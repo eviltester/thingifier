@@ -171,6 +171,10 @@ public class TodoManagerUsageTest {
         ApiResponse apiresponse = todoManager.api().get("todo/" + paperwork.getGUID());
         Assert.assertEquals(200, apiresponse.getStatusCode());
 
+        // get a todo that does not exist
+        apiresponse = todoManager.api().get("todo/" + paperwork.getGUID()+"bob");
+        Assert.assertEquals(404, apiresponse.getStatusCode());
+
 
         System.out.println(JsonThing.asJson(query));
 

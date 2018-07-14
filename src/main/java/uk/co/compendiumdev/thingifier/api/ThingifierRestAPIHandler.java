@@ -23,7 +23,7 @@ public class ThingifierRestAPIHandler {
         this.thingifier = thingifier;
     }
 
-    // TODO: should not return boolean should return an HTTP status and an error message or the item
+
     public ApiResponse post(String url, String body) {
 
         Map args = new Gson().fromJson(body, Map.class);
@@ -252,7 +252,7 @@ public class ThingifierRestAPIHandler {
         }else{
             List<ThingInstance> items = queryresult.getListThingInstance();
             if(items.size()==0){
-                // TODO 404 not found - nothing to delete
+                // 404 not found - nothing to delete
                 return ApiResponse.error404(String.format("Could not find any instances with %s", url));
             }
             for(ThingInstance instance : items){
@@ -264,8 +264,18 @@ public class ThingifierRestAPIHandler {
     }
 
     public ApiResponse get(String url) {
-        // should really check for 404 with it doesn't match anything
-        List<ThingInstance> query = thingifier.simplequery(url);
-        return ApiResponse.success(JsonThing.asJson(query));
+
+
+        SimpleQuery queryResults = new SimpleQuery(thingifier, url).performQuery();
+        List<ThingInstance> queryItems = queryResults.getListThingInstance();
+
+        // return a 404 if it doesn't match anything
+        if(queryResults.lastMatchWasNothing() ||
+                (queryResults.lastMatchWasInstance() && queryItems.size()==0)){
+            // if query list was empty then return a 404
+            return ApiResponse.error404(String.format("Could not find an instance with %s", url));
+        }
+
+        return ApiResponse.success(JsonThing.asJson(queryItems));
     }
 }

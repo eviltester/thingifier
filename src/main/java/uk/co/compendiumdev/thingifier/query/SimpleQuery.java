@@ -185,4 +185,12 @@ public class SimpleQuery{
     public ThingInstance getLastInstance() {
         return currentInstance;
     }
+
+    public boolean lastMatchWasInstance() {
+        return lastMatch == CURRENT_INSTANCE;
+    }
+
+    public boolean lastMatchWasNothing() {
+        return lastMatch == NOTHING;
+    }
 }
