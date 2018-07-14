@@ -16,6 +16,7 @@ public class ApiRoutingDefinitionGenerator {
         this.thingifier = thingifier;
     }
 
+    // TODO: use this to create basic documentation
     public ApiRoutingDefinition generate() {
         ApiRoutingDefinition defn = new ApiRoutingDefinition();
 

@@ -23,6 +23,7 @@ public class ThingifierRestServer {
             response.type("application/json");
         });
 
+        // TODO : this now needs HTTP level automated coverage
 
         // configure it based on a thingifier
         ApiRoutingDefinition routingDefinitions = new ApiRoutingDefinitionGenerator(thingifier).generate();
