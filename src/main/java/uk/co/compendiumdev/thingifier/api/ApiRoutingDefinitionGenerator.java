@@ -4,9 +4,6 @@ import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.generic.definitions.RelationshipDefinition;
 
-import static spark.Spark.*;
-import static spark.Spark.post;
-
 public class ApiRoutingDefinitionGenerator {
 
 
