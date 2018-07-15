@@ -17,8 +17,9 @@ public class TodoManagerThingifier {
     public Thingifier get(){
 
         // this is basically an Entity Relationship diagram as source
-        //TODO:  should expand functionality based on E-R diagrams
-
+        // TODO:  should expand functionality based on E-R diagrams
+        // TODO: import thingifier from JSON to allow dynamic configuration
+        // TODO: allow configuration from -defn FILENAME when starting at the command line
         Thingifier todoManager = new Thingifier();
 
         todoManager.setDocumentation("Todo Manager", "A Simple todo manager.");
@@ -51,6 +52,7 @@ public class TodoManagerThingifier {
 
 
         // Some hard coded test data for experimenting with
+        // TODO: allow importing from a JSON to create data in bulk
         ThingInstance paperwork = todo.createInstance().setValue("title", "scan paperwork");
         todo.addInstance(paperwork);
 
