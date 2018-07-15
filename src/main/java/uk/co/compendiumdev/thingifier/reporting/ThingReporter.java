@@ -92,9 +92,12 @@ public class ThingReporter {
 
                 for(String aField : aThing.definition().getFieldNames()){
 
-                    output.append("<li>" + aField + "\n");
+                    output.append(String.format("<li> %s \n", aField));
 
                     output.append("<ul>\n");
+
+                    output.append(String.format("<li> (%s)</li>", aThing.definition().getField(aField).getType() ));
+
                     for(ValidationRule validation : aThing.definition().getField(aField).validationRules()){
                         output.append("<li>" + validation.getErrorMessage("") + "</li>\n");
 

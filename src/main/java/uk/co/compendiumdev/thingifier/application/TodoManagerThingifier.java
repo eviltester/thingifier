@@ -22,7 +22,7 @@ public class TodoManagerThingifier {
         // TODO: allow configuration from -defn FILENAME when starting at the command line
         Thingifier todoManager = new Thingifier();
 
-        todoManager.setDocumentation("Todo Manager", "A Simple todo manager.");
+        todoManager.setDocumentation("Todo Manager", "A Simple todo manager. All data lives in memory and is not persisted so the application is cleared everytime you start it. It does have some test data in here when you start");
 
         Thing todo = todoManager.createThing("todo", "todos");
 
