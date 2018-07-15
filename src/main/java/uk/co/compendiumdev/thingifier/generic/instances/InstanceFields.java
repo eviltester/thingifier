@@ -32,16 +32,6 @@ public class InstanceFields {
         return output.toString();
     }
 
-    public InstanceFields setFieldValuesFrom(String[] fieldValuesFrom) {
-
-        //todo: add validation in here, this is naive to start us off
-        for(String aFieldValuePair : fieldValuesFrom){
-            String[] pairValues = aFieldValuePair.split(":");
-            addValue(pairValues[0], pairValues[1]);
-        }
-
-        return this;
-    }
 
     public void deleteAllFieldsExcept(String... fieldNamesToIgnore) {
 

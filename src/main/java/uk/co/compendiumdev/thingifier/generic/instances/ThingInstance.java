@@ -76,11 +76,6 @@ public class ThingInstance {
         return this;
     }
 
-    public ThingInstance setFieldValuesFrom(String[] fieldValuesFrom) {
-        instance.setFieldValuesFrom(fieldValuesFrom);
-        return this;
-    }
-
     public ThingInstance setFieldValuesFrom(Map<String, String> args) {
 
         for(Map.Entry<String, String> entry : args.entrySet()){
