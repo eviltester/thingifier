@@ -13,7 +13,6 @@ public class ApiRoutingDefinitionGenerator {
         this.thingifier = thingifier;
     }
 
-    // TODO: use this to create basic documentation
     // TODO: have the ability to override these from config and define from config rather than code
     public ApiRoutingDefinition generate() {
         ApiRoutingDefinition defn = new ApiRoutingDefinition();
