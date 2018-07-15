@@ -45,10 +45,12 @@ public class Main {
 
         Spark.port(proxyport);
 
+        // TODO: add a shutdown verb as configurable through arguments e.g. -shutdownable=false
+        get("/shutdown", (request, result) -> {System.exit(0); return "";});
+
         ThingifierRestServer restServer = new ThingifierRestServer(args, "", new TodoManagerThingifier().get());
 
-        // TODO: add a shutdown verb as configurable through arguments e.g. -shutdownable=false
-        get("/shutdown", (req, res) -> {System.exit(0); return "";});
+
 
 
 
