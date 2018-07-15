@@ -58,15 +58,25 @@ public class TodoManagerThingifier {
         Thing project = todoManager.createThing("project", "projects");
 
         project.definition()
-                .addFields(Field.is("title", STRING), Field.is("description",STRING),
-                        Field.is("completed",FieldType.BOOLEAN).withDefaultValue("FALSE"),
-                        Field.is("active",FieldType.BOOLEAN).withDefaultValue("TRUE"));
+                .addFields(
+                        Field.is("title", STRING),
+                        Field.is("description",STRING),
+                        Field.is("completed",FieldType.BOOLEAN).
+                                withDefaultValue("FALSE").
+                                withValidation(VRule.MatchesType()),
+                        Field.is("active",FieldType.BOOLEAN).
+                                withDefaultValue("TRUE").
+                                withValidation(VRule.MatchesType()));
 
 
         Thing category = todoManager.createThing("category", "categories");
 
         category.definition()
-                .addFields(Field.is("title", STRING), Field.is("description",STRING));
+                .addFields(
+                        Field.is("title", STRING).
+                                mandatory().
+                                withValidation(VRule.NotEmpty()),
+                        Field.is("description",STRING));
 
         todoManager.defineRelationship(Between.things(project, todo), AndCall.it("tasks"), WithCardinality.of("1", "*"));
         todoManager.defineRelationship(Between.things(project, category), AndCall.it("categories"), WithCardinality.of("1", "*"));
