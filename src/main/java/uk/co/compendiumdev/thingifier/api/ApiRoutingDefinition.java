@@ -12,25 +12,9 @@ public class ApiRoutingDefinition {
         this.routings = new ArrayList<>();
     }
 
-    /* Use the 'self documenting methods
-    * TODO: delete these comments when done
-    */
-    /*
-    public void addRouting(RoutingVerb verb, String url, RoutingStatus routingStatus) {
-
-        routings.add(new RoutingDefinition(verb, url, routingStatus, null));
-    }
-
-    public void addRouting(RoutingVerb verb, String url, RoutingStatus routingStatus, ResponseHeader header) {
-        routings.add(new RoutingDefinition(verb, url, routingStatus, header));
-    }
-    */
-
     public Collection<RoutingDefinition> definitions() {
         return routings;
     }
-
-
 
     public void addRouting(String documentation, RoutingVerb verb, String url, RoutingStatus routingStatus) {
         routings.add(new RoutingDefinition(verb, url, routingStatus, null).addDocumentation(documentation));
