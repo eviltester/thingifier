@@ -130,7 +130,7 @@ public class ThingifierRestAPIHandler {
                 ValidationReport validation = relatedItem.validate();
 
                 if(validation.isValid()) {
-                    thing.addInstance(relatedItem);
+                    thingToCreate.addInstance(relatedItem);
                     returnThing = relatedItem;
                 }else{
                     // do not add it, report the errors

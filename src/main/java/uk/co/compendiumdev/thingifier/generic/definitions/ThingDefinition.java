@@ -150,31 +150,4 @@ public class ThingDefinition {
         return retRels;
     }
 
-    // REMOVED 20180706 because this seemed overly complicated
-    /*
-    public ThingDefinition addFields(String... fields) {
-        for(String fieldData : fields){
-            addField(Field.fromData(fieldData));
-        }
-        return this;
-    }
-
-    public ThingDefinition withFields(Object[] fields) {
-        List<String> stringFields = new ArrayList<String>();
-        List<Field> fieldFields= new ArrayList<Field>();
-
-        for(Object aField : fields){
-            if(aField instanceof String){
-                stringFields.add((String)aField);
-            }
-            if(aField instanceof Field){
-                fieldFields.add((Field)aField);
-            }
-        }
-        this.addFields(stringFields.toArray(new String[stringFields.size()]));
-        this.addFields(fieldFields.toArray(new Field[fieldFields.size()]));
-
-        return this;
-    }
-    */
 }

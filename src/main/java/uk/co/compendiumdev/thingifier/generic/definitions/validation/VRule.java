@@ -6,4 +6,10 @@ public class VRule{
     public static ValidationRule NotEmpty() {
         return new NotEmptyValidationRule();
     }
+
+    public static ValidationRule MatchesType() {
+        return new MatchesTypeValidationRule();
+    }
+
+
 }

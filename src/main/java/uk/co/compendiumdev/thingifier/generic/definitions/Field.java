@@ -2,15 +2,18 @@ package uk.co.compendiumdev.thingifier.generic.definitions;
 
 import uk.co.compendiumdev.thingifier.api.ValidationReport;
 import uk.co.compendiumdev.thingifier.generic.FieldType;
+import uk.co.compendiumdev.thingifier.generic.definitions.validation.MatchesTypeValidationRule;
 import uk.co.compendiumdev.thingifier.generic.definitions.validation.ValidationRule;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class Field {
 
     private final String name;
     private final FieldType type;
+    private boolean fieldIsOptional;
 
     // default value for the field
     private String defaultValue;
@@ -20,6 +23,7 @@ public class Field {
         this.name = name;
         this.type = type;
         validationRules=new ArrayList<>();
+        fieldIsOptional=true;
 
     }
 
@@ -57,6 +61,11 @@ public class Field {
     }
 
     public boolean isValidValue(String value) {
+
+        if(value==null){
+            return false;
+        }
+
         if(type == FieldType.BOOLEAN){
             if(value.toLowerCase().contentEquals("true") ||
                     value.toLowerCase().contentEquals("false")     ){
@@ -66,7 +75,16 @@ public class Field {
             return false;
         }
 
-        // TODO : add validation for Integer
+        if(type == FieldType.INTEGER){
+            try {
+                Integer.valueOf(value);
+                return true;
+            }catch(NumberFormatException e){
+                return false;
+            }
+        }
+
+        // TODO : add validation for DATE
 
         return true;
     }
@@ -76,15 +94,36 @@ public class Field {
         return this;
     }
 
+    public Field withValidation(ValidationRule... validationRule) {
+        validationRules.addAll(Arrays.asList(validationRule));
+        return this;
+    }
+
     public ValidationReport validate(String value) {
+
 
         ValidationReport report = new ValidationReport();
 
+        // missing fields will come through as null,
+        // if they are optional then that is fine
+        if(fieldIsOptional && value==null){
+            report.setValid(true);
+            return report;
+        }
+
         for(ValidationRule rule : validationRules){
-            boolean valid = rule.validates(value);
-            if(!valid) {
-                report.setValid(false);
-                report.addErrorMessage(rule.getErrorMessage(this.getName()));
+
+            if(rule instanceof MatchesTypeValidationRule){
+                if(!isValidValue(value)){
+                    report.setValid(false);
+                    report.addErrorMessage(String.format("%s : %s does not match type %s", this.getName(), value, type));
+                }
+            }else {
+
+                if (!rule.validates(value)) {
+                    report.setValid(false);
+                    report.addErrorMessage(rule.getErrorMessage(this.getName()));
+                }
             }
         }
 

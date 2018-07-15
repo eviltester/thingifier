@@ -27,13 +27,15 @@ public class TodoManagerThingifier {
         Thing todo = todoManager.createThing("todo", "todos");
 
         todo.definition()
-                .addFields( Field.is("title", STRING).withValidation(VRule.NotEmpty()),
+                .addFields( Field.is("title", STRING).withValidation(VRule.NotEmpty(),
+                                                                            VRule.MatchesType()),
                             Field.is("description",STRING),
-                            Field.is("doneStatus",FieldType.BOOLEAN).withDefaultValue("FALSE"))
+                            Field.is("doneStatus",FieldType.BOOLEAN).withDefaultValue("FALSE").
+                                                                            withValidation(
+                                                                                    VRule.MatchesType()))
                                     ;
 
-        // TODO: create a NotEmpty validation rule
-        // TODO: validate against field type i.e. INTEGER, BOOLEAN, DATE
+        // TODO: validate against field type DATE
         // TODO: create SET field type
         // TODO: validate against set type
         // TODO: create validation rule MatchesFieldType to allow configuration of field validation against type
