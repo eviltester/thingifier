@@ -30,6 +30,21 @@ public class TodoManagerThingifier {
                 .addFields(Field.is("title", STRING), Field.is("description",STRING),
                         Field.is("doneStatus",FieldType.BOOLEAN).withDefaultValue("FALSE"));
 
+        // TODO: validate against field type i.e. INTEGER, BOOLEAN, DATE
+        // TODO: create SET field type
+        // TODO: validate against set type
+        // TODO: create validation rule MatchesFieldType to allow configuration of field validation against type
+        // TODO: ValidationRule Interface - implemented by rules and ValidtionRuleGroup to allow processing in a list - main method validates()
+        // TODO: create a MinimumLength validation rule
+        // TODO: create a MaximumLength validation rule
+        // TODO: create a IsGreaterThan validation rule
+        // TODO: create an IsLessThan validation rule
+        // TODO create a ValidationRuleGroup.and()  where all the validation rules in the group must pass for validation to pass
+        // TODO create a ValidationRuleGroup.or()  where any of the validation rules in the group must pass for validation to pass - stops on first 'pass'
+        // TODO : create a MatchesRegex validation rule for fields - this will be the simplest way of creating complex validation quickly
+        // e.g. (.|\s)*\S(.|\s)*    non empty
+
+
 
         Thing project = todoManager.createThing("project", "projects");
 
