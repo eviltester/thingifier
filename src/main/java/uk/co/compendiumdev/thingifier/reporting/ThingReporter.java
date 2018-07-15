@@ -7,6 +7,7 @@ import uk.co.compendiumdev.thingifier.api.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.RoutingVerb;
 import uk.co.compendiumdev.thingifier.generic.definitions.Field;
 import uk.co.compendiumdev.thingifier.generic.definitions.RelationshipDefinition;
+import uk.co.compendiumdev.thingifier.generic.definitions.validation.ValidationRule;
 import uk.co.compendiumdev.thingifier.generic.instances.RelationshipInstance;
 import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
 
@@ -91,7 +92,15 @@ public class ThingReporter {
 
                 for(String aField : aThing.definition().getFieldNames()){
 
-                    output.append("<li>" + aField + "</li>\n");
+                    output.append("<li>" + aField + "\n");
+
+                    output.append("<ul>\n");
+                    for(ValidationRule validation : aThing.definition().getField(aField).validationRules()){
+                        output.append("<li>" + validation.getErrorMessage("") + "</li>\n");
+
+                    }
+                    output.append("</ul>\n");
+                    output.append("</li>\n");
                 }
                 output.append("</ul>\n");
             }

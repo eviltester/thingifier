@@ -2,6 +2,7 @@ package uk.co.compendiumdev.thingifier.api;
 
 import com.google.gson.Gson;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,12 +29,23 @@ public class ApiResponse {
 
     }
 
+    public static String getErrorMessageJson(Collection<String> errorMessages) {
+        Map error = new HashMap<String,String>();
+        error.put("errorMessages", errorMessages);
+        return new Gson().toJson(error);
+
+    }
+
     public static ApiResponse success(String body) {
         return new ApiResponse(200).setBody(body);
     }
 
     public static ApiResponse error(int statusCode, String errorMessage) {
         return new ApiResponse(statusCode).setBody(getErrorMessageJson(errorMessage));
+    }
+
+    public static ApiResponse error(int statusCode, Collection<String> errorMessages) {
+        return new ApiResponse(statusCode).setBody(getErrorMessageJson(errorMessages));
     }
 
     private ApiResponse setBody(String body) {

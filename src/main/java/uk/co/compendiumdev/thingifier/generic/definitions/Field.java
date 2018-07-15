@@ -1,6 +1,11 @@
 package uk.co.compendiumdev.thingifier.generic.definitions;
 
+import uk.co.compendiumdev.thingifier.api.ValidationReport;
 import uk.co.compendiumdev.thingifier.generic.FieldType;
+import uk.co.compendiumdev.thingifier.generic.definitions.validation.ValidationRule;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class Field {
 
@@ -9,10 +14,13 @@ public class Field {
 
     // default value for the field
     private String defaultValue;
+    private List<ValidationRule> validationRules;
 
     private Field(String name, FieldType type) {
         this.name = name;
         this.type = type;
+        validationRules=new ArrayList<>();
+
     }
 
     public static Field is(String name) {
@@ -61,6 +69,30 @@ public class Field {
         // TODO : add validation for Integer
 
         return true;
+    }
+
+    public Field withValidation(ValidationRule validationRule) {
+        validationRules.add(validationRule);
+        return this;
+    }
+
+    public ValidationReport validate(String value) {
+
+        ValidationReport report = new ValidationReport();
+
+        for(ValidationRule rule : validationRules){
+            boolean valid = rule.validates(value);
+            if(!valid) {
+                report.setValid(false);
+                report.addErrorMessage(rule.getErrorMessage(this.getName()));
+            }
+        }
+
+        return report;
+    }
+
+    public List<ValidationRule> validationRules() {
+        return validationRules;
     }
 
 

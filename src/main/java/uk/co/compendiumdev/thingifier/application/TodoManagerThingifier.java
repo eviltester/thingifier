@@ -3,12 +3,12 @@ package uk.co.compendiumdev.thingifier.application;
 import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.generic.FieldType;
+import uk.co.compendiumdev.thingifier.generic.definitions.validation.VRule;
 import uk.co.compendiumdev.thingifier.generic.definitions.Field;
 import uk.co.compendiumdev.thingifier.generic.dsl.relationship.AndCall;
 import uk.co.compendiumdev.thingifier.generic.dsl.relationship.Between;
 import uk.co.compendiumdev.thingifier.generic.dsl.relationship.WithCardinality;
 import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
-import uk.co.compendiumdev.thingifier.reporting.JsonThing;
 
 import static uk.co.compendiumdev.thingifier.generic.FieldType.STRING;
 
@@ -27,9 +27,12 @@ public class TodoManagerThingifier {
         Thing todo = todoManager.createThing("todo", "todos");
 
         todo.definition()
-                .addFields(Field.is("title", STRING), Field.is("description",STRING),
-                        Field.is("doneStatus",FieldType.BOOLEAN).withDefaultValue("FALSE"));
+                .addFields( Field.is("title", STRING).withValidation(VRule.NotEmpty()),
+                            Field.is("description",STRING),
+                            Field.is("doneStatus",FieldType.BOOLEAN).withDefaultValue("FALSE"))
+                                    ;
 
+        // TODO: create a NotEmpty validation rule
         // TODO: validate against field type i.e. INTEGER, BOOLEAN, DATE
         // TODO: create SET field type
         // TODO: validate against set type

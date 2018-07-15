@@ -46,11 +46,18 @@ public class InstanceFields {
     public void deleteAllFieldsExcept(String... fieldNamesToIgnore) {
 
         Set<String> ignorekeys = new HashSet<>(Arrays.asList(fieldNamesToIgnore));
+        Set<String> keys = values.keySet();
 
-        for(String key : values.keySet()){
+        for(String key : keys){
             if(!ignorekeys.contains(key)) {
                 values.remove(key);
             }
         }
+    }
+
+    public Map<String, String> asMap() {
+        HashMap<String, String> aMap = new HashMap<String, String>();
+        aMap.putAll(values);
+        return aMap;
     }
 }

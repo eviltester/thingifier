@@ -1,5 +1,6 @@
 package uk.co.compendiumdev.thingifier.generic.instances;
 
+import uk.co.compendiumdev.thingifier.api.ValidationReport;
 import uk.co.compendiumdev.thingifier.generic.GUID;
 import uk.co.compendiumdev.thingifier.generic.definitions.Field;
 import uk.co.compendiumdev.thingifier.generic.definitions.RelationshipDefinition;
@@ -214,4 +215,22 @@ public class ThingInstance {
     }
 
 
+    public ValidationReport validate() {
+        ValidationReport report= new ValidationReport();
+
+
+        for(String fieldName : entityDefinition.getFieldNames()){
+            Field field = entityDefinition.getField(fieldName);
+            ValidationReport validity = field.validate(instance.getValue(fieldName));
+            report.combine(validity);
+        }
+
+        return report;
+    }
+
+    public ThingInstance createDuplicateWithoutRelationships() {
+        ThingInstance cloneInstance = new ThingInstance(entityDefinition);
+        cloneInstance.setFieldValuesFrom(instance.asMap());
+        return cloneInstance;
+    }
 }

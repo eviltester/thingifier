@@ -24,6 +24,8 @@ public class ThingifierRestAPIHandler {
     }
 
 
+    // TODO : this whole class needs to be refactored and wrapped with unit tests
+
     public ApiResponse post(String url, String body) {
 
         Map args = new Gson().fromJson(body, Map.class);
@@ -40,9 +42,16 @@ public class ThingifierRestAPIHandler {
             // create a new thing
             ThingInstance instance = thing.createInstance();
             instance.setFieldValuesFrom(args);
-            // TODO check if it is valid
-            thing.addInstance(instance);
-            return ApiResponse.created(JsonThing.asJson(instance));
+
+            ValidationReport validation = instance.validate();
+
+            if(validation.isValid()) {
+                thing.addInstance(instance);
+                return ApiResponse.created(JsonThing.asJson(instance));
+            }else{
+                // do not add it, report the errors
+                return ApiResponse.error(400, validation.getErrorMessages());
+            }
         }
 
 
@@ -117,9 +126,16 @@ public class ThingifierRestAPIHandler {
                 Thing thingToCreate = thingifier.getThingNamed(createThing.getName());
                 relatedItem = thingToCreate.createInstance().setFieldValuesFrom(new Gson().fromJson(body, Map.class));
 
-                // TODO: assuming the thing is valid - it might not be so fix it here
-                thingToCreate.addInstance(relatedItem);
-                returnThing = relatedItem;
+                // assuming the thing is valid - it might not be so detect it here
+                ValidationReport validation = relatedItem.validate();
+
+                if(validation.isValid()) {
+                    thing.addInstance(relatedItem);
+                    returnThing = relatedItem;
+                }else{
+                    // do not add it, report the errors
+                    return ApiResponse.error(400, validation.getErrorMessages());
+                }
             }
 
 
@@ -196,9 +212,17 @@ public class ThingifierRestAPIHandler {
                     aGUID = UUID.fromString(urlParts[1]);
                     instance = thing.createInstance(aGUID.toString());
                     instance.setFieldValuesFrom(args);
-                    // TODO check if it is valid
-                    thing.addInstance(instance);
-                    return ApiResponse.created(JsonThing.asJson(instance));
+
+                    ValidationReport validation = instance.validate();
+
+                    if(validation.isValid()) {
+                        thing.addInstance(instance);
+                        return ApiResponse.created(JsonThing.asJson(instance));
+                    }else{
+                        // do not add it, report the errors
+                        return ApiResponse.error(400, validation.getErrorMessages());
+                    }
+
 
                 }catch(Exception e){
                     // that is not a valid guid
@@ -207,11 +231,25 @@ public class ThingifierRestAPIHandler {
                 }
             }else{
                 // when amending existing thing with PUT it must be idempotent so
-                // TODO: check that all fields are valid in the args
+                // check that all fields are valid in the args
+
+                // create copy and validate copy
+                ThingInstance cloned = instance.createDuplicateWithoutRelationships();
+
                 // quick hack to make idempotent - delete all values and add new ones
-                instance.clearAllFields(); // except "guid"
-                instance.setFieldValuesFrom(args);
-                return ApiResponse.success(JsonThing.asJson(instance));
+                cloned.clearAllFields(); // except "guid"
+                cloned.setFieldValuesFrom(args);
+
+                ValidationReport validation = cloned.validate();
+
+                if(validation.isValid()) {
+                    instance.clearAllFields();
+                    instance.setFieldValuesFrom(args);
+                    return ApiResponse.success(JsonThing.asJson(instance));
+                }else {
+                    // do not add it, report the errors
+                    return ApiResponse.error(400, validation.getErrorMessages());
+                }
             }
         }
 
