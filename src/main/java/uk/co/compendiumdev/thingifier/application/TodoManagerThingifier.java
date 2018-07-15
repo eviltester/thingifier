@@ -21,6 +21,8 @@ public class TodoManagerThingifier {
 
         Thingifier todoManager = new Thingifier();
 
+        todoManager.setDocumentation("Todo Manager", "A Simple todo manager.");
+
         Thing todo = todoManager.createThing("todo", "todos");
 
         todo.definition()

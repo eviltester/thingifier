@@ -13,7 +13,7 @@ public class RoutingStatus {
     }
 
     public static RoutingStatus returnValue(int status) {
-        return new RoutingStatus().setStatusCode(status);
+        return new RoutingStatus().setStatusCode(status).setReturnedFromCall(false);
     }
 
     private RoutingStatus setStatusCode(int status) {
@@ -21,8 +21,8 @@ public class RoutingStatus {
         return this;
     }
 
-    private RoutingStatus setReturnedFromCall(boolean b) {
-        this.returnedFromCall = true;
+    private RoutingStatus setReturnedFromCall(boolean isReturned) {
+        this.returnedFromCall = isReturned;
         return this;
     }
 

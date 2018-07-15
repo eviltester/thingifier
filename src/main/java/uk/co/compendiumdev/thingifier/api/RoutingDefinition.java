@@ -5,6 +5,7 @@ public class RoutingDefinition {
     private final String url;
     private final RoutingStatus routingStatus;
     private final ResponseHeader header;
+    private String documentation="";
 
     public RoutingDefinition(RoutingVerb verb, String url, RoutingStatus routingStatus, ResponseHeader header) {
         this.verb = verb;
@@ -39,5 +40,14 @@ public class RoutingDefinition {
         }
 
         return header.headerValue;
+    }
+
+    public String getDocumentation() {
+        return this.documentation;
+    }
+
+    public RoutingDefinition addDocumentation(String documentation) {
+        this.documentation = documentation;
+        return this;
     }
 }

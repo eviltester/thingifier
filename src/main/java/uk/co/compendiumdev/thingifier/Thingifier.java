@@ -17,7 +17,9 @@ public class Thingifier {
 
     Map<String, Thing> things = new HashMap<String, Thing>();
     private Map<String, RelationshipDefinition> relationships = new HashMap<String, RelationshipDefinition>();
-;
+    private String title="";
+    private String initialParagraph="";
+
 
     public Thing createThing(String thingName, String pluralName) {
         Thing aThing = Thing.create(thingName, pluralName);
@@ -86,5 +88,20 @@ public class Thingifier {
 
     public Collection<RelationshipDefinition> getRelationshipDefinitions() {
         return relationships.values();
+    }
+
+    public void setDocumentation(String title, String initialParagraph) {
+        this.title = title;
+        this.initialParagraph = initialParagraph;
+
+
+    }
+
+    public String getTitle() {
+        return this.title;
+    }
+
+    public String getInitialParagraph() {
+        return this.initialParagraph;
     }
 }

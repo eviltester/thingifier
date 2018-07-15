@@ -2,6 +2,7 @@ package uk.co.compendiumdev.thingifier.application;
 
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.*;
+import uk.co.compendiumdev.thingifier.reporting.ThingReporter;
 
 import static spark.Spark.*;
 
@@ -25,6 +26,15 @@ public class ThingifierRestServer {
 
         // configure it based on a thingifier
         ApiRoutingDefinition routingDefinitions = new ApiRoutingDefinitionGenerator(thingifier).generate();
+
+
+        // / - default for documentation
+        get("/", (request, response) -> {
+            response.type("text/html");
+            response.status(200);
+            return new ThingReporter(thingifier).getApiDocumentation(routingDefinitions);
+        });
+
 
         for(RoutingDefinition defn : routingDefinitions.definitions()){
             switch (defn.verb()){
@@ -97,6 +107,7 @@ public class ThingifierRestServer {
         }
 
 
+        // TODO : allow this to be overwritten by config
         // nothing else is supported
         head("*", (request, response) -> {response.status(404); return "";});
         get("*", (request, response) -> {response.status(404); return "";});
