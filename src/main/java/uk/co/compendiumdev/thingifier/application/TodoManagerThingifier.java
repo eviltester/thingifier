@@ -78,6 +78,8 @@ public class TodoManagerThingifier {
                                 withValidation(VRule.NotEmpty()),
                         Field.is("description",STRING));
 
+        // TODO create mandatory relationshisp = at the moment all entities can exist without relationship
+        // e.g. create an estimate for a todo - the estimate must have a todo
         todoManager.defineRelationship(Between.things(project, todo), AndCall.it("tasks"), WithCardinality.of("1", "*"));
         todoManager.defineRelationship(Between.things(project, category), AndCall.it("categories"), WithCardinality.of("1", "*"));
         todoManager.defineRelationship(Between.things(category, todo), AndCall.it("todos"), WithCardinality.of("1", "*"));
