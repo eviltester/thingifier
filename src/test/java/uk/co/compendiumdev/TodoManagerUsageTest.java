@@ -635,4 +635,26 @@ public class TodoManagerUsageTest {
         }
 
     }
+
+
+
+    /*
+        Get todo
+        Amend todo POST  /todo/guid
+                        {"guid":"ab32fc3f-5dfe-4217-ac54-98ff66d66239"}
+        Fail amend due to missing mandatory field
+        Fail amend due to failed validation field
+
+        404 Amend todo that does not exist
+        404 amend(POST)/GET entity type does not exist e.g. bob
+            - receives a generic 404 with no error message
+            // TODO: investigate top level 404 handling - can we have 404 handling for "no such entity" to allow an error message in the 404
+
+        DELETE todo
+
+        GET Todos for a project http://localhost:4567/project/d719b9a2-c74f-4ca3-a4ca-a3fffc74cf65/tasks
+        Create Todo for a project
+        Fail to create todo for project - field validation
+
+     */
 }

@@ -167,7 +167,7 @@ public class ThingifierRestAPIHandler {
         ThingInstance instance = thing.findInstance(FieldValue.is("guid", instanceGuid));
         if (instance==null){
             // cannot amend something that does not exist
-            return ApiResponse.error404(String.format("Nothing such %s entity with GUID %s found", thing.definition().getName(), instanceGuid));
+            return ApiResponse.error404(String.format("No such %s entity instance with GUID %s found", thing.definition().getName(), instanceGuid));
         }else{
             // TODO validate
             ThingInstance cloned = instance.createDuplicateWithoutRelationships();
@@ -212,7 +212,7 @@ public class ThingifierRestAPIHandler {
     }
 
     private ApiResponse noSuchEntity(String entityName) {
-        return ApiResponse.error404(String.format("Nothing such entity as %s found", entityName));
+        return ApiResponse.error404(String.format("No such entity as %s found", entityName));
     }
 
     public ApiResponse put(String url, String body) {
