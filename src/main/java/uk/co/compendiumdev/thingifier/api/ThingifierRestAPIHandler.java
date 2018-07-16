@@ -39,19 +39,7 @@ public class ThingifierRestAPIHandler {
         // create a thing
         Thing thing = thingifier.getThingNamed(url);
         if(thing!=null){
-            // create a new thing
-            ThingInstance instance = thing.createInstance();
-            instance.setFieldValuesFrom(args);
-
-            ValidationReport validation = instance.validate();
-
-            if(validation.isValid()) {
-                thing.addInstance(instance);
-                return ApiResponse.created(JsonThing.asJson(instance));
-            }else{
-                // do not add it, report the errors
-                return ApiResponse.error(400, validation.getErrorMessages());
-            }
+            return createANewThingWithPost(args, thing);
         }
 
 
@@ -63,21 +51,11 @@ public class ThingifierRestAPIHandler {
         String[] urlParts = url.split("/");
         if(urlParts.length==2) {
 
-            thing = thingifier.getThingNamed(urlParts[0]);
-            if (thing == null) {
-                // this is not a URL for thing/guid
-                // unknown thing
-                return noSuchEntity(urlParts[0]);
+            String thingName = urlParts[0];
+            thing = thingifier.getThingNamed(thingName);
+            String instanceGuid = urlParts[1];
 
-            }
-            ThingInstance instance = thing.findInstance(FieldValue.is("guid", urlParts[1]));
-            if (instance==null){
-                // cannot amend something that does not exist
-                return ApiResponse.error404(String.format("Nothing such %s entity with GUID %s found", urlParts[0], urlParts[1]));
-            }else{
-                instance.setFieldValuesFrom(args);
-                return ApiResponse.success(JsonThing.asJson(instance));
-            }
+            return amendAThingWithPost(args, thing, thingName, instanceGuid);
         }
 
 
@@ -124,7 +102,14 @@ public class ThingifierRestAPIHandler {
                 ThingDefinition createThing = relationshipToUse.to();
 
                 Thing thingToCreate = thingifier.getThingNamed(createThing.getName());
-                relatedItem = thingToCreate.createInstance().setFieldValuesFrom(new Gson().fromJson(body, Map.class));
+
+                try{
+                    relatedItem = thingToCreate.createInstance().setFieldValuesFrom(new Gson().fromJson(body, Map.class));
+                }catch(Exception e){
+                    return ApiResponse.error(400, e.getMessage());
+                }
+
+
 
                 // assuming the thing is valid - it might not be so detect it here
                 ValidationReport validation = relatedItem.validate();
@@ -172,6 +157,60 @@ public class ThingifierRestAPIHandler {
 
     }
 
+    private ApiResponse amendAThingWithPost(Map args, Thing thing, String thingName, String instanceGuid) {
+        if (thing == null) {
+            // this is not a URL for thing/guid
+            // unknown thing
+            return noSuchEntity(thingName);
+
+        }
+        ThingInstance instance = thing.findInstance(FieldValue.is("guid", instanceGuid));
+        if (instance==null){
+            // cannot amend something that does not exist
+            return ApiResponse.error404(String.format("Nothing such %s entity with GUID %s found", thing.definition().getName(), instanceGuid));
+        }else{
+            // TODO validate
+            ThingInstance cloned = instance.createDuplicateWithoutRelationships();
+
+            try{
+                cloned.setFieldValuesFrom(args);
+            }catch(Exception e){
+                return ApiResponse.error(400, e.getMessage());
+            }
+
+            ValidationReport validation = cloned.validate();
+
+            if(validation.isValid()) {
+                instance.setFieldValuesFrom(args);
+                return ApiResponse.success(JsonThing.asJson(instance));
+            }else {
+                // do not add it, report the errors
+                return ApiResponse.error(400, validation.getErrorMessages());
+            }
+        }
+    }
+
+    private ApiResponse createANewThingWithPost(Map args, Thing thing) {
+        // create a new thing
+        ThingInstance instance = thing.createInstance();
+
+        try{
+            instance.setFieldValuesFrom(args);
+        }catch(Exception e){
+            return ApiResponse.error(400, e.getMessage());
+        }
+
+        ValidationReport validation = instance.validate();
+
+        if(validation.isValid()) {
+            thing.addInstance(instance);
+            return ApiResponse.created(JsonThing.asJson(instance));
+        }else{
+            // do not add it, report the errors
+            return ApiResponse.error(400, validation.getErrorMessages());
+        }
+    }
+
     private ApiResponse noSuchEntity(String entityName) {
         return ApiResponse.error404(String.format("Nothing such entity as %s found", entityName));
     }
@@ -211,24 +250,31 @@ public class ThingifierRestAPIHandler {
                 try {
                     aGUID = UUID.fromString(urlParts[1]);
                     instance = thing.createInstance(aGUID.toString());
-                    instance.setFieldValuesFrom(args);
-
-                    ValidationReport validation = instance.validate();
-
-                    if(validation.isValid()) {
-                        thing.addInstance(instance);
-                        return ApiResponse.created(JsonThing.asJson(instance));
-                    }else{
-                        // do not add it, report the errors
-                        return ApiResponse.error(400, validation.getErrorMessages());
-                    }
-
 
                 }catch(Exception e){
                     // that is not a valid guid
                     System.out.println(e.getMessage());
-                    return ApiResponse.error404(String.format("Nothing such %s entity with GUID %s found", urlParts[0], urlParts[1]));
+                    return ApiResponse.error404(String.format("Invalid GUID for %s entity", urlParts[1], urlParts[0]));
                 }
+
+                try{
+                    instance.setFieldValuesFrom(args);
+                }catch(Exception e){
+                    return ApiResponse.error(400, e.getMessage());
+                }
+
+
+                ValidationReport validation = instance.validate();
+
+                if(validation.isValid()) {
+                    thing.addInstance(instance);
+                    return ApiResponse.created(JsonThing.asJson(instance));
+                }else{
+                    // do not add it, report the errors
+                    return ApiResponse.error(400, validation.getErrorMessages());
+                }
+
+
             }else{
                 // when amending existing thing with PUT it must be idempotent so
                 // check that all fields are valid in the args
@@ -238,7 +284,13 @@ public class ThingifierRestAPIHandler {
 
                 // quick hack to make idempotent - delete all values and add new ones
                 cloned.clearAllFields(); // except "guid"
-                cloned.setFieldValuesFrom(args);
+
+                try{
+                    cloned.setFieldValuesFrom(args);
+                }catch(Exception e){
+                    return ApiResponse.error(400, e.getMessage());
+                }
+
 
                 ValidationReport validation = cloned.validate();
 

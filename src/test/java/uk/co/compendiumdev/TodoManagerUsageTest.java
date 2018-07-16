@@ -6,6 +6,7 @@ import uk.co.compendiumdev.thingifier.api.ApiResponse;
 import uk.co.compendiumdev.thingifier.generic.FieldType;
 import uk.co.compendiumdev.thingifier.generic.definitions.Field;
 import uk.co.compendiumdev.thingifier.generic.definitions.FieldValue;
+import uk.co.compendiumdev.thingifier.generic.definitions.validation.VRule;
 import uk.co.compendiumdev.thingifier.generic.dsl.relationship.AndCall;
 import uk.co.compendiumdev.thingifier.generic.dsl.relationship.Between;
 import uk.co.compendiumdev.thingifier.generic.dsl.relationship.WithCardinality;
@@ -48,25 +49,46 @@ public class TodoManagerUsageTest {
 
         todoManager = new Thingifier();
 
+        todoManager.setDocumentation("Todo Manager", "A Simple todo manager");
+
         Thing todo = todoManager.createThing("todo", "todos");
 
-                todo.definition()
-                .addFields(Field.is("title", STRING), Field.is("description",STRING),
-                        Field.is("doneStatus",FieldType.BOOLEAN).withDefaultValue("FALSE"));
+        todo.definition()
+                .addFields( Field.is("title", STRING).
+                                mandatory().
+                                withValidation(
+                                        VRule.NotEmpty(),
+                                        VRule.MatchesType()),
+                        Field.is("description",STRING),
+                        Field.is("doneStatus",FieldType.BOOLEAN).
+                                withDefaultValue("FALSE").
+                                withValidation(
+                                        VRule.MatchesType()))
+        ;
 
 
         Thing project = todoManager.createThing("project", "projects");
 
         project.definition()
-                .addFields(Field.is("title", STRING), Field.is("description",STRING),
-                        Field.is("completed",FieldType.BOOLEAN).withDefaultValue("FALSE"),
-                        Field.is("active",FieldType.BOOLEAN).withDefaultValue("TRUE"));
+                .addFields(
+                        Field.is("title", STRING),
+                        Field.is("description",STRING),
+                        Field.is("completed",FieldType.BOOLEAN).
+                                withDefaultValue("FALSE").
+                                withValidation(VRule.MatchesType()),
+                        Field.is("active",FieldType.BOOLEAN).
+                                withDefaultValue("TRUE").
+                                withValidation(VRule.MatchesType()));
 
 
         Thing category = todoManager.createThing("category", "categories");
 
         category.definition()
-                .addFields(Field.is("title", STRING), Field.is("description",STRING));
+                .addFields(
+                        Field.is("title", STRING).
+                                mandatory().
+                                withValidation(VRule.NotEmpty()),
+                        Field.is("description",STRING));
 
         todoManager.defineRelationship(Between.things(project, todo), AndCall.it("tasks"), WithCardinality.of("1", "*"));
         todoManager.defineRelationship(Between.things(project, category), AndCall.it("categories"), WithCardinality.of("1", "*"));
@@ -128,7 +150,7 @@ public class TodoManagerUsageTest {
 
 
     @Test
-    public void ApiPrototypeFreeBackend(){
+    public void ApiPrototypeFreeBackend() {
 
 
         // stuff we could get for free from backend
@@ -172,12 +194,11 @@ public class TodoManagerUsageTest {
         Assert.assertEquals(200, apiresponse.getStatusCode());
 
         // get a todo that does not exist
-        apiresponse = todoManager.api().get("todo/" + paperwork.getGUID()+"bob");
+        apiresponse = todoManager.api().get("todo/" + paperwork.getGUID() + "bob");
         Assert.assertEquals(404, apiresponse.getStatusCode());
 
 
-        System.out.println(JsonThing.asJson(query));
-
+        //
         ThingInstance officeWork = project.createInstance().setValue("title", "Office Work");
         project.addInstance(officeWork);
 
@@ -187,7 +208,7 @@ public class TodoManagerUsageTest {
 
         // match on relationships
         // project/_GUID_/tasks
-        query = todoManager.simplequery(String.format("project/%s/tasks",officeWork.getGUID()));
+        query = todoManager.simplequery(String.format("project/%s/tasks", officeWork.getGUID()));
 
         Assert.assertEquals(2, query.size());
         Assert.assertTrue(query.contains(paperwork));
@@ -197,7 +218,7 @@ public class TodoManagerUsageTest {
 
         // match on entity types
         // project/_GUID_/todo
-        query = todoManager.simplequery(String.format("project/%s/todo",officeWork.getGUID()));
+        query = todoManager.simplequery(String.format("project/%s/todo", officeWork.getGUID()));
 
         Assert.assertEquals(2, query.size());
         Assert.assertTrue(query.contains(paperwork));
@@ -206,7 +227,7 @@ public class TodoManagerUsageTest {
         System.out.println(JsonThing.asJson(query));
 
         // project/_GUID_/todo/category
-        query = todoManager.simplequery(String.format("project/%s/todo/category",officeWork.getGUID()));
+        query = todoManager.simplequery(String.format("project/%s/todo/category", officeWork.getGUID()));
 
         Assert.assertEquals(1, query.size());
         Assert.assertTrue(query.contains(officeCategory));
@@ -215,11 +236,14 @@ public class TodoManagerUsageTest {
 
         // invalid query should match nothing there is no entity called task
         // project/_GUID_/task
-        query = todoManager.simplequery(String.format("project/%s/task",officeWork.getGUID()));
+        query = todoManager.simplequery(String.format("project/%s/task", officeWork.getGUID()));
 
         Assert.assertEquals(0, query.size());
 
+    }
 
+    @Test
+    public void NonHttpApiBasedTests(){
 
         // simulate a POST request
 
@@ -229,8 +253,15 @@ public class TodoManagerUsageTest {
 
         new Gson().toJson(requestBody);
 
-        // amend existing project
-        apiresponse = todoManager.api().post(String.format("project/%s",officeWork.getGUID()), new Gson().toJson(requestBody));
+        // create a project with POST
+        ApiResponse apiresponse = todoManager.api().post("project", new Gson().toJson(requestBody));
+        Assert.assertEquals(201, apiresponse.getStatusCode());
+        String officeWorkProjectGuid = simpleJsonValueGet(apiresponse.getBody(),"project", "guid");
+
+        ThingInstance officeWork = todoManager.findThingInstanceByGuid(officeWorkProjectGuid);
+
+        // amend existing project with POST
+        apiresponse = todoManager.api().post(String.format("project/%s", officeWorkProjectGuid), new Gson().toJson(requestBody));
         Assert.assertEquals(200, apiresponse.getStatusCode());
         Assert.assertEquals("My Office Work", officeWork.getValue("title"));
 
@@ -306,6 +337,18 @@ public class TodoManagerUsageTest {
         Assert.assertEquals(404, apiresponse.getStatusCode());
 
 
+
+        // create a todo with POST
+
+        requestBody = new HashMap<String,String>();
+        requestBody.put("title", "My Paperwork Todo");
+
+        apiresponse = todoManager.api().post("todo", new Gson().toJson(requestBody));
+        Assert.assertEquals(201, apiresponse.getStatusCode());
+        String paperworkTodoGuid = simpleJsonValueGet(apiresponse.getBody(),"todo", "guid");
+
+        ThingInstance paperwork = todoManager.findThingInstanceByGuid(paperworkTodoGuid);
+
         // Create a relationship with POST
         // POST project/_GUID_/tasks
         // {"guid":"_GUID_"} need to find the thing then use that as the relationship type
@@ -363,6 +406,80 @@ public class TodoManagerUsageTest {
         System.out.println(todoManager);
 
 
+        // Mandatory field validation on POST create - must have a title
+        requestBody = new HashMap<String,String>();
+        //requestBody.put("title", "A new TODO Item");
+        requestBody.put("description", "A new TODO Item");
+
+        apiresponse = todoManager.api().post(String.format("todo"), new Gson().toJson(requestBody));
+        System.out.println(apiresponse.getBody());
+        Assert.assertEquals(400, apiresponse.getStatusCode());
+
+        // Mandatory field validation PUT create
+        requestBody = new HashMap<String,String>();
+        //requestBody.put("title", "A new TODO Item");
+        requestBody.put("description", "A new TODO Item");
+        requestBody.put("doneStatus", "TRUE");
+        apiresponse = todoManager.api().put(String.format("todo/%s", UUID.randomUUID().toString()), new Gson().toJson(requestBody));
+        System.out.println(apiresponse.getBody());
+        Assert.assertEquals(400, apiresponse.getStatusCode());
+
+        // Mandatory field validation PUT amend
+        requestBody = new HashMap<String,String>();
+        //requestBody.put("title", "A new TODO Item");
+        requestBody.put("description", "Amended TODO Item ");
+        requestBody.put("doneStatus", "TRUE");
+        apiresponse = todoManager.api().put(String.format("todo/%s", paperwork.getGUID()), new Gson().toJson(requestBody));
+        System.out.println(apiresponse.getBody());
+        Assert.assertEquals(400, apiresponse.getStatusCode());
+
+
+        // Field validation on boolean for Create with POST
+        requestBody = new HashMap<String,String>();
+        requestBody.put("title", "A new TODO Item");
+        requestBody.put("doneStatus", "FALSEY");
+
+        apiresponse = todoManager.api().post(String.format("todo"), new Gson().toJson(requestBody));
+        System.out.println(apiresponse.getBody());
+        Assert.assertEquals(400, apiresponse.getStatusCode());
+
+        // Field validation on boolean for Amend with POST
+        requestBody = new HashMap<String,String>();
+        requestBody.put("title", "A new TODO Item");
+        requestBody.put("doneStatus", "FALSEY");
+
+        apiresponse = todoManager.api().post(String.format("todo/%s", paperwork.getGUID()), new Gson().toJson(requestBody));
+        System.out.println(apiresponse.getBody());
+        Assert.assertEquals(400, apiresponse.getStatusCode());
+
+
+        // Field validation on boolean for Amend with PUT
+        requestBody = new HashMap<String,String>();
+        requestBody.put("title", "A new TODO Item");
+        requestBody.put("description", "A new TODO Item");
+        requestBody.put("doneStatus", "FALSEY");
+        apiresponse = todoManager.api().put(String.format("todo/%s", paperwork.getGUID()), new Gson().toJson(requestBody));
+        System.out.println(apiresponse.getBody());
+        Assert.assertEquals(400, apiresponse.getStatusCode());
+
+
+
+    }
+
+    private String simpleJsonValueGet(String body, String... terms) {
+
+        JsonObject obj= new JsonParser().parse(body).getAsJsonObject();
+        String value ="";
+
+        for(int termId = 0; termId<terms.length; termId++){
+            if(termId<terms.length-1){
+                obj = obj.get(terms[termId]).getAsJsonObject();
+            }else{
+                value= obj.get(terms[termId]).getAsString();
+            }
+        }
+
+        return value;
     }
 
 

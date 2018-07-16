@@ -36,7 +36,6 @@ public class Thing {
 
     public Thing addInstance(ThingInstance instance){
 
-        // todo: validate the instance against the definition and make sure it is valid before adding it to the collection
         instances.put(instance.getGUID(), instance);
         return this;
     }
