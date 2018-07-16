@@ -134,8 +134,8 @@ public class ThingifierRestAPIHandler {
                                                                         relationshipName));
             }
 
-            // TODO: 201/Created should have a Location header which points to the API call to get the thing created
-            return ApiResponse.created(JsonThing.asJson(returnThing));
+
+            return ApiResponse.created(returnThing);
         }
 
         // Assume it matches  alist
@@ -204,7 +204,7 @@ public class ThingifierRestAPIHandler {
 
         if(validation.isValid()) {
             thing.addInstance(instance);
-            return ApiResponse.created(JsonThing.asJson(instance));
+            return ApiResponse.created(instance);
         }else{
             // do not add it, report the errors
             return ApiResponse.error(400, validation.getErrorMessages());
@@ -268,7 +268,7 @@ public class ThingifierRestAPIHandler {
 
                 if(validation.isValid()) {
                     thing.addInstance(instance);
-                    return ApiResponse.created(JsonThing.asJson(instance));
+                    return ApiResponse.created(instance);
                 }else{
                     // do not add it, report the errors
                     return ApiResponse.error(400, validation.getErrorMessages());

@@ -1,8 +1,12 @@
 package uk.co.compendiumdev.thingifier.application;
 
+import spark.Response;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.*;
 import uk.co.compendiumdev.thingifier.reporting.ThingReporter;
+
+import java.util.Map;
+import java.util.Set;
 
 import static spark.Spark.*;
 
@@ -43,6 +47,7 @@ public class ThingifierRestServer {
                         get(defn.url(), (request, response) -> {
                             ApiResponse apiResponse = thingifier.api().get(justThePath(request.pathInfo()));
                             response.status(apiResponse.getStatusCode());
+                            addHeaders(apiResponse.getHeaders(),response);
                             return apiResponse.getBody();
                         });
                     }
@@ -52,6 +57,7 @@ public class ThingifierRestServer {
                         post(defn.url(), (request, response) -> {
                             ApiResponse apiResponse = thingifier.api().post(justThePath(request.pathInfo()), request.body());
                             response.status(apiResponse.getStatusCode());
+                            addHeaders(apiResponse.getHeaders(),response);
                             return apiResponse.getBody();
                         });
                     }
@@ -71,7 +77,9 @@ public class ThingifierRestServer {
                     }else{
                         delete(defn.url(), (request, response) -> {
                             ApiResponse apiResponse = thingifier.api().delete(justThePath(request.pathInfo()));
-                            response.status(apiResponse.getStatusCode()); return apiResponse.getBody();});
+                            response.status(apiResponse.getStatusCode());
+                            addHeaders(apiResponse.getHeaders(),response);
+                            return apiResponse.getBody();});
                     }
                     break;
                 case PATCH:
@@ -90,6 +98,7 @@ public class ThingifierRestServer {
                         put(defn.url(), (request, response) -> {
                             ApiResponse apiResponse = thingifier.api().put(justThePath(request.pathInfo()), request.body());
                             response.status(apiResponse.getStatusCode());
+                            addHeaders(apiResponse.getHeaders(),response);
                             return apiResponse.getBody();
                         });
                     }
@@ -127,5 +136,11 @@ public class ThingifierRestServer {
             response.body(ApiResponse.getErrorMessageJson(e.getMessage()));
         });
 
+    }
+
+    private void addHeaders(Set<Map.Entry<String, String>> headers, Response response) {
+        for(Map.Entry<String, String> header : headers){
+            response.header(header.getKey(), header.getValue());
+        }
     }
 }
