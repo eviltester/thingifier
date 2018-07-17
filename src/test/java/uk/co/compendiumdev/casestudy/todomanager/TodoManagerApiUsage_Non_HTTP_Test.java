@@ -19,8 +19,7 @@ public class TodoManagerApiUsage_Non_HTTP_Test {
     /* TODO: NEXT ACTION
     to support delete I completely amended the relationship handling to have a Definition, then Vectors which describe
     the direction then instances and although all the automated assertions pass, I'm pretty sure this now has bugs and
-    a lot of redundant code. Next step is to remove the `amrelatedto` part and rely on the bi-direction
-    of the relationships and hit the code at a lower level to test and refactor
+    a lot of redundant code. Hit the code at a lower level to test and refactor
      */
 
     // explore the Thingifier via a todo manager case study
@@ -414,7 +413,6 @@ public class TodoManagerApiUsage_Non_HTTP_Test {
 
         System.out.println(todoManager);
 
-        // TODO: I don't think we need am related to since that is a reverse of the relationships
     }
 
 

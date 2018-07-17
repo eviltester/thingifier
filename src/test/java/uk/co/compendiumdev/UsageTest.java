@@ -129,7 +129,7 @@ public class UsageTest {
         user.addInstance(alan);
 
 
-        // TODO fix relationshps
+        // TODO fix relationshps so that they have values
         //RelationshipDefinition relationship = things.defineRelationshipBetween("USER", "URL", AndCall.it("visited"));
         //relationship.representedAsThing("visit").definition().addFields(Field.is("dateOfVisit", DATE));
 

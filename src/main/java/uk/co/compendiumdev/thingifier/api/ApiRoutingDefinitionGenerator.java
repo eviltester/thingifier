@@ -77,24 +77,10 @@ public class ApiRoutingDefinitionGenerator {
             defn.addRouting("method not allowed", RoutingVerb.PATCH, aUrlWGuid, RoutingStatus.returnValue(405));
 
 
-            // TODO: should really output thing relationship here to make documentation clearer
-
             for(RelationshipVector rel : thing.definition().getRelationships()){
                 addRoutingsForRelationship(defn, rel);
             }
         }
-
-//        for(RelationshipDefinition relationship : thingifier.getRelationshipDefinitions()){
-//            // get all things for a relationship
-//
-//            addRoutingsForRelationship(defn, relationship.getFromRelationship());
-//
-//            // TODO: the fact that I am creating a 'reversed' relationship to make this easier suggests to me that this might be a concept I need in the main app
-//            if(relationship.isTwoWay()) {
-//                addRoutingsForRelationship(defn, relationship.getReversedRelationship());
-//            }
-//
-//        }
 
         return defn;
     }

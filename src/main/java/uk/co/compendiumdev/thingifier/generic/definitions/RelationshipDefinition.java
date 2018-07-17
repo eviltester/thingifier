@@ -51,7 +51,14 @@ public class RelationshipDefinition {
 
         StringBuilder output = new StringBuilder();
         // TODO: the <=> should reflect the cardinality defined vectors created
-        output.append("\t\t" + this.name + " : " + from.definition().getName() + " <=> " + to.definition().getName() + "\n");
+        if(to_from==null) {
+            output.append(String.format("\t\t%s : %s <=> %s %n",
+                            this.name, from.definition().getName(), to.definition().getName()));
+        }else{
+            output.append(String.format("\t\t%1$s : %2$s <%1$s/%4$s> %3$s %n",
+                    this.name, from.definition().getName(), to.definition().getName(), to_from.getName()));
+
+        }
 
         return output.toString();
     }

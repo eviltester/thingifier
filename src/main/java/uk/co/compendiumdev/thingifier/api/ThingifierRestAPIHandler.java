@@ -176,7 +176,7 @@ public class ThingifierRestAPIHandler {
             // cannot amend something that does not exist
             return ApiResponse.error404(String.format("No such %s entity instance with GUID %s found", thing.definition().getName(), instanceGuid));
         }else{
-            // TODO validate
+
             ThingInstance cloned = instance.createDuplicateWithoutRelationships();
 
             try{
@@ -318,7 +318,6 @@ public class ThingifierRestAPIHandler {
         List<ThingInstance> query = thingifier.simplequery(url);
 
         if(query.size()>0) {
-            // TODO: this should really have validation
             // TODO: not implemented yet
             // this should be creating a new instance of the type of thing with a relationship to the parent
             // simple query needs to support looking at the things it found e.g. matched "todo" thing, get parent for the todo (a project), copy the relationships from the parent to the todo
