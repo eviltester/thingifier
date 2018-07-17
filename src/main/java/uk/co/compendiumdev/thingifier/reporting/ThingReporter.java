@@ -119,6 +119,13 @@ public class ThingReporter {
                                 relationship.getName(),
                                 relationship.from().definition().getName(),
                                 relationship.to().getName()));
+
+                if(relationship.isTwoWay()){
+                    output.append(String.format("<li>%s : %s => %s%n",
+                            relationship.getReversedRelationship().getName(),
+                            relationship.getReversedRelationship().getFrom().definition().getName(),
+                            relationship.getReversedRelationship().getTo().definition().getName()));
+                }
             }
             output.append("</ul>\n");
 

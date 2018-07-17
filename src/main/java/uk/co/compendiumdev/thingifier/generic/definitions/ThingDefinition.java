@@ -3,10 +3,7 @@ package uk.co.compendiumdev.thingifier.generic.definitions;
 import uk.co.compendiumdev.thingifier.generic.FieldType;
 import uk.co.compendiumdev.thingifier.generic.GUID;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 public class ThingDefinition {
@@ -150,4 +147,15 @@ public class ThingDefinition {
         return retRels;
     }
 
+    public Collection<RelationshipVector> getRelationships() {
+        // TODO: at the moment this is overly complicated because it supports duplicate named relationship which we don't use or test for
+        Set<RelationshipVector> myRelationships=new HashSet<>();
+        for(List<RelationshipVector> list : relationships.values()){
+            for(RelationshipVector rel : list){
+                myRelationships.add(rel);
+            }
+
+        }
+        return myRelationships;
+    }
 }
