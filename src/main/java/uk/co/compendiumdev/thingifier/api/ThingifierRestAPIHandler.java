@@ -92,7 +92,7 @@ public class ThingifierRestAPIHandler {
             }
 
 
-            ThingInstance returnThing = connectThis;
+            ThingInstance returnThing = null;
 
             RelationshipVector relationshipToUse;
 

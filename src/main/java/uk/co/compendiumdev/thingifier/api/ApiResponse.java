@@ -12,7 +12,7 @@ import java.util.Set;
 public class ApiResponse {
     public static final String GUID_HEADER = "X-Thing-Instance-GUID";
     private final int statusCode;
-    private String body;
+    private String body="";
     private Map<String, String> headers;
 
     public ApiResponse(int statusCode) {
@@ -21,10 +21,15 @@ public class ApiResponse {
     }
 
     public static ApiResponse created(ThingInstance thingInstance) {
-        return new ApiResponse(201).
-                                setBody(JsonThing.asJson(thingInstance)).
-                                setLocationHeader(thingInstance.getEntity().getName() + "/" + thingInstance.getGUID()).
-                                setHeader(ApiResponse.GUID_HEADER, thingInstance.getGUID());
+        ApiResponse response = new ApiResponse(201);
+
+        if(thingInstance!=null){
+                response.setBody(JsonThing.asJson(thingInstance)).
+                setLocationHeader(thingInstance.getEntity().getName() + "/" + thingInstance.getGUID()).
+                setHeader(ApiResponse.GUID_HEADER, thingInstance.getGUID());
+        }
+
+        return response;
     }
 
     private ApiResponse setHeader(String headername, String value) {
