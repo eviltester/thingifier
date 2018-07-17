@@ -97,6 +97,16 @@ public class TodoManagerQueryEngineTest {
 
         System.out.println(JsonThing.asJson(query));
 
+
+
+
+        // should be able to get projects for a task
+        query = todoManager.simplequery(String.format("todo/%s/task-of", paperwork.getGUID()));
+        Assert.assertEquals(1, query.size());
+        Assert.assertTrue(query.contains(officeWork));
+        System.out.println(JsonThing.asJson(query));
+
+
         // match on entity types
         // project/_GUID_/todo
         query = todoManager.simplequery(String.format("project/%s/todo", officeWork.getGUID()));
@@ -120,6 +130,8 @@ public class TodoManagerQueryEngineTest {
         query = todoManager.simplequery(String.format("project/%s/task", officeWork.getGUID()));
 
         Assert.assertEquals(0, query.size());
+
+
 
     }
 

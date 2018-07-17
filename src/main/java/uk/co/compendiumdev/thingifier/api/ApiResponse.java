@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class ApiResponse {
+    public static final String GUID_HEADER = "X-Thing-Instance-GUID";
     private final int statusCode;
     private String body;
     private Map<String, String> headers;
@@ -22,16 +23,17 @@ public class ApiResponse {
     public static ApiResponse created(ThingInstance thingInstance) {
         return new ApiResponse(201).
                                 setBody(JsonThing.asJson(thingInstance)).
-                                setLocationHeader(thingInstance.getEntity().getName() + "/" + thingInstance.getGUID());
+                                setLocationHeader(thingInstance.getEntity().getName() + "/" + thingInstance.getGUID()).
+                                setHeader(ApiResponse.GUID_HEADER, thingInstance.getGUID());
     }
 
-    private ApiResponse setLocationHeader(String location) {
-        this.headers.put("Location", location);
+    private ApiResponse setHeader(String headername, String value) {
+        this.headers.put(headername, value);
         return this;
     }
 
-    public boolean hasHeaders(){
-        return headers.size()>0;
+    private ApiResponse setLocationHeader(String location) {
+        return setHeader("Location", location);
     }
 
     public Set<Map.Entry<String, String>> getHeaders(){
@@ -79,5 +81,9 @@ public class ApiResponse {
 
     public String getBody() {
         return body;
+    }
+
+    public String getHeaderValue(String headername) {
+        return headers.get(headername);
     }
 }

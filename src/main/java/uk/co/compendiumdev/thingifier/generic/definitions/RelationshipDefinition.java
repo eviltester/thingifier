@@ -21,6 +21,7 @@ public class RelationshipDefinition {
         from_to = fromVector;
         this.name = fromVector.getName();
         this.cardinality = fromVector.getCardinality();
+        from.definition().addRelationship(this);
     }
 
     public void whenReversed(Cardinality of, AndCall it) {
@@ -29,6 +30,7 @@ public class RelationshipDefinition {
 
     public RelationshipDefinition withReverse(RelationshipVector toVector){
         to_from = toVector;
+        to.definition().addRelationship(this);
         return this;
     }
 
@@ -54,4 +56,18 @@ public class RelationshipDefinition {
     }
 
 
+    public boolean isTwoWay() {
+        return to_from!=null;
+    }
+
+    public RelationshipVector reversed() {
+        return to_from;
+    }
+
+    /*
+        Return a temporary relationship definition which is a representation of the reversal, without the reversal
+     */
+    public RelationshipDefinition getReversedRelationship() {
+        return new RelationshipDefinition(to, from, to_from);
+    }
 }

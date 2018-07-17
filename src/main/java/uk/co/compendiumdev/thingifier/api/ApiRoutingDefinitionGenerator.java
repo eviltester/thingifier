@@ -75,51 +75,64 @@ public class ApiRoutingDefinitionGenerator {
             defn.addRouting("method not allowed", RoutingVerb.HEAD, aUrlWGuid, RoutingStatus.returnValue(405));
             defn.addRouting("method not allowed", RoutingVerb.PATCH, aUrlWGuid, RoutingStatus.returnValue(405));
 
+
+            // TODO: should really output thing relationship here to make documentation clearer
+
         }
 
         for(RelationshipDefinition relationship : thingifier.getRelationshipDefinitions()){
             // get all things for a relationship
 
-            String aUrl = relationship.from().definition().getName() + "/:guid/" + relationship.getName();
-            defn.addRouting(
-                    String.format("return all the items related to :guid by the relationship named %s", relationship.getName()),
-                    RoutingVerb.GET, aUrl, RoutingStatus.returnedFromCall());
+            addRoutingsForRelationship(defn, relationship);
 
-            defn.addRouting(
-                    String.format("show all Options for endpoint of %s", aUrl),
-                    RoutingVerb.OPTIONS, aUrl, RoutingStatus.returnValue(200),
-                    new ResponseHeader("Allow", "OPTIONS, GET"));
-
-            // we can post if there is no guid as it will create the 'thing' and the relationship connection
-            defn.addRouting(String.format("create an instance of a relationship named %s between instance :guid and the instance represented by the guid in the body of the message", relationship.getName()),
-                    RoutingVerb.POST, aUrl, RoutingStatus.returnedFromCall());
-
-            defn.addRouting("method not allowed", RoutingVerb.HEAD, aUrl, RoutingStatus.returnValue(405));
-            defn.addRouting("method not allowed", RoutingVerb.DELETE, aUrl, RoutingStatus.returnValue(405));
-            defn.addRouting("method not allowed", RoutingVerb.PATCH, aUrl, RoutingStatus.returnValue(405));
-            defn.addRouting("method not allowed", RoutingVerb.PUT, aUrl, RoutingStatus.returnValue(405));
-
-
-            // we should be able to delete a relationship
-            final String aUrlDelete = relationship.from().definition().getName() + "/:guid/" + relationship.getName() + "/:relatedguid";
-            defn.addRouting(
-                    String.format("delete the instance of the relationship between :guid and :relatedguid named %s ", relationship.getName()),
-                    RoutingVerb.DELETE, aUrlDelete, RoutingStatus.returnedFromCall());
-
-            defn.addRouting(
-                    String.format("show all Options for endpoint of %s", aUrlDelete),
-                    RoutingVerb.OPTIONS, aUrlDelete, RoutingStatus.returnValue(200),
-                    new ResponseHeader("Allow", "OPTIONS, DELETE"));
-
-
-            defn.addRouting("method not allowed", RoutingVerb.HEAD, aUrlDelete, RoutingStatus.returnValue(405));
-            defn.addRouting("method not allowed", RoutingVerb.GET, aUrlDelete, RoutingStatus.returnValue(405));
-            defn.addRouting("method not allowed", RoutingVerb.PATCH, aUrlDelete, RoutingStatus.returnValue(405));
-            defn.addRouting("method not allowed", RoutingVerb.PUT, aUrlDelete, RoutingStatus.returnValue(405));
-            defn.addRouting("method not allowed", RoutingVerb.POST, aUrlDelete, RoutingStatus.returnValue(405));
+            // TODO: the fact that I am creating a 'reversed' relationship to make this easier suggests to me that this might be a concept I need in the main app
+            if(relationship.isTwoWay()) {
+                addRoutingsForRelationship(defn, relationship.getReversedRelationship());
+            }
 
         }
 
         return defn;
+    }
+
+    private void addRoutingsForRelationship(ApiRoutingDefinition defn, RelationshipDefinition relationship) {
+        String aUrl = relationship.from().definition().getName() + "/:guid/" + relationship.getName();
+        defn.addRouting(
+                String.format("return all the %s items related to %s :guid by the relationship named %s", relationship.to().getName(), relationship.from().definition().getName(), relationship.getName()),
+                RoutingVerb.GET, aUrl, RoutingStatus.returnedFromCall());
+
+        defn.addRouting(
+                String.format("show all Options for endpoint of %s", aUrl),
+                RoutingVerb.OPTIONS, aUrl, RoutingStatus.returnValue(200),
+                new ResponseHeader("Allow", "OPTIONS, GET"));
+
+        // we can post if there is no guid as it will create the 'thing' and the relationship connection
+        defn.addRouting(String.format("create an instance of a relationship named %s between %s instance :guid and the %s instance represented by the guid in the body of the message"
+                                        , relationship.getName(), relationship.from().definition().getName(), relationship.to().getName()),
+                RoutingVerb.POST, aUrl, RoutingStatus.returnedFromCall());
+
+        defn.addRouting("method not allowed", RoutingVerb.HEAD, aUrl, RoutingStatus.returnValue(405));
+        defn.addRouting("method not allowed", RoutingVerb.DELETE, aUrl, RoutingStatus.returnValue(405));
+        defn.addRouting("method not allowed", RoutingVerb.PATCH, aUrl, RoutingStatus.returnValue(405));
+        defn.addRouting("method not allowed", RoutingVerb.PUT, aUrl, RoutingStatus.returnValue(405));
+
+
+        // we should be able to delete a relationship
+        final String aUrlDelete = relationship.from().definition().getName() + "/:guid/" + relationship.getName() + "/:relatedguid";
+        defn.addRouting(
+                String.format("delete the instance of the relationship between %s :guid and %s :relatedguid named %s ", relationship.from().definition().getName(), relationship.to().getName(), relationship.getName()),
+                RoutingVerb.DELETE, aUrlDelete, RoutingStatus.returnedFromCall());
+
+        defn.addRouting(
+                String.format("show all Options for endpoint of %s", aUrlDelete),
+                RoutingVerb.OPTIONS, aUrlDelete, RoutingStatus.returnValue(200),
+                new ResponseHeader("Allow", "OPTIONS, DELETE"));
+
+
+        defn.addRouting("method not allowed", RoutingVerb.HEAD, aUrlDelete, RoutingStatus.returnValue(405));
+        defn.addRouting("method not allowed", RoutingVerb.GET, aUrlDelete, RoutingStatus.returnValue(405));
+        defn.addRouting("method not allowed", RoutingVerb.PATCH, aUrlDelete, RoutingStatus.returnValue(405));
+        defn.addRouting("method not allowed", RoutingVerb.PUT, aUrlDelete, RoutingStatus.returnValue(405));
+        defn.addRouting("method not allowed", RoutingVerb.POST, aUrlDelete, RoutingStatus.returnValue(405));
     }
 }

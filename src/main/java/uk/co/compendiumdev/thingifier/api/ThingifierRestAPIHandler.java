@@ -94,11 +94,13 @@ public class ThingifierRestAPIHandler {
 
             ThingInstance returnThing = connectThis;
 
+            RelationshipDefinition relationshipToUse;
+
             // if we have a parent thing, but no GUID then can we create a Thing and connect it?
             if(relatedItem==null) {
                 List<RelationshipDefinition> possibleRelationships = connectThis.getEntity().getRelationships(relationshipName);
-                // if no way to narrow it down then use the first one
-                RelationshipDefinition relationshipToUse = possibleRelationships.get(0);
+                // if no way to narrow it down then use the first one TODO: potential bug if multiple named relationshps
+                relationshipToUse = possibleRelationships.get(0);
                 ThingDefinition createThing = relationshipToUse.to();
 
                 Thing thingToCreate = thingifier.getThingNamed(createThing.getName());
@@ -121,18 +123,23 @@ public class ThingifierRestAPIHandler {
                     // do not add it, report the errors
                     return ApiResponse.error(400, validation.getErrorMessages());
                 }
+            }else{
+                // we know what we are connecting to, find the correct relationship
+                relationshipToUse = connectThis.getEntity().getRelationship(relationshipName, relatedItem.getEntity());
             }
 
 
 
             try {
-                connectThis.connects(relationshipName, relatedItem);
+                // TODO: enforce cardinality on relationship
+                connectThis.connects(relationshipToUse.getName(), relatedItem);
             }catch(Exception e){
                 return ApiResponse.error(400, String.format("Could not connect %s (%s) to %s (%s) via relationship %s",
                                                                         connectThis.getGUID(), connectThis.getEntity().getName(),
                                                                         relatedItem.getGUID(), relatedItem.getEntity().getName(),
-                                                                        relationshipName));
+                                                                        relationshipToUse.getName()));
             }
+
 
 
             return ApiResponse.created(returnThing);
@@ -164,7 +171,7 @@ public class ThingifierRestAPIHandler {
             return noSuchEntity(thingName);
 
         }
-        ThingInstance instance = thing.findInstance(FieldValue.is("guid", instanceGuid));
+        ThingInstance instance = thing.findInstanceByGUID(FieldValue.is("guid", instanceGuid));
         if (instance==null){
             // cannot amend something that does not exist
             return ApiResponse.error404(String.format("No such %s entity instance with GUID %s found", thing.definition().getName(), instanceGuid));
@@ -241,7 +248,7 @@ public class ThingifierRestAPIHandler {
                 // unknown thing
                 return noSuchEntity(urlParts[0]);
             }
-            ThingInstance instance = thing.findInstance(FieldValue.is("guid", urlParts[1]));
+            ThingInstance instance = thing.findInstanceByGUID(FieldValue.is("guid", urlParts[1]));
 
             if (instance==null){
                 // it does not exist, but we have a GUID - create it

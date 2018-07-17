@@ -2,7 +2,6 @@ package uk.co.compendiumdev.casestudy.todomanager;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
@@ -73,7 +72,7 @@ public class BasicTodoManagerTest {
 
         todos.addInstance(tidy);
 
-        ThingInstance foundit = todos.findInstance(tidy.getGUID());
+        ThingInstance foundit = todos.findInstanceByGUID(tidy.getGUID());
 
         Assert.assertEquals("Delete this todo", foundit.getValue("title"));
 
@@ -81,7 +80,7 @@ public class BasicTodoManagerTest {
         Assert.assertEquals(originalTodosCount, todos.countInstances());
 
 
-        foundit = todos.findInstance(tidy.getGUID());
+        foundit = todos.findInstanceByGUID(tidy.getGUID());
 
         Assert.assertNull(foundit);
 
@@ -109,7 +108,7 @@ public class BasicTodoManagerTest {
 
         todos.addInstance(tidy);
 
-        ThingInstance foundit = todos.findInstance(guid);
+        ThingInstance foundit = todos.findInstanceByGUID(guid);
 
         Assert.assertEquals("Delete this todo", foundit.getValue("title"));
 
@@ -117,7 +116,7 @@ public class BasicTodoManagerTest {
         Assert.assertEquals(originalTodosCount, todos.countInstances());
 
 
-        foundit = todos.findInstance(guid);
+        foundit = todos.findInstanceByGUID(guid);
 
         Assert.assertNull(foundit);
 

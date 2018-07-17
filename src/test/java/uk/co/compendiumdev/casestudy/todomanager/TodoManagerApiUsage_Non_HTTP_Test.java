@@ -1,30 +1,19 @@
 package uk.co.compendiumdev.casestudy.todomanager;
 
+import com.google.gson.*;
 import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.ApiResponse;
-import uk.co.compendiumdev.thingifier.generic.FieldType;
-import uk.co.compendiumdev.thingifier.generic.definitions.Field;
 import uk.co.compendiumdev.thingifier.generic.definitions.FieldValue;
-import uk.co.compendiumdev.thingifier.generic.definitions.validation.VRule;
-import uk.co.compendiumdev.thingifier.generic.dsl.relationship.AndCall;
-import uk.co.compendiumdev.thingifier.generic.dsl.relationship.Between;
-import uk.co.compendiumdev.thingifier.generic.dsl.relationship.WithCardinality;
 import uk.co.compendiumdev.thingifier.generic.instances.RelationshipInstance;
 import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
-import uk.co.compendiumdev.thingifier.reporting.JsonThing;
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.*;
 
-import static uk.co.compendiumdev.thingifier.generic.FieldType.STRING;
-
-public class TodoManagerUsageTest {
+public class TodoManagerApiUsage_Non_HTTP_Test {
 
     private static Thingifier todoManager;
 
@@ -163,7 +152,7 @@ public class TodoManagerUsageTest {
         JsonObject projectjson= new JsonParser().parse(apiresponse.getBody()).getAsJsonObject();
         String projectGUID = projectjson.get("project").getAsJsonObject().get("guid").getAsString();
 
-        ThingInstance myNewProject = todoManager.getThingNamed("project").findInstance(FieldValue.is("guid", projectGUID));
+        ThingInstance myNewProject = todoManager.getThingNamed("project").findInstanceByGUID(FieldValue.is("guid", projectGUID));
         Assert.assertEquals("MY NEW PROJECT", myNewProject.getValue("title"));
 
         //Assert.assertEquals("My Office Work", officeWork.getValue("title"));
@@ -197,7 +186,7 @@ public class TodoManagerUsageTest {
         Assert.assertEquals(currentProjects+1, todoManager.getThingNamed("project").countInstances());
         Assert.assertEquals("office", officeWork.getValue("title"));
         Assert.assertEquals(officeWorkGuid, officeWork.getGUID());
-        ThingInstance newProject = todoManager.getThingNamed("project").findInstance(FieldValue.is("guid", guid));
+        ThingInstance newProject = todoManager.getThingNamed("project").findInstanceByGUID(FieldValue.is("guid", guid));
 
         Assert.assertEquals("My Office Work", newProject.getValue("title"));
         Assert.assertEquals(guid, newProject.getValue("guid"));
@@ -238,6 +227,7 @@ public class TodoManagerUsageTest {
         int numberOfTasks = myNewProject.connections("tasks").size();
 
         apiresponse = todoManager.api().post(String.format("project/%s/tasks",myNewProject.getGUID()), new Gson().toJson(requestBody));
+        System.out.println(apiresponse.getBody());
         Assert.assertEquals(201, apiresponse.getStatusCode());
 
         Assert.assertEquals(numberOfTasks+1, myNewProject.connections("tasks").size());
@@ -276,7 +266,7 @@ public class TodoManagerUsageTest {
 
         Assert.assertEquals(numberOfTasks-1, myNewProject.connections("tasks").size());
         Assert.assertNotNull("Task should exist, only the relationship should be deleted",
-                                todoManager.getThingNamed("todo").findInstance(FieldValue.is("guid", paperwork.getGUID())));
+                                todoManager.getThingNamed("todo").findInstanceByGUID(FieldValue.is("guid", paperwork.getGUID())));
 
 
         System.out.println(todoManager);
@@ -342,21 +332,7 @@ public class TodoManagerUsageTest {
 
     }
 
-    private String simpleJsonValueGet(String body, String... terms) {
 
-        JsonObject obj= new JsonParser().parse(body).getAsJsonObject();
-        String value ="";
-
-        for(int termId = 0; termId<terms.length; termId++){
-            if(termId<terms.length-1){
-                obj = obj.get(terms[termId]).getAsJsonObject();
-            }else{
-                value= obj.get(terms[termId]).getAsString();
-            }
-        }
-
-        return value;
-    }
 
 
     @Test
@@ -407,13 +383,13 @@ public class TodoManagerUsageTest {
         Thing todo = todoManager.getThingNamed("todo");
         Thing project = todoManager.getThingNamed("project");
         Thing category = todoManager.getThingNamed("category");
-        
+
         ThingInstance myNewProject = todoManager.getThingNamed("project").createInstance().setValue("title", "Project For Relationships");
         project.addInstance(myNewProject);
-        
+
         ThingInstance relTodo = todoManager.getThingNamed("todo").createInstance().setValue("title", "Todo for relationship testing");
         todo.addInstance(relTodo);
-        
+
         // Create a relationship with POST
         // POST project/_GUID_/tasks
         // {"guid":"_GUID_"} need to find the thing then use that as the relationship type
@@ -433,22 +409,129 @@ public class TodoManagerUsageTest {
 
         System.out.println(todoManager);
 
+    }
+
+    @Test
+    public void createARelationshipUsingReversalRelationshipAPI(){
+
+
+        Thing todo = todoManager.getThingNamed("todo");
+        Thing project = todoManager.getThingNamed("project");
+        Thing category = todoManager.getThingNamed("category");
+
+        ThingInstance myNewProject = todoManager.getThingNamed("project").createInstance().setValue("title", "Project For Relationships " + System.currentTimeMillis());
+        project.addInstance(myNewProject);
+
+        ThingInstance relTodo = todoManager.getThingNamed("todo").createInstance().setValue("title", "Todo for relationship testing " + System.currentTimeMillis());
+        todo.addInstance(relTodo);
+
+        // Create a relationship with POST
+        // POST todo/_GUID_/task-of
+        // {"guid":"_GUID_"} need to find the thing then use that as the relationship type
+
+
+        // Create a relationship with POST and just a GUID
+        //myNewProject
+        HashMap<String, String> requestBody = new HashMap<String, String>();
+        requestBody.put("guid", myNewProject.getGUID());
+
+        int numberOfProjects= relTodo.connections("task-of").size();
+        Assert.assertEquals(0, numberOfProjects);
+
+        // get current related projects through api
+        ApiResponse apiresponse = todoManager.api().get(String.format("todo/%s/task-of", relTodo.getGUID()));
+        Assert.assertEquals(200, apiresponse.getStatusCode());
+        Assert.assertEquals("Expected no projects", "{}", apiresponse.getBody());
+
+        apiresponse = todoManager.api().post(String.format("todo/%s/task-of", relTodo.getGUID()), new Gson().toJson(requestBody));
+        System.out.println(apiresponse.getBody());
+        Assert.assertEquals(201, apiresponse.getStatusCode());
+
+        Assert.assertEquals(1, relTodo.connections("task-of").size());
+
+        apiresponse = todoManager.api().get(String.format("todo/%s/task-of", relTodo.getGUID()));
+        Assert.assertEquals(200, apiresponse.getStatusCode());
+        Assert.assertEquals("Expected A project", myNewProject.getGUID(), simpleJsonValueGet(apiresponse.getBody(), "projects", "0", "guid"));
+
+        System.out.println(todoManager);
+
+    }
+
+    // TODO: Delete a reversable relationship
+
+
+    @Test
+    public void createARelationshipAndTodoAtSameTimeUsingAPI(){
+
+
+        Thing todo = todoManager.getThingNamed("todo");
+        Thing project = todoManager.getThingNamed("project");
+
+
+        ThingInstance myNewProject = todoManager.getThingNamed("project").createInstance().setValue("title", "Project For Relationships");
+        project.addInstance(myNewProject);
+
 
         // Createa a relationship and a thing with a POST and no GUID
         // POST project/_GUID_/tasks
         // {"title":"A new TODO Item related to project"}
-        requestBody = new HashMap<String,String>();
-        requestBody.put("title", "A new TODO Item related to project");
+        HashMap<String, String> requestBody = new HashMap<String, String>();
+        String expectedTitle = "A new TODO Item related to project " + System.currentTimeMillis();
 
-        numberOfTasks = myNewProject.connections("tasks").size();
+        requestBody.put("title", expectedTitle);
 
-        apiresponse = todoManager.api().post(String.format("project/%s/tasks",myNewProject.getGUID()), new Gson().toJson(requestBody));
+        int numberOfTasks = myNewProject.connections("tasks").size();
+
+        ApiResponse apiresponse = todoManager.api().post(String.format("project/%s/tasks", myNewProject.getGUID()), new Gson().toJson(requestBody));
         Assert.assertEquals(201, apiresponse.getStatusCode());
+        String locationGuid = apiresponse.getHeaderValue(ApiResponse.GUID_HEADER);
+
+        Assert.assertTrue("Expected location header to contain the same GUID as the X- GUID header",
+                        apiresponse.getHeaderValue("Location").contains(locationGuid));
+
+        Assert.assertEquals("Expected number of tasks in project to increase by 1",
+                        numberOfTasks + 1, myNewProject.connections("tasks").size());
+
+        // check todo exists
+        ThingInstance myCreatedTodo = todo.findInstanceByGUID(locationGuid);
+        Assert.assertEquals(expectedTitle, myCreatedTodo.getValue("title"));
+
+        // check todo is also related to the project since relationship is two way
+        List<ThingInstance> items = myCreatedTodo.connectedItems("task-of");
+        Assert.assertEquals("Expected task be connected to only 1 project", 1, items.size());
+
+        // item should be myNewProject
+        Assert.assertEquals("Expected to be connected to project", myNewProject.getGUID(), items.get(0).getGUID());
+
+
     }
 
 
+    private String simpleJsonValueGet(String body, String... terms) {
 
+        JsonElement obj= new JsonParser().parse(body);
 
+        String value ="";
+
+        for(int termId = 0; termId<terms.length; termId++){
+            if(termId<terms.length-1){
+                if(obj.isJsonObject()){
+                    obj = obj.getAsJsonObject();
+                    obj = ((JsonObject)obj).get(terms[termId]);
+                }else{
+                    if(obj.isJsonArray()){
+                        obj = ((JsonArray)obj).get(Integer.valueOf(terms[termId]));
+                    }
+                }
+
+            }else{
+                // TODO: if the final thing is an array of primitives then this won't work
+                value= ((JsonObject)obj).get(terms[termId]).getAsString();
+            }
+        }
+
+        return value;
+    }
 
     /*
         Get todo

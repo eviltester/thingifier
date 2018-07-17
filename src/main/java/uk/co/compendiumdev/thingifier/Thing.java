@@ -47,7 +47,7 @@ public class Thing {
 
 
 
-    public ThingInstance findInstance(FieldValue fieldValue) {
+    public ThingInstance findInstanceByGUID(FieldValue fieldValue) {
 
         for(ThingInstance thing : instances.values()){
             if(thing.getValue(fieldValue.getName()).contentEquals(fieldValue.getValue())){
@@ -58,7 +58,7 @@ public class Thing {
         return null;
     }
 
-    public ThingInstance findInstance(String instanceFieldValue) {
+    public ThingInstance findInstanceByGUID(String instanceFieldValue) {
 
         if(instances.containsKey(instanceFieldValue)){
             return instances.get(instanceFieldValue);
@@ -66,6 +66,7 @@ public class Thing {
 
         return null;
     }
+
 
     public Collection<ThingInstance> getInstances() {
         return instances.values();

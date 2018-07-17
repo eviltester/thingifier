@@ -43,7 +43,6 @@ public class Thingifier {
     public RelationshipDefinition defineRelationship(Between things, AndCall it, Cardinality of) {
         RelationshipDefinition relationship = new RelationshipDefinition( things.from(), things.to(), new RelationshipVector(it.isCalled(), of));
         relationships.put(it.isCalled(), relationship);
-        things.from().definition().addRelationship(relationship);
         return relationship;
     }
 
@@ -74,12 +73,27 @@ public class Thingifier {
     }
 
     public boolean hasRelationshipNamed(String relationshipName) {
-        return relationships.containsKey(relationshipName.toLowerCase());
+        if(relationships.containsKey(relationshipName.toLowerCase())){
+            return true;
+        }
+
+        // perhaps it is a reverse relationship?
+        for(RelationshipDefinition defn : relationships.values()){
+            if(defn.isTwoWay()){
+                if(defn.getReversedRelationship().getName().equalsIgnoreCase(relationshipName)){
+                    return true;
+                }
+            }
+
+        }
+
+        return false;
     }
+
 
     public ThingInstance findThingInstanceByGuid(String thingGUID) {
         for(Thing aThing : things.values()){
-            ThingInstance instance = aThing.findInstance(FieldValue.is("guid", thingGUID));
+            ThingInstance instance = aThing.findInstanceByGUID(FieldValue.is("guid", thingGUID));
             if(instance!=null){
                 return instance;
             }

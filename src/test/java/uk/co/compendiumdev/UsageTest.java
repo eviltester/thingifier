@@ -6,15 +6,12 @@ import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.generic.definitions.Field;
 import uk.co.compendiumdev.thingifier.generic.FieldType;
 import uk.co.compendiumdev.thingifier.generic.definitions.FieldValue;
-import uk.co.compendiumdev.thingifier.generic.definitions.RelationshipDefinition;
 import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
-import uk.co.compendiumdev.thingifier.generic.dsl.relationship.AndCall;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Collection;
 
-import static uk.co.compendiumdev.thingifier.generic.FieldType.DATE;
 import static uk.co.compendiumdev.thingifier.generic.FieldType.INTEGER;
 import static uk.co.compendiumdev.thingifier.generic.FieldType.STRING;
 
@@ -61,7 +58,7 @@ public class UsageTest {
         Assert.assertEquals(2, person.countInstances());
         Assert.assertEquals("Bob", bob.getValue("name"));
         Assert.assertEquals("56", bob.getValue("age"));
-        Assert.assertEquals("1000", person.findInstance(FieldValue.is("name","Eris")).getValue("age"));
+        Assert.assertEquals("1000", person.findInstanceByGUID(FieldValue.is("name","Eris")).getValue("age"));
 
     }
 

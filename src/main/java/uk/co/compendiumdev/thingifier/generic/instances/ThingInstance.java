@@ -1,5 +1,6 @@
 package uk.co.compendiumdev.thingifier.generic.instances;
 
+import uk.co.compendiumdev.thingifier.api.ApiResponse;
 import uk.co.compendiumdev.thingifier.api.ValidationReport;
 import uk.co.compendiumdev.thingifier.generic.GUID;
 import uk.co.compendiumdev.thingifier.generic.definitions.Field;
@@ -120,13 +121,16 @@ public class ThingInstance {
     }
 
 
+    /**
+     * connect this thing to another thing using the relationship relationshipName
+     */
     public void connects(String relationshipName, ThingInstance thing) {
 
         // TODO: enforce cardinality
 
         // find relationship
         if(!entityDefinition.hasRelationship(relationshipName)){
-            throw new IllegalArgumentException(String.format("Unkown Relationship %s for %s : %s", relationshipName, entityDefinition.getName(), getGUID()));
+            throw new IllegalArgumentException(String.format("Unknown Relationship %s for %s : %s", relationshipName, entityDefinition.getName(), getGUID()));
         }
 
         RelationshipDefinition relationship = entityDefinition.getRelationship(relationshipName, thing.entityDefinition);
@@ -135,6 +139,7 @@ public class ThingInstance {
         this.relationships.add(related);
 
         thing.isNowRelatedVia(related);
+
     }
 
     private void isNowRelatedVia(RelationshipInstance relationship) {
@@ -148,6 +153,12 @@ public class ThingInstance {
                 theConnections.add(relationship);
             }
         }
+        // TODO: suspect representing it like this might be a problem
+        for(RelationshipInstance relationship : amRelatedTo){
+            if(relationship.getRelationship().reversed().getName().toLowerCase().contentEquals(relationshipName.toLowerCase())){
+                theConnections.add(relationship);
+            }
+        }
         return theConnections;
     }
 
@@ -156,6 +167,13 @@ public class ThingInstance {
         for(RelationshipInstance relationship : relationships){
             if(relationship.getRelationship().getName().toLowerCase().contentEquals(relationshipName.toLowerCase())){
                 theConnectedItems.add(relationship.getTo());
+            }
+        }
+
+        // check the reverse relationships too
+        for(RelationshipInstance relationship : amRelatedTo){
+            if(relationship.getRelationship().reversed().getName().toLowerCase().contentEquals(relationshipName.toLowerCase())){
+                theConnectedItems.add(relationship.getFrom());
             }
         }
         return theConnectedItems;
