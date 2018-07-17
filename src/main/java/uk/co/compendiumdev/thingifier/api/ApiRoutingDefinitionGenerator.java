@@ -3,6 +3,7 @@ package uk.co.compendiumdev.thingifier.api;
 import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.generic.definitions.RelationshipDefinition;
+import uk.co.compendiumdev.thingifier.generic.definitions.RelationshipVector;
 
 public class ApiRoutingDefinitionGenerator {
 
@@ -83,7 +84,7 @@ public class ApiRoutingDefinitionGenerator {
         for(RelationshipDefinition relationship : thingifier.getRelationshipDefinitions()){
             // get all things for a relationship
 
-            addRoutingsForRelationship(defn, relationship);
+            addRoutingsForRelationship(defn, relationship.getFromRelationship());
 
             // TODO: the fact that I am creating a 'reversed' relationship to make this easier suggests to me that this might be a concept I need in the main app
             if(relationship.isTwoWay()) {
@@ -95,10 +96,15 @@ public class ApiRoutingDefinitionGenerator {
         return defn;
     }
 
-    private void addRoutingsForRelationship(ApiRoutingDefinition defn, RelationshipDefinition relationship) {
-        String aUrl = relationship.from().definition().getName() + "/:guid/" + relationship.getName();
+    private void addRoutingsForRelationship(ApiRoutingDefinition defn, RelationshipVector relationship) {
+
+        String fromName = relationship.getFrom().definition().getName();
+        String toName = relationship.getTo().definition().getName();
+        String relationshipName = relationship.getName();
+
+        String aUrl = fromName + "/:guid/" + relationshipName;
         defn.addRouting(
-                String.format("return all the %s items related to %s :guid by the relationship named %s", relationship.to().getName(), relationship.from().definition().getName(), relationship.getName()),
+                String.format("return all the %s items related to %s :guid by the relationship named %s", toName, fromName, relationshipName),
                 RoutingVerb.GET, aUrl, RoutingStatus.returnedFromCall());
 
         defn.addRouting(
@@ -108,7 +114,7 @@ public class ApiRoutingDefinitionGenerator {
 
         // we can post if there is no guid as it will create the 'thing' and the relationship connection
         defn.addRouting(String.format("create an instance of a relationship named %s between %s instance :guid and the %s instance represented by the guid in the body of the message"
-                                        , relationship.getName(), relationship.from().definition().getName(), relationship.to().getName()),
+                                        , relationshipName, fromName, toName),
                 RoutingVerb.POST, aUrl, RoutingStatus.returnedFromCall());
 
         defn.addRouting("method not allowed", RoutingVerb.HEAD, aUrl, RoutingStatus.returnValue(405));
@@ -118,9 +124,9 @@ public class ApiRoutingDefinitionGenerator {
 
 
         // we should be able to delete a relationship
-        final String aUrlDelete = relationship.from().definition().getName() + "/:guid/" + relationship.getName() + "/:relatedguid";
+        final String aUrlDelete = fromName + "/:guid/" + relationshipName + "/:relatedguid";
         defn.addRouting(
-                String.format("delete the instance of the relationship between %s :guid and %s :relatedguid named %s ", relationship.from().definition().getName(), relationship.to().getName(), relationship.getName()),
+                String.format("delete the instance of the relationship between %s :guid and %s :relatedguid named %s ", fromName, toName, relationshipName),
                 RoutingVerb.DELETE, aUrlDelete, RoutingStatus.returnedFromCall());
 
         defn.addRouting(

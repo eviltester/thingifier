@@ -3,6 +3,7 @@ package uk.co.compendiumdev.thingifier.query;
 import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.generic.definitions.RelationshipDefinition;
+import uk.co.compendiumdev.thingifier.generic.definitions.RelationshipVector;
 import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
 
 import java.util.ArrayList;
@@ -27,8 +28,8 @@ public class SimpleQuery{
     Thing currentThing = null;
     ThingInstance currentInstance = null;
     List<ThingInstance> foundItems = new ArrayList<ThingInstance>();
-    RelationshipDefinition lastRelationshipFound=null;
-    List<RelationshipDefinition> lastRelationshipsFound=null;
+    RelationshipVector lastRelationshipFound=null;
+    List<RelationshipVector> lastRelationshipsFound=null;
     Thing parentThing = null;
     private ThingInstance parentInstance = null;
 
@@ -179,7 +180,7 @@ public class SimpleQuery{
         if(foundItemsHistoryList.size()-2<0){
             return false;
         }
-        return foundItemsHistoryList.get(foundItemsHistoryList.size()-2) instanceof RelationshipDefinition;
+        return foundItemsHistoryList.get(foundItemsHistoryList.size()-2) instanceof RelationshipVector;
     }
 
     public ThingInstance getLastInstance() {

@@ -41,7 +41,7 @@ public class Thingifier {
     }
 
     public RelationshipDefinition defineRelationship(Between things, AndCall it, Cardinality of) {
-        RelationshipDefinition relationship = new RelationshipDefinition( things.from(), things.to(), new RelationshipVector(it.isCalled(), of));
+        RelationshipDefinition relationship = RelationshipDefinition.create( things.from(), things.to(), new RelationshipVector(it.isCalled(), of));
         relationships.put(it.isCalled(), relationship);
         return relationship;
     }

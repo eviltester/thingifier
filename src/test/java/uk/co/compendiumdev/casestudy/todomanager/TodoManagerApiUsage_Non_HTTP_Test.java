@@ -1,6 +1,7 @@
 package uk.co.compendiumdev.casestudy.todomanager;
 
 import com.google.gson.*;
+import org.junit.Before;
 import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.ApiResponse;
@@ -15,7 +16,7 @@ import java.util.*;
 
 public class TodoManagerApiUsage_Non_HTTP_Test {
 
-    private static Thingifier todoManager;
+    private Thingifier todoManager;
 
     // explore the Thingifier via a todo manager case study
 
@@ -85,11 +86,18 @@ public class TodoManagerApiUsage_Non_HTTP_Test {
 
 
 
-    @BeforeClass
-    public static void createDefinitions(){
+    Thing todo;
+    Thing project;
+    Thing category;
+
+    @Before
+    public void createDefinitions(){
 
         todoManager = TodoManagerModel.definedAsThingifier();
 
+        todo = todoManager.getThingNamed("todo");
+        project = todoManager.getThingNamed("project");
+        category = todoManager.getThingNamed("category");
     }
 
 
@@ -335,54 +343,11 @@ public class TodoManagerApiUsage_Non_HTTP_Test {
 
 
 
-    @Test
-    public void RelationshipDefinitionCheck(){
-
-
-        Thing todo = todoManager.getThingNamed("todo");
-        Thing project = todoManager.getThingNamed("project");
-        Thing category = todoManager.getThingNamed("category");
-
-        ThingInstance paperwork = todo.createInstance().setValue("title", "scan paperwork");
-        todo.addInstance(paperwork);
-        ThingInstance filework = todo.createInstance().setValue("title", "file paperwork");
-        todo.addInstance(filework);
-
-        ThingInstance officeWork = project.createInstance().setValue("title", "Office Work");
-        project.addInstance(officeWork);
-
-        officeWork.connects("tasks", paperwork);
-        officeWork.connects("tasks", filework);
-
-        List<RelationshipInstance> relationships = officeWork.connections("tasks");
-        List<ThingInstance> relatedItems = new ArrayList<ThingInstance>();
-        for(RelationshipInstance relationship : relationships){
-            relatedItems.add(relationship.getTo());
-        }
-
-        Assert.assertTrue(relatedItems.contains(paperwork));
-        Assert.assertTrue(relatedItems.contains(filework));
-
-
-        relatedItems = officeWork.connectedItems("tasks");
-        Assert.assertTrue(relatedItems.contains(paperwork));
-        Assert.assertTrue(relatedItems.contains(filework));
-
-        todo.deleteInstance(paperwork.getGUID());
-
-        relatedItems = officeWork.connectedItems("tasks");
-        Assert.assertFalse(relatedItems.contains(paperwork));
-        Assert.assertTrue(relatedItems.contains(filework));
-    }
 
     
     @Test
-    public void createARelationshipUsingAPI(){
+    public void createARelationshipUsingAPI_POST(){
 
-
-        Thing todo = todoManager.getThingNamed("todo");
-        Thing project = todoManager.getThingNamed("project");
-        Thing category = todoManager.getThingNamed("category");
 
         ThingInstance myNewProject = todoManager.getThingNamed("project").createInstance().setValue("title", "Project For Relationships");
         project.addInstance(myNewProject);
@@ -415,10 +380,6 @@ public class TodoManagerApiUsage_Non_HTTP_Test {
     public void createARelationshipUsingReversalRelationshipAPI(){
 
 
-        Thing todo = todoManager.getThingNamed("todo");
-        Thing project = todoManager.getThingNamed("project");
-        Thing category = todoManager.getThingNamed("category");
-
         ThingInstance myNewProject = todoManager.getThingNamed("project").createInstance().setValue("title", "Project For Relationships " + System.currentTimeMillis());
         project.addInstance(myNewProject);
 
@@ -450,22 +411,168 @@ public class TodoManagerApiUsage_Non_HTTP_Test {
         Assert.assertEquals(1, relTodo.connections("task-of").size());
 
         apiresponse = todoManager.api().get(String.format("todo/%s/task-of", relTodo.getGUID()));
+        System.out.println(apiresponse.getBody());
         Assert.assertEquals(200, apiresponse.getStatusCode());
         Assert.assertEquals("Expected A project", myNewProject.getGUID(), simpleJsonValueGet(apiresponse.getBody(), "projects", "0", "guid"));
 
         System.out.println(todoManager);
 
+        // TODO: I don't think we need am related to since that is a reverse of the relationships
     }
-
-    // TODO: Delete a reversable relationship
 
 
     @Test
+    public void deleteARelationshipUsingReversalRelationshipAPI(){
+
+
+        ThingInstance myNewProject = todoManager.getThingNamed("project").createInstance().setValue("title", "Project For Relationships " + System.currentTimeMillis());
+        project.addInstance(myNewProject);
+
+        ThingInstance relTodo = todoManager.getThingNamed("todo").createInstance().setValue("title", "Todo for relationship testing " + System.currentTimeMillis());
+        todo.addInstance(relTodo);
+
+        // Create a relationship with POST
+        // POST todo/_GUID_/task-of
+        // {"guid":"_GUID_"} need to find the thing then use that as the relationship type
+
+
+        // Create a relationship with POST and just a GUID
+        //myNewProject
+        HashMap<String, String> requestBody = new HashMap<String, String>();
+        requestBody.put("guid", myNewProject.getGUID());
+
+        int numberOfProjects= relTodo.connections("task-of").size();
+        Assert.assertEquals(0, numberOfProjects);
+
+        // Create it
+        ApiResponse apiresponse = todoManager.api().post(String.format("todo/%s/task-of", relTodo.getGUID()), new Gson().toJson(requestBody));
+        System.out.println(apiresponse.getBody());
+        Assert.assertEquals(201, apiresponse.getStatusCode());
+
+        Assert.assertEquals(1, relTodo.connections("task-of").size());
+
+
+        // Delete the relationship
+        apiresponse = todoManager.api().delete(String.format("todo/%s/task-of/%s", relTodo.getGUID(), myNewProject.getGUID()));
+        System.out.println(apiresponse.getBody());
+        Assert.assertEquals(200, apiresponse.getStatusCode());
+
+        // project should be related to nothing
+        Collection<ThingInstance> items = myNewProject.connectedItems("tasks");
+        Assert.assertEquals(0, items.size());
+
+        // todo should be related to nothing
+        items = relTodo.connectedItems("task-of");
+        Assert.assertEquals(0, items.size());
+
+
+        System.out.println(todoManager);
+
+    }
+
+
+    // Delete a thing in a reversable relationship and ensure relationship is deleted
+    @Test
+    public void deleteAThingInAReversalRelationship(){
+
+
+        ThingInstance myNewProject = todoManager.getThingNamed("project").createInstance().setValue("title", "Project For Relationships " + System.currentTimeMillis());
+        project.addInstance(myNewProject);
+
+        ThingInstance relTodo = todoManager.getThingNamed("todo").createInstance().setValue("title", "Todo for relationship testing " + System.currentTimeMillis());
+        todo.addInstance(relTodo);
+
+        // Create a relationship with POST
+        // POST todo/_GUID_/task-of
+        // {"guid":"_GUID_"} need to find the thing then use that as the relationship type
+
+
+        // Create a relationship with POST and just a GUID
+        //myNewProject
+        HashMap<String, String> requestBody = new HashMap<String, String>();
+        requestBody.put("guid", myNewProject.getGUID());
+
+        int numberOfProjects= relTodo.connections("task-of").size();
+        Assert.assertEquals(0, numberOfProjects);
+
+        // Create it
+        ApiResponse apiresponse = todoManager.api().post(String.format("todo/%s/task-of", relTodo.getGUID()), new Gson().toJson(requestBody));
+        System.out.println(apiresponse.getBody());
+        Assert.assertEquals(201, apiresponse.getStatusCode());
+
+        Assert.assertEquals(1, relTodo.connections("task-of").size());
+
+
+        // Delete the relationship
+        apiresponse = todoManager.api().delete(String.format("todo/%s", relTodo.getGUID(), myNewProject.getGUID()));
+        System.out.println(apiresponse.getBody());
+        Assert.assertEquals(200, apiresponse.getStatusCode());
+
+        Assert.assertEquals("Should be no stored todos",  0, todo.getInstances().size());
+
+
+        // project should be related to nothing
+        Collection<ThingInstance> items = myNewProject.connectedItems("tasks");
+        Assert.assertEquals(0, items.size());
+
+        // todo should be related to nothing
+        items = relTodo.connectedItems("task-of");
+        Assert.assertEquals(0, items.size());
+
+
+        System.out.println(todoManager);
+
+    }
+
+    // TODO: Create a thing and relate through a reverse relationship e.g. POST todo/GUID/task-of
+
+    @Test
+    public void createAReverseRelationshipAndProjectAtSameTimeUsingAPI(){
+
+
+
+        ThingInstance relTodo = todoManager.getThingNamed("todo").createInstance().setValue("title", "Todo for relationship testing " + System.currentTimeMillis());
+        todo.addInstance(relTodo);
+
+
+        // Createa a relationship and a thing with a POST and no GUID
+        // POST project/_GUID_/tasks
+        // {"title":"A new TODO Item related to project"}
+        HashMap<String, String> requestBody = new HashMap<String, String>();
+        String expectedTitle = "A new project related to the task " + System.currentTimeMillis();
+
+        requestBody.put("title", expectedTitle);
+
+
+
+        int numberOfProjects= relTodo.connections("task-of").size();
+        Assert.assertEquals(0, numberOfProjects);
+
+        // TODO: currently not creating reverse relationships
+        // Create it
+        ApiResponse apiresponse = todoManager.api().post(String.format("todo/%s/task-of", relTodo.getGUID()), new Gson().toJson(requestBody));
+        System.out.println(apiresponse.getBody());
+        Assert.assertEquals(201, apiresponse.getStatusCode());
+
+        Assert.assertEquals(1, relTodo.connections("task-of").size());
+
+        ThingInstance myNewProject = project.findInstanceByGUID(apiresponse.getHeaderValue(ApiResponse.GUID_HEADER));
+        Assert.assertNotNull(myNewProject);
+
+
+        // project should be related to task
+        Collection<ThingInstance> items = myNewProject.connectedItems("tasks");
+        Assert.assertEquals(1, items.size());
+
+        // todo should be related to project
+        items = relTodo.connectedItems("task-of");
+        Assert.assertEquals(1, items.size());
+
+
+    }
+
+    @Test
     public void createARelationshipAndTodoAtSameTimeUsingAPI(){
-
-
-        Thing todo = todoManager.getThingNamed("todo");
-        Thing project = todoManager.getThingNamed("project");
 
 
         ThingInstance myNewProject = todoManager.getThingNamed("project").createInstance().setValue("title", "Project For Relationships");
@@ -487,25 +594,27 @@ public class TodoManagerApiUsage_Non_HTTP_Test {
         String locationGuid = apiresponse.getHeaderValue(ApiResponse.GUID_HEADER);
 
         Assert.assertTrue("Expected location header to contain the same GUID as the X- GUID header",
-                        apiresponse.getHeaderValue("Location").contains(locationGuid));
+                apiresponse.getHeaderValue("Location").contains(locationGuid));
 
         Assert.assertEquals("Expected number of tasks in project to increase by 1",
-                        numberOfTasks + 1, myNewProject.connections("tasks").size());
+                numberOfTasks + 1, myNewProject.connections("tasks").size());
 
         // check todo exists
         ThingInstance myCreatedTodo = todo.findInstanceByGUID(locationGuid);
         Assert.assertEquals(expectedTitle, myCreatedTodo.getValue("title"));
 
         // check todo is also related to the project since relationship is two way
-        List<ThingInstance> items = myCreatedTodo.connectedItems("task-of");
+        Collection<ThingInstance> items = myCreatedTodo.connectedItems("task-of");
         Assert.assertEquals("Expected task be connected to only 1 project", 1, items.size());
 
+        List<ThingInstance> itemList = new ArrayList<>();
+        itemList.addAll(items);
+
         // item should be myNewProject
-        Assert.assertEquals("Expected to be connected to project", myNewProject.getGUID(), items.get(0).getGUID());
+        Assert.assertEquals("Expected to be connected to project", myNewProject.getGUID(), itemList.get(0).getGUID());
 
 
     }
-
 
     private String simpleJsonValueGet(String body, String... terms) {
 

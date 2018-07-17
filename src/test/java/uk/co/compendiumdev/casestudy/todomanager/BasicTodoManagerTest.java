@@ -5,7 +5,12 @@ import org.junit.Before;
 import org.junit.Test;
 import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.generic.instances.RelationshipInstance;
 import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 public class BasicTodoManagerTest {
 
@@ -31,6 +36,48 @@ public class BasicTodoManagerTest {
         Assert.assertEquals("FALSE", todo.definition().getField("doneStatus").getDefaultValue());
 
     }
+
+
+    @Test
+    public void RelationshipDefinitionCheck(){
+
+
+        Thing todo = todoManager.getThingNamed("todo");
+        Thing project = todoManager.getThingNamed("project");
+        Thing category = todoManager.getThingNamed("category");
+
+        ThingInstance paperwork = todo.createInstance().setValue("title", "scan paperwork");
+        todo.addInstance(paperwork);
+        ThingInstance filework = todo.createInstance().setValue("title", "file paperwork");
+        todo.addInstance(filework);
+
+        ThingInstance officeWork = project.createInstance().setValue("title", "Office Work");
+        project.addInstance(officeWork);
+
+        officeWork.connects("tasks", paperwork);
+        officeWork.connects("tasks", filework);
+
+        Collection<RelationshipInstance> relationships = officeWork.connections("tasks");
+        Collection<ThingInstance> relatedItems = new ArrayList<ThingInstance>();
+        for(RelationshipInstance relationship : relationships){
+            relatedItems.add(relationship.getTo());
+        }
+
+        Assert.assertTrue(relatedItems.contains(paperwork));
+        Assert.assertTrue(relatedItems.contains(filework));
+
+
+        relatedItems = officeWork.connectedItems("tasks");
+        Assert.assertTrue(relatedItems.contains(paperwork));
+        Assert.assertTrue(relatedItems.contains(filework));
+
+        todo.deleteInstance(paperwork.getGUID());
+
+        relatedItems = officeWork.connectedItems("tasks");
+        Assert.assertFalse(relatedItems.contains(paperwork));
+        Assert.assertTrue(relatedItems.contains(filework));
+    }
+
 
     @Test
     public void createAndAmendSomeTodos(){

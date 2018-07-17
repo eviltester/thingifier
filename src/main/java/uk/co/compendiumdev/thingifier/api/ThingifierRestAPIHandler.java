@@ -4,6 +4,7 @@ import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.generic.definitions.FieldValue;
 import uk.co.compendiumdev.thingifier.generic.definitions.RelationshipDefinition;
+import uk.co.compendiumdev.thingifier.generic.definitions.RelationshipVector;
 import uk.co.compendiumdev.thingifier.generic.definitions.ThingDefinition;
 import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
 import uk.co.compendiumdev.thingifier.query.SimpleQuery;
@@ -94,14 +95,14 @@ public class ThingifierRestAPIHandler {
 
             ThingInstance returnThing = connectThis;
 
-            RelationshipDefinition relationshipToUse;
+            RelationshipVector relationshipToUse;
 
             // if we have a parent thing, but no GUID then can we create a Thing and connect it?
             if(relatedItem==null) {
-                List<RelationshipDefinition> possibleRelationships = connectThis.getEntity().getRelationships(relationshipName);
+                List<RelationshipVector> possibleRelationships = connectThis.getEntity().getRelationships(relationshipName);
                 // if no way to narrow it down then use the first one TODO: potential bug if multiple named relationshps
                 relationshipToUse = possibleRelationships.get(0);
-                ThingDefinition createThing = relationshipToUse.to();
+                ThingDefinition createThing = relationshipToUse.getTo().definition();
 
                 Thing thingToCreate = thingifier.getThingNamed(createThing.getName());
 

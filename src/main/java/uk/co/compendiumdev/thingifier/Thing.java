@@ -93,6 +93,7 @@ public class Thing {
         instances.remove(guid);
 
         item.tellRelatedItemsIAmDeleted();
+        item.removeAllRelationships();
 
 
         return this;

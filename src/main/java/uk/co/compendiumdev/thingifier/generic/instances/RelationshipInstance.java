@@ -2,6 +2,7 @@ package uk.co.compendiumdev.thingifier.generic.instances;
 
 import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.generic.definitions.RelationshipDefinition;
+import uk.co.compendiumdev.thingifier.generic.definitions.RelationshipVector;
 
 public class RelationshipInstance {
     private RelationshipDefinition relationship;
@@ -9,10 +10,10 @@ public class RelationshipInstance {
     private ThingInstance to;
     private Thing representedBy;
 
-    public RelationshipInstance(RelationshipDefinition relationship, ThingInstance from, ThingInstance to) {
+    public RelationshipInstance(RelationshipVector relationship, ThingInstance from, ThingInstance to) {
         this.from = from;
         this.to = to;
-        this.relationship = relationship;
+        this.relationship = relationship.getRelationshipDefinition();
     }
 
     public RelationshipInstance setRelationship(RelationshipDefinition relationship) {

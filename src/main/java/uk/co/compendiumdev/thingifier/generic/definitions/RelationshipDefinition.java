@@ -6,6 +6,10 @@ import uk.co.compendiumdev.thingifier.generic.dsl.relationship.AndCall;
 
 public class RelationshipDefinition {
 
+    /*
+        A RelationshipDefinition defines the whole scope of the relationship
+        Things will only know about the vectors that relate outwards from themselves.
+     */
     private final String name;
     private final Thing from;
     private final Thing to;
@@ -15,13 +19,21 @@ public class RelationshipDefinition {
 
 
 
-    public RelationshipDefinition(Thing from, Thing to, RelationshipVector fromVector) {
+    private RelationshipDefinition(Thing from, Thing to, RelationshipVector fromVector) {
         this.from = from;
         this.to = to;
         from_to = fromVector;
+        fromVector.addFromAndToFor(from, to, this);
         this.name = fromVector.getName();
         this.cardinality = fromVector.getCardinality();
-        from.definition().addRelationship(this);
+    }
+
+    public static RelationshipDefinition create(Thing from, Thing to, RelationshipVector fromVector) {
+        RelationshipDefinition defn = new RelationshipDefinition(from, to, fromVector);
+
+        // and add the relationship Vector
+        from.definition().addRelationship(fromVector);
+        return defn;
     }
 
     public void whenReversed(Cardinality of, AndCall it) {
@@ -30,14 +42,15 @@ public class RelationshipDefinition {
 
     public RelationshipDefinition withReverse(RelationshipVector toVector){
         to_from = toVector;
-        to.definition().addRelationship(this);
+        toVector.addFromAndToFor(to, from, this);
+        to.definition().addRelationship(toVector);
         return this;
     }
 
     public String toString(){
 
         StringBuilder output = new StringBuilder();
-        // TODO: the <=> should reflect the cardinality defined
+        // TODO: the <=> should reflect the cardinality defined vectors created
         output.append("\t\t" + this.name + " : " + from.definition().getName() + " <=> " + to.definition().getName() + "\n");
 
         return output.toString();
@@ -60,14 +73,29 @@ public class RelationshipDefinition {
         return to_from!=null;
     }
 
-    public RelationshipVector reversed() {
+
+    /*
+        Return the representation of the reversal
+     */
+    public RelationshipVector getReversedRelationship() {
         return to_from;
     }
 
     /*
-        Return a temporary relationship definition which is a representation of the reversal, without the reversal
+        A Relationship is known as any of its vector names
      */
-    public RelationshipDefinition getReversedRelationship() {
-        return new RelationshipDefinition(to, from, to_from);
+    public boolean isKnownAs(String relationshipName) {
+
+        if(from_to.getName().toLowerCase().equalsIgnoreCase(relationshipName)){
+            return true;
+        }
+        if(to_from!=null && to_from.getName().toLowerCase().equalsIgnoreCase(relationshipName)){
+            return true;
+        }
+        return false;
+    }
+
+    public RelationshipVector getFromRelationship() {
+        return from_to;
     }
 }

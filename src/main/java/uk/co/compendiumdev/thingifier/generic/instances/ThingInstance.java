@@ -5,11 +5,10 @@ import uk.co.compendiumdev.thingifier.api.ValidationReport;
 import uk.co.compendiumdev.thingifier.generic.GUID;
 import uk.co.compendiumdev.thingifier.generic.definitions.Field;
 import uk.co.compendiumdev.thingifier.generic.definitions.RelationshipDefinition;
+import uk.co.compendiumdev.thingifier.generic.definitions.RelationshipVector;
 import uk.co.compendiumdev.thingifier.generic.definitions.ThingDefinition;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ThingInstance {
 
@@ -133,7 +132,7 @@ public class ThingInstance {
             throw new IllegalArgumentException(String.format("Unknown Relationship %s for %s : %s", relationshipName, entityDefinition.getName(), getGUID()));
         }
 
-        RelationshipDefinition relationship = entityDefinition.getRelationship(relationshipName, thing.entityDefinition);
+        RelationshipVector relationship = entityDefinition.getRelationship(relationshipName, thing.entityDefinition);
 
         RelationshipInstance related = new RelationshipInstance(relationship, this, thing);
         this.relationships.add(related);
@@ -144,35 +143,43 @@ public class ThingInstance {
 
     private void isNowRelatedVia(RelationshipInstance relationship) {
         this.amRelatedTo.add(relationship);
+
+        // if the relationship vector has a parent that is both ways then we need to create a relationship of the reverse type to the thing that called us
+        if(relationship.getRelationship().isTwoWay()){
+            this.relationships.add(relationship);
+        }
     }
 
-    public List<RelationshipInstance> connections(String relationshipName) {
-        List<RelationshipInstance> theConnections = new ArrayList<RelationshipInstance>();
+    public Collection<RelationshipInstance> connections(String relationshipName) {
+        Set<RelationshipInstance> theConnections = new HashSet<RelationshipInstance>();
         for(RelationshipInstance relationship : relationships){
-            if(relationship.getRelationship().getName().toLowerCase().contentEquals(relationshipName.toLowerCase())){
+            if(relationship.getRelationship().isKnownAs(relationshipName)){
                 theConnections.add(relationship);
             }
         }
-        // TODO: suspect representing it like this might be a problem
         for(RelationshipInstance relationship : amRelatedTo){
-            if(relationship.getRelationship().reversed().getName().toLowerCase().contentEquals(relationshipName.toLowerCase())){
+            if(relationship.getRelationship().isKnownAs(relationshipName)){
                 theConnections.add(relationship);
             }
         }
         return theConnections;
     }
 
-    public List<ThingInstance> connectedItems(String relationshipName) {
-        List<ThingInstance> theConnectedItems = new ArrayList<ThingInstance>();
+    public Collection<ThingInstance> connectedItems(String relationshipName) {
+        Set<ThingInstance> theConnectedItems = new HashSet<ThingInstance>();
         for(RelationshipInstance relationship : relationships){
-            if(relationship.getRelationship().getName().toLowerCase().contentEquals(relationshipName.toLowerCase())){
-                theConnectedItems.add(relationship.getTo());
+            if(relationship.getRelationship().isKnownAs(relationshipName)){
+                if(relationship.getTo()== this){
+                    theConnectedItems.add(relationship.getFrom());
+                }else{
+                    theConnectedItems.add(relationship.getTo());
+                }
             }
         }
 
         // check the reverse relationships too
         for(RelationshipInstance relationship : amRelatedTo){
-            if(relationship.getRelationship().reversed().getName().toLowerCase().contentEquals(relationshipName.toLowerCase())){
+            if(relationship.getRelationship().getReversedRelationship().getName().toLowerCase().contentEquals(relationshipName.toLowerCase())){
                 theConnectedItems.add(relationship.getFrom());
             }
         }
@@ -192,12 +199,36 @@ public class ThingInstance {
         List<RelationshipInstance> toDelete = new ArrayList<RelationshipInstance>();
 
         for(RelationshipInstance relationship : relationships){
-            if(relationship.getTo()==thing && relationship.getRelationship().getName().equalsIgnoreCase(relationshipName)){
-                toDelete.add(relationship);
+            if(relationship.getRelationship().isKnownAs(relationshipName)){
+                if(relationship.getTo() == thing || relationship.getFrom()==thing){
+                    toDelete.add(relationship);
+                    thing.isNoLongerRelatedVia(relationship);
+                }
             }
         }
 
         relationships.removeAll(toDelete);
+
+    }
+
+    public void removeAllRelationships() {
+
+        for(RelationshipInstance relationship : relationships){
+            if(relationship.getTo()==this){
+                relationship.getFrom().isNoLongerRelatedVia(relationship);
+            }else{
+                relationship.getTo().isNoLongerRelatedVia(relationship);
+            }
+        }
+
+        relationships.clear();
+
+    }
+
+    private void isNoLongerRelatedVia(RelationshipInstance relationship) {
+        // delete any relationship to or from
+        relationships.remove(relationship);
+        amRelatedTo.remove(relationship);
     }
 
     private void removeRelationshipsToMe(ThingInstance thing) {
@@ -246,4 +277,6 @@ public class ThingInstance {
         cloneInstance.setFieldValuesFrom(instance.asMap());
         return cloneInstance;
     }
+
+
 }
