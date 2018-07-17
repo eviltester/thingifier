@@ -1,10 +1,8 @@
 package uk.co.compendiumdev.thingifier.generic.instances;
 
-import uk.co.compendiumdev.thingifier.api.ApiResponse;
 import uk.co.compendiumdev.thingifier.api.ValidationReport;
 import uk.co.compendiumdev.thingifier.generic.GUID;
 import uk.co.compendiumdev.thingifier.generic.definitions.Field;
-import uk.co.compendiumdev.thingifier.generic.definitions.RelationshipDefinition;
 import uk.co.compendiumdev.thingifier.generic.definitions.RelationshipVector;
 import uk.co.compendiumdev.thingifier.generic.definitions.ThingDefinition;
 
@@ -162,18 +160,6 @@ public class ThingInstance {
         return theConnectedItems;
     }
 
-    public void tellRelatedItemsIAmDeleted() {
-
-        for(RelationshipInstance item : relationships){
-            if(item.getFrom()!=this) {
-                item.getFrom().removeRelationshipsToMe(this);
-            }else{
-                item.getTo().removeRelationshipsToMe(this);
-            }
-        }
-
-    }
-
     public void removeRelationshipsTo(ThingInstance thing, String relationshipName) {
         List<RelationshipInstance> toDelete = new ArrayList<RelationshipInstance>();
 
@@ -192,11 +178,11 @@ public class ThingInstance {
 
     public void removeAllRelationships() {
 
-        for(RelationshipInstance relationship : relationships){
-            if(relationship.getTo()==this){
-                relationship.getFrom().isNoLongerRelatedVia(relationship);
+        for(RelationshipInstance item : relationships){
+            if(item.getFrom()!= this) {
+                item.getFrom().removeRelationshipsInvolvingMe(this);
             }else{
-                relationship.getTo().isNoLongerRelatedVia(relationship);
+                item.getTo().removeRelationshipsInvolvingMe(this);
             }
         }
 
@@ -209,11 +195,14 @@ public class ThingInstance {
         relationships.remove(relationship);
     }
 
-    private void removeRelationshipsToMe(ThingInstance thing) {
+    private void removeRelationshipsInvolvingMe(ThingInstance thing) {
         List<RelationshipInstance> toDelete = new ArrayList<RelationshipInstance>();
 
         for(RelationshipInstance relationship : relationships){
             if(relationship.getTo()==thing){
+                toDelete.add(relationship);
+            }
+            if(relationship.getFrom()==thing){
                 toDelete.add(relationship);
             }
         }

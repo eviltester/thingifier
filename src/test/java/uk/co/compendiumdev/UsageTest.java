@@ -58,7 +58,7 @@ public class UsageTest {
         Assert.assertEquals(2, person.countInstances());
         Assert.assertEquals("Bob", bob.getValue("name"));
         Assert.assertEquals("56", bob.getValue("age"));
-        Assert.assertEquals("1000", person.findInstanceByGUID(FieldValue.is("name","Eris")).getValue("age"));
+        Assert.assertEquals("1000", person.findInstanceByField(FieldValue.is("name","Eris")).getValue("age"));
 
     }
 

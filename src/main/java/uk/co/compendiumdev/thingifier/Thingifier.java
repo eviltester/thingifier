@@ -93,7 +93,7 @@ public class Thingifier {
 
     public ThingInstance findThingInstanceByGuid(String thingGUID) {
         for(Thing aThing : things.values()){
-            ThingInstance instance = aThing.findInstanceByGUID(FieldValue.is("guid", thingGUID));
+            ThingInstance instance = aThing.findInstanceByField(FieldValue.is("guid", thingGUID));
             if(instance!=null){
                 return instance;
             }

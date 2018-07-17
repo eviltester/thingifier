@@ -171,7 +171,7 @@ public class ThingifierRestAPIHandler {
             return noSuchEntity(thingName);
 
         }
-        ThingInstance instance = thing.findInstanceByGUID(FieldValue.is("guid", instanceGuid));
+        ThingInstance instance = thing.findInstanceByField(FieldValue.is("guid", instanceGuid));
         if (instance==null){
             // cannot amend something that does not exist
             return ApiResponse.error404(String.format("No such %s entity instance with GUID %s found", thing.definition().getName(), instanceGuid));
@@ -248,7 +248,7 @@ public class ThingifierRestAPIHandler {
                 // unknown thing
                 return noSuchEntity(urlParts[0]);
             }
-            ThingInstance instance = thing.findInstanceByGUID(FieldValue.is("guid", urlParts[1]));
+            ThingInstance instance = thing.findInstanceByField(FieldValue.is("guid", urlParts[1]));
 
             if (instance==null){
                 // it does not exist, but we have a GUID - create it

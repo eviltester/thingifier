@@ -47,7 +47,7 @@ public class Thing {
 
 
 
-    public ThingInstance findInstanceByGUID(FieldValue fieldValue) {
+    public ThingInstance findInstanceByField(FieldValue fieldValue) {
 
         for(ThingInstance thing : instances.values()){
             if(thing.getValue(fieldValue.getName()).contentEquals(fieldValue.getValue())){
@@ -74,12 +74,6 @@ public class Thing {
 
 
 
-
-    public Thing getCopyWithoutInstances() {
-        Thing copyWithoutInstances = new Thing(definition);
-        return copyWithoutInstances;
-    }
-
     public Thing deleteInstance(String guid) {
 
         if(!instances.containsKey(guid)){
@@ -92,9 +86,7 @@ public class Thing {
 
         instances.remove(guid);
 
-        item.tellRelatedItemsIAmDeleted();
         item.removeAllRelationships();
-
 
         return this;
     }

@@ -164,7 +164,7 @@ public class TodoManagerApiUsage_Non_HTTP_Test {
         JsonObject projectjson = new JsonParser().parse(apiresponse.getBody()).getAsJsonObject();
         String projectGUID = projectjson.get("project").getAsJsonObject().get("guid").getAsString();
 
-        ThingInstance myNewProject = todoManager.getThingNamed("project").findInstanceByGUID(FieldValue.is("guid", projectGUID));
+        ThingInstance myNewProject = todoManager.getThingNamed("project").findInstanceByField(FieldValue.is("guid", projectGUID));
         Assert.assertEquals("MY NEW PROJECT", myNewProject.getValue("title"));
 
         //Assert.assertEquals("My Office Work", officeWork.getValue("title"));
@@ -198,7 +198,7 @@ public class TodoManagerApiUsage_Non_HTTP_Test {
         Assert.assertEquals(currentProjects + 1, todoManager.getThingNamed("project").countInstances());
         Assert.assertEquals("office", officeWork.getValue("title"));
         Assert.assertEquals(officeWorkGuid, officeWork.getGUID());
-        ThingInstance newProject = todoManager.getThingNamed("project").findInstanceByGUID(FieldValue.is("guid", guid));
+        ThingInstance newProject = todoManager.getThingNamed("project").findInstanceByField(FieldValue.is("guid", guid));
 
         Assert.assertEquals("My Office Work", newProject.getValue("title"));
         Assert.assertEquals(guid, newProject.getValue("guid"));
@@ -276,7 +276,7 @@ public class TodoManagerApiUsage_Non_HTTP_Test {
 
         Assert.assertEquals(numberOfTasks - 1, myNewProject.connectedItems("tasks").size());
         Assert.assertNotNull("Task should exist, only the relationship should be deleted",
-                todoManager.getThingNamed("todo").findInstanceByGUID(FieldValue.is("guid", paperwork.getGUID())));
+                todoManager.getThingNamed("todo").findInstanceByField(FieldValue.is("guid", paperwork.getGUID())));
 
 
         System.out.println(todoManager);
