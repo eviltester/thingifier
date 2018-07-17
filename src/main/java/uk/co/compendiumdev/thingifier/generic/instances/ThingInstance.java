@@ -16,14 +16,12 @@ public class ThingInstance {
     private final List<RelationshipInstance> relationships;
     private final ThingDefinition entityDefinition;
     private final InstanceFields instance;
-    private List<RelationshipInstance> amRelatedTo;
 
     public ThingInstance(ThingDefinition eDefn) {
         this.entityDefinition = eDefn;
         this.instance = new InstanceFields();
         instance.addValue("guid", GUID.create());
         this.relationships = new ArrayList<RelationshipInstance>();
-        this.amRelatedTo = new ArrayList<RelationshipInstance>();
     }
 
     public ThingInstance(ThingDefinition entityTestSession, String guid) {
@@ -142,27 +140,11 @@ public class ThingInstance {
     }
 
     private void isNowRelatedVia(RelationshipInstance relationship) {
-        this.amRelatedTo.add(relationship);
 
         // if the relationship vector has a parent that is both ways then we need to create a relationship of the reverse type to the thing that called us
         if(relationship.getRelationship().isTwoWay()){
             this.relationships.add(relationship);
         }
-    }
-
-    public Collection<RelationshipInstance> connections(String relationshipName) {
-        Set<RelationshipInstance> theConnections = new HashSet<RelationshipInstance>();
-        for(RelationshipInstance relationship : relationships){
-            if(relationship.getRelationship().isKnownAs(relationshipName)){
-                theConnections.add(relationship);
-            }
-        }
-        for(RelationshipInstance relationship : amRelatedTo){
-            if(relationship.getRelationship().isKnownAs(relationshipName)){
-                theConnections.add(relationship);
-            }
-        }
-        return theConnections;
     }
 
     public Collection<ThingInstance> connectedItems(String relationshipName) {
@@ -177,22 +159,19 @@ public class ThingInstance {
             }
         }
 
-        // check the reverse relationships too
-        for(RelationshipInstance relationship : amRelatedTo){
-            if(relationship.getRelationship().getReversedRelationship().getName().toLowerCase().contentEquals(relationshipName.toLowerCase())){
-                theConnectedItems.add(relationship.getFrom());
-            }
-        }
         return theConnectedItems;
     }
 
     public void tellRelatedItemsIAmDeleted() {
-        for(RelationshipInstance item : amRelatedTo){
-            item.getFrom().removeRelationshipsToMe(this);
+
+        for(RelationshipInstance item : relationships){
+            if(item.getFrom()!=this) {
+                item.getFrom().removeRelationshipsToMe(this);
+            }else{
+                item.getTo().removeRelationshipsToMe(this);
+            }
         }
 
-        // I am related to nothing for I am dead
-        amRelatedTo = new ArrayList<RelationshipInstance>();
     }
 
     public void removeRelationshipsTo(ThingInstance thing, String relationshipName) {
@@ -228,7 +207,6 @@ public class ThingInstance {
     private void isNoLongerRelatedVia(RelationshipInstance relationship) {
         // delete any relationship to or from
         relationships.remove(relationship);
-        amRelatedTo.remove(relationship);
     }
 
     private void removeRelationshipsToMe(ThingInstance thing) {

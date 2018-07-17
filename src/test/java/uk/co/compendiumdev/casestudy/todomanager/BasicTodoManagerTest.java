@@ -5,12 +5,8 @@ import org.junit.Before;
 import org.junit.Test;
 import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.generic.instances.RelationshipInstance;
 import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
-
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 public class BasicTodoManagerTest {
 
@@ -57,11 +53,7 @@ public class BasicTodoManagerTest {
         officeWork.connects("tasks", paperwork);
         officeWork.connects("tasks", filework);
 
-        Collection<RelationshipInstance> relationships = officeWork.connections("tasks");
-        Collection<ThingInstance> relatedItems = new ArrayList<ThingInstance>();
-        for(RelationshipInstance relationship : relationships){
-            relatedItems.add(relationship.getTo());
-        }
+        Collection<ThingInstance> relatedItems = officeWork.connectedItems("tasks");
 
         Assert.assertTrue(relatedItems.contains(paperwork));
         Assert.assertTrue(relatedItems.contains(filework));
