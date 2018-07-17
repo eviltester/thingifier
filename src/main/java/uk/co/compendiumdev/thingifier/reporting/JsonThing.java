@@ -6,6 +6,8 @@ import java.util.*;
 
 public class JsonThing {
 
+    // TODO can this be replaced with Gson directly?
+
     public static String asJson(ThingInstance thingInstance) {
 
         StringBuilder json = new StringBuilder();

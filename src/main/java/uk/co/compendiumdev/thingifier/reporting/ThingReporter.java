@@ -115,17 +115,26 @@ public class ThingReporter {
 
             for(RelationshipDefinition relationship : relationships){
 
-                output.append(String.format("<li>%s : %s => %s%n",
-                                relationship.getName(),
-                                relationship.from().definition().getName(),
-                                relationship.to().getName()));
+
+
+                //task-of : todo => project
+                String reportLine = String.format("<li>%s : %s => %s%n",
+                        relationship.getName(),
+                        relationship.from().definition().getName(),
+                        relationship.to().getName());
+
+
+                // for a two way relationship can it be combined on to one line e.g.
+                // tasks/task-of : project =(tasks)=> todo  / todo=(task-of)=> project
 
                 if(relationship.isTwoWay()){
-                    output.append(String.format("<li>%s : %s => %s%n",
+                    reportLine = String.format("<li>%1$s/%2$s : %3$s =(%1$s)=> %4$s / %4$s =(%2$s)=> %3$s %n",
+                            relationship.getName(),
                             relationship.getReversedRelationship().getName(),
-                            relationship.getReversedRelationship().getFrom().definition().getName(),
-                            relationship.getReversedRelationship().getTo().definition().getName()));
-                }
+                            relationship.from().definition().getName(),
+                            relationship.to().getName());}
+
+                output.append(reportLine);
             }
             output.append("</ul>\n");
 
