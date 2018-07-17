@@ -4,6 +4,7 @@ import uk.co.compendiumdev.thingifier.api.ThingifierRestAPIHandler;
 import uk.co.compendiumdev.thingifier.generic.definitions.Cardinality;
 import uk.co.compendiumdev.thingifier.generic.definitions.FieldValue;
 import uk.co.compendiumdev.thingifier.generic.definitions.RelationshipDefinition;
+import uk.co.compendiumdev.thingifier.generic.definitions.RelationshipVector;
 import uk.co.compendiumdev.thingifier.generic.dsl.relationship.WithCardinality;
 import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
 import uk.co.compendiumdev.thingifier.generic.dsl.relationship.AndCall;
@@ -40,7 +41,7 @@ public class Thingifier {
     }
 
     public RelationshipDefinition defineRelationship(Between things, AndCall it, Cardinality of) {
-        RelationshipDefinition relationship = new RelationshipDefinition(it.isCalled(), things.from(), things.to(), of);
+        RelationshipDefinition relationship = new RelationshipDefinition( things.from(), things.to(), new RelationshipVector(it.isCalled(), of));
         relationships.put(it.isCalled(), relationship);
         things.from().definition().addRelationship(relationship);
         return relationship;

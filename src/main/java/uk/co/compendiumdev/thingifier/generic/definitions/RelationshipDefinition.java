@@ -9,15 +9,22 @@ public class RelationshipDefinition {
     private final Thing from;
     private final Thing to;
     private final Cardinality cardinality;
+    private RelationshipVector from_to;
+    private RelationshipVector to_from;
 
 
 
-    public RelationshipDefinition(String relationShipName, Thing from, Thing to, Cardinality cardinality) {
-        this.name = relationShipName;
+    public RelationshipDefinition(Thing from, Thing to, RelationshipVector fromVector) {
         this.from = from;
         this.to = to;
-        this.cardinality = cardinality;
+        from_to = fromVector;
+        this.name = fromVector.getName();
+        this.cardinality = fromVector.getCardinality();
+    }
 
+    public RelationshipDefinition withReverse(RelationshipVector toVector){
+        to_from = toVector;
+        return this;
     }
 
     public String toString(){
