@@ -1,4 +1,4 @@
-package uk.co.compendiumdev;
+package uk.co.compendiumdev.casestudy.todomanager;
 
 import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
@@ -44,61 +44,8 @@ public class TodoManagerUsageTest {
     */
 
 
-    @BeforeClass
-    public static void createDefinitions(){
 
-        todoManager = new Thingifier();
-
-        todoManager.setDocumentation("Todo Manager", "A Simple todo manager");
-
-        Thing todo = todoManager.createThing("todo", "todos");
-
-        todo.definition()
-                .addFields( Field.is("title", STRING).
-                                mandatory().
-                                withValidation(
-                                        VRule.NotEmpty(),
-                                        VRule.MatchesType()),
-                        Field.is("description",STRING),
-                        Field.is("doneStatus",FieldType.BOOLEAN).
-                                withDefaultValue("FALSE").
-                                withValidation(
-                                        VRule.MatchesType()))
-        ;
-
-
-        Thing project = todoManager.createThing("project", "projects");
-
-        project.definition()
-                .addFields(
-                        Field.is("title", STRING),
-                        Field.is("description",STRING),
-                        Field.is("completed",FieldType.BOOLEAN).
-                                withDefaultValue("FALSE").
-                                withValidation(VRule.MatchesType()),
-                        Field.is("active",FieldType.BOOLEAN).
-                                withDefaultValue("TRUE").
-                                withValidation(VRule.MatchesType()));
-
-
-        Thing category = todoManager.createThing("category", "categories");
-
-        category.definition()
-                .addFields(
-                        Field.is("title", STRING).
-                                mandatory().
-                                withValidation(VRule.NotEmpty()),
-                        Field.is("description",STRING));
-
-        todoManager.defineRelationship(Between.things(project, todo), AndCall.it("tasks"), WithCardinality.of("1", "*"));
-        todoManager.defineRelationship(Between.things(project, category), AndCall.it("categories"), WithCardinality.of("1", "*"));
-        todoManager.defineRelationship(Between.things(category, todo), AndCall.it("todos"), WithCardinality.of("1", "*"));
-        todoManager.defineRelationship(Between.things(category, project), AndCall.it("projects"), WithCardinality.of("1", "*"));
-        todoManager.defineRelationship(Between.things(todo, category), AndCall.it("categories"), WithCardinality.of("1", "*"));
-
-
-
-        /*
+            /*
 
         Thinking through API
 
@@ -146,101 +93,30 @@ public class TodoManagerUsageTest {
 
 
          */
-    }
 
 
-    @Test
-    public void ApiPrototypeFreeBackend() {
 
+    @BeforeClass
+    public static void createDefinitions(){
 
-        // stuff we could get for free from backend
-        Thing todo = todoManager.getThingNamed("todo");
-        Thing project = todoManager.getThingNamed("project");
-        Thing category = todoManager.getThingNamed("category");
-
-        ThingInstance paperwork = todo.createInstance().setValue("title", "scan paperwork");
-        todo.addInstance(paperwork);
-        System.out.println(JsonThing.asJson(paperwork));
-
-        ThingInstance filework = todo.createInstance().setValue("title", "file paperwork");
-        todo.addInstance(filework);
-
-        ThingInstance officeCategory = category.createInstance().setValue("title", "Office");
-        category.addInstance(officeCategory);
-
-        ThingInstance homeCategory = category.createInstance().setValue("title", "Home");
-        category.addInstance(homeCategory);
-
-
-        paperwork.connects("categories", officeCategory);
-
-        // todo
-        List<ThingInstance> query = todoManager.simplequery("todo");
-
-        Assert.assertEquals(2, query.size());
-        Assert.assertTrue(query.contains(paperwork));
-        Assert.assertTrue(query.contains(filework));
-
-        System.out.println(JsonThing.asJson(query));
-
-        // todo/_GUID_
-        query = todoManager.simplequery("todo/" + paperwork.getGUID());
-
-        Assert.assertEquals(1, query.size());
-        Assert.assertTrue(query.contains(paperwork));
-        Assert.assertFalse(query.contains(filework));
-
-        ApiResponse apiresponse = todoManager.api().get("todo/" + paperwork.getGUID());
-        Assert.assertEquals(200, apiresponse.getStatusCode());
-
-        // get a todo that does not exist
-        apiresponse = todoManager.api().get("todo/" + paperwork.getGUID() + "bob");
-        Assert.assertEquals(404, apiresponse.getStatusCode());
-
-
-        //
-        ThingInstance officeWork = project.createInstance().setValue("title", "Office Work");
-        project.addInstance(officeWork);
-
-        officeWork.connects("tasks", paperwork);
-        officeWork.connects("tasks", filework);
-
-
-        // match on relationships
-        // project/_GUID_/tasks
-        query = todoManager.simplequery(String.format("project/%s/tasks", officeWork.getGUID()));
-
-        Assert.assertEquals(2, query.size());
-        Assert.assertTrue(query.contains(paperwork));
-        Assert.assertTrue(query.contains(filework));
-
-        System.out.println(JsonThing.asJson(query));
-
-        // match on entity types
-        // project/_GUID_/todo
-        query = todoManager.simplequery(String.format("project/%s/todo", officeWork.getGUID()));
-
-        Assert.assertEquals(2, query.size());
-        Assert.assertTrue(query.contains(paperwork));
-        Assert.assertTrue(query.contains(filework));
-
-        System.out.println(JsonThing.asJson(query));
-
-        // project/_GUID_/todo/category
-        query = todoManager.simplequery(String.format("project/%s/todo/category", officeWork.getGUID()));
-
-        Assert.assertEquals(1, query.size());
-        Assert.assertTrue(query.contains(officeCategory));
-
-        System.out.println(JsonThing.asJson(query));
-
-        // invalid query should match nothing there is no entity called task
-        // project/_GUID_/task
-        query = todoManager.simplequery(String.format("project/%s/task", officeWork.getGUID()));
-
-        Assert.assertEquals(0, query.size());
+        todoManager = TodoManagerModel.definedAsThingifier();
 
     }
+
+
+
+
+
+
+
+
+    /*
+
+
+    Non HTTP API Based Tests
+
+
+    */
 
     @Test
     public void NonHttpApiBasedTests(){
@@ -523,118 +399,54 @@ public class TodoManagerUsageTest {
         Assert.assertTrue(relatedItems.contains(filework));
     }
 
-
+    
     @Test
-    public void todoModelDefinitionCheck(){
+    public void createARelationshipUsingAPI(){
 
 
         Thing todo = todoManager.getThingNamed("todo");
+        Thing project = todoManager.getThingNamed("project");
+        Thing category = todoManager.getThingNamed("category");
+        
+        ThingInstance myNewProject = todoManager.getThingNamed("project").createInstance().setValue("title", "Project For Relationships");
+        project.addInstance(myNewProject);
+        
+        ThingInstance relTodo = todoManager.getThingNamed("todo").createInstance().setValue("title", "Todo for relationship testing");
+        todo.addInstance(relTodo);
+        
+        // Create a relationship with POST
+        // POST project/_GUID_/tasks
+        // {"guid":"_GUID_"} need to find the thing then use that as the relationship type
 
-        Assert.assertTrue(todo.definition().hasFieldNameDefined("title"));
-        Assert.assertTrue(todo.definition().hasFieldNameDefined("description"));
-        Assert.assertTrue(todo.definition().hasFieldNameDefined("doneStatus"));
 
-        Assert.assertEquals("FALSE", todo.definition().getField("doneStatus").getDefaultValue());
+        // Create a relationship with POST and just a GUID
+        //myNewProject
+        HashMap<String, String> requestBody = new HashMap<String, String>();
+        requestBody.put("guid", relTodo.getGUID());
 
+        int numberOfTasks = myNewProject.connections("tasks").size();
+
+        ApiResponse apiresponse = todoManager.api().post(String.format("project/%s/tasks", myNewProject.getGUID()), new Gson().toJson(requestBody));
+        Assert.assertEquals(201, apiresponse.getStatusCode());
+
+        Assert.assertEquals(numberOfTasks+1, myNewProject.connections("tasks").size());
+
+        System.out.println(todoManager);
+
+
+        // Createa a relationship and a thing with a POST and no GUID
+        // POST project/_GUID_/tasks
+        // {"title":"A new TODO Item related to project"}
+        requestBody = new HashMap<String,String>();
+        requestBody.put("title", "A new TODO Item related to project");
+
+        numberOfTasks = myNewProject.connections("tasks").size();
+
+        apiresponse = todoManager.api().post(String.format("project/%s/tasks",myNewProject.getGUID()), new Gson().toJson(requestBody));
+        Assert.assertEquals(201, apiresponse.getStatusCode());
     }
 
-    @Test
-    public void createAndAmendSomeTodos(){
 
-        Thing todos = todoManager.getThingNamed("todo");
-
-        ThingInstance tidy = todos.createInstance().
-                                setValue("title", "Tidy up my room").
-                                setValue("description", "I need to tidy up my room because it is a mess");
-
-        todos.addInstance(tidy);
-
-        ThingInstance paperwork = todos.createInstance().
-                setValue("title","Do Paperwork").
-                setValue("description", "Scan everything in, upload to document management system and file paperwork");
-
-        todos.addInstance(paperwork);
-
-        Assert.assertEquals("FALSE", paperwork.getValue("doneStatus"));
-
-        System.out.println(todoManager.toString());
-
-        tidy.setValue("doneStatus", "TRUE");
-        Assert.assertEquals("TRUE", tidy.getValue("doneStatus"));
-        System.out.println(todoManager.toString());
-
-    }
-
-    @Test
-    public void createAndDeleteTodos(){
-
-        Thing todos = todoManager.getThingNamed("todo");
-
-        int originalTodosCount = todos.countInstances();
-
-        ThingInstance tidy = todos.createInstance().
-                setValue("title","Delete this todo").
-                setValue("description", "I need to be deleted");
-
-        todos.addInstance(tidy);
-
-        ThingInstance foundit = todos.findInstance(tidy.getGUID());
-
-        Assert.assertEquals("Delete this todo", foundit.getValue("title"));
-
-        todos.deleteInstance(foundit.getGUID());
-        Assert.assertEquals(originalTodosCount, todos.countInstances());
-
-
-        foundit = todos.findInstance(tidy.getGUID());
-
-        Assert.assertNull(foundit);
-
-
-        try{
-            todos.deleteInstance(foundit.getGUID());
-            Assert.fail("Item already deleted, exception should have been thrown");
-        }catch(Exception e){
-
-        }
-
-    }
-
-    @Test
-    public void createAmendAndDeleteATodoWithAGivenGUID(){
-
-        Thing todos = todoManager.getThingNamed("todo");
-
-        int originalTodosCount = todos.countInstances();
-
-        String guid="1234-12334-1234-1234";
-
-        ThingInstance tidy = todos.createInstance(guid).setValue("title", "Delete this todo").
-                setValue("description", "I need to be deleted");
-
-        todos.addInstance(tidy);
-
-        ThingInstance foundit = todos.findInstance(guid);
-
-        Assert.assertEquals("Delete this todo", foundit.getValue("title"));
-
-        todos.deleteInstance(guid);
-        Assert.assertEquals(originalTodosCount, todos.countInstances());
-
-
-        foundit = todos.findInstance(guid);
-
-        Assert.assertNull(foundit);
-
-
-        try{
-            todos.deleteInstance(foundit.getGUID());
-            Assert.fail("Item already deleted, exception should have been thrown");
-        }catch(Exception e){
-
-        }
-
-    }
 
 
 

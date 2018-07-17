@@ -2,6 +2,7 @@ package uk.co.compendiumdev.thingifier.generic.definitions;
 
 
 import uk.co.compendiumdev.thingifier.Thing;
+import uk.co.compendiumdev.thingifier.generic.dsl.relationship.AndCall;
 
 public class RelationshipDefinition {
 
@@ -20,6 +21,10 @@ public class RelationshipDefinition {
         from_to = fromVector;
         this.name = fromVector.getName();
         this.cardinality = fromVector.getCardinality();
+    }
+
+    public void whenReversed(Cardinality of, AndCall it) {
+        withReverse(new RelationshipVector(it.isCalled(), of));
     }
 
     public RelationshipDefinition withReverse(RelationshipVector toVector){
@@ -47,4 +52,6 @@ public class RelationshipDefinition {
     public Thing from() {
         return from;
     }
+
+
 }
