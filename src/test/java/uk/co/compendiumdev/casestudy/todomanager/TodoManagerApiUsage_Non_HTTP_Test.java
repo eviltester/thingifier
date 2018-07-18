@@ -12,6 +12,9 @@ import org.junit.Test;
 
 import java.util.*;
 
+import static java.util.Collections.addAll;
+import static java.util.Collections.list;
+
 public class TodoManagerApiUsage_Non_HTTP_Test {
 
     private Thingifier todoManager;
@@ -119,7 +122,7 @@ public class TodoManagerApiUsage_Non_HTTP_Test {
     */
 
     @Test
-    public void postCreateAnEntityWhichPassesValidationWithAllFields(){
+    public void postCanCreateAnEntityWhichPassesValidationWithAllFields(){
 
         // POST project
         Map requestBody = new HashMap<String, String>();
@@ -164,11 +167,53 @@ public class TodoManagerApiUsage_Non_HTTP_Test {
 
     }
 
+    @Test
+    public void postCanCreateAnEntityWhichPassesValidationWithMinimumFields(){
+
+        // POST project
+        Map requestBody = new HashMap<String, String>();
+        String title = "My Office Work" + System.currentTimeMillis();
+
+        requestBody.put("title", title);
+
+        new Gson().toJson(requestBody);
+
+        // create a project with POST
+        ApiResponse apiresponse = todoManager.api().post("todo", new Gson().toJson(requestBody));
+
+        System.out.println(apiresponse.getBody());
+
+        Assert.assertEquals(201, apiresponse.getStatusCode());
+
+        // Check JSON response
+        String officeWorkGuid = simpleJsonValueGet(apiresponse.getBody(), "todo", "guid");
+        Assert.assertEquals(title, simpleJsonValueGet(apiresponse.getBody(), "todo", "title"));
+        Assert.assertEquals("", simpleJsonValueGet(apiresponse.getBody(), "todo", "description"));
+        Assert.assertEquals("FALSE", simpleJsonValueGet(apiresponse.getBody(), "todo", "doneStatus"));
+
+        // Check header for GUID
+        String headerLocation = apiresponse.getHeaderValue("Location");
+        String headerGUID = apiresponse.getHeaderValue(ApiResponse.GUID_HEADER);
+
+        Assert.assertEquals(headerGUID, officeWorkGuid);
+        Assert.assertEquals("todo/"+officeWorkGuid, headerLocation);
+
+        // check that it is created in the model
+
+        ThingInstance createdProject = todo.findInstanceByGUID(headerGUID);
+
+        Assert.assertEquals(headerGUID, createdProject.getGUID());
+        Assert.assertEquals(title, createdProject.getValue("title"));
+        Assert.assertEquals("", createdProject.getValue("description"));
+        Assert.assertEquals("FALSE", createdProject.getValue("doneStatus"));
+
+    }
+
 
     @Test
-    public void postAmendAnExistingEntity(){
+    public void postCanAmendAnExistingEntity(){
 
-        ThingInstance relTodo = todoManager.getThingNamed("todo").createInstance().setValue("title", "Todo for amending");
+        ThingInstance relTodo = todo.createInstance().setValue("title", "Todo for amending");
         todo.addInstance(relTodo);
 
 
@@ -199,58 +244,28 @@ public class TodoManagerApiUsage_Non_HTTP_Test {
     }
 
     @Test
-    public void NonHttpApiBasedTests() {
+    public void postFailCannotCreateProjectWithGuidInUrl() {
 
-        // simulate a POST request
+        int currentProjects = project.countInstances();
 
-        // POST project
         Map requestBody = new HashMap<String, String>();
         requestBody.put("title", "My Office Work");
 
-        ApiResponse apiresponse;
-
-//        new Gson().toJson(requestBody);
-//
-//        // create a project with POST
-//        ApiResponse apiresponse = todoManager.api().post("project", new Gson().toJson(requestBody));
-//        Assert.assertEquals(201, apiresponse.getStatusCode());
-//        String officeWorkProjectGuid = simpleJsonValueGet(apiresponse.getBody(), "project", "guid");
-//
-//        ThingInstance officeWork = todoManager.findThingInstanceByGuid(officeWorkProjectGuid);
-//
-//        // amend existing project with POST
-//        apiresponse = todoManager.api().post(String.format("project/%s", officeWorkProjectGuid), new Gson().toJson(requestBody));
-//        Assert.assertEquals(200, apiresponse.getStatusCode());
-//        Assert.assertEquals("My Office Work", officeWork.getValue("title"));
-//
-//        officeWork.setValue("title", "office");
-//        Assert.assertEquals("office", officeWork.getValue("title"));
-
-        // cannot create a new project with a GUID using POST - it will be treated like an amendment without a thing
         String guid = UUID.randomUUID().toString();
-        int currentProjects = todoManager.getThingNamed("project").countInstances();
-        apiresponse = todoManager.api().post(String.format("project/%s", guid), new Gson().toJson(requestBody));
+
+        ApiResponse apiresponse = todoManager.api().post(String.format("project/%s", guid), new Gson().toJson(requestBody));
         Assert.assertEquals(404, apiresponse.getStatusCode());
 
-        Assert.assertEquals(currentProjects, todoManager.getThingNamed("project").countInstances());
+        Assert.assertEquals(currentProjects, project.countInstances());
 
-        // CREATE PROJECT WITH POST AND NO GUID
-        requestBody = new HashMap<String, String>();
-        requestBody.put("title", "MY NEW PROJECT");
+    }
 
-        currentProjects = todoManager.getThingNamed("project").countInstances();
-        apiresponse = todoManager.api().post(String.format("project"), new Gson().toJson(requestBody));
-        Assert.assertEquals(201, apiresponse.getStatusCode());
 
-        JsonObject projectjson = new JsonParser().parse(apiresponse.getBody()).getAsJsonObject();
-        String projectGUID = projectjson.get("project").getAsJsonObject().get("guid").getAsString();
+    @Test
+    public void putCanAmendExistingProject() {
 
-        ThingInstance myNewProject = todoManager.getThingNamed("project").findInstanceByField(FieldValue.is("guid", projectGUID));
-        Assert.assertEquals("MY NEW PROJECT", myNewProject.getValue("title"));
-
-        //Assert.assertEquals("My Office Work", officeWork.getValue("title"));
-
-        Assert.assertEquals(currentProjects + 1, todoManager.getThingNamed("project").countInstances());
+        Map requestBody;
+        ApiResponse apiresponse;
 
 
         // PUT
@@ -258,7 +273,7 @@ public class TodoManagerApiUsage_Non_HTTP_Test {
         requestBody = new HashMap<String, String>();
         requestBody.put("title", "My Office Work");
 
-        ThingInstance officeWork = todoManager.getThingNamed("project").createInstance().setValue("title", "Todo for amending");
+        ThingInstance officeWork = project.createInstance().setValue("title", "An Existing Project");
         project.addInstance(officeWork);
 
         String officeWorkGuid = officeWork.getGUID();
@@ -272,42 +287,89 @@ public class TodoManagerApiUsage_Non_HTTP_Test {
         officeWork.setValue("title", "office");
         Assert.assertEquals("office", officeWork.getValue("title"));
         Assert.assertNotNull(officeWorkGuid);
+    }
+
+    @Test
+    public void putCanCreateAnEntityInstanceWithAGivenGUID() {
+
+        Map requestBody;
+        ApiResponse apiresponse;
+
+
+        // PUT
+
+        requestBody = new HashMap<String, String>();
+        String title = "My Office Work " + System.currentTimeMillis();
+        requestBody.put("title", title);
+
+
+        int currentProjects = project.countInstances();
+        Assert.assertEquals(0, currentProjects);
 
         // create with a PUT and a given GUID
-        guid = UUID.randomUUID().toString();
-        currentProjects = todoManager.getThingNamed("project").countInstances();
+        String guid = UUID.randomUUID().toString();
+
+
         apiresponse = todoManager.api().put(String.format("project/%s", guid), new Gson().toJson(requestBody));
         Assert.assertEquals(201, apiresponse.getStatusCode());
 
-        Assert.assertEquals(currentProjects + 1, todoManager.getThingNamed("project").countInstances());
-        Assert.assertEquals("office", officeWork.getValue("title"));
-        Assert.assertEquals(officeWorkGuid, officeWork.getGUID());
-        ThingInstance newProject = todoManager.getThingNamed("project").findInstanceByField(FieldValue.is("guid", guid));
+        Assert.assertEquals(guid, apiresponse.getHeaderValue(ApiResponse.GUID_HEADER));
+        Assert.assertTrue(apiresponse.getHeaderValue("Location").endsWith(guid));
 
-        Assert.assertEquals("My Office Work", newProject.getValue("title"));
+        Assert.assertEquals(currentProjects + 1, project.countInstances());
+
+
+        ThingInstance newProject = project.findInstanceByField(FieldValue.is("guid", guid));
+
+        Assert.assertEquals(title, newProject.getValue("title"));
         Assert.assertEquals(guid, newProject.getValue("guid"));
+    }
 
 
-        // DELETE
-        apiresponse = todoManager.api().delete(String.format("project/%s", officeWork.getGUID()));
+
+    @Test
+    public void deleteCanDeleteARelationship(){
+
+        ApiResponse apiresponse;
+
+
+        ThingInstance paperwork = todo.createInstance().setValue("title", "Todo for amending");
+        todo.addInstance(paperwork);
+
+        ThingInstance myNewProject = project.createInstance().setValue("title", "My New Project " + System.currentTimeMillis());
+        project.addInstance(myNewProject);
+
+        myNewProject.connects("tasks", paperwork);
+
+        // DELETE a Relationship
+        // DELETE project/_GUID_/tasks/_GUID_
+        int numberOfTasks = myNewProject.connectedItems("tasks").size();
+        Assert.assertEquals(1, numberOfTasks);
+
+        apiresponse = todoManager.api().delete(String.format("project/%s/tasks/%s", myNewProject.getGUID(), paperwork.getGUID()));
         Assert.assertEquals(200, apiresponse.getStatusCode());
 
-        Assert.assertEquals(currentProjects, todoManager.getThingNamed("project").countInstances());
+        Assert.assertEquals(numberOfTasks - 1, myNewProject.connectedItems("tasks").size());
+        Assert.assertNotNull("Task should exist, only the relationship should be deleted",
+                todo.findInstanceByField(FieldValue.is("guid", paperwork.getGUID())));
 
-        apiresponse = todoManager.api().delete(String.format("project/%s", officeWork.getGUID()));
-        Assert.assertEquals(404, apiresponse.getStatusCode());
+
+        System.out.println(todoManager);
+
+    }
+
+    @Test
+    public void postCanCreateARelationship(){
+        Map requestBody;
+        ApiResponse apiresponse;
 
 
-        // create a todo with POST
+        ThingInstance paperwork = todo.createInstance().setValue("title", "Todo for amending");
+        todo.addInstance(paperwork);
 
-        requestBody = new HashMap<String, String>();
-        requestBody.put("title", "My Paperwork Todo");
+        ThingInstance myNewProject = project.createInstance().setValue("title", "My New Project " + System.currentTimeMillis());
+        project.addInstance(myNewProject);
 
-        apiresponse = todoManager.api().post("todo", new Gson().toJson(requestBody));
-        Assert.assertEquals(201, apiresponse.getStatusCode());
-        String paperworkTodoGuid = simpleJsonValueGet(apiresponse.getBody(), "todo", "guid");
-
-        ThingInstance paperwork = todoManager.findThingInstanceByGuid(paperworkTodoGuid);
 
         // Create a relationship with POST
         // POST project/_GUID_/tasks
@@ -316,10 +378,11 @@ public class TodoManagerApiUsage_Non_HTTP_Test {
 
         // Create a relationship with POST and just a GUID
         //myNewProject
-        requestBody = new HashMap<String, String>();
-        requestBody.put("guid", paperwork.getGUID());
 
         int numberOfTasks = myNewProject.connectedItems("tasks").size();
+
+        requestBody = new HashMap<String, String>();
+        requestBody.put("guid", paperwork.getGUID());
 
         apiresponse = todoManager.api().post(String.format("project/%s/tasks", myNewProject.getGUID()), new Gson().toJson(requestBody));
         System.out.println(apiresponse.getBody());
@@ -327,44 +390,53 @@ public class TodoManagerApiUsage_Non_HTTP_Test {
 
         Assert.assertEquals(numberOfTasks + 1, myNewProject.connectedItems("tasks").size());
 
-        System.out.println(todoManager);
+        // todo should also be connected to project via the associated task-of relationship vector
+        Collection<ThingInstance> projects = paperwork.connectedItems("task-of");
 
+        Assert.assertEquals(1, projects.size());
+        List<ThingInstance> listOfProjects = new ArrayList<ThingInstance>();
+        listOfProjects.addAll(projects);
 
-        // Createa a relationship and a thing with a POST and no GUID
-        // POST project/_GUID_/tasks
-        // {"title":"A new TODO Item related to project"}
-        requestBody = new HashMap<String, String>();
-        requestBody.put("title", "A new TODO Item related to project");
-
-        numberOfTasks = myNewProject.connectedItems("tasks").size();
-
-        apiresponse = todoManager.api().post(String.format("project/%s/tasks", myNewProject.getGUID()), new Gson().toJson(requestBody));
-        Assert.assertEquals(201, apiresponse.getStatusCode());
-
-        // the created todo is in the body
-        JsonObject todojson = new JsonParser().parse(apiresponse.getBody()).getAsJsonObject();
-        String todoGUID = todojson.get("todo").getAsJsonObject().get("guid").getAsString();
-        Assert.assertEquals("A new TODO Item related to project", todoManager.findThingInstanceByGuid(todoGUID).getValue("title"));
-
-        Assert.assertEquals(numberOfTasks + 1, myNewProject.connectedItems("tasks").size());
+        Assert.assertEquals(myNewProject.getGUID(), listOfProjects.get(0).getGUID());
 
         System.out.println(todoManager);
+    }
 
+    @Test
+    public void deleteAnEntityInstanceAPI() {
+        ApiResponse apiresponse;
 
-        // DELETE a Relationship
-        // DELETE project/_GUID_/tasks/_GUID_
-        numberOfTasks = myNewProject.connectedItems("tasks").size();
+        ThingInstance officeWork = project.createInstance().setValue("title", "An Existing Project");
+        project.addInstance(officeWork);
 
-        apiresponse = todoManager.api().delete(String.format("project/%s/tasks/%s", myNewProject.getGUID(), paperwork.getGUID()));
+        Assert.assertEquals(1, project.countInstances());
+
+        apiresponse = todoManager.api().delete(String.format("project/%s", officeWork.getGUID()));
         Assert.assertEquals(200, apiresponse.getStatusCode());
 
-        Assert.assertEquals(numberOfTasks - 1, myNewProject.connectedItems("tasks").size());
-        Assert.assertNotNull("Task should exist, only the relationship should be deleted",
-                todoManager.getThingNamed("todo").findInstanceByField(FieldValue.is("guid", paperwork.getGUID())));
+        Assert.assertEquals(0, project.countInstances());
+
+        apiresponse = todoManager.api().delete(String.format("project/%s", officeWork.getGUID()));
+        Assert.assertEquals(404, apiresponse.getStatusCode());
+
+    }
 
 
-        System.out.println(todoManager);
+    @Test
+    public void deleteFailToDeleteAGUIDThatDoesNotExistAsAnEntityInstance() {
 
+        ApiResponse apiresponse;
+
+        apiresponse = todoManager.api().delete(String.format("project/%s", UUID.randomUUID().toString()));
+        Assert.assertEquals(404, apiresponse.getStatusCode());
+
+    }
+
+    @Test
+    public void postFailValidationEntityInstanceAPI() {
+
+        Map requestBody;
+        ApiResponse apiresponse;
 
         // Mandatory field validation on POST create - must have a title
         requestBody = new HashMap<String, String>();
@@ -374,25 +446,6 @@ public class TodoManagerApiUsage_Non_HTTP_Test {
         apiresponse = todoManager.api().post(String.format("todo"), new Gson().toJson(requestBody));
         System.out.println(apiresponse.getBody());
         Assert.assertEquals(400, apiresponse.getStatusCode());
-
-        // Mandatory field validation PUT create
-        requestBody = new HashMap<String, String>();
-        //requestBody.put("title", "A new TODO Item");
-        requestBody.put("description", "A new TODO Item");
-        requestBody.put("doneStatus", "TRUE");
-        apiresponse = todoManager.api().put(String.format("todo/%s", UUID.randomUUID().toString()), new Gson().toJson(requestBody));
-        System.out.println(apiresponse.getBody());
-        Assert.assertEquals(400, apiresponse.getStatusCode());
-
-        // Mandatory field validation PUT amend
-        requestBody = new HashMap<String, String>();
-        //requestBody.put("title", "A new TODO Item");
-        requestBody.put("description", "Amended TODO Item ");
-        requestBody.put("doneStatus", "TRUE");
-        apiresponse = todoManager.api().put(String.format("todo/%s", paperwork.getGUID()), new Gson().toJson(requestBody));
-        System.out.println(apiresponse.getBody());
-        Assert.assertEquals(400, apiresponse.getStatusCode());
-
 
         // Field validation on boolean for Create with POST
         requestBody = new HashMap<String, String>();
@@ -408,7 +461,45 @@ public class TodoManagerApiUsage_Non_HTTP_Test {
         requestBody.put("title", "A new TODO Item");
         requestBody.put("doneStatus", "FALSEY");
 
+        ThingInstance paperwork = todo.createInstance().setValue("title", "Todo for amending");
+        todo.addInstance(paperwork);
+
         apiresponse = todoManager.api().post(String.format("todo/%s", paperwork.getGUID()), new Gson().toJson(requestBody));
+        System.out.println(apiresponse.getBody());
+        Assert.assertEquals(400, apiresponse.getStatusCode());
+
+    }
+
+    @Test
+    public void putFailValidationEntityInstanceAPI() {
+
+        Map requestBody;
+        ApiResponse apiresponse;
+
+        // Mandatory field validation on POST create - must have a title
+        requestBody = new HashMap<String, String>();
+        //requestBody.put("title", "A new TODO Item");
+        requestBody.put("description", "A new TODO Item");
+
+        // Mandatory field validation PUT create
+        requestBody = new HashMap<String, String>();
+        //requestBody.put("title", "A new TODO Item");
+        requestBody.put("description", "A new TODO Item");
+        requestBody.put("doneStatus", "TRUE");
+        apiresponse = todoManager.api().put(String.format("todo/%s", UUID.randomUUID().toString()), new Gson().toJson(requestBody));
+        System.out.println(apiresponse.getBody());
+        Assert.assertEquals(400, apiresponse.getStatusCode());
+
+
+        ThingInstance paperwork = todo.createInstance().setValue("title", "Todo for amending");
+        todo.addInstance(paperwork);
+
+        // Mandatory field validation PUT amend
+        requestBody = new HashMap<String, String>();
+        //requestBody.put("title", "A new TODO Item");
+        requestBody.put("description", "Amended TODO Item ");
+        requestBody.put("doneStatus", "TRUE");
+        apiresponse = todoManager.api().put(String.format("todo/%s", paperwork.getGUID()), new Gson().toJson(requestBody));
         System.out.println(apiresponse.getBody());
         Assert.assertEquals(400, apiresponse.getStatusCode());
 
@@ -422,18 +513,17 @@ public class TodoManagerApiUsage_Non_HTTP_Test {
         System.out.println(apiresponse.getBody());
         Assert.assertEquals(400, apiresponse.getStatusCode());
 
-
     }
 
 
     @Test
-    public void postCreateARelationshipUsingAPI() {
+    public void postCanCreateARelationshipUsingAPI() {
 
 
-        ThingInstance myNewProject = todoManager.getThingNamed("project").createInstance().setValue("title", "Project For Relationships");
+        ThingInstance myNewProject = project.createInstance().setValue("title", "Project For Relationships");
         project.addInstance(myNewProject);
 
-        ThingInstance relTodo = todoManager.getThingNamed("todo").createInstance().setValue("title", "Todo for relationship testing");
+        ThingInstance relTodo = todo.createInstance().setValue("title", "Todo for relationship testing");
         todo.addInstance(relTodo);
 
         // Create a relationship with POST
@@ -458,13 +548,13 @@ public class TodoManagerApiUsage_Non_HTTP_Test {
     }
 
     @Test
-    public void postCreateARelationshipUsingReversalRelationshipAPI() {
+    public void postCanCreateARelationshipUsingReversalRelationshipAPI() {
 
 
-        ThingInstance myNewProject = todoManager.getThingNamed("project").createInstance().setValue("title", "Project For Relationships " + System.currentTimeMillis());
+        ThingInstance myNewProject = project.createInstance().setValue("title", "Project For Relationships " + System.currentTimeMillis());
         project.addInstance(myNewProject);
 
-        ThingInstance relTodo = todoManager.getThingNamed("todo").createInstance().setValue("title", "Todo for relationship testing " + System.currentTimeMillis());
+        ThingInstance relTodo = todo.createInstance().setValue("title", "Todo for relationship testing " + System.currentTimeMillis());
         todo.addInstance(relTodo);
 
         // Create a relationship with POST
@@ -505,10 +595,10 @@ public class TodoManagerApiUsage_Non_HTTP_Test {
     public void deleteARelationshipUsingReversalRelationshipAPI() {
 
 
-        ThingInstance myNewProject = todoManager.getThingNamed("project").createInstance().setValue("title", "Project For Relationships " + System.currentTimeMillis());
+        ThingInstance myNewProject = project.createInstance().setValue("title", "Project For Relationships " + System.currentTimeMillis());
         project.addInstance(myNewProject);
 
-        ThingInstance relTodo = todoManager.getThingNamed("todo").createInstance().setValue("title", "Todo for relationship testing " + System.currentTimeMillis());
+        ThingInstance relTodo = todo.createInstance().setValue("title", "Todo for relationship testing " + System.currentTimeMillis());
         todo.addInstance(relTodo);
 
         // Create a relationship with POST
@@ -556,10 +646,10 @@ public class TodoManagerApiUsage_Non_HTTP_Test {
     public void deleteAThingInAReversalRelationship() {
 
 
-        ThingInstance myNewProject = todoManager.getThingNamed("project").createInstance().setValue("title", "Project For Relationships " + System.currentTimeMillis());
+        ThingInstance myNewProject = project.createInstance().setValue("title", "Project For Relationships " + System.currentTimeMillis());
         project.addInstance(myNewProject);
 
-        ThingInstance relTodo = todoManager.getThingNamed("todo").createInstance().setValue("title", "Todo for relationship testing " + System.currentTimeMillis());
+        ThingInstance relTodo = todo.createInstance().setValue("title", "Todo for relationship testing " + System.currentTimeMillis());
         todo.addInstance(relTodo);
 
         // Create a relationship with POST
@@ -604,56 +694,12 @@ public class TodoManagerApiUsage_Non_HTTP_Test {
 
     }
 
-    // TODO: Create a thing and relate through a reverse relationship e.g. POST todo/GUID/task-of
 
     @Test
-    public void postCreateAReverseRelationshipAndProjectAtSameTimeUsingAPI() {
+    public void postCanCreateARelationshipAndTodoAtSameTimeUsingAPI() {
 
 
-        ThingInstance relTodo = todoManager.getThingNamed("todo").createInstance().setValue("title", "Todo for relationship testing " + System.currentTimeMillis());
-        todo.addInstance(relTodo);
-
-
-        // Createa a relationship and a thing with a POST and no GUID
-        // POST project/_GUID_/tasks
-        // {"title":"A new TODO Item related to project"}
-        HashMap<String, String> requestBody = new HashMap<String, String>();
-        String expectedTitle = "A new project related to the task " + System.currentTimeMillis();
-
-        requestBody.put("title", expectedTitle);
-
-
-        int numberOfProjects = relTodo.connectedItems("task-of").size();
-        Assert.assertEquals(0, numberOfProjects);
-
-        // TODO: currently not creating reverse relationships
-        // Create it
-        ApiResponse apiresponse = todoManager.api().post(String.format("todo/%s/task-of", relTodo.getGUID()), new Gson().toJson(requestBody));
-        System.out.println(apiresponse.getBody());
-        Assert.assertEquals(201, apiresponse.getStatusCode());
-
-        Assert.assertEquals(1, relTodo.connectedItems("task-of").size());
-
-        ThingInstance myNewProject = project.findInstanceByGUID(apiresponse.getHeaderValue(ApiResponse.GUID_HEADER));
-        Assert.assertNotNull(myNewProject);
-
-
-        // project should be related to task
-        Collection<ThingInstance> items = myNewProject.connectedItems("tasks");
-        Assert.assertEquals(1, items.size());
-
-        // todo should be related to project
-        items = relTodo.connectedItems("task-of");
-        Assert.assertEquals(1, items.size());
-
-
-    }
-
-    @Test
-    public void postCreateARelationshipAndTodoAtSameTimeUsingAPI() {
-
-
-        ThingInstance myNewProject = todoManager.getThingNamed("project").createInstance().setValue("title", "Project For Relationships");
+        ThingInstance myNewProject = project.createInstance().setValue("title", "Project For Relationships");
         project.addInstance(myNewProject);
 
 
@@ -693,6 +739,52 @@ public class TodoManagerApiUsage_Non_HTTP_Test {
 
 
     }
+
+    @Test
+    public void postCanCreateAReverseRelationshipAndProjectAtSameTimeUsingAPI() {
+
+        // Create a thing and relate through a reverse relationship e.g. POST todo/GUID/task-of
+
+        ThingInstance relTodo = todo.createInstance().setValue("title", "Todo for relationship testing " + System.currentTimeMillis());
+        todo.addInstance(relTodo);
+
+
+        // Createa a relationship and a thing with a POST and no GUID
+        // POST project/_GUID_/tasks
+        // {"title":"A new TODO Item related to project"}
+        HashMap<String, String> requestBody = new HashMap<String, String>();
+        String expectedTitle = "A new project related to the task " + System.currentTimeMillis();
+
+        requestBody.put("title", expectedTitle);
+
+
+        int numberOfProjects = relTodo.connectedItems("task-of").size();
+        Assert.assertEquals(0, numberOfProjects);
+
+        // TODO: currently not creating reverse relationships
+        // Create it
+        ApiResponse apiresponse = todoManager.api().post(String.format("todo/%s/task-of", relTodo.getGUID()), new Gson().toJson(requestBody));
+        System.out.println(apiresponse.getBody());
+        Assert.assertEquals(201, apiresponse.getStatusCode());
+
+        Assert.assertEquals(1, relTodo.connectedItems("task-of").size());
+
+        ThingInstance myNewProject = project.findInstanceByGUID(apiresponse.getHeaderValue(ApiResponse.GUID_HEADER));
+        Assert.assertNotNull(myNewProject);
+
+
+        // project should be related to task
+        Collection<ThingInstance> items = myNewProject.connectedItems("tasks");
+        Assert.assertEquals(1, items.size());
+
+        // todo should be related to project
+        items = relTodo.connectedItems("task-of");
+        Assert.assertEquals(1, items.size());
+
+
+    }
+
+
 
     private String simpleJsonValueGet(String body, String... terms) {
 

@@ -40,10 +40,17 @@ public class ThingInstance {
         if(relationships.size()>0) {
             output.append(String.format("\t\t\t\t\t Relationships:\n"));
             for (RelationshipInstance relatesTo : relationships) {
-                output.append(String.format("\t\t\t\t\t %s : %s (%s)%n",
-                        relatesTo.getRelationship().getName(),
-                        relatesTo.getTo().getGUID(),
-                        relatesTo.getTo().getEntity().getName()));
+                if(relatesTo.getFrom() == this) {
+                    output.append(String.format("\t\t\t\t\t %s : %s (%s)%n",
+                            relatesTo.getRelationship().getName(),
+                            relatesTo.getTo().getGUID(),
+                            relatesTo.getTo().getEntity().getName()));
+                }else{
+                    output.append(String.format("\t\t\t\t\t %s : %s (%s)%n",
+                            relatesTo.getRelationship().getReversedRelationship().getName(),
+                            relatesTo.getFrom().getGUID(),
+                            relatesTo.getFrom().getEntity().getName()));
+                }
             }
         }
 
