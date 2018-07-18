@@ -48,7 +48,11 @@ public class RelationshipApiNonHttpTest {
 
 
 
+/* TODO: additional relationship test methods required to create visible condition coverage via method names
 
+    - GET instances in a relationship
+    - Delete a thing in a relationship (non reversed)
+ */
 
 
 
