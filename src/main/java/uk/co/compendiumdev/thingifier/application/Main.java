@@ -45,6 +45,8 @@ public class Main {
 
         Spark.port(proxyport);
 
+        // todo : add shutdown behind an admin authentication with basic auth and a custom secret code header
+        // todo : add some other admin endpoints e.g. show version details of the app etc.
         // TODO: add a shutdown verb as configurable through arguments e.g. -shutdownable=false
         get("/shutdown", (request, result) -> {System.exit(0); return "";});
 

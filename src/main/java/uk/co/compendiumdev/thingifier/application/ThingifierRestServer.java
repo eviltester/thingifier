@@ -19,6 +19,10 @@ public class ThingifierRestServer {
         return path;
     }
 
+    // todo : we should be able to configure the API routing for authorisation and support logging
+
+
+
     public ThingifierRestServer(String[] args, String path, Thingifier thingifier) {
 
 
