@@ -163,6 +163,7 @@ public class BasicTodoManagerTest {
         try{
             todos.deleteInstance(foundit.getGUID());
             Assert.fail("Item already deleted, exception should have been thrown");
+
         }catch(Exception e){
 
         }
