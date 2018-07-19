@@ -1,70 +1,131 @@
 package uk.co.compendiumdev.thingifier.reporting;
 
+import uk.co.compendiumdev.thingifier.Thing;
+import uk.co.compendiumdev.thingifier.generic.definitions.ThingDefinition;
 import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
 
 import java.util.*;
 
 public class JsonThing {
 
-    // TODO can this be replaced with Gson directly?
+    public static String asJsonObjectWithWrapperObject(ThingInstance thingInstance) {
 
-    public static String asJson(ThingInstance thingInstance) {
+        if(thingInstance==null){
+            return "{}";
+        }
+
+        return asJsonObjectWithNamedWrapperObject(thingInstance, thingInstance.getEntity().getName());
+    }
+
+    public static String asJsonObjectWithNamedWrapperObject(ThingInstance thingInstance, String name) {
+
+        if(thingInstance==null){
+            return "{}";
+        }
 
         StringBuilder json = new StringBuilder();
 
-        json.append(String.format("{ \"%s\" : { %s }}",
-                                    thingInstance.getEntity().getName(),
-                                    getFieldsAsJson(thingInstance)));
+        json.append(String.format("{ \"%s\" : %s }",
+                name,
+                asJson(thingInstance)));
 
         return json.toString();
     }
 
+    public static String jsonObjectWrapper(String objectName, String json){
+
+        return String.format("{ \"%s\" : %s }",
+                objectName,
+                json);
+
+    }
+
+
+
+    // TODO this seems like overkill - will we ever return multiple types of things?
     public static String asJson(List<ThingInstance> things) {
+
+        if(things==null || things.size()==0){
+            return "{}";
+        }
+
         Map<String, Set<ThingInstance>> sets = new HashMap<>();
 
-        // collate
+        // collate the names of the things
         for(ThingInstance thing : things){
-            Set<ThingInstance> setOf = sets.get(thing.getEntity().getName());
+            String nameOfThings = thing.getEntity().getPlural();
+            Set<ThingInstance> setOf = sets.get(nameOfThings);
             if(setOf==null){
                 setOf = new HashSet<>();
-                sets.put(thing.getEntity().getName(), setOf);
+                sets.put(nameOfThings, setOf);
             }
             setOf.add(thing);
         }
 
+
+        // if there are multiple sets then
+
+        // {things : [  {things1 : []} , {things2 : []} ]
+        // if there is a single set then
+        // {things1 : []}
+
         StringBuilder json = new StringBuilder();
 
-        json.append("{");
         // output
         String prepend = "";
-        boolean firstInSet = true;
 
-        for(Set<ThingInstance> set : sets.values()){
-
-            firstInSet = true;
-
-            String arrayPrepend = "";
-
-            for(ThingInstance thing : set){
-
-                if(firstInSet){
-                    json.append(String.format("%s \"%s\" : [", prepend, thing.getEntity().getPlural()));
-                    prepend=", ";
-                    firstInSet=false;
-                }
-
-                json.append(String.format("%s {%s}", arrayPrepend, getFieldsAsJson(thing)));
-                arrayPrepend = ", ";
-            }
-
-            json.append("]");
-
-
+        if(sets.size()>1){
+            json.append("{\"things\" : [ ");
         }
-        json.append("}");
+
+        for(String typeName : sets.keySet()){
+
+            json.append(prepend);
+            json.append(jsonObjectWrapper(typeName, asJsonArray(sets.get(typeName))));
+            prepend = ", ";
+        }
+
+        if(sets.size()>1){
+            json.append("]}");
+        }
+
+
 
         return json.toString();
     }
+
+    public static String asJsonArray(Collection<ThingInstance> things) {
+
+        StringBuilder json = new StringBuilder();
+
+        json.append("[");
+
+        String arrayPrepend = "";
+        for(ThingInstance thing : things){
+
+            json.append(String.format("%s %s", arrayPrepend, asJson(thing)));
+            arrayPrepend = ", ";
+        }
+
+        json.append("]");
+
+        return json.toString();
+    }
+
+    public static String asJson(ThingInstance thingInstance) {
+
+        if(thingInstance==null){
+            return "{}";
+        }
+
+        StringBuilder json = new StringBuilder();
+
+        json.append(String.format("{ %s }",
+                getFieldsAsJson(thingInstance)));
+
+        return json.toString();
+    }
+
 
     private static String getFieldsAsJson(ThingInstance thing) {
         StringBuilder json = new StringBuilder();

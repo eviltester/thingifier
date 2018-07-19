@@ -61,10 +61,15 @@ public class ApiResponse {
         if(isErrorResponse){
             return getErrorMessageJson(errorMessages);
         }
+        // we always return an object
+        // collections are named with their plural
         if(isCollection){
+            System.out.println(JsonThing.asJson(thingsToReturn));
             return JsonThing.asJson(thingsToReturn);
         }else{
-            return JsonThing.asJson(thingsToReturn.get(0));
+            ThingInstance instance = thingsToReturn.get(0);
+            System.out.println(JsonThing.asJson(instance));
+            return JsonThing.jsonObjectWrapper(instance.getEntity().getName(), JsonThing.asJson(thingsToReturn.get(0)));
         }
     }
 
@@ -128,7 +133,7 @@ public class ApiResponse {
     }
 
     public static String getErrorMessageJson(Collection<String> myErrorMessages) {
-        Map errorResponseBody = new HashMap<String,String>();
+        Map errorResponseBody = new HashMap<String,Collection<String>>();
         errorResponseBody.put("errorMessages", myErrorMessages);
         return new Gson().toJson(errorResponseBody);
 
