@@ -32,7 +32,7 @@ public class ThingifierRestServer {
         // when we want {"title":"My posted todo on the project"}
         // this is just a quick hack to amend it to support XML
         // TODO: try to change this in the future to make it more robust, perhaps the API shouldn't take a String as the body, it should take a parsed class?
-
+        // TODO: BUG - since we remove the wrapper we might send in a POST <project><title>My posted todo on the project</title></project> to /todo and it will work fine if the fields are the same
         if(request.headers("Content-Type")!=null && request.headers("Content-Type").endsWith("/xml")) {
 
             // PROTOTYPE XML Conversion
