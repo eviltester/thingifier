@@ -40,7 +40,7 @@ public class ThingifierRestServer {
                 System.out.println(e);
             }
 
-            if(request.headers("Content-Type").endsWith("/xml")){
+            if(request.headers("Content-Type")!=null && request.headers("Content-Type").endsWith("/xml")){
                 response.type(request.headers("Accept"));
                 halt(406, ApiResponseError.asAppropriate(request.headers("Accept"), "Only Content-Type application/json supported"));
             }

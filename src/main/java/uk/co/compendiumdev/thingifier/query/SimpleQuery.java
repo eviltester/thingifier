@@ -2,8 +2,8 @@ package uk.co.compendiumdev.thingifier.query;
 
 import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.generic.definitions.RelationshipDefinition;
 import uk.co.compendiumdev.thingifier.generic.definitions.RelationshipVector;
+import uk.co.compendiumdev.thingifier.generic.definitions.ThingDefinition;
 import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
 
 import java.util.ArrayList;
@@ -35,6 +35,7 @@ public class SimpleQuery{
 
     // TODO: this should be an object with FoundItem objects which have getAsRelationshipDefinition etc.
     List<Object> foundItemsHistoryList = new ArrayList<>();
+    private ThingDefinition resultContainsDefinition;
 
     public SimpleQuery(Thingifier thingifier, String query) {
         this.thingifier = thingifier;
@@ -59,6 +60,7 @@ public class SimpleQuery{
                 if(currentThing==null && foundItems.size()==0) {
                     // first thing - find it
                     currentThing = thingifier.getThingNamed(term);
+                    resultContainsDefinition = currentThing.definition();
                     foundItemsHistoryList.add(currentThing);
                     parentThing=currentThing;
                     currentInstance=null;
@@ -68,6 +70,11 @@ public class SimpleQuery{
                 }else{
                     // related to another type of thing
                     foundItemsHistoryList.add(thingifier.getThingNamed(term));
+
+
+                    if(foundItems!=null & foundItems.size()>0) {
+                        resultContainsDefinition = foundItems.get(0).typeOfConnectedItems(term);
+                    }
 
                     List<ThingInstance> newitems = new ArrayList<ThingInstance>();
                     for(ThingInstance instance : foundItems){
@@ -93,6 +100,11 @@ public class SimpleQuery{
                 lastRelationshipFound = lastRelationshipsFound.get(0);
 
                 foundItemsHistoryList.add(lastRelationshipFound);
+
+
+                if(foundItems!=null & foundItems.size()>0) {
+                    resultContainsDefinition = foundItems.get(0).typeOfConnectedItems(term);
+                }
 
                 List<ThingInstance> newitems = new ArrayList<ThingInstance>();
                 for(ThingInstance instance : foundItems){
@@ -193,5 +205,9 @@ public class SimpleQuery{
 
     public boolean lastMatchWasNothing() {
         return lastMatch == NOTHING;
+    }
+
+    public ThingDefinition resultContainsDefn() {
+        return resultContainsDefinition;
     }
 }

@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import org.json.JSONObject;
 import org.json.XML;
 import uk.co.compendiumdev.thingifier.api.ApiResponse;
+import uk.co.compendiumdev.thingifier.generic.definitions.ThingDefinition;
 import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
 import uk.co.compendiumdev.thingifier.reporting.JsonThing;
 
@@ -24,8 +25,19 @@ public class ApiResponseAsXml {
         // collections are named with their plural
         if(apiResponse.isCollection()){
 
-            // TODO: BUG - when an XML response is asked for, but the collection is empty then we don't know what to return and {} is returned - ApiResponse should know the Thing that is in the collection
+
             List<ThingInstance> thingsToReturn = apiResponse.getReturnedInstanceCollection();
+
+            if(thingsToReturn.size()==0){
+                // when an XML response is asked for, but the collection is empty then we don't know what to return and {}
+                // would be returned but- ApiResponse should know the Thing that is in the collection
+                ThingDefinition defn = apiResponse.getTypeOfThingReturned();
+                if(defn!=null){
+                    return String.format("<%1$s></%1$s>", defn.getPlural());
+                }
+
+            }
+
             String output = JsonThing.asJson(thingsToReturn);
 
             // xml output via JSON
@@ -49,8 +61,6 @@ public class ApiResponseAsXml {
         }else{
             ThingInstance instance = apiResponse.getReturnedInstance();
             String output = JsonThing.jsonObjectWrapper(instance.getEntity().getName(), JsonThing.asJson(instance));
-
-
 
             // experimental xml output
             try {

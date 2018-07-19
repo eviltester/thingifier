@@ -1,5 +1,6 @@
 package uk.co.compendiumdev.thingifier.api;
 
+import uk.co.compendiumdev.thingifier.generic.definitions.ThingDefinition;
 import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
 
 import java.util.*;
@@ -18,6 +19,7 @@ public class ApiResponse {
     private Collection<String> errorMessages;
 
     private Map<String, String> headers;
+    private ThingDefinition typeOfResults;
 
 
     public ApiResponse(int statusCode) {
@@ -154,5 +156,16 @@ public class ApiResponse {
 
     public boolean isCollection() {
         return isCollection;
+    }
+
+    public ApiResponse resultContainsType(ThingDefinition thingDefinition) {
+        if(thingDefinition!=null){
+            this.typeOfResults = thingDefinition;
+        }
+        return this;
+    }
+
+    public ThingDefinition getTypeOfThingReturned() {
+        return typeOfResults;
     }
 }

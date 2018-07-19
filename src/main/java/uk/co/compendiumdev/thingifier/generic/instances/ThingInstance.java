@@ -152,6 +152,21 @@ public class ThingInstance {
         }
     }
 
+    public ThingDefinition typeOfConnectedItems(String relationshipName) {
+
+        for(RelationshipVector relationship : entityDefinition.getRelationships()){
+            if(relationship.getRelationshipDefinition().isKnownAs(relationshipName)){
+                if(relationship.getTo().definition()== this.entityDefinition){
+                    return relationship.getFrom().definition();
+                }else{
+                    return relationship.getTo().definition();
+                }
+            }
+        }
+
+        return null;
+    }
+
     public Collection<ThingInstance> connectedItems(String relationshipName) {
         Set<ThingInstance> theConnectedItems = new HashSet<ThingInstance>();
         for(RelationshipInstance relationship : relationships){

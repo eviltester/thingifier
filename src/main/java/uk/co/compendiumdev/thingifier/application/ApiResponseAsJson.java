@@ -28,42 +28,12 @@ public class ApiResponseAsJson {
         if(apiResponse.isCollection()){
 
             String output = JsonThing.asJson(apiResponse.getReturnedInstanceCollection());
-            System.out.println(output);
-
-            // experimental xml output
-//            try {
-//                if(thingsToReturn.size()>0) {
-//                    String parseForXMLOutput = JsonThing.jsonObjectWrapper(
-//                            thingsToReturn.get(0).getEntity().getPlural(),
-//                            JsonThing.asJsonArrayInstanceWrapped(thingsToReturn,
-//                                    thingsToReturn.get(0).getEntity().getName()));
-//                    System.out.println(parseForXMLOutput);
-//                    System.out.println(XML.toString(new JSONObject(parseForXMLOutput)));
-//                }
-//            }catch (Exception e){
-//                System.out.println(e);
-//            }
-
 
             return output;
+
         }else{
             ThingInstance instance = apiResponse.getReturnedInstance();
             String output = JsonThing.jsonObjectWrapper(instance.getEntity().getName(), JsonThing.asJson(instance));
-
-            System.out.println(output);
-
-//            // experimental xml output
-//            try {
-//                if(thingsToReturn.size()>0) {
-//                    String parseForXMLOutput = output;
-//                    System.out.println(parseForXMLOutput);
-//                    System.out.println(XML.toString(new JSONObject(parseForXMLOutput)));
-//                }
-//            }catch (Exception e){
-//                System.out.println(e);
-//            }
-
-
 
             return output;
         }
