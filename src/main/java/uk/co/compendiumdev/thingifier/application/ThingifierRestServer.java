@@ -22,28 +22,7 @@ public class ThingifierRestServer {
     }
 
     // todo : we should be able to configure the API routing for authorisation and support logging
-
-
-    /*
-    TODO: need to tidy up the return objects
-     - use single except for xml where <projects><project><guid>...
-     - for single instance return {... details ...} but xml <todo> .... details ... </todo>
-
-    { "todos" : [ { "doneStatus" : "FALSE",  "guid" : "b1a71c87-fe7b-4595-9131-86230dd55dd4",  "description" : "",  "title" : "file paperwork"},  { "doneStatus" : "FALSE",  "guid" : "9af3f230-db65-449e-accc-075b4244331f",  "description" : "",  "title" : "scan paperwork"}]}
-<todos><doneStatus>FALSE</doneStatus><guid>b1a71c87-fe7b-4595-9131-86230dd55dd4</guid><description/><title>file paperwork</title></todos><todos><doneStatus>FALSE</doneStatus><guid>9af3f230-db65-449e-accc-075b4244331f</guid><description/><title>scan paperwork</title></todos>
-
-org.json.JSONException: A JSONObject text must begin with '{' at 1 [character 2 line 1]
-{ "projects" : [ { "guid" : "93327398-a148-4ca7-9d7c-bdf6d9d80cb4",  "description" : "",  "active" : "TRUE",  "completed" : "FALSE",  "title" : "Office Work"}]}
-<projects><guid>93327398-a148-4ca7-9d7c-bdf6d9d80cb4</guid><description/><active>TRUE</active><completed>FALSE</completed><title>Office Work</title></projects>
-
-org.json.JSONException: A JSONObject text must begin with '{' at 1 [character 2 line 1]
-{ "todos" : [ { "doneStatus" : "FALSE",  "guid" : "b1a71c87-fe7b-4595-9131-86230dd55dd4",  "description" : "",  "title" : "file paperwork"},  { "doneStatus" : "FALSE",  "guid" : "9af3f230-db65-449e-accc-075b4244331f",  "description" : "",  "title" : "scan paperwork"}]}
-<todos><doneStatus>FALSE</doneStatus><guid>b1a71c87-fe7b-4595-9131-86230dd55dd4</guid><description/><title>file paperwork</title></todos><todos><doneStatus>FALSE</doneStatus><guid>9af3f230-db65-449e-accc-075b4244331f</guid><description/><title>scan paperwork</title></todos>
-
-org.json.JSONException: A JSONObject text must begin with '{' at 1 [character 2 line 1]
-{ "projects" : [ { "guid" : "93327398-a148-4ca7-9d7c-bdf6d9d80cb4",  "description" : "",  "active" : "TRUE",  "completed" : "FALSE",  "title" : "Office Work"}]}
-<projects><guid>93327398-a148-4ca7-9d7c-bdf6d9d80cb4</guid><description/><active>TRUE</active><completed>FALSE</completed><title>Office Work</title></projects>
-     */
+    // todo : honour different Content-Type headers at the moment we assume and treat it as application/json
 
 
     public ThingifierRestServer(String[] args, String path, Thingifier thingifier) {
@@ -51,25 +30,31 @@ org.json.JSONException: A JSONObject text must begin with '{' at 1 [character 2 
 
         before((request, response) -> {
 
-
-            // Prototype xml json to see if it works in principle
+            // TODO: wrap this in a --verbose option
             try {
+                System.out.println("**REQUEST**");
+                System.out.println(request.url());
+                System.out.println(request.pathInfo());
                 System.out.println(request.body());
-                new JSONObject(request.body());
-                System.out.println(XML.toString(new JSONObject(request.body())));
             }catch (Exception e){
                 System.out.println(e);
             }
 
-            // force json
-            response.type("application/json");
+            if(request.headers("Content-Type").endsWith("/xml")){
+                response.type(request.headers("Accept"));
+                halt(406, ApiResponseError.asAppropriate(request.headers("Accept"), "Only Content-Type application/json supported"));
+            }
+
+            // TODO: wrap this in a --verbose option
+            System.out.println("**PROCESSING**");
         });
 
         after((request, response) -> {
-            // Prototype xml json to see if it works in principle
+            // TODO: wrap this in a --verbose option
             try {
+                System.out.println("**RESPONSE**");
+                System.out.println(response.status());
                 System.out.println(response.body());
-                System.out.println(XML.toString(new JSONObject(response.body())));
             }catch (Exception e){
                 System.out.println(e);
             }
@@ -97,7 +82,8 @@ org.json.JSONException: A JSONObject text must begin with '{' at 1 [character 2 
                             ApiResponse apiResponse = thingifier.api().get(justThePath(request.pathInfo()));
                             response.status(apiResponse.getStatusCode());
                             addHeaders(apiResponse.getHeaders(),response);
-                            return apiResponse.getBody();
+                            return new HttpApiResponse(request, response, apiResponse).getBody();
+                            //return apiResponse.getBody();
                         });
                     }
                     break;
@@ -107,7 +93,8 @@ org.json.JSONException: A JSONObject text must begin with '{' at 1 [character 2 
                             ApiResponse apiResponse = thingifier.api().post(justThePath(request.pathInfo()), request.body());
                             response.status(apiResponse.getStatusCode());
                             addHeaders(apiResponse.getHeaders(),response);
-                            return apiResponse.getBody();
+                            return new HttpApiResponse(request, response, apiResponse).getBody();
+                            //return apiResponse.getBody();
                         });
                     }
                     break;
@@ -128,7 +115,9 @@ org.json.JSONException: A JSONObject text must begin with '{' at 1 [character 2 
                             ApiResponse apiResponse = thingifier.api().delete(justThePath(request.pathInfo()));
                             response.status(apiResponse.getStatusCode());
                             addHeaders(apiResponse.getHeaders(),response);
-                            return apiResponse.getBody();});
+                            return new HttpApiResponse(request, response, apiResponse).getBody();
+                            //return apiResponse.getBody();
+                            });
                     }
                     break;
                 case PATCH:
@@ -148,7 +137,8 @@ org.json.JSONException: A JSONObject text must begin with '{' at 1 [character 2 
                             ApiResponse apiResponse = thingifier.api().put(justThePath(request.pathInfo()), request.body());
                             response.status(apiResponse.getStatusCode());
                             addHeaders(apiResponse.getHeaders(),response);
-                            return apiResponse.getBody();
+                            return new HttpApiResponse(request, response, apiResponse).getBody();
+                            //return apiResponse.getBody();
                         });
                     }
                     break;
@@ -177,12 +167,12 @@ org.json.JSONException: A JSONObject text must begin with '{' at 1 [character 2 
 
         exception(RuntimeException.class, (e, request, response) -> {
             response.status(400);
-            response.body(ApiResponse.getErrorMessageJson(e.getMessage()));
+            response.body(ApiResponseError.asAppropriate(request.headers("Accept"),e.getMessage()));
         });
 
         exception(Exception.class, (e, request, response) -> {
             response.status(500);
-            response.body(ApiResponse.getErrorMessageJson(e.getMessage()));
+            response.body(ApiResponseError.asAppropriate(request.headers("Accept"),e.getMessage()));
         });
 
     }

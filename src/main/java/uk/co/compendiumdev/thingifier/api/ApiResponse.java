@@ -1,13 +1,8 @@
 package uk.co.compendiumdev.thingifier.api;
 
-import com.google.gson.Gson;
-import org.json.JSONObject;
-import org.json.XML;
 import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
-import uk.co.compendiumdev.thingifier.reporting.JsonThing;
 
 import java.util.*;
-import java.util.zip.ZipFile;
 
 public class ApiResponse {
     public static final String GUID_HEADER = "X-Thing-Instance-GUID";
@@ -58,58 +53,6 @@ public class ApiResponse {
         isCollection=true;
         return this;
     }
-
-    public String getBody() {
-
-        if(isErrorResponse){
-            return getErrorMessageJson(errorMessages);
-        }
-        // we always return an object
-        // collections are named with their plural
-        if(isCollection){
-
-            String output = JsonThing.asJson(thingsToReturn);
-            System.out.println(output);
-
-            // experimental xml output
-            try {
-                if(thingsToReturn.size()>0) {
-                    String parseForXMLOutput = JsonThing.jsonObjectWrapper(
-                                                                thingsToReturn.get(0).getEntity().getPlural(),
-                                                                JsonThing.asJsonArrayInstanceWrapped(thingsToReturn,
-                                                                                        thingsToReturn.get(0).getEntity().getName()));
-                    System.out.println(parseForXMLOutput);
-                    System.out.println(XML.toString(new JSONObject(parseForXMLOutput)));
-                }
-            }catch (Exception e){
-                System.out.println(e);
-            }
-
-
-            return output;
-        }else{
-            ThingInstance instance = thingsToReturn.get(0);
-            String output = JsonThing.jsonObjectWrapper(instance.getEntity().getName(), JsonThing.asJson(thingsToReturn.get(0)));
-
-            System.out.println(output);
-
-            // experimental xml output
-            try {
-                if(thingsToReturn.size()>0) {
-                    String parseForXMLOutput = output;
-                    System.out.println(parseForXMLOutput);
-                    System.out.println(XML.toString(new JSONObject(parseForXMLOutput)));
-                }
-            }catch (Exception e){
-                System.out.println(e);
-            }
-
-
-
-            return output;
-        }
-    }
-
 
 
 
@@ -162,19 +105,7 @@ public class ApiResponse {
      */
 
 
-    // error messages should always be plural to make it easier to parse
-    public static String getErrorMessageJson(String errorMessage) {
-        Collection<String> localErrorMessages = new ArrayList<>();
-        localErrorMessages.add(errorMessage);
-        return getErrorMessageJson(localErrorMessages);
-    }
 
-    public static String getErrorMessageJson(Collection<String> myErrorMessages) {
-        Map errorResponseBody = new HashMap<String,Collection<String>>();
-        errorResponseBody.put("errorMessages", myErrorMessages);
-        return new Gson().toJson(errorResponseBody);
-
-    }
 
     public static ApiResponse error404(String errorMessage) {
         return error(404, errorMessage);
@@ -192,6 +123,18 @@ public class ApiResponse {
         return new ApiResponse(statusCode);
     }
 
+    public boolean isErrorResponse() {
+        return isErrorResponse;
+    }
+
+
+    public Collection<String> getErrorMessages() {
+        return errorMessages;
+    }
+
+
+
+
 
     public ThingInstance getReturnedInstance() {
         if(isCollection){
@@ -206,5 +149,10 @@ public class ApiResponse {
             throw new IllegalStateException("response contains an instance, not a collection");
         }
         return thingsToReturn;
+    }
+
+
+    public boolean isCollection() {
+        return isCollection;
     }
 }
