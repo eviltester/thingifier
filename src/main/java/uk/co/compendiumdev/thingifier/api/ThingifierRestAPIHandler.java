@@ -36,7 +36,6 @@ public class ThingifierRestAPIHandler {
         Map args = new Gson().fromJson(body, Map.class);
 
 
-
         /*
             No GUID and match a Thing
          */
