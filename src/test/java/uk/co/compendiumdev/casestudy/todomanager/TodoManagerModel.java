@@ -82,7 +82,20 @@ could implement a Thingifier URL query matcher to return instances based on quer
     public static Thingifier definedAsThingifier() {
         Thingifier todoManager = new Thingifier();
 
-        todoManager.setDocumentation("Todo Manager", "A Simple todo manager");
+        StringBuilder para = new StringBuilder();
+
+        para.append("A Simple todo manager<br/>\n\n");
+        para.append("Will accept json by default.<br/>\n");
+        para.append("Set Content-Type header to application/xml if you want to send in XML.<br/>\n");
+        para.append("XML body would look something like:<br/>\n");
+        // <project><title>My posted todo on the project</title></project>
+        // would become {"project":{"title":"My posted todo on the project"}}
+        // when we want {"title":"My posted todo on the project"}
+        para.append("&#x3C;project&#x3E;&#x3C;title&#x3E;My posted todo on the project&#x3C;/title&#x3E;&#x3C;/project&#x3E;<br/>\n");
+        para.append("JSON body would look something like:<br/>\n");
+        para.append("{\"title\":\"My posted todo on the project\"}<br/>\n");
+
+        todoManager.setDocumentation("Todo Manager", para.toString());
 
         Thing todo = todoManager.createThing("todo", "todos");
 

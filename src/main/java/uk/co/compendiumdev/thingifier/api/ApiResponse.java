@@ -22,13 +22,19 @@ public class ApiResponse {
     private ThingDefinition typeOfResults;
 
 
-    public ApiResponse(int statusCode) {
+    private ApiResponse(int statusCode) {
         this.statusCode = statusCode;
         headers = new HashMap<>();
         thingsToReturn = new ArrayList();
         isCollection = true;
         isErrorResponse=false;
         errorMessages = new ArrayList<>();
+    }
+
+    private ApiResponse(int statusCode, boolean isError, Collection<String> errorMessages) {
+        this(statusCode);
+        isErrorResponse=isError;
+        this.errorMessages.addAll(errorMessages);
     }
 
     public int getStatusCode() {
@@ -120,9 +126,7 @@ public class ApiResponse {
     }
 
     public static ApiResponse error(int statusCode, Collection<String> errorMessages) {
-        isErrorResponse=true;
-        errorMessages.addAll(errorMessages);
-        return new ApiResponse(statusCode);
+        return new ApiResponse(statusCode, true, errorMessages);
     }
 
     public boolean isErrorResponse() {

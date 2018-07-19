@@ -31,6 +31,9 @@ public class ThingifierRestAPIHandler {
     // TODO : this whole class needs to be refactored and wrapped with unit tests
     // todo : generate examples when outputing the api documentation
 
+
+    // TODO: Bug - get with 404 returns {} regardless of asked for type
+
     public ApiResponse post(String url, String body) {
 
         Map args = new Gson().fromJson(body, Map.class);
