@@ -142,8 +142,7 @@ public class ThingDefinition {
 
     public List<RelationshipVector> getRelationships(String relationshipName) {
         List<RelationshipVector> myrelationships = this.relationships.get(relationshipName.toLowerCase());
-        ArrayList<RelationshipVector> retRels = new ArrayList<RelationshipVector>();
-        retRels.addAll(myrelationships);
+        ArrayList<RelationshipVector> retRels = new ArrayList<RelationshipVector>(myrelationships);
         return retRels;
     }
 

@@ -41,8 +41,8 @@ public class ThingifierRestServer {
             JSONObject conv = XML.toJSONObject(request.body());
             if (conv.keySet().size() == 1) {
                 // if the key is an entity type then we just want the body
-                ArrayList<String> keys = new ArrayList<String>();
-                keys.addAll(conv.keySet());
+                ArrayList<String> keys = new ArrayList<String>(conv.keySet());
+
                 if (thingifier.hasThingNamed(keys.get(0))) {
                     // just the body
                     String justTheBody = conv.get(keys.get(0)).toString();

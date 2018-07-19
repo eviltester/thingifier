@@ -16,8 +16,7 @@ public class InstanceFields {
     }
 
     public List<String> getFields(){
-        List<String> fields = new ArrayList<String>();
-        fields.addAll(values.keySet());
+        List<String> fields = new ArrayList<String>(values.keySet());
         return fields;
     }
 

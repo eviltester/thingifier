@@ -13,9 +13,6 @@ import org.junit.Test;
 
 import java.util.*;
 
-import static java.util.Collections.addAll;
-import static java.util.Collections.list;
-
 public class RelationshipApiNonHttpTest {
 
     private Thingifier todoManager;
@@ -122,8 +119,7 @@ public class RelationshipApiNonHttpTest {
         Collection<ThingInstance> projects = paperwork.connectedItems("task-of");
 
         Assert.assertEquals(1, projects.size());
-        List<ThingInstance> listOfProjects = new ArrayList<ThingInstance>();
-        listOfProjects.addAll(projects);
+        List<ThingInstance> listOfProjects = new ArrayList<ThingInstance>(projects);
 
         Assert.assertEquals(myNewProject.getGUID(), listOfProjects.get(0).getGUID());
 
@@ -345,8 +341,7 @@ public class RelationshipApiNonHttpTest {
         Collection<ThingInstance> items = myCreatedTodo.connectedItems("task-of");
         Assert.assertEquals("Expected task be connected to only 1 project", 1, items.size());
 
-        List<ThingInstance> itemList = new ArrayList<>();
-        itemList.addAll(items);
+        List<ThingInstance> itemList = new ArrayList<>(items);
 
         // item should be myNewProject
         Assert.assertEquals("Expected to be connected to project", myNewProject.getGUID(), itemList.get(0).getGUID());

@@ -65,8 +65,8 @@ public class SimpleQuery{
                     parentThing=currentThing;
                     currentInstance=null;
                     lastMatch=CURRENT_THING;
-                    foundItems = new ArrayList<ThingInstance>();
-                    foundItems.addAll(currentThing.getInstances());
+                    foundItems = new ArrayList<ThingInstance>(currentThing.getInstances());
+
                 }else{
                     // related to another type of thing
                     foundItemsHistoryList.add(thingifier.getThingNamed(term));
