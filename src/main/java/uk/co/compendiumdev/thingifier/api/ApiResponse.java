@@ -10,11 +10,12 @@ public class ApiResponse {
     public static final String GUID_HEADER = "X-Thing-Instance-GUID";
 
     private final int statusCode;
-    // TODO instead of storing a json, store the things to return
-    // isCollection true, return as collection, false, return as instance
+    // instead of storing a json as the body, store the things to return
     // let getBody do the conversion to json or xml
     List<ThingInstance> thingsToReturn;
+    // isCollection true, return as collection, false, return as instance
     private boolean isCollection;
+    // isErrorResponse true, return the stored collection of error messages
     private static boolean isErrorResponse;
     private Collection<String> errorMessages;
 
@@ -35,17 +36,6 @@ public class ApiResponse {
     }
 
 
-
-
-    private ApiResponse setReturnAsCollection(boolean isItACollection) {
-        isCollection = isItACollection;
-        return this;
-    }
-
-    private ApiResponse addReturnThing(ThingInstance thingInstance) {
-        thingsToReturn.add(thingInstance);
-        return this;
-    }
 
 
     public static ApiResponse success() {
@@ -114,8 +104,7 @@ public class ApiResponse {
         ApiResponse response = new ApiResponse(201);
 
         if(thingInstance!=null){
-            response.addReturnThing(thingInstance);
-            response.setReturnAsCollection(false);
+            response.returnSingleInstance(thingInstance);
             response.setLocationHeader(thingInstance.getEntity().getName() + "/" + thingInstance.getGUID()).
                     setHeader(ApiResponse.GUID_HEADER, thingInstance.getGUID());
         }
