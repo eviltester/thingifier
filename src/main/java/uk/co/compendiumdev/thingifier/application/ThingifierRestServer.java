@@ -75,29 +75,6 @@ public class ThingifierRestServer {
                 System.out.println(e);
             }
 
-//            if(request.headers("Content-Type")!=null && request.headers("Content-Type").endsWith("/xml")){
-//
-//                // PROTOTYPE XML Conversion
-//                System.out.println(request.body());
-//                System.out.println(XML.toJSONObject(request.body()).toString());
-//                JSONObject conv = XML.toJSONObject(request.body());
-//                if(conv.keySet().size()==1){
-//                    // if the key is an entity type then we just want the body
-//                    ArrayList<String> keys = new ArrayList<String>();
-//                    keys.addAll(conv.keySet());
-//                    if(thingifier.hasThingNamed(keys.get(0))){
-//                        // just the body
-//                        String justTheBody = conv.get(keys.get(0)).toString();
-//                        System.out.println(justTheBody);
-//                    }
-//
-//                }
-//
-//
-//
-//                //response.type(request.headers("Accept"));
-//                //halt(406, ApiResponseError.asAppropriate(request.headers("Accept"), "Only Content-Type application/json supported"));
-//            }
 
             // TODO: wrap this in a --verbose option
             System.out.println("**PROCESSING**");
