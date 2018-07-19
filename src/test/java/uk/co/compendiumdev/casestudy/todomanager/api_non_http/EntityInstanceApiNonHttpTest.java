@@ -8,6 +8,7 @@ import uk.co.compendiumdev.casestudy.todomanager.TodoManagerModel;
 import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.ApiResponse;
+import uk.co.compendiumdev.thingifier.generic.definitions.Field;
 import uk.co.compendiumdev.thingifier.generic.definitions.FieldValue;
 import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
 
@@ -16,6 +17,7 @@ import java.util.Map;
 import java.util.UUID;
 
 public class EntityInstanceApiNonHttpTest {
+
 
     private Thingifier todoManager;
 
@@ -67,15 +69,15 @@ public class EntityInstanceApiNonHttpTest {
         // create a project with POST
         ApiResponse apiresponse = todoManager.api().post("todo", new Gson().toJson(requestBody));
 
-        System.out.println(apiresponse.getBody());
-
         Assert.assertEquals(201, apiresponse.getStatusCode());
 
-        // Check JSON response
-        String officeWorkGuid = SimpleJsonValueParser.get(apiresponse.getBody(), "todo", "guid");
-        Assert.assertEquals(title, SimpleJsonValueParser.get(apiresponse.getBody(), "todo", "title"));
-        Assert.assertEquals(description, SimpleJsonValueParser.get(apiresponse.getBody(), "todo", "description"));
-        Assert.assertEquals(doneStatus, SimpleJsonValueParser.get(apiresponse.getBody(), "todo", "doneStatus"));
+        ThingInstance createdInstance = apiresponse.getReturnedInstance();
+
+        String officeWorkGuid = createdInstance.getGUID();
+        Assert.assertEquals(title, createdInstance.getValue("title"));
+        Assert.assertEquals(description, createdInstance.getValue("description"));
+        Assert.assertEquals(doneStatus, createdInstance.getValue("doneStatus"));
+
 
         // Check header for GUID
         String headerLocation = apiresponse.getHeaderValue("Location");
@@ -88,10 +90,7 @@ public class EntityInstanceApiNonHttpTest {
 
         ThingInstance createdProject = todo.findInstanceByGUID(headerGUID);
 
-        Assert.assertEquals(headerGUID, createdProject.getGUID());
-        Assert.assertEquals(title, createdProject.getValue("title"));
-        Assert.assertEquals(description, createdProject.getValue("description"));
-        Assert.assertEquals(doneStatus, createdProject.getValue("doneStatus"));
+        Assert.assertEquals(createdProject, createdInstance);
 
     }
 
@@ -109,15 +108,15 @@ public class EntityInstanceApiNonHttpTest {
         // create a project with POST
         ApiResponse apiresponse = todoManager.api().post("todo", new Gson().toJson(requestBody));
 
-        System.out.println(apiresponse.getBody());
 
         Assert.assertEquals(201, apiresponse.getStatusCode());
 
-        // Check JSON response
-        String officeWorkGuid = SimpleJsonValueParser.get(apiresponse.getBody(), "todo", "guid");
-        Assert.assertEquals(title, SimpleJsonValueParser.get(apiresponse.getBody(), "todo", "title"));
-        Assert.assertEquals("", SimpleJsonValueParser.get(apiresponse.getBody(), "todo", "description"));
-        Assert.assertEquals("FALSE", SimpleJsonValueParser.get(apiresponse.getBody(), "todo", "doneStatus"));
+        ThingInstance createdInstance = apiresponse.getReturnedInstance();
+
+        String officeWorkGuid = createdInstance.getGUID();
+        Assert.assertEquals(title, createdInstance.getValue("title"));
+        Assert.assertEquals("", createdInstance.getValue("description"));
+        Assert.assertEquals("FALSE", createdInstance.getValue("doneStatus"));
 
         // Check header for GUID
         String headerLocation = apiresponse.getHeaderValue("Location");
@@ -130,10 +129,7 @@ public class EntityInstanceApiNonHttpTest {
 
         ThingInstance createdProject = todo.findInstanceByGUID(headerGUID);
 
-        Assert.assertEquals(headerGUID, createdProject.getGUID());
-        Assert.assertEquals(title, createdProject.getValue("title"));
-        Assert.assertEquals("", createdProject.getValue("description"));
-        Assert.assertEquals("FALSE", createdProject.getValue("doneStatus"));
+        Assert.assertEquals(createdProject, createdInstance);
 
     }
 
@@ -158,16 +154,17 @@ public class EntityInstanceApiNonHttpTest {
         // amend a project with POST
         ApiResponse apiresponse = todoManager.api().post("todo/" + relTodo.getGUID(), new Gson().toJson(requestBody));
 
-        System.out.println(apiresponse.getBody());
-
         Assert.assertEquals(200, apiresponse.getStatusCode());
         Assert.assertEquals(0, apiresponse.getHeaders().size());
 
-        // Check JSON response
-        Assert.assertEquals(relTodo.getGUID(), SimpleJsonValueParser.get(apiresponse.getBody(), "todo", "guid"));
-        Assert.assertEquals(title, SimpleJsonValueParser.get(apiresponse.getBody(), "todo", "title"));
-        Assert.assertEquals(description, SimpleJsonValueParser.get(apiresponse.getBody(), "todo", "description"));
-        Assert.assertEquals("FALSE", SimpleJsonValueParser.get(apiresponse.getBody(), "todo", "doneStatus"));
+        // Check response
+
+        ThingInstance createdInstance = apiresponse.getReturnedInstance();
+
+        Assert.assertEquals(relTodo.getGUID(), createdInstance.getGUID());
+        Assert.assertEquals(title, createdInstance.getValue("title"));
+        Assert.assertEquals(description, createdInstance.getValue("description"));
+        Assert.assertEquals("FALSE", createdInstance.getValue("doneStatus"));
 
     }
 
@@ -289,13 +286,14 @@ public class EntityInstanceApiNonHttpTest {
         Map requestBody;
         ApiResponse apiresponse;
 
+        // TODO: assert that error messages are present in the APIResponse
+
         // Mandatory field validation on POST create - must have a title
         requestBody = new HashMap<String, String>();
         //requestBody.put("title", "A new TODO Item");
         requestBody.put("description", "A new TODO Item");
 
         apiresponse = todoManager.api().post(String.format("todo"), new Gson().toJson(requestBody));
-        System.out.println(apiresponse.getBody());
         Assert.assertEquals(400, apiresponse.getStatusCode());
 
         // Field validation on boolean for Create with POST
@@ -304,7 +302,6 @@ public class EntityInstanceApiNonHttpTest {
         requestBody.put("doneStatus", "FALSEY");
 
         apiresponse = todoManager.api().post(String.format("todo"), new Gson().toJson(requestBody));
-        System.out.println(apiresponse.getBody());
         Assert.assertEquals(400, apiresponse.getStatusCode());
 
         // Field validation on boolean for Amend with POST
@@ -316,7 +313,6 @@ public class EntityInstanceApiNonHttpTest {
         todo.addInstance(paperwork);
 
         apiresponse = todoManager.api().post(String.format("todo/%s", paperwork.getGUID()), new Gson().toJson(requestBody));
-        System.out.println(apiresponse.getBody());
         Assert.assertEquals(400, apiresponse.getStatusCode());
 
     }
@@ -326,6 +322,8 @@ public class EntityInstanceApiNonHttpTest {
 
         Map requestBody;
         ApiResponse apiresponse;
+
+        // TODO: assert that error messages are present in the api response
 
         // Mandatory field validation on POST create - must have a title
         requestBody = new HashMap<String, String>();
@@ -338,7 +336,6 @@ public class EntityInstanceApiNonHttpTest {
         requestBody.put("description", "A new TODO Item");
         requestBody.put("doneStatus", "TRUE");
         apiresponse = todoManager.api().put(String.format("todo/%s", UUID.randomUUID().toString()), new Gson().toJson(requestBody));
-        System.out.println(apiresponse.getBody());
         Assert.assertEquals(400, apiresponse.getStatusCode());
 
 
@@ -351,7 +348,6 @@ public class EntityInstanceApiNonHttpTest {
         requestBody.put("description", "Amended TODO Item ");
         requestBody.put("doneStatus", "TRUE");
         apiresponse = todoManager.api().put(String.format("todo/%s", paperwork.getGUID()), new Gson().toJson(requestBody));
-        System.out.println(apiresponse.getBody());
         Assert.assertEquals(400, apiresponse.getStatusCode());
 
 
@@ -361,7 +357,6 @@ public class EntityInstanceApiNonHttpTest {
         requestBody.put("description", "A new TODO Item");
         requestBody.put("doneStatus", "FALSEY");
         apiresponse = todoManager.api().put(String.format("todo/%s", paperwork.getGUID()), new Gson().toJson(requestBody));
-        System.out.println(apiresponse.getBody());
         Assert.assertEquals(400, apiresponse.getStatusCode());
 
     }

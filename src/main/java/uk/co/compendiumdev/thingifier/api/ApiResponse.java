@@ -7,6 +7,7 @@ import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
 import uk.co.compendiumdev.thingifier.reporting.JsonThing;
 
 import java.util.*;
+import java.util.zip.ZipFile;
 
 public class ApiResponse {
     public static final String GUID_HEADER = "X-Thing-Instance-GUID";
@@ -192,5 +193,18 @@ public class ApiResponse {
     }
 
 
+    public ThingInstance getReturnedInstance() {
+        if(isCollection){
+            throw new IllegalStateException("response contains a collection, not an instance");
+        }
 
+        return thingsToReturn.get(0);
+    }
+
+    public List<ThingInstance> getReturnedInstanceCollection() {
+        if(!isCollection){
+            throw new IllegalStateException("response contains an instance, not a collection");
+        }
+        return thingsToReturn;
+    }
 }
