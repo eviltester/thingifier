@@ -1,6 +1,8 @@
 package uk.co.compendiumdev.thingifier.api;
 
 import com.google.gson.Gson;
+import org.json.JSONObject;
+import org.json.XML;
 import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
 import uk.co.compendiumdev.thingifier.reporting.JsonThing;
 
@@ -64,12 +66,46 @@ public class ApiResponse {
         // we always return an object
         // collections are named with their plural
         if(isCollection){
-            System.out.println(JsonThing.asJson(thingsToReturn));
-            return JsonThing.asJson(thingsToReturn);
+
+            String output = JsonThing.asJson(thingsToReturn);
+            System.out.println(output);
+
+            // experimental xml output
+            try {
+                if(thingsToReturn.size()>0) {
+                    String parseForXMLOutput = JsonThing.jsonObjectWrapper(
+                                                                thingsToReturn.get(0).getEntity().getPlural(),
+                                                                JsonThing.asJsonArrayInstanceWrapped(thingsToReturn,
+                                                                                        thingsToReturn.get(0).getEntity().getName()));
+                    System.out.println(parseForXMLOutput);
+                    System.out.println(XML.toString(new JSONObject(parseForXMLOutput)));
+                }
+            }catch (Exception e){
+                System.out.println(e);
+            }
+
+
+            return output;
         }else{
             ThingInstance instance = thingsToReturn.get(0);
-            System.out.println(JsonThing.asJson(instance));
-            return JsonThing.jsonObjectWrapper(instance.getEntity().getName(), JsonThing.asJson(thingsToReturn.get(0)));
+            String output = JsonThing.jsonObjectWrapper(instance.getEntity().getName(), JsonThing.asJson(thingsToReturn.get(0)));
+
+            System.out.println(output);
+
+            // experimental xml output
+            try {
+                if(thingsToReturn.size()>0) {
+                    String parseForXMLOutput = output;
+                    System.out.println(parseForXMLOutput);
+                    System.out.println(XML.toString(new JSONObject(parseForXMLOutput)));
+                }
+            }catch (Exception e){
+                System.out.println(e);
+            }
+
+
+
+            return output;
         }
     }
 

@@ -112,6 +112,24 @@ public class JsonThing {
         return json.toString();
     }
 
+    public static String asJsonArrayInstanceWrapped(Collection<ThingInstance> things, String wrapperName) {
+
+        StringBuilder json = new StringBuilder();
+
+        json.append("[");
+
+        String arrayPrepend = "";
+        for(ThingInstance thing : things){
+
+            json.append(String.format("%s {\"%s\" : %s}", arrayPrepend, wrapperName, asJson(thing)));
+            arrayPrepend = ", ";
+        }
+
+        json.append("]");
+
+        return json.toString();
+    }
+
     public static String asJson(ThingInstance thingInstance) {
 
         if(thingInstance==null){
