@@ -194,7 +194,7 @@ public class ThingifierRestAPIHandler {
 
             if(validation.isValid()) {
                 instance.setFieldValuesFrom(args);
-                return ApiResponse.success(JsonThing.asJson(instance));
+                return ApiResponse.success().returnSingleInstance(instance);
             }else {
                 // do not add it, report the errors
                 return ApiResponse.error(400, validation.getErrorMessages());
@@ -309,7 +309,7 @@ public class ThingifierRestAPIHandler {
                 if(validation.isValid()) {
                     instance.clearAllFields();
                     instance.setFieldValuesFrom(args);
-                    return ApiResponse.success(JsonThing.asJson(instance));
+                    return ApiResponse.success().returnSingleInstance(instance);
                 }else {
                     // do not add it, report the errors
                     return ApiResponse.error(400, validation.getErrorMessages());
@@ -361,7 +361,7 @@ public class ThingifierRestAPIHandler {
             }
 
         }
-        return ApiResponse.success("");
+        return ApiResponse.success();
     }
 
     public ApiResponse get(String url) {
@@ -377,6 +377,6 @@ public class ThingifierRestAPIHandler {
             return ApiResponse.error404(String.format("Could not find an instance with %s", url));
         }
 
-        return ApiResponse.success(JsonThing.asJson(queryItems));
+        return ApiResponse.success().returnInstanceCollection(queryItems);
     }
 }

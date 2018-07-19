@@ -4,37 +4,94 @@ import com.google.gson.Gson;
 import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
 import uk.co.compendiumdev.thingifier.reporting.JsonThing;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class ApiResponse {
     public static final String GUID_HEADER = "X-Thing-Instance-GUID";
+
     private final int statusCode;
-    private String body="";
+    // TODO instead of storing a json, store the things to return
+    // isCollection true, return as collection, false, return as instance
+    // let getBody do the conversion to json or xml
+    List<ThingInstance> thingsToReturn;
+    private boolean isCollection;
+    private static boolean isErrorResponse;
+    private Collection<String> errorMessages;
+
     private Map<String, String> headers;
+
 
     public ApiResponse(int statusCode) {
         this.statusCode = statusCode;
         headers = new HashMap<>();
+        thingsToReturn = new ArrayList();
+        isCollection = true;
+        isErrorResponse=false;
+        errorMessages = new ArrayList<>();
     }
 
-    public static ApiResponse created(ThingInstance thingInstance) {
-        ApiResponse response = new ApiResponse(201);
+    public int getStatusCode() {
+        return this.statusCode;
+    }
 
-        if(thingInstance!=null){
-                response.setBody(JsonThing.asJson(thingInstance)).
-                setLocationHeader(thingInstance.getEntity().getName() + "/" + thingInstance.getGUID()).
-                setHeader(ApiResponse.GUID_HEADER, thingInstance.getGUID());
+
+
+
+    private ApiResponse setReturnAsCollection(boolean isItACollection) {
+        isCollection = isItACollection;
+        return this;
+    }
+
+    private ApiResponse addReturnThing(ThingInstance thingInstance) {
+        thingsToReturn.add(thingInstance);
+        return this;
+    }
+
+
+    public static ApiResponse success() {
+        return new ApiResponse(200);
+    }
+
+    public ApiResponse returnSingleInstance(ThingInstance instance) {
+        this.isCollection = false;
+        thingsToReturn.clear();
+        thingsToReturn.add(instance);
+        return this;
+    }
+
+    public ApiResponse returnInstanceCollection(List<ThingInstance> items) {
+        thingsToReturn.clear();
+        thingsToReturn.addAll(items);
+        isCollection=true;
+        return this;
+    }
+
+    public String getBody() {
+
+        if(isErrorResponse){
+            return getErrorMessageJson(errorMessages);
         }
-
-        return response;
+        if(isCollection){
+            return JsonThing.asJson(thingsToReturn);
+        }else{
+            return JsonThing.asJson(thingsToReturn.get(0));
+        }
     }
+
+
+
+
+    /*
+            HEADERS
+     */
 
     private ApiResponse setHeader(String headername, String value) {
         this.headers.put(headername, value);
         return this;
+    }
+
+    public String getHeaderValue(String headername) {
+        return headers.get(headername);
     }
 
     private ApiResponse setLocationHeader(String location) {
@@ -45,50 +102,65 @@ public class ApiResponse {
         return headers.entrySet();
     }
 
-    public static ApiResponse error404(String errorMessage) {
-        return new ApiResponse(404).setBody(getErrorMessageJson(errorMessage));
+
+
+
+
+    /*
+            SPECIAL CASE RESPONSES
+     */
+
+    public static ApiResponse created(ThingInstance thingInstance) {
+        ApiResponse response = new ApiResponse(201);
+
+        if(thingInstance!=null){
+            response.addReturnThing(thingInstance);
+            response.setReturnAsCollection(false);
+            response.setLocationHeader(thingInstance.getEntity().getName() + "/" + thingInstance.getGUID()).
+                    setHeader(ApiResponse.GUID_HEADER, thingInstance.getGUID());
+        }
+
+        return response;
     }
 
+
+
+
+    /*
+            ERROR MESSAGES
+     */
+
+
+    // error messages should always be plural to make it easier to parse
     public static String getErrorMessageJson(String errorMessage) {
-        Map error = new HashMap<String,String>();
-        error.put("errorMessage", errorMessage);
-        return new Gson().toJson(error);
+        Collection<String> localErrorMessages = new ArrayList<>();
+        localErrorMessages.add(errorMessage);
+        return getErrorMessageJson(localErrorMessages);
+    }
+
+    public static String getErrorMessageJson(Collection<String> myErrorMessages) {
+        Map errorResponseBody = new HashMap<String,String>();
+        errorResponseBody.put("errorMessages", myErrorMessages);
+        return new Gson().toJson(errorResponseBody);
 
     }
 
-    public static String getErrorMessageJson(Collection<String> errorMessages) {
-        Map error = new HashMap<String,String>();
-        error.put("errorMessages", errorMessages);
-        return new Gson().toJson(error);
-
-    }
-
-    public static ApiResponse success(String body) {
-        return new ApiResponse(200).setBody(body);
+    public static ApiResponse error404(String errorMessage) {
+        return error(404, errorMessage);
     }
 
     public static ApiResponse error(int statusCode, String errorMessage) {
-        return new ApiResponse(statusCode).setBody(getErrorMessageJson(errorMessage));
+        Collection<String> localErrorMessages = new ArrayList<>();
+        localErrorMessages.add(errorMessage);
+        return error(statusCode, localErrorMessages);
     }
 
     public static ApiResponse error(int statusCode, Collection<String> errorMessages) {
-        return new ApiResponse(statusCode).setBody(getErrorMessageJson(errorMessages));
+        isErrorResponse=true;
+        errorMessages.addAll(errorMessages);
+        return new ApiResponse(statusCode);
     }
 
-    private ApiResponse setBody(String body) {
-        this.body = body;
-        return this;
-    }
 
-    public int getStatusCode() {
-        return this.statusCode;
-    }
 
-    public String getBody() {
-        return body;
-    }
-
-    public String getHeaderValue(String headername) {
-        return headers.get(headername);
-    }
 }
