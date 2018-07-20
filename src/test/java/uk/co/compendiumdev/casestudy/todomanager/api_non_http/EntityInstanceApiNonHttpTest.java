@@ -40,14 +40,6 @@ public class EntityInstanceApiNonHttpTest {
 
     */
 
-    /* TODO: additional entity instance test methods required to create visible condition coverage via method names
-
-    - Get can return single entity instance
-    - Get can return multiple entity instances
-    - Post fail amend due to validation errors
-    - Put fail amend due to validation errors
-     */
-
 
     @Test
     public void getCanReturnASingleEntityInstance(){
