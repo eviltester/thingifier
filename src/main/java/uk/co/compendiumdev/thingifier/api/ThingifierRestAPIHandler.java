@@ -379,6 +379,10 @@ public class ThingifierRestAPIHandler {
             return ApiResponse.error404(String.format("Could not find an instance with %s", url));
         }
 
-        return ApiResponse.success().returnInstanceCollection(queryItems).resultContainsType(queryResults.resultContainsDefn());
+        if(queryResults.lastMatchWasInstance()){
+            return ApiResponse.success().returnSingleInstance(queryResults.getLastInstance()).resultContainsType(queryResults.resultContainsDefn());
+        }else {
+            return ApiResponse.success().returnInstanceCollection(queryItems).resultContainsType(queryResults.resultContainsDefn());
+        }
     }
 }

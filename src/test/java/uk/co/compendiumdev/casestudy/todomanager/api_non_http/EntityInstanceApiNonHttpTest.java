@@ -11,9 +11,7 @@ import uk.co.compendiumdev.thingifier.api.ApiResponse;
 import uk.co.compendiumdev.thingifier.generic.definitions.FieldValue;
 import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class EntityInstanceApiNonHttpTest {
 
@@ -49,6 +47,66 @@ public class EntityInstanceApiNonHttpTest {
     - Post fail amend due to validation errors
     - Put fail amend due to validation errors
      */
+
+
+    @Test
+    public void getCanReturnASingleEntityInstance(){
+
+        // add some data
+        todo.addInstance(todo.createInstance().setValue("title", "My Title" + System.nanoTime()));
+        todo.addInstance(todo.createInstance().setValue("title", "My Title" + System.nanoTime()));
+
+
+        ThingInstance findThis = todo.createInstance().setValue("title", "My Title" + System.nanoTime());
+        todo.addInstance(findThis);
+
+        todo.addInstance(todo.createInstance().setValue("title", "My Title" + System.nanoTime()));
+
+
+        ApiResponse apiResponse = todoManager.api().get("/todo/" + findThis.getGUID());
+
+        Assert.assertEquals(200, apiResponse.getStatusCode());
+        Assert.assertFalse("Should be a single item, rather than a collection", apiResponse.isCollection());
+
+        Assert.assertEquals(findThis.getValue("title"), apiResponse.getReturnedInstance().getValue("title"));
+        Assert.assertEquals(findThis.getValue("guid"), apiResponse.getReturnedInstance().getValue("guid"));
+
+        Assert.assertEquals(findThis, apiResponse.getReturnedInstance());
+        Assert.assertEquals(0, apiResponse.getErrorMessages().size());
+
+    }
+
+    @Test
+    public void getCanReturnMultipleEntityInstances(){
+
+        // add some data
+        todo.addInstance(todo.createInstance().setValue("title", "My Title" + System.nanoTime()));
+        todo.addInstance(todo.createInstance().setValue("title", "My Title" + System.nanoTime()));
+        todo.addInstance(todo.createInstance().setValue("title", "My Title" + System.nanoTime()));
+        todo.addInstance(todo.createInstance().setValue("title", "My Title" + System.nanoTime()));
+
+
+        ApiResponse apiResponse = todoManager.api().get("/todo");
+
+        Assert.assertEquals(200, apiResponse.getStatusCode());
+        Assert.assertTrue("Should be a collection", apiResponse.isCollection());
+
+        Assert.assertEquals(todo.countInstances(), apiResponse.getReturnedInstanceCollection().size());
+
+        Set<String> guidSet = new HashSet<>();
+
+        for( ThingInstance item : apiResponse.getReturnedInstanceCollection()){
+            guidSet.add(item.getGUID());
+            Assert.assertNotNull(todo.findInstanceByGUID(item.getGUID()));
+        }
+
+        Assert.assertEquals(guidSet.size(), todo.countInstances());
+        Assert.assertEquals(guidSet.size(), apiResponse.getReturnedInstanceCollection().size());
+
+        Assert.assertEquals(0, apiResponse.getErrorMessages().size());
+
+    }
+
 
     @Test
     public void postCanCreateAnEntityWhichPassesValidationWithAllFields(){
@@ -185,6 +243,48 @@ public class EntityInstanceApiNonHttpTest {
 
     }
 
+    @Test
+    public void postFailCannotAmendEntityInstanceWhenValidationErrorsAPI() {
+
+        Map requestBody;
+        ApiResponse apiresponse;
+
+        String originalTitle = "Todo for amending " + System.currentTimeMillis();
+        String originalDescription = "my description " + System.currentTimeMillis();
+
+        ThingInstance amendTodo = todo.createInstance().setValue("title", originalTitle).setValue("description", originalDescription);
+        todo.addInstance(amendTodo);
+
+
+        // Mandatory field validation PUT title
+        requestBody = new HashMap<String, String>();
+        requestBody.put("title", "");
+        requestBody.put("description", "Amend Failed new TODO Item");
+        apiresponse = todoManager.api().post(String.format("todo/%s", amendTodo.getGUID()), new Gson().toJson(requestBody));
+
+        Assert.assertEquals(400, apiresponse.getStatusCode());
+        Assert.assertTrue(apiresponse.getErrorMessages().size()>0);
+
+
+        Assert.assertEquals(originalTitle, amendTodo.getValue("title"));
+        Assert.assertEquals(originalDescription, amendTodo.getValue("description"));
+
+
+        // Field validation on boolean for Amend with PUT
+        requestBody = new HashMap<String, String>();
+        requestBody.put("title", "A new TODO Item");
+        requestBody.put("description", "A new TODO Item");
+        requestBody.put("doneStatus", "FALSEY");
+        apiresponse = todoManager.api().post(String.format("todo/%s", amendTodo.getGUID()), new Gson().toJson(requestBody));
+
+        Assert.assertEquals(400, apiresponse.getStatusCode());
+        Assert.assertTrue(apiresponse.getErrorMessages().size()>0);
+
+        Assert.assertEquals(originalTitle, amendTodo.getValue("title"));
+        Assert.assertEquals(originalDescription, amendTodo.getValue("description"));
+
+    }
+
 
     @Test
     public void putCanAmendExistingProject() {
@@ -284,12 +384,10 @@ public class EntityInstanceApiNonHttpTest {
     }
 
     @Test
-    public void postFailCannotCreateValidationErrorsEntityInstanceAPI() {
+    public void postFailCannotCreateEntityInstanceWhenValidationErrorsAPI() {
 
         Map requestBody;
         ApiResponse apiresponse;
-
-        // TODO: assert that error messages are present in the APIResponse
 
         // Mandatory field validation on POST create - must have a title
         requestBody = new HashMap<String, String>();
@@ -329,13 +427,6 @@ public class EntityInstanceApiNonHttpTest {
         Map requestBody;
         ApiResponse apiresponse;
 
-        // TODO: assert that error messages are present in the api response
-
-        // Mandatory field validation on POST create - must have a title
-        requestBody = new HashMap<String, String>();
-        //requestBody.put("title", "A new TODO Item");
-        requestBody.put("description", "A new TODO Item");
-
         // Mandatory field validation PUT create
         requestBody = new HashMap<String, String>();
         //requestBody.put("title", "A new TODO Item");
@@ -370,5 +461,51 @@ public class EntityInstanceApiNonHttpTest {
 
     }
 
+    @Test
+    public void putFailCannotCreateEntityInstanceWhenValidationErrors() {
 
+        Map requestBody;
+        ApiResponse apiresponse;
+
+        // Mandatory field validation PUT create
+        requestBody = new HashMap<String, String>();
+        //requestBody.put("title", "A new TODO Item");
+        requestBody.put("description", "A new TODO Item");
+        requestBody.put("doneStatus", "TRUE");
+        apiresponse = todoManager.api().put(String.format("todo/%s", UUID.randomUUID().toString()), new Gson().toJson(requestBody));
+        Assert.assertEquals(400, apiresponse.getStatusCode());
+        Assert.assertTrue(apiresponse.getErrorMessages().size()>0);
+
+    }
+
+    @Test
+    public void putFailCannotAmendEntityInstanceWhenValidationErrors() {
+
+        Map requestBody;
+        ApiResponse apiresponse;
+
+
+        ThingInstance paperwork = todo.createInstance().setValue("title", "Todo for amending");
+        todo.addInstance(paperwork);
+
+        // Mandatory field validation PUT amend
+        requestBody = new HashMap<String, String>();
+        //requestBody.put("title", "A new TODO Item");
+        requestBody.put("description", "Amended TODO Item ");
+        requestBody.put("doneStatus", "TRUE");
+        apiresponse = todoManager.api().put(String.format("todo/%s", paperwork.getGUID()), new Gson().toJson(requestBody));
+        Assert.assertEquals(400, apiresponse.getStatusCode());
+        Assert.assertTrue(apiresponse.getErrorMessages().size()>0);
+
+
+        // Field validation on boolean for Amend with PUT
+        requestBody = new HashMap<String, String>();
+        requestBody.put("title", "A new TODO Item");
+        requestBody.put("description", "A new TODO Item");
+        requestBody.put("doneStatus", "FALSEY");
+        apiresponse = todoManager.api().put(String.format("todo/%s", paperwork.getGUID()), new Gson().toJson(requestBody));
+        Assert.assertEquals(400, apiresponse.getStatusCode());
+        Assert.assertTrue(apiresponse.getErrorMessages().size()>0);
+
+    }
 }
