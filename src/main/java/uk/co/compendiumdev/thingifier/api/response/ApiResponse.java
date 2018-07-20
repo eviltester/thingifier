@@ -5,14 +5,15 @@ import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
 
 import java.util.*;
 
-public class ApiResponse {
+
+public final class ApiResponse {
     public static final String GUID_HEADER = "X-Thing-Instance-GUID";
 
     private final int statusCode;
     private boolean hasBody;
     // instead of storing a json as the body, store the things to return
     // let getBody do the conversion to json or xml
-    List<ThingInstance> thingsToReturn;
+    private List<ThingInstance> thingsToReturn;
     // isCollection true, return as collection, false, return as instance
     private boolean isCollection;
     // isErrorResponse true, return the stored collection of error messages
@@ -23,20 +24,20 @@ public class ApiResponse {
     private ThingDefinition typeOfResults;
 
 
-    private ApiResponse(int statusCode) {
+    private ApiResponse(final int statusCode) {
         this.statusCode = statusCode;
         headers = new HashMap<>();
         thingsToReturn = new ArrayList();
         isCollection = true;
-        isErrorResponse=false;
+        isErrorResponse = false;
         errorMessages = new ArrayList<>();
         hasBody = false;
     }
 
-    private ApiResponse(int statusCode, boolean isError, Collection<String> errorMessages) {
+    private ApiResponse(final int statusCode, final boolean isError, final Collection<String> errorMessages) {
         this(statusCode);
-        isErrorResponse=isError;
-        this.hasBody=true;
+        isErrorResponse = isError;
+        this.hasBody = true;
         this.errorMessages.addAll(errorMessages);
     }
 
@@ -45,13 +46,11 @@ public class ApiResponse {
     }
 
 
-
-
     public static ApiResponse success() {
         return new ApiResponse(200);
     }
 
-    public ApiResponse returnSingleInstance(ThingInstance instance) {
+    public ApiResponse returnSingleInstance(final ThingInstance instance) {
         this.isCollection = false;
         thingsToReturn.clear();
         thingsToReturn.add(instance);
@@ -59,10 +58,10 @@ public class ApiResponse {
         return this;
     }
 
-    public ApiResponse returnInstanceCollection(List<ThingInstance> items) {
+    public ApiResponse returnInstanceCollection(final List<ThingInstance> items) {
         thingsToReturn.clear();
         thingsToReturn.addAll(items);
-        isCollection=true;
+        isCollection = true;
         andThisHasABody();
         return this;
     }
@@ -73,20 +72,20 @@ public class ApiResponse {
             HEADERS
      */
 
-    private ApiResponse setHeader(String headername, String value) {
+    private ApiResponse setHeader(final String headername, final String value) {
         this.headers.put(headername, value);
         return this;
     }
 
-    public String getHeaderValue(String headername) {
+    public String getHeaderValue(final String headername) {
         return headers.get(headername);
     }
 
-    private ApiResponse setLocationHeader(String location) {
+    private ApiResponse setLocationHeader(final String location) {
         return setHeader("Location", location);
     }
 
-    public Set<Map.Entry<String, String>> getHeaders(){
+    public Set<Map.Entry<String, String>> getHeaders() {
         return headers.entrySet();
     }
 
@@ -98,10 +97,10 @@ public class ApiResponse {
             SPECIAL CASE RESPONSES
      */
 
-    public static ApiResponse created(ThingInstance thingInstance) {
+    public static ApiResponse created(final ThingInstance thingInstance) {
         ApiResponse response = new ApiResponse(201);
 
-        if(thingInstance!=null){
+        if (thingInstance != null) {
             response.returnSingleInstance(thingInstance);
             response.setLocationHeader(thingInstance.getEntity().getName() + "/" + thingInstance.getGUID()).
                     setHeader(ApiResponse.GUID_HEADER, thingInstance.getGUID());
@@ -124,19 +123,17 @@ public class ApiResponse {
      */
 
 
-
-
-    public static ApiResponse error404(String errorMessage) {
+    public static ApiResponse error404(final String errorMessage) {
         return error(404, errorMessage);
     }
 
-    public static ApiResponse error(int statusCode, String errorMessage) {
+    public static ApiResponse error(final int statusCode, final String errorMessage) {
         Collection<String> localErrorMessages = new ArrayList<>();
         localErrorMessages.add(errorMessage);
         return error(statusCode, localErrorMessages);
     }
 
-    public static ApiResponse error(int statusCode, Collection<String> errorMessages) {
+    public static ApiResponse error(final int statusCode, final Collection<String> errorMessages) {
         return new ApiResponse(statusCode, true, errorMessages);
     }
 
@@ -150,11 +147,8 @@ public class ApiResponse {
     }
 
 
-
-
-
     public ThingInstance getReturnedInstance() {
-        if(isCollection){
+        if (isCollection) {
             throw new IllegalStateException("response contains a collection, not an instance");
         }
 
@@ -162,7 +156,7 @@ public class ApiResponse {
     }
 
     public List<ThingInstance> getReturnedInstanceCollection() {
-        if(!isCollection){
+        if (!isCollection) {
             throw new IllegalStateException("response contains an instance, not a collection");
         }
         return thingsToReturn;
@@ -173,8 +167,8 @@ public class ApiResponse {
         return isCollection;
     }
 
-    public ApiResponse resultContainsType(ThingDefinition thingDefinition) {
-        if(thingDefinition!=null){
+    public ApiResponse resultContainsType(final ThingDefinition thingDefinition) {
+        if (thingDefinition != null) {
             this.typeOfResults = thingDefinition;
         }
         return this;

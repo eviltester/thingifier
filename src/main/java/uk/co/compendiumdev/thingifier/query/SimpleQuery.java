@@ -11,22 +11,21 @@ import java.util.List;
 
 import static uk.co.compendiumdev.thingifier.query.SimpleQuery.LastMatchValue.*;
 
-public class SimpleQuery{
+public class SimpleQuery {
 
     private final Thingifier thingifier;
     private final String query;
 
-    enum LastMatchValue{NOTHING, CURRENT_THING, CURRENT_INSTANCE, CURRENT_ITEMS, CURRENT_RELATIONSHIP};
+    enum LastMatchValue { NOTHING, CURRENT_THING, CURRENT_INSTANCE, CURRENT_ITEMS, CURRENT_RELATIONSHIP};
 
-    LastMatchValue lastMatch= NOTHING;
-
+    LastMatchValue lastMatch = NOTHING;
 
     // populated during search
     Thing currentThing = null;
     ThingInstance currentInstance = null;
     List<ThingInstance> foundItems = new ArrayList<ThingInstance>();
-    RelationshipVector lastRelationshipFound=null;
-    List<RelationshipVector> lastRelationshipsFound=null;
+    RelationshipVector lastRelationshipFound = null;
+    List<RelationshipVector> lastRelationshipsFound = null;
     Thing parentThing = null;
     private ThingInstance parentInstance = null;
 
@@ -50,106 +49,106 @@ public class SimpleQuery{
 
         lastMatch = NOTHING;
 
-        for(String term : terms){
+        for (String term : terms) {
 
             // if matches an entity type
-            if(thingifier.hasThingNamed(term)){
-                if(currentThing==null && foundItems.size()==0) {
+            if (thingifier.hasThingNamed(term)) {
+                if (currentThing == null && foundItems.size() == 0) {
                     // first thing - find it
                     currentThing = thingifier.getThingNamed(term);
                     resultContainsDefinition = currentThing.definition();
                     foundItemsHistoryList.add(currentThing);
-                    parentThing=currentThing;
-                    currentInstance=null;
-                    lastMatch=CURRENT_THING;
+                    parentThing = currentThing;
+                    currentInstance = null;
+                    lastMatch = CURRENT_THING;
                     foundItems = new ArrayList<ThingInstance>(currentThing.getInstances());
 
-                }else{
+                } else {
                     // related to another type of thing
                     foundItemsHistoryList.add(thingifier.getThingNamed(term));
 
 
-                    if(foundItems!=null && foundItems.size()>0) {
+                    if (foundItems != null && foundItems.size() > 0) {
                         resultContainsDefinition = foundItems.get(0).typeOfConnectedItems(term);
                     }
 
                     List<ThingInstance> newitems = new ArrayList<ThingInstance>();
-                    if(foundItems!=null) {
+                    if (foundItems != null) {
                         for (ThingInstance instance : foundItems) {
                             List<ThingInstance> matchedInstances = instance.connectedItemsOfType(term);
                             newitems.addAll(matchedInstances);
                         }
                     }
                     foundItems = newitems;
-                    lastMatch=CURRENT_ITEMS;
-                    parentThing=currentThing;
-                    currentThing=null;
-                    currentInstance=null;
+                    lastMatch = CURRENT_ITEMS;
+                    parentThing = currentThing;
+                    currentThing = null;
+                    currentInstance = null;
                 }
                 continue;
             }
 
             // if it matches a relationship then get the instances identified by the relationship
             //if(currentThing != null && currentThing.definition().hasRelationship(term)){
-            if(thingifier.hasRelationshipNamed(term)){
+            if (thingifier.hasRelationshipNamed(term)) {
 
                 // what I want to store is the relationship between the parent Thing and the relationship name
-                Thing thingToCheckForRelationship = currentThing==null ? parentThing : currentThing;
+                Thing thingToCheckForRelationship = currentThing == null ? parentThing : currentThing;
                 lastRelationshipsFound = thingToCheckForRelationship.definition().getRelationships(term);
                 lastRelationshipFound = lastRelationshipsFound.get(0);
 
                 foundItemsHistoryList.add(lastRelationshipFound);
 
 
-                if(foundItems!=null && foundItems.size()>0) {
+                if (foundItems != null && foundItems.size() > 0) {
                     resultContainsDefinition = foundItems.get(0).typeOfConnectedItems(term);
                 }
 
                 List<ThingInstance> newitems = new ArrayList<ThingInstance>();
-                if(foundItems!=null) {
+                if (foundItems != null) {
                     for (ThingInstance instance : foundItems) {
                         newitems.addAll(instance.connectedItems(term));
                     }
                 }
                 foundItems = newitems;
-                parentInstance=currentInstance;
+                parentInstance = currentInstance;
                 parentThing = currentThing;
-                currentThing=null;
-                currentInstance=null;
+                currentThing = null;
+                currentInstance = null;
                 lastMatch = CURRENT_RELATIONSHIP;
                 continue;
             }
 
             // is it a GUID?
             boolean found = false;
-            for(ThingInstance instance : foundItems){
-                if(instance.getGUID().contentEquals(term)){
+            for (ThingInstance instance : foundItems) {
+                if (instance.getGUID().contentEquals(term)) {
 
                     foundItemsHistoryList.add(instance);
 
-                    if(currentThing!=null){
-                        parentThing=currentThing;
+                    if (currentThing != null) {
+                        parentThing = currentThing;
                     }
                     currentThing = null;
 
                     currentInstance = instance;
                     foundItems = new ArrayList<ThingInstance>();
                     foundItems.add(instance);
-                    lastMatch=CURRENT_INSTANCE;
-                    found=true;
+                    lastMatch = CURRENT_INSTANCE;
+                    found = true;
                 }
-                if(found){
+                if (found) {
                     break;
                 }
             }
-            if(found){
+            if (found) {
                 // it was a GUID
                 continue;
             }
 
             // is it a field?
             // is it a filter query?  e.g. ?title="name"
-            lastMatch=NOTHING;
+            lastMatch = NOTHING;
         }
 
         return this;
@@ -158,15 +157,15 @@ public class SimpleQuery{
     public List<ThingInstance> getListThingInstance() {
         List<ThingInstance> returnThis = new ArrayList<ThingInstance>();
 
-        if(lastMatch==CURRENT_THING) {
+        if (lastMatch == CURRENT_THING) {
             returnThis.addAll(currentThing.getInstances());
         }
 
-        if(lastMatch==CURRENT_INSTANCE){
+        if (lastMatch == CURRENT_INSTANCE) {
             returnThis.add(currentInstance);
         }
 
-        if(lastMatch==CURRENT_ITEMS || lastMatch == CURRENT_RELATIONSHIP){
+        if (lastMatch == CURRENT_ITEMS || lastMatch == CURRENT_RELATIONSHIP) {
             returnThis.addAll(foundItems);
         }
 
@@ -190,10 +189,10 @@ public class SimpleQuery{
     public boolean wasItemFoundUnderARelationship() {
 
         // not enough in the history list to do the check, so no it wasn't
-        if(foundItemsHistoryList.size()-2<0){
+        if (foundItemsHistoryList.size() - 2 < 0) {
             return false;
         }
-        return foundItemsHistoryList.get(foundItemsHistoryList.size()-2) instanceof RelationshipVector;
+        return foundItemsHistoryList.get(foundItemsHistoryList.size() - 2) instanceof RelationshipVector;
     }
 
     public ThingInstance getLastInstance() {

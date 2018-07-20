@@ -36,7 +36,7 @@ public class RelationshipInstance {
         return this;
     }
 
-    public String toString(){
+    public String toString() {
 
         StringBuilder output = new StringBuilder();
 
@@ -46,12 +46,12 @@ public class RelationshipInstance {
                 from.getGUID(),
                 to.getEntity().getName(),
                 to.getGUID()
-                );
+        );
 
         output.append(format + "\n");
 
         // now output the instances
-        for(ThingInstance instance : representedBy.getInstances()){
+        for (ThingInstance instance : representedBy.getInstances()) {
             output.append(instance + "\n");
         }
 

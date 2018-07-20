@@ -10,7 +10,7 @@ public class ApiRoutingDefinitionGenerator {
 
     private final Thingifier thingifier;
 
-    public ApiRoutingDefinitionGenerator(Thingifier thingifier){
+    public ApiRoutingDefinitionGenerator(final Thingifier thingifier) {
         this.thingifier = thingifier;
     }
 
@@ -18,13 +18,13 @@ public class ApiRoutingDefinitionGenerator {
     public ApiRoutingDefinition generate() {
         ApiRoutingDefinition defn = new ApiRoutingDefinition();
 
-        for(Thing thing : thingifier.getThings()){
+        for (Thing thing : thingifier.getThings()) {
 
             String url = thing.definition().getName().toLowerCase();
             // we should be able to get things e.g. GET project
             defn.addRouting(
-                    String.format("return all the instances of %s", thing.definition().getName())
-                            , RoutingVerb.GET, url, RoutingStatus.returnedFromCall());
+                    String.format("return all the instances of %s", thing.definition().getName()),
+                    RoutingVerb.GET, url, RoutingStatus.returnedFromCall());
 
             // we should be able to create things without a GUID e.g. POST project
             defn.addRouting(
@@ -46,7 +46,7 @@ public class ApiRoutingDefinitionGenerator {
             defn.addRouting("method not allowed",
                     RoutingVerb.PUT, url, RoutingStatus.returnValue(405));
 
-            String aUrlWGuid = thing.definition().getName().toLowerCase()  + "/:guid";
+            String aUrlWGuid = thing.definition().getName().toLowerCase() + "/:guid";
             // we should be able to get specific things based on the GUID e.g. GET project/GUID
             defn.addRouting(
                     String.format("return a specific instances of %s using a guid", thing.definition().getName()),
@@ -77,7 +77,7 @@ public class ApiRoutingDefinitionGenerator {
             defn.addRouting("method not allowed", RoutingVerb.PATCH, aUrlWGuid, RoutingStatus.returnValue(405));
 
 
-            for(RelationshipVector rel : thing.definition().getRelationships()){
+            for (RelationshipVector rel : thing.definition().getRelationships()) {
                 addRoutingsForRelationship(defn, rel);
             }
         }
@@ -85,7 +85,7 @@ public class ApiRoutingDefinitionGenerator {
         return defn;
     }
 
-    private void addRoutingsForRelationship(ApiRoutingDefinition defn, RelationshipVector relationship) {
+    private void addRoutingsForRelationship(final ApiRoutingDefinition defn, final RelationshipVector relationship) {
 
         String fromName = relationship.getFrom().definition().getName();
         String toName = relationship.getTo().definition().getName();
@@ -103,7 +103,7 @@ public class ApiRoutingDefinitionGenerator {
 
         // we can post if there is no guid as it will create the 'thing' and the relationship connection
         defn.addRouting(String.format("create an instance of a relationship named %s between %s instance :guid and the %s instance represented by the guid in the body of the message"
-                                        , relationshipName, fromName, toName),
+                , relationshipName, fromName, toName),
                 RoutingVerb.POST, aUrl, RoutingStatus.returnedFromCall());
 
         defn.addRouting("method not allowed", RoutingVerb.HEAD, aUrl, RoutingStatus.returnValue(405));

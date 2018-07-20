@@ -10,7 +10,7 @@ public class ApiRoutingDefinition {
 
     private List<RoutingDefinition> routings;
 
-    public ApiRoutingDefinition(){
+    public ApiRoutingDefinition() {
         this.routings = new ArrayList<>();
     }
 
@@ -18,11 +18,11 @@ public class ApiRoutingDefinition {
         return routings;
     }
 
-    public void addRouting(String documentation, RoutingVerb verb, String url, RoutingStatus routingStatus) {
+    public void addRouting(final String documentation, final RoutingVerb verb, final String url, final RoutingStatus routingStatus) {
         routings.add(new RoutingDefinition(verb, url, routingStatus, null).addDocumentation(documentation));
     }
 
-    public void addRouting(String documentation, RoutingVerb verb, String url, RoutingStatus routingStatus, ResponseHeader header) {
+    public void addRouting(final String documentation, final RoutingVerb verb, final String url, final RoutingStatus routingStatus, final ResponseHeader header) {
         routings.add(new RoutingDefinition(verb, url, routingStatus, header).addDocumentation(documentation));
     }
 }

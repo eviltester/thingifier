@@ -4,27 +4,27 @@ import java.util.*;
 
 public class InstanceFields {
 
-    private Map<String,String> values = new HashMap<String,String>();
+    private Map<String, String> values = new HashMap<String, String>();
 
-    public void addValue(String fieldName, String value){
+    public void addValue(String fieldName, String value) {
         values.put(fieldName.toLowerCase(), value);
     }
 
-    public String getValue(String fieldName){
+    public String getValue(String fieldName) {
         return values.get(fieldName.toLowerCase());
     }
 
-    public List<String> getFields(){
+    public List<String> getFields() {
         List<String> fields = new ArrayList<String>(values.keySet());
         return fields;
     }
 
-    public String toString(){
+    public String toString() {
 
         StringBuilder output = new StringBuilder();
 
-        for(Map.Entry<String, String> entry : values.entrySet()){
-            output.append("\n\t\t\t\t" + entry.getKey() + " : " + entry.getValue() + "\n" );
+        for (Map.Entry<String, String> entry : values.entrySet()) {
+            output.append("\n\t\t\t\t" + entry.getKey() + " : " + entry.getValue() + "\n");
         }
 
         return output.toString();
@@ -36,8 +36,8 @@ public class InstanceFields {
         Set<String> ignorekeys = new HashSet<>(Arrays.asList(fieldNamesToIgnore));
         Set<String> keys = values.keySet();
 
-        for(String key : keys){
-            if(!ignorekeys.contains(key)) {
+        for (String key : keys) {
+            if (!ignorekeys.contains(key)) {
                 values.remove(key);
             }
         }

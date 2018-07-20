@@ -19,7 +19,7 @@ public class ThingReporter {
     private Collection<RelationshipDefinition> relationships;
 
     public ThingReporter(Map<String, Thing> things,
-                         Map<String, RelationshipDefinition>  relationships) {
+                         Map<String, RelationshipDefinition> relationships) {
 
         this.things = things.values();
         this.relationships = relationships.values();
@@ -37,7 +37,7 @@ public class ThingReporter {
         output.append("\nThings:\n");
         output.append("=======\n");
 
-        for(Thing aThing : things){
+        for (Thing aThing : things) {
             output.append(aThing.definition());
         }
 
@@ -45,18 +45,18 @@ public class ThingReporter {
         output.append("\nRelationships\n");
         output.append("=============\n");
 
-        for(RelationshipDefinition aRelationship : relationships){
+        for (RelationshipDefinition aRelationship : relationships) {
             output.append(aRelationship);
         }
 
         output.append("\nInstances\n");
         output.append("=========\n");
 
-        for(Thing aThing : things){
+        for (Thing aThing : things) {
 
             output.append("## Of " + aThing.definition().getName() + "\n");
 
-            for(ThingInstance anInstance : aThing.getInstances()) {
+            for (ThingInstance anInstance : aThing.getInstances()) {
                 output.append(anInstance);
             }
         }
@@ -69,7 +69,7 @@ public class ThingReporter {
 
         StringBuilder output = new StringBuilder();
 
-        if(thingifier!=null) {
+        if (thingifier != null) {
             // create generic API documentation
             output.append(heading(1, thingifier.getTitle()));
             output.append(String.format("%n"));
@@ -79,23 +79,23 @@ public class ThingReporter {
 
         output.append(heading(2, "Model"));
 
-        if(things!=null){
+        if (things != null) {
             output.append(heading(3, "Things"));
-            for(Thing aThing : things){
-                output.append(heading(4,aThing.definition().getName()));
+            for (Thing aThing : things) {
+                output.append(heading(4, aThing.definition().getName()));
 
                 output.append("Fields:\n");
                 output.append("<ul>\n");
 
-                for(String aField : aThing.definition().getFieldNames()){
+                for (String aField : aThing.definition().getFieldNames()) {
 
                     output.append(String.format("<li> %s %n", aField));
 
                     output.append("<ul>\n");
 
-                    output.append(String.format("<li> (%s)</li>", aThing.definition().getField(aField).getType() ));
+                    output.append(String.format("<li> (%s)</li>", aThing.definition().getField(aField).getType()));
 
-                    for(ValidationRule validation : aThing.definition().getField(aField).validationRules()){
+                    for (ValidationRule validation : aThing.definition().getField(aField).validationRules()) {
                         output.append("<li>" + validation.getErrorMessage("") + "</li>\n");
 
                     }
@@ -106,12 +106,11 @@ public class ThingReporter {
             }
         }
 
-        if(relationships!=null){
+        if (relationships != null) {
             output.append(heading(3, "Relationships"));
             output.append("<ul>\n");
 
-            for(RelationshipDefinition relationship : relationships){
-
+            for (RelationshipDefinition relationship : relationships) {
 
 
                 //task-of : todo => project
@@ -124,12 +123,13 @@ public class ThingReporter {
                 // for a two way relationship can it be combined on to one line e.g.
                 // tasks/task-of : project =(tasks)=> todo  / todo=(task-of)=> project
 
-                if(relationship.isTwoWay()){
+                if (relationship.isTwoWay()) {
                     reportLine = String.format("<li>%1$s/%2$s : %3$s =(%1$s)=> %4$s / %4$s =(%2$s)=> %3$s %n",
                             relationship.getName(),
                             relationship.getReversedRelationship().getName(),
                             relationship.from().definition().getName(),
-                            relationship.to().getName());}
+                            relationship.to().getName());
+                }
 
                 output.append(reportLine);
             }
@@ -147,16 +147,16 @@ public class ThingReporter {
 
         String currentEndPoint = "";
 
-        for(RoutingDefinition routingDefn : routingDefinitions.definitions()){
+        for (RoutingDefinition routingDefn : routingDefinitions.definitions()) {
             // only show if not a method not allowed method
-            if(!currentEndPoint.equalsIgnoreCase(routingDefn.url())){
+            if (!currentEndPoint.equalsIgnoreCase(routingDefn.url())) {
                 // new endpoint
                 output.append(heading(4, String.format("/%s%n", routingDefn.url())));
                 currentEndPoint = routingDefn.url();
             }
-            if(routingDefn.status().isReturnedFromCall() || routingDefn.status().value()!=405) {
+            if (routingDefn.status().isReturnedFromCall() || routingDefn.status().value() != 405) {
                 // ignore options
-                if(routingDefn.verb()!=RoutingVerb.OPTIONS) {
+                if (routingDefn.verb() != RoutingVerb.OPTIONS) {
                     output.append(String.format("<ul>%n<li>%n<strong>%s %s</strong><ul><li>%s</li></ul></li>%n</ul>",
                             routingDefn.verb(), routingDefn.url(), routingDefn.getDocumentation()));
 
@@ -173,7 +173,6 @@ public class ThingReporter {
         output.append(paragraph("Shutdown the server."));
 
 
-
         return output.toString();
     }
 
@@ -183,7 +182,7 @@ public class ThingReporter {
 
 
     // Template functions
-    private String heading(int level, String text){
-            return String.format("<h%1$d>%2$s</h%1$d>%n",level, text);
+    private String heading(int level, String text) {
+        return String.format("<h%1$d>%2$s</h%1$d>%n", level, text);
     }
 }

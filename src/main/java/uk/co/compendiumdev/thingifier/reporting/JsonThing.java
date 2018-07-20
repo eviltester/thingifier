@@ -1,7 +1,5 @@
 package uk.co.compendiumdev.thingifier.reporting;
 
-import uk.co.compendiumdev.thingifier.Thing;
-import uk.co.compendiumdev.thingifier.generic.definitions.ThingDefinition;
 import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
 
 import java.util.*;
@@ -10,7 +8,7 @@ public class JsonThing {
 
     public static String asJsonObjectWithWrapperObject(ThingInstance thingInstance) {
 
-        if(thingInstance==null){
+        if (thingInstance == null) {
             return "{}";
         }
 
@@ -19,7 +17,7 @@ public class JsonThing {
 
     public static String asJsonObjectWithNamedWrapperObject(ThingInstance thingInstance, String name) {
 
-        if(thingInstance==null){
+        if (thingInstance == null) {
             return "{}";
         }
 
@@ -32,7 +30,7 @@ public class JsonThing {
         return json.toString();
     }
 
-    public static String jsonObjectWrapper(String objectName, String json){
+    public static String jsonObjectWrapper(String objectName, String json) {
 
         return String.format("{ \"%s\" : %s }",
                 objectName,
@@ -41,21 +39,20 @@ public class JsonThing {
     }
 
 
-
     // TODO this seems like overkill - will we ever return multiple types of things?
     public static String asJson(List<ThingInstance> things) {
 
-        if(things==null || things.size()==0){
+        if (things == null || things.size() == 0) {
             return "{}";
         }
 
         Map<String, Set<ThingInstance>> sets = new HashMap<>();
 
         // collate the names of the things
-        for(ThingInstance thing : things){
+        for (ThingInstance thing : things) {
             String nameOfThings = thing.getEntity().getPlural();
             Set<ThingInstance> setOf = sets.get(nameOfThings);
-            if(setOf==null){
+            if (setOf == null) {
                 setOf = new HashSet<>();
                 sets.put(nameOfThings, setOf);
             }
@@ -74,23 +71,22 @@ public class JsonThing {
         // output
         String prepend = "";
 
-        if(sets.size()>1){
+        if (sets.size() > 1) {
             json.append("{\"things\" : [ ");
         }
 
         Set<String> keys = sets.keySet();
 
-        for(String typeName : keys){
+        for (String typeName : keys) {
 
             json.append(prepend);
             json.append(jsonObjectWrapper(typeName, asJsonArray(sets.get(typeName))));
             prepend = ", ";
         }
 
-        if(sets.size()>1){
+        if (sets.size() > 1) {
             json.append("]}");
         }
-
 
 
         return json.toString();
@@ -103,7 +99,7 @@ public class JsonThing {
         json.append("[");
 
         String arrayPrepend = "";
-        for(ThingInstance thing : things){
+        for (ThingInstance thing : things) {
 
             json.append(String.format("%s %s", arrayPrepend, asJson(thing)));
             arrayPrepend = ", ";
@@ -121,7 +117,7 @@ public class JsonThing {
         json.append("[");
 
         String arrayPrepend = "";
-        for(ThingInstance thing : things){
+        for (ThingInstance thing : things) {
 
             json.append(String.format("%s {\"%s\" : %s}", arrayPrepend, wrapperName, asJson(thing)));
             arrayPrepend = ", ";
@@ -134,7 +130,7 @@ public class JsonThing {
 
     public static String asJson(ThingInstance thingInstance) {
 
-        if(thingInstance==null){
+        if (thingInstance == null) {
             return "{}";
         }
 
@@ -151,10 +147,10 @@ public class JsonThing {
         StringBuilder json = new StringBuilder();
         String prepend = "";
 
-        for(String field : thing.getEntity().getFieldNames()){
+        for (String field : thing.getEntity().getFieldNames()) {
 
             json.append(String.format("%s \"%s\" : \"%s\"", prepend, field, thing.getValue(field)));
-            prepend=", ";
+            prepend = ", ";
         }
 
         return json.toString();

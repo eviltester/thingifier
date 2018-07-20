@@ -10,17 +10,17 @@ public class ValidationReport {
     private boolean validity;
     private List<String> errorMessages;
 
-    public ValidationReport(){
-        validity=true;
+    public ValidationReport() {
+        validity = true;
         errorMessages = new ArrayList<>();
     }
 
     public void setValid(boolean validity) {
-        this.validity=validity;
+        this.validity = validity;
     }
 
     public void combine(ValidationReport report) {
-        if(!report.isValid()){
+        if (!report.isValid()) {
             setValid(false);
         }
 

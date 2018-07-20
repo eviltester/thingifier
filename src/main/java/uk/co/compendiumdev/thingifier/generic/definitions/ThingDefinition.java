@@ -1,7 +1,6 @@
 package uk.co.compendiumdev.thingifier.generic.definitions;
 
 import uk.co.compendiumdev.thingifier.generic.FieldType;
-import uk.co.compendiumdev.thingifier.generic.GUID;
 
 import java.util.*;
 
@@ -13,11 +12,11 @@ public class ThingDefinition {
 
     private Map<String, List<RelationshipVector>> relationships;
 
-    private ThingDefinition(){
+    private ThingDefinition() {
         relationships = new HashMap<String, List<RelationshipVector>>();
     }
 
-    public static ThingDefinition create(String name, String plural){
+    public static ThingDefinition create(String name, String plural) {
         ThingDefinition entityDefinition = new ThingDefinition();
         entityDefinition.setName(name);
         entityDefinition.setPlural(plural);
@@ -25,13 +24,13 @@ public class ThingDefinition {
         return entityDefinition;
     }
 
-    public String toString(){
+    public String toString() {
         StringBuilder output = new StringBuilder();
 
         output.append("\t" + name + "\n");
         output.append("\t\tFields:\n");
 
-        for(Field aField : fields.values()){
+        for (Field aField : fields.values()) {
 
             output.append("\t\t\t" + aField.getName() + "\n");
         }
@@ -41,7 +40,7 @@ public class ThingDefinition {
 
     public ThingDefinition setName(String name) {
         this.name = name;
-        if(plural == null || plural.length()==0){
+        if (plural == null || plural.length() == 0) {
             this.setPlural(name);
         }
         return this;
@@ -63,7 +62,7 @@ public class ThingDefinition {
 
     public List<String> getFieldNames() {
         ArrayList<String> fieldNames = new ArrayList<String>();
-        for(Field field : fields.values()){
+        for (Field field : fields.values()) {
             fieldNames.add(field.getName());
         }
         return fieldNames;
@@ -82,23 +81,21 @@ public class ThingDefinition {
         return fields.keySet().contains(fieldName.toLowerCase());
     }
 
-    public ThingDefinition and(){
+    public ThingDefinition and() {
         return this;
     }
 
 
     public ThingDefinition addFields(Field... theseFields) {
-        for(Field aField : theseFields){
+        for (Field aField : theseFields) {
             addField(aField);
         }
         return this;
     }
 
 
-
-
     public Field getField(String fieldName) {
-        if(hasFieldNameDefined(fieldName)){
+        if (hasFieldNameDefined(fieldName)) {
             return fields.get(fieldName.toLowerCase());
         }
         return null;
@@ -111,13 +108,13 @@ public class ThingDefinition {
     public RelationshipVector getRelationship(String relationshipName, ThingDefinition toEntityDefinition) {
 
         List<RelationshipVector> relatinionshipsWithThisName = this.relationships.get(relationshipName.toLowerCase());
-        if(relatinionshipsWithThisName==null){
+        if (relatinionshipsWithThisName == null) {
             // there is no relationship with this name
             return null;
         }
 
-        for(RelationshipVector relationship : relatinionshipsWithThisName){
-            if(relationship.getTo().definition() == toEntityDefinition){
+        for (RelationshipVector relationship : relatinionshipsWithThisName) {
+            if (relationship.getTo().definition() == toEntityDefinition) {
                 return relationship;
             }
         }
@@ -130,7 +127,7 @@ public class ThingDefinition {
     public void addRelationship(RelationshipVector relationship) {
 
         List<RelationshipVector> relationshipsWithThisName = this.relationships.get(relationship.getName());
-        if(relationshipsWithThisName==null){
+        if (relationshipsWithThisName == null) {
             // there is no relationship with this name
             relationshipsWithThisName = new ArrayList<RelationshipVector>();
             this.relationships.put(relationship.getName(), relationshipsWithThisName);
@@ -147,9 +144,9 @@ public class ThingDefinition {
 
     public Collection<RelationshipVector> getRelationships() {
         // TODO: at the moment this is overly complicated because it supports duplicate named relationship which we don't use or test for
-        Set<RelationshipVector> myRelationships=new HashSet<>();
-        for(List<RelationshipVector> list : relationships.values()){
-            for(RelationshipVector rel : list){
+        Set<RelationshipVector> myRelationships = new HashSet<>();
+        for (List<RelationshipVector> list : relationships.values()) {
+            for (RelationshipVector rel : list) {
                 myRelationships.add(rel);
             }
 

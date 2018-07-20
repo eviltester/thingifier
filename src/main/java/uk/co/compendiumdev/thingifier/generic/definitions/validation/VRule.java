@@ -1,8 +1,6 @@
 package uk.co.compendiumdev.thingifier.generic.definitions.validation;
 
-import uk.co.compendiumdev.thingifier.generic.definitions.validation.ValidationRule;
-
-public class VRule{
+public class VRule {
 
     public static ValidationRule notEmpty() {
         return new NotEmptyValidationRule();

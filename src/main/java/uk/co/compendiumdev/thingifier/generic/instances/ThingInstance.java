@@ -27,25 +27,25 @@ public class ThingInstance {
         instance.addValue("guid", guid);
     }
 
-    public String toString(){
+    public String toString() {
 
         StringBuilder output = new StringBuilder();
 
         output.append("\t\t\t" + entityDefinition.getName() + "\n");
         //output.append(instance.toString() + "\n");
-        for(String fieldName : entityDefinition.getFieldNames()){
+        for (String fieldName : entityDefinition.getFieldNames()) {
             output.append(String.format("\t\t\t\t %s : %s %n", fieldName, getValue(fieldName)));
         }
 
-        if(relationships.size()>0) {
+        if (relationships.size() > 0) {
             output.append(String.format("\t\t\t\t\t Relationships:%n"));
             for (RelationshipInstance relatesTo : relationships) {
-                if(relatesTo.getFrom() == this) {
+                if (relatesTo.getFrom() == this) {
                     output.append(String.format("\t\t\t\t\t %s : %s (%s)%n",
                             relatesTo.getRelationship().getName(),
                             relatesTo.getTo().getGUID(),
                             relatesTo.getTo().getEntity().getName()));
-                }else{
+                } else {
                     output.append(String.format("\t\t\t\t\t %s : %s (%s)%n",
                             relatesTo.getRelationship().getReversedRelationship().getName(),
                             relatesTo.getFrom().getGUID(),
@@ -65,15 +65,15 @@ public class ThingInstance {
         return this.entityDefinition.getFieldNames();
     }
 
-    public ThingInstance setValue(String fieldName, String value)  {
-        if(this.entityDefinition.hasFieldNameDefined(fieldName)){
+    public ThingInstance setValue(String fieldName, String value) {
+        if (this.entityDefinition.hasFieldNameDefined(fieldName)) {
             Field field = entityDefinition.getField(fieldName);
-            if(field.isValidValue(value)) {
+            if (field.isValidValue(value)) {
                 this.instance.addValue(fieldName, value);
-            }else{
+            } else {
                 throw new IllegalArgumentException(String.format("Invalid Value %s for field %s of type %s", value, field.getName(), field.getType()));
             }
-        }else{
+        } else {
             reportError(fieldName);
         }
         return this;
@@ -81,30 +81,30 @@ public class ThingInstance {
 
     public ThingInstance setFieldValuesFrom(Map<String, String> args) {
 
-        for(Map.Entry<String, String> entry : args.entrySet()){
+        for (Map.Entry<String, String> entry : args.entrySet()) {
             setValue(entry.getKey(), entry.getValue());
         }
         return this;
     }
 
-    private void reportError(String fieldName)  {
+    private void reportError(String fieldName) {
         throw new RuntimeException("Could not find field: " + fieldName + " on Entity " + this.entityDefinition.getName());
     }
 
     public String getValue(String fieldName) {
-        if(this.entityDefinition.hasFieldNameDefined(fieldName)){
+        if (this.entityDefinition.hasFieldNameDefined(fieldName)) {
             String assignedValue = this.instance.getValue(fieldName);
-            if(assignedValue==null){
-                if(this.entityDefinition.getField(fieldName).hasDefaultValue()){
+            if (assignedValue == null) {
+                if (this.entityDefinition.getField(fieldName).hasDefaultValue()) {
                     return getDefaultValue(fieldName);
-                }else{
+                } else {
                     // does definition have a default value?
                     String defaultVal = this.entityDefinition.getField(fieldName).getType().getDefault();
-                    if(defaultVal!=null){
+                    if (defaultVal != null) {
                         return defaultVal;
                     }
                 }
-            }else{
+            } else {
                 return assignedValue;
             }
         }
@@ -131,7 +131,7 @@ public class ThingInstance {
         // TODO: enforce cardinality
 
         // find relationship
-        if(!entityDefinition.hasRelationship(relationshipName)){
+        if (!entityDefinition.hasRelationship(relationshipName)) {
             throw new IllegalArgumentException(String.format("Unknown Relationship %s for %s : %s", relationshipName, entityDefinition.getName(), getGUID()));
         }
 
@@ -147,18 +147,18 @@ public class ThingInstance {
     private void isNowRelatedVia(RelationshipInstance relationship) {
 
         // if the relationship vector has a parent that is both ways then we need to create a relationship of the reverse type to the thing that called us
-        if(relationship.getRelationship().isTwoWay()){
+        if (relationship.getRelationship().isTwoWay()) {
             this.relationships.add(relationship);
         }
     }
 
     public ThingDefinition typeOfConnectedItems(String relationshipName) {
 
-        for(RelationshipVector relationship : entityDefinition.getRelationships()){
-            if(relationship.getRelationshipDefinition().isKnownAs(relationshipName)){
-                if(relationship.getTo().definition()== this.entityDefinition){
+        for (RelationshipVector relationship : entityDefinition.getRelationships()) {
+            if (relationship.getRelationshipDefinition().isKnownAs(relationshipName)) {
+                if (relationship.getTo().definition() == this.entityDefinition) {
                     return relationship.getFrom().definition();
-                }else{
+                } else {
                     return relationship.getTo().definition();
                 }
             }
@@ -169,11 +169,11 @@ public class ThingInstance {
 
     public Collection<ThingInstance> connectedItems(String relationshipName) {
         Set<ThingInstance> theConnectedItems = new HashSet<ThingInstance>();
-        for(RelationshipInstance relationship : relationships){
-            if(relationship.getRelationship().isKnownAs(relationshipName)){
-                if(relationship.getTo()== this){
+        for (RelationshipInstance relationship : relationships) {
+            if (relationship.getRelationship().isKnownAs(relationshipName)) {
+                if (relationship.getTo() == this) {
                     theConnectedItems.add(relationship.getFrom());
-                }else{
+                } else {
                     theConnectedItems.add(relationship.getTo());
                 }
             }
@@ -185,9 +185,9 @@ public class ThingInstance {
     public void removeRelationshipsTo(ThingInstance thing, String relationshipName) {
         List<RelationshipInstance> toDelete = new ArrayList<RelationshipInstance>();
 
-        for(RelationshipInstance relationship : relationships){
-            if(relationship.getRelationship().isKnownAs(relationshipName)){
-                if(relationship.getTo() == thing || relationship.getFrom()==thing){
+        for (RelationshipInstance relationship : relationships) {
+            if (relationship.getRelationship().isKnownAs(relationshipName)) {
+                if (relationship.getTo() == thing || relationship.getFrom() == thing) {
                     toDelete.add(relationship);
                     thing.isNoLongerRelatedVia(relationship);
                 }
@@ -200,10 +200,10 @@ public class ThingInstance {
 
     public void removeAllRelationships() {
 
-        for(RelationshipInstance item : relationships){
-            if(item.getFrom()!= this) {
+        for (RelationshipInstance item : relationships) {
+            if (item.getFrom() != this) {
                 item.getFrom().removeRelationshipsInvolvingMe(this);
-            }else{
+            } else {
                 item.getTo().removeRelationshipsInvolvingMe(this);
             }
         }
@@ -220,11 +220,11 @@ public class ThingInstance {
     private void removeRelationshipsInvolvingMe(ThingInstance thing) {
         List<RelationshipInstance> toDelete = new ArrayList<RelationshipInstance>();
 
-        for(RelationshipInstance relationship : relationships){
-            if(relationship.getTo()==thing){
+        for (RelationshipInstance relationship : relationships) {
+            if (relationship.getTo() == thing) {
                 toDelete.add(relationship);
             }
-            if(relationship.getFrom()==thing){
+            if (relationship.getFrom() == thing) {
                 toDelete.add(relationship);
             }
         }
@@ -234,8 +234,8 @@ public class ThingInstance {
 
     public List<ThingInstance> connectedItemsOfType(String type) {
         List<ThingInstance> theConnectedItems = new ArrayList<ThingInstance>();
-        for(RelationshipInstance relationship : relationships){
-            if(relationship.getTo().getEntity().getName().toLowerCase().contentEquals(type.toLowerCase())){
+        for (RelationshipInstance relationship : relationships) {
+            if (relationship.getTo().getEntity().getName().toLowerCase().contentEquals(type.toLowerCase())) {
                 theConnectedItems.add(relationship.getTo());
             }
         }
@@ -249,10 +249,10 @@ public class ThingInstance {
 
 
     public ValidationReport validate() {
-        ValidationReport report= new ValidationReport();
+        ValidationReport report = new ValidationReport();
 
 
-        for(String fieldName : entityDefinition.getFieldNames()){
+        for (String fieldName : entityDefinition.getFieldNames()) {
             Field field = entityDefinition.getField(fieldName);
             ValidationReport validity = field.validate(instance.getValue(fieldName));
             report.combine(validity);

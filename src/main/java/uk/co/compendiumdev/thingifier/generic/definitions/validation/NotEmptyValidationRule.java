@@ -2,12 +2,12 @@ package uk.co.compendiumdev.thingifier.generic.definitions.validation;
 
 public class NotEmptyValidationRule implements ValidationRule {
 
-    public boolean validates(String value){
-        if(value==null){
+    public boolean validates(String value) {
+        if (value == null) {
             return false;
         }
 
-        return value.trim().length()!=0;
+        return value.trim().length() != 0;
     }
 
     @Override

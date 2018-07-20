@@ -1,17 +1,21 @@
 package uk.co.compendiumdev.thingifier.api.response;
 
 public class ApiResponseError {
-    public static String asAppropriate(String accept, String errorMessage) {
 
-        boolean isJson=true; // default to json
+    private ApiResponseError() {
+    }
 
-        if(accept!= null && accept.endsWith("/xml")){
-            isJson=false;
+    public static String asAppropriate(final String accept, final String errorMessage) {
+
+        boolean isJson = true; // default to json
+
+        if (accept != null && accept.endsWith("/xml")) {
+            isJson = false;
         }
 
-        if(isJson){
+        if (isJson) {
             return ApiResponseAsJson.getErrorMessageJson(errorMessage);
-        }else{
+        } else {
             return ApiResponseAsXml.getErrorMessageXml(errorMessage);
         }
     }

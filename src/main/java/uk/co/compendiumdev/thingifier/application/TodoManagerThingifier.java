@@ -14,7 +14,7 @@ import static uk.co.compendiumdev.thingifier.generic.FieldType.STRING;
 
 public class TodoManagerThingifier {
 
-    public Thingifier get(){
+    public Thingifier get() {
 
         // this is basically an Entity Relationship diagram as source
         // TODO:  should expand functionality based on E-R diagrams
@@ -45,17 +45,17 @@ public class TodoManagerThingifier {
         Thing todo = todoManager.createThing("todo", "todos");
 
         todo.definition()
-                .addFields( Field.is("title", STRING).
-                                        mandatory().
-                                        withValidation(
-                                                VRule.notEmpty(),
-                                                VRule.matchesType()),
-                            Field.is("description",STRING),
-                            Field.is("doneStatus",FieldType.BOOLEAN).
-                                        withDefaultValue("FALSE").
-                                            withValidation(
-                                                    VRule.matchesType()))
-                                    ;
+                .addFields(Field.is("title", STRING).
+                                mandatory().
+                                withValidation(
+                                        VRule.notEmpty(),
+                                        VRule.matchesType()),
+                        Field.is("description", STRING),
+                        Field.is("doneStatus", FieldType.BOOLEAN).
+                                withDefaultValue("FALSE").
+                                withValidation(
+                                        VRule.matchesType()))
+        ;
 
         // TODO: validate against field type DATE
         // TODO: create SET field type
@@ -72,17 +72,16 @@ public class TodoManagerThingifier {
         // e.g. (.|\s)*\S(.|\s)*    non empty
 
 
-
         Thing project = todoManager.createThing("project", "projects");
 
         project.definition()
                 .addFields(
                         Field.is("title", STRING),
-                        Field.is("description",STRING),
-                        Field.is("completed",FieldType.BOOLEAN).
+                        Field.is("description", STRING),
+                        Field.is("completed", FieldType.BOOLEAN).
                                 withDefaultValue("FALSE").
                                 withValidation(VRule.matchesType()),
-                        Field.is("active",FieldType.BOOLEAN).
+                        Field.is("active", FieldType.BOOLEAN).
                                 withDefaultValue("TRUE").
                                 withValidation(VRule.matchesType()));
 
@@ -94,12 +93,12 @@ public class TodoManagerThingifier {
                         Field.is("title", STRING).
                                 mandatory().
                                 withValidation(VRule.notEmpty()),
-                        Field.is("description",STRING));
+                        Field.is("description", STRING));
 
         // TODO create mandatory relationshisp = at the moment all entities can exist without relationship
         // e.g. create an estimate for a todo - the estimate must have a todo
         todoManager.defineRelationship(Between.things(project, todo), AndCall.it("tasks"), WithCardinality.of("1", "*")).
-                whenReversed(WithCardinality.of("1","*"),AndCall.it("task-of"));
+                whenReversed(WithCardinality.of("1", "*"), AndCall.it("task-of"));
 
         todoManager.defineRelationship(Between.things(project, category), AndCall.it("categories"), WithCardinality.of("1", "*"));
         todoManager.defineRelationship(Between.things(category, todo), AndCall.it("todos"), WithCardinality.of("1", "*"));

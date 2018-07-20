@@ -20,8 +20,8 @@ import static spark.Spark.*;
 
 public class ThingifierRestServer {
 
-    private String justThePath(String path){
-        if(path.startsWith("/")){
+    private String justThePath(String path) {
+        if (path.startsWith("/")) {
             return path.substring(1);
         }
         return path;
@@ -37,7 +37,7 @@ public class ThingifierRestServer {
         // this is just a quick hack to amend it to support XML
         // TODO: try to change this in the future to make it more robust, perhaps the API shouldn't take a String as the body, it should take a parsed class?
         // TODO: BUG - since we remove the wrapper we might send in a POST <project><title>My posted todo on the project</title></project> to /todo and it will work fine if the fields are the same
-        if(request.headers("Content-Type")!=null && request.headers("Content-Type").endsWith("/xml")) {
+        if (request.headers("Content-Type") != null && request.headers("Content-Type").endsWith("/xml")) {
 
             // PROTOTYPE XML Conversion
             System.out.println(request.body());
@@ -75,7 +75,7 @@ public class ThingifierRestServer {
                 System.out.println(request.url());
                 System.out.println(request.pathInfo());
                 System.out.println(request.body());
-            }catch (Exception e){
+            } catch (Exception e) {
                 System.out.println(e);
             }
 
@@ -90,7 +90,7 @@ public class ThingifierRestServer {
                 System.out.println("**RESPONSE**");
                 System.out.println(response.status());
                 System.out.println(response.body());
-            }catch (Exception e){
+            } catch (Exception e) {
                 System.out.println(e);
             }
         });
@@ -109,76 +109,80 @@ public class ThingifierRestServer {
         });
 
 
-        for(RoutingDefinition defn : routingDefinitions.definitions()){
-            switch (defn.verb()){
+        for (RoutingDefinition defn : routingDefinitions.definitions()) {
+            switch (defn.verb()) {
                 case GET:
-                    if(defn.status().isReturnedFromCall()) {
+                    if (defn.status().isReturnedFromCall()) {
                         get(defn.url(), (request, response) -> {
                             ApiResponse apiResponse = thingifier.api().get(justThePath(request.pathInfo()));
                             response.status(apiResponse.getStatusCode());
-                            addHeaders(apiResponse.getHeaders(),response);
+                            addHeaders(apiResponse.getHeaders(), response);
                             return new HttpApiResponse(request, response, apiResponse).getBody();
                             //return apiResponse.getBody();
                         });
                     }
                     break;
                 case POST:
-                    if(defn.status().isReturnedFromCall()) {
+                    if (defn.status().isReturnedFromCall()) {
                         post(defn.url(), (request, response) -> {
                             ApiResponse apiResponse = thingifier.api().post(justThePath(request.pathInfo()), justTheBody(request, thingifier));
                             response.status(apiResponse.getStatusCode());
-                            addHeaders(apiResponse.getHeaders(),response);
+                            addHeaders(apiResponse.getHeaders(), response);
                             return new HttpApiResponse(request, response, apiResponse).getBody();
                             //return apiResponse.getBody();
                         });
                     }
                     break;
                 case HEAD:
-                    if(!defn.status().isReturnedFromCall()) {
+                    if (!defn.status().isReturnedFromCall()) {
                         head(defn.url(), (request, response) -> {
-                            response.status(defn.status().value());return "";
+                            response.status(defn.status().value());
+                            return "";
                         });
                     }
                     break;
                 case DELETE:
-                    if(!defn.status().isReturnedFromCall()) {
+                    if (!defn.status().isReturnedFromCall()) {
                         delete(defn.url(), (request, response) -> {
-                            response.status(defn.status().value());return "";
+                            response.status(defn.status().value());
+                            return "";
                         });
-                    }else{
+                    } else {
                         delete(defn.url(), (request, response) -> {
                             ApiResponse apiResponse = thingifier.api().delete(justThePath(request.pathInfo()));
                             response.status(apiResponse.getStatusCode());
-                            addHeaders(apiResponse.getHeaders(),response);
+                            addHeaders(apiResponse.getHeaders(), response);
                             return new HttpApiResponse(request, response, apiResponse).getBody();
                             //return apiResponse.getBody();
-                            });
+                        });
                     }
                     break;
                 case PATCH:
-                    if(!defn.status().isReturnedFromCall()) {
+                    if (!defn.status().isReturnedFromCall()) {
                         patch(defn.url(), (request, response) -> {
-                            response.status(defn.status().value());return "";
+                            response.status(defn.status().value());
+                            return "";
                         });
                     }
                     break;
                 case PUT:
-                    if(!defn.status().isReturnedFromCall()) {
+                    if (!defn.status().isReturnedFromCall()) {
                         put(defn.url(), (request, response) -> {
-                            response.status(defn.status().value());return "";
+                            response.status(defn.status().value());
+                            return "";
                         });
-                    }else{
+                    } else {
                         put(defn.url(), (request, response) -> {
                             ApiResponse apiResponse = thingifier.api().put(justThePath(request.pathInfo()), justTheBody(request, thingifier));
                             response.status(apiResponse.getStatusCode());
-                            addHeaders(apiResponse.getHeaders(),response);
+                            addHeaders(apiResponse.getHeaders(), response);
                             return new HttpApiResponse(request, response, apiResponse).getBody();
                             //return apiResponse.getBody();
                         });
                     }
                     break;
                 case OPTIONS:
-                    if(!defn.status().isReturnedFromCall()) {
+                    if (!defn.status().isReturnedFromCall()) {
                         options(defn.url(), (request, response) -> {
                             response.status(defn.status().value());
                             response.header(defn.header(), defn.headerValue());
@@ -192,30 +196,50 @@ public class ThingifierRestServer {
 
         // TODO : allow this to be overwritten by config
         // nothing else is supported
-        head("*", (request, response) -> {response.status(404); return "";});
-        get("*", (request, response) -> {response.status(404); return "";});
-        options("*", (request, response) -> {response.status(404); return "";});
-        put("*", (request, response) -> {response.status(404); return "";});
-        post("*", (request, response) -> {response.status(404); return "";});
-        patch("*", (request, response) -> {response.status(404); return "";});
-        delete("*", (request, response) -> {response.status(404); return "";});
+        head("*", (request, response) -> {
+            response.status(404);
+            return "";
+        });
+        get("*", (request, response) -> {
+            response.status(404);
+            return "";
+        });
+        options("*", (request, response) -> {
+            response.status(404);
+            return "";
+        });
+        put("*", (request, response) -> {
+            response.status(404);
+            return "";
+        });
+        post("*", (request, response) -> {
+            response.status(404);
+            return "";
+        });
+        patch("*", (request, response) -> {
+            response.status(404);
+            return "";
+        });
+        delete("*", (request, response) -> {
+            response.status(404);
+            return "";
+        });
 
         exception(RuntimeException.class, (e, request, response) -> {
             response.status(400);
-            response.body(ApiResponseError.asAppropriate(request.headers("Accept"),e.getMessage()));
+            response.body(ApiResponseError.asAppropriate(request.headers("Accept"), e.getMessage()));
         });
 
         exception(Exception.class, (e, request, response) -> {
             response.status(500);
-            response.body(ApiResponseError.asAppropriate(request.headers("Accept"),e.getMessage()));
+            response.body(ApiResponseError.asAppropriate(request.headers("Accept"), e.getMessage()));
         });
 
     }
 
 
-
     private void addHeaders(Set<Map.Entry<String, String>> headers, Response response) {
-        for(Map.Entry<String, String> header : headers){
+        for (Map.Entry<String, String> header : headers) {
             response.header(header.getKey(), header.getValue());
         }
     }

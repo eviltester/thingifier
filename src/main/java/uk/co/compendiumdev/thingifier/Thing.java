@@ -19,22 +19,21 @@ public class Thing {
     }
 
 
-
     // TODO should probably create a Thing with a populated definition rather than this way round
     public static Thing create(String name, String plural) {
         Thing thing = new Thing(ThingDefinition.create(name, plural));
         return thing;
     }
 
-    public ThingInstance createInstance(){
+    public ThingInstance createInstance() {
         return new ThingInstance(definition);
     }
 
-    public ThingInstance createInstance(String guid){
+    public ThingInstance createInstance(String guid) {
         return new ThingInstance(definition, guid);
     }
 
-    public Thing addInstance(ThingInstance instance){
+    public Thing addInstance(ThingInstance instance) {
 
         instances.put(instance.getGUID(), instance);
         return this;
@@ -46,13 +45,12 @@ public class Thing {
     }
 
 
-
     public ThingInstance findInstanceByField(FieldValue fieldValue) {
 
-        for(ThingInstance thing : instances.values()){
-            if(thing.getValue(fieldValue.getName()).contentEquals(fieldValue.getValue())){
+        for (ThingInstance thing : instances.values()) {
+            if (thing.getValue(fieldValue.getName()).contentEquals(fieldValue.getValue())) {
                 return thing;
-            };
+            }
         }
 
         return null;
@@ -60,7 +58,7 @@ public class Thing {
 
     public ThingInstance findInstanceByGUID(String instanceFieldValue) {
 
-        if(instances.containsKey(instanceFieldValue)){
+        if (instances.containsKey(instanceFieldValue)) {
             return instances.get(instanceFieldValue);
         }
 
@@ -73,10 +71,9 @@ public class Thing {
     }
 
 
-
     public Thing deleteInstance(String guid) {
 
-        if(!instances.containsKey(guid)){
+        if (!instances.containsKey(guid)) {
             throw new IndexOutOfBoundsException(
                     String.format("Could not find a %s with GUID %s",
                             definition.getName(), guid));
@@ -100,7 +97,6 @@ public class Thing {
     public ThingDefinition definition() {
         return definition;
     }
-
 
 
 }

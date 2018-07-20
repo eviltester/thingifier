@@ -1,6 +1,7 @@
 package uk.co.compendiumdev.thingifier.generic;
 
 public enum FieldType {
+
     STRING(""), INTEGER(""), DATE(null), BOOLEAN("FALSE");
 
     private final String defaultValue;

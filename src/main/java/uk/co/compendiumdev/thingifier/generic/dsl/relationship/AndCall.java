@@ -1,16 +1,16 @@
 package uk.co.compendiumdev.thingifier.generic.dsl.relationship;
 
 
-public class AndCall {
+public final class AndCall {
 
 
     private final String nameToCallIt;
 
-    public AndCall(String nameToCallIt) {
+    public AndCall(final String nameToCallIt) {
         this.nameToCallIt = nameToCallIt;
     }
 
-    public static AndCall it(String nameToCallIt) {
+    public static AndCall it(final String nameToCallIt) {
         return new AndCall(nameToCallIt);
     }
 

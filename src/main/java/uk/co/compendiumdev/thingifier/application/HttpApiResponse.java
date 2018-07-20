@@ -19,23 +19,23 @@ public class HttpApiResponse {
 
     public String getBody() {
 
-        boolean asJson=true; //default to json
+        boolean asJson = true; //default to json
 
-        if(request.headers("Accept")!=null) {
+        if (request.headers("Accept") != null) {
             if (request.headers("Accept").endsWith("/xml")) {
                 asJson = false;
             }
-            if (request.headers("Accept").endsWith("/json")) {
-                // todo : should probably return a 406 Not Acceptable http status message if we don't support the asked for type
-            }
+//            if (request.headers("Accept").endsWith("/json")) {
+//                // todo : should probably return a 406 Not Acceptable http status message if we don't support the asked for type
+//            }
         }
 
-        String returnBody="";
+        String returnBody = "";
 
-        if(asJson){
+        if (asJson) {
             returnBody = new ApiResponseAsJson(apiResponse).getJson();
             response.type("application/json");
-        }else{
+        } else {
             returnBody = new ApiResponseAsXml(apiResponse).getXml();
             response.type("application/xml");
         }

@@ -4,24 +4,25 @@ public class RoutingStatus {
     private int returnedStatusCode;
     private boolean returnedFromCall;
 
-    private RoutingStatus(){
-        this.returnedFromCall=true;
-        this.returnedStatusCode=0;
+    private RoutingStatus() {
+        this.returnedFromCall = true;
+        this.returnedStatusCode = 0;
     }
+
     public static RoutingStatus returnedFromCall() {
         return new RoutingStatus().setReturnedFromCall(true);
     }
 
-    public static RoutingStatus returnValue(int status) {
+    public static RoutingStatus returnValue(final int status) {
         return new RoutingStatus().setStatusCode(status).setReturnedFromCall(false);
     }
 
-    private RoutingStatus setStatusCode(int status) {
+    private RoutingStatus setStatusCode(final int status) {
         this.returnedStatusCode = status;
         return this;
     }
 
-    private RoutingStatus setReturnedFromCall(boolean isReturned) {
+    private RoutingStatus setReturnedFromCall(final boolean isReturned) {
         this.returnedFromCall = isReturned;
         return this;
     }

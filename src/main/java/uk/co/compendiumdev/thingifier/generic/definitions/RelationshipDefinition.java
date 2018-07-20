@@ -14,15 +14,14 @@ public class RelationshipDefinition {
     private final Thing from;
     private final Thing to;
     private final Cardinality cardinality;
-    private RelationshipVector from_to;
-    private RelationshipVector to_from;
-
+    private RelationshipVector fromTo;
+    private RelationshipVector toFrom;
 
 
     private RelationshipDefinition(Thing from, Thing to, RelationshipVector fromVector) {
         this.from = from;
         this.to = to;
-        from_to = fromVector;
+        fromTo = fromVector;
         fromVector.addFromAndToFor(from, to, this);
         this.name = fromVector.getName();
         this.cardinality = fromVector.getCardinality();
@@ -40,23 +39,23 @@ public class RelationshipDefinition {
         withReverse(new RelationshipVector(it.isCalled(), of));
     }
 
-    public RelationshipDefinition withReverse(RelationshipVector toVector){
-        to_from = toVector;
+    public RelationshipDefinition withReverse(RelationshipVector toVector) {
+        toFrom = toVector;
         toVector.addFromAndToFor(to, from, this);
         to.definition().addRelationship(toVector);
         return this;
     }
 
-    public String toString(){
+    public String toString() {
 
         StringBuilder output = new StringBuilder();
         // TODO: the <=> should reflect the cardinality defined vectors created
-        if(to_from==null) {
+        if (toFrom == null) {
             output.append(String.format("\t\t%s : %s <=> %s %n",
-                            this.name, from.definition().getName(), to.definition().getName()));
-        }else{
+                    this.name, from.definition().getName(), to.definition().getName()));
+        } else {
             output.append(String.format("\t\t%1$s : %2$s <%1$s/%4$s> %3$s %n",
-                    this.name, from.definition().getName(), to.definition().getName(), to_from.getName()));
+                    this.name, from.definition().getName(), to.definition().getName(), toFrom.getName()));
 
         }
 
@@ -77,7 +76,7 @@ public class RelationshipDefinition {
 
 
     public boolean isTwoWay() {
-        return to_from!=null;
+        return toFrom != null;
     }
 
 
@@ -85,7 +84,7 @@ public class RelationshipDefinition {
         Return the representation of the reversal
      */
     public RelationshipVector getReversedRelationship() {
-        return to_from;
+        return toFrom;
     }
 
     /*
@@ -93,16 +92,16 @@ public class RelationshipDefinition {
      */
     public boolean isKnownAs(String relationshipName) {
 
-        if(from_to.getName().toLowerCase().equalsIgnoreCase(relationshipName)){
+        if (fromTo.getName().toLowerCase().equalsIgnoreCase(relationshipName)) {
             return true;
         }
-        if(to_from!=null && to_from.getName().toLowerCase().equalsIgnoreCase(relationshipName)){
+        if (toFrom != null && toFrom.getName().toLowerCase().equalsIgnoreCase(relationshipName)) {
             return true;
         }
         return false;
     }
 
     public RelationshipVector getFromRelationship() {
-        return from_to;
+        return fromTo;
     }
 }

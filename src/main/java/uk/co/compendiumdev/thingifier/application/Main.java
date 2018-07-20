@@ -5,7 +5,7 @@ import spark.Spark;
 import static spark.Spark.get;
 
 public class Main {
-    static boolean hasHerokuAssignedPort(){
+    static boolean hasHerokuAssignedPort() {
         ProcessBuilder processBuilder = new ProcessBuilder();
         return (processBuilder.environment().get("PORT") != null);
     }
@@ -25,16 +25,16 @@ public class Main {
 
         // added to support heroku as per https://sparktutorials.github.io/2015/08/24/spark-heroku.html
         // environment can override config for port
-        if(hasHerokuAssignedPort()) {
+        if (hasHerokuAssignedPort()) {
             proxyport = getHerokuAssignedPort();
         }
 
-        for(String arg : args){
+        for (String arg : args) {
             System.out.println("Args: " + arg);
 
-            if(arg.startsWith("-port")){
-                String[]details = arg.split("=");
-                if(details!=null && details.length>1){
+            if (arg.startsWith("-port")) {
+                String[] details = arg.split("=");
+                if (details != null && details.length > 1) {
                     proxyport = Integer.parseInt(details[1].trim());
                     System.out.println("Will configure web server to use port " + proxyport);
                 }
@@ -42,19 +42,17 @@ public class Main {
         }
 
 
-
         Spark.port(proxyport);
 
         // todo : add shutdown behind an admin authentication with basic auth and a custom secret code header
         // todo : add some other admin endpoints e.g. show version details of the app etc.
         // TODO: add a shutdown verb as configurable through arguments e.g. -shutdownable=false
-        get("/shutdown", (request, result) -> {System.exit(0); return "";});
+        get("/shutdown", (request, result) -> {
+            System.exit(0);
+            return "";
+        });
 
         ThingifierRestServer restServer = new ThingifierRestServer(args, "", new TodoManagerThingifier().get());
-
-
-
-
 
 
         System.out.println("Running on " + Spark.port());

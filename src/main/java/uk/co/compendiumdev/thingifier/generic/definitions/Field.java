@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class Field {
+public final class Field {
 
     private final String name;
     private final FieldType type;
@@ -22,8 +22,8 @@ public class Field {
     private Field(String name, FieldType type) {
         this.name = name;
         this.type = type;
-        validationRules=new ArrayList<>();
-        fieldIsOptional=true;
+        validationRules = new ArrayList<>();
+        fieldIsOptional = true;
 
     }
 
@@ -35,7 +35,6 @@ public class Field {
         Field aField = new Field(name, type);
         return aField;
     }
-
 
 
     public String getName() {
@@ -53,7 +52,7 @@ public class Field {
     }
 
     public boolean hasDefaultValue() {
-        return defaultValue!=null;
+        return defaultValue != null;
     }
 
     public FieldType getType() {
@@ -62,24 +61,24 @@ public class Field {
 
     public boolean isValidValue(String value) {
 
-        if(value==null){
+        if (value == null) {
             return false;
         }
 
-        if(type == FieldType.BOOLEAN){
-            if(value.toLowerCase().contentEquals("true") ||
-                    value.toLowerCase().contentEquals("false")     ){
+        if (type == FieldType.BOOLEAN) {
+            if (value.toLowerCase().contentEquals("true") ||
+                    value.toLowerCase().contentEquals("false")) {
                 return true;
             }
 
             return false;
         }
 
-        if(type == FieldType.INTEGER){
+        if (type == FieldType.INTEGER) {
             try {
                 Integer.valueOf(value);
                 return true;
-            }catch(NumberFormatException e){
+            } catch (NumberFormatException e) {
                 return false;
             }
         }
@@ -106,25 +105,25 @@ public class Field {
 
         // missing fields will come through as null,
         // if they are optional then that is fine
-        if(fieldIsOptional && value==null){
+        if (fieldIsOptional && value == null) {
             report.setValid(true);
             return report;
         }
 
-        if(!fieldIsOptional && value==null){
+        if (!fieldIsOptional && value == null) {
             report.setValid(false);
             report.addErrorMessage(String.format("%s : field is mandatory", this.getName()));
             return report;
         }
 
-        for(ValidationRule rule : validationRules){
+        for (ValidationRule rule : validationRules) {
 
-            if(rule instanceof MatchesTypeValidationRule){
-                if(!isValidValue(value)){
+            if (rule instanceof MatchesTypeValidationRule) {
+                if (!isValidValue(value)) {
                     report.setValid(false);
                     report.addErrorMessage(String.format("%s : %s does not match type %s", this.getName(), value, type));
                 }
-            }else {
+            } else {
 
                 if (!rule.validates(value)) {
                     report.setValid(false);
@@ -141,7 +140,7 @@ public class Field {
     }
 
     public Field mandatory() {
-        fieldIsOptional=false;
+        fieldIsOptional = false;
         return this;
     }
 

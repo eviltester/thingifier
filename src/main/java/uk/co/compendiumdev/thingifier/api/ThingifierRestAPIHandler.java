@@ -45,7 +45,7 @@ public class ThingifierRestAPIHandler {
         // if queryis empty then need a way to check if the query matched
         // create a thing
         Thing thing = thingifier.getThingNamed(url);
-        if(thing!=null){
+        if (thing != null) {
             return createANewThingWithPost(args, thing);
         }
 
@@ -56,7 +56,7 @@ public class ThingifierRestAPIHandler {
         // amend  a thing
         // thing/guid
         String[] urlParts = url.split("/");
-        if(urlParts.length==2) {
+        if (urlParts.length == 2) {
 
             String thingName = urlParts[0];
             thing = thingifier.getThingNamed(thingName);
@@ -71,18 +71,18 @@ public class ThingifierRestAPIHandler {
          */
         // get the things to post to
         SimpleQuery query = new SimpleQuery(thingifier, url).performQuery();
-        if(query.lastMatchWasRelationship()){
+        if (query.lastMatchWasRelationship()) {
 
             // get the relationship name
             String relationshipName = query.getLastRelationshipName();
 
             // find the thing in the body
 
-            ThingInstance relatedItem=null;
+            ThingInstance relatedItem = null;
 
             // if there is a guid in the body then use that to try and find a thing that matches it
-            JsonObject thingJson= new JsonParser().parse(body).getAsJsonObject();
-            if(thingJson.has("guid")) {
+            JsonObject thingJson = new JsonParser().parse(body).getAsJsonObject();
+            if (thingJson.has("guid")) {
                 String thingGUID = thingJson.get("guid").getAsString();
 
                 relatedItem = thingifier.findThingInstanceByGuid(thingGUID);
@@ -94,7 +94,7 @@ public class ThingifierRestAPIHandler {
 
             // find the thing from the query to connect the relatedItem to
             ThingInstance connectThis = query.getParentInstance();
-            if(connectThis==null){
+            if (connectThis == null) {
                 return ApiResponse.error404(String.format("Could not find parent thing for relationship %s", url));
             }
 
@@ -104,7 +104,7 @@ public class ThingifierRestAPIHandler {
             RelationshipVector relationshipToUse;
 
             // if we have a parent thing, but no GUID then can we create a Thing and connect it?
-            if(relatedItem==null) {
+            if (relatedItem == null) {
                 List<RelationshipVector> possibleRelationships = connectThis.getEntity().getRelationships(relationshipName);
                 // if no way to narrow it down then use the first one TODO: potential bug if multiple named relationshps
                 relationshipToUse = possibleRelationships.get(0);
@@ -112,41 +112,38 @@ public class ThingifierRestAPIHandler {
 
                 Thing thingToCreate = thingifier.getThingNamed(createThing.getName());
 
-                try{
+                try {
                     relatedItem = thingToCreate.createInstance().setFieldValuesFrom(new Gson().fromJson(body, Map.class));
-                }catch(Exception e){
+                } catch (Exception e) {
                     return ApiResponse.error(400, e.getMessage());
                 }
-
 
 
                 // assuming the thing is valid - it might not be so detect it here
                 ValidationReport validation = relatedItem.validate();
 
-                if(validation.isValid()) {
+                if (validation.isValid()) {
                     thingToCreate.addInstance(relatedItem);
                     returnThing = relatedItem;
-                }else{
+                } else {
                     // do not add it, report the errors
                     return ApiResponse.error(400, validation.getErrorMessages());
                 }
-            }else{
+            } else {
                 // we know what we are connecting to, find the correct relationship
                 relationshipToUse = connectThis.getEntity().getRelationship(relationshipName, relatedItem.getEntity());
             }
 
 
-
             try {
                 // TODO: enforce cardinality on relationship
                 connectThis.connects(relationshipToUse.getName(), relatedItem);
-            }catch(Exception e){
+            } catch (Exception e) {
                 return ApiResponse.error(400, String.format("Could not connect %s (%s) to %s (%s) via relationship %s",
-                                                                        connectThis.getGUID(), connectThis.getEntity().getName(),
-                                                                        relatedItem.getGUID(), relatedItem.getEntity().getName(),
-                                                                        relationshipToUse.getName()));
+                        connectThis.getGUID(), connectThis.getEntity().getName(),
+                        relatedItem.getGUID(), relatedItem.getEntity().getName(),
+                        relationshipToUse.getName()));
             }
-
 
 
             return ApiResponse.created(returnThing);
@@ -155,10 +152,9 @@ public class ThingifierRestAPIHandler {
         // Assume it matches  alist
 
 
-
         List<ThingInstance> items = query.getListThingInstance();
 
-        if(items.size()>0) {
+        if (items.size() > 0) {
             // TODO: this should really have validation
             // TODO: not implemented yet
             // this should be creating a new instance of the type of thing with a relationship to the parent
@@ -179,25 +175,25 @@ public class ThingifierRestAPIHandler {
 
         }
         ThingInstance instance = thing.findInstanceByField(FieldValue.is("guid", instanceGuid));
-        if (instance==null){
+        if (instance == null) {
             // cannot amend something that does not exist
             return ApiResponse.error404(String.format("No such %s entity instance with GUID %s found", thing.definition().getName(), instanceGuid));
-        }else{
+        } else {
 
             ThingInstance cloned = instance.createDuplicateWithoutRelationships();
 
-            try{
+            try {
                 cloned.setFieldValuesFrom(args);
-            }catch(Exception e){
+            } catch (Exception e) {
                 return ApiResponse.error(400, e.getMessage());
             }
 
             ValidationReport validation = cloned.validate();
 
-            if(validation.isValid()) {
+            if (validation.isValid()) {
                 instance.setFieldValuesFrom(args);
                 return ApiResponse.success().returnSingleInstance(instance);
-            }else {
+            } else {
                 // do not add it, report the errors
                 return ApiResponse.error(400, validation.getErrorMessages());
             }
@@ -208,18 +204,18 @@ public class ThingifierRestAPIHandler {
         // create a new thing
         ThingInstance instance = thing.createInstance();
 
-        try{
+        try {
             instance.setFieldValuesFrom(args);
-        }catch(Exception e){
+        } catch (Exception e) {
             return ApiResponse.error(400, e.getMessage());
         }
 
         ValidationReport validation = instance.validate();
 
-        if(validation.isValid()) {
+        if (validation.isValid()) {
             thing.addInstance(instance);
             return ApiResponse.created(instance);
-        }else{
+        } else {
             // do not add it, report the errors
             return ApiResponse.error(400, validation.getErrorMessages());
         }
@@ -238,7 +234,7 @@ public class ThingifierRestAPIHandler {
         // if queryis empty then need a way to check if the query matched
         // create a thing
         Thing thing = thingifier.getThingNamed(url);
-        if(thing!=null){
+        if (thing != null) {
             // can't create a new thing at root level with PUT
             return ApiResponse.error(405, "Cannot create root level entity with a PUT");
         }
@@ -247,7 +243,7 @@ public class ThingifierRestAPIHandler {
         // amend  a thing
         // thing/guid
         String[] urlParts = url.split("/");
-        if(urlParts.length==2) {
+        if (urlParts.length == 2) {
 
             thing = thingifier.getThingNamed(urlParts[0]);
             if (thing == null) {
@@ -257,7 +253,7 @@ public class ThingifierRestAPIHandler {
             }
             ThingInstance instance = thing.findInstanceByField(FieldValue.is("guid", urlParts[1]));
 
-            if (instance==null){
+            if (instance == null) {
                 // it does not exist, but we have a GUID - create it
                 UUID aGUID;
 
@@ -265,31 +261,31 @@ public class ThingifierRestAPIHandler {
                     aGUID = UUID.fromString(urlParts[1]);
                     instance = thing.createInstance(aGUID.toString());
 
-                }catch(Exception e){
+                } catch (Exception e) {
                     // that is not a valid guid
                     System.out.println(e.getMessage());
                     return ApiResponse.error404(String.format("Invalid GUID for %s entity %s", urlParts[1], urlParts[0]));
                 }
 
-                try{
+                try {
                     instance.setFieldValuesFrom(args);
-                }catch(Exception e){
+                } catch (Exception e) {
                     return ApiResponse.error(400, e.getMessage());
                 }
 
 
                 ValidationReport validation = instance.validate();
 
-                if(validation.isValid()) {
+                if (validation.isValid()) {
                     thing.addInstance(instance);
                     return ApiResponse.created(instance);
-                }else{
+                } else {
                     // do not add it, report the errors
                     return ApiResponse.error(400, validation.getErrorMessages());
                 }
 
 
-            }else{
+            } else {
                 // when amending existing thing with PUT it must be idempotent so
                 // check that all fields are valid in the args
 
@@ -299,20 +295,20 @@ public class ThingifierRestAPIHandler {
                 // quick hack to make idempotent - delete all values and add new ones
                 cloned.clearAllFields(); // except "guid"
 
-                try{
+                try {
                     cloned.setFieldValuesFrom(args);
-                }catch(Exception e){
+                } catch (Exception e) {
                     return ApiResponse.error(400, e.getMessage());
                 }
 
 
                 ValidationReport validation = cloned.validate();
 
-                if(validation.isValid()) {
+                if (validation.isValid()) {
                     instance.clearAllFields();
                     instance.setFieldValuesFrom(args);
                     return ApiResponse.success().returnSingleInstance(instance);
-                }else {
+                } else {
                     // do not add it, report the errors
                     return ApiResponse.error(400, validation.getErrorMessages());
                 }
@@ -324,7 +320,7 @@ public class ThingifierRestAPIHandler {
         // get the things to post to
         List<ThingInstance> query = thingifier.simplequery(url);
 
-        if(query.size()>0) {
+        if (query.size() > 0) {
             // TODO: not implemented yet
             // this should be creating a new instance of the type of thing with a relationship to the parent
             // simple query needs to support looking at the things it found e.g. matched "todo" thing, get parent for the todo (a project), copy the relationships from the parent to the todo
@@ -340,25 +336,25 @@ public class ThingifierRestAPIHandler {
     public ApiResponse delete(String url) {
         // this should probably not delete root items
         Thing thing = thingifier.getThingNamed(url);
-        if(thing!=null){
+        if (thing != null) {
             // can't delete root level with a DELETE
             return ApiResponse.error(405, "Cannot delete root level entity");
         }
 
         SimpleQuery queryresult = new SimpleQuery(thingifier, url).performQuery();
 
-        if(queryresult.wasItemFoundUnderARelationship()){
+        if (queryresult.wasItemFoundUnderARelationship()) {
             // delete the relationships not the items
             ThingInstance parent = queryresult.getParentInstance();
             ThingInstance child = queryresult.getLastInstance();
             parent.removeRelationshipsTo(child, queryresult.getLastRelationshipName());
-        }else{
+        } else {
             List<ThingInstance> items = queryresult.getListThingInstance();
-            if(items.size()==0){
+            if (items.size() == 0) {
                 // 404 not found - nothing to delete
                 return ApiResponse.error404(String.format("Could not find any instances with %s", url));
             }
-            for(ThingInstance instance : items){
+            for (ThingInstance instance : items) {
                 thingifier.getThingNamed(instance.getEntity().getName()).deleteInstance(instance.getGUID());
             }
 
@@ -373,15 +369,15 @@ public class ThingifierRestAPIHandler {
         List<ThingInstance> queryItems = queryResults.getListThingInstance();
 
         // return a 404 if it doesn't match anything
-        if(queryResults.lastMatchWasNothing() ||
-                (queryResults.lastMatchWasInstance() && queryItems.size()==0)){
+        if (queryResults.lastMatchWasNothing() ||
+                (queryResults.lastMatchWasInstance() && queryItems.size() == 0)) {
             // if query list was empty then return a 404
             return ApiResponse.error404(String.format("Could not find an instance with %s", url));
         }
 
-        if(queryResults.lastMatchWasInstance()){
+        if (queryResults.lastMatchWasInstance()) {
             return ApiResponse.success().returnSingleInstance(queryResults.getLastInstance()).resultContainsType(queryResults.resultContainsDefn());
-        }else {
+        } else {
             return ApiResponse.success().returnInstanceCollection(queryItems).resultContainsType(queryResults.resultContainsDefn());
         }
     }
