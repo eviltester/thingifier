@@ -1,4 +1,4 @@
-package uk.co.compendiumdev.thingifier.api;
+package uk.co.compendiumdev.thingifier.api.response;
 
 public class ResponseHeader {
     public final String headerName;

@@ -1,4 +1,4 @@
-package uk.co.compendiumdev.thingifier.application;
+package uk.co.compendiumdev.thingifier.api.response;
 
 public class ApiResponseError {
     public static String asAppropriate(String accept, String errorMessage) {

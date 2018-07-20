@@ -1,9 +1,8 @@
-package uk.co.compendiumdev.thingifier.application;
+package uk.co.compendiumdev.thingifier.api.response;
 
-import com.google.gson.Gson;
 import org.json.JSONObject;
 import org.json.XML;
-import uk.co.compendiumdev.thingifier.api.ApiResponse;
+import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.generic.definitions.ThingDefinition;
 import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
 import uk.co.compendiumdev.thingifier.reporting.JsonThing;

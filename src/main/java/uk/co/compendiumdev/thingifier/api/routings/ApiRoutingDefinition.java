@@ -1,4 +1,6 @@
-package uk.co.compendiumdev.thingifier.api;
+package uk.co.compendiumdev.thingifier.api.routings;
+
+import uk.co.compendiumdev.thingifier.api.response.ResponseHeader;
 
 import java.util.ArrayList;
 import java.util.Collection;

@@ -1,4 +1,4 @@
-package uk.co.compendiumdev.thingifier.api;
+package uk.co.compendiumdev.thingifier.api.routings;
 
 public class RoutingStatus {
     private int returnedStatusCode;

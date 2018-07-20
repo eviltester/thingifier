@@ -5,7 +5,11 @@ import org.json.XML;
 import spark.Request;
 import spark.Response;
 import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.api.*;
+import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
+import uk.co.compendiumdev.thingifier.api.response.ApiResponseError;
+import uk.co.compendiumdev.thingifier.api.routings.ApiRoutingDefinition;
+import uk.co.compendiumdev.thingifier.api.routings.ApiRoutingDefinitionGenerator;
+import uk.co.compendiumdev.thingifier.api.routings.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.reporting.ThingReporter;
 
 import java.util.ArrayList;

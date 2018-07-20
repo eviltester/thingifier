@@ -1,4 +1,4 @@
-package uk.co.compendiumdev.thingifier.api;
+package uk.co.compendiumdev.thingifier.api.response;
 
 import uk.co.compendiumdev.thingifier.generic.definitions.ThingDefinition;
 import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;

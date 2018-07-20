@@ -1,8 +1,8 @@
-package uk.co.compendiumdev.thingifier.api;
+package uk.co.compendiumdev.thingifier.api.routings;
 
 import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.generic.definitions.RelationshipDefinition;
+import uk.co.compendiumdev.thingifier.api.response.ResponseHeader;
 import uk.co.compendiumdev.thingifier.generic.definitions.RelationshipVector;
 
 public class ApiRoutingDefinitionGenerator {

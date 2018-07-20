@@ -2,7 +2,9 @@ package uk.co.compendiumdev.thingifier.application;
 
 import spark.Request;
 import spark.Response;
-import uk.co.compendiumdev.thingifier.api.ApiResponse;
+import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
+import uk.co.compendiumdev.thingifier.api.response.ApiResponseAsJson;
+import uk.co.compendiumdev.thingifier.api.response.ApiResponseAsXml;
 
 public class HttpApiResponse {
     private final Request request;
