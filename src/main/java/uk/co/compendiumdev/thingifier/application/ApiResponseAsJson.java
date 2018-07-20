@@ -20,6 +20,11 @@ public class ApiResponseAsJson {
     }
 
     public String getJson() {
+
+        if(!apiResponse.hasABody()){
+            return "";
+        }
+
         if(apiResponse.isErrorResponse()){
             return getErrorMessageJson(apiResponse.getErrorMessages());
         }

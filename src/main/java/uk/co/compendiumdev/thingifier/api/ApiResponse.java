@@ -9,6 +9,7 @@ public class ApiResponse {
     public static final String GUID_HEADER = "X-Thing-Instance-GUID";
 
     private final int statusCode;
+    private boolean hasBody;
     // instead of storing a json as the body, store the things to return
     // let getBody do the conversion to json or xml
     List<ThingInstance> thingsToReturn;
@@ -29,11 +30,13 @@ public class ApiResponse {
         isCollection = true;
         isErrorResponse=false;
         errorMessages = new ArrayList<>();
+        hasBody = false;
     }
 
     private ApiResponse(int statusCode, boolean isError, Collection<String> errorMessages) {
         this(statusCode);
         isErrorResponse=isError;
+        this.hasBody=true;
         this.errorMessages.addAll(errorMessages);
     }
 
@@ -52,6 +55,7 @@ public class ApiResponse {
         this.isCollection = false;
         thingsToReturn.clear();
         thingsToReturn.add(instance);
+        andThisHasABody();
         return this;
     }
 
@@ -59,6 +63,7 @@ public class ApiResponse {
         thingsToReturn.clear();
         thingsToReturn.addAll(items);
         isCollection=true;
+        andThisHasABody();
         return this;
     }
 
@@ -100,9 +105,15 @@ public class ApiResponse {
             response.returnSingleInstance(thingInstance);
             response.setLocationHeader(thingInstance.getEntity().getName() + "/" + thingInstance.getGUID()).
                     setHeader(ApiResponse.GUID_HEADER, thingInstance.getGUID());
+            response.andThisHasABody();
         }
 
         return response;
+    }
+
+    private ApiResponse andThisHasABody() {
+        this.hasBody = true;
+        return this;
     }
 
 
@@ -171,5 +182,9 @@ public class ApiResponse {
 
     public ThingDefinition getTypeOfThingReturned() {
         return typeOfResults;
+    }
+
+    public boolean hasABody() {
+        return this.hasBody;
     }
 }

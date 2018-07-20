@@ -18,6 +18,11 @@ public class ApiResponseAsXml {
     }
 
     public String getXml() {
+
+        if(!apiResponse.hasABody()){
+            return "";
+        }
+
         if(apiResponse.isErrorResponse()){
             return getErrorMessageXml(apiResponse.getErrorMessages());
         }
