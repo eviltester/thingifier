@@ -20,7 +20,7 @@ public class EntityInstanceApiNonHttpTest {
 
     Thing todo;
     Thing project;
-    Thing category;
+
 
     @Before
     public void createDefinitions() {
@@ -29,7 +29,7 @@ public class EntityInstanceApiNonHttpTest {
 
         todo = todoManager.getThingNamed("todo");
         project = todoManager.getThingNamed("project");
-        category = todoManager.getThingNamed("category");
+
     }
     
        /*

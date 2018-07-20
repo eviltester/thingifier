@@ -68,11 +68,10 @@ public class ApiResponseAsXml {
 
             // experimental xml output
             try {
-                if(instance != null) {
                     String parseForXMLOutput = output;
                     System.out.println(parseForXMLOutput);
                     output = XML.toString(new JSONObject(parseForXMLOutput));
-                }
+
             }catch (Exception e){
                 // TODO: if this happens then the status code is going to be wrong
                 output = getErrorMessageXml(e.getMessage());

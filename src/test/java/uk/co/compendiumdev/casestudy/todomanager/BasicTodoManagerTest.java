@@ -35,12 +35,11 @@ public class BasicTodoManagerTest {
 
 
     @Test
-    public void RelationshipDefinitionCheck(){
+    public void relationshipDefinitionCheck(){
 
 
         Thing todo = todoManager.getThingNamed("todo");
         Thing project = todoManager.getThingNamed("project");
-        Thing category = todoManager.getThingNamed("category");
 
         ThingInstance paperwork = todo.createInstance().setValue("title", "scan paperwork");
         todo.addInstance(paperwork);

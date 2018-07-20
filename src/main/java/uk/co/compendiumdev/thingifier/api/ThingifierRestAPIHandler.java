@@ -268,7 +268,7 @@ public class ThingifierRestAPIHandler {
                 }catch(Exception e){
                     // that is not a valid guid
                     System.out.println(e.getMessage());
-                    return ApiResponse.error404(String.format("Invalid GUID for %s entity", urlParts[1], urlParts[0]));
+                    return ApiResponse.error404(String.format("Invalid GUID for %s entity %s", urlParts[1], urlParts[0]));
                 }
 
                 try{

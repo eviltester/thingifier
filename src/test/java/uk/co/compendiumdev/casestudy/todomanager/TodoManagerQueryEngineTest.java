@@ -31,7 +31,7 @@ public class TodoManagerQueryEngineTest {
      */
 
     @Test
-    public void ApiPrototypeFreeBackend() {
+    public void apiPrototypeFreeBackend() {
 
 
         // stuff we could get for free from backend

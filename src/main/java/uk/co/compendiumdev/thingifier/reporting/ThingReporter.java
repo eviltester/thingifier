@@ -89,7 +89,7 @@ public class ThingReporter {
 
                 for(String aField : aThing.definition().getFieldNames()){
 
-                    output.append(String.format("<li> %s \n", aField));
+                    output.append(String.format("<li> %s %n", aField));
 
                     output.append("<ul>\n");
 

@@ -16,7 +16,7 @@ public class ApiResponse {
     // isCollection true, return as collection, false, return as instance
     private boolean isCollection;
     // isErrorResponse true, return the stored collection of error messages
-    private static boolean isErrorResponse;
+    private boolean isErrorResponse;
     private Collection<String> errorMessages;
 
     private Map<String, String> headers;

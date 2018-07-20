@@ -5,7 +5,6 @@ import java.util.*;
 public class InstanceFields {
 
     private Map<String,String> values = new HashMap<String,String>();
-    private String[] fieldValuesFrom;
 
     public void addValue(String fieldName, String value){
         values.put(fieldName.toLowerCase(), value);

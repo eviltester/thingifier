@@ -30,7 +30,7 @@ public class RelationshipApiNonHttpTest {
 
     Thing todo;
     Thing project;
-    Thing category;
+
 
     @Before
     public void createDefinitions() {
@@ -39,7 +39,7 @@ public class RelationshipApiNonHttpTest {
 
         todo = todoManager.getThingNamed("todo");
         project = todoManager.getThingNamed("project");
-        category = todoManager.getThingNamed("category");
+
     }
 
 
@@ -406,7 +406,7 @@ public class RelationshipApiNonHttpTest {
 
 
         // Delete the relationship
-        apiresponse = todoManager.api().delete(String.format("todo/%s", relTodo.getGUID(), myNewProject.getGUID()));
+        apiresponse = todoManager.api().delete(String.format("todo/%s", relTodo.getGUID()));
         Assert.assertEquals(200, apiresponse.getStatusCode());
 
         Assert.assertEquals("Should be no stored todos", 0, todo.getInstances().size());

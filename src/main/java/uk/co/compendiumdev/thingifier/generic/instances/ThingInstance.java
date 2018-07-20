@@ -38,7 +38,7 @@ public class ThingInstance {
         }
 
         if(relationships.size()>0) {
-            output.append(String.format("\t\t\t\t\t Relationships:\n"));
+            output.append(String.format("\t\t\t\t\t Relationships:%n"));
             for (RelationshipInstance relatesTo : relationships) {
                 if(relatesTo.getFrom() == this) {
                     output.append(String.format("\t\t\t\t\t %s : %s (%s)%n",

@@ -103,13 +103,13 @@ could implement a Thingifier URL query matcher to return instances based on quer
                 .addFields( Field.is("title", STRING).
                                 mandatory().
                                 withValidation(
-                                        VRule.NotEmpty(),
-                                        VRule.MatchesType()),
+                                        VRule.notEmpty(),
+                                        VRule.matchesType()),
                         Field.is("description",STRING),
                         Field.is("doneStatus",FieldType.BOOLEAN).
                                 withDefaultValue("FALSE").
                                 withValidation(
-                                        VRule.MatchesType()))
+                                        VRule.matchesType()))
         ;
 
 
@@ -121,10 +121,10 @@ could implement a Thingifier URL query matcher to return instances based on quer
                         Field.is("description",STRING),
                         Field.is("completed",FieldType.BOOLEAN).
                                 withDefaultValue("FALSE").
-                                withValidation(VRule.MatchesType()),
+                                withValidation(VRule.matchesType()),
                         Field.is("active",FieldType.BOOLEAN).
                                 withDefaultValue("TRUE").
-                                withValidation(VRule.MatchesType()));
+                                withValidation(VRule.matchesType()));
 
 
         Thing category = todoManager.createThing("category", "categories");
@@ -133,7 +133,7 @@ could implement a Thingifier URL query matcher to return instances based on quer
                 .addFields(
                         Field.is("title", STRING).
                                 mandatory().
-                                withValidation(VRule.NotEmpty()),
+                                withValidation(VRule.notEmpty()),
                         Field.is("description",STRING));
 
         todoManager.defineRelationship(Between.things(project, todo), AndCall.it("tasks"), WithCardinality.of("1", "*")).

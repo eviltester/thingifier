@@ -78,7 +78,9 @@ public class JsonThing {
             json.append("{\"things\" : [ ");
         }
 
-        for(String typeName : sets.keySet()){
+        Set<String> keys = sets.keySet();
+
+        for(String typeName : keys){
 
             json.append(prepend);
             json.append(jsonObjectWrapper(typeName, asJsonArray(sets.get(typeName))));

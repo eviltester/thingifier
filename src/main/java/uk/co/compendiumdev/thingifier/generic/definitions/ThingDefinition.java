@@ -10,11 +10,10 @@ public class ThingDefinition {
     private String name;
     private Map<String, Field> fields = new HashMap<String, Field>();
     private String plural;
-    private String guid;
+
     private Map<String, List<RelationshipVector>> relationships;
 
     private ThingDefinition(){
-        guid = GUID.create();
         relationships = new HashMap<String, List<RelationshipVector>>();
     }
 

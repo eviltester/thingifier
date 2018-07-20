@@ -9,19 +9,16 @@ import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
 import java.util.ArrayList;
 import java.util.List;
 
+import static uk.co.compendiumdev.thingifier.query.SimpleQuery.LastMatchValue.*;
+
 public class SimpleQuery{
 
     private final Thingifier thingifier;
     private final String query;
 
-    // last match values
-    final int NOTHING=-1;
-    final int CURRENT_THING=0;
-    final int CURRENT_INSTANCE=1;
-    final int CURRENT_ITEMS=2;
-    final int CURRENT_RELATIONSHIP=3;
+    enum LastMatchValue{NOTHING, CURRENT_THING, CURRENT_INSTANCE, CURRENT_ITEMS, CURRENT_RELATIONSHIP};
 
-    int lastMatch=NOTHING;
+    LastMatchValue lastMatch= NOTHING;
 
 
     // populated during search
@@ -72,14 +69,16 @@ public class SimpleQuery{
                     foundItemsHistoryList.add(thingifier.getThingNamed(term));
 
 
-                    if(foundItems!=null & foundItems.size()>0) {
+                    if(foundItems!=null && foundItems.size()>0) {
                         resultContainsDefinition = foundItems.get(0).typeOfConnectedItems(term);
                     }
 
                     List<ThingInstance> newitems = new ArrayList<ThingInstance>();
-                    for(ThingInstance instance : foundItems){
-                        List<ThingInstance> matchedInstances = instance.connectedItemsOfType(term);
-                        newitems.addAll(matchedInstances);
+                    if(foundItems!=null) {
+                        for (ThingInstance instance : foundItems) {
+                            List<ThingInstance> matchedInstances = instance.connectedItemsOfType(term);
+                            newitems.addAll(matchedInstances);
+                        }
                     }
                     foundItems = newitems;
                     lastMatch=CURRENT_ITEMS;
@@ -102,13 +101,15 @@ public class SimpleQuery{
                 foundItemsHistoryList.add(lastRelationshipFound);
 
 
-                if(foundItems!=null & foundItems.size()>0) {
+                if(foundItems!=null && foundItems.size()>0) {
                     resultContainsDefinition = foundItems.get(0).typeOfConnectedItems(term);
                 }
 
                 List<ThingInstance> newitems = new ArrayList<ThingInstance>();
-                for(ThingInstance instance : foundItems){
-                    newitems.addAll(instance.connectedItems(term));
+                if(foundItems!=null) {
+                    for (ThingInstance instance : foundItems) {
+                        newitems.addAll(instance.connectedItems(term));
+                    }
                 }
                 foundItems = newitems;
                 parentInstance=currentInstance;
