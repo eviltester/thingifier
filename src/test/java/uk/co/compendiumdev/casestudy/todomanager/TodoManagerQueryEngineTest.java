@@ -14,11 +14,35 @@ import java.util.List;
 public class TodoManagerQueryEngineTest {
 
     private Thingifier todoManager;
+    ThingInstance paperwork;
+    ThingInstance filework;
+    Thing project;
+    ThingInstance officeCategory;
 
     @Before
     public void createDefinitions(){
 
         todoManager = TodoManagerModel.definedAsThingifier();
+
+        Thing todo = todoManager.getThingNamed("todo");
+        project = todoManager.getThingNamed("project");
+        Thing category = todoManager.getThingNamed("category");
+
+        paperwork = todo.createInstance().setValue("title", "scan paperwork");
+        todo.addInstance(paperwork);
+        System.out.println(JsonThing.asJson(paperwork));
+
+        filework = todo.createInstance().setValue("title", "file paperwork");
+        todo.addInstance(filework);
+
+        officeCategory = category.createInstance().setValue("title", "Office");
+        category.addInstance(officeCategory);
+
+        ThingInstance homeCategory = category.createInstance().setValue("title", "Home");
+        category.addInstance(homeCategory);
+
+
+        paperwork.connects("categories", officeCategory);
 
     }
 
@@ -30,31 +54,9 @@ public class TodoManagerQueryEngineTest {
 
      */
 
+
     @Test
-    public void apiPrototypeFreeBackend() {
-
-
-        // stuff we could get for free from backend
-        Thing todo = todoManager.getThingNamed("todo");
-        Thing project = todoManager.getThingNamed("project");
-        Thing category = todoManager.getThingNamed("category");
-
-        ThingInstance paperwork = todo.createInstance().setValue("title", "scan paperwork");
-        todo.addInstance(paperwork);
-        System.out.println(JsonThing.asJson(paperwork));
-
-        ThingInstance filework = todo.createInstance().setValue("title", "file paperwork");
-        todo.addInstance(filework);
-
-        ThingInstance officeCategory = category.createInstance().setValue("title", "Office");
-        category.addInstance(officeCategory);
-
-        ThingInstance homeCategory = category.createInstance().setValue("title", "Home");
-        category.addInstance(homeCategory);
-
-
-        paperwork.connects("categories", officeCategory);
-
+    public void canGetListOfEntityInstancesViaName(){
         // todo
         List<ThingInstance> query = todoManager.simplequery("todo");
 
@@ -64,6 +66,26 @@ public class TodoManagerQueryEngineTest {
 
         System.out.println(JsonThing.asJson(query));
 
+    }
+
+    @Test
+    public void canGetListOfEntityInstancesViaPluralName(){
+        // todos
+        List<ThingInstance> query = todoManager.simplequery("todos");
+
+        Assert.assertEquals(2, query.size());
+        Assert.assertTrue(query.contains(paperwork));
+        Assert.assertTrue(query.contains(filework));
+
+        System.out.println(JsonThing.asJson(query));
+
+    }
+
+    @Test
+    public void canGetSpecificEntityInstanceUsingGUID(){
+
+        List<ThingInstance> query;
+
         // todo/_GUID_
         query = todoManager.simplequery("todo/" + paperwork.getGUID());
 
@@ -71,13 +93,35 @@ public class TodoManagerQueryEngineTest {
         Assert.assertTrue(query.contains(paperwork));
         Assert.assertFalse(query.contains(filework));
 
-        ApiResponse apiresponse = todoManager.api().get("todo/" + paperwork.getGUID());
-        Assert.assertEquals(200, apiresponse.getStatusCode());
+        System.out.println(JsonThing.asJson(query));
 
-        // get a todo that does not exist
-        apiresponse = todoManager.api().get("todo/" + paperwork.getGUID() + "bob");
-        Assert.assertEquals(404, apiresponse.getStatusCode());
+    }
 
+
+
+    @Test
+    public void cannotGetGuidThatDoesNotExist(){
+
+        List<ThingInstance> query;
+
+        // todo/_GUID_
+        query = todoManager.simplequery("todo/" + paperwork.getGUID() + "bob");
+
+        Assert.assertEquals(0, query.size());
+        System.out.println(JsonThing.asJson(query));
+
+    }
+
+
+
+
+    @Test
+    public void connectionTesting() {
+
+
+        // stuff we could get for free from backend
+
+        List<ThingInstance> query;
 
         //
         ThingInstance officeWork = project.createInstance().setValue("title", "Office Work");

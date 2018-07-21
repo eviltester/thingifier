@@ -16,13 +16,13 @@ import java.util.*;
 
 public class Thingifier {
 
-    Map<String, Thing> things = new HashMap<String, Thing>();
+    private Map<String, Thing> things = new HashMap<String, Thing>();
     private Map<String, RelationshipDefinition> relationships = new HashMap<String, RelationshipDefinition>();
     private String title = "";
     private String initialParagraph = "";
 
 
-    public Thing createThing(String thingName, String pluralName) {
+    public Thing createThing(final String thingName, final String pluralName) {
         Thing aThing = Thing.create(thingName, pluralName);
         things.put(thingName, aThing);
         return aThing;
@@ -32,21 +32,21 @@ public class Thingifier {
         return new ArrayList<Thing>(things.values());
     }
 
-    public boolean hasThingNamed(String aName) {
+    public boolean hasThingNamed(final String aName) {
         return things.containsKey(aName);
     }
 
-    public Thing getThingNamed(String aName) {
+    public Thing getThingNamed(final String aName) {
         return things.get(aName);
     }
 
-    public RelationshipDefinition defineRelationship(Between things, AndCall it, Cardinality of) {
-        RelationshipDefinition relationship = RelationshipDefinition.create(things.from(), things.to(), new RelationshipVector(it.isCalled(), of));
+    public RelationshipDefinition defineRelationship(final Between giventhings, final AndCall it, final Cardinality of) {
+        RelationshipDefinition relationship = RelationshipDefinition.create(giventhings.from(), giventhings.to(), new RelationshipVector(it.isCalled(), of));
         relationships.put(it.isCalled(), relationship);
         return relationship;
     }
 
-    public RelationshipDefinition defineRelationshipBetween(String nameOfFromThing, String nameOfToThing, AndCall it) {
+    public RelationshipDefinition defineRelationshipBetween(final String nameOfFromThing, final String nameOfToThing, final AndCall it) {
         return defineRelationship(Between.things(getThingNamed(nameOfFromThing),
                 getThingNamed(nameOfToThing)), it, WithCardinality.of("1", "*"));
     }
@@ -58,11 +58,11 @@ public class Thingifier {
 
 
     // todo: allow duplicate named relationships but between different types of things
-    private RelationshipDefinition getRelationship(String relationshipName) {
+    private RelationshipDefinition getRelationship(final String relationshipName) {
         return relationships.get(relationshipName);
     }
 
-    public List<ThingInstance> simplequery(String query) {
+    public List<ThingInstance> simplequery(final String query) {
 
         return new SimpleQuery(this, query).performQuery().getListThingInstance();
 
@@ -72,7 +72,7 @@ public class Thingifier {
         return new ThingifierRestAPIHandler(this);
     }
 
-    public boolean hasRelationshipNamed(String relationshipName) {
+    public boolean hasRelationshipNamed(final String relationshipName) {
         if (relationships.containsKey(relationshipName.toLowerCase())) {
             return true;
         }
@@ -91,7 +91,7 @@ public class Thingifier {
     }
 
 
-    public ThingInstance findThingInstanceByGuid(String thingGUID) {
+    public ThingInstance findThingInstanceByGuid(final String thingGUID) {
         for (Thing aThing : things.values()) {
             ThingInstance instance = aThing.findInstanceByField(FieldValue.is("guid", thingGUID));
             if (instance != null) {
@@ -105,9 +105,9 @@ public class Thingifier {
         return relationships.values();
     }
 
-    public void setDocumentation(String title, String initialParagraph) {
-        this.title = title;
-        this.initialParagraph = initialParagraph;
+    public void setDocumentation(final String modelTitle, final String anInitialParagraph) {
+        this.title = modelTitle;
+        this.initialParagraph = anInitialParagraph;
 
 
     }
@@ -119,4 +119,19 @@ public class Thingifier {
     public String getInitialParagraph() {
         return this.initialParagraph;
     }
+
+    public boolean hasThingWithPluralNamed(final String term) {
+        Thing aThing = getThingWithPluralNamed(term);
+        return aThing != null;
+    }
+
+    public Thing getThingWithPluralNamed(final String term) {
+        for (Thing aThing : things.values()){
+            if (aThing.definition().getPlural().equalsIgnoreCase(term)){
+                return aThing;
+            }
+        }
+        return null;
+    }
+
 }

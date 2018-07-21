@@ -172,12 +172,12 @@ public class ApiResponseAsXmlTest {
         for(int todoid = 0; todoid < 2; todoid++){
 
             if (myTodo.todos[todoid].guid.equals(aTodo.getGUID())) {
-                Assert.assertEquals(aTodo.getGUID(), myTodo.todos[1].guid);
-                Assert.assertEquals("a todo", myTodo.todos[1].title);
+                Assert.assertEquals(aTodo.getGUID(), myTodo.todos[todoid].guid);
+                Assert.assertEquals("a todo", myTodo.todos[todoid].title);
                 foundCount++;
             }else {
-                Assert.assertEquals(anotherTodo.getGUID(), myTodo.todos[0].guid);
-                Assert.assertEquals("another todo", myTodo.todos[0].title);
+                Assert.assertEquals(anotherTodo.getGUID(), myTodo.todos[todoid].guid);
+                Assert.assertEquals("another todo", myTodo.todos[todoid].title);
                 foundCount++;
             }
 

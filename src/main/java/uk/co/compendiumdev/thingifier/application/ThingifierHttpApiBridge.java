@@ -40,6 +40,10 @@ public class ThingifierHttpApiBridge {
     }
 
 
+    public String query(final Request request, final Response response, final String query) {
+        ApiResponse apiResponse = thingifier.api().get(query);
+        return responseBodyFor(request.headers(), apiResponse, response);
+    }
 
     private String responseBodyFor(final Set<String> headers, final ApiResponse apiResponse, final Response response) {
         HttpApiResponse httpResponse = new HttpApiResponse(headers, apiResponse);

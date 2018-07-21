@@ -142,6 +142,10 @@ public class ThingifierRestServer {
             }
         }
 
+        // Undocumented admin interface - this needs to be authentication controlled and toggelable from command line
+        get("/admin/query/*", (request, response) -> {
+            return apiBridge.query(request, response, request.splat()[0]);
+        });
 
         // TODO : allow this to be overwritten by config
         // nothing else is supported

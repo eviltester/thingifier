@@ -52,10 +52,14 @@ public class SimpleQuery {
         for (String term : terms) {
 
             // if matches an entity type
-            if (thingifier.hasThingNamed(term)) {
+            if (thingifier.hasThingNamed(term) || thingifier.hasThingWithPluralNamed(term)) {
                 if (currentThing == null && foundItems.size() == 0) {
                     // first thing - find it
                     currentThing = thingifier.getThingNamed(term);
+                    if (currentThing == null){
+                        // was it the plural?
+                        currentThing = thingifier.getThingWithPluralNamed(term);
+                    }
                     resultContainsDefinition = currentThing.definition();
                     foundItemsHistoryList.add(currentThing);
                     parentThing = currentThing;
@@ -66,6 +70,10 @@ public class SimpleQuery {
                 } else {
                     // related to another type of thing
                     foundItemsHistoryList.add(thingifier.getThingNamed(term));
+
+                    // TODO: could match plurals further down e.g. todos/guid/categories but we really want relationships to take priority
+                    // so I haven't coded that here we need a little more complex code to handle this, but it can be done, just move this
+                    // after the relationships check if there is alreadya current or parent thing
 
 
                     if (foundItems != null && foundItems.size() > 0) {

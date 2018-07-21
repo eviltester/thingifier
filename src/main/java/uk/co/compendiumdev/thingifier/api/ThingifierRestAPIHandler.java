@@ -32,7 +32,14 @@ public class ThingifierRestAPIHandler {
     // todo : generate examples when outputing the api documentation
 
 
-    // TODO: Bug - get with 404 returns {} regardless of asked for type
+
+
+    // TODO: - listed here https://www.lisihocke.com/2018/07/testing-tour-stop-16-pair-exploring-an-api-with-thomas.html
+    // TODO: ensure that relationshps enforce the type of thing e.g. if I pass in a GUID of the wrong type then it should not cross ref
+    // TODO: possibly consider an X- header which has the number of items in the collection
+    // TODO: consider empty json collection having the type e.g. {"todos": []}
+    // TODO: because json generation does not use GSON it can create unescaped and invalid json
+    // TODO: guid should be mandatory when included in put/post ie. trim("   ") should not be valid
 
     public ApiResponse post(final String url, final String body) {
 
@@ -362,7 +369,7 @@ public class ThingifierRestAPIHandler {
         return ApiResponse.success();
     }
 
-    public ApiResponse get(String url) {
+    public ApiResponse get(final String url) {
 
 
         SimpleQuery queryResults = new SimpleQuery(thingifier, url).performQuery();
