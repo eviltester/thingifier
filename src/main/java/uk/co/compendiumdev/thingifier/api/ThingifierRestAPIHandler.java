@@ -19,8 +19,8 @@ import java.util.UUID;
 public class ThingifierRestAPIHandler {
     private final Thingifier thingifier;
 
-    public ThingifierRestAPIHandler(Thingifier thingifier) {
-        this.thingifier = thingifier;
+    public ThingifierRestAPIHandler(final Thingifier aThingifier) {
+        this.thingifier = aThingifier;
     }
 
 
@@ -34,7 +34,7 @@ public class ThingifierRestAPIHandler {
 
     // TODO: Bug - get with 404 returns {} regardless of asked for type
 
-    public ApiResponse post(String url, String body) {
+    public ApiResponse post(final String url, final String body) {
 
         Map args = new Gson().fromJson(body, Map.class);
 

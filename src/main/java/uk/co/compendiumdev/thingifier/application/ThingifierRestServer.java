@@ -20,52 +20,13 @@ import static spark.Spark.*;
 
 public class ThingifierRestServer {
 
-    private String justThePath(String path) {
-        if (path.startsWith("/")) {
-            return path.substring(1);
-        }
-        return path;
-    }
-
-
-    private String justTheBody(Request request, Thingifier thingifier) {
-
-        // because we are using crude XML and JSON parsing
-        // <project><title>My posted todo on the project</title></project>
-        // would become {"project":{"title":"My posted todo on the project"}}
-        // when we want {"title":"My posted todo on the project"}
-        // this is just a quick hack to amend it to support XML
-        // TODO: try to change this in the future to make it more robust, perhaps the API shouldn't take a String as the body, it should take a parsed class?
-        // TODO: BUG - since we remove the wrapper we might send in a POST <project><title>My posted todo on the project</title></project> to /todo and it will work fine if the fields are the same
-        if (request.headers("Content-Type") != null && request.headers("Content-Type").endsWith("/xml")) {
-
-            // PROTOTYPE XML Conversion
-            System.out.println(request.body());
-            System.out.println(XML.toJSONObject(request.body()).toString());
-            JSONObject conv = XML.toJSONObject(request.body());
-            if (conv.keySet().size() == 1) {
-                // if the key is an entity type then we just want the body
-                ArrayList<String> keys = new ArrayList<String>(conv.keySet());
-
-                if (thingifier.hasThingNamed(keys.get(0))) {
-                    // just the body
-                    String justTheBody = conv.get(keys.get(0)).toString();
-                    System.out.println(justTheBody);
-                    return justTheBody;
-                }
-
-            }
-        }
-
-        return request.body();
-    }
 
     // todo : we should be able to configure the API routing for authorisation and support logging
-    // todo : honour different Content-Type headers at the moment we assume and treat it as application/json
 
 
     public ThingifierRestServer(String[] args, String path, Thingifier thingifier) {
 
+        ThingifierHttpApiBridge apiBridge = new ThingifierHttpApiBridge(thingifier);
 
         before((request, response) -> {
 
@@ -114,21 +75,14 @@ public class ThingifierRestServer {
                 case GET:
                     if (defn.status().isReturnedFromCall()) {
                         get(defn.url(), (request, response) -> {
-                            ApiResponse apiResponse = thingifier.api().get(justThePath(request.pathInfo()));
-                            response.status(apiResponse.getStatusCode());
-                            addHeaders(apiResponse.getHeaders(), response);
-                            return new HttpApiResponse(request, response, apiResponse).getBody();
-                            //return apiResponse.getBody();
+                            return apiBridge.get(request, response);
                         });
                     }
                     break;
                 case POST:
                     if (defn.status().isReturnedFromCall()) {
                         post(defn.url(), (request, response) -> {
-                            ApiResponse apiResponse = thingifier.api().post(justThePath(request.pathInfo()), justTheBody(request, thingifier));
-                            response.status(apiResponse.getStatusCode());
-                            addHeaders(apiResponse.getHeaders(), response);
-                            return new HttpApiResponse(request, response, apiResponse).getBody();
+                            return apiBridge.post(request, response);
                             //return apiResponse.getBody();
                         });
                     }
@@ -149,10 +103,8 @@ public class ThingifierRestServer {
                         });
                     } else {
                         delete(defn.url(), (request, response) -> {
-                            ApiResponse apiResponse = thingifier.api().delete(justThePath(request.pathInfo()));
-                            response.status(apiResponse.getStatusCode());
-                            addHeaders(apiResponse.getHeaders(), response);
-                            return new HttpApiResponse(request, response, apiResponse).getBody();
+                            return apiBridge.delete(request, response);
+
                             //return apiResponse.getBody();
                         });
                     }
@@ -173,10 +125,7 @@ public class ThingifierRestServer {
                         });
                     } else {
                         put(defn.url(), (request, response) -> {
-                            ApiResponse apiResponse = thingifier.api().put(justThePath(request.pathInfo()), justTheBody(request, thingifier));
-                            response.status(apiResponse.getStatusCode());
-                            addHeaders(apiResponse.getHeaders(), response);
-                            return new HttpApiResponse(request, response, apiResponse).getBody();
+                            return apiBridge.put(request, response);
                             //return apiResponse.getBody();
                         });
                     }
@@ -237,10 +186,4 @@ public class ThingifierRestServer {
 
     }
 
-
-    private void addHeaders(Set<Map.Entry<String, String>> headers, Response response) {
-        for (Map.Entry<String, String> header : headers) {
-            response.header(header.getKey(), header.getValue());
-        }
-    }
 }
