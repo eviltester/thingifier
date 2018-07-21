@@ -24,21 +24,24 @@ public final class ApiResponse {
     private ThingDefinition typeOfResults;
 
 
-    private ApiResponse(final int statusCode) {
-        this.statusCode = statusCode;
+    private ApiResponse(final int aStatusCode) {
+        this.statusCode = aStatusCode;
         headers = new HashMap<>();
         thingsToReturn = new ArrayList();
-        isCollection = true;
+        isCollection = false;
         isErrorResponse = false;
         errorMessages = new ArrayList<>();
         hasBody = false;
     }
 
-    private ApiResponse(final int statusCode, final boolean isError, final Collection<String> errorMessages) {
-        this(statusCode);
+    private ApiResponse(final int aStatusCode, final boolean isError, final Collection<String> theErrorMessages) {
+        this(aStatusCode);
         isErrorResponse = isError;
+        if (isError){
+            isCollection = false;
+        }
         this.hasBody = true;
-        this.errorMessages.addAll(errorMessages);
+        this.errorMessages.addAll(theErrorMessages);
     }
 
     public int getStatusCode() {

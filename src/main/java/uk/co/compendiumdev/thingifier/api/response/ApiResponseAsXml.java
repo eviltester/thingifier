@@ -37,6 +37,9 @@ public class ApiResponseAsXml {
                 ThingDefinition defn = apiResponse.getTypeOfThingReturned();
                 if (defn != null) {
                     return String.format("<%1$s></%1$s>", defn.getPlural());
+                } else {
+                    // TODO: consider if this should possibly be an illegalstate exception because we need an entity type for null xml
+                    return "";
                 }
 
             }
@@ -52,6 +55,10 @@ public class ApiResponseAsXml {
                                     thingsToReturn.get(0).getEntity().getName()));
 
                     output = XML.toString(new JSONObject(parseForXMLOutput));
+
+                    // TODO: workaround for this seems like a bug in XML.toString, but work around it at the moment
+                    // i.e. it outputs <todos><todo>...</todo></todos><todos><todo>...</todo></todos>
+                    output = output.replace(String.format("</%1$s><%1$s>", thingsToReturn.get(0).getEntity().getPlural()), "");
                 }
             } catch (Exception e) {
                 // TODO: if this happens then the status code is going to be wrong

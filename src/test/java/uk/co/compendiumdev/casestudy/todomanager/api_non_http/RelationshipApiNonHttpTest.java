@@ -109,7 +109,6 @@ public class RelationshipApiNonHttpTest {
                 todo.findInstanceByField(FieldValue.is("guid", paperwork.getGUID())));
 
         Assert.assertTrue(apiresponse.getErrorMessages().size()==0);
-        Assert.assertTrue(apiresponse.getReturnedInstanceCollection().size()==0);
         Assert.assertEquals("Should have no body", "", new ApiResponseAsXml(apiresponse).getXml().trim());
         Assert.assertEquals("Should have no body", "", new ApiResponseAsJson(apiresponse).getJson().trim());
 
@@ -143,7 +142,6 @@ public class RelationshipApiNonHttpTest {
         Assert.assertEquals(200, apiresponse.getStatusCode());
         Assert.assertFalse(apiresponse.hasABody());
         Assert.assertTrue(apiresponse.getErrorMessages().size()==0);
-        Assert.assertTrue(apiresponse.getReturnedInstanceCollection().size()==0);
 
 
         Assert.assertEquals(numberOfTasks - 1, myNewProject.connectedItems("tasks").size());
@@ -199,7 +197,6 @@ public class RelationshipApiNonHttpTest {
         Assert.assertEquals(myNewProject.getGUID(), listOfProjects.get(0).getGUID());
 
         Assert.assertTrue(apiresponse.getErrorMessages().size()==0);
-        Assert.assertTrue(apiresponse.getReturnedInstanceCollection().size()==0);
         Assert.assertEquals("Should have no body", "", new ApiResponseAsXml(apiresponse).getXml().trim());
         Assert.assertEquals("Should have no body", "", new ApiResponseAsJson(apiresponse).getJson().trim());
 
@@ -237,7 +234,6 @@ public class RelationshipApiNonHttpTest {
         Assert.assertEquals(numberOfTasks + 1, myNewProject.connectedItems("tasks").size());
 
         Assert.assertTrue(apiresponse.getErrorMessages().size()==0);
-        Assert.assertTrue(apiresponse.getReturnedInstanceCollection().size()==0);
         Assert.assertEquals("Should have no body", "", new ApiResponseAsXml(apiresponse).getXml().trim());
         Assert.assertEquals("Should have no body", "", new ApiResponseAsJson(apiresponse).getJson().trim());
 
@@ -287,7 +283,6 @@ public class RelationshipApiNonHttpTest {
 
         Assert.assertEquals(1, relTodo.connectedItems("task-of").size());
         Assert.assertTrue(apiresponse.getErrorMessages().size()==0);
-        Assert.assertTrue(apiresponse.getReturnedInstanceCollection().size()==0);
         Assert.assertEquals("Should have no body", "", new ApiResponseAsXml(apiresponse).getXml().trim());
         Assert.assertEquals("Should have no body", "", new ApiResponseAsJson(apiresponse).getJson().trim());
 
