@@ -1,5 +1,6 @@
 package uk.co.compendiumdev.thingifier.api.response;
 
+import com.google.gson.JsonObject;
 import org.json.JSONObject;
 import org.json.XML;
 import uk.co.compendiumdev.thingifier.generic.definitions.ThingDefinition;
@@ -49,10 +50,13 @@ public class ApiResponseAsXml {
             // xml output via JSON
             try {
                 if (thingsToReturn.size() > 0) {
-                    String parseForXMLOutput = JsonThing.jsonObjectWrapper(
-                            thingsToReturn.get(0).getEntity().getPlural(),
-                            JsonThing.asJsonArrayInstanceWrapped(thingsToReturn,
+
+                    final JsonObject retObj = new JsonObject();
+                    retObj.add(thingsToReturn.get(0).getEntity().getPlural(),
+                                JsonThing.asJsonArrayInstanceWrapped(thingsToReturn,
                                     thingsToReturn.get(0).getEntity().getName()));
+
+                    String parseForXMLOutput = retObj.toString();
 
                     output = XML.toString(new JSONObject(parseForXMLOutput));
 
@@ -70,7 +74,11 @@ public class ApiResponseAsXml {
             return output;
         } else {
             ThingInstance instance = apiResponse.getReturnedInstance();
-            String output = JsonThing.jsonObjectWrapper(instance.getEntity().getName(), JsonThing.asJson(instance));
+
+            final JsonObject retObj = new JsonObject();
+            retObj.add(instance.getEntity().getName(), JsonThing.asJsonObject(instance));
+
+            String output = retObj.toString();
 
             // experimental xml output
             try {

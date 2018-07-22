@@ -1,49 +1,18 @@
 package uk.co.compendiumdev.thingifier.reporting;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+
 import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
 
 import java.util.*;
 
 public class JsonThing {
 
-    public static String asJsonObjectWithWrapperObject(ThingInstance thingInstance) {
-
-        if (thingInstance == null) {
-            return "{}";
-        }
-
-        return asJsonObjectWithNamedWrapperObject(thingInstance, thingInstance.getEntity().getName());
-    }
-
-    public static String asJsonObjectWithNamedWrapperObject(ThingInstance thingInstance, String name) {
-
-        if (thingInstance == null) {
-            return "{}";
-        }
-
-        StringBuilder json = new StringBuilder();
-
-        json.append(String.format("{ \"%s\" : %s }",
-                name,
-                asJson(thingInstance)));
-
-        return json.toString();
-    }
-
-    public static String jsonObjectWrapper(String objectName, String json) {
-
-        return String.format("{ \"%s\" : %s }",
-                objectName,
-                json);
-
-    }
-
 
     // TODO this seems like overkill - will we ever return multiple types of things?
-    public static String asJson(List<ThingInstance> things) {
+    public static String asJson(final List<ThingInstance> things) {
 
         if (things == null || things.size() == 0) {
             return "{}";
@@ -69,95 +38,89 @@ public class JsonThing {
         // if there is a single set then
         // {things1 : []}
 
-        StringBuilder json = new StringBuilder();
-
-        // output
-        String prepend = "";
-
-        if (sets.size() > 1) {
-            json.append("{\"things\" : [ ");
-        }
+        final JsonArray jsonArray = new JsonArray();
+        JsonObject arrayObj = null;
 
         Set<String> keys = sets.keySet();
 
         for (String typeName : keys) {
 
-            json.append(prepend);
-            json.append(jsonObjectWrapper(typeName, asJsonArray(sets.get(typeName))));
-            prepend = ", ";
+            arrayObj = new JsonObject();
+            arrayObj.add(typeName, asJsonArray(sets.get(typeName)));
+            jsonArray.add(arrayObj);
+
         }
 
         if (sets.size() > 1) {
-            json.append("]}");
+
+            JsonObject returnObject = new JsonObject();
+            returnObject.add("things", jsonArray);
+            return returnObject.toString();
+
+        } else{
+
+            return arrayObj.toString();
         }
 
-
-        return json.toString();
     }
 
-    public static String asJsonArray(Collection<ThingInstance> things) {
+    public static JsonArray asJsonArray(final Collection<ThingInstance> things) {
 
-        StringBuilder json = new StringBuilder();
+        // [{"guid":"bob"}, {"guid":"bob2"}]
 
-        json.append("[");
+        final JsonArray jsonArray = new JsonArray();
 
-        String arrayPrepend = "";
         for (ThingInstance thing : things) {
+            jsonArray.add(asJsonObject(thing));
 
-            json.append(String.format("%s %s", arrayPrepend, asJson(thing)));
-            arrayPrepend = ", ";
         }
 
-        json.append("]");
-
-        return json.toString();
+        System.out.println(jsonArray.toString());
+        return jsonArray;
     }
 
-    public static String asJsonArrayInstanceWrapped(Collection<ThingInstance> things, String wrapperName) {
+    public static JsonArray asJsonArrayInstanceWrapped(Collection<ThingInstance> things, String wrapperName) {
 
-        StringBuilder json = new StringBuilder();
 
-        json.append("[");
+        // [{"todo":{"guid":"bob"}}, {"todo":{"guid":"bob2"}}]
 
-        String arrayPrepend = "";
+        final JsonArray jsonArray = new JsonArray();
+
         for (ThingInstance thing : things) {
 
-            json.append(String.format("%s {\"%s\" : %s}", arrayPrepend, wrapperName, asJson(thing)));
-            arrayPrepend = ", ";
+            JsonObject jsonObj = new JsonObject();
+            jsonObj.add(wrapperName, asJsonObject(thing));
+            jsonArray.add(jsonObj);
+
         }
 
-        json.append("]");
-
-        return json.toString();
+        System.out.println(jsonArray.toString());
+        return jsonArray;
     }
 
     public static String asJson(final ThingInstance thingInstance) {
 
-        if (thingInstance == null) {
-            return "{}";
-        }
-
-        StringBuilder json = new StringBuilder();
-
-        json.append(
-                getFieldsAsJson(thingInstance));
-
-        return json.toString();
+        return new Gson().toJson(asJsonObject(thingInstance));
     }
 
-
-    private static String getFieldsAsJson(final ThingInstance thing) {
+    public static JsonObject asJsonObject(final ThingInstance thingInstance) {
 
         final JsonObject jsonobj = new JsonObject();
 
-        for (String field : thing.getEntity().getFieldNames()) {
-
-            jsonobj.addProperty(field, thing.getValue(field));
+        if (thingInstance == null) {
+            return jsonobj;
         }
 
 
-        return new Gson().toJson(jsonobj);
-    }
+        for (String field : thingInstance.getEntity().getFieldNames()) {
 
+            jsonobj.addProperty(field, thingInstance.getValue(field));
+        }
+
+
+        return jsonobj;
+
+
+    }
 
 }

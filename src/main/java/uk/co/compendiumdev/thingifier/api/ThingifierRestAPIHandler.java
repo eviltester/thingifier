@@ -34,7 +34,7 @@ public class ThingifierRestAPIHandler {
     // TODO: ensure that relationshps enforce the type of thing e.g. if I pass in a GUID of the wrong type then it should not cross ref
     // TODO: possibly consider an X- header which has the number of items in the collection
     // TODO: consider empty json collection having the type e.g. {"todos": []}
-    // TODO: because json generation does not use GSON it can create unescaped and invalid json
+
 
 
     public ApiResponse post(final String url, final Map args) {

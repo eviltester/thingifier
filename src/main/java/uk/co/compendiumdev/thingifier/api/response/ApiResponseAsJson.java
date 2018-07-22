@@ -1,6 +1,7 @@
 package uk.co.compendiumdev.thingifier.api.response;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
 import uk.co.compendiumdev.thingifier.reporting.JsonThing;
 
@@ -35,9 +36,11 @@ public final class ApiResponseAsJson {
 
         } else {
             ThingInstance instance = apiResponse.getReturnedInstance();
-            String output = JsonThing.jsonObjectWrapper(instance.getEntity().getName(), JsonThing.asJson(instance));
 
-            return output;
+            final JsonObject retObj = new JsonObject();
+            retObj.add(instance.getEntity().getName(), JsonThing.asJsonObject(instance));
+
+            return retObj.toString();
         }
     }
 
