@@ -31,6 +31,8 @@ public class ThingifierRestAPIHandler {
     // TODO : this whole class needs to be refactored and wrapped with unit tests
     // todo : generate examples when outputing the api documentation
 
+    // TODO: could we simplify all XML and JSON conversion by converting incoming messages to a map then using the map internally
+    //       and on output create a MAP and convert this to XML or JSON?
 
 
 
