@@ -28,8 +28,6 @@ public class ThingifierRestAPIHandler {
     // TODO : this whole class needs to be refactored and wrapped with unit tests
     // todo : generate examples when outputing the api documentation
 
-    // TODO: could we simplify all XML and JSON conversion on output create a MAP and convert this to XML or JSON?
-
     // TODO: - listed here https://www.lisihocke.com/2018/07/testing-tour-stop-16-pair-exploring-an-api-with-thomas.html
     // TODO: ensure that relationshps enforce the type of thing e.g. if I pass in a GUID of the wrong type then it should not cross ref
     // TODO: possibly consider an X- header which has the number of items in the collection
