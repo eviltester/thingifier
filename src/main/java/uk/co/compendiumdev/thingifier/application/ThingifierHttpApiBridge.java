@@ -1,5 +1,6 @@
 package uk.co.compendiumdev.thingifier.application;
 
+import com.google.gson.Gson;
 import org.json.JSONObject;
 import org.json.XML;
 import spark.Request;
@@ -84,7 +85,7 @@ public class ThingifierHttpApiBridge {
     }
 
 
-    private String justTheBody(final Request request) {
+    private Map justTheBody(final Request request) {
 
         // TODO refactor this out into a class that has unit tests
         // because we are using crude XML and JSON parsing
@@ -108,13 +109,14 @@ public class ThingifierHttpApiBridge {
                     // just the body
                     String justTheBody = conv.get(keys.get(0)).toString();
                     System.out.println(justTheBody);
-                    return justTheBody;
+                    Map args = new Gson().fromJson(justTheBody, Map.class);
+                    return args;
                 }
 
             }
         }
 
-        return request.body();
+        return new Gson().fromJson(request.body(), Map.class);
     }
 
 

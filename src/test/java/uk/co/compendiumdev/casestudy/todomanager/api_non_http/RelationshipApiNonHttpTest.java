@@ -182,7 +182,7 @@ public class RelationshipApiNonHttpTest {
         requestBody = new HashMap<String, String>();
         requestBody.put("guid", paperwork.getGUID());
 
-        apiresponse = todoManager.api().post(String.format("project/%s/tasks", myNewProject.getGUID()), new Gson().toJson(requestBody));
+        apiresponse = todoManager.api().post(String.format("project/%s/tasks", myNewProject.getGUID()), requestBody);
 
         Assert.assertEquals(201, apiresponse.getStatusCode());
 
@@ -227,7 +227,7 @@ public class RelationshipApiNonHttpTest {
 
         int numberOfTasks = myNewProject.connectedItems("tasks").size();
 
-        ApiResponse apiresponse = todoManager.api().post(String.format("project/%s/tasks", myNewProject.getGUID()), new Gson().toJson(requestBody));
+        ApiResponse apiresponse = todoManager.api().post(String.format("project/%s/tasks", myNewProject.getGUID()), requestBody);
 
         Assert.assertEquals(201, apiresponse.getStatusCode());
 
@@ -278,7 +278,7 @@ public class RelationshipApiNonHttpTest {
 
 
 
-        apiresponse = todoManager.api().post(String.format("todo/%s/task-of", relTodo.getGUID()), new Gson().toJson(requestBody));
+        apiresponse = todoManager.api().post(String.format("todo/%s/task-of", relTodo.getGUID()), requestBody);
         Assert.assertEquals(201, apiresponse.getStatusCode());
 
         Assert.assertEquals(1, relTodo.connectedItems("task-of").size());
@@ -332,7 +332,7 @@ public class RelationshipApiNonHttpTest {
         Assert.assertEquals(0, numberOfProjects);
 
         // Create a relationship
-        ApiResponse apiresponse = todoManager.api().post(String.format("todo/%s/task-of", relTodo.getGUID()), new Gson().toJson(requestBody));
+        ApiResponse apiresponse = todoManager.api().post(String.format("todo/%s/task-of", relTodo.getGUID()),requestBody);
         Assert.assertEquals(201, apiresponse.getStatusCode());
 
         Assert.assertEquals(1, relTodo.connectedItems("task-of").size());
@@ -390,7 +390,7 @@ public class RelationshipApiNonHttpTest {
         Assert.assertEquals(0, numberOfProjects);
 
         // Create relationship
-        ApiResponse apiresponse = todoManager.api().post(String.format("todo/%s/task-of", relTodo.getGUID()), new Gson().toJson(requestBody));
+        ApiResponse apiresponse = todoManager.api().post(String.format("todo/%s/task-of", relTodo.getGUID()), requestBody);
         Assert.assertEquals(201, apiresponse.getStatusCode());
 
         Assert.assertEquals(1, relTodo.connectedItems("task-of").size());
@@ -444,7 +444,7 @@ public class RelationshipApiNonHttpTest {
 
         int numberOfTasks = myNewProject.connectedItems("tasks").size();
 
-        ApiResponse apiresponse = todoManager.api().post(String.format("project/%s/tasks", myNewProject.getGUID()), new Gson().toJson(requestBody));
+        ApiResponse apiresponse = todoManager.api().post(String.format("project/%s/tasks", myNewProject.getGUID()), requestBody);
         Assert.assertEquals(201, apiresponse.getStatusCode());
         String locationGuid = apiresponse.getHeaderValue(ApiResponse.GUID_HEADER);
         Assert.assertTrue(apiresponse.getErrorMessages().size()==0);
@@ -501,7 +501,7 @@ public class RelationshipApiNonHttpTest {
         Assert.assertEquals(0, numberOfProjects);
 
         // Create it
-        ApiResponse apiresponse = todoManager.api().post(String.format("todo/%s/task-of", relTodo.getGUID()), new Gson().toJson(requestBody));
+        ApiResponse apiresponse = todoManager.api().post(String.format("todo/%s/task-of", relTodo.getGUID()), requestBody);
         Assert.assertEquals(201, apiresponse.getStatusCode());
         Assert.assertTrue(apiresponse.getErrorMessages().size()==0);
         Assert.assertEquals(1, relTodo.connectedItems("task-of").size());

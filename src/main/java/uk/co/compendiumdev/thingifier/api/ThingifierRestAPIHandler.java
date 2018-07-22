@@ -8,10 +8,8 @@ import uk.co.compendiumdev.thingifier.generic.definitions.RelationshipVector;
 import uk.co.compendiumdev.thingifier.generic.definitions.ThingDefinition;
 import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
 import uk.co.compendiumdev.thingifier.query.SimpleQuery;
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -31,8 +29,7 @@ public class ThingifierRestAPIHandler {
     // TODO : this whole class needs to be refactored and wrapped with unit tests
     // todo : generate examples when outputing the api documentation
 
-    // TODO: could we simplify all XML and JSON conversion by converting incoming messages to a map then using the map internally
-    //       and on output create a MAP and convert this to XML or JSON?
+    // TODO: could we simplify all XML and JSON conversion on output create a MAP and convert this to XML or JSON?
 
 
 
@@ -43,9 +40,7 @@ public class ThingifierRestAPIHandler {
     // TODO: because json generation does not use GSON it can create unescaped and invalid json
 
 
-    public ApiResponse post(final String url, final String body) {
-
-        Map args = new Gson().fromJson(body, Map.class);
+    public ApiResponse post(final String url, final Map args) {
 
 
         /*
@@ -90,9 +85,8 @@ public class ThingifierRestAPIHandler {
             ThingInstance relatedItem = null;
 
             // if there is a guid in the body then use that to try and find a thing that matches it
-            JsonObject thingJson = new JsonParser().parse(body).getAsJsonObject();
-            if (thingJson.has("guid")) {
-                String thingGUID = thingJson.get("guid").getAsString();
+            if (args.containsKey("guid")) {
+                String thingGUID = (String) args.get("guid");
 
                 relatedItem = thingifier.findThingInstanceByGuid(thingGUID);
                 if (relatedItem == null) {
@@ -122,7 +116,7 @@ public class ThingifierRestAPIHandler {
                 Thing thingToCreate = thingifier.getThingNamed(createThing.getName());
 
                 try {
-                    relatedItem = thingToCreate.createInstance().setFieldValuesFrom(new Gson().fromJson(body, Map.class));
+                    relatedItem = thingToCreate.createInstance().setFieldValuesFrom(stringMap(args));
                 } catch (Exception e) {
                     return ApiResponse.error(400, e.getMessage());
                 }
@@ -174,6 +168,16 @@ public class ThingifierRestAPIHandler {
         // WHAT was that query?
         return ApiResponse.error(400, "Your request was not understood");
 
+    }
+
+    private Map<String, String> stringMap(final Map<String, Object> args) {
+        Map<String, String> stringsInMap = new HashMap();
+        for (String key : args.keySet()){
+            if (args.get(key) instanceof String){
+                stringsInMap.put(key, (String) args.get(key));
+            }
+        }
+        return stringsInMap;
     }
 
     private ApiResponse amendAThingWithPost(Map args, Thing thing, String thingName, String instanceGuid) {
@@ -239,10 +243,10 @@ public class ThingifierRestAPIHandler {
         return ApiResponse.error404(String.format("No such entity as %s found", entityName));
     }
 
-    public ApiResponse put(String url, String body) {
+    public ApiResponse put(String url, Map args) {
 
 
-        Map args = new Gson().fromJson(body, Map.class);
+
 
 
         // if queryis empty then need a way to check if the query matched
