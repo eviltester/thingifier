@@ -194,7 +194,7 @@ public class ThingifierRestAPIHandler {
 
                 cloned = instance.createDuplicateWithoutRelationships();
 
-                cloned.setCloneFieldValuesFrom(args);
+                cloned.setFieldValuesFrom(args);
 
             } catch (Exception e) {
                 return ApiResponse.error(400, e.getMessage());
@@ -311,23 +311,25 @@ public class ThingifierRestAPIHandler {
                     // quick hack to make idempotent - delete all values and add new ones
                     cloned.clearAllFields(); // except "guid"
 
-                    cloned.setCloneFieldValuesFrom(args);
+                    cloned.setFieldValuesFrom(args);
+
+                    ValidationReport validation = cloned.validate();
+
+                    if (validation.isValid()) {
+                        instance.clearAllFields();
+                        instance.setFieldValuesFrom(args);
+                        return ApiResponse.success().returnSingleInstance(instance);
+                    } else {
+                        // do not add it, report the errors
+                        return ApiResponse.error(400, validation.getErrorMessages());
+                    }
 
                 } catch (Exception e) {
                     return ApiResponse.error(400, e.getMessage());
                 }
 
 
-                ValidationReport validation = cloned.validate();
 
-                if (validation.isValid()) {
-                    instance.clearAllFields();
-                    instance.setFieldValuesFrom(args);
-                    return ApiResponse.success().returnSingleInstance(instance);
-                } else {
-                    // do not add it, report the errors
-                    return ApiResponse.error(400, validation.getErrorMessages());
-                }
             }
         }
 

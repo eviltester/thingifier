@@ -1,5 +1,8 @@
 package uk.co.compendiumdev.thingifier.reporting;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
 import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
 
 import java.util.*;
@@ -128,7 +131,7 @@ public class JsonThing {
         return json.toString();
     }
 
-    public static String asJson(ThingInstance thingInstance) {
+    public static String asJson(final ThingInstance thingInstance) {
 
         if (thingInstance == null) {
             return "{}";
@@ -136,24 +139,24 @@ public class JsonThing {
 
         StringBuilder json = new StringBuilder();
 
-        json.append(String.format("{ %s }",
-                getFieldsAsJson(thingInstance)));
+        json.append(
+                getFieldsAsJson(thingInstance));
 
         return json.toString();
     }
 
 
-    private static String getFieldsAsJson(ThingInstance thing) {
-        StringBuilder json = new StringBuilder();
-        String prepend = "";
+    private static String getFieldsAsJson(final ThingInstance thing) {
+
+        final JsonObject jsonobj = new JsonObject();
 
         for (String field : thing.getEntity().getFieldNames()) {
 
-            json.append(String.format("%s \"%s\" : \"%s\"", prepend, field, thing.getValue(field)));
-            prepend = ", ";
+            jsonobj.addProperty(field, thing.getValue(field));
         }
 
-        return json.toString();
+
+        return new Gson().toJson(jsonobj);
     }
 
 

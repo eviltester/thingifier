@@ -231,6 +231,11 @@ public class ApiResponseAsXmlTest {
 
     private XStream getErrorMessagesXmlParser() {
         XStream xstream = new XStream(new StaxDriver());
+
+        XStream.setupDefaultSecurity(xstream);
+        Class<?>[] classes = new Class[] { ErrorMessagesResponse.class, String.class };
+        xstream.allowTypes(classes);
+
         xstream.alias("errorMessages", ErrorMessagesResponse.class);
         xstream.addImplicitCollection(ErrorMessagesResponse.class, "errorMessages");
         xstream.alias("errorMessage", String.class);
@@ -239,12 +244,23 @@ public class ApiResponseAsXmlTest {
 
     private XStream getTodoXmlParser() {
         XStream xstream = new XStream(new StaxDriver());
+
+        XStream.setupDefaultSecurity(xstream);
+        Class<?>[] classes = new Class[] { Todo.class};
+        xstream.allowTypes(classes);
+
+
         xstream.alias("todo", Todo.class);
         return xstream;
     }
 
     private XStream getTodosXmlParser() {
         XStream xstream = new XStream(new StaxDriver());
+
+        XStream.setupDefaultSecurity(xstream);
+        Class<?>[] classes = new Class[] { TodoCollectionResponse.class, Todo.class};
+        xstream.allowTypes(classes);
+
         xstream.alias("todos", TodoCollectionResponse.class);
         xstream.addImplicitCollection(TodoCollectionResponse.class, "todos");
         xstream.alias("todo", Todo.class);
