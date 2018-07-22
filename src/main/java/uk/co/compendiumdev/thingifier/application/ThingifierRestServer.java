@@ -24,7 +24,7 @@ public class ThingifierRestServer {
     // todo : we should be able to configure the API routing for authorisation and support logging
 
 
-    public ThingifierRestServer(String[] args, String path, Thingifier thingifier) {
+    public ThingifierRestServer(final String[] args, final String path, final Thingifier thingifier) {
 
         ThingifierHttpApiBridge apiBridge = new ThingifierHttpApiBridge(thingifier);
 

@@ -31,10 +31,10 @@ public class InstanceFields {
     }
 
 
-    public void deleteAllFieldsExcept(String... fieldNamesToIgnore) {
+    public void deleteAllFieldsExcept(final String... fieldNamesToIgnore) {
 
         Set<String> ignorekeys = new HashSet<>(Arrays.asList(fieldNamesToIgnore));
-        Set<String> keys = values.keySet();
+        Set<String> keys = new HashSet(values.keySet());
 
         for (String key : keys) {
             if (!ignorekeys.contains(key)) {

@@ -39,7 +39,7 @@ public class ThingifierRestAPIHandler {
     // TODO: possibly consider an X- header which has the number of items in the collection
     // TODO: consider empty json collection having the type e.g. {"todos": []}
     // TODO: because json generation does not use GSON it can create unescaped and invalid json
-    // TODO: guid should be mandatory when included in put/post ie. trim("   ") should not be valid
+
 
     public ApiResponse post(final String url, final String body) {
 
@@ -187,10 +187,15 @@ public class ThingifierRestAPIHandler {
             return ApiResponse.error404(String.format("No such %s entity instance with GUID %s found", thing.definition().getName(), instanceGuid));
         } else {
 
-            ThingInstance cloned = instance.createDuplicateWithoutRelationships();
+            ThingInstance cloned = null;
+
 
             try {
-                cloned.setFieldValuesFrom(args);
+
+                cloned = instance.createDuplicateWithoutRelationships();
+
+                cloned.setCloneFieldValuesFrom(args);
+
             } catch (Exception e) {
                 return ApiResponse.error(400, e.getMessage());
             }
@@ -296,14 +301,18 @@ public class ThingifierRestAPIHandler {
                 // when amending existing thing with PUT it must be idempotent so
                 // check that all fields are valid in the args
 
-                // create copy and validate copy
-                ThingInstance cloned = instance.createDuplicateWithoutRelationships();
-
-                // quick hack to make idempotent - delete all values and add new ones
-                cloned.clearAllFields(); // except "guid"
+                ThingInstance cloned;
 
                 try {
-                    cloned.setFieldValuesFrom(args);
+
+                    // create copy and validate copy
+                    cloned = instance.createDuplicateWithoutRelationships();
+
+                    // quick hack to make idempotent - delete all values and add new ones
+                    cloned.clearAllFields(); // except "guid"
+
+                    cloned.setCloneFieldValuesFrom(args);
+
                 } catch (Exception e) {
                     return ApiResponse.error(400, e.getMessage());
                 }

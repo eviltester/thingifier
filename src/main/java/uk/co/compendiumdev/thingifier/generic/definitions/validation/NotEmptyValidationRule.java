@@ -2,7 +2,7 @@ package uk.co.compendiumdev.thingifier.generic.definitions.validation;
 
 public class NotEmptyValidationRule implements ValidationRule {
 
-    public boolean validates(String value) {
+    public boolean validates(final String value) {
         if (value == null) {
             return false;
         }
@@ -11,7 +11,7 @@ public class NotEmptyValidationRule implements ValidationRule {
     }
 
     @Override
-    public String getErrorMessage(String fieldName) {
+    public String getErrorMessage(final String fieldName) {
         return String.format("%s : can not be empty", fieldName);
     }
 }

@@ -79,15 +79,46 @@ public class ThingInstance {
         return this;
     }
 
-    public ThingInstance setFieldValuesFrom(Map<String, String> args) {
+    public ThingInstance setFieldValuesFrom(final Map<String, String> args) {
 
         for (Map.Entry<String, String> entry : args.entrySet()) {
-            setValue(entry.getKey(), entry.getValue());
+
+            // Handle attempt to amend a GUID
+            if (!entry.getKey().equalsIgnoreCase("guid")) {
+
+                // set the value
+                setValue(entry.getKey(), entry.getValue());
+
+            } else{
+
+                // if editing it then throw error, ignore if same value
+                String existingGuid = instance.getValue("guid");
+                if (existingGuid != null && existingGuid.trim().length() > 0){
+
+                    // if value is different then it is an attempt to amend it
+                    if (!existingGuid.equalsIgnoreCase(entry.getValue())) {
+                        throw new RuntimeException(
+                                String.format("Can not amend GUID on Entity %s from %s to %s",
+                                        this.entityDefinition.getName(),
+                                        existingGuid,
+                                        entry.getValue()));
+                    }
+                }
+            }
         }
         return this;
     }
 
-    private void reportError(String fieldName) {
+    public ThingInstance setCloneFieldValuesFrom(final Map<String, String> args) {
+
+        for (Map.Entry<String, String> entry : args.entrySet()) {
+            setValue(entry.getKey(), entry.getValue());
+        }
+
+        return this;
+    }
+
+    private void reportError(final String fieldName) {
         throw new RuntimeException("Could not find field: " + fieldName + " on Entity " + this.entityDefinition.getName());
     }
 
@@ -263,9 +294,10 @@ public class ThingInstance {
 
     public ThingInstance createDuplicateWithoutRelationships() {
         ThingInstance cloneInstance = new ThingInstance(entityDefinition);
-        cloneInstance.setFieldValuesFrom(instance.asMap());
+        cloneInstance.setCloneFieldValuesFrom(instance.asMap());
         return cloneInstance;
     }
+
 
 
 }
