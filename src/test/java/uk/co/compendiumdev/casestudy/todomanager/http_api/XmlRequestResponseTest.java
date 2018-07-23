@@ -37,6 +37,22 @@ public class XmlRequestResponseTest {
     }
 
     @Test
+    public void canGetAnEmptyXmlItemsCollection(){
+
+
+
+        HttpApiRequest request = new HttpApiRequest("todos");
+        request.getHeaders().putAll(acceptXml);
+
+        final HttpApiResponse response = new ThingifierHttpApi(todoManager).get(request);
+        Assert.assertEquals(200, response.getStatusCode());
+        System.out.println(response.getBody());
+
+        Assert.assertTrue(response.getBody().equalsIgnoreCase("<todos></todos>"));
+    }
+
+
+    @Test
     public void canGetXmlItemsWhenAskedForXml(){
 
 

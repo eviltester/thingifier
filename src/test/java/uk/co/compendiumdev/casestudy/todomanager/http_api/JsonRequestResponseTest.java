@@ -10,7 +10,6 @@ import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiResponse;
 import uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi;
-import uk.co.compendiumdev.thingifier.api.response.ApiResponseAsJsonTest;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -36,6 +35,20 @@ public class JsonRequestResponseTest {
         acceptJson.put("Accept", "application/json");
 
     }
+
+    @Test
+    public void canGetAnEmptyJsonItemsCollection(){
+
+        HttpApiRequest request = new HttpApiRequest("todos");
+        request.getHeaders().putAll(acceptJson);
+
+        final HttpApiResponse response = new ThingifierHttpApi(todoManager).get(request);
+        Assert.assertEquals(200, response.getStatusCode());
+        System.out.println(response.getBody());
+
+        Assert.assertTrue(response.getBody().equalsIgnoreCase("{\"todos\":[]}"));
+    }
+
 
     @Test
     public void canGetJsonItems(){
