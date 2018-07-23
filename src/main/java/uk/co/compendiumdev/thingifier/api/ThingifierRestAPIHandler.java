@@ -396,8 +396,14 @@ public class ThingifierRestAPIHandler {
         }
 
         if (queryResults.lastMatchWasInstance()) {
-            return ApiResponse.success().returnSingleInstance(queryResults.getLastInstance()).resultContainsType(queryResults.resultContainsDefn());
+            if(queryResults.isResultACollection()){
+                // if we asked for /projects then we should always return a collection
+                return ApiResponse.success().returnInstanceCollection(queryResults.getListThingInstance());
+            }else{
+                return ApiResponse.success().returnSingleInstance(queryResults.getLastInstance());
+            }
         } else {
+
             return ApiResponse.success().returnInstanceCollection(queryItems).resultContainsType(queryResults.resultContainsDefn());
         }
     }
