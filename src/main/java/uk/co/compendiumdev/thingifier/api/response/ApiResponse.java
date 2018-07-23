@@ -92,8 +92,8 @@ public final class ApiResponse {
         return setHeader("Location", location);
     }
 
-    public Set<Map.Entry<String, String>> getHeaders() {
-        return headers.entrySet();
+    public Map<String, String> getHeaders() {
+        return headers;
     }
 
 

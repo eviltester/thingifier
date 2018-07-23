@@ -6,6 +6,9 @@ import org.json.XML;
 import spark.Request;
 import spark.Response;
 import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
+import uk.co.compendiumdev.thingifier.api.http.HttpApiResponse;
+import uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 
 import java.util.ArrayList;
@@ -22,8 +25,14 @@ public class ThingifierHttpApiBridge {
     }
 
     public String get(final Request request, final Response response) {
-        ApiResponse apiResponse = thingifier.api().get(justThePath(request.pathInfo()));
-        return responseBodyFor(headersAsMap(request), apiResponse, response);
+
+        final HttpApiRequest theRequest = new HttpApiRequest(request.pathInfo()).setHeaders(headersAsMap(request));
+        final HttpApiResponse theResponse = new ThingifierHttpApi(thingifier).get(theRequest);
+        updateResponseFromHttpResponse(theResponse, response);
+        return theResponse.getBody();
+
+//        ApiResponse apiResponse = thingifier.api().get(justThePath(request.pathInfo()));
+//        return responseBodyFor(headersAsMap(request), apiResponse, response);
     }
 
     public String post(final Request request, final Response response) {
@@ -83,9 +92,10 @@ public class ThingifierHttpApiBridge {
 
 
 
-    private void addHeaders(final Set<Map.Entry<String, String>> headers, final Response response) {
-        for (Map.Entry<String, String> header : headers) {
-            response.header(header.getKey(), header.getValue());
+    private void addHeaders(final Map<String, String> headers, final Response response) {
+        final Set<String> keys = headers.keySet();
+        for (String headerKey : keys) {
+            response.header(headerKey, headers.get(headerKey));
         }
     }
 
