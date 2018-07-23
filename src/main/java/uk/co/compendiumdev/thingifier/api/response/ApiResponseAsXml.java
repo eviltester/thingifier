@@ -45,20 +45,14 @@ public class ApiResponseAsXml {
 
             }
 
-            String output = JsonThing.asJson(thingsToReturn);
+            // default JSON in case the xml conversion fails
+            String output = JsonThing.asJsonTypedArrayWithContentsUntyped(thingsToReturn, apiResponse.getTypeOfThingReturned().getPlural());
 
             // xml output via JSON
             try {
                 if (thingsToReturn.size() > 0) {
 
                     String parseForXMLOutput = JsonThing.asJsonTypedArrayWithContentsTyped(thingsToReturn, apiResponse.getTypeOfThingReturned());
-
-//                    final JsonObject retObj = new JsonObject();
-//                    retObj.add(thingsToReturn.get(0).getEntity().getPlural(),
-//                                JsonThing.asJsonArrayInstanceWrapped(thingsToReturn,
-//                                    thingsToReturn.get(0).getEntity().getName()));
-//
-//                    String parseForXMLOutput = retObj.toString();
 
                     output = XML.toString(new JSONObject(parseForXMLOutput));
 
@@ -67,7 +61,7 @@ public class ApiResponseAsXml {
                     output = output.replace(String.format("</%1$s><%1$s>", thingsToReturn.get(0).getEntity().getPlural()), "");
                 }
             } catch (Exception e) {
-                // TODO: if this happens then the status code is going to be wrong
+                // TODO: if this happens then the status code is going to be wrong, should probably throw an exception instead
                 output = getErrorMessageXml(e.getMessage());
             }
 
@@ -77,10 +71,7 @@ public class ApiResponseAsXml {
         } else {
             ThingInstance instance = apiResponse.getReturnedInstance();
 
-            final JsonObject retObj = new JsonObject();
-            retObj.add(instance.getEntity().getName(), JsonThing.asJsonObject(instance));
-
-            String output = retObj.toString();
+            String output = JsonThing.asNamedJsonObject(instance).toString();
 
             // experimental xml output
             try {

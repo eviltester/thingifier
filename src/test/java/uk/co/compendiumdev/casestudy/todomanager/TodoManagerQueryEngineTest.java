@@ -56,6 +56,10 @@ public class TodoManagerQueryEngineTest {
 
      */
 
+    public String asJson(final List<ThingInstance> things) {
+        return JsonThing.asJsonArray(things).toString();
+    }
+
 
     @Test
     public void canGetListOfEntityInstancesViaName(){
@@ -71,7 +75,7 @@ public class TodoManagerQueryEngineTest {
         Assert.assertTrue(queryResults.contains(paperwork));
         Assert.assertTrue(queryResults.contains(filework));
 
-        System.out.println(JsonThing.asJson(queryResults));
+        System.out.println(asJson(queryResults));
 
     }
 
@@ -88,7 +92,7 @@ public class TodoManagerQueryEngineTest {
         Assert.assertTrue(queryResults.contains(paperwork));
         Assert.assertTrue(queryResults.contains(filework));
 
-        System.out.println(JsonThing.asJson(queryResults));
+        System.out.println(asJson(queryResults));
 
     }
 
@@ -109,7 +113,7 @@ public class TodoManagerQueryEngineTest {
         Assert.assertTrue(queryResults.contains(paperwork));
         Assert.assertFalse(queryResults.contains(filework));
 
-        System.out.println(JsonThing.asJson(queryResults));
+        System.out.println(asJson(queryResults));
 
     }
 
@@ -130,7 +134,7 @@ public class TodoManagerQueryEngineTest {
         Assert.assertTrue(queryResults.contains(paperwork));
         Assert.assertFalse(queryResults.contains(filework));
 
-        System.out.println(JsonThing.asJson(queryResults));
+        System.out.println(asJson(queryResults));
 
     }
 
@@ -151,7 +155,7 @@ public class TodoManagerQueryEngineTest {
         Assert.assertEquals(todoManager.getThingNamed("todo").definition(), query.resultContainsDefn());
 
         Assert.assertEquals(0, queryResults.size());
-        System.out.println(JsonThing.asJson(queryResults));
+        System.out.println(asJson(queryResults));
 
     }
 
@@ -171,7 +175,7 @@ public class TodoManagerQueryEngineTest {
         Assert.assertEquals(todoManager.getThingNamed("todo").definition(), query.resultContainsDefn());
 
         Assert.assertEquals(0, queryResults.size());
-        System.out.println(JsonThing.asJson(queryResults));
+        System.out.println(asJson(queryResults));
 
     }
 
@@ -202,7 +206,7 @@ public class TodoManagerQueryEngineTest {
         Assert.assertTrue(queryResults.contains(paperwork));
         Assert.assertTrue(queryResults.contains(filework));
 
-        System.out.println(JsonThing.asJson(queryResults));
+        System.out.println(asJson(queryResults));
 
 
 
@@ -212,7 +216,7 @@ public class TodoManagerQueryEngineTest {
         queryResults = new SimpleQuery(todoManager, String.format("todo/%s/task-of", paperwork.getGUID())).performQuery().getListThingInstance();
         Assert.assertEquals(1, queryResults.size());
         Assert.assertTrue(queryResults.contains(officeWork));
-        System.out.println(JsonThing.asJson(queryResults));
+        System.out.println(asJson(queryResults));
 
 
         // match on entity types
@@ -224,7 +228,7 @@ public class TodoManagerQueryEngineTest {
         Assert.assertTrue(queryResults.contains(paperwork));
         Assert.assertTrue(queryResults.contains(filework));
 
-        System.out.println(JsonThing.asJson(queryResults));
+        System.out.println(asJson(queryResults));
 
         // project/_GUID_/todo/category
 
@@ -233,7 +237,7 @@ public class TodoManagerQueryEngineTest {
         Assert.assertEquals(1, queryResults.size());
         Assert.assertTrue(queryResults.contains(officeCategory));
 
-        System.out.println(JsonThing.asJson(queryResults));
+        System.out.println(asJson(queryResults));
 
         // invalid query should match nothing there is no entity called task
         // project/_GUID_/task
