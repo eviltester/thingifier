@@ -53,7 +53,7 @@ public class Thingifier {
 
     public String toString() {
 
-        return new ThingReporter(things, relationships).basicReport();
+        return new ThingReporter(this).basicReport();
     }
 
 

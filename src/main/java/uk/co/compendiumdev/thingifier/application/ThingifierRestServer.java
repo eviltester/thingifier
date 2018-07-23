@@ -1,20 +1,11 @@
 package uk.co.compendiumdev.thingifier.application;
 
-import org.json.JSONObject;
-import org.json.XML;
-import spark.Request;
-import spark.Response;
 import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponseError;
 import uk.co.compendiumdev.thingifier.api.routings.ApiRoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.routings.ApiRoutingDefinitionGenerator;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingDefinition;
-import uk.co.compendiumdev.thingifier.reporting.ThingReporter;
-
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.Set;
+import uk.co.compendiumdev.thingifier.reporting.RestApiDocumentationGenerator;
 
 import static spark.Spark.*;
 
@@ -66,7 +57,7 @@ public class ThingifierRestServer {
         get("/", (request, response) -> {
             response.type("text/html");
             response.status(200);
-            return new ThingReporter(thingifier).getApiDocumentation(routingDefinitions);
+            return new RestApiDocumentationGenerator(thingifier).getApiDocumentation(routingDefinitions);
         });
 
 
