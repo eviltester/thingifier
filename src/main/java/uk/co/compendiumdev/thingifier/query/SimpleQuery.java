@@ -16,6 +16,13 @@ public class SimpleQuery {
     private final Thingifier thingifier;
     private final String query;
 
+    private boolean isCollection = false;
+    private boolean pluralMatch = false;
+
+    public boolean isResultACollection() {
+        return isCollection;
+    }
+
     enum LastMatchValue { NOTHING, CURRENT_THING, CURRENT_INSTANCE, CURRENT_ITEMS, CURRENT_RELATIONSHIP};
 
     LastMatchValue lastMatch = NOTHING;
@@ -56,10 +63,17 @@ public class SimpleQuery {
                 if (currentThing == null && foundItems.size() == 0) {
                     // first thing - find it
                     currentThing = thingifier.getThingNamed(term);
+                    pluralMatch=false;
+
                     if (currentThing == null){
                         // was it the plural?
                         currentThing = thingifier.getThingWithPluralNamed(term);
+                        pluralMatch=true;
                     }
+
+                    // entity type is always a collection
+                    isCollection = true;
+
                     resultContainsDefinition = currentThing.definition();
                     foundItemsHistoryList.add(currentThing);
                     parentThing = currentThing;
@@ -87,6 +101,8 @@ public class SimpleQuery {
                             newitems.addAll(matchedInstances);
                         }
                     }
+
+                    // relationship is a collection
                     foundItems = newitems;
                     lastMatch = CURRENT_ITEMS;
                     parentThing = currentThing;
@@ -118,6 +134,10 @@ public class SimpleQuery {
                         newitems.addAll(instance.connectedItems(term));
                     }
                 }
+
+                // relationships is always a collection
+                isCollection=true;
+
                 foundItems = newitems;
                 parentInstance = currentInstance;
                 parentThing = currentThing;
@@ -137,6 +157,10 @@ public class SimpleQuery {
                     if (currentThing != null) {
                         parentThing = currentThing;
                     }
+
+                    // if we had a plural term then return this as a collection
+                    isCollection=pluralMatch;
+
                     currentThing = null;
 
                     currentInstance = instance;

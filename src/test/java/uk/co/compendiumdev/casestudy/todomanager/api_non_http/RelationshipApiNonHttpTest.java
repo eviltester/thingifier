@@ -271,7 +271,8 @@ public class RelationshipApiNonHttpTest {
         Assert.assertEquals(0, apiresponse.getReturnedInstanceCollection().size());
         Assert.assertTrue(apiresponse.getErrorMessages().size()==0);
         Assert.assertTrue(apiresponse.hasABody());
-        Assert.assertEquals("Should have no body", "{}", new ApiResponseAsJson(apiresponse).getJson().trim());
+        Assert.assertTrue("Should have no array content", new ApiResponseAsJson(apiresponse).getJson().trim().contains("[]"));
+        Assert.assertTrue("Should have name of thing",  new ApiResponseAsJson(apiresponse).getJson().trim().startsWith("{\"projects\":"));
 
 
 

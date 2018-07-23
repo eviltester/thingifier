@@ -57,6 +57,7 @@ public final class ApiResponse {
         this.isCollection = false;
         thingsToReturn.clear();
         thingsToReturn.add(instance);
+        typeOfResults = instance.getEntity();
         andThisHasABody();
         return this;
     }
@@ -65,6 +66,9 @@ public final class ApiResponse {
         thingsToReturn.clear();
         thingsToReturn.addAll(items);
         isCollection = true;
+        if(items.size()>0){
+            typeOfResults = items.get(0).getEntity();
+        }
         andThisHasABody();
         return this;
     }

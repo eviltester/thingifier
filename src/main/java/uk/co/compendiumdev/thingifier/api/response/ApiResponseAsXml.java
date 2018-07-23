@@ -51,12 +51,14 @@ public class ApiResponseAsXml {
             try {
                 if (thingsToReturn.size() > 0) {
 
-                    final JsonObject retObj = new JsonObject();
-                    retObj.add(thingsToReturn.get(0).getEntity().getPlural(),
-                                JsonThing.asJsonArrayInstanceWrapped(thingsToReturn,
-                                    thingsToReturn.get(0).getEntity().getName()));
+                    String parseForXMLOutput = JsonThing.asJsonTypedArrayWithContentsTyped(thingsToReturn, apiResponse.getTypeOfThingReturned());
 
-                    String parseForXMLOutput = retObj.toString();
+//                    final JsonObject retObj = new JsonObject();
+//                    retObj.add(thingsToReturn.get(0).getEntity().getPlural(),
+//                                JsonThing.asJsonArrayInstanceWrapped(thingsToReturn,
+//                                    thingsToReturn.get(0).getEntity().getName()));
+//
+//                    String parseForXMLOutput = retObj.toString();
 
                     output = XML.toString(new JSONObject(parseForXMLOutput));
 

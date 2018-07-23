@@ -5,10 +5,7 @@ import com.google.gson.JsonObject;
 import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
 import uk.co.compendiumdev.thingifier.reporting.JsonThing;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public final class ApiResponseAsJson {
     private final ApiResponse apiResponse;
@@ -26,11 +23,34 @@ public final class ApiResponseAsJson {
         if (apiResponse.isErrorResponse()) {
             return getErrorMessageJson(apiResponse.getErrorMessages());
         }
+
         // we always return an object
         // collections are named with their plural
         if (apiResponse.isCollection()) {
 
-            String output = JsonThing.asJson(apiResponse.getReturnedInstanceCollection());
+            String output="";
+
+            final List<ThingInstance> things = apiResponse.getReturnedInstanceCollection();
+
+            String typeName="";
+
+            if(apiResponse.getTypeOfThingReturned()!=null){
+                typeName= apiResponse.getTypeOfThingReturned().getPlural();
+            }else {
+
+                // TODO check - do not think that this is ever possible anymore
+                if (things.size() > 0) {
+                    typeName = things.get(0).getEntity().getPlural();
+                }
+            }
+
+            if(typeName.length()>0) {
+                output = JsonThing.asJsonTypedArrayWithContentsUntyped(apiResponse.getReturnedInstanceCollection(), typeName);
+            }else{
+                if(things.size()==0){
+                    output = "{}";
+                }
+            }
 
             return output;
 

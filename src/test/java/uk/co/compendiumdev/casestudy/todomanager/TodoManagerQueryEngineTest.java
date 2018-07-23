@@ -7,6 +7,7 @@ import org.junit.Test;
 import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.query.SimpleQuery;
 import uk.co.compendiumdev.thingifier.reporting.JsonThing;
 
 import java.util.List;
@@ -31,7 +32,7 @@ public class TodoManagerQueryEngineTest {
         paperwork = todo.createInstance().setValue("title", "scan paperwork");
         todo.addInstance(paperwork);
 
-        System.out.println(new Gson().toJson(JsonThing.asJsonObject(paperwork)));
+        //System.out.println(new Gson().toJson(JsonThing.asJsonObject(paperwork)));
 
         filework = todo.createInstance().setValue("title", "file paperwork");
         todo.addInstance(filework);
@@ -59,60 +60,120 @@ public class TodoManagerQueryEngineTest {
     @Test
     public void canGetListOfEntityInstancesViaName(){
         // todo
-        List<ThingInstance> query = todoManager.simplequery("todo");
 
-        Assert.assertEquals(2, query.size());
-        Assert.assertTrue(query.contains(paperwork));
-        Assert.assertTrue(query.contains(filework));
+        final SimpleQuery query = new SimpleQuery(todoManager, "todo");
 
-        System.out.println(JsonThing.asJson(query));
+        List<ThingInstance> queryResults = query.performQuery().getListThingInstance();
+
+        Assert.assertTrue(query.isResultACollection());
+
+        Assert.assertEquals(2, queryResults.size());
+        Assert.assertTrue(queryResults.contains(paperwork));
+        Assert.assertTrue(queryResults.contains(filework));
+
+        System.out.println(JsonThing.asJson(queryResults));
 
     }
 
     @Test
     public void canGetListOfEntityInstancesViaPluralName(){
         // todos
-        List<ThingInstance> query = todoManager.simplequery("todos");
+        final SimpleQuery query = new SimpleQuery(todoManager, "todos");
 
-        Assert.assertEquals(2, query.size());
-        Assert.assertTrue(query.contains(paperwork));
-        Assert.assertTrue(query.contains(filework));
+        List<ThingInstance> queryResults = query.performQuery().getListThingInstance();
 
-        System.out.println(JsonThing.asJson(query));
+        Assert.assertTrue(query.isResultACollection());
+
+        Assert.assertEquals(2, queryResults.size());
+        Assert.assertTrue(queryResults.contains(paperwork));
+        Assert.assertTrue(queryResults.contains(filework));
+
+        System.out.println(JsonThing.asJson(queryResults));
 
     }
 
     @Test
     public void canGetSpecificEntityInstanceUsingGUID(){
 
-        List<ThingInstance> query;
+        List<ThingInstance> queryResults;
 
         // todo/_GUID_
-        query = todoManager.simplequery("todo/" + paperwork.getGUID());
 
-        Assert.assertEquals(1, query.size());
-        Assert.assertTrue(query.contains(paperwork));
-        Assert.assertFalse(query.contains(filework));
+        final SimpleQuery query = new SimpleQuery(todoManager, "todo/" + paperwork.getGUID());
 
-        System.out.println(JsonThing.asJson(query));
+        queryResults = query.performQuery().getListThingInstance();
+
+        Assert.assertFalse(query.isResultACollection()); // it can still be returned as a collection but is valid to return as a single
+
+        Assert.assertEquals(1, queryResults.size());
+        Assert.assertTrue(queryResults.contains(paperwork));
+        Assert.assertFalse(queryResults.contains(filework));
+
+        System.out.println(JsonThing.asJson(queryResults));
 
     }
 
+    @Test
+    public void canGetSpecificEntityInstanceUsingGUIDOnPlural(){
+
+        List<ThingInstance> queryResults;
+
+        // todo/_GUID_
+
+        final SimpleQuery query = new SimpleQuery(todoManager, "todos/" + paperwork.getGUID());
+
+        queryResults = query.performQuery().getListThingInstance();
+
+        Assert.assertTrue(query.isResultACollection()); // plural should always report itself as a collection even on instance
+
+        Assert.assertEquals(1, queryResults.size());
+        Assert.assertTrue(queryResults.contains(paperwork));
+        Assert.assertFalse(queryResults.contains(filework));
+
+        System.out.println(JsonThing.asJson(queryResults));
+
+    }
 
 
     @Test
     public void cannotGetGuidThatDoesNotExist(){
 
-        List<ThingInstance> query;
+        List<ThingInstance> queryResults;
 
         // todo/_GUID_
-        query = todoManager.simplequery("todo/" + paperwork.getGUID() + "bob");
 
-        Assert.assertEquals(0, query.size());
-        System.out.println(JsonThing.asJson(query));
+        final SimpleQuery query = new SimpleQuery(todoManager, "todo/" + paperwork.getGUID() + "bob");
+
+        queryResults = query.performQuery().getListThingInstance();
+
+        // even though it doesn not match anything I should know what type of thing this empty collection is
+        Assert.assertTrue(query.isResultACollection());
+        Assert.assertEquals(todoManager.getThingNamed("todo").definition(), query.resultContainsDefn());
+
+        Assert.assertEquals(0, queryResults.size());
+        System.out.println(JsonThing.asJson(queryResults));
 
     }
 
+    @Test
+    public void cannotGetGuidThatDoesNotExistWithPlural(){
+
+        List<ThingInstance> queryResults;
+
+        // todo/_GUID_
+
+        final SimpleQuery query = new SimpleQuery(todoManager, "todos/" + paperwork.getGUID() + "bob");
+
+        queryResults = query.performQuery().getListThingInstance();
+
+        // even though it doesn not match anything I should know what type of thing this empty collection is
+        Assert.assertTrue(query.isResultACollection());
+        Assert.assertEquals(todoManager.getThingNamed("todo").definition(), query.resultContainsDefn());
+
+        Assert.assertEquals(0, queryResults.size());
+        System.out.println(JsonThing.asJson(queryResults));
+
+    }
 
 
 
@@ -122,7 +183,7 @@ public class TodoManagerQueryEngineTest {
 
         // stuff we could get for free from backend
 
-        List<ThingInstance> query;
+        List<ThingInstance> queryResults;
 
         //
         ThingInstance officeWork = project.createInstance().setValue("title", "Office Work");
@@ -134,47 +195,52 @@ public class TodoManagerQueryEngineTest {
 
         // match on relationships
         // project/_GUID_/tasks
-        query = todoManager.simplequery(String.format("project/%s/tasks", officeWork.getGUID()));
 
-        Assert.assertEquals(2, query.size());
-        Assert.assertTrue(query.contains(paperwork));
-        Assert.assertTrue(query.contains(filework));
+        queryResults = new SimpleQuery(todoManager, String.format("project/%s/tasks", officeWork.getGUID())).performQuery().getListThingInstance();
 
-        System.out.println(JsonThing.asJson(query));
+        Assert.assertEquals(2, queryResults.size());
+        Assert.assertTrue(queryResults.contains(paperwork));
+        Assert.assertTrue(queryResults.contains(filework));
+
+        System.out.println(JsonThing.asJson(queryResults));
 
 
 
 
         // should be able to get projects for a task
-        query = todoManager.simplequery(String.format("todo/%s/task-of", paperwork.getGUID()));
-        Assert.assertEquals(1, query.size());
-        Assert.assertTrue(query.contains(officeWork));
-        System.out.println(JsonThing.asJson(query));
+
+        queryResults = new SimpleQuery(todoManager, String.format("todo/%s/task-of", paperwork.getGUID())).performQuery().getListThingInstance();
+        Assert.assertEquals(1, queryResults.size());
+        Assert.assertTrue(queryResults.contains(officeWork));
+        System.out.println(JsonThing.asJson(queryResults));
 
 
         // match on entity types
         // project/_GUID_/todo
-        query = todoManager.simplequery(String.format("project/%s/todo", officeWork.getGUID()));
 
-        Assert.assertEquals(2, query.size());
-        Assert.assertTrue(query.contains(paperwork));
-        Assert.assertTrue(query.contains(filework));
+        queryResults = new SimpleQuery(todoManager, String.format("project/%s/todo", officeWork.getGUID())).performQuery().getListThingInstance();
 
-        System.out.println(JsonThing.asJson(query));
+        Assert.assertEquals(2, queryResults.size());
+        Assert.assertTrue(queryResults.contains(paperwork));
+        Assert.assertTrue(queryResults.contains(filework));
+
+        System.out.println(JsonThing.asJson(queryResults));
 
         // project/_GUID_/todo/category
-        query = todoManager.simplequery(String.format("project/%s/todo/category", officeWork.getGUID()));
 
-        Assert.assertEquals(1, query.size());
-        Assert.assertTrue(query.contains(officeCategory));
+        queryResults = new SimpleQuery(todoManager, String.format("project/%s/todo/category", officeWork.getGUID())).performQuery().getListThingInstance();
 
-        System.out.println(JsonThing.asJson(query));
+        Assert.assertEquals(1, queryResults.size());
+        Assert.assertTrue(queryResults.contains(officeCategory));
+
+        System.out.println(JsonThing.asJson(queryResults));
 
         // invalid query should match nothing there is no entity called task
         // project/_GUID_/task
-        query = todoManager.simplequery(String.format("project/%s/task", officeWork.getGUID()));
 
-        Assert.assertEquals(0, query.size());
+        queryResults = new SimpleQuery(todoManager, String.format("project/%s/task", officeWork.getGUID())).performQuery().getListThingInstance();
+
+        Assert.assertEquals(0, queryResults.size());
 
 
 

@@ -144,7 +144,7 @@ public class ApiResponseAsJsonTest {
 
         String json = new ApiResponseAsJson(response).getJson();
         System.out.println(json);
-        TodoResponse myTodo = new Gson().fromJson(json, TodoResponse.class);
+        TodoCollectionResponse myTodo = new Gson().fromJson(json, TodoCollectionResponse.class);
 
         int foundCount=0;
         for(int todoid = 0; todoid < 2; todoid++){
@@ -194,6 +194,12 @@ public class ApiResponseAsJsonTest {
     private class TodoResponse{
 
         Todo todo;
+        Todo[] todos;
+
+    }
+
+    private class TodoCollectionResponse{
+
         Todo[] todos;
 
     }

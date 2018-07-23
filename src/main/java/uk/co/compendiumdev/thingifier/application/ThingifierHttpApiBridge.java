@@ -9,6 +9,7 @@ import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -22,36 +23,47 @@ public class ThingifierHttpApiBridge {
 
     public String get(final Request request, final Response response) {
         ApiResponse apiResponse = thingifier.api().get(justThePath(request.pathInfo()));
-        return responseBodyFor(request.headers(), apiResponse, response);
+        return responseBodyFor(headersAsMap(request), apiResponse, response);
     }
 
     public String post(final Request request, final Response response) {
         ApiResponse apiResponse = thingifier.api().post(justThePath(request.pathInfo()), justTheBody(request));
-        return responseBodyFor(request.headers(), apiResponse, response);
+        return responseBodyFor(headersAsMap(request), apiResponse, response);
     }
 
     public String delete(final Request request, final Response response) {
         ApiResponse apiResponse = thingifier.api().delete(justThePath(request.pathInfo()));
-        return responseBodyFor(request.headers(), apiResponse, response);
+        return responseBodyFor(headersAsMap(request), apiResponse, response);
     }
 
     public String put(final Request request, final Response response) {
         ApiResponse apiResponse = thingifier.api().put(justThePath(request.pathInfo()), justTheBody(request));
-        return responseBodyFor(request.headers(), apiResponse, response);
+        return responseBodyFor(headersAsMap(request), apiResponse, response);
     }
 
 
     public String query(final Request request, final Response response, final String query) {
         ApiResponse apiResponse = thingifier.api().get(query);
-        return responseBodyFor(request.headers(), apiResponse, response);
+        return responseBodyFor(headersAsMap(request), apiResponse, response);
     }
 
-    private String responseBodyFor(final Set<String> headers, final ApiResponse apiResponse, final Response response) {
+    private Map<String,String> headersAsMap(final Request request) {
+        final Set<String> headerNames = request.headers();
+        final Map<String,String> headers = new HashMap<>();
+
+        for(String header : headerNames){
+            headers.put(header, request.headers(header));
+        }
+        return headers;
+    }
+
+    private String responseBodyFor(final Map<String, String> headers, final ApiResponse apiResponse, final Response response) {
         HttpApiResponse httpResponse = new HttpApiResponse(headers, apiResponse);
 
+        String body = httpResponse.getBody();
         updateResponseFromHttpResponse(httpResponse, response);
 
-        return httpResponse.getBody();
+        return body;
     }
 
 

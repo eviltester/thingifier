@@ -43,7 +43,7 @@ public class ThingifierRestAPIHandler {
          */
         // if queryis empty then need a way to check if the query matched
         // create a thing
-        Thing thing = thingifier.getThingNamed(url);
+        Thing thing = thingifier.getThingNamedSingularOrPlural(url);
         if (thing != null) {
             return createANewThingWithPost(args, thing);
         }
@@ -58,7 +58,7 @@ public class ThingifierRestAPIHandler {
         if (urlParts.length == 2) {
 
             String thingName = urlParts[0];
-            thing = thingifier.getThingNamed(thingName);
+            thing = thingifier.getThingNamedSingularOrPlural(thingName);
             String instanceGuid = urlParts[1];
 
             return amendAThingWithPost(args, thing, thingName, instanceGuid);
@@ -246,7 +246,7 @@ public class ThingifierRestAPIHandler {
 
         // if queryis empty then need a way to check if the query matched
         // create a thing
-        Thing thing = thingifier.getThingNamed(url);
+        Thing thing = thingifier.getThingNamedSingularOrPlural(url);
         if (thing != null) {
             // can't create a new thing at root level with PUT
             return ApiResponse.error(405, "Cannot create root level entity with a PUT");
@@ -258,7 +258,7 @@ public class ThingifierRestAPIHandler {
         String[] urlParts = url.split("/");
         if (urlParts.length == 2) {
 
-            thing = thingifier.getThingNamed(urlParts[0]);
+            thing = thingifier.getThingNamedSingularOrPlural(urlParts[0]);
             if (thing == null) {
                 // this is not a URL for thing/guid
                 // unknown thing
@@ -337,7 +337,8 @@ public class ThingifierRestAPIHandler {
         // Assume it matches  alist
 
         // get the things to post to
-        List<ThingInstance> query = thingifier.simplequery(url);
+
+        List<ThingInstance> query = new SimpleQuery(thingifier, url).performQuery().getListThingInstance();
 
         if (query.size() > 0) {
             // TODO: not implemented yet
@@ -354,7 +355,7 @@ public class ThingifierRestAPIHandler {
 
     public ApiResponse delete(String url) {
         // this should probably not delete root items
-        Thing thing = thingifier.getThingNamed(url);
+        Thing thing = thingifier.getThingNamedSingularOrPlural(url);
         if (thing != null) {
             // can't delete root level with a DELETE
             return ApiResponse.error(405, "Cannot delete root level entity");

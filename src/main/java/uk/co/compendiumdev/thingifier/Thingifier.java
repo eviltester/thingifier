@@ -32,13 +32,7 @@ public class Thingifier {
         return new ArrayList<Thing>(things.values());
     }
 
-    public boolean hasThingNamed(final String aName) {
-        return things.containsKey(aName);
-    }
 
-    public Thing getThingNamed(final String aName) {
-        return things.get(aName);
-    }
 
     public RelationshipDefinition defineRelationship(final Between giventhings, final AndCall it, final Cardinality of) {
         RelationshipDefinition relationship = RelationshipDefinition.create(giventhings.from(), giventhings.to(), new RelationshipVector(it.isCalled(), of));
@@ -46,10 +40,6 @@ public class Thingifier {
         return relationship;
     }
 
-    public RelationshipDefinition defineRelationshipBetween(final String nameOfFromThing, final String nameOfToThing, final AndCall it) {
-        return defineRelationship(Between.things(getThingNamed(nameOfFromThing),
-                getThingNamed(nameOfToThing)), it, WithCardinality.of("1", "*"));
-    }
 
     public String toString() {
 
@@ -57,16 +47,6 @@ public class Thingifier {
     }
 
 
-    // todo: allow duplicate named relationships but between different types of things
-    private RelationshipDefinition getRelationship(final String relationshipName) {
-        return relationships.get(relationshipName);
-    }
-
-    public List<ThingInstance> simplequery(final String query) {
-
-        return new SimpleQuery(this, query).performQuery().getListThingInstance();
-
-    }
 
     public ThingifierRestAPIHandler api() {
         return new ThingifierRestAPIHandler(this);
@@ -120,6 +100,15 @@ public class Thingifier {
         return this.initialParagraph;
     }
 
+
+    public boolean hasThingNamed(final String aName) {
+        return things.containsKey(aName);
+    }
+
+    public Thing getThingNamed(final String aName) {
+        return things.get(aName);
+    }
+
     public boolean hasThingWithPluralNamed(final String term) {
         Thing aThing = getThingWithPluralNamed(term);
         return aThing != null;
@@ -134,4 +123,14 @@ public class Thingifier {
         return null;
     }
 
+    public Thing getThingNamedSingularOrPlural(final String term) {
+        Thing thing = getThingNamed(term);
+        if(thing==null){
+            if(hasThingWithPluralNamed(term)){
+                thing = getThingWithPluralNamed(term);
+            }
+        }
+
+        return thing;
+    }
 }

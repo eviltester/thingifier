@@ -12,10 +12,10 @@ import java.util.Set;
 public class HttpApiResponse {
 
     private final ApiResponse apiResponse;
-    private final Set<String> headers;
+    private final Map<String, String> headers;
     private String type;
 
-    public HttpApiResponse(final Set<String> requestHeaders, final ApiResponse anApiResponse) {
+    public HttpApiResponse(final Map<String, String> requestHeaders, final ApiResponse anApiResponse) {
         this.headers = requestHeaders;
         this.apiResponse = anApiResponse;
         type = null;
@@ -27,14 +27,13 @@ public class HttpApiResponse {
 
         String acceptHeader = getHeader("Accept");
 
-        if (acceptHeader != null) {
             if (acceptHeader.endsWith("/xml")) {
                 asJson = false;
             }
 //            if (request.headers("Accept").endsWith("/json")) {
 //                // todo : should probably return a 406 Not Acceptable http status message if we don't support the asked for type
 //            }
-        }
+
 
         String returnBody = "";
 
@@ -52,19 +51,10 @@ public class HttpApiResponse {
 
     private String getHeader(final String name) {
 
-
-        for (String header : headers) {
-
-            String[] headerParts = header.split(":");
-
-            if (headerParts.length == 2) {
-                if (headerParts[0].trim().equalsIgnoreCase(name)) {
-                    return headerParts[1].trim();
-                }
-            }
+        if(headers.containsKey(name)){
+            return headers.get(name);
         }
-
-        return null;
+        return "";
     }
 
     public boolean hasType() {

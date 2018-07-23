@@ -15,7 +15,8 @@ public class ApiRoutingDefinitionGenerator {
     }
 
     // TODO: generate /_plural_ instead of /_entityName_ for top level routing (make this toggelable from command line (to inject buggyness) but make plural the default
-        // - this should always return a collection object regardless if it is a single instance or not
+        // - plural should always return a collection object regardless if it is a single instance or not
+        // - single should return a single if instance and collection if multiple
     // TODO: have a toggle to allow for /_entityName  - this should only be valid if  /_entityName/_guid_ and will return a single object
     // TODO: create an /instance/_entityName_/_guid_ that provides a report with all relationships listed as objects e.g.
     /*
@@ -42,7 +43,13 @@ public class ApiRoutingDefinitionGenerator {
 
         for (Thing thing : thingifier.getThings()) {
 
-            String url = thing.definition().getName().toLowerCase();
+            // TODO: make this configurable between plural and single
+            String thingName;
+            thingName = thing.definition().getPlural().toLowerCase();
+            //thingName = thing.definition().getName().toLowerCase();
+
+            String url = thingName;
+
             // we should be able to get things e.g. GET project
             defn.addRouting(
                     String.format("return all the instances of %s", thing.definition().getName()),
@@ -68,7 +75,7 @@ public class ApiRoutingDefinitionGenerator {
             defn.addRouting("method not allowed",
                     RoutingVerb.PUT, url, RoutingStatus.returnValue(405));
 
-            String aUrlWGuid = thing.definition().getName().toLowerCase() + "/:guid";
+            String aUrlWGuid = url + "/:guid";
             // we should be able to get specific things based on the GUID e.g. GET project/GUID
             defn.addRouting(
                     String.format("return a specific instances of %s using a guid", thing.definition().getName()),
@@ -113,7 +120,12 @@ public class ApiRoutingDefinitionGenerator {
         String toName = relationship.getTo().definition().getName();
         String relationshipName = relationship.getName();
 
-        String aUrl = fromName + "/:guid/" + relationshipName;
+        // TODO: make this configurable between plural and single
+        String fromNameForUrl;
+        //fromNameForUrl = relationship.getFrom().definition().getName();
+        fromNameForUrl = relationship.getFrom().definition().getPlural();
+
+        String aUrl = fromNameForUrl + "/:guid/" + relationshipName;
         defn.addRouting(
                 String.format("return all the %s items related to %s :guid by the relationship named %s", toName, fromName, relationshipName),
                 RoutingVerb.GET, aUrl, RoutingStatus.returnedFromCall());
@@ -135,7 +147,7 @@ public class ApiRoutingDefinitionGenerator {
 
 
         // we should be able to delete a relationship
-        final String aUrlDelete = fromName + "/:guid/" + relationshipName + "/:relatedguid";
+        final String aUrlDelete = fromNameForUrl + "/:guid/" + relationshipName + "/:relatedguid";
         defn.addRouting(
                 String.format("delete the instance of the relationship between %s :guid and %s :relatedguid named %s ", fromName, toName, relationshipName),
                 RoutingVerb.DELETE, aUrlDelete, RoutingStatus.returnedFromCall());
