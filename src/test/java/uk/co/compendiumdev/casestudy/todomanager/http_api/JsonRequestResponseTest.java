@@ -23,6 +23,9 @@ public class JsonRequestResponseTest {
     Thing project;
 
 
+    // TODO: DELETE through api
+    // TODO: create relationship with XML
+    // TODO: create relationship with JSON
 
     @Before
     public void createDefinitions() {
