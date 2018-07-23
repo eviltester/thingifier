@@ -98,11 +98,6 @@ public class JsonThing {
         return jsonArray;
     }
 
-    public static String asJson(final ThingInstance thingInstance) {
-
-        return new Gson().toJson(asJsonObject(thingInstance));
-    }
-
     public static JsonObject asJsonObject(final ThingInstance thingInstance) {
 
         final JsonObject jsonobj = new JsonObject();

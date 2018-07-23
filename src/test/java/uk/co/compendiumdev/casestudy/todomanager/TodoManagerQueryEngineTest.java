@@ -1,11 +1,11 @@
 package uk.co.compendiumdev.casestudy.todomanager;
 
+import com.google.gson.Gson;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
 import uk.co.compendiumdev.thingifier.reporting.JsonThing;
 
@@ -30,7 +30,8 @@ public class TodoManagerQueryEngineTest {
 
         paperwork = todo.createInstance().setValue("title", "scan paperwork");
         todo.addInstance(paperwork);
-        System.out.println(JsonThing.asJson(paperwork));
+
+        System.out.println(new Gson().toJson(JsonThing.asJsonObject(paperwork)));
 
         filework = todo.createInstance().setValue("title", "file paperwork");
         todo.addInstance(filework);
