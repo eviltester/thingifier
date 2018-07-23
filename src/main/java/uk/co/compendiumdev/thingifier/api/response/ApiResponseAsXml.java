@@ -1,6 +1,5 @@
 package uk.co.compendiumdev.thingifier.api.response;
 
-import com.google.gson.JsonObject;
 import org.json.JSONObject;
 import org.json.XML;
 import uk.co.compendiumdev.thingifier.generic.definitions.ThingDefinition;
@@ -9,7 +8,7 @@ import uk.co.compendiumdev.thingifier.reporting.JsonThing;
 
 import java.util.*;
 
-public class ApiResponseAsXml {
+final public class ApiResponseAsXml {
     private final ApiResponse apiResponse;
 
     public ApiResponseAsXml(final ApiResponse apiResponse) {

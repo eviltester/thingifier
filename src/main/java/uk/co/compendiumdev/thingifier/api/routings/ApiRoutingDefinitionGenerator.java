@@ -15,8 +15,8 @@ public class ApiRoutingDefinitionGenerator {
     }
 
     // TODO: generate /_plural_ instead of /_entityName_ for top level routing (make this toggelable from command line (to inject buggyness) but make plural the default
-        // - plural should always return a collection object regardless if it is a single instance or not
-        // - single should return a single if instance and collection if multiple
+    // - plural should always return a collection object regardless if it is a single instance or not
+    // - single should return a single if instance and collection if multiple
     // TODO: have a toggle to allow for /_entityName  - this should only be valid if  /_entityName/_guid_ and will return a single object
     // TODO: create an /instance/_entityName_/_guid_ that provides a report with all relationships listed as objects e.g.
     /*
@@ -136,8 +136,9 @@ public class ApiRoutingDefinitionGenerator {
                 new ResponseHeader("Allow", "OPTIONS, GET"));
 
         // we can post if there is no guid as it will create the 'thing' and the relationship connection
-        defn.addRouting(String.format("create an instance of a relationship named %s between %s instance :guid and the %s instance represented by the guid in the body of the message"
-                , relationshipName, fromName, toName),
+        defn.addRouting(
+                String.format("create an instance of a relationship named %s between %s instance :guid and the %s instance represented by the guid in the body of the message",
+                        relationshipName, fromName, toName),
                 RoutingVerb.POST, aUrl, RoutingStatus.returnedFromCall());
 
         defn.addRouting("method not allowed", RoutingVerb.HEAD, aUrl, RoutingStatus.returnValue(405));

@@ -1,7 +1,6 @@
 package uk.co.compendiumdev.thingifier.api.response;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
 import uk.co.compendiumdev.thingifier.reporting.JsonThing;
 
@@ -28,15 +27,15 @@ public final class ApiResponseAsJson {
         // collections are named with their plural
         if (apiResponse.isCollection()) {
 
-            String output="";
+            String output = "";
 
             final List<ThingInstance> things = apiResponse.getReturnedInstanceCollection();
 
-            String typeName="";
+            String typeName = "";
 
-            if(apiResponse.getTypeOfThingReturned()!=null){
-                typeName= apiResponse.getTypeOfThingReturned().getPlural();
-            }else {
+            if (apiResponse.getTypeOfThingReturned() != null) {
+                typeName = apiResponse.getTypeOfThingReturned().getPlural();
+            } else {
 
                 // TODO check - do not think that this is ever possible anymore
                 if (things.size() > 0) {
@@ -44,10 +43,10 @@ public final class ApiResponseAsJson {
                 }
             }
 
-            if(typeName.length()>0) {
+            if (typeName.length() > 0) {
                 output = JsonThing.asJsonTypedArrayWithContentsUntyped(apiResponse.getReturnedInstanceCollection(), typeName);
-            }else{
-                if(things.size()==0){
+            } else {
+                if (things.size() == 0) {
                     output = "{}";
                 }
             }

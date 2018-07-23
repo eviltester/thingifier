@@ -2,15 +2,11 @@ package uk.co.compendiumdev.thingifier.reporting;
 
 import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.api.routings.ApiRoutingDefinition;
-import uk.co.compendiumdev.thingifier.api.routings.RoutingDefinition;
-import uk.co.compendiumdev.thingifier.api.routings.RoutingVerb;
 import uk.co.compendiumdev.thingifier.generic.definitions.RelationshipDefinition;
-import uk.co.compendiumdev.thingifier.generic.definitions.validation.ValidationRule;
 import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
 
 import java.util.Collection;
-import java.util.Map;
+
 
 public class ThingReporter {
 
@@ -57,8 +53,6 @@ public class ThingReporter {
 
         return output.toString();
     }
-
-
 
 
 }

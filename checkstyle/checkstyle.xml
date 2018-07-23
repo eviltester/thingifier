@@ -7,7 +7,7 @@
 
 https://github.com/checkstyle/checkstyle/blob/master/src/main/resources/sun_checks.xml
 
-Amended 20180723 to ignore javadoc checks, and LineLength
+Amended 20180723 to ignore javadoc checks, and LineLength and TodoComment
 
 -->
 <!--
@@ -177,7 +177,9 @@ Amended 20180723 to ignore javadoc checks, and LineLength
         <!-- See http://checkstyle.sf.net/config_misc.html -->
         <module name="ArrayTypeStyle"/>
         <module name="FinalParameters"/>
+        <!--
         <module name="TodoComment"/>
+        -->
         <module name="UpperEll"/>
 
     </module>

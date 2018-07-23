@@ -1,6 +1,6 @@
 package uk.co.compendiumdev.thingifier.api.response;
 
-public class ApiResponseError {
+final public class ApiResponseError {
 
     private ApiResponseError() {
     }

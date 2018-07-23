@@ -3,7 +3,8 @@ package uk.co.compendiumdev.thingifier.api.http;
 import java.util.HashMap;
 import java.util.Map;
 
-public class HttpApiRequest {
+final public class HttpApiRequest {
+
     private final String path;
     private Map<String, String> headers;
     private boolean hasBody;
@@ -12,8 +13,8 @@ public class HttpApiRequest {
     public HttpApiRequest(final String pathInfo) {
         this.path = justThePath(pathInfo);
         this.headers = new HashMap<>();
-        hasBody=false;
-        body="";
+        hasBody = false;
+        body = "";
     }
 
     private String justThePath(final String path) {

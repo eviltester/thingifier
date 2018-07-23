@@ -1,14 +1,13 @@
 package uk.co.compendiumdev.thingifier.generic.instances;
 
 import uk.co.compendiumdev.thingifier.api.ValidationReport;
-import uk.co.compendiumdev.thingifier.generic.GUID;
 import uk.co.compendiumdev.thingifier.generic.definitions.Field;
 import uk.co.compendiumdev.thingifier.generic.definitions.RelationshipVector;
 import uk.co.compendiumdev.thingifier.generic.definitions.ThingDefinition;
 
 import java.util.*;
 
-public class ThingInstance {
+final public class ThingInstance {
 
 
     private final List<RelationshipInstance> relationships;
@@ -18,7 +17,7 @@ public class ThingInstance {
     public ThingInstance(ThingDefinition eDefn) {
         this.entityDefinition = eDefn;
         this.instance = new InstanceFields();
-        instance.addValue("guid", GUID.create());
+        instance.addValue("guid", UUID.randomUUID().toString());
         this.relationships = new ArrayList<RelationshipInstance>();
     }
 
@@ -89,11 +88,11 @@ public class ThingInstance {
                 // set the value
                 setValue(entry.getKey(), entry.getValue());
 
-            } else{
+            } else {
 
                 // if editing it then throw error, ignore if same value
                 String existingGuid = instance.getValue("guid");
-                if (existingGuid != null && existingGuid.trim().length() > 0){
+                if (existingGuid != null && existingGuid.trim().length() > 0) {
 
                     // if value is different then it is an attempt to amend it
                     if (!existingGuid.equalsIgnoreCase(entry.getValue())) {
@@ -297,7 +296,6 @@ public class ThingInstance {
         cloneInstance.setCloneFieldValuesFrom(instance.asMap());
         return cloneInstance;
     }
-
 
 
 }

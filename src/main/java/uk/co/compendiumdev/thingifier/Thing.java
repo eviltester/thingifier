@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-public class Thing {
+final public class Thing {
 
     private final ThingDefinition definition;
     private Map<String, ThingInstance> instances = new HashMap<String, ThingInstance>();

@@ -11,7 +11,7 @@ import java.util.List;
 
 import static uk.co.compendiumdev.thingifier.query.SimpleQuery.LastMatchValue.*;
 
-public class SimpleQuery {
+final public class SimpleQuery {
 
     private final Thingifier thingifier;
     private final String query;
@@ -23,7 +23,9 @@ public class SimpleQuery {
         return isCollection;
     }
 
-    enum LastMatchValue { NOTHING, CURRENT_THING, CURRENT_INSTANCE, CURRENT_ITEMS, CURRENT_RELATIONSHIP};
+    enum LastMatchValue {NOTHING, CURRENT_THING, CURRENT_INSTANCE, CURRENT_ITEMS, CURRENT_RELATIONSHIP}
+
+    ;
 
     LastMatchValue lastMatch = NOTHING;
 
@@ -63,12 +65,12 @@ public class SimpleQuery {
                 if (currentThing == null && foundItems.size() == 0) {
                     // first thing - find it
                     currentThing = thingifier.getThingNamed(term);
-                    pluralMatch=false;
+                    pluralMatch = false;
 
-                    if (currentThing == null){
+                    if (currentThing == null) {
                         // was it the plural?
                         currentThing = thingifier.getThingWithPluralNamed(term);
-                        pluralMatch=true;
+                        pluralMatch = true;
                     }
 
                     // entity type is always a collection
@@ -136,7 +138,7 @@ public class SimpleQuery {
                 }
 
                 // relationships is always a collection
-                isCollection=true;
+                isCollection = true;
 
                 foundItems = newitems;
                 parentInstance = currentInstance;
@@ -159,7 +161,7 @@ public class SimpleQuery {
                     }
 
                     // if we had a plural term then return this as a collection
-                    isCollection=pluralMatch;
+                    isCollection = pluralMatch;
 
                     currentThing = null;
 

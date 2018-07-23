@@ -34,7 +34,6 @@ public class ThingifierRestAPIHandler {
     // TODO: consider empty json collection having the type e.g. {"todos": []}
 
 
-
     public ApiResponse post(final String url, final Map args) {
 
 
@@ -167,8 +166,8 @@ public class ThingifierRestAPIHandler {
 
     private Map<String, String> stringMap(final Map<String, Object> args) {
         Map<String, String> stringsInMap = new HashMap();
-        for (String key : args.keySet()){
-            if (args.get(key) instanceof String){
+        for (String key : args.keySet()) {
+            if (args.get(key) instanceof String) {
                 stringsInMap.put(key, (String) args.get(key));
             }
         }
@@ -239,9 +238,6 @@ public class ThingifierRestAPIHandler {
     }
 
     public ApiResponse put(String url, Map args) {
-
-
-
 
 
         // if queryis empty then need a way to check if the query matched
@@ -330,7 +326,6 @@ public class ThingifierRestAPIHandler {
                 }
 
 
-
             }
         }
 
@@ -396,10 +391,10 @@ public class ThingifierRestAPIHandler {
         }
 
         if (queryResults.lastMatchWasInstance()) {
-            if(queryResults.isResultACollection()){
+            if (queryResults.isResultACollection()) {
                 // if we asked for /projects then we should always return a collection
                 return ApiResponse.success().returnInstanceCollection(queryResults.getListThingInstance());
-            }else{
+            } else {
                 return ApiResponse.success().returnSingleInstance(queryResults.getLastInstance());
             }
         } else {

@@ -4,8 +4,8 @@ public class Cardinality {
     private final String from;
     private final String to;
 
-    public Cardinality(String from, String to) {
-        this.from = from;
-        this.to = to;
+    public Cardinality(final String fromAmount, final String toAmount) {
+        this.from = fromAmount;
+        this.to = toAmount;
     }
 }

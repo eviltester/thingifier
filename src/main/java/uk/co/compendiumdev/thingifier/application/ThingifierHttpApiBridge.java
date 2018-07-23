@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-public class ThingifierHttpApiBridge {
+final public class ThingifierHttpApiBridge {
 
     private final Thingifier thingifier;
 
@@ -66,11 +66,11 @@ public class ThingifierHttpApiBridge {
         return theResponse.getBody();
     }
 
-    private Map<String,String> headersAsMap(final Request request) {
+    private Map<String, String> headersAsMap(final Request request) {
         final Set<String> headerNames = request.headers();
-        final Map<String,String> headers = new HashMap<>();
+        final Map<String, String> headers = new HashMap<>();
 
-        for(String header : headerNames){
+        for (String header : headerNames) {
             headers.put(header, request.headers(header));
         }
         return headers;
@@ -81,7 +81,7 @@ public class ThingifierHttpApiBridge {
 
         response.status(httpResponse.getStatusCode());
 
-        if (httpResponse.hasType()){
+        if (httpResponse.hasType()) {
             response.type(httpResponse.getType());
         }
 

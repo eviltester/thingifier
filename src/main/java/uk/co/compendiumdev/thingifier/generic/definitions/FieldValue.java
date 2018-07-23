@@ -1,6 +1,7 @@
 package uk.co.compendiumdev.thingifier.generic.definitions;
 
-public class FieldValue {
+final public class FieldValue {
+
     private final String fieldName;
     private final String fieldValue;
 

@@ -7,7 +7,7 @@ import uk.co.compendiumdev.thingifier.api.response.ApiResponseAsXml;
 import java.util.HashMap;
 import java.util.Map;
 
-public class HttpApiResponse {
+final public class HttpApiResponse {
 
     private final ApiResponse apiResponse;
     private final HashMap<String, String> apiResponseHeaders;
@@ -17,12 +17,12 @@ public class HttpApiResponse {
 
     public HttpApiResponse(final Map<String, String> requestHeaders, final ApiResponse anApiResponse) {
         this.apiResponse = anApiResponse;
-        this.apiResponseHeaders = new HashMap<String,String>();
+        this.apiResponseHeaders = new HashMap<String, String>();
 
         configure(requestHeaders);
     }
 
-    private void configure(final Map<String, String> requestHeaders){
+    private void configure(final Map<String, String> requestHeaders) {
         asJson = true; //default to json
 
         String acceptHeader = getHeader("Accept", requestHeaders);
@@ -30,7 +30,6 @@ public class HttpApiResponse {
         if (acceptHeader.endsWith("/xml")) {
             asJson = false;
         }
-
 
 
         if (asJson) {
@@ -55,9 +54,9 @@ public class HttpApiResponse {
         return returnBody;
     }
 
-    private String getHeader(final String name, Map<String,String> requestHeaders) {
+    private String getHeader(final String name, Map<String, String> requestHeaders) {
 
-        if(requestHeaders.containsKey(name)){
+        if (requestHeaders.containsKey(name)) {
             return requestHeaders.get(name);
         }
         return "";

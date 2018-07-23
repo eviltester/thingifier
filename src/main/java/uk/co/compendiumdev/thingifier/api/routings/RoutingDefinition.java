@@ -7,7 +7,7 @@ public class RoutingDefinition {
     private final String url;
     private final RoutingStatus routingStatus;
     private final ResponseHeader header;
-    private String documentation="";
+    private String documentation = "";
 
     public RoutingDefinition(RoutingVerb verb, String url, RoutingStatus routingStatus, ResponseHeader header) {
         this.verb = verb;
@@ -29,7 +29,7 @@ public class RoutingDefinition {
     }
 
     public String header() {
-        if(header.headerName==null) {
+        if (header.headerName == null) {
             return "";
         }
 
@@ -37,7 +37,7 @@ public class RoutingDefinition {
     }
 
     public String headerValue() {
-        if(header.headerValue==null) {
+        if (header.headerValue == null) {
             return "";
         }
 

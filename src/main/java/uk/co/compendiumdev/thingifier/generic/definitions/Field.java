@@ -19,7 +19,7 @@ public final class Field {
     private String defaultValue;
     private List<ValidationRule> validationRules;
 
-    private Field(String name, FieldType type) {
+    private Field(final String name, final FieldType type) {
         this.name = name;
         this.type = type;
         validationRules = new ArrayList<>();
@@ -66,8 +66,8 @@ public final class Field {
         }
 
         if (type == FieldType.BOOLEAN) {
-            if (value.toLowerCase().contentEquals("true") ||
-                    value.toLowerCase().contentEquals("false")) {
+            if (value.toLowerCase().contentEquals("true")
+                    || value.toLowerCase().contentEquals("false")) {
                 return true;
             }
 

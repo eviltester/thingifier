@@ -5,16 +5,14 @@ import uk.co.compendiumdev.thingifier.generic.definitions.Cardinality;
 import uk.co.compendiumdev.thingifier.generic.definitions.FieldValue;
 import uk.co.compendiumdev.thingifier.generic.definitions.RelationshipDefinition;
 import uk.co.compendiumdev.thingifier.generic.definitions.RelationshipVector;
-import uk.co.compendiumdev.thingifier.generic.dsl.relationship.WithCardinality;
 import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
 import uk.co.compendiumdev.thingifier.generic.dsl.relationship.AndCall;
 import uk.co.compendiumdev.thingifier.generic.dsl.relationship.Between;
-import uk.co.compendiumdev.thingifier.query.SimpleQuery;
 import uk.co.compendiumdev.thingifier.reporting.ThingReporter;
 
 import java.util.*;
 
-public class Thingifier {
+final public class Thingifier {
 
     private Map<String, Thing> things = new HashMap<String, Thing>();
     private Map<String, RelationshipDefinition> relationships = new HashMap<String, RelationshipDefinition>();
@@ -33,7 +31,6 @@ public class Thingifier {
     }
 
 
-
     public RelationshipDefinition defineRelationship(final Between giventhings, final AndCall it, final Cardinality of) {
         RelationshipDefinition relationship = RelationshipDefinition.create(giventhings.from(), giventhings.to(), new RelationshipVector(it.isCalled(), of));
         relationships.put(it.isCalled(), relationship);
@@ -45,7 +42,6 @@ public class Thingifier {
 
         return new ThingReporter(this).basicReport();
     }
-
 
 
     public ThingifierRestAPIHandler api() {
@@ -115,8 +111,8 @@ public class Thingifier {
     }
 
     public Thing getThingWithPluralNamed(final String term) {
-        for (Thing aThing : things.values()){
-            if (aThing.definition().getPlural().equalsIgnoreCase(term)){
+        for (Thing aThing : things.values()) {
+            if (aThing.definition().getPlural().equalsIgnoreCase(term)) {
                 return aThing;
             }
         }
@@ -125,8 +121,8 @@ public class Thingifier {
 
     public Thing getThingNamedSingularOrPlural(final String term) {
         Thing thing = getThingNamed(term);
-        if(thing==null){
-            if(hasThingWithPluralNamed(term)){
+        if (thing == null) {
+            if (hasThingWithPluralNamed(term)) {
                 thing = getThingWithPluralNamed(term);
             }
         }

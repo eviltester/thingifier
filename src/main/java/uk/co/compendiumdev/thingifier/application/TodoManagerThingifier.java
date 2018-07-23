@@ -54,8 +54,7 @@ public class TodoManagerThingifier {
                         Field.is("doneStatus", FieldType.BOOLEAN).
                                 withDefaultValue("FALSE").
                                 withValidation(
-                                        VRule.matchesType()))
-        ;
+                                        VRule.matchesType()));
 
         // TODO: validate against field type DATE
         // TODO: create SET field type

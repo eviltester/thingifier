@@ -9,7 +9,7 @@ import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import java.util.ArrayList;
 import java.util.Map;
 
-public class ThingifierHttpApi {
+final public class ThingifierHttpApi {
 
     private final Thingifier thingifier;
 

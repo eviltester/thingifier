@@ -7,9 +7,9 @@ public final class Between {
     private final Thing from;
     private final Thing to;
 
-    private Between(final Thing from, final Thing to) {
-        this.from= from;
-        this.to = to;
+    private Between(final Thing fromThing, final Thing toThing) {
+        this.from = fromThing;
+        this.to = toThing;
     }
 
     public static Between things(final Thing from, final Thing to) {
