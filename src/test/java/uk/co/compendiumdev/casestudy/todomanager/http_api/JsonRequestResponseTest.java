@@ -10,9 +10,10 @@ import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiResponse;
 import uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi;
+import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
+import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.UUID;
 
 public class JsonRequestResponseTest {
 
@@ -21,7 +22,7 @@ public class JsonRequestResponseTest {
     Thing todo;
     Thing project;
 
-    Map<String, String> acceptJson;
+
 
     @Before
     public void createDefinitions() {
@@ -31,8 +32,6 @@ public class JsonRequestResponseTest {
         todo = todoManager.getThingNamed("todo");
         project = todoManager.getThingNamed("project");
 
-        acceptJson = new HashMap<String, String>();
-        acceptJson.put("Accept", "application/json");
 
     }
 
@@ -40,7 +39,7 @@ public class JsonRequestResponseTest {
     public void canGetAnEmptyJsonItemsCollection(){
 
         HttpApiRequest request = new HttpApiRequest("todos");
-        request.getHeaders().putAll(acceptJson);
+        request.getHeaders().putAll(HeadersSupport.acceptJson());
 
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).get(request);
         Assert.assertEquals(200, response.getStatusCode());
@@ -57,7 +56,7 @@ public class JsonRequestResponseTest {
         todo.addInstance(todo.createInstance().setValue("title", "my title"));
 
         HttpApiRequest request = new HttpApiRequest("/todos");
-        request.getHeaders().putAll(acceptJson);
+        request.getHeaders().putAll(HeadersSupport.acceptJson());
 
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).get(request);
         Assert.assertEquals(200, response.getStatusCode());
@@ -79,7 +78,7 @@ public class JsonRequestResponseTest {
         todo.addInstance(todo.createInstance().setValue("title", "my other title"));
 
         HttpApiRequest request = new HttpApiRequest("todos");
-        request.getHeaders().putAll(acceptJson);
+        request.getHeaders().putAll(HeadersSupport.acceptJson());
 
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).get(request);
         Assert.assertEquals(200, response.getStatusCode());
@@ -101,7 +100,7 @@ public class JsonRequestResponseTest {
         todo.addInstance(todo.createInstance().setValue("title", "my other title"));
 
         HttpApiRequest request = new HttpApiRequest("todos" + System.nanoTime());
-        request.getHeaders().putAll(acceptJson);
+        request.getHeaders().putAll(HeadersSupport.acceptJson());
 
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).get(request);
         Assert.assertEquals(404, response.getStatusCode());
@@ -111,6 +110,92 @@ public class JsonRequestResponseTest {
 
         Assert.assertEquals(1, errors.errorMessages.length);
         errors.errorMessages[0].startsWith("Could not find an instance with todos");
+
+    }
+
+
+       /*
+
+
+        POST to create
+
+
+     */
+
+    @Test
+    public void canPostAndCreateAnItemWithXml(){
+
+        HttpApiRequest request = new HttpApiRequest("todos");
+        request.getHeaders().putAll(HeadersSupport.acceptJson());
+        request.getHeaders().putAll(HeadersSupport.containsJson());
+
+
+        //{"title":"title from json"}
+        request.setBody("{\"title\":\"title from json\"}");
+
+        Assert.assertEquals(0, todo.countInstances());
+
+        final HttpApiResponse response = new ThingifierHttpApi(todoManager).post(request);
+
+        Assert.assertEquals(201, response.getStatusCode());
+        System.out.println(response.getBody());
+
+        Assert.assertEquals(1, todo.countInstances());
+
+        // header should give me the guid
+        String guid = response.getHeaders().get(ApiResponse.GUID_HEADER);
+
+        final ThingInstance aTodo = todo.findInstanceByGUID(guid);
+
+        Assert.assertEquals("title from json", aTodo.getValue("title"));
+
+        //{"todo":"doneStatus":"FALSE","guid":
+        Assert.assertTrue("Should have returned json", response.getBody().startsWith("{\"todo\":{\"doneStatus\":\"FALSE\",\"guid\":"));
+
+    }
+
+    // We only support single items as input so this is not acceptable
+    // //{"todo":{"title":"title from json"}}
+
+
+         /*
+
+
+        PUT to create
+
+
+     */
+
+    @Test
+    public void canPutAndCreateAnItemWithJsonAndReceiveXml(){
+
+        HttpApiRequest request = new HttpApiRequest("todos/"+UUID.randomUUID().toString());
+        request.getHeaders().putAll(HeadersSupport.acceptXml());
+        request.getHeaders().putAll(HeadersSupport.containsJson());
+
+        //{"title":"title from json"}
+        request.setBody("{\"title\":\"title from json\"}");
+
+        Assert.assertEquals(0, todo.countInstances());
+
+        final HttpApiResponse response = new ThingifierHttpApi(todoManager).put(request);
+
+        System.out.println(response.getBody());
+
+        Assert.assertEquals(201, response.getStatusCode());
+
+
+        Assert.assertEquals(1, todo.countInstances());
+
+        // header should give me the guid
+        String guid = response.getHeaders().get(ApiResponse.GUID_HEADER);
+
+        final ThingInstance aTodo = todo.findInstanceByGUID(guid);
+
+        Assert.assertEquals("title from json", aTodo.getValue("title"));
+
+        //{"todo":"doneStatus":"FALSE","guid":
+        Assert.assertTrue("Should have returned xml", response.getBody().startsWith("<todo><doneStatus>FALSE</doneStatus>"));
 
     }
 

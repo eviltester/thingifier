@@ -1,6 +1,5 @@
 package uk.co.compendiumdev.casestudy.todomanager.http_api;
 
-import com.google.gson.Gson;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -10,9 +9,11 @@ import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiResponse;
 import uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi;
+import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
+import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.UUID;
+
 
 public class XmlRequestResponseTest {
 
@@ -21,7 +22,6 @@ public class XmlRequestResponseTest {
     Thing todo;
     Thing project;
 
-    Map<String, String> acceptXml;
 
     @Before
     public void createDefinitions() {
@@ -31,8 +31,6 @@ public class XmlRequestResponseTest {
         todo = todoManager.getThingNamed("todo");
         project = todoManager.getThingNamed("project");
 
-        acceptXml = new HashMap<String, String>();
-        acceptXml.put("Accept", "application/xml");
 
     }
 
@@ -42,7 +40,7 @@ public class XmlRequestResponseTest {
 
 
         HttpApiRequest request = new HttpApiRequest("todos");
-        request.getHeaders().putAll(acceptXml);
+        request.getHeaders().putAll(HeadersSupport.acceptXml());
 
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).get(request);
         Assert.assertEquals(200, response.getStatusCode());
@@ -59,7 +57,7 @@ public class XmlRequestResponseTest {
         todo.addInstance(todo.createInstance().setValue("title", "my title"));
 
         HttpApiRequest request = new HttpApiRequest("todos");
-        request.getHeaders().putAll(acceptXml);
+        request.getHeaders().putAll(HeadersSupport.acceptXml());
 
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).get(request);
         Assert.assertEquals(200, response.getStatusCode());
@@ -75,7 +73,7 @@ public class XmlRequestResponseTest {
         todo.addInstance(todo.createInstance().setValue("title", "my title"));
 
         HttpApiRequest request = new HttpApiRequest("todosyoohoo");
-        request.getHeaders().putAll(acceptXml);
+        request.getHeaders().putAll(HeadersSupport.acceptXml());
 
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).get(request);
         Assert.assertEquals(404, response.getStatusCode());
@@ -89,6 +87,91 @@ public class XmlRequestResponseTest {
     }
 
 
+
+    /*
+
+
+        POST to create
+
+
+     */
+
+    @Test
+    public void canPostAndCreateAnItemWithXml(){
+
+        HttpApiRequest request = new HttpApiRequest("todos");
+        request.getHeaders().putAll(HeadersSupport.acceptXml());
+        request.getHeaders().putAll(HeadersSupport.containsXml());
+
+        request.setBody("<todo><title>test title</title></todo>");
+
+        Assert.assertEquals(0, todo.countInstances());
+
+        final HttpApiResponse response = new ThingifierHttpApi(todoManager).post(request);
+
+        Assert.assertEquals(201, response.getStatusCode());
+        System.out.println(response.getBody());
+
+        Assert.assertEquals(1, todo.countInstances());
+
+        // header should give me the guid
+        String guid = response.getHeaders().get(ApiResponse.GUID_HEADER);
+
+        final ThingInstance aTodo = todo.findInstanceByGUID(guid);
+
+        Assert.assertEquals("test title", aTodo.getValue("title"));
+
+        //{"todo":"doneStatus":"FALSE","guid":
+        Assert.assertTrue("Should have returned xml", response.getBody().startsWith("<todo><doneStatus>FALSE</doneStatus>"));
+
+    }
+
+    // We only support single items as input so this is not acceptable
+    // "<todos><todo><title>test title</title></todo></todos>"
+
+
+        /*
+
+
+        PUT to create
+
+
+     */
+
+    @Test
+    public void canPutAndCreateAnItemWithXmlAndReceiveJson(){
+
+        HttpApiRequest request = new HttpApiRequest("todos/"+UUID.randomUUID().toString());
+        request.getHeaders().putAll(HeadersSupport.acceptJson());
+        request.getHeaders().putAll(HeadersSupport.containsXml());
+
+        request.setBody("<todo><title>test title</title></todo>");
+
+        Assert.assertEquals(0, todo.countInstances());
+
+        final HttpApiResponse response = new ThingifierHttpApi(todoManager).put(request);
+
+        System.out.println(response.getBody());
+
+        Assert.assertEquals(201, response.getStatusCode());
+
+
+        Assert.assertEquals(1, todo.countInstances());
+
+        // header should give me the guid
+        String guid = response.getHeaders().get(ApiResponse.GUID_HEADER);
+
+        final ThingInstance aTodo = todo.findInstanceByGUID(guid);
+
+        Assert.assertEquals("test title", aTodo.getValue("title"));
+
+        //{"todo":"doneStatus":"FALSE","guid":
+        Assert.assertTrue("Should have returned json", response.getBody().startsWith("{\"todo\":{\"doneStatus\":\"FALSE\",\"guid\":"));
+
+    }
+
+    // We only support single items as input so this is not acceptable
+    // "<todos><todo><title>test title</title></todo></todos>"
     private class TodoCollectionResponse{
 
         Todo[] todos;
