@@ -22,10 +22,12 @@ public class ThingifierHttpApi {
 //        return responseBodyFor(headersAsMap(request), apiResponse, response);
 //    }
 //
-//    public String delete(final Request request, final Response response) {
-//        ApiResponse apiResponse = thingifier.api().delete(justThePath(request.pathInfo()));
-//        return responseBodyFor(headersAsMap(request), apiResponse, response);
-//    }
+
+    public HttpApiResponse delete(final HttpApiRequest request) {
+        ApiResponse apiResponse = thingifier.api().delete(request.getPath());
+        HttpApiResponse httpResponse = new HttpApiResponse(request.getHeaders(), apiResponse);
+        return httpResponse;
+    }
 //
 //    public String put(final Request request, final Response response) {
 //        ApiResponse apiResponse = thingifier.api().put(justThePath(request.pathInfo()), justTheBody(request));

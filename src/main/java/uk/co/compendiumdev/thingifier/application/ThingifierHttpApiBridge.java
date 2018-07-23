@@ -31,8 +31,6 @@ public class ThingifierHttpApiBridge {
         updateResponseFromHttpResponse(theResponse, response);
         return theResponse.getBody();
 
-//        ApiResponse apiResponse = thingifier.api().get(justThePath(request.pathInfo()));
-//        return responseBodyFor(headersAsMap(request), apiResponse, response);
     }
 
     public String post(final Request request, final Response response) {
@@ -41,8 +39,14 @@ public class ThingifierHttpApiBridge {
     }
 
     public String delete(final Request request, final Response response) {
-        ApiResponse apiResponse = thingifier.api().delete(justThePath(request.pathInfo()));
-        return responseBodyFor(headersAsMap(request), apiResponse, response);
+
+        final HttpApiRequest theRequest = new HttpApiRequest(request.pathInfo()).setHeaders(headersAsMap(request));
+        final HttpApiResponse theResponse = new ThingifierHttpApi(thingifier).delete(theRequest);
+        updateResponseFromHttpResponse(theResponse, response);
+        return theResponse.getBody();
+
+//        ApiResponse apiResponse = thingifier.api().delete(justThePath(request.pathInfo()));
+//        return responseBodyFor(headersAsMap(request), apiResponse, response);
     }
 
     public String put(final Request request, final Response response) {
