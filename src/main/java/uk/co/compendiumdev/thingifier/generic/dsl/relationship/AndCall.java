@@ -6,8 +6,8 @@ public final class AndCall {
 
     private final String nameToCallIt;
 
-    public AndCall(final String nameToCallIt) {
-        this.nameToCallIt = nameToCallIt;
+    public AndCall(final String theNameToCallIt) {
+        this.nameToCallIt = theNameToCallIt;
     }
 
     public static AndCall it(final String nameToCallIt) {

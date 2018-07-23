@@ -5,10 +5,10 @@ import uk.co.compendiumdev.thingifier.generic.definitions.RelationshipDefinition
 import uk.co.compendiumdev.thingifier.generic.definitions.RelationshipVector;
 
 public class RelationshipInstance {
+    // TODO : should a relationship instance be associated with a vector rather than a definition?
     private RelationshipDefinition relationship;
     private ThingInstance from;
     private ThingInstance to;
-    private Thing representedBy;
 
     public RelationshipInstance(RelationshipVector relationship, ThingInstance from, ThingInstance to) {
         this.from = from;
@@ -31,10 +31,6 @@ public class RelationshipInstance {
         return this;
     }
 
-    public RelationshipInstance setRepresentedBy(Thing representedBy) {
-        this.representedBy = representedBy;
-        return this;
-    }
 
     public String toString() {
 
@@ -49,11 +45,6 @@ public class RelationshipInstance {
         );
 
         output.append(format + "\n");
-
-        // now output the instances
-        for (ThingInstance instance : representedBy.getInstances()) {
-            output.append(instance + "\n");
-        }
 
         return output.toString();
     }

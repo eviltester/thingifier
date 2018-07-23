@@ -37,7 +37,7 @@ public final class ApiResponse {
     private ApiResponse(final int aStatusCode, final boolean isError, final Collection<String> theErrorMessages) {
         this(aStatusCode);
         isErrorResponse = isError;
-        if (isError){
+        if (isError) {
             isCollection = false;
         }
         this.hasBody = true;
@@ -66,7 +66,7 @@ public final class ApiResponse {
         thingsToReturn.clear();
         thingsToReturn.addAll(items);
         isCollection = true;
-        if(items.size()>0){
+        if (items.size() > 0) {
             typeOfResults = items.get(0).getEntity();
         }
         andThisHasABody();
