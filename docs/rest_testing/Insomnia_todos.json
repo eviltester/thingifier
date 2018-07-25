@@ -1,0 +1,694 @@
+{
+	"_type": "export",
+	"__export_format": 3,
+	"__export_date": "2018-07-25T09:21:57.155Z",
+	"__export_source": "insomnia.desktop.app:v5.9.6",
+	"resources": [
+		{
+			"_id": "wrk_631b2292b0644574ad51d2cfb8a02602",
+			"parentId": null,
+			"modified": 1521978538584,
+			"created": 1521978538584,
+			"name": "Insomnia",
+			"description": "",
+			"certificates": [],
+			"_type": "workspace"
+		},
+		{
+			"_id": "env_4f5c3c4e1ef346f6b12c85938a8235cb",
+			"parentId": "wrk_631b2292b0644574ad51d2cfb8a02602",
+			"modified": 1532510428339,
+			"created": 1521978538587,
+			"name": "Thingifier Todo Localhost",
+			"data": {},
+			"color": null,
+			"isPrivate": false,
+			"_type": "environment"
+		},
+		{
+			"_id": "jar_3c84d688c3b442898203d03dbfcf696d",
+			"parentId": "wrk_631b2292b0644574ad51d2cfb8a02602",
+			"modified": 1521978538586,
+			"created": 1521978538586,
+			"name": "Default Jar",
+			"cookies": [],
+			"_type": "cookie_jar"
+		},
+		{
+			"_id": "fld_77cc560d79a0443bad4cc3093544fbb8",
+			"parentId": "wrk_631b2292b0644574ad51d2cfb8a02602",
+			"modified": 1532510453049,
+			"created": 1532510445905,
+			"name": "Thingifier TODO",
+			"description": "",
+			"environment": {},
+			"metaSortKey": -1532510445980,
+			"_type": "request_group"
+		},
+		{
+			"_id": "req_c102ab4d698b434faf5d6254311f0bfd",
+			"parentId": "fld_77cc560d79a0443bad4cc3093544fbb8",
+			"modified": 1532510473426,
+			"created": 1531413681537,
+			"url": "http://localhost:4567/todos",
+			"name": "todos (JSON)",
+			"description": "",
+			"method": "POST",
+			"body": {
+				"mimeType": "application/json",
+				"text": "{\"title\":\"my title\"}"
+			},
+			"parameters": [],
+			"headers": [
+				{
+					"name": "Content-Type",
+					"value": "application/json",
+					"id": "pair_787dfd26e3334b73b36c56e5f285e6e2",
+					"disabled": false
+				},
+				{
+					"name": "accept",
+					"value": "application/xml",
+					"id": "pair_8ae0ec814aef49a3bcc7de857f5e3bda",
+					"disabled": true
+				}
+			],
+			"authentication": {},
+			"metaSortKey": -1532510445905,
+			"settingStoreCookies": true,
+			"settingSendCookies": true,
+			"settingDisableRenderRequestBody": false,
+			"settingEncodeUrl": true,
+			"_type": "request"
+		},
+		{
+			"_id": "req_fac2b1f97682408aa93d5b0027994565",
+			"parentId": "fld_77cc560d79a0443bad4cc3093544fbb8",
+			"modified": 1532510485074,
+			"created": 1531422925998,
+			"url": "http://localhost:4567/todos/1621ddb5-ff44-48fe-80d0-481717a5a0cf",
+			"name": "Create Todo (JSON)",
+			"description": "",
+			"method": "PUT",
+			"body": {
+				"mimeType": "application/json",
+				"text": "{\t\"description\": \"\", \"title\":\"A new todo for you yoohoo now\"}"
+			},
+			"parameters": [],
+			"headers": [
+				{
+					"name": "Content-Type",
+					"value": "application/json",
+					"id": "pair_70f3c488b0234fd5abe983f6b3d8465a"
+				},
+				{
+					"name": "Accept",
+					"value": "application/xml",
+					"id": "pair_2b7b22aaabc944be8808b14f2e0e99ee"
+				}
+			],
+			"authentication": {},
+			"metaSortKey": -1532510445705,
+			"settingStoreCookies": true,
+			"settingSendCookies": true,
+			"settingDisableRenderRequestBody": false,
+			"settingEncodeUrl": true,
+			"_type": "request"
+		},
+		{
+			"_id": "req_4f4fb864e3f04f8f8fdb2d4428f7a814",
+			"parentId": "fld_77cc560d79a0443bad4cc3093544fbb8",
+			"modified": 1532510488474,
+			"created": 1531423018713,
+			"url": "http://localhost:4567/todos/1621ddb5-ff44-48fe-80d0-481717a5a0cf",
+			"name": "Delete Todo",
+			"description": "",
+			"method": "DELETE",
+			"body": {
+				"mimeType": "application/json",
+				"text": ""
+			},
+			"parameters": [],
+			"headers": [
+				{
+					"name": "Content-Type",
+					"value": "application/json",
+					"id": "pair_70f3c488b0234fd5abe983f6b3d8465a"
+				},
+				{
+					"name": "Accept",
+					"value": "application/xml",
+					"id": "pair_b10eb9e06efb4417b35fda340f4c8e7b"
+				}
+			],
+			"authentication": {},
+			"metaSortKey": -1532510445605,
+			"settingStoreCookies": true,
+			"settingSendCookies": true,
+			"settingDisableRenderRequestBody": false,
+			"settingEncodeUrl": true,
+			"_type": "request"
+		},
+		{
+			"_id": "req_b11b88ff6a4d41168dc7c8f79d977452",
+			"parentId": "fld_77cc560d79a0443bad4cc3093544fbb8",
+			"modified": 1532510504455,
+			"created": 1531472471537,
+			"url": "http://localhost:4567/projects/93327398-a148-4ca7-9d7c-bdf6d9d80cb4/tasks",
+			"name": "todos for a project",
+			"description": "",
+			"method": "GET",
+			"body": {
+				"mimeType": "application/json",
+				"text": ""
+			},
+			"parameters": [],
+			"headers": [
+				{
+					"name": "Content-Type",
+					"value": "application/json",
+					"id": "pair_787dfd26e3334b73b36c56e5f285e6e2"
+				}
+			],
+			"authentication": {},
+			"metaSortKey": -1532510445105,
+			"settingStoreCookies": true,
+			"settingSendCookies": true,
+			"settingDisableRenderRequestBody": false,
+			"settingEncodeUrl": true,
+			"_type": "request"
+		},
+		{
+			"_id": "req_1439d2969a184cc599e20319a2a177b8",
+			"parentId": "fld_77cc560d79a0443bad4cc3093544fbb8",
+			"modified": 1532510501041,
+			"created": 1531472496104,
+			"url": "http://localhost:4567/projects/93327398-a148-4ca7-9d7c-bdf6d9d80cb4/tasks",
+			"name": "create todo for project (JSON)",
+			"description": "",
+			"method": "POST",
+			"body": {
+				"mimeType": "application/json",
+				"text": "{\"title\":\"My posted todo on the project\"}"
+			},
+			"parameters": [],
+			"headers": [
+				{
+					"name": "Content-Type",
+					"value": "application/json",
+					"id": "pair_787dfd26e3334b73b36c56e5f285e6e2"
+				}
+			],
+			"authentication": {},
+			"metaSortKey": -1532510445205,
+			"settingStoreCookies": true,
+			"settingSendCookies": true,
+			"settingDisableRenderRequestBody": false,
+			"settingEncodeUrl": true,
+			"_type": "request"
+		},
+		{
+			"_id": "req_e7f6141897514a35a359a533d166829c",
+			"parentId": "fld_77cc560d79a0443bad4cc3093544fbb8",
+			"modified": 1532510490175,
+			"created": 1531472591062,
+			"url": "http://localhost:4567/projects",
+			"name": "projects",
+			"description": "",
+			"method": "GET",
+			"body": {
+				"mimeType": "application/json",
+				"text": ""
+			},
+			"parameters": [],
+			"headers": [
+				{
+					"name": "Content-Type",
+					"value": "application/json",
+					"id": "pair_787dfd26e3334b73b36c56e5f285e6e2"
+				},
+				{
+					"name": "Accept",
+					"value": "application/json",
+					"id": "pair_79cce1e17ace4e83a2ed64fb63a292a4"
+				}
+			],
+			"authentication": {},
+			"metaSortKey": -1532510445555,
+			"settingStoreCookies": true,
+			"settingSendCookies": true,
+			"settingDisableRenderRequestBody": false,
+			"settingEncodeUrl": true,
+			"_type": "request"
+		},
+		{
+			"_id": "req_a5989abce0ec4cca8da2e0ef4dde6572",
+			"parentId": "fld_77cc560d79a0443bad4cc3093544fbb8",
+			"modified": 1532510491746,
+			"created": 1531472651820,
+			"url": "http://localhost:4567/projects/93327398-a148-4ca7-9d7c-bdf6d9d80cb4",
+			"name": "a project",
+			"description": "",
+			"method": "GET",
+			"body": {
+				"mimeType": "application/json",
+				"text": ""
+			},
+			"parameters": [],
+			"headers": [
+				{
+					"name": "Content-Type",
+					"value": "application/json",
+					"id": "pair_787dfd26e3334b73b36c56e5f285e6e2"
+				},
+				{
+					"name": "Accept",
+					"value": "application/xml",
+					"id": "pair_137765a76f4d4caa9d2845529681e135"
+				}
+			],
+			"authentication": {},
+			"metaSortKey": -1532510445505,
+			"settingStoreCookies": true,
+			"settingSendCookies": true,
+			"settingDisableRenderRequestBody": false,
+			"settingEncodeUrl": true,
+			"_type": "request"
+		},
+		{
+			"_id": "req_39cc786d01734a8ca446981450ad816d",
+			"parentId": "fld_77cc560d79a0443bad4cc3093544fbb8",
+			"modified": 1532510493340,
+			"created": 1531575206925,
+			"url": "http://localhost:4567/projects/93327398-a148-4ca7-9d7c-bdf6d9d80cb4",
+			"name": "a project",
+			"description": "",
+			"method": "DELETE",
+			"body": {
+				"mimeType": "application/json",
+				"text": ""
+			},
+			"parameters": [],
+			"headers": [
+				{
+					"name": "Content-Type",
+					"value": "application/json",
+					"id": "pair_787dfd26e3334b73b36c56e5f285e6e2"
+				}
+			],
+			"authentication": {},
+			"metaSortKey": -1532510445455,
+			"settingStoreCookies": true,
+			"settingSendCookies": true,
+			"settingDisableRenderRequestBody": false,
+			"settingEncodeUrl": true,
+			"_type": "request"
+		},
+		{
+			"_id": "req_0030755b865749e9963cf84bc2cbf047",
+			"parentId": "fld_77cc560d79a0443bad4cc3093544fbb8",
+			"modified": 1532510481296,
+			"created": 1531610566065,
+			"url": "http://localhost:4567/todos",
+			"name": "all todos",
+			"description": "",
+			"method": "GET",
+			"body": {
+				"mimeType": "application/json",
+				"text": ""
+			},
+			"parameters": [],
+			"headers": [
+				{
+					"name": "Content-Type",
+					"value": "application/json",
+					"id": "pair_787dfd26e3334b73b36c56e5f285e6e2",
+					"disabled": false
+				},
+				{
+					"name": "Accept",
+					"value": "application/xml",
+					"id": "pair_4ea07976b6aa45268cef80f7b3f4b2f1",
+					"disabled": true
+				}
+			],
+			"authentication": {},
+			"metaSortKey": -1532510445805,
+			"settingStoreCookies": true,
+			"settingSendCookies": true,
+			"settingDisableRenderRequestBody": false,
+			"settingEncodeUrl": true,
+			"_type": "request"
+		},
+		{
+			"_id": "req_632cf767db414013a81f9fb7e6eb7984",
+			"parentId": "fld_77cc560d79a0443bad4cc3093544fbb8",
+			"modified": 1532510469707,
+			"created": 1531677337007,
+			"url": "http://localhost:4567/admin/query/categories",
+			"name": "adhoc testing",
+			"description": "",
+			"method": "GET",
+			"body": {
+				"mimeType": "application/json",
+				"text": ""
+			},
+			"parameters": [],
+			"headers": [
+				{
+					"name": "Content-Type",
+					"value": "application/json",
+					"id": "pair_787dfd26e3334b73b36c56e5f285e6e2"
+				},
+				{
+					"name": "accept",
+					"value": "application/xml",
+					"id": "pair_1d156ff1599f4527a9d94f44b1a2d9b6",
+					"disabled": true
+				},
+				{
+					"name": "",
+					"value": "",
+					"id": "pair_4205e2f617e9491fa67d36d925068561"
+				}
+			],
+			"authentication": {},
+			"metaSortKey": -1532510445955,
+			"settingStoreCookies": true,
+			"settingSendCookies": true,
+			"settingDisableRenderRequestBody": false,
+			"settingEncodeUrl": true,
+			"_type": "request"
+		},
+		{
+			"_id": "req_6a3086e407b7417194c5bcb7b4a36078",
+			"parentId": "fld_77cc560d79a0443bad4cc3093544fbb8",
+			"modified": 1532510494870,
+			"created": 1531858635649,
+			"url": "http://localhost:4567/projects",
+			"name": "create a project (JSON)",
+			"description": "",
+			"method": "POST",
+			"body": {
+				"mimeType": "application/json",
+				"text": "{\"title\":\"My posted todo on the project\"}"
+			},
+			"parameters": [],
+			"headers": [
+				{
+					"name": "Content-Type",
+					"value": "application/json",
+					"id": "pair_787dfd26e3334b73b36c56e5f285e6e2"
+				},
+				{
+					"name": "Accept",
+					"value": "application/xml",
+					"id": "pair_bb1856ce2d41411bb6e24c5b0513e448",
+					"disabled": true
+				}
+			],
+			"authentication": {},
+			"metaSortKey": -1532510445405,
+			"settingStoreCookies": true,
+			"settingSendCookies": true,
+			"settingDisableRenderRequestBody": false,
+			"settingEncodeUrl": true,
+			"_type": "request"
+		},
+		{
+			"_id": "req_e15f2cd6d14c41908269b2dccf910a58",
+			"parentId": "fld_77cc560d79a0443bad4cc3093544fbb8",
+			"modified": 1532510506055,
+			"created": 1531859624987,
+			"url": "http://localhost:4567/projects/93327398-a148-4ca7-9d7c-bdf6d9d80cb4/tasks",
+			"name": "relate project to task",
+			"description": "",
+			"method": "POST",
+			"body": {
+				"mimeType": "application/json",
+				"text": "{\"guid\":\"1621ddb5-ff44-48fe-80d0-481717a5a0cf\"}"
+			},
+			"parameters": [],
+			"headers": [
+				{
+					"name": "Content-Type",
+					"value": "application/json",
+					"id": "pair_787dfd26e3334b73b36c56e5f285e6e2"
+				}
+			],
+			"authentication": {},
+			"metaSortKey": -1532510445055,
+			"settingStoreCookies": true,
+			"settingSendCookies": true,
+			"settingDisableRenderRequestBody": false,
+			"settingEncodeUrl": true,
+			"_type": "request"
+		},
+		{
+			"_id": "req_45e3671f5ce445bdb3bc6cb27f4a4128",
+			"parentId": "fld_77cc560d79a0443bad4cc3093544fbb8",
+			"modified": 1532510483192,
+			"created": 1532302321096,
+			"url": "http://localhost:4567/todos/117a851c-0400-4302-aa4c-ebb30e476b6b",
+			"name": "a specific todo",
+			"description": "",
+			"method": "GET",
+			"body": {
+				"mimeType": "application/json",
+				"text": ""
+			},
+			"parameters": [],
+			"headers": [
+				{
+					"name": "Content-Type",
+					"value": "application/json",
+					"id": "pair_787dfd26e3334b73b36c56e5f285e6e2"
+				},
+				{
+					"name": "Accept",
+					"value": "application/xml",
+					"id": "pair_4ea07976b6aa45268cef80f7b3f4b2f1",
+					"disabled": true
+				}
+			],
+			"authentication": {},
+			"metaSortKey": -1532510445755,
+			"settingStoreCookies": true,
+			"settingSendCookies": true,
+			"settingDisableRenderRequestBody": false,
+			"settingEncodeUrl": true,
+			"_type": "request"
+		},
+		{
+			"_id": "req_e26afa4b99d2418fa74be47e34ab141d",
+			"parentId": "fld_77cc560d79a0443bad4cc3093544fbb8",
+			"modified": 1532510479066,
+			"created": 1532509549809,
+			"url": "http://localhost:4567/todos",
+			"name": "todos (XML)",
+			"description": "",
+			"method": "POST",
+			"body": {
+				"mimeType": "application/xml",
+				"text": "<todo><title>my title</title></todo>"
+			},
+			"parameters": [],
+			"headers": [
+				{
+					"name": "Content-Type",
+					"value": "application/xml",
+					"id": "pair_787dfd26e3334b73b36c56e5f285e6e2",
+					"disabled": false
+				},
+				{
+					"name": "accept",
+					"value": "application/xml",
+					"id": "pair_8ae0ec814aef49a3bcc7de857f5e3bda",
+					"disabled": true
+				}
+			],
+			"authentication": {},
+			"metaSortKey": -1532510445855,
+			"settingStoreCookies": true,
+			"settingSendCookies": true,
+			"settingDisableRenderRequestBody": false,
+			"settingEncodeUrl": true,
+			"_type": "request"
+		},
+		{
+			"_id": "req_7c55cbb778664047a0490d3502738f8c",
+			"parentId": "fld_77cc560d79a0443bad4cc3093544fbb8",
+			"modified": 1532510486859,
+			"created": 1532509758356,
+			"url": "http://localhost:4567/todos/1621ddb5-ff44-48fe-80d0-481717a5a0cf",
+			"name": "Create Todo (XML)",
+			"description": "",
+			"method": "PUT",
+			"body": {
+				"mimeType": "application/xml",
+				"text": "<todo><description></description><title>A new todo for you yoohoo now</title></todo>"
+			},
+			"parameters": [],
+			"headers": [
+				{
+					"name": "Content-Type",
+					"value": "application/xml",
+					"id": "pair_70f3c488b0234fd5abe983f6b3d8465a"
+				},
+				{
+					"name": "Accept",
+					"value": "application/xml",
+					"id": "pair_39ec0693429948f794b5cea601aa51ef",
+					"disabled": true
+				}
+			],
+			"authentication": {},
+			"metaSortKey": -1532510445655,
+			"settingStoreCookies": true,
+			"settingSendCookies": true,
+			"settingDisableRenderRequestBody": false,
+			"settingEncodeUrl": true,
+			"_type": "request"
+		},
+		{
+			"_id": "req_b8e6132243404c1d95859f333c428554",
+			"parentId": "fld_77cc560d79a0443bad4cc3093544fbb8",
+			"modified": 1532510497871,
+			"created": 1532509916723,
+			"url": "http://localhost:4567/projects/93327398-a148-4ca7-9d7c-bdf6d9d80cb4",
+			"name": "create a project (JSON)",
+			"description": "",
+			"method": "PUT",
+			"body": {
+				"mimeType": "application/json",
+				"text": "{\"title\":\"My posted todo on the project\"}"
+			},
+			"parameters": [],
+			"headers": [
+				{
+					"name": "Content-Type",
+					"value": "application/json",
+					"id": "pair_787dfd26e3334b73b36c56e5f285e6e2"
+				},
+				{
+					"name": "Accept",
+					"value": "application/xml",
+					"id": "pair_bb1856ce2d41411bb6e24c5b0513e448",
+					"disabled": false
+				}
+			],
+			"authentication": {},
+			"metaSortKey": -1532510445305,
+			"settingStoreCookies": true,
+			"settingSendCookies": true,
+			"settingDisableRenderRequestBody": false,
+			"settingEncodeUrl": true,
+			"_type": "request"
+		},
+		{
+			"_id": "req_45665b9af9bb4358b0f70b684f3617d6",
+			"parentId": "fld_77cc560d79a0443bad4cc3093544fbb8",
+			"modified": 1532510499468,
+			"created": 1532509941054,
+			"url": "http://localhost:4567/projects/93327398-a148-4ca7-9d7c-bdf6d9d80cb4",
+			"name": "create a project (XML)",
+			"description": "",
+			"method": "PUT",
+			"body": {
+				"mimeType": "application/json",
+				"text": "<project><title>My posted todo on the project</title></project>"
+			},
+			"parameters": [],
+			"headers": [
+				{
+					"name": "Content-Type",
+					"value": "application/xml",
+					"id": "pair_787dfd26e3334b73b36c56e5f285e6e2"
+				},
+				{
+					"name": "Accept",
+					"value": "application/xml",
+					"id": "pair_bb1856ce2d41411bb6e24c5b0513e448",
+					"disabled": true
+				}
+			],
+			"authentication": {},
+			"metaSortKey": -1532510445255,
+			"settingStoreCookies": true,
+			"settingSendCookies": true,
+			"settingDisableRenderRequestBody": false,
+			"settingEncodeUrl": true,
+			"_type": "request"
+		},
+		{
+			"_id": "req_43385d4d78dc43988f5950978a0ac870",
+			"parentId": "fld_77cc560d79a0443bad4cc3093544fbb8",
+			"modified": 1532510496410,
+			"created": 1532510023971,
+			"url": "http://localhost:4567/projects",
+			"name": "create a project (XML)",
+			"description": "",
+			"method": "POST",
+			"body": {
+				"mimeType": "application/xml",
+				"text": "<project><title>My posted todo on the project</title></project>"
+			},
+			"parameters": [],
+			"headers": [
+				{
+					"name": "Content-Type",
+					"value": "application/xml",
+					"id": "pair_787dfd26e3334b73b36c56e5f285e6e2"
+				},
+				{
+					"name": "Accept",
+					"value": "application/xml",
+					"id": "pair_bb1856ce2d41411bb6e24c5b0513e448",
+					"disabled": true
+				}
+			],
+			"authentication": {},
+			"metaSortKey": -1532510445355,
+			"settingStoreCookies": true,
+			"settingSendCookies": true,
+			"settingDisableRenderRequestBody": false,
+			"settingEncodeUrl": true,
+			"_type": "request"
+		},
+		{
+			"_id": "req_98c51e1fbbcd4cb09c5c3a4a8284413a",
+			"parentId": "fld_77cc560d79a0443bad4cc3093544fbb8",
+			"modified": 1532510502815,
+			"created": 1532510202075,
+			"url": "http://localhost:4567/projects/93327398-a148-4ca7-9d7c-bdf6d9d80cb4/tasks",
+			"name": "create todo for project (XML)",
+			"description": "",
+			"method": "POST",
+			"body": {
+				"mimeType": "application/xml",
+				"text": "<todo><title>My posted todo on the project</title></todo>"
+			},
+			"parameters": [],
+			"headers": [
+				{
+					"name": "Content-Type",
+					"value": "application/xml",
+					"id": "pair_787dfd26e3334b73b36c56e5f285e6e2"
+				},
+				{
+					"name": "Accept",
+					"value": "application/xml",
+					"id": "pair_b3a3b52c210f442888deb377498ee7a5",
+					"disabled": false
+				}
+			],
+			"authentication": {},
+			"metaSortKey": -1532510445155,
+			"settingStoreCookies": true,
+			"settingSendCookies": true,
+			"settingDisableRenderRequestBody": false,
+			"settingEncodeUrl": true,
+			"_type": "request"
+		}
+	]
+}

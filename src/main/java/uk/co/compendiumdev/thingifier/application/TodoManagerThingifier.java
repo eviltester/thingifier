@@ -20,13 +20,31 @@ public class TodoManagerThingifier {
         // TODO:  should expand functionality based on E-R diagrams
         // TODO: import thingifier from JSON to allow dynamic configuration
         // TODO: allow configuration from -defn FILENAME when starting at the command line
+
+        // TODO: validate against field type DATE
+        // TODO: create SET field type
+        // TODO: validate against set type
+        // TODO: create validation rule MatchesFieldType to allow configuration of field validation against type
+        // TODO: ValidationRule Interface - implemented by rules and ValidtionRuleGroup to allow processing in a list - main method validates()
+        // TODO: create a MinimumLength validation rule
+        // TODO: create a MaximumLength validation rule
+        // TODO: create a IsGreaterThan validation rule
+        // TODO: create an IsLessThan validation rule
+        // TODO create a ValidationRuleGroup.and()  where all the validation rules in the group must pass for validation to pass
+        // TODO create a ValidationRuleGroup.or()  where any of the validation rules in the group must pass for validation to pass - stops on first 'pass'
+        // TODO : create a MatchesRegex validation rule for fields - this will be the simplest way of creating complex validation quickly
+        // e.g. (.|\s)*\S(.|\s)*    non empty
+
+
         Thingifier todoManager = new Thingifier();
 
         StringBuilder para = new StringBuilder();
 
         para.append("A Simple todo manager<br/><br/>\n\n");
         para.append("Will accept json by default.<br/><br/>\n");
+        para.append("<i>Content-Type: application/json</i><br/><br/>\n");
         para.append("Set Content-Type header to application/xml if you want to send in XML.<br/><br/>\n");
+        para.append("<i>Content-Type: application/xml</i><br/><br/>\n");
         para.append("XML body would look something like:<br/><br/>\n");
         para.append("<i>&#x3C;project&#x3E;&#x3C;title&#x3E;My posted todo on the project&#x3C;/title&#x3E;&#x3C;/project&#x3E;</i><br/><br/>\n");
         para.append("JSON body would look something like:<br/><br/>\n");
@@ -56,21 +74,6 @@ public class TodoManagerThingifier {
                                 withValidation(
                                         VRule.matchesType()));
 
-        // TODO: validate against field type DATE
-        // TODO: create SET field type
-        // TODO: validate against set type
-        // TODO: create validation rule MatchesFieldType to allow configuration of field validation against type
-        // TODO: ValidationRule Interface - implemented by rules and ValidtionRuleGroup to allow processing in a list - main method validates()
-        // TODO: create a MinimumLength validation rule
-        // TODO: create a MaximumLength validation rule
-        // TODO: create a IsGreaterThan validation rule
-        // TODO: create an IsLessThan validation rule
-        // TODO create a ValidationRuleGroup.and()  where all the validation rules in the group must pass for validation to pass
-        // TODO create a ValidationRuleGroup.or()  where any of the validation rules in the group must pass for validation to pass - stops on first 'pass'
-        // TODO : create a MatchesRegex validation rule for fields - this will be the simplest way of creating complex validation quickly
-        // e.g. (.|\s)*\S(.|\s)*    non empty
-
-
         Thing project = todoManager.createThing("project", "projects");
 
         project.definition()
@@ -94,8 +97,6 @@ public class TodoManagerThingifier {
                                 withValidation(VRule.notEmpty()),
                         Field.is("description", STRING));
 
-        // TODO create mandatory relationshisp = at the moment all entities can exist without relationship
-        // e.g. create an estimate for a todo - the estimate must have a todo
         todoManager.defineRelationship(Between.things(project, todo), AndCall.it("tasks"), WithCardinality.of("1", "*")).
                 whenReversed(WithCardinality.of("1", "*"), AndCall.it("task-of"));
 
@@ -103,6 +104,10 @@ public class TodoManagerThingifier {
         todoManager.defineRelationship(Between.things(category, todo), AndCall.it("todos"), WithCardinality.of("1", "*"));
         todoManager.defineRelationship(Between.things(category, project), AndCall.it("projects"), WithCardinality.of("1", "*"));
         todoManager.defineRelationship(Between.things(todo, category), AndCall.it("categories"), WithCardinality.of("1", "*"));
+
+        // TODO create mandatory relationshisp = at the moment all entities can exist without relationship
+        // e.g. create an estimate for a todo - the estimate must have a todo
+
 
 
         // Some hard coded test data for experimenting with

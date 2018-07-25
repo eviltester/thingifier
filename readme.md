@@ -57,25 +57,33 @@ Relationships:
 
 This generates the following REST API automatically
 
-- /todo
+- /todos
     - GET - all the todos
     - POST - create a todo - body JSON
     - OPTIONS
-- /todo/_GUID_
+- /todos/_GUID_
     - GET - a specific todo
     - DELETE - a specific todo
     - POST - amend the todo
     - PUT - replace all the todo fields in the JSON body
     - OPTIONS
-- /todo/_GUID_/categories
+- /todos/_GUID_/categories
     - GET - all the categories for a todo
     - POST - create a todo - body JSON must contain a GUID for a category e.g. `{"guid":"1234-1234-1234-1234"}`
     
-Similar for `/project` and `/category`
+Similar for `/projects` and `/categories`
 
-The JSON body is simply
+The JSON body for creating and amending is simply
 
 `{"fieldname":"fieldvalue", "anotherFieldName":"anotherValue", etc.}`
+
+The XML body for creating and amending is simply
+
+`<entity><fieldname>fieldvalue></fieldname><anotherFieldName>anotherValue</anotherFieldName><entity>`
+
+e.g.
+
+`<todo><title>my title</title></todo>`
 
 The fieldnames are shown in the list above for the model or the code below.
 
@@ -88,29 +96,50 @@ The deployed app does have some sample data for testing purposes, this can easil
 ### Code for Model
 
 ~~~~~~~~
-      Thing todo = todoManager.createThing("todo", "todos");
+       Thing todo = todoManager.createThing("todo", "todos");
 
         todo.definition()
-                .addFields(Field.is("title", STRING), Field.is("description",STRING),
-                        Field.is("doneStatus",FieldType.BOOLEAN).withDefaultValue("FALSE"));
-
-
+                .addFields(Field.is("title", STRING).
+                                mandatory().
+                                withValidation(
+                                        VRule.notEmpty(),
+                                        VRule.matchesType()),
+                        Field.is("description", STRING),
+                        Field.is("doneStatus", FieldType.BOOLEAN).
+                                withDefaultValue("FALSE").
+                                withValidation(
+                                        VRule.matchesType()));
+        
         Thing project = todoManager.createThing("project", "projects");
 
         project.definition()
-                .addFields(Field.is("title", STRING), Field.is("description",STRING),
-                        Field.is("completed",FieldType.BOOLEAN).withDefaultValue("FALSE"),
-                        Field.is("active",FieldType.BOOLEAN).withDefaultValue("TRUE"));
+                .addFields(
+                        Field.is("title", STRING),
+                        Field.is("description", STRING),
+                        Field.is("completed", FieldType.BOOLEAN).
+                                withDefaultValue("FALSE").
+                                withValidation(VRule.matchesType()),
+                        Field.is("active", FieldType.BOOLEAN).
+                                withDefaultValue("TRUE").
+                                withValidation(VRule.matchesType()));
 
 
         Thing category = todoManager.createThing("category", "categories");
 
         category.definition()
-                .addFields(Field.is("title", STRING), Field.is("description",STRING));
+                .addFields(
+                        Field.is("title", STRING).
+                                mandatory().
+                                withValidation(VRule.notEmpty()),
+                        Field.is("description", STRING));
 
-        todoManager.defineRelationship(Between.things(project, todo), AndCall.it("tasks"), WithCardinality.of("1", "*"));
+        todoManager.defineRelationship(Between.things(project, todo), AndCall.it("tasks"), WithCardinality.of("1", "*")).
+                whenReversed(WithCardinality.of("1", "*"), AndCall.it("task-of"));
+
         todoManager.defineRelationship(Between.things(project, category), AndCall.it("categories"), WithCardinality.of("1", "*"));
         todoManager.defineRelationship(Between.things(category, todo), AndCall.it("todos"), WithCardinality.of("1", "*"));
         todoManager.defineRelationship(Between.things(category, project), AndCall.it("projects"), WithCardinality.of("1", "*"));
         todoManager.defineRelationship(Between.things(todo, category), AndCall.it("categories"), WithCardinality.of("1", "*"));
-~~~~~~~~
+    ~~~~~~~~
+    
+    Default model can be found in [src/main/java/uk/co/compendiumdev/thingifier/application/TodoManagerThingifier.java](https://github.com/eviltester/thingifier/blob/master/src/main/java/uk/co/compendiumdev/thingifier/application/TodoManagerThingifier.java)
