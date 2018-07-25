@@ -1,13 +1,13 @@
 {
 	"_type": "export",
 	"__export_format": 3,
-	"__export_date": "2018-07-25T09:21:57.155Z",
+	"__export_date": "2018-07-25T17:58:06.687Z",
 	"__export_source": "insomnia.desktop.app:v5.9.6",
 	"resources": [
 		{
 			"_id": "wrk_631b2292b0644574ad51d2cfb8a02602",
 			"parentId": null,
-			"modified": 1521978538584,
+			"modified": 1532538304419,
 			"created": 1521978538584,
 			"name": "Insomnia",
 			"description": "",
@@ -684,6 +684,134 @@
 			],
 			"authentication": {},
 			"metaSortKey": -1532510445155,
+			"settingStoreCookies": true,
+			"settingSendCookies": true,
+			"settingDisableRenderRequestBody": false,
+			"settingEncodeUrl": true,
+			"_type": "request"
+		},
+		{
+			"_id": "req_0b76031e727f4267837cb88b99829c10",
+			"parentId": "fld_77cc560d79a0443bad4cc3093544fbb8",
+			"modified": 1532538694046,
+			"created": 1532538322447,
+			"url": "http://localhost:4567/categories/93327398-a148-4ca7-9d7c-bdf6d9d80cb5",
+			"name": "create a category (JSON)",
+			"description": "",
+			"method": "PUT",
+			"body": {
+				"mimeType": "application/json",
+				"text": "{\"title\":\"My Category\"}"
+			},
+			"parameters": [],
+			"headers": [
+				{
+					"name": "Content-Type",
+					"value": "application/json",
+					"id": "pair_787dfd26e3334b73b36c56e5f285e6e2"
+				},
+				{
+					"name": "Accept",
+					"value": "application/xml",
+					"id": "pair_bb1856ce2d41411bb6e24c5b0513e448",
+					"disabled": false
+				}
+			],
+			"authentication": {},
+			"metaSortKey": -1532510445042.5,
+			"settingStoreCookies": true,
+			"settingSendCookies": true,
+			"settingDisableRenderRequestBody": false,
+			"settingEncodeUrl": true,
+			"_type": "request"
+		},
+		{
+			"_id": "req_03639aa40566462b890aba851df264c1",
+			"parentId": "fld_77cc560d79a0443bad4cc3093544fbb8",
+			"modified": 1532539003925,
+			"created": 1532538378165,
+			"url": "http://localhost:4567/categories/93327398-a148-4ca7-9d7c-bdf6d9d80cb5/todos",
+			"name": "relate todo to category",
+			"description": "",
+			"method": "POST",
+			"body": {
+				"mimeType": "application/json",
+				"text": "{\"guid\":\"1621ddb5-ff44-48fe-80d0-481717a5a0cf\"}"
+			},
+			"parameters": [],
+			"headers": [
+				{
+					"name": "Content-Type",
+					"value": "application/json",
+					"id": "pair_787dfd26e3334b73b36c56e5f285e6e2"
+				}
+			],
+			"authentication": {},
+			"metaSortKey": -1532510444955,
+			"settingStoreCookies": true,
+			"settingSendCookies": true,
+			"settingDisableRenderRequestBody": false,
+			"settingEncodeUrl": true,
+			"_type": "request"
+		},
+		{
+			"_id": "req_5a47b4261e2746c4bf4b13657eab2eb6",
+			"parentId": "fld_77cc560d79a0443bad4cc3093544fbb8",
+			"modified": 1532538726853,
+			"created": 1532538688377,
+			"url": "http://localhost:4567/categories",
+			"name": "categories",
+			"description": "",
+			"method": "GET",
+			"body": {
+				"mimeType": "application/json",
+				"text": ""
+			},
+			"parameters": [],
+			"headers": [
+				{
+					"name": "Content-Type",
+					"value": "application/json",
+					"id": "pair_787dfd26e3334b73b36c56e5f285e6e2"
+				},
+				{
+					"name": "Accept",
+					"value": "application/xml",
+					"id": "pair_bb1856ce2d41411bb6e24c5b0513e448",
+					"disabled": false
+				}
+			],
+			"authentication": {},
+			"metaSortKey": -1532510445048.75,
+			"settingStoreCookies": true,
+			"settingSendCookies": true,
+			"settingDisableRenderRequestBody": false,
+			"settingEncodeUrl": true,
+			"_type": "request"
+		},
+		{
+			"_id": "req_412c3334e7d543158374e67bcd67d4ea",
+			"parentId": "fld_77cc560d79a0443bad4cc3093544fbb8",
+			"modified": 1532541469484,
+			"created": 1532539425938,
+			"url": "http://localhost:4567/categories/93327398-a148-4ca7-9d7c-bdf6d9d80cb5/todos",
+			"name": "relate project to category incorrectly",
+			"description": "",
+			"method": "POST",
+			"body": {
+				"mimeType": "application/json",
+				"text": "{\"guid\":\"93327398-a148-4ca7-9d7c-bdf6d9d80cb4\"}"
+			},
+			"parameters": [],
+			"headers": [
+				{
+					"name": "Content-Type",
+					"value": "application/json",
+					"id": "pair_787dfd26e3334b73b36c56e5f285e6e2"
+				}
+			],
+			"authentication": {},
+			"metaSortKey": -1532510444905,
 			"settingStoreCookies": true,
 			"settingSendCookies": true,
 			"settingDisableRenderRequestBody": false,

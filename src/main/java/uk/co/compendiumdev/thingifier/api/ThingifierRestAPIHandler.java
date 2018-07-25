@@ -36,6 +36,7 @@ public class ThingifierRestAPIHandler {
 
     public ApiResponse post(final String url, final Map args) {
 
+        // we want to
 
         /*
             No GUID and match a Thing
@@ -133,6 +134,24 @@ public class ThingifierRestAPIHandler {
 
 
             try {
+
+                if(relationshipToUse==null){
+                    return ApiResponse.error(400, String.format("Could not find a relationship named %s between %s and a %s",
+                            relationshipName,
+                            connectThis.getEntity().getName(),
+                            relatedItem.getEntity().getName()));
+
+                }
+                if(relationshipToUse.getTo().definition() != relatedItem.getEntity()){
+                    return ApiResponse.error(400, String.format("Could not connect %s (%s) to %s (%s) via relationship %s because it is a %s instead of a %s",
+                            connectThis.getGUID(), connectThis.getEntity().getName(),
+                            relatedItem.getGUID(), relatedItem.getEntity().getName(),
+                            relationshipToUse.getName(),
+                            relatedItem.getEntity().getName(),
+                            relationshipToUse.getTo().definition().getName()
+                            ));
+                }
+
                 // TODO: enforce cardinality on relationship
                 connectThis.connects(relationshipToUse.getName(), relatedItem);
             } catch (Exception e) {

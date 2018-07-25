@@ -60,63 +60,10 @@ final public class SimpleQuery {
 
         for (String term : terms) {
 
-            // if matches an entity type
-            if (thingifier.hasThingNamed(term) || thingifier.hasThingWithPluralNamed(term)) {
-                if (currentThing == null && foundItems.size() == 0) {
-                    // first thing - find it
-                    currentThing = thingifier.getThingNamed(term);
-                    pluralMatch = false;
-
-                    if (currentThing == null) {
-                        // was it the plural?
-                        currentThing = thingifier.getThingWithPluralNamed(term);
-                        pluralMatch = true;
-                    }
-
-                    // entity type is always a collection
-                    isCollection = true;
-
-                    resultContainsDefinition = currentThing.definition();
-                    foundItemsHistoryList.add(currentThing);
-                    parentThing = currentThing;
-                    currentInstance = null;
-                    lastMatch = CURRENT_THING;
-                    foundItems = new ArrayList<ThingInstance>(currentThing.getInstances());
-
-                } else {
-                    // related to another type of thing
-                    foundItemsHistoryList.add(thingifier.getThingNamed(term));
-
-                    // TODO: could match plurals further down e.g. todos/guid/categories but we really want relationships to take priority
-                    // so I haven't coded that here we need a little more complex code to handle this, but it can be done, just move this
-                    // after the relationships check if there is alreadya current or parent thing
-
-
-                    if (foundItems != null && foundItems.size() > 0) {
-                        resultContainsDefinition = foundItems.get(0).typeOfConnectedItems(term);
-                    }
-
-                    List<ThingInstance> newitems = new ArrayList<ThingInstance>();
-                    if (foundItems != null) {
-                        for (ThingInstance instance : foundItems) {
-                            List<ThingInstance> matchedInstances = instance.connectedItemsOfType(term);
-                            newitems.addAll(matchedInstances);
-                        }
-                    }
-
-                    // relationship is a collection
-                    foundItems = newitems;
-                    lastMatch = CURRENT_ITEMS;
-                    parentThing = currentThing;
-                    currentThing = null;
-                    currentInstance = null;
-                }
-                continue;
-            }
-
+            // if we have a parent thing then we want to check for relationships before we check for things
             // if it matches a relationship then get the instances identified by the relationship
             //if(currentThing != null && currentThing.definition().hasRelationship(term)){
-            if (thingifier.hasRelationshipNamed(term)) {
+            if (parentThing!=null && thingifier.hasRelationshipNamed(term)) {
 
                 // what I want to store is the relationship between the parent Thing and the relationship name
                 Thing thingToCheckForRelationship = currentThing == null ? parentThing : currentThing;
@@ -148,6 +95,57 @@ final public class SimpleQuery {
                 lastMatch = CURRENT_RELATIONSHIP;
                 continue;
             }
+
+            // if matches an entity type
+            if (thingifier.hasThingNamed(term) || thingifier.hasThingWithPluralNamed(term)) {
+                if (currentThing == null && foundItems.size() == 0) {
+                    // first thing - find it
+                    currentThing = thingifier.getThingNamed(term);
+                    pluralMatch = false;
+
+                    if (currentThing == null) {
+                        // was it the plural?
+                        currentThing = thingifier.getThingWithPluralNamed(term);
+                        pluralMatch = true;
+                    }
+
+                    // entity type is always a collection
+                    isCollection = true;
+
+                    resultContainsDefinition = currentThing.definition();
+                    foundItemsHistoryList.add(currentThing);
+                    parentThing = currentThing;
+                    currentInstance = null;
+                    lastMatch = CURRENT_THING;
+                    foundItems = new ArrayList<ThingInstance>(currentThing.getInstances());
+
+                } else {
+                    // related to another type of thing
+                    foundItemsHistoryList.add(thingifier.getThingNamed(term));
+
+                    if (foundItems != null && foundItems.size() > 0) {
+                        resultContainsDefinition = foundItems.get(0).typeOfConnectedItems(term);
+                    }
+
+                    List<ThingInstance> newitems = new ArrayList<ThingInstance>();
+                    if (foundItems != null) {
+                        for (ThingInstance instance : foundItems) {
+                            List<ThingInstance> matchedInstances = instance.connectedItemsOfType(term);
+                            newitems.addAll(matchedInstances);
+                        }
+                    }
+
+                    // relationship is a collection
+                    foundItems = newitems;
+                    lastMatch = CURRENT_ITEMS;
+                    parentThing = currentThing;
+                    currentThing = null;
+                    currentInstance = null;
+                }
+                continue;
+            }
+
+
 
             // is it a GUID?
             boolean found = false;

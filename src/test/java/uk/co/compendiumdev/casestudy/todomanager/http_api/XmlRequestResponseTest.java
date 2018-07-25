@@ -129,6 +129,36 @@ public class XmlRequestResponseTest {
     // We only support single items as input so this is not acceptable
     // "<todos><todo><title>test title</title></todo></todos>"
 
+    @Test
+    public void canPostAndAmendAnItemWithXml(){
+
+        final ThingInstance atodo = todo.createInstance().setValue("title", "my title");
+        todo.addInstance(atodo);
+
+        Assert.assertEquals(1, todo.countInstances());
+
+        HttpApiRequest request = new HttpApiRequest("todos/" + atodo.getGUID());
+        request.getHeaders().putAll(HeadersSupport.acceptXml());
+        request.getHeaders().putAll(HeadersSupport.containsXml());
+
+
+        //<todo><title>test title</title></todo>
+        request.setBody("<todo><title>test title</title></todo>");
+
+
+        final HttpApiResponse response = new ThingifierHttpApi(todoManager).post(request);
+
+        Assert.assertEquals(200, response.getStatusCode());
+
+        // TODO: should amendments should really return <todos> not <todo>
+
+        System.out.println(response.getBody());
+
+        Assert.assertEquals(1, todo.countInstances());
+
+        Assert.assertEquals("test title", atodo.getValue("title"));
+
+    }
 
         /*
 
@@ -167,6 +197,46 @@ public class XmlRequestResponseTest {
 
         //{"todo":"doneStatus":"FALSE","guid":
         Assert.assertTrue("Should have returned json", response.getBody().startsWith("{\"todo\":{\"doneStatus\":\"FALSE\",\"guid\":"));
+
+    }
+
+
+     /*
+
+
+        PUT to amend
+
+
+     */
+
+    @Test
+    public void canPutToAmendAnItemWithJson(){
+
+        final ThingInstance atodo = todo.createInstance().setValue("title", "my title");
+        todo.addInstance(atodo);
+
+        Assert.assertEquals(1, todo.countInstances());
+
+        HttpApiRequest request = new HttpApiRequest("todos/"+atodo.getGUID());
+        request.getHeaders().putAll(HeadersSupport.acceptXml());
+        request.getHeaders().putAll(HeadersSupport.containsXml());
+
+
+        request.setBody("<todo><title>test title</title></todo>");
+
+
+        final HttpApiResponse response = new ThingifierHttpApi(todoManager).put(request);
+
+        System.out.println(response.getBody());
+
+        Assert.assertEquals(200, response.getStatusCode());
+
+        // TODO: amendments should possibly return <todos>
+
+
+        Assert.assertEquals(1, todo.countInstances());
+
+        Assert.assertEquals("test title", atodo.getValue("title"));
 
     }
 

@@ -23,10 +23,6 @@ public class JsonRequestResponseTest {
     Thing project;
 
 
-    // TODO: DELETE through api
-    // TODO: create relationship with XML
-    // TODO: create relationship with JSON
-
     @Before
     public void createDefinitions() {
 
@@ -39,7 +35,7 @@ public class JsonRequestResponseTest {
     }
 
     @Test
-    public void canGetAnEmptyJsonItemsCollection(){
+    public void canGetAnEmptyJsonItemsCollection() {
 
         HttpApiRequest request = new HttpApiRequest("todos");
         request.getHeaders().putAll(HeadersSupport.acceptJson());
@@ -53,7 +49,7 @@ public class JsonRequestResponseTest {
 
 
     @Test
-    public void canGetJsonItems(){
+    public void canGetJsonItems() {
 
 
         todo.addInstance(todo.createInstance().setValue("title", "my title"));
@@ -68,13 +64,14 @@ public class JsonRequestResponseTest {
         final TodoCollectionResponse todos = new Gson().fromJson(response.getBody(), TodoCollectionResponse.class);
 
         Assert.assertEquals(1, todos.todos.length);
-        Assert.assertEquals("my title", todos.todos[0].title );
-        Assert.assertNotNull(todos.todos[0].guid );
+        Assert.assertEquals("my title", todos.todos[0].title);
+        Assert.assertNotNull(todos.todos[0].guid);
 
     }
 
+
     @Test
-    public void canGetMultipleJsonItems(){
+    public void canGetMultipleJsonItems() {
 
 
         todo.addInstance(todo.createInstance().setValue("title", "my title"));
@@ -96,7 +93,7 @@ public class JsonRequestResponseTest {
     }
 
     @Test
-    public void cannotGetFromMissingEndpoint(){
+    public void cannotGetFromMissingEndpoint() {
 
 
         todo.addInstance(todo.createInstance().setValue("title", "my title"));
@@ -112,7 +109,7 @@ public class JsonRequestResponseTest {
         final ErrorMessages errors = new Gson().fromJson(response.getBody(), ErrorMessages.class);
 
         Assert.assertEquals(1, errors.errorMessages.length);
-        errors.errorMessages[0].startsWith("Could not find an instance with todos");
+        Assert.assertTrue(errors.errorMessages[0], errors.errorMessages[0].startsWith("Could not find an instance with todos"));
 
     }
 
@@ -126,7 +123,7 @@ public class JsonRequestResponseTest {
      */
 
     @Test
-    public void canPostAndCreateAnItemWithXml(){
+    public void canPostAndCreateAnItemWithJson() {
 
         HttpApiRequest request = new HttpApiRequest("todos");
         request.getHeaders().putAll(HeadersSupport.acceptJson());
@@ -170,9 +167,9 @@ public class JsonRequestResponseTest {
      */
 
     @Test
-    public void canPutAndCreateAnItemWithJsonAndReceiveXml(){
+    public void canPutAndCreateAnItemWithJsonAndReceiveXml() {
 
-        HttpApiRequest request = new HttpApiRequest("todos/"+UUID.randomUUID().toString());
+        HttpApiRequest request = new HttpApiRequest("todos/" + UUID.randomUUID().toString());
         request.getHeaders().putAll(HeadersSupport.acceptXml());
         request.getHeaders().putAll(HeadersSupport.containsJson());
 
@@ -202,19 +199,101 @@ public class JsonRequestResponseTest {
 
     }
 
-    private class TodoCollectionResponse{
+
+
+       /*
+
+
+        POST to amend
+
+
+     */
+
+    @Test
+    public void canPostToAmendAnItemWithJson() {
+
+        final ThingInstance atodo = todo.createInstance().setValue("title", "my title");
+        todo.addInstance(atodo);
+
+        Assert.assertEquals(1, todo.countInstances());
+
+        HttpApiRequest request = new HttpApiRequest("todos/" + atodo.getGUID());
+        request.getHeaders().putAll(HeadersSupport.acceptJson());
+        request.getHeaders().putAll(HeadersSupport.containsJson());
+
+
+        //{"title":"title from json"}
+        request.setBody("{\"title\":\"title from json\"}");
+
+
+        final HttpApiResponse response = new ThingifierHttpApi(todoManager).post(request);
+
+        Assert.assertEquals(200, response.getStatusCode());
+
+        // TODO: amendments should possibly return todos[] or a single object {" but certainly not {"todo":
+
+        System.out.println(response.getBody());
+
+        Assert.assertEquals(1, todo.countInstances());
+
+        Assert.assertEquals("title from json", atodo.getValue("title"));
+
+    }
+
+           /*
+
+
+        PUT to amend
+
+
+     */
+
+    @Test
+    public void canPutToAmendAnItemWithJson() {
+
+        final ThingInstance atodo = todo.createInstance().setValue("title", "my title");
+        todo.addInstance(atodo);
+
+        Assert.assertEquals(1, todo.countInstances());
+
+        HttpApiRequest request = new HttpApiRequest("todos/" + atodo.getGUID());
+        request.getHeaders().putAll(HeadersSupport.acceptJson());
+        request.getHeaders().putAll(HeadersSupport.containsJson());
+
+
+        // guid is optional here but have added it anyway
+        //{"title":"title from json", "guid":"%s"}
+        request.setBody(String.format("{\"title\":\"title from json\", \"guid\":\"%s\"}", atodo.getGUID()));
+
+
+        final HttpApiResponse response = new ThingifierHttpApi(todoManager).put(request);
+
+        System.out.println(response.getBody());
+
+        Assert.assertEquals(200, response.getStatusCode());
+
+        // TODO: amendments should possibly return todos[] or a single object {" but certainly not {"todo":
+
+
+        Assert.assertEquals(1, todo.countInstances());
+
+        Assert.assertEquals("title from json", atodo.getValue("title"));
+
+    }
+
+    private class TodoCollectionResponse {
 
         Todo[] todos;
 
     }
 
-    private class Todo{
+    private class Todo {
 
         String guid;
         String title;
     }
 
-    private class ErrorMessages{
+    private class ErrorMessages {
 
         String[] errorMessages;
     }
