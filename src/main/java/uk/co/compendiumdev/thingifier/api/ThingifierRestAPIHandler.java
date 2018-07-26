@@ -33,7 +33,7 @@ public class ThingifierRestAPIHandler {
     // TODO: possibly consider an X- header which has the number of items in the collection
 
 
-    public ApiResponse post(final String url, final Map args) {
+    public ApiResponse post(final String url, final Map<String, String> args) {
 
         // we want to
 
@@ -44,7 +44,7 @@ public class ThingifierRestAPIHandler {
         // create a thing
         Thing thing = thingifier.getThingNamedSingularOrPlural(url);
         if (thing != null) {
-            return createANewThingWithPost(args, thing);
+            return createANewThingWith(args, thing);
         }
 
 
@@ -110,23 +110,15 @@ public class ThingifierRestAPIHandler {
 
                 Thing thingToCreate = thingifier.getThingNamed(createThing.getName());
 
-                try {
-                    relatedItem = thingToCreate.createInstance().setFieldValuesFrom(stringMap(args));
-                } catch (Exception e) {
-                    return ApiResponse.error(400, e.getMessage());
-                }
-
-
-                // assuming the thing is valid - it might not be so detect it here
-                ValidationReport validation = relatedItem.validate();
-
-                if (validation.isValid()) {
-                    thingToCreate.addInstance(relatedItem);
+                final ApiResponse response = createANewThingWith(args, thingToCreate);
+                if(response.isErrorResponse()){
+                    return response;
+                }else{
+                    relatedItem = response.getReturnedInstance();
                     returnThing = relatedItem;
-                } else {
-                    // do not add it, report the errors
-                    return ApiResponse.error(400, validation.getErrorMessages());
                 }
+
+
             } else {
                 // we know what we are connecting to, find the correct relationship
                 relationshipToUse = connectThis.getEntity().getRelationship(relationshipName, relatedItem.getEntity());
@@ -154,6 +146,7 @@ public class ThingifierRestAPIHandler {
 
                 // TODO: enforce cardinality on relationship
                 connectThis.connects(relationshipToUse.getName(), relatedItem);
+
             } catch (Exception e) {
                 return ApiResponse.error(400, String.format("Could not connect %s (%s) to %s (%s) via relationship %s",
                         connectThis.getGUID(), connectThis.getEntity().getName(),
@@ -166,39 +159,32 @@ public class ThingifierRestAPIHandler {
         }
 
 
-//        List<ThingInstance> items = query.getListThingInstance();
-//
-//        if (items.size() > 0) {
-//            // TODO: this should really have validation
-//            // TODO: not implemented yet
-//            // this should be creating a new instance of the type of thing with a relationship to the parent
-//            // simple query needs to support looking at the things it found e.g. matched "todo" thing, get parent for the todo (a project), copy the relationships from the parent to the todo
-//            return ApiResponse.error(501, "Amending multiple items is not supported");
-//        }
-
         // WHAT was that query?
         return ApiResponse.error(400, "Your request was not understood");
 
     }
 
-    private Map<String, String> stringMap(final Map<String, Object> args) {
-        Map<String, String> stringsInMap = new HashMap();
-        for (String key : args.keySet()) {
-            if (args.get(key) instanceof String) {
-                stringsInMap.put(key, (String) args.get(key));
-            }
-        }
-        return stringsInMap;
+
+
+    private ApiResponse amendAThingWithPost(final Map<String, String> args, Thing thing, String thingName, String instanceGuid) {
+        // with a post we do not want to clear fields before setting - we only amend what we pass in
+        return amendAThing(args, thing, thingName, instanceGuid, false);
     }
 
-    private ApiResponse amendAThingWithPost(Map args, Thing thing, String thingName, String instanceGuid) {
+    private ApiResponse amendAThingWithPut(final Map<String, String> args, final Thing thing, final ThingInstance instance) {
+        return amendAThing(args, thing, thing.definition().getName(), instance.getGUID(), true);
+    }
+
+    private ApiResponse amendAThing(final Map<String, String> args, final Thing thing, final String thingName, final String instanceGuid, final Boolean clearFieldsBeforeSettingFromArgs) {
         if (thing == null) {
             // this is not a URL for thing/guid
             // unknown thing
             return noSuchEntity(thingName);
 
         }
+
         ThingInstance instance = thing.findInstanceByField(FieldValue.is("guid", instanceGuid));
+
         if (instance == null) {
             // cannot amend something that does not exist
             return ApiResponse.error404(String.format("No such %s entity instance with GUID %s found", thing.definition().getName(), instanceGuid));
@@ -211,6 +197,10 @@ public class ThingifierRestAPIHandler {
 
                 cloned = instance.createDuplicateWithoutRelationships();
 
+                if(clearFieldsBeforeSettingFromArgs){
+                    // if you want an idempotent amend then clear it down prior to amending
+                    cloned.clearAllFields();
+                }
                 cloned.setFieldValuesFrom(args);
 
             } catch (Exception e) {
@@ -220,6 +210,9 @@ public class ThingifierRestAPIHandler {
             ValidationReport validation = cloned.validate();
 
             if (validation.isValid()) {
+                if(clearFieldsBeforeSettingFromArgs){
+                    instance.clearAllFields();
+                }
                 instance.setFieldValuesFrom(args);
                 return ApiResponse.success().returnSingleInstance(instance);
             } else {
@@ -229,11 +222,13 @@ public class ThingifierRestAPIHandler {
         }
     }
 
-    private ApiResponse createANewThingWithPost(Map args, Thing thing) {
+
+    private ApiResponse createANewThingWith(final Map<String, String> args, final Thing thing) {
         // create a new thing
-        ThingInstance instance = thing.createInstance();
+        ThingInstance instance;
 
         try {
+            instance = thing.createInstance();
             instance.setFieldValuesFrom(args);
         } catch (Exception e) {
             return ApiResponse.error(400, e.getMessage());
@@ -250,11 +245,11 @@ public class ThingifierRestAPIHandler {
         }
     }
 
-    private ApiResponse noSuchEntity(String entityName) {
+    private ApiResponse noSuchEntity(final String entityName) {
         return ApiResponse.error404(String.format("No such entity as %s found", entityName));
     }
 
-    public ApiResponse put(String url, Map args) {
+    public ApiResponse put(final String url, final Map<String, String> args) {
 
 
         // if queryis empty then need a way to check if the query matched
@@ -277,6 +272,7 @@ public class ThingifierRestAPIHandler {
                 // unknown thing
                 return noSuchEntity(urlParts[0]);
             }
+
             ThingInstance instance = thing.findInstanceByField(FieldValue.is("guid", urlParts[1]));
 
             if (instance == null) {
@@ -314,50 +310,11 @@ public class ThingifierRestAPIHandler {
             } else {
                 // when amending existing thing with PUT it must be idempotent so
                 // check that all fields are valid in the args
-
-                ThingInstance cloned;
-
-                try {
-
-                    // create copy and validate copy
-                    cloned = instance.createDuplicateWithoutRelationships();
-
-                    // quick hack to make idempotent - delete all values and add new ones
-                    cloned.clearAllFields(); // except "guid"
-
-                    cloned.setFieldValuesFrom(args);
-
-                    ValidationReport validation = cloned.validate();
-
-                    if (validation.isValid()) {
-                        instance.clearAllFields();
-                        instance.setFieldValuesFrom(args);
-                        return ApiResponse.success().returnSingleInstance(instance);
-                    } else {
-                        // do not add it, report the errors
-                        return ApiResponse.error(400, validation.getErrorMessages());
-                    }
-
-                } catch (Exception e) {
-                    return ApiResponse.error(400, e.getMessage());
-                }
-
+                return amendAThingWithPut(args, thing, instance);
 
             }
         }
 
-        // Assume it matches  alist
-
-        // get the things to post to
-//
-//        List<ThingInstance> query = new SimpleQuery(thingifier, url).performQuery().getListThingInstance();
-//
-//        if (query.size() > 0) {
-//            // TODO: not implemented yet
-//            // this should be creating a new instance of the type of thing with a relationship to the parent
-//            // simple query needs to support looking at the things it found e.g. matched "todo" thing, get parent for the todo (a project), copy the relationships from the parent to the todo
-//            return ApiResponse.error(501, "Amending multiple items is not supported");
-//        }
 
         // WHAT was that query?
         return ApiResponse.error(400, "Your request was not understood");
@@ -365,7 +322,9 @@ public class ThingifierRestAPIHandler {
 
     }
 
-    public ApiResponse delete(String url) {
+
+
+    public ApiResponse delete(final String url) {
         // this should probably not delete root items
         Thing thing = thingifier.getThingNamedSingularOrPlural(url);
         if (thing != null) {

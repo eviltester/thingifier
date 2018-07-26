@@ -7,6 +7,7 @@ import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 
 final public class ThingifierHttpApi {
@@ -52,7 +53,7 @@ final public class ThingifierHttpApi {
 
 
 
-    private Map bodyAsMap(final HttpApiRequest request) {
+    private Map<String, String> bodyAsMap(final HttpApiRequest request) {
 
         // TODO refactor this out into a class that has unit tests
         // because we are using crude XML and JSON parsing
@@ -77,13 +78,22 @@ final public class ThingifierHttpApi {
                     String justTheBody = conv.get(keys.get(0)).toString();
                     System.out.println(justTheBody);
                     Map args = new Gson().fromJson(justTheBody, Map.class);
-                    return args;
+                    return stringMap(args);
                 }
 
             }
         }
 
-        return new Gson().fromJson(request.getBody(), Map.class);
+        return stringMap(new Gson().fromJson(request.getBody(), Map.class));
     }
 
+    private Map<String, String> stringMap(final Map<String, Object> args) {
+        Map<String, String> stringsInMap = new HashMap();
+        for (String key : args.keySet()) {
+            if (args.get(key) instanceof String) {
+                stringsInMap.put(key, (String) args.get(key));
+            }
+        }
+        return stringsInMap;
+    }
 }
