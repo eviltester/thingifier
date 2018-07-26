@@ -31,7 +31,6 @@ public class ThingifierRestAPIHandler {
     // TODO: - listed here https://www.lisihocke.com/2018/07/testing-tour-stop-16-pair-exploring-an-api-with-thomas.html
     // TODO: ensure that relationshps enforce the type of thing e.g. if I pass in a GUID of the wrong type then it should not cross ref
     // TODO: possibly consider an X- header which has the number of items in the collection
-    // TODO: consider empty json collection having the type e.g. {"todos": []}
 
 
     public ApiResponse post(final String url, final Map args) {
@@ -350,15 +349,15 @@ public class ThingifierRestAPIHandler {
         // Assume it matches  alist
 
         // get the things to post to
-
-        List<ThingInstance> query = new SimpleQuery(thingifier, url).performQuery().getListThingInstance();
-
-        if (query.size() > 0) {
-            // TODO: not implemented yet
-            // this should be creating a new instance of the type of thing with a relationship to the parent
-            // simple query needs to support looking at the things it found e.g. matched "todo" thing, get parent for the todo (a project), copy the relationships from the parent to the todo
-            return ApiResponse.error(501, "Amending multiple items is not supported");
-        }
+//
+//        List<ThingInstance> query = new SimpleQuery(thingifier, url).performQuery().getListThingInstance();
+//
+//        if (query.size() > 0) {
+//            // TODO: not implemented yet
+//            // this should be creating a new instance of the type of thing with a relationship to the parent
+//            // simple query needs to support looking at the things it found e.g. matched "todo" thing, get parent for the todo (a project), copy the relationships from the parent to the todo
+//            return ApiResponse.error(501, "Amending multiple items is not supported");
+//        }
 
         // WHAT was that query?
         return ApiResponse.error(400, "Your request was not understood");

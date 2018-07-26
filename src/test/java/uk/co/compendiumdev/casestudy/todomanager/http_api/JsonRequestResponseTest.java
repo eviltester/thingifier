@@ -69,6 +69,51 @@ public class JsonRequestResponseTest {
 
     }
 
+    @Test
+    public void canGetJsonItemAsACollection() {
+
+
+        final ThingInstance aTodo = todo.createInstance().setValue("title", "my title");
+        todo.addInstance(aTodo);
+
+        HttpApiRequest request = new HttpApiRequest("/todos/" + aTodo.getGUID());
+        request.getHeaders().putAll(HeadersSupport.acceptJson());
+
+        final HttpApiResponse response = new ThingifierHttpApi(todoManager).get(request);
+        Assert.assertEquals(200, response.getStatusCode());
+        System.out.println(response.getBody());
+
+        final TodoCollectionResponse todos = new Gson().fromJson(response.getBody(), TodoCollectionResponse.class);
+
+        Assert.assertEquals(1, todos.todos.length);
+        Assert.assertEquals("my title", todos.todos[0].title);
+        Assert.assertNotNull(todos.todos[0].guid);
+
+    }
+
+    // this will only happen if routings allow it, normally we will route through plurals so it won't happen via http
+    // except on an admin query interface routing
+    @Test
+    public void canGetJsonItemAsAnInstance() {
+
+
+        final ThingInstance aTodo = todo.createInstance().setValue("title", "my title");
+        todo.addInstance(aTodo);
+
+        HttpApiRequest request = new HttpApiRequest("/todo/" + aTodo.getGUID());
+        request.getHeaders().putAll(HeadersSupport.acceptJson());
+
+        final HttpApiResponse response = new ThingifierHttpApi(todoManager).get(request);
+        Assert.assertEquals(200, response.getStatusCode());
+        System.out.println(response.getBody());
+
+        final Todo todo = new Gson().fromJson(response.getBody(), Todo.class);
+
+        Assert.assertEquals("my title", todo.title);
+        Assert.assertNotNull(todo.guid);
+
+    }
+
 
     @Test
     public void canGetMultipleJsonItems() {
