@@ -57,7 +57,11 @@ public class TodoManagerQueryEngineTest {
      */
 
     public String asJson(final List<ThingInstance> things) {
-        return JsonThing.asJsonArray(things).toString();
+        String name = "unknown";
+        if(things!= null && things.size()>0 ){
+            name = things.get(0).getEntity().getPlural();
+        }
+        return JsonThing.asJsonTypedArrayWithContentsUntyped(things, name);
     }
 
 

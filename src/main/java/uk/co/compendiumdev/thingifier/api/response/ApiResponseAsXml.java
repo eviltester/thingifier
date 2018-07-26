@@ -75,7 +75,7 @@ final public class ApiResponseAsXml {
             // experimental xml output
             try {
                 String parseForXMLOutput = output;
-                System.out.println(parseForXMLOutput);
+                //System.out.println(parseForXMLOutput);
                 output = XML.toString(new JSONObject(parseForXMLOutput));
 
             } catch (Exception e) {

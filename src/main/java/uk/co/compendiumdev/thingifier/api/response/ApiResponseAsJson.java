@@ -56,7 +56,8 @@ public final class ApiResponseAsJson {
         } else {
             ThingInstance instance = apiResponse.getReturnedInstance();
 
-            return JsonThing.asNamedJsonObject(instance).toString();
+            //return JsonThing.asNamedJsonObject(instance).toString();
+            return JsonThing.asJsonObject(instance).toString();
         }
     }
 

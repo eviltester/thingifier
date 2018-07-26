@@ -115,10 +115,10 @@ public class ApiResponseAsJsonTest {
 
         String json = new ApiResponseAsJson(response).getJson();
         System.out.println(json);
-        TodoResponse myTodo = new Gson().fromJson(json, TodoResponse.class);
+        Todo myTodo = new Gson().fromJson(json, Todo.class);
 
-        Assert.assertEquals(aTodo.getGUID(), myTodo.todo.guid);
-        Assert.assertEquals("a todo", myTodo.todo.title);
+        Assert.assertEquals(aTodo.getGUID(), myTodo.guid);
+        Assert.assertEquals("a todo", myTodo.title);
 
     }
 
@@ -179,9 +179,8 @@ public class ApiResponseAsJsonTest {
         System.out.println(json);
         Assert.assertEquals("{}", json);
 
-        TodoResponse myTodo = new Gson().fromJson(json, TodoResponse.class);
+        TodoCollectionResponse myTodo = new Gson().fromJson(json, TodoCollectionResponse.class);
 
-        Assert.assertNull(myTodo.todo);
         Assert.assertNull(myTodo.todos);
     }
 
@@ -191,12 +190,6 @@ public class ApiResponseAsJsonTest {
 
     }
 
-    private class TodoResponse{
-
-        Todo todo;
-        Todo[] todos;
-
-    }
 
     private class TodoCollectionResponse{
 

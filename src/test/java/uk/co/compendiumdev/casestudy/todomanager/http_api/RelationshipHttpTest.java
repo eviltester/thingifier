@@ -119,6 +119,35 @@ public class RelationshipHttpTest {
         Assert.assertEquals("Could not find a relationship named tasks between project and a category", errors.errorMessages[0]);
     }
 
+    @Test
+    public void cannotCreateARelationshipWhenGivenGuidDoesNotExist(){
+
+
+        final ThingInstance atodo = todo.createInstance().setValue("title", "a TODO");
+        todo.addInstance(atodo);
+
+        final ThingInstance aproject = project.createInstance().setValue("title", "a Project");
+        project.addInstance(aproject);
+
+        Assert.assertEquals(0,aproject.connectedItems("tasks").size());
+
+        HttpApiRequest request = new HttpApiRequest("projects/" + aproject.getGUID() + "/tasks");
+        request.getHeaders().putAll(HeadersSupport.acceptJson());
+
+        //{"guid":"%s"}
+        String body = String.format("{\"guid\":\"%s\"}", atodo.getGUID() + "bob");
+        request.setBody(body);
+
+        final HttpApiResponse response = new ThingifierHttpApi(todoManager).post(request);
+        Assert.assertEquals(404, response.getStatusCode());
+
+        final ErrorMessages errors = new Gson().fromJson(response.getBody(), ErrorMessages.class);
+        Assert.assertEquals(1,errors.errorMessages.length);
+
+        Assert.assertTrue(errors.errorMessages[0],errors.errorMessages[0].startsWith("Could not find thing with GUID "));
+        Assert.assertTrue(errors.errorMessages[0],errors.errorMessages[0].endsWith("bob"));
+    }
+
     // need to see if I can create where a relationship name is the same as a plural entity
     @Test
     public void canCreateARelationshipBetweenCategoryAndTodoViaTodos(){

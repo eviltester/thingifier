@@ -93,6 +93,7 @@ public class ThingifierRestAPIHandler {
             // find the thing from the query to connect the relatedItem to
             ThingInstance connectThis = query.getParentInstance();
             if (connectThis == null) {
+                // TODO: I don't think it is possible to ever hit this line of code
                 return ApiResponse.error404(String.format("Could not find parent thing for relationship %s", url));
             }
 
@@ -165,18 +166,16 @@ public class ThingifierRestAPIHandler {
             return ApiResponse.created(returnThing);
         }
 
-        // Assume it matches  alist
 
-
-        List<ThingInstance> items = query.getListThingInstance();
-
-        if (items.size() > 0) {
-            // TODO: this should really have validation
-            // TODO: not implemented yet
-            // this should be creating a new instance of the type of thing with a relationship to the parent
-            // simple query needs to support looking at the things it found e.g. matched "todo" thing, get parent for the todo (a project), copy the relationships from the parent to the todo
-            return ApiResponse.error(501, "Amending multiple items is not supported");
-        }
+//        List<ThingInstance> items = query.getListThingInstance();
+//
+//        if (items.size() > 0) {
+//            // TODO: this should really have validation
+//            // TODO: not implemented yet
+//            // this should be creating a new instance of the type of thing with a relationship to the parent
+//            // simple query needs to support looking at the things it found e.g. matched "todo" thing, get parent for the todo (a project), copy the relationships from the parent to the todo
+//            return ApiResponse.error(501, "Amending multiple items is not supported");
+//        }
 
         // WHAT was that query?
         return ApiResponse.error(400, "Your request was not understood");

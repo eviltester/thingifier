@@ -13,7 +13,7 @@ public class JsonThing {
 
 
     /**
-     * This is more suitable for JSON output
+     * This is more suitable for JSON output of an array
      * @param things
      * @param typeName
      * @return
@@ -22,6 +22,49 @@ public class JsonThing {
         final JsonObject arrayObj = new JsonObject();
         arrayObj.add(typeName, asJsonArray(things));
         return arrayObj.toString();
+    }
+
+    /**
+     * This is suitable only for internal use - Json output of an array should always have a wrapper name e.g. {todos: []}
+     * @param things
+     * @return
+     */
+    private static JsonArray asJsonArray(final Collection<ThingInstance> things) {
+
+        // [{"guid":"bob"}, {"guid":"bob2"}]
+
+        final JsonArray jsonArray = new JsonArray();
+
+        for (ThingInstance thing : things) {
+            jsonArray.add(asJsonObject(thing));
+
+        }
+
+        //System.out.println(jsonArray.toString());
+        return jsonArray;
+    }
+
+    /**
+     * Suitable for JSON Output as it is just the object
+     * @param thingInstance
+     * @return
+     */
+    public static JsonObject asJsonObject(final ThingInstance thingInstance) {
+
+        final JsonObject jsonobj = new JsonObject();
+
+        if (thingInstance == null) {
+            return jsonobj;
+        }
+
+
+        for (String field : thingInstance.getEntity().getFieldNames()) {
+
+            jsonobj.addProperty(field, thingInstance.getValue(field));
+        }
+
+
+        return jsonobj;
     }
 
     /**
@@ -38,33 +81,16 @@ public class JsonThing {
     }
 
 
-    /**
-     * This is suitable for JSON output
-     * @param things
-     * @return
-     */
-    public static JsonArray asJsonArray(final Collection<ThingInstance> things) {
 
-        // [{"guid":"bob"}, {"guid":"bob2"}]
 
-        final JsonArray jsonArray = new JsonArray();
-
-        for (ThingInstance thing : things) {
-            jsonArray.add(asJsonObject(thing));
-
-        }
-
-        System.out.println(jsonArray.toString());
-        return jsonArray;
-    }
 
 
     /**
-     * This is suitable for XML output
+     * This is suitable for partial XML output but should never be used directly as it needs a wrapper name to make sense
      * @param things
      * @return
      */
-    public static JsonArray asJsonArrayInstanceWrapped(Collection<ThingInstance> things) {
+    private static JsonArray asJsonArrayInstanceWrapped(Collection<ThingInstance> things) {
 
 
         // [{"todo":{"guid":"bob"}}, {"todo":{"guid":"bob2"}}]
@@ -79,32 +105,16 @@ public class JsonThing {
 
         }
 
-        System.out.println(jsonArray.toString());
+        //System.out.println(jsonArray.toString());
         return jsonArray;
     }
 
 
 
-    private static JsonObject asJsonObject(final ThingInstance thingInstance) {
 
-        final JsonObject jsonobj = new JsonObject();
-
-        if (thingInstance == null) {
-            return jsonobj;
-        }
-
-
-        for (String field : thingInstance.getEntity().getFieldNames()) {
-
-            jsonobj.addProperty(field, thingInstance.getValue(field));
-        }
-
-
-        return jsonobj;
-
-
-    }
-
+    /**
+     *   Suitable for XML output as it has a name
+     */
     public static JsonObject asNamedJsonObject(final ThingInstance instance) {
 
         final JsonObject retObj = new JsonObject();
@@ -112,4 +122,5 @@ public class JsonThing {
         return retObj;
 
     }
+
 }

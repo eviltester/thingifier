@@ -195,8 +195,8 @@ public class XmlRequestResponseTest {
 
         Assert.assertEquals("test title", aTodo.getValue("title"));
 
-        //{"todo":"doneStatus":"FALSE","guid":
-        Assert.assertTrue("Should have returned json", response.getBody().startsWith("{\"todo\":{\"doneStatus\":\"FALSE\",\"guid\":"));
+        //{"doneStatus":"FALSE","guid":
+        Assert.assertTrue("Should have returned json", response.getBody().startsWith("{\"doneStatus\":\"FALSE\",\"guid\":"));
 
     }
 

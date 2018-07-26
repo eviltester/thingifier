@@ -149,8 +149,9 @@ public class JsonRequestResponseTest {
 
         Assert.assertEquals("title from json", aTodo.getValue("title"));
 
-        //{"todo":"doneStatus":"FALSE","guid":
-        Assert.assertTrue("Should have returned json", response.getBody().startsWith("{\"todo\":{\"doneStatus\":\"FALSE\",\"guid\":"));
+        // TODO: consider if this should be an array
+        //{"doneStatus":"FALSE","guid":
+        Assert.assertTrue("Should have returned json", response.getBody().startsWith("{\"doneStatus\":\"FALSE\",\"guid\":"));
 
     }
 
