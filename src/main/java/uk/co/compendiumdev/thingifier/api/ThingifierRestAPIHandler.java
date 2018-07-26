@@ -212,7 +212,7 @@ public class ThingifierRestAPIHandler {
 
         // if there is a guid in the body then use that to try and find a thing that matches it
         if (args.containsKey("guid")) {
-            String thingGUID = (String) args.get("guid");
+            String thingGUID = args.get("guid");
 
             relatedItem = thingifier.findThingInstanceByGuid(thingGUID);
             if (relatedItem == null) {
