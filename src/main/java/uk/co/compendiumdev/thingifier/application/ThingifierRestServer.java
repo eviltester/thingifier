@@ -1,5 +1,6 @@
 package uk.co.compendiumdev.thingifier.application;
 
+import spark.Request;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponseError;
 import uk.co.compendiumdev.thingifier.api.routings.ApiRoutingDefinition;
@@ -138,6 +139,13 @@ public class ThingifierRestServer {
             return apiBridge.query(request, response, request.splat()[0]);
         });
 
+        // Undocumented admin interface - this needs to be authentication controlled and toggelable from command line
+        post("/admin/data/thingifier", (request, response) -> {
+            thingifier.clearAllData();
+            response.status(200);
+            return "";
+        });
+
         // TODO : allow this to be overwritten by config
         // nothing else is supported
         head("*", (request, response) -> {
@@ -171,14 +179,22 @@ public class ThingifierRestServer {
 
         exception(RuntimeException.class, (e, request, response) -> {
             response.status(400);
-            response.body(ApiResponseError.asAppropriate(request.headers("Accept"), e.getMessage()));
+            response.body(getExceptionErrorResponse(e, request));
         });
 
         exception(Exception.class, (e, request, response) -> {
             response.status(500);
-            response.body(ApiResponseError.asAppropriate(request.headers("Accept"), e.getMessage()));
+            response.body(getExceptionErrorResponse(e, request));
         });
 
+    }
+
+    private String getExceptionErrorResponse(final Exception e, final Request request) {
+        if(e.getMessage()==null) {
+            return ApiResponseError.asAppropriate(request.headers("Accept"), e.toString());
+        }else{
+            return ApiResponseError.asAppropriate(request.headers("Accept"), e.getMessage());
+        }
     }
 
 }

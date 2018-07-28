@@ -4,9 +4,7 @@ import uk.co.compendiumdev.thingifier.generic.definitions.FieldValue;
 import uk.co.compendiumdev.thingifier.generic.definitions.ThingDefinition;
 import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 
 final public class Thing {
@@ -96,6 +94,23 @@ final public class Thing {
 
     public ThingDefinition definition() {
         return definition;
+    }
+
+    private List<String> getGuidList() {
+        List<String> guids = new ArrayList<>();
+        for(ThingInstance instance : instances.values()){
+            guids.add(instance.getGUID());
+        }
+
+        return guids;
+    }
+
+    public void deleteAllInstances() {
+        List<String> guids = getGuidList();
+
+        for(String aGuid : guids){
+            deleteInstance(aGuid);
+        }
     }
 
 

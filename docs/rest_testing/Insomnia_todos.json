@@ -1,7 +1,7 @@
 {
 	"_type": "export",
 	"__export_format": 3,
-	"__export_date": "2018-07-25T17:58:06.687Z",
+	"__export_date": "2018-07-28T11:40:23.754Z",
 	"__export_source": "insomnia.desktop.app:v5.9.6",
 	"resources": [
 		{
@@ -343,10 +343,10 @@
 		{
 			"_id": "req_632cf767db414013a81f9fb7e6eb7984",
 			"parentId": "fld_77cc560d79a0443bad4cc3093544fbb8",
-			"modified": 1532510469707,
+			"modified": 1532777968113,
 			"created": 1531677337007,
 			"url": "http://localhost:4567/admin/query/categories",
-			"name": "adhoc testing",
+			"name": "adhoc query",
 			"description": "",
 			"method": "GET",
 			"body": {
@@ -812,6 +812,35 @@
 			],
 			"authentication": {},
 			"metaSortKey": -1532510444905,
+			"settingStoreCookies": true,
+			"settingSendCookies": true,
+			"settingDisableRenderRequestBody": false,
+			"settingEncodeUrl": true,
+			"_type": "request"
+		},
+		{
+			"_id": "req_740667f503794ed781ac452fff2c5a8c",
+			"parentId": "fld_77cc560d79a0443bad4cc3093544fbb8",
+			"modified": 1532777990445,
+			"created": 1532777974521,
+			"url": "http://localhost:4567/admin/data/thingifier",
+			"name": "clear All Data",
+			"description": "",
+			"method": "POST",
+			"body": {
+				"mimeType": "application/json",
+				"text": ""
+			},
+			"parameters": [],
+			"headers": [
+				{
+					"name": "Content-Type",
+					"value": "application/json",
+					"id": "pair_787dfd26e3334b73b36c56e5f285e6e2"
+				}
+			],
+			"authentication": {},
+			"metaSortKey": -1532510444855,
 			"settingStoreCookies": true,
 			"settingSendCookies": true,
 			"settingDisableRenderRequestBody": false,

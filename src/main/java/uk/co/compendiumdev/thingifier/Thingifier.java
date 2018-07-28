@@ -129,4 +129,11 @@ final public class Thingifier {
 
         return thing;
     }
+
+    public void clearAllData() {
+        // clear all instance data
+        for (Thing aThing : things.values()) {
+            aThing.deleteAllInstances();
+        }
+    }
 }

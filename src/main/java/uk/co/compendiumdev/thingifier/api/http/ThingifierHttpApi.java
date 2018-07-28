@@ -55,6 +55,12 @@ final public class ThingifierHttpApi {
 
     private Map<String, String> bodyAsMap(final HttpApiRequest request) {
 
+        if(request.getBody().trim().isEmpty()){
+            return new HashMap();
+        }
+
+
+
         // TODO refactor this out into a class that has unit tests
         // because we are using crude XML and JSON parsing
         // <project><title>My posted todo on the project</title></project>
