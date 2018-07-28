@@ -3,17 +3,18 @@ package uk.co.compendiumdev.thingifier.generic.definitions;
 import uk.co.compendiumdev.thingifier.generic.FieldType;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 public class ThingDefinition {
     private String name;
-    private Map<String, Field> fields = new HashMap<String, Field>();
+    private Map<String, Field> fields = new ConcurrentHashMap<String, Field>();
     private String plural;
 
     private Map<String, List<RelationshipVector>> relationships;
 
     private ThingDefinition() {
-        relationships = new HashMap<String, List<RelationshipVector>>();
+        relationships = new ConcurrentHashMap<String, List<RelationshipVector>>();
     }
 
     public static ThingDefinition create(String name, String plural) {

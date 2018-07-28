@@ -11,11 +11,12 @@ import uk.co.compendiumdev.thingifier.generic.dsl.relationship.Between;
 import uk.co.compendiumdev.thingifier.reporting.ThingReporter;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 final public class Thingifier {
 
-    private Map<String, Thing> things = new HashMap<String, Thing>();
-    private Map<String, RelationshipDefinition> relationships = new HashMap<String, RelationshipDefinition>();
+    private Map<String, Thing> things = new ConcurrentHashMap<String, Thing>();
+    private Map<String, RelationshipDefinition> relationships = new ConcurrentHashMap<String, RelationshipDefinition>();
     private String title = "";
     private String initialParagraph = "";
 

@@ -5,12 +5,13 @@ import uk.co.compendiumdev.thingifier.generic.definitions.ThingDefinition;
 import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 final public class Thing {
 
     private final ThingDefinition definition;
-    private Map<String, ThingInstance> instances = new HashMap<String, ThingInstance>();
+    private Map<String, ThingInstance> instances = new ConcurrentHashMap<>();
 
     public Thing(ThingDefinition thingDefinition) {
         this.definition = thingDefinition;
