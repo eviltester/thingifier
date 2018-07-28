@@ -135,7 +135,7 @@ public class EntityInstanceApiNonHttpTest {
         String headerGUID = apiresponse.getHeaderValue(ApiResponse.GUID_HEADER);
 
         Assert.assertEquals(headerGUID, officeWorkGuid);
-        Assert.assertEquals("todo/" + officeWorkGuid, headerLocation);
+        Assert.assertEquals("todos/" + officeWorkGuid, headerLocation);
 
         // check that it is created in the model
 
@@ -175,7 +175,7 @@ public class EntityInstanceApiNonHttpTest {
         String headerGUID = apiresponse.getHeaderValue(ApiResponse.GUID_HEADER);
 
         Assert.assertEquals(headerGUID, officeWorkGuid);
-        Assert.assertEquals("todo/" + officeWorkGuid, headerLocation);
+        Assert.assertEquals("todos/" + officeWorkGuid, headerLocation);
 
         // check that it is created in the model
 

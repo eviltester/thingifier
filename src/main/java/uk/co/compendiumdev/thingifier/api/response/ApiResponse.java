@@ -109,7 +109,8 @@ public final class ApiResponse {
 
         if (thingInstance != null) {
             response.returnSingleInstance(thingInstance);
-            response.setLocationHeader(thingInstance.getEntity().getName() + "/" + thingInstance.getGUID()).
+            // TODO: configure to allow plural or single based on app routing configuration
+            response.setLocationHeader(thingInstance.getEntity().getPlural() + "/" + thingInstance.getGUID()).
                     setHeader(ApiResponse.GUID_HEADER, thingInstance.getGUID());
             response.andThisHasABody();
         }

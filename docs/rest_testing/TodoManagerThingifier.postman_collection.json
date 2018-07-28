@@ -1,0 +1,1187 @@
+{
+	"info": {
+		"_postman_id": "9e7cd8aa-f38d-4641-b498-0b56a06e7c09",
+		"name": "Todo Manager Thingifier",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"_postman_id": "492876c5-fe0a-4e79-b81b-6630bffdee25",
+			"name": "clear environment",
+			"item": [
+				{
+					"_postman_id": "64b7ca5b-36e7-48e9-9b97-5c56ea4547e4",
+					"name": "Clear Data",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {},
+						"url": {
+							"raw": "{{url}}/admin/data/thingifier",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"admin",
+								"data",
+								"thingifier"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"_postman_id": "02fa6201-8eda-481f-8760-8def84a14ba1",
+			"name": "get empty",
+			"item": [
+				{
+					"_postman_id": "2667f7d8-d4b5-4b20-8c6a-b451ef11ed4c",
+					"name": "GET no todos",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "3ea7efae-8dfc-472f-a453-84f5217d4e92",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"should be no todos\",function()",
+									" {",
+									"   var response = JSON.parse(responseBody); ",
+									"   pm.expect(response.todos.length).to.eql(0);",
+									" });",
+									" ",
+									"pm.test(\"Content-Type is present\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\");",
+									"    pm.expect(pm.response.headers.get(\"Content-Type\")).to.eql(\"application/json\");",
+									"});",
+									"",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"url": {
+							"raw": "{{url}}/todos",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"todos"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"_postman_id": "ef08ddcd-26c5-438f-b8dc-7afc0a0b58a4",
+					"name": "GET no projects",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "554f476f-ecae-400d-868c-bd44e1e85ccb",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"should be no todos\",function()",
+									" {",
+									"   var response = JSON.parse(responseBody); ",
+									"   pm.expect(response.projects.length).to.eql(0);",
+									" });",
+									" ",
+									"pm.test(\"Content-Type is present\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\");",
+									"    pm.expect(pm.response.headers.get(\"Content-Type\")).to.eql(\"application/json\");",
+									"});",
+									"",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"url": {
+							"raw": "{{url}}/projects",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"projects"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"_postman_id": "b45b23d7-0b4b-4c34-b272-6ae47f5c2368",
+					"name": "GET no categories",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "52f45bf6-6d18-4e52-886a-d96e2d6f2de4",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"should be no todos\",function()",
+									" {",
+									"   var response = JSON.parse(responseBody); ",
+									"   pm.expect(response.categories.length).to.eql(0);",
+									" });",
+									" ",
+									"pm.test(\"Content-Type is present\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\");",
+									"    pm.expect(pm.response.headers.get(\"Content-Type\")).to.eql(\"application/json\");",
+									"});",
+									"",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"url": {
+							"raw": "{{url}}/categories",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"categories"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"_postman_id": "82497382-9c4b-4c5e-a8cc-1e398e6250db",
+			"name": "todos",
+			"item": [
+				{
+					"_postman_id": "214e8778-1aa0-48b3-961a-dfd730eb7b96",
+					"name": "POST create a specific todo - guid, title",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "a2aaefeb-a16b-4337-91db-c389e0c0c2f4",
+								"type": "text/javascript",
+								"exec": [
+									"\t\t\t//\"doneStatus\": \"FALSE\",",
+									"",
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"headers are present\", function () {",
+									"    pm.response.to.have.header(\"Location\");",
+									"    pm.response.to.have.header(\"Content-Type\");",
+									"    pm.response.to.have.header(\"X-Thing-Instance-GUID\");",
+									"});",
+									"",
+									"pm.test(\"headers are present\", function () {",
+									"    pm.expect(pm.response.headers.get(\"Location\")).to.eql(\"todos/\" + ",
+									"                pm.response.headers.get(\"X-Thing-Instance-GUID\"));",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\t\t\"title\": \"a specific todo Title\"\n}"
+						},
+						"url": {
+							"raw": "{{url}}/todos",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"todos"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"_postman_id": "9a7019c6-434d-49fa-a768-5f8fa185c64f",
+					"name": "POST no create todo - need non-blank title",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "e727f92d-a2cd-4f2a-994b-a33d25ec6004",
+								"type": "text/javascript",
+								"exec": [
+									"\t\t\t//\"doneStatus\": \"FALSE\",",
+									"",
+									"pm.test(\"Status code is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"headers are present\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\");",
+									"});",
+									"",
+									"pm.test(\"expected error message\", function () {",
+									"    pm.expect(pm.response.json().errorMessages[0]).to.eql(\"title : can not be empty\");",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\t\t\"title\": \"\"\n}"
+						},
+						"url": {
+							"raw": "{{url}}/todos",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"todos"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"_postman_id": "630c8d2b-22d3-439e-b1b9-fd9d02da63c9",
+					"name": "POST no create todo - need title",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "810046b7-f713-462e-a5a4-c7fb2f955571",
+								"type": "text/javascript",
+								"exec": [
+									"\t\t\t//\"doneStatus\": \"FALSE\",",
+									"",
+									"pm.test(\"Status code is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"headers are present\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\");",
+									"});",
+									"",
+									"pm.test(\"expected error message\", function () {",
+									"    pm.expect(pm.response.json().errorMessages[0]).to.eql(\"title : field is mandatory\");",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n}"
+						},
+						"url": {
+							"raw": "{{url}}/todos",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"todos"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"_postman_id": "f1a89cf8-9fb4-4fe3-9138-8ac4d7199977",
+					"name": "POST no create todo - need body with title",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "810046b7-f713-462e-a5a4-c7fb2f955571",
+								"type": "text/javascript",
+								"exec": [
+									"\t\t\t//\"doneStatus\": \"FALSE\",",
+									"",
+									"pm.test(\"Status code is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"headers are present\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\");",
+									"});",
+									"",
+									"pm.test(\"expected error message\", function () {",
+									"    pm.expect(pm.response.json().errorMessages[0]).to.eql(\"title : field is mandatory\");",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{url}}/todos",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"todos"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"_postman_id": "aaf2ed2f-9e79-4779-a0a0-72d2f9ab5279",
+					"name": "create a specific todo - guid, title",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "8c96b7db-67fd-498e-bc28-90149b3c6b6c",
+								"type": "text/javascript",
+								"exec": [
+									"\t\t\t//\"doneStatus\": \"FALSE\",",
+									"",
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"headers are present\", function () {",
+									"    pm.response.to.have.header(\"Location\");",
+									"    pm.response.to.have.header(\"Content-Type\");",
+									"    pm.response.to.have.header(\"X-Thing-Instance-GUID\");",
+									"});",
+									"",
+									"pm.test(\"header values are present\", function () {",
+									"    pm.expect(pm.response.headers.get(\"Location\")).to.eql(\"todos/\" + \"3e788069-1d22-4aa1-a03b-5689eab2f321\");",
+									"    pm.expect(pm.response.headers.get(\"X-Thing-Instance-GUID\")).to.eql(\"3e788069-1d22-4aa1-a03b-5689eab2f321\");",
+									"});",
+									"",
+									"",
+									"pm.test(\"json values as expected\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.doneStatus).to.eql(\"FALSE\");",
+									"    pm.expect(jsonData.guid).to.eql(\"3e788069-1d22-4aa1-a03b-5689eab2f321\");",
+									"    pm.expect(jsonData.description).to.eql(\"\");",
+									"    pm.expect(jsonData.title).to.eql(\"a specific todo Title for put\");",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\t\t\"title\": \"a specific todo Title for put\"\n}"
+						},
+						"url": {
+							"raw": "{{url}}/todos/3e788069-1d22-4aa1-a03b-5689eab2f321",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"todos",
+								"3e788069-1d22-4aa1-a03b-5689eab2f321"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"_postman_id": "3e331405-031e-4111-9c8d-14da019a4112",
+					"name": "amend a specific todo",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "84177d19-f6f9-44c4-8c88-768f31b83bb2",
+								"type": "text/javascript",
+								"exec": [
+									"\t\t\t//\"doneStatus\": \"FALSE\",",
+									"",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"headers are present\", function () {",
+									"    ",
+									"    pm.response.to.have.header(\"Content-Type\");",
+									"        ",
+									"    pm.response.to.not.have.header(\"Location\");",
+									"    pm.response.to.not.have.header(\"X-Thing-Instance-GUID\");",
+									"});",
+									"",
+									"",
+									"pm.test(\"json values as expected\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.doneStatus).to.eql(\"FALSE\");",
+									"    pm.expect(jsonData.guid).to.eql(\"3e788069-1d22-4aa1-a03b-5689eab2f321\");",
+									"    pm.expect(jsonData.description).to.eql(\"\");",
+									"    pm.expect(jsonData.title).to.eql(\"a put amended specific todo Title for put\");",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\t\t\"title\": \"a put amended specific todo Title for put\"\n}"
+						},
+						"url": {
+							"raw": "{{url}}/todos/3e788069-1d22-4aa1-a03b-5689eab2f321",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"todos",
+								"3e788069-1d22-4aa1-a03b-5689eab2f321"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"_postman_id": "c0195d92-e135-4641-a247-4e4328bc44c1",
+					"name": "amend a specific todo",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "fef5e001-5c23-44aa-bfce-f5af2980a4f5",
+								"type": "text/javascript",
+								"exec": [
+									"\t\t\t//\"doneStatus\": \"FALSE\",",
+									"",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"headers are present\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\");",
+									"        ",
+									"    pm.response.to.not.have.header(\"Location\");",
+									"    pm.response.to.not.have.header(\"X-Thing-Instance-GUID\");",
+									"});",
+									"",
+									"",
+									"pm.test(\"title changed\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.title).to.eql(\"a specific todo Title Amended\");",
+									"    pm.expect(jsonData.guid).to.eql(\"3e788069-1d22-4aa1-a03b-5689eab2f321\");",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\t\t\"title\": \"a specific todo Title Amended\"\n}"
+						},
+						"url": {
+							"raw": "{{url}}/todos/3e788069-1d22-4aa1-a03b-5689eab2f321",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"todos",
+								"3e788069-1d22-4aa1-a03b-5689eab2f321"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"_postman_id": "74a5001d-e97d-4f02-971d-729f45b41780",
+					"name": "a specific todo",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "5a247952-84b5-4dae-8d8f-03790b0e004f",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"headers are present\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\");",
+									"        ",
+									"    pm.response.to.not.have.header(\"Location\");",
+									"    pm.response.to.not.have.header(\"X-Thing-Instance-GUID\");",
+									"});",
+									"",
+									"",
+									"pm.test(\"values\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.todos[0].doneStatus).to.eql(\"FALSE\");",
+									"    pm.expect(jsonData.todos[0].description).to.eql(\"\");",
+									"    pm.expect(jsonData.todos[0].title).to.eql(\"a specific todo Title Amended\");",
+									"    pm.expect(jsonData.todos[0].guid).to.eql(\"3e788069-1d22-4aa1-a03b-5689eab2f321\");",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\t\t\"title\": \"a specific todo Title Amended\"\n}"
+						},
+						"url": {
+							"raw": "{{url}}/todos/3e788069-1d22-4aa1-a03b-5689eab2f321",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"todos",
+								"3e788069-1d22-4aa1-a03b-5689eab2f321"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"_postman_id": "8fa59b44-9dee-4dff-ac07-a39cdd68b894",
+					"name": "a specific todo",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "c6dd0417-a85f-40e5-9f9c-b32c092fec7b",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"headers are present\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\");",
+									"        ",
+									"    pm.response.to.not.have.header(\"Location\");",
+									"    pm.response.to.not.have.header(\"X-Thing-Instance-GUID\");",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\t\t\"title\": \"a specific todo Title Amended\"\n}"
+						},
+						"url": {
+							"raw": "{{url}}/todos/3e788069-1d22-4aa1-a03b-5689eab2f321",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"todos",
+								"3e788069-1d22-4aa1-a03b-5689eab2f321"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"_postman_id": "d817d958-3cd1-477c-9af0-0441f3641721",
+					"name": "cannot get a missing todo",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "ca20b8a8-e75c-4c20-8057-7e2afe558bf3",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 404\", function () {",
+									"    pm.response.to.have.status(404);",
+									"});",
+									"",
+									"pm.test(\"headers are present\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\");",
+									"        ",
+									"    pm.response.to.not.have.header(\"Location\");",
+									"    pm.response.to.not.have.header(\"X-Thing-Instance-GUID\");",
+									"});",
+									"",
+									"",
+									"pm.test(\"error message exists\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.errorMessages.length).to.eql(1);",
+									"    pm.expect(jsonData.errorMessages[0]).to.eql(\"Could not find an instance with todos/3e788069-1d22-4aa1-a03b-5689eab2f321\");",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\t\t\"title\": \"a specific todo Title Amended\"\n}"
+						},
+						"url": {
+							"raw": "{{url}}/todos/3e788069-1d22-4aa1-a03b-5689eab2f321",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"todos",
+								"3e788069-1d22-4aa1-a03b-5689eab2f321"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"_postman_id": "802fd8c4-dc21-4222-ad92-f2185a2dfd8a",
+			"name": "projects",
+			"item": [
+				{
+					"_postman_id": "9bd4332c-b9c7-4cd4-8b56-7142af2cf313",
+					"name": "create a specific project",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "ae1bd3ac-6e29-4f16-b5cf-12af33924df7",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\t\t\"title\": \"a specific project\"\n}"
+						},
+						"url": {
+							"raw": "{{url}}/projects/4c656319-1e4c-4286-8c2c-dff2d6762f0d",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"projects",
+								"4c656319-1e4c-4286-8c2c-dff2d6762f0d"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"_postman_id": "7a1b1a30-e64a-4eee-9b49-25ffac44a4e1",
+			"name": "relationships",
+			"item": [
+				{
+					"_postman_id": "378a17f0-2a0f-4334-8477-5472bd8424dc",
+					"name": "create a specific todo - guid, title Copy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "2fcc6fe8-fef2-476d-b88f-0ebc1a5ba4db",
+								"type": "text/javascript",
+								"exec": [
+									"\t\t\t//\"doneStatus\": \"FALSE\",",
+									"",
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"headers are present\", function () {",
+									"    pm.response.to.have.header(\"Location\");",
+									"    pm.response.to.have.header(\"Content-Type\");",
+									"    pm.response.to.have.header(\"X-Thing-Instance-GUID\");",
+									"});",
+									"",
+									"pm.test(\"header values are present\", function () {",
+									"    pm.expect(pm.response.headers.get(\"Location\")).to.eql(\"todos/\" + \"09452402-32de-4403-8e4a-a27bc333448c\");",
+									"    pm.expect(pm.response.headers.get(\"X-Thing-Instance-GUID\")).to.eql(\"09452402-32de-4403-8e4a-a27bc333448c\");",
+									"});",
+									"",
+									"",
+									"pm.test(\"json values as expected\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.doneStatus).to.eql(\"FALSE\");",
+									"    pm.expect(jsonData.guid).to.eql(\"09452402-32de-4403-8e4a-a27bc333448c\");",
+									"    pm.expect(jsonData.description).to.eql(\"\");",
+									"    pm.expect(jsonData.title).to.eql(\"a specific todo Title for put\");",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\t\t\"title\": \"a specific todo Title for put\"\n}"
+						},
+						"url": {
+							"raw": "{{url}}/todos/09452402-32de-4403-8e4a-a27bc333448c",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"todos",
+								"09452402-32de-4403-8e4a-a27bc333448c"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"_postman_id": "d6909cee-6648-481e-8d58-95a55cc359e9",
+					"name": "create a specific project to todo relationship",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "b4bdf0c4-8760-4cba-b52d-466568171542",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\t\t\"guid\": \"09452402-32de-4403-8e4a-a27bc333448c\"\n}"
+						},
+						"url": {
+							"raw": "{{url}}/projects/4c656319-1e4c-4286-8c2c-dff2d6762f0d/tasks",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"projects",
+								"4c656319-1e4c-4286-8c2c-dff2d6762f0d",
+								"tasks"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"_postman_id": "39814d51-7280-4aca-8013-54e84472c6db",
+					"name": "specific project todos",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "972a7766-1a1f-4e4e-ae39-65405ddf51cf",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"",
+									"",
+									"",
+									"pm.test(\"found todo\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.todos.length).to.eql(1);",
+									"    pm.expect(jsonData.todos[0].guid).to.eql(\"09452402-32de-4403-8e4a-a27bc333448c\");",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\t\t\"guid\": \"09452402-32de-4403-8e4a-a27bc333448c\"\n}"
+						},
+						"url": {
+							"raw": "{{url}}/projects/4c656319-1e4c-4286-8c2c-dff2d6762f0d/tasks",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"projects",
+								"4c656319-1e4c-4286-8c2c-dff2d6762f0d",
+								"tasks"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"_postman_id": "abf5a62c-bfb1-4f1d-bbb3-3f357b95e8fc",
+					"name": "specific project todos relationship",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "931081a2-8131-41c3-90cc-b96f02d7525f",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\t\t\"guid\": \"09452402-32de-4403-8e4a-a27bc333448c\"\n}"
+						},
+						"url": {
+							"raw": "{{url}}/projects/4c656319-1e4c-4286-8c2c-dff2d6762f0d/tasks/09452402-32de-4403-8e4a-a27bc333448c",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"projects",
+								"4c656319-1e4c-4286-8c2c-dff2d6762f0d",
+								"tasks",
+								"09452402-32de-4403-8e4a-a27bc333448c"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"_postman_id": "db03320c-fe31-4591-9ba4-5276596b2f58",
+					"name": "specific project todos is empty",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "f28a37a0-2a73-4f02-a2f1-632d1a5fafce",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"found todo\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.todos.length).to.eql(0);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\t\t\"guid\": \"09452402-32de-4403-8e4a-a27bc333448c\"\n}"
+						},
+						"url": {
+							"raw": "{{url}}/projects/4c656319-1e4c-4286-8c2c-dff2d6762f0d/tasks",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"projects",
+								"4c656319-1e4c-4286-8c2c-dff2d6762f0d",
+								"tasks"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"_postman_id": "ae4190a5-4e64-4490-af50-8982cd47f887",
+					"name": "cannot specific project todos relationship",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "d6e09c39-4b69-4413-bd7f-1123f7075e40",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 404\", function () {",
+									"    pm.response.to.have.status(404);",
+									"});",
+									"",
+									"",
+									"pm.test(\"error message\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.errorMessages.length).to.eql(1);",
+									"    pm.expect(jsonData.errorMessages[0]).to.eql(",
+									"    \"Could not find any instances with projects/4c656319-1e4c-4286-8c2c-dff2d6762f0d/tasks/09452402-32de-4403-8e4a-a27bc333448c\");",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\t\t\"guid\": \"09452402-32de-4403-8e4a-a27bc333448c\"\n}"
+						},
+						"url": {
+							"raw": "{{url}}/projects/4c656319-1e4c-4286-8c2c-dff2d6762f0d/tasks/09452402-32de-4403-8e4a-a27bc333448c",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"projects",
+								"4c656319-1e4c-4286-8c2c-dff2d6762f0d",
+								"tasks",
+								"09452402-32de-4403-8e4a-a27bc333448c"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"_postman_id": "04e17576-4e89-4987-a1a5-e801a3404a66",
+			"name": "Setup",
+			"item": [
+				{
+					"_postman_id": "3fd92879-d7cf-4582-9210-8778d7e677ab",
+					"name": "Clear Data Copy",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {},
+						"url": {
+							"raw": "{{url}}/admin/data/thingifier",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"admin",
+								"data",
+								"thingifier"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"_postman_id": "77bda96f-ca3c-4c6b-94f8-a1172ca7a8ab",
+					"name": "Create 100 Todos",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "0dec1329-e0da-4152-beee-c965ddc45002",
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"// create 100 todos",
+									"for (var i = 0; i < 100; i++) {",
+									"    var title = \"a Title \"  + i;",
+									"    pm.sendRequest({",
+									"        url: pm.variables.get(\"url\")+\"/todos\",",
+									"        method: \"POST\",",
+									"        body: \"{'title': '\" + title + \"' }\"",
+									"    });",
+									"}",
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "83175a9e-8ceb-4ab0-8747-c312f1ed4194",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Verify the number of records\",function()",
+									" {",
+									"   var response = JSON.parse(responseBody); ",
+									"   pm.expect(response.todos.length).to.eql(100);",
+									" });"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"title\":\"a title {{$guid}}\"}"
+						},
+						"url": {
+							"raw": "{{url}}/todos",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"todos"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
