@@ -154,4 +154,6 @@ public class ThingDefinition {
         }
         return myRelationships;
     }
+
+
 }

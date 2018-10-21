@@ -2,10 +2,13 @@ package uk.co.compendiumdev.thingifier.generic.definitions;
 
 import uk.co.compendiumdev.thingifier.Thing;
 
+import static uk.co.compendiumdev.thingifier.generic.definitions.Optionality.*;
+
 public class RelationshipVector {
 
     private final String name;
     private final Cardinality cardinality;
+    private Optionality optionality;
     private Thing from;
     private Thing to;
     private RelationshipDefinition parentRelationship;
@@ -13,6 +16,7 @@ public class RelationshipVector {
     public RelationshipVector(String relationShipName, Cardinality cardinality) {
         this.name = relationShipName;
         this.cardinality = cardinality;
+        this.optionality = OPTIONAL_RELATIONSHIP;
     }
 
     public String getName() {
@@ -39,5 +43,13 @@ public class RelationshipVector {
 
     public RelationshipDefinition getRelationshipDefinition() {
         return parentRelationship;
+    }
+
+    public void setOptionality(final Optionality aGivenOptionality) {
+        this.optionality = aGivenOptionality;
+    }
+
+    public Optionality getOptionality() {
+        return optionality;
     }
 }

@@ -4,8 +4,10 @@
 
   <groupId>uk.co.compendiumdev</groupId>
   <artifactId>thingifier</artifactId>
- <!--<version>1-5-SNAPSHOT</version>-->
- <version>1-4</version>
+
+    <!-- 1.5 working on optionality of relationships -->
+ <version>1-5-SNAPSHOT</version>
+ <!--<version>1-4</version>-->
   <packaging>jar</packaging>
 
   <name>thingifier</name>

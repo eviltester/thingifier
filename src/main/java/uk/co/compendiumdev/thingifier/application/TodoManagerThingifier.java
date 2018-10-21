@@ -3,6 +3,7 @@ package uk.co.compendiumdev.thingifier.application;
 import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.generic.FieldType;
+import uk.co.compendiumdev.thingifier.generic.definitions.RelationshipDefinition;
 import uk.co.compendiumdev.thingifier.generic.definitions.validation.VRule;
 import uk.co.compendiumdev.thingifier.generic.definitions.Field;
 import uk.co.compendiumdev.thingifier.generic.dsl.relationship.AndCall;
@@ -10,10 +11,14 @@ import uk.co.compendiumdev.thingifier.generic.dsl.relationship.Between;
 import uk.co.compendiumdev.thingifier.generic.dsl.relationship.WithCardinality;
 import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
 
+import static uk.co.compendiumdev.thingifier.generic.FieldType.INTEGER;
 import static uk.co.compendiumdev.thingifier.generic.FieldType.STRING;
 
 public class TodoManagerThingifier {
 
+    /*
+            REMEMBER - THIS IS THE PRODUCTION DEFINITION
+     */
     public Thingifier get() {
 
         // this is basically an Entity Relationship diagram as source
@@ -104,11 +109,6 @@ public class TodoManagerThingifier {
         todoManager.defineRelationship(Between.things(category, todo), AndCall.it("todos"), WithCardinality.of("1", "*"));
         todoManager.defineRelationship(Between.things(category, project), AndCall.it("projects"), WithCardinality.of("1", "*"));
         todoManager.defineRelationship(Between.things(todo, category), AndCall.it("categories"), WithCardinality.of("1", "*"));
-
-        // TODO create mandatory relationshisp = at the moment all entities can exist without relationship
-        // e.g. create an estimate for a todo - the estimate must have a todo
-
-
 
         // Some hard coded test data for experimenting with
         // TODO: allow importing from a JSON to create data in bulk

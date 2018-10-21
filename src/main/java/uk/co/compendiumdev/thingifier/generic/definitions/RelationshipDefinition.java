@@ -13,7 +13,6 @@ public class RelationshipDefinition {
     private final String name;
     private final Thing from;
     private final Thing to;
-    private final Cardinality cardinality;
     private RelationshipVector fromTo;
     private RelationshipVector toFrom;
 
@@ -24,7 +23,6 @@ public class RelationshipDefinition {
         fromTo = fromVector;
         fromVector.addFromAndToFor(from, to, this);
         this.name = fromVector.getName();
-        this.cardinality = fromVector.getCardinality();
     }
 
     public static RelationshipDefinition create(Thing from, Thing to, RelationshipVector fromVector) {
@@ -103,5 +101,18 @@ public class RelationshipDefinition {
 
     public RelationshipVector getFromRelationship() {
         return fromTo;
+    }
+
+
+    // TODO - add during creation, not afterwards
+    public RelationshipDefinition hasOptionality(final String fromOptionality, final String toOptionality) {
+        // from optionality is from to e.g. from must have to "M", or from can have to "O"
+
+        fromTo.setOptionality( fromOptionality.equalsIgnoreCase("M") ? Optionality.MANDATORY_RELATIONSHIP : Optionality.OPTIONAL_RELATIONSHIP);
+        if(toFrom!=null) {
+            toFrom.setOptionality(toOptionality.equalsIgnoreCase("M") ? Optionality.MANDATORY_RELATIONSHIP : Optionality.OPTIONAL_RELATIONSHIP);
+        }
+
+        return this;
     }
 }

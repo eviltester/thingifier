@@ -15,8 +15,9 @@ public class ValidationReport {
         errorMessages = new ArrayList<>();
     }
 
-    public void setValid(boolean validity) {
+    public ValidationReport setValid(boolean validity) {
         this.validity = validity;
+        return this;
     }
 
     public void combine(ValidationReport report) {
@@ -35,7 +36,8 @@ public class ValidationReport {
         return validity;
     }
 
-    public void addErrorMessage(String errorMessage) {
+    public ValidationReport addErrorMessage(String errorMessage) {
         errorMessages.add(errorMessage);
+        return this;
     }
 }

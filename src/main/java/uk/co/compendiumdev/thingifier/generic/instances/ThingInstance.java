@@ -2,6 +2,7 @@ package uk.co.compendiumdev.thingifier.generic.instances;
 
 import uk.co.compendiumdev.thingifier.api.ValidationReport;
 import uk.co.compendiumdev.thingifier.generic.definitions.Field;
+import uk.co.compendiumdev.thingifier.generic.definitions.Optionality;
 import uk.co.compendiumdev.thingifier.generic.definitions.RelationshipVector;
 import uk.co.compendiumdev.thingifier.generic.definitions.ThingDefinition;
 
@@ -282,10 +283,33 @@ final public class ThingInstance {
         ValidationReport report = new ValidationReport();
 
 
+        // Field validation
+
         for (String fieldName : entityDefinition.getFieldNames()) {
             Field field = entityDefinition.getField(fieldName);
             ValidationReport validity = field.validate(instance.getValue(fieldName));
             report.combine(validity);
+        }
+
+        // Relationship Validation
+        final Collection<RelationshipVector> theRelationshipVectors = entityDefinition.getRelationships();
+        for(RelationshipVector vector : theRelationshipVectors){
+            // for each definition, does it have relationships that match
+            if(vector.getOptionality() == Optionality.MANDATORY_RELATIONSHIP){
+                boolean foundRelationship = false;
+                for(RelationshipInstance relationship : relationships){
+                    if(relationship.getRelationship()==vector.getRelationshipDefinition()){
+                        foundRelationship=true;
+                    }
+                }
+                if(!foundRelationship){
+                    report.combine(
+                        new ValidationReport().
+                            setValid(false).
+                            addErrorMessage(String.format("Mandatory Relationship not found %s", vector.getName()))
+                    );
+                }
+            }
         }
 
         return report;

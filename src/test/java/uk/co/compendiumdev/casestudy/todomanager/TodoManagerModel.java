@@ -4,11 +4,13 @@ import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.generic.FieldType;
 import uk.co.compendiumdev.thingifier.generic.definitions.Field;
+import uk.co.compendiumdev.thingifier.generic.definitions.RelationshipDefinition;
 import uk.co.compendiumdev.thingifier.generic.definitions.validation.VRule;
 import uk.co.compendiumdev.thingifier.generic.dsl.relationship.AndCall;
 import uk.co.compendiumdev.thingifier.generic.dsl.relationship.Between;
 import uk.co.compendiumdev.thingifier.generic.dsl.relationship.WithCardinality;
 
+import static uk.co.compendiumdev.thingifier.generic.FieldType.INTEGER;
 import static uk.co.compendiumdev.thingifier.generic.FieldType.STRING;
 
 public class TodoManagerModel {
@@ -143,7 +145,29 @@ could implement a Thingifier URL query matcher to return instances based on quer
         todoManager.defineRelationship(Between.things(category, todo), AndCall.it("todos"), WithCardinality.of("1", "*"));
         todoManager.defineRelationship(Between.things(category, project), AndCall.it("projects"), WithCardinality.of("1", "*"));
         todoManager.defineRelationship(Between.things(todo, category), AndCall.it("categories"), WithCardinality.of("1", "*"));
-        
+
+
+        // TODO create mandatory relationships = at the moment all entities can exist without relationship
+        // e.g. create an estimate for a todo - the estimate must have a todo
+
+        Thing estimate = todoManager.createThing("estimate", "estimates");
+        estimate.definition()
+                .addFields(
+                        Field.is("duration", INTEGER).
+                                mandatory().
+                                withValidation(VRule.notEmpty()),
+                        Field.is("description", STRING));
+
+        // a todo can only have one estimate, and an estimate is for one todo
+        final RelationshipDefinition estimated = todoManager.defineRelationship(
+                Between.things(estimate, todo),
+                AndCall.it("estimate"),
+                WithCardinality.of("1", "1"));
+        // an estimate must have a todo, a todo does not need to have an estimate
+        estimated.hasOptionality("M", "O");
+
+        // TODO there is a special case of Mandatory : Mandatory which we need to be able to 'create' entities at same time as relationships
+
         return todoManager;
     }
 }

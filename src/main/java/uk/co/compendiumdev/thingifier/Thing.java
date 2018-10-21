@@ -114,5 +114,4 @@ final public class Thing {
         }
     }
 
-
 }
