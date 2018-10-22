@@ -7,13 +7,11 @@ final public class HttpApiRequest {
 
     private final String path;
     private Map<String, String> headers;
-    private boolean hasBody;
     private String body;
 
     public HttpApiRequest(final String pathInfo) {
         this.path = justThePath(pathInfo);
         this.headers = new HashMap<>();
-        hasBody = false;
         body = "";
     }
 
@@ -38,7 +36,6 @@ final public class HttpApiRequest {
     }
 
     public HttpApiRequest setBody(final String theBody) {
-        this.hasBody = true;
         this.body = theBody;
         return this;
     }
