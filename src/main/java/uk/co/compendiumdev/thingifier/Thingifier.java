@@ -152,4 +152,10 @@ final public class Thingifier {
             deleteThing(deleteMe);
         }
     }
+
+    public List<String> getThingNames() {
+        List<String> names = new ArrayList();
+        names.addAll(things.keySet());
+        return names;
+    }
 }

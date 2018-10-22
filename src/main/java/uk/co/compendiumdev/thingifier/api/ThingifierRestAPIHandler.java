@@ -2,6 +2,7 @@ package uk.co.compendiumdev.thingifier.api;
 
 import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.generic.definitions.FieldValue;
 import uk.co.compendiumdev.thingifier.generic.definitions.RelationshipVector;
@@ -88,7 +89,7 @@ public class ThingifierRestAPIHandler {
 
 
 
-    public ApiResponse post(final String url, final Map<String, String> args) {
+    public ApiResponse post(final String url, final BodyParser args) {
 
         // we want to
 
@@ -100,7 +101,7 @@ public class ThingifierRestAPIHandler {
         Thing thing = thingifier.getThingNamedSingularOrPlural(url);
         if (thing != null) {
             // create a new thing does not enforce relationships
-            final ApiResponse response = createANewThingWith(args, thing);
+            final ApiResponse response = createANewThingWith(args.getStringMap(), thing);
             if(response.isErrorResponse()){
                 return response;
             }
@@ -142,7 +143,7 @@ public class ThingifierRestAPIHandler {
                 return ApiResponse.error404(String.format("No such %s entity instance with GUID %s found", thing.definition().getName(), instanceGuid));
             }
 
-            return amendAThingWithPost(args, instance);
+            return amendAThingWithPost(args.getStringMap(), instance);
         }
 
 
@@ -152,7 +153,7 @@ public class ThingifierRestAPIHandler {
         // get the things to post to
         SimpleQuery query = new SimpleQuery(thingifier, url).performQuery();
         if (query.lastMatchWasRelationship()) {
-            return createRelationship(url, args, query);
+            return createRelationship(url, args.getStringMap(), query);
         }
 
 
@@ -161,7 +162,7 @@ public class ThingifierRestAPIHandler {
 
     }
 
-    public ApiResponse put(final String url, final Map<String, String> args) {
+    public ApiResponse put(final String url, final BodyParser args) {
 
 
         // if queryis empty then need a way to check if the query matched
@@ -194,13 +195,13 @@ public class ThingifierRestAPIHandler {
             if (instance == null) {
                 // it does not exist, but we have a GUID - create it
 
-                return createANewThingWithGuid(instanceGuid, args, thing);
+                return createANewThingWithGuid(instanceGuid, args.getStringMap(), thing);
 
 
             } else {
                 // when amending existing thing with PUT it must be idempotent so
                 // check that all fields are valid in the args
-                return amendAThingWithPut(args, instance);
+                return amendAThingWithPut(args.getStringMap(), instance);
 
             }
         }
