@@ -296,9 +296,12 @@ public class RelationshipHttpTest {
      * can not create an estimate without a todo
      * can create an estimate when added to a todo directly because relationship is created
      * when delete a todo the estimate is also deleted
-     * TODO: amend relationship to move estimate to another TODO
      * GET estimates for a todo
      * GET todos for an estimate
+     * TODO: amend relationship to move estimate to another todo (implement with relationships as fields in the object e.g. "todos" : [{"guid": "xxx-xxx-xxx-xxx"}])
+     * TODO: cardinality validation on relationship fields e.g. max of 2 etc.
+     * TODO: create 'proposed objects' and validate those rather than create and delete (will support amend validation as well)
+
      */
 
     // can not create an estimate on its own, without a todo

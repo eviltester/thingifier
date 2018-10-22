@@ -81,6 +81,13 @@ could implement a Thingifier URL query matcher to return instances based on quer
 
  */
 
+    // TODO: validate model
+    // TODO: do not allow fields to have same names are relationships
+    // TODO: more types of fields SET(predefined set of values), NUMBER (floating point)
+    // TODO: transformations for fields e.g. allow Number to Integer (or validate against this)
+    // TODO: transformations for SET (match case, or any case)
+    // TODO: validation for dates - specific date formats
+
     public static Thingifier definedAsThingifier() {
         Thingifier todoManager = new Thingifier();
 
