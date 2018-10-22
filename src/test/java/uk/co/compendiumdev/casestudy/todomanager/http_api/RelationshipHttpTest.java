@@ -13,7 +13,6 @@ import uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
 
-import java.util.UUID;
 
 public class RelationshipHttpTest {
 
@@ -291,14 +290,161 @@ public class RelationshipHttpTest {
         Assert.assertEquals(1, categories.countInstances());
     }
 
-    private class ErrorMessages{
+    /**
+     * Optional Relationships - Mandatory
+     *
+     * can not create an estimate without a todo
+     * can create an estimate when added to a todo directly because relationship is created
+     * when delete a todo the estimate is also deleted
+     * TODO: amend relationship to move estimate to another TODO
+     * GET estimates for a todo
+     * GET todos for an estimate
+     */
 
-        String[] errorMessages;
+    // can not create an estimate on its own, without a todo
+    @Test
+    public void canNotCreateEstimateWithoutMandatoryRelationship(){
+
+
+        HttpApiRequest request = new HttpApiRequest("estimate");
+        request.getHeaders().putAll(HeadersSupport.acceptJson());
+
+        String body = "{\"duration\":\"3\"}";
+        request.setBody(body);
+
+        final HttpApiResponse response = new ThingifierHttpApi(todoManager).post(request);
+        Assert.assertEquals(400, response.getStatusCode());
+
+        Assert.assertEquals(0, todoManager.getThingNamed("estimate").countInstances());
     }
 
-    private class Todo{
+    @Test
+    public void canCreateAnEstimateForTodoMandatoryRelationship(){
+
+        final ThingInstance atodo = todo.createInstance().setValue("title", "a TODO for estimating");
+        todo.addInstance(atodo);
+
+
+        HttpApiRequest request = new HttpApiRequest("todos/" + atodo.getGUID() + "/estimates" );
+        request.getHeaders().putAll(HeadersSupport.acceptJson());
+
+        String body = "{\"duration\":\"3\"}";
+        request.setBody(body);
+
+        final HttpApiResponse response = new ThingifierHttpApi(todoManager).post(request);
+        Assert.assertEquals(201, response.getStatusCode());
+
+        Assert.assertEquals(1, todoManager.getThingNamed("estimate").countInstances());
+        Assert.assertEquals(1, atodo.connectedItems("estimates").size());
+
+    }
+
+
+    @Test
+    public void canDeleteAnEstimateWhenTodoDeletedBecauseOfMandatoryRelationship(){
+
+
+
+        final ThingInstance atodo = todo.createInstance().setValue("title", "a TODO for estimating");
+        todo.addInstance(atodo);
+
+        final Thing estimates = todoManager.getThingNamed("estimate");
+        final ThingInstance anEstimate = estimates.createInstance().setValue("duration", "7");
+        estimates.addInstance(anEstimate);
+
+        anEstimate.connects("estimate", atodo);
+
+        Assert.assertEquals(1, atodo.connectedItems("estimates").size());
+        Assert.assertEquals(1, estimates.countInstances());
+        Assert.assertEquals(1, todo.countInstances());
+
+
+        final HttpApiRequest request = new HttpApiRequest("todos/" + atodo.getGUID());
+
+        HttpApiResponse response = new ThingifierHttpApi(todoManager).delete(request);
+        Assert.assertEquals(200, response.getStatusCode());
+
+
+        Assert.assertEquals(0, todo.countInstances());
+        Assert.assertEquals(0, estimates.countInstances());
+
+    }
+
+    @Test
+    public void canGetEstimatesViaRelationship(){
+
+
+
+        final ThingInstance atodo = todo.createInstance().setValue("title", "a TODO for estimating");
+        todo.addInstance(atodo);
+
+        final Thing estimates = todoManager.getThingNamed("estimate");
+        final ThingInstance anEstimate = estimates.createInstance().setValue("duration", "7").setValue("description", "an estimate");
+        estimates.addInstance(anEstimate);
+
+        anEstimate.connects("estimate", atodo);
+
+        Assert.assertEquals(1, atodo.connectedItems("estimates").size());
+        Assert.assertEquals(1, estimates.countInstances());
+        Assert.assertEquals(1, todo.countInstances());
+
+
+        HttpApiRequest request = new HttpApiRequest("todos/" + atodo.getGUID() + "/estimates");
+
+        HttpApiResponse response = new ThingifierHttpApi(todoManager).get(request);
+        Assert.assertEquals(200, response.getStatusCode());
+
+        System.out.println(response.getBody());
+
+        final EstimateCollectionResponse estimatesfound = new Gson().fromJson(response.getBody(), EstimateCollectionResponse.class);
+
+        Assert.assertEquals(1, estimatesfound.estimates.length);
+        Assert.assertEquals("7", estimatesfound.estimates[0].duration);
+        Assert.assertEquals("an estimate", estimatesfound.estimates[0].description);
+
+
+        request = new HttpApiRequest("estimates/" + anEstimate.getGUID() + "/estimate");
+
+        response = new ThingifierHttpApi(todoManager).get(request);
+        Assert.assertEquals(200, response.getStatusCode());
+
+        System.out.println(response.getBody());
+
+        final TodoCollectionResponse todosfound = new Gson().fromJson(response.getBody(), TodoCollectionResponse.class);
+
+        Assert.assertEquals(1, todosfound.todos.length);
+        Assert.assertEquals("a TODO for estimating", todosfound.todos[0].title);
+
+
+    }
+
+
+    private class TodoCollectionResponse {
+
+        Todo[] todos;
+
+    }
+
+    private class EstimateCollectionResponse {
+
+        Estimate[] estimates;
+
+    }
+
+    private class Estimate {
+
+        String duration;
+        String description;
+    }
+
+    private class Todo {
 
         String guid;
         String title;
+    }
+
+    private class ErrorMessages {
+
+        String[] errorMessages;
     }
 }
