@@ -189,4 +189,9 @@ public final class ApiResponse {
     public boolean hasABody() {
         return this.hasBody;
     }
+
+    public ApiResponse addToErrorMessages(final String message) {
+        errorMessages.add(message);
+        return this;
+    }
 }

@@ -70,7 +70,14 @@ final public class Thing {
     }
 
 
-    public Thing deleteInstance(String guid) {
+    /**
+     * This deletes the instance but does not delete any mandatorily related items, these need to be handled by
+     * another class using the returned list of alsoDelete, otherwise the model will be invalid
+     *
+     * @param guid
+     * @return
+     */
+    public List<ThingInstance> deleteInstance(String guid) {
 
         if (!instances.containsKey(guid)) {
             throw new IndexOutOfBoundsException(
@@ -82,9 +89,10 @@ final public class Thing {
 
         instances.remove(guid);
 
-        item.removeAllRelationships();
+        final List<ThingInstance> alsoDelete = item.removeAllRelationships();
 
-        return this;
+
+        return alsoDelete;
     }
 
     /*
@@ -106,12 +114,5 @@ final public class Thing {
         return guids;
     }
 
-    public void deleteAllInstances() {
-        List<String> guids = getGuidList();
-
-        for(String aGuid : guids){
-            deleteInstance(aGuid);
-        }
-    }
 
 }

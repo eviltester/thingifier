@@ -33,8 +33,9 @@ public class RelationshipDefinition {
         return defn;
     }
 
-    public void whenReversed(Cardinality of, AndCall it) {
+    public RelationshipDefinition whenReversed(Cardinality of, AndCall it) {
         withReverse(new RelationshipVector(it.isCalled(), of));
+        return this;
     }
 
     public RelationshipDefinition withReverse(RelationshipVector toVector) {
@@ -114,5 +115,13 @@ public class RelationshipDefinition {
         }
 
         return this;
+    }
+
+    public Optionality getOptionalityTo() {
+        return toFrom.getOptionality();
+    }
+
+    public Optionality getOptionalityFrom() {
+        return fromTo.getOptionality();
     }
 }

@@ -79,7 +79,7 @@ public class ThingifierRestAPIHandler {
                 return ApiResponse.error404(String.format("Could not find any instances with %s", url));
             }
             for (ThingInstance instance : items) {
-                thingifier.getThingNamed(instance.getEntity().getName()).deleteInstance(instance.getGUID());
+                thingifier.deleteThing(instance);
             }
 
         }
@@ -99,7 +99,19 @@ public class ThingifierRestAPIHandler {
         // create a thing
         Thing thing = thingifier.getThingNamedSingularOrPlural(url);
         if (thing != null) {
-            return createANewThingWith(args, thing);
+            // create a new thing does not enforce relationships
+            final ApiResponse response = createANewThingWith(args, thing);
+            if(response.isErrorResponse()){
+                return response;
+            }
+
+            ValidationReport validity = response.getReturnedInstance().validate();
+            if(validity.isValid()){
+                return response;
+            }else{
+                thingifier.deleteThing(response.getReturnedInstance());
+                return ApiResponse.error(400, validity.getErrorMessages()).addToErrorMessages("No new item created");
+            }
         }
 
 
@@ -231,20 +243,23 @@ public class ThingifierRestAPIHandler {
         ThingInstance returnThing = null;
 
         RelationshipVector relationshipToUse;
+        Thing thingToCreate = null;
+        ApiResponse response = null;
 
-        // if we have a parent thing, but no GUID then can we create a Thing and connect it?
+        // if we have a parent thing, but no GUID then can we create a Thing and connect it later?
         if (relatedItem == null) {
             List<RelationshipVector> possibleRelationships = connectThis.getEntity().getRelationships(relationshipName);
             // if no way to narrow it down then use the first one TODO: potential bug if multiple named relationshps
             relationshipToUse = possibleRelationships.get(0);
             ThingDefinition createThing = relationshipToUse.getTo().definition();
 
-            Thing thingToCreate = thingifier.getThingNamed(createThing.getName());
+            thingToCreate = thingifier.getThingNamed(createThing.getName());
 
-            final ApiResponse response = createANewThingWith(args, thingToCreate);
+            response = createANewThingWith(args, thingToCreate);
             if(response.isErrorResponse()){
                 return response;
             }else{
+                // Created it, so relate it later
                 relatedItem = response.getReturnedInstance();
                 returnThing = relatedItem;
             }
@@ -259,24 +274,43 @@ public class ThingifierRestAPIHandler {
         try {
 
             if(relationshipToUse==null){
-                return ApiResponse.error(400, String.format("Could not find a relationship named %s between %s and a %s",
+                response = ApiResponse.error(400, String.format("Could not find a relationship named %s between %s and a %s",
                         relationshipName,
                         connectThis.getEntity().getName(),
                         relatedItem.getEntity().getName()));
 
-            }
-            if(relationshipToUse.getTo().definition() != relatedItem.getEntity()){
-                return ApiResponse.error(400, String.format("Could not connect %s (%s) to %s (%s) via relationship %s because it is a %s instead of a %s",
-                        connectThis.getGUID(), connectThis.getEntity().getName(),
-                        relatedItem.getGUID(), relatedItem.getEntity().getName(),
-                        relationshipToUse.getName(),
-                        relatedItem.getEntity().getName(),
-                        relationshipToUse.getTo().definition().getName()
-                        ));
+            }else {
+                if (relationshipToUse.getTo().definition() != relatedItem.getEntity()) {
+                    response = ApiResponse.error(400, String.format("Could not connect %s (%s) to %s (%s) via relationship %s because it is a %s instead of a %s",
+                            connectThis.getGUID(), connectThis.getEntity().getName(),
+                            relatedItem.getGUID(), relatedItem.getEntity().getName(),
+                            relationshipToUse.getName(),
+                            relatedItem.getEntity().getName(),
+                            relationshipToUse.getTo().definition().getName()
+                    ));
+                }
             }
 
-            // TODO: enforce cardinality on relationship
+            if(response != null && response.isErrorResponse()){
+                if(thingToCreate != null){
+                    // we had an error so delete the created thing
+                    thingifier.deleteThing(relatedItem);
+                    response.addToErrorMessages(" the newly created item was deleted. No new items have been created.");
+
+                }
+                // we already have an error so return now
+                return response;
+            }
+
             connectThis.connects(relationshipToUse.getName(), relatedItem);
+
+            // enforce cardinality on relationship
+            ValidationReport validNow = relatedItem.validate();
+            if(!validNow.isValid()){
+                response = ApiResponse.error(400, validNow.getErrorMessages());
+                thingifier.deleteThing(relatedItem);
+                return response;
+            }
 
         } catch (Exception e) {
             return ApiResponse.error(400, String.format("Could not connect %s (%s) to %s (%s) via relationship %s",
@@ -356,6 +390,14 @@ public class ThingifierRestAPIHandler {
         return addNewThingWithFields(args, thing.createInstance(), thing);
     }
 
+    /**
+     * Because we are creating a new thing we can only validate fields and not the relationships
+     *
+     * @param args
+     * @param instance
+     * @param thing
+     * @return
+     */
     private ApiResponse addNewThingWithFields(final Map<String, String> args, final ThingInstance instance, final Thing thing) {
 
         try {
@@ -364,7 +406,7 @@ public class ThingifierRestAPIHandler {
             return ApiResponse.error(400, e.getMessage());
         }
 
-        ValidationReport validation = instance.validate();
+        ValidationReport validation = instance.validateFields();
 
         if (validation.isValid()) {
             thing.addInstance(instance);

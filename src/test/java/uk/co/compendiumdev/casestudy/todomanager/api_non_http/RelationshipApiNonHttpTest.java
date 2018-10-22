@@ -19,13 +19,6 @@ public class RelationshipApiNonHttpTest {
 
     private Thingifier todoManager;
 
-    /* TODO: NEXT ACTION
-    to support delete I completely amended the relationship handling to have a Definition, then Vectors which describe
-    the direction then instances and although all the automated assertions pass, I'm pretty sure this now has bugs and
-    a lot of redundant code. Hit the code at a lower level to test and refactor
-     */
-
-
 
 
     Thing todo;
@@ -43,6 +36,25 @@ public class RelationshipApiNonHttpTest {
     }
 
 
+        /*
+        Get todo
+        Amend todo POST  /todo/guid
+                        {"guid":"ab32fc3f-5dfe-4217-ac54-98ff66d66239"}
+        Fail amend due to missing mandatory field
+        Fail amend due to failed validation field
+
+        404 Amend todo that does not exist
+        404 amend(POST)/GET entity type does not exist e.g. bob
+            - receives a generic 404 with no error message
+            // TODO: investigate top level 404 handling - can we have 404 handling for "no such entity" to allow an error message in the 404
+
+        DELETE todo
+
+        GET Todos for a project http://localhost:4567/project/d719b9a2-c74f-4ca3-a4ca-a3fffc74cf65/tasks
+        Create Todo for a project
+        Fail to create todo for project - field validation
+
+     */
 
 
     @Test
@@ -154,6 +166,8 @@ public class RelationshipApiNonHttpTest {
         System.out.println(todoManager);
 
     }
+
+
 
 
     @Test
@@ -528,26 +542,106 @@ public class RelationshipApiNonHttpTest {
     }
 
 
+    // TODO rest api needs to enforce optionality of relationships during creation of entities
+    // at REST API level
+    // DONE: create todo/estimates should create the item and the relationships so should validate
+    // DONE: create /estimate should fail because there is no relationship
+    // TODO: currently no way to amend a relationship and move something to something else this would have to be a PUT
+    //     - but we currently have no way to amend relationships in the body of a message
+    // TODO: currently no way to create an entity with multiple relationships
+    //     - need to have a way to define relationships in the body of the message
+    // TODO: add http tests for optional relationships
+
+
+    @Test
+    public void postCanCreateAMandatoryRelationshipFromEstimateAndTodoAtSameTimeUsingAPI() {
 
 
 
-    /*
-        Get todo
-        Amend todo POST  /todo/guid
-                        {"guid":"ab32fc3f-5dfe-4217-ac54-98ff66d66239"}
-        Fail amend due to missing mandatory field
-        Fail amend due to failed validation field
+        ThingInstance myTodo = todo.createInstance().setValue("title", "an estimated todo");
+        todo.addInstance(myTodo);
 
-        404 Amend todo that does not exist
-        404 amend(POST)/GET entity type does not exist e.g. bob
-            - receives a generic 404 with no error message
-            // TODO: investigate top level 404 handling - can we have 404 handling for "no such entity" to allow an error message in the 404
+        final Thing estimates = todoManager.getThingNamed("estimate");
+        int numberOfEstimates = estimates.countInstances();
+        Assert.assertEquals(0, numberOfEstimates );
 
-        DELETE todo
 
-        GET Todos for a project http://localhost:4567/project/d719b9a2-c74f-4ca3-a4ca-a3fffc74cf65/tasks
-        Create Todo for a project
-        Fail to create todo for project - field validation
 
-     */
+        // Createa a relationship and a thing with a POST and no GUID
+        // POST todos/_GUID_/estimates
+        // {"duration":"3", "description", "a test estimate xxxxxxxx"}
+        HashMap<String, String> requestBody = new HashMap<String, String>();
+        String expectedDescription = "a test estimate " + System.currentTimeMillis();
+
+        requestBody.put("description", expectedDescription);
+        requestBody.put("duration", "3");
+
+        ApiResponse apiresponse = todoManager.api().post(String.format("todo/%s/estimates", myTodo.getGUID()), requestBody);
+        Assert.assertEquals(201, apiresponse.getStatusCode());
+        String locationGuid = apiresponse.getHeaderValue(ApiResponse.GUID_HEADER);
+        Assert.assertTrue(apiresponse.getErrorMessages().size()==0);
+
+        Assert.assertTrue("Expected location header to contain the same GUID as the X- GUID header",
+                apiresponse.getHeaderValue("Location").contains(locationGuid));
+
+        Assert.assertEquals("Expected number of estimates in project to increase by 1",
+                numberOfEstimates + 1, estimates.countInstances());
+
+        Assert.assertTrue(apiresponse.hasABody());
+        Assert.assertNotEquals("Should have a body", "", new ApiResponseAsXml(apiresponse).getXml().trim());
+        Assert.assertNotEquals("Should have a body", "", new ApiResponseAsJson(apiresponse).getJson().trim());
+
+        Assert.assertFalse(apiresponse.isCollection());
+
+
+
+        // check estimate exists
+        ThingInstance myCreatedItem = estimates.findInstanceByGUID(locationGuid);
+        Assert.assertEquals(expectedDescription, myCreatedItem.getValue("description"));
+        Assert.assertEquals("3", myCreatedItem.getValue("duration"));
+
+        // check estimate is related to the todo since relationship is two way
+        Collection<ThingInstance> items = myCreatedItem.connectedItems("estimate");
+        Assert.assertEquals("Expected estimate to be connected to only 1 todo", 1, items.size());
+        Assert.assertTrue(items.contains(myTodo));
+
+        // check todo also recognises the relationship
+        items = myTodo.connectedItems("estimates");
+        Assert.assertEquals("Expected todo to be connected to only 1 estimate", 1, items.size());
+        Assert.assertTrue(items.contains(myCreatedItem));
+
+    }
+
+    @Test
+    public void postCanNotCreateEstimateWithoutAMandatoryRelationshipUsingAPI() {
+
+
+
+        ThingInstance myTodo = todo.createInstance().setValue("title", "an estimated todo");
+        todo.addInstance(myTodo);
+
+        final Thing estimates = todoManager.getThingNamed("estimate");
+        int numberOfEstimates = estimates.countInstances();
+        Assert.assertEquals(0, numberOfEstimates );
+
+
+
+        // Createa a relationship and a thing with a POST and no GUID
+        // POST todos/_GUID_/estimates
+        // {"duration":"3", "description", "a test estimate xxxxxxxx"}
+        HashMap<String, String> requestBody = new HashMap<String, String>();
+        String expectedDescription = "a test estimate " + System.currentTimeMillis();
+
+        requestBody.put("description", expectedDescription);
+        requestBody.put("duration", "3");
+
+        ApiResponse apiresponse = todoManager.api().post(String.format("estimate", myTodo.getGUID()), requestBody);
+        Assert.assertEquals(400, apiresponse.getStatusCode());
+
+        Assert.assertEquals("Expected number of estimates in project to not increase",
+                numberOfEstimates, estimates.countInstances());
+
+
+
+    }
 }

@@ -162,7 +162,9 @@ could implement a Thingifier URL query matcher to return instances based on quer
         final RelationshipDefinition estimated = todoManager.defineRelationship(
                 Between.things(estimate, todo),
                 AndCall.it("estimate"),
-                WithCardinality.of("1", "1"));
+                WithCardinality.of("1", "1")).
+                whenReversed(WithCardinality.of("1", "M"), AndCall.it("estimates"));
+
         // an estimate must have a todo, a todo does not need to have an estimate
         estimated.hasOptionality("M", "O");
 

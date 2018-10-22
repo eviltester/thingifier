@@ -2,11 +2,12 @@ package uk.co.compendiumdev.thingifier.generic.instances;
 
 import uk.co.compendiumdev.thingifier.api.ValidationReport;
 import uk.co.compendiumdev.thingifier.generic.definitions.Field;
-import uk.co.compendiumdev.thingifier.generic.definitions.Optionality;
 import uk.co.compendiumdev.thingifier.generic.definitions.RelationshipVector;
 import uk.co.compendiumdev.thingifier.generic.definitions.ThingDefinition;
 
 import java.util.*;
+
+import static uk.co.compendiumdev.thingifier.generic.definitions.Optionality.MANDATORY_RELATIONSHIP;
 
 final public class ThingInstance {
 
@@ -229,17 +230,30 @@ final public class ThingInstance {
 
     }
 
-    public void removeAllRelationships() {
+    public List<ThingInstance> removeAllRelationships() {
+
+        List<ThingInstance> deleteThese = new ArrayList<>();
 
         for (RelationshipInstance item : relationships) {
             if (item.getFrom() != this) {
                 item.getFrom().removeRelationshipsInvolvingMe(this);
+                if (item.getRelationship().getOptionalityFrom() == MANDATORY_RELATIONSHIP) {
+                    // I am deleted, therefor any mandatory relationship to me, must result in the related thing being
+                    // deleted also
+                    deleteThese.add(item.getFrom());
+                }
             } else {
                 item.getTo().removeRelationshipsInvolvingMe(this);
+
+//                if (item.getRelationship().getOptionalityTo() == MANDATORY_RELATIONSHIP) {
+//                    // I am being deleted therefore it does not matter if relationship to other is mandatory
+//                }
             }
         }
 
         relationships.clear();
+
+        return deleteThese;
 
     }
 
@@ -279,7 +293,7 @@ final public class ThingInstance {
     }
 
 
-    public ValidationReport validate() {
+    public ValidationReport validateFields(){
         ValidationReport report = new ValidationReport();
 
 
@@ -291,11 +305,19 @@ final public class ThingInstance {
             report.combine(validity);
         }
 
-        // Relationship Validation
+        return report;
+    }
+
+
+    public ValidationReport validateRelationships(){
+        ValidationReport report = new ValidationReport();
+
+
+        // Optionality Relationship Validation
         final Collection<RelationshipVector> theRelationshipVectors = entityDefinition.getRelationships();
         for(RelationshipVector vector : theRelationshipVectors){
             // for each definition, does it have relationships that match
-            if(vector.getOptionality() == Optionality.MANDATORY_RELATIONSHIP){
+            if(vector.getOptionality() == MANDATORY_RELATIONSHIP){
                 boolean foundRelationship = false;
                 for(RelationshipInstance relationship : relationships){
                     if(relationship.getRelationship()==vector.getRelationshipDefinition()){
@@ -304,13 +326,22 @@ final public class ThingInstance {
                 }
                 if(!foundRelationship){
                     report.combine(
-                        new ValidationReport().
-                            setValid(false).
-                            addErrorMessage(String.format("Mandatory Relationship not found %s", vector.getName()))
+                            new ValidationReport().
+                                    setValid(false).
+                                    addErrorMessage(String.format("Mandatory Relationship not found %s", vector.getName()))
                     );
                 }
             }
         }
+
+        return report;
+    }
+
+    public ValidationReport validate() {
+        ValidationReport report = new ValidationReport();
+
+        report.combine(validateFields());
+        report.combine(validateRelationships());
 
         return report;
     }

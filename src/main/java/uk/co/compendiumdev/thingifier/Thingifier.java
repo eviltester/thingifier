@@ -134,7 +134,22 @@ final public class Thingifier {
     public void clearAllData() {
         // clear all instance data
         for (Thing aThing : things.values()) {
-            aThing.deleteAllInstances();
+            for(ThingInstance instance : aThing.getInstances()) {
+                deleteThing(instance);
+            }
+        }
+    }
+
+    public void deleteThing(final ThingInstance aThingInstance) {
+        // delete a thing and all related things with mandatory relationships
+        final Thing aThing = getThingNamed(aThingInstance.getEntity().getName());
+
+        // we may also have to delete things which are mandatorily related i.e. can't exist on their own
+        final List<ThingInstance> otherThingsToDelete = aThing.deleteInstance(aThingInstance.getGUID());
+
+        // TODO: Warning recursion with no 'cut off' if any cyclical relationships then this might fail
+        for(ThingInstance deleteMe : otherThingsToDelete){
+            deleteThing(deleteMe);
         }
     }
 }

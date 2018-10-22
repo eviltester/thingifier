@@ -108,19 +108,19 @@ public class ThingDefinition {
 
     public RelationshipVector getRelationship(String relationshipName, ThingDefinition toEntityDefinition) {
 
-        List<RelationshipVector> relatinionshipsWithThisName = this.relationships.get(relationshipName.toLowerCase());
-        if (relatinionshipsWithThisName == null) {
+        List<RelationshipVector> relationshipsWithThisName = this.relationships.get(relationshipName.toLowerCase());
+        if (relationshipsWithThisName == null) {
             // there is no relationship with this name
             return null;
         }
 
-        for (RelationshipVector relationship : relatinionshipsWithThisName) {
+        for (RelationshipVector relationship : relationshipsWithThisName) {
             if (relationship.getTo().definition() == toEntityDefinition) {
                 return relationship;
             }
         }
 
-        // there is no relationship with this name
+        // there is no relationship with this name between the things we want
         return null;
 
     }

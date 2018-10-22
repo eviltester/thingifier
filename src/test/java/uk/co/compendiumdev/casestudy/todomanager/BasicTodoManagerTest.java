@@ -62,7 +62,8 @@ public class BasicTodoManagerTest {
         Assert.assertTrue(relatedItems.contains(paperwork));
         Assert.assertTrue(relatedItems.contains(filework));
 
-        todo.deleteInstance(paperwork.getGUID());
+        todoManager.deleteThing(paperwork);
+
 
         relatedItems = officeWork.connectedItems("tasks");
         Assert.assertFalse(relatedItems.contains(paperwork));
@@ -114,7 +115,7 @@ public class BasicTodoManagerTest {
 
         Assert.assertEquals("Delete this todo", foundit.getValue("title"));
 
-        todos.deleteInstance(foundit.getGUID());
+        todoManager.deleteThing(foundit);
         Assert.assertEquals(originalTodosCount, todos.countInstances());
 
 
@@ -124,7 +125,7 @@ public class BasicTodoManagerTest {
 
 
         try{
-            todos.deleteInstance(foundit.getGUID());
+            todoManager.deleteThing(foundit);
             Assert.fail("Item already deleted, exception should have been thrown");
         }catch(Exception e){
 
@@ -150,7 +151,8 @@ public class BasicTodoManagerTest {
 
         Assert.assertEquals("Delete this todo", foundit.getValue("title"));
 
-        todos.deleteInstance(guid);
+        todoManager.deleteThing(foundit);
+
         Assert.assertEquals(originalTodosCount, todos.countInstances());
 
 
@@ -160,7 +162,8 @@ public class BasicTodoManagerTest {
 
 
         try{
-            todos.deleteInstance(foundit.getGUID());
+            todoManager.deleteThing(foundit);
+
             Assert.fail("Item already deleted, exception should have been thrown");
 
         }catch(Exception e){
