@@ -14,6 +14,7 @@ public class BodyParser {
 
     private final HttpApiRequest request;
     private final List<String> thingNames;
+    private Map<String, Object> args = null;
 
     public BodyParser(final HttpApiRequest aGivenRequest, final List<String> thingNames) {
         this.request = aGivenRequest;
@@ -23,24 +24,54 @@ public class BodyParser {
 
 
     public Map<String, String> getStringMap() {
-        if(request.getBody().trim().isEmpty()){
-            return new HashMap();
-        }
-
         return stringMap(getMap());
     }
 
     private Map<String, String> stringMap(final Map<String, Object> args) {
         Map<String, String> stringsInMap = new HashMap();
         for (String key : args.keySet()) {
-            if (args.get(key) instanceof String) {
-                stringsInMap.put(key, (String) args.get(key));
+            Object theValue = args.get(key);
+
+            if (theValue instanceof String ) {
+                stringsInMap.put(key, (String) theValue);
+            }
+            if(theValue instanceof Double){
+                stringsInMap.put(key, String.valueOf(theValue));
             }
         }
         return stringsInMap;
     }
 
+    public List<String> getObjectNames(){
+        List<String> objectOrCollectionNames = new ArrayList();
+        for (String key : args.keySet()) {
+            if (!(args.get(key) instanceof String || args.get(key) instanceof Double)) {
+                objectOrCollectionNames.add(key);
+            }
+        }
+        return objectOrCollectionNames;
+    }
+
     public Map<String, Object> getMap() {
+
+        parseMap();
+
+        return args;
+    }
+
+    /**
+     * Only parse it once and then cache the converted map
+     */
+    private void parseMap() {
+
+        if(args!=null)
+            return;
+
+        if(request.getBody().trim().isEmpty()){
+            args = new HashMap<>();
+            return;
+        }
+
         // because we are using crude XML and JSON parsing
         // <project><title>My posted todo on the project</title></project>
         // would become {"project":{"title":"My posted todo on the project"}}
@@ -62,13 +93,13 @@ public class BodyParser {
                     // just the body
                     String justTheBody = conv.get(keys.get(0)).toString();
                     System.out.println(justTheBody);
-                    Map args = new Gson().fromJson(justTheBody, Map.class);
-                    return args;
+                    args = new Gson().fromJson(justTheBody, Map.class);
+                    return;
                 }
 
             }
         }
 
-        return new Gson().fromJson(request.getBody(), Map.class);
+        args = new Gson().fromJson(request.getBody(), Map.class);
     }
 }

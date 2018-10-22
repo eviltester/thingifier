@@ -23,7 +23,7 @@ final public class HttpApiRequest {
     }
 
     public HttpApiRequest setHeaders(final Map<String, String> mapOfHeaderValues) {
-        this.headers = mapOfHeaderValues;
+        this.headers.putAll(mapOfHeaderValues);
         return this;
     }
 
@@ -46,5 +46,9 @@ final public class HttpApiRequest {
 
     public String getHeader(final String headerName) {
         return this.headers.get(headerName);
+    }
+
+    public void addHeader(final String headerName, final String headerValue) {
+        this.headers.put(headerName, headerValue);
     }
 }
