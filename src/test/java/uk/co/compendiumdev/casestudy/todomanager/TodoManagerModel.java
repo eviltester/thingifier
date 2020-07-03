@@ -87,6 +87,10 @@ could implement a Thingifier URL query matcher to return instances based on quer
     // TODO: transformations for fields e.g. allow Number to Integer (or validate against this)
     // TODO: transformations for SET (match case, or any case)
     // TODO: validation for dates - specific date formats
+    // TODO: allow creation of a key/unique field to use instead of guid e.g. .keyIs("id")
+    //     this means that /todos/_id_ would match the entity, rather than guid
+    // TODO: allow definition of unique scheme e.g. id starting at 0 auto increment
+
 
     public static Thingifier definedAsThingifier() {
         Thingifier todoManager = new Thingifier();

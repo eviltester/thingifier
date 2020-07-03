@@ -1,4 +1,4 @@
-package uk.co.compendiumdev.thingifier.application;
+package uk.co.compendiumdev.thingifier.application.examples;
 
 import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;

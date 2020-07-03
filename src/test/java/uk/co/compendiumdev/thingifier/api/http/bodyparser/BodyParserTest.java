@@ -177,7 +177,8 @@ public class BodyParserTest {
         HttpApiRequest request = new HttpApiRequest("/estimates");
         request.addHeader("Content-Type", "application/xml");
         // <estimate><duration>5</duration><estimates><estimate><guid>1234567890</guid></estimate></estimates></estimate>
-        request.setBody("<estimate><duration>5</duration><estimate><todo><guid>1234567890</guid></todo><todo><guid>12345678901234567890</guid></todo></estimate></estimate>");
+        // this is an estimate which wants to be linked to multiple todos using the estimate relationship - each estimate can  only be linked to 1 todo
+        request.setBody("<estimate><duration>5</duration><estimate><todo><guid>1234567890</guid></todo></estimate></estimate>");
 
         List<String> names = new ArrayList<>();
 

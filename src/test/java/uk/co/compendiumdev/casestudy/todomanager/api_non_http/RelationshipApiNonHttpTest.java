@@ -2,6 +2,7 @@ package uk.co.compendiumdev.casestudy.todomanager.api_non_http;
 
 import com.google.gson.*;
 import org.junit.Before;
+import org.junit.Ignore;
 import uk.co.compendiumdev.casestudy.todomanager.TodoManagerModel;
 import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
@@ -633,23 +634,51 @@ public class RelationshipApiNonHttpTest {
         Assert.assertEquals(0, numberOfEstimates );
 
 
-
-        // Createa a relationship and a thing with a POST and no GUID
-        // POST todos/_GUID_/estimates
-        // {"duration":"3", "description", "a test estimate xxxxxxxx"}
         HashMap<String, String> requestBody = new HashMap<String, String>();
         String expectedDescription = "a test estimate " + System.currentTimeMillis();
 
         requestBody.put("description", expectedDescription);
         requestBody.put("duration", "3");
 
-        ApiResponse apiresponse = todoManager.api().post(String.format("estimate", myTodo.getGUID()), getSimpleParser(requestBody));
+        ApiResponse apiresponse = todoManager.api().post("estimate", getSimpleParser(requestBody));
         Assert.assertEquals(400, apiresponse.getStatusCode());
 
         Assert.assertEquals("Expected number of estimates in project to not increase",
                 numberOfEstimates, estimates.countInstances());
 
+    }
 
+    // TODO : post an estimate with a relationship to a todo as the body
+
+    @Ignore("Working on this one next")
+    @Test
+    public void postCanCreateEstimateAMandatoryRelationshipUsingAPI() {
+
+
+
+        ThingInstance myTodo = todo.createInstance().setValue("title", "an estimated todo");
+        todo.addInstance(myTodo);
+
+        final Thing estimates = todoManager.getThingNamed("estimate");
+        int numberOfEstimates = estimates.countInstances();
+        Assert.assertEquals(0, numberOfEstimates );
+
+
+        HashMap<String, String> requestBody = new HashMap<String, String>();
+        String expectedDescription = "a test estimate " + System.currentTimeMillis();
+
+        requestBody.put("description", expectedDescription);
+        requestBody.put("duration", "3");
+
+        ApiResponse apiresponse = todoManager.api().post("estimate", getSimpleParser(requestBody));
+        Assert.assertEquals(400, apiresponse.getStatusCode());
+
+        Assert.assertEquals("Expected number of estimates in project to not increase",
+                numberOfEstimates, estimates.countInstances());
 
     }
+
+    // TODO: cardinality is enforced so this would not be valid because it has multiple todos in the estimate relationship
+    // "<estimate><duration>5</duration><estimate><todo><guid>1234567890</guid></todo><todo><guid>999991234567890</guid></todo></estimate></estimate>"
+
 }

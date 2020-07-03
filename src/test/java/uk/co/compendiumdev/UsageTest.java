@@ -21,11 +21,13 @@ public class UsageTest {
 
 
     // done: create thingifier  (things Map<thingName, Thing>
-    // todo: find things based on field values
     // done: define relationships between things
     // done: create relationships between things
     // done: named directional relationships
     // done: delete thing instances
+
+    // todo: show relationships in the instances e.g. for a todo show "relationships" : [ "task-of" : [{"guid":"xxx"}]]
+    // todo: find things based on field values
     // todo: cardinality of relationships
     // todo: test for optional fields (they are optional by default)
     // todo: default field values

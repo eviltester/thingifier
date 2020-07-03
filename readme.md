@@ -140,6 +140,6 @@ The deployed app does have some sample data for testing purposes, this can easil
         todoManager.defineRelationship(Between.things(category, todo), AndCall.it("todos"), WithCardinality.of("1", "*"));
         todoManager.defineRelationship(Between.things(category, project), AndCall.it("projects"), WithCardinality.of("1", "*"));
         todoManager.defineRelationship(Between.things(todo, category), AndCall.it("categories"), WithCardinality.of("1", "*"));
-    ~~~~~~~~
+~~~~~~~~
     
-    Default model can be found in [src/main/java/uk/co/compendiumdev/thingifier/application/TodoManagerThingifier.java](https://github.com/eviltester/thingifier/blob/master/src/main/java/uk/co/compendiumdev/thingifier/application/TodoManagerThingifier.java)
+Default model can be found in [src/main/java/uk/co/compendiumdev/thingifier/application/TodoManagerThingifier.java](https://github.com/eviltester/thingifier/blob/master/src/main/java/uk/co/compendiumdev/thingifier/application/TodoManagerThingifier.java)

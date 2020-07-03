@@ -83,7 +83,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>uk.co.compendiumdev.thingifier.application.Main</mainClass>
+                            <mainClass>uk.co.compendiumdev.thingifier.application.MainTodoExample</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

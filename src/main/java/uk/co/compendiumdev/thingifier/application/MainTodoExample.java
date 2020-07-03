@@ -1,10 +1,16 @@
 package uk.co.compendiumdev.thingifier.application;
 
 import spark.Spark;
+import uk.co.compendiumdev.thingifier.application.examples.TodoListThingifier;
+import uk.co.compendiumdev.thingifier.application.examples.TodoManagerThingifier;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import static spark.Spark.get;
 
-public class Main {
+public class MainTodoExample {
     static boolean hasHerokuAssignedPort() {
         ProcessBuilder processBuilder = new ProcessBuilder();
         return (processBuilder.environment().get("PORT") != null);
@@ -29,6 +35,17 @@ public class Main {
             proxyport = getHerokuAssignedPort();
         }
 
+        List<String> validModelNames = new ArrayList();
+        validModelNames.add("todoListManager");
+        validModelNames.add("simpleTodoList");
+
+        String modelName=validModelNames.get(0);
+
+        System.out.println("Valid Model Names -model=");
+        for(String aModelName : validModelNames){
+            System.out.println(aModelName);
+        }
+
         for (String arg : args) {
             System.out.println("Args: " + arg);
 
@@ -37,6 +54,21 @@ public class Main {
                 if (details != null && details.length > 1) {
                     proxyport = Integer.parseInt(details[1].trim());
                     System.out.println("Will configure web server to use port " + proxyport);
+                }
+            }
+
+            if (arg.startsWith("-model")) {
+                String[] details = arg.split("=");
+                if (details != null && details.length > 1) {
+                    String argModelName = details[1].trim();
+                    if(validModelNames.contains(argModelName)){
+                        modelName = argModelName;
+                        System.out.println("Will use model named " + modelName);
+                    }else{
+                        System.out.println(
+                                String.format("Invalid model name %s, using %s",
+                                        argModelName, modelName));
+                    }
                 }
             }
         }
@@ -52,10 +84,18 @@ public class Main {
             return "";
         });
 
-        ThingifierRestServer restServer = new ThingifierRestServer(args, "", new TodoManagerThingifier().get());
+        ThingifierRestServer restServer;
 
+        switch (modelName){
+            case "simpleTodoList":
+                restServer = new ThingifierRestServer(args, "", new TodoListThingifier().get());
+            case "todoListManager":
+            default:
+                restServer = new ThingifierRestServer(args, "", new TodoManagerThingifier().get());
+        }
 
         System.out.println("Running on " + Spark.port());
+        System.out.println(" e.g. http://localhost:" + Spark.port());
 
     }
 }
