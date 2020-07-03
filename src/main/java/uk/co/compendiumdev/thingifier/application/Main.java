@@ -10,7 +10,7 @@ import java.util.List;
 
 import static spark.Spark.get;
 
-public class MainTodoExample {
+public class Main {
     static boolean hasHerokuAssignedPort() {
         ProcessBuilder processBuilder = new ProcessBuilder();
         return (processBuilder.environment().get("PORT") != null);
