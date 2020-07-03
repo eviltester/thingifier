@@ -1,0 +1,113 @@
+package uk.co.compendiumdev.thingifier.tactical.postmanreplication;
+
+import io.restassured.RestAssured;
+import io.restassured.http.ContentType;
+import io.restassured.path.json.JsonPath;
+import io.restassured.response.Response;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import java.util.HashMap;
+
+import static io.restassured.RestAssured.given;
+import static io.restassured.RestAssured.when;
+
+public class ProjectTodoRelationshipCrudTest {
+
+    // replicate the automated execution and assertion from Postman project
+    // https://github.com/eviltester/thingifier/blob/master/docs/rest_testing/TodoManagerThingifier.postman_collection.json
+
+
+    @BeforeClass
+    public static void clearDataFromEnv(){
+
+        // avoid the use of Environment.getEnv("/todos") etc. to keep code a little clearer
+        RestAssured.baseURI = Environment.getBaseUri();
+
+        when().post("/admin/data/thingifier")
+                    .then().statusCode(200);
+
+        final JsonPath clearedData = when().get("/todos")
+                .then().statusCode(200).extract().body().jsonPath();
+
+        final int newNumberOfTodos = clearedData.getList("todos").size();
+
+        Assert.assertEquals(0, newNumberOfTodos);
+    }
+
+
+    @Test
+    public void canCreateAndAmendSequence(){
+
+        String specificProjectGuid = "4c656319-1e4c-4286-8c2c-dff2d6762f0d";
+        String specificTodoGuid = "09452402-32de-4403-8e4a-a27bc333448c";
+
+        // CREATE Project WITH PUT
+
+        final HashMap<String, String> givenBody = new HashMap<String, String>();
+        givenBody.put("title", "a specific project");
+
+        given().body(givenBody).
+                when().put("/projects/" + specificProjectGuid).
+                then().
+                statusCode(201).
+                contentType(ContentType.JSON).
+                header("Location", "projects/" + specificProjectGuid).
+                header("X-Thing-Instance-GUID", specificProjectGuid);
+
+        // CREATE A Specific Todo
+
+        given().body(givenBody).
+                when().put("/todos/" + specificTodoGuid).
+                then().
+                statusCode(201).
+                contentType(ContentType.JSON).
+                header("Location", "todos/" + specificTodoGuid).
+                header("X-Thing-Instance-GUID", specificTodoGuid);
+
+        // Create a specific project to todo relationship with POST
+        givenBody.put("guid", specificTodoGuid);
+
+        given().body(givenBody).
+                when().post("/projects/" + specificProjectGuid + "/tasks").
+                then().
+                statusCode(201).
+                contentType(ContentType.JSON);
+
+        // GET todos for a project
+
+        Response response = when().get("/projects/" + specificProjectGuid + "/tasks").
+                then().
+                statusCode(200).
+                contentType(ContentType.JSON).
+                and().extract().response();
+
+        Assert.assertEquals(1, response.getBody().jsonPath().getList("todos").size());
+        Assert.assertEquals(specificTodoGuid, response.getBody().jsonPath().get("todos[0].guid"));
+
+
+        // DELETE the Project Todos Relationship TODO
+        when().delete("/projects/" + specificProjectGuid + "/tasks/" +specificTodoGuid).
+                then().
+                statusCode(200).
+                contentType(ContentType.JSON);
+
+        // GET todos for a project
+
+        response = when().get("/projects/" + specificProjectGuid + "/tasks").
+                then().
+                statusCode(200).
+                contentType(ContentType.JSON).
+                and().extract().response();
+
+        Assert.assertEquals(0, response.getBody().jsonPath().getList("todos").size());
+
+        // DELETE the Project Todos Relationship TODO again
+        when().delete("/projects/" + specificProjectGuid + "/tasks/" +specificTodoGuid).
+                then().
+                statusCode(404).
+                contentType(ContentType.JSON);
+    }
+
+}
