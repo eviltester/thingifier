@@ -11,7 +11,7 @@
   <packaging>jar</packaging>
 
   <name>thingifier</name>
-  <url>http://compendiumdev.co.uk</url>
+  <url>https://compendiumdev.co.uk</url>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

@@ -27,6 +27,7 @@ public class UsageTest {
     // done: delete thing instances
 
     // todo: show relationships in the instances e.g. for a todo show "relationships" : [ "task-of" : [{"guid":"xxx"}]]
+    // todo: allow creating relationships through post 'in' the instance
     // todo: find things based on field values
     // todo: cardinality of relationships
     // todo: test for optional fields (they are optional by default)
