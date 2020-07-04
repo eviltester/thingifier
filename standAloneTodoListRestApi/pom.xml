@@ -48,6 +48,9 @@
                         <!-- This tells Maven to include all dependencies -->
                         <descriptorRef>jar-with-dependencies</descriptorRef>
                     </descriptorRefs>
+                    <!-- rename the 'full' jar -->
+                    <finalName>runTodoListRestAPI-${project.version}</finalName>
+                    <appendAssemblyId>false</appendAssemblyId>
                     <archive>
                         <manifest>
                             <mainClass>uk.co.compendiumdev.todolist.application.Main</mainClass>

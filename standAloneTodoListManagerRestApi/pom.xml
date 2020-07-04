@@ -12,7 +12,7 @@
 
     <groupId>uk.co.compendiumdev.thingifier</groupId>
     <artifactId>standAloneTodoListManagerRestApi</artifactId>
-    <version>${thingifier.version}}</version>
+    <version>${thingifier.version}</version>
 
     <dependencies>
         <dependency>
@@ -35,6 +35,7 @@
             </plugin>
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
+                <version>3.3.0</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -48,6 +49,9 @@
                         <!-- This tells Maven to include all dependencies -->
                         <descriptorRef>jar-with-dependencies</descriptorRef>
                     </descriptorRefs>
+                    <!-- rename the 'full' jar -->
+                    <finalName>runTodoManagerRestAPI-${project.version}</finalName>
+                    <appendAssemblyId>false</appendAssemblyId>
                     <archive>
                         <manifest>
                             <mainClass>uk.co.compendiumdev.todolist.application.Main</mainClass>
