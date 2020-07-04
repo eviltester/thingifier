@@ -3,6 +3,7 @@ package uk.co.compendiumdev.thingifier.reporting;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
+import uk.co.compendiumdev.thingifier.generic.definitions.RelationshipVector;
 import uk.co.compendiumdev.thingifier.generic.definitions.ThingDefinition;
 import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
 
@@ -37,7 +38,6 @@ public class JsonThing {
 
         for (ThingInstance thing : things) {
             jsonArray.add(asJsonObject(thing));
-
         }
 
         //System.out.println(jsonArray.toString());
@@ -57,12 +57,62 @@ public class JsonThing {
             return jsonobj;
         }
 
-
         for (String field : thingInstance.getEntity().getFieldNames()) {
-
             jsonobj.addProperty(field, thingInstance.getValue(field));
         }
 
+        // TODO: add relationships
+        // TODO: add tests for relationship rendering
+        /*
+            "relationships" : [
+                {
+                    "relationship_name" : [
+                        {
+                            "typeofthingsplural": [
+                                {"guid" : "value"}
+                            ]
+                        }
+                    ]
+                }
+            ]
+         */
+        // TODO: consider if we should just make the "relationship_name": [{"guid","value"},{...}] array the root
+        final Collection<RelationshipVector> relationships = thingInstance.getEntity().getRelationships();
+        // "relationships" : [
+        if(relationships.size()>0){
+            final JsonArray relationshipsArray = new JsonArray();
+
+            // fill the array "relationship_name" : [
+            for(RelationshipVector relationship : relationships){
+                final Collection<ThingInstance> relatedItems = thingInstance.connectedItems(relationship.getName());
+                if(relatedItems.size()>0) {
+                    // relationship_name" : [
+                    final JsonArray namedRelationshipInstancesArray = new JsonArray();
+
+                    // for each thing related to
+                    //"typeofthingsplural": [
+                    final JsonArray arrayOfGuids = new JsonArray();
+                    for(ThingInstance item : relatedItems) {
+                        final JsonObject itemGuidObject = new JsonObject();
+                        itemGuidObject.addProperty("guid", item.getGUID());
+                        arrayOfGuids.add(itemGuidObject);
+                    }
+
+                    //"typeofthingsplural": [
+                    final JsonObject objectForArrayOfGuids = new JsonObject();
+                    objectForArrayOfGuids.add(relationship.getTo().definition().getPlural(), arrayOfGuids);
+                    namedRelationshipInstancesArray.add(objectForArrayOfGuids);
+
+
+                    // relationship_name" : [
+                    final JsonObject relationshipArrayObject = new JsonObject();
+                    relationshipArrayObject.add(relationship.getName(), namedRelationshipInstancesArray);
+                    relationshipsArray.add(relationshipArrayObject);
+                }
+            }
+
+            jsonobj.add("relationships", relationshipsArray);
+        }
 
         return jsonobj;
     }
@@ -79,10 +129,6 @@ public class JsonThing {
         arrayObj.add(defn.getPlural(), asJsonArrayInstanceWrapped(things));
         return arrayObj.toString();
     }
-
-
-
-
 
 
     /**

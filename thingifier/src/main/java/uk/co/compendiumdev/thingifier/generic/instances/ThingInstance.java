@@ -90,6 +90,8 @@ final public class ThingInstance {
                 // set the value
                 setValue(entry.getKey(), entry.getValue());
 
+                // TODO: allow relationship matching and creation
+
             } else {
 
                 // if editing it then throw error, ignore if same value
