@@ -61,8 +61,6 @@ public class JsonThing {
             jsonobj.addProperty(field, thingInstance.getValue(field));
         }
 
-        // TODO: add relationships
-        // TODO: add tests for relationship rendering
         /*
             "relationships" : [
                 {
@@ -76,10 +74,10 @@ public class JsonThing {
                 }
             ]
          */
-        // TODO: consider if we should just make the "relationship_name": [{"guid","value"},{...}] array the root
+        // TODO: allow customisation of the relationships rendering e.g. just make the "relationship_name": [{"guid","value"},{...}] array the root
         final Collection<RelationshipVector> relationships = thingInstance.getEntity().getRelationships();
         // "relationships" : [
-        if(relationships.size()>0){
+        if(relationships.size()>0 && thingInstance.hasAnyRelationshipInstances()){
             final JsonArray relationshipsArray = new JsonArray();
 
             // fill the array "relationship_name" : [

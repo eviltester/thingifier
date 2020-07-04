@@ -99,7 +99,7 @@ public class RestApiDocumentationGenerator {
         output.append(heading(2, "API"));
 
         output.append(paragraph("The API takes JSON body with objects using the field definitions shown in the model.\n"));
-        output.append(paragraph("e.g. <code>{\"guid\", \"1234-1234-1234-1234\"}</code>\n"));
+        output.append(paragraph("e.g. <code>{\"guid\": \"1234-1234-1234-1234\"}</code>\n"));
         output.append(paragraph("Or, for XML\n"));
         String codeSnippet = "<%1$s><guid><1234-1234-1234-1234></guid></%1$s>".replace("<", "&lt;");
 

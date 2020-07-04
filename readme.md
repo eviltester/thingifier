@@ -9,19 +9,22 @@ If you actually want an ER Based tool then check out:
 - [Jeddict](https://jeddict.github.io/)
 - [Evolutility](http://www.evolutility.org/index.aspx)
 
+If you want to generate test data for an api, investigate:
+
+- [next.json-generator.com](https://next.json-generator.com/)
+- [Java-Faker](https://github.com/DiUS/java-faker)
+
 ---
 
 - Alan Richardson
-- www.eviltester.com
-- www.seleniumsimplified.com
-- www.javafortesters.com
-- www.compendiumdev.co.uk
+- https://www.eviltester.com
+- https://www.compendiumdev.co.uk
 - https://uk.linkedin.com/in/eviltester
 - https://twitter.com/eviltester
 
 ---
 
-This is a work in project so it currently has a hard coded model of a small TODO application.
+This is a work in progress so it currently has a hard coded model of a small TODO application.
 
 ## Model
 

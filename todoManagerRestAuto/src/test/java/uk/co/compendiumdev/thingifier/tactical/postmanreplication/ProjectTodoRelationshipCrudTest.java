@@ -85,6 +85,7 @@ public class ProjectTodoRelationshipCrudTest {
 
         Assert.assertEquals(1, response.getBody().jsonPath().getList("todos").size());
         Assert.assertEquals(specificTodoGuid, response.getBody().jsonPath().get("todos[0].guid"));
+        Assert.assertEquals(specificProjectGuid, response.getBody().jsonPath().get("todos[0].relationships[0].task-of[0].projects[0].guid"));
 
 
         // DELETE the Project Todos Relationship TODO
@@ -102,6 +103,15 @@ public class ProjectTodoRelationshipCrudTest {
                 and().extract().response();
 
         Assert.assertEquals(0, response.getBody().jsonPath().getList("todos").size());
+
+        // GET project and check no relationships listed
+        response = when().get("/projects/" + specificProjectGuid).
+                then().
+                statusCode(200).
+                contentType(ContentType.JSON).
+                and().extract().response();
+
+        Assert.assertNull(response.getBody().jsonPath().get("projects[0].relationships"));
 
         // DELETE the Project Todos Relationship TODO again
         when().delete("/projects/" + specificProjectGuid + "/tasks/" +specificTodoGuid).

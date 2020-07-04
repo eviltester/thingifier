@@ -355,4 +355,7 @@ final public class ThingInstance {
     }
 
 
+    public boolean hasAnyRelationshipInstances() {
+        return (relationships.size() >0);
+    }
 }

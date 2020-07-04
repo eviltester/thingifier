@@ -1,5 +1,8 @@
 package uk.co.compendiumdev.thingifier.tactical.postmanreplication;
 
+import io.restassured.RestAssured;
+import io.restassured.filter.log.RequestLoggingFilter;
+import io.restassured.filter.log.ResponseLoggingFilter;
 import spark.Spark;
 import uk.co.compendiumdev.thingifier.application.ThingifierRestServer;
 import uk.co.compendiumdev.thingifier.application.examples.TodoManagerThingifier;
@@ -16,6 +19,10 @@ public class Environment {
     }
 
     public static String getBaseUri() {
+
+        // setup rest assured logging
+        RestAssured.filters(new RequestLoggingFilter(), new ResponseLoggingFilter());
+
         // if not running then start the spark
         if(Port.inUse("localhost", 4567)) {
             return "http://localhost:4567";
@@ -26,5 +33,10 @@ public class Environment {
             new ThingifierRestServer(args, "", new TodoManagerThingifier().get());
             return "http://localhost:4567";
         }
+
+
+
+        // TODO: incorporate browsermob proxy and allow configuration of all
+        //  requests through a proxy file to output a HAR file of all requests for later review
     }
 }
