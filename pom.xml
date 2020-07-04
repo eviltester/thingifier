@@ -8,7 +8,9 @@
     <packaging>pom</packaging>
 
     <properties>
-        <thingifier.version>1.5.0</thingifier.version>
+        <thingifier.version>1.5.1-SNAPSHOT</thingifier.version>
+        <java.version>1.8</java.version>
+        <!--<java.version>13</java.version>-->
     </properties>
 
     <modules>
