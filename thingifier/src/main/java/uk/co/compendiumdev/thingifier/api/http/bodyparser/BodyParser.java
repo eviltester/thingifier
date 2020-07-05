@@ -46,10 +46,11 @@ public class BodyParser {
         return stringsInMap;
     }
 
-//    private Map<String, String> stringMap(final Map<String, Object> args) {
-//        Map<String, String> stringsInMap = flattenToStringMap("", args);
-//        return stringsInMap;
-//    }
+    public Map<String, String> getFlattenedStringMap() {
+        Map<String, String> stringsInMap = flattenToStringMap("", getMap());
+        return stringsInMap;
+    }
+
 
     private Map<String, String> flattenToStringMap(final String prefixkey, final Object theValue) {
         Map<String, String> stringsInMap = new HashMap();
@@ -60,7 +61,7 @@ public class BodyParser {
             stringsInMap.put(prefixkey, String.valueOf(theValue));
         }
         String separator = "";
-        if(prefixkey!=null && prefixkey.length() > 0){
+        if(prefixkey!=null && prefixkey.length() > 0 && !prefixkey.endsWith(".")){
             separator = ".";
         }
         // todo: handle relationships - flatten? i.e. relationships.task-of.projects.guid
@@ -140,4 +141,6 @@ public class BodyParser {
 
         args = new Gson().fromJson(request.getBody(), Map.class);
     }
+
+
 }

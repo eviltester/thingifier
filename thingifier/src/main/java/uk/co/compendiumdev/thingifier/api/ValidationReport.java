@@ -40,4 +40,13 @@ public class ValidationReport {
         errorMessages.add(errorMessage);
         return this;
     }
+
+    public String getCombinedErrorMessages() {
+        StringBuilder reasons = new StringBuilder();
+        reasons.append("Validation Report:\n\n");
+        for(String reason : errorMessages){
+            reasons.append("- " + reason + "\n");
+        }
+        return reasons.toString();
+    }
 }

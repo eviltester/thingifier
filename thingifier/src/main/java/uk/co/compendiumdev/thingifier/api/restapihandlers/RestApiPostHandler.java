@@ -29,6 +29,7 @@ public class RestApiPostHandler {
         Thing thing = thingifier.getThingNamedSingularOrPlural(url);
         if (thing != null) {
             // create a new thing does not enforce relationships
+            // TODO: validate before creation so as to only delete in an 'emergency' not as default
             final ApiResponse response = new ThingCreation(thingifier).with(args, thing);
             if(response.isErrorResponse()){
                 return response;

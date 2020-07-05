@@ -119,6 +119,7 @@ public class TodoManagerThingifier {
         todo.addInstance(filework);
 
         ThingInstance officeCategory = category.createInstance().setValue("title", "Office");
+        category.addInstance(officeCategory);
 
         ThingInstance homeCategory = category.createInstance().setValue("title", "Home");
         category.addInstance(homeCategory);
