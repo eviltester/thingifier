@@ -56,7 +56,7 @@ public class ProjectTodoRelationshipCrudTest {
                 header("Location", "projects/" + specificProjectGuid).
                 header("X-Thing-Instance-GUID", specificProjectGuid);
 
-        // CREATE A Specific Todo
+        // CREATE A Specific To do
 
         given().body(givenBody).
                 when().put("/todos/" + specificTodoGuid).
@@ -66,7 +66,7 @@ public class ProjectTodoRelationshipCrudTest {
                 header("Location", "todos/" + specificTodoGuid).
                 header("X-Thing-Instance-GUID", specificTodoGuid);
 
-        // Create a specific project to todo relationship with POST
+        // Create a specific project to to do relationship with POST
         givenBody.put("guid", specificTodoGuid);
 
         given().body(givenBody).
@@ -88,7 +88,7 @@ public class ProjectTodoRelationshipCrudTest {
         Assert.assertEquals(specificProjectGuid, response.getBody().jsonPath().get("todos[0].relationships[0].task-of[0].projects[0].guid"));
 
 
-        // DELETE the Project Todos Relationship TODO
+        // DELETE the Project Todos Relationship TO DO
         when().delete("/projects/" + specificProjectGuid + "/tasks/" +specificTodoGuid).
                 then().
                 statusCode(200).
@@ -113,7 +113,7 @@ public class ProjectTodoRelationshipCrudTest {
 
         Assert.assertNull(response.getBody().jsonPath().get("projects[0].relationships"));
 
-        // DELETE the Project Todos Relationship TODO again
+        // DELETE the Project Todos Relationship TO DO again
         when().delete("/projects/" + specificProjectGuid + "/tasks/" +specificTodoGuid).
                 then().
                 statusCode(404).

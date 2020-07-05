@@ -23,7 +23,6 @@ public class BodyRelationshipValidator {
 
         Map<String,String> fullargs = bodyargs.getFlattenedStringMap();
 
-        // todo: check that all relationship definitions are valid
         boolean validRelationships = true;
 
         for(Map.Entry<String, String> complexKeyValue : fullargs.entrySet()){

@@ -64,7 +64,6 @@ public class BodyParser {
         if(prefixkey!=null && prefixkey.length() > 0 && !prefixkey.endsWith(".")){
             separator = ".";
         }
-        // todo: handle relationships - flatten? i.e. relationships.task-of.projects.guid
         if(theValue instanceof Map){
             for (String key : ((Map<String,Object>)theValue).keySet()) {
                 Object aValue = ((Map<String,Object>)theValue).get(key);

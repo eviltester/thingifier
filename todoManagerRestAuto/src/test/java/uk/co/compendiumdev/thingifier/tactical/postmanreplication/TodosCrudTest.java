@@ -40,7 +40,7 @@ public class TodosCrudTest {
     @Test
     public void cannotCreateWithInvalidTodoBlankTitlePosts(){
 
-        //{"title": "a specific todo Title"}
+        //{"title": "a specific to do Title"}
         final HashMap<String, String> givenBody = new HashMap<String, String>();
         givenBody.put("title", "");
 
@@ -177,7 +177,7 @@ public class TodosCrudTest {
         Assert.assertEquals("", body.get("description"));
         Assert.assertEquals("a specific todo Title Amended", body.get("title"));
 
-        // GET the TODO
+        // GET the TO DO item
         response = when().get("/todos/" + specificGuid).
                 then().
                 statusCode(200).
@@ -195,14 +195,14 @@ public class TodosCrudTest {
         Assert.assertEquals("a specific todo Title Amended", body.get("todos[0].title"));
 
 
-        // DELETE the TODO
+        // DELETE the TO DO item
         response = when().delete("/todos/" + specificGuid).
                 then().
                 statusCode(200).
                 contentType(ContentType.JSON).
                 and().extract().response();
 
-        // Cannot GET a deleted todo
+        // Cannot GET a deleted to do item
         response = when().get("/todos/" + specificGuid).
                 then().
                 statusCode(404).
