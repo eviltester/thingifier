@@ -10,6 +10,21 @@ import java.util.List;
 
 import static spark.Spark.get;
 
+/*
+
+Backlog
+
+- todo: have an auto updated 'create' and 'amend' date time stamp field - renamable in definition e.g. created-time, type CREATED-DATE, with a format
+- todo: have an automatically added 'ping' url to see if service is running
+- todo: create a 'view' gui that shows all the items e.g. /system/gui
+- todo: allow configuring the default url mappings e.g. url("/gui).to(DEFAULT_API.systemGui)
+- todo: allow switing on and off features
+- todo: allow nested objects, not just relationships e.g. GET shows related objects as top level fields, or full objects
+- todo: allow creating and amending with nested objects
+- todo: allow grouped fields, e.g. bought{from:"", when,""} - shown as nested in the json views
+
+ */
+
 public class Main {
     static boolean hasHerokuAssignedPort() {
         ProcessBuilder processBuilder = new ProcessBuilder();
