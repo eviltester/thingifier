@@ -29,7 +29,7 @@ public class RestApiPostHandler {
         Thing thing = thingifier.getThingNamedSingularOrPlural(url);
         if (thing != null) {
             // create a new thing does not enforce relationships
-            final ApiResponse response = new ThingCreation().with(args.getStringMap(), thing);
+            final ApiResponse response = new ThingCreation(thingifier).with(args.getStringMap(), thing);
             if(response.isErrorResponse()){
                 return response;
             }
@@ -92,7 +92,7 @@ public class RestApiPostHandler {
 
     private ApiResponse amendAThingWithPost(final Map<String, String> args, ThingInstance instance) {
         // with a post we do not want to clear fields before setting - we only amend what we pass in
-        return new ThingAmendment().amendInstance(args, instance, false);
+        return new ThingAmendment(thingifier).amendInstance(args, instance, false);
     }
 
 

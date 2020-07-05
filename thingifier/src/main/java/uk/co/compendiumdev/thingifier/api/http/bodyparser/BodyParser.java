@@ -1,6 +1,7 @@
 package uk.co.compendiumdev.thingifier.api.http.bodyparser;
 
 import com.google.gson.Gson;
+import com.google.gson.internal.LinkedTreeMap;
 import org.json.JSONObject;
 import org.json.XML;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
@@ -22,10 +23,13 @@ public class BodyParser {
     }
 
 
-
+    /**
+     * getStringMap returns the top level values as a map
+     */
     public Map<String, String> getStringMap() {
         return stringMap(getMap());
     }
+
 
     private Map<String, String> stringMap(final Map<String, Object> args) {
         Map<String, String> stringsInMap = new HashMap();
@@ -37,6 +41,40 @@ public class BodyParser {
             }
             if(theValue instanceof Double){
                 stringsInMap.put(key, String.valueOf(theValue));
+            }
+        }
+        return stringsInMap;
+    }
+
+//    private Map<String, String> stringMap(final Map<String, Object> args) {
+//        Map<String, String> stringsInMap = flattenToStringMap("", args);
+//        return stringsInMap;
+//    }
+
+    private Map<String, String> flattenToStringMap(final String prefixkey, final Object theValue) {
+        Map<String, String> stringsInMap = new HashMap();
+        if (theValue instanceof String ) {
+            stringsInMap.put(prefixkey, (String) theValue);
+        }
+        if(theValue instanceof Double){
+            stringsInMap.put(prefixkey, String.valueOf(theValue));
+        }
+        String separator = "";
+        if(prefixkey!=null && prefixkey.length() > 0){
+            separator = ".";
+        }
+        // todo: handle relationships - flatten? i.e. relationships.task-of.projects.guid
+        if(theValue instanceof Map){
+            for (String key : ((Map<String,Object>)theValue).keySet()) {
+                Object aValue = ((Map<String,Object>)theValue).get(key);
+                Map<String,String> nestedValues = flattenToStringMap(prefixkey + separator + key, aValue);
+                stringsInMap.putAll(nestedValues);
+            }
+        }
+        if(theValue instanceof ArrayList) {
+            for(Object aValue : (ArrayList)theValue){
+                Map<String,String> nestedValues = flattenToStringMap(prefixkey + separator, aValue);
+                stringsInMap.putAll(nestedValues);
             }
         }
         return stringsInMap;

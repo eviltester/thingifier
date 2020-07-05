@@ -62,7 +62,7 @@ public class RelationshipCreation {
 
             thingToCreate = thingifier.getThingNamed(createThing.getName());
 
-            response = new ThingCreation().with(args, thingToCreate);
+            response = new ThingCreation(thingifier).with(args, thingToCreate);
             if(response.isErrorResponse()){
                 return response;
             }else{

@@ -1,14 +1,22 @@
 package uk.co.compendiumdev.thingifier.api.restapihandlers;
 
 import uk.co.compendiumdev.thingifier.Thing;
+import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.ValidationReport;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 public class ThingCreation {
+
+    private final Thingifier thingifier;
+
+    public ThingCreation(final Thingifier thingifier) {
+        this.thingifier = thingifier;
+    }
 
     public ApiResponse with(final Map<String, String> args, final Thing thing) {
         return addNewThingWithFields(args, thing.createInstance(), thing);
@@ -50,6 +58,10 @@ public class ThingCreation {
 
         ValidationReport validation = instance.validateFields();
 
+
+        //TODO: handle relationships
+        //List<RelationshipDetails> relationships = getRelationshipsFromArgs(args);
+
         if (validation.isValid()) {
             thing.addInstance(instance);
             return ApiResponse.created(instance);
@@ -58,4 +70,12 @@ public class ThingCreation {
             return ApiResponse.error(400, validation.getErrorMessages());
         }
     }
+
+//    private List<RelationshipDetails> getRelationshipsFromArgs(final Map<String, String> args) {
+//        Map<String, String> relationships = args.get("relationships");
+//        return null;
+//    }
+//
+//    private class RelationshipDetails {
+//    }
 }

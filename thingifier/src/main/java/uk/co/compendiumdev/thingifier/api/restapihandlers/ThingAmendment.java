@@ -1,5 +1,6 @@
 package uk.co.compendiumdev.thingifier.api.restapihandlers;
 
+import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.ValidationReport;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
@@ -7,6 +8,12 @@ import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
 import java.util.Map;
 
 public class ThingAmendment {
+
+    private final Thingifier thingifier;
+
+    public ThingAmendment(final Thingifier thingifier) {
+        this.thingifier = thingifier;
+    }
 
     public ApiResponse amendInstance(final Map<String, String> args, final ThingInstance instance, final Boolean clearFieldsBeforeSettingFromArgs) {
 
