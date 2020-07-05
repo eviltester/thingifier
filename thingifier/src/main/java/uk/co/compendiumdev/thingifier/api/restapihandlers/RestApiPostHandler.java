@@ -29,7 +29,7 @@ public class RestApiPostHandler {
         Thing thing = thingifier.getThingNamedSingularOrPlural(url);
         if (thing != null) {
             // create a new thing does not enforce relationships
-            final ApiResponse response = new ThingCreation(thingifier).with(args.getStringMap(), thing);
+            final ApiResponse response = new ThingCreation(thingifier).with(args, thing);
             if(response.isErrorResponse()){
                 return response;
             }
@@ -71,7 +71,7 @@ public class RestApiPostHandler {
                 return ApiResponse.error404(String.format("No such %s entity instance with GUID %s found", thing.definition().getName(), instanceGuid));
             }
 
-            return amendAThingWithPost(args.getStringMap(), instance);
+            return amendAThingWithPost(args, instance);
         }
 
 
@@ -81,7 +81,7 @@ public class RestApiPostHandler {
         // get the things to post to
         SimpleQuery query = new SimpleQuery(thingifier, url).performQuery();
         if (query.lastMatchWasRelationship()) {
-            return new RelationshipCreation(thingifier).create(url, args.getStringMap(), query);
+            return new RelationshipCreation(thingifier).create(url, args, query);
         }
 
         // WHAT was that query?
@@ -90,7 +90,7 @@ public class RestApiPostHandler {
     }
 
 
-    private ApiResponse amendAThingWithPost(final Map<String, String> args, ThingInstance instance) {
+    private ApiResponse amendAThingWithPost(BodyParser args, ThingInstance instance) {
         // with a post we do not want to clear fields before setting - we only amend what we pass in
         return new ThingAmendment(thingifier).amendInstance(args, instance, false);
     }

@@ -2,6 +2,7 @@ package uk.co.compendiumdev.thingifier.api.restapihandlers;
 
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.ValidationReport;
+import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
 
@@ -15,8 +16,9 @@ public class ThingAmendment {
         this.thingifier = thingifier;
     }
 
-    public ApiResponse amendInstance(final Map<String, String> args, final ThingInstance instance, final Boolean clearFieldsBeforeSettingFromArgs) {
+    public ApiResponse amendInstance(final BodyParser bodyargs, final ThingInstance instance, final Boolean clearFieldsBeforeSettingFromArgs) {
 
+        final Map<String, String> args = bodyargs.getStringMap();
 
         ThingInstance cloned = null;
 

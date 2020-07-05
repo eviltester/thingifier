@@ -47,13 +47,13 @@ public class RestApiPutHandler {
             if (instance == null) {
                 // it does not exist, but we have a GUID - create it
 
-                return new ThingCreation(thingifier).withGuid(instanceGuid, args.getStringMap(), thing);
+                return new ThingCreation(thingifier).withGuid(instanceGuid, args, thing);
 
 
             } else {
                 // when amending existing thing with PUT it must be idempotent so
                 // check that all fields are valid in the args
-                return amendAThingWithPut(args.getStringMap(), instance);
+                return amendAThingWithPut(args, instance);
 
             }
         }
@@ -64,8 +64,9 @@ public class RestApiPutHandler {
 
     }
 
-    private ApiResponse amendAThingWithPut(final Map<String, String> args, final ThingInstance instance) {
+    private ApiResponse amendAThingWithPut(final BodyParser bodyargs, final ThingInstance instance) {
+
         return new ThingAmendment(thingifier).
-                amendInstance(args, instance, true);
+                amendInstance(bodyargs, instance, true);
     }
 }

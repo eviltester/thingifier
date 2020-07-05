@@ -3,6 +3,7 @@ package uk.co.compendiumdev.thingifier.api.restapihandlers;
 import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.ValidationReport;
+import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.generic.definitions.RelationshipVector;
 import uk.co.compendiumdev.thingifier.generic.definitions.ThingDefinition;
@@ -20,7 +21,10 @@ public class RelationshipCreation {
         this.thingifier = aThingifier;
     }
 
-    public ApiResponse create(final String url, final Map<String, String> args, final SimpleQuery query) {
+    public ApiResponse create(final String url, final BodyParser bodyargs, final SimpleQuery query) {
+
+        final Map<String, String> args = bodyargs.getStringMap();
+
         // get the relationship name
         String relationshipName = query.getLastRelationshipName();
 
@@ -62,7 +66,7 @@ public class RelationshipCreation {
 
             thingToCreate = thingifier.getThingNamed(createThing.getName());
 
-            response = new ThingCreation(thingifier).with(args, thingToCreate);
+            response = new ThingCreation(thingifier).with(bodyargs, thingToCreate);
             if(response.isErrorResponse()){
                 return response;
             }else{

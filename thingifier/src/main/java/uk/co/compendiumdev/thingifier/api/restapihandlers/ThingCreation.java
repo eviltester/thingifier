@@ -3,6 +3,7 @@ package uk.co.compendiumdev.thingifier.api.restapihandlers;
 import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.ValidationReport;
+import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
 
@@ -18,11 +19,14 @@ public class ThingCreation {
         this.thingifier = thingifier;
     }
 
-    public ApiResponse with(final Map<String, String> args, final Thing thing) {
+    public ApiResponse with(final BodyParser bodyargs, final Thing thing) {
+        final Map<String, String> args = bodyargs.getStringMap();
         return addNewThingWithFields(args, thing.createInstance(), thing);
     }
 
-    public ApiResponse withGuid(final String instanceGuid, final Map<String, String> args, final Thing thing) {
+    public ApiResponse withGuid(final String instanceGuid, final BodyParser bodyargs, final Thing thing) {
+
+        final Map<String, String> args = bodyargs.getStringMap();
 
         ThingInstance instance;
 
