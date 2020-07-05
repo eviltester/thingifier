@@ -6,10 +6,7 @@ import org.json.JSONObject;
 import org.json.XML;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class BodyParser {
 
@@ -46,35 +43,39 @@ public class BodyParser {
         return stringsInMap;
     }
 
-    public Map<String, String> getFlattenedStringMap() {
-        Map<String, String> stringsInMap = flattenToStringMap("", getMap());
+    // since complex keys can be duplicated,
+    // we can't use a hashmap, so we are using a list of map entries
+    // the map entries could be a custom Key Value Pair implementation if we wanted
+    public List<Map.Entry<String,String>> getFlattenedStringMap() {
+        List<Map.Entry<String,String>> stringsInMap = flattenToStringMap("", getMap());
         return stringsInMap;
     }
 
 
-    private Map<String, String> flattenToStringMap(final String prefixkey, final Object theValue) {
-        Map<String, String> stringsInMap = new HashMap();
+    private List<Map.Entry<String,String>> flattenToStringMap(final String prefixkey, final Object theValue) {
+        List<Map.Entry<String,String>> stringsInMap = new ArrayList<>();
         if (theValue instanceof String ) {
-            stringsInMap.put(prefixkey, (String) theValue);
+            stringsInMap.add(new AbstractMap.SimpleEntry<String,String>(prefixkey, (String)theValue));
         }
         if(theValue instanceof Double){
-            stringsInMap.put(prefixkey, String.valueOf(theValue));
+            stringsInMap.add(new AbstractMap.SimpleEntry<String,String>(prefixkey, (String)theValue));
         }
         String separator = "";
         if(prefixkey!=null && prefixkey.length() > 0 && !prefixkey.endsWith(".")){
             separator = ".";
         }
         if(theValue instanceof Map){
-            for (String key : ((Map<String,Object>)theValue).keySet()) {
-                Object aValue = ((Map<String,Object>)theValue).get(key);
-                Map<String,String> nestedValues = flattenToStringMap(prefixkey + separator + key, aValue);
-                stringsInMap.putAll(nestedValues);
+            for (Map.Entry<String,Object> entry : ((Map<String,Object>)theValue).entrySet()) {
+                String key = entry.getKey();
+                Object aValue = entry.getValue();
+                List<Map.Entry<String,String>> nestedValues = flattenToStringMap(prefixkey + separator + key, aValue);
+                stringsInMap.addAll(nestedValues);
             }
         }
         if(theValue instanceof ArrayList) {
             for(Object aValue : (ArrayList)theValue){
-                Map<String,String> nestedValues = flattenToStringMap(prefixkey + separator, aValue);
-                stringsInMap.putAll(nestedValues);
+                List<Map.Entry<String,String>> nestedValues = flattenToStringMap(prefixkey + separator, aValue);
+                stringsInMap.addAll(nestedValues);
             }
         }
         return stringsInMap;

@@ -5,6 +5,7 @@ import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.ValidationReport;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.generic.definitions.RelationshipVector;
+import uk.co.compendiumdev.thingifier.generic.definitions.ThingDefinition;
 import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
 
 import java.util.ArrayList;
@@ -19,13 +20,18 @@ public class BodyRelationshipValidator {
     }
 
     public ValidationReport validate(final BodyParser bodyargs, final Thing thing) {
+        final ThingDefinition thingDefinition = thing.definition();
+        return validate(bodyargs, thingDefinition);
+    }
+
+    public ValidationReport validate(final BodyParser bodyargs, final ThingDefinition thingDefinition) {
         final ValidationReport report = new ValidationReport();
 
-        Map<String,String> fullargs = bodyargs.getFlattenedStringMap();
+        List<Map.Entry<String,String>> fullargs = bodyargs.getFlattenedStringMap();
 
         boolean validRelationships = true;
 
-        for(Map.Entry<String, String> complexKeyValue : fullargs.entrySet()){
+        for(Map.Entry<String, String> complexKeyValue : fullargs){
             //is it a relationship?
             String complexKey = complexKeyValue.getKey();
             if(complexKey.startsWith("relationships.")){
@@ -37,16 +43,16 @@ public class BodyRelationshipValidator {
                     continue;
                 }
                 // is it a valid relationship name for this thing
-                if(!thing.definition().hasRelationship(parts[1])){
+                if(!thingDefinition.hasRelationship(parts[1])){
                     validRelationships = false;
                     report.addErrorMessage(
                             String.format("%s is not a valid relationship for %s",
-                                    parts[1], thing.definition().getName()));
+                                    parts[1], thingDefinition.getName()));
                     continue;
                 }
                 // is it a valid relationship to the other thing
                 boolean foundRelationship=false;
-                for(RelationshipVector relationships : thing.definition().getRelationships(parts[1])){
+                for(RelationshipVector relationships : thingDefinition.getRelationships(parts[1])){
                     if(relationships.getTo().definition().getPlural().equals(parts[2])){
                         foundRelationship=true;
                     }
@@ -55,7 +61,7 @@ public class BodyRelationshipValidator {
                     validRelationships=false;
                     report.addErrorMessage(
                             String.format("%s to %s is not a valid relationship for %s",
-                                    parts[1], parts[2], thing.definition().getName()));
+                                    parts[1], parts[2], thingDefinition.getName()));
                     continue;
                 }
                 // check that the thing we want to relate with exists

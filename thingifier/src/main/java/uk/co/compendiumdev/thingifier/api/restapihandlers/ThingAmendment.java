@@ -29,6 +29,7 @@ public class ThingAmendment {
             if(clearFieldsBeforeSettingFromArgs){
                 // if you want an idempotent amend then clear it down prior to amending
                 cloned.clearAllFields();
+
             }
             cloned.setFieldValuesFrom(args);
 
@@ -38,11 +39,20 @@ public class ThingAmendment {
 
         ValidationReport validation = cloned.validate();
 
+        // validate the relationships as well
+        ValidationReport relationshipsValidation = new BodyRelationshipValidator(thingifier).validate(bodyargs, cloned.getEntity());
+        validation.combine(relationshipsValidation);
+
         if (validation.isValid()) {
             if(clearFieldsBeforeSettingFromArgs){
                 instance.clearAllFields();
+                // delete all existing relationships for idempotent amend
+                instance.removeAllRelationships();
             }
             instance.setFieldValuesFrom(args);
+
+            final ApiResponse relresponse = new RelationshipCreator(thingifier).createRelationships(bodyargs, instance);
+
             return ApiResponse.success().returnSingleInstance(instance);
         } else {
             // do not add it, report the errors
