@@ -89,7 +89,7 @@ could implement a Thingifier URL query matcher to return instances based on quer
     // TODO: validation for dates - specific date formats
     // TODO: allow creation of a key/unique field to use instead of guid e.g. .keyIs("id")
     //     this means that /todos/_id_ would match the entity, rather than guid
-    // TODO: allow definition of unique scheme e.g. id starting at 0 auto increment
+    // TODO: allow definition of unique scheme e.g. id starting at 0 auto increment (GUID is global, ID is per entity)
 
 
     public static Thingifier definedAsThingifier() {

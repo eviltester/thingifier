@@ -194,15 +194,9 @@ public class JsonRequestResponseTest {
 
         Assert.assertEquals("title from json", aTodo.getValue("title"));
 
-        // TODO: consider if this should be an array
-        //{"doneStatus":"FALSE","guid":
         Assert.assertTrue("Should have returned json", response.getBody().startsWith("{\"doneStatus\":\"FALSE\",\"guid\":"));
 
     }
-
-    // We only support single items as input so this is not acceptable
-    // //{"todo":{"title":"title from json"}}
-
 
          /*
 
@@ -240,7 +234,6 @@ public class JsonRequestResponseTest {
 
         Assert.assertEquals("title from json", aTodo.getValue("title"));
 
-        //{"todo":"doneStatus":"FALSE","guid":
         Assert.assertTrue("Should have returned xml", response.getBody().startsWith("<todo><doneStatus>FALSE</doneStatus>"));
 
     }
@@ -275,8 +268,6 @@ public class JsonRequestResponseTest {
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).post(request);
 
         Assert.assertEquals(200, response.getStatusCode());
-
-        // TODO: amendments should possibly return todos[] or a single object {" but certainly not {"todo":
 
         System.out.println(response.getBody());
 
@@ -317,9 +308,6 @@ public class JsonRequestResponseTest {
         System.out.println(response.getBody());
 
         Assert.assertEquals(200, response.getStatusCode());
-
-        // TODO: amendments should possibly return todos[] or a single object {" but certainly not {"todo":
-
 
         Assert.assertEquals(1, todo.countInstances());
 

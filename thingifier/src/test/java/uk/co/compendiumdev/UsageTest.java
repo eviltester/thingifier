@@ -25,8 +25,8 @@ public class UsageTest {
     // done: create relationships between things
     // done: named directional relationships
     // done: delete thing instances
+    // done: show relationships in the instances e.g. for a todo show "relationships" : [ "task-of" : [{"guid":"xxx"}]]
 
-    // todo: show relationships in the instances e.g. for a todo show "relationships" : [ "task-of" : [{"guid":"xxx"}]]
     // todo: create test coverage for creating relationships through post 'in' the instance
     // todo: find things based on field values
     // todo: cardinality of relationships
@@ -147,7 +147,7 @@ public class UsageTest {
     @Test
     public void todoModelUsageExamples(){
 
-        // Start simple with a to do manager model e.g. todo, context, project (can also be a sub-project), task group
+        // Start simple with a to do manager model e.g. to do items, context, project (can also be a sub-project), task group
 
         Thing todo = Thing.create("ToDo", "ToDos");
 

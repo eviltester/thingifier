@@ -71,8 +71,8 @@ public class RelationshipHttpTest {
         HttpApiRequest request = new HttpApiRequest("projects/" + aproject.getGUID() + "/tasks");
         request.getHeaders().putAll(HeadersSupport.acceptJson());
 
-        //{"title":"My New Todo"}
-        String body = "{\"title\":\"My New Todo\"}";
+        //{"title":"My New To do"}
+        String body = "{\"title\":\"My New To do\"}";
         request.setBody(body);
 
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).post(request);
@@ -187,8 +187,8 @@ public class RelationshipHttpTest {
         HttpApiRequest request = new HttpApiRequest("categories/" + acategory.getGUID() + "/todos");
         request.getHeaders().putAll(HeadersSupport.acceptJson());
 
-        //{"title":"My New Todo"}
-        String body = "{\"title\":\"My New Todo\"}";
+        //{"title":"My New To do"}
+        String body = "{\"title\":\"My New To do\"}";
         request.setBody(body);
 
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).post(request);
@@ -217,7 +217,6 @@ public class RelationshipHttpTest {
         HttpApiRequest request = new HttpApiRequest("projects/" + aproject.getGUID() + "/tasks");
         request.getHeaders().putAll(HeadersSupport.containsXml());
 
-        //<todo><guid>%s</guid></todo>}
         String body = String.format("<todo><guid>%s</guid></todo>", atodo.getGUID());
         request.setBody(body);
 
@@ -293,11 +292,11 @@ public class RelationshipHttpTest {
     /**
      * Optional Relationships - Mandatory
      *
-     * can not create an estimate without a todo
-     * can create an estimate when added to a todo directly because relationship is created
-     * when delete a todo the estimate is also deleted
-     * GET estimates for a todo
-     * GET todos for an estimate
+     * can not create an estimate without a to do
+     * can create an estimate when added to a to do directly because relationship is created
+     * when delete a to do the estimate is also deleted
+     * GET estimates for a to do
+     * GET to dos for an estimate
      * TODO: amend relationship to move estimate to another todo (implement with relationships as fields in the object e.g. "todos" : [{"guid": "xxx-xxx-xxx-xxx"}])
      * TODO: cardinality validation on relationship fields e.g. max of 2 etc.
      * TODO: create 'proposed objects' and validate those rather than create and delete (will support amend validation as well)

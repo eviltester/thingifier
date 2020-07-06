@@ -50,6 +50,21 @@ public class RelationshipCreator {
                                     parts[1], parts[2], parts[3],
                                     complexKeyValue.getValue()));
                 }
+            }else{
+                // support compressed relationships
+                if(complexKey.contains(".")) {
+                    String[] parts = complexKey.split("\\.");
+                    // assume it is a relationship - because of earlier validation
+                    if(parts.length == 2){
+                        final ThingInstance instanceToRelateTo = thingifier.findThingInstanceByGuid(complexKeyValue.getValue());
+                        if(instanceToRelateTo!=null){
+                            relationships.add(
+                                new RelationshipDetails(
+                                        parts[0], instanceToRelateTo.getEntity().getPlural(), parts[1],
+                                        complexKeyValue.getValue()));
+                        }
+                    }
+                }
             }
         }
         return relationships;

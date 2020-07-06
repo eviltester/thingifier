@@ -491,8 +491,7 @@ public class EntityInstanceApiNonHttpTest {
 
         // Mandatory field validation on POST create - must have a title
         requestBody = new HashMap<String, String>();
-        //requestBody.put("title", "A new TODO Item");
-        requestBody.put("description", "A new TODO Item");
+        requestBody.put("description", "A new TODO Item"); // 400 because it should be "title"
 
         apiresponse = todoManager.api().post(String.format("todo"),  getSimpleParser(requestBody));
         Assert.assertEquals(400, apiresponse.getStatusCode());
@@ -532,7 +531,7 @@ public class EntityInstanceApiNonHttpTest {
 
         // Mandatory field validation PUT create
         requestBody = new HashMap<String, String>();
-        //requestBody.put("title", "A new TODO Item");
+        // will generate 400 because description should be title
         requestBody.put("description", "A new TODO Item");
         requestBody.put("doneStatus", "TRUE");
         apiresponse = todoManager.api().put(String.format("todo/%s", UUID.randomUUID().toString()), getSimpleParser(requestBody));
@@ -546,7 +545,7 @@ public class EntityInstanceApiNonHttpTest {
 
         // Mandatory field validation PUT amend
         requestBody = new HashMap<String, String>();
-        //requestBody.put("title", "A new TODO Item");
+        // will generate 400 because description should be title
         requestBody.put("description", "Amended TODO Item ");
         requestBody.put("doneStatus", "TRUE");
         apiresponse = todoManager.api().put(String.format("todo/%s", paperwork.getGUID()), getSimpleParser(requestBody));
@@ -575,7 +574,7 @@ public class EntityInstanceApiNonHttpTest {
 
         // Mandatory field validation PUT create
         requestBody = new HashMap<String, String>();
-        //requestBody.put("title", "A new TODO Item");
+        // will generate 400 because description should be title
         requestBody.put("description", "A new TODO Item");
         requestBody.put("doneStatus", "TRUE");
         apiresponse = todoManager.api().put(String.format("todo/%s", UUID.randomUUID().toString()), getSimpleParser(requestBody));
@@ -597,7 +596,7 @@ public class EntityInstanceApiNonHttpTest {
 
         // Mandatory field validation PUT amend
         requestBody = new HashMap<String, String>();
-        //requestBody.put("title", "A new TODO Item");
+        // will generate 400 because description should be title
         requestBody.put("description", "Amended TODO Item ");
         requestBody.put("doneStatus", "TRUE");
         apiresponse = todoManager.api().put(String.format("todo/%s", paperwork.getGUID()), getSimpleParser(requestBody));

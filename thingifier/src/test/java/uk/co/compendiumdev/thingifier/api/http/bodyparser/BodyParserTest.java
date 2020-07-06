@@ -177,7 +177,7 @@ public class BodyParserTest {
         HttpApiRequest request = new HttpApiRequest("/estimates");
         request.addHeader("Content-Type", "application/xml");
         // <estimate><duration>5</duration><estimates><estimate><guid>1234567890</guid></estimate></estimates></estimate>
-        // this is an estimate which wants to be linked to multiple todos using the estimate relationship - each estimate can  only be linked to 1 todo
+        // this is an estimate which wants to be linked to multiple to dos using the estimate relationship - each estimate can  only be linked to 1 to do
         request.setBody("<estimate><duration>5</duration><estimate><todo><guid>1234567890</guid></todo></estimate></estimate>");
 
         List<String> names = new ArrayList<>();
@@ -203,6 +203,6 @@ public class BodyParserTest {
         Assert.assertEquals(1, objects.size());
         Assert.assertEquals("estimate", objects.get(0));
 
-        // estimate is a LinkedTreeMap of LinkedTreeMap "todo" of ArrayList of LinkedTreeMap
+        // estimate is a LinkedTreeMap of LinkedTreeMap "to do" of ArrayList of LinkedTreeMap
     }
 }

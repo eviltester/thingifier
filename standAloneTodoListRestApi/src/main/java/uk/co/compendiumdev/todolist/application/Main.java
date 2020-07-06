@@ -1,6 +1,8 @@
 package uk.co.compendiumdev.todolist.application;
 
 import spark.Spark;
+import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.application.DefaultGUI;
 import uk.co.compendiumdev.thingifier.application.ThingifierRestServer;
 import uk.co.compendiumdev.thingifier.application.examples.TodoListThingifier;
 
@@ -52,9 +54,15 @@ public class Main {
             return "";
         });
 
+        Thingifier thingifier;
+
+        thingifier = new TodoListThingifier().get();
+
+        new DefaultGUI(thingifier).setupDefaultGUI();
+
         ThingifierRestServer restServer;
-        restServer = new ThingifierRestServer(
-                            args, "", new TodoListThingifier().get());
+
+        restServer = new ThingifierRestServer(args, "", thingifier);
 
         System.out.println("Running on " + Spark.port());
         System.out.println(" e.g. http://localhost:" + Spark.port());

@@ -1,14 +1,11 @@
 package uk.co.compendiumdev.thingifier.application;
 
-import spark.Service;
 import spark.Spark;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.application.examples.TodoListThingifier;
 import uk.co.compendiumdev.thingifier.application.examples.TodoManagerThingifier;
-import uk.co.compendiumdev.thingifier.reporting.RestApiDocumentationGenerator;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static spark.Spark.get;

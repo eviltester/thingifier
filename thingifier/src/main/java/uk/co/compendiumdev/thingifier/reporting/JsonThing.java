@@ -74,8 +74,15 @@ public class JsonThing {
                 }
             ]
          */
-        // TODO: allow customisation of the relationships rendering e.g. just make the "relationship_name": [{"guid","value"},{...}] array the root
         final Collection<RelationshipVector> relationships = thingInstance.getEntity().getRelationships();
+
+        // compressed relationships are possible when relationship_name is not a field name
+        /*
+            task-of: [{"guid":"..."},{...}]
+         */
+        Boolean hasAnyComplexRelationships = false; // assume that most relationships can be compressed
+        Boolean allowCompressedRelationships = true; // todo: allow configuring relationship compression at app level
+
         // "relationships" : [
         if(relationships.size()>0 && thingInstance.hasAnyRelationshipInstances()){
             final JsonArray relationshipsArray = new JsonArray();
@@ -83,9 +90,14 @@ public class JsonThing {
             // fill the array "relationship_name" : [
             for(RelationshipVector relationship : relationships){
                 final Collection<ThingInstance> relatedItems = thingInstance.connectedItems(relationship.getName());
+
+                boolean isCompressedRelationship=true;
+                if(thingInstance.getEntity().hasFieldNameDefined(relationship.getName())){
+                    // cannot make compressed because it has a field of the same name
+                    isCompressedRelationship=false;
+                }
+
                 if(relatedItems.size()>0) {
-                    // relationship_name" : [
-                    final JsonArray namedRelationshipInstancesArray = new JsonArray();
 
                     // for each thing related to
                     //"typeofthingsplural": [
@@ -96,20 +108,32 @@ public class JsonThing {
                         arrayOfGuids.add(itemGuidObject);
                     }
 
-                    //"typeofthingsplural": [
-                    final JsonObject objectForArrayOfGuids = new JsonObject();
-                    objectForArrayOfGuids.add(relationship.getTo().definition().getPlural(), arrayOfGuids);
-                    namedRelationshipInstancesArray.add(objectForArrayOfGuids);
+                    if(isCompressedRelationship && allowCompressedRelationships){
+                        // if it is compressed then add the array directly to the jsonobj
+                        // relationship_name" : [
+                        jsonobj.add(relationship.getName(), arrayOfGuids);
 
+                    }else {
 
-                    // relationship_name" : [
-                    final JsonObject relationshipArrayObject = new JsonObject();
-                    relationshipArrayObject.add(relationship.getName(), namedRelationshipInstancesArray);
-                    relationshipsArray.add(relationshipArrayObject);
+                        final JsonArray namedRelationshipInstancesArray = new JsonArray();
+                        //"typeofthingsplural": [
+                        final JsonObject objectForArrayOfGuids = new JsonObject();
+                        objectForArrayOfGuids.add(relationship.getTo().definition().getPlural(), arrayOfGuids);
+                        namedRelationshipInstancesArray.add(objectForArrayOfGuids);
+
+                        // relationship_name" : [
+                        final JsonObject relationshipArrayObject = new JsonObject();
+                        relationshipArrayObject.add(relationship.getName(), namedRelationshipInstancesArray);
+                        relationshipsArray.add(relationshipArrayObject);
+
+                        hasAnyComplexRelationships = true;
+                    }
                 }
             }
 
-            jsonobj.add("relationships", relationshipsArray);
+            if(hasAnyComplexRelationships) {
+                jsonobj.add("relationships", relationshipsArray);
+            }
         }
 
         return jsonobj;
@@ -137,7 +161,7 @@ public class JsonThing {
     private static JsonArray asJsonArrayInstanceWrapped(Collection<ThingInstance> things) {
 
 
-        // [{"todo":{"guid":"bob"}}, {"todo":{"guid":"bob2"}}]
+        // [{"item":{"guid":"bob"}}, {"item":{"guid":"bob2"}}]
 
         final JsonArray jsonArray = new JsonArray();
 

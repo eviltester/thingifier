@@ -61,7 +61,7 @@ public class OptionalityRelationshipTest {
         ThingInstance tidyRoomEstimate = estimates.createInstance().
                                         setValue("duration", "1");
 
-        // it should be invalid because the estimate does not have a relationship with a todo
+        // it should be invalid because the estimate does not have a relationship with a to do
         Assert.assertFalse(tidyRoomEstimate.validate().isValid());
 
     }
@@ -84,7 +84,7 @@ public class OptionalityRelationshipTest {
 
         tidyRoomEstimate.connects("estimate", tidy);
 
-        // it should be valid because the estimate has a relationship with a todo
+        // it should be valid because the estimate has a relationship with a to do
         Assert.assertTrue(tidyRoomEstimate.validate().isValid());
 
         estimates.addInstance(tidyRoomEstimate);
@@ -115,7 +115,7 @@ public class OptionalityRelationshipTest {
 
         tidyRoomEstimate.connects("estimate", tidy);
 
-        // it should be valid because the estimate has a relationship with a todo
+        // it should be valid because the estimate has a relationship with a to do
         Assert.assertTrue(tidyRoomEstimate.validate().isValid());
 
         estimates.addInstance(tidyRoomEstimate);
@@ -125,7 +125,7 @@ public class OptionalityRelationshipTest {
         Assert.assertEquals(1, estimates.getInstances().size());
         Assert.assertEquals(1, todos.getInstances().size());
 
-        // now delete the todo, and the estimate should also be deleted
+        // now delete the to do, and the estimate should also be deleted
 
         todoManager.deleteThing(tidy);
 

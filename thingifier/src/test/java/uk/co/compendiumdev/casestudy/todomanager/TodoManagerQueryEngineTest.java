@@ -67,7 +67,7 @@ public class TodoManagerQueryEngineTest {
 
     @Test
     public void canGetListOfEntityInstancesViaName(){
-        // todo
+        // to do
 
         final SimpleQuery query = new SimpleQuery(todoManager, "todo");
 
@@ -105,7 +105,7 @@ public class TodoManagerQueryEngineTest {
 
         List<ThingInstance> queryResults;
 
-        // todo/_GUID_
+        // to do/_GUID_
 
         final SimpleQuery query = new SimpleQuery(todoManager, "todo/" + paperwork.getGUID());
 
@@ -126,7 +126,7 @@ public class TodoManagerQueryEngineTest {
 
         List<ThingInstance> queryResults;
 
-        // todo/_GUID_
+        // to do/_GUID_
 
         final SimpleQuery query = new SimpleQuery(todoManager, "todos/" + paperwork.getGUID());
 
@@ -148,7 +148,7 @@ public class TodoManagerQueryEngineTest {
 
         List<ThingInstance> queryResults;
 
-        // todo/_GUID_
+        // to do/_GUID_
 
         final SimpleQuery query = new SimpleQuery(todoManager, "todo/" + paperwork.getGUID() + "bob");
 
@@ -168,7 +168,7 @@ public class TodoManagerQueryEngineTest {
 
         List<ThingInstance> queryResults;
 
-        // todo/_GUID_
+        // to do/_GUID_
 
         final SimpleQuery query = new SimpleQuery(todoManager, "todos/" + paperwork.getGUID() + "bob");
 
@@ -224,7 +224,7 @@ public class TodoManagerQueryEngineTest {
 
 
         // match on entity types
-        // project/_GUID_/todo
+        // project/_GUID_/to do
 
         queryResults = new SimpleQuery(todoManager, String.format("project/%s/todo", officeWork.getGUID())).performQuery().getListThingInstance();
 
@@ -234,7 +234,7 @@ public class TodoManagerQueryEngineTest {
 
         System.out.println(asJson(queryResults));
 
-        // project/_GUID_/todo/category
+        // project/_GUID_/to do/category
 
         queryResults = new SimpleQuery(todoManager, String.format("project/%s/todo/category", officeWork.getGUID())).performQuery().getListThingInstance();
 

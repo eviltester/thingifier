@@ -7,10 +7,10 @@
     <version>1.0.0</version>
     <packaging>pom</packaging>
 
+
     <properties>
-        <thingifier.version>1.5.1-SNAPSHOT</thingifier.version>
+        <thingifier.version>1.5.1</thingifier.version>
         <java.version>1.8</java.version>
-        <!--<java.version>13</java.version>-->
     </properties>
 
     <modules>
@@ -20,3 +20,55 @@
         <module>standAloneTodoListManagerRestApi</module>
     </modules>
 </project>
+
+        <!--
+
+        1.5.1
+            - added simple view gui /gui
+            - added compressed relationships - as default in response
+            - both forms acceptable in the input
+
+            e.g.
+
+            ~~~~~~~~
+            "task-of": [
+                {
+                  "guid": "91b56544-3345-48e6-93f3-986e53586390"
+                }
+            ],
+            "categories": [
+                {
+                  "guid": "61693e4a-b1da-4adb-af37-d53d1b045311"
+                }
+              ]
+            ~~~~~~~~
+
+            instead of
+
+            ~~~~~~~~
+              "relationships": [
+        {
+          "task-of": [
+            {
+              "projects": [
+                {
+                  "guid": "91b56544-3345-48e6-93f3-986e53586390"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "categories": [
+            {
+              "categories": [
+                {
+                  "guid": "61693e4a-b1da-4adb-af37-d53d1b045311"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+            ~~~~~~~~
+        -->

@@ -112,12 +112,12 @@ public class BodyParser {
         }
 
         // because we are using crude XML and JSON parsing
-        // <project><title>My posted todo on the project</title></project>
-        // would become {"project":{"title":"My posted todo on the project"}}
-        // when we want {"title":"My posted todo on the project"}
+        // <project><title>My posted to do on the project</title></project>
+        // would become {"project":{"title":"My posted to do on the project"}}
+        // when we want {"title":"My posted to do on the project"}
         // this is just a quick hack to amend it to support XML
         // TODO: try to change this in the future to make it more robust, perhaps the API shouldn't take a String as the body, it should take a parsed class?
-        // TODO: BUG - since we remove the wrapper we might send in a POST <project><title>My posted todo on the project</title></project> to /todo and it will work fine if the fields are the same
+        // TODO: BUG - since we remove the wrapper we might send in a POST <project><title>My posted to do on the project</title></project> to /todo and it will work fine if the fields are the same
         if (request.getHeader("Content-Type") != null && request.getHeader("Content-Type").endsWith("/xml")) {
 
             // PROTOTYPE XML Conversion

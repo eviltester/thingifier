@@ -71,7 +71,7 @@ public class RestApiDocumentationGenerator {
             for (RelationshipDefinition relationship : relationships) {
 
 
-                //task-of : todo => project
+                //task-of : task => project
                 String reportLine = String.format("<li>%s : %s => %s%n",
                         relationship.getName(),
                         relationship.from().definition().getName(),
@@ -79,7 +79,7 @@ public class RestApiDocumentationGenerator {
 
 
                 // for a two way relationship can it be combined on to one line e.g.
-                // tasks/task-of : project =(tasks)=> todo  / todo=(task-of)=> project
+                // tasks/task-of : project =(tasks)=> task  / task=(task-of)=> project
 
                 if (relationship.isTwoWay()) {
                     reportLine = String.format("<li>%1$s/%2$s : %3$s =(%1$s)=> %4$s / %4$s =(%2$s)=> %3$s %n",

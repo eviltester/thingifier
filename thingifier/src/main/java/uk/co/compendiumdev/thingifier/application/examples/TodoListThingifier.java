@@ -15,7 +15,7 @@ import static uk.co.compendiumdev.thingifier.generic.FieldType.STRING;
 public class TodoListThingifier {
 
     /*
-            A Very simple list of todo items
+            A Very simple list of to do items
      */
     public Thingifier get() {
 

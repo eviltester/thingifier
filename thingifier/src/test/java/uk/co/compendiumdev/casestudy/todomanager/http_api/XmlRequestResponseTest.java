@@ -121,13 +121,9 @@ public class XmlRequestResponseTest {
 
         Assert.assertEquals("test title", aTodo.getValue("title"));
 
-        //{"todo":"doneStatus":"FALSE","guid":
         Assert.assertTrue("Should have returned xml", response.getBody().startsWith("<todo><doneStatus>FALSE</doneStatus>"));
 
     }
-
-    // We only support single items as input so this is not acceptable
-    // "<todos><todo><title>test title</title></todo></todos>"
 
     @Test
     public void canPostAndAmendAnItemWithXml(){
@@ -142,15 +138,12 @@ public class XmlRequestResponseTest {
         request.getHeaders().putAll(HeadersSupport.containsXml());
 
 
-        //<todo><title>test title</title></todo>
         request.setBody("<todo><title>test title</title></todo>");
 
 
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).post(request);
 
         Assert.assertEquals(200, response.getStatusCode());
-
-        // TODO: should amendments should really return <todos> not <todo>
 
         System.out.println(response.getBody());
 
@@ -231,17 +224,12 @@ public class XmlRequestResponseTest {
 
         Assert.assertEquals(200, response.getStatusCode());
 
-        // TODO: amendments should possibly return <todos>
-
-
         Assert.assertEquals(1, todo.countInstances());
 
         Assert.assertEquals("test title", atodo.getValue("title"));
 
     }
 
-    // We only support single items as input so this is not acceptable
-    // "<todos><todo><title>test title</title></todo></todos>"
     private class TodoCollectionResponse{
 
         Todo[] todos;
