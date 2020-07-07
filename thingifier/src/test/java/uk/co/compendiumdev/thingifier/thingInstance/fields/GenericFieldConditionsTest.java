@@ -25,6 +25,17 @@ public class GenericFieldConditionsTest {
         Assertions.assertEquals("Not Completed", session.getValue("CompletedStatus"));
     }
 
+    @Test
+    public void canCreateFieldWithExamples(){
+
+        entityTestSession.addField(Field.is("complicated").withExample("nuclear physics"));
+
+        Assertions.assertEquals(1,
+                entityTestSession.getField("complicated").getExamples().size());
+
+        Assertions.assertEquals("nuclear physics",
+                entityTestSession.getField("complicated").getRandomExampleValue());
+    }
 
     @Test
     public void fieldNameAccessIsCaseInsensitive(){

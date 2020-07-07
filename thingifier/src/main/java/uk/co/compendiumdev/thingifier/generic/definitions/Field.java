@@ -5,14 +5,15 @@ import uk.co.compendiumdev.thingifier.generic.FieldType;
 import uk.co.compendiumdev.thingifier.generic.definitions.validation.MatchesTypeValidationRule;
 import uk.co.compendiumdev.thingifier.generic.definitions.validation.ValidationRule;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 
 public final class Field {
 
     private final String name;
     private final FieldType type;
+    private final Set<String> fieldExamples;
+
     private boolean fieldIsOptional;
 
     // default value for the field
@@ -20,6 +21,8 @@ public final class Field {
     private List<ValidationRule> validationRules;
     private boolean truncateStringIfTooLong;
     private int truncateStringLengthTo;
+    private int maximumIntegerValue;
+    private int minimumIntegerValue;
 
     private Field(final String name, final FieldType type) {
         this.name = name;
@@ -27,7 +30,9 @@ public final class Field {
         validationRules = new ArrayList<>();
         fieldIsOptional = true;
         truncateStringIfTooLong=false;
-
+        fieldExamples = new HashSet<>();
+        maximumIntegerValue = Integer.MAX_VALUE;
+        minimumIntegerValue = Integer.MIN_VALUE;
     }
 
     public static Field is(String name) {
@@ -40,6 +45,7 @@ public final class Field {
     }
 
 
+
     public String getName() {
         return name;
     }
@@ -47,6 +53,7 @@ public final class Field {
 
     public Field withDefaultValue(String aDefaultValue) {
         this.defaultValue = aDefaultValue;
+        fieldExamples.add(aDefaultValue);
         return this;
     }
 
@@ -166,5 +173,74 @@ public final class Field {
             return truncateStringLengthTo;
         }
         return -1; // no limit
+    }
+
+    public String truncatedString(String toMakeWithinLimits){
+        String truncated = toMakeWithinLimits;
+        if(truncateStringIfTooLong){
+            truncated = toMakeWithinLimits.substring(0,getMaximumAllowedLength());
+        }
+        return truncated;
+    }
+
+    public Field withExample(final String anExample) {
+        fieldExamples.add(anExample);
+        return this;
+    }
+
+    public ArrayList<String> getExamples() {
+
+        if(type==FieldType.BOOLEAN){
+            String[] samples = {"true", "false"};
+            return new ArrayList<String>(Arrays.asList(samples));
+        }
+
+        if(type==FieldType.INTEGER){
+            // if max value then set upperbound
+            int upperBound = Integer.MAX_VALUE;
+            // if min value then set lowerBound
+            int lowerBound = Integer.MIN_VALUE;
+            ArrayList<String>returnThis = new ArrayList<>();
+            String rndInt = String.valueOf(
+                                ThreadLocalRandom.current().
+                                        nextInt(lowerBound, upperBound + 1));
+            returnThis.add(rndInt);
+            return returnThis;
+        }
+
+        if(type==FieldType.STRING){
+            if(fieldExamples.size()==0){
+                ArrayList<String>returnThis = new ArrayList<>();
+                //TODO: randomly generate a string
+                returnThis.add(truncatedString("bob"));
+                return returnThis;
+            }
+        }
+        return new ArrayList<String>(fieldExamples);
+    }
+
+    public String getRandomExampleValue() {
+        final ArrayList<String> examples = getExamples();
+
+        if(examples.size()==0){
+            return "";
+        }
+
+        return examples.get(new Random().nextInt(examples.size()));
+    }
+
+    public Field withMaximumValue(final int maximumInteger) {
+        this.maximumIntegerValue = maximumInteger;
+        return this;
+    }
+
+    public Field withMinimumValue(final int minimumInteger) {
+        this.minimumIntegerValue = minimumInteger;
+        return this;
+    }
+
+    public boolean withinAllowedIntegerRange(final int intVal) {
+        return (intVal>=minimumIntegerValue &&
+                intVal<=maximumIntegerValue);
     }
 }
