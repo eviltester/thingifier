@@ -17,7 +17,8 @@ public class ThingInstanceCreationTest {
     public void createEntity(){
 
         entityTestSession = ThingDefinition.create("Test Session", "Test Sessions");
-        entityTestSession.defineField("Title");
+
+        entityTestSession.addField(Field.is("Title"));
         entityTestSession.addFields(Field.is("CompletedStatus").withDefaultValue("Not Completed"));
         entityTestSession.addFields(Field.is("review", FieldType.BOOLEAN).withDefaultValue("TRUE"));
         entityTestSession.addFields(Field.is("falsey", FieldType.BOOLEAN));

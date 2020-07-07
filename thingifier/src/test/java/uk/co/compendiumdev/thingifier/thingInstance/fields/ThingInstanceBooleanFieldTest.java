@@ -1,4 +1,4 @@
-package uk.co.compendiumdev.thingifier.thingInstance;
+package uk.co.compendiumdev.thingifier.thingInstance.fields;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,15 +16,15 @@ public class ThingInstanceBooleanFieldTest {
     public void createEntity(){
 
         entityTestSession = ThingDefinition.create("Test Session", "Test Sessions");
-        entityTestSession.defineField("Title");
-        entityTestSession.addFields(Field.is("CompletedStatus").withDefaultValue("Not Completed"));
         entityTestSession.addFields(Field.is("review", FieldType.BOOLEAN).withDefaultValue("TRUE"));
         entityTestSession.addFields(Field.is("falsey", FieldType.BOOLEAN));
+
+        // TODO: allow 'optional' on boolean so could be nullable not set
     }
 
 
     @Test
-    public void booleanFieldsCanOnlyBeSetAsTrueOrFalse(){
+    public void booleanFieldsCanOnlyBeSetAsTrueOrFalse() {
 
         ThingInstance session = new ThingInstance(entityTestSession);
 
@@ -36,17 +36,19 @@ public class ThingInstanceBooleanFieldTest {
 
         session.setValue("review", "TRUE");
         Assertions.assertEquals("TRUE", session.getValue("review"));
+    }
 
+    @Test
+    public void booleanFieldsRaiseExceptionForInvalidValue(){
 
-        try {
+        ThingInstance session = new ThingInstance(entityTestSession);
+
+        Assertions.assertThrows(IllegalArgumentException.class, ()->{
             session.setValue("review", "BOB");
+        });
 
-            Assertions.fail("An Exception should have been thrown");
-        }catch(IllegalArgumentException e){
-            // unchanged from default
-            Assertions.assertEquals("TRUE", session.getValue("review"));
-        }
-
+        // unchanged from default
+        Assertions.assertEquals("TRUE", session.getValue("review"));
     }
 
 

@@ -1,4 +1,4 @@
-package uk.co.compendiumdev.thingifier.thingInstance;
+package uk.co.compendiumdev.thingifier.thingInstance.fields;
 
 
 import org.junit.jupiter.api.Assertions;

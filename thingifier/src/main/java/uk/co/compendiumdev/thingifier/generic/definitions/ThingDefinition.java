@@ -47,13 +47,7 @@ public class ThingDefinition {
         return this;
     }
 
-    public ThingDefinition defineField(String fieldName) {
-
-        addField(Field.is(fieldName));
-        return this;
-    }
-
-    private void addField(Field aField) {
+    public void addField(Field aField) {
         fields.put(aField.getName().toLowerCase(), aField);
     }
 

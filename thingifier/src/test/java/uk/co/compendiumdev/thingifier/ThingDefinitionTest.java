@@ -2,6 +2,7 @@ package uk.co.compendiumdev.thingifier;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import uk.co.compendiumdev.thingifier.generic.definitions.Field;
 import uk.co.compendiumdev.thingifier.generic.definitions.ThingDefinition;
 
 public class ThingDefinitionTest {
@@ -20,7 +21,8 @@ public class ThingDefinitionTest {
 
         eDefn.setName("aRequirement");
         eDefn.setPlural("theRequirements");
-        eDefn.defineField("Title");
+
+        eDefn.addField(Field.is("Title"));
 
         Assertions.assertEquals("aRequirement", eDefn.getName());
         Assertions.assertEquals("theRequirements", eDefn.getPlural());
