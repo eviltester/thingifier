@@ -31,8 +31,6 @@ public class UsageTest {
     // todo: find things based on field values
     // todo: cardinality of relationships
     // todo: test for optional fields (they are optional by default)
-    // todo: default field values
-    // todo: regex for field validation
     // todo: randomly generate data against regex
     // todo: delete definitions - and all things
 

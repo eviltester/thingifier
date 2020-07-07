@@ -18,12 +18,15 @@ public final class Field {
     // default value for the field
     private String defaultValue;
     private List<ValidationRule> validationRules;
+    private boolean truncateStringIfTooLong;
+    private int truncateStringLengthTo;
 
     private Field(final String name, final FieldType type) {
         this.name = name;
         this.type = type;
         validationRules = new ArrayList<>();
         fieldIsOptional = true;
+        truncateStringIfTooLong=false;
 
     }
 
@@ -139,9 +142,29 @@ public final class Field {
         return validationRules;
     }
 
+    public boolean isMandatory(){
+        return !fieldIsOptional;
+    }
+
     public Field mandatory() {
         fieldIsOptional = false;
         return this;
     }
 
+    public Field truncateStringTo(final int maximumTruncatedLengthOfString) {
+        truncateStringIfTooLong = true;
+        truncateStringLengthTo=maximumTruncatedLengthOfString;
+        return this;
+    }
+
+    public boolean shouldTruncate() {
+        return truncateStringIfTooLong;
+    }
+
+    public int getMaximumAllowedLength() {
+        if(truncateStringIfTooLong){
+            return truncateStringLengthTo;
+        }
+        return -1; // no limit
+    }
 }

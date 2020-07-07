@@ -1,6 +1,7 @@
 package uk.co.compendiumdev.thingifier.generic.instances;
 
 import uk.co.compendiumdev.thingifier.api.ValidationReport;
+import uk.co.compendiumdev.thingifier.generic.FieldType;
 import uk.co.compendiumdev.thingifier.generic.definitions.Field;
 import uk.co.compendiumdev.thingifier.generic.definitions.RelationshipVector;
 import uk.co.compendiumdev.thingifier.generic.definitions.ThingDefinition;
@@ -70,7 +71,15 @@ final public class ThingInstance {
         if (this.entityDefinition.hasFieldNameDefined(fieldName)) {
             Field field = entityDefinition.getField(fieldName);
             if (field.isValidValue(value)) {
-                this.instance.addValue(fieldName, value);
+                String valueToAdd = value;
+                if(field.getType()== FieldType.STRING){
+                    if(field.shouldTruncate()){
+                        valueToAdd = valueToAdd.substring(0,field.getMaximumAllowedLength());
+                    }
+                }
+
+                this.instance.addValue(fieldName, valueToAdd);
+
             } else {
                 throw new IllegalArgumentException(String.format("Invalid Value %s for field %s of type %s", value, field.getName(), field.getType()));
             }

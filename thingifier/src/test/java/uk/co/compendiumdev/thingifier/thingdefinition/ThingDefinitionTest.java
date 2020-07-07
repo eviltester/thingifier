@@ -1,4 +1,4 @@
-package uk.co.compendiumdev.thingifier;
+package uk.co.compendiumdev.thingifier.thingdefinition;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

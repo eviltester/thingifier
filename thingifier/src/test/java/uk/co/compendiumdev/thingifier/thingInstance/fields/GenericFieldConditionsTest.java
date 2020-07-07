@@ -1,14 +1,13 @@
-package uk.co.compendiumdev.thingifier.thingInstance;
+package uk.co.compendiumdev.thingifier.thingInstance.fields;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import uk.co.compendiumdev.thingifier.generic.FieldType;
 import uk.co.compendiumdev.thingifier.generic.definitions.Field;
 import uk.co.compendiumdev.thingifier.generic.definitions.ThingDefinition;
 import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
 
-public class ThingInstanceTest {
+public class GenericFieldConditionsTest {
 
     ThingDefinition entityTestSession;
 
@@ -16,11 +15,7 @@ public class ThingInstanceTest {
     public void createEntity(){
 
         entityTestSession = ThingDefinition.create("Test Session", "Test Sessions");
-
-        entityTestSession.addField(Field.is("Title"));
         entityTestSession.addFields(Field.is("CompletedStatus").withDefaultValue("Not Completed"));
-        entityTestSession.addFields(Field.is("review", FieldType.BOOLEAN).withDefaultValue("TRUE"));
-        entityTestSession.addFields(Field.is("falsey", FieldType.BOOLEAN));
     }
 
     @Test
