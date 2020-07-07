@@ -1,8 +1,10 @@
 package uk.co.compendiumdev.casestudy.todomanager.api_non_http;
 
 import com.google.gson.*;
-import org.junit.Before;
-import org.junit.Ignore;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.casestudy.todomanager.TodoManagerModel;
 import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
@@ -13,8 +15,6 @@ import uk.co.compendiumdev.thingifier.api.response.ApiResponseAsJson;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponseAsXml;
 import uk.co.compendiumdev.thingifier.generic.definitions.FieldValue;
 import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
-import org.junit.Assert;
-import org.junit.Test;
 
 import java.util.*;
 
@@ -28,7 +28,7 @@ public class RelationshipApiNonHttpTest {
     Thing project;
 
 
-    @Before
+    @BeforeEach
     public void createDefinitions() {
 
         todoManager = TodoManagerModel.definedAsThingifier();
@@ -62,7 +62,9 @@ public class RelationshipApiNonHttpTest {
 
     private BodyParser getSimpleParser(final Map requestBody) {
 
-        final HttpApiRequest arequest = new HttpApiRequest("/path").setBody(new Gson().toJson(requestBody));
+        String body = new Gson().toJson(requestBody);
+        System.out.println(body);
+        final HttpApiRequest arequest = new HttpApiRequest("/path").setBody(body);
         return new BodyParser(arequest, todoManager.getThingNames());
     }
 
@@ -81,21 +83,22 @@ public class RelationshipApiNonHttpTest {
         myNewProject.connects("tasks", paperwork);
 
         int numberOfTasks = myNewProject.connectedItems("tasks").size();
-        Assert.assertEquals(1, numberOfTasks);
+        Assertions.assertEquals(1, numberOfTasks);
 
         apiresponse = todoManager.api().get(String.format("project/%s/tasks", myNewProject.getGUID()));
 
-        Assert.assertEquals(200, apiresponse.getStatusCode());
-        Assert.assertTrue(apiresponse.hasABody());
-        Assert.assertTrue(apiresponse.isCollection());
-        Assert.assertFalse(apiresponse.isErrorResponse());
+        Assertions.assertEquals(200, apiresponse.getStatusCode());
+        Assertions.assertTrue(apiresponse.hasABody());
+        Assertions.assertTrue(apiresponse.isCollection());
+        Assertions.assertFalse(apiresponse.isErrorResponse());
 
         ThingInstance foundInstance = todo.findInstanceByField(FieldValue.is("guid", paperwork.getGUID()));
-        Assert.assertNotNull("Task should exist, only the relationship should be deleted",
-                foundInstance);
+        Assertions.assertNotNull(
+                foundInstance,
+                "Task should exist, only the relationship should be deleted");
 
-        Assert.assertTrue(apiresponse.getReturnedInstanceCollection().size()==1);
-        Assert.assertEquals(foundInstance, apiresponse.getReturnedInstanceCollection().get(0));
+        Assertions.assertTrue(apiresponse.getReturnedInstanceCollection().size()==1);
+        Assertions.assertEquals(foundInstance, apiresponse.getReturnedInstanceCollection().get(0));
 
         System.out.println(todoManager);
 
@@ -119,19 +122,20 @@ public class RelationshipApiNonHttpTest {
         // DELETE a Relationship
         // DELETE project/_GUID_/tasks/_GUID_
         int numberOfTasks = myNewProject.connectedItems("tasks").size();
-        Assert.assertEquals(1, numberOfTasks);
+        Assertions.assertEquals(1, numberOfTasks);
 
         apiresponse = todoManager.api().delete(String.format("project/%s/tasks/%s", myNewProject.getGUID(), paperwork.getGUID()));
 
-        Assert.assertEquals(200, apiresponse.getStatusCode());
+        Assertions.assertEquals(200, apiresponse.getStatusCode());
 
-        Assert.assertEquals(numberOfTasks - 1, myNewProject.connectedItems("tasks").size());
-        Assert.assertNotNull("Task should exist, only the relationship should be deleted",
-                todo.findInstanceByField(FieldValue.is("guid", paperwork.getGUID())));
+        Assertions.assertEquals(numberOfTasks - 1, myNewProject.connectedItems("tasks").size());
+        Assertions.assertNotNull(
+                todo.findInstanceByField(FieldValue.is("guid", paperwork.getGUID())),
+                "Task should exist, only the relationship should be deleted");
 
-        Assert.assertTrue(apiresponse.getErrorMessages().size()==0);
-        Assert.assertEquals("Should have no body", "", new ApiResponseAsXml(apiresponse).getXml().trim());
-        Assert.assertEquals("Should have no body", "", new ApiResponseAsJson(apiresponse).getJson().trim());
+        Assertions.assertTrue(apiresponse.getErrorMessages().size()==0);
+        Assertions.assertEquals("", new ApiResponseAsXml(apiresponse).getXml().trim(),"Should have no body");
+        Assertions.assertEquals( "", new ApiResponseAsJson(apiresponse).getJson().trim(),"Should have no body");
 
         System.out.println(todoManager);
 
@@ -156,20 +160,21 @@ public class RelationshipApiNonHttpTest {
         // DELETE the todo
         // DELETE todo/_guid_
         int numberOfTasks = myNewProject.connectedItems("tasks").size();
-        Assert.assertEquals(1, numberOfTasks);
+        Assertions.assertEquals(1, numberOfTasks);
 
         apiresponse = todoManager.api().delete(String.format("todo/%s", paperwork.getGUID()));
 
-        Assert.assertEquals(200, apiresponse.getStatusCode());
-        Assert.assertFalse(apiresponse.hasABody());
-        Assert.assertTrue(apiresponse.getErrorMessages().size()==0);
+        Assertions.assertEquals(200, apiresponse.getStatusCode());
+        Assertions.assertFalse(apiresponse.hasABody());
+        Assertions.assertTrue(apiresponse.getErrorMessages().size()==0);
 
 
-        Assert.assertEquals(numberOfTasks - 1, myNewProject.connectedItems("tasks").size());
-        Assert.assertNull("Task should not exist",
-                todo.findInstanceByField(FieldValue.is("guid", paperwork.getGUID())));
-        Assert.assertEquals(0, todo.countInstances());
-        Assert.assertEquals(1, project.countInstances());
+        Assertions.assertEquals(numberOfTasks - 1, myNewProject.connectedItems("tasks").size());
+        Assertions.assertNull(
+                todo.findInstanceByField(FieldValue.is("guid", paperwork.getGUID())),
+                "Task should not exist");
+        Assertions.assertEquals(0, todo.countInstances());
+        Assertions.assertEquals(1, project.countInstances());
 
 
         System.out.println(todoManager);
@@ -207,21 +212,21 @@ public class RelationshipApiNonHttpTest {
 
         apiresponse = todoManager.api().post(String.format("project/%s/tasks", myNewProject.getGUID()), getSimpleParser(requestBody));
 
-        Assert.assertEquals(201, apiresponse.getStatusCode());
+        Assertions.assertEquals(201, apiresponse.getStatusCode());
 
-        Assert.assertEquals(numberOfTasks + 1, myNewProject.connectedItems("tasks").size());
+        Assertions.assertEquals(numberOfTasks + 1, myNewProject.connectedItems("tasks").size());
 
         // todo should also be connected to project via the associated task-of relationship vector
         Collection<ThingInstance> projects = paperwork.connectedItems("task-of");
 
-        Assert.assertEquals(1, projects.size());
+        Assertions.assertEquals(1, projects.size());
         List<ThingInstance> listOfProjects = new ArrayList<ThingInstance>(projects);
 
-        Assert.assertEquals(myNewProject.getGUID(), listOfProjects.get(0).getGUID());
+        Assertions.assertEquals(myNewProject.getGUID(), listOfProjects.get(0).getGUID());
 
-        Assert.assertTrue(apiresponse.getErrorMessages().size()==0);
-        Assert.assertEquals("Should have no body", "", new ApiResponseAsXml(apiresponse).getXml().trim());
-        Assert.assertEquals("Should have no body", "", new ApiResponseAsJson(apiresponse).getJson().trim());
+        Assertions.assertTrue(apiresponse.getErrorMessages().size()==0);
+        Assertions.assertEquals( "", new ApiResponseAsXml(apiresponse).getXml().trim(),"Should have no body");
+        Assertions.assertEquals("", new ApiResponseAsJson(apiresponse).getJson().trim(),"Should have no body");
 
         System.out.println(todoManager);
     }
@@ -252,13 +257,13 @@ public class RelationshipApiNonHttpTest {
 
         ApiResponse apiresponse = todoManager.api().post(String.format("project/%s/tasks", myNewProject.getGUID()), getSimpleParser(requestBody));
 
-        Assert.assertEquals(201, apiresponse.getStatusCode());
+        Assertions.assertEquals(201, apiresponse.getStatusCode());
 
-        Assert.assertEquals(numberOfTasks + 1, myNewProject.connectedItems("tasks").size());
+        Assertions.assertEquals(numberOfTasks + 1, myNewProject.connectedItems("tasks").size());
 
-        Assert.assertTrue(apiresponse.getErrorMessages().size()==0);
-        Assert.assertEquals("Should have no body", "", new ApiResponseAsXml(apiresponse).getXml().trim());
-        Assert.assertEquals("Should have no body", "", new ApiResponseAsJson(apiresponse).getJson().trim());
+        Assertions.assertTrue(apiresponse.getErrorMessages().size()==0);
+        Assertions.assertEquals( "", new ApiResponseAsXml(apiresponse).getXml().trim(),"Should have no body");
+        Assertions.assertEquals( "", new ApiResponseAsJson(apiresponse).getJson().trim(),"Should have no body");
 
         System.out.println(todoManager);
 
@@ -285,17 +290,19 @@ public class RelationshipApiNonHttpTest {
         requestBody.put("guid", myNewProject.getGUID());
 
         int numberOfProjects = relTodo.connectedItems("task-of").size();
-        Assert.assertEquals(0, numberOfProjects);
+        Assertions.assertEquals(0, numberOfProjects);
 
         // get current related projects through api
         ApiResponse apiresponse = todoManager.api().get(String.format("todo/%s/task-of", relTodo.getGUID()));
 
-        Assert.assertEquals(200, apiresponse.getStatusCode());
-        Assert.assertEquals(0, apiresponse.getReturnedInstanceCollection().size());
-        Assert.assertTrue(apiresponse.getErrorMessages().size()==0);
-        Assert.assertTrue(apiresponse.hasABody());
-        Assert.assertTrue("Should have no array content", new ApiResponseAsJson(apiresponse).getJson().trim().contains("[]"));
-        Assert.assertTrue("Should have name of thing",  new ApiResponseAsJson(apiresponse).getJson().trim().startsWith("{\"projects\":"));
+        Assertions.assertEquals(200, apiresponse.getStatusCode());
+        Assertions.assertEquals(0, apiresponse.getReturnedInstanceCollection().size());
+        Assertions.assertTrue(apiresponse.getErrorMessages().size()==0);
+        Assertions.assertTrue(apiresponse.hasABody());
+        Assertions.assertTrue(new ApiResponseAsJson(apiresponse).getJson().trim().contains("[]"),
+                "Should have no array content");
+        Assertions.assertTrue(new ApiResponseAsJson(apiresponse).getJson().trim().startsWith("{\"projects\":"),
+                "Should have name of thing");
 
 
 
@@ -303,12 +310,12 @@ public class RelationshipApiNonHttpTest {
 
 
         apiresponse = todoManager.api().post(String.format("todo/%s/task-of", relTodo.getGUID()), getSimpleParser(requestBody));
-        Assert.assertEquals(201, apiresponse.getStatusCode());
+        Assertions.assertEquals(201, apiresponse.getStatusCode());
 
-        Assert.assertEquals(1, relTodo.connectedItems("task-of").size());
-        Assert.assertTrue(apiresponse.getErrorMessages().size()==0);
-        Assert.assertEquals("Should have no body", "", new ApiResponseAsXml(apiresponse).getXml().trim());
-        Assert.assertEquals("Should have no body", "", new ApiResponseAsJson(apiresponse).getJson().trim());
+        Assertions.assertEquals(1, relTodo.connectedItems("task-of").size());
+        Assertions.assertTrue(apiresponse.getErrorMessages().size()==0);
+        Assertions.assertEquals( "", new ApiResponseAsXml(apiresponse).getXml().trim(),"Should have no body");
+        Assertions.assertEquals( "", new ApiResponseAsJson(apiresponse).getJson().trim(),"Should have no body");
 
 
 
@@ -316,16 +323,16 @@ public class RelationshipApiNonHttpTest {
 
 
         apiresponse = todoManager.api().get(String.format("todo/%s/task-of", relTodo.getGUID()));
-        Assert.assertEquals(200, apiresponse.getStatusCode());
+        Assertions.assertEquals(200, apiresponse.getStatusCode());
 
-        Assert.assertEquals(1, apiresponse.getReturnedInstanceCollection().size());
-        Assert.assertTrue(apiresponse.getErrorMessages().size()==0);
-        Assert.assertTrue(apiresponse.hasABody());
+        Assertions.assertEquals(1, apiresponse.getReturnedInstanceCollection().size());
+        Assertions.assertTrue(apiresponse.getErrorMessages().size()==0);
+        Assertions.assertTrue(apiresponse.hasABody());
 
-
-
-
-        Assert.assertEquals("Expected A project", myNewProject.getGUID(), apiresponse.getReturnedInstanceCollection().get(0).getGUID());
+        Assertions.assertEquals(
+                myNewProject.getGUID(),
+                apiresponse.getReturnedInstanceCollection().get(0).getGUID(),
+                "Expected A project");
 
         System.out.println(todoManager);
 
@@ -353,36 +360,36 @@ public class RelationshipApiNonHttpTest {
         requestBody.put("guid", myNewProject.getGUID());
 
         int numberOfProjects = relTodo.connectedItems("task-of").size();
-        Assert.assertEquals(0, numberOfProjects);
+        Assertions.assertEquals(0, numberOfProjects);
 
         // Create a relationship
         ApiResponse apiresponse = todoManager.api().post(String.format("todo/%s/task-of", relTodo.getGUID()),getSimpleParser(requestBody));
-        Assert.assertEquals(201, apiresponse.getStatusCode());
+        Assertions.assertEquals(201, apiresponse.getStatusCode());
 
-        Assert.assertEquals(1, relTodo.connectedItems("task-of").size());
+        Assertions.assertEquals(1, relTodo.connectedItems("task-of").size());
 
-        Assert.assertTrue(apiresponse.getErrorMessages().size()==0);
-        Assert.assertFalse(apiresponse.hasABody());
-        Assert.assertEquals("Should have no body", "", new ApiResponseAsXml(apiresponse).getXml().trim());
-        Assert.assertEquals("Should have no body", "", new ApiResponseAsJson(apiresponse).getJson().trim());
+        Assertions.assertTrue(apiresponse.getErrorMessages().size()==0);
+        Assertions.assertFalse(apiresponse.hasABody());
+        Assertions.assertEquals("", new ApiResponseAsXml(apiresponse).getXml().trim());
+        Assertions.assertEquals("", new ApiResponseAsJson(apiresponse).getJson().trim(),"Should have no body");
 
 
         // Delete the relationship
         apiresponse = todoManager.api().delete(String.format("todo/%s/task-of/%s", relTodo.getGUID(), myNewProject.getGUID()));
-        Assert.assertEquals(200, apiresponse.getStatusCode());
+        Assertions.assertEquals(200, apiresponse.getStatusCode());
 
         // project should be related to nothing
         Collection<ThingInstance> items = myNewProject.connectedItems("tasks");
-        Assert.assertEquals(0, items.size());
+        Assertions.assertEquals(0, items.size());
 
         // todo should be related to nothing
         items = relTodo.connectedItems("task-of");
-        Assert.assertEquals(0, items.size());
+        Assertions.assertEquals(0, items.size());
 
-        Assert.assertTrue(apiresponse.getErrorMessages().size()==0);
-        Assert.assertFalse(apiresponse.hasABody());
-        Assert.assertEquals("Should have no body", "", new ApiResponseAsXml(apiresponse).getXml().trim());
-        Assert.assertEquals("Should have no body", "", new ApiResponseAsJson(apiresponse).getJson().trim());
+        Assertions.assertTrue(apiresponse.getErrorMessages().size()==0);
+        Assertions.assertFalse(apiresponse.hasABody());
+        Assertions.assertEquals( "", new ApiResponseAsXml(apiresponse).getXml().trim(), "Should have no body");
+        Assertions.assertEquals("", new ApiResponseAsJson(apiresponse).getJson().trim(), "Should have no body");
 
         System.out.println(todoManager);
 
@@ -411,38 +418,38 @@ public class RelationshipApiNonHttpTest {
         requestBody.put("guid", myNewProject.getGUID());
 
         int numberOfProjects = relTodo.connectedItems("task-of").size();
-        Assert.assertEquals(0, numberOfProjects);
+        Assertions.assertEquals(0, numberOfProjects);
 
         // Create relationship
         ApiResponse apiresponse = todoManager.api().post(String.format("todo/%s/task-of", relTodo.getGUID()), getSimpleParser(requestBody));
-        Assert.assertEquals(201, apiresponse.getStatusCode());
+        Assertions.assertEquals(201, apiresponse.getStatusCode());
 
-        Assert.assertEquals(1, relTodo.connectedItems("task-of").size());
-        Assert.assertTrue(apiresponse.getErrorMessages().size()==0);
-        Assert.assertFalse(apiresponse.hasABody());
-        Assert.assertEquals("Should have no body", "", new ApiResponseAsXml(apiresponse).getXml().trim());
-        Assert.assertEquals("Should have no body", "", new ApiResponseAsJson(apiresponse).getJson().trim());
+        Assertions.assertEquals(1, relTodo.connectedItems("task-of").size());
+        Assertions.assertTrue(apiresponse.getErrorMessages().size()==0);
+        Assertions.assertFalse(apiresponse.hasABody());
+        Assertions.assertEquals( "", new ApiResponseAsXml(apiresponse).getXml().trim(), "Should have no body");
+        Assertions.assertEquals("", new ApiResponseAsJson(apiresponse).getJson().trim(), "Should have no body");
 
 
         // Delete the relationship
         apiresponse = todoManager.api().delete(String.format("todo/%s", relTodo.getGUID()));
-        Assert.assertEquals(200, apiresponse.getStatusCode());
+        Assertions.assertEquals(200, apiresponse.getStatusCode());
 
-        Assert.assertEquals("Should be no stored todos", 0, todo.getInstances().size());
-        Assert.assertTrue(apiresponse.getErrorMessages().size()==0);
-        Assert.assertFalse(apiresponse.hasABody());
-        Assert.assertEquals("Should have no body", "", new ApiResponseAsXml(apiresponse).getXml().trim());
-        Assert.assertEquals("Should have no body", "", new ApiResponseAsJson(apiresponse).getJson().trim());
+        Assertions.assertEquals(0, todo.getInstances().size(),"Should be no stored todos");
+        Assertions.assertTrue(apiresponse.getErrorMessages().size()==0);
+        Assertions.assertFalse(apiresponse.hasABody());
+        Assertions.assertEquals( "", new ApiResponseAsXml(apiresponse).getXml().trim(), "Should have no body");
+        Assertions.assertEquals( "", new ApiResponseAsJson(apiresponse).getJson().trim(), "Should have no body");
 
 
 
         // project should be related to nothing
         Collection<ThingInstance> items = myNewProject.connectedItems("tasks");
-        Assert.assertEquals(0, items.size());
+        Assertions.assertEquals(0, items.size());
 
         // todo should be related to nothing
         items = relTodo.connectedItems("task-of");
-        Assert.assertEquals(0, items.size());
+        Assertions.assertEquals(0, items.size());
 
 
         System.out.println(todoManager);
@@ -469,36 +476,39 @@ public class RelationshipApiNonHttpTest {
         int numberOfTasks = myNewProject.connectedItems("tasks").size();
 
         ApiResponse apiresponse = todoManager.api().post(String.format("project/%s/tasks", myNewProject.getGUID()), getSimpleParser(requestBody));
-        Assert.assertEquals(201, apiresponse.getStatusCode());
+        Assertions.assertEquals(201, apiresponse.getStatusCode());
         String locationGuid = apiresponse.getHeaderValue(ApiResponse.GUID_HEADER);
-        Assert.assertTrue(apiresponse.getErrorMessages().size()==0);
+        Assertions.assertTrue(apiresponse.getErrorMessages().size()==0);
 
-        Assert.assertTrue("Expected location header to contain the same GUID as the X- GUID header",
-                apiresponse.getHeaderValue("Location").contains(locationGuid));
+        Assertions.assertTrue(
+                apiresponse.getHeaderValue("Location").contains(locationGuid),
+                "Expected location header to contain the same GUID as the X- GUID header");
 
-        Assert.assertEquals("Expected number of tasks in project to increase by 1",
-                numberOfTasks + 1, myNewProject.connectedItems("tasks").size());
+        Assertions.assertEquals(
+                numberOfTasks + 1, myNewProject.connectedItems("tasks").size(),
+                "Expected number of tasks in project to increase by 1");
 
-        Assert.assertTrue(apiresponse.hasABody());
-        Assert.assertNotEquals("Should have a body", "", new ApiResponseAsXml(apiresponse).getXml().trim());
-        Assert.assertNotEquals("Should have a body", "", new ApiResponseAsJson(apiresponse).getJson().trim());
+        Assertions.assertTrue(apiresponse.hasABody());
+        Assertions.assertNotEquals("Should have a body", "", new ApiResponseAsXml(apiresponse).getXml().trim());
+        Assertions.assertNotEquals("Should have a body", "", new ApiResponseAsJson(apiresponse).getJson().trim());
 
-        Assert.assertFalse(apiresponse.isCollection());
+        Assertions.assertFalse(apiresponse.isCollection());
 
 
 
         // check todo exists
         ThingInstance myCreatedTodo = todo.findInstanceByGUID(locationGuid);
-        Assert.assertEquals(expectedTitle, myCreatedTodo.getValue("title"));
+        Assertions.assertEquals(expectedTitle, myCreatedTodo.getValue("title"));
 
         // check todo is also related to the project since relationship is two way
         Collection<ThingInstance> items = myCreatedTodo.connectedItems("task-of");
-        Assert.assertEquals("Expected task be connected to only 1 project", 1, items.size());
+        Assertions.assertEquals(1, items.size(),
+                "Expected task be connected to only 1 project");
 
         List<ThingInstance> itemList = new ArrayList<>(items);
 
         // item should be myNewProject
-        Assert.assertEquals("Expected to be connected to project", myNewProject.getGUID(), itemList.get(0).getGUID());
+        Assertions.assertEquals( myNewProject.getGUID(), itemList.get(0).getGUID(),"Expected to be connected to project");
 
 
     }
@@ -522,30 +532,30 @@ public class RelationshipApiNonHttpTest {
 
 
         int numberOfProjects = relTodo.connectedItems("task-of").size();
-        Assert.assertEquals(0, numberOfProjects);
+        Assertions.assertEquals(0, numberOfProjects);
 
         // Create it
         ApiResponse apiresponse = todoManager.api().post(String.format("todo/%s/task-of", relTodo.getGUID()), getSimpleParser(requestBody));
-        Assert.assertEquals(201, apiresponse.getStatusCode());
-        Assert.assertTrue(apiresponse.getErrorMessages().size()==0);
-        Assert.assertEquals(1, relTodo.connectedItems("task-of").size());
+        Assertions.assertEquals(201, apiresponse.getStatusCode());
+        Assertions.assertTrue(apiresponse.getErrorMessages().size()==0);
+        Assertions.assertEquals(1, relTodo.connectedItems("task-of").size());
 
-        Assert.assertTrue(apiresponse.hasABody());
-        Assert.assertNotEquals("Should have a body", "", new ApiResponseAsXml(apiresponse).getXml().trim());
-        Assert.assertNotEquals("Should have a body", "", new ApiResponseAsJson(apiresponse).getJson().trim());
-        Assert.assertFalse(apiresponse.isCollection());
+        Assertions.assertTrue(apiresponse.hasABody());
+        Assertions.assertNotEquals("Should have a body", "", new ApiResponseAsXml(apiresponse).getXml().trim());
+        Assertions.assertNotEquals("Should have a body", "", new ApiResponseAsJson(apiresponse).getJson().trim());
+        Assertions.assertFalse(apiresponse.isCollection());
 
         ThingInstance myNewProject = project.findInstanceByGUID(apiresponse.getHeaderValue(ApiResponse.GUID_HEADER));
-        Assert.assertNotNull(myNewProject);
+        Assertions.assertNotNull(myNewProject);
 
 
         // project should be related to task
         Collection<ThingInstance> items = myNewProject.connectedItems("tasks");
-        Assert.assertEquals(1, items.size());
+        Assertions.assertEquals(1, items.size());
 
         // a todo instance should be related to project
         items = relTodo.connectedItems("task-of");
-        Assert.assertEquals(1, items.size());
+        Assertions.assertEquals(1, items.size());
 
 
     }
@@ -572,7 +582,7 @@ public class RelationshipApiNonHttpTest {
 
         final Thing estimates = todoManager.getThingNamed("estimate");
         int numberOfEstimates = estimates.countInstances();
-        Assert.assertEquals(0, numberOfEstimates );
+        Assertions.assertEquals(0, numberOfEstimates );
 
 
 
@@ -586,52 +596,52 @@ public class RelationshipApiNonHttpTest {
         requestBody.put("duration", "3");
 
         ApiResponse apiresponse = todoManager.api().post(String.format("todo/%s/estimates", myTodo.getGUID()), getSimpleParser(requestBody));
-        Assert.assertEquals(201, apiresponse.getStatusCode());
+        Assertions.assertEquals(201, apiresponse.getStatusCode());
         String locationGuid = apiresponse.getHeaderValue(ApiResponse.GUID_HEADER);
-        Assert.assertTrue(apiresponse.getErrorMessages().size()==0);
+        Assertions.assertTrue(apiresponse.getErrorMessages().size()==0);
 
-        Assert.assertTrue("Expected location header to contain the same GUID as the X- GUID header",
-                apiresponse.getHeaderValue("Location").contains(locationGuid));
+        Assertions.assertTrue(
+                apiresponse.getHeaderValue("Location").contains(locationGuid),
+                "Expected location header to contain the same GUID as the X- GUID header");
 
-        Assert.assertEquals("Expected number of estimates in project to increase by 1",
-                numberOfEstimates + 1, estimates.countInstances());
+        Assertions.assertEquals(
+                numberOfEstimates + 1, estimates.countInstances(),
+                "Expected number of estimates in project to increase by 1");
 
-        Assert.assertTrue(apiresponse.hasABody());
-        Assert.assertNotEquals("Should have a body", "", new ApiResponseAsXml(apiresponse).getXml().trim());
-        Assert.assertNotEquals("Should have a body", "", new ApiResponseAsJson(apiresponse).getJson().trim());
+        Assertions.assertTrue(apiresponse.hasABody());
+        Assertions.assertNotEquals("Should have a body", "", new ApiResponseAsXml(apiresponse).getXml().trim());
+        Assertions.assertNotEquals("Should have a body", "", new ApiResponseAsJson(apiresponse).getJson().trim());
 
-        Assert.assertFalse(apiresponse.isCollection());
+        Assertions.assertFalse(apiresponse.isCollection());
 
 
 
         // check estimate exists
         ThingInstance myCreatedItem = estimates.findInstanceByGUID(locationGuid);
-        Assert.assertEquals(expectedDescription, myCreatedItem.getValue("description"));
-        Assert.assertEquals("3", myCreatedItem.getValue("duration"));
+        Assertions.assertEquals(expectedDescription, myCreatedItem.getValue("description"));
+        Assertions.assertEquals("3", myCreatedItem.getValue("duration"));
 
         // check estimate is related to the todo since relationship is two way
         Collection<ThingInstance> items = myCreatedItem.connectedItems("estimate");
-        Assert.assertEquals("Expected estimate to be connected to only 1 todo", 1, items.size());
-        Assert.assertTrue(items.contains(myTodo));
+        Assertions.assertEquals( 1, items.size(), "Expected estimate to be connected to only 1 todo");
+        Assertions.assertTrue(items.contains(myTodo));
 
         // check todo also recognises the relationship
         items = myTodo.connectedItems("estimates");
-        Assert.assertEquals("Expected todo to be connected to only 1 estimate", 1, items.size());
-        Assert.assertTrue(items.contains(myCreatedItem));
+        Assertions.assertEquals( 1, items.size(), "Expected todo to be connected to only 1 estimate");
+        Assertions.assertTrue(items.contains(myCreatedItem));
 
     }
 
     @Test
     public void postCanNotCreateEstimateWithoutAMandatoryRelationshipUsingAPI() {
 
-
-
         ThingInstance myTodo = todo.createInstance().setValue("title", "an estimated todo");
         todo.addInstance(myTodo);
 
         final Thing estimates = todoManager.getThingNamed("estimate");
         int numberOfEstimates = estimates.countInstances();
-        Assert.assertEquals(0, numberOfEstimates );
+        Assertions.assertEquals(0, numberOfEstimates );
 
 
         HashMap<String, String> requestBody = new HashMap<String, String>();
@@ -641,40 +651,60 @@ public class RelationshipApiNonHttpTest {
         requestBody.put("duration", "3");
 
         ApiResponse apiresponse = todoManager.api().post("estimate", getSimpleParser(requestBody));
-        Assert.assertEquals(400, apiresponse.getStatusCode());
+        Assertions.assertEquals(400, apiresponse.getStatusCode());
 
-        Assert.assertEquals("Expected number of estimates in project to not increase",
-                numberOfEstimates, estimates.countInstances());
+        Assertions.assertEquals(
+                numberOfEstimates, estimates.countInstances(),
+                "Expected number of estimates in project to not increase");
 
     }
 
-    // TODO : post an estimate with a relationship to a todo as the body
-
-    @Ignore("Working on this one next")
     @Test
     public void postCanCreateEstimateAMandatoryRelationshipUsingAPI() {
 
-
-
-        ThingInstance myTodo = todo.createInstance().setValue("title", "an estimated todo");
+        ThingInstance myTodo = todo.createInstance().setValue("title",
+                                    "an estimated todo");
         todo.addInstance(myTodo);
 
+        // todo has no estimates
+        Assertions.assertEquals(
+                0, myTodo.connectedItems("estimates").size());
+
+        // there are no estimates at all
         final Thing estimates = todoManager.getThingNamed("estimate");
         int numberOfEstimates = estimates.countInstances();
-        Assert.assertEquals(0, numberOfEstimates );
+        Assertions.assertEquals(0, numberOfEstimates );
 
 
-        HashMap<String, String> requestBody = new HashMap<String, String>();
+        HashMap<String, Object> requestBody = new HashMap<String, Object>();
         String expectedDescription = "a test estimate " + System.currentTimeMillis();
 
         requestBody.put("description", expectedDescription);
         requestBody.put("duration", "3");
 
-        ApiResponse apiresponse = todoManager.api().post("estimate", getSimpleParser(requestBody));
-        Assert.assertEquals(400, apiresponse.getStatusCode());
+        // relationship to request
+        // estimate: [{"guid", "..."}]
+        List<HashMap> estimateTodoGuids = new ArrayList<>();
+        final HashMap<String, String > todoGuid = new HashMap<>();
+        todoGuid.put("guid",myTodo.getGUID());
+        estimateTodoGuids.add(todoGuid);
+        requestBody.put("estimate", estimateTodoGuids);
 
-        Assert.assertEquals("Expected number of estimates in project to not increase",
-                numberOfEstimates, estimates.countInstances());
+        ApiResponse apiresponse = todoManager.api().post("estimate", getSimpleParser(requestBody));
+        Assertions.assertEquals(201, apiresponse.getStatusCode());
+
+        Assertions.assertEquals(
+                numberOfEstimates+1, estimates.countInstances(),
+                "Expected number of estimates in project to increase");
+
+        // todo now has an estimate
+        Assertions.assertEquals(
+                1, myTodo.connectedItems("estimates").size());
+
+        // and it is the estimate we expected
+        final ArrayList<ThingInstance> estimatesList = new ArrayList();
+        estimatesList.addAll(myTodo.connectedItems("estimates"));
+        Assertions.assertEquals(expectedDescription, estimatesList.get(0).getValue("description"));
 
     }
 

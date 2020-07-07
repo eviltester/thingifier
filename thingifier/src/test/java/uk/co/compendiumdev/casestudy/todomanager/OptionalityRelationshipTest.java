@@ -1,8 +1,9 @@
 package uk.co.compendiumdev.casestudy.todomanager;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
@@ -17,7 +18,7 @@ public class OptionalityRelationshipTest {
 
     private Thingifier todoManager;
 
-    @Before
+    @BeforeEach
     public void createDefinitions(){
 
         todoManager = TodoManagerModel.definedAsThingifier();
@@ -33,7 +34,7 @@ public class OptionalityRelationshipTest {
 
         ThingInstance aProject = projects.createInstance().setValue("title", "myproject");
 
-        Assert.assertTrue(aProject.validate().isValid());
+        Assertions.assertTrue(aProject.validate().isValid());
 
 
         Thing todos = todoManager.getThingNamed("todo");
@@ -42,7 +43,7 @@ public class OptionalityRelationshipTest {
                 setValue("title", "Tidy up my room").
                 setValue("description", "I need to tidy up my room because it is a mess");
 
-        Assert.assertTrue(tidy.validate().isValid());
+        Assertions.assertTrue(tidy.validate().isValid());
 
 
     }
@@ -62,7 +63,7 @@ public class OptionalityRelationshipTest {
                                         setValue("duration", "1");
 
         // it should be invalid because the estimate does not have a relationship with a to do
-        Assert.assertFalse(tidyRoomEstimate.validate().isValid());
+        Assertions.assertFalse(tidyRoomEstimate.validate().isValid());
 
     }
 
@@ -85,12 +86,12 @@ public class OptionalityRelationshipTest {
         tidyRoomEstimate.connects("estimate", tidy);
 
         // it should be valid because the estimate has a relationship with a to do
-        Assert.assertTrue(tidyRoomEstimate.validate().isValid());
+        Assertions.assertTrue(tidyRoomEstimate.validate().isValid());
 
         estimates.addInstance(tidyRoomEstimate);
 
         final Collection<ThingInstance> relatedEstimates = tidy.connectedItems("estimate");
-        Assert.assertEquals(1, relatedEstimates.size());
+        Assertions.assertEquals(1, relatedEstimates.size());
 
     }
 
@@ -116,14 +117,14 @@ public class OptionalityRelationshipTest {
         tidyRoomEstimate.connects("estimate", tidy);
 
         // it should be valid because the estimate has a relationship with a to do
-        Assert.assertTrue(tidyRoomEstimate.validate().isValid());
+        Assertions.assertTrue(tidyRoomEstimate.validate().isValid());
 
         estimates.addInstance(tidyRoomEstimate);
 
         final Collection<ThingInstance> relatedEstimates = tidy.connectedItems("estimates");
-        Assert.assertEquals(1, relatedEstimates.size());
-        Assert.assertEquals(1, estimates.getInstances().size());
-        Assert.assertEquals(1, todos.getInstances().size());
+        Assertions.assertEquals(1, relatedEstimates.size());
+        Assertions.assertEquals(1, estimates.getInstances().size());
+        Assertions.assertEquals(1, todos.getInstances().size());
 
         // now delete the to do, and the estimate should also be deleted
 
@@ -133,8 +134,8 @@ public class OptionalityRelationshipTest {
         // things only know about themselves and their instances, but the thingifier knows about
         // all things and so can delete related items as well
 
-        Assert.assertEquals(0, todos.getInstances().size());
-        Assert.assertEquals(0, estimates.getInstances().size());
+        Assertions.assertEquals(0, todos.getInstances().size());
+        Assertions.assertEquals(0, estimates.getInstances().size());
     }
 
 

@@ -1,7 +1,7 @@
 package uk.co.compendiumdev.thingifier.api.http.bodyparser;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 
 import java.util.*;
@@ -20,9 +20,9 @@ public class BodyParserTest {
 
         final Map<String, String> map = new BodyParser(request, names).getStringMap();
 
-        Assert.assertEquals(1, map.keySet().size());
-        Assert.assertTrue(map.keySet().contains("duration"));
-        Assert.assertEquals("5", map.get("duration"));
+        Assertions.assertEquals(1, map.keySet().size());
+        Assertions.assertTrue(map.keySet().contains("duration"));
+        Assertions.assertEquals("5", map.get("duration"));
     }
 
 
@@ -39,9 +39,9 @@ public class BodyParserTest {
 
         final Map<String, String> map = new BodyParser(request, names).getStringMap();
 
-        Assert.assertEquals(1, map.keySet().size());
-        Assert.assertTrue(map.keySet().contains("duration"));
-        Assert.assertEquals("5", map.get("duration"));
+        Assertions.assertEquals(1, map.keySet().size());
+        Assertions.assertTrue(map.keySet().contains("duration"));
+        Assertions.assertEquals("5", map.get("duration"));
     }
 
     @Test
@@ -58,14 +58,14 @@ public class BodyParserTest {
 
         final Map<String, Object> map = bodyParser.getMap();
 
-        Assert.assertEquals(2, map.keySet().size());
-        Assert.assertTrue(map.keySet().contains("duration"));
-        Assert.assertEquals("5", map.get("duration"));
-        Assert.assertTrue(map.keySet().contains("estimate"));
+        Assertions.assertEquals(2, map.keySet().size());
+        Assertions.assertTrue(map.keySet().contains("duration"));
+        Assertions.assertEquals("5", map.get("duration"));
+        Assertions.assertTrue(map.keySet().contains("estimate"));
 
         final List<String> objects = bodyParser.getObjectNames();
-        Assert.assertEquals(1, objects.size());
-        Assert.assertEquals("estimate", objects.get(0));
+        Assertions.assertEquals(1, objects.size());
+        Assertions.assertEquals("estimate", objects.get(0));
 
         // estimate object is a LinkedTreeMap
 
@@ -85,21 +85,21 @@ public class BodyParserTest {
 
         final Map<String, String> valuesmap = bodyParser.getStringMap();
 
-        Assert.assertEquals(1, valuesmap.keySet().size());
-        Assert.assertTrue(valuesmap.keySet().contains("duration"));
-        Assert.assertEquals("5", valuesmap.get("duration"));
+        Assertions.assertEquals(1, valuesmap.keySet().size());
+        Assertions.assertTrue(valuesmap.keySet().contains("duration"));
+        Assertions.assertEquals("5", valuesmap.get("duration"));
 
 
         final Map<String, Object> map = bodyParser.getMap();
 
-        Assert.assertEquals(2, map.keySet().size());
-        Assert.assertTrue(map.keySet().contains("duration"));
-        Assert.assertEquals("5", map.get("duration"));
-        Assert.assertTrue(map.keySet().contains("estimate"));
+        Assertions.assertEquals(2, map.keySet().size());
+        Assertions.assertTrue(map.keySet().contains("duration"));
+        Assertions.assertEquals("5", map.get("duration"));
+        Assertions.assertTrue(map.keySet().contains("estimate"));
 
         final List<String> objects = bodyParser.getObjectNames();
-        Assert.assertEquals(1, objects.size());
-        Assert.assertEquals("estimate", objects.get(0));
+        Assertions.assertEquals(1, objects.size());
+        Assertions.assertEquals("estimate", objects.get(0));
 
         // estimate is a LinkedTreeMap
     }
@@ -118,21 +118,21 @@ public class BodyParserTest {
 
         final Map<String, String> valuesmap = bodyParser.getStringMap();
 
-        Assert.assertEquals(1, valuesmap.keySet().size());
-        Assert.assertTrue(valuesmap.keySet().contains("duration"));
-        Assert.assertEquals("5", valuesmap.get("duration"));
+        Assertions.assertEquals(1, valuesmap.keySet().size());
+        Assertions.assertTrue(valuesmap.keySet().contains("duration"));
+        Assertions.assertEquals("5", valuesmap.get("duration"));
 
 
         final Map<String, Object> map = bodyParser.getMap();
 
-        Assert.assertEquals(2, map.keySet().size());
-        Assert.assertTrue(map.keySet().contains("duration"));
-        Assert.assertEquals("5", map.get("duration"));
-        Assert.assertTrue(map.keySet().contains("estimate"));
+        Assertions.assertEquals(2, map.keySet().size());
+        Assertions.assertTrue(map.keySet().contains("duration"));
+        Assertions.assertEquals("5", map.get("duration"));
+        Assertions.assertTrue(map.keySet().contains("estimate"));
 
         final List<String> objects = bodyParser.getObjectNames();
-        Assert.assertEquals(1, objects.size());
-        Assert.assertEquals("estimate", objects.get(0));
+        Assertions.assertEquals(1, objects.size());
+        Assertions.assertEquals("estimate", objects.get(0));
 
         // estimate is an ArrayList of LinkedTreeMap
     }
@@ -153,20 +153,20 @@ public class BodyParserTest {
 
         final Map<String, String> valuesmap = bodyParser.getStringMap();
 
-        Assert.assertEquals(1, valuesmap.keySet().size());
-        Assert.assertTrue(valuesmap.keySet().contains("duration"));
-        Assert.assertEquals("5.0", valuesmap.get("duration"));
+        Assertions.assertEquals(1, valuesmap.keySet().size());
+        Assertions.assertTrue(valuesmap.keySet().contains("duration"));
+        Assertions.assertEquals("5.0", valuesmap.get("duration"));
 
         final Map<String, Object> map = bodyParser.getMap();
 
-        Assert.assertEquals(2, map.keySet().size());
-        Assert.assertTrue(map.keySet().contains("duration"));
-        Assert.assertEquals(5.0, map.get("duration"));
-        Assert.assertTrue(map.keySet().contains("estimate"));
+        Assertions.assertEquals(2, map.keySet().size());
+        Assertions.assertTrue(map.keySet().contains("duration"));
+        Assertions.assertEquals(5.0, map.get("duration"));
+        Assertions.assertTrue(map.keySet().contains("estimate"));
 
         final List<String> objects = bodyParser.getObjectNames();
-        Assert.assertEquals(1, objects.size());
-        Assert.assertEquals("estimate", objects.get(0));
+        Assertions.assertEquals(1, objects.size());
+        Assertions.assertEquals("estimate", objects.get(0));
 
         // estimate is a LinkedTreeMap
     }
@@ -188,20 +188,20 @@ public class BodyParserTest {
 
         final Map<String, String> valuesmap = bodyParser.getStringMap();
 
-        Assert.assertEquals(1, valuesmap.keySet().size());
-        Assert.assertTrue(valuesmap.keySet().contains("duration"));
-        Assert.assertEquals("5.0", valuesmap.get("duration"));
+        Assertions.assertEquals(1, valuesmap.keySet().size());
+        Assertions.assertTrue(valuesmap.keySet().contains("duration"));
+        Assertions.assertEquals("5.0", valuesmap.get("duration"));
 
         final Map<String, Object> map = bodyParser.getMap();
 
-        Assert.assertEquals(2, map.keySet().size());
-        Assert.assertTrue(map.keySet().contains("duration"));
-        Assert.assertEquals(5.0, map.get("duration"));
-        Assert.assertTrue(map.keySet().contains("estimate"));
+        Assertions.assertEquals(2, map.keySet().size());
+        Assertions.assertTrue(map.keySet().contains("duration"));
+        Assertions.assertEquals(5.0, map.get("duration"));
+        Assertions.assertTrue(map.keySet().contains("estimate"));
 
         final List<String> objects = bodyParser.getObjectNames();
-        Assert.assertEquals(1, objects.size());
-        Assert.assertEquals("estimate", objects.get(0));
+        Assertions.assertEquals(1, objects.size());
+        Assertions.assertEquals("estimate", objects.get(0));
 
         // estimate is a LinkedTreeMap of LinkedTreeMap "to do" of ArrayList of LinkedTreeMap
     }

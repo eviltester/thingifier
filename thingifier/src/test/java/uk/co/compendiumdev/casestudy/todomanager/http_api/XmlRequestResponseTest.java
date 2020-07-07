@@ -1,8 +1,8 @@
 package uk.co.compendiumdev.casestudy.todomanager.http_api;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.casestudy.todomanager.TodoManagerModel;
 import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
@@ -23,7 +23,7 @@ public class XmlRequestResponseTest {
     Thing project;
 
 
-    @Before
+    @BeforeEach
     public void createDefinitions() {
 
         todoManager = TodoManagerModel.definedAsThingifier();
@@ -43,10 +43,10 @@ public class XmlRequestResponseTest {
         request.getHeaders().putAll(HeadersSupport.acceptXml());
 
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).get(request);
-        Assert.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals(200, response.getStatusCode());
         System.out.println(response.getBody());
 
-        Assert.assertTrue(response.getBody().equalsIgnoreCase("<todos></todos>"));
+        Assertions.assertTrue(response.getBody().equalsIgnoreCase("<todos></todos>"));
     }
 
 
@@ -60,10 +60,10 @@ public class XmlRequestResponseTest {
         request.getHeaders().putAll(HeadersSupport.acceptXml());
 
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).get(request);
-        Assert.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals(200, response.getStatusCode());
         System.out.println(response.getBody());
 
-        Assert.assertTrue(response.getBody().startsWith("<todos><todo>"));
+        Assertions.assertTrue(response.getBody().startsWith("<todos><todo>"));
     }
 
     @Test
@@ -76,10 +76,10 @@ public class XmlRequestResponseTest {
         request.getHeaders().putAll(HeadersSupport.acceptXml());
 
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).get(request);
-        Assert.assertEquals(404, response.getStatusCode());
+        Assertions.assertEquals(404, response.getStatusCode());
         System.out.println(response.getBody());
 
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 "<errorMessages><errorMessage>" +
                         "Could not find an instance with todosyoohoo"+
                         "</errorMessage></errorMessages>",
@@ -105,23 +105,24 @@ public class XmlRequestResponseTest {
 
         request.setBody("<todo><title>test title</title></todo>");
 
-        Assert.assertEquals(0, todo.countInstances());
+        Assertions.assertEquals(0, todo.countInstances());
 
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).post(request);
 
-        Assert.assertEquals(201, response.getStatusCode());
+        Assertions.assertEquals(201, response.getStatusCode());
         System.out.println(response.getBody());
 
-        Assert.assertEquals(1, todo.countInstances());
+        Assertions.assertEquals(1, todo.countInstances());
 
         // header should give me the guid
         String guid = response.getHeaders().get(ApiResponse.GUID_HEADER);
 
         final ThingInstance aTodo = todo.findInstanceByGUID(guid);
 
-        Assert.assertEquals("test title", aTodo.getValue("title"));
+        Assertions.assertEquals("test title", aTodo.getValue("title"));
 
-        Assert.assertTrue("Should have returned xml", response.getBody().startsWith("<todo><doneStatus>FALSE</doneStatus>"));
+        Assertions.assertTrue(response.getBody().startsWith("<todo><doneStatus>FALSE</doneStatus>"),
+                "Should have returned xml as body: " + response.getBody());
 
     }
 
@@ -131,7 +132,7 @@ public class XmlRequestResponseTest {
         final ThingInstance atodo = todo.createInstance().setValue("title", "my title");
         todo.addInstance(atodo);
 
-        Assert.assertEquals(1, todo.countInstances());
+        Assertions.assertEquals(1, todo.countInstances());
 
         HttpApiRequest request = new HttpApiRequest("todos/" + atodo.getGUID());
         request.getHeaders().putAll(HeadersSupport.acceptXml());
@@ -143,13 +144,13 @@ public class XmlRequestResponseTest {
 
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).post(request);
 
-        Assert.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals(200, response.getStatusCode());
 
         System.out.println(response.getBody());
 
-        Assert.assertEquals(1, todo.countInstances());
+        Assertions.assertEquals(1, todo.countInstances());
 
-        Assert.assertEquals("test title", atodo.getValue("title"));
+        Assertions.assertEquals("test title", atodo.getValue("title"));
 
     }
 
@@ -170,26 +171,27 @@ public class XmlRequestResponseTest {
 
         request.setBody("<todo><title>test title</title></todo>");
 
-        Assert.assertEquals(0, todo.countInstances());
+        Assertions.assertEquals(0, todo.countInstances());
 
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).put(request);
 
         System.out.println(response.getBody());
 
-        Assert.assertEquals(201, response.getStatusCode());
+        Assertions.assertEquals(201, response.getStatusCode());
 
 
-        Assert.assertEquals(1, todo.countInstances());
+        Assertions.assertEquals(1, todo.countInstances());
 
         // header should give me the guid
         String guid = response.getHeaders().get(ApiResponse.GUID_HEADER);
 
         final ThingInstance aTodo = todo.findInstanceByGUID(guid);
 
-        Assert.assertEquals("test title", aTodo.getValue("title"));
+        Assertions.assertEquals("test title", aTodo.getValue("title"));
 
         //{"doneStatus":"FALSE","guid":
-        Assert.assertTrue("Should have returned json", response.getBody().startsWith("{\"doneStatus\":\"FALSE\",\"guid\":"));
+        Assertions.assertTrue(response.getBody().startsWith("{\"doneStatus\":\"FALSE\",\"guid\":"),
+                "Should have returned json as body " + response.getBody());
 
     }
 
@@ -208,7 +210,7 @@ public class XmlRequestResponseTest {
         final ThingInstance atodo = todo.createInstance().setValue("title", "my title");
         todo.addInstance(atodo);
 
-        Assert.assertEquals(1, todo.countInstances());
+        Assertions.assertEquals(1, todo.countInstances());
 
         HttpApiRequest request = new HttpApiRequest("todos/"+atodo.getGUID());
         request.getHeaders().putAll(HeadersSupport.acceptXml());
@@ -222,11 +224,11 @@ public class XmlRequestResponseTest {
 
         System.out.println(response.getBody());
 
-        Assert.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals(200, response.getStatusCode());
 
-        Assert.assertEquals(1, todo.countInstances());
+        Assertions.assertEquals(1, todo.countInstances());
 
-        Assert.assertEquals("test title", atodo.getValue("title"));
+        Assertions.assertEquals("test title", atodo.getValue("title"));
 
     }
 

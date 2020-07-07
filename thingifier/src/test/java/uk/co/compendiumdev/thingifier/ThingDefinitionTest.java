@@ -1,13 +1,8 @@
 package uk.co.compendiumdev.thingifier;
 
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.generic.definitions.ThingDefinition;
-import org.junit.Test;
-
-
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
-import static org.hamcrest.core.IsCollectionContaining.hasItem;
 
 public class ThingDefinitionTest {
 
@@ -16,25 +11,25 @@ public class ThingDefinitionTest {
         ThingDefinition eDefn;
         eDefn = ThingDefinition.create("Requirement", "Requirements");
 
-        assertThat(eDefn.getName(), is("Requirement"));
-        assertThat(eDefn.getPlural(), is("Requirements"));
+        Assertions.assertEquals("Requirement", eDefn.getName());
+        Assertions.assertEquals("Requirements", eDefn.getPlural());
 
 
-        assertThat(eDefn.getFieldNames().size(), is(1)); // guid exists
-        assertThat(eDefn.getFieldNames(), contains("guid"));
+        Assertions.assertEquals(1, eDefn.getFieldNames().size()); // guid exists
+        Assertions.assertTrue(eDefn.getFieldNames().contains("guid"));
 
         eDefn.setName("aRequirement");
         eDefn.setPlural("theRequirements");
         eDefn.defineField("Title");
 
-        assertThat(eDefn.getName(), is("aRequirement"));
-        assertThat(eDefn.getPlural(), is("theRequirements"));
-        assertThat(eDefn.getFieldNames().size(), is(2));
+        Assertions.assertEquals("aRequirement", eDefn.getName());
+        Assertions.assertEquals("theRequirements", eDefn.getPlural());
+        Assertions.assertEquals(2, eDefn.getFieldNames().size());
 
-        assertThat(eDefn.getFieldNames(), hasItem("Title"));
+        Assertions.assertTrue(eDefn.getFieldNames().contains("Title"));
 
-        assertThat(eDefn.hasFieldNameDefined("Title"), is(true));
-        assertThat(eDefn.hasFieldNameDefined("Description"), is(false));
+        Assertions.assertTrue(eDefn.hasFieldNameDefined("Title"));
+        Assertions.assertFalse(eDefn.hasFieldNameDefined("Description"));
     }
 
 

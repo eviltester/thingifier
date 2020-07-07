@@ -1,9 +1,9 @@
 package uk.co.compendiumdev.casestudy.todomanager.http_api;
 
 import com.google.gson.Gson;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.casestudy.todomanager.TodoManagerModel;
 import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
@@ -23,7 +23,7 @@ public class JsonRequestResponseTest {
     Thing project;
 
 
-    @Before
+    @BeforeEach
     public void createDefinitions() {
 
         todoManager = TodoManagerModel.definedAsThingifier();
@@ -41,10 +41,10 @@ public class JsonRequestResponseTest {
         request.getHeaders().putAll(HeadersSupport.acceptJson());
 
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).get(request);
-        Assert.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals(200, response.getStatusCode());
         System.out.println(response.getBody());
 
-        Assert.assertTrue(response.getBody().equalsIgnoreCase("{\"todos\":[]}"));
+        Assertions.assertTrue(response.getBody().equalsIgnoreCase("{\"todos\":[]}"));
     }
 
 
@@ -58,14 +58,14 @@ public class JsonRequestResponseTest {
         request.getHeaders().putAll(HeadersSupport.acceptJson());
 
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).get(request);
-        Assert.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals(200, response.getStatusCode());
         System.out.println(response.getBody());
 
         final TodoCollectionResponse todos = new Gson().fromJson(response.getBody(), TodoCollectionResponse.class);
 
-        Assert.assertEquals(1, todos.todos.length);
-        Assert.assertEquals("my title", todos.todos[0].title);
-        Assert.assertNotNull(todos.todos[0].guid);
+        Assertions.assertEquals(1, todos.todos.length);
+        Assertions.assertEquals("my title", todos.todos[0].title);
+        Assertions.assertNotNull(todos.todos[0].guid);
 
     }
 
@@ -80,14 +80,14 @@ public class JsonRequestResponseTest {
         request.getHeaders().putAll(HeadersSupport.acceptJson());
 
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).get(request);
-        Assert.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals(200, response.getStatusCode());
         System.out.println(response.getBody());
 
         final TodoCollectionResponse todos = new Gson().fromJson(response.getBody(), TodoCollectionResponse.class);
 
-        Assert.assertEquals(1, todos.todos.length);
-        Assert.assertEquals("my title", todos.todos[0].title);
-        Assert.assertNotNull(todos.todos[0].guid);
+        Assertions.assertEquals(1, todos.todos.length);
+        Assertions.assertEquals("my title", todos.todos[0].title);
+        Assertions.assertNotNull(todos.todos[0].guid);
 
     }
 
@@ -104,13 +104,13 @@ public class JsonRequestResponseTest {
         request.getHeaders().putAll(HeadersSupport.acceptJson());
 
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).get(request);
-        Assert.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals(200, response.getStatusCode());
         System.out.println(response.getBody());
 
         final Todo todo = new Gson().fromJson(response.getBody(), Todo.class);
 
-        Assert.assertEquals("my title", todo.title);
-        Assert.assertNotNull(todo.guid);
+        Assertions.assertEquals("my title", todo.title);
+        Assertions.assertNotNull(todo.guid);
 
     }
 
@@ -126,14 +126,14 @@ public class JsonRequestResponseTest {
         request.getHeaders().putAll(HeadersSupport.acceptJson());
 
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).get(request);
-        Assert.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals(200, response.getStatusCode());
         System.out.println(response.getBody());
 
         final TodoCollectionResponse todos = new Gson().fromJson(response.getBody(), TodoCollectionResponse.class);
 
-        Assert.assertEquals(2, todos.todos.length);
-        Assert.assertEquals(todos.todos[0].title, todo.findInstanceByGUID(todos.todos[0].guid).getValue("title"));
-        Assert.assertEquals(todos.todos[1].title, todo.findInstanceByGUID(todos.todos[1].guid).getValue("title"));
+        Assertions.assertEquals(2, todos.todos.length);
+        Assertions.assertEquals(todos.todos[0].title, todo.findInstanceByGUID(todos.todos[0].guid).getValue("title"));
+        Assertions.assertEquals(todos.todos[1].title, todo.findInstanceByGUID(todos.todos[1].guid).getValue("title"));
 
     }
 
@@ -148,13 +148,14 @@ public class JsonRequestResponseTest {
         request.getHeaders().putAll(HeadersSupport.acceptJson());
 
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).get(request);
-        Assert.assertEquals(404, response.getStatusCode());
+        Assertions.assertEquals(404, response.getStatusCode());
         System.out.println(response.getBody());
 
         final ErrorMessages errors = new Gson().fromJson(response.getBody(), ErrorMessages.class);
 
-        Assert.assertEquals(1, errors.errorMessages.length);
-        Assert.assertTrue(errors.errorMessages[0], errors.errorMessages[0].startsWith("Could not find an instance with todos"));
+        Assertions.assertEquals(1, errors.errorMessages.length);
+        Assertions.assertTrue(errors.errorMessages[0].startsWith("Could not find an instance with todos"),
+                errors.errorMessages[0]);
 
     }
 
@@ -178,23 +179,24 @@ public class JsonRequestResponseTest {
         //{"title":"title from json"}
         request.setBody("{\"title\":\"title from json\"}");
 
-        Assert.assertEquals(0, todo.countInstances());
+        Assertions.assertEquals(0, todo.countInstances());
 
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).post(request);
 
-        Assert.assertEquals(201, response.getStatusCode());
+        Assertions.assertEquals(201, response.getStatusCode());
         System.out.println(response.getBody());
 
-        Assert.assertEquals(1, todo.countInstances());
+        Assertions.assertEquals(1, todo.countInstances());
 
         // header should give me the guid
         String guid = response.getHeaders().get(ApiResponse.GUID_HEADER);
 
         final ThingInstance aTodo = todo.findInstanceByGUID(guid);
 
-        Assert.assertEquals("title from json", aTodo.getValue("title"));
+        Assertions.assertEquals("title from json", aTodo.getValue("title"));
 
-        Assert.assertTrue("Should have returned json", response.getBody().startsWith("{\"doneStatus\":\"FALSE\",\"guid\":"));
+        Assertions.assertTrue(response.getBody().startsWith("{\"doneStatus\":\"FALSE\",\"guid\":"),
+                "Should have returned json");
 
     }
 
@@ -216,25 +218,26 @@ public class JsonRequestResponseTest {
         //{"title":"title from json"}
         request.setBody("{\"title\":\"title from json\"}");
 
-        Assert.assertEquals(0, todo.countInstances());
+        Assertions.assertEquals(0, todo.countInstances());
 
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).put(request);
 
         System.out.println(response.getBody());
 
-        Assert.assertEquals(201, response.getStatusCode());
+        Assertions.assertEquals(201, response.getStatusCode());
 
 
-        Assert.assertEquals(1, todo.countInstances());
+        Assertions.assertEquals(1, todo.countInstances());
 
         // header should give me the guid
         String guid = response.getHeaders().get(ApiResponse.GUID_HEADER);
 
         final ThingInstance aTodo = todo.findInstanceByGUID(guid);
 
-        Assert.assertEquals("title from json", aTodo.getValue("title"));
+        Assertions.assertEquals("title from json", aTodo.getValue("title"));
 
-        Assert.assertTrue("Should have returned xml", response.getBody().startsWith("<todo><doneStatus>FALSE</doneStatus>"));
+        Assertions.assertTrue(response.getBody().startsWith("<todo><doneStatus>FALSE</doneStatus>"),
+                "Should have returned xml");
 
     }
 
@@ -254,7 +257,7 @@ public class JsonRequestResponseTest {
         final ThingInstance atodo = todo.createInstance().setValue("title", "my title");
         todo.addInstance(atodo);
 
-        Assert.assertEquals(1, todo.countInstances());
+        Assertions.assertEquals(1, todo.countInstances());
 
         HttpApiRequest request = new HttpApiRequest("todos/" + atodo.getGUID());
         request.getHeaders().putAll(HeadersSupport.acceptJson());
@@ -267,13 +270,13 @@ public class JsonRequestResponseTest {
 
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).post(request);
 
-        Assert.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals(200, response.getStatusCode());
 
         System.out.println(response.getBody());
 
-        Assert.assertEquals(1, todo.countInstances());
+        Assertions.assertEquals(1, todo.countInstances());
 
-        Assert.assertEquals("title from json", atodo.getValue("title"));
+        Assertions.assertEquals("title from json", atodo.getValue("title"));
 
     }
 
@@ -291,7 +294,7 @@ public class JsonRequestResponseTest {
         final ThingInstance atodo = todo.createInstance().setValue("title", "my title");
         todo.addInstance(atodo);
 
-        Assert.assertEquals(1, todo.countInstances());
+        Assertions.assertEquals(1, todo.countInstances());
 
         HttpApiRequest request = new HttpApiRequest("todos/" + atodo.getGUID());
         request.getHeaders().putAll(HeadersSupport.acceptJson());
@@ -307,11 +310,11 @@ public class JsonRequestResponseTest {
 
         System.out.println(response.getBody());
 
-        Assert.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals(200, response.getStatusCode());
 
-        Assert.assertEquals(1, todo.countInstances());
+        Assertions.assertEquals(1, todo.countInstances());
 
-        Assert.assertEquals("title from json", atodo.getValue("title"));
+        Assertions.assertEquals("title from json", atodo.getValue("title"));
 
     }
 

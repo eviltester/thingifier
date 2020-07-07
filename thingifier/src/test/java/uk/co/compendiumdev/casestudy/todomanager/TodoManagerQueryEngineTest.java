@@ -1,9 +1,8 @@
 package uk.co.compendiumdev.casestudy.todomanager;
 
-import com.google.gson.Gson;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
@@ -20,7 +19,7 @@ public class TodoManagerQueryEngineTest {
     Thing project;
     ThingInstance officeCategory;
 
-    @Before
+    @BeforeEach
     public void createDefinitions(){
 
         todoManager = TodoManagerModel.definedAsThingifier();
@@ -73,11 +72,11 @@ public class TodoManagerQueryEngineTest {
 
         List<ThingInstance> queryResults = query.performQuery().getListThingInstance();
 
-        Assert.assertTrue(query.isResultACollection());
+        Assertions.assertTrue(query.isResultACollection());
 
-        Assert.assertEquals(2, queryResults.size());
-        Assert.assertTrue(queryResults.contains(paperwork));
-        Assert.assertTrue(queryResults.contains(filework));
+        Assertions.assertEquals(2, queryResults.size());
+        Assertions.assertTrue(queryResults.contains(paperwork));
+        Assertions.assertTrue(queryResults.contains(filework));
 
         System.out.println(asJson(queryResults));
 
@@ -90,11 +89,11 @@ public class TodoManagerQueryEngineTest {
 
         List<ThingInstance> queryResults = query.performQuery().getListThingInstance();
 
-        Assert.assertTrue(query.isResultACollection());
+        Assertions.assertTrue(query.isResultACollection());
 
-        Assert.assertEquals(2, queryResults.size());
-        Assert.assertTrue(queryResults.contains(paperwork));
-        Assert.assertTrue(queryResults.contains(filework));
+        Assertions.assertEquals(2, queryResults.size());
+        Assertions.assertTrue(queryResults.contains(paperwork));
+        Assertions.assertTrue(queryResults.contains(filework));
 
         System.out.println(asJson(queryResults));
 
@@ -111,11 +110,11 @@ public class TodoManagerQueryEngineTest {
 
         queryResults = query.performQuery().getListThingInstance();
 
-        Assert.assertFalse(query.isResultACollection()); // it can still be returned as a collection but is valid to return as a single
+        Assertions.assertFalse(query.isResultACollection()); // it can still be returned as a collection but is valid to return as a single
 
-        Assert.assertEquals(1, queryResults.size());
-        Assert.assertTrue(queryResults.contains(paperwork));
-        Assert.assertFalse(queryResults.contains(filework));
+        Assertions.assertEquals(1, queryResults.size());
+        Assertions.assertTrue(queryResults.contains(paperwork));
+        Assertions.assertFalse(queryResults.contains(filework));
 
         System.out.println(asJson(queryResults));
 
@@ -132,11 +131,11 @@ public class TodoManagerQueryEngineTest {
 
         queryResults = query.performQuery().getListThingInstance();
 
-        Assert.assertTrue(query.isResultACollection()); // plural should always report itself as a collection even on instance
+        Assertions.assertTrue(query.isResultACollection()); // plural should always report itself as a collection even on instance
 
-        Assert.assertEquals(1, queryResults.size());
-        Assert.assertTrue(queryResults.contains(paperwork));
-        Assert.assertFalse(queryResults.contains(filework));
+        Assertions.assertEquals(1, queryResults.size());
+        Assertions.assertTrue(queryResults.contains(paperwork));
+        Assertions.assertFalse(queryResults.contains(filework));
 
         System.out.println(asJson(queryResults));
 
@@ -155,10 +154,10 @@ public class TodoManagerQueryEngineTest {
         queryResults = query.performQuery().getListThingInstance();
 
         // even though it doesn not match anything I should know what type of thing this empty collection is
-        Assert.assertTrue(query.isResultACollection());
-        Assert.assertEquals(todoManager.getThingNamed("todo").definition(), query.resultContainsDefn());
+        Assertions.assertTrue(query.isResultACollection());
+        Assertions.assertEquals(todoManager.getThingNamed("todo").definition(), query.resultContainsDefn());
 
-        Assert.assertEquals(0, queryResults.size());
+        Assertions.assertEquals(0, queryResults.size());
         System.out.println(asJson(queryResults));
 
     }
@@ -175,10 +174,10 @@ public class TodoManagerQueryEngineTest {
         queryResults = query.performQuery().getListThingInstance();
 
         // even though it doesn not match anything I should know what type of thing this empty collection is
-        Assert.assertTrue(query.isResultACollection());
-        Assert.assertEquals(todoManager.getThingNamed("todo").definition(), query.resultContainsDefn());
+        Assertions.assertTrue(query.isResultACollection());
+        Assertions.assertEquals(todoManager.getThingNamed("todo").definition(), query.resultContainsDefn());
 
-        Assert.assertEquals(0, queryResults.size());
+        Assertions.assertEquals(0, queryResults.size());
         System.out.println(asJson(queryResults));
 
     }
@@ -206,9 +205,9 @@ public class TodoManagerQueryEngineTest {
 
         queryResults = new SimpleQuery(todoManager, String.format("project/%s/tasks", officeWork.getGUID())).performQuery().getListThingInstance();
 
-        Assert.assertEquals(2, queryResults.size());
-        Assert.assertTrue(queryResults.contains(paperwork));
-        Assert.assertTrue(queryResults.contains(filework));
+        Assertions.assertEquals(2, queryResults.size());
+        Assertions.assertTrue(queryResults.contains(paperwork));
+        Assertions.assertTrue(queryResults.contains(filework));
 
         System.out.println(asJson(queryResults));
 
@@ -218,8 +217,8 @@ public class TodoManagerQueryEngineTest {
         // should be able to get projects for a task
 
         queryResults = new SimpleQuery(todoManager, String.format("todo/%s/task-of", paperwork.getGUID())).performQuery().getListThingInstance();
-        Assert.assertEquals(1, queryResults.size());
-        Assert.assertTrue(queryResults.contains(officeWork));
+        Assertions.assertEquals(1, queryResults.size());
+        Assertions.assertTrue(queryResults.contains(officeWork));
         System.out.println(asJson(queryResults));
 
 
@@ -228,9 +227,9 @@ public class TodoManagerQueryEngineTest {
 
         queryResults = new SimpleQuery(todoManager, String.format("project/%s/todo", officeWork.getGUID())).performQuery().getListThingInstance();
 
-        Assert.assertEquals(2, queryResults.size());
-        Assert.assertTrue(queryResults.contains(paperwork));
-        Assert.assertTrue(queryResults.contains(filework));
+        Assertions.assertEquals(2, queryResults.size());
+        Assertions.assertTrue(queryResults.contains(paperwork));
+        Assertions.assertTrue(queryResults.contains(filework));
 
         System.out.println(asJson(queryResults));
 
@@ -238,8 +237,8 @@ public class TodoManagerQueryEngineTest {
 
         queryResults = new SimpleQuery(todoManager, String.format("project/%s/todo/category", officeWork.getGUID())).performQuery().getListThingInstance();
 
-        Assert.assertEquals(1, queryResults.size());
-        Assert.assertTrue(queryResults.contains(officeCategory));
+        Assertions.assertEquals(1, queryResults.size());
+        Assertions.assertTrue(queryResults.contains(officeCategory));
 
         System.out.println(asJson(queryResults));
 
@@ -248,7 +247,7 @@ public class TodoManagerQueryEngineTest {
 
         queryResults = new SimpleQuery(todoManager, String.format("project/%s/task", officeWork.getGUID())).performQuery().getListThingInstance();
 
-        Assert.assertEquals(0, queryResults.size());
+        Assertions.assertEquals(0, queryResults.size());
 
 
 

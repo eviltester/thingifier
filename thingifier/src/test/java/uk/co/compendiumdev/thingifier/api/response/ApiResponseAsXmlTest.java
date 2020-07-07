@@ -1,10 +1,9 @@
 package uk.co.compendiumdev.thingifier.api.response;
 
-import com.google.gson.Gson;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.StaxDriver;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.generic.definitions.Field;
@@ -24,10 +23,10 @@ public class ApiResponseAsXmlTest {
 
         ApiResponse response = ApiResponse.error404("oops");
 
-        Assert.assertEquals(404, response.getStatusCode());
-        Assert.assertEquals(true, response.hasABody());
-        Assert.assertEquals(true, response.isErrorResponse());
-        Assert.assertEquals(false, response.isCollection());
+        Assertions.assertEquals(404, response.getStatusCode());
+        Assertions.assertEquals(true, response.hasABody());
+        Assertions.assertEquals(true, response.isErrorResponse());
+        Assertions.assertEquals(false, response.isCollection());
 
         String xml = new ApiResponseAsXml(response).getXml();
 
@@ -36,8 +35,8 @@ public class ApiResponseAsXmlTest {
         XStream xstream = getErrorMessagesXmlParser();
         ErrorMessagesResponse messages = (ErrorMessagesResponse) xstream.fromXML(xml);
 
-        Assert.assertEquals(1, messages.errorMessages.length);
-        Assert.assertEquals("oops", messages.errorMessages[0]);
+        Assertions.assertEquals(1, messages.errorMessages.length);
+        Assertions.assertEquals("oops", messages.errorMessages[0]);
 
     }
 
@@ -48,10 +47,10 @@ public class ApiResponseAsXmlTest {
 
         ApiResponse response = ApiResponse.error(500, "oopsy");
 
-        Assert.assertEquals(500, response.getStatusCode());
-        Assert.assertEquals(true, response.hasABody());
-        Assert.assertEquals(true, response.isErrorResponse());
-        Assert.assertEquals(false, response.isCollection());
+        Assertions.assertEquals(500, response.getStatusCode());
+        Assertions.assertEquals(true, response.hasABody());
+        Assertions.assertEquals(true, response.isErrorResponse());
+        Assertions.assertEquals(false, response.isCollection());
 
         String xml = new ApiResponseAsXml(response).getXml();
 
@@ -60,8 +59,8 @@ public class ApiResponseAsXmlTest {
         XStream xstream = getErrorMessagesXmlParser();
         ErrorMessagesResponse messages = (ErrorMessagesResponse) xstream.fromXML(xml);
 
-        Assert.assertEquals(1, messages.errorMessages.length);
-        Assert.assertEquals("oopsy", messages.errorMessages[0]);
+        Assertions.assertEquals(1, messages.errorMessages.length);
+        Assertions.assertEquals("oopsy", messages.errorMessages[0]);
 
     }
 
@@ -75,10 +74,10 @@ public class ApiResponseAsXmlTest {
 
         ApiResponse response = ApiResponse.error(501, errors);
 
-        Assert.assertEquals(501, response.getStatusCode());
-        Assert.assertEquals(true, response.hasABody());
-        Assert.assertEquals(true, response.isErrorResponse());
-        Assert.assertEquals(false, response.isCollection());
+        Assertions.assertEquals(501, response.getStatusCode());
+        Assertions.assertEquals(true, response.hasABody());
+        Assertions.assertEquals(true, response.isErrorResponse());
+        Assertions.assertEquals(false, response.isCollection());
 
         String xml = new ApiResponseAsXml(response).getXml();
 
@@ -87,13 +86,13 @@ public class ApiResponseAsXmlTest {
         XStream xstream = getErrorMessagesXmlParser();
         ErrorMessagesResponse messages = (ErrorMessagesResponse) xstream.fromXML(xml);
 
-        Assert.assertEquals(3, messages.errorMessages.length);
+        Assertions.assertEquals(3, messages.errorMessages.length);
 
         List<String> checkErrors = Arrays.asList(messages.errorMessages);
 
-        Assert.assertTrue(checkErrors.contains("oopsy"));
-        Assert.assertTrue(checkErrors.contains("doopsy"));
-        Assert.assertTrue(checkErrors.contains("do"));
+        Assertions.assertTrue(checkErrors.contains("oopsy"));
+        Assertions.assertTrue(checkErrors.contains("doopsy"));
+        Assertions.assertTrue(checkErrors.contains("do"));
 
     }
 
@@ -102,14 +101,14 @@ public class ApiResponseAsXmlTest {
 
         ApiResponse response = ApiResponse.success();
 
-        Assert.assertEquals(200, response.getStatusCode());
-        Assert.assertEquals(false, response.hasABody());
-        Assert.assertEquals(false, response.isErrorResponse());
-        Assert.assertEquals(false, response.isCollection());
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals(false, response.hasABody());
+        Assertions.assertEquals(false, response.isErrorResponse());
+        Assertions.assertEquals(false, response.isCollection());
 
         String xml = new ApiResponseAsXml(response).getXml();
 
-        Assert.assertEquals("", xml);
+        Assertions.assertEquals("", xml);
 
     }
 
@@ -126,18 +125,18 @@ public class ApiResponseAsXmlTest {
 
         ApiResponse response = ApiResponse.success().returnSingleInstance(aTodo);
 
-        Assert.assertEquals(200, response.getStatusCode());
-        Assert.assertEquals(true, response.hasABody());
-        Assert.assertEquals(false, response.isErrorResponse());
-        Assert.assertEquals(false, response.isCollection());
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals(true, response.hasABody());
+        Assertions.assertEquals(false, response.isErrorResponse());
+        Assertions.assertEquals(false, response.isCollection());
 
         String xml = new ApiResponseAsXml(response).getXml();
 
         XStream xstream = getTodoXmlParser();
         Todo myTodo = (Todo) xstream.fromXML(xml);
 
-        Assert.assertEquals(aTodo.getGUID(), myTodo.guid);
-        Assert.assertEquals("a todo", myTodo.title);
+        Assertions.assertEquals(aTodo.getGUID(), myTodo.guid);
+        Assertions.assertEquals("a todo", myTodo.title);
 
     }
 
@@ -156,10 +155,10 @@ public class ApiResponseAsXmlTest {
 
         ApiResponse response = ApiResponse.success().returnInstanceCollection(new ArrayList(todos.getInstances()));
 
-        Assert.assertEquals(200, response.getStatusCode());
-        Assert.assertEquals(true, response.hasABody());
-        Assert.assertEquals(false, response.isErrorResponse());
-        Assert.assertEquals(true, response.isCollection());
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals(true, response.hasABody());
+        Assertions.assertEquals(false, response.isErrorResponse());
+        Assertions.assertEquals(true, response.isCollection());
 
 
         String xml = new ApiResponseAsXml(response).getXml();
@@ -172,18 +171,18 @@ public class ApiResponseAsXmlTest {
         for(int todoid = 0; todoid < 2; todoid++){
 
             if (myTodo.todos[todoid].guid.equals(aTodo.getGUID())) {
-                Assert.assertEquals(aTodo.getGUID(), myTodo.todos[todoid].guid);
-                Assert.assertEquals("a todo", myTodo.todos[todoid].title);
+                Assertions.assertEquals(aTodo.getGUID(), myTodo.todos[todoid].guid);
+                Assertions.assertEquals("a todo", myTodo.todos[todoid].title);
                 foundCount++;
             }else {
-                Assert.assertEquals(anotherTodo.getGUID(), myTodo.todos[todoid].guid);
-                Assert.assertEquals("another todo", myTodo.todos[todoid].title);
+                Assertions.assertEquals(anotherTodo.getGUID(), myTodo.todos[todoid].guid);
+                Assertions.assertEquals("another todo", myTodo.todos[todoid].title);
                 foundCount++;
             }
 
 
         }
-        Assert.assertEquals(2, foundCount);
+        Assertions.assertEquals(2, foundCount);
 
     }
 
@@ -193,15 +192,15 @@ public class ApiResponseAsXmlTest {
         ApiResponse response = ApiResponse.success().returnInstanceCollection(new ArrayList());
         // type has not been set in response
 
-        Assert.assertEquals(200, response.getStatusCode());
-        Assert.assertEquals(true, response.hasABody());
-        Assert.assertEquals(false, response.isErrorResponse());
-        Assert.assertEquals(true, response.isCollection());
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals(true, response.hasABody());
+        Assertions.assertEquals(false, response.isErrorResponse());
+        Assertions.assertEquals(true, response.isCollection());
 
         String xml = new ApiResponseAsXml(response).getXml();
         System.out.println(xml);
 
-        Assert.assertEquals("", xml);
+        Assertions.assertEquals("", xml);
 
     }
 
@@ -213,19 +212,19 @@ public class ApiResponseAsXmlTest {
         Thing todo = thingifier.createThing("todo", "todos");
         response.resultContainsType(todo.definition());
 
-        Assert.assertEquals(200, response.getStatusCode());
-        Assert.assertEquals(true, response.hasABody());
-        Assert.assertEquals(false, response.isErrorResponse());
-        Assert.assertEquals(true, response.isCollection());
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals(true, response.hasABody());
+        Assertions.assertEquals(false, response.isErrorResponse());
+        Assertions.assertEquals(true, response.isCollection());
 
         String xml = new ApiResponseAsXml(response).getXml();
         System.out.println(xml);
         XStream xstream = getTodosXmlParser();
         TodoCollectionResponse myTodo = (TodoCollectionResponse) xstream.fromXML(xml);
 
-        Assert.assertEquals("<todos></todos>", xml);
+        Assertions.assertEquals("<todos></todos>", xml);
 
-        Assert.assertNull(myTodo.todos);
+        Assertions.assertNull(myTodo.todos);
     }
 
 

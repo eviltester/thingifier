@@ -1,8 +1,8 @@
 package uk.co.compendiumdev.thingifier;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.casestudy.todomanager.TodoManagerModel;
 import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
 
@@ -24,7 +24,7 @@ public class ModelsTest {
 
     // Site -> Page
 
-    @Before
+    @BeforeEach
     public void createDefinitions(){
 
         todoManager = TodoManagerModel.definedAsThingifier();
@@ -40,11 +40,11 @@ public class ModelsTest {
             todos.addInstance(todos.createInstance().setValue("title", "title " + System.nanoTime()));
         }
 
-        Assert.assertEquals(100, todos.countInstances());
+        Assertions.assertEquals(100, todos.countInstances());
 
         todoManager.clearAllData();
 
-        Assert.assertEquals(0, todos.countInstances());
+        Assertions.assertEquals(0, todos.countInstances());
     }
 
     @Test
@@ -63,8 +63,8 @@ public class ModelsTest {
         }
 
 
-        Assert.assertEquals(100, todos.countInstances());
-        Assert.assertEquals(50, projects.countInstances());
+        Assertions.assertEquals(100, todos.countInstances());
+        Assertions.assertEquals(50, projects.countInstances());
 
         for(ThingInstance project : projects.getInstances()){
 
@@ -81,8 +81,8 @@ public class ModelsTest {
 
         todoManager.clearAllData();
 
-        Assert.assertEquals(0, todos.countInstances());
-        Assert.assertEquals(0, projects.countInstances());
+        Assertions.assertEquals(0, todos.countInstances());
+        Assertions.assertEquals(0, projects.countInstances());
 
         System.out.println(todoManager.toString());
     }

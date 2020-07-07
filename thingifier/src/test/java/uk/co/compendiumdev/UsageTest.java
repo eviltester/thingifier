@@ -1,14 +1,14 @@
 package uk.co.compendiumdev;
 
 
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.generic.definitions.Field;
 import uk.co.compendiumdev.thingifier.generic.FieldType;
 import uk.co.compendiumdev.thingifier.generic.definitions.FieldValue;
 import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
-import org.junit.Assert;
-import org.junit.Test;
 
 import java.util.Collection;
 
@@ -58,10 +58,10 @@ public class UsageTest {
 
         person.addInstance(eris);
 
-        Assert.assertEquals(2, person.countInstances());
-        Assert.assertEquals("Bob", bob.getValue("name"));
-        Assert.assertEquals("56", bob.getValue("age"));
-        Assert.assertEquals("1000", person.findInstanceByField(FieldValue.is("name","Eris")).getValue("age"));
+        Assertions.assertEquals(2, person.countInstances());
+        Assertions.assertEquals("Bob", bob.getValue("name"));
+        Assertions.assertEquals("56", bob.getValue("age"));
+        Assertions.assertEquals("1000", person.findInstanceByField(FieldValue.is("name","Eris")).getValue("age"));
 
     }
 
@@ -73,9 +73,9 @@ public class UsageTest {
         url.definition().addFields(Field.is("url"),
                                  Field.is("visited", INTEGER), Field.is("name",STRING));
 
-        Assert.assertTrue(url.definition().hasFieldNameDefined("url"));
-        Assert.assertTrue(url.definition().hasFieldNameDefined("name"));
-        Assert.assertTrue(url.definition().hasFieldNameDefined("visited"));
+        Assertions.assertTrue(url.definition().hasFieldNameDefined("url"));
+        Assertions.assertTrue(url.definition().hasFieldNameDefined("name"));
+        Assertions.assertTrue(url.definition().hasFieldNameDefined("visited"));
 
 
         url.addInstance(
@@ -97,7 +97,7 @@ public class UsageTest {
             System.out.println(String.format("%s\t%s", aURL.getValue("name"), aURL.getValue("url")));
         }
 
-        Assert.assertEquals(2, instances.size());
+        Assertions.assertEquals(2, instances.size());
 
     }
 
@@ -114,8 +114,8 @@ public class UsageTest {
 
         Thing urls = things.getThingNamed("URL");
 
-        Assert.assertTrue(urls.definition().hasFieldNameDefined("url"));
-        Assert.assertTrue(urls.definition().hasFieldNameDefined("name"));
+        Assertions.assertTrue(urls.definition().hasFieldNameDefined("url"));
+        Assertions.assertTrue(urls.definition().hasFieldNameDefined("name"));
 
         ThingInstance evilTester_dot_com = urls.createInstance().
                 setValue("name","EvilTester.com").setValue("url","http://eviltester.com");
@@ -155,11 +155,11 @@ public class UsageTest {
                 .addFields(Field.is("title", STRING), Field.is("description",STRING),
                         Field.is("doneStatus",FieldType.BOOLEAN).withDefaultValue("FALSE"));
 
-        Assert.assertTrue(todo.definition().hasFieldNameDefined("title"));
-        Assert.assertTrue(todo.definition().hasFieldNameDefined("description"));
-        Assert.assertTrue(todo.definition().hasFieldNameDefined("doneStatus"));
+        Assertions.assertTrue(todo.definition().hasFieldNameDefined("title"));
+        Assertions.assertTrue(todo.definition().hasFieldNameDefined("description"));
+        Assertions.assertTrue(todo.definition().hasFieldNameDefined("doneStatus"));
 
-        Assert.assertEquals("FALSE", todo.definition().getField("doneStatus").getDefaultValue());
+        Assertions.assertEquals("FALSE", todo.definition().getField("doneStatus").getDefaultValue());
 
 
     }

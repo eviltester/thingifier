@@ -1,9 +1,9 @@
 package uk.co.compendiumdev.casestudy.todomanager.api_non_http;
 
 import com.google.gson.Gson;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.casestudy.todomanager.TodoManagerModel;
 import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
@@ -24,7 +24,7 @@ public class EntityInstanceApiNonHttpTest {
     Thing project;
 
 
-    @Before
+    @BeforeEach
     public void createDefinitions() {
 
         todoManager = TodoManagerModel.definedAsThingifier();
@@ -59,15 +59,16 @@ public class EntityInstanceApiNonHttpTest {
 
         ApiResponse apiResponse = todoManager.api().get("/todo/" + findThis.getGUID());
 
-        Assert.assertEquals(200, apiResponse.getStatusCode());
-        Assert.assertFalse("Should be a single item, rather than a collection", apiResponse.isCollection());
-        Assert.assertTrue(apiResponse.hasABody());
+        Assertions.assertEquals(200, apiResponse.getStatusCode());
+        Assertions.assertFalse(apiResponse.isCollection(),
+                "Should be a single item, rather than a collection");
+        Assertions.assertTrue(apiResponse.hasABody());
 
-        Assert.assertEquals(findThis.getValue("title"), apiResponse.getReturnedInstance().getValue("title"));
-        Assert.assertEquals(findThis.getValue("guid"), apiResponse.getReturnedInstance().getValue("guid"));
+        Assertions.assertEquals(findThis.getValue("title"), apiResponse.getReturnedInstance().getValue("title"));
+        Assertions.assertEquals(findThis.getValue("guid"), apiResponse.getReturnedInstance().getValue("guid"));
 
-        Assert.assertEquals(findThis, apiResponse.getReturnedInstance());
-        Assert.assertEquals(0, apiResponse.getErrorMessages().size());
+        Assertions.assertEquals(findThis, apiResponse.getReturnedInstance());
+        Assertions.assertEquals(0, apiResponse.getErrorMessages().size());
 
     }
 
@@ -83,23 +84,24 @@ public class EntityInstanceApiNonHttpTest {
 
         ApiResponse apiResponse = todoManager.api().get("/todo");
 
-        Assert.assertEquals(200, apiResponse.getStatusCode());
-        Assert.assertTrue("Should be a collection", apiResponse.isCollection());
-        Assert.assertTrue(apiResponse.hasABody());
+        Assertions.assertEquals(200, apiResponse.getStatusCode());
+        Assertions.assertTrue(apiResponse.isCollection(),
+                "Should be a collection");
+        Assertions.assertTrue(apiResponse.hasABody());
 
-        Assert.assertEquals(todo.countInstances(), apiResponse.getReturnedInstanceCollection().size());
+        Assertions.assertEquals(todo.countInstances(), apiResponse.getReturnedInstanceCollection().size());
 
         Set<String> guidSet = new HashSet<>();
 
         for (ThingInstance item : apiResponse.getReturnedInstanceCollection()) {
             guidSet.add(item.getGUID());
-            Assert.assertNotNull(todo.findInstanceByGUID(item.getGUID()));
+            Assertions.assertNotNull(todo.findInstanceByGUID(item.getGUID()));
         }
 
-        Assert.assertEquals(guidSet.size(), todo.countInstances());
-        Assert.assertEquals(guidSet.size(), apiResponse.getReturnedInstanceCollection().size());
+        Assertions.assertEquals(guidSet.size(), todo.countInstances());
+        Assertions.assertEquals(guidSet.size(), apiResponse.getReturnedInstanceCollection().size());
 
-        Assert.assertEquals(0, apiResponse.getErrorMessages().size());
+        Assertions.assertEquals(0, apiResponse.getErrorMessages().size());
 
     }
 
@@ -120,31 +122,31 @@ public class EntityInstanceApiNonHttpTest {
         // create a project with POST
         ApiResponse apiresponse = todoManager.api().post("todo", getSimpleParser(requestBody));
 
-        Assert.assertEquals(201, apiresponse.getStatusCode());
-        Assert.assertTrue(apiresponse.hasABody());
-        Assert.assertFalse(apiresponse.isCollection());
-        Assert.assertEquals(0, apiresponse.getErrorMessages().size());
+        Assertions.assertEquals(201, apiresponse.getStatusCode());
+        Assertions.assertTrue(apiresponse.hasABody());
+        Assertions.assertFalse(apiresponse.isCollection());
+        Assertions.assertEquals(0, apiresponse.getErrorMessages().size());
 
         ThingInstance createdInstance = apiresponse.getReturnedInstance();
 
         String officeWorkGuid = createdInstance.getGUID();
-        Assert.assertEquals(title, createdInstance.getValue("title"));
-        Assert.assertEquals(description, createdInstance.getValue("description"));
-        Assert.assertEquals(doneStatus, createdInstance.getValue("doneStatus"));
+        Assertions.assertEquals(title, createdInstance.getValue("title"));
+        Assertions.assertEquals(description, createdInstance.getValue("description"));
+        Assertions.assertEquals(doneStatus, createdInstance.getValue("doneStatus"));
 
 
         // Check header for GUID
         String headerLocation = apiresponse.getHeaderValue("Location");
         String headerGUID = apiresponse.getHeaderValue(ApiResponse.GUID_HEADER);
 
-        Assert.assertEquals(headerGUID, officeWorkGuid);
-        Assert.assertEquals("todos/" + officeWorkGuid, headerLocation);
+        Assertions.assertEquals(headerGUID, officeWorkGuid);
+        Assertions.assertEquals("todos/" + officeWorkGuid, headerLocation);
 
         // check that it is created in the model
 
         ThingInstance createdProject = todo.findInstanceByGUID(headerGUID);
 
-        Assert.assertEquals(createdProject, createdInstance);
+        Assertions.assertEquals(createdProject, createdInstance);
 
     }
 
@@ -167,30 +169,30 @@ public class EntityInstanceApiNonHttpTest {
         ApiResponse apiresponse = todoManager.api().post("todo",  getSimpleParser(requestBody));
 
 
-        Assert.assertEquals(201, apiresponse.getStatusCode());
-        Assert.assertTrue(apiresponse.hasABody());
-        Assert.assertFalse(apiresponse.isCollection());
-        Assert.assertEquals(0, apiresponse.getErrorMessages().size());
+        Assertions.assertEquals(201, apiresponse.getStatusCode());
+        Assertions.assertTrue(apiresponse.hasABody());
+        Assertions.assertFalse(apiresponse.isCollection());
+        Assertions.assertEquals(0, apiresponse.getErrorMessages().size());
 
         ThingInstance createdInstance = apiresponse.getReturnedInstance();
 
         String officeWorkGuid = createdInstance.getGUID();
-        Assert.assertEquals(title, createdInstance.getValue("title"));
-        Assert.assertEquals("", createdInstance.getValue("description"));
-        Assert.assertEquals("FALSE", createdInstance.getValue("doneStatus"));
+        Assertions.assertEquals(title, createdInstance.getValue("title"));
+        Assertions.assertEquals("", createdInstance.getValue("description"));
+        Assertions.assertEquals("FALSE", createdInstance.getValue("doneStatus"));
 
         // Check header for GUID
         String headerLocation = apiresponse.getHeaderValue("Location");
         String headerGUID = apiresponse.getHeaderValue(ApiResponse.GUID_HEADER);
 
-        Assert.assertEquals(headerGUID, officeWorkGuid);
-        Assert.assertEquals("todos/" + officeWorkGuid, headerLocation);
+        Assertions.assertEquals(headerGUID, officeWorkGuid);
+        Assertions.assertEquals("todos/" + officeWorkGuid, headerLocation);
 
         // check that it is created in the model
 
         ThingInstance createdProject = todo.findInstanceByGUID(headerGUID);
 
-        Assert.assertEquals(createdProject, createdInstance);
+        Assertions.assertEquals(createdProject, createdInstance);
 
     }
 
@@ -213,20 +215,20 @@ public class EntityInstanceApiNonHttpTest {
         // amend a project with POST
         ApiResponse apiresponse = todoManager.api().post("todo/" + relTodo.getGUID(),  getSimpleParser(requestBody));
 
-        Assert.assertEquals(200, apiresponse.getStatusCode());
-        Assert.assertEquals(0, apiresponse.getHeaders().size());
-        Assert.assertTrue(apiresponse.hasABody());
-        Assert.assertFalse(apiresponse.isCollection());
-        Assert.assertEquals(0, apiresponse.getErrorMessages().size());
+        Assertions.assertEquals(200, apiresponse.getStatusCode());
+        Assertions.assertEquals(0, apiresponse.getHeaders().size());
+        Assertions.assertTrue(apiresponse.hasABody());
+        Assertions.assertFalse(apiresponse.isCollection());
+        Assertions.assertEquals(0, apiresponse.getErrorMessages().size());
 
         // Check response
 
         ThingInstance createdInstance = apiresponse.getReturnedInstance();
 
-        Assert.assertEquals(relTodo.getGUID(), createdInstance.getGUID());
-        Assert.assertEquals(title, createdInstance.getValue("title"));
-        Assert.assertEquals(description, createdInstance.getValue("description"));
-        Assert.assertEquals("FALSE", createdInstance.getValue("doneStatus"));
+        Assertions.assertEquals(relTodo.getGUID(), createdInstance.getGUID());
+        Assertions.assertEquals(title, createdInstance.getValue("title"));
+        Assertions.assertEquals(description, createdInstance.getValue("description"));
+        Assertions.assertEquals("FALSE", createdInstance.getValue("doneStatus"));
 
     }
 
@@ -241,12 +243,12 @@ public class EntityInstanceApiNonHttpTest {
         String guid = UUID.randomUUID().toString();
 
         ApiResponse apiresponse = todoManager.api().post(String.format("project/%s", guid),  getSimpleParser(requestBody));
-        Assert.assertEquals(404, apiresponse.getStatusCode());
-        Assert.assertTrue(apiresponse.getErrorMessages().size() > 0);
-        Assert.assertTrue(apiresponse.hasABody());
+        Assertions.assertEquals(404, apiresponse.getStatusCode());
+        Assertions.assertTrue(apiresponse.getErrorMessages().size() > 0);
+        Assertions.assertTrue(apiresponse.hasABody());
 
 
-        Assert.assertEquals(currentProjects, project.countInstances());
+        Assertions.assertEquals(currentProjects, project.countInstances());
 
     }
 
@@ -269,13 +271,13 @@ public class EntityInstanceApiNonHttpTest {
         requestBody.put("description", "Amend Failed new TODO Item");
         apiresponse = todoManager.api().post(String.format("todo/%s", amendTodo.getGUID()),  getSimpleParser(requestBody));
 
-        Assert.assertEquals(400, apiresponse.getStatusCode());
-        Assert.assertTrue(apiresponse.getErrorMessages().size() > 0);
-        Assert.assertTrue(apiresponse.hasABody());
+        Assertions.assertEquals(400, apiresponse.getStatusCode());
+        Assertions.assertTrue(apiresponse.getErrorMessages().size() > 0);
+        Assertions.assertTrue(apiresponse.hasABody());
 
 
-        Assert.assertEquals(originalTitle, amendTodo.getValue("title"));
-        Assert.assertEquals(originalDescription, amendTodo.getValue("description"));
+        Assertions.assertEquals(originalTitle, amendTodo.getValue("title"));
+        Assertions.assertEquals(originalDescription, amendTodo.getValue("description"));
 
 
         // Field validation on boolean for Amend with PUT
@@ -285,13 +287,13 @@ public class EntityInstanceApiNonHttpTest {
         requestBody.put("doneStatus", "FALSEY");
         apiresponse = todoManager.api().post(String.format("todo/%s", amendTodo.getGUID()),  getSimpleParser(requestBody));
 
-        Assert.assertEquals(400, apiresponse.getStatusCode());
-        Assert.assertTrue(apiresponse.getErrorMessages().size() > 0);
-        Assert.assertTrue(apiresponse.hasABody());
+        Assertions.assertEquals(400, apiresponse.getStatusCode());
+        Assertions.assertTrue(apiresponse.getErrorMessages().size() > 0);
+        Assertions.assertTrue(apiresponse.hasABody());
 
 
-        Assert.assertEquals(originalTitle, amendTodo.getValue("title"));
-        Assert.assertEquals(originalDescription, amendTodo.getValue("description"));
+        Assertions.assertEquals(originalTitle, amendTodo.getValue("title"));
+        Assertions.assertEquals(originalDescription, amendTodo.getValue("description"));
 
     }
 
@@ -312,20 +314,20 @@ public class EntityInstanceApiNonHttpTest {
         project.addInstance(officeWork);
 
         String officeWorkGuid = officeWork.getGUID();
-        Assert.assertNotNull(officeWorkGuid);
+        Assertions.assertNotNull(officeWorkGuid);
 
         // amend existing project with PUT - this should validate that all required fields are present
         apiresponse = todoManager.api().put(String.format("project/%s", officeWork.getGUID()),  getSimpleParser(requestBody));
-        Assert.assertEquals(200, apiresponse.getStatusCode());
-        Assert.assertEquals("My Office Work", officeWork.getValue("title"));
+        Assertions.assertEquals(200, apiresponse.getStatusCode());
+        Assertions.assertEquals("My Office Work", officeWork.getValue("title"));
 
         officeWork.setValue("title", "office");
-        Assert.assertEquals("office", officeWork.getValue("title"));
-        Assert.assertNotNull(officeWorkGuid);
+        Assertions.assertEquals("office", officeWork.getValue("title"));
+        Assertions.assertNotNull(officeWorkGuid);
 
-        Assert.assertTrue(apiresponse.hasABody());
-        Assert.assertFalse(apiresponse.isCollection());
-        Assert.assertEquals(officeWorkGuid, apiresponse.getReturnedInstance().getGUID());
+        Assertions.assertTrue(apiresponse.hasABody());
+        Assertions.assertFalse(apiresponse.isCollection());
+        Assertions.assertEquals(officeWorkGuid, apiresponse.getReturnedInstance().getGUID());
 
     }
 
@@ -345,7 +347,7 @@ public class EntityInstanceApiNonHttpTest {
         project.addInstance(officeWork);
 
         String officeWorkGuid = officeWork.getGUID();
-        Assert.assertNotNull(officeWorkGuid);
+        Assertions.assertNotNull(officeWorkGuid);
 
         // amend existing project with PUT - this should validate that all required fields are present
 
@@ -354,13 +356,13 @@ public class EntityInstanceApiNonHttpTest {
         // note, I haven't added a description
 
         apiresponse = todoManager.api().put(String.format("project/%s", officeWork.getGUID()),  getSimpleParser(requestBody));
-        Assert.assertEquals(200, apiresponse.getStatusCode());
-        Assert.assertEquals("My Office Work", officeWork.getValue("title"));
-        Assert.assertEquals("", officeWork.getValue("description"));
+        Assertions.assertEquals(200, apiresponse.getStatusCode());
+        Assertions.assertEquals("My Office Work", officeWork.getValue("title"));
+        Assertions.assertEquals("", officeWork.getValue("description"));
 
-        Assert.assertTrue(apiresponse.hasABody());
-        Assert.assertFalse(apiresponse.isCollection());
-        Assert.assertEquals(officeWorkGuid, apiresponse.getReturnedInstance().getGUID());
+        Assertions.assertTrue(apiresponse.hasABody());
+        Assertions.assertFalse(apiresponse.isCollection());
+        Assertions.assertEquals(officeWorkGuid, apiresponse.getReturnedInstance().getGUID());
 
     }
 
@@ -381,7 +383,7 @@ public class EntityInstanceApiNonHttpTest {
         project.addInstance(officeWork);
 
         String originalGUID = officeWork.getGUID();
-        Assert.assertNotNull(originalGUID);
+        Assertions.assertNotNull(originalGUID);
 
         // amend existing project with PUT - this should validate that all required fields are present
 
@@ -392,13 +394,13 @@ public class EntityInstanceApiNonHttpTest {
 
         apiresponse = todoManager.api().put(String.format("project/%s", originalGUID),  getSimpleParser(requestBody));
 
-        Assert.assertEquals(400, apiresponse.getStatusCode());
-        Assert.assertEquals("An Existing Project", officeWork.getValue("title"));
-        Assert.assertEquals("my original description", officeWork.getValue("description"));
-        Assert.assertEquals(originalGUID, officeWork.getValue("guid"));
+        Assertions.assertEquals(400, apiresponse.getStatusCode());
+        Assertions.assertEquals("An Existing Project", officeWork.getValue("title"));
+        Assertions.assertEquals("my original description", officeWork.getValue("description"));
+        Assertions.assertEquals(originalGUID, officeWork.getValue("guid"));
 
-        Assert.assertTrue(apiresponse.hasABody());
-        Assert.assertTrue(apiresponse.isErrorResponse());
+        Assertions.assertTrue(apiresponse.hasABody());
+        Assertions.assertTrue(apiresponse.isErrorResponse());
 
     }
 
@@ -418,31 +420,31 @@ public class EntityInstanceApiNonHttpTest {
 
 
         int currentProjects = project.countInstances();
-        Assert.assertEquals(0, currentProjects);
+        Assertions.assertEquals(0, currentProjects);
 
         // create with a PUT and a given GUID
         String guid = UUID.randomUUID().toString();
 
 
         apiresponse = todoManager.api().put(String.format("project/%s", guid),  getSimpleParser(requestBody));
-        Assert.assertEquals(201, apiresponse.getStatusCode());
+        Assertions.assertEquals(201, apiresponse.getStatusCode());
 
 
-        Assert.assertEquals(guid, apiresponse.getHeaderValue(ApiResponse.GUID_HEADER));
-        Assert.assertTrue(apiresponse.getHeaderValue("Location").endsWith(guid));
+        Assertions.assertEquals(guid, apiresponse.getHeaderValue(ApiResponse.GUID_HEADER));
+        Assertions.assertTrue(apiresponse.getHeaderValue("Location").endsWith(guid));
 
-        Assert.assertEquals(currentProjects + 1, project.countInstances());
+        Assertions.assertEquals(currentProjects + 1, project.countInstances());
 
 
         ThingInstance newProject = project.findInstanceByField(FieldValue.is("guid", guid));
 
-        Assert.assertEquals(title, newProject.getValue("title"));
-        Assert.assertEquals(guid, newProject.getValue("guid"));
+        Assertions.assertEquals(title, newProject.getValue("title"));
+        Assertions.assertEquals(guid, newProject.getValue("guid"));
 
-        Assert.assertTrue(apiresponse.hasABody());
-        Assert.assertFalse(apiresponse.isCollection());
-        Assert.assertTrue(apiresponse.getErrorMessages().size() == 0);
-        Assert.assertEquals(newProject, apiresponse.getReturnedInstance());
+        Assertions.assertTrue(apiresponse.hasABody());
+        Assertions.assertFalse(apiresponse.isCollection());
+        Assertions.assertTrue(apiresponse.getErrorMessages().size() == 0);
+        Assertions.assertEquals(newProject, apiresponse.getReturnedInstance());
     }
 
     @Test
@@ -452,21 +454,21 @@ public class EntityInstanceApiNonHttpTest {
         ThingInstance officeWork = project.createInstance().setValue("title", "An Existing Project");
         project.addInstance(officeWork);
 
-        Assert.assertEquals(1, project.countInstances());
+        Assertions.assertEquals(1, project.countInstances());
 
         apiresponse = todoManager.api().delete(String.format("project/%s", officeWork.getGUID()));
-        Assert.assertEquals(200, apiresponse.getStatusCode());
-        Assert.assertTrue(apiresponse.getErrorMessages().size() == 0);
+        Assertions.assertEquals(200, apiresponse.getStatusCode());
+        Assertions.assertTrue(apiresponse.getErrorMessages().size() == 0);
 
-        Assert.assertFalse(apiresponse.hasABody());
+        Assertions.assertFalse(apiresponse.hasABody());
 
-        Assert.assertEquals(0, project.countInstances());
+        Assertions.assertEquals(0, project.countInstances());
 
         apiresponse = todoManager.api().delete(String.format("project/%s", officeWork.getGUID()));
-        Assert.assertEquals(404, apiresponse.getStatusCode());
-        Assert.assertTrue(apiresponse.getErrorMessages().size() > 0);
+        Assertions.assertEquals(404, apiresponse.getStatusCode());
+        Assertions.assertTrue(apiresponse.getErrorMessages().size() > 0);
 
-        Assert.assertTrue(apiresponse.hasABody());
+        Assertions.assertTrue(apiresponse.hasABody());
 
     }
 
@@ -477,9 +479,9 @@ public class EntityInstanceApiNonHttpTest {
         ApiResponse apiresponse;
 
         apiresponse = todoManager.api().delete(String.format("project/%s", UUID.randomUUID().toString()));
-        Assert.assertEquals(404, apiresponse.getStatusCode());
-        Assert.assertTrue(apiresponse.getErrorMessages().size() > 0);
-        Assert.assertTrue(apiresponse.hasABody());
+        Assertions.assertEquals(404, apiresponse.getStatusCode());
+        Assertions.assertTrue(apiresponse.getErrorMessages().size() > 0);
+        Assertions.assertTrue(apiresponse.hasABody());
 
     }
 
@@ -494,9 +496,9 @@ public class EntityInstanceApiNonHttpTest {
         requestBody.put("description", "A new TODO Item"); // 400 because it should be "title"
 
         apiresponse = todoManager.api().post(String.format("todo"),  getSimpleParser(requestBody));
-        Assert.assertEquals(400, apiresponse.getStatusCode());
-        Assert.assertTrue(apiresponse.getErrorMessages().size() > 0);
-        Assert.assertTrue(apiresponse.hasABody());
+        Assertions.assertEquals(400, apiresponse.getStatusCode());
+        Assertions.assertTrue(apiresponse.getErrorMessages().size() > 0);
+        Assertions.assertTrue(apiresponse.hasABody());
 
         // Field validation on boolean for Create with POST
         requestBody = new HashMap<String, String>();
@@ -504,9 +506,9 @@ public class EntityInstanceApiNonHttpTest {
         requestBody.put("doneStatus", "FALSEY");
 
         apiresponse = todoManager.api().post(String.format("todo"), getSimpleParser(requestBody));
-        Assert.assertEquals(400, apiresponse.getStatusCode());
-        Assert.assertTrue(apiresponse.getErrorMessages().size() > 0);
-        Assert.assertTrue(apiresponse.hasABody());
+        Assertions.assertEquals(400, apiresponse.getStatusCode());
+        Assertions.assertTrue(apiresponse.getErrorMessages().size() > 0);
+        Assertions.assertTrue(apiresponse.hasABody());
 
         // Field validation on boolean for Amend with POST
         requestBody = new HashMap<String, String>();
@@ -517,9 +519,9 @@ public class EntityInstanceApiNonHttpTest {
         todo.addInstance(paperwork);
 
         apiresponse = todoManager.api().post(String.format("todo/%s", paperwork.getGUID()), getSimpleParser(requestBody));
-        Assert.assertEquals(400, apiresponse.getStatusCode());
-        Assert.assertTrue(apiresponse.getErrorMessages().size() > 0);
-        Assert.assertTrue(apiresponse.hasABody());
+        Assertions.assertEquals(400, apiresponse.getStatusCode());
+        Assertions.assertTrue(apiresponse.getErrorMessages().size() > 0);
+        Assertions.assertTrue(apiresponse.hasABody());
 
     }
 
@@ -535,9 +537,9 @@ public class EntityInstanceApiNonHttpTest {
         requestBody.put("description", "A new TODO Item");
         requestBody.put("doneStatus", "TRUE");
         apiresponse = todoManager.api().put(String.format("todo/%s", UUID.randomUUID().toString()), getSimpleParser(requestBody));
-        Assert.assertEquals(400, apiresponse.getStatusCode());
-        Assert.assertTrue(apiresponse.getErrorMessages().size() > 0);
-        Assert.assertTrue(apiresponse.hasABody());
+        Assertions.assertEquals(400, apiresponse.getStatusCode());
+        Assertions.assertTrue(apiresponse.getErrorMessages().size() > 0);
+        Assertions.assertTrue(apiresponse.hasABody());
 
 
         ThingInstance paperwork = todo.createInstance().setValue("title", "Todo for amending");
@@ -549,9 +551,9 @@ public class EntityInstanceApiNonHttpTest {
         requestBody.put("description", "Amended TODO Item ");
         requestBody.put("doneStatus", "TRUE");
         apiresponse = todoManager.api().put(String.format("todo/%s", paperwork.getGUID()), getSimpleParser(requestBody));
-        Assert.assertEquals(400, apiresponse.getStatusCode());
-        Assert.assertTrue(apiresponse.getErrorMessages().size() > 0);
-        Assert.assertTrue(apiresponse.hasABody());
+        Assertions.assertEquals(400, apiresponse.getStatusCode());
+        Assertions.assertTrue(apiresponse.getErrorMessages().size() > 0);
+        Assertions.assertTrue(apiresponse.hasABody());
 
 
         // Field validation on boolean for Amend with PUT
@@ -560,9 +562,9 @@ public class EntityInstanceApiNonHttpTest {
         requestBody.put("description", "A new TODO Item");
         requestBody.put("doneStatus", "FALSEY");
         apiresponse = todoManager.api().put(String.format("todo/%s", paperwork.getGUID()), getSimpleParser(requestBody));
-        Assert.assertEquals(400, apiresponse.getStatusCode());
-        Assert.assertTrue(apiresponse.getErrorMessages().size() > 0);
-        Assert.assertTrue(apiresponse.hasABody());
+        Assertions.assertEquals(400, apiresponse.getStatusCode());
+        Assertions.assertTrue(apiresponse.getErrorMessages().size() > 0);
+        Assertions.assertTrue(apiresponse.hasABody());
 
     }
 
@@ -578,9 +580,9 @@ public class EntityInstanceApiNonHttpTest {
         requestBody.put("description", "A new TODO Item");
         requestBody.put("doneStatus", "TRUE");
         apiresponse = todoManager.api().put(String.format("todo/%s", UUID.randomUUID().toString()), getSimpleParser(requestBody));
-        Assert.assertEquals(400, apiresponse.getStatusCode());
-        Assert.assertTrue(apiresponse.getErrorMessages().size() > 0);
-        Assert.assertTrue(apiresponse.hasABody());
+        Assertions.assertEquals(400, apiresponse.getStatusCode());
+        Assertions.assertTrue(apiresponse.getErrorMessages().size() > 0);
+        Assertions.assertTrue(apiresponse.hasABody());
 
     }
 
@@ -600,9 +602,9 @@ public class EntityInstanceApiNonHttpTest {
         requestBody.put("description", "Amended TODO Item ");
         requestBody.put("doneStatus", "TRUE");
         apiresponse = todoManager.api().put(String.format("todo/%s", paperwork.getGUID()), getSimpleParser(requestBody));
-        Assert.assertEquals(400, apiresponse.getStatusCode());
-        Assert.assertTrue(apiresponse.getErrorMessages().size() > 0);
-        Assert.assertTrue(apiresponse.hasABody());
+        Assertions.assertEquals(400, apiresponse.getStatusCode());
+        Assertions.assertTrue(apiresponse.getErrorMessages().size() > 0);
+        Assertions.assertTrue(apiresponse.hasABody());
 
 
         // Field validation on boolean for Amend with PUT
@@ -611,9 +613,9 @@ public class EntityInstanceApiNonHttpTest {
         requestBody.put("description", "A new TODO Item");
         requestBody.put("doneStatus", "FALSEY");
         apiresponse = todoManager.api().put(String.format("todo/%s", paperwork.getGUID()), getSimpleParser(requestBody));
-        Assert.assertEquals(400, apiresponse.getStatusCode());
-        Assert.assertTrue(apiresponse.getErrorMessages().size() > 0);
-        Assert.assertTrue(apiresponse.hasABody());
+        Assertions.assertEquals(400, apiresponse.getStatusCode());
+        Assertions.assertTrue(apiresponse.getErrorMessages().size() > 0);
+        Assertions.assertTrue(apiresponse.hasABody());
 
     }
 }

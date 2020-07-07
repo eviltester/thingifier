@@ -1,8 +1,8 @@
 package uk.co.compendiumdev.casestudy.todomanager;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
@@ -12,7 +12,7 @@ public class BasicTodoManagerTest {
 
     private Thingifier todoManager;
 
-    @Before
+    @BeforeEach
     public void createDefinitions(){
 
         todoManager = TodoManagerModel.definedAsThingifier();
@@ -25,11 +25,11 @@ public class BasicTodoManagerTest {
 
         Thing todo = todoManager.getThingNamed("todo");
 
-        Assert.assertTrue(todo.definition().hasFieldNameDefined("title"));
-        Assert.assertTrue(todo.definition().hasFieldNameDefined("description"));
-        Assert.assertTrue(todo.definition().hasFieldNameDefined("doneStatus"));
+        Assertions.assertTrue(todo.definition().hasFieldNameDefined("title"));
+        Assertions.assertTrue(todo.definition().hasFieldNameDefined("description"));
+        Assertions.assertTrue(todo.definition().hasFieldNameDefined("doneStatus"));
 
-        Assert.assertEquals("FALSE", todo.definition().getField("doneStatus").getDefaultValue());
+        Assertions.assertEquals("FALSE", todo.definition().getField("doneStatus").getDefaultValue());
 
     }
 
@@ -54,20 +54,20 @@ public class BasicTodoManagerTest {
 
         Collection<ThingInstance> relatedItems = officeWork.connectedItems("tasks");
 
-        Assert.assertTrue(relatedItems.contains(paperwork));
-        Assert.assertTrue(relatedItems.contains(filework));
+        Assertions.assertTrue(relatedItems.contains(paperwork));
+        Assertions.assertTrue(relatedItems.contains(filework));
 
 
         relatedItems = officeWork.connectedItems("tasks");
-        Assert.assertTrue(relatedItems.contains(paperwork));
-        Assert.assertTrue(relatedItems.contains(filework));
+        Assertions.assertTrue(relatedItems.contains(paperwork));
+        Assertions.assertTrue(relatedItems.contains(filework));
 
         todoManager.deleteThing(paperwork);
 
 
         relatedItems = officeWork.connectedItems("tasks");
-        Assert.assertFalse(relatedItems.contains(paperwork));
-        Assert.assertTrue(relatedItems.contains(filework));
+        Assertions.assertFalse(relatedItems.contains(paperwork));
+        Assertions.assertTrue(relatedItems.contains(filework));
     }
 
 
@@ -88,12 +88,12 @@ public class BasicTodoManagerTest {
 
         todos.addInstance(paperwork);
 
-        Assert.assertEquals("FALSE", paperwork.getValue("doneStatus"));
+        Assertions.assertEquals("FALSE", paperwork.getValue("doneStatus"));
 
         System.out.println(todoManager.toString());
 
         tidy.setValue("doneStatus", "TRUE");
-        Assert.assertEquals("TRUE", tidy.getValue("doneStatus"));
+        Assertions.assertEquals("TRUE", tidy.getValue("doneStatus"));
         System.out.println(todoManager.toString());
 
     }
@@ -113,20 +113,20 @@ public class BasicTodoManagerTest {
 
         ThingInstance foundit = todos.findInstanceByGUID(tidy.getGUID());
 
-        Assert.assertEquals("Delete this todo", foundit.getValue("title"));
+        Assertions.assertEquals("Delete this todo", foundit.getValue("title"));
 
         todoManager.deleteThing(foundit);
-        Assert.assertEquals(originalTodosCount, todos.countInstances());
+        Assertions.assertEquals(originalTodosCount, todos.countInstances());
 
 
         foundit = todos.findInstanceByGUID(tidy.getGUID());
 
-        Assert.assertNull(foundit);
+        Assertions.assertNull(foundit);
 
 
         try{
             todoManager.deleteThing(foundit);
-            Assert.fail("Item already deleted, exception should have been thrown");
+            Assertions.fail("Item already deleted, exception should have been thrown");
         }catch(Exception e){
 
         }
@@ -149,22 +149,22 @@ public class BasicTodoManagerTest {
 
         ThingInstance foundit = todos.findInstanceByGUID(guid);
 
-        Assert.assertEquals("Delete this todo", foundit.getValue("title"));
+        Assertions.assertEquals("Delete this todo", foundit.getValue("title"));
 
         todoManager.deleteThing(foundit);
 
-        Assert.assertEquals(originalTodosCount, todos.countInstances());
+        Assertions.assertEquals(originalTodosCount, todos.countInstances());
 
 
         foundit = todos.findInstanceByGUID(guid);
 
-        Assert.assertNull(foundit);
+        Assertions.assertNull(foundit);
 
 
         try{
             todoManager.deleteThing(foundit);
 
-            Assert.fail("Item already deleted, exception should have been thrown");
+            Assertions.fail("Item already deleted, exception should have been thrown");
 
         }catch(Exception e){
 

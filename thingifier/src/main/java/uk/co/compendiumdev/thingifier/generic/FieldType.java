@@ -18,5 +18,5 @@ public enum FieldType {
 // TODO add type for SET having a set of valid values
 // TODO add type for EXPANDINGSET having a set of valid initial values, but allow user expansion
 // TODO add type for ID having an incremental unique id per entity type
-// TODO add type for CREATEDDATE - automatically maintain - possibly allow configuring format
-// TODO add type for AMENDEDDATE - automatically maintain - possibly allow configuring format
+// TODO add type for CREATEDDATE - automatically maintained - possibly allow configuring format
+// TODO add type for AMENDEDDATE - automatically maintained - possibly allow configuring format

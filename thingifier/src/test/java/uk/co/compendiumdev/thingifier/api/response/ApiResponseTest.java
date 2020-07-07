@@ -1,15 +1,13 @@
 package uk.co.compendiumdev.thingifier.api.response;
 
-import com.google.gson.Gson;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.generic.definitions.Field;
 import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static uk.co.compendiumdev.thingifier.generic.FieldType.STRING;
@@ -22,13 +20,13 @@ public class ApiResponseTest {
 
         ApiResponse response = ApiResponse.error404("oops");
 
-        Assert.assertEquals(404, response.getStatusCode());
-        Assert.assertEquals(true, response.hasABody());
-        Assert.assertEquals(true, response.isErrorResponse());
-        Assert.assertEquals(false, response.isCollection());
+        Assertions.assertEquals(404, response.getStatusCode());
+        Assertions.assertEquals(true, response.hasABody());
+        Assertions.assertEquals(true, response.isErrorResponse());
+        Assertions.assertEquals(false, response.isCollection());
 
-        Assert.assertEquals(1, response.getErrorMessages().size());
-        Assert.assertTrue(response.getErrorMessages().contains("oops"));
+        Assertions.assertEquals(1, response.getErrorMessages().size());
+        Assertions.assertTrue(response.getErrorMessages().contains("oops"));
     }
 
     @Test
@@ -36,13 +34,13 @@ public class ApiResponseTest {
 
         ApiResponse response = ApiResponse.error(500, "oopsy");
 
-        Assert.assertEquals(500, response.getStatusCode());
-        Assert.assertEquals(true, response.hasABody());
-        Assert.assertEquals(true, response.isErrorResponse());
-        Assert.assertEquals(false, response.isCollection());
+        Assertions.assertEquals(500, response.getStatusCode());
+        Assertions.assertEquals(true, response.hasABody());
+        Assertions.assertEquals(true, response.isErrorResponse());
+        Assertions.assertEquals(false, response.isCollection());
 
-        Assert.assertEquals(1, response.getErrorMessages().size());
-        Assert.assertTrue(response.getErrorMessages().contains("oopsy"));
+        Assertions.assertEquals(1, response.getErrorMessages().size());
+        Assertions.assertTrue(response.getErrorMessages().contains("oopsy"));
 
     }
 
@@ -56,15 +54,15 @@ public class ApiResponseTest {
 
         ApiResponse response = ApiResponse.error(501, errors);
 
-        Assert.assertEquals(501, response.getStatusCode());
-        Assert.assertEquals(true, response.hasABody());
-        Assert.assertEquals(true, response.isErrorResponse());
-        Assert.assertEquals(false, response.isCollection());
+        Assertions.assertEquals(501, response.getStatusCode());
+        Assertions.assertEquals(true, response.hasABody());
+        Assertions.assertEquals(true, response.isErrorResponse());
+        Assertions.assertEquals(false, response.isCollection());
 
-        Assert.assertEquals(3, response.getErrorMessages().size());
-        Assert.assertTrue(response.getErrorMessages().contains("oopsy"));
-        Assert.assertTrue(response.getErrorMessages().contains("doopsy"));
-        Assert.assertTrue(response.getErrorMessages().contains("do"));
+        Assertions.assertEquals(3, response.getErrorMessages().size());
+        Assertions.assertTrue(response.getErrorMessages().contains("oopsy"));
+        Assertions.assertTrue(response.getErrorMessages().contains("doopsy"));
+        Assertions.assertTrue(response.getErrorMessages().contains("do"));
 
     }
 
@@ -73,10 +71,10 @@ public class ApiResponseTest {
 
         ApiResponse response = ApiResponse.success();
 
-        Assert.assertEquals(200, response.getStatusCode());
-        Assert.assertEquals(false, response.hasABody());
-        Assert.assertEquals(false, response.isErrorResponse());
-        Assert.assertEquals(false, response.isCollection());
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals(false, response.hasABody());
+        Assertions.assertEquals(false, response.isErrorResponse());
+        Assertions.assertEquals(false, response.isCollection());
 
     }
 
@@ -93,12 +91,12 @@ public class ApiResponseTest {
 
         ApiResponse response = ApiResponse.success().returnSingleInstance(aTodo);
 
-        Assert.assertEquals(200, response.getStatusCode());
-        Assert.assertEquals(true, response.hasABody());
-        Assert.assertEquals(false, response.isErrorResponse());
-        Assert.assertEquals(false, response.isCollection());
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals(true, response.hasABody());
+        Assertions.assertEquals(false, response.isErrorResponse());
+        Assertions.assertEquals(false, response.isCollection());
 
-        Assert.assertEquals(aTodo, response.getReturnedInstance());
+        Assertions.assertEquals(aTodo, response.getReturnedInstance());
 
     }
 
@@ -117,14 +115,14 @@ public class ApiResponseTest {
 
         ApiResponse response = ApiResponse.success().returnInstanceCollection(new ArrayList(todos.getInstances()));
 
-        Assert.assertEquals(200, response.getStatusCode());
-        Assert.assertEquals(true, response.hasABody());
-        Assert.assertEquals(false, response.isErrorResponse());
-        Assert.assertEquals(true, response.isCollection());
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals(true, response.hasABody());
+        Assertions.assertEquals(false, response.isErrorResponse());
+        Assertions.assertEquals(true, response.isCollection());
 
-        Assert.assertEquals(2, response.getReturnedInstanceCollection().size());
-        Assert.assertTrue(response.getReturnedInstanceCollection().contains(aTodo));
-        Assert.assertTrue(response.getReturnedInstanceCollection().contains(anotherTodo));
+        Assertions.assertEquals(2, response.getReturnedInstanceCollection().size());
+        Assertions.assertTrue(response.getReturnedInstanceCollection().contains(aTodo));
+        Assertions.assertTrue(response.getReturnedInstanceCollection().contains(anotherTodo));
 
     }
 
@@ -133,12 +131,12 @@ public class ApiResponseTest {
 
         ApiResponse response = ApiResponse.success().returnInstanceCollection(new ArrayList());
 
-        Assert.assertEquals(200, response.getStatusCode());
-        Assert.assertEquals(true, response.hasABody());
-        Assert.assertEquals(false, response.isErrorResponse());
-        Assert.assertEquals(true, response.isCollection());
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals(true, response.hasABody());
+        Assertions.assertEquals(false, response.isErrorResponse());
+        Assertions.assertEquals(true, response.isCollection());
 
-        Assert.assertEquals(0, response.getReturnedInstanceCollection().size());
+        Assertions.assertEquals(0, response.getReturnedInstanceCollection().size());
     }
 
 }

@@ -75,7 +75,7 @@ final public class ThingInstance {
                 throw new IllegalArgumentException(String.format("Invalid Value %s for field %s of type %s", value, field.getName(), field.getType()));
             }
         } else {
-            reportError(fieldName);
+            reportCannotFindFieldError(fieldName);
         }
         return this;
     }
@@ -89,8 +89,6 @@ final public class ThingInstance {
 
                 // set the value
                 setValue(entry.getKey(), entry.getValue());
-
-                // TODO: allow relationship matching and creation
 
             } else {
 
@@ -121,7 +119,7 @@ final public class ThingInstance {
         return this;
     }
 
-    private void reportError(final String fieldName) {
+    private void reportCannotFindFieldError(final String fieldName) {
         throw new RuntimeException("Could not find field: " + fieldName + " on Entity " + this.entityDefinition.getName());
     }
 
@@ -129,10 +127,11 @@ final public class ThingInstance {
         if (this.entityDefinition.hasFieldNameDefined(fieldName)) {
             String assignedValue = this.instance.getValue(fieldName);
             if (assignedValue == null) {
+                // does definition have a default value?
                 if (this.entityDefinition.getField(fieldName).hasDefaultValue()) {
                     return getDefaultValue(fieldName);
                 } else {
-                    // does definition have a default value?
+                    // return the field type default value
                     String defaultVal = this.entityDefinition.getField(fieldName).getType().getDefault();
                     if (defaultVal != null) {
                         return defaultVal;
@@ -143,7 +142,7 @@ final public class ThingInstance {
             }
         }
 
-        reportError(fieldName);
+        reportCannotFindFieldError(fieldName);
         return "";
     }
 
