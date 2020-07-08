@@ -263,48 +263,50 @@ public final class Field {
 
     public ArrayList<String> getExamples() {
 
-        if(type==FieldType.BOOLEAN){
+        // todo add the default, any examples to retExamples and any extra stuff below
+        // combine, don't replace
+        Set<String> buildExamples = new HashSet<>();
+
+        if (type == FieldType.BOOLEAN) {
             String[] samples = {"true", "false"};
-            return new ArrayList<String>(Arrays.asList(samples));
+            buildExamples.addAll(Arrays.asList(samples));
         }
 
         if(type==FieldType.INTEGER){
-            ArrayList<String>returnThis = new ArrayList<>();
             int rndInt = ThreadLocalRandom.current().
                             nextInt(minimumIntegerValue, maximumIntegerValue + 1);
-            returnThis.add(String.valueOf(rndInt));
-            return returnThis;
+            buildExamples.add(String.valueOf(rndInt));
         }
 
         if(type==FieldType.ID){
-            ArrayList<String>returnThis = new ArrayList<>();
             int rndInt = ThreadLocalRandom.current().
                     nextInt(1, 100);
-            returnThis.add(String.valueOf(rndInt));
-            return returnThis;
+            buildExamples.add(String.valueOf(rndInt));
         }
 
         if(type==FieldType.GUID){
-            ArrayList<String>returnThis = new ArrayList<>();
-            returnThis.add(UUID.randomUUID().toString());
-            return returnThis;
+            buildExamples.add(UUID.randomUUID().toString());
         }
 
         if(type==FieldType.FLOAT){
-            ArrayList<String>returnThis = new ArrayList<>();
             final float rndFloat = minimumFloatValue + ThreadLocalRandom.current().nextFloat() * (maximumFloatValue - minimumFloatValue);
-            returnThis.add(String.valueOf(rndFloat));
-            return returnThis;
+            buildExamples.add(String.valueOf(rndFloat));
         }
 
+        // string might have examples
+        if(fieldExamples.size()>0){
+            buildExamples.addAll(fieldExamples);
+        }
+
+        // TODO: try to use regex in matching rules to generate
         if(type==FieldType.STRING){
             if(fieldExamples.size()==0){
-                ArrayList<String>returnThis = new ArrayList<>();
-                returnThis.add(truncatedString(new RandomString().get(20)));
-                return returnThis;
+                buildExamples.add(truncatedString(new RandomString().get(20)));
             }
         }
-        return new ArrayList<String>(fieldExamples);
+
+        // return as a list
+        return new ArrayList<String>(buildExamples);
     }
 
     public String getRandomExampleValue() {
