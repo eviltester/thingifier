@@ -48,4 +48,8 @@ public class InstanceFields {
         aMap.putAll(values);
         return aMap;
     }
+
+    public boolean hasFieldNamed(String fieldName) {
+        return values.keySet().contains(fieldName);
+    }
 }

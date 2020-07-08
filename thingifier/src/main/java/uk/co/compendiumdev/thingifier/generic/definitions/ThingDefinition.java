@@ -1,6 +1,7 @@
 package uk.co.compendiumdev.thingifier.generic.definitions;
 
 import uk.co.compendiumdev.thingifier.generic.FieldType;
+import uk.co.compendiumdev.thingifier.generic.instances.InstanceFields;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -12,9 +13,11 @@ public class ThingDefinition {
     private String plural;
 
     private Map<String, List<RelationshipVector>> relationships;
+    private int nextId;
 
     private ThingDefinition() {
         relationships = new ConcurrentHashMap<String, List<RelationshipVector>>();
+        nextId=1;
     }
 
     public static ThingDefinition create(String name, String plural) {
@@ -150,4 +153,34 @@ public class ThingDefinition {
     }
 
 
+    public void addIdsToInstance(final InstanceFields instance) {
+        for(Map.Entry<String,Field> field : fields.entrySet()){
+            Field aField = field.getValue();
+            if(aField.getType()==FieldType.ID){
+                if(!instance.hasFieldNamed(aField.getName())) {
+                    instance.addValue(aField.getName(), getNextIdValue());
+                }
+            }
+        }
+    }
+
+    // TODO: this could support multiple ids by giving them a name and keeping them in a HashSet
+    private String getNextIdValue() {
+        int id = nextId;
+        nextId++;
+        return String.valueOf(id);
+    }
+
+    public boolean hasIDField() {
+        return getIDField()!=null;
+    }
+
+    public Field getIDField() {
+        for (Field aField : fields.values()) {
+            if(aField.getType()==FieldType.ID){
+                return aField;
+            }
+        }
+        return null;
+    }
 }

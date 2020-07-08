@@ -110,11 +110,21 @@ public final class Field {
             return report;
         }
 
+        if(type == FieldType.ID){
+            report.setValid(false);
+            report.addErrorMessage(String.format("%s : field is an ID, you can't set it", this.getName()));
+            return report;
+        }
+        // TODO: if we do allow setting ids then we have to check if it is higher or equal to the nextId
+        // and adjust nextId to be this id +1
+
+
         if (!fieldIsOptional && value == null) {
             report.setValid(false);
             report.addErrorMessage(String.format("%s : field is mandatory", this.getName()));
             return report;
         }
+
 
         if(shouldValidateValuesAgainstType) {
             if (type == FieldType.BOOLEAN) {

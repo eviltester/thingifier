@@ -21,6 +21,7 @@ final public class ThingInstance {
         this.entityDefinition = eDefn;
         this.instance = new InstanceFields();
         instance.addValue("guid", UUID.randomUUID().toString());
+        eDefn.addIdsToInstance(instance);
         this.relationships = new ArrayList<RelationshipInstance>();
     }
 
@@ -369,5 +370,18 @@ final public class ThingInstance {
 
     public boolean hasAnyRelationshipInstances() {
         return (relationships.size() >0);
+    }
+
+    public boolean hasIDField() {
+        return entityDefinition.hasIDField();
+    }
+
+    public String getID() {
+        String value = "";
+        final Field field = entityDefinition.getIDField();
+        if(field!=null) {
+            value = getValue(field.getName());
+        }
+        return value;
     }
 }

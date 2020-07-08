@@ -51,6 +51,7 @@ final public class SimpleQuery {
     public SimpleQuery performQuery() {
         // a simple query is a URL based REST query
         // e.g. THING/_GUID_/RELATIONSHIP/THING
+        // e.g. THING/_ID_/RELATIONSHIP/THING
         // THING/RELATIONSHIP
 
         String[] terms = query.split("/");
@@ -150,7 +151,18 @@ final public class SimpleQuery {
             // is it a GUID?
             boolean found = false;
             for (ThingInstance instance : foundItems) {
+
+                boolean matchBasedOnIdOrGUID = false;
+                if(instance.hasIDField() && instance.getID().contentEquals(term)){
+                    // found based on ID
+                    matchBasedOnIdOrGUID = true;
+                }
+
                 if (instance.getGUID().contentEquals(term)) {
+                    matchBasedOnIdOrGUID = true;
+                }
+
+                if(matchBasedOnIdOrGUID){
 
                     foundItemsHistoryList.add(instance);
 
@@ -174,7 +186,7 @@ final public class SimpleQuery {
                 }
             }
             if (found) {
-                // it was a GUID
+                // it was a GUID or id
                 continue;
             }
 

@@ -24,6 +24,11 @@ public class EntityInstanceApiNonHttpTest {
     Thing project;
 
 
+    // TODO: tests that use the TodoManagerModel were created early and are too complicated - simplify
+    // when the thingifier was a prototype and we were building the todo manager at the same
+    // time this saved time. Now, the tests are too complicated to maintain because the TodoManagerModel
+    // is complex. We should simplify these tests and move them into the actual standAlone
+    // projects
     @BeforeEach
     public void createDefinitions() {
 

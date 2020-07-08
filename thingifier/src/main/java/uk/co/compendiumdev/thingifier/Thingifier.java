@@ -20,6 +20,22 @@ final public class Thingifier {
     private String title = "";
     private String initialParagraph = "";
 
+    /*
+        TODO: configure the REST API from the entities and relationship definitions
+        at the moment a default REST API is created, consider an API model as separate
+        e.g
+         - API.usePluralNouns(), useSingleNouns()
+         - API.allowQueryParamFilters()
+         - API.disallowQueryParamFilters("/todos")
+         - API.routing("/todos").disallow("PATCH,POST.UPDATE")
+         - API.hideGUIDsWhenIDAvailable()
+         - etc.
+        aliases to entites and relationships to override definitions in the entity etc.
+        create 'queries' to show subsets of data, etc.
+        Do not put this into the entities and relationships make this a separate model
+     */
+
+
 
     public Thing createThing(final String thingName, final String pluralName) {
         Thing aThing = Thing.create(thingName, pluralName);
