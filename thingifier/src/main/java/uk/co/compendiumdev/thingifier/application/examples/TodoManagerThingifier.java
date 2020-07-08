@@ -71,13 +71,10 @@ public class TodoManagerThingifier {
                 .addFields(Field.is("title", STRING).
                                 mandatory().
                                 withValidation(
-                                        VRule.notEmpty(),
-                                        VRule.matchesType()),
+                                        VRule.notEmpty()),
                         Field.is("description", STRING),
                         Field.is("doneStatus", FieldType.BOOLEAN).
-                                withDefaultValue("FALSE").
-                                withValidation(
-                                        VRule.matchesType()));
+                                withDefaultValue("FALSE"));
 
         Thing project = todoManager.createThing("project", "projects");
 
@@ -86,11 +83,9 @@ public class TodoManagerThingifier {
                         Field.is("title", STRING),
                         Field.is("description", STRING),
                         Field.is("completed", FieldType.BOOLEAN).
-                                withDefaultValue("FALSE").
-                                withValidation(VRule.matchesType()),
+                                withDefaultValue("FALSE"),
                         Field.is("active", FieldType.BOOLEAN).
-                                withDefaultValue("TRUE").
-                                withValidation(VRule.matchesType()));
+                                withDefaultValue("TRUE"));
 
 
         Thing category = todoManager.createThing("category", "categories");

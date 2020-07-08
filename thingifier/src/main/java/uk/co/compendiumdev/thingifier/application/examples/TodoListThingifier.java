@@ -51,13 +51,10 @@ public class TodoListThingifier {
                 .addFields(Field.is("title", STRING).
                                 mandatory().
                                 withValidation(
-                                        VRule.notEmpty(),
-                                        VRule.matchesType()),
+                                        VRule.notEmpty()),
                         Field.is("description", STRING),
                         Field.is("doneStatus", FieldType.BOOLEAN).
-                                withDefaultValue("FALSE").
-                                withValidation(
-                                        VRule.matchesType()));
+                                withDefaultValue("FALSE"));
 
 
         ThingInstance paperwork = todo.createInstance().setValue("title", "scan paperwork");

@@ -43,9 +43,11 @@ public class ValidationReport {
 
     public String getCombinedErrorMessages() {
         StringBuilder reasons = new StringBuilder();
-        reasons.append("Validation Report:\n\n");
+        reasons.append("Failed Validation: ");
+        String delimiter ="";
         for(String reason : errorMessages){
-            reasons.append("- " + reason + "\n");
+            reasons.append( delimiter + reason);
+            delimiter = ", ";
         }
         return reasons.toString();
     }

@@ -4,7 +4,8 @@ public enum FieldType {
 
     STRING(""),
     INTEGER("0"),
-    DATE(null),
+    FLOAT("0.0"),
+    DATE(null), // todo
     BOOLEAN("FALSE"),
     ENUM(""); // remember to set example values
 

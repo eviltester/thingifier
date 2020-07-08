@@ -101,12 +101,13 @@ public class StringFieldInstanceTest {
                 withValidation(VRule.matchesRegex("^Bug:.*")));
 
         ThingInstance instance = new ThingInstance(stringFieldEntity);
-        instance.setValue("field", "ISSUE: reporting a bug - this is a bug");
-        ValidationReport report = instance.validate();
+        IllegalArgumentException e =
+                Assertions.assertThrows(IllegalArgumentException.class, () ->{
+            instance.setValue("field", "ISSUE: reporting a bug - this is a bug");
+        });
 
-        Assertions.assertFalse(report.isValid());
-        System.out.println(report.getCombinedErrorMessages());
-        report.getCombinedErrorMessages().contains("not match");
+        System.out.println(e.getMessage());
+        Assertions.assertTrue(e.getMessage().contains("not match"));
     }
 
     @Test

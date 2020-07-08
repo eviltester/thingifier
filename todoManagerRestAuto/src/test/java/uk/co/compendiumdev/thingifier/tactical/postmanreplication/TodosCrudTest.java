@@ -51,8 +51,8 @@ public class TodosCrudTest {
                 contentType(ContentType.JSON).
                 and().extract().body().jsonPath();
 
-        Assert.assertEquals("title : can not be empty",
-                body.getList("errorMessages").get(0));
+        String errorMessages = (String)body.getList("errorMessages").get(0);
+        Assert.assertTrue(errorMessages, errorMessages.contains("title : can not be empty"));
     }
 
     @Test

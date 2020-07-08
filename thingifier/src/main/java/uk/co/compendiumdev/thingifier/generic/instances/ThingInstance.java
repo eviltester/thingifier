@@ -70,7 +70,9 @@ final public class ThingInstance {
     public ThingInstance setValue(String fieldName, String value) {
         if (this.entityDefinition.hasFieldNameDefined(fieldName)) {
             Field field = entityDefinition.getField(fieldName);
-            if (field.isValidValue(value)) {
+            final ValidationReport validationReport = field.validate(value);
+            if (validationReport.isValid()) {
+
                 String valueToAdd = value;
 
                 if(field.getType()== FieldType.STRING){
@@ -78,28 +80,12 @@ final public class ThingInstance {
                         valueToAdd = valueToAdd.substring(0,field.getMaximumAllowedLength());
                     }
                 }
-                if(field.getType()== FieldType.ENUM){
-                    if(!field.getExamples().contains(value)){
-                        throw new IllegalArgumentException(
-                                String.format("Invalid Value %s for field %s of type %s",
-                                        value, field.getName(), field.getType()));
-                    }
-                }
-                if(field.getType()==FieldType.INTEGER){
-                    int intVal = Integer.parseInt(valueToAdd);
-                    if(!field.withinAllowedIntegerRange(intVal)){
-                        throw new IllegalArgumentException(
-                                String.format("Invalid Value %s for field %s of type %s",
-                                        value, field.getName(), field.getType()));
-                    }
-                }
 
                 this.instance.addValue(fieldName, valueToAdd);
 
             } else {
                 throw new IllegalArgumentException(
-                        String.format("Invalid Value %s for field %s of type %s",
-                            value, field.getName(), field.getType()));
+                        validationReport.getCombinedErrorMessages());
             }
         } else {
             reportCannotFindFieldError(fieldName);

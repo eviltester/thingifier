@@ -2,7 +2,6 @@ package uk.co.compendiumdev.thingifier.generic.definitions;
 
 import uk.co.compendiumdev.thingifier.api.ValidationReport;
 import uk.co.compendiumdev.thingifier.generic.FieldType;
-import uk.co.compendiumdev.thingifier.generic.definitions.validation.MatchesTypeValidationRule;
 import uk.co.compendiumdev.thingifier.generic.definitions.validation.ValidationRule;
 
 import java.util.*;
@@ -23,6 +22,13 @@ public final class Field {
     private int truncateStringLengthTo;
     private int maximumIntegerValue;
     private int minimumIntegerValue;
+    private boolean allowedNullable;
+    // todo: use BigDecimal for the internal float representations
+    private float maximumFloatValue;
+    private float minimumFloatValue;
+
+    // allow this being switched off
+    private boolean shouldValidateValuesAgainstType;
 
     private Field(final String name, final FieldType type) {
         this.name = name;
@@ -33,6 +39,10 @@ public final class Field {
         fieldExamples = new HashSet<>();
         maximumIntegerValue = Integer.MAX_VALUE;
         minimumIntegerValue = Integer.MIN_VALUE;
+        maximumFloatValue = Float.MAX_VALUE;
+        minimumFloatValue = Float.MIN_VALUE;
+        allowedNullable=false;
+        shouldValidateValuesAgainstType=true;
     }
 
     public static Field is(String name) {
@@ -50,6 +60,10 @@ public final class Field {
         return name;
     }
 
+    public Field ignoreTypeValidation(){
+        shouldValidateValuesAgainstType=true;
+        return this;
+    }
 
     public Field withDefaultValue(String aDefaultValue) {
         this.defaultValue = aDefaultValue;
@@ -58,6 +72,11 @@ public final class Field {
     }
 
     public String getDefaultValue() {
+        // todo: allow configuration of allowedNullable
+        if(defaultValue==null && !allowedNullable){
+            // get the definition default
+            return type.getDefault();
+        }
         return defaultValue;
     }
 
@@ -67,35 +86,6 @@ public final class Field {
 
     public FieldType getType() {
         return type;
-    }
-
-    public boolean isValidValue(String value) {
-
-        if (value == null) {
-            return false;
-        }
-
-        if (type == FieldType.BOOLEAN) {
-            if (value.toLowerCase().contentEquals("true")
-                    || value.toLowerCase().contentEquals("false")) {
-                return true;
-            }
-
-            return false;
-        }
-
-        if (type == FieldType.INTEGER) {
-            try {
-                Integer.valueOf(value);
-                return true;
-            } catch (NumberFormatException e) {
-                return false;
-            }
-        }
-
-        // TODO : add validation for DATE
-
-        return true;
     }
 
     public Field withValidation(ValidationRule validationRule) {
@@ -126,24 +116,78 @@ public final class Field {
             return report;
         }
 
+        if(shouldValidateValuesAgainstType) {
+            if (type == FieldType.BOOLEAN) {
+                if (!(value.toLowerCase().contentEquals("true")
+                        || value.toLowerCase().contentEquals("false"))) {
+                    report.setValid(false);
+                    report.addErrorMessage(
+                            String.format(
+                                    "%s : %s does not match type %s (true, false)", this.getName(), value, type));
+                }
+            }
+
+            if (type == FieldType.INTEGER) {
+                try {
+                    int intVal = Integer.valueOf(value);
+                    if (!withinAllowedIntegerRange(intVal)) {
+                        report.setValid(false);
+                        report.addErrorMessage(
+                                String.format(
+                                        "%s : %s is not within range for type %s (%d to %d)",
+                                        this.getName(), value, type, minimumIntegerValue, maximumIntegerValue));
+                    }
+                } catch (NumberFormatException e) {
+                    report.setValid(false);
+                    report.addErrorMessage(
+                            String.format(
+                                    "%s : %s does not match type %s", this.getName(), value, type));
+                }
+            }
+
+
+            if (type == FieldType.FLOAT) {
+                try {
+                    float floatValue = Float.valueOf(value);
+                    if (!withinAllowedFloatRange(floatValue)) {
+                        report.setValid(false);
+                        report.addErrorMessage(
+                                String.format(
+                                        "%s : %s is not within range for type %s (%f to %f)",
+                                        this.getName(), value, type, minimumFloatValue, maximumFloatValue));
+                    }
+
+                } catch (NumberFormatException e) {
+                    report.setValid(false);
+                    report.addErrorMessage(
+                            String.format(
+                                    "%s : %s does not match type %s", this.getName(), value, type));
+                }
+            }
+
+            // TODO : add validation for DATE
+            // TODO : add validation for ENUM
+            if (type == FieldType.ENUM) {
+                if (!getExamples().contains(value)) {
+                    report.setValid(false);
+                    report.addErrorMessage(
+                            String.format(
+                                    "%s : %s does not match type %s", this.getName(), value, type));
+                }
+            }
+        }
+
         for (ValidationRule rule : validationRules) {
-
-            if (rule instanceof MatchesTypeValidationRule) {
-                if (!isValidValue(value)) {
-                    report.setValid(false);
-                    report.addErrorMessage(String.format("%s : %s does not match type %s", this.getName(), value, type));
-                }
-            } else {
-
-                if (!rule.validates(value)) {
-                    report.setValid(false);
-                    report.addErrorMessage(rule.getErrorMessage(this.getName()));
-                }
+            if (!rule.validates(value)) {
+                report.setValid(false);
+                report.addErrorMessage(rule.getErrorMessage(this.getName()));
             }
         }
 
         return report;
     }
+
+
 
     public List<ValidationRule> validationRules() {
         return validationRules;
@@ -196,15 +240,17 @@ public final class Field {
         }
 
         if(type==FieldType.INTEGER){
-            // if max value then set upperbound
-            int upperBound = Integer.MAX_VALUE;
-            // if min value then set lowerBound
-            int lowerBound = Integer.MIN_VALUE;
             ArrayList<String>returnThis = new ArrayList<>();
-            String rndInt = String.valueOf(
-                                ThreadLocalRandom.current().
-                                        nextInt(lowerBound, upperBound + 1));
-            returnThis.add(rndInt);
+            int rndInt = ThreadLocalRandom.current().
+                            nextInt(minimumIntegerValue, maximumIntegerValue + 1);
+            returnThis.add(String.valueOf(rndInt));
+            return returnThis;
+        }
+
+        if(type==FieldType.FLOAT){
+            ArrayList<String>returnThis = new ArrayList<>();
+            final float rndFloat = minimumFloatValue + ThreadLocalRandom.current().nextFloat() * (maximumFloatValue - minimumFloatValue);
+            returnThis.add(String.valueOf(rndFloat));
             return returnThis;
         }
 
@@ -242,5 +288,20 @@ public final class Field {
     public boolean withinAllowedIntegerRange(final int intVal) {
         return (intVal>=minimumIntegerValue &&
                 intVal<=maximumIntegerValue);
+    }
+
+    public Field withMaximumValue(final float maxFloat) {
+        this.maximumFloatValue = maxFloat;
+        return this;
+    }
+
+    public Field withMinimumValue(final float minFloat) {
+        this.minimumFloatValue = minFloat;
+        return this;
+    }
+
+    public boolean withinAllowedFloatRange(final float floatValue) {
+        return (floatValue>=minimumFloatValue &&
+                floatValue<=maximumIntegerValue);
     }
 }

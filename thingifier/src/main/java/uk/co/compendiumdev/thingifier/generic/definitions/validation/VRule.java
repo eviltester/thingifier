@@ -6,10 +6,6 @@ public class VRule {
         return new NotEmptyValidationRule();
     }
 
-    public static ValidationRule matchesType() {
-        return new MatchesTypeValidationRule();
-    }
-
     public static ValidationRule maximumLength(final int maxLength) {
         return new MaximumLengthValidationRule(maxLength);
     }

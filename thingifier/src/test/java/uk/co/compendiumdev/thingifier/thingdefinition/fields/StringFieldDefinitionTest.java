@@ -9,15 +9,6 @@ import uk.co.compendiumdev.thingifier.generic.definitions.ThingDefinition;
 
 public class StringFieldDefinitionTest {
 
-    ThingDefinition entityTestSession;
-
-    @BeforeEach
-    public void createEntity(){
-
-        entityTestSession = ThingDefinition.create("Test Session", "Test Sessions");
-        entityTestSession.addFields(Field.is("defaultString"));
-    }
-
     @Test
     public void byDefaultAFieldIsAnOptionalString(){
 
