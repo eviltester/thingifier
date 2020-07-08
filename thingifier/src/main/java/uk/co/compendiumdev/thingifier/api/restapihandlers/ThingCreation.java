@@ -26,9 +26,15 @@ public class ThingCreation {
         ValidationReport validated = new BodyRelationshipValidator(thingifier).validate(bodyargs, thing);
 
         if(!validated.isValid()){
-            return ApiResponse.error(400, String.format("Invalid relationships.%n%s",validated.getCombinedErrorMessages()));
+            return ApiResponse.error(400, String.format("Invalid relationships: %s",validated.getCombinedErrorMessages()));
         }
 
+        validated = new BodyCreationValidator(thingifier).validate(bodyargs, thing);
+        if(!validated.isValid()){
+            return ApiResponse.error(400, String.format("Invalid Creation: %s",validated.getCombinedErrorMessages()));
+        }
+
+        // todo: separate validation for creation of 'cannot' create with ID, or cannot create with GUID
         return addNewThingWithFields(bodyargs, thing.createInstance(), thing);
     }
 
@@ -62,7 +68,8 @@ public class ThingCreation {
             return ApiResponse.error(400, e.getMessage());
         }
 
-        ValidationReport validation = instance.validateFields();
+
+        ValidationReport validation = instance.validateNonProtectedFields();
 
         if (validation.isValid()) {
             thing.addInstance(instance);

@@ -115,4 +115,16 @@ final public class Thing {
     }
 
 
+    public ThingInstance findInstanceByGUIDorID(final String instanceGuid) {
+        ThingInstance instance = findInstanceByGUID(instanceGuid);
+        if(instance==null){
+            if(definition.hasIDField()) {
+                instance = findInstanceByField(
+                        FieldValue.is(
+                                definition.getIDField().getName(),
+                                instanceGuid));
+            }
+        }
+        return instance;
+    }
 }

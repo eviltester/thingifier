@@ -116,7 +116,7 @@ public class RelationshipCreation {
             connectThis.connects(relationshipToUse.getName(), relatedItem);
 
             // enforce cardinality on relationship
-            ValidationReport validNow = relatedItem.validate();
+            ValidationReport validNow = relatedItem.validateRelationships();
             if(!validNow.isValid()){
                 response = ApiResponse.error(400, validNow.getErrorMessages());
                 thingifier.deleteThing(relatedItem);

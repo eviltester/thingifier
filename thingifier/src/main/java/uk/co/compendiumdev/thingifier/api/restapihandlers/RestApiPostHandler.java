@@ -35,7 +35,7 @@ public class RestApiPostHandler {
                 return response;
             }
 
-            ValidationReport validity = response.getReturnedInstance().validate();
+            ValidationReport validity = response.getReturnedInstance().validateNonProtectedFields();
             if(validity.isValid()){
                 return response;
             }else{
@@ -65,11 +65,11 @@ public class RestApiPostHandler {
 
             String instanceGuid = urlParts[1];
 
-            ThingInstance instance = thing.findInstanceByField(FieldValue.is("guid", instanceGuid));
+            ThingInstance instance = thing.findInstanceByGUIDorID(instanceGuid);
 
             if (instance == null) {
                 // cannot amend something that does not exist
-                return ApiResponse.error404(String.format("No such %s entity instance with GUID %s found", thing.definition().getName(), instanceGuid));
+                return ApiResponse.error404(String.format("No such %s entity instance with GUID or ID %s found", thing.definition().getName(), instanceGuid));
             }
 
             return amendAThingWithPost(args, instance);

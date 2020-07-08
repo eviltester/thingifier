@@ -42,11 +42,13 @@ public class RestApiPutHandler {
 
             String instanceGuid = urlParts[1];
 
-            ThingInstance instance = thing.findInstanceByField(FieldValue.is("guid", instanceGuid));
+            ThingInstance instance = thing.findInstanceByGUIDorID(instanceGuid);
 
             if (instance == null) {
                 // it does not exist, but we have a GUID - create it
-
+                // if we were given an ID then this will fail because
+                // ID will not match GUID formatting
+                // TODO: reconsider this, as we would also need to support PUT an id
                 return new ThingCreation(thingifier).withGuid(instanceGuid, args, thing);
 
 

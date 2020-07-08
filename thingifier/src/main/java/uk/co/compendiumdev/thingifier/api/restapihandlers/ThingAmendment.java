@@ -37,7 +37,7 @@ public class ThingAmendment {
             return ApiResponse.error(400, e.getMessage());
         }
 
-        ValidationReport validation = cloned.validate();
+        ValidationReport validation = cloned.validateNonProtectedFields();
 
         // validate the relationships as well
         ValidationReport relationshipsValidation = new BodyRelationshipValidator(thingifier).validate(bodyargs, cloned.getEntity());

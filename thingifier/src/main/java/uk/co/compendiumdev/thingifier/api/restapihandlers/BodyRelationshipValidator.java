@@ -4,6 +4,7 @@ import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.ValidationReport;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
+import uk.co.compendiumdev.thingifier.generic.definitions.FieldValue;
 import uk.co.compendiumdev.thingifier.generic.definitions.RelationshipVector;
 import uk.co.compendiumdev.thingifier.generic.definitions.ThingDefinition;
 import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
@@ -80,19 +81,32 @@ public class BodyRelationshipValidator {
         }
 
         // find the other thing
-        if(!fieldToMatchForGuid.equals("guid")){
+        List<String> linkingFields = thingDefinition.getProtectedFieldNamesList();
+        if(!linkingFields.contains(fieldToMatchForGuid)){
             validRelationships = false;
             report.addErrorMessage(String.format(
-                    "Only support relationship references for guid, not for %s", fieldToMatchForGuid));
+                    "Do not support relationship references using %s", fieldToMatchForGuid));
             return validRelationships;
         }
 
-        final ThingInstance thingToRelateTo = thingifier.findThingInstanceByGuid(guidValue);
+        ThingInstance thingToRelateTo = thingifier.findThingInstanceByGuid(guidValue);
+        // if we cannot find it by a guid then we need to identify the relationship type and find it by id for things
+        if(thingToRelateTo==null) {
+            final List<RelationshipVector> relationshipsNamed = thingDefinition.getRelationships(relationShipName);
+            for(RelationshipVector vector : relationshipsNamed){
+                final Thing thingToRelationship = vector.getTo();
+                thingToRelateTo = thingToRelationship.findInstanceByGUIDorID(guidValue);
+                if(thingToRelateTo!=null){
+                    break;
+                }
+            }
+        }
+
         if(thingToRelateTo==null){
             validRelationships=false;
             report.addErrorMessage(
-                    String.format("cannot find %s to relate to with guid %s",
-                            relationShipName, guidValue));
+                    String.format("cannot find %s to relate to with %s %s",
+                            relationShipName, fieldToMatchForGuid, guidValue));
             return validRelationships;
         }
 
@@ -126,18 +140,24 @@ public class BodyRelationshipValidator {
             report.addErrorMessage(String.format("%s is not a valid relationship",complexKey));
             return validRelationships;
         }
+
+        String relationshipsPart = parts[0];
+        String relationshipNamePart = parts[1];
+        String relationshipToPart = parts[2];
+        String relationshipFieldPart = parts[3];
+
         // is it a valid relationship name for this thing
-        if(!thingDefinition.hasRelationship(parts[1])){
+        if(!thingDefinition.hasRelationship(relationshipNamePart)){
             validRelationships = false;
             report.addErrorMessage(
                     String.format("%s is not a valid relationship for %s",
-                            parts[1], thingDefinition.getName()));
+                            relationshipNamePart, thingDefinition.getName()));
             return validRelationships;
         }
         // is it a valid relationship to the other thing
         boolean foundRelationship=false;
-        for(RelationshipVector relationships : thingDefinition.getRelationships(parts[1])){
-            if(relationships.getTo().definition().getPlural().equals(parts[2])){
+        for(RelationshipVector relationships : thingDefinition.getRelationships(relationshipNamePart)){
+            if(relationships.getTo().definition().getPlural().equals(relationshipToPart)){
                 foundRelationship=true;
             }
         }
@@ -145,18 +165,24 @@ public class BodyRelationshipValidator {
             validRelationships=false;
             report.addErrorMessage(
                     String.format("%s to %s is not a valid relationship for %s",
-                            parts[1], parts[2], thingDefinition.getName()));
+                            relationshipNamePart, relationshipToPart, thingDefinition.getName()));
             return validRelationships;
         }
         // check that the thing we want to relate with exists
-        String guid = complexKeyValue;
-        final ThingInstance thingToRelateTo = thingifier.
-                getThingNamedSingularOrPlural(parts[2]).findInstanceByGUID(guid);
+        String uniqueId = complexKeyValue;
+        ThingInstance thingToRelateTo = thingifier.
+                getThingNamedSingularOrPlural(relationshipToPart).findInstanceByGUID(uniqueId);
+        if(thingToRelateTo==null){
+            thingToRelateTo = thingifier.
+                    getThingNamedSingularOrPlural(relationshipToPart).
+                        findInstanceByField(
+                            FieldValue.is(relationshipFieldPart, uniqueId));
+        }
         if(thingToRelateTo==null){
             validRelationships=false;
             report.addErrorMessage(
-                    String.format("cannot find %s of %s to relate to with guid %s",
-                            parts[3], parts[2], guid));
+                    String.format("cannot find %s of %s to relate to with %s %s",
+                            relationshipFieldPart, relationshipToPart, relationshipFieldPart, uniqueId));
         }
         return validRelationships;
     }

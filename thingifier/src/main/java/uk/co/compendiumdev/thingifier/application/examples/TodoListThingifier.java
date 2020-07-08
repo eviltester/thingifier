@@ -48,7 +48,9 @@ public class TodoListThingifier {
         Thing todo = todoList.createThing("todo", "todos");
 
         todo.definition()
-                .addFields(Field.is("title", STRING).
+                .addFields(
+                        Field.is("id",FieldType.ID),
+                        Field.is("title", STRING).
                                 mandatory().
                                 withValidation(
                                         VRule.notEmpty()),

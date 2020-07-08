@@ -31,9 +31,9 @@ public class InstanceFields {
     }
 
 
-    public void deleteAllFieldsExcept(final String... fieldNamesToIgnore) {
+    public void deleteAllFieldsExcept(List fieldNamesToIgnore) {
 
-        Set<String> ignorekeys = new HashSet<>(Arrays.asList(fieldNamesToIgnore));
+        Set<String> ignorekeys = new HashSet<>(fieldNamesToIgnore);
         Set<String> keys = new HashSet(values.keySet());
 
         for (String key : keys) {

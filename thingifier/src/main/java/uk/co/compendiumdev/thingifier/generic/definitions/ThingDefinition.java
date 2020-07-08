@@ -183,4 +183,13 @@ public class ThingDefinition {
         }
         return null;
     }
+
+    public List<String> getProtectedFieldNamesList() {
+        List<String> protectedNames = new ArrayList();
+        protectedNames.add("guid");
+        if(hasIDField()){
+            protectedNames.add(getIDField().getName());
+        }
+        return protectedNames;
+    }
 }

@@ -6,6 +6,7 @@ import uk.co.compendiumdev.thingifier.generic.definitions.Field;
 import uk.co.compendiumdev.thingifier.generic.definitions.RelationshipVector;
 import uk.co.compendiumdev.thingifier.generic.definitions.ThingDefinition;
 
+import java.lang.reflect.Array;
 import java.util.*;
 
 import static uk.co.compendiumdev.thingifier.generic.definitions.Optionality.MANDATORY_RELATIONSHIP;
@@ -96,26 +97,27 @@ final public class ThingInstance {
 
     public ThingInstance setFieldValuesFrom(final Map<String, String> args) {
 
+        // protected fields
+        List<String> idOrGuidFields = entityDefinition.getProtectedFieldNamesList();
+
         for (Map.Entry<String, String> entry : args.entrySet()) {
 
-            // Handle attempt to amend a GUID
-            if (!entry.getKey().equalsIgnoreCase("guid")) {
-
+            // Handle attempt to amend a protected field
+            if (!idOrGuidFields.contains(entry.getKey())) {
                 // set the value
                 setValue(entry.getKey(), entry.getValue());
-
             } else {
-
                 // if editing it then throw error, ignore if same value
-                String existingGuid = instance.getValue("guid");
-                if (existingGuid != null && existingGuid.trim().length() > 0) {
+                String existingValue = instance.getValue(entry.getKey());
+                if (existingValue != null && existingValue.trim().length() > 0) {
 
                     // if value is different then it is an attempt to amend it
-                    if (!existingGuid.equalsIgnoreCase(entry.getValue())) {
+                    if (!existingValue.equalsIgnoreCase(entry.getValue())) {
                         throw new RuntimeException(
-                                String.format("Can not amend GUID on Entity %s from %s to %s",
+                                String.format("Can not amend %s on Entity %s from %s to %s",
+                                        entry.getKey(),
                                         this.entityDefinition.getName(),
-                                        existingGuid,
+                                        existingValue,
                                         entry.getValue()));
                     }
                 }
@@ -127,10 +129,15 @@ final public class ThingInstance {
     public ThingInstance setCloneFieldValuesFrom(final Map<String, String> args) {
 
         for (Map.Entry<String, String> entry : args.entrySet()) {
-            setValue(entry.getKey(), entry.getValue());
+            overrideValue(entry.getKey(), entry.getValue());
         }
 
         return this;
+    }
+
+    private void overrideValue(final String key, final String value) {
+        // bypass all validation
+        this.instance.addValue(key, value);
     }
 
     private void reportCannotFindFieldError(final String fieldName) {
@@ -304,29 +311,50 @@ final public class ThingInstance {
 
 
     public void clearAllFields() {
-        instance.deleteAllFieldsExcept("guid");
+        List<String>ignoreFields = new ArrayList<>();
+
+        ignoreFields.add("guid");
+        if(hasIDField()){
+            ignoreFields.add(getEntity().getIDField().getName());
+        }
+
+        instance.deleteAllFieldsExcept(ignoreFields);
     }
 
 
     public ValidationReport validateFields(){
-        ValidationReport report = new ValidationReport();
+        return validateFields(new ArrayList<>());
+    }
 
+    public ValidationReport validateFields(List<String> excluding){
+        ValidationReport report = new ValidationReport();
 
         // Field validation
 
         for (String fieldName : entityDefinition.getFieldNames()) {
-            Field field = entityDefinition.getField(fieldName);
-            ValidationReport validity = field.validate(instance.getValue(fieldName));
-            report.combine(validity);
+            if(!excluding.contains(fieldName)) {
+                Field field = entityDefinition.getField(fieldName);
+                ValidationReport validity = field.validate(instance.getValue(fieldName));
+                report.combine(validity);
+            }
         }
 
         return report;
     }
+    public ValidationReport validateNonProtectedFields() {
+        List<String> excluding = getProtectedFieldNamesList(); // guid and ids
+        return validateFields(excluding);
+    }
 
+    private List<String> getProtectedFieldNamesList() {
+        return entityDefinition.getProtectedFieldNamesList();
+    }
 
     public ValidationReport validateRelationships(){
         ValidationReport report = new ValidationReport();
 
+
+        // TODO: relationship cardinality validation e.g. too many, not enough etc.
 
         // Optionality Relationship Validation
         final Collection<RelationshipVector> theRelationshipVectors = entityDefinition.getRelationships();
@@ -384,4 +412,6 @@ final public class ThingInstance {
         }
         return value;
     }
+
+
 }

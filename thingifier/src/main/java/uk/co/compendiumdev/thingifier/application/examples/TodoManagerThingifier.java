@@ -68,7 +68,8 @@ public class TodoManagerThingifier {
         Thing todo = todoManager.createThing("todo", "todos");
 
         todo.definition()
-                .addFields(Field.is("title", STRING).
+                .addFields(Field.is("id", FieldType.ID),
+                        Field.is("title", STRING).
                                 mandatory().
                                 withValidation(
                                         VRule.notEmpty()),
@@ -80,6 +81,7 @@ public class TodoManagerThingifier {
 
         project.definition()
                 .addFields(
+                        Field.is("id", FieldType.ID),
                         Field.is("title", STRING),
                         Field.is("description", STRING),
                         Field.is("completed", FieldType.BOOLEAN).
@@ -92,6 +94,7 @@ public class TodoManagerThingifier {
 
         category.definition()
                 .addFields(
+                        Field.is("id", FieldType.ID),
                         Field.is("title", STRING).
                                 mandatory().
                                 withValidation(VRule.notEmpty()),

@@ -148,7 +148,7 @@ final public class SimpleQuery {
 
 
 
-            // is it a GUID?
+            // is it a GUID or ID?
             boolean found = false;
             for (ThingInstance instance : foundItems) {
 

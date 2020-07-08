@@ -3,6 +3,8 @@ package uk.co.compendiumdev.thingifier.api.restapihandlers;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
+import uk.co.compendiumdev.thingifier.generic.definitions.FieldValue;
+import uk.co.compendiumdev.thingifier.generic.definitions.RelationshipVector;
 import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
 
 import java.util.ArrayList;
@@ -18,11 +20,12 @@ public class RelationshipCreator {
 
     public ApiResponse createRelationships(final BodyParser bodyargs, final ThingInstance instance) {
         try {
-            List<RelationshipDetails> relationships = getRelationshipsFromArgs(bodyargs);
+            List<RelationshipDetails> relationships = getRelationshipsFromArgs(bodyargs, instance);
             for (RelationshipDetails relationship : relationships) {
                 instance.connects(relationship.relationshipName,
                         thingifier.getThingNamedSingularOrPlural(relationship.toType).
-                                findInstanceByGUID(relationship.guidValue));
+                                findInstanceByField(
+                                        FieldValue.is(relationship.guidName, relationship.guidValue)));
             }
 
             return ApiResponse.created(instance);
@@ -32,7 +35,7 @@ public class RelationshipCreator {
         }
     }
 
-    private List<RelationshipDetails> getRelationshipsFromArgs(final BodyParser bodyargs) {
+    private List<RelationshipDetails> getRelationshipsFromArgs(final BodyParser bodyargs, final ThingInstance instance) {
 
         List<Map.Entry<String,String>> fullargs = bodyargs.getFlattenedStringMap();
         List<RelationshipDetails>relationships = new ArrayList<>();
@@ -56,11 +59,29 @@ public class RelationshipCreator {
                     String[] parts = complexKey.split("\\.");
                     // assume it is a relationship - because of earlier validation
                     if(parts.length == 2){
-                        final ThingInstance instanceToRelateTo = thingifier.findThingInstanceByGuid(complexKeyValue.getValue());
+                        String relationshipName = parts[0];
+                        String relationshipFieldName = parts[1];
+                        // assume it is a guid
+                        ThingInstance instanceToRelateTo = thingifier.findThingInstanceByGuid(complexKeyValue.getValue());
+                        if(instanceToRelateTo ==null){
+                            // but it might not be
+                            if(instance.getEntity().hasRelationship(relationshipName)){
+                                final List<RelationshipVector> relationshipsAre =
+                                        instance.getEntity().getRelationships(relationshipName);
+                                for(RelationshipVector relate : relationshipsAre){
+                                    instanceToRelateTo = relate.getTo().
+                                            findInstanceByField(
+                                                    FieldValue.is(relationshipFieldName, complexKeyValue.getValue()));
+                                    if(instanceToRelateTo!=null){
+                                        break;
+                                    }
+                                }
+                            }
+                        }
                         if(instanceToRelateTo!=null){
                             relationships.add(
                                 new RelationshipDetails(
-                                        parts[0], instanceToRelateTo.getEntity().getPlural(), parts[1],
+                                        relationshipName, instanceToRelateTo.getEntity().getPlural(),relationshipFieldName,
                                         complexKeyValue.getValue()));
                         }
                     }
