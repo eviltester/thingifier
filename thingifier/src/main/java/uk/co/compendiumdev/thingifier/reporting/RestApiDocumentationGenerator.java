@@ -1,13 +1,17 @@
 package uk.co.compendiumdev.thingifier.reporting;
 
+import com.google.gson.GsonBuilder;
 import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.routings.ApiRoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingVerb;
 import uk.co.compendiumdev.thingifier.application.ThingifierVersionDetails;
+import uk.co.compendiumdev.thingifier.generic.FieldType;
+import uk.co.compendiumdev.thingifier.generic.definitions.Field;
 import uk.co.compendiumdev.thingifier.generic.definitions.RelationshipDefinition;
 import uk.co.compendiumdev.thingifier.generic.definitions.validation.ValidationRule;
+import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
 
 import java.util.Collection;
 import java.util.List;
@@ -16,11 +20,13 @@ public class RestApiDocumentationGenerator {
     private final Thingifier thingifier;
     private final List<Thing> things;
     private final Collection<RelationshipDefinition> relationships;
+    private final JsonThing jsonThing;
 
     public RestApiDocumentationGenerator(final Thingifier aThingifier) {
         this.thingifier = aThingifier;
         this.things = thingifier.getThings();
         this.relationships = thingifier.getRelationshipDefinitions();
+        jsonThing = new JsonThing(thingifier.apiConfig().jsonOutput());
     }
 
     public String getApiDocumentation(final ApiRoutingDefinition routingDefinitions) {
@@ -47,22 +53,71 @@ public class RestApiDocumentationGenerator {
                 output.append("Fields:\n");
                 output.append("<ul>\n");
 
+                // todo: generate an example Thing
+                final ThingInstance exampleThing = new ThingInstance(aThing.definition());
+
                 for (String aField : aThing.definition().getFieldNames()) {
 
                     output.append(String.format("<li> %s %n", aField));
 
                     output.append("<ul>\n");
 
-                    output.append(String.format("<li> (%s)</li>", aThing.definition().getField(aField).getType()));
+                    Field theField = aThing.definition().getField(aField);
+                    output.append(String.format("<li> (%s)</li>", theField.getType()));
 
-                    for (ValidationRule validation : aThing.definition().getField(aField).validationRules()) {
+                    for (ValidationRule validation : theField.validationRules()) {
                         output.append("<li>" + validation.getErrorMessage("") + "</li>\n");
-
                     }
+
+                    String exampleValue = theField.getRandomExampleValue();
+                    exampleThing.overrideValue(theField.getName(), exampleValue);
+
+                    output.append(String.format("<li>Example: \"%s\"</li>", exampleValue));
+                    output.append(String.format("<li>Mandatory?: %b</li>", theField.isMandatory()));
+                    output.append(String.format("<li>Validates?: %b</li>", theField.willValidate()));
+
+                    if(theField.shouldTruncate()){
+                        output.append(String.format("<li>Truncate to: %d characters</li>", theField.truncateLength()));
+                    }
+
+                    if(theField.getType()== FieldType.STRING) {
+                        if (theField.willEnforceLength()) {
+                            output.append(String.format("<li>Max Length: %d characters</li>", theField.truncateLength()));
+                        }
+                    }
+
+                    if(theField.getType()== FieldType.INTEGER){
+                        output.append(String.format("<li>Values Between: \"%d\" to \"%d\" </li>",
+                                            theField.getMinimumIntegerValue(), theField.getMaximumIntegerValue()));
+                    }
+
+                    if(theField.getType()== FieldType.FLOAT){
+                        output.append(String.format("<li>Values Between: \"%f\" to \"%f\" </li>",
+                                theField.getMinimumFloatValue(), theField.getMaximumFloatValue()));
+                    }
+
                     output.append("</ul>\n");
                     output.append("</li>\n");
+
+
                 }
                 output.append("</ul>\n");
+
+
+                // show an example
+                output.append("<p>Example Output</p>\n");
+                output.append("<pre>\n");
+                output.append(new GsonBuilder().setPrettyPrinting()
+                        .create().toJson(jsonThing.asJsonObject(exampleThing)));
+                output.append("</pre>\n");
+
+                output.append("<p>Example Input</p>\n");
+                exampleThing.clearNonProtectedFields();
+                output.append("<pre>\n");
+                output.append(new GsonBuilder().setPrettyPrinting()
+                        .create().toJson(jsonThing.asJsonObject(exampleThing)));
+                output.append("</pre>\n");
+
             }
         }
 

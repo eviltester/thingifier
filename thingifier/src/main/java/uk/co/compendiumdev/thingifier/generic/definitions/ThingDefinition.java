@@ -24,7 +24,7 @@ public class ThingDefinition {
         ThingDefinition entityDefinition = new ThingDefinition();
         entityDefinition.setName(name);
         entityDefinition.setPlural(plural);
-        entityDefinition.addField(Field.is("guid", FieldType.STRING));
+        entityDefinition.addField(Field.is("guid", FieldType.GUID));
         return entityDefinition;
     }
 

@@ -135,7 +135,7 @@ final public class ThingInstance {
         return this;
     }
 
-    private void overrideValue(final String key, final String value) {
+    public void overrideValue(final String key, final String value) {
         // bypass all validation
         this.instance.addValue(key, value);
     }
@@ -414,4 +414,10 @@ final public class ThingInstance {
     }
 
 
+    // DANGER this is only used for creating documentation this could kill the system
+    public void clearNonProtectedFields() {
+        for(String name : entityDefinition.getProtectedFieldNamesList()){
+            overrideValue(name, null);
+        }
+    }
 }

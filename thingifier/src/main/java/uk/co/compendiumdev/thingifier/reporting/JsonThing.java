@@ -66,7 +66,11 @@ public class JsonThing {
         }
 
         for (String field : thingInstance.getEntity().getFieldNames()) {
-            jsonobj.addProperty(field, thingInstance.getValue(field));
+            try {
+                jsonobj.addProperty(field, thingInstance.getValue(field));
+            }catch(Exception e){
+                // ignore
+            }
         }
 
         /*

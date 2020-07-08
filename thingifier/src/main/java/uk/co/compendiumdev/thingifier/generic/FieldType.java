@@ -8,7 +8,8 @@ public enum FieldType {
     DATE(null), // todo
     BOOLEAN("FALSE"),
     ENUM(""), // remember to set example values
-    ID(null);
+    ID(null), // TODO: validate against more than one against a thing
+    GUID(null); // TODO: validate against more than one against a thing
 
     private final String defaultValue;
 
@@ -21,11 +22,10 @@ public enum FieldType {
     }
 }
 
-// TODO add type for ID having an incremental unique id per entity type
 // TODO: TIME field type
 // TODO: DATE_TIME field type
 // TODO: ARRAY to contain an array of Entity Instances
 // TODO: OBJECT to contain an instance of a specific Entity Type
 // TODO add type for CREATEDDATE - automatically maintained - possibly allow configuring format
 // TODO add type for AMENDEDDATE - automatically maintained - possibly allow configuring format
-// TODO: have an 'overrideValue' method which ignores all validation performed by setValue and can be used for internal use or migration routines
+

@@ -2,6 +2,7 @@ package uk.co.compendiumdev.thingifier.generic.definitions;
 
 import uk.co.compendiumdev.thingifier.api.ValidationReport;
 import uk.co.compendiumdev.thingifier.generic.FieldType;
+import uk.co.compendiumdev.thingifier.generic.data.RandomString;
 import uk.co.compendiumdev.thingifier.generic.definitions.validation.ValidationRule;
 
 import java.util.*;
@@ -19,7 +20,7 @@ public final class Field {
     private String defaultValue;
     private List<ValidationRule> validationRules;
     private boolean truncateStringIfTooLong;
-    private int truncateStringLengthTo;
+    private int maximumStringLength;
     private int maximumIntegerValue;
     private int minimumIntegerValue;
     private boolean allowedNullable;
@@ -29,6 +30,7 @@ public final class Field {
 
     // allow this being switched off
     private boolean shouldValidateValuesAgainstType;
+    private boolean validateIfStringIsTooLong;
 
     private Field(final String name, final FieldType type) {
         this.name = name;
@@ -43,6 +45,7 @@ public final class Field {
         minimumFloatValue = Float.MIN_VALUE;
         allowedNullable=false;
         shouldValidateValuesAgainstType=true;
+        validateIfStringIsTooLong = false;
     }
 
     public static Field is(String name) {
@@ -53,8 +56,6 @@ public final class Field {
         Field aField = new Field(name, type);
         return aField;
     }
-
-
 
     public String getName() {
         return name;
@@ -156,6 +157,18 @@ public final class Field {
             }
 
 
+            if(type == FieldType.STRING){
+                if(validateIfStringIsTooLong){
+                    if(value.length()>maximumStringLength){
+                        report.setValid(false);
+                        report.addErrorMessage(
+                                String.format(
+                                        "%s : is too long (max %d)",
+                                        this.getName(), maximumStringLength));
+                    }
+                }
+            }
+
             if (type == FieldType.FLOAT) {
                 try {
                     float floatValue = Float.valueOf(value);
@@ -214,7 +227,13 @@ public final class Field {
 
     public Field truncateStringTo(final int maximumTruncatedLengthOfString) {
         truncateStringIfTooLong = true;
-        truncateStringLengthTo=maximumTruncatedLengthOfString;
+        maximumStringLength =maximumTruncatedLengthOfString;
+        return this;
+    }
+
+    public Field maximumStringLength(final int maximumLengthOfString) {
+        validateIfStringIsTooLong = true;
+        maximumStringLength =maximumLengthOfString;
         return this;
     }
 
@@ -224,7 +243,7 @@ public final class Field {
 
     public int getMaximumAllowedLength() {
         if(truncateStringIfTooLong){
-            return truncateStringLengthTo;
+            return maximumStringLength;
         }
         return -1; // no limit
     }
@@ -257,6 +276,20 @@ public final class Field {
             return returnThis;
         }
 
+        if(type==FieldType.ID){
+            ArrayList<String>returnThis = new ArrayList<>();
+            int rndInt = ThreadLocalRandom.current().
+                    nextInt(1, 100);
+            returnThis.add(String.valueOf(rndInt));
+            return returnThis;
+        }
+
+        if(type==FieldType.GUID){
+            ArrayList<String>returnThis = new ArrayList<>();
+            returnThis.add(UUID.randomUUID().toString());
+            return returnThis;
+        }
+
         if(type==FieldType.FLOAT){
             ArrayList<String>returnThis = new ArrayList<>();
             final float rndFloat = minimumFloatValue + ThreadLocalRandom.current().nextFloat() * (maximumFloatValue - minimumFloatValue);
@@ -267,8 +300,7 @@ public final class Field {
         if(type==FieldType.STRING){
             if(fieldExamples.size()==0){
                 ArrayList<String>returnThis = new ArrayList<>();
-                //TODO: randomly generate a string
-                returnThis.add(truncatedString("bob"));
+                returnThis.add(truncatedString(new RandomString().get(20)));
                 return returnThis;
             }
         }
@@ -313,5 +345,33 @@ public final class Field {
     public boolean withinAllowedFloatRange(final float floatValue) {
         return (floatValue>=minimumFloatValue &&
                 floatValue<=maximumIntegerValue);
+    }
+
+    public int truncateLength() {
+        return maximumStringLength;
+    }
+
+    public int getMaximumIntegerValue() {
+        return maximumIntegerValue;
+    }
+
+    public int getMinimumIntegerValue() {
+        return minimumIntegerValue;
+    }
+
+    public Float getMinimumFloatValue() {
+        return minimumFloatValue;
+    }
+
+    public Float getMaximumFloatValue() {
+        return maximumFloatValue;
+    }
+
+    public boolean willValidate() {
+        return shouldValidateValuesAgainstType;
+    }
+
+    public boolean willEnforceLength() {
+        return validateIfStringIsTooLong;
     }
 }
