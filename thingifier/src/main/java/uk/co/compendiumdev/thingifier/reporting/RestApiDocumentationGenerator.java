@@ -27,6 +27,8 @@ public class RestApiDocumentationGenerator {
 
         StringBuilder output = new StringBuilder();
 
+        output.append(paragraph("Menu: " + href("/gui", "gui")));
+
         if (thingifier != null) {
             // create generic API documentation
             output.append(heading(1, thingifier.getTitle()));

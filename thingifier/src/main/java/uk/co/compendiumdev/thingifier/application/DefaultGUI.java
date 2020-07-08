@@ -29,7 +29,13 @@ public class DefaultGUI {
         get("/gui", (request, response) -> {
             response.type("text/html");
             response.status(200);
-            return "<html><head><title>GUI</title></head></body><a href='/gui/entities'>entities</a></body></html>";
+            StringBuilder html = new StringBuilder();
+            html.append("<html><head><title>GUI</title></head></body>");
+            html.append("<p><a href='/'>API documentation</a></p>");
+            html.append("<p><a href='/gui/entities'>Entities Explorer</a></p>");
+
+            html.append("</body></html>");
+            return html.toString();
         });
 
         get("/gui/entities", (request, response) -> {
@@ -135,7 +141,9 @@ public class DefaultGUI {
 
     private String getInstancesRootMenuHtml() {
         StringBuilder html = new StringBuilder();
-        html.append("<div class='entity-instances-menu'><p><a href='/gui'>Menu</a>:</p>");
+        html.append("<div class='entity-instances-menu'>");
+        html.append("<p><a href='/'>API documentation</a></p>");
+        html.append("<p><a href='/gui'>Menu</a>:</p>");
         html.append("<ul>");
         for(String thing : thingifier.getThingNames()){
             html.append(String.format("<li><a href='/gui/instances?entity=%1$s'>%1$s</a></li>",thing));

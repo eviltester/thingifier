@@ -33,6 +33,9 @@ public class Main {
             proxyport = getHerokuAssignedPort();
         }
 
+        int version = 3;
+        System.out.println("Number of app versions available (e.g. -version=2) are: " + version);
+
         for (String arg : args) {
             System.out.println("Args: " + arg);
 
@@ -43,9 +46,16 @@ public class Main {
                     System.out.println("Will configure web server to use port " + proxyport);
                 }
             }
+            if (arg.startsWith("-version")) {
+                String[] details = arg.split("=");
+                if (details != null && details.length > 1) {
+                    version = Integer.parseInt(details[1].trim());
+                }
+            }
 
         }
 
+        System.out.println("Will configure app as release version " + version);
 
         Spark.port(proxyport);
 
@@ -57,6 +67,28 @@ public class Main {
         Thingifier thingifier;
 
         thingifier = new TodoListThingifier().get();
+
+        // can have different -version params which configure the TodoManagerThingifier in different ways
+        // e.g. v1 non compressed relationships with guids
+        // e.g. v2 compressed relationships with guids
+        // e.g. v3 compressed relationships with ids
+        // default the app to v3 to make it easier for people
+        switch(version){
+            case 1:
+                thingifier.apiConfig().jsonOutput().compressRelationships(false);
+                thingifier.apiConfig().jsonOutput().relationshipsUsesIdsIfAvailable(false);
+                break;
+            case 2:
+                thingifier.apiConfig().jsonOutput().compressRelationships(true);
+                thingifier.apiConfig().jsonOutput().relationshipsUsesIdsIfAvailable(false);
+                break;
+            case 3:
+                thingifier.apiConfig().jsonOutput().compressRelationships(true);
+                thingifier.apiConfig().jsonOutput().relationshipsUsesIdsIfAvailable(true);
+                break;
+        }
+
+
 
         new DefaultGUI(thingifier).setupDefaultGUI();
 
