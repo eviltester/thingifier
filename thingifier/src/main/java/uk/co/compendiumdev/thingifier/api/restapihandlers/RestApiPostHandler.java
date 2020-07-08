@@ -36,6 +36,8 @@ public class RestApiPostHandler {
             }
 
             ValidationReport validity = response.getReturnedInstance().validateNonProtectedFields();
+            validity.combine(response.getReturnedInstance().validateRelationships());
+
             if(validity.isValid()){
                 return response;
             }else{

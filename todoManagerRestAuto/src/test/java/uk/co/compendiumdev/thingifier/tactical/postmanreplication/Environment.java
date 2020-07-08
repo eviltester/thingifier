@@ -4,6 +4,7 @@ import io.restassured.RestAssured;
 import io.restassured.filter.log.RequestLoggingFilter;
 import io.restassured.filter.log.ResponseLoggingFilter;
 import spark.Spark;
+import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.application.ThingifierRestServer;
 import uk.co.compendiumdev.thingifier.application.examples.TodoManagerThingifier;
 import uk.co.compendiumdev.thingifier.tactical.sparkstart.Port;
@@ -30,7 +31,10 @@ public class Environment {
             //start it up
             Spark.port(4567);
             String [] args = {};
-            new ThingifierRestServer(args, "", new TodoManagerThingifier().get());
+            final Thingifier thingifier = new TodoManagerThingifier().get();
+            thingifier.apiConfig().jsonOutput().compressRelationships(false);
+            thingifier.apiConfig().jsonOutput().relationshipsUsesIdsIfAvailable(false);
+            new ThingifierRestServer(args, "", thingifier);
             return "http://localhost:4567";
         }
 

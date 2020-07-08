@@ -65,6 +65,7 @@ public class RelationshipCreator {
                         ThingInstance instanceToRelateTo = thingifier.findThingInstanceByGuid(complexKeyValue.getValue());
                         if(instanceToRelateTo ==null){
                             // but it might not be
+                            // TODO: find other usages of this pattern and refactor to
                             if(instance.getEntity().hasRelationship(relationshipName)){
                                 final List<RelationshipVector> relationshipsAre =
                                         instance.getEntity().getRelationships(relationshipName);

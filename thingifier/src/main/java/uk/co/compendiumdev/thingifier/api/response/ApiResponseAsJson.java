@@ -1,6 +1,7 @@
 package uk.co.compendiumdev.thingifier.api.response;
 
 import com.google.gson.Gson;
+import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
 import uk.co.compendiumdev.thingifier.reporting.JsonThing;
 
@@ -8,9 +9,11 @@ import java.util.*;
 
 public final class ApiResponseAsJson {
     private final ApiResponse apiResponse;
+    private final JsonThing jsonThing;
 
-    public ApiResponseAsJson(final ApiResponse apiResponse) {
+    public ApiResponseAsJson(final ApiResponse apiResponse, final JsonThing aJsonThing) {
         this.apiResponse = apiResponse;
+        this.jsonThing = aJsonThing;
     }
 
     public String getJson() {
@@ -44,7 +47,7 @@ public final class ApiResponseAsJson {
             }
 
             if (typeName.length() > 0) {
-                output = JsonThing.asJsonTypedArrayWithContentsUntyped(apiResponse.getReturnedInstanceCollection(), typeName);
+                output = jsonThing.asJsonTypedArrayWithContentsUntyped(apiResponse.getReturnedInstanceCollection(), typeName);
             } else {
                 if (things.size() == 0) {
                     output = "{}";
@@ -57,7 +60,7 @@ public final class ApiResponseAsJson {
             ThingInstance instance = apiResponse.getReturnedInstance();
 
             //return JsonThing.asNamedJsonObject(instance).toString();
-            return JsonThing.asJsonObject(instance).toString();
+            return jsonThing.asJsonObject(instance).toString();
         }
     }
 

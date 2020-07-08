@@ -6,8 +6,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.generic.definitions.Field;
 import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.reporting.JsonThing;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,6 +19,7 @@ import static uk.co.compendiumdev.thingifier.generic.FieldType.STRING;
 
 public class ApiResponseAsXmlTest {
 
+    private JsonThing defaultJsonThing = new JsonThing(new ThingifierApiConfig().jsonOutput());
 
     @Test
     public void response404HasSingleErrorMessage(){
@@ -28,7 +31,7 @@ public class ApiResponseAsXmlTest {
         Assertions.assertEquals(true, response.isErrorResponse());
         Assertions.assertEquals(false, response.isCollection());
 
-        String xml = new ApiResponseAsXml(response).getXml();
+        String xml = new ApiResponseAsXml(response, defaultJsonThing).getXml();
 
         System.out.println(xml);
 
@@ -52,7 +55,7 @@ public class ApiResponseAsXmlTest {
         Assertions.assertEquals(true, response.isErrorResponse());
         Assertions.assertEquals(false, response.isCollection());
 
-        String xml = new ApiResponseAsXml(response).getXml();
+        String xml = new ApiResponseAsXml(response, defaultJsonThing).getXml();
 
         System.out.println(xml);
 
@@ -79,7 +82,7 @@ public class ApiResponseAsXmlTest {
         Assertions.assertEquals(true, response.isErrorResponse());
         Assertions.assertEquals(false, response.isCollection());
 
-        String xml = new ApiResponseAsXml(response).getXml();
+        String xml = new ApiResponseAsXml(response, defaultJsonThing).getXml();
 
         System.out.println(xml);
 
@@ -106,7 +109,7 @@ public class ApiResponseAsXmlTest {
         Assertions.assertEquals(false, response.isErrorResponse());
         Assertions.assertEquals(false, response.isCollection());
 
-        String xml = new ApiResponseAsXml(response).getXml();
+        String xml = new ApiResponseAsXml(response, defaultJsonThing).getXml();
 
         Assertions.assertEquals("", xml);
 
@@ -130,7 +133,7 @@ public class ApiResponseAsXmlTest {
         Assertions.assertEquals(false, response.isErrorResponse());
         Assertions.assertEquals(false, response.isCollection());
 
-        String xml = new ApiResponseAsXml(response).getXml();
+        String xml = new ApiResponseAsXml(response, defaultJsonThing).getXml();
 
         XStream xstream = getTodoXmlParser();
         Todo myTodo = (Todo) xstream.fromXML(xml);
@@ -161,7 +164,7 @@ public class ApiResponseAsXmlTest {
         Assertions.assertEquals(true, response.isCollection());
 
 
-        String xml = new ApiResponseAsXml(response).getXml();
+        String xml = new ApiResponseAsXml(response, defaultJsonThing).getXml();
         System.out.println(xml);
         XStream xstream = getTodosXmlParser();
         TodoCollectionResponse myTodo = (TodoCollectionResponse) xstream.fromXML(xml);
@@ -197,7 +200,7 @@ public class ApiResponseAsXmlTest {
         Assertions.assertEquals(false, response.isErrorResponse());
         Assertions.assertEquals(true, response.isCollection());
 
-        String xml = new ApiResponseAsXml(response).getXml();
+        String xml = new ApiResponseAsXml(response, defaultJsonThing).getXml();
         System.out.println(xml);
 
         Assertions.assertEquals("", xml);
@@ -217,7 +220,7 @@ public class ApiResponseAsXmlTest {
         Assertions.assertEquals(false, response.isErrorResponse());
         Assertions.assertEquals(true, response.isCollection());
 
-        String xml = new ApiResponseAsXml(response).getXml();
+        String xml = new ApiResponseAsXml(response, defaultJsonThing).getXml();
         System.out.println(xml);
         XStream xstream = getTodosXmlParser();
         TodoCollectionResponse myTodo = (TodoCollectionResponse) xstream.fromXML(xml);

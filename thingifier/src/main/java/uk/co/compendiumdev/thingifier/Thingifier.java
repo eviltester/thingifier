@@ -15,20 +15,22 @@ import java.util.concurrent.ConcurrentHashMap;
 
 final public class Thingifier {
 
+    // todo: we should have a constructor for Thingifier
     private Map<String, Thing> things = new ConcurrentHashMap<String, Thing>();
     private Map<String, RelationshipDefinition> relationships = new ConcurrentHashMap<String, RelationshipDefinition>();
     private String title = "";
     private String initialParagraph = "";
+    private ThingifierApiConfig apiConfig = new ThingifierApiConfig();
 
     /*
         TODO: configure the REST API from the entities and relationship definitions
         at the moment a default REST API is created, consider an API model as separate
         e.g
-         - API.usePluralNouns(), useSingleNouns()
-         - API.allowQueryParamFilters()
-         - API.disallowQueryParamFilters("/todos")
-         - API.routing("/todos").disallow("PATCH,POST.UPDATE")
-         - API.hideGUIDsWhenIDAvailable()
+         - apiConfig.usePluralNouns(), useSingleNouns()
+         - apiConfig.allowQueryParamFilters()
+         - apiConfig.disallowQueryParamFilters("/todos")
+         - apiConfig.routing("/todos").disallow("PATCH,POST.UPDATE")
+         - apiConfig.hideGUIDsWhenIDAvailable()
          - etc.
         aliases to entites and relationships to override definitions in the entity etc.
         create 'queries' to show subsets of data, etc.
@@ -173,5 +175,9 @@ final public class Thingifier {
         List<String> names = new ArrayList();
         names.addAll(things.keySet());
         return names;
+    }
+
+    public ThingifierApiConfig apiConfig() {
+        return apiConfig;
     }
 }

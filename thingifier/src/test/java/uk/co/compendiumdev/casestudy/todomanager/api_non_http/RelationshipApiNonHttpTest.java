@@ -15,6 +15,7 @@ import uk.co.compendiumdev.thingifier.api.response.ApiResponseAsJson;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponseAsXml;
 import uk.co.compendiumdev.thingifier.generic.definitions.FieldValue;
 import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.reporting.JsonThing;
 
 import java.util.*;
 
@@ -26,13 +27,14 @@ public class RelationshipApiNonHttpTest {
 
     Thing todo;
     Thing project;
+    private JsonThing jsonThing;
 
 
     @BeforeEach
     public void createDefinitions() {
 
         todoManager = TodoManagerModel.definedAsThingifier();
-
+        jsonThing = new JsonThing(todoManager.apiConfig().jsonOutput());
         todo = todoManager.getThingNamed("todo");
         project = todoManager.getThingNamed("project");
 
@@ -134,8 +136,8 @@ public class RelationshipApiNonHttpTest {
                 "Task should exist, only the relationship should be deleted");
 
         Assertions.assertTrue(apiresponse.getErrorMessages().size()==0);
-        Assertions.assertEquals("", new ApiResponseAsXml(apiresponse).getXml().trim(),"Should have no body");
-        Assertions.assertEquals( "", new ApiResponseAsJson(apiresponse).getJson().trim(),"Should have no body");
+        Assertions.assertEquals("", new ApiResponseAsXml(apiresponse,jsonThing).getXml().trim(),"Should have no body");
+        Assertions.assertEquals( "", new ApiResponseAsJson(apiresponse, jsonThing).getJson().trim(),"Should have no body");
 
         System.out.println(todoManager);
 
@@ -225,8 +227,8 @@ public class RelationshipApiNonHttpTest {
         Assertions.assertEquals(myNewProject.getGUID(), listOfProjects.get(0).getGUID());
 
         Assertions.assertTrue(apiresponse.getErrorMessages().size()==0);
-        Assertions.assertEquals( "", new ApiResponseAsXml(apiresponse).getXml().trim(),"Should have no body");
-        Assertions.assertEquals("", new ApiResponseAsJson(apiresponse).getJson().trim(),"Should have no body");
+        Assertions.assertEquals( "", new ApiResponseAsXml(apiresponse, jsonThing).getXml().trim(),"Should have no body");
+        Assertions.assertEquals("", new ApiResponseAsJson(apiresponse, jsonThing).getJson().trim(),"Should have no body");
 
         System.out.println(todoManager);
     }
@@ -262,8 +264,8 @@ public class RelationshipApiNonHttpTest {
         Assertions.assertEquals(numberOfTasks + 1, myNewProject.connectedItems("tasks").size());
 
         Assertions.assertTrue(apiresponse.getErrorMessages().size()==0);
-        Assertions.assertEquals( "", new ApiResponseAsXml(apiresponse).getXml().trim(),"Should have no body");
-        Assertions.assertEquals( "", new ApiResponseAsJson(apiresponse).getJson().trim(),"Should have no body");
+        Assertions.assertEquals( "", new ApiResponseAsXml(apiresponse, jsonThing).getXml().trim(),"Should have no body");
+        Assertions.assertEquals( "", new ApiResponseAsJson(apiresponse, jsonThing).getJson().trim(),"Should have no body");
 
         System.out.println(todoManager);
 
@@ -299,9 +301,9 @@ public class RelationshipApiNonHttpTest {
         Assertions.assertEquals(0, apiresponse.getReturnedInstanceCollection().size());
         Assertions.assertTrue(apiresponse.getErrorMessages().size()==0);
         Assertions.assertTrue(apiresponse.hasABody());
-        Assertions.assertTrue(new ApiResponseAsJson(apiresponse).getJson().trim().contains("[]"),
+        Assertions.assertTrue(new ApiResponseAsJson(apiresponse, jsonThing).getJson().trim().contains("[]"),
                 "Should have no array content");
-        Assertions.assertTrue(new ApiResponseAsJson(apiresponse).getJson().trim().startsWith("{\"projects\":"),
+        Assertions.assertTrue(new ApiResponseAsJson(apiresponse, jsonThing).getJson().trim().startsWith("{\"projects\":"),
                 "Should have name of thing");
 
 
@@ -314,8 +316,8 @@ public class RelationshipApiNonHttpTest {
 
         Assertions.assertEquals(1, relTodo.connectedItems("task-of").size());
         Assertions.assertTrue(apiresponse.getErrorMessages().size()==0);
-        Assertions.assertEquals( "", new ApiResponseAsXml(apiresponse).getXml().trim(),"Should have no body");
-        Assertions.assertEquals( "", new ApiResponseAsJson(apiresponse).getJson().trim(),"Should have no body");
+        Assertions.assertEquals( "", new ApiResponseAsXml(apiresponse, jsonThing).getXml().trim(),"Should have no body");
+        Assertions.assertEquals( "", new ApiResponseAsJson(apiresponse, jsonThing).getJson().trim(),"Should have no body");
 
 
 
@@ -370,8 +372,8 @@ public class RelationshipApiNonHttpTest {
 
         Assertions.assertTrue(apiresponse.getErrorMessages().size()==0);
         Assertions.assertFalse(apiresponse.hasABody());
-        Assertions.assertEquals("", new ApiResponseAsXml(apiresponse).getXml().trim());
-        Assertions.assertEquals("", new ApiResponseAsJson(apiresponse).getJson().trim(),"Should have no body");
+        Assertions.assertEquals("", new ApiResponseAsXml(apiresponse,jsonThing).getXml().trim());
+        Assertions.assertEquals("", new ApiResponseAsJson(apiresponse, jsonThing).getJson().trim(),"Should have no body");
 
 
         // Delete the relationship
@@ -388,8 +390,8 @@ public class RelationshipApiNonHttpTest {
 
         Assertions.assertTrue(apiresponse.getErrorMessages().size()==0);
         Assertions.assertFalse(apiresponse.hasABody());
-        Assertions.assertEquals( "", new ApiResponseAsXml(apiresponse).getXml().trim(), "Should have no body");
-        Assertions.assertEquals("", new ApiResponseAsJson(apiresponse).getJson().trim(), "Should have no body");
+        Assertions.assertEquals( "", new ApiResponseAsXml(apiresponse, jsonThing).getXml().trim(), "Should have no body");
+        Assertions.assertEquals("", new ApiResponseAsJson(apiresponse, jsonThing).getJson().trim(), "Should have no body");
 
         System.out.println(todoManager);
 
@@ -427,8 +429,8 @@ public class RelationshipApiNonHttpTest {
         Assertions.assertEquals(1, relTodo.connectedItems("task-of").size());
         Assertions.assertTrue(apiresponse.getErrorMessages().size()==0);
         Assertions.assertFalse(apiresponse.hasABody());
-        Assertions.assertEquals( "", new ApiResponseAsXml(apiresponse).getXml().trim(), "Should have no body");
-        Assertions.assertEquals("", new ApiResponseAsJson(apiresponse).getJson().trim(), "Should have no body");
+        Assertions.assertEquals( "", new ApiResponseAsXml(apiresponse, jsonThing).getXml().trim(), "Should have no body");
+        Assertions.assertEquals("", new ApiResponseAsJson(apiresponse, jsonThing).getJson().trim(), "Should have no body");
 
 
         // Delete the relationship
@@ -438,8 +440,8 @@ public class RelationshipApiNonHttpTest {
         Assertions.assertEquals(0, todo.getInstances().size(),"Should be no stored todos");
         Assertions.assertTrue(apiresponse.getErrorMessages().size()==0);
         Assertions.assertFalse(apiresponse.hasABody());
-        Assertions.assertEquals( "", new ApiResponseAsXml(apiresponse).getXml().trim(), "Should have no body");
-        Assertions.assertEquals( "", new ApiResponseAsJson(apiresponse).getJson().trim(), "Should have no body");
+        Assertions.assertEquals( "", new ApiResponseAsXml(apiresponse, jsonThing).getXml().trim(), "Should have no body");
+        Assertions.assertEquals( "", new ApiResponseAsJson(apiresponse, jsonThing).getJson().trim(), "Should have no body");
 
 
 
@@ -489,8 +491,8 @@ public class RelationshipApiNonHttpTest {
                 "Expected number of tasks in project to increase by 1");
 
         Assertions.assertTrue(apiresponse.hasABody());
-        Assertions.assertNotEquals("Should have a body", "", new ApiResponseAsXml(apiresponse).getXml().trim());
-        Assertions.assertNotEquals("Should have a body", "", new ApiResponseAsJson(apiresponse).getJson().trim());
+        Assertions.assertNotEquals("Should have a body", "", new ApiResponseAsXml(apiresponse, jsonThing).getXml().trim());
+        Assertions.assertNotEquals("Should have a body", "", new ApiResponseAsJson(apiresponse, jsonThing).getJson().trim());
 
         Assertions.assertFalse(apiresponse.isCollection());
 
@@ -541,8 +543,8 @@ public class RelationshipApiNonHttpTest {
         Assertions.assertEquals(1, relTodo.connectedItems("task-of").size());
 
         Assertions.assertTrue(apiresponse.hasABody());
-        Assertions.assertNotEquals("Should have a body", "", new ApiResponseAsXml(apiresponse).getXml().trim());
-        Assertions.assertNotEquals("Should have a body", "", new ApiResponseAsJson(apiresponse).getJson().trim());
+        Assertions.assertNotEquals("Should have a body", "", new ApiResponseAsXml(apiresponse, jsonThing).getXml().trim());
+        Assertions.assertNotEquals("Should have a body", "", new ApiResponseAsJson(apiresponse, jsonThing).getJson().trim());
         Assertions.assertFalse(apiresponse.isCollection());
 
         ThingInstance myNewProject = project.findInstanceByGUID(apiresponse.getHeaderValue(ApiResponse.GUID_HEADER));
@@ -609,8 +611,8 @@ public class RelationshipApiNonHttpTest {
                 "Expected number of estimates in project to increase by 1");
 
         Assertions.assertTrue(apiresponse.hasABody());
-        Assertions.assertNotEquals("Should have a body", "", new ApiResponseAsXml(apiresponse).getXml().trim());
-        Assertions.assertNotEquals("Should have a body", "", new ApiResponseAsJson(apiresponse).getJson().trim());
+        Assertions.assertNotEquals("Should have a body", "", new ApiResponseAsXml(apiresponse, jsonThing).getXml().trim());
+        Assertions.assertNotEquals("Should have a body", "", new ApiResponseAsJson(apiresponse, jsonThing).getJson().trim());
 
         Assertions.assertFalse(apiresponse.isCollection());
 

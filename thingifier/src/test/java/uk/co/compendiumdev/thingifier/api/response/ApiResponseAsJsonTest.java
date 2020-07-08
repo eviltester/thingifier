@@ -5,8 +5,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.generic.definitions.Field;
 import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.reporting.JsonThing;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,6 +18,7 @@ import static uk.co.compendiumdev.thingifier.generic.FieldType.STRING;
 
 public class ApiResponseAsJsonTest {
 
+    public JsonThing defaultJsonThing = new JsonThing(new ThingifierApiConfig().jsonOutput());
 
     @Test
     public void response404HasSingleErrorMessage(){
@@ -26,7 +29,7 @@ public class ApiResponseAsJsonTest {
         Assertions.assertEquals(true, response.hasABody());
         Assertions.assertEquals(true, response.isErrorResponse());
         Assertions.assertEquals(false, response.isCollection());
-        String json = new ApiResponseAsJson(response).getJson();
+        String json = new ApiResponseAsJson(response, defaultJsonThing).getJson();
 
         ErrorMessagesResponse messages = new Gson().fromJson(json, ErrorMessagesResponse.class);
         Assertions.assertEquals(1, messages.errorMessages.length);
@@ -44,7 +47,7 @@ public class ApiResponseAsJsonTest {
         Assertions.assertEquals(true, response.isErrorResponse());
         Assertions.assertEquals(false, response.isCollection());
 
-        String json = new ApiResponseAsJson(response).getJson();
+        String json = new ApiResponseAsJson(response, defaultJsonThing).getJson();
 
         ErrorMessagesResponse messages = new Gson().fromJson(json, ErrorMessagesResponse.class);
         Assertions.assertEquals(1, messages.errorMessages.length);
@@ -67,7 +70,7 @@ public class ApiResponseAsJsonTest {
         Assertions.assertEquals(true, response.isErrorResponse());
         Assertions.assertEquals(false, response.isCollection());
 
-        String json = new ApiResponseAsJson(response).getJson();
+        String json = new ApiResponseAsJson(response, defaultJsonThing).getJson();
 
         ErrorMessagesResponse messages = new Gson().fromJson(json, ErrorMessagesResponse.class);
         Assertions.assertEquals(3, messages.errorMessages.length);
@@ -90,7 +93,7 @@ public class ApiResponseAsJsonTest {
         Assertions.assertEquals(false, response.isErrorResponse());
         Assertions.assertEquals(false, response.isCollection());
 
-        String json = new ApiResponseAsJson(response).getJson();
+        String json = new ApiResponseAsJson(response, defaultJsonThing).getJson();
         Assertions.assertEquals("", json);
 
     }
@@ -113,7 +116,7 @@ public class ApiResponseAsJsonTest {
         Assertions.assertEquals(false, response.isErrorResponse());
         Assertions.assertEquals(false, response.isCollection());
 
-        String json = new ApiResponseAsJson(response).getJson();
+        String json = new ApiResponseAsJson(response, defaultJsonThing).getJson();
         System.out.println(json);
         Todo myTodo = new Gson().fromJson(json, Todo.class);
 
@@ -142,7 +145,7 @@ public class ApiResponseAsJsonTest {
         Assertions.assertEquals(false, response.isErrorResponse());
         Assertions.assertEquals(true, response.isCollection());
 
-        String json = new ApiResponseAsJson(response).getJson();
+        String json = new ApiResponseAsJson(response, defaultJsonThing).getJson();
         System.out.println(json);
         TodoCollectionResponse myTodo = new Gson().fromJson(json, TodoCollectionResponse.class);
 
@@ -175,7 +178,7 @@ public class ApiResponseAsJsonTest {
         Assertions.assertEquals(false, response.isErrorResponse());
         Assertions.assertEquals(true, response.isCollection());
 
-        String json = new ApiResponseAsJson(response).getJson();
+        String json = new ApiResponseAsJson(response, defaultJsonThing).getJson();
         System.out.println(json);
         Assertions.assertEquals("{}", json);
 

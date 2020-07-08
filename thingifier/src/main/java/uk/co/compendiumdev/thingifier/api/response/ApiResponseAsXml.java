@@ -10,9 +10,11 @@ import java.util.*;
 
 final public class ApiResponseAsXml {
     private final ApiResponse apiResponse;
+    private final JsonThing jsonThing;
 
-    public ApiResponseAsXml(final ApiResponse apiResponse) {
+    public ApiResponseAsXml(final ApiResponse apiResponse, final JsonThing aJsonThing) {
         this.apiResponse = apiResponse;
+        this.jsonThing = aJsonThing;
     }
 
     public String getXml() {
@@ -45,13 +47,13 @@ final public class ApiResponseAsXml {
             }
 
             // default JSON in case the xml conversion fails
-            String output = JsonThing.asJsonTypedArrayWithContentsUntyped(thingsToReturn, apiResponse.getTypeOfThingReturned().getPlural());
+            String output = jsonThing.asJsonTypedArrayWithContentsUntyped(thingsToReturn, apiResponse.getTypeOfThingReturned().getPlural());
 
             // xml output via JSON
             try {
                 if (thingsToReturn.size() > 0) {
 
-                    String parseForXMLOutput = JsonThing.asJsonTypedArrayWithContentsTyped(thingsToReturn, apiResponse.getTypeOfThingReturned());
+                    String parseForXMLOutput = jsonThing.asJsonTypedArrayWithContentsTyped(thingsToReturn, apiResponse.getTypeOfThingReturned());
 
                     output = XML.toString(new JSONObject(parseForXMLOutput));
 
@@ -70,7 +72,7 @@ final public class ApiResponseAsXml {
         } else {
             ThingInstance instance = apiResponse.getReturnedInstance();
 
-            String output = JsonThing.asNamedJsonObject(instance).toString();
+            String output = jsonThing.asNamedJsonObject(instance).toString();
 
             // experimental xml output
             try {

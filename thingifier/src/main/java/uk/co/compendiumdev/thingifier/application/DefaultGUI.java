@@ -17,9 +17,11 @@ public class DefaultGUI {
     // TODO: templates or tidier way to create the default GUI pages with styling
 
     private final Thingifier thingifier;
+    private final JsonThing jsonThing;
 
     public DefaultGUI(final Thingifier thingifier) {
         this.thingifier=thingifier;
+        this.jsonThing = new JsonThing(thingifier.apiConfig().jsonOutput());
     }
 
     public void setupDefaultGUI(){
@@ -123,7 +125,8 @@ public class DefaultGUI {
             html.append("<h2>JSON Example</h2>");
             html.append("<pre>");
             // pretty print the json
-            html.append(new GsonBuilder().setPrettyPrinting().create().toJson(JsonThing.asJsonObject(instance)));
+            html.append(new GsonBuilder().setPrettyPrinting()
+                    .create().toJson(jsonThing.asJsonObject(instance)));
             html.append("</pre>");
             html.append("</body></html>");
             return html.toString();

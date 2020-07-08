@@ -60,7 +60,7 @@ public class TodoManagerQueryEngineTest {
         if(things!= null && things.size()>0 ){
             name = things.get(0).getEntity().getPlural();
         }
-        return JsonThing.asJsonTypedArrayWithContentsUntyped(things, name);
+        return new JsonThing(todoManager.apiConfig().jsonOutput()).asJsonTypedArrayWithContentsUntyped(things, name);
     }
 
 

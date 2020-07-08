@@ -3,6 +3,9 @@ package uk.co.compendiumdev.thingifier.reporting;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
+import uk.co.compendiumdev.thingifier.JsonOutputConfig;
+import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.generic.definitions.RelationshipVector;
 import uk.co.compendiumdev.thingifier.generic.definitions.ThingDefinition;
 import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
@@ -12,6 +15,11 @@ import java.util.*;
 public class JsonThing {
 
 
+    private final JsonOutputConfig apiConfig;
+
+    public JsonThing(final JsonOutputConfig apiConfig) {
+        this.apiConfig = apiConfig;
+    }
 
     /**
      * This is more suitable for JSON output of an array
@@ -19,7 +27,7 @@ public class JsonThing {
      * @param typeName
      * @return
      */
-    public static String asJsonTypedArrayWithContentsUntyped(final List<ThingInstance> things, String typeName) {
+    public String asJsonTypedArrayWithContentsUntyped(final List<ThingInstance> things, String typeName) {
         final JsonObject arrayObj = new JsonObject();
         arrayObj.add(typeName, asJsonArray(things));
         return arrayObj.toString();
@@ -30,7 +38,7 @@ public class JsonThing {
      * @param things
      * @return
      */
-    private static JsonArray asJsonArray(final Collection<ThingInstance> things) {
+    private JsonArray asJsonArray(final Collection<ThingInstance> things) {
 
         // [{"guid":"bob"}, {"guid":"bob2"}]
 
@@ -49,7 +57,7 @@ public class JsonThing {
      * @param thingInstance
      * @return
      */
-    public static JsonObject asJsonObject(final ThingInstance thingInstance) {
+    public JsonObject asJsonObject(final ThingInstance thingInstance) {
 
         final JsonObject jsonobj = new JsonObject();
 
@@ -81,7 +89,10 @@ public class JsonThing {
             task-of: [{"guid":"..."},{...}]
          */
         Boolean hasAnyComplexRelationships = false; // assume that most relationships can be compressed
-        Boolean allowCompressedRelationships = true; // todo: allow configuring relationship compression at app level
+
+        // config of output
+        Boolean allowCompressedRelationships = apiConfig.doesAllowCompressedRelationships();
+        Boolean useIdsInRelationshipRenderingIfAvailable = apiConfig.doesRelationshipsUseIdsIfAvailable(); // todo: allow configuring relationship rendering at an app or api level
 
         // "relationships" : [
         if(relationships.size()>0 && thingInstance.hasAnyRelationshipInstances()){
@@ -104,7 +115,18 @@ public class JsonThing {
                     final JsonArray arrayOfGuids = new JsonArray();
                     for(ThingInstance item : relatedItems) {
                         final JsonObject itemGuidObject = new JsonObject();
-                        itemGuidObject.addProperty("guid", item.getGUID());
+
+                        String fieldNameAsUniqueId = "guid";
+                        String valueOfUniqueId = item.getGUID();
+
+                        if(useIdsInRelationshipRenderingIfAvailable){
+                            if(item.hasIDField()){
+                                fieldNameAsUniqueId = item.getEntity().getIDField().getName();
+                                valueOfUniqueId = item.getValue(fieldNameAsUniqueId);
+                            }
+                        }
+                        itemGuidObject.addProperty(fieldNameAsUniqueId, valueOfUniqueId);
+
                         arrayOfGuids.add(itemGuidObject);
                     }
 
@@ -145,7 +167,7 @@ public class JsonThing {
      * @param defn
      * @return
      */
-    public static String asJsonTypedArrayWithContentsTyped(final List<ThingInstance> things, ThingDefinition defn) {
+    public String asJsonTypedArrayWithContentsTyped(final List<ThingInstance> things, ThingDefinition defn) {
 
         final JsonObject arrayObj = new JsonObject();
         arrayObj.add(defn.getPlural(), asJsonArrayInstanceWrapped(things));
@@ -158,7 +180,7 @@ public class JsonThing {
      * @param things
      * @return
      */
-    private static JsonArray asJsonArrayInstanceWrapped(Collection<ThingInstance> things) {
+    private JsonArray asJsonArrayInstanceWrapped(Collection<ThingInstance> things) {
 
 
         // [{"item":{"guid":"bob"}}, {"item":{"guid":"bob2"}}]
@@ -183,10 +205,10 @@ public class JsonThing {
     /**
      *   Suitable for XML output as it has a name
      */
-    public static JsonObject asNamedJsonObject(final ThingInstance instance) {
+    public JsonObject asNamedJsonObject(final ThingInstance instance) {
 
         final JsonObject retObj = new JsonObject();
-        retObj.add(instance.getEntity().getName(), JsonThing.asJsonObject(instance));
+        retObj.add(instance.getEntity().getName(), asJsonObject(instance));
         return retObj;
 
     }
