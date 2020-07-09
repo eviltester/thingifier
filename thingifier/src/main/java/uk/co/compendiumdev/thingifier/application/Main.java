@@ -15,14 +15,62 @@ import static spark.Spark.get;
 
 Backlog
 
+- todo: create before/after api hooks to use Thingifier as an API framework as well as generator
+- todo: split example models and main out of Thingifier and into a 'standalone api's app
+- todo: api config collections for different 'releases' of the API - see standalone examples
+- todo: allow switching between releases when it is running
+- todo: styling of GUIs
+- todo: export insomnia, swagger, raml, postman files,
 - todo: have an auto updated 'create' and 'amend' date time stamp field - renamable in definition e.g. created-time, type CREATED-DATE, with a format
 - todo: have an automatically added 'ping' url to see if service is running
-- todo: create a 'view' gui that shows all the items e.g. /system/gui
 - todo: allow configuring the default url mappings e.g. url("/gui).to(DEFAULT_API.systemGui)
-- todo: allow switing on and off features
+- todo: documentation for routing urls should use GUID or ID based on config
+- todo: HATEOS - based on config for GUID, Ids and Routings
+- todo: allow switching on and off features at low and high level with well defined and consistent methods
+    - exclusively use compressed relationships
+        - output use compressed relationship
+        - input enforce compressed relationship(true)
+    - exclusively use IDs
+        - show guids in responses(false)
+        - show relationships using ids where available(true)
+        - show ids in urls where available(true)
+        - allow guids in urls(false)
+        - allow ids in urls(true)
+    - exclusively use GUIDs
+        - show guids in responses(true)
+        - show relationships using ids where available(false)
+        - show ids in urls where available(false)
+        - allow guids in urls(true)
+        - allow ids in urls(false)
+    - exclusively use XML
+        - sub config...
+        - can accept XML in requests (true)
+        - can output XML in responses (true)
+        - can accept JSON in requests (false)
+        - can output JSON in responses (false)
+        - reports accepting XML in requests (true)
+        - reports outputing XML in responses (true)
+        - output default(XML)
+        - input default(XML)
+    - exclusively use JSON
+        - sub config...
+        - can accept XML in requests (false)
+        - can output XML in responses (false)
+        - can accept JSON in requests (true)
+        - can output JSON in responses (true)
+        - reports accepting JSON in requests (true)
+        - reports outputing JSON in responses (true)
+        - reports accepting XML in requests (false)
+        - reports outputing XML in responses (false)
+        - output default(JSON)
+        - input default(JSON)
 - todo: allow nested objects, not just relationships e.g. GET shows related objects as top level fields, or full objects
 - todo: allow creating and amending with nested objects
+- todo: allow one way relationships as single fields e.g. project: {guid}
 - todo: allow grouped fields, e.g. bought{from:"", when,""} - shown as nested in the json views
+- todo: support different authentication methods
+- todo: allow user accounts
+
 
  */
 

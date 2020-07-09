@@ -3,6 +3,7 @@ package uk.co.compendiumdev.thingifier.htmlgui;
 import com.google.gson.GsonBuilder;
 import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.api.routings.ApiRoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingVerb;
@@ -26,12 +27,14 @@ public class RestApiDocumentationGenerator {
     private final JsonThing jsonThing;
     private final XmlThing xmlThing;
     private final DefaultGUIHTMLRootMenu mainMenu;
+    private final ThingifierApiConfig apiConfig;
 
     public RestApiDocumentationGenerator(final Thingifier aThingifier) {
         this.thingifier = aThingifier;
         this.things = thingifier.getThings();
         this.relationships = thingifier.getRelationshipDefinitions();
-        jsonThing = new JsonThing(thingifier.apiConfig().jsonOutput());
+        apiConfig = thingifier.apiConfig();
+        jsonThing = new JsonThing(apiConfig.jsonOutput());
         xmlThing = new XmlThing(jsonThing);
         mainMenu = new DefaultGUIHTMLRootMenu();
     }
@@ -79,6 +82,10 @@ public class RestApiDocumentationGenerator {
                 final DocumentationThingInstance exampleThing = new DocumentationThingInstance(aThing.definition());
 
                 for (String aField : aThing.definition().getFieldNames()) {
+
+                    if(!apiConfig.showGuidsInResponses() && aField.contentEquals("guid")){
+                        continue;
+                    }
 
                     output.append(String.format("<li> %s %n", aField));
 

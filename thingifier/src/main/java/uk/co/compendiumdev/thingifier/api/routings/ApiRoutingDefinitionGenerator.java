@@ -2,6 +2,7 @@ package uk.co.compendiumdev.thingifier.api.routings;
 
 import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.api.response.ResponseHeader;
 import uk.co.compendiumdev.thingifier.generic.definitions.RelationshipVector;
 
@@ -9,9 +10,14 @@ public class ApiRoutingDefinitionGenerator {
 
 
     private final Thingifier thingifier;
+    private final ThingifierApiConfig config;
+
+    private final String uniqueGUID = ":guid";
+    private final String uniqueID = ":id";
 
     public ApiRoutingDefinitionGenerator(final Thingifier thingifier) {
         this.thingifier = thingifier;
+        this.config = thingifier.apiConfig();
     }
 
     // TODO: generate /_plural_ instead of /_entityName_ for top level routing (make this toggelable from command line (to inject buggyness) but make plural the default
@@ -37,63 +43,90 @@ public class ApiRoutingDefinitionGenerator {
                     etc. (no relationships for 'thing' are included)
     */
 
+
+
     // TODO: have the ability to override these from config and define from config rather than code
     public ApiRoutingDefinition generate() {
         ApiRoutingDefinition defn = new ApiRoutingDefinition();
 
+
+
+
         for (Thing thing : thingifier.getThings()) {
 
-            // TODO: make this configurable between plural and single
-            String thingName;
-            thingName = thing.definition().getPlural().toLowerCase();
-            //thingName = thing.definition().getName().toLowerCase();
+            String uniqueIdentifier;
+            String uniqueIdFieldName;
+            if(config.showIdsInUrlsIfAvailable() && thing.definition().hasIDField()){
+                uniqueIdentifier=uniqueID;
+                uniqueIdFieldName = thing.definition().getIDField().getName();
+            }else{
+                uniqueIdentifier=uniqueGUID;
+                uniqueIdFieldName="guid";
+            }
 
-            String url = thingName;
+            String pluralUrl;
+            if(config.singleInstancesArePlural()) {
+                pluralUrl = thing.definition().getPlural().toLowerCase();
+            }else {
+                pluralUrl = thing.definition().getName().toLowerCase();
+            }
 
             // we should be able to get things e.g. GET project
             defn.addRouting(
                     String.format("return all the instances of %s", thing.definition().getName()),
-                    RoutingVerb.GET, url, RoutingStatus.returnedFromCall());
+                    RoutingVerb.GET, pluralUrl, RoutingStatus.returnedFromCall());
 
+            // TODO: more granularity if singleUrl!=pluralUrl then we need two paths here
+            // e.g. GET projects, POST project - which also changes the Options
             // we should be able to create things without a GUID e.g. POST project
             defn.addRouting(
-                    String.format("we should be able to create %s without a GUID using the field values in the body of the message", thing.definition().getName()),
-                    RoutingVerb.POST, url, RoutingStatus.returnedFromCall());
+                    String.format("we should be able to create %s without a %s using the field values in the body of the message",
+                                        thing.definition().getName(), uniqueIdFieldName.toUpperCase()),
+                    RoutingVerb.POST, pluralUrl, RoutingStatus.returnedFromCall());
 
             defn.addRouting(
-                    String.format("show all Options for endpoint of %s", url),
-                    RoutingVerb.OPTIONS, url, RoutingStatus.returnValue(200),
+                    String.format("show all Options for endpoint of %s", pluralUrl),
+                    RoutingVerb.OPTIONS, pluralUrl, RoutingStatus.returnValue(200),
                     new ResponseHeader("Allow", "OPTIONS, GET, POST"));
 
             // the following are not valid so return 405
             defn.addRouting("method not allowed",
-                    RoutingVerb.HEAD, url, RoutingStatus.returnValue(405));
+                    RoutingVerb.HEAD, pluralUrl, RoutingStatus.returnValue(405));
             defn.addRouting("method not allowed",
-                    RoutingVerb.DELETE, url, RoutingStatus.returnValue(405));
+                    RoutingVerb.DELETE, pluralUrl, RoutingStatus.returnValue(405));
             defn.addRouting("method not allowed",
-                    RoutingVerb.PATCH, url, RoutingStatus.returnValue(405));
+                    RoutingVerb.PATCH, pluralUrl, RoutingStatus.returnValue(405));
             defn.addRouting("method not allowed",
-                    RoutingVerb.PUT, url, RoutingStatus.returnValue(405));
+                    RoutingVerb.PUT, pluralUrl, RoutingStatus.returnValue(405));
 
-            String aUrlWGuid = url + "/:guid";
+            String aUrlWGuid = pluralUrl + "/" + uniqueIdentifier;
             // we should be able to get specific things based on the GUID e.g. GET project/GUID
             defn.addRouting(
-                    String.format("return a specific instances of %s using a guid", thing.definition().getName()),
+                    String.format("return a specific instances of %s using a %s",
+                            thing.definition().getName(),uniqueIdFieldName),
                     RoutingVerb.GET, aUrlWGuid, RoutingStatus.returnedFromCall());
 
             // we should be able to amend things with a GUID e.g. POST project/GUID with body
             defn.addRouting(
-                    String.format("amend a specific instances of %s using a guid with a body containing the fields to amend", thing.definition().getName()),
+                    String.format("amend a specific instances of %s using a %s with a body containing the fields to amend",
+                            thing.definition().getName(), uniqueIdFieldName),
                     RoutingVerb.POST, aUrlWGuid, RoutingStatus.returnedFromCall());
 
             // we should be able to amend things with PUT and a GUID e.g. PUT project/GUID
+            String ifGUIDamendment="";
+            if(uniqueIdentifier.contentEquals(uniqueGUID)){
+                ifGUIDamendment = String.format(", if the %2$s does not exist then a %1$s will be created with that %2$s",
+                        thing.definition().getName(),uniqueIdFieldName);
+            }
             defn.addRouting(
-                    String.format("amend a specific instances of %1$s using a guid with a body containing the fields to amend, if the guid does not exist then a %1$s will be created with that GUID", thing.definition().getName()),
+                    String.format("amend a specific instances of %1$s using a %2$s with a body containing the fields to amend",
+                            thing.definition().getName(),uniqueIdFieldName )+ifGUIDamendment,
                     RoutingVerb.PUT, aUrlWGuid, RoutingStatus.returnedFromCall());
 
             // we should be able to delete specific things e.g. DELETE project/GUID
             defn.addRouting(
-                    String.format("delete a specific instances of %s using a guid", thing.definition().getName()),
+                    String.format("delete a specific instances of %s using a %s",
+                                thing.definition().getName(), uniqueIdFieldName),
                     RoutingVerb.DELETE, aUrlWGuid, RoutingStatus.returnedFromCall());
 
             defn.addRouting(
@@ -120,14 +153,30 @@ public class ApiRoutingDefinitionGenerator {
         String toName = relationship.getTo().definition().getName();
         String relationshipName = relationship.getName();
 
-        // TODO: make this configurable between plural and single
-        String fromNameForUrl;
-        //fromNameForUrl = relationship.getFrom().definition().getName();
-        fromNameForUrl = relationship.getFrom().definition().getPlural();
 
-        String aUrl = fromNameForUrl + "/:guid/" + relationshipName;
+        final Thing thing = relationship.getFrom();
+        String uniqueIdentifier;
+        String uniqueIdFieldName;
+        if(config.showIdsInUrlsIfAvailable() && thing.definition().hasIDField()){
+            uniqueIdentifier=uniqueID;
+            uniqueIdFieldName = thing.definition().getIDField().getName();
+        }else{
+            uniqueIdentifier=uniqueGUID;
+            uniqueIdFieldName="guid";
+        }
+
+        String fromNameForUrl;
+        if(config.singleInstancesArePlural()) {
+            fromNameForUrl = thing.definition().getPlural().toLowerCase();
+        }else {
+            fromNameForUrl = thing.definition().getName().toLowerCase();
+        }
+
+
+        String aUrl = fromNameForUrl + "/" + uniqueIdentifier + "/" + relationshipName;
         defn.addRouting(
-                String.format("return all the %s items related to %s :guid by the relationship named %s", toName, fromName, relationshipName),
+                String.format("return all the %s items related to %s, with given %s, by the relationship named %s",
+                        toName, fromName, uniqueIdFieldName, relationshipName),
                 RoutingVerb.GET, aUrl, RoutingStatus.returnedFromCall());
 
         defn.addRouting(
@@ -137,8 +186,8 @@ public class ApiRoutingDefinitionGenerator {
 
         // we can post if there is no guid as it will create the 'thing' and the relationship connection
         defn.addRouting(
-                String.format("create an instance of a relationship named %s between %s instance :guid and the %s instance represented by the guid in the body of the message",
-                        relationshipName, fromName, toName),
+                String.format("create an instance of a relationship named %s between %s instance %s and the %s instance represented by the %s in the body of the message",
+                        relationshipName, fromName, uniqueIdentifier, toName, uniqueIdFieldName),
                 RoutingVerb.POST, aUrl, RoutingStatus.returnedFromCall());
 
         defn.addRouting("method not allowed", RoutingVerb.HEAD, aUrl, RoutingStatus.returnValue(405));
@@ -148,9 +197,9 @@ public class ApiRoutingDefinitionGenerator {
 
 
         // we should be able to delete a relationship
-        final String aUrlDelete = fromNameForUrl + "/:guid/" + relationshipName + "/:relatedguid";
+        final String aUrlDelete = fromNameForUrl + "/" + uniqueIdentifier +"/" + relationshipName + "/" + uniqueIdentifier;
         defn.addRouting(
-                String.format("delete the instance of the relationship between %s :guid and %s :relatedguid named %s ", fromName, toName, relationshipName),
+                String.format("delete the instance of the relationship named %s between %s and %s using the %s", relationshipName,  fromName, toName, uniqueIdentifier),
                 RoutingVerb.DELETE, aUrlDelete, RoutingStatus.returnedFromCall());
 
         defn.addRouting(

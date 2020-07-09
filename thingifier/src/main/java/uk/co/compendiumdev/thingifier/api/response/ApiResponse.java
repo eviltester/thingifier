@@ -1,5 +1,7 @@
 package uk.co.compendiumdev.thingifier.api.response;
 
+import uk.co.compendiumdev.thingifier.ThingifierApiConfig;
+import uk.co.compendiumdev.thingifier.api.ApiUrls;
 import uk.co.compendiumdev.thingifier.generic.definitions.ThingDefinition;
 import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
 
@@ -8,6 +10,7 @@ import java.util.*;
 
 public final class ApiResponse {
     public static final String GUID_HEADER = "X-Thing-Instance-GUID";
+    public static final String ID_HEADER = "X-Thing-Instance-ID";
 
     private final int statusCode;
     private boolean hasBody;
@@ -104,14 +107,19 @@ public final class ApiResponse {
             SPECIAL CASE RESPONSES
      */
 
-    public static ApiResponse created(final ThingInstance thingInstance) {
+    public static ApiResponse created(final ThingInstance thingInstance, ThingifierApiConfig apiConfig) {
         ApiResponse response = new ApiResponse(201);
 
         if (thingInstance != null) {
             response.returnSingleInstance(thingInstance);
-            // TODO: configure to allow plural or single based on app routing configuration
-            response.setLocationHeader(thingInstance.getEntity().getPlural() + "/" + thingInstance.getGUID()).
-                    setHeader(ApiResponse.GUID_HEADER, thingInstance.getGUID());
+
+            response.setLocationHeader(
+                    new ApiUrls(apiConfig).
+                            getCreatedLocationHeader(thingInstance));
+
+            if(apiConfig.showGuidsInResponses()) {
+                response.setHeader(ApiResponse.GUID_HEADER, thingInstance.getGUID());
+            }
             response.andThisHasABody();
         }
 

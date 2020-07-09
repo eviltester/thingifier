@@ -4,10 +4,12 @@ public class JsonOutputConfig {
 
     private boolean allowCompressedRelationships;
     private Boolean jsonOutputRelationshipsUsesIdsIfAvailable;
+    private boolean willShowGuidsInResponse;
 
     public JsonOutputConfig(){
         allowCompressedRelationships=true;
         jsonOutputRelationshipsUsesIdsIfAvailable=true;
+        willShowGuidsInResponse=true;
     }
 
     public Boolean doesAllowCompressedRelationships() {
@@ -27,4 +29,10 @@ public class JsonOutputConfig {
     }
 
 
+    public void allowShowGuidsInResponse(boolean config){
+        willShowGuidsInResponse=config;
+    }
+    public boolean showGuidsInResponse() {
+        return willShowGuidsInResponse;
+    }
 }

@@ -75,16 +75,22 @@ public class Main {
         // default the app to v3 to make it easier for people
         switch(version){
             case 1:
-                thingifier.apiConfig().jsonOutput().compressRelationships(false);
-                thingifier.apiConfig().jsonOutput().relationshipsUsesIdsIfAvailable(false);
+                thingifier.apiConfig().allowShowIdsInUrlsIfAvailable(false);
+                thingifier.apiConfig().allowShowIdsInResponsesIfAvailable(false);
+                thingifier.apiConfig().showSingleInstancesAsPlural(true);
+                thingifier.apiConfig().allowShowGuidsInResponses(true);
                 break;
             case 2:
-                thingifier.apiConfig().jsonOutput().compressRelationships(true);
-                thingifier.apiConfig().jsonOutput().relationshipsUsesIdsIfAvailable(false);
+                thingifier.apiConfig().allowShowIdsInUrlsIfAvailable(false);
+                thingifier.apiConfig().allowShowIdsInResponsesIfAvailable(false);
+                thingifier.apiConfig().showSingleInstancesAsPlural(true);
+                thingifier.apiConfig().allowShowGuidsInResponses(true);
                 break;
             case 3:
-                thingifier.apiConfig().jsonOutput().compressRelationships(true);
-                thingifier.apiConfig().jsonOutput().relationshipsUsesIdsIfAvailable(true);
+                thingifier.apiConfig().allowShowIdsInUrlsIfAvailable(true);
+                thingifier.apiConfig().allowShowIdsInResponsesIfAvailable(true);
+                thingifier.apiConfig().showSingleInstancesAsPlural(true);
+                thingifier.apiConfig().allowShowGuidsInResponses(false);
                 break;
         }
 

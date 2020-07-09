@@ -3,6 +3,10 @@ package uk.co.compendiumdev.thingifier.htmlgui;
 import com.google.gson.GsonBuilder;
 import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.ThingifierApiConfig;
+import uk.co.compendiumdev.thingifier.generic.FieldType;
+import uk.co.compendiumdev.thingifier.generic.definitions.Field;
+import uk.co.compendiumdev.thingifier.generic.definitions.FieldValue;
 import uk.co.compendiumdev.thingifier.generic.definitions.RelationshipVector;
 import uk.co.compendiumdev.thingifier.generic.definitions.ThingDefinition;
 import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
@@ -21,10 +25,12 @@ public class DefaultGUI {
     private final JsonThing jsonThing;
     private final DefaultGUIHTMLRootMenu rootMenu;
     private final XmlThing xmlThing;
+    private final ThingifierApiConfig apiConfig;
 
     public DefaultGUI(final Thingifier thingifier) {
         this.thingifier=thingifier;
-        this.jsonThing = new JsonThing(thingifier.apiConfig().jsonOutput());
+        this.apiConfig = thingifier.apiConfig();
+        this.jsonThing = new JsonThing(apiConfig.jsonOutput());
         this.xmlThing = new XmlThing(jsonThing);
         this.rootMenu = new DefaultGUIHTMLRootMenu();
     }
@@ -83,12 +89,29 @@ public class DefaultGUI {
             response.status(200);
             StringBuilder html = new StringBuilder();
 
-            String entityName = request.queryParams("entity");
-            String guid = request.queryParams("guid");
+            String entityName;
+            Thing thing=null;
+            for(String queryParam : request.queryParams()){
+                if(queryParam.contentEquals("entity")){
+                    entityName = request.queryParams("entity");
+                    thing = thingifier.getThingNamed(entityName);
+                }
+            }
+            String keyName="";
+            String keyValue="";
+            for(String queryParam : request.queryParams()){
+                Field field = thing.definition().getField(queryParam);
+                if(field!=null) {
+                    if (field.getType() == FieldType.GUID || field.getType() == FieldType.ID) {
+                        keyName = field.getName();
+                        keyValue = request.queryParams(queryParam);
+                        break;
+                    }
+                }
+            }
 
-            final Thing thing = thingifier.getThingNamed(entityName);
             final ThingDefinition definition = thing.definition();
-            ThingInstance instance = thing.findInstanceByGUID(guid);
+            ThingInstance instance = thing.findInstanceByField(FieldValue.is(keyName, keyValue));
 
             html.append("<html><head><title>GUI</title></head></body>");
             html.append(getInstancesRootMenuHtml());
@@ -96,7 +119,9 @@ public class DefaultGUI {
             html.append("<h2>" + definition.getName() + "</h2>");
 
             html.append("<ul>");
-            html.append(String.format("<li>%s<ul><li>%s</li></ul></li>", "guid", instance.getGUID()));
+            if(apiConfig.showGuidsInResponses()) {
+                html.append(String.format("<li>%s<ul><li>%s</li></ul></li>", "guid", instance.getGUID()));
+            }
             for(String field : definition.getFieldNames()) {
                 if (!field.equals("guid")) {
                     html.append(String.format("<li>%s<ul><li>%s</li></ul></li>",
@@ -180,11 +205,30 @@ public class DefaultGUI {
         final ThingDefinition definition = instance.getEntity();
 
         html.append("<tr>");
-        html.append(String.format("<td><a href='/gui/instance?entity=%1$s&guid=%2$s'>%2$s</a></td>",
-                        definition.getName(),instance.getGUID()));
+        // show keys first
+        if(apiConfig.showGuidsInResponses()) {
+            html.append(String.format("<td><a href='/gui/instance?entity=%1$s&guid=%2$s'>%2$s</a></td>",
+                    definition.getName(), instance.getGUID()));
+        }
 
+        // show any clickable id fields
         for(String field : definition.getFieldNames()) {
             if (!field.equals("guid")) {
+                Field theField = definition.getField(field);
+                if(theField.getType()== FieldType.ID){
+                    // make ids clickable
+                    String renderAs = String.format("<a href='/gui/instance?entity=%1$s&%2$s=%3$s'>%3$s</a>",
+                            definition.getName(),theField.getName(), instance.getValue(field));
+                    html.append(String.format("<td>%s</td>", renderAs));
+                }
+
+            }
+        }
+
+        // show any normal fields
+        for(String field : definition.getFieldNames()) {
+            Field theField = definition.getField(field);
+            if(theField.getType()!= FieldType.ID && theField.getType()!=FieldType.GUID){
                 html.append(String.format("<td>%s</td>", instance.getValue(field)));
             }
         }
@@ -198,9 +242,21 @@ public class DefaultGUI {
 
         html.append("<table>");
         html.append("<tr>");
-        html.append("<th>guid</th>");
+        // guid first
+        if(apiConfig.showGuidsInResponses()) {
+            html.append("<th>guid</th>");
+        }
+        // then any ids
         for(String field : definition.getFieldNames()) {
-            if (!field.equals("guid")) {
+            Field theField = definition.getField(field);
+            if (theField.getType()==FieldType.ID) {
+                html.append(String.format("<th>%s</th>", field));
+            }
+        }
+        // then the normal fields
+        for(String field : definition.getFieldNames()) {
+            Field theField = definition.getField(field);
+            if (theField.getType()!=FieldType.ID && theField.getType()!=FieldType.GUID) {
                 html.append(String.format("<th>%s</th>", field));
             }
         }

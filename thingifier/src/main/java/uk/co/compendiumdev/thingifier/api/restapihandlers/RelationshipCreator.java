@@ -28,7 +28,7 @@ public class RelationshipCreator {
                                         FieldValue.is(relationship.guidName, relationship.guidValue)));
             }
 
-            return ApiResponse.created(instance);
+            return ApiResponse.created(instance, thingifier.apiConfig());
 
         }catch(Exception e){
             return ApiResponse.error(400, "Error creating relationships " + e.getMessage());

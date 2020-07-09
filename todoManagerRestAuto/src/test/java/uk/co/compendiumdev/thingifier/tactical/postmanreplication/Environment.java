@@ -32,8 +32,13 @@ public class Environment {
             Spark.port(4567);
             String [] args = {};
             final Thingifier thingifier = new TodoManagerThingifier().get();
+            thingifier.apiConfig().allowShowGuidsInResponses(true);
+            thingifier.apiConfig().allowShowIdsInUrlsIfAvailable(false);
+            thingifier.apiConfig().showSingleInstancesAsPlural(true);
+            thingifier.apiConfig().allowShowIdsInResponsesIfAvailable(false);
             thingifier.apiConfig().jsonOutput().compressRelationships(false);
             thingifier.apiConfig().jsonOutput().relationshipsUsesIdsIfAvailable(false);
+
             new ThingifierRestServer(args, "", thingifier);
             return "http://localhost:4567";
         }

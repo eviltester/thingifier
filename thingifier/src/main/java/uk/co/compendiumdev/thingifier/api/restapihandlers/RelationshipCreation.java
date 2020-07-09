@@ -131,6 +131,6 @@ public class RelationshipCreation {
         }
 
 
-        return ApiResponse.created(returnThing);
+        return ApiResponse.created(returnThing, thingifier.apiConfig());
     }
 }

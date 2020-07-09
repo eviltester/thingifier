@@ -66,6 +66,9 @@ public class JsonThing {
         }
 
         for (String field : thingInstance.getEntity().getFieldNames()) {
+            // if hiding guids then skip them
+            if(!apiConfig.showGuidsInResponse() && field.contentEquals("guid"))
+                continue;
             try {
                 jsonobj.addProperty(field, thingInstance.getValue(field));
             }catch(Exception e){
