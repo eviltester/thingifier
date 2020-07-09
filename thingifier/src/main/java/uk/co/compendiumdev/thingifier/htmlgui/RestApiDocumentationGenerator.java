@@ -1,4 +1,4 @@
-package uk.co.compendiumdev.thingifier.reporting;
+package uk.co.compendiumdev.thingifier.htmlgui;
 
 import com.google.gson.GsonBuilder;
 import uk.co.compendiumdev.thingifier.Thing;
@@ -11,7 +11,10 @@ import uk.co.compendiumdev.thingifier.generic.FieldType;
 import uk.co.compendiumdev.thingifier.generic.definitions.Field;
 import uk.co.compendiumdev.thingifier.generic.definitions.RelationshipDefinition;
 import uk.co.compendiumdev.thingifier.generic.definitions.validation.ValidationRule;
+import uk.co.compendiumdev.thingifier.generic.instances.DocumentationThingInstance;
 import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.reporting.JsonThing;
+import uk.co.compendiumdev.thingifier.reporting.XmlThing;
 
 import java.util.Collection;
 import java.util.List;
@@ -21,19 +24,23 @@ public class RestApiDocumentationGenerator {
     private final List<Thing> things;
     private final Collection<RelationshipDefinition> relationships;
     private final JsonThing jsonThing;
+    private final XmlThing xmlThing;
+    private final DefaultGUIHTMLRootMenu mainMenu;
 
     public RestApiDocumentationGenerator(final Thingifier aThingifier) {
         this.thingifier = aThingifier;
         this.things = thingifier.getThings();
         this.relationships = thingifier.getRelationshipDefinitions();
         jsonThing = new JsonThing(thingifier.apiConfig().jsonOutput());
+        xmlThing = new XmlThing(jsonThing);
+        mainMenu = new DefaultGUIHTMLRootMenu();
     }
 
     public String getApiDocumentation(final ApiRoutingDefinition routingDefinitions) {
 
         StringBuilder output = new StringBuilder();
 
-        output.append(paragraph("Menu: " + href("/gui", "gui")));
+        output.append(mainMenu.getMenuAsHTML());
 
         if (thingifier != null) {
             // create generic API documentation
@@ -41,6 +48,21 @@ public class RestApiDocumentationGenerator {
             output.append(String.format("%n"));
             output.append(paragraph(thingifier.getInitialParagraph()));
             output.append(String.format("%n"));
+
+            // TODO: the following should be configurable by api config
+            // e.g. if XML is not supported then do not show info about XML
+            output.append(paragraph("Will accept json by default."));
+            output.append(paragraph("<i>Content-Type: application/json</i>"));
+            output.append(paragraph("Set Content-Type header to application/xml if you want to send in XML."));
+            output.append(paragraph("<i>Content-Type: application/xml</i>"));
+            output.append(paragraph("You can control the returned data format by setting the Accept header"));
+            output.append(paragraph("i.e. for XML use"));
+            output.append(paragraph("<i>Accept: application/xml</i><br/><br/>\n"));
+            output.append(paragraph("You get JSON by default but can also request this i.e."));
+            output.append(paragraph("<i>Accept: application/json</i><br/><br/>\n"));
+
+            output.append(paragraph("All data lives in memory and is not persisted so the application is cleared everytime you start it. It does have some test data in here when you start"));
+
         }
 
         output.append(heading(2, "Model"));
@@ -54,7 +76,7 @@ public class RestApiDocumentationGenerator {
                 output.append("<ul>\n");
 
                 // todo: generate an example Thing
-                final ThingInstance exampleThing = new ThingInstance(aThing.definition());
+                final DocumentationThingInstance exampleThing = new DocumentationThingInstance(aThing.definition());
 
                 for (String aField : aThing.definition().getFieldNames()) {
 
@@ -105,17 +127,29 @@ public class RestApiDocumentationGenerator {
 
 
                 // show an example
-                output.append("<p>Example Output</p>\n");
+                output.append("<p>Example JSON Output from API calls</p>\n");
                 output.append("<pre>\n");
                 output.append(new GsonBuilder().setPrettyPrinting()
-                        .create().toJson(jsonThing.asJsonObject(exampleThing)));
+                        .create().toJson(jsonThing.asJsonObject(exampleThing.getInstance())));
                 output.append("</pre>\n");
 
-                output.append("<p>Example Input</p>\n");
-                exampleThing.clearNonProtectedFields();
+                // todo: conditional output on if API supports XML responses
+                output.append("<p>Example XML Output from API calls</p>\n");
+                output.append("<pre>\n");
+                output.append(xmlThing.prettyPrintHtml(xmlThing.getSingleObjectXml(exampleThing.getInstance())));
+                output.append("</pre>\n");
+
+                output.append("<p>Example JSON Input to API calls</p>\n");
+                ThingInstance createableExampleThing = exampleThing.getInstanceWithoutProtectedFields();
                 output.append("<pre>\n");
                 output.append(new GsonBuilder().setPrettyPrinting()
-                        .create().toJson(jsonThing.asJsonObject(exampleThing)));
+                        .create().toJson(jsonThing.asJsonObject(createableExampleThing)));
+                output.append("</pre>\n");
+
+                // todo: conditional output on if API supports XML responses
+                output.append("<p>Example XML Input to API calls</p>\n");
+                output.append("<pre>\n");
+                output.append(xmlThing.prettyPrintHtml(xmlThing.getSingleObjectXml(createableExampleThing)));
                 output.append("</pre>\n");
 
             }
@@ -155,12 +189,7 @@ public class RestApiDocumentationGenerator {
         // output the API documentation
         output.append(heading(2, "API"));
 
-        output.append(paragraph("The API takes JSON body with objects using the field definitions shown in the model.\n"));
-        output.append(paragraph("e.g. <code>{\"guid\": \"1234-1234-1234-1234\"}</code>\n"));
-        output.append(paragraph("Or, for XML\n"));
-        String codeSnippet = "<%1$s><guid><1234-1234-1234-1234></guid></%1$s>".replace("<", "&lt;");
-
-        output.append(paragraph(String.format("e.g. <code>" + codeSnippet + "</code>\n", thingifier.getThings().get(0).definition().getName())));
+        output.append(paragraph("The API takes body with objects using the field definitions and examples shown in the model."));
 
         output.append(heading(3, "End Points"));
 
@@ -203,6 +232,8 @@ public class RestApiDocumentationGenerator {
 
         return output.toString();
     }
+
+
 
     private String href(final String text, final String url) {
         return String.format("<a href='%s'>%s</a>", url, text);

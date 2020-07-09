@@ -6,31 +6,50 @@ import uk.co.compendiumdev.thingifier.generic.definitions.Field;
 import uk.co.compendiumdev.thingifier.generic.definitions.RelationshipVector;
 import uk.co.compendiumdev.thingifier.generic.definitions.ThingDefinition;
 
-import java.lang.reflect.Array;
 import java.util.*;
 
 import static uk.co.compendiumdev.thingifier.generic.definitions.Optionality.MANDATORY_RELATIONSHIP;
 
-final public class ThingInstance {
+public class ThingInstance {
 
+    // TODO: this is messy because of cloning and documentation - find a way to simplify
 
     private final List<RelationshipInstance> relationships;
     private final ThingDefinition entityDefinition;
-    private final InstanceFields instance;
+    private final InstanceFields instanceFields;
 
     public ThingInstance(ThingDefinition eDefn) {
+        this(eDefn, true);
+    }
+
+    protected static ThingInstance getInstanceWithoutIds(ThingDefinition eDefn){
+        return new ThingInstance(eDefn, false);
+    }
+
+    /**
+     * Without ids this would be a dangerous thing instance since
+     * the ids are supposed to be global to the entity
+     * without ids should only be used for creating documentation or
+     * example instances
+     * @param eDefn
+     * @param addIds
+     */
+    private ThingInstance(ThingDefinition eDefn, boolean addIds) {
         this.entityDefinition = eDefn;
-        this.instance = new InstanceFields();
-        instance.addValue("guid", UUID.randomUUID().toString());
-        eDefn.addIdsToInstance(instance);
+        this.instanceFields = new InstanceFields();
+        instanceFields.addValue("guid", UUID.randomUUID().toString());
+        if(addIds) {
+            eDefn.addIdsToInstance(instanceFields);
+        }
         this.relationships = new ArrayList<RelationshipInstance>();
     }
 
     public ThingInstance(ThingDefinition entityTestSession, String guid) {
         this(entityTestSession);
-        instance.addValue("guid", guid);
+        instanceFields.addValue("guid", guid);
     }
 
+    // todo: put this in a 'reporting' class
     public String toString() {
 
         StringBuilder output = new StringBuilder();
@@ -62,7 +81,7 @@ final public class ThingInstance {
     }
 
     public String getGUID() {
-        return instance.getValue("guid");
+        return instanceFields.getValue("guid");
     }
 
     public List<String> getFieldNames() {
@@ -83,7 +102,7 @@ final public class ThingInstance {
                     }
                 }
 
-                this.instance.addValue(fieldName, valueToAdd);
+                this.instanceFields.addValue(fieldName, valueToAdd);
 
             } else {
                 throw new IllegalArgumentException(
@@ -108,7 +127,7 @@ final public class ThingInstance {
                 setValue(entry.getKey(), entry.getValue());
             } else {
                 // if editing it then throw error, ignore if same value
-                String existingValue = instance.getValue(entry.getKey());
+                String existingValue = instanceFields.getValue(entry.getKey());
                 if (existingValue != null && existingValue.trim().length() > 0) {
 
                     // if value is different then it is an attempt to amend it
@@ -126,18 +145,11 @@ final public class ThingInstance {
         return this;
     }
 
-    public ThingInstance setCloneFieldValuesFrom(final Map<String, String> args) {
 
-        for (Map.Entry<String, String> entry : args.entrySet()) {
-            overrideValue(entry.getKey(), entry.getValue());
-        }
-
-        return this;
-    }
 
     public void overrideValue(final String key, final String value) {
         // bypass all validation
-        this.instance.addValue(key, value);
+        this.instanceFields.addValue(key, value);
     }
 
     private void reportCannotFindFieldError(final String fieldName) {
@@ -146,7 +158,7 @@ final public class ThingInstance {
 
     public String getValue(String fieldName) {
         if (this.entityDefinition.hasFieldNameDefined(fieldName)) {
-            String assignedValue = this.instance.getValue(fieldName);
+            String assignedValue = this.instanceFields.getValue(fieldName);
             if (assignedValue == null) {
                 // does definition have a default value?
                 if (this.entityDefinition.getField(fieldName).hasDefaultValue()) {
@@ -191,7 +203,7 @@ final public class ThingInstance {
 
         RelationshipVector relationship = entityDefinition.getRelationship(relationshipName, thing.entityDefinition);
 
-        RelationshipInstance related = new RelationshipInstance(relationship, this, thing);
+        RelationshipInstance related = new RelationshipInstance(relationship.getRelationshipDefinition(), this, thing);
         this.relationships.add(related);
 
         thing.isNowRelatedVia(related);
@@ -310,16 +322,6 @@ final public class ThingInstance {
     }
 
 
-    public void clearAllFields() {
-        List<String>ignoreFields = new ArrayList<>();
-
-        ignoreFields.add("guid");
-        if(hasIDField()){
-            ignoreFields.add(getEntity().getIDField().getName());
-        }
-
-        instance.deleteAllFieldsExcept(ignoreFields);
-    }
 
 
     public ValidationReport validateFields(){
@@ -334,7 +336,7 @@ final public class ThingInstance {
         for (String fieldName : entityDefinition.getFieldNames()) {
             if(!excluding.contains(fieldName)) {
                 Field field = entityDefinition.getField(fieldName);
-                ValidationReport validity = field.validate(instance.getValue(fieldName));
+                ValidationReport validity = field.validate(instanceFields.getValue(fieldName));
                 report.combine(validity);
             }
         }
@@ -389,11 +391,7 @@ final public class ThingInstance {
         return report;
     }
 
-    public ThingInstance createDuplicateWithoutRelationships() {
-        ThingInstance cloneInstance = new ThingInstance(entityDefinition);
-        cloneInstance.setCloneFieldValuesFrom(instance.asMap());
-        return cloneInstance;
-    }
+
 
 
     public boolean hasAnyRelationshipInstances() {
@@ -414,10 +412,48 @@ final public class ThingInstance {
     }
 
 
-    // DANGER this is only used for creating documentation this could kill the system
-    public void clearNonProtectedFields() {
-        for(String name : entityDefinition.getProtectedFieldNamesList()){
-            overrideValue(name, null);
+    // Cloning and documentation
+
+
+    public void clearAllFields() {
+        List<String>ignoreFields = new ArrayList<>();
+
+        ignoreFields.add("guid");
+        if(hasIDField()){
+            ignoreFields.add(getEntity().getIDField().getName());
         }
+
+        instanceFields.deleteAllFieldsExcept(ignoreFields);
     }
+
+    public ThingInstance setCloneFieldValuesFrom(final Map<String, String> args) {
+
+        for (Map.Entry<String, String> entry : args.entrySet()) {
+            overrideValue(entry.getKey(), entry.getValue());
+        }
+
+        return this;
+    }
+
+    public ThingInstance createDuplicateWithoutRelationships() {
+        ThingInstance cloneInstance = new ThingInstance(entityDefinition, false);
+        cloneInstance.setCloneFieldValuesFrom(instanceFields.asMap());
+        return cloneInstance;
+    }
+
+    public ThingInstance createDuplicateWithRelationships() {
+        ThingInstance cloneInstance = new ThingInstance(entityDefinition, false);
+        cloneInstance.setCloneFieldValuesFrom(instanceFields.asMap());
+        for(RelationshipInstance relationship : relationships){
+            RelationshipInstance clonedRelationship = new RelationshipInstance(
+                                                            relationship.getRelationship(),
+                                                            relationship.getFrom(),
+                                                            relationship.getTo()
+            );
+            cloneInstance.relationships.add(clonedRelationship);
+        }
+        return cloneInstance;
+    }
+
+
 }

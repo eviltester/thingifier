@@ -6,7 +6,7 @@ import uk.co.compendiumdev.thingifier.api.response.ApiResponseError;
 import uk.co.compendiumdev.thingifier.api.routings.ApiRoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.routings.ApiRoutingDefinitionGenerator;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingDefinition;
-import uk.co.compendiumdev.thingifier.reporting.RestApiDocumentationGenerator;
+import uk.co.compendiumdev.thingifier.htmlgui.RestApiDocumentationGenerator;
 
 import static spark.Spark.*;
 

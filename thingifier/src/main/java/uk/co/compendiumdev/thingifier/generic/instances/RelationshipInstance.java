@@ -5,15 +5,22 @@ import uk.co.compendiumdev.thingifier.generic.definitions.RelationshipDefinition
 import uk.co.compendiumdev.thingifier.generic.definitions.RelationshipVector;
 
 public class RelationshipInstance {
-    // TODO : should a relationship instance be associated with a vector rather than a definition?
+
     private RelationshipDefinition relationship;
     private ThingInstance from;
     private ThingInstance to;
 
+    // TODO : should a relationship instance be associated with a vector rather than a definition?
     public RelationshipInstance(RelationshipVector relationship, ThingInstance from, ThingInstance to) {
         this.from = from;
         this.to = to;
         this.relationship = relationship.getRelationshipDefinition();
+    }
+
+    public RelationshipInstance(RelationshipDefinition relationship, ThingInstance from, ThingInstance to) {
+        this.from = from;
+        this.to = to;
+        this.relationship = relationship;
     }
 
     public RelationshipInstance setRelationship(RelationshipDefinition relationship) {
@@ -60,4 +67,5 @@ public class RelationshipInstance {
     public ThingInstance getFrom() {
         return from;
     }
+
 }

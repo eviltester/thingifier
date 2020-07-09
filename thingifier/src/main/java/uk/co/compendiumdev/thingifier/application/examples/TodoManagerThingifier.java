@@ -45,23 +45,7 @@ public class TodoManagerThingifier {
 
         StringBuilder para = new StringBuilder();
 
-        para.append("A Simple todo manager<br/><br/>\n\n");
-        para.append("Will accept json by default.<br/><br/>\n");
-        para.append("<i>Content-Type: application/json</i><br/><br/>\n");
-        para.append("Set Content-Type header to application/xml if you want to send in XML.<br/><br/>\n");
-        para.append("<i>Content-Type: application/xml</i><br/><br/>\n");
-        para.append("XML body would look something like:<br/><br/>\n");
-        para.append("<i>&#x3C;project&#x3E;&#x3C;title&#x3E;My posted todo on the project&#x3C;/title&#x3E;&#x3C;/project&#x3E;</i><br/><br/>\n");
-        para.append("JSON body would look something like:<br/><br/>\n");
-        para.append("<i>{\"title\":\"My posted todo on the project\"}</i><br/><br/>\n");
-        para.append("You can control the returned data format by setting the Accept header<br/><br/>\n");
-        para.append("i.e. for XML use<br/><br/>\n");
-        para.append("<i>Accept: application/xml</i><br/><br/>\n");
-        para.append("You get JSON by default but can also request this i.e.<br/><br/>\n");
-        para.append("<i>Accept: application/json</i><br/><br/>\n");
-
-        para.append("<br/>All data lives in memory and is not persisted so the application is cleared everytime you start it. It does have some test data in here when you start<br/>\n");
-
+        para.append("A Simple todo manager with categories and projects.");
 
         todoManager.setDocumentation("Todo Manager", para.toString());
 

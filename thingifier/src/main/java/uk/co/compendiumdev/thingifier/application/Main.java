@@ -4,6 +4,7 @@ import spark.Spark;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.application.examples.TodoListThingifier;
 import uk.co.compendiumdev.thingifier.application.examples.TodoManagerThingifier;
+import uk.co.compendiumdev.thingifier.htmlgui.DefaultGUI;
 
 import java.util.ArrayList;
 import java.util.List;

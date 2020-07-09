@@ -5,16 +5,19 @@ import org.json.XML;
 import uk.co.compendiumdev.thingifier.generic.definitions.ThingDefinition;
 import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
 import uk.co.compendiumdev.thingifier.reporting.JsonThing;
+import uk.co.compendiumdev.thingifier.reporting.XmlThing;
 
 import java.util.*;
 
 final public class ApiResponseAsXml {
     private final ApiResponse apiResponse;
     private final JsonThing jsonThing;
+    private final XmlThing xmlThing;
 
     public ApiResponseAsXml(final ApiResponse apiResponse, final JsonThing aJsonThing) {
         this.apiResponse = apiResponse;
         this.jsonThing = aJsonThing;
+        this.xmlThing = new XmlThing(jsonThing);
     }
 
     public String getXml() {
@@ -38,28 +41,22 @@ final public class ApiResponseAsXml {
                 // would be returned but- ApiResponse should know the Thing that is in the collection
                 ThingDefinition defn = apiResponse.getTypeOfThingReturned();
                 if (defn != null) {
-                    return String.format("<%1$s></%1$s>", defn.getPlural());
+                    return xmlThing.getEmptyElement(defn.getPlural());
                 } else {
-                    // TODO: consider if this should possibly be an illegalstate exception because we need an entity type for null xml
-                    return "";
+                    throw new IllegalStateException("Do not know type of thing returned");
                 }
 
             }
 
-            // default JSON in case the xml conversion fails
-            String output = jsonThing.asJsonTypedArrayWithContentsUntyped(thingsToReturn, apiResponse.getTypeOfThingReturned().getPlural());
+            // could default to JSON in case the xml conversion fails
+            //  jsonThing.asJsonTypedArrayWithContentsUntyped(thingsToReturn, apiResponse.getTypeOfThingReturned().getPlural());
+            String output ="";
 
             // xml output via JSON
             try {
                 if (thingsToReturn.size() > 0) {
 
-                    String parseForXMLOutput = jsonThing.asJsonTypedArrayWithContentsTyped(thingsToReturn, apiResponse.getTypeOfThingReturned());
-
-                    output = XML.toString(new JSONObject(parseForXMLOutput));
-
-                    // TODO: workaround for this seems like a bug in XML.toString, but work around it at the moment
-                    // i.e. it outputs <todos><todo>...</todo></todos><todos><todo>...</todo></todos>
-                    output = output.replace(String.format("</%1$s><%1$s>", thingsToReturn.get(0).getEntity().getPlural()), "");
+                    output = xmlThing.getCollectionOfThings(thingsToReturn, apiResponse.getTypeOfThingReturned());
                 }
             } catch (Exception e) {
                 // TODO: if this happens then the status code is going to be wrong, should probably throw an exception instead
@@ -72,14 +69,10 @@ final public class ApiResponseAsXml {
         } else {
             ThingInstance instance = apiResponse.getReturnedInstance();
 
-            String output = jsonThing.asNamedJsonObject(instance).toString();
+            String output = "";
 
-            // experimental xml output
             try {
-                String parseForXMLOutput = output;
-                //System.out.println(parseForXMLOutput);
-                output = XML.toString(new JSONObject(parseForXMLOutput));
-
+                output = xmlThing.getSingleObjectXml(instance);
             } catch (Exception e) {
                 // TODO: if this happens then the status code is going to be wrong
                 output = getErrorMessageXml(e.getMessage());
@@ -98,9 +91,6 @@ final public class ApiResponseAsXml {
     }
 
     public static String getErrorMessageXml(final Collection<String> myErrorMessages) {
-        Map errorResponseBody = new HashMap<String, Collection<String>>();
-        errorResponseBody.put("errorMessage", myErrorMessages);
-        return XML.toString(new JSONObject(errorResponseBody), "errorMessages");
-
+        return XmlThing.getStringCollectionAsXml("errorMessages", "errorMessage", myErrorMessages);
     }
 }

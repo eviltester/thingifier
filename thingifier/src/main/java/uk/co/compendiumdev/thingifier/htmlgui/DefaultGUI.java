@@ -1,4 +1,4 @@
-package uk.co.compendiumdev.thingifier.application;
+package uk.co.compendiumdev.thingifier.htmlgui;
 
 import com.google.gson.GsonBuilder;
 import uk.co.compendiumdev.thingifier.Thing;
@@ -7,6 +7,7 @@ import uk.co.compendiumdev.thingifier.generic.definitions.RelationshipVector;
 import uk.co.compendiumdev.thingifier.generic.definitions.ThingDefinition;
 import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
 import uk.co.compendiumdev.thingifier.reporting.JsonThing;
+import uk.co.compendiumdev.thingifier.reporting.XmlThing;
 
 import java.util.Collection;
 
@@ -18,10 +19,14 @@ public class DefaultGUI {
 
     private final Thingifier thingifier;
     private final JsonThing jsonThing;
+    private final DefaultGUIHTMLRootMenu rootMenu;
+    private final XmlThing xmlThing;
 
     public DefaultGUI(final Thingifier thingifier) {
         this.thingifier=thingifier;
         this.jsonThing = new JsonThing(thingifier.apiConfig().jsonOutput());
+        this.xmlThing = new XmlThing(jsonThing);
+        this.rootMenu = new DefaultGUIHTMLRootMenu();
     }
 
     public void setupDefaultGUI(){
@@ -31,9 +36,7 @@ public class DefaultGUI {
             response.status(200);
             StringBuilder html = new StringBuilder();
             html.append("<html><head><title>GUI</title></head></body>");
-            html.append("<p><a href='/'>API documentation</a></p>");
-            html.append("<p><a href='/gui/entities'>Entities Explorer</a></p>");
-
+            html.append(rootMenu.getMenuAsHTML());
             html.append("</body></html>");
             return html.toString();
         });
@@ -130,9 +133,20 @@ public class DefaultGUI {
 
             html.append("<h2>JSON Example</h2>");
             html.append("<pre>");
+            html.append("<code class='json'>");
             // pretty print the json
             html.append(new GsonBuilder().setPrettyPrinting()
                     .create().toJson(jsonThing.asJsonObject(instance)));
+            html.append("</code>");
+            html.append("</pre>");
+
+
+            html.append("<h2>XML Example</h2>");
+            html.append("<pre>");
+            html.append("<code class='xml'>");
+            // pretty print the json
+            html.append(xmlThing.prettyPrintHtml(xmlThing.getSingleObjectXml(instance)));
+            html.append("</code>");
             html.append("</pre>");
             html.append("</body></html>");
             return html.toString();
@@ -141,9 +155,8 @@ public class DefaultGUI {
 
     private String getInstancesRootMenuHtml() {
         StringBuilder html = new StringBuilder();
+        html.append(rootMenu.getMenuAsHTML());
         html.append("<div class='entity-instances-menu'>");
-        html.append("<p><a href='/'>API documentation</a></p>");
-        html.append("<p><a href='/gui'>Menu</a>:</p>");
         html.append("<ul>");
         for(String thing : thingifier.getThingNames()){
             html.append(String.format("<li><a href='/gui/instances?entity=%1$s'>%1$s</a></li>",thing));

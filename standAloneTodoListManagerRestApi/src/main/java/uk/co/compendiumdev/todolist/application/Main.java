@@ -2,7 +2,7 @@ package uk.co.compendiumdev.todolist.application;
 
 import spark.Spark;
 import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.application.DefaultGUI;
+import uk.co.compendiumdev.thingifier.htmlgui.DefaultGUI;
 import uk.co.compendiumdev.thingifier.application.ThingifierRestServer;
 import uk.co.compendiumdev.thingifier.application.examples.TodoManagerThingifier;
 
