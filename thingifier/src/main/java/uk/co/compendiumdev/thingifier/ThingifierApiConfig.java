@@ -7,6 +7,7 @@ public class ThingifierApiConfig {
     private boolean willShowGuidsInResponses;
     private boolean willShowSingleInstancesAsPlural;
     private boolean willShowIdsInUrlsIfAvailable;
+    private boolean willEnforceDeclaredTypesInInput;
 
     public ThingifierApiConfig(){
         jsonOutputConfig = new JsonOutputConfig();
@@ -16,6 +17,7 @@ public class ThingifierApiConfig {
         willShowGuidsInResponses=true;  // custom headers
         willShowIdsInResponsesIfAvailable = true; // relationship rendering
         willShowIdsInUrlsIfAvailable = true;  // location headers, api urls
+        willEnforceDeclaredTypesInInput = true;
 
         // by default
         jsonOutputConfig.allowShowGuidsInResponse(willShowGuidsInResponses);
@@ -55,6 +57,11 @@ public class ThingifierApiConfig {
         return this;
     }
 
+    public ThingifierApiConfig shouldEnforceDeclaredTypesInInput(boolean config){
+        willEnforceDeclaredTypesInInput = config;
+        return this;
+    }
+
     public boolean singleInstancesArePlural() {
         return willShowSingleInstancesAsPlural;
     }
@@ -69,5 +76,9 @@ public class ThingifierApiConfig {
 
     public boolean showIdsInUrlsIfAvailable() {
         return willShowIdsInUrlsIfAvailable;
+    }
+
+    public boolean enforceDeclaredTypesInInput() {
+        return willEnforceDeclaredTypesInInput;
     }
 }

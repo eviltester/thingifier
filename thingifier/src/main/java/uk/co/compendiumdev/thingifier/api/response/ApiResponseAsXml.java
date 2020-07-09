@@ -43,7 +43,9 @@ final public class ApiResponseAsXml {
                 if (defn != null) {
                     return xmlThing.getEmptyElement(defn.getPlural());
                 } else {
-                    throw new IllegalStateException("Do not know type of thing returned");
+                    // todo should probably throw an exception
+                    return "";
+                    //throw new IllegalStateException("Do not know type of thing returned");
                 }
 
             }

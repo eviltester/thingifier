@@ -29,7 +29,7 @@ public class BasicTodoManagerTest {
         Assertions.assertTrue(todo.definition().hasFieldNameDefined("description"));
         Assertions.assertTrue(todo.definition().hasFieldNameDefined("doneStatus"));
 
-        Assertions.assertEquals("FALSE", todo.definition().getField("doneStatus").getDefaultValue());
+        Assertions.assertEquals("false", todo.definition().getField("doneStatus").getDefaultValue());
 
     }
 
@@ -88,12 +88,12 @@ public class BasicTodoManagerTest {
 
         todos.addInstance(paperwork);
 
-        Assertions.assertEquals("FALSE", paperwork.getValue("doneStatus"));
+        Assertions.assertEquals("false", paperwork.getValue("doneStatus"));
 
         System.out.println(todoManager.toString());
 
-        tidy.setValue("doneStatus", "TRUE");
-        Assertions.assertEquals("TRUE", tidy.getValue("doneStatus"));
+        tidy.setValue("doneStatus", "true");
+        Assertions.assertEquals("true", tidy.getValue("doneStatus"));
         System.out.println(todoManager.toString());
 
     }

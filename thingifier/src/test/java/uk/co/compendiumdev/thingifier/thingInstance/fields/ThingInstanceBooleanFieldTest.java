@@ -16,7 +16,7 @@ public class ThingInstanceBooleanFieldTest {
     public void createEntity(){
 
         entityTestSession = ThingDefinition.create("Test Session", "Test Sessions");
-        entityTestSession.addFields(Field.is("review", FieldType.BOOLEAN).withDefaultValue("TRUE"));
+        entityTestSession.addFields(Field.is("review", FieldType.BOOLEAN).withDefaultValue("true"));
         entityTestSession.addFields(Field.is("falsey", FieldType.BOOLEAN));
 
         // TODO: allow 'optional' on boolean so could be nullable not set
@@ -29,13 +29,13 @@ public class ThingInstanceBooleanFieldTest {
         ThingInstance session = new ThingInstance(entityTestSession);
 
         // false by default
-        Assertions.assertEquals("TRUE", session.getValue("review"));
+        Assertions.assertEquals("true", session.getValue("review"));
 
-        session.setValue("review", "FALSE");
-        Assertions.assertEquals("FALSE", session.getValue("review"));
+        session.setValue("review", "false");
+        Assertions.assertEquals("false", session.getValue("review"));
 
-        session.setValue("review", "TRUE");
-        Assertions.assertEquals("TRUE", session.getValue("review"));
+        session.setValue("review", "true");
+        Assertions.assertEquals("true", session.getValue("review"));
     }
 
     @Test
@@ -48,7 +48,7 @@ public class ThingInstanceBooleanFieldTest {
         });
 
         // unchanged from default
-        Assertions.assertEquals("TRUE", session.getValue("review"));
+        Assertions.assertEquals("true", session.getValue("review"));
     }
 
 

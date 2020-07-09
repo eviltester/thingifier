@@ -119,7 +119,7 @@ could implement a Thingifier URL query matcher to return instances based on quer
                                         VRule.notEmpty()),
                         Field.is("description",STRING),
                         Field.is("doneStatus",FieldType.BOOLEAN).
-                                withDefaultValue("FALSE")
+                                withDefaultValue("false")
                 )
         ;
 
@@ -131,9 +131,9 @@ could implement a Thingifier URL query matcher to return instances based on quer
                         Field.is("title", STRING),
                         Field.is("description",STRING),
                         Field.is("completed",FieldType.BOOLEAN).
-                                withDefaultValue("FALSE"),
+                                withDefaultValue("false"),
                         Field.is("active",FieldType.BOOLEAN).
-                                withDefaultValue("TRUE"));
+                                withDefaultValue("true"));
 
 
         Thing category = todoManager.createThing("category", "categories");
@@ -176,6 +176,9 @@ could implement a Thingifier URL query matcher to return instances based on quer
         estimated.hasOptionality("M", "O");
 
         // TODO there is a special case of Mandatory : Mandatory which we need to be able to 'create' entities at same time as relationships
+
+        todoManager.apiConfig().shouldEnforceDeclaredTypesInInput(false);
+        todoManager.apiConfig().jsonOutput().convertFieldsToDefinedTypes(false);
 
         return todoManager;
     }

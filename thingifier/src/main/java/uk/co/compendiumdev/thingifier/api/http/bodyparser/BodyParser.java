@@ -4,7 +4,11 @@ import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
 import org.json.JSONObject;
 import org.json.XML;
+import uk.co.compendiumdev.thingifier.api.ValidationReport;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
+import uk.co.compendiumdev.thingifier.generic.FieldType;
+import uk.co.compendiumdev.thingifier.generic.definitions.Field;
+import uk.co.compendiumdev.thingifier.generic.definitions.ThingDefinition;
 
 import java.util.*;
 
@@ -156,4 +160,40 @@ public class BodyParser {
     }
 
 
+    public ValidationReport validateAgainstType(final ThingDefinition entity) {
+        ValidationReport report = new ValidationReport();
+        for(Map.Entry<String, Object>arg : args.entrySet()){
+
+            Field field = entity.getField(arg.getKey());
+            if(field==null){
+                continue;
+                // should possibly error it? but ignore for now
+            }
+
+            Object theValue = arg.getValue();
+
+            String errorMessage = String.format("%s should be %s", field.getName(), field.getType());
+
+            if(field.getType()== FieldType.BOOLEAN){
+                if (!(theValue instanceof Boolean )) {
+                    report.setValid(false);
+                    report.addErrorMessage(errorMessage);
+                }
+            }
+            if(field.getType()== FieldType.INTEGER){
+                if (!(theValue instanceof Double )) {
+                    report.setValid(false);
+                    report.addErrorMessage(errorMessage);
+                }
+            }
+            if(field.getType()== FieldType.FLOAT){
+                if (!(theValue instanceof Double )) {
+                    report.setValid(false);
+                    report.addErrorMessage(errorMessage);
+                }
+            }
+            // everything else goes
+        }
+        return report;
+    }
 }

@@ -121,7 +121,7 @@ public class XmlRequestResponseTest {
 
         Assertions.assertEquals("test title", aTodo.getValue("title"));
 
-        Assertions.assertTrue(response.getBody().startsWith("<todo><doneStatus>FALSE</doneStatus>"),
+        Assertions.assertTrue(response.getBody().startsWith("<todo><doneStatus>false</doneStatus>"),
                 "Should have returned xml as body: " + response.getBody());
 
     }
@@ -190,7 +190,7 @@ public class XmlRequestResponseTest {
         Assertions.assertEquals("test title", aTodo.getValue("title"));
 
         //{"doneStatus":"FALSE","guid":
-        Assertions.assertTrue(response.getBody().startsWith("{\"doneStatus\":\"FALSE\",\"guid\":"),
+        Assertions.assertTrue(response.getBody().startsWith("{\"doneStatus\":\"false\",\"guid\":"),
                 "Should have returned json as body " + response.getBody());
 
     }

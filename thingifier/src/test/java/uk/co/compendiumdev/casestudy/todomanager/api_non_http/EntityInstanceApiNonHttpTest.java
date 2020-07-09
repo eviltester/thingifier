@@ -118,7 +118,7 @@ public class EntityInstanceApiNonHttpTest {
         Map requestBody = new HashMap<String, String>();
         String title = "My Office Work" + System.currentTimeMillis();
         String description = "MyDescription " + System.currentTimeMillis();
-        String doneStatus = "TRUE";
+        String doneStatus = "true";
 
         requestBody.put("title", title);
         requestBody.put("description", description);
@@ -184,7 +184,7 @@ public class EntityInstanceApiNonHttpTest {
         String officeWorkGuid = createdInstance.getGUID();
         Assertions.assertEquals(title, createdInstance.getValue("title"));
         Assertions.assertEquals("", createdInstance.getValue("description"));
-        Assertions.assertEquals("FALSE", createdInstance.getValue("doneStatus"));
+        Assertions.assertEquals("false", createdInstance.getValue("doneStatus"));
 
         // Check header for GUID
         String headerLocation = apiresponse.getHeaderValue("Location");
@@ -233,7 +233,7 @@ public class EntityInstanceApiNonHttpTest {
         Assertions.assertEquals(relTodo.getGUID(), createdInstance.getGUID());
         Assertions.assertEquals(title, createdInstance.getValue("title"));
         Assertions.assertEquals(description, createdInstance.getValue("description"));
-        Assertions.assertEquals("FALSE", createdInstance.getValue("doneStatus"));
+        Assertions.assertEquals("false", createdInstance.getValue("doneStatus"));
 
     }
 

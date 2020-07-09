@@ -62,6 +62,13 @@ public class ThingCreation {
 
         final Map<String, String> args = bodyargs.getStringMap();
 
+        if(thingifier.apiConfig().enforceDeclaredTypesInInput()) {
+            ValidationReport validatedTypes = bodyargs.validateAgainstType(instance.getEntity());
+            if(!validatedTypes.isValid()){
+                return ApiResponse.error(400, validatedTypes.getCombinedErrorMessages());
+            }
+        }
+
         try {
             instance.setFieldValuesFrom(args);
         } catch (Exception e) {
