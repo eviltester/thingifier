@@ -38,6 +38,7 @@ public class Environment {
             thingifier.apiConfig().allowShowIdsInResponsesIfAvailable(false);
             thingifier.apiConfig().jsonOutput().compressRelationships(false);
             thingifier.apiConfig().jsonOutput().relationshipsUsesIdsIfAvailable(false);
+            thingifier.apiConfig().jsonOutput().convertFieldsToDefinedTypes(false);
 
             new ThingifierRestServer(args, "", thingifier);
             return "http://localhost:4567";

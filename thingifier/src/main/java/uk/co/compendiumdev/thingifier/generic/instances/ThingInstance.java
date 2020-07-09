@@ -102,6 +102,18 @@ public class ThingInstance {
                     }
                 }
 
+                if(field.getType()== FieldType.INTEGER){
+                        valueToAdd = Integer.valueOf(valueToAdd).toString();
+                }
+
+                if(field.getType()== FieldType.BOOLEAN){
+                    valueToAdd = Boolean.valueOf(valueToAdd).toString();
+                }
+
+                if(field.getType()== FieldType.FLOAT){
+                    valueToAdd = Float.valueOf(valueToAdd).toString();
+                }
+
                 this.instanceFields.addValue(fieldName, valueToAdd);
 
             } else {

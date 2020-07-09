@@ -19,6 +19,7 @@ Backlog
 - todo: split example models and main out of Thingifier and into a 'standalone api's app
 - todo: api config collections for different 'releases' of the API - see standalone examples
 - todo: allow switching between releases when it is running
+- todo: support raw type conversion e.g. true, instead of "true"
 - todo: styling of GUIs
 - todo: export insomnia, swagger, raml, postman files,
 - todo: have an auto updated 'create' and 'amend' date time stamp field - renamable in definition e.g. created-time, type CREATED-DATE, with a format

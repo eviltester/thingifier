@@ -82,6 +82,7 @@ public class Main {
                 thingifier.apiConfig().allowShowGuidsInResponses(true);
                 thingifier.apiConfig().jsonOutput().compressRelationships(false);
                 thingifier.apiConfig().jsonOutput().relationshipsUsesIdsIfAvailable(false);
+                thingifier.apiConfig().jsonOutput().convertFieldsToDefinedTypes(false);
                 break;
             case 2:
                 thingifier.apiConfig().allowShowIdsInUrlsIfAvailable(false);
@@ -90,6 +91,7 @@ public class Main {
                 thingifier.apiConfig().allowShowGuidsInResponses(true);
                 thingifier.apiConfig().jsonOutput().compressRelationships(true);
                 thingifier.apiConfig().jsonOutput().relationshipsUsesIdsIfAvailable(false);
+                thingifier.apiConfig().jsonOutput().convertFieldsToDefinedTypes(false);
                 break;
             case 3:
                 thingifier.apiConfig().allowShowIdsInUrlsIfAvailable(true);
@@ -98,6 +100,7 @@ public class Main {
                 thingifier.apiConfig().allowShowGuidsInResponses(false);
                 thingifier.apiConfig().jsonOutput().compressRelationships(true);
                 thingifier.apiConfig().jsonOutput().relationshipsUsesIdsIfAvailable(true);
+                thingifier.apiConfig().jsonOutput().convertFieldsToDefinedTypes(false);
                 break;
         }
         new DefaultGUI(thingifier).setupDefaultGUI();

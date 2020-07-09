@@ -54,7 +54,6 @@ final public class ThingifierHttpApi {
 
         return new BodyParser(request, thingifier.getThingNames());
 
-
     }
 
 

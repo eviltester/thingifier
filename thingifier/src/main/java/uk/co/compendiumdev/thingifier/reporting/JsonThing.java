@@ -6,6 +6,8 @@ import com.google.gson.JsonObject;
 import uk.co.compendiumdev.thingifier.JsonOutputConfig;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.ThingifierApiConfig;
+import uk.co.compendiumdev.thingifier.generic.FieldType;
+import uk.co.compendiumdev.thingifier.generic.definitions.Field;
 import uk.co.compendiumdev.thingifier.generic.definitions.RelationshipVector;
 import uk.co.compendiumdev.thingifier.generic.definitions.ThingDefinition;
 import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
@@ -65,12 +67,33 @@ public class JsonThing {
             return jsonobj;
         }
 
-        for (String field : thingInstance.getEntity().getFieldNames()) {
+        for (String fieldName : thingInstance.getEntity().getFieldNames()) {
+            Field theField = thingInstance.getEntity().getField(fieldName);
             // if hiding guids then skip them
-            if(!apiConfig.showGuidsInResponse() && field.contentEquals("guid"))
+            if(!apiConfig.showGuidsInResponse() && theField.getType()== FieldType.GUID)
                 continue;
             try {
-                jsonobj.addProperty(field, thingInstance.getValue(field));
+                if(apiConfig.shouldConvertFieldsToDefinedTypes()) {
+                    switch (theField.getType()) {
+                        case BOOLEAN:
+                            jsonobj.addProperty(theField.getName(), Boolean.valueOf(theField.getName()));
+                            break;
+                        case INTEGER:
+                            jsonobj.addProperty(theField.getName(), Integer.valueOf(theField.getName()));
+                            break;
+                        case FLOAT:
+                            jsonobj.addProperty(theField.getName(), Float.valueOf(theField.getName()));
+                            break;
+                        case ID:
+                            jsonobj.addProperty(theField.getName(), Integer.valueOf(theField.getName()));
+                            break;
+                        default:
+                            jsonobj.addProperty(theField.getName(), thingInstance.getValue(theField.getName()));
+                    }
+                }else {
+                    // output as string
+                    jsonobj.addProperty(theField.getName(), thingInstance.getValue(theField.getName()));
+                }
             }catch(Exception e){
                 // ignore
             }

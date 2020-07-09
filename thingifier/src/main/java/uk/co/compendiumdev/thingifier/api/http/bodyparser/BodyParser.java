@@ -29,13 +29,20 @@ public class BodyParser {
 
 
     private Map<String, String> stringMap(final Map<String, Object> args) {
+        // todo: configuration to reject if wrong types for field definitions
+        // default should be to handle and convert
         Map<String, String> stringsInMap = new HashMap();
         for (String key : args.keySet()) {
             Object theValue = args.get(key);
 
+            if (theValue instanceof Boolean ) {
+                stringsInMap.put(key, String.valueOf(theValue));
+            }
+
             if (theValue instanceof String ) {
                 stringsInMap.put(key, (String) theValue);
             }
+
             if(theValue instanceof Double){
                 stringsInMap.put(key, String.valueOf(theValue));
             }
@@ -53,13 +60,19 @@ public class BodyParser {
 
 
     private List<Map.Entry<String,String>> flattenToStringMap(final String prefixkey, final Object theValue) {
+        // todo: configuration to reject if wrong types for field definitions
+        // default should be to handle and convert
         List<Map.Entry<String,String>> stringsInMap = new ArrayList<>();
         if (theValue instanceof String ) {
             stringsInMap.add(new AbstractMap.SimpleEntry<String,String>(prefixkey, (String)theValue));
         }
         if(theValue instanceof Double){
-            stringsInMap.add(new AbstractMap.SimpleEntry<String,String>(prefixkey, (String)theValue));
+            stringsInMap.add(new AbstractMap.SimpleEntry<String,String>(prefixkey, String.valueOf(theValue)));
         }
+        if(theValue instanceof Boolean){
+            stringsInMap.add(new AbstractMap.SimpleEntry<String,String>(prefixkey, String.valueOf(theValue)));
+        }
+        // todo: what else can come in?
         String separator = "";
         if(prefixkey!=null && prefixkey.length() > 0 && !prefixkey.endsWith(".")){
             separator = ".";
