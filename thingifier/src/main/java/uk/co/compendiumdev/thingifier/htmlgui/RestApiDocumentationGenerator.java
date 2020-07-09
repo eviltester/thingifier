@@ -26,7 +26,7 @@ public class RestApiDocumentationGenerator {
     private final Collection<RelationshipDefinition> relationships;
     private final JsonThing jsonThing;
     private final XmlThing xmlThing;
-    private final DefaultGUIHTMLRootMenu mainMenu;
+    private final DefaultGUIHTML mainMenu;
     private final ThingifierApiConfig apiConfig;
 
     public RestApiDocumentationGenerator(final Thingifier aThingifier) {
@@ -36,19 +36,22 @@ public class RestApiDocumentationGenerator {
         apiConfig = thingifier.apiConfig();
         jsonThing = new JsonThing(apiConfig.jsonOutput());
         xmlThing = new XmlThing(jsonThing);
-        mainMenu = new DefaultGUIHTMLRootMenu();
+        mainMenu = new DefaultGUIHTML();
     }
 
     public String getApiDocumentation(final ApiRoutingDefinition routingDefinitions) {
 
         StringBuilder output = new StringBuilder();
 
+        output.append(mainMenu.getPageStart("API Documentation"));
         output.append(mainMenu.getMenuAsHTML());
 
         if (thingifier != null) {
             // create generic API documentation
             output.append(heading(1, thingifier.getTitle()));
             output.append(String.format("%n"));
+
+            output.append("<div class='headertextblock'>");
             output.append(paragraph(thingifier.getInitialParagraph()));
             output.append(String.format("%n"));
 
@@ -65,7 +68,7 @@ public class RestApiDocumentationGenerator {
             output.append(paragraph("<i>Accept: application/json</i><br/><br/>\n"));
 
             output.append(paragraph("All data lives in memory and is not persisted so the application is cleared everytime you start it. It does have some test data in here when you start"));
-
+            output.append("</div>");
         }
 
         output.append(heading(2, "Model"));
@@ -81,6 +84,79 @@ public class RestApiDocumentationGenerator {
                 // todo: generate an example Thing
                 final DocumentationThingInstance exampleThing = new DocumentationThingInstance(aThing.definition());
 
+                output.append("<table>\n");
+                output.append("<thead>\n");
+                output.append("<tr>");
+                output.append("<td>Fieldname</td>\n");
+                output.append("<td>Type</td>\n");
+                output.append("<td>Validation</td>\n");
+                output.append("</tr>");
+                output.append("</thead>\n");
+
+
+
+                output.append("<tbody>\n");
+
+                for (String aField : aThing.definition().getFieldNames()) {
+
+                    output.append("<tr>");
+                    if(!apiConfig.showGuidsInResponses() && aField.contentEquals("guid")){
+                        continue;
+                    }
+
+                    output.append(String.format("<td>%s</td>", aField));
+
+                    Field theField = aThing.definition().getField(aField);
+                    output.append(String.format("<td>%s</td>", theField.getType()));
+
+                    output.append("<td>");
+                    output.append("<ul>");
+                    for (ValidationRule validation : theField.validationRules()) {
+                        output.append("<li>" + validation.getErrorMessage("") + "</li>\n");
+                    }
+
+                    output.append(String.format("<li>Mandatory?: %b</li>", theField.isMandatory()));
+                    output.append(String.format("<li>Validates?: %b</li>", theField.willValidate()));
+
+                    if(theField.shouldTruncate()){
+                        output.append(String.format("<li>Truncate to: %d characters</li>", theField.truncateLength()));
+                    }
+
+                    if(theField.getType()== FieldType.STRING) {
+                        if (theField.willEnforceLength()) {
+                            output.append(String.format("<li>Max Length: %d characters</li>", theField.truncateLength()));
+                        }
+                    }
+
+                    if(theField.getType()== FieldType.INTEGER){
+                        output.append(String.format("<li>Values Between: \"%d\" to \"%d\" </li>",
+                                theField.getMinimumIntegerValue(), theField.getMaximumIntegerValue()));
+                    }
+
+                    if(theField.getType()== FieldType.FLOAT){
+                        output.append(String.format("<li>Values Between: \"%f\" to \"%f\" </li>",
+                                theField.getMinimumFloatValue(), theField.getMaximumFloatValue()));
+                    }
+
+                    output.append("</ul>\n");
+                    output.append("</td>\n");
+
+                    output.append("</tr>");
+
+                    String exampleValue = theField.getRandomExampleValue();
+                    exampleThing.overrideValue(theField.getName(), exampleValue);
+
+                    output.append(String.format("<tr><td colspan='3' class='examplevalue'>Example: \"%s\"</td></tr>", exampleValue));
+
+
+                }
+
+
+                output.append("</tbody>\n");
+                output.append("</table>\n");
+
+/*
+                output.append("<ul>\n");
                 for (String aField : aThing.definition().getFieldNames()) {
 
                     if(!apiConfig.showGuidsInResponses() && aField.contentEquals("guid")){
@@ -131,31 +207,33 @@ public class RestApiDocumentationGenerator {
 
                 }
                 output.append("</ul>\n");
-
+*/
 
                 // show an example
                 output.append("<p>Example JSON Output from API calls</p>\n");
-                output.append("<pre>\n");
+                output.append("<pre class='json'>\n");
+                output.append("<code class='json'>\n");
                 output.append(new GsonBuilder().setPrettyPrinting()
                         .create().toJson(jsonThing.asJsonObject(exampleThing.getInstance())));
+                output.append("</code>\n");
                 output.append("</pre>\n");
 
                 // todo: conditional output on if API supports XML responses
                 output.append("<p>Example XML Output from API calls</p>\n");
-                output.append("<pre>\n");
+                output.append("<pre class='xml'>\n");
                 output.append(xmlThing.prettyPrintHtml(xmlThing.getSingleObjectXml(exampleThing.getInstance())));
                 output.append("</pre>\n");
 
                 output.append("<p>Example JSON Input to API calls</p>\n");
                 ThingInstance createableExampleThing = exampleThing.getInstanceWithoutProtectedFields();
-                output.append("<pre>\n");
+                output.append("<pre class='json'>\n");
                 output.append(new GsonBuilder().setPrettyPrinting()
                         .create().toJson(jsonThing.asJsonObject(createableExampleThing)));
                 output.append("</pre>\n");
 
                 // todo: conditional output on if API supports XML responses
                 output.append("<p>Example XML Input to API calls</p>\n");
-                output.append("<pre>\n");
+                output.append("<pre class='xml'>\n");
                 output.append(xmlThing.prettyPrintHtml(xmlThing.getSingleObjectXml(createableExampleThing)));
                 output.append("</pre>\n");
 
@@ -206,13 +284,13 @@ public class RestApiDocumentationGenerator {
             // only show if not a method not allowed method
             if (!currentEndPoint.equalsIgnoreCase(routingDefn.url())) {
                 // new endpoint
-                output.append(heading(4, String.format("/%s%n", routingDefn.url())));
+                output.append(heading(4, "endpoint", String.format("/%s%n", routingDefn.url())));
                 currentEndPoint = routingDefn.url();
             }
             if (routingDefn.status().isReturnedFromCall() || routingDefn.status().value() != 405) {
                 // ignore options
                 if (routingDefn.verb() != RoutingVerb.OPTIONS) {
-                    output.append(String.format("<ul>%n<li>%n<strong>%s %s</strong><ul><li>%s</li></ul></li>%n</ul>",
+                    output.append(String.format("<ul>%n<li class='endpoint'>%n<strong>%s /%s</strong><ul><li class='normal'>%s</li></ul></li>%n</ul>",
                             routingDefn.verb(), routingDefn.url(), routingDefn.getDocumentation()));
 
                     //output.append(heading(5, String.format("%s %s%n", routingDefn.verb(), routingDefn.url())));
@@ -221,25 +299,20 @@ public class RestApiDocumentationGenerator {
             }
         }
 
-        output.append(heading(4, "/"));
+        output.append(heading(4, "/docs"));
         output.append(paragraph("Show this documentation as HTML."));
 
         output.append(heading(4, "/shutdown"));
         output.append(paragraph("Shutdown the server."));
 
-        output.append("<br/><hr/>");
-        output.append(paragraph(
-                String.format(
-                        "Thingifier version %s, Copyright Alan Richardson, Compendium Developments Ltd %s ",
-                        ThingifierVersionDetails.VERSION_NUMBER,
-                        ThingifierVersionDetails.COPYRIGHT_YEAR)));
-        output.append(paragraph(href("Thingifier", "https://github.com/eviltester/thingifier")));
-        output.append(paragraph(href("EvilTester.com", "http://eviltester.com")));
-        output.append(paragraph(href("Compendium Developments", "https://compendiumdev.co.uk")));
-
+        output.append(mainMenu.getPageFooter());
+        output.append(mainMenu.getPageEnd());
         return output.toString();
     }
 
+    private String heading(final int level, final String theclass, final String text) {
+        return String.format("<h%1$d class='%2$s'>%3$s</h%1$d>%n", level, theclass, text);
+    }
 
 
     private String href(final String text, final String url) {

@@ -7,6 +7,7 @@ import uk.co.compendiumdev.thingifier.application.ThingifierRestServer;
 import uk.co.compendiumdev.thingifier.application.examples.TodoListThingifier;
 
 import static spark.Spark.get;
+import static spark.Spark.staticFiles;
 
 public class Main {
     static boolean hasHerokuAssignedPort() {
@@ -58,6 +59,7 @@ public class Main {
         System.out.println("Will configure app as release version " + version);
 
         Spark.port(proxyport);
+        staticFiles.location("/public");
 
         get("/shutdown", (request, result) -> {
             System.exit(0);

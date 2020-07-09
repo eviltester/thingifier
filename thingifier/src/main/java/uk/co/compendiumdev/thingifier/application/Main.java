@@ -9,17 +9,23 @@ import uk.co.compendiumdev.thingifier.htmlgui.DefaultGUI;
 import java.util.ArrayList;
 import java.util.List;
 
-import static spark.Spark.get;
+import static spark.Spark.*;
 
 /*
 
 Backlog
 
+- todo: styling of GUIs
+- todo: allow shutdown to be prevented at command line e.g. -noshutdown
+- todo: release as basic test api with multiple versions
+- todo: generate a guid which we render at the command line on startup and -admin=base64usernamepassword default to admin:password to host admin urls behind
+- todo: add an option allow admin urls to enable, disable admin urls
+- todo: support queries on the entities e.g. /todos?field=exactmatch
+- todo: support tearing down and reset every 10 mins for a heroku deploy
 - todo: create before/after api hooks to use Thingifier as an API framework as well as generator
 - todo: split example models and main out of Thingifier and into a 'standalone api's app
 - todo: api config collections for different 'releases' of the API - see standalone examples
 - todo: allow switching between releases when it is running
-- todo: styling of GUIs
 - todo: export insomnia, swagger, raml, postman files,
 - todo: have an auto updated 'create' and 'amend' date time stamp field - renamable in definition e.g. created-time, type CREATED-DATE, with a format
 - todo: have an automatically added 'ping' url to see if service is running
@@ -139,6 +145,7 @@ public class Main {
 
 
         Spark.port(proxyport);
+        staticFileLocation("/public");
 
         // todo : add shutdown behind an admin authentication with basic auth and a custom secret code header
         // todo : add some other admin endpoints e.g. show version details of the app etc.

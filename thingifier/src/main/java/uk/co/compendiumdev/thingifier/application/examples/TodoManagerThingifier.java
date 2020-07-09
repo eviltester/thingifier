@@ -51,6 +51,7 @@ public class TodoManagerThingifier {
 
         Thing todo = todoManager.createThing("todo", "todos");
 
+        // todo: show fields in the order we add them, not the hashmap key order
         todo.definition()
                 .addFields(Field.is("id", FieldType.ID),
                         Field.is("title", STRING).

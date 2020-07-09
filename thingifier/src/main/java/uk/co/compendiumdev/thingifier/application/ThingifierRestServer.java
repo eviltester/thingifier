@@ -55,7 +55,7 @@ public class ThingifierRestServer {
 
 
         // / - default for documentation
-        get("/", (request, response) -> {
+        get("/docs", (request, response) -> {
             response.type("text/html");
             response.status(200);
             return new RestApiDocumentationGenerator(thingifier).getApiDocumentation(routingDefinitions);

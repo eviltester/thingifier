@@ -23,7 +23,7 @@ public class DefaultGUI {
 
     private final Thingifier thingifier;
     private final JsonThing jsonThing;
-    private final DefaultGUIHTMLRootMenu rootMenu;
+    private final DefaultGUIHTML templates;
     private final XmlThing xmlThing;
     private final ThingifierApiConfig apiConfig;
 
@@ -32,7 +32,7 @@ public class DefaultGUI {
         this.apiConfig = thingifier.apiConfig();
         this.jsonThing = new JsonThing(apiConfig.jsonOutput());
         this.xmlThing = new XmlThing(jsonThing);
-        this.rootMenu = new DefaultGUIHTMLRootMenu();
+        this.templates = new DefaultGUIHTML();
     }
 
     public void setupDefaultGUI(){
@@ -41,9 +41,10 @@ public class DefaultGUI {
             response.type("text/html");
             response.status(200);
             StringBuilder html = new StringBuilder();
-            html.append("<html><head><title>GUI</title></head></body>");
-            html.append(rootMenu.getMenuAsHTML());
-            html.append("</body></html>");
+            html.append(templates.getPageStart("GUI"));
+            html.append(templates.getMenuAsHTML());
+            html.append(templates.getPageFooter());
+            html.append(templates.getPageEnd());
             return html.toString();
         });
 
@@ -51,9 +52,13 @@ public class DefaultGUI {
             response.type("text/html");
             response.status(200);
             StringBuilder html = new StringBuilder();
-            html.append("<html><head><title>GUI</title></head></body>");
+            html.append(templates.getPageStart("Entities Menu"));
+
+            html.append(templates.getMenuAsHTML());
             html.append(getInstancesRootMenuHtml());
-            html.append("</body></html>");
+            //html.append(heading(2, "Choose from the Entities Menu Above"));
+            html.append(templates.getPageFooter());
+            html.append(templates.getPageEnd());
             return html.toString();
         });
 
@@ -64,12 +69,20 @@ public class DefaultGUI {
 
             String entityName = request.queryParams("entity");
 
-            html.append("<html><head><title>GUI</title></head><body>");
-            html.append(getInstancesRootMenuHtml());
-            html.append(getHTMLTableStylingCSS());
+            html.append(templates.getPageStart(entityName + " Instances"));
 
+            html.append(templates.getMenuAsHTML());
+            html.append(getInstancesRootMenuHtml());
+
+            html.append(heading(1, entityName + " Instances"));
 
             final Thing thing = thingifier.getThingNamed(entityName);
+
+            if(thing==null){
+                response.redirect("/gui/entities");
+                return "";
+            }
+
             final ThingDefinition definition = thing.definition();
 
             html.append("<h2>" + definition.getPlural() + "</h2>");
@@ -79,8 +92,11 @@ public class DefaultGUI {
             for(ThingInstance instance : thing.getInstances()){
                 html.append(htmlTableRowFor(instance));
             }
+            html.append("</tbody>");
             html.append("</table>");
-            html.append("</body></html>");
+
+            html.append(templates.getPageFooter());
+            html.append(templates.getPageEnd());
             return html.toString();
         });
 
@@ -89,7 +105,7 @@ public class DefaultGUI {
             response.status(200);
             StringBuilder html = new StringBuilder();
 
-            String entityName;
+            String entityName="";
             Thing thing=null;
             for(String queryParam : request.queryParams()){
                 if(queryParam.contentEquals("entity")){
@@ -97,6 +113,12 @@ public class DefaultGUI {
                     thing = thingifier.getThingNamed(entityName);
                 }
             }
+
+            if(thing==null){
+                response.redirect("/gui/entities");
+                return "";
+            }
+
             String keyName="";
             String keyValue="";
             for(String queryParam : request.queryParams()){
@@ -113,31 +135,33 @@ public class DefaultGUI {
             final ThingDefinition definition = thing.definition();
             ThingInstance instance = thing.findInstanceByField(FieldValue.is(keyName, keyValue));
 
-            html.append("<html><head><title>GUI</title></head></body>");
+            if(instance==null){
+                response.redirect("/gui/instances?entity=" + entityName);
+                return "";
+            }
+
+            html.append(templates.getPageStart(entityName + " Instance"));
+            html.append(templates.getMenuAsHTML());
             html.append(getInstancesRootMenuHtml());
+
+            html.append(heading(1, entityName + " Instance"));
 
             html.append("<h2>" + definition.getName() + "</h2>");
 
-            html.append("<ul>");
-            if(apiConfig.showGuidsInResponses()) {
-                html.append(String.format("<li>%s<ul><li>%s</li></ul></li>", "guid", instance.getGUID()));
-            }
-            for(String field : definition.getFieldNames()) {
-                if (!field.equals("guid")) {
-                    html.append(String.format("<li>%s<ul><li>%s</li></ul></li>",
-                            field, instance.getValue(field)));
-                }
-            }
-            html.append("</ul>");
+            html.append(getInstanceAsTable(instance));
+
+            html.append("<details style='padding:1em'><summary>As List</summary>");
+            html.append(getInstanceAsUl(instance));
+            html.append("</details>");
+
 
             if(instance.hasAnyRelationshipInstances()) {
 
                 html.append("<h2>Relationships</h2>");
-                html.append(getHTMLTableStylingCSS());
 
                 for (RelationshipVector relationship : definition.getRelationships()) {
                     final Collection<ThingInstance> relatedItems = instance.connectedItems(relationship.getName());
-                    html.append("<h2>" + relationship.getName() + "</h2>");
+                    html.append("<h3>" + relationship.getName() + "</h3>");
                     if(relatedItems.size() > 0) {
                         boolean header=true;
 
@@ -147,7 +171,9 @@ public class DefaultGUI {
                                 header=false;
                             }
                             html.append(htmlTableRowFor(relatedInstance));
+
                         }
+                        html.append("</tbody>");
                         html.append("</table>");
 
                     }else{
@@ -157,7 +183,7 @@ public class DefaultGUI {
             }
 
             html.append("<h2>JSON Example</h2>");
-            html.append("<pre>");
+            html.append("<pre class='json'>");
             html.append("<code class='json'>");
             // pretty print the json
             html.append(new GsonBuilder().setPrettyPrinting()
@@ -167,21 +193,74 @@ public class DefaultGUI {
 
 
             html.append("<h2>XML Example</h2>");
-            html.append("<pre>");
+            html.append("<pre class='xml'>");
             html.append("<code class='xml'>");
             // pretty print the json
             html.append(xmlThing.prettyPrintHtml(xmlThing.getSingleObjectXml(instance)));
             html.append("</code>");
             html.append("</pre>");
-            html.append("</body></html>");
+
+            html.append(templates.getPageFooter());
+            html.append(templates.getPageEnd());
             return html.toString();
         });
     }
 
+    private String getInstanceAsUl(final ThingInstance instance) {
+        final ThingDefinition definition = instance.getEntity();
+        StringBuilder html = new StringBuilder();
+        html.append("<ul>");
+        if(apiConfig.showGuidsInResponses()) {
+            html.append(String.format("<li>%s<ul><li>%s</li></ul></li>", "guid", instance.getGUID()));
+        }
+        for(String field : definition.getFieldNames()) {
+            if (!field.equals("guid")) {
+                html.append(String.format("<li>%s<ul><li>%s</li></ul></li>",
+                        field, instance.getValue(field)));
+            }
+        }
+        html.append("</ul>");
+        return html.toString();
+    }
+
+    private String getInstanceAsTable(ThingInstance instance) {
+
+        final ThingDefinition definition = instance.getEntity();
+
+        StringBuilder html = new StringBuilder();
+        html.append("<table>");
+        html.append("<thead><tr>");
+        for(String fieldName : definition.getFieldNames()) {
+            Field field = definition.getField(fieldName);
+            if(field.getType()==FieldType.GUID){
+                if(apiConfig.showGuidsInResponses()) {
+                    html.append(String.format("<th>%s</th>",field.getName()));
+                }
+            }else{
+                html.append(String.format("<th>%s</th>",field.getName()));
+            }
+        }
+        html.append("</tr></thead>");
+        html.append("<tbody><tr>");
+        for(String fieldName : definition.getFieldNames()) {
+            Field field = definition.getField(fieldName);
+            if(field.getType()==FieldType.GUID){
+                if(apiConfig.showGuidsInResponses()) {
+                    html.append(String.format("<td>%s</td>",instance.getValue(fieldName)));
+                }
+            }else{
+                html.append(String.format("<td>%s</td>",instance.getValue(fieldName)));
+            }
+        }
+
+        html.append("</tr></tbody>");
+        html.append("</table>");
+        return html.toString();
+    }
+
     private String getInstancesRootMenuHtml() {
         StringBuilder html = new StringBuilder();
-        html.append(rootMenu.getMenuAsHTML());
-        html.append("<div class='entity-instances-menu'>");
+        html.append("<div class='entity-instances-menu menu'>");
         html.append("<ul>");
         for(String thing : thingifier.getThingNames()){
             html.append(String.format("<li><a href='/gui/instances?entity=%1$s'>%1$s</a></li>",thing));
@@ -191,14 +270,6 @@ public class DefaultGUI {
         return html.toString();
     }
 
-    private String getHTMLTableStylingCSS() {
-        StringBuilder html = new StringBuilder();
-        html.append("<style>\n");
-        html.append("table {border-collapse: collapse;}\n" +
-                "table, th, td {border: 1px solid black;}\n");
-        html.append("</style>");
-        return html.toString();
-    }
 
     private String htmlTableRowFor(final ThingInstance instance) {
         StringBuilder html = new StringBuilder();
@@ -241,6 +312,7 @@ public class DefaultGUI {
         StringBuilder html = new StringBuilder();
 
         html.append("<table>");
+        html.append("<thead>");
         html.append("<tr>");
         // guid first
         if(apiConfig.showGuidsInResponses()) {
@@ -261,8 +333,14 @@ public class DefaultGUI {
             }
         }
         html.append("</tr>");
+        html.append("</thead>");
+        html.append("</tbody>");
 
         return html.toString();
+    }
+
+    private String heading(final int level, final String text) {
+        return String.format("<h%1$d>%2$s</h%1$d>%n", level, text);
     }
 }
 

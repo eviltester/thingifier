@@ -85,6 +85,8 @@ final public class SimpleQuery {
                     }
                 }
 
+                // todo: apply any filter query here to remove any found items from the list
+
                 // relationships is always a collection
                 isCollection = true;
 
