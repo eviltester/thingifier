@@ -61,6 +61,11 @@ public class JsonThing {
      */
     public JsonObject asJsonObject(final ThingInstance thingInstance) {
 
+        // todo: I swallowed exception generation in here because I was passing in the 'input' representations
+        // for the report generation - perhaps the reporting instances should have reporting entities which
+        // don't mention the fields e.g. guid and id, then this will work without exception because
+        // it would never try to getValue?
+
         final JsonObject jsonobj = new JsonObject();
 
         if (thingInstance == null) {
@@ -72,30 +77,37 @@ public class JsonThing {
             // if hiding guids then skip them
             if(!apiConfig.showGuidsInResponse() && theField.getType()== FieldType.GUID)
                 continue;
+
+            String fieldValue = "";
+
             try {
+                fieldValue = thingInstance.getValue(theField.getName());
+
                 if(apiConfig.shouldConvertFieldsToDefinedTypes()) {
                     switch (theField.getType()) {
                         case BOOLEAN:
-                            jsonobj.addProperty(theField.getName(), Boolean.valueOf(theField.getName()));
+                            jsonobj.addProperty(fieldName, Boolean.valueOf(fieldValue));
                             break;
                         case INTEGER:
-                            jsonobj.addProperty(theField.getName(), Integer.valueOf(theField.getName()));
+                            jsonobj.addProperty(fieldName, Integer.valueOf(fieldValue));
                             break;
                         case FLOAT:
-                            jsonobj.addProperty(theField.getName(), Float.valueOf(theField.getName()));
+                            jsonobj.addProperty(fieldName, Float.valueOf(fieldValue));
                             break;
                         case ID:
-                            jsonobj.addProperty(theField.getName(), Integer.valueOf(theField.getName()));
+                            jsonobj.addProperty(fieldName, Integer.valueOf(fieldValue));
                             break;
                         default:
-                            jsonobj.addProperty(theField.getName(), thingInstance.getValue(theField.getName()));
+                            jsonobj.addProperty(fieldName, fieldValue);
                     }
                 }else {
                     // output as string
-                    jsonobj.addProperty(theField.getName(), thingInstance.getValue(theField.getName()));
+                    jsonobj.addProperty(fieldName, fieldValue);
                 }
             }catch(Exception e){
                 // ignore
+                System.out.println("Error processing " + fieldName +
+                            " with value " + fieldValue + " " + e.getMessage());
             }
         }
 
@@ -149,15 +161,19 @@ public class JsonThing {
                         String fieldNameAsUniqueId = "guid";
                         String valueOfUniqueId = item.getGUID();
 
-                        if(useIdsInRelationshipRenderingIfAvailable){
-                            if(item.hasIDField()){
-                                fieldNameAsUniqueId = item.getEntity().getIDField().getName();
-                                valueOfUniqueId = item.getValue(fieldNameAsUniqueId);
+                        try {
+                            if (useIdsInRelationshipRenderingIfAvailable) {
+                                if (item.hasIDField()) {
+                                    fieldNameAsUniqueId = item.getEntity().getIDField().getName();
+                                    valueOfUniqueId = item.getValue(fieldNameAsUniqueId);
+                                }
                             }
-                        }
-                        itemGuidObject.addProperty(fieldNameAsUniqueId, valueOfUniqueId);
+                            itemGuidObject.addProperty(fieldNameAsUniqueId, valueOfUniqueId);
 
-                        arrayOfGuids.add(itemGuidObject);
+                            arrayOfGuids.add(itemGuidObject);
+                        }catch(Exception e){
+                            System.out.println("Error finding relationship");
+                        }
                     }
 
                     if(isCompressedRelationship && allowCompressedRelationships){

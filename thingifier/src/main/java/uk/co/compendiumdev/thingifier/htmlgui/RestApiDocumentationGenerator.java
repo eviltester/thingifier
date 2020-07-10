@@ -28,6 +28,7 @@ public class RestApiDocumentationGenerator {
     private final XmlThing xmlThing;
     private final DefaultGUIHTML mainMenu;
     private final ThingifierApiConfig apiConfig;
+    private String prependPath;
 
     public RestApiDocumentationGenerator(final Thingifier aThingifier) {
         this.thingifier = aThingifier;
@@ -37,14 +38,22 @@ public class RestApiDocumentationGenerator {
         jsonThing = new JsonThing(apiConfig.jsonOutput());
         xmlThing = new XmlThing(jsonThing);
         mainMenu = new DefaultGUIHTML();
+        prependPath = "";
     }
 
-    public String getApiDocumentation(final ApiRoutingDefinition routingDefinitions) {
+    public String getApiDocumentation(final ApiRoutingDefinition routingDefinitions,
+                                      final List<RoutingDefinition> additionalRoutes,
+                                      final String urlPath) {
 
         StringBuilder output = new StringBuilder();
 
         output.append(mainMenu.getPageStart("API Documentation"));
         output.append(mainMenu.getMenuAsHTML());
+
+
+        if(urlPath!=null){
+            prependPath = urlPath;
+        }
 
         if (thingifier != null) {
             // create generic API documentation
@@ -284,7 +293,8 @@ public class RestApiDocumentationGenerator {
             // only show if not a method not allowed method
             if (!currentEndPoint.equalsIgnoreCase(routingDefn.url())) {
                 // new endpoint
-                output.append(heading(4, "endpoint", String.format("/%s%n", routingDefn.url())));
+                output.append(heading(4, "endpoint", "/" + routingDefn.url()));
+                output.append(paragraph("e.g. <span class='endpoint'>" + url(routingDefn.url()) + "</span"));
                 currentEndPoint = routingDefn.url();
             }
             if (routingDefn.status().isReturnedFromCall() || routingDefn.status().value() != 405) {
@@ -293,21 +303,36 @@ public class RestApiDocumentationGenerator {
                     output.append(String.format("<ul>%n<li class='endpoint'>%n<strong>%s /%s</strong><ul><li class='normal'>%s</li></ul></li>%n</ul>",
                             routingDefn.verb(), routingDefn.url(), routingDefn.getDocumentation()));
 
-                    //output.append(heading(5, String.format("%s %s%n", routingDefn.verb(), routingDefn.url())));
-                    //output.append(paragraph(routingDefn.getDocumentation()));
                 }
             }
         }
 
         output.append(heading(4, "/docs"));
+        output.append(paragraph("e.g. <span class='endpoint'>" + url("/docs") + "</span"));
         output.append(paragraph("Show this documentation as HTML."));
 
-        output.append(heading(4, "/shutdown"));
-        output.append(paragraph("Shutdown the server."));
+        if(additionalRoutes!=null) {
+            for (RoutingDefinition route : additionalRoutes) {
+                output.append(heading(4, route.url()));
+                output.append(paragraph("e.g. <span class='endpoint'>" + url(route.url()) + "</span"));
+                output.append(paragraph(route.getDocumentation()));
+            }
+        }
 
         output.append(mainMenu.getPageFooter());
         output.append(mainMenu.getPageEnd());
         return output.toString();
+    }
+
+    private String url(final String postUrl) {
+
+        String midPath = "";
+        if(!postUrl.startsWith("/")){
+            midPath = "/";
+        }
+        // todo: option to make clickable?
+
+        return prependPath + midPath + postUrl;
     }
 
     private String heading(final int level, final String theclass, final String text) {

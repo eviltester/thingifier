@@ -5,9 +5,13 @@ import io.restassured.filter.log.RequestLoggingFilter;
 import io.restassured.filter.log.ResponseLoggingFilter;
 import spark.Spark;
 import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.api.routings.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.application.ThingifierRestServer;
 import uk.co.compendiumdev.thingifier.application.examples.TodoManagerThingifier;
 import uk.co.compendiumdev.thingifier.tactical.sparkstart.Port;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class Environment {
 
@@ -40,7 +44,8 @@ public class Environment {
             thingifier.apiConfig().jsonOutput().relationshipsUsesIdsIfAvailable(false);
             thingifier.apiConfig().jsonOutput().convertFieldsToDefinedTypes(false);
 
-            new ThingifierRestServer(args, "", thingifier);
+            List<RoutingDefinition> additionalRoutes = new ArrayList<>();
+            new ThingifierRestServer(args, "", thingifier, additionalRoutes);
             return "http://localhost:4567";
         }
 

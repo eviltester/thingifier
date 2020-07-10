@@ -75,6 +75,5 @@ public final class ApiResponseAsJson {
         Map errorResponseBody = new HashMap<String, Collection<String>>();
         errorResponseBody.put("errorMessages", myErrorMessages);
         return new Gson().toJson(errorResponseBody);
-
     }
 }

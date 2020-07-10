@@ -103,7 +103,7 @@ public class TodosCrudTest {
 
         final JsonPath body = response.jsonPath();
 
-        Assert.assertEquals("FALSE", body.get("doneStatus"));
+        Assert.assertEquals("false", body.get("doneStatus"));
         Assert.assertEquals(response.header("X-Thing-Instance-GUID"), body.get("guid"));
         Assert.assertEquals("", body.get("description"));
         Assert.assertEquals("a specific todo Title", body.get("title"));
@@ -128,7 +128,7 @@ public class TodosCrudTest {
                 header("X-Thing-Instance-GUID", specificGuid).
                 and().extract().body().jsonPath();
 
-        Assert.assertEquals("FALSE", body.get("doneStatus"));
+        Assert.assertEquals("false", body.get("doneStatus"));
         Assert.assertEquals(specificGuid, body.get("guid"));
         Assert.assertEquals("", body.get("description"));
         Assert.assertEquals("a specific todo Title for put", body.get("title"));
@@ -150,7 +150,7 @@ public class TodosCrudTest {
 
         body = response.getBody().jsonPath();
 
-        Assert.assertEquals("FALSE", body.get("doneStatus"));
+        Assert.assertEquals("false", body.get("doneStatus"));
         Assert.assertEquals(specificGuid, body.get("guid"));
         Assert.assertEquals("", body.get("description"));
         Assert.assertEquals("a put amended specific todo Title for put", body.get("title"));
@@ -172,7 +172,7 @@ public class TodosCrudTest {
 
         body = response.getBody().jsonPath();
 
-        Assert.assertEquals("FALSE", body.get("doneStatus"));
+        Assert.assertEquals("false", body.get("doneStatus"));
         Assert.assertEquals(specificGuid, body.get("guid"));
         Assert.assertEquals("", body.get("description"));
         Assert.assertEquals("a specific todo Title Amended", body.get("title"));
@@ -189,7 +189,7 @@ public class TodosCrudTest {
 
         body = response.getBody().jsonPath();
 
-        Assert.assertEquals("FALSE", body.get("todos[0].doneStatus"));
+        Assert.assertEquals("false", body.get("todos[0].doneStatus"));
         Assert.assertEquals(specificGuid, body.get("todos[0].guid"));
         Assert.assertEquals("", body.get("todos[0].description"));
         Assert.assertEquals("a specific todo Title Amended", body.get("todos[0].title"));

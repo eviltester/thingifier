@@ -41,7 +41,7 @@ public class TodoListThingifier {
                                         VRule.notEmpty()),
                         Field.is("description", STRING),
                         Field.is("doneStatus", FieldType.BOOLEAN).
-                                withDefaultValue("FALSE"));
+                                withDefaultValue("false"));
 
 
         ThingInstance paperwork = todo.createInstance().setValue("title", "scan paperwork");

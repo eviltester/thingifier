@@ -2,8 +2,10 @@ package uk.co.compendiumdev.thingifier.application;
 
 import spark.Spark;
 import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.api.routings.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.application.examples.TodoListThingifier;
 import uk.co.compendiumdev.thingifier.application.examples.TodoManagerThingifier;
+import uk.co.compendiumdev.thingifier.application.routehandlers.ShutdownRouteHandler;
 import uk.co.compendiumdev.thingifier.htmlgui.DefaultGUI;
 
 import java.util.ArrayList;
@@ -111,6 +113,9 @@ public class Main {
 
         String modelName=validModelNames.get(0);
 
+        // prevent shutdown verb as configurable through arguments e.g. -noshutdown
+        Boolean allowShutdown = true;
+
         System.out.println("Valid Model Names -model=");
         for(String aModelName : validModelNames){
             System.out.println(aModelName);
@@ -141,19 +146,30 @@ public class Main {
                     }
                 }
             }
+
+            if (arg.startsWith("-noshutdown")) {
+                allowShutdown = false;
+            }
         }
 
 
         Spark.port(proxyport);
         staticFileLocation("/public");
 
+
+        List<RoutingDefinition> additionalRoutes = new ArrayList<>();
+
+
         // todo : add shutdown behind an admin authentication with basic auth and a custom secret code header
         // todo : add some other admin endpoints e.g. show version details of the app etc.
-        // TODO: add a shutdown verb as configurable through arguments e.g. -shutdownable=false
-        get("/shutdown", (request, result) -> {
-            System.exit(0);
-            return "";
-        });
+
+
+        if(allowShutdown) {
+            additionalRoutes.addAll(
+                    new ShutdownRouteHandler().
+                            configureRoutes().
+                            getRoutes());
+        }
 
         Thingifier thingifier;
 
@@ -165,16 +181,23 @@ public class Main {
                 thingifier = new TodoManagerThingifier().get();
         }
 
-        new DefaultGUI(thingifier).setupDefaultGUI();
+        additionalRoutes.addAll(new DefaultGUI(thingifier).
+                                configureRoutes().
+                                getRoutes());
 
         ThingifierRestServer restServer;
 
         switch (modelName){
             case "simpleTodoList":
-                restServer = new ThingifierRestServer(args, "", thingifier);
+                restServer = new ThingifierRestServer(args, "",
+                                                thingifier,
+                                                additionalRoutes);
             case "todoListManager":
             default:
-                restServer = new ThingifierRestServer(args, "", thingifier);
+                restServer = new ThingifierRestServer(
+                                        args, "",
+                                        thingifier,
+                                        additionalRoutes);
         }
 
 

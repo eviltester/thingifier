@@ -8,17 +8,34 @@ import uk.co.compendiumdev.thingifier.api.routings.ApiRoutingDefinitionGenerator
 import uk.co.compendiumdev.thingifier.api.routings.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.htmlgui.RestApiDocumentationGenerator;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.List;
+
 import static spark.Spark.*;
 
 public class ThingifierRestServer {
+
+    private final List<RoutingDefinition> additionalRoutes;
+    private String urlPath;
 
 
     // todo : we should be able to configure the API routing for authorisation and support logging
 
 
-    public ThingifierRestServer(final String[] args, final String path, final Thingifier thingifier) {
+    public ThingifierRestServer(final String[] args, final String path,
+                                final Thingifier thingifier,
+                                final List<RoutingDefinition> additionalDocumentedRoutes) {
 
         ThingifierHttpApiBridge apiBridge = new ThingifierHttpApiBridge(thingifier);
+
+        this.additionalRoutes = additionalDocumentedRoutes;
+
+        this.urlPath = null;
+        // can set path, but if not set, pick up from requests
+        if(path!=null && path.length()>0) {
+            this.urlPath = path;
+        }
 
         before((request, response) -> {
 
@@ -32,6 +49,15 @@ public class ThingifierRestServer {
                 System.out.println(e);
             }
 
+            if(this.urlPath==null){
+                // capture the protocol and authority to use as rendered urls
+                try{
+                    final URL requestUrl = new URL(request.url());
+                    this.urlPath = requestUrl.getProtocol() + "://" + requestUrl.getAuthority();
+                }catch(MalformedURLException e){
+                    System.out.println(request.url() + " " + e.getMessage());
+                }
+            }
 
             // TODO: wrap this in a --verbose option
             System.out.println("**PROCESSING**");
@@ -58,7 +84,8 @@ public class ThingifierRestServer {
         get("/docs", (request, response) -> {
             response.type("text/html");
             response.status(200);
-            return new RestApiDocumentationGenerator(thingifier).getApiDocumentation(routingDefinitions);
+            return new RestApiDocumentationGenerator(thingifier).
+                    getApiDocumentation(routingDefinitions, additionalRoutes, this.urlPath);
         });
 
 

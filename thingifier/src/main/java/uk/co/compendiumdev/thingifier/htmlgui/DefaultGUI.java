@@ -4,6 +4,9 @@ import com.google.gson.GsonBuilder;
 import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.ThingifierApiConfig;
+import uk.co.compendiumdev.thingifier.api.routings.RoutingDefinition;
+import uk.co.compendiumdev.thingifier.api.routings.RoutingStatus;
+import uk.co.compendiumdev.thingifier.api.routings.RoutingVerb;
 import uk.co.compendiumdev.thingifier.generic.FieldType;
 import uk.co.compendiumdev.thingifier.generic.definitions.Field;
 import uk.co.compendiumdev.thingifier.generic.definitions.FieldValue;
@@ -13,7 +16,9 @@ import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
 import uk.co.compendiumdev.thingifier.reporting.JsonThing;
 import uk.co.compendiumdev.thingifier.reporting.XmlThing;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import static spark.Spark.get;
 
@@ -27,15 +32,21 @@ public class DefaultGUI {
     private final XmlThing xmlThing;
     private final ThingifierApiConfig apiConfig;
 
+    private List<RoutingDefinition> publicRoutes;
+
     public DefaultGUI(final Thingifier thingifier) {
         this.thingifier=thingifier;
         this.apiConfig = thingifier.apiConfig();
         this.jsonThing = new JsonThing(apiConfig.jsonOutput());
         this.xmlThing = new XmlThing(jsonThing);
         this.templates = new DefaultGUIHTML();
+        publicRoutes = new ArrayList<>();
     }
 
-    public void setupDefaultGUI(){
+    public List<RoutingDefinition> getRoutes(){
+        return publicRoutes;
+    }
+    public DefaultGUI configureRoutes(){
 
         get("/gui", (request, response) -> {
             response.type("text/html");
@@ -47,6 +58,13 @@ public class DefaultGUI {
             html.append(templates.getPageEnd());
             return html.toString();
         });
+
+        publicRoutes.add(new RoutingDefinition(
+                                RoutingVerb.GET,
+                                "/gui",
+                                RoutingStatus.returnedFromCall(),
+                                null
+                            ).addDocumentation("Show the Default GUI"));
 
         get("/gui/entities", (request, response) -> {
             response.type("text/html");
@@ -204,6 +222,8 @@ public class DefaultGUI {
             html.append(templates.getPageEnd());
             return html.toString();
         });
+
+        return this;
     }
 
     private String getInstanceAsUl(final ThingInstance instance) {

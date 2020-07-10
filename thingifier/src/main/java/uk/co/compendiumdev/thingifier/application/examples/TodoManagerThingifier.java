@@ -60,7 +60,7 @@ public class TodoManagerThingifier {
                                         VRule.notEmpty()),
                         Field.is("description", STRING),
                         Field.is("doneStatus", FieldType.BOOLEAN).
-                                withDefaultValue("FALSE"));
+                                withDefaultValue("false"));
 
         Thing project = todoManager.createThing("project", "projects");
 
@@ -70,9 +70,9 @@ public class TodoManagerThingifier {
                         Field.is("title", STRING),
                         Field.is("description", STRING),
                         Field.is("completed", FieldType.BOOLEAN).
-                                withDefaultValue("FALSE"),
+                                withDefaultValue("false"),
                         Field.is("active", FieldType.BOOLEAN).
-                                withDefaultValue("TRUE"));
+                                withDefaultValue("false"));
 
 
         Thing category = todoManager.createThing("category", "categories");

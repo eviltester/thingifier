@@ -2,9 +2,14 @@ package uk.co.compendiumdev.todolist.application;
 
 import spark.Spark;
 import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.api.routings.RoutingDefinition;
+import uk.co.compendiumdev.thingifier.application.routehandlers.ShutdownRouteHandler;
 import uk.co.compendiumdev.thingifier.htmlgui.DefaultGUI;
 import uk.co.compendiumdev.thingifier.application.ThingifierRestServer;
 import uk.co.compendiumdev.thingifier.application.examples.TodoListThingifier;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static spark.Spark.get;
 import static spark.Spark.staticFiles;
@@ -61,10 +66,11 @@ public class Main {
         Spark.port(proxyport);
         staticFiles.location("/public");
 
-        get("/shutdown", (request, result) -> {
-            System.exit(0);
-            return "";
-        });
+        List<RoutingDefinition> additionalRoutes = new ArrayList<>();
+
+        additionalRoutes.addAll(new ShutdownRouteHandler().
+                configureRoutes().
+                getRoutes());
 
         Thingifier thingifier;
 
@@ -98,11 +104,13 @@ public class Main {
 
 
 
-        new DefaultGUI(thingifier).setupDefaultGUI();
+        additionalRoutes.addAll(new DefaultGUI(thingifier).
+                configureRoutes().
+                getRoutes());
 
         ThingifierRestServer restServer;
 
-        restServer = new ThingifierRestServer(args, "", thingifier);
+        restServer = new ThingifierRestServer(args, "", thingifier, additionalRoutes);
 
         System.out.println("Running on " + Spark.port());
         System.out.println(" e.g. http://localhost:" + Spark.port());
