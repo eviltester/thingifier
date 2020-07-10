@@ -11,7 +11,6 @@ import uk.co.compendiumdev.thingifier.htmlgui.DefaultGUI;
 import java.util.ArrayList;
 import java.util.List;
 
-import static spark.Spark.*;
 
 /*
 
@@ -116,6 +115,11 @@ public class Main {
         // prevent shutdown verb as configurable through arguments e.g. -noshutdown
         Boolean allowShutdown = true;
 
+        // clear data every 10 minutes configuragle through arguments e.g. -autocleardown
+        // -autocleardown=15
+        Boolean clearDataPeriodically = false;
+        int clearDownMinutes=10;
+
         System.out.println("Valid Model Names -model=");
         for(String aModelName : validModelNames){
             System.out.println(aModelName);
@@ -150,6 +154,20 @@ public class Main {
             if (arg.startsWith("-noshutdown")) {
                 allowShutdown = false;
             }
+
+            if (arg.startsWith("-autocleardown")) {
+                clearDataPeriodically = true;
+                String[] details = arg.split("=");
+                if (details != null && details.length > 1) {
+                    String minutes = details[1].trim();
+                    try{
+                        clearDownMinutes = Integer.valueOf(minutes);
+                    }catch(Exception e){
+                        System.out.println("Invalid minutes " + minutes + " " +e.getMessage());
+                    }
+                    System.out.println(String.format("Will clear down every %d minutes", clearDownMinutes));
+                }
+            }
         }
 
 
@@ -176,14 +194,24 @@ public class Main {
         switch (modelName){
             case "simpleTodoList":
                 thingifier =  new TodoListThingifier().get();
+                break;
             case "todoListManager":
             default:
                 thingifier = new TodoManagerThingifier().get();
         }
 
+        thingifier.apiConfig().allowShowIdsInUrlsIfAvailable(true);
+        thingifier.apiConfig().allowShowIdsInResponsesIfAvailable(true);
+        thingifier.apiConfig().showSingleInstancesAsPlural(true);
+        thingifier.apiConfig().allowShowGuidsInResponses(false);
+
         additionalRoutes.addAll(new DefaultGUI(thingifier).
                                 configureRoutes().
                                 getRoutes());
+
+
+
+
 
         ThingifierRestServer restServer;
 
@@ -200,7 +228,10 @@ public class Main {
                                         additionalRoutes);
         }
 
-
+        if(clearDataPeriodically) {
+            restServer.registerPreRequestHook(
+                    new ClearDataPreRequestHook(clearDownMinutes, thingifier));
+        }
 
         System.out.println("Running on " + Spark.port());
         System.out.println(" e.g. http://localhost:" + Spark.port());

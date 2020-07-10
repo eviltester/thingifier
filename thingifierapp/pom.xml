@@ -103,13 +103,28 @@
                         <descriptorRef>jar-with-dependencies</descriptorRef>
                     </descriptorRefs>
                     <!-- rename the 'full' jar -->
-                    <finalName>thingifier-${project.version}-full</finalName>
+                    <finalName>thingifierapp-${project.version}-full</finalName>
                     <appendAssemblyId>false</appendAssemblyId>
                     <archive>
                         <manifest>
                             <mainClass>uk.co.compendiumdev.thingifier.application.Main</mainClass>
                         </manifest>
                     </archive>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>com.heroku.sdk</groupId>
+                <artifactId>heroku-maven-plugin</artifactId>
+                <version>1.1.3</version>
+                <configuration>
+                    <jdkVersion>${java.version}</jdkVersion>
+                    <appName>apithingifier</appName>
+                    <processTypes>
+                        <!-- https://devcenter.heroku.com/articles/deploying-java-applications-with-the-heroku-maven-plugin -->
+                        <!-- Tell Heroku how to launch your application -->
+                        <!-- try from procfile -->
+                        <web>java $JAVA_OPTS -cp target/classes:target/dependency/* uk.co.compendiumdev.thingifier.application.Main -model=simpleTodoList -noshutdown -autocleardown=10</web>
+                    </processTypes>
                 </configuration>
             </plugin>
         </plugins>

@@ -1,5 +1,6 @@
 package uk.co.compendiumdev.thingifier.application;
 
+import org.eclipse.jetty.http.HttpFields;
 import spark.Request;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponseError;
@@ -10,6 +11,7 @@ import uk.co.compendiumdev.thingifier.htmlgui.RestApiDocumentationGenerator;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 
 import static spark.Spark.*;
@@ -18,6 +20,7 @@ public class ThingifierRestServer {
 
     private final List<RoutingDefinition> additionalRoutes;
     private String urlPath;
+    private List<PreRequestHook> preRequestHooks;
 
 
     // todo : we should be able to configure the API routing for authorisation and support logging
@@ -31,6 +34,8 @@ public class ThingifierRestServer {
 
         this.additionalRoutes = additionalDocumentedRoutes;
 
+        preRequestHooks = new ArrayList<>();
+
         this.urlPath = null;
         // can set path, but if not set, pick up from requests
         if(path!=null && path.length()>0) {
@@ -41,10 +46,12 @@ public class ThingifierRestServer {
 
             // TODO: wrap this in a --verbose option
             try {
+                /*
                 System.out.println("**REQUEST**");
                 System.out.println(request.url());
                 System.out.println(request.pathInfo());
                 System.out.println(request.body());
+                 */
             } catch (Exception e) {
                 System.out.println(e);
             }
@@ -59,6 +66,14 @@ public class ThingifierRestServer {
                 }
             }
 
+            if(preRequestHooks!=null){
+                for(PreRequestHook hook : preRequestHooks){
+                    if(!hook.run(request, response)){
+                        return ;
+                    };
+                }
+            }
+
             // TODO: wrap this in a --verbose option
             System.out.println("**PROCESSING**");
         });
@@ -66,9 +81,11 @@ public class ThingifierRestServer {
         after((request, response) -> {
             // TODO: wrap this in a --verbose option
             try {
+                /*
                 System.out.println("**RESPONSE**");
                 System.out.println(response.status());
                 System.out.println(response.body());
+                 */
             } catch (Exception e) {
                 System.out.println(e);
             }
@@ -224,4 +241,8 @@ public class ThingifierRestServer {
         }
     }
 
+    public void registerPreRequestHook(final PreRequestHook hook) {
+        // pre-request hooks run pre-every-request
+        preRequestHooks.add(hook);
+    }
 }

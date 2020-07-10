@@ -1,6 +1,48 @@
 # Thingifier
 
-An experiment in Model Based Development.
+An experiment in Model Based API Development.
+
+## Download
+
+Thingifier comes preconfigured for download as:
+
+- [a simple todo list](https://github.com/eviltester/thingifier/releases/download/v1.5.1/runTodoListRestAPI-1.5.1.jar)
+- [a more complex todo list manager](https://github.com/eviltester/thingifier/releases/download/v1.5.1/runTodoListRestAPI-1.5.1.jar)
+
+When you download one of the `.jar` files then use:
+
+- `java -jar runTodoListRestAPI-1.5.1.jar`
+
+Where you replace the name of the `.jar` file with the name of the file you downloaded.
+
+- then visit https://localhost:4567 and you will see the welcome gui.
+- there are links to the API documentation, and the View GUI
+
+Command line options are:
+
+- `-port=1234` to change the port to `1234`
+- `-version=1` to start with a different version.
+    - Each api comes preconfigured with multiple versions, by default the 'best' version is used, so if you switch to an earlier version you might find more bugs.
+
+## Cloud Deploy
+
+An online version of the application can be found at:
+
+- https://apithingifier.herokuapp.com
+
+This version will reset all data every 10 minutes.
+
+If you want to practice seriously then I suggest downloading the `.jar` and running it locally.
+
+We are not responsible for any data that you find on the cloud deploy.
+
+We reserve the right to remove the cloud deploy or change the reset time if we discover it is being misused.
+
+## Usage
+
+Currently Thingifier is suitable for using as a Practice Test App for API Testing.
+    
+## Details
 
 Based on my [Compendium-TA](https://www.compendiumdev.co.uk/page.php?title=compendiumta) tool from 2003/2004.
 
@@ -24,125 +66,3 @@ If you want to generate test data for an api, investigate:
 
 ---
 
-This is a work in progress so it currently has a hard coded model of a small TODO application.
-
-## Model
-
-Entities:
-
-- todo
-    - Fields:
-        - doneStatus
-        - guid
-        - description
-        - title
-- project
-    - Fields:
-        - guid
-        - description
-        - active
-        - completed
-        - title
-- category
-    - Fields:
-        - guid
-        - description
-        - title
-
-Relationships:
-
-- projects : category => project
-- categories : todo => category
-- todos : category => todo
-- tasks : project => todo
-
-### Resulting REST API
-
-This generates the following REST API automatically
-
-- /todos
-    - GET - all the todos
-    - POST - create a todo - body JSON
-    - OPTIONS
-- /todos/_GUID_
-    - GET - a specific todo
-    - DELETE - a specific todo
-    - POST - amend the todo
-    - PUT - replace all the todo fields in the JSON body
-    - OPTIONS
-- /todos/_GUID_/categories
-    - GET - all the categories for a todo
-    - POST - create a todo - body JSON must contain a GUID for a category e.g. `{"guid":"1234-1234-1234-1234"}`
-    
-Similar for `/projects` and `/categories`
-
-The JSON body for creating and amending is simply
-
-`{"fieldname":"fieldvalue", "anotherFieldName":"anotherValue", etc.}`
-
-The XML body for creating and amending is simply
-
-`<entity><fieldname>fieldvalue></fieldname><anotherFieldName>anotherValue</anotherFieldName><entity>`
-
-e.g.
-
-`<todo><title>my title</title></todo>`
-
-The fieldnames are shown in the list above for the model or the code below.
-
-The REST API has some guards to check for 404s but very little error handling and no enforcement of mandatory fields etc.
-
-But it is a workable API and all details are stored in memory.
-
-The deployed app does have some sample data for testing purposes, this can easily be `DELETE`d using the API.
-    
-### Code for Model
-
-~~~~~~~~
-       Thing todo = todoManager.createThing("todo", "todos");
-
-        todo.definition()
-                .addFields(Field.is("title", STRING).
-                                mandatory().
-                                withValidation(
-                                        VRule.notEmpty(),
-                                        VRule.matchesType()),
-                        Field.is("description", STRING),
-                        Field.is("doneStatus", FieldType.BOOLEAN).
-                                withDefaultValue("FALSE").
-                                withValidation(
-                                        VRule.matchesType()));
-        
-        Thing project = todoManager.createThing("project", "projects");
-
-        project.definition()
-                .addFields(
-                        Field.is("title", STRING),
-                        Field.is("description", STRING),
-                        Field.is("completed", FieldType.BOOLEAN).
-                                withDefaultValue("FALSE").
-                                withValidation(VRule.matchesType()),
-                        Field.is("active", FieldType.BOOLEAN).
-                                withDefaultValue("TRUE").
-                                withValidation(VRule.matchesType()));
-
-
-        Thing category = todoManager.createThing("category", "categories");
-
-        category.definition()
-                .addFields(
-                        Field.is("title", STRING).
-                                mandatory().
-                                withValidation(VRule.notEmpty()),
-                        Field.is("description", STRING));
-
-        todoManager.defineRelationship(Between.things(project, todo), AndCall.it("tasks"), WithCardinality.of("1", "*")).
-                whenReversed(WithCardinality.of("1", "*"), AndCall.it("task-of"));
-
-        todoManager.defineRelationship(Between.things(project, category), AndCall.it("categories"), WithCardinality.of("1", "*"));
-        todoManager.defineRelationship(Between.things(category, todo), AndCall.it("todos"), WithCardinality.of("1", "*"));
-        todoManager.defineRelationship(Between.things(category, project), AndCall.it("projects"), WithCardinality.of("1", "*"));
-        todoManager.defineRelationship(Between.things(todo, category), AndCall.it("categories"), WithCardinality.of("1", "*"));
-~~~~~~~~
-    
-Default model can be found in [src/main/java/uk/co/compendiumdev/thingifier/application/TodoManagerThingifier.java](https://github.com/eviltester/thingifier/blob/master/src/main/java/uk/co/compendiumdev/thingifier/application/TodoManagerThingifier.java)

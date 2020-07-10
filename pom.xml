@@ -9,7 +9,7 @@
 
 
     <properties>
-        <thingifier.version>1.5.2-SNAPSHOT</thingifier.version>
+        <thingifier.version>1.5.2</thingifier.version>
         <java.version>1.8</java.version>
     </properties>
 
@@ -24,6 +24,15 @@
 </project>
 
         <!--
+
+        1.5.2
+
+            - added styling to the gui
+            - added many configuration options
+            - started added 'hooks' for responses to make easier to extend
+            - added xml and json examples in documentation output
+            - created heroku instance which auto clears
+            - split out project into more modules to make easier to customise and maintain
 
         1.5.1
             - added simple view gui /gui
