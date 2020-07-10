@@ -39,6 +39,12 @@
             <version>${thingifier.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>uk.co.compendiumdev.thingifier</groupId>
+            <artifactId>examplemodels</artifactId>
+            <version>${thingifier.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>

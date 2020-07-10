@@ -154,7 +154,7 @@ public class Main {
 
 
         Spark.port(proxyport);
-        staticFileLocation("/public");
+        Spark.staticFileLocation("/public");
 
 
         List<RoutingDefinition> additionalRoutes = new ArrayList<>();

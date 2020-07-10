@@ -15,9 +15,11 @@
 
     <modules>
         <module>thingifier</module>
+        <module>examplemodels</module>
         <module>todoManagerRestAuto</module>
         <module>standAloneTodoListRestApi</module>
         <module>standAloneTodoListManagerRestApi</module>
+        <module>thingifierapp</module>
     </modules>
 </project>
 
