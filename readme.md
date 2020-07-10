@@ -6,12 +6,12 @@ An experiment in Model Based API Development.
 
 Thingifier comes preconfigured for download as:
 
-- [a simple todo list](https://github.com/eviltester/thingifier/releases/download/v1.5.1/runTodoListRestAPI-1.5.1.jar)
-- [a more complex todo list manager](https://github.com/eviltester/thingifier/releases/download/v1.5.1/runTodoListRestAPI-1.5.1.jar)
+- [a simple todo list](https://github.com/eviltester/thingifier/releases/download/v1.5.2/runTodoListRestAPI-1.5.2.jar)
+- [a more complex todo list manager](https://github.com/eviltester/thingifier/releases/download/v1.5.2/runTodoManagerRestAPI-1.5.2.jar)
 
 When you download one of the `.jar` files then use:
 
-- `java -jar runTodoListRestAPI-1.5.1.jar`
+- `java -jar runTodoListRestAPI-1.5.2.jar`
 
 Where you replace the name of the `.jar` file with the name of the file you downloaded.
 
