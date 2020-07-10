@@ -15,7 +15,7 @@ When you download one of the `.jar` files then use:
 
 Where you replace the name of the `.jar` file with the name of the file you downloaded.
 
-- then visit https://localhost:4567 and you will see the welcome gui.
+- then visit http://localhost:4567 and you will see the welcome gui.
 - there are links to the API documentation, and the View GUI
 
 Command line options are:
