@@ -20,6 +20,11 @@
             <artifactId>thingifier</artifactId>
             <version>${thingifier.version}</version>
         </dependency>
+        <dependency>
+            <groupId>uk.co.compendiumdev.thingifier</groupId>
+            <artifactId>examplemodels</artifactId>
+            <version>${thingifier.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
