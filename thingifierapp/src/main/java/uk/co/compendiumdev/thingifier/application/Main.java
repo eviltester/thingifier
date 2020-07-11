@@ -5,6 +5,9 @@ import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.application.examples.TodoListThingifier;
 import uk.co.compendiumdev.thingifier.application.examples.TodoManagerThingifier;
+import uk.co.compendiumdev.thingifier.application.httprequestHooks.ClearDataPreRequestHook;
+import uk.co.compendiumdev.thingifier.application.httprequestHooks.LogTheRequestHook;
+import uk.co.compendiumdev.thingifier.application.httprequestHooks.LogTheResponseHook;
 import uk.co.compendiumdev.thingifier.application.routehandlers.ShutdownRouteHandler;
 import uk.co.compendiumdev.thingifier.htmlgui.DefaultGUI;
 
@@ -97,144 +100,50 @@ public class Main {
 
     public static void main(String[] args) {
 
+        MainImplementation app = new MainImplementation();
 
-        Integer proxyport = 4567;    // default for spark
+        app.registerModel("todoListManager", new TodoManagerThingifier().get());
+        app.registerModel("simpleTodoList", new TodoListThingifier().get(), true);
 
-        // added to support heroku as per https://sparktutorials.github.io/2015/08/24/spark-heroku.html
-        // environment can override config for port
-        if (hasHerokuAssignedPort()) {
-            proxyport = getHerokuAssignedPort();
-        }
+        app.setDefaultsFromArgs(args);
 
-        List<String> validModelNames = new ArrayList();
-        validModelNames.add("todoListManager");
-        validModelNames.add("simpleTodoList");
+        // could process args independently here
+        // or override args
+        // e.g. set port independently to a different default
+        //app.setPort(1234);
+        //app.setStaticFileLocation("/public");
+        //app.setAllowShutdown(false);
 
-        String modelName=validModelNames.get(0);
-
-        // prevent shutdown verb as configurable through arguments e.g. -noshutdown
-        Boolean allowShutdown = true;
-
-        // clear data every 10 minutes configuragle through arguments e.g. -autocleardown
-        // -autocleardown=15
-        Boolean clearDataPeriodically = false;
-        int clearDownMinutes=10;
-
-        System.out.println("Valid Model Names -model=");
-        for(String aModelName : validModelNames){
-            System.out.println(aModelName);
-        }
-
-        for (String arg : args) {
-            System.out.println("Args: " + arg);
-
-            if (arg.startsWith("-port")) {
-                String[] details = arg.split("=");
-                if (details != null && details.length > 1) {
-                    proxyport = Integer.parseInt(details[1].trim());
-                    System.out.println("Will configure web server to use port " + proxyport);
-                }
-            }
-
-            if (arg.startsWith("-model")) {
-                String[] details = arg.split("=");
-                if (details != null && details.length > 1) {
-                    String argModelName = details[1].trim();
-                    if(validModelNames.contains(argModelName)){
-                        modelName = argModelName;
-                        System.out.println("Will use model named " + modelName);
-                    }else{
-                        System.out.println(
-                                String.format("Invalid model name %s, using %s",
-                                        argModelName, modelName));
-                    }
-                }
-            }
-
-            if (arg.startsWith("-noshutdown")) {
-                allowShutdown = false;
-            }
-
-            if (arg.startsWith("-autocleardown")) {
-                clearDataPeriodically = true;
-                String[] details = arg.split("=");
-                if (details != null && details.length > 1) {
-                    String minutes = details[1].trim();
-                    try{
-                        clearDownMinutes = Integer.valueOf(minutes);
-                    }catch(Exception e){
-                        System.out.println("Invalid minutes " + minutes + " " +e.getMessage());
-                    }
-                    System.out.println(String.format("Will clear down every %d minutes", clearDownMinutes));
-                }
-            }
-        }
-
-
-        Spark.port(proxyport);
-        Spark.staticFileLocation("/public");
-
-
-        List<RoutingDefinition> additionalRoutes = new ArrayList<>();
-
+        app.configurePortAndDefaultRoutes();
+        app.setupBuiltInConfigurableRoutes();
 
         // todo : add shutdown behind an admin authentication with basic auth and a custom secret code header
         // todo : add some other admin endpoints e.g. show version details of the app etc.
 
+        // allows thingifier to be used in additional custom route configuration
+        // or apiConfig()
+        // setup the thingifier
+        Thingifier thingifier = app.chooseThingifier();
 
-        if(allowShutdown) {
-            additionalRoutes.addAll(
-                    new ShutdownRouteHandler().
-                            configureRoutes().
-                            getRoutes());
-        }
-
-        Thingifier thingifier;
-
-        switch (modelName){
-            case "simpleTodoList":
-                thingifier =  new TodoListThingifier().get();
-                break;
-            case "todoListManager":
-            default:
-                thingifier = new TodoManagerThingifier().get();
-        }
+        // todo: have configuration profiles on thingifier then
+        // app.configureProfile(); app.configureProfile("v1");
 
         thingifier.apiConfig().allowShowIdsInUrlsIfAvailable(true);
         thingifier.apiConfig().allowShowIdsInResponsesIfAvailable(true);
         thingifier.apiConfig().showSingleInstancesAsPlural(true);
         thingifier.apiConfig().allowShowGuidsInResponses(false);
 
-        additionalRoutes.addAll(new DefaultGUI(thingifier).
-                                configureRoutes().
-                                getRoutes());
+        // can configure additional routes and processing
+//        app.addAdditionalRoutes(new DefaultGUI(thingifier).
+//                                    configureRoutes().
+//                                getRoutes());
+        app.setupDefaultGui();
 
+        // returning the restServer supports adding more 'hooks'
+        ThingifierRestServer restServer = app.startRestServer();
 
+        app.addBuiltInArgConfiguredHooks();
 
-
-
-        ThingifierRestServer restServer;
-
-        switch (modelName){
-            case "simpleTodoList":
-                restServer = new ThingifierRestServer(args, "",
-                                                thingifier,
-                                                additionalRoutes);
-            case "todoListManager":
-            default:
-                restServer = new ThingifierRestServer(
-                                        args, "",
-                                        thingifier,
-                                        additionalRoutes);
-        }
-
-        if(clearDataPeriodically) {
-            restServer.registerPreRequestHook(
-                    new ClearDataPreRequestHook(clearDownMinutes, thingifier));
-        }
-
-        System.out.println("Running on " + Spark.port());
-        System.out.println(" e.g. http://localhost:" + Spark.port());
 
     }
 

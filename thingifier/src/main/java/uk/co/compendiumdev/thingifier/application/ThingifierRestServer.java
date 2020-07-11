@@ -1,12 +1,12 @@
 package uk.co.compendiumdev.thingifier.application;
 
-import org.eclipse.jetty.http.HttpFields;
 import spark.Request;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponseError;
 import uk.co.compendiumdev.thingifier.api.routings.ApiRoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.routings.ApiRoutingDefinitionGenerator;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingDefinition;
+import uk.co.compendiumdev.thingifier.application.httprequestHooks.RequestHook;
 import uk.co.compendiumdev.thingifier.htmlgui.RestApiDocumentationGenerator;
 
 import java.net.MalformedURLException;
@@ -20,7 +20,8 @@ public class ThingifierRestServer {
 
     private final List<RoutingDefinition> additionalRoutes;
     private String urlPath;
-    private List<PreRequestHook> preRequestHooks;
+    private List<RequestHook> preRequestHooks;
+    private List<RequestHook> postRequestHooks;
 
 
     // todo : we should be able to configure the API routing for authorisation and support logging
@@ -35,6 +36,7 @@ public class ThingifierRestServer {
         this.additionalRoutes = additionalDocumentedRoutes;
 
         preRequestHooks = new ArrayList<>();
+        postRequestHooks = new ArrayList<>();
 
         this.urlPath = null;
         // can set path, but if not set, pick up from requests
@@ -43,18 +45,6 @@ public class ThingifierRestServer {
         }
 
         before((request, response) -> {
-
-            // TODO: wrap this in a --verbose option
-            try {
-                /*
-                System.out.println("**REQUEST**");
-                System.out.println(request.url());
-                System.out.println(request.pathInfo());
-                System.out.println(request.body());
-                 */
-            } catch (Exception e) {
-                System.out.println(e);
-            }
 
             if(this.urlPath==null){
                 // capture the protocol and authority to use as rendered urls
@@ -67,27 +57,18 @@ public class ThingifierRestServer {
             }
 
             if(preRequestHooks!=null){
-                for(PreRequestHook hook : preRequestHooks){
-                    if(!hook.run(request, response)){
-                        return ;
-                    };
+                for(RequestHook hook : preRequestHooks){
+                    hook.run(request, response);
                 }
             }
 
-            // TODO: wrap this in a --verbose option
-            System.out.println("**PROCESSING**");
         });
 
         after((request, response) -> {
-            // TODO: wrap this in a --verbose option
-            try {
-                /*
-                System.out.println("**RESPONSE**");
-                System.out.println(response.status());
-                System.out.println(response.body());
-                 */
-            } catch (Exception e) {
-                System.out.println(e);
+            if(postRequestHooks!=null){
+                for(RequestHook hook : postRequestHooks){
+                    hook.run(request, response);
+                }
             }
         });
 
@@ -241,8 +222,13 @@ public class ThingifierRestServer {
         }
     }
 
-    public void registerPreRequestHook(final PreRequestHook hook) {
+    public void registerPreRequestHook(final RequestHook hook) {
         // pre-request hooks run pre-every-request
         preRequestHooks.add(hook);
+    }
+
+    public void registerPostRequestHook(final RequestHook hook) {
+        // post-request hooks run after-every-response
+        postRequestHooks.add(hook);
     }
 }
