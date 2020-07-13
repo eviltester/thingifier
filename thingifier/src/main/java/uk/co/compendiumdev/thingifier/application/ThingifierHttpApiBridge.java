@@ -7,33 +7,62 @@ import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiResponse;
 import uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi;
+import uk.co.compendiumdev.thingifier.application.httpapimessagehooks.HttpApiRequestHook;
+import uk.co.compendiumdev.thingifier.application.httpapimessagehooks.HttpApiResponseHook;
 
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 final public class ThingifierHttpApiBridge {
 
-    private final Thingifier thingifier;
+    // todo: the methods here are all very similar, we should refactor this commonality
 
-    public ThingifierHttpApiBridge(final Thingifier aThingifier) {
+    private final Thingifier thingifier;
+    private List<HttpApiRequestHook> apiRequestHooks;
+    private List<HttpApiResponseHook> apiResponseHooks;
+
+    public ThingifierHttpApiBridge(final Thingifier aThingifier){
+        this(aThingifier, null, null);
+    }
+
+    public ThingifierHttpApiBridge(final Thingifier aThingifier,
+                                   List<HttpApiRequestHook> apiRequestHooks,
+                                   List<HttpApiResponseHook> apiResponseHooks) {
         this.thingifier = aThingifier;
+        if(apiRequestHooks==null){
+            this.apiRequestHooks = new ArrayList<>();
+        }else{
+            this.apiRequestHooks = apiRequestHooks;
+        }
+        if(apiResponseHooks==null){
+            this.apiResponseHooks = new ArrayList<>();
+        }else{
+            this.apiResponseHooks = apiResponseHooks;
+        }
     }
 
     public String get(final Request request, final Response response) {
 
-        final HttpApiRequest theRequest = new HttpApiRequest(request.pathInfo()).setHeaders(headersAsMap(request));
-        final HttpApiResponse theResponse = new ThingifierHttpApi(thingifier).get(theRequest);
+        final HttpApiRequest theRequest = new HttpApiRequest(request.pathInfo()).
+                                                setHeaders(headersAsMap(request));
+
+        HttpApiResponse theResponse = new ThingifierHttpApi(thingifier).get(theRequest);
+
         updateResponseFromHttpResponse(theResponse, response);
         return theResponse.getBody();
 
     }
 
+
+
     public String post(final Request request, final Response response) {
 
-        final HttpApiRequest theRequest = new HttpApiRequest(request.pathInfo()).setHeaders(headersAsMap(request)).setBody(request.body());
-        final HttpApiResponse theResponse = new ThingifierHttpApi(thingifier).post(theRequest);
+        final HttpApiRequest theRequest = new HttpApiRequest(request.pathInfo()).
+                                            setHeaders(headersAsMap(request)).
+                                            setBody(request.body());
+
+        HttpApiResponse theResponse = new ThingifierHttpApi(thingifier).post(theRequest);
+
         updateResponseFromHttpResponse(theResponse, response);
         return theResponse.getBody();
 
@@ -41,8 +70,11 @@ final public class ThingifierHttpApiBridge {
 
     public String delete(final Request request, final Response response) {
 
-        final HttpApiRequest theRequest = new HttpApiRequest(request.pathInfo()).setHeaders(headersAsMap(request));
-        final HttpApiResponse theResponse = new ThingifierHttpApi(thingifier).delete(theRequest);
+        final HttpApiRequest theRequest = new HttpApiRequest(request.pathInfo()).
+                                                setHeaders(headersAsMap(request));
+
+        HttpApiResponse theResponse = new ThingifierHttpApi(thingifier).delete(theRequest);
+
         updateResponseFromHttpResponse(theResponse, response);
         return theResponse.getBody();
 
@@ -50,18 +82,24 @@ final public class ThingifierHttpApiBridge {
 
     public String put(final Request request, final Response response) {
 
-        final HttpApiRequest theRequest = new HttpApiRequest(request.pathInfo()).setHeaders(headersAsMap(request)).setBody(request.body());
-        final HttpApiResponse theResponse = new ThingifierHttpApi(thingifier).put(theRequest);
+        final HttpApiRequest theRequest = new HttpApiRequest(request.pathInfo()).
+                                            setHeaders(headersAsMap(request)).
+                                            setBody(request.body());
+
+        HttpApiResponse theResponse = new ThingifierHttpApi(thingifier).put(theRequest);
+
         updateResponseFromHttpResponse(theResponse, response);
         return theResponse.getBody();
-
     }
 
 
     public String query(final Request request, final Response response, final String query) {
 
-        final HttpApiRequest theRequest = new HttpApiRequest(request.pathInfo()).setHeaders(headersAsMap(request));
-        final HttpApiResponse theResponse = new ThingifierHttpApi(thingifier).query(theRequest, query);
+        final HttpApiRequest theRequest = new HttpApiRequest(request.pathInfo()).
+                                                setHeaders(headersAsMap(request));
+
+        HttpApiResponse theResponse = new ThingifierHttpApi(thingifier).query(theRequest, query);
+
         updateResponseFromHttpResponse(theResponse, response);
         return theResponse.getBody();
     }

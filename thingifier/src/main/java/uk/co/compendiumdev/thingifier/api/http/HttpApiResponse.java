@@ -61,6 +61,10 @@ final public class HttpApiResponse {
 
     private String getHeader(final String name, Map<String, String> requestHeaders) {
 
+        if(requestHeaders==null){
+            return "";
+        }
+
         if (requestHeaders.containsKey(name)) {
             return requestHeaders.get(name);
         }

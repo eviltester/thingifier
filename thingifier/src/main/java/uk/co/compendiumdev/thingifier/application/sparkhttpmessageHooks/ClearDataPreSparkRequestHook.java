@@ -1,4 +1,4 @@
-package uk.co.compendiumdev.thingifier.application.httprequestHooks;
+package uk.co.compendiumdev.thingifier.application.sparkhttpmessageHooks;
 
 import spark.Request;
 import spark.Response;
@@ -6,13 +6,13 @@ import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
 
-public class ClearDataPreRequestHook implements RequestHook {
+public class ClearDataPreSparkRequestHook implements SparkRequestResponseHook {
     private long lastReset;
     private final int minutes;
     private final Thingifier thingifier;
     private final long maxgap;
 
-    public ClearDataPreRequestHook(final int minutes, Thingifier thingifier) {
+    public ClearDataPreSparkRequestHook(final int minutes, Thingifier thingifier) {
         this.minutes = minutes;
         this.lastReset = System.currentTimeMillis();
         this.thingifier = thingifier;

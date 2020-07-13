@@ -45,7 +45,7 @@ public class Environment {
             thingifier.apiConfig().jsonOutput().convertFieldsToDefinedTypes(false);
 
             List<RoutingDefinition> additionalRoutes = new ArrayList<>();
-            new ThingifierRestServer(args, "", thingifier, additionalRoutes);
+            new ThingifierRestServer("", thingifier, additionalRoutes);
             return "http://localhost:4567";
         }
 

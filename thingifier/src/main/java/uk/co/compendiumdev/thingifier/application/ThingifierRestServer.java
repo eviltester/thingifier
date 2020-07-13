@@ -1,12 +1,15 @@
 package uk.co.compendiumdev.thingifier.application;
 
+import org.eclipse.jetty.http.HttpFields;
 import spark.Request;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponseError;
 import uk.co.compendiumdev.thingifier.api.routings.ApiRoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.routings.ApiRoutingDefinitionGenerator;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingDefinition;
-import uk.co.compendiumdev.thingifier.application.httprequestHooks.RequestHook;
+import uk.co.compendiumdev.thingifier.application.httpapimessagehooks.HttpApiRequestHook;
+import uk.co.compendiumdev.thingifier.application.httpapimessagehooks.HttpApiResponseHook;
+import uk.co.compendiumdev.thingifier.application.sparkhttpmessageHooks.SparkRequestResponseHook;
 import uk.co.compendiumdev.thingifier.htmlgui.RestApiDocumentationGenerator;
 
 import java.net.MalformedURLException;
@@ -20,14 +23,16 @@ public class ThingifierRestServer {
 
     private final List<RoutingDefinition> additionalRoutes;
     private String urlPath;
-    private List<RequestHook> preRequestHooks;
-    private List<RequestHook> postRequestHooks;
+    private List<SparkRequestResponseHook> preRequestHooks;
+    private List<SparkRequestResponseHook> postRequestHooks;
+    private List<HttpApiRequestHook> httpApiRequestHooks;
+    private final List<HttpApiResponseHook> httpApiResponseHooks;
 
 
     // todo : we should be able to configure the API routing for authorisation and support logging
 
 
-    public ThingifierRestServer(final String[] args, final String path,
+    public ThingifierRestServer(final String path,
                                 final Thingifier thingifier,
                                 final List<RoutingDefinition> additionalDocumentedRoutes) {
 
@@ -37,6 +42,8 @@ public class ThingifierRestServer {
 
         preRequestHooks = new ArrayList<>();
         postRequestHooks = new ArrayList<>();
+        httpApiRequestHooks = new ArrayList<>();
+        httpApiResponseHooks = new ArrayList<>();
 
         this.urlPath = null;
         // can set path, but if not set, pick up from requests
@@ -57,7 +64,7 @@ public class ThingifierRestServer {
             }
 
             if(preRequestHooks!=null){
-                for(RequestHook hook : preRequestHooks){
+                for(SparkRequestResponseHook hook : preRequestHooks){
                     hook.run(request, response);
                 }
             }
@@ -66,7 +73,7 @@ public class ThingifierRestServer {
 
         after((request, response) -> {
             if(postRequestHooks!=null){
-                for(RequestHook hook : postRequestHooks){
+                for(SparkRequestResponseHook hook : postRequestHooks){
                     hook.run(request, response);
                 }
             }
@@ -100,7 +107,6 @@ public class ThingifierRestServer {
                     if (defn.status().isReturnedFromCall()) {
                         post(defn.url(), (request, response) -> {
                             return apiBridge.post(request, response);
-                            //return apiResponse.getBody();
                         });
                     }
                     break;
@@ -121,8 +127,6 @@ public class ThingifierRestServer {
                     } else {
                         delete(defn.url(), (request, response) -> {
                             return apiBridge.delete(request, response);
-
-                            //return apiResponse.getBody();
                         });
                     }
                     break;
@@ -143,7 +147,6 @@ public class ThingifierRestServer {
                     } else {
                         put(defn.url(), (request, response) -> {
                             return apiBridge.put(request, response);
-                            //return apiResponse.getBody();
                         });
                     }
                     break;
@@ -222,13 +225,23 @@ public class ThingifierRestServer {
         }
     }
 
-    public void registerPreRequestHook(final RequestHook hook) {
+    public void registerPreRequestHook(final SparkRequestResponseHook hook) {
         // pre-request hooks run pre-every-request
         preRequestHooks.add(hook);
     }
 
-    public void registerPostRequestHook(final RequestHook hook) {
+    public void registerPostRequestHook(final SparkRequestResponseHook hook) {
         // post-request hooks run after-every-response
         postRequestHooks.add(hook);
+    }
+
+    public void registerHttpApiRequestHook(final HttpApiRequestHook hook) {
+        // pre-request hooks run pre-every-api-request
+        httpApiRequestHooks.add(hook);
+    }
+
+    public void registerHttpApiResponseHook(final HttpApiResponseHook hook) {
+        // pre-request hooks run pre-every-api-request
+        httpApiResponseHooks.add(hook);
     }
 }

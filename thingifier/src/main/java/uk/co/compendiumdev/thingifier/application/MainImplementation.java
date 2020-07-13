@@ -5,9 +5,9 @@ import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfigProfile;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfigProfiles;
-import uk.co.compendiumdev.thingifier.application.httprequestHooks.ClearDataPreRequestHook;
-import uk.co.compendiumdev.thingifier.application.httprequestHooks.LogTheRequestHook;
-import uk.co.compendiumdev.thingifier.application.httprequestHooks.LogTheResponseHook;
+import uk.co.compendiumdev.thingifier.application.sparkhttpmessageHooks.ClearDataPreSparkRequestHook;
+import uk.co.compendiumdev.thingifier.application.sparkhttpmessageHooks.LogTheSparkRequestHook;
+import uk.co.compendiumdev.thingifier.application.sparkhttpmessageHooks.LogTheResponseHook;
 import uk.co.compendiumdev.thingifier.application.routehandlers.ShutdownRouteHandler;
 import uk.co.compendiumdev.thingifier.htmlgui.DefaultGUI;
 
@@ -33,10 +33,10 @@ public class MainImplementation {
     ThingifierRestServer restServer;
     private String[] args;
     // prevent shutdown verb as configurable through arguments e.g. -noshutdown
-    Boolean allowShutdown;
+    boolean allowShutdown;
     // clear data every 10 minutes configuragle through arguments e.g. -autocleardown
     // -autocleardown=15
-    Boolean clearDataPeriodically;
+    boolean clearDataPeriodically;
     int clearDownMinutes;
     // impact the logging detail -verbose
     boolean verboseMode;
@@ -282,8 +282,7 @@ public class MainImplementation {
             throw new RuntimeException("No Thingifier Model Setup");
         }
 
-        restServer = new ThingifierRestServer(
-                args, "",
+        restServer = new ThingifierRestServer( "",
                 thingifier,
                 additionalRoutes);
 
@@ -297,12 +296,12 @@ public class MainImplementation {
 
         if(clearDataPeriodically) {
             restServer.registerPreRequestHook(
-                    new ClearDataPreRequestHook(clearDownMinutes, thingifier));
+                    new ClearDataPreSparkRequestHook(clearDownMinutes, thingifier));
         }
 
         if(verboseMode){
             restServer.registerPreRequestHook(
-                    new LogTheRequestHook());
+                    new LogTheSparkRequestHook());
             restServer.registerPreRequestHook(
                     new LogTheResponseHook());
         }

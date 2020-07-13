@@ -24,7 +24,6 @@ public class ThingifierRestAPIHandler {
     // TODO: we should be able to accept xml with correct content type
     // TODO: we should be able to accept html forms with correct content type
     // todo allow an accept text/html to create different output - (probably handled by routings rather than api)
-    // TODO : this whole class needs to be refactored and wrapped with unit tests
     // todo : generate examples when outputing the api documentation
 
     // TODO: - listed here https://www.lisihocke.com/2018/07/testing-tour-stop-16-pair-exploring-an-api-with-thomas.html

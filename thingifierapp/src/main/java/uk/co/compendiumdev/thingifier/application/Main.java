@@ -1,18 +1,8 @@
 package uk.co.compendiumdev.thingifier.application;
 
-import spark.Spark;
 import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.api.routings.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.application.examples.TodoListThingifier;
 import uk.co.compendiumdev.thingifier.application.examples.TodoManagerThingifier;
-import uk.co.compendiumdev.thingifier.application.httprequestHooks.ClearDataPreRequestHook;
-import uk.co.compendiumdev.thingifier.application.httprequestHooks.LogTheRequestHook;
-import uk.co.compendiumdev.thingifier.application.httprequestHooks.LogTheResponseHook;
-import uk.co.compendiumdev.thingifier.application.routehandlers.ShutdownRouteHandler;
-import uk.co.compendiumdev.thingifier.htmlgui.DefaultGUI;
-
-import java.util.ArrayList;
-import java.util.List;
 
 
 /*

@@ -1,9 +1,9 @@
-package uk.co.compendiumdev.thingifier.application.httprequestHooks;
+package uk.co.compendiumdev.thingifier.application.sparkhttpmessageHooks;
 
 import spark.Request;
 import spark.Response;
 
-public class LogTheRequestHook implements RequestHook {
+public class LogTheSparkRequestHook implements SparkRequestResponseHook {
     @Override
     public void run(final Request request, final Response response) {
         try {
