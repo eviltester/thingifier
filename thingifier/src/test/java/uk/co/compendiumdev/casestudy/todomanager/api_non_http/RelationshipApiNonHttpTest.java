@@ -3,7 +3,6 @@ package uk.co.compendiumdev.casestudy.todomanager.api_non_http;
 import com.google.gson.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.casestudy.todomanager.TodoManagerModel;
 import uk.co.compendiumdev.thingifier.Thing;
@@ -13,8 +12,8 @@ import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponseAsJson;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponseAsXml;
-import uk.co.compendiumdev.thingifier.generic.definitions.FieldValue;
-import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.domain.definitions.FieldValue;
+import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
 import uk.co.compendiumdev.thingifier.reporting.JsonThing;
 
 import java.util.*;

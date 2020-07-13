@@ -1,13 +1,13 @@
 package uk.co.compendiumdev.thingifier;
 
 import uk.co.compendiumdev.thingifier.api.ThingifierRestAPIHandler;
-import uk.co.compendiumdev.thingifier.generic.definitions.Cardinality;
-import uk.co.compendiumdev.thingifier.generic.definitions.FieldValue;
-import uk.co.compendiumdev.thingifier.generic.definitions.RelationshipDefinition;
-import uk.co.compendiumdev.thingifier.generic.definitions.RelationshipVector;
-import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
-import uk.co.compendiumdev.thingifier.generic.dsl.relationship.AndCall;
-import uk.co.compendiumdev.thingifier.generic.dsl.relationship.Between;
+import uk.co.compendiumdev.thingifier.domain.definitions.Cardinality;
+import uk.co.compendiumdev.thingifier.domain.definitions.FieldValue;
+import uk.co.compendiumdev.thingifier.domain.definitions.RelationshipDefinition;
+import uk.co.compendiumdev.thingifier.domain.definitions.RelationshipVector;
+import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.domain.dsl.relationship.AndCall;
+import uk.co.compendiumdev.thingifier.domain.dsl.relationship.Between;
 import uk.co.compendiumdev.thingifier.reporting.ThingReporter;
 
 import java.util.*;

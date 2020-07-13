@@ -2,8 +2,8 @@ package uk.co.compendiumdev.thingifier.thingdefinition;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import uk.co.compendiumdev.thingifier.generic.definitions.Field;
-import uk.co.compendiumdev.thingifier.generic.definitions.ThingDefinition;
+import uk.co.compendiumdev.thingifier.domain.definitions.Field;
+import uk.co.compendiumdev.thingifier.domain.definitions.ThingDefinition;
 
 public class ThingDefinitionTest {
 

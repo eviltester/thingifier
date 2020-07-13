@@ -2,15 +2,12 @@ package uk.co.compendiumdev.thingifier.application.examples;
 
 import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.generic.FieldType;
-import uk.co.compendiumdev.thingifier.generic.definitions.Field;
-import uk.co.compendiumdev.thingifier.generic.definitions.validation.VRule;
-import uk.co.compendiumdev.thingifier.generic.dsl.relationship.AndCall;
-import uk.co.compendiumdev.thingifier.generic.dsl.relationship.Between;
-import uk.co.compendiumdev.thingifier.generic.dsl.relationship.WithCardinality;
-import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.domain.FieldType;
+import uk.co.compendiumdev.thingifier.domain.definitions.Field;
+import uk.co.compendiumdev.thingifier.domain.definitions.validation.VRule;
+import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
 
-import static uk.co.compendiumdev.thingifier.generic.FieldType.STRING;
+import static uk.co.compendiumdev.thingifier.domain.FieldType.STRING;
 
 public class TodoListThingifier {
 
@@ -39,9 +36,10 @@ public class TodoListThingifier {
                                 mandatory().
                                 withValidation(
                                         VRule.notEmpty()),
-                        Field.is("description", STRING),
                         Field.is("doneStatus", FieldType.BOOLEAN).
-                                withDefaultValue("false"));
+                                withDefaultValue("false"),
+                        Field.is("description", STRING)
+                        );
 
 
         ThingInstance paperwork = todo.createInstance().setValue("title", "scan paperwork");

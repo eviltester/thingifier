@@ -3,9 +3,9 @@ package uk.co.compendiumdev.thingifier.api.restapihandlers;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
-import uk.co.compendiumdev.thingifier.generic.definitions.FieldValue;
-import uk.co.compendiumdev.thingifier.generic.definitions.RelationshipVector;
-import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.domain.definitions.FieldValue;
+import uk.co.compendiumdev.thingifier.domain.definitions.RelationshipVector;
+import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
 
 import java.util.ArrayList;
 import java.util.List;

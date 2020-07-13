@@ -1,19 +1,9 @@
 package uk.co.compendiumdev.thingifier.api;
 
-import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.api.restapihandlers.*;
-import uk.co.compendiumdev.thingifier.generic.definitions.FieldValue;
-import uk.co.compendiumdev.thingifier.generic.definitions.RelationshipVector;
-import uk.co.compendiumdev.thingifier.generic.definitions.ThingDefinition;
-import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
-import uk.co.compendiumdev.thingifier.query.SimpleQuery;
-
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 
 public class ThingifierRestAPIHandler {
     private final Thingifier thingifier;

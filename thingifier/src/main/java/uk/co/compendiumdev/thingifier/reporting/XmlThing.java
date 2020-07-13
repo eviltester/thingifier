@@ -2,8 +2,8 @@ package uk.co.compendiumdev.thingifier.reporting;
 
 import org.json.JSONObject;
 import org.json.XML;
-import uk.co.compendiumdev.thingifier.generic.definitions.ThingDefinition;
-import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.domain.definitions.ThingDefinition;
+import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
 
 import java.util.Collection;
 import java.util.HashMap;

@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.casestudy.todomanager.TodoManagerModel;
-import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
 
 import java.util.Collection;
 import java.util.Random;

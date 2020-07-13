@@ -3,7 +3,7 @@ package uk.co.compendiumdev.thingifier.thingInstance.fields;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import uk.co.compendiumdev.thingifier.generic.instances.InstanceFields;
+import uk.co.compendiumdev.thingifier.domain.instances.InstanceFields;
 
 import java.util.List;
 

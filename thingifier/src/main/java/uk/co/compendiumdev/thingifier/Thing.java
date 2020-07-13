@@ -1,8 +1,8 @@
 package uk.co.compendiumdev.thingifier;
 
-import uk.co.compendiumdev.thingifier.generic.definitions.FieldValue;
-import uk.co.compendiumdev.thingifier.generic.definitions.ThingDefinition;
-import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.domain.definitions.FieldValue;
+import uk.co.compendiumdev.thingifier.domain.definitions.ThingDefinition;
+import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;

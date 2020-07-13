@@ -1,14 +1,12 @@
 package uk.co.compendiumdev.thingifier.thingInstance.fields;
 
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.api.ValidationReport;
-import uk.co.compendiumdev.thingifier.generic.FieldType;
-import uk.co.compendiumdev.thingifier.generic.definitions.Field;
-import uk.co.compendiumdev.thingifier.generic.definitions.ThingDefinition;
-import uk.co.compendiumdev.thingifier.generic.definitions.validation.VRule;
-import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.domain.definitions.Field;
+import uk.co.compendiumdev.thingifier.domain.definitions.ThingDefinition;
+import uk.co.compendiumdev.thingifier.domain.definitions.validation.VRule;
+import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
 
 public class StringFieldInstanceTest {
 

@@ -10,7 +10,7 @@ import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiResponse;
 import uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi;
-import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
 
 public class DeleteRequestTest {
 

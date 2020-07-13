@@ -2,8 +2,8 @@ package uk.co.compendiumdev.thingifier.reporting;
 
 import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.generic.definitions.RelationshipDefinition;
-import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.domain.definitions.RelationshipDefinition;
+import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
 
 import java.util.Collection;
 

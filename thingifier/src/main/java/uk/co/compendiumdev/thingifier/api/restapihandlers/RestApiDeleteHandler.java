@@ -3,7 +3,7 @@ package uk.co.compendiumdev.thingifier.api.restapihandlers;
 import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
-import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
 import uk.co.compendiumdev.thingifier.query.SimpleQuery;
 
 import java.util.List;

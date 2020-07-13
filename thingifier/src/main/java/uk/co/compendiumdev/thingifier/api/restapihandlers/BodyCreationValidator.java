@@ -4,7 +4,7 @@ import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.ValidationReport;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
-import uk.co.compendiumdev.thingifier.generic.definitions.ThingDefinition;
+import uk.co.compendiumdev.thingifier.domain.definitions.ThingDefinition;
 
 import java.util.List;
 import java.util.Map;

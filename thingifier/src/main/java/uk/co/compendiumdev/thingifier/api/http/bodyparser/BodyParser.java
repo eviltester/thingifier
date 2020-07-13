@@ -1,14 +1,13 @@
 package uk.co.compendiumdev.thingifier.api.http.bodyparser;
 
 import com.google.gson.Gson;
-import com.google.gson.internal.LinkedTreeMap;
 import org.json.JSONObject;
 import org.json.XML;
 import uk.co.compendiumdev.thingifier.api.ValidationReport;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
-import uk.co.compendiumdev.thingifier.generic.FieldType;
-import uk.co.compendiumdev.thingifier.generic.definitions.Field;
-import uk.co.compendiumdev.thingifier.generic.definitions.ThingDefinition;
+import uk.co.compendiumdev.thingifier.domain.FieldType;
+import uk.co.compendiumdev.thingifier.domain.definitions.Field;
+import uk.co.compendiumdev.thingifier.domain.definitions.ThingDefinition;
 
 import java.util.*;
 

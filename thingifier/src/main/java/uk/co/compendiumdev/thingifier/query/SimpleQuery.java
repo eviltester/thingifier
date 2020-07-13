@@ -2,9 +2,9 @@ package uk.co.compendiumdev.thingifier.query;
 
 import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.generic.definitions.RelationshipVector;
-import uk.co.compendiumdev.thingifier.generic.definitions.ThingDefinition;
-import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.domain.definitions.RelationshipVector;
+import uk.co.compendiumdev.thingifier.domain.definitions.ThingDefinition;
+import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
 
 import java.util.ArrayList;
 import java.util.List;

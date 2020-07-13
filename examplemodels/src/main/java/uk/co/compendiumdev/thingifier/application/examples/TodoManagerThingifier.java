@@ -2,17 +2,15 @@ package uk.co.compendiumdev.thingifier.application.examples;
 
 import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.generic.FieldType;
-import uk.co.compendiumdev.thingifier.generic.definitions.RelationshipDefinition;
-import uk.co.compendiumdev.thingifier.generic.definitions.validation.VRule;
-import uk.co.compendiumdev.thingifier.generic.definitions.Field;
-import uk.co.compendiumdev.thingifier.generic.dsl.relationship.AndCall;
-import uk.co.compendiumdev.thingifier.generic.dsl.relationship.Between;
-import uk.co.compendiumdev.thingifier.generic.dsl.relationship.WithCardinality;
-import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.domain.FieldType;
+import uk.co.compendiumdev.thingifier.domain.definitions.validation.VRule;
+import uk.co.compendiumdev.thingifier.domain.definitions.Field;
+import uk.co.compendiumdev.thingifier.domain.dsl.relationship.AndCall;
+import uk.co.compendiumdev.thingifier.domain.dsl.relationship.Between;
+import uk.co.compendiumdev.thingifier.domain.dsl.relationship.WithCardinality;
+import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
 
-import static uk.co.compendiumdev.thingifier.generic.FieldType.INTEGER;
-import static uk.co.compendiumdev.thingifier.generic.FieldType.STRING;
+import static uk.co.compendiumdev.thingifier.domain.FieldType.STRING;
 
 public class TodoManagerThingifier {
 
@@ -58,9 +56,10 @@ public class TodoManagerThingifier {
                                 mandatory().
                                 withValidation(
                                         VRule.notEmpty()),
-                        Field.is("description", STRING),
                         Field.is("doneStatus", FieldType.BOOLEAN).
-                                withDefaultValue("false"));
+                                withDefaultValue("false"),
+                        Field.is("description", STRING)
+                        );
 
         Thing project = todoManager.createThing("project", "projects");
 
@@ -68,11 +67,11 @@ public class TodoManagerThingifier {
                 .addFields(
                         Field.is("id", FieldType.ID),
                         Field.is("title", STRING),
-                        Field.is("description", STRING),
                         Field.is("completed", FieldType.BOOLEAN).
                                 withDefaultValue("false"),
                         Field.is("active", FieldType.BOOLEAN).
-                                withDefaultValue("false"));
+                                withDefaultValue("false"),
+                        Field.is("description", STRING));
 
 
         Thing category = todoManager.createThing("category", "categories");

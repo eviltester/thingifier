@@ -5,11 +5,8 @@ import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.ValidationReport;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
-import uk.co.compendiumdev.thingifier.generic.definitions.FieldValue;
-import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
 import uk.co.compendiumdev.thingifier.query.SimpleQuery;
-
-import java.util.Map;
 
 public class RestApiPostHandler {
     private final Thingifier thingifier;

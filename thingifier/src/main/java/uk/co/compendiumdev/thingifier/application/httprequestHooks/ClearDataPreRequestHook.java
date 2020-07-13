@@ -4,7 +4,7 @@ import spark.Request;
 import spark.Response;
 import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
 
 public class ClearDataPreRequestHook implements RequestHook {
     private long lastReset;

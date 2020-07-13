@@ -6,15 +6,15 @@ import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.ThingifierApiConfig;
-import uk.co.compendiumdev.thingifier.generic.definitions.Field;
-import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.domain.definitions.Field;
+import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
 import uk.co.compendiumdev.thingifier.reporting.JsonThing;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static uk.co.compendiumdev.thingifier.generic.FieldType.STRING;
+import static uk.co.compendiumdev.thingifier.domain.FieldType.STRING;
 
 public class ApiResponseAsJsonTest {
 

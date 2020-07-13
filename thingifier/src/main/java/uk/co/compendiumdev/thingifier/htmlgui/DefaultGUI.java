@@ -7,12 +7,12 @@ import uk.co.compendiumdev.thingifier.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingStatus;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingVerb;
-import uk.co.compendiumdev.thingifier.generic.FieldType;
-import uk.co.compendiumdev.thingifier.generic.definitions.Field;
-import uk.co.compendiumdev.thingifier.generic.definitions.FieldValue;
-import uk.co.compendiumdev.thingifier.generic.definitions.RelationshipVector;
-import uk.co.compendiumdev.thingifier.generic.definitions.ThingDefinition;
-import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.domain.FieldType;
+import uk.co.compendiumdev.thingifier.domain.definitions.Field;
+import uk.co.compendiumdev.thingifier.domain.definitions.FieldValue;
+import uk.co.compendiumdev.thingifier.domain.definitions.RelationshipVector;
+import uk.co.compendiumdev.thingifier.domain.definitions.ThingDefinition;
+import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
 import uk.co.compendiumdev.thingifier.reporting.JsonThing;
 import uk.co.compendiumdev.thingifier.reporting.XmlThing;
 

@@ -5,11 +5,10 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.generic.FieldType;
-import uk.co.compendiumdev.thingifier.generic.definitions.Field;
-import uk.co.compendiumdev.thingifier.generic.definitions.validation.VRule;
+import uk.co.compendiumdev.thingifier.domain.FieldType;
+import uk.co.compendiumdev.thingifier.domain.definitions.Field;
 
-import static uk.co.compendiumdev.thingifier.generic.FieldType.STRING;
+import static uk.co.compendiumdev.thingifier.domain.FieldType.STRING;
 
 public class BooleanApiTest {
 

@@ -2,8 +2,8 @@ package uk.co.compendiumdev.thingifier.api.response;
 
 import uk.co.compendiumdev.thingifier.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.api.ApiUrls;
-import uk.co.compendiumdev.thingifier.generic.definitions.ThingDefinition;
-import uk.co.compendiumdev.thingifier.generic.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.domain.definitions.ThingDefinition;
+import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
 
 import java.util.*;
 
