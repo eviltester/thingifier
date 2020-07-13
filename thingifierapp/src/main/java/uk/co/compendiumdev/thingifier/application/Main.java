@@ -125,13 +125,9 @@ public class Main {
         // setup the thingifier
         Thingifier thingifier = app.chooseThingifier();
 
-        // todo: have configuration profiles on thingifier then
-        // app.configureProfile(); app.configureProfile("v1");
-
-        thingifier.apiConfig().allowShowIdsInUrlsIfAvailable(true);
-        thingifier.apiConfig().allowShowIdsInResponsesIfAvailable(true);
-        thingifier.apiConfig().showSingleInstancesAsPlural(true);
-        thingifier.apiConfig().allowShowGuidsInResponses(false);
+        // can set profile by adding more configs, or just
+        // app.setProfileToUse(aProfile)
+        app.configureThingifierWithProfile();
 
         // can configure additional routes and processing
 //        app.addAdditionalRoutes(new DefaultGUI(thingifier).

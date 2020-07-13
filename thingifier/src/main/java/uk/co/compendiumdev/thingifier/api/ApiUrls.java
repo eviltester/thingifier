@@ -1,6 +1,6 @@
 package uk.co.compendiumdev.thingifier.api;
 
-import uk.co.compendiumdev.thingifier.ThingifierApiConfig;
+import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
 
 public class ApiUrls {

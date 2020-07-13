@@ -1,7 +1,5 @@
 package uk.co.compendiumdev.thingifier.api.http;
 
-import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponseAsJson;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponseAsXml;

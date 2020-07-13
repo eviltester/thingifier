@@ -2,6 +2,8 @@ package uk.co.compendiumdev.thingifier.application.examples;
 
 import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
+import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfigProfile;
 import uk.co.compendiumdev.thingifier.domain.FieldType;
 import uk.co.compendiumdev.thingifier.domain.definitions.validation.VRule;
 import uk.co.compendiumdev.thingifier.domain.definitions.Field;
@@ -114,6 +116,63 @@ public class TodoManagerThingifier {
 
         paperwork.connects("categories", officeCategory);
 
+
+        // PROFILES
+        // can have different -version params which configure the TodoManagerThingifier in different ways
+        // e.g. v1 non compressed relationships with guids
+        // e.g. v2 compressed relationships with guids
+        // e.g. v3 compressed relationships with ids
+        // default the app to v3 to make it easier for people
+
+        ThingifierApiConfigProfile profile0 = todoManager.apiConfigProfiles().
+                create("v0", "prototype");
+        ThingifierApiConfig config0 = profile0.apiConfig();
+
+        config0.allowShowIdsInUrlsIfAvailable(false);
+        config0.allowShowIdsInResponsesIfAvailable(false);
+        config0.showSingleInstancesAsPlural(false);
+        config0.allowShowGuidsInResponses(true);
+        config0.jsonOutput().compressRelationships(false);
+        config0.jsonOutput().relationshipsUsesIdsIfAvailable(false);
+        config0.jsonOutput().convertFieldsToDefinedTypes(false);
+        config0.shouldEnforceDeclaredTypesInInput(false);
+
+        ThingifierApiConfigProfile profile = todoManager.apiConfigProfiles().
+                create("v1", "non compressed relationships with guids");
+        ThingifierApiConfig config = profile.apiConfig();
+
+        config.allowShowIdsInUrlsIfAvailable(false);
+        config.allowShowIdsInResponsesIfAvailable(false);
+        config.showSingleInstancesAsPlural(true);
+        config.allowShowGuidsInResponses(true);
+        config.jsonOutput().compressRelationships(false);
+        config.jsonOutput().relationshipsUsesIdsIfAvailable(false);
+        config.jsonOutput().convertFieldsToDefinedTypes(false);
+        config.shouldEnforceDeclaredTypesInInput(false);
+
+        ThingifierApiConfigProfile profile2 = todoManager.apiConfigProfiles().
+                create("v2", "compressed relationships with guids");
+        ThingifierApiConfig config2 = profile2.apiConfig();
+        config2.allowShowIdsInUrlsIfAvailable(false);
+        config2.allowShowIdsInResponsesIfAvailable(false);
+        config2.showSingleInstancesAsPlural(true);
+        config2.allowShowGuidsInResponses(true);
+        config2.jsonOutput().compressRelationships(true);
+        config2.jsonOutput().relationshipsUsesIdsIfAvailable(false);
+        config2.jsonOutput().convertFieldsToDefinedTypes(false);
+        config2.shouldEnforceDeclaredTypesInInput(false);
+
+        ThingifierApiConfigProfile profile3 = todoManager.apiConfigProfiles().
+                create("v3", "compressed relationships with ids");
+        ThingifierApiConfig config3 = profile3.apiConfig();
+        config3.allowShowIdsInUrlsIfAvailable(true);
+        config3.allowShowIdsInResponsesIfAvailable(true);
+        config3.showSingleInstancesAsPlural(true);
+        config3.allowShowGuidsInResponses(false);
+        config3.jsonOutput().compressRelationships(true);
+        config3.jsonOutput().relationshipsUsesIdsIfAvailable(true);
+        config3.jsonOutput().convertFieldsToDefinedTypes(false);
+        config3.shouldEnforceDeclaredTypesInInput(true);
 
         return todoManager;
     }

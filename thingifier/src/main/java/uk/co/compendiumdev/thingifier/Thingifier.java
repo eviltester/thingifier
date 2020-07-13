@@ -1,6 +1,9 @@
 package uk.co.compendiumdev.thingifier;
 
 import uk.co.compendiumdev.thingifier.api.ThingifierRestAPIHandler;
+import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
+import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfigProfile;
+import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfigProfiles;
 import uk.co.compendiumdev.thingifier.domain.definitions.Cardinality;
 import uk.co.compendiumdev.thingifier.domain.definitions.FieldValue;
 import uk.co.compendiumdev.thingifier.domain.definitions.RelationshipDefinition;
@@ -15,13 +18,21 @@ import java.util.concurrent.ConcurrentHashMap;
 
 final public class Thingifier {
 
-    // todo: we should have a constructor for Thingifier
-    private Map<String, Thing> things = new ConcurrentHashMap<String, Thing>();
-    private Map<String, RelationshipDefinition> relationships = new ConcurrentHashMap<String, RelationshipDefinition>();
-    private String title = "";
-    private String initialParagraph = "";
-    private ThingifierApiConfig apiConfig = new ThingifierApiConfig();
+    private Map<String, Thing> things;
+    private Map<String, RelationshipDefinition> relationships;
+    private String title;
+    private String initialParagraph;
+    private ThingifierApiConfig apiConfig;
+    private ThingifierApiConfigProfiles apiConfigProfiles;
 
+    public Thingifier(){
+        things = new ConcurrentHashMap<String, Thing>();
+        relationships = new ConcurrentHashMap<String, RelationshipDefinition>();
+        title = "";
+        initialParagraph = "";
+        apiConfig = new ThingifierApiConfig();
+        apiConfigProfiles = new ThingifierApiConfigProfiles();
+    }
     /*
         TODO: configure the REST API from the entities and relationship definitions
         at the moment a default REST API is created, consider an API model as separate
@@ -179,5 +190,18 @@ final public class Thingifier {
 
     public ThingifierApiConfig apiConfig() {
         return apiConfig;
+    }
+
+    public ThingifierApiConfigProfiles apiConfigProfiles() {
+        return apiConfigProfiles;
+    }
+
+    public void configureWithProfile(final ThingifierApiConfigProfile profileToUse) {
+        // TODO: should probably 'copy' the config and apply it
+        if(profileToUse==null){
+            System.out.println("API System Defaults Used");
+        }else {
+            apiConfig = profileToUse.apiConfig();
+        }
     }
 }

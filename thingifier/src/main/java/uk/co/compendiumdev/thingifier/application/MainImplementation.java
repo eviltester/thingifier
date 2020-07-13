@@ -3,6 +3,8 @@ package uk.co.compendiumdev.thingifier.application;
 import spark.Spark;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingDefinition;
+import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfigProfile;
+import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfigProfiles;
 import uk.co.compendiumdev.thingifier.application.httprequestHooks.ClearDataPreRequestHook;
 import uk.co.compendiumdev.thingifier.application.httprequestHooks.LogTheRequestHook;
 import uk.co.compendiumdev.thingifier.application.httprequestHooks.LogTheResponseHook;
@@ -27,6 +29,7 @@ public class MainImplementation {
     private String staticFilePath;
     private List<RoutingDefinition> additionalRoutes;
     private Thingifier thingifier;
+    private ThingifierApiConfigProfile profileToUse;
     ThingifierRestServer restServer;
     private String[] args;
     // prevent shutdown verb as configurable through arguments e.g. -noshutdown
@@ -37,6 +40,9 @@ public class MainImplementation {
     int clearDownMinutes;
     // impact the logging detail -verbose
     boolean verboseMode;
+
+    int desiredVersionNumber;
+    String desiredVersionName;
 
     public MainImplementation(){
 
@@ -56,6 +62,10 @@ public class MainImplementation {
         clearDataPeriodically = false;
         clearDownMinutes=10;
         verboseMode=false;
+        profileToUse = null;
+
+        desiredVersionNumber=-1;
+        desiredVersionName=null;
     }
 
 
@@ -100,6 +110,10 @@ public class MainImplementation {
         System.out.println("Valid Model Names -model=");
         for(String aModelName : thingifierModels.keySet()){
             System.out.println(aModelName);
+        }
+
+        for(Map.Entry<String, Thingifier> models: thingifierModels.entrySet()){
+            outputVersionDetailsFor(models.getKey(), models.getValue());
         }
 
         for (String arg : args) {
@@ -149,8 +163,49 @@ public class MainImplementation {
                     System.out.println(String.format("Will clear down every %d minutes", clearDownMinutes));
                 }
             }
+
+            if (arg.startsWith("-version")) {
+                String[] details = arg.split("=");
+                if (details != null && details.length > 1) {
+                    desiredVersionNumber = Integer.parseInt(details[1].trim());
+                    System.out.println("Argument version number provided: "+ desiredVersionNumber);
+                }
+            }
+            if (arg.startsWith("-versionName")) {
+                String[] details = arg.split("=");
+                if (details != null && details.length > 1) {
+                    desiredVersionName = details[1].trim();
+                    System.out.println("Argument version number provided: "+ desiredVersionName);
+                }
+            }
+
         }
 
+    }
+
+    private void outputVersionDetailsFor(String modelName, final Thingifier aThingifier) {
+
+        final ThingifierApiConfigProfiles profiles = aThingifier.apiConfigProfiles();
+
+        if(profiles.countOfProfiles()>=1) {
+            int version = profiles.countOfProfiles();
+            System.out.println(
+                    String.format(
+                            "Model %s : Number of app versions available (e.g. -version=2, -versionName=profile1) are: %d",
+                            modelName, version));
+            final List<ThingifierApiConfigProfile> actualProfiles = profiles.getProfiles();
+            int profileCount = 1;
+            for(ThingifierApiConfigProfile profile : actualProfiles){
+                System.out.println(
+                        String.format(
+                                "%d - %s : %s",
+                                profileCount, profile.getName(),
+                                profile.getDescription()
+                        )
+                );
+                profileCount++;
+            }
+        }
     }
 
 
@@ -251,5 +306,57 @@ public class MainImplementation {
             restServer.registerPreRequestHook(
                     new LogTheResponseHook());
         }
+    }
+
+    public void configureThingifierWithProfile() {
+
+        // we hard coded a profile
+        if(profileToUse!=null){
+            thingifier.configureWithProfile(profileToUse);
+            return;
+        }
+
+        final ThingifierApiConfigProfiles profiles = thingifier.apiConfigProfiles();
+
+        // try to use the arg versions
+        if(desiredVersionNumber!=-1) {
+            if (desiredVersionNumber > 0 && desiredVersionNumber <= profiles.countOfProfiles()) {
+                profileToUse = profiles.getProfiles().get(desiredVersionNumber - 1);
+            } else {
+                System.out.println("Invalid version number provided: " + desiredVersionNumber);
+            }
+        }
+
+        if(desiredVersionName!=null && desiredVersionName.length()>0) {
+            profileToUse = profiles.getProfile(desiredVersionName);
+            if (profileToUse == null) {
+                System.out.println("Invalid version name provided: " + desiredVersionName);
+            }
+        }
+
+        if(profileToUse!=null) {
+            System.out.println(
+                    String.format(
+                            "Will configure app as release version %s : %s ",
+                                    profileToUse.getName(), profileToUse.getDescription()));
+        }else{
+            profileToUse = profiles.getDefault();
+            if(profileToUse!=null){
+                System.out.println(
+                        String.format(
+                                "Will configure app as release version %s : %s ",
+                                        profileToUse.getName(), profileToUse.getDescription()));
+            }
+        }
+
+        if(profileToUse!=null){
+            thingifier.configureWithProfile(profileToUse);
+        }else{
+            String.format("Will configure app as default profile");
+        }
+    }
+
+    public void setProfileToUse(ThingifierApiConfigProfile aProfile){
+        profileToUse = aProfile;
     }
 }
