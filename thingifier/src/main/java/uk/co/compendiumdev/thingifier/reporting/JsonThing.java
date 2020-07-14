@@ -3,7 +3,7 @@ package uk.co.compendiumdev.thingifier.reporting;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
-import uk.co.compendiumdev.thingifier.JsonOutputConfig;
+import uk.co.compendiumdev.thingifier.apiconfig.JsonOutputConfig;
 import uk.co.compendiumdev.thingifier.domain.FieldType;
 import uk.co.compendiumdev.thingifier.domain.definitions.Field;
 import uk.co.compendiumdev.thingifier.domain.definitions.RelationshipVector;

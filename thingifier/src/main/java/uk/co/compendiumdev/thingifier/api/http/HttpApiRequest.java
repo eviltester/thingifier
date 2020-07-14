@@ -62,4 +62,12 @@ public final class HttpApiRequest {
     public Map<String, String> getQueryParams() {
         return queryParams;
     }
+
+    public String getHeader(final String headerName, final String aDefault) {
+        String header = getHeader(headerName);
+        if(header==null){
+            header=aDefault;
+        }
+        return header;
+    }
 }

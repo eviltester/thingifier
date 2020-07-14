@@ -28,6 +28,7 @@ public class JsonRequestResponseTest {
 
         todoManager = TodoManagerModel.definedAsThingifier();
 
+        todoManager.apiConfig().setApiToEnforceAcceptHeaderForResponses(false);
         todo = todoManager.getThingNamed("todo");
         project = todoManager.getThingNamed("project");
 

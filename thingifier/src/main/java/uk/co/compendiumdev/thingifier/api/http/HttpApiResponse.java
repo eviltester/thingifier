@@ -3,6 +3,7 @@ package uk.co.compendiumdev.thingifier.api.http;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponseAsJson;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponseAsXml;
+import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.reporting.JsonThing;
 
 import java.util.HashMap;
@@ -13,27 +14,41 @@ final public class HttpApiResponse {
     private final ApiResponse apiResponse;
     private final HashMap<String, String> apiResponseHeaders;
     private final JsonThing jsonThing;
+    private final ThingifierApiConfig apiConfig;
 
     private String type;
     private boolean asJson;
 
     public HttpApiResponse(final Map<String, String> requestHeaders,
                            final ApiResponse anApiResponse,
-                           JsonThing jsonThing
+                           JsonThing jsonThing,
+                           ThingifierApiConfig apiConfig
                            ) {
         this.apiResponse = anApiResponse;
         this.apiResponseHeaders = new HashMap<String, String>();
         this.jsonThing = jsonThing;
-        configure(requestHeaders);
+        this.apiConfig = apiConfig;
+        asJson=true;
+
+        if(requestHeaders==null){
+            configure(new HashMap<>());
+        }else {
+            configure(requestHeaders);
+        }
+
     }
 
     private void configure(final Map<String, String> requestHeaders) {
-        asJson = true; //default to json
 
         String acceptHeader = getHeader("Accept", requestHeaders);
 
-        if (acceptHeader.endsWith("/xml")) {
+        if (acceptHeader.endsWith("/xml") &&
+            apiConfig.willApiAllowXmlForResponses()) {
             asJson = false;
+        }
+
+        if(!apiConfig.willApiAllowJsonForResponses()){
+            asJson=false;
         }
 
 
@@ -43,7 +58,9 @@ final public class HttpApiResponse {
             type = "application/xml";
         }
         apiResponseHeaders.put("Content-Type", type);
-        apiResponseHeaders.putAll(apiResponse.getHeaders());
+        if(apiResponse!=null) {
+            apiResponseHeaders.putAll(apiResponse.getHeaders());
+        }
     }
 
     public String getBody() {

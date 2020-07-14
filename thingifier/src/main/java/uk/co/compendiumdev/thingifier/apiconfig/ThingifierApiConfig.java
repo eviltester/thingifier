@@ -1,7 +1,5 @@
 package uk.co.compendiumdev.thingifier.apiconfig;
 
-import uk.co.compendiumdev.thingifier.JsonOutputConfig;
-
 public class ThingifierApiConfig {
 
 
@@ -17,15 +15,18 @@ public class ThingifierApiConfig {
     private boolean willShowSingleInstancesAsPlural;
 
     // XML
-    // todo: willApiAllowXMLResponses i.e. respond with XML if asked for, json otherwise (default: true)
-    // todo: willApiEnforceXMLResponses i.e. respond with 400 if asked for but not allowed XML responses (default: true)
+    // willApiAllowXMLResponses i.e. respond with XML if asked for, json otherwise (default: true)
+    boolean willApiAllowXmlResponses;
     // todo: willApiAllowXMLRequests i.e. process when XML content submitted, if not then throw error (default: true)
 
     // JSON
     // todo: willApiAllowJsonResponses i.e. respond with Json if asked for, xml otherwise
-    // todo: willApiEnforceJsonResponses i.e. respond with 400 if asked for but not allowed Json responses
+    boolean willApiAllowJsonResponses;
+
     // todo: willApiAllowJsonRequests i.e. process when Json content submitted, if not then throw error
 
+    // willApiEnforceAcceptHeaderForResponses i.e. respond with 415 if asked for but not allowed XML responses (default: true)
+    boolean willApiEnforceAcceptHeaderForResponses;
 
     /*
         *** Responses ***
@@ -38,6 +39,9 @@ public class ThingifierApiConfig {
 
     // willShowGuidsInResponses e.g. if false then no GUIDs shown in responses at all
     private boolean willShowGuidsInResponses;
+
+
+
 
     // Requests
     // willEnforceDeclaredTypesInInput e.g. only accept if boolean is given as `true` indead of "true"
@@ -56,6 +60,11 @@ public class ThingifierApiConfig {
         willShowIdsInResponsesIfAvailable = true; // relationship rendering
         willShowIdsInUrlsIfAvailable = true;  // location headers, api urls
         willEnforceDeclaredTypesInInput = true;
+
+        willApiAllowXmlResponses = true;
+        willApiAllowJsonResponses = true;
+        willApiEnforceAcceptHeaderForResponses = false; // default to whatever is allowed by default
+
 
         paramsConfig = new ParamConfig();
 
@@ -102,6 +111,20 @@ public class ThingifierApiConfig {
         willEnforceDeclaredTypesInInput = config;
         return this;
     }
+    public ThingifierApiConfig setApiToAllowXmlForResponses(boolean allow) {
+        willApiAllowXmlResponses = allow;
+        return this;
+    }
+
+    public ThingifierApiConfig setApiToAllowJsonForResponses(boolean allow) {
+        willApiAllowJsonResponses = allow;
+        return this;
+    }
+
+    public ThingifierApiConfig setApiToEnforceAcceptHeaderForResponses(boolean config) {
+        willApiEnforceAcceptHeaderForResponses=config;
+        return this;
+    }
 
     public boolean willUrlShowInstancesAsPlural() {
         return willShowSingleInstancesAsPlural;
@@ -117,6 +140,18 @@ public class ThingifierApiConfig {
     }
     public boolean willApiEnforceDeclaredTypesInInput() {
         return willEnforceDeclaredTypesInInput;
+    }
+
+    public boolean willApiAllowXmlForResponses() {
+        return willApiAllowXmlResponses;
+    }
+
+    public boolean willApiAllowJsonForResponses() {
+        return willApiAllowJsonResponses;
+    }
+
+    public boolean willApiEnforceAcceptHeaderForResponses() {
+        return willApiEnforceAcceptHeaderForResponses;
     }
 
     public ParamConfig forParams() {

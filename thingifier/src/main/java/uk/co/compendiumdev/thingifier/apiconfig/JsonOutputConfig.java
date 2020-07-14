@@ -1,4 +1,4 @@
-package uk.co.compendiumdev.thingifier;
+package uk.co.compendiumdev.thingifier.apiconfig;
 
 public class JsonOutputConfig {
 

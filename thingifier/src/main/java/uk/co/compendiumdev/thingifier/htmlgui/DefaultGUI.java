@@ -120,104 +120,107 @@ public class DefaultGUI {
         });
 
         get("/gui/instance", (request, response) -> {
-            response.type("text/html");
-            response.status(200);
-            StringBuilder html = new StringBuilder();
+                    response.type("text/html");
+                    response.status(200);
+                    StringBuilder html = new StringBuilder();
 
-            String entityName="";
-            Thing thing=null;
-            for(String queryParam : request.queryParams()){
-                if(queryParam.contentEquals("entity")){
-                    entityName = request.queryParams("entity");
-                    thing = thingifier.getThingNamed(entityName);
-                }
-            }
-
-            if(thing==null){
-                response.redirect("/gui/entities");
-                return "";
-            }
-
-            String keyName="";
-            String keyValue="";
-            for(String queryParam : request.queryParams()){
-                Field field = thing.definition().getField(queryParam);
-                if(field!=null) {
-                    if (field.getType() == FieldType.GUID || field.getType() == FieldType.ID) {
-                        keyName = field.getName();
-                        keyValue = request.queryParams(queryParam);
-                        break;
-                    }
-                }
-            }
-
-            final ThingDefinition definition = thing.definition();
-            ThingInstance instance = thing.findInstanceByField(FieldValue.is(keyName, keyValue));
-
-            if(instance==null){
-                response.redirect("/gui/instances?entity=" + entityName);
-                return "";
-            }
-
-            html.append(templates.getPageStart(entityName + " Instance"));
-            html.append(templates.getMenuAsHTML());
-            html.append(getInstancesRootMenuHtml());
-
-            html.append(heading(1, entityName + " Instance"));
-
-            html.append("<h2>" + definition.getName() + "</h2>");
-
-            html.append(getInstanceAsTable(instance));
-
-            html.append("<details style='padding:1em'><summary>As List</summary>");
-            html.append(getInstanceAsUl(instance));
-            html.append("</details>");
-
-
-            if(instance.hasAnyRelationshipInstances()) {
-
-                html.append("<h2>Relationships</h2>");
-
-                for (RelationshipVector relationship : definition.getRelationships()) {
-                    final Collection<ThingInstance> relatedItems = instance.connectedItems(relationship.getName());
-                    html.append("<h3>" + relationship.getName() + "</h3>");
-                    if(relatedItems.size() > 0) {
-                        boolean header=true;
-
-                        for (ThingInstance relatedInstance : relatedItems) {
-                            if(header){
-                                html.append(startHtmlTableFor(relatedInstance.getEntity()));
-                                header=false;
-                            }
-                            html.append(htmlTableRowFor(relatedInstance));
-
+                    String entityName = "";
+                    Thing thing = null;
+                    for (String queryParam : request.queryParams()) {
+                        if (queryParam.contentEquals("entity")) {
+                            entityName = request.queryParams("entity");
+                            thing = thingifier.getThingNamed(entityName);
                         }
-                        html.append("</tbody>");
-                        html.append("</table>");
-
-                    }else{
-                        html.append("<ul><li>none</li></ul>");
                     }
-                }
+
+                    if (thing == null) {
+                        response.redirect("/gui/entities");
+                        return "";
+                    }
+
+                    String keyName = "";
+                    String keyValue = "";
+                    for (String queryParam : request.queryParams()) {
+                        Field field = thing.definition().getField(queryParam);
+                        if (field != null) {
+                            if (field.getType() == FieldType.GUID || field.getType() == FieldType.ID) {
+                                keyName = field.getName();
+                                keyValue = request.queryParams(queryParam);
+                                break;
+                            }
+                        }
+                    }
+
+                    final ThingDefinition definition = thing.definition();
+                    ThingInstance instance = thing.findInstanceByField(FieldValue.is(keyName, keyValue));
+
+                    if (instance == null) {
+                        response.redirect("/gui/instances?entity=" + entityName);
+                        return "";
+                    }
+
+                    html.append(templates.getPageStart(entityName + " Instance"));
+                    html.append(templates.getMenuAsHTML());
+                    html.append(getInstancesRootMenuHtml());
+
+                    html.append(heading(1, entityName + " Instance"));
+
+                    html.append("<h2>" + definition.getName() + "</h2>");
+
+                    html.append(getInstanceAsTable(instance));
+
+                    html.append("<details style='padding:1em'><summary>As List</summary>");
+                    html.append(getInstanceAsUl(instance));
+                    html.append("</details>");
+
+
+                    if (instance.hasAnyRelationshipInstances()) {
+
+                        html.append("<h2>Relationships</h2>");
+
+                        for (RelationshipVector relationship : definition.getRelationships()) {
+                            final Collection<ThingInstance> relatedItems = instance.connectedItems(relationship.getName());
+                            html.append("<h3>" + relationship.getName() + "</h3>");
+                            if (relatedItems.size() > 0) {
+                                boolean header = true;
+
+                                for (ThingInstance relatedInstance : relatedItems) {
+                                    if (header) {
+                                        html.append(startHtmlTableFor(relatedInstance.getEntity()));
+                                        header = false;
+                                    }
+                                    html.append(htmlTableRowFor(relatedInstance));
+
+                                }
+                                html.append("</tbody>");
+                                html.append("</table>");
+
+                            } else {
+                                html.append("<ul><li>none</li></ul>");
+                            }
+                        }
+                    }
+
+                    if (thingifier.apiConfig().willApiAllowJsonForResponses()){
+                            html.append("<h2>JSON Example</h2>");
+                        html.append("<pre class='json'>");
+                        html.append("<code class='json'>");
+                        // pretty print the json
+                        html.append(new GsonBuilder().setPrettyPrinting()
+                                .create().toJson(jsonThing.asJsonObject(instance)));
+                        html.append("</code>");
+                        html.append("</pre>");
+                    }
+
+            if (thingifier.apiConfig().willApiAllowXmlForResponses()) {
+                html.append("<h2>XML Example</h2>");
+                html.append("<pre class='xml'>");
+                html.append("<code class='xml'>");
+                // pretty print the json
+                html.append(xmlThing.prettyPrintHtml(xmlThing.getSingleObjectXml(instance)));
+                html.append("</code>");
+                html.append("</pre>");
             }
-
-            html.append("<h2>JSON Example</h2>");
-            html.append("<pre class='json'>");
-            html.append("<code class='json'>");
-            // pretty print the json
-            html.append(new GsonBuilder().setPrettyPrinting()
-                    .create().toJson(jsonThing.asJsonObject(instance)));
-            html.append("</code>");
-            html.append("</pre>");
-
-
-            html.append("<h2>XML Example</h2>");
-            html.append("<pre class='xml'>");
-            html.append("<code class='xml'>");
-            // pretty print the json
-            html.append(xmlThing.prettyPrintHtml(xmlThing.getSingleObjectXml(instance)));
-            html.append("</code>");
-            html.append("</pre>");
 
             html.append(templates.getPageFooter());
             html.append(templates.getPageEnd());

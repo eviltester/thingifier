@@ -75,11 +75,33 @@ public class RestApiDocumentationGenerator {
             output.append(paragraph("<i>Content-Type: application/json</i>"));
             output.append(paragraph("Set Content-Type header to application/xml if you want to send in XML."));
             output.append(paragraph("<i>Content-Type: application/xml</i>"));
-            output.append(paragraph("You can control the returned data format by setting the Accept header"));
-            output.append(paragraph("i.e. for XML use"));
-            output.append(paragraph("<i>Accept: application/xml</i><br/><br/>\n"));
-            output.append(paragraph("You get JSON by default but can also request this i.e."));
-            output.append(paragraph("<i>Accept: application/json</i><br/><br/>\n"));
+
+            if(thingifier.apiConfig().willApiAllowXmlForResponses() &&
+                    thingifier.apiConfig().willApiAllowJsonForResponses() ) {
+                output.append(paragraph("You can control the returned data format by setting the Accept header"));
+            }
+
+            if(thingifier.apiConfig().willApiAllowXmlForResponses() &&
+                    !thingifier.apiConfig().willApiAllowJsonForResponses() ) {
+                output.append(paragraph("Returned data format will be XML by default."));
+            }
+
+            if(thingifier.apiConfig().willApiAllowXmlForResponses()) {
+                output.append(paragraph("You can request XML response by setting the Accept header."));
+                output.append(paragraph("i.e. for XML use"));
+                output.append(paragraph("<i>Accept: application/xml</i><br/><br/>\n"));
+            }
+
+            if(!thingifier.apiConfig().willApiAllowXmlForResponses() &&
+                    thingifier.apiConfig().willApiAllowJsonForResponses() ) {
+                output.append(paragraph("You receive JSON by default as the response"));
+            }
+
+            if(thingifier.apiConfig().willApiAllowJsonForResponses()) {
+                output.append(paragraph("You can request JSON response by setting the Accept header."));
+                output.append(paragraph("i.e. for JSON use"));
+                output.append(paragraph("<i>Accept: application/json</i><br/><br/>\n"));
+            }
 
             if(thingifier.apiConfig().forParams().willAllowFilteringThroughUrlParams()){
                 output.append(paragraph("Some requests can be filtered by adding query params of fieldname=value. Where only matching items will be returned."));
@@ -177,31 +199,40 @@ public class RestApiDocumentationGenerator {
 
 
                 // show an example
-                output.append("<p>Example JSON Output from API calls</p>\n");
-                output.append("<pre class='json'>\n");
-                output.append("<code class='json'>\n");
-                output.append(new GsonBuilder().setPrettyPrinting()
-                        .create().toJson(jsonThing.asJsonObject(exampleThing.getInstance())));
-                output.append("</code>\n");
-                output.append("</pre>\n");
+                if(thingifier.apiConfig().willApiAllowJsonForResponses()) {
+                    output.append("<p>Example JSON Output from API calls</p>\n");
+                    output.append("<pre class='json'>\n");
+                    output.append("<code class='json'>\n");
+                    output.append(new GsonBuilder().setPrettyPrinting()
+                            .create().toJson(jsonThing.asJsonObject(exampleThing.getInstance())));
+                    output.append("</code>\n");
+                    output.append("</pre>\n");
+                }
 
-                // todo: conditional output on if API supports XML responses
-                output.append("<p>Example XML Output from API calls</p>\n");
-                output.append("<pre class='xml'>\n");
-                output.append(xmlThing.prettyPrintHtml(xmlThing.getSingleObjectXml(exampleThing.getInstance())));
-                output.append("</pre>\n");
+                if(thingifier.apiConfig().willApiAllowXmlForResponses()) {
+                    output.append("<p>Example XML Output from API calls</p>\n");
+                    output.append("<pre class='xml'>\n");
+                    output.append("<code class='xml'>\n");
+                    output.append(xmlThing.prettyPrintHtml(xmlThing.getSingleObjectXml(exampleThing.getInstance())));
+                    output.append("</code>\n");
+                    output.append("</pre>\n");
+                }
 
                 output.append("<p>Example JSON Input to API calls</p>\n");
                 ThingInstance createableExampleThing = exampleThing.getInstanceWithoutProtectedFields();
                 output.append("<pre class='json'>\n");
+                output.append("<code class='json'>\n");
                 output.append(new GsonBuilder().setPrettyPrinting()
                         .create().toJson(jsonThing.asJsonObject(createableExampleThing)));
+                output.append("</code>\n");
                 output.append("</pre>\n");
 
                 // todo: conditional output on if API supports XML responses
                 output.append("<p>Example XML Input to API calls</p>\n");
                 output.append("<pre class='xml'>\n");
+                output.append("<code class='xml'>\n");
                 output.append(xmlThing.prettyPrintHtml(xmlThing.getSingleObjectXml(createableExampleThing)));
+                output.append("</code>\n");
                 output.append("</pre>\n");
 
             }

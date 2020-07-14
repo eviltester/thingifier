@@ -12,12 +12,16 @@ import java.util.List;
 
 final public class ThingifierHttpApi {
 
-    // todo: the methods here are all very similar, we should refactor this commonality
-
     private final Thingifier thingifier;
     private final JsonThing jsonThing;
     private List<HttpApiRequestHook> apiRequestHooks;
     private List<HttpApiResponseHook> apiResponseHooks;
+
+    private enum HttpVerb{
+        GET, DELETE, POST, PUT,
+        // NOT Handled
+        OPTIONS, HEAD, PATCH,
+    };
 
     public ThingifierHttpApi(final Thingifier aThingifier){
         this(aThingifier, null, null);
@@ -42,28 +46,94 @@ final public class ThingifierHttpApi {
         jsonThing = new JsonThing(thingifier.apiConfig().jsonOutput());
     }
 
-    public HttpApiResponse get(final HttpApiRequest request) {
+
+    private HttpApiResponse requestWrapper(final HttpApiRequest request, HttpVerb verb){
+
+        String acceptHeader = request.getHeader("Accept", "");
+
+        // Config Validation
+
+        ApiResponse apiResponse=null;
+
+        if(thingifier.apiConfig().willApiEnforceAcceptHeaderForResponses()){
+            if (!acceptHeader.endsWith("/xml") ||
+                !acceptHeader.endsWith("/json")){
+                apiResponse = ApiResponse.error(415, "Unrecognised Accept Type");
+            }
+        }
+        if (acceptHeader.endsWith("/xml") &&
+                !thingifier.apiConfig().willApiAllowXmlForResponses() &&
+                thingifier.apiConfig().willApiEnforceAcceptHeaderForResponses()
+        ) {
+            apiResponse = ApiResponse.error(415, "XML not supported");
+        }
+
+        if (acceptHeader.endsWith("/json") &&
+                !thingifier.apiConfig().willApiAllowJsonForResponses() &&
+                thingifier.apiConfig().willApiEnforceAcceptHeaderForResponses()
+        ) {
+            apiResponse = ApiResponse.error(415, "JSON not supported");
+        }
+
+        if(apiResponse!=null){
+            return new HttpApiResponse(request.getHeaders(), apiResponse,
+                    jsonThing, thingifier.apiConfig());
+        }
+
 
         HttpApiResponse httpResponse = runTheHttpApiRequestHooksOn(request);
 
-        if(httpResponse==null) {
-            ApiResponse apiResponse = thingifier.api().get(request.getPath(), request.getQueryParams());
-            httpResponse = new HttpApiResponse(request.getHeaders(), apiResponse, jsonThing);
+        if(httpResponse!=null){
+            return httpResponse;
         }
+
+        apiResponse = routeRequest(request, verb);
+
+        httpResponse = new HttpApiResponse(request.getHeaders(), apiResponse,
+                jsonThing, thingifier.apiConfig());
 
         return runTheHttpApiResponseHooksOn(httpResponse);
     }
 
-    public HttpApiResponse delete(final HttpApiRequest request) {
+    public ApiResponse routeRequest(final HttpApiRequest request,
+                                        HttpVerb verb) {
 
-        HttpApiResponse httpResponse = runTheHttpApiRequestHooksOn(request);
+        ApiResponse apiResponse=null;
 
-        if(httpResponse==null) {
-            ApiResponse apiResponse = thingifier.api().delete(request.getPath());
-            httpResponse = new HttpApiResponse(request.getHeaders(), apiResponse, jsonThing);
+        switch (verb){
+            case GET:
+                apiResponse = thingifier.api().get(request.getPath(),
+                                            request.getQueryParams());
+                break;
+            case DELETE:
+                apiResponse = thingifier.api().delete(request.getPath());
+                break;
+            case POST:
+                apiResponse = thingifier.api().post(request.getPath(), bodyAsMap(request));
+                break;
+            case PUT:
+                apiResponse = thingifier.api().put(request.getPath(), bodyAsMap(request));
+                break;
         }
 
-        return runTheHttpApiResponseHooksOn(httpResponse);
+        return apiResponse;
+
+    }
+
+    public HttpApiResponse get(final HttpApiRequest request) {
+        return requestWrapper(request, HttpVerb.GET);
+    }
+
+    public HttpApiResponse delete(final HttpApiRequest request) {
+        return requestWrapper(request, HttpVerb.DELETE);
+    }
+
+    public HttpApiResponse post(final HttpApiRequest request) {
+        return requestWrapper(request, HttpVerb.POST);
+    }
+
+    public HttpApiResponse put(final HttpApiRequest request) {
+        return requestWrapper(request, HttpVerb.PUT);
     }
 
     public HttpApiResponse query(final HttpApiRequest request, final String query) {
@@ -72,30 +142,8 @@ final public class ThingifierHttpApi {
 
         if(httpResponse==null) {
             ApiResponse apiResponse = thingifier.api().get(query);
-            httpResponse = new HttpApiResponse(request.getHeaders(), apiResponse, jsonThing);
-        }
-
-        return runTheHttpApiResponseHooksOn(httpResponse);
-
-    }
-
-    public HttpApiResponse post(final HttpApiRequest request) {
-        HttpApiResponse httpResponse = runTheHttpApiRequestHooksOn(request);
-
-        if(httpResponse==null) {
-            ApiResponse apiResponse = thingifier.api().post(request.getPath(), bodyAsMap(request));
-            httpResponse = new HttpApiResponse(request.getHeaders(), apiResponse, jsonThing);
-        }
-
-        return runTheHttpApiResponseHooksOn(httpResponse);
-    }
-
-    public HttpApiResponse put(final HttpApiRequest request) {
-        HttpApiResponse httpResponse = runTheHttpApiRequestHooksOn(request);
-
-        if(httpResponse==null) {
-            ApiResponse apiResponse = thingifier.api().put(request.getPath(), bodyAsMap(request));
-            httpResponse = new HttpApiResponse(request.getHeaders(), apiResponse, jsonThing);
+            httpResponse = new HttpApiResponse(request.getHeaders(), apiResponse,
+                    jsonThing, thingifier.apiConfig());
         }
 
         return runTheHttpApiResponseHooksOn(httpResponse);
@@ -109,7 +157,7 @@ final public class ThingifierHttpApi {
 
     private HttpApiResponse runTheHttpApiResponseHooksOn(final HttpApiResponse response) {
         for(HttpApiResponseHook hook : apiResponseHooks){
-            HttpApiResponse returnImmediately = hook.run(response);
+            HttpApiResponse returnImmediately = hook.run(response, thingifier.apiConfig());
             if(returnImmediately!=null){
                 return returnImmediately;
             }
@@ -119,7 +167,7 @@ final public class ThingifierHttpApi {
 
     private HttpApiResponse runTheHttpApiRequestHooksOn(final HttpApiRequest request) {
         for(HttpApiRequestHook hook : apiRequestHooks){
-            HttpApiResponse response = hook.run(request);
+            HttpApiResponse response = hook.run(request, thingifier.apiConfig());
             if(response!=null){
                 return response;
             }
