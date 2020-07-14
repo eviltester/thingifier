@@ -117,7 +117,7 @@ public final class ApiResponse {
                     new ApiUrls(apiConfig).
                             getCreatedLocationHeader(thingInstance));
 
-            if(apiConfig.showGuidsInResponses()) {
+            if(apiConfig.willResponsesShowGuids()) {
                 response.setHeader(ApiResponse.GUID_HEADER, thingInstance.getGUID());
             }
             response.andThisHasABody();

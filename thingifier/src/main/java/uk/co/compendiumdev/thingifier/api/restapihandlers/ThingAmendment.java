@@ -20,7 +20,7 @@ public class ThingAmendment {
 
         final Map<String, String> args = bodyargs.getStringMap();
 
-        if(thingifier.apiConfig().enforceDeclaredTypesInInput()) {
+        if(thingifier.apiConfig().willApiEnforceDeclaredTypesInInput()) {
             ValidationReport validatedTypes = bodyargs.validateAgainstType(instance.getEntity());
             if(!validatedTypes.isValid()){
                 return ApiResponse.error(400, validatedTypes.getCombinedErrorMessages());

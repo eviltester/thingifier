@@ -56,7 +56,7 @@ public class ApiRoutingDefinitionGenerator {
 
             String uniqueIdentifier;
             String uniqueIdFieldName;
-            if(config.showIdsInUrlsIfAvailable() && thing.definition().hasIDField()){
+            if(config.willUrlsShowIdsIfAvailable() && thing.definition().hasIDField()){
                 uniqueIdentifier=uniqueID;
                 uniqueIdFieldName = thing.definition().getIDField().getName();
             }else{
@@ -65,7 +65,7 @@ public class ApiRoutingDefinitionGenerator {
             }
 
             String pluralUrl;
-            if(config.singleInstancesArePlural()) {
+            if(config.willUrlShowInstancesAsPlural()) {
                 pluralUrl = thing.definition().getPlural().toLowerCase();
             }else {
                 pluralUrl = thing.definition().getName().toLowerCase();
@@ -104,7 +104,8 @@ public class ApiRoutingDefinitionGenerator {
             defn.addRouting(
                     String.format("return a specific instances of %s using a %s",
                             thing.definition().getName(),uniqueIdFieldName),
-                    RoutingVerb.GET, aUrlWGuid, RoutingStatus.returnedFromCall());
+                    RoutingVerb.GET, aUrlWGuid, RoutingStatus.returnedFromCall()).
+                    setAsFilterableFrom(thing.definition());
 
             // we should be able to amend things with a GUID e.g. POST project/GUID with body
             defn.addRouting(
@@ -157,7 +158,7 @@ public class ApiRoutingDefinitionGenerator {
         final Thing thing = relationship.getFrom();
         String uniqueIdentifier;
         String uniqueIdFieldName;
-        if(config.showIdsInUrlsIfAvailable() && thing.definition().hasIDField()){
+        if(config.willUrlsShowIdsIfAvailable() && thing.definition().hasIDField()){
             uniqueIdentifier=uniqueID;
             uniqueIdFieldName = thing.definition().getIDField().getName();
         }else{
@@ -166,7 +167,7 @@ public class ApiRoutingDefinitionGenerator {
         }
 
         String fromNameForUrl;
-        if(config.singleInstancesArePlural()) {
+        if(config.willUrlShowInstancesAsPlural()) {
             fromNameForUrl = thing.definition().getPlural().toLowerCase();
         }else {
             fromNameForUrl = thing.definition().getName().toLowerCase();

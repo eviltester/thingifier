@@ -36,13 +36,13 @@ public class Environment {
             Spark.port(4567);
             String [] args = {};
             final Thingifier thingifier = new TodoManagerThingifier().get();
-            thingifier.apiConfig().allowShowGuidsInResponses(true);
-            thingifier.apiConfig().allowShowIdsInUrlsIfAvailable(false);
-            thingifier.apiConfig().showSingleInstancesAsPlural(true);
-            thingifier.apiConfig().allowShowIdsInResponsesIfAvailable(false);
-            thingifier.apiConfig().jsonOutput().compressRelationships(false);
-            thingifier.apiConfig().jsonOutput().relationshipsUsesIdsIfAvailable(false);
-            thingifier.apiConfig().jsonOutput().convertFieldsToDefinedTypes(false);
+            thingifier.apiConfig().setResponsesToShowGuids(true);
+            thingifier.apiConfig().setUrlToShowIdsInUrlsIfAvailable(false);
+            thingifier.apiConfig().setUrlToShowSingleInstancesAsPlural(true);
+            thingifier.apiConfig().setResponsesToShowIdsIfAvailable(false);
+            thingifier.apiConfig().jsonOutput().setCompressRelationships(false);
+            thingifier.apiConfig().jsonOutput().setRelationshipsUseIdsIfAvailable(false);
+            thingifier.apiConfig().jsonOutput().setConvertFieldsToDefinedTypes(false);
 
             List<RoutingDefinition> additionalRoutes = new ArrayList<>();
             new ThingifierRestServer("", thingifier, additionalRoutes);

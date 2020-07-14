@@ -14,13 +14,13 @@ public class ApiUrls {
         String uniqueID;
         String entityPath;
 
-        if (apiConfig.singleInstancesArePlural()) {
+        if (apiConfig.willUrlShowInstancesAsPlural()) {
             entityPath = thingInstance.getEntity().getPlural();
         } else {
             entityPath = thingInstance.getEntity().getName();
         }
 
-        if (apiConfig.showIdsInUrlsIfAvailable() && thingInstance.hasIDField()){
+        if (apiConfig.willUrlsShowIdsIfAvailable() && thingInstance.hasIDField()){
             uniqueID = thingInstance.getID();
         }else{
             uniqueID = thingInstance.getGUID();

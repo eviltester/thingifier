@@ -14,34 +14,30 @@ public class JsonOutputConfig {
         willConvertFieldsToDefinedTypes=true;
     }
 
-    public Boolean doesAllowCompressedRelationships() {
-        return allowCompressedRelationships;
-    }
 
-    public Boolean doesRelationshipsUseIdsIfAvailable() {
-        return jsonOutputRelationshipsUsesIdsIfAvailable;
-    }
-
-    public void compressRelationships(final boolean config) {
+    public void setCompressRelationships(final boolean config) {
         allowCompressedRelationships=config;
     }
-
-    public void relationshipsUsesIdsIfAvailable(final boolean config) {
+    public void setRelationshipsUseIdsIfAvailable(final boolean config) {
         jsonOutputRelationshipsUsesIdsIfAvailable=config;
     }
-
-    public void convertFieldsToDefinedTypes(final boolean config) {
+    public void setConvertFieldsToDefinedTypes(final boolean config) {
         willConvertFieldsToDefinedTypes=config;
     }
-
-    public void allowShowGuidsInResponse(boolean config){
+    public void setShowGuidsInResponse(boolean config){
         willShowGuidsInResponse=config;
     }
-    public boolean showGuidsInResponse() {
+
+    public Boolean willRenderRelationshipsAsCompressed() {
+        return allowCompressedRelationships;
+    }
+    public Boolean willRenderRelationshipsWithIdsIfAvailable() {
+        return jsonOutputRelationshipsUsesIdsIfAvailable;
+    }
+    public boolean willRenderGuidsInResponse() {
         return willShowGuidsInResponse;
     }
-
-    public boolean shouldConvertFieldsToDefinedTypes() {
+    public boolean willRenderFieldsAsDefinedTypes() {
         return willConvertFieldsToDefinedTypes;
     }
 }

@@ -231,7 +231,7 @@ public class DefaultGUI {
         final ThingDefinition definition = instance.getEntity();
         StringBuilder html = new StringBuilder();
         html.append("<ul>");
-        if(apiConfig.showGuidsInResponses()) {
+        if(apiConfig.willResponsesShowGuids()) {
             html.append(String.format("<li>%s<ul><li>%s</li></ul></li>", "guid", instance.getGUID()));
         }
         for(String field : definition.getFieldNames()) {
@@ -254,7 +254,7 @@ public class DefaultGUI {
         for(String fieldName : definition.getFieldNames()) {
             Field field = definition.getField(fieldName);
             if(field.getType()==FieldType.GUID){
-                if(apiConfig.showGuidsInResponses()) {
+                if(apiConfig.willResponsesShowGuids()) {
                     html.append(String.format("<th>%s</th>",field.getName()));
                 }
             }else{
@@ -266,7 +266,7 @@ public class DefaultGUI {
         for(String fieldName : definition.getFieldNames()) {
             Field field = definition.getField(fieldName);
             if(field.getType()==FieldType.GUID){
-                if(apiConfig.showGuidsInResponses()) {
+                if(apiConfig.willResponsesShowGuids()) {
                     html.append(String.format("<td>%s</td>",instance.getValue(fieldName)));
                 }
             }else{
@@ -298,7 +298,7 @@ public class DefaultGUI {
 
         html.append("<tr>");
         // show keys first
-        if(apiConfig.showGuidsInResponses()) {
+        if(apiConfig.willResponsesShowGuids()) {
             html.append(String.format("<td><a href='/gui/instance?entity=%1$s&guid=%2$s'>%2$s</a></td>",
                     definition.getName(), instance.getGUID()));
         }
@@ -336,7 +336,7 @@ public class DefaultGUI {
         html.append("<thead>");
         html.append("<tr>");
         // guid first
-        if(apiConfig.showGuidsInResponses()) {
+        if(apiConfig.willResponsesShowGuids()) {
             html.append("<th>guid</th>");
         }
         // then any ids

@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.apiconfig.ParamConfig;
 import uk.co.compendiumdev.thingifier.domain.FieldType;
 import uk.co.compendiumdev.thingifier.domain.definitions.Field;
 import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
@@ -36,7 +37,8 @@ public class QueryFiltersTest {
         params.put("truefalse", "true");
 
         SimpleQuery queryResults = new SimpleQuery(aThingifier, "things").
-                                        performQuery(params);
+                                        performQuery(params,
+                                                aThingifier.apiConfig().forParams());
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
         final List<ThingInstance> instances = queryResults.getListThingInstance();

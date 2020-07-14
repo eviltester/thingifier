@@ -2,6 +2,7 @@ package uk.co.compendiumdev.thingifier.query;
 
 import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.apiconfig.ParamConfig;
 import uk.co.compendiumdev.thingifier.domain.definitions.RelationshipVector;
 import uk.co.compendiumdev.thingifier.domain.definitions.ThingDefinition;
 import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
@@ -204,11 +205,17 @@ final public class SimpleQuery {
         return isCollection;
     }
 
-    public SimpleQuery performQuery(final Map<String, String> queryParams) {
+    public SimpleQuery performQuery(final Map<String, String> queryParams,
+                                    ParamConfig config) {
+
         performQuery();
         //filter the results based on the query
         // todo: should we filter single instances?
         if(!isCollection){
+            return this;
+        }
+
+        if(!config.willAllowFilteringThroughUrlParams()){
             return this;
         }
 

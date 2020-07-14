@@ -17,7 +17,19 @@ public class RestApiGetHandler {
     }
 
     public ApiResponse handle(final String url, final Map<String, String> queryParams) {
-        SimpleQuery queryResults = new SimpleQuery(thingifier, url).performQuery(queryParams);
+
+        // if there are params, and we are not allowed to filter, and we enforce that
+        if(queryParams.size()>0 &&
+            thingifier.apiConfig().forParams().willEnforceFilteringThroughUrlParams() &&
+            !thingifier.apiConfig().forParams().willAllowFilteringThroughUrlParams()){
+            return ApiResponse.error(400,
+                        String.format("Can not use query parameters with %s", url));
+        }
+
+        SimpleQuery queryResults = new SimpleQuery(thingifier, url).performQuery(
+                                                queryParams,
+                                                thingifier.apiConfig().forParams());
+
         List<ThingInstance> queryItems = queryResults.getListThingInstance();
 
         // return a 404 if it doesn't match anything

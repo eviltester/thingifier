@@ -1,6 +1,7 @@
 package uk.co.compendiumdev.thingifier.api.routings;
 
 import uk.co.compendiumdev.thingifier.api.response.ResponseHeader;
+import uk.co.compendiumdev.thingifier.domain.definitions.ThingDefinition;
 
 public class RoutingDefinition {
     private final RoutingVerb verb;
@@ -8,12 +9,16 @@ public class RoutingDefinition {
     private final RoutingStatus routingStatus;
     private final ResponseHeader header;
     private String documentation = "";
+    private boolean isFilterable;
+    private ThingDefinition filterableEntityDefn;
 
     public RoutingDefinition(RoutingVerb verb, String url, RoutingStatus routingStatus, ResponseHeader header) {
         this.verb = verb;
         this.url = url;
         this.routingStatus = routingStatus;
         this.header = header;
+        this.isFilterable=false;
+        filterableEntityDefn=null;
     }
 
     public RoutingVerb verb() {
@@ -51,5 +56,18 @@ public class RoutingDefinition {
     public RoutingDefinition addDocumentation(String documentation) {
         this.documentation = documentation;
         return this;
+    }
+
+    public boolean isFilterable() {
+        return isFilterable;
+    }
+
+    public void setAsFilterableFrom(final ThingDefinition definition) {
+        isFilterable=true;
+        filterableEntityDefn = definition;
+    }
+
+    public ThingDefinition getFilterableEntity() {
+        return filterableEntityDefn;
     }
 }

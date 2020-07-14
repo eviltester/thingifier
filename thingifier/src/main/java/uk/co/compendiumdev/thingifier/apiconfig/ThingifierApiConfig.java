@@ -4,20 +4,51 @@ import uk.co.compendiumdev.thingifier.JsonOutputConfig;
 
 public class ThingifierApiConfig {
 
-    private boolean willShowIdsInResponsesIfAvailable;
-    private JsonOutputConfig jsonOutputConfig;
-    private boolean willShowGuidsInResponses;
+
+    // Params
+    // todo: willAllowFilteringThroughUrlParams  true/false (default: true)
+    // todo: willEnforceFilteringThroughUrlParams true/false ie. 404 error if params when not supported (default: true)
+    // todo: api request level allow filtering e.g. on some /things allow filtering but not others
+    private ParamConfig paramsConfig;
+
+    // Plurals
+    // todo: enforcePluralsInApiCalls true/false i.e. throw404ErrorIfWrongPluralSingluarUsed default is true
+    // - showUrlsAsPluralOrSingular, allow toggling between plural or singular
     private boolean willShowSingleInstancesAsPlural;
-    private boolean willShowIdsInUrlsIfAvailable;
+
+    // XML
+    // todo: willApiAllowXMLResponses i.e. respond with XML if asked for, json otherwise (default: true)
+    // todo: willApiEnforceXMLResponses i.e. respond with 400 if asked for but not allowed XML responses (default: true)
+    // todo: willApiAllowXMLRequests i.e. process when XML content submitted, if not then throw error (default: true)
+
+    // JSON
+    // todo: willApiAllowJsonResponses i.e. respond with Json if asked for, xml otherwise
+    // todo: willApiEnforceJsonResponses i.e. respond with 400 if asked for but not allowed Json responses
+    // todo: willApiAllowJsonRequests i.e. process when Json content submitted, if not then throw error
+
+
+    /*
+        *** Responses ***
+     */
+    private JsonOutputConfig jsonOutputConfig;
+    // willShowFieldvaluesAsConverted Types e.g. boolean is `true` instead of "true"
+
+    // willShowIdsIfAvailable e.g. instead of GUIDs everywhere, only use GUID if an ID not available
+    private boolean willShowIdsInResponsesIfAvailable;
+
+    // willShowGuidsInResponses e.g. if false then no GUIDs shown in responses at all
+    private boolean willShowGuidsInResponses;
+
+    // Requests
+    // willEnforceDeclaredTypesInInput e.g. only accept if boolean is given as `true` indead of "true"
     private boolean willEnforceDeclaredTypesInInput;
 
-    // todo: allowFilteringThroughUrlParams  true/false (default: true)
-    // todo: enforceFilteringTrhoughUrlParams true/false ie. 404 error if params when not supported (default: true)
-    // todo: api request level allow filtering e.g. on some /things allow filtering but not others
-    // todo: enforcePluralsInApiCalls true/false i.e. throw404ErrorIfWrongPluralSingluarUsed
+    // URLs
+    // willUseIdsInUrlsIfAvailable - instead of GUIDs use Ids
+    private boolean willShowIdsInUrlsIfAvailable;
 
     public ThingifierApiConfig(){
-        jsonOutputConfig = new JsonOutputConfig();
+
 
         // default to the most modern and 'up to date' config
         willShowSingleInstancesAsPlural=true;
@@ -26,10 +57,13 @@ public class ThingifierApiConfig {
         willShowIdsInUrlsIfAvailable = true;  // location headers, api urls
         willEnforceDeclaredTypesInInput = true;
 
+        paramsConfig = new ParamConfig();
+
         // by default
-        jsonOutputConfig.allowShowGuidsInResponse(willShowGuidsInResponses);
-        jsonOutputConfig.compressRelationships(true);
-        jsonOutputConfig.relationshipsUsesIdsIfAvailable(willShowIdsInResponsesIfAvailable);
+        jsonOutputConfig = new JsonOutputConfig();
+        jsonOutputConfig.setShowGuidsInResponse(willShowGuidsInResponses);
+        jsonOutputConfig.setCompressRelationships(true);
+        jsonOutputConfig.setRelationshipsUseIdsIfAvailable(willShowIdsInResponsesIfAvailable);
 
     }
 
@@ -38,54 +72,54 @@ public class ThingifierApiConfig {
     }
 
 
-    public ThingifierApiConfig allowShowGuidsInResponses(boolean allow){
+    public ThingifierApiConfig setResponsesToShowGuids(boolean allow){
         willShowGuidsInResponses = allow;
         if(!allow) {
-            jsonOutput().relationshipsUsesIdsIfAvailable(true);
-            jsonOutput().allowShowGuidsInResponse(false);
+            jsonOutput().setRelationshipsUseIdsIfAvailable(true);
+            jsonOutput().setShowGuidsInResponse(false);
         }
         return this;
     }
 
-    public ThingifierApiConfig allowShowIdsInResponsesIfAvailable(boolean allow) {
+    public ThingifierApiConfig setResponsesToShowIdsIfAvailable(boolean allow) {
         willShowIdsInResponsesIfAvailable = allow;
-        jsonOutput().relationshipsUsesIdsIfAvailable(allow);
+        jsonOutput().setRelationshipsUseIdsIfAvailable(allow);
         return this;
     }
 
-    public ThingifierApiConfig allowShowIdsInUrlsIfAvailable(boolean allow) {
+    public ThingifierApiConfig setUrlToShowIdsInUrlsIfAvailable(boolean allow) {
         willShowIdsInUrlsIfAvailable = allow;
-        jsonOutput().relationshipsUsesIdsIfAvailable(allow);
+        jsonOutput().setRelationshipsUseIdsIfAvailable(allow);
         return this;
     }
 
-    public ThingifierApiConfig showSingleInstancesAsPlural(boolean yes){
+    public ThingifierApiConfig setUrlToShowSingleInstancesAsPlural(boolean yes){
         willShowSingleInstancesAsPlural = yes;
         return this;
     }
 
-    public ThingifierApiConfig shouldEnforceDeclaredTypesInInput(boolean config){
+    public ThingifierApiConfig setApiToEnforceDeclaredTypesInInput(boolean config){
         willEnforceDeclaredTypesInInput = config;
         return this;
     }
 
-    public boolean singleInstancesArePlural() {
+    public boolean willUrlShowInstancesAsPlural() {
         return willShowSingleInstancesAsPlural;
     }
-
-    public boolean showIdsInResponsesIfAvailable() {
+    public boolean willResponseShowIdsIfAvailable() {
         return willShowIdsInResponsesIfAvailable;
     }
-
-    public boolean showGuidsInResponses() {
+    public boolean willResponsesShowGuids() {
         return willShowGuidsInResponses;
     }
-
-    public boolean showIdsInUrlsIfAvailable() {
+    public boolean willUrlsShowIdsIfAvailable() {
         return willShowIdsInUrlsIfAvailable;
     }
-
-    public boolean enforceDeclaredTypesInInput() {
+    public boolean willApiEnforceDeclaredTypesInInput() {
         return willEnforceDeclaredTypesInInput;
+    }
+
+    public ParamConfig forParams() {
+        return paramsConfig;
     }
 }

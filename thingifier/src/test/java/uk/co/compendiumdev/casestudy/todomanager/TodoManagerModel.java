@@ -177,8 +177,8 @@ could implement a Thingifier URL query matcher to return instances based on quer
 
         // TODO there is a special case of Mandatory : Mandatory which we need to be able to 'create' entities at same time as relationships
 
-        todoManager.apiConfig().shouldEnforceDeclaredTypesInInput(false);
-        todoManager.apiConfig().jsonOutput().convertFieldsToDefinedTypes(false);
+        todoManager.apiConfig().setApiToEnforceDeclaredTypesInInput(false);
+        todoManager.apiConfig().jsonOutput().setConvertFieldsToDefinedTypes(false);
 
         return todoManager;
     }

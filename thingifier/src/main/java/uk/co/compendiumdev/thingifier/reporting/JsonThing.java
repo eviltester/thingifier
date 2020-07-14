@@ -73,7 +73,7 @@ public class JsonThing {
         for (String fieldName : thingInstance.getEntity().getFieldNames()) {
             Field theField = thingInstance.getEntity().getField(fieldName);
             // if hiding guids then skip them
-            if(!apiConfig.showGuidsInResponse() && theField.getType()== FieldType.GUID)
+            if(!apiConfig.willRenderGuidsInResponse() && theField.getType()== FieldType.GUID)
                 continue;
 
             String fieldValue = "";
@@ -81,7 +81,7 @@ public class JsonThing {
             try {
                 fieldValue = thingInstance.getValue(theField.getName());
 
-                if(apiConfig.shouldConvertFieldsToDefinedTypes()) {
+                if(apiConfig.willRenderFieldsAsDefinedTypes()) {
                     switch (theField.getType()) {
                         case BOOLEAN:
                             jsonobj.addProperty(fieldName, Boolean.valueOf(fieldValue));
@@ -131,8 +131,8 @@ public class JsonThing {
         Boolean hasAnyComplexRelationships = false; // assume that most relationships can be compressed
 
         // config of output
-        Boolean allowCompressedRelationships = apiConfig.doesAllowCompressedRelationships();
-        Boolean useIdsInRelationshipRenderingIfAvailable = apiConfig.doesRelationshipsUseIdsIfAvailable(); // todo: allow configuring relationship rendering at an app or api level
+        Boolean allowCompressedRelationships = apiConfig.willRenderRelationshipsAsCompressed();
+        Boolean useIdsInRelationshipRenderingIfAvailable = apiConfig.willRenderRelationshipsWithIdsIfAvailable(); // todo: allow configuring relationship rendering at an app or api level
 
         // "relationships" : [
         if(relationships.size()>0 && thingInstance.hasAnyRelationshipInstances()){

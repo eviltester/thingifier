@@ -10,16 +10,20 @@ import uk.co.compendiumdev.thingifier.api.routings.RoutingVerb;
 import uk.co.compendiumdev.thingifier.domain.FieldType;
 import uk.co.compendiumdev.thingifier.domain.definitions.Field;
 import uk.co.compendiumdev.thingifier.domain.definitions.RelationshipDefinition;
+import uk.co.compendiumdev.thingifier.domain.definitions.ThingDefinition;
 import uk.co.compendiumdev.thingifier.domain.definitions.validation.ValidationRule;
 import uk.co.compendiumdev.thingifier.domain.instances.DocumentationThingInstance;
 import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
 import uk.co.compendiumdev.thingifier.reporting.JsonThing;
 import uk.co.compendiumdev.thingifier.reporting.XmlThing;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-
-// todo: add filters to the documentation and example documentation
+import java.util.Random;
 
 public class RestApiDocumentationGenerator {
     private final Thingifier thingifier;
@@ -77,6 +81,11 @@ public class RestApiDocumentationGenerator {
             output.append(paragraph("You get JSON by default but can also request this i.e."));
             output.append(paragraph("<i>Accept: application/json</i><br/><br/>\n"));
 
+            if(thingifier.apiConfig().forParams().willAllowFilteringThroughUrlParams()){
+                output.append(paragraph("Some requests can be filtered by adding query params of fieldname=value. Where only matching items will be returned."));
+                output.append(paragraph("e.g. <i>/items?size=2&status=true</i><br/><br/>\n"));
+            }
+
             output.append(paragraph("All data lives in memory and is not persisted so the application is cleared everytime you start it. It does have some test data in here when you start"));
             output.append("</div>");
         }
@@ -110,7 +119,7 @@ public class RestApiDocumentationGenerator {
                 for (String aField : aThing.definition().getFieldNames()) {
 
                     output.append("<tr>");
-                    if(!apiConfig.showGuidsInResponses() && aField.contentEquals("guid")){
+                    if(!apiConfig.willResponsesShowGuids() && aField.contentEquals("guid")){
                         continue;
                     }
 
@@ -165,59 +174,7 @@ public class RestApiDocumentationGenerator {
                 output.append("</tbody>\n");
                 output.append("</table>\n");
 
-/*
-                output.append("<ul>\n");
-                for (String aField : aThing.definition().getFieldNames()) {
 
-                    if(!apiConfig.showGuidsInResponses() && aField.contentEquals("guid")){
-                        continue;
-                    }
-
-                    output.append(String.format("<li> %s %n", aField));
-
-                    output.append("<ul>\n");
-
-                    Field theField = aThing.definition().getField(aField);
-                    output.append(String.format("<li> (%s)</li>", theField.getType()));
-
-                    for (ValidationRule validation : theField.validationRules()) {
-                        output.append("<li>" + validation.getErrorMessage("") + "</li>\n");
-                    }
-
-                    String exampleValue = theField.getRandomExampleValue();
-                    exampleThing.overrideValue(theField.getName(), exampleValue);
-
-                    output.append(String.format("<li>Example: \"%s\"</li>", exampleValue));
-                    output.append(String.format("<li>Mandatory?: %b</li>", theField.isMandatory()));
-                    output.append(String.format("<li>Validates?: %b</li>", theField.willValidate()));
-
-                    if(theField.shouldTruncate()){
-                        output.append(String.format("<li>Truncate to: %d characters</li>", theField.truncateLength()));
-                    }
-
-                    if(theField.getType()== FieldType.STRING) {
-                        if (theField.willEnforceLength()) {
-                            output.append(String.format("<li>Max Length: %d characters</li>", theField.truncateLength()));
-                        }
-                    }
-
-                    if(theField.getType()== FieldType.INTEGER){
-                        output.append(String.format("<li>Values Between: \"%d\" to \"%d\" </li>",
-                                            theField.getMinimumIntegerValue(), theField.getMaximumIntegerValue()));
-                    }
-
-                    if(theField.getType()== FieldType.FLOAT){
-                        output.append(String.format("<li>Values Between: \"%f\" to \"%f\" </li>",
-                                theField.getMinimumFloatValue(), theField.getMaximumFloatValue()));
-                    }
-
-                    output.append("</ul>\n");
-                    output.append("</li>\n");
-
-
-                }
-                output.append("</ul>\n");
-*/
 
                 // show an example
                 output.append("<p>Example JSON Output from API calls</p>\n");
@@ -296,6 +253,18 @@ public class RestApiDocumentationGenerator {
                 // new endpoint
                 output.append(heading(4, "endpoint", "/" + routingDefn.url()));
                 output.append(paragraph("e.g. <span class='endpoint'>" + url(routingDefn.url()) + "</span"));
+
+                if(routingDefn.isFilterable() &&
+                        thingifier.apiConfig().forParams().willAllowFilteringThroughUrlParams()){
+
+                    // we are allowed to filter url
+                    output.append(paragraph("This endpoint can be filtered with fields as URL Query Parameters."));
+                    String exampleFilter = getExampleFilter(routingDefn.getFilterableEntity());
+                    if(exampleFilter!=null && exampleFilter.length()>0){
+                        output.append(paragraph("e.g. <span class='endpoint'>" + url(routingDefn.url()) + exampleFilter + "</span"));
+                    }
+                }
+
                 currentEndPoint = routingDefn.url();
             }
             if (routingDefn.status().isReturnedFromCall() || routingDefn.status().value() != 405) {
@@ -323,6 +292,45 @@ public class RestApiDocumentationGenerator {
         output.append(mainMenu.getPageFooter());
         output.append(mainMenu.getPageEnd());
         return output.toString();
+    }
+
+    private String getExampleFilter(final ThingDefinition filterableEntity) {
+        String exampleFilters = "";
+        List<Field> exampleFields = new ArrayList<>();
+        List<Integer> indexes = new ArrayList<>();
+        Random random = new Random();
+
+        // todo: ignore strings unless none added, in which case add the strings
+        for(String fieldName : filterableEntity.getFieldNames()){
+            Field field = filterableEntity.getField(fieldName);
+            if(field.getType() != FieldType.ID && field.getType()!= FieldType.GUID){
+                // we can filter on guid and id, but don't use those as examples
+                if(exampleFields.size()==0 || random.nextBoolean()){
+                    // make sure at least one
+                    indexes.add(exampleFields.size());
+                    exampleFields.add(field);
+                }
+            }
+        }
+
+        String delimiter = "?";
+
+        int fieldsToUse=random.nextInt(exampleFields.size())+1;
+        for(int x=0; x<fieldsToUse; x++){
+            int fieldToUse=random.nextInt(indexes.size());
+            Field field = exampleFields.get(indexes.get(fieldToUse));
+            indexes.remove(fieldToUse);
+            exampleFilters = exampleFilters + delimiter + field.getName() + "=" + field.getRandomExampleValue();
+            delimiter = "&";
+        }
+
+//        try {
+//            exampleFilters =  URLEncoder.encode(exampleFilters, StandardCharsets.UTF_8.toString());
+//        } catch (UnsupportedEncodingException ex) {
+            exampleFilters = exampleFilters.replace(" ", "%20");
+//        }
+
+        return exampleFilters;
     }
 
     private String url(final String postUrl) {

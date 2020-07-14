@@ -18,11 +18,15 @@ final public class ApiRoutingDefinition {
         return routings;
     }
 
-    public void addRouting(final String documentation, final RoutingVerb verb, final String url, final RoutingStatus routingStatus) {
-        routings.add(new RoutingDefinition(verb, url, routingStatus, null).addDocumentation(documentation));
+    public RoutingDefinition addRouting(final String documentation, final RoutingVerb verb, final String url, final RoutingStatus routingStatus) {
+        RoutingDefinition defn = new RoutingDefinition(verb, url, routingStatus, null).addDocumentation(documentation);
+        routings.add(defn);
+        return defn;
     }
 
-    public void addRouting(final String documentation, final RoutingVerb verb, final String url, final RoutingStatus routingStatus, final ResponseHeader header) {
-        routings.add(new RoutingDefinition(verb, url, routingStatus, header).addDocumentation(documentation));
+    public RoutingDefinition addRouting(final String documentation, final RoutingVerb verb, final String url, final RoutingStatus routingStatus, final ResponseHeader header) {
+        RoutingDefinition defn = new RoutingDefinition(verb, url, routingStatus, header).addDocumentation(documentation);
+        routings.add(defn);
+        return defn;
     }
 }
