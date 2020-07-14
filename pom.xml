@@ -29,7 +29,7 @@
             - added hooks at the API request and response level to override default API processing functionality
             - api field order is controlled by the order of definitions
             - added API Config Profiles to make it easier to configure different API versions
-
+            - added filters on GET requests e.g. ?status=true
 
         1.5.2
 
