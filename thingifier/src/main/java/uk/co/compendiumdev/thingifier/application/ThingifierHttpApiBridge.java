@@ -44,7 +44,8 @@ final public class ThingifierHttpApiBridge {
     public String get(final Request request, final Response response) {
 
         final HttpApiRequest theRequest = new HttpApiRequest(request.pathInfo()).
-                                                setHeaders(headersAsMap(request));
+                                                setHeaders(headersAsMap(request))
+                                                .setQueryParams(queryParamsAsMap(request));
 
         HttpApiResponse theResponse = new ThingifierHttpApi(thingifier).get(theRequest);
 
@@ -53,6 +54,21 @@ final public class ThingifierHttpApiBridge {
 
     }
 
+    private Map<String, String> queryParamsAsMap(final Request request) {
+
+        Map<String, String> params = new HashMap<>();
+
+        for(String paramName : request.queryParams()){
+            // todo: figure out what to do if more than one
+            String paramValue = request.queryParamsValues(paramName)[0];
+            if(paramValue==null){
+                paramValue="";
+            }
+            params.put(paramName, paramValue);
+        }
+
+        return params;
+    }
 
 
     public String post(final Request request, final Response response) {

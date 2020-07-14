@@ -5,6 +5,8 @@ import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.api.restapihandlers.*;
 
+import java.util.Map;
+
 public class ThingifierRestAPIHandler {
     private final Thingifier thingifier;
     private final RestApiDeleteHandler delete;
@@ -34,6 +36,10 @@ public class ThingifierRestAPIHandler {
         return get.handle(url);
     }
 
+    public ApiResponse get(final String url, final Map<String, String> queryParams) {
+        return get.handle(url, queryParams);
+    }
+
     public ApiResponse delete(final String url) {
         return delete.handle(url);
     }
@@ -45,14 +51,6 @@ public class ThingifierRestAPIHandler {
     public ApiResponse put(final String url, final BodyParser args) {
         return put.handle(url, args);
     }
-
-
-
-
-
-
-
-
 
 
 

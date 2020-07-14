@@ -8,6 +8,7 @@ import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static uk.co.compendiumdev.thingifier.query.SimpleQuery.LastMatchValue.*;
 
@@ -19,13 +20,9 @@ final public class SimpleQuery {
     private boolean isCollection = false;
     private boolean pluralMatch = false;
 
-    public boolean isResultACollection() {
-        return isCollection;
-    }
 
-    enum LastMatchValue {NOTHING, CURRENT_THING, CURRENT_INSTANCE, CURRENT_ITEMS, CURRENT_RELATIONSHIP}
 
-    ;
+    enum LastMatchValue {NOTHING, CURRENT_THING, CURRENT_INSTANCE, CURRENT_ITEMS, CURRENT_RELATIONSHIP};
 
     LastMatchValue lastMatch = NOTHING;
 
@@ -44,7 +41,12 @@ final public class SimpleQuery {
 
     public SimpleQuery(Thingifier thingifier, String query) {
         this.thingifier = thingifier;
-        this.query = query;
+
+        if(query.startsWith("/")){
+            this.query = query.substring(1);
+        }else{
+            this.query = query;
+        }
     }
 
 
@@ -84,8 +86,6 @@ final public class SimpleQuery {
                         newitems.addAll(instance.connectedItems(term));
                     }
                 }
-
-                // todo: apply any filter query here to remove any found items from the list
 
                 // relationships is always a collection
                 isCollection = true;
@@ -200,11 +200,31 @@ final public class SimpleQuery {
         return this;
     }
 
+    public boolean isResultACollection() {
+        return isCollection;
+    }
+
+    public SimpleQuery performQuery(final Map<String, String> queryParams) {
+        performQuery();
+        //filter the results based on the query
+        // todo: should we filter single instances?
+        if(!isCollection){
+            return this;
+        }
+
+        foundItems = new QueryListFilter(queryParams).filter(foundItems);
+
+        return this;
+    }
+
     public List<ThingInstance> getListThingInstance() {
         List<ThingInstance> returnThis = new ArrayList<ThingInstance>();
 
         if (lastMatch == CURRENT_THING) {
-            returnThis.addAll(currentThing.getInstances());
+            // if not allow filtering then...
+            //returnThis.addAll(currentThing.getInstances());
+            // if allow filtering then...
+            returnThis.addAll(foundItems);
         }
 
         if (lastMatch == CURRENT_INSTANCE) {

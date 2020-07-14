@@ -19,6 +19,8 @@ import uk.co.compendiumdev.thingifier.reporting.XmlThing;
 import java.util.Collection;
 import java.util.List;
 
+// todo: add filters to the documentation and example documentation
+
 public class RestApiDocumentationGenerator {
     private final Thingifier thingifier;
     private final List<Thing> things;

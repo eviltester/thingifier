@@ -3,15 +3,17 @@ package uk.co.compendiumdev.thingifier.api.http;
 import java.util.HashMap;
 import java.util.Map;
 
-final public class HttpApiRequest {
+public final class HttpApiRequest {
 
     private final String path;
     private Map<String, String> headers;
     private String body;
+    private Map<String, String> queryParams;
 
     public HttpApiRequest(final String pathInfo) {
         this.path = justThePath(pathInfo);
         this.headers = new HashMap<>();
+        this.queryParams = new HashMap<>();
         body = "";
     }
 
@@ -50,5 +52,14 @@ final public class HttpApiRequest {
 
     public void addHeader(final String headerName, final String headerValue) {
         this.headers.put(headerName, headerValue);
+    }
+
+    public HttpApiRequest setQueryParams(final Map<String, String> queryParamsAsMap) {
+        queryParams = queryParamsAsMap;
+        return this;
+    }
+
+    public Map<String, String> getQueryParams() {
+        return queryParams;
     }
 }

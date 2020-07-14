@@ -47,7 +47,7 @@ final public class ThingifierHttpApi {
         HttpApiResponse httpResponse = runTheHttpApiRequestHooksOn(request);
 
         if(httpResponse==null) {
-            ApiResponse apiResponse = thingifier.api().get(request.getPath());
+            ApiResponse apiResponse = thingifier.api().get(request.getPath(), request.getQueryParams());
             httpResponse = new HttpApiResponse(request.getHeaders(), apiResponse, jsonThing);
         }
 

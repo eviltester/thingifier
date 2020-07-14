@@ -25,6 +25,7 @@ import static spark.Spark.get;
 public class DefaultGUI {
 
     // TODO: templates or tidier way to create the default GUI pages with styling
+    // todo: support filters in the GUI Urls
 
     private final Thingifier thingifier;
     private final JsonThing jsonThing;

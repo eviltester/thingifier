@@ -1,9 +1,8 @@
 package uk.co.compendiumdev.thingifier.domain.definitions;
 
-import junit.framework.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.io.File;
 
 public class ThingDefinitionTest {
 
@@ -18,16 +17,16 @@ public class ThingDefinitionTest {
         }
 
         // guid added automatically - making 20 fields
-        Assert.assertEquals(20, defn.getFieldNames().size());
+        Assertions.assertEquals(20, defn.getFieldNames().size());
 
         // check order
         int expectedFieldPostfix = 0;
         for(String fieldName: defn.getFieldNames()){
             if(expectedFieldPostfix==0){
                 // first field is GUID
-                Assert.assertEquals("guid", fieldName);
+                Assertions.assertEquals("guid", fieldName);
             }else{
-                Assert.assertEquals("field" + expectedFieldPostfix, fieldName);
+                Assertions.assertEquals("field" + expectedFieldPostfix, fieldName);
             }
             expectedFieldPostfix++;
         }

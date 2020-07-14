@@ -11,6 +11,11 @@ public class ThingifierApiConfig {
     private boolean willShowIdsInUrlsIfAvailable;
     private boolean willEnforceDeclaredTypesInInput;
 
+    // todo: allowFilteringThroughUrlParams  true/false (default: true)
+    // todo: enforceFilteringTrhoughUrlParams true/false ie. 404 error if params when not supported (default: true)
+    // todo: api request level allow filtering e.g. on some /things allow filtering but not others
+    // todo: enforcePluralsInApiCalls true/false i.e. throw404ErrorIfWrongPluralSingluarUsed
+
     public ThingifierApiConfig(){
         jsonOutputConfig = new JsonOutputConfig();
 

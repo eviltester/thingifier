@@ -25,10 +25,10 @@ public class UsageTest {
     // done: create relationships between things
     // done: named directional relationships
     // done: delete thing instances
-    // done: show relationships in the instances e.g. for a todo show "relationships" : [ "task-of" : [{"guid":"xxx"}]]
+    // done: show relationships in the instances e.g. for a to do show "relationships" : [ "task-of" : [{"guid":"xxx"}]]
+    // done: find things based on field values e.g. ?status=true
 
     // todo: create test coverage for creating relationships through post 'in' the instance
-    // todo: find things based on field values
     // todo: cardinality of relationships
     // todo: test for optional fields (they are optional by default)
     // todo: randomly generate data against regex

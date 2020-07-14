@@ -5,7 +5,9 @@ import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
 import uk.co.compendiumdev.thingifier.query.SimpleQuery;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class RestApiGetHandler {
     private final Thingifier thingifier;
@@ -14,8 +16,8 @@ public class RestApiGetHandler {
         this.thingifier = aThingifier;
     }
 
-    public ApiResponse handle(final String url) {
-        SimpleQuery queryResults = new SimpleQuery(thingifier, url).performQuery();
+    public ApiResponse handle(final String url, final Map<String, String> queryParams) {
+        SimpleQuery queryResults = new SimpleQuery(thingifier, url).performQuery(queryParams);
         List<ThingInstance> queryItems = queryResults.getListThingInstance();
 
         // return a 404 if it doesn't match anything
@@ -37,4 +39,10 @@ public class RestApiGetHandler {
             return ApiResponse.success().returnInstanceCollection(queryItems).resultContainsType(queryResults.resultContainsDefn());
         }
     }
+
+    public ApiResponse handle(final String url) {
+        return handle(url, new HashMap<>());
+    }
+
+
 }
