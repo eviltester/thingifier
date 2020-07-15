@@ -4,7 +4,7 @@ import java.util.*;
 
 public class AcceptHeaderParser {
     private final String acceptHeader;
-    private final String[] acceptMediaTypeDefinitions;
+    private final List<String> acceptMediaTypeDefinitionsList;
     private final String[] acceptedXmlStrings = {
                                             "application/xml",
                         };
@@ -48,7 +48,13 @@ public class AcceptHeaderParser {
         acceptedTypes.put(ACCEPT_TYPE.NO_MATCHING_TYPE, new ArrayList<>());
 
         // TODO: use ;q=0.9 to sort items in the array
-        acceptMediaTypeDefinitions = this.acceptHeader.split(",");
+        String[] acceptMediaTypeDefinitions = this.acceptHeader.split(",");
+        acceptMediaTypeDefinitionsList = new ArrayList<>();
+        for(String type : acceptMediaTypeDefinitions){
+            if(type!=null & type.trim().length()>0){
+                acceptMediaTypeDefinitionsList.add(type.trim());
+            }
+        }
     }
 
     public boolean hasAPreferenceFor(final ACCEPT_TYPE type) {
@@ -58,7 +64,7 @@ public class AcceptHeaderParser {
         // if type is found in the array before any other type
         // then assume this is a preference
         // TODO: use ;q=0.9 to allow preferences to have a priority but listed in different order
-        for(String acceptedType : acceptMediaTypeDefinitions){
+        for(String acceptedType : acceptMediaTypeDefinitionsList){
             ACCEPT_TYPE matchingType = getMatchingType(acceptedType);
             if(matchingType!= ACCEPT_TYPE.NO_MATCHING_TYPE &&
                     matchingType!= ACCEPT_TYPE.ANYTHING){
@@ -91,14 +97,14 @@ public class AcceptHeaderParser {
 
     public boolean willAccept(final ACCEPT_TYPE type) {
 
-        if(acceptMediaTypeDefinitions.length==0 &&
+        if(acceptMediaTypeDefinitionsList.size()==0 &&
                 type == ACCEPT_TYPE.ANYTHING){
             return true;
         }
 
         List<String> typeValues = acceptedTypes.get(type);
 
-        for(String acceptedType : acceptMediaTypeDefinitions){
+        for(String acceptedType : acceptMediaTypeDefinitionsList){
             for(String typeValue : typeValues) {
                 if (acceptedType.contains(typeValue)) {
                     return true;
