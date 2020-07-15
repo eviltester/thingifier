@@ -54,6 +54,17 @@ final public class ThingifierHttpApiBridge {
 
     }
 
+    public String head(final Request request, final Response response) {
+        final HttpApiRequest theRequest = new HttpApiRequest(request.pathInfo()).
+                setHeaders(headersAsMap(request))
+                .setQueryParams(queryParamsAsMap(request));
+
+        HttpApiResponse theResponse = new ThingifierHttpApi(thingifier).head(theRequest);
+
+        updateResponseFromHttpResponse(theResponse, response);
+        return theResponse.getBody();
+    }
+
     private Map<String, String> queryParamsAsMap(final Request request) {
 
         Map<String, String> params = new HashMap<>();
@@ -144,6 +155,7 @@ final public class ThingifierHttpApiBridge {
             response.header(headerKey, httpResponse.getHeaders().get(headerKey));
         }
     }
+
 
 
 }

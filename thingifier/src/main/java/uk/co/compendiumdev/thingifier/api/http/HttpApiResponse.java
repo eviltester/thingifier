@@ -42,15 +42,17 @@ final public class HttpApiResponse {
 
         String acceptHeader = getHeader("Accept", requestHeaders);
 
-        if (acceptHeader.endsWith("/xml") &&
-            apiConfig.willApiAllowXmlForResponses()) {
-            asJson = false;
+        AcceptHeaderParser accept = new AcceptHeaderParser(acceptHeader);
+
+        if(accept.hasAPreferenceForXml()){
+            if(apiConfig.willApiAllowXmlForResponses()) {
+                asJson = false;
+            }
         }
 
         if(!apiConfig.willApiAllowJsonForResponses()){
             asJson=false;
         }
-
 
         if (asJson) {
             type = "application/json";

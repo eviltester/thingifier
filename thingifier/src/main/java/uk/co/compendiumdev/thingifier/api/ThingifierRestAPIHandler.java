@@ -40,6 +40,12 @@ public class ThingifierRestAPIHandler {
         return get.handle(url, queryParams);
     }
 
+    public ApiResponse head(final String url) {
+        final ApiResponse response = get.handle(url);
+        response.clearBody();
+        return response;
+    }
+
     public ApiResponse delete(final String url) {
         return delete.handle(url);
     }

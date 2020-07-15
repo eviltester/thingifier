@@ -17,10 +17,12 @@ final public class ThingifierHttpApi {
     private List<HttpApiRequestHook> apiRequestHooks;
     private List<HttpApiResponseHook> apiResponseHooks;
 
+
+
     private enum HttpVerb{
-        GET, DELETE, POST, PUT,
+        GET, DELETE, POST, PUT, HEAD,
         // NOT Handled
-        OPTIONS, HEAD, PATCH,
+        OPTIONS, PATCH,
     };
 
     public ThingifierHttpApi(final Thingifier aThingifier){
@@ -55,24 +57,29 @@ final public class ThingifierHttpApi {
 
         ApiResponse apiResponse=null;
 
+        final AcceptHeaderParser accept = new AcceptHeaderParser(acceptHeader);
+
         if(thingifier.apiConfig().willApiEnforceAcceptHeaderForResponses()){
-            if (!acceptHeader.endsWith("/xml") ||
-                !acceptHeader.endsWith("/json")){
+            if (!accept.willAcceptAnything() ||
+                !accept.willAcceptXml() ||
+                !accept.willAcceptJson()){
                 apiResponse = ApiResponse.error(415, "Unrecognised Accept Type");
             }
         }
-        if (acceptHeader.endsWith("/xml") &&
+        boolean willOnlyAcceptXML = accept.willAcceptXml() && !accept.willAcceptJson() && !accept.willAcceptAnything();
+        if (    willOnlyAcceptXML &&
                 !thingifier.apiConfig().willApiAllowXmlForResponses() &&
                 thingifier.apiConfig().willApiEnforceAcceptHeaderForResponses()
         ) {
-            apiResponse = ApiResponse.error(415, "XML not supported");
+            apiResponse = ApiResponse.error(406, "XML not supported");
         }
 
-        if (acceptHeader.endsWith("/json") &&
+        boolean willOnlyAcceptJSON = accept.willAcceptJson() && !accept.willAcceptXml() && !accept.willAcceptAnything();
+        if (    willOnlyAcceptJSON &&
                 !thingifier.apiConfig().willApiAllowJsonForResponses() &&
                 thingifier.apiConfig().willApiEnforceAcceptHeaderForResponses()
         ) {
-            apiResponse = ApiResponse.error(415, "JSON not supported");
+            apiResponse = ApiResponse.error(406, "JSON not supported");
         }
 
         if(apiResponse!=null){
@@ -105,6 +112,9 @@ final public class ThingifierHttpApi {
                 apiResponse = thingifier.api().get(request.getPath(),
                                             request.getQueryParams());
                 break;
+            case HEAD:
+                apiResponse = thingifier.api().head(request.getPath());
+                break;
             case DELETE:
                 apiResponse = thingifier.api().delete(request.getPath());
                 break;
@@ -122,6 +132,10 @@ final public class ThingifierHttpApi {
 
     public HttpApiResponse get(final HttpApiRequest request) {
         return requestWrapper(request, HttpVerb.GET);
+    }
+
+    public HttpApiResponse head(final HttpApiRequest request) {
+        return requestWrapper(request, HttpVerb.HEAD);
     }
 
     public HttpApiResponse delete(final HttpApiRequest request) {

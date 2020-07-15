@@ -202,4 +202,8 @@ public final class ApiResponse {
         errorMessages.add(message);
         return this;
     }
+
+    public void clearBody() {
+        this.hasBody = false;
+    }
 }

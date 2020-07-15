@@ -1,5 +1,7 @@
 package uk.co.compendiumdev.thingifier.api.response;
 
+import uk.co.compendiumdev.thingifier.api.http.AcceptHeaderParser;
+
 final public class ApiResponseError {
 
     private ApiResponseError() {
@@ -9,7 +11,10 @@ final public class ApiResponseError {
 
         boolean isJson = true; // default to json
 
-        if (accept != null && accept.endsWith("/xml")) {
+        AcceptHeaderParser acceptable = new AcceptHeaderParser(accept);
+
+        // TODO: should be able to configure a default API response type rather than assume it is JSON
+        if (acceptable.hasAPreferenceForXml()) {
             isJson = false;
         }
 

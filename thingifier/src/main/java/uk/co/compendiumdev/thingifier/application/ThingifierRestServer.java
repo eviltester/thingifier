@@ -111,10 +111,9 @@ public class ThingifierRestServer {
                     }
                     break;
                 case HEAD:
-                    if (!defn.status().isReturnedFromCall()) {
+                    if (defn.status().isReturnedFromCall()) {
                         head(defn.url(), (request, response) -> {
-                            response.status(defn.status().value());
-                            return "";
+                            return apiBridge.head(request, response);
                         });
                     }
                     break;

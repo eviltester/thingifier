@@ -76,6 +76,9 @@ public class ApiRoutingDefinitionGenerator {
                     String.format("return all the instances of %s", thing.definition().getName()),
                     RoutingVerb.GET, pluralUrl, RoutingStatus.returnedFromCall());
 
+            defn.addRouting(String.format("headers for all the instances of %s", thing.definition().getName()),
+                    RoutingVerb.HEAD, pluralUrl, RoutingStatus.returnedFromCall());
+
             // TODO: more granularity if singleUrl!=pluralUrl then we need two paths here
             // e.g. GET projects, POST project - which also changes the Options
             // we should be able to create things without a GUID e.g. POST project
@@ -87,11 +90,9 @@ public class ApiRoutingDefinitionGenerator {
             defn.addRouting(
                     String.format("show all Options for endpoint of %s", pluralUrl),
                     RoutingVerb.OPTIONS, pluralUrl, RoutingStatus.returnValue(200),
-                    new ResponseHeader("Allow", "OPTIONS, GET, POST"));
+                    new ResponseHeader("Allow", "OPTIONS, GET, HEAD, POST"));
 
-            // the following are not valid so return 405
-            defn.addRouting("method not allowed",
-                    RoutingVerb.HEAD, pluralUrl, RoutingStatus.returnValue(405));
+            // the following are not handled so return 405
             defn.addRouting("method not allowed",
                     RoutingVerb.DELETE, pluralUrl, RoutingStatus.returnValue(405));
             defn.addRouting("method not allowed",
@@ -106,6 +107,10 @@ public class ApiRoutingDefinitionGenerator {
                             thing.definition().getName(),uniqueIdFieldName),
                     RoutingVerb.GET, aUrlWGuid, RoutingStatus.returnedFromCall()).
                     setAsFilterableFrom(thing.definition());
+
+            defn.addRouting(String.format("headers for a specific instances of %s using a %s",
+                            thing.definition().getName(),uniqueIdFieldName),
+                    RoutingVerb.HEAD, aUrlWGuid, RoutingStatus.returnedFromCall());
 
             // we should be able to amend things with a GUID e.g. POST project/GUID with body
             defn.addRouting(
@@ -133,10 +138,8 @@ public class ApiRoutingDefinitionGenerator {
             defn.addRouting(
                     String.format("show all Options for endpoint of %s", aUrlWGuid),
                     RoutingVerb.OPTIONS, aUrlWGuid, RoutingStatus.returnValue(200),
-                    new ResponseHeader("Allow", "OPTIONS, GET, POST, PUT, DELETE"));
+                    new ResponseHeader("Allow", "OPTIONS, GET, HEAD, POST, PUT, DELETE"));
 
-
-            defn.addRouting("method not allowed", RoutingVerb.HEAD, aUrlWGuid, RoutingStatus.returnValue(405));
             defn.addRouting("method not allowed", RoutingVerb.PATCH, aUrlWGuid, RoutingStatus.returnValue(405));
 
 
@@ -180,10 +183,14 @@ public class ApiRoutingDefinitionGenerator {
                         toName, fromName, uniqueIdFieldName, relationshipName),
                 RoutingVerb.GET, aUrl, RoutingStatus.returnedFromCall());
 
+        defn.addRouting(String.format("headers for the %s items related to %s, with given %s, by the relationship named %s",
+                toName, fromName, uniqueIdFieldName, relationshipName),
+                RoutingVerb.HEAD, aUrl, RoutingStatus.returnedFromCall());
+
         defn.addRouting(
                 String.format("show all Options for endpoint of %s", aUrl),
                 RoutingVerb.OPTIONS, aUrl, RoutingStatus.returnValue(200),
-                new ResponseHeader("Allow", "OPTIONS, GET"));
+                new ResponseHeader("Allow", "OPTIONS, GET, HEAD, POST"));
 
         // we can post if there is no guid as it will create the 'thing' and the relationship connection
         defn.addRouting(
@@ -191,7 +198,6 @@ public class ApiRoutingDefinitionGenerator {
                         relationshipName, fromName, uniqueIdentifier, toName, uniqueIdFieldName),
                 RoutingVerb.POST, aUrl, RoutingStatus.returnedFromCall());
 
-        defn.addRouting("method not allowed", RoutingVerb.HEAD, aUrl, RoutingStatus.returnValue(405));
         defn.addRouting("method not allowed", RoutingVerb.DELETE, aUrl, RoutingStatus.returnValue(405));
         defn.addRouting("method not allowed", RoutingVerb.PATCH, aUrl, RoutingStatus.returnValue(405));
         defn.addRouting("method not allowed", RoutingVerb.PUT, aUrl, RoutingStatus.returnValue(405));
