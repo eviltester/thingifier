@@ -59,10 +59,12 @@ final public class ThingifierHttpApi {
 
         final AcceptHeaderParser accept = new AcceptHeaderParser(acceptHeader);
 
+        int statusAcceptTypeNotSupported = thingifier.apiConfig().statusCodes().acceptTypeNotSupported();
+
         if(thingifier.apiConfig().willApiEnforceAcceptHeaderForResponses()){
             if (!accept.willAcceptXml() ||
                 !accept.willAcceptJson()){
-                apiResponse = ApiResponse.error(415, "Unrecognised Accept Type");
+                apiResponse = ApiResponse.error(statusAcceptTypeNotSupported, "Unrecognised Accept Type");
             }
         }
         boolean willOnlyAcceptXML = accept.hasAskedFor(AcceptHeaderParser.ACCEPT_TYPE.XML) &&
@@ -71,7 +73,7 @@ final public class ThingifierHttpApi {
                 !thingifier.apiConfig().willApiAllowXmlForResponses() &&
                 thingifier.apiConfig().willApiEnforceAcceptHeaderForResponses()
         ) {
-            apiResponse = ApiResponse.error(406, "XML not supported");
+            apiResponse = ApiResponse.error(statusAcceptTypeNotSupported, "XML not supported");
         }
 
         boolean willOnlyAcceptJSON = accept.hasAskedFor(AcceptHeaderParser.ACCEPT_TYPE.JSON) &&
@@ -80,7 +82,7 @@ final public class ThingifierHttpApi {
                 !thingifier.apiConfig().willApiAllowJsonForResponses() &&
                 thingifier.apiConfig().willApiEnforceAcceptHeaderForResponses()
         ) {
-            apiResponse = ApiResponse.error(406, "JSON not supported");
+            apiResponse = ApiResponse.error(statusAcceptTypeNotSupported, "JSON not supported");
         }
 
         if(apiResponse!=null){

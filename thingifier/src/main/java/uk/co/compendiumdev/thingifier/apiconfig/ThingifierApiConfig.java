@@ -50,6 +50,7 @@ public class ThingifierApiConfig {
     // URLs
     // willUseIdsInUrlsIfAvailable - instead of GUIDs use Ids
     private boolean willShowIdsInUrlsIfAvailable;
+    private StatusCodeConfig statusCodeConfig;
 
     public ThingifierApiConfig(){
 
@@ -74,6 +75,7 @@ public class ThingifierApiConfig {
         jsonOutputConfig.setCompressRelationships(true);
         jsonOutputConfig.setRelationshipsUseIdsIfAvailable(willShowIdsInResponsesIfAvailable);
 
+        statusCodeConfig = new StatusCodeConfig();
     }
 
     public JsonOutputConfig jsonOutput() {
@@ -156,5 +158,9 @@ public class ThingifierApiConfig {
 
     public ParamConfig forParams() {
         return paramsConfig;
+    }
+
+    public StatusCodeConfig statusCodes() {
+        return statusCodeConfig;
     }
 }
