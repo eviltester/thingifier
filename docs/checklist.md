@@ -2,9 +2,9 @@
 
 ## URLs
 
-- `/nouns` - URLs are normally 'plural' nouns, if 'noun' does not exist then `404` will result
-- `/nouns/` - a trailing slash means `nouns` with (`/`) 'missing value', so will usually result in a `404`
-- `/nouns/{guid}` - `{guid}` is some sort of unique id or GUID, varies per system, if item is not found then status `404` returned
+- `/nouns` - URLs are normally 'plural' nouns, if 'noun' does not exist then [404](https://httpstatuses.com/404) will result
+- `/nouns/` - a trailing slash means `nouns` with (`/`) 'missing value', so will usually result in a [404](https://httpstatuses.com/404)
+- `/nouns/{guid}` - `{guid}` is some sort of unique id or GUID, varies per system, if item is not found then status [404](https://httpstatuses.com/404) returned
 
 Query Arguments:
 
@@ -14,13 +14,45 @@ Query Arguments:
    - e.g. `?id=[>=]1[and][<=]4`, `?id=1-4` this will be system specific
 - also `&` is not 'mandatory' it is 'customary', anything after `?` is the query string so could be parsed however the API defines
 
+## Status Codes
+
+All responses contain a [status code](https://httpstatuses.com/).
+
+- We expect the status code to match the type of response e.g. if there was an error processing a request then we would expect a 4xx or 5xx response, we would not expect a 2xx response.
+
+General Status Code Ranges:
+
+- 1xx - Information response (100, 101, 102)
+- 2xx - Success response (200 - 226)
+- 3xx - Redirection response (300 - 308)
+- 4xx - Client Error in Request (400 - 499)
+- 5xx - Server Error (500 - 599)
 
 ## Verbs
 
+Verbs use resources e.g. URLs. Some general status code rules apply:
+
+- Non-Existant - [404](https://httpstatuses.com/404)
+    - if a request is made for a resource that does not exist then a [404](https://httpstatuses.com/404) status code is returned
+- Not-Authenticated - [401](https://httpstatuses.com/401) 
+    - if a request is made for a resource that requires Authentication, and the request is not authenticated then [401](https://httpstatuses.com/401) status code is returned
+- Not-Authorised - [403](https://httpstatuses.com/403) 
+    - if a request is made for a resource that requires an Authenticated request with a level of authorisation, and the request is not authorised then [403](https://httpstatuses.com/403) status code is returned
+- Method Not Allowed - [405](https://httpstatuses.com/405)
+    - if a resource exists, but the method (e.g. `GET`, `PUT`) does not apply, then a [405](https://httpstatuses.com/405) status code is returned
+    - the `OPTIONS` request can usually be issued on a resource to find out what methods apply
+
+
 - `GET`
     - is cacheable
+    - when resource is found
+        - then a [200](https://httpstatuses.com/200) status code is returned
+        - the body of the response contains the details fetched about the resource
+        - the format of the response (e.g JSON, XML) is based on the MIME type in the Accept header of the request
+        - if no Accept header was sent in the request then the default for the system will be used
+    - when resource is not found [404](https://httpstatuses.com/404)
 - `HEAD`
-    - identical to `GET` without a body?
+    - identical to `GET` without a body
 - `PUT`
     - is idempotent (same result each time)
     - for an Update that means 'replace', and all fields presented
@@ -44,7 +76,7 @@ Query Arguments:
    - `406` status code if cannot supply an accepted type ([406](https://httpstatuses.com/406))
 
 - `Content-Type`
-    - `415` status code if content-type not supported  ([415](https://httpstatuses.com/415))
+    - `415` status code if content-type not supported ([415](https://httpstatuses.com/415)) e.g. XML supplied, but system only accepts JSON
 
 ## References
 

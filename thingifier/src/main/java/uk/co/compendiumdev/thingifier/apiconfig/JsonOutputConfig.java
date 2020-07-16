@@ -2,6 +2,7 @@ package uk.co.compendiumdev.thingifier.apiconfig;
 
 public class JsonOutputConfig {
 
+    // TODO: have a default Response Accept format e.g. JSON, or XML
     private boolean allowCompressedRelationships;
     private Boolean jsonOutputRelationshipsUsesIdsIfAvailable;
     private boolean willShowGuidsInResponse;
