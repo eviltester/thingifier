@@ -97,13 +97,24 @@ public class AcceptHeaderParser {
 
     public boolean willAccept(final ACCEPT_TYPE type) {
 
-        if(acceptMediaTypeDefinitionsList.size()==0 &&
-                type == ACCEPT_TYPE.ANYTHING){
+        // if no types provided then we will accept anything
+        if(acceptMediaTypeDefinitionsList.size()==0){
             return true;
         }
 
+        boolean askedFor = hasAskedFor(type);
+        if(askedFor){
+            return true;
+        }
+
+        // before we say no, check if it has asked for anything
+        return hasAskedFor(ACCEPT_TYPE.ANYTHING);
+    }
+
+    public boolean hasAskedFor(final ACCEPT_TYPE type){
         List<String> typeValues = acceptedTypes.get(type);
 
+        // look for specific type
         for(String acceptedType : acceptMediaTypeDefinitionsList){
             for(String typeValue : typeValues) {
                 if (acceptedType.contains(typeValue)) {
