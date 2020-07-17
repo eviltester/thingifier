@@ -5,6 +5,7 @@ import uk.co.compendiumdev.thingifier.api.http.HttpApiResponse;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.application.httpapimessagehooks.HttpApiRequestHook;
 
+import static uk.co.compendiumdev.challenge.Challenges.CHALLENGE.GET_CHALLENGES;
 import static uk.co.compendiumdev.challenge.Challenges.CHALLENGE.GET_TODOS;
 
 public class ChallengerApiRequestHook implements HttpApiRequestHook {

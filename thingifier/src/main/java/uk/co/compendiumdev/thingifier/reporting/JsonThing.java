@@ -104,8 +104,8 @@ public class JsonThing {
                 }
             }catch(Exception e){
                 // ignore
-                System.out.println("Error processing " + fieldName +
-                            " with value " + fieldValue + " " + e.getMessage());
+//                System.out.println("Error processing " + fieldName +
+//                            " with value " + fieldValue + " " + e.getMessage());
             }
         }
 

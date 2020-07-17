@@ -10,7 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>challenger</artifactId>
-    <version>${thingifier.version}</version>
+    <version>0.1</version>
 
     <dependencies>
         <dependency>
@@ -47,11 +47,11 @@
                         <descriptorRef>jar-with-dependencies</descriptorRef>
                     </descriptorRefs>
                     <!-- rename the 'full' jar -->
-                    <finalName>runTodoListRestAPI-${project.version}</finalName>
+                    <finalName>apichallenges</finalName>
                     <appendAssemblyId>false</appendAssemblyId>
                     <archive>
                         <manifest>
-                            <mainClass>uk.co.compendiumdev.todolist.application.Main</mainClass>
+                            <mainClass>uk.co.compendiumdev.challenge.Main</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

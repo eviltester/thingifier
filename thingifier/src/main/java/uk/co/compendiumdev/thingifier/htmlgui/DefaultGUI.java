@@ -35,12 +35,12 @@ public class DefaultGUI {
 
     private List<RoutingDefinition> publicRoutes;
 
-    public DefaultGUI(final Thingifier thingifier) {
+    public DefaultGUI(final Thingifier thingifier, DefaultGUIHTML defaultGui) {
         this.thingifier=thingifier;
         this.apiConfig = thingifier.apiConfig();
         this.jsonThing = new JsonThing(apiConfig.jsonOutput());
         this.xmlThing = new XmlThing(jsonThing);
-        this.templates = new DefaultGUIHTML();
+        this.templates = defaultGui;
         publicRoutes = new ArrayList<>();
     }
 
@@ -55,10 +55,17 @@ public class DefaultGUI {
             StringBuilder html = new StringBuilder();
             html.append(templates.getPageStart("GUI"));
             html.append(templates.getMenuAsHTML());
+
+            // allow an app level configuration html here
+            html.append(templates.getHomePageContent());
+
             html.append(templates.getPageFooter());
             html.append(templates.getPageEnd());
             return html.toString();
         });
+
+
+        templates.addMenuItem("Home", "/gui");
 
         publicRoutes.add(new RoutingDefinition(
                                 RoutingVerb.GET,
@@ -66,6 +73,8 @@ public class DefaultGUI {
                                 RoutingStatus.returnedFromCall(),
                                 null
                             ).addDocumentation("Show the Default GUI"));
+
+        templates.addMenuItem("Entities Explorer", "/gui/entities");
 
         get("/gui/entities", (request, response) -> {
             response.type("text/html");
@@ -358,7 +367,7 @@ public class DefaultGUI {
         }
         html.append("</tr>");
         html.append("</thead>");
-        html.append("</tbody>");
+        html.append("<tbody>");
 
         return html.toString();
     }

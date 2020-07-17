@@ -105,4 +105,8 @@ final public class HttpApiResponse {
     public Map<String, String> getHeaders() {
         return apiResponse.getHeaders();
     }
+
+    public ApiResponse apiResponse() {
+        return apiResponse;
+    }
 }

@@ -1,5 +1,6 @@
 package uk.co.compendiumdev.challenge;
 
+import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.application.MainImplementation;
 import uk.co.compendiumdev.thingifier.application.ThingifierRestServer;
 import uk.co.compendiumdev.thingifier.application.routehandlers.ShutdownRouteHandler;
@@ -10,7 +11,8 @@ public class Main {
 
 
         MainImplementation app = new MainImplementation();
-        app.registerModel("challengeapi", new ChallengeApiModel().get());
+        Thingifier thingifier = new ChallengeApiModel().get();
+        app.registerModel("challengeapi", thingifier);
 
         // add any additional thingifier configurations here if more needed than model has defined
         app.setDefaultsFromArgs(args);
@@ -19,7 +21,7 @@ public class Main {
         app.setupBuiltInConfigurableRoutes();
 
         // setup routes required for challenges
-        ChallengeRouteHandler challenger = new ChallengeRouteHandler();
+        ChallengeRouteHandler challenger = new ChallengeRouteHandler(thingifier);
         challenger.configureRoutes();
 
         app.addAdditionalRoutes(challenger.getRoutes());
@@ -30,6 +32,8 @@ public class Main {
         app.configureThingifierWithProfile();
 
         app.setupDefaultGui();
+        challenger.setupGui(app.getGuiManagement());
+
         final ThingifierRestServer restServer = app.startRestServer();
 
         app.addBuiltInArgConfiguredHooks();

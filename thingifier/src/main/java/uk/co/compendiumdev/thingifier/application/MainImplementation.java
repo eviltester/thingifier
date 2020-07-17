@@ -10,6 +10,7 @@ import uk.co.compendiumdev.thingifier.application.sparkhttpmessageHooks.LogTheSp
 import uk.co.compendiumdev.thingifier.application.sparkhttpmessageHooks.LogTheResponseHook;
 import uk.co.compendiumdev.thingifier.application.routehandlers.ShutdownRouteHandler;
 import uk.co.compendiumdev.thingifier.htmlgui.DefaultGUI;
+import uk.co.compendiumdev.thingifier.htmlgui.DefaultGUIHTML;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -44,6 +45,8 @@ public class MainImplementation {
     int desiredVersionNumber;
     String desiredVersionName;
 
+    DefaultGUIHTML guiManagement;
+
     public MainImplementation(){
 
         // added to support heroku as per https://sparktutorials.github.io/2015/08/24/spark-heroku.html
@@ -66,6 +69,8 @@ public class MainImplementation {
 
         desiredVersionNumber=-1;
         desiredVersionName=null;
+
+        guiManagement = new DefaultGUIHTML();
     }
 
 
@@ -270,7 +275,7 @@ public class MainImplementation {
     public void setupDefaultGui() {
 
         additionalRoutes.addAll(
-            new DefaultGUI(thingifier).
+            new DefaultGUI(thingifier, guiManagement).
                 configureRoutes().
                 getRoutes()
         );
@@ -283,8 +288,9 @@ public class MainImplementation {
         }
 
         restServer = new ThingifierRestServer( "",
-                thingifier,
-                additionalRoutes);
+                                    thingifier,
+                                    additionalRoutes,
+                                    guiManagement);
 
         System.out.println("Running on " + Spark.port());
         System.out.println(" e.g. http://localhost:" + Spark.port());
@@ -357,5 +363,9 @@ public class MainImplementation {
 
     public void setProfileToUse(ThingifierApiConfigProfile aProfile){
         profileToUse = aProfile;
+    }
+
+    public DefaultGUIHTML getGuiManagement() {
+        return guiManagement;
     }
 }

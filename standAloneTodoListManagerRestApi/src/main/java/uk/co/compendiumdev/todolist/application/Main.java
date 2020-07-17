@@ -4,6 +4,9 @@ import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.application.MainImplementation;
 import uk.co.compendiumdev.thingifier.application.examples.TodoManagerThingifier;
 
+import static spark.Spark.get;
+import static spark.route.HttpMethod.get;
+
 
 public class Main {
 
@@ -21,6 +24,12 @@ public class Main {
         app.configureThingifierWithProfile();
 
         app.setupDefaultGui();
+
+        get("/", (request, response) -> {
+            response.redirect("/gui");
+            return "";
+                });
+
         app.startRestServer();
         app.addBuiltInArgConfiguredHooks();
     }

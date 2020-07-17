@@ -4,6 +4,8 @@ import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.application.examples.TodoListThingifier;
 import uk.co.compendiumdev.thingifier.application.examples.TodoManagerThingifier;
 
+import static spark.Spark.get;
+
 
 /*
 
@@ -124,6 +126,11 @@ public class Main {
 //                                    configureRoutes().
 //                                getRoutes());
         app.setupDefaultGui();
+
+        get("/", (request, response) -> {
+            response.redirect("/gui");
+            return "";
+        });
 
         // returning the restServer supports adding more 'hooks'
         ThingifierRestServer restServer = app.startRestServer();

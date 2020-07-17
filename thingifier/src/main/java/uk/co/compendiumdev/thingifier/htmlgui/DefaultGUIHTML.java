@@ -2,11 +2,45 @@ package uk.co.compendiumdev.thingifier.htmlgui;
 
 import uk.co.compendiumdev.thingifier.application.ThingifierVersionDetails;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class DefaultGUIHTML {
+
+    private String homePageContent;
+    List<GuiMenuItem> menuItems;
+
+    public DefaultGUIHTML(){
+        menuItems = new ArrayList<>();
+        this.homePageContent = "";
+    }
+
+    public void addMenuItem(final String title, final String url) {
+        menuItems.add(new GuiMenuItem(title, url));
+    }
+
+    public void setHomePageContent(final String content) {
+        homePageContent = content;
+    }
+
+    public String getHomePageContent() {
+        return homePageContent;
+    }
+
+    private class GuiMenuItem {
+        public String menuTitle;
+        public String url;
+
+        public GuiMenuItem(String title, String url){
+            this.menuTitle = title;
+            this.url = url;
+        }
+    }
 
     public String getPageStart(final String title){
         StringBuilder html = new StringBuilder();
         html.append("<html><head>");
+        html.append("<meta http-equiv='content-language' content='en-us'>");
         html.append("<title>" + title + "</title>");
         html.append(" <link rel='stylesheet' href='/css/default.css'>");
         html.append("</head><body>");
@@ -18,8 +52,11 @@ public class DefaultGUIHTML {
         StringBuilder html = new StringBuilder();
         html.append("<div class='rootmenu menu'>");
         html.append("<ul>");
-        html.append("<li><a href='/docs'>API documentation</a></li>");
-        html.append("<li><a href='/gui/entities'>Entities Explorer</a></li>");
+        for(GuiMenuItem menu : menuItems){
+            html.append(String.format("<li><a href='%s'>%s</a></li>",
+                    menu.url, menu.menuTitle));
+        }
+
         html.append("</ul>");
         html.append("</div>");
         return html.toString();
@@ -27,7 +64,7 @@ public class DefaultGUIHTML {
 
     public String getPageFooter(){
         StringBuilder html = new StringBuilder();
-        html.append("<br/><hr/>");
+        html.append("<p>&nbsp;</p><hr/>");
         html.append("<div class='footer'>");
         html.append(paragraph(
                 String.format(

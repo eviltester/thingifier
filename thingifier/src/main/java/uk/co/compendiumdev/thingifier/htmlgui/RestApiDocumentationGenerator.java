@@ -17,9 +17,6 @@ import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
 import uk.co.compendiumdev.thingifier.reporting.JsonThing;
 import uk.co.compendiumdev.thingifier.reporting.XmlThing;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -31,7 +28,7 @@ public class RestApiDocumentationGenerator {
     private final Collection<RelationshipDefinition> relationships;
     private final JsonThing jsonThing;
     private final XmlThing xmlThing;
-    private final DefaultGUIHTML mainMenu;
+    private final DefaultGUIHTML defaultGui;
     private final ThingifierApiConfig apiConfig;
     private String prependPath;
 
@@ -40,14 +37,14 @@ public class RestApiDocumentationGenerator {
     // possibly a GuiHtml with ability to set meta tags, title, register menu items, change footers etc.
     // start with a menu and register menu items and return menu html
 
-    public RestApiDocumentationGenerator(final Thingifier aThingifier) {
+    public RestApiDocumentationGenerator(final Thingifier aThingifier, DefaultGUIHTML defaultGui) {
         this.thingifier = aThingifier;
         this.things = thingifier.getThings();
         this.relationships = thingifier.getRelationshipDefinitions();
         apiConfig = thingifier.apiConfig();
         jsonThing = new JsonThing(apiConfig.jsonOutput());
         xmlThing = new XmlThing(jsonThing);
-        mainMenu = new DefaultGUIHTML();
+        this.defaultGui = defaultGui;
         prependPath = "";
     }
 
@@ -57,8 +54,8 @@ public class RestApiDocumentationGenerator {
 
         StringBuilder output = new StringBuilder();
 
-        output.append(mainMenu.getPageStart("API Documentation"));
-        output.append(mainMenu.getMenuAsHTML());
+        output.append(defaultGui.getPageStart("API Documentation"));
+        output.append(defaultGui.getMenuAsHTML());
 
 
         if(urlPath!=null){
@@ -325,8 +322,8 @@ public class RestApiDocumentationGenerator {
             }
         }
 
-        output.append(mainMenu.getPageFooter());
-        output.append(mainMenu.getPageEnd());
+        output.append(defaultGui.getPageFooter());
+        output.append(defaultGui.getPageEnd());
         return output.toString();
     }
 

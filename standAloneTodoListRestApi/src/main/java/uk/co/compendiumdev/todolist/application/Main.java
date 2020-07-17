@@ -3,6 +3,8 @@ package uk.co.compendiumdev.todolist.application;
 import uk.co.compendiumdev.thingifier.application.MainImplementation;
 import uk.co.compendiumdev.thingifier.application.examples.TodoListThingifier;
 
+import static spark.Spark.get;
+
 public class Main {
 
     public static void main(String[] args) {
@@ -23,6 +25,12 @@ public class Main {
         app.configureThingifierWithProfile();
 
         app.setupDefaultGui();
+
+        get("/", (request, response) -> {
+            response.redirect("/gui");
+            return "";
+        });
+
         app.startRestServer();
         app.addBuiltInArgConfiguredHooks();
 

@@ -41,6 +41,8 @@ public class ChallengeApiModel {
         ThingInstance filework = todo.createInstance().setValue("title", "file paperwork");
         todo.addInstance(filework);
 
+        todoList.apiConfig().setResponsesToShowGuids(false);
+
         return todoList;
     }
 }

@@ -8,6 +8,7 @@ import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.application.ThingifierRestServer;
 import uk.co.compendiumdev.thingifier.application.examples.TodoManagerThingifier;
+import uk.co.compendiumdev.thingifier.htmlgui.DefaultGUIHTML;
 import uk.co.compendiumdev.thingifier.tactical.sparkstart.Port;
 
 import java.util.ArrayList;
@@ -45,7 +46,7 @@ public class Environment {
             thingifier.apiConfig().jsonOutput().setConvertFieldsToDefinedTypes(false);
 
             List<RoutingDefinition> additionalRoutes = new ArrayList<>();
-            new ThingifierRestServer("", thingifier, additionalRoutes);
+            new ThingifierRestServer("", thingifier, additionalRoutes, new DefaultGUIHTML());
             return "http://localhost:4567";
         }
 

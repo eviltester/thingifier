@@ -10,6 +10,7 @@ import uk.co.compendiumdev.thingifier.api.routings.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.application.httpapimessagehooks.HttpApiRequestHook;
 import uk.co.compendiumdev.thingifier.application.httpapimessagehooks.HttpApiResponseHook;
 import uk.co.compendiumdev.thingifier.application.sparkhttpmessageHooks.SparkRequestResponseHook;
+import uk.co.compendiumdev.thingifier.htmlgui.DefaultGUIHTML;
 import uk.co.compendiumdev.thingifier.htmlgui.RestApiDocumentationGenerator;
 
 import java.net.MalformedURLException;
@@ -34,7 +35,8 @@ public class ThingifierRestServer {
 
     public ThingifierRestServer(final String path,
                                 final Thingifier thingifier,
-                                final List<RoutingDefinition> additionalDocumentedRoutes) {
+                                final List<RoutingDefinition> additionalDocumentedRoutes,
+                                DefaultGUIHTML guiManagement) {
 
         this.additionalRoutes = additionalDocumentedRoutes;
 
@@ -91,9 +93,11 @@ public class ThingifierRestServer {
         get("/docs", (request, response) -> {
             response.type("text/html");
             response.status(200);
-            return new RestApiDocumentationGenerator(thingifier).
+            return new RestApiDocumentationGenerator(thingifier, guiManagement).
                     getApiDocumentation(routingDefinitions, additionalRoutes, this.urlPath);
         });
+
+        guiManagement.addMenuItem("API documentation","/docs");
 
 
         for (RoutingDefinition defn : routingDefinitions.definitions()) {

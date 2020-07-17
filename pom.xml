@@ -9,7 +9,7 @@
 
 
     <properties>
-        <thingifier.version>1.5.3-SNAPSHOT</thingifier.version>
+        <thingifier.version>1.5.3</thingifier.version>
         <java.version>1.8</java.version>
     </properties>
 
@@ -17,10 +17,11 @@
         <module>thingifier</module>
         <module>examplemodels</module>
         <module>todoManagerRestAuto</module>
+        <module>challenger</module>
         <module>standAloneTodoListRestApi</module>
         <module>standAloneTodoListManagerRestApi</module>
         <module>thingifierapp</module>
-        <module>challenger</module>
+
     </modules>
 </project>
 
