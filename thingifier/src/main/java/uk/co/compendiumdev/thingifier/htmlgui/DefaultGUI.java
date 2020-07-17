@@ -249,11 +249,21 @@ public class DefaultGUI {
         for(String field : definition.getFieldNames()) {
             if (!field.equals("guid")) {
                 html.append(String.format("<li>%s<ul><li>%s</li></ul></li>",
-                        field, instance.getValue(field)));
+                        field, htmlsanitise(instance.getValue(field))));
             }
         }
         html.append("</ul>");
         return html.toString();
+    }
+
+    private String htmlsanitise(final String value) {
+
+        // todo - add a appconfig to allow XSS vulnerabilities in the GUI
+
+        return value.replace("&","&amp;").
+                     replace("<", "&lt;").
+                     replace(">", "&gt;").
+                     replace(" ", "&nbsp;");
     }
 
     private String getInstanceAsTable(ThingInstance instance) {
@@ -282,7 +292,7 @@ public class DefaultGUI {
                     html.append(String.format("<td>%s</td>",instance.getValue(fieldName)));
                 }
             }else{
-                html.append(String.format("<td>%s</td>",instance.getValue(fieldName)));
+                html.append(String.format("<td>%s</td>",htmlsanitise(instance.getValue(fieldName))));
             }
         }
 
@@ -333,7 +343,7 @@ public class DefaultGUI {
         for(String field : definition.getFieldNames()) {
             Field theField = definition.getField(field);
             if(theField.getType()!= FieldType.ID && theField.getType()!=FieldType.GUID){
-                html.append(String.format("<td>%s</td>", instance.getValue(field)));
+                html.append(String.format("<td>%s</td>", htmlsanitise(instance.getValue(field))));
             }
         }
         html.append("</tr>");

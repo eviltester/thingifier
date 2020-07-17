@@ -3,4 +3,4 @@ For heroku:
 Deploy the restmud-web-games-bundle
 
 - cd thingifierapp
-- `heroku deploy:jar target/thingifierapp-1.5.2-full.jar --app apithingifier`
+- `heroku deploy:jar target/thingifierapp-1.5.4-full.jar --app apithingifier`

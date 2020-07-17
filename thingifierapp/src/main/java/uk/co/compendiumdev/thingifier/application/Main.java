@@ -102,7 +102,9 @@ public class Main {
         // could process args independently here
         // or override args
         // e.g. set port independently to a different default
-        //app.setPort(1234);
+        if(hasHerokuAssignedPort()) {
+            app.setPort(getHerokuAssignedPort());
+        }
         //app.setStaticFileLocation("/public");
         //app.setAllowShutdown(false);
 
@@ -127,10 +129,6 @@ public class Main {
 //                                getRoutes());
         app.setupDefaultGui();
 
-        get("/", (request, response) -> {
-            response.redirect("/gui");
-            return "";
-        });
 
         // returning the restServer supports adding more 'hooks'
         ThingifierRestServer restServer = app.startRestServer();

@@ -49,6 +49,8 @@ public class MainImplementation {
 
     public MainImplementation(){
 
+        proxyport = 4567; // default for spark
+
         // added to support heroku as per https://sparktutorials.github.io/2015/08/24/spark-heroku.html
         // environment can override config for port
         if (hasHerokuAssignedPort()) {
@@ -58,7 +60,7 @@ public class MainImplementation {
         additionalRoutes =  new ArrayList<>();
         thingifierModels = new HashMap<>();
         defaultModelName="";
-        proxyport = 4567; // default for spark
+
 
         staticFilePath = "/public"; // for built in styles
         allowShutdown = true;
