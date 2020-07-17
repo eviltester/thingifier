@@ -18,6 +18,7 @@ final public class ThingifierHttpApiBridge {
     // todo: the methods here are all very similar, we should refactor this commonality
 
     private final Thingifier thingifier;
+    private final ThingifierHttpApi thingifierHttpApi;
     private List<HttpApiRequestHook> apiRequestHooks;
     private List<HttpApiResponseHook> apiResponseHooks;
 
@@ -39,15 +40,19 @@ final public class ThingifierHttpApiBridge {
         }else{
             this.apiResponseHooks = apiResponseHooks;
         }
+
+        this.thingifierHttpApi = new ThingifierHttpApi(thingifier,
+                                        apiRequestHooks, apiResponseHooks);
     }
 
     public String get(final Request request, final Response response) {
 
         final HttpApiRequest theRequest = new HttpApiRequest(request.pathInfo()).
                                                 setHeaders(headersAsMap(request))
-                                                .setQueryParams(queryParamsAsMap(request));
+                                                .setQueryParams(queryParamsAsMap(request)).
+                                                setVerb(HttpApiRequest.VERB.GET);
 
-        HttpApiResponse theResponse = new ThingifierHttpApi(thingifier).get(theRequest);
+        HttpApiResponse theResponse = thingifierHttpApi.get(theRequest);
 
         updateResponseFromHttpResponse(theResponse, response);
         return theResponse.getBody();
@@ -57,9 +62,10 @@ final public class ThingifierHttpApiBridge {
     public String head(final Request request, final Response response) {
         final HttpApiRequest theRequest = new HttpApiRequest(request.pathInfo()).
                 setHeaders(headersAsMap(request))
-                .setQueryParams(queryParamsAsMap(request));
+                .setQueryParams(queryParamsAsMap(request)).
+                        setVerb(HttpApiRequest.VERB.HEAD);
 
-        HttpApiResponse theResponse = new ThingifierHttpApi(thingifier).head(theRequest);
+        HttpApiResponse theResponse = thingifierHttpApi.head(theRequest);
 
         updateResponseFromHttpResponse(theResponse, response);
         return theResponse.getBody();
@@ -86,9 +92,10 @@ final public class ThingifierHttpApiBridge {
 
         final HttpApiRequest theRequest = new HttpApiRequest(request.pathInfo()).
                                             setHeaders(headersAsMap(request)).
-                                            setBody(request.body());
+                                            setBody(request.body()).
+                                            setVerb(HttpApiRequest.VERB.POST);
 
-        HttpApiResponse theResponse = new ThingifierHttpApi(thingifier).post(theRequest);
+        HttpApiResponse theResponse = thingifierHttpApi.post(theRequest);
 
         updateResponseFromHttpResponse(theResponse, response);
         return theResponse.getBody();
@@ -98,9 +105,10 @@ final public class ThingifierHttpApiBridge {
     public String delete(final Request request, final Response response) {
 
         final HttpApiRequest theRequest = new HttpApiRequest(request.pathInfo()).
-                                                setHeaders(headersAsMap(request));
+                                                setHeaders(headersAsMap(request)).
+                                                setVerb(HttpApiRequest.VERB.DELETE);
 
-        HttpApiResponse theResponse = new ThingifierHttpApi(thingifier).delete(theRequest);
+        HttpApiResponse theResponse = thingifierHttpApi.delete(theRequest);
 
         updateResponseFromHttpResponse(theResponse, response);
         return theResponse.getBody();
@@ -111,9 +119,10 @@ final public class ThingifierHttpApiBridge {
 
         final HttpApiRequest theRequest = new HttpApiRequest(request.pathInfo()).
                                             setHeaders(headersAsMap(request)).
-                                            setBody(request.body());
+                                            setBody(request.body()).
+                                            setVerb(HttpApiRequest.VERB.PUT);
 
-        HttpApiResponse theResponse = new ThingifierHttpApi(thingifier).put(theRequest);
+        HttpApiResponse theResponse = thingifierHttpApi.put(theRequest);
 
         updateResponseFromHttpResponse(theResponse, response);
         return theResponse.getBody();
@@ -123,9 +132,10 @@ final public class ThingifierHttpApiBridge {
     public String query(final Request request, final Response response, final String query) {
 
         final HttpApiRequest theRequest = new HttpApiRequest(request.pathInfo()).
-                                                setHeaders(headersAsMap(request));
+                                                setHeaders(headersAsMap(request)).
+                                                setVerb(HttpApiRequest.VERB.GET);
 
-        HttpApiResponse theResponse = new ThingifierHttpApi(thingifier).query(theRequest, query);
+        HttpApiResponse theResponse = thingifierHttpApi.query(theRequest, query);
 
         updateResponseFromHttpResponse(theResponse, response);
         return theResponse.getBody();

@@ -35,6 +35,11 @@ public class RestApiDocumentationGenerator {
     private final ThingifierApiConfig apiConfig;
     private String prependPath;
 
+    // TODO: DefaultGUIHTML is hard coded in here, need more flexibility
+    // around GUIs to allow hooks and other main classes to expand it
+    // possibly a GuiHtml with ability to set meta tags, title, register menu items, change footers etc.
+    // start with a menu and register menu items and return menu html
+
     public RestApiDocumentationGenerator(final Thingifier aThingifier) {
         this.thingifier = aThingifier;
         this.things = thingifier.getThings();

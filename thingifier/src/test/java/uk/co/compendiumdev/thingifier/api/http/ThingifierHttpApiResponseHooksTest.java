@@ -39,7 +39,7 @@ class ThingifierHttpApiResponseHooksTest {
 
     private class And404Becomes500Error implements HttpApiResponseHook {
         @Override
-        public HttpApiResponse run(final HttpApiResponse response, ThingifierApiConfig config) {
+        public HttpApiResponse run(final HttpApiRequest request, final HttpApiResponse response, ThingifierApiConfig config) {
             if(response.getStatusCode()==404){
                 return new HttpApiResponse(null,
                         ApiResponse.error(500,"bypassed all processing"),

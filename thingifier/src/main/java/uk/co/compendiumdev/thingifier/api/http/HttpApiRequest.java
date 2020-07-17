@@ -9,12 +9,16 @@ public final class HttpApiRequest {
     private Map<String, String> headers;
     private String body;
     private Map<String, String> queryParams;
+    private VERB verb;
+
+    public enum VERB{ GET, HEAD, POST, PUT, DELETE, PATCH, OPTIONS, CONNECT, TRACE}
 
     public HttpApiRequest(final String pathInfo) {
         this.path = justThePath(pathInfo);
         this.headers = new HashMap<>();
         this.queryParams = new HashMap<>();
         body = "";
+        verb = VERB.GET;
     }
 
     private String justThePath(final String path) {
@@ -69,5 +73,14 @@ public final class HttpApiRequest {
             header=aDefault;
         }
         return header;
+    }
+
+    public HttpApiRequest setVerb(final VERB verb) {
+        this.verb = verb;
+        return this;
+    }
+
+    public VERB getVerb() {
+        return this.verb;
     }
 }

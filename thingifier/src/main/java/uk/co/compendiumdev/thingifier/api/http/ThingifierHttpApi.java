@@ -102,7 +102,7 @@ final public class ThingifierHttpApi {
         httpResponse = new HttpApiResponse(request.getHeaders(), apiResponse,
                 jsonThing, thingifier.apiConfig());
 
-        return runTheHttpApiResponseHooksOn(httpResponse);
+        return runTheHttpApiResponseHooksOn(request, httpResponse);
     }
 
     public ApiResponse routeRequest(final HttpApiRequest request,
@@ -163,7 +163,7 @@ final public class ThingifierHttpApi {
                     jsonThing, thingifier.apiConfig());
         }
 
-        return runTheHttpApiResponseHooksOn(httpResponse);
+        return runTheHttpApiResponseHooksOn(request, httpResponse);
     }
 
     private BodyParser bodyAsMap(final HttpApiRequest request) {
@@ -172,9 +172,9 @@ final public class ThingifierHttpApi {
 
     }
 
-    private HttpApiResponse runTheHttpApiResponseHooksOn(final HttpApiResponse response) {
+    private HttpApiResponse runTheHttpApiResponseHooksOn(final HttpApiRequest request, final HttpApiResponse response) {
         for(HttpApiResponseHook hook : apiResponseHooks){
-            HttpApiResponse returnImmediately = hook.run(response, thingifier.apiConfig());
+            HttpApiResponse returnImmediately = hook.run(request, response, thingifier.apiConfig());
             if(returnImmediately!=null){
                 return returnImmediately;
             }

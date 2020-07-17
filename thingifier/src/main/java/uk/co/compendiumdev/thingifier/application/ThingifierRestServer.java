@@ -36,14 +36,16 @@ public class ThingifierRestServer {
                                 final Thingifier thingifier,
                                 final List<RoutingDefinition> additionalDocumentedRoutes) {
 
-        ThingifierHttpApiBridge apiBridge = new ThingifierHttpApiBridge(thingifier);
-
         this.additionalRoutes = additionalDocumentedRoutes;
 
         preRequestHooks = new ArrayList<>();
         postRequestHooks = new ArrayList<>();
         httpApiRequestHooks = new ArrayList<>();
         httpApiResponseHooks = new ArrayList<>();
+
+        ThingifierHttpApiBridge apiBridge = new ThingifierHttpApiBridge(
+                                                thingifier,
+                                                httpApiRequestHooks, httpApiResponseHooks);
 
         this.urlPath = null;
         // can set path, but if not set, pick up from requests

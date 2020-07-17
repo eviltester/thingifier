@@ -20,6 +20,7 @@
         <module>standAloneTodoListRestApi</module>
         <module>standAloneTodoListManagerRestApi</module>
         <module>thingifierapp</module>
+        <module>challenger</module>
     </modules>
 </project>
 

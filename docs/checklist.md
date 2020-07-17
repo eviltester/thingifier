@@ -89,6 +89,7 @@ Verbs use resources e.g. URLs. Some general status code rules apply:
     - [(HTTP/1.1): Range Requests](https://tools.ietf.org/html/rfc7233)
     - [(HTTP/1.1): Caching](https://tools.ietf.org/html/rfc7234)
     - [(HTTP/1.1): Authentication](https://tools.ietf.org/html/rfc7235)
+    - [PATCH Method for HTTP](https://tools.ietf.org/html/rfc5789)
 - [IANA Media Types Registry](https://www.iana.org/assignments/media-types/media-types.xhtml)
 - [restfulapi.net](https://restfulapi.net/)
 - [httpstatuses.com](https://httpstatuses.com)
