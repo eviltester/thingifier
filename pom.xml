@@ -9,7 +9,7 @@
 
 
     <properties>
-        <thingifier.version>1.5.3</thingifier.version>
+        <thingifier.version>1.5.4-SNAPSHOT</thingifier.version>
         <java.version>1.8</java.version>
     </properties>
 
@@ -25,72 +25,80 @@
     </modules>
 </project>
 
-        <!--
+<!--
 
-        1.5.3
-            - added hooks at the API request and response level to override default API processing functionality
-            - api field order is controlled by the order of definitions
-            - added API Config Profiles to make it easier to configure different API versions
-            - added filters on GET requests e.g. ?status=true
-            - added config to control if JSON or XML is allowed in response configured by accept header
-            - HEAD method supported where GET methods supported
-            - improved Accept header processing
+1.5.4
 
-        1.5.2
 
-            - added styling to the gui
-            - added many configuration options
-            - started added 'hooks' for responses to make easier to extend
-            - added xml and json examples in documentation output
-            - created heroku instance which auto clears
-            - split out project into more modules to make easier to customise and maintain
 
-        1.5.1
-            - added simple view gui /gui
-            - added compressed relationships - as default in response
-            - both forms acceptable in the input
+1.5.3
 
-            e.g.
+- added hooks at the API request and response level to override default API processing functionality
+- api field order is controlled by the order of definitions
+- added API Config Profiles to make it easier to configure different API versions
+- added filters on GET requests e.g. ?status=true
+- added config to control if JSON or XML is allowed in response configured by accept header
+- HEAD method supported where GET methods supported
+- improved Accept header processing
+- added challenger app
+- started checklist doc
 
-            ~~~~~~~~
-            "task-of": [
-                {
-                  "guid": "91b56544-3345-48e6-93f3-986e53586390"
-                }
-            ],
-            "categories": [
-                {
-                  "guid": "61693e4a-b1da-4adb-af37-d53d1b045311"
-                }
-              ]
-            ~~~~~~~~
+1.5.2
 
-            instead of
+- added styling to the gui
+- added many configuration options
+- started added 'hooks' for responses to make easier to extend
+- added xml and json examples in documentation output
+- created heroku instance which auto clears
+- split out project into more modules to make easier to customise and maintain
 
-            ~~~~~~~~
-              "relationships": [
-        {
-          "task-of": [
+1.5.1
+
+- added simple view gui /gui
+- added compressed relationships - as default in response
+- both forms acceptable in the input
+
+        e.g.
+
+        ~~~~~~~~
+        "task-of": [
             {
-              "projects": [
-                {
-                  "guid": "91b56544-3345-48e6-93f3-986e53586390"
-                }
-              ]
+              "guid": "91b56544-3345-48e6-93f3-986e53586390"
+            }
+        ],
+        "categories": [
+            {
+              "guid": "61693e4a-b1da-4adb-af37-d53d1b045311"
             }
           ]
-        },
+        ~~~~~~~~
+
+        instead of
+
+        ~~~~~~~~
+          "relationships": [
+    {
+      "task-of": [
         {
-          "categories": [
+          "projects": [
             {
-              "categories": [
-                {
-                  "guid": "61693e4a-b1da-4adb-af37-d53d1b045311"
-                }
-              ]
+              "guid": "91b56544-3345-48e6-93f3-986e53586390"
             }
           ]
         }
       ]
-            ~~~~~~~~
+    },
+    {
+      "categories": [
+        {
+          "categories": [
+            {
+              "guid": "61693e4a-b1da-4adb-af37-d53d1b045311"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+        ~~~~~~~~
         -->
