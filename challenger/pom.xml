@@ -51,7 +51,7 @@
                     <appendAssemblyId>false</appendAssemblyId>
                     <archive>
                         <manifest>
-                            <mainClass>uk.co.compendiumdev.challenge.Main</mainClass>
+                            <mainClass>uk.co.compendiumdev.challenge.ChallengeMain</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

@@ -1,5 +1,6 @@
 package uk.co.compendiumdev.challenge;
 
+import com.google.gson.annotations.SerializedName;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingStatus;
@@ -30,6 +31,7 @@ public class ChallengeRouteHandler {
 
         get("/challenges", (request, result) -> {
             result.status(200);
+            result.type("application/json");
             result.body(challenges.getAsJson());
             return "";
         });

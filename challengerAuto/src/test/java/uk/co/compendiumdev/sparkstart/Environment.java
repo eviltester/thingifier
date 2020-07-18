@@ -1,0 +1,43 @@
+package uk.co.compendiumdev.sparkstart;
+
+
+import spark.Spark;
+import uk.co.compendiumdev.challenge.ChallengeMain;
+
+public class Environment {
+
+    public static String getEnv(String urlPath){
+        return  getBaseUri() + urlPath;
+    }
+
+    public static String getBaseUri() {
+
+        // return environment if want to run externally
+
+        // if not running then start the spark
+        if(Port.inUse("localhost", 4567)) {
+            return "http://localhost:4567";
+        }else{
+            //start it up
+            Spark.port(4567);
+            String [] args = {};
+            ChallengeMain.main(args);
+
+            // wait till running
+            int maxtries=10;
+            while(!Port.inUse("localhost", 4567)){
+                maxtries--;
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            return "http://localhost:4567";
+        }
+
+        // TODO: incorporate browsermob proxy and allow configuration of all
+        //  requests through a proxy file to output a HAR file of all requests for later review
+    }
+}

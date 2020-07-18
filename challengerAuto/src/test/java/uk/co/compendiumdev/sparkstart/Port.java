@@ -1,4 +1,4 @@
-package uk.co.compendiumdev.thingifier.tactical.sparkstart;
+package uk.co.compendiumdev.sparkstart;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;

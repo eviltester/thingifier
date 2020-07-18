@@ -1,6 +1,7 @@
 package uk.co.compendiumdev.challenge;
 
 import com.google.gson.Gson;
+import com.google.gson.annotations.SerializedName;
 
 import java.util.*;
 
@@ -22,7 +23,9 @@ public class Challenges {
     }
 
     public enum CHALLENGE{
-        GET_TODOS, GET_TODO, GET_TODO_404, POST_TODOS, GET_CHALLENGES, POST_TODOS_BAD_DONE_STATUS, DELETE_A_TODO, DELETE_ALL_TODOS, POST_UPDATE_TODO;
+        GET_TODOS, GET_TODO, GET_TODO_404, POST_TODOS,
+        GET_CHALLENGES, POST_TODOS_BAD_DONE_STATUS,
+        DELETE_A_TODO, DELETE_ALL_TODOS, POST_UPDATE_TODO;
     }
 
     public Challenges(){
@@ -45,7 +48,7 @@ public class Challenges {
         // CREATE
         addChallenge(CHALLENGE.POST_TODOS, "POST /todos (201)",
                 "Issue a POST request to successfully create a todo");
-        addChallenge(CHALLENGE.POST_TODOS_BAD_DONE_STATUS, "POST /todos (400)",
+        addChallenge(CHALLENGE.POST_TODOS_BAD_DONE_STATUS, "POST /todos (400) doneStatus",
                 "Issue a POST request to create a todo but fail validation on the `doneStatus` field");
 
         // UPDATE
@@ -55,7 +58,7 @@ public class Challenges {
         // DELETE
         addChallenge(CHALLENGE.DELETE_A_TODO, "DELETE /todos/{id} (200)",
                 "Issue a DELETE request to successfully delete a todo");
-        addChallenge(CHALLENGE.DELETE_ALL_TODOS, "DELETE /todos/{id} (200)",
+        addChallenge(CHALLENGE.DELETE_ALL_TODOS, "DELETE /todos/{id} (200) all",
                 "Issue a DELETE request to successfully delete the last todo");
 
         // todo: expand out the challenges
@@ -64,6 +67,17 @@ public class Challenges {
         // HEAD
         // status code challenges
         // method not allowed
+
+        Set challengeNames = new HashSet();
+        for(ChallengeData challenge : orderedChallengeStatus){
+            System.out.println("Challenge: " + challenge.name);
+            challengeNames.add(challenge.name);
+        }
+        if(challengeNames.size()!=orderedChallengeStatus.size()) {
+            throw new RuntimeException(
+                    "Number of names, does not match number of challenges" +
+                            ", possible duplicate name");
+        }
     }
 
     private void addChallenge(final CHALLENGE id, final String name, final String description) {
@@ -72,7 +86,13 @@ public class Challenges {
         orderedChallengeStatus.add(challenge);
     }
 
+    private class ChallengesPayload{
+        List<ChallengeData> challenges;
+    }
+
     public String getAsJson(){
-        return new Gson().toJson(orderedChallengeStatus);
+        final ChallengesPayload payload = new ChallengesPayload();
+        payload.challenges = orderedChallengeStatus;
+        return new Gson().toJson(payload);
     }
 }

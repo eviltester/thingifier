@@ -18,9 +18,11 @@
         <module>examplemodels</module>
         <module>todoManagerRestAuto</module>
         <module>challenger</module>
+        <module>challengerAuto</module>
         <module>standAloneTodoListRestApi</module>
         <module>standAloneTodoListManagerRestApi</module>
         <module>thingifierapp</module>
+
 
     </modules>
 </project>

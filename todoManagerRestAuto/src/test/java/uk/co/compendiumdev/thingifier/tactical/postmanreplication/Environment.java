@@ -9,7 +9,7 @@ import uk.co.compendiumdev.thingifier.api.routings.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.application.ThingifierRestServer;
 import uk.co.compendiumdev.thingifier.application.examples.TodoManagerThingifier;
 import uk.co.compendiumdev.thingifier.htmlgui.DefaultGUIHTML;
-import uk.co.compendiumdev.thingifier.tactical.sparkstart.Port;
+import uk.co.compendiumdev.sparkstart.Port;
 
 import java.util.ArrayList;
 import java.util.List;

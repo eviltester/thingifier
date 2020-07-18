@@ -3,9 +3,8 @@ package uk.co.compendiumdev.challenge;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.application.MainImplementation;
 import uk.co.compendiumdev.thingifier.application.ThingifierRestServer;
-import uk.co.compendiumdev.thingifier.application.routehandlers.ShutdownRouteHandler;
 
-public class Main {
+public class ChallengeMain {
 
     public static void main(String[] args) {
 
