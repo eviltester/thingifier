@@ -7,7 +7,7 @@ public class ThingifierApiConfig {
     // todo: willAllowFilteringThroughUrlParams  true/false (default: true)
     // todo: willEnforceFilteringThroughUrlParams true/false ie. 404 error if params when not supported (default: true)
     // todo: api request level allow filtering e.g. on some /things allow filtering but not others
-    private ParamConfig paramsConfig;
+    private final ParamConfig paramsConfig;
 
     // Plurals
     // todo: enforcePluralsInApiCalls true/false i.e. throw404ErrorIfWrongPluralSingluarUsed default is true
@@ -31,7 +31,7 @@ public class ThingifierApiConfig {
     /*
         *** Responses ***
      */
-    private JsonOutputConfig jsonOutputConfig;
+    private final JsonOutputConfig jsonOutputConfig;
     // willShowFieldvaluesAsConverted Types e.g. boolean is `true` instead of "true"
 
     // willShowIdsIfAvailable e.g. instead of GUIDs everywhere, only use GUID if an ID not available
@@ -50,7 +50,7 @@ public class ThingifierApiConfig {
     // URLs
     // willUseIdsInUrlsIfAvailable - instead of GUIDs use Ids
     private boolean willShowIdsInUrlsIfAvailable;
-    private StatusCodeConfig statusCodeConfig;
+    private final StatusCodeConfig statusCodeConfig;
 
     public ThingifierApiConfig(){
 
@@ -76,6 +76,22 @@ public class ThingifierApiConfig {
         jsonOutputConfig.setRelationshipsUseIdsIfAvailable(willShowIdsInResponsesIfAvailable);
 
         statusCodeConfig = new StatusCodeConfig();
+    }
+
+    public void setFrom(final ThingifierApiConfig apiConfig) {
+        willShowSingleInstancesAsPlural=apiConfig.willUrlShowInstancesAsPlural();
+        willShowGuidsInResponses=apiConfig.willResponsesShowGuids();
+        willShowIdsInResponsesIfAvailable = apiConfig.willResponseShowIdsIfAvailable();
+        willShowIdsInUrlsIfAvailable = apiConfig.willUrlsShowIdsIfAvailable();
+        willEnforceDeclaredTypesInInput = apiConfig.willApiEnforceDeclaredTypesInInput();
+
+        willApiAllowXmlResponses = apiConfig.willApiAllowXmlForResponses();
+        willApiAllowJsonResponses = apiConfig.willApiAllowJsonForResponses();
+        willApiEnforceAcceptHeaderForResponses = willApiEnforceAcceptHeaderForResponses();
+
+        paramsConfig.setFrom(apiConfig.forParams());
+        statusCodeConfig.setFrom(apiConfig.statusCodes());
+        jsonOutputConfig.setFrom(apiConfig.jsonOutput());
     }
 
     public JsonOutputConfig jsonOutput() {
@@ -163,4 +179,6 @@ public class ThingifierApiConfig {
     public StatusCodeConfig statusCodes() {
         return statusCodeConfig;
     }
+
+
 }

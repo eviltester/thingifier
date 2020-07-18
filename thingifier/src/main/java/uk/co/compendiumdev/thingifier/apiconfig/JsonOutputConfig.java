@@ -5,14 +5,21 @@ public class JsonOutputConfig {
     // TODO: have a default Response Accept format e.g. JSON, or XML
     private boolean allowCompressedRelationships;
     private Boolean jsonOutputRelationshipsUsesIdsIfAvailable;
-    private boolean willShowGuidsInResponse;
-    private boolean willConvertFieldsToDefinedTypes;
+    private boolean showGuidsInResponse;
+    private boolean convertFieldsToDefinedTypes;
 
     public JsonOutputConfig(){
         allowCompressedRelationships=true;
         jsonOutputRelationshipsUsesIdsIfAvailable=true;
-        willShowGuidsInResponse=true;
-        willConvertFieldsToDefinedTypes=true;
+        showGuidsInResponse =true;
+        convertFieldsToDefinedTypes =true;
+    }
+
+    public void setFrom(final JsonOutputConfig jsonOutput) {
+        allowCompressedRelationships = jsonOutput.willRenderRelationshipsAsCompressed();
+        jsonOutputRelationshipsUsesIdsIfAvailable = jsonOutput.willRenderRelationshipsWithIdsIfAvailable();
+        showGuidsInResponse = jsonOutput.willRenderGuidsInResponse();
+        convertFieldsToDefinedTypes = jsonOutput.willRenderFieldsAsDefinedTypes();
     }
 
 
@@ -23,10 +30,10 @@ public class JsonOutputConfig {
         jsonOutputRelationshipsUsesIdsIfAvailable=config;
     }
     public void setConvertFieldsToDefinedTypes(final boolean config) {
-        willConvertFieldsToDefinedTypes=config;
+        convertFieldsToDefinedTypes =config;
     }
     public void setShowGuidsInResponse(boolean config){
-        willShowGuidsInResponse=config;
+        showGuidsInResponse =config;
     }
 
     public Boolean willRenderRelationshipsAsCompressed() {
@@ -36,9 +43,10 @@ public class JsonOutputConfig {
         return jsonOutputRelationshipsUsesIdsIfAvailable;
     }
     public boolean willRenderGuidsInResponse() {
-        return willShowGuidsInResponse;
+        return showGuidsInResponse;
     }
     public boolean willRenderFieldsAsDefinedTypes() {
-        return willConvertFieldsToDefinedTypes;
+        return convertFieldsToDefinedTypes;
     }
+
 }

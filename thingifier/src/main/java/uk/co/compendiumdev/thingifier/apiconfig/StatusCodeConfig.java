@@ -25,4 +25,7 @@ public class StatusCodeConfig {
         return acceptTypeNotSupportedValue;
     }
 
+    public void setFrom(final StatusCodeConfig statusCodes) {
+        acceptTypeNotSupportedValue = statusCodes.acceptTypeNotSupported();
+    }
 }

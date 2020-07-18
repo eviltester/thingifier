@@ -22,8 +22,8 @@ final public class Thingifier {
     private Map<String, RelationshipDefinition> relationships;
     private String title;
     private String initialParagraph;
-    private ThingifierApiConfig apiConfig;
-    private ThingifierApiConfigProfiles apiConfigProfiles;
+    private final ThingifierApiConfig apiConfig;
+    private final ThingifierApiConfigProfiles apiConfigProfiles;
 
     public Thingifier(){
         things = new ConcurrentHashMap<String, Thing>();
@@ -197,11 +197,10 @@ final public class Thingifier {
     }
 
     public void configureWithProfile(final ThingifierApiConfigProfile profileToUse) {
-        // TODO: should probably 'copy' the config and apply it
         if(profileToUse==null){
             System.out.println("API System Defaults Used");
         }else {
-            apiConfig = profileToUse.apiConfig();
+            apiConfig.setFrom(profileToUse.apiConfig());
         }
     }
 }

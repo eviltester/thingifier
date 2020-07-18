@@ -13,6 +13,12 @@ public class ParamConfig {
         enforceFilteringThroughUrlParams=true;
     }
 
+    public void setFrom(final ParamConfig forParams) {
+        this.allowFilteringThroughUrlParams = forParams.willAllowFilteringThroughUrlParams();
+        this.enforceFilteringThroughUrlParams = forParams.willEnforceFilteringThroughUrlParams();
+    }
+
+
     public boolean setAllowFilteringThroughUrlParams(boolean allow){
         return allowFilteringThroughUrlParams=allow;
     }
