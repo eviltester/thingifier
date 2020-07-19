@@ -179,10 +179,13 @@ public class BodyParser {
                     report.addErrorMessage(errorMessage);
                 }
             }
-            if(field.getType()== FieldType.INTEGER){
+            if(field.getType()== FieldType.INTEGER || field.getType()==FieldType.ID){
                 if (!(theValue instanceof Double )) {
                     report.setValid(false);
                     report.addErrorMessage(errorMessage);
+                }else {
+                    // enforce an int
+                    arg.setValue(((Double) theValue).intValue());
                 }
             }
             if(field.getType()== FieldType.FLOAT){
@@ -194,5 +197,30 @@ public class BodyParser {
             // everything else goes
         }
         return report;
+    }
+
+    public Map<String, String> convertArgsToSpecifiedType(final Map<String, String> args, final ThingDefinition entity) {
+        for(Map.Entry<String, String>arg : args.entrySet()){
+
+            Field field = entity.getField(arg.getKey());
+            if(field==null){
+                continue;
+                // should possibly error it? but ignore for now
+            }
+
+            String theValue = arg.getValue();
+
+            // json parses these as float when they should be integer
+            if(field.getType()== FieldType.INTEGER || field.getType()==FieldType.ID){
+                    // enforce an int of possible
+                try {
+                    Double dVal = Double.parseDouble(theValue);
+                    arg.setValue(String.valueOf(dVal.intValue()));
+                }catch(Exception e){
+
+                }
+            }
+        }
+        return args;
     }
 }

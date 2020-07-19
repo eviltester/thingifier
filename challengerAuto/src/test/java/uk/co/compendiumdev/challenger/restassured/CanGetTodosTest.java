@@ -68,4 +68,20 @@ public class CanGetTodosTest extends RestAssuredBaseTest {
 
         Assertions.assertTrue(statuses.getChallengeNamed("GET /todos/{id} (404)").status);
     }
+
+    @Test
+    void can404WhenNotPluralNouns(){
+
+        RestAssured.
+            given().
+                get(apiPath( "/todo")).
+            then().
+                statusCode(404);
+
+        ChallengesStatus statuses = new ChallengesStatus();
+        statuses.get();
+
+        Assertions.assertTrue(statuses.getChallengeNamed("GET /todo (404) not plural").status);
+    }
+
 }

@@ -62,6 +62,18 @@ Verbs use resources e.g. URLs. Some general status code rules apply:
     - for an update that means 'update', and partial payloads can be presented, with unmentioned fields not updated
     - for a create that means 'insert', and partial payloads can be presented, with unmentioned fields using defaults or auto-generated values        
 
+### PUT vs POST
+
+Not all systems support PUT and POST in the same way.
+
+So the 'rules' for PUT and POST tend to be contextual in applications.
+
+If it is to be REST compliant then the main difference is Idemopotent (PUT) vs Not Necessarily Idempotent (POST). But sometimes systems do not comply with this.
+
+Remember the REST descriptions are 'guidelines'. APIs can still 'work' when they don't follow the guidelines exactly , the API documentation just has to be clear on how the API operates.
+
+
+
 ## Content Negotiation Headers
 
 - `Accept`
@@ -93,3 +105,4 @@ Verbs use resources e.g. URLs. Some general status code rules apply:
 - [IANA Media Types Registry](https://www.iana.org/assignments/media-types/media-types.xhtml)
 - [restfulapi.net](https://restfulapi.net/)
 - [httpstatuses.com](https://httpstatuses.com)
+- [Mozilla HTTP MDN Web Docs](https://developer.mozilla.org/en-US/docs/Web/HTTP)

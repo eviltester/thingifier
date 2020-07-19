@@ -11,7 +11,7 @@ import uk.co.compendiumdev.challenger.payloads.Todo;
 import uk.co.compendiumdev.challenger.restassured.api.ChallengesStatus;
 import uk.co.compendiumdev.challenger.restassured.api.RestAssuredBaseTest;
 
-public class CanCreateTodos extends RestAssuredBaseTest {
+public class CanCreateTodosWithPOSTTest extends RestAssuredBaseTest {
 
     @Test
     void canCreateATodoWithPost(){

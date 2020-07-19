@@ -18,7 +18,7 @@ public class ThingAmendment {
 
     public ApiResponse amendInstance(final BodyParser bodyargs, final ThingInstance instance, final Boolean clearFieldsBeforeSettingFromArgs) {
 
-        final Map<String, String> args = bodyargs.getStringMap();
+        Map<String, String> args = bodyargs.getStringMap();
 
         if(thingifier.apiConfig().willApiEnforceDeclaredTypesInInput()) {
             ValidationReport validatedTypes = bodyargs.validateAgainstType(instance.getEntity());
@@ -26,6 +26,9 @@ public class ThingAmendment {
                 return ApiResponse.error(400, validatedTypes.getCombinedErrorMessages());
             }
         }
+
+        // integer values and ids will be represented as decimal so convert
+        args = bodyargs.convertArgsToSpecifiedType(args, instance.getEntity());
 
         ThingInstance cloned = null;
 

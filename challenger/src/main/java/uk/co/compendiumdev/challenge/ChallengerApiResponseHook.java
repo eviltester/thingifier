@@ -1,11 +1,15 @@
 package uk.co.compendiumdev.challenge;
 
+import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiResponse;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.application.httpapimessagehooks.HttpApiResponseHook;
+import uk.co.compendiumdev.thingifier.domain.definitions.FieldValue;
+import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
 
+import java.io.File;
 import java.util.Collection;
 
 import static uk.co.compendiumdev.challenge.Challenges.CHALLENGE.*;
@@ -37,6 +41,23 @@ public class ChallengerApiResponseHook implements HttpApiResponseHook {
                 response.getStatusCode()==404){
             challenges.pass(GET_TODO_404);
         }
+
+
+        if(request.getVerb() == HttpApiRequest.VERB.GET &&
+                request.getPath().contentEquals("todos") &&
+                request.getQueryParams().containsKey("doneStatus") &&
+                request.getQueryParams().get("doneStatus").contentEquals("true") &&
+                response.getStatusCode()==200){
+            // only pass if there are done and not done todos
+            final Thing thing = thingifier.getThingNamed("todo");
+            final ThingInstance aDoneThing = thing.findInstanceByField(FieldValue.is("doneStatus", "true"));
+            final ThingInstance aNotDoneThing = thing.findInstanceByField(FieldValue.is("doneStatus", "false"));
+            if(aDoneThing!=null && aNotDoneThing!=null) {
+                challenges.pass(GET_TODOS_FILTERED);
+            }
+        }
+
+
 
         // CREATE
         if(request.getVerb() == HttpApiRequest.VERB.POST &&
@@ -74,6 +95,11 @@ public class ChallengerApiResponseHook implements HttpApiResponseHook {
                 thingifier.getThingWithPluralNamed("todos").countInstances()==0){
             challenges.pass(DELETE_ALL_TODOS);
         }
+
+
+
+        // TODO: challenge - complete all challenges in the minimum number of requests
+        // TODO: challenge - complete all challenges
 
         // do not interfere with api and return null
         return null;

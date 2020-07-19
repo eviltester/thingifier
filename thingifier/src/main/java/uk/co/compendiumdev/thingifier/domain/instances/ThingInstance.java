@@ -135,7 +135,7 @@ public class ThingInstance {
 
             // Handle attempt to amend a protected field
             if (!idOrGuidFields.contains(entry.getKey())) {
-                // set the value
+                // set the value because it is not protected
                 setValue(entry.getKey(), entry.getValue());
             } else {
                 // if editing it then throw error, ignore if same value

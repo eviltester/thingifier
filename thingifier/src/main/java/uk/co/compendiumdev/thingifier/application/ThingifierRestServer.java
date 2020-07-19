@@ -1,6 +1,5 @@
 package uk.co.compendiumdev.thingifier.application;
 
-import org.eclipse.jetty.http.HttpFields;
 import spark.Request;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponseError;
@@ -25,7 +24,7 @@ public class ThingifierRestServer {
     private final List<RoutingDefinition> additionalRoutes;
     private String urlPath;
     private List<SparkRequestResponseHook> preRequestHooks;
-    private List<SparkRequestResponseHook> postRequestHooks;
+    private List<SparkRequestResponseHook> postResponseHooks;
     private List<HttpApiRequestHook> httpApiRequestHooks;
     private final List<HttpApiResponseHook> httpApiResponseHooks;
 
@@ -41,7 +40,7 @@ public class ThingifierRestServer {
         this.additionalRoutes = additionalDocumentedRoutes;
 
         preRequestHooks = new ArrayList<>();
-        postRequestHooks = new ArrayList<>();
+        postResponseHooks = new ArrayList<>();
         httpApiRequestHooks = new ArrayList<>();
         httpApiResponseHooks = new ArrayList<>();
 
@@ -76,8 +75,8 @@ public class ThingifierRestServer {
         });
 
         after((request, response) -> {
-            if(postRequestHooks!=null){
-                for(SparkRequestResponseHook hook : postRequestHooks){
+            if(postResponseHooks !=null){
+                for(SparkRequestResponseHook hook : postResponseHooks){
                     hook.run(request, response);
                 }
             }
@@ -235,9 +234,9 @@ public class ThingifierRestServer {
         preRequestHooks.add(hook);
     }
 
-    public void registerPostRequestHook(final SparkRequestResponseHook hook) {
+    public void registerPostResponseHook(final SparkRequestResponseHook hook) {
         // post-request hooks run after-every-response
-        postRequestHooks.add(hook);
+        postResponseHooks.add(hook);
     }
 
     public void registerHttpApiRequestHook(final HttpApiRequestHook hook) {

@@ -72,20 +72,4 @@ public class CanDeleteTodosTest extends RestAssuredBaseTest {
         Assertions.assertEquals(0, notodos.size());
     }
 
-    @Test
-    void can404WhenGetSpecificTodo(){
-
-        RestAssured.
-                given().
-                accept("application/json").
-                get(apiPath( "/todos/9999999")).
-                then().
-                statusCode(404).
-                contentType(ContentType.JSON);
-
-        ChallengesStatus statuses = new ChallengesStatus();
-        statuses.get();
-
-        Assertions.assertTrue(statuses.getChallengeNamed("GET /todos/{id} (404)").status);
-    }
 }

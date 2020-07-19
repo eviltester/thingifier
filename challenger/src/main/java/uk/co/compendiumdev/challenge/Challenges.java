@@ -1,7 +1,6 @@
 package uk.co.compendiumdev.challenge;
 
 import com.google.gson.Gson;
-import com.google.gson.annotations.SerializedName;
 
 import java.util.*;
 
@@ -23,16 +22,24 @@ public class Challenges {
     }
 
     public enum CHALLENGE{
-        GET_TODOS, GET_TODO, GET_TODO_404, POST_TODOS,
-        GET_CHALLENGES, POST_TODOS_BAD_DONE_STATUS,
-        DELETE_A_TODO, DELETE_ALL_TODOS, POST_UPDATE_TODO;
+        GET_CHALLENGES,
+        GET_TODOS,
+        GET_TODO,
+        GET_TODO_404,
+        POST_TODOS,
+        POST_UPDATE_TODO,
+        POST_TODOS_BAD_DONE_STATUS,
+        DELETE_A_TODO,
+        DELETE_ALL_TODOS,
+        GET_TODOS_FILTERED,
+        GET_TODOS_NOT_PLURAL_404,
+        OPTIONS_TODOS,
+        GET_HEAD_TODOS;
     }
 
     public Challenges(){
         challengeStatus = new HashMap<>();
         orderedChallengeStatus = new ArrayList<>();
-
-        /* todo: Basic set of CRUD challenges */
 
         // READ
         addChallenge(CHALLENGE.GET_CHALLENGES, "GET /challenges (200)",
@@ -40,33 +47,76 @@ public class Challenges {
 
         addChallenge(CHALLENGE.GET_TODOS, "GET /todos (200)",
                 "Issue a GET request on the `/todos` end point");
+
+        addChallenge(CHALLENGE.GET_TODOS_NOT_PLURAL_404, "GET /todo (404) not plural",
+                "Issue a GET request on the `/todo` end point should 404 because nouns should be plural");
+
         addChallenge(CHALLENGE.GET_TODO, "GET /todos/{id} (200)",
                 "Issue a GET request on the `/todos/{id}` end point to return a specific todo");
+
         addChallenge(CHALLENGE.GET_TODO_404, "GET /todos/{id} (404)",
                 "Issue a GET request on the `/todos/{id}` end point for a todo that does not exist");
+
+        addChallenge(CHALLENGE.GET_TODOS_FILTERED, "GET /todos (200) ?filter",
+                "Issue a GET request on the `/todos` end point with a query filter to get only todos which are 'done'. There must exist both 'done' and 'not done' todos, to pass this challenge.");
+
+        // HEAD
+        addChallenge(CHALLENGE.GET_HEAD_TODOS, "HEAD /todos (200)",
+                "Issue a HEAD request on the `/todos` end point");
+
 
         // CREATE
         addChallenge(CHALLENGE.POST_TODOS, "POST /todos (201)",
                 "Issue a POST request to successfully create a todo");
+
         addChallenge(CHALLENGE.POST_TODOS_BAD_DONE_STATUS, "POST /todos (400) doneStatus",
                 "Issue a POST request to create a todo but fail validation on the `doneStatus` field");
 
         // UPDATE
-        addChallenge(CHALLENGE.POST_UPDATE_TODO, "POST /todos.{id} (200)",
+        addChallenge(CHALLENGE.POST_UPDATE_TODO, "POST /todos/{id} (200)",
                 "Issue a POST request to successfully update a todo");
 
         // DELETE
         addChallenge(CHALLENGE.DELETE_A_TODO, "DELETE /todos/{id} (200)",
                 "Issue a DELETE request to successfully delete a todo");
+
         addChallenge(CHALLENGE.DELETE_ALL_TODOS, "DELETE /todos/{id} (200) all",
                 "Issue a DELETE request to successfully delete the last todo");
 
+        // OPTIONS
+        addChallenge(CHALLENGE.OPTIONS_TODOS, "OPTIONS /todos (200)",
+                "Issue an OPTIONS request on the `/todos` end point to check the 'Allow' header in the resonse");
+
         // todo: expand out the challenges
         // PUT
-        // OPTIONS
+        //      idempotent - same result each time
+
         // HEAD
+
+        // POST control content type
+        //      control content type - XML
+        //      control content type - JSON
+        //      content type not supported 415 e.g. form encoded
+
+        // POST
+        //      not idempotent - same values, different results i.e. id different
+
+        // accept type
+        //      specify accept type - XML
+        //      specify accept type - JSON
+        //      specify accept type - */* (ANY) to get default
+        //      specify multiple accept type with a preference for XML - should receive XML
+        //      none specified - get default
+        //      cannot supply accepted type 406
+
+        // POST to create with
+        //      content type XML - accept type JSON
+        //      content type JSON - accept type XML
+
         // status code challenges
-        // method not allowed
+        //     method not allowed - 405
+
+
 
         Set challengeNames = new HashSet();
         for(ChallengeData challenge : orderedChallengeStatus){

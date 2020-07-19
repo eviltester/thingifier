@@ -1,6 +1,5 @@
 package uk.co.compendiumdev.challenge;
 
-import com.google.gson.annotations.SerializedName;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingStatus;
@@ -48,6 +47,7 @@ public class ChallengeRouteHandler {
     public void addHooks(final ThingifierRestServer restServer) {
 
         restServer.registerPreRequestHook(new ChallengerSparkHTTPRequestHook(challenges));
+        restServer.registerPostResponseHook(new ChallengerSparkHTTPResponseHook(challenges));
         restServer.registerHttpApiRequestHook(new ChallengerApiRequestHook(challenges));
         restServer.registerHttpApiResponseHook(new ChallengerApiResponseHook(challenges, thingifier));
     }

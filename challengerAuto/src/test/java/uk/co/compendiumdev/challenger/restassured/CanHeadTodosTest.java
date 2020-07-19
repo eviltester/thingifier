@@ -1,0 +1,67 @@
+package uk.co.compendiumdev.challenger.restassured;
+
+
+import io.restassured.RestAssured;
+import io.restassured.http.Header;
+import io.restassured.response.Response;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import uk.co.compendiumdev.challenger.restassured.api.ChallengesStatus;
+import uk.co.compendiumdev.challenger.restassured.api.RestAssuredBaseTest;
+import uk.co.compendiumdev.challenger.restassured.api.TodosApi;
+
+import java.util.Arrays;
+import java.util.List;
+
+public class CanHeadTodosTest extends RestAssuredBaseTest {
+
+
+    @Test
+    void canCheckHeadForTodos(){
+
+        final Response headresponse = RestAssured.
+                given().
+                    accept("application/json").
+                head(apiPath( "/todos")).
+                then().
+                    statusCode(200).
+                and().extract().response();
+
+        // pass challenge
+        ChallengesStatus statuses = new ChallengesStatus();
+        statuses.get();
+        Assertions.assertTrue(statuses.getChallengeNamed("HEAD /todos (200)").status);
+
+
+        Assertions.assertTrue(headresponse.body().asString().equals(""),
+                        "Expected no Body for Head response");
+
+        final Response todosgetresponse = RestAssured.
+                given().
+                accept("application/json").
+                get(apiPath( "/todos")).
+                then().
+                statusCode(200).
+                and().extract().response();
+
+        // headers should be the same for get and head
+        Assertions.assertEquals(headresponse.headers().size(),
+                                todosgetresponse.headers().size());
+
+        for(Header header : headresponse.headers().asList()){
+            if(header.getName().contentEquals("Date")){
+                // check date header exists, don't check the exact value
+                Assertions.assertNotNull(todosgetresponse.header("Date"));
+                Assertions.assertEquals(
+                        header.getValue().length(),
+                        todosgetresponse.header("Date").length());
+            }else {
+                Assertions.assertEquals(
+                        todosgetresponse.header(header.getName()),
+                        header.getValue());
+            }
+        }
+
+    }
+
+}
