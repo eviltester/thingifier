@@ -34,7 +34,8 @@ public class Challenges {
         GET_TODOS_FILTERED,
         GET_TODOS_NOT_PLURAL_404,
         OPTIONS_TODOS,
-        GET_HEAD_TODOS;
+        GET_HEAD_TODOS,
+        POST_TODOS_415;
     }
 
     public Challenges(){
@@ -88,15 +89,15 @@ public class Challenges {
                 "Issue an OPTIONS request on the `/todos` end point to check the 'Allow' header in the resonse");
 
         // todo: expand out the challenges
-        // PUT
-        //      idempotent - same result each time
-
-        // HEAD
 
         // POST control content type
         //      control content type - XML
         //      control content type - JSON
         //      content type not supported 415 e.g. form encoded
+        addChallenge(CHALLENGE.POST_TODOS_415, "POST /todos (415)",
+                "Issue a POST request on the `/todos` end point with an unsupported content type to generate a 415 status code");
+
+
 
         // POST
         //      not idempotent - same values, different results i.e. id different
@@ -108,6 +109,9 @@ public class Challenges {
         //      specify multiple accept type with a preference for XML - should receive XML
         //      none specified - get default
         //      cannot supply accepted type 406
+
+        // PUT
+        //      idempotent - same result each time
 
         // POST to create with
         //      content type XML - accept type JSON

@@ -199,6 +199,7 @@ public class BodyParser {
         return report;
     }
 
+    // todo - push this into the FieldType e.g. FieldType.getObject(xx) and FieldType.getAsInteger(xxx) etc.
     public Map<String, String> convertArgsToSpecifiedType(final Map<String, String> args, final ThingDefinition entity) {
         for(Map.Entry<String, String>arg : args.entrySet()){
 

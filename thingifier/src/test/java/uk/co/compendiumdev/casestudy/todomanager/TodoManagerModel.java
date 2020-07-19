@@ -179,6 +179,7 @@ could implement a Thingifier URL query matcher to return instances based on quer
 
         todoManager.apiConfig().setApiToEnforceDeclaredTypesInInput(false);
         todoManager.apiConfig().jsonOutput().setConvertFieldsToDefinedTypes(false);
+        todoManager.apiConfig().setApiToEnforceContentTypeForRequests(false);
 
         return todoManager;
     }

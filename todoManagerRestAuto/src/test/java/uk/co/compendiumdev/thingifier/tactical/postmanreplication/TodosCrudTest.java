@@ -4,9 +4,9 @@ import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.List;
@@ -20,7 +20,7 @@ public class TodosCrudTest {
     // https://github.com/eviltester/thingifier/blob/master/docs/rest_testing/TodoManagerThingifier.postman_collection.json
 
 
-    @BeforeClass
+    @BeforeAll
     public static void clearDataFromEnv(){
 
         // avoid the use of Environment.getEnv("/todos") etc. to keep code a little clearer
@@ -34,7 +34,7 @@ public class TodosCrudTest {
 
         final int newNumberOfTodos = clearedData.getList("todos").size();
 
-        Assert.assertEquals(0, newNumberOfTodos);
+        Assertions.assertEquals(0, newNumberOfTodos);
     }
 
     @Test
@@ -52,7 +52,7 @@ public class TodosCrudTest {
                 and().extract().body().jsonPath();
 
         String errorMessages = (String)body.getList("errorMessages").get(0);
-        Assert.assertTrue(errorMessages, errorMessages.contains("title : can not be empty"));
+        Assertions.assertTrue(errorMessages.contains("title : can not be empty"),errorMessages);
     }
 
     @Test
@@ -66,7 +66,7 @@ public class TodosCrudTest {
                 contentType(ContentType.JSON).
                 and().extract().body().jsonPath();
 
-        Assert.assertEquals("title : field is mandatory",
+        Assertions.assertEquals("title : field is mandatory",
                 body.getList("errorMessages").get(0));
     }
 
@@ -81,7 +81,7 @@ public class TodosCrudTest {
                 contentType(ContentType.JSON).
                 and().extract().body().jsonPath();
 
-        Assert.assertEquals("title : field is mandatory",
+        Assertions.assertEquals("title : field is mandatory",
                 body.getList("errorMessages").get(0));
     }
 
@@ -97,16 +97,16 @@ public class TodosCrudTest {
                 statusCode(201).
                 contentType(ContentType.JSON).and().extract().response();
 
-        Assert.assertEquals(
+        Assertions.assertEquals(
                         response.header("Location"),
                 "todos/" + response.header("X-Thing-Instance-GUID"));
 
         final JsonPath body = response.jsonPath();
 
-        Assert.assertEquals("false", body.get("doneStatus"));
-        Assert.assertEquals(response.header("X-Thing-Instance-GUID"), body.get("guid"));
-        Assert.assertEquals("", body.get("description"));
-        Assert.assertEquals("a specific todo Title", body.get("title"));
+        Assertions.assertEquals("false", body.get("doneStatus"));
+        Assertions.assertEquals(response.header("X-Thing-Instance-GUID"), body.get("guid"));
+        Assertions.assertEquals("", body.get("description"));
+        Assertions.assertEquals("a specific todo Title", body.get("title"));
     }
 
     @Test
@@ -128,10 +128,10 @@ public class TodosCrudTest {
                 header("X-Thing-Instance-GUID", specificGuid).
                 and().extract().body().jsonPath();
 
-        Assert.assertEquals("false", body.get("doneStatus"));
-        Assert.assertEquals(specificGuid, body.get("guid"));
-        Assert.assertEquals("", body.get("description"));
-        Assert.assertEquals("a specific todo Title for put", body.get("title"));
+        Assertions.assertEquals("false", body.get("doneStatus"));
+        Assertions.assertEquals(specificGuid, body.get("guid"));
+        Assertions.assertEquals("", body.get("description"));
+        Assertions.assertEquals("a specific todo Title for put", body.get("title"));
 
 
         // AMEND with PUT
@@ -145,15 +145,15 @@ public class TodosCrudTest {
                 and().extract().response();
 
 
-        Assert.assertFalse(response.headers().hasHeaderWithName("Location"));
-        Assert.assertFalse(response.headers().hasHeaderWithName("X-Thing-Instance-GUID"));
+        Assertions.assertFalse(response.headers().hasHeaderWithName("Location"));
+        Assertions.assertFalse(response.headers().hasHeaderWithName("X-Thing-Instance-GUID"));
 
         body = response.getBody().jsonPath();
 
-        Assert.assertEquals("false", body.get("doneStatus"));
-        Assert.assertEquals(specificGuid, body.get("guid"));
-        Assert.assertEquals("", body.get("description"));
-        Assert.assertEquals("a put amended specific todo Title for put", body.get("title"));
+        Assertions.assertEquals("false", body.get("doneStatus"));
+        Assertions.assertEquals(specificGuid, body.get("guid"));
+        Assertions.assertEquals("", body.get("description"));
+        Assertions.assertEquals("a put amended specific todo Title for put", body.get("title"));
 
 
         // AMEND with POST
@@ -167,15 +167,15 @@ public class TodosCrudTest {
                 and().extract().response();
 
 
-        Assert.assertFalse(response.headers().hasHeaderWithName("Location"));
-        Assert.assertFalse(response.headers().hasHeaderWithName("X-Thing-Instance-GUID"));
+        Assertions.assertFalse(response.headers().hasHeaderWithName("Location"));
+        Assertions.assertFalse(response.headers().hasHeaderWithName("X-Thing-Instance-GUID"));
 
         body = response.getBody().jsonPath();
 
-        Assert.assertEquals("false", body.get("doneStatus"));
-        Assert.assertEquals(specificGuid, body.get("guid"));
-        Assert.assertEquals("", body.get("description"));
-        Assert.assertEquals("a specific todo Title Amended", body.get("title"));
+        Assertions.assertEquals("false", body.get("doneStatus"));
+        Assertions.assertEquals(specificGuid, body.get("guid"));
+        Assertions.assertEquals("", body.get("description"));
+        Assertions.assertEquals("a specific todo Title Amended", body.get("title"));
 
         // GET the TO DO item
         response = when().get("/todos/" + specificGuid).
@@ -184,15 +184,15 @@ public class TodosCrudTest {
                 contentType(ContentType.JSON).
                 and().extract().response();
 
-        Assert.assertFalse(response.headers().hasHeaderWithName("Location"));
-        Assert.assertFalse(response.headers().hasHeaderWithName("X-Thing-Instance-GUID"));
+        Assertions.assertFalse(response.headers().hasHeaderWithName("Location"));
+        Assertions.assertFalse(response.headers().hasHeaderWithName("X-Thing-Instance-GUID"));
 
         body = response.getBody().jsonPath();
 
-        Assert.assertEquals("false", body.get("todos[0].doneStatus"));
-        Assert.assertEquals(specificGuid, body.get("todos[0].guid"));
-        Assert.assertEquals("", body.get("todos[0].description"));
-        Assert.assertEquals("a specific todo Title Amended", body.get("todos[0].title"));
+        Assertions.assertEquals("false", body.get("todos[0].doneStatus"));
+        Assertions.assertEquals(specificGuid, body.get("todos[0].guid"));
+        Assertions.assertEquals("", body.get("todos[0].description"));
+        Assertions.assertEquals("a specific todo Title Amended", body.get("todos[0].title"));
 
 
         // DELETE the TO DO item
@@ -209,7 +209,7 @@ public class TodosCrudTest {
                 contentType(ContentType.JSON).
                 and().extract().response();
 
-        Assert.assertEquals("Could not find an instance with todos/3e788069-1d22-4aa1-a03b-5689eab2f321",
+        Assertions.assertEquals("Could not find an instance with todos/3e788069-1d22-4aa1-a03b-5689eab2f321",
                 response.getBody().jsonPath().get("errorMessages[0]"));
     }
 

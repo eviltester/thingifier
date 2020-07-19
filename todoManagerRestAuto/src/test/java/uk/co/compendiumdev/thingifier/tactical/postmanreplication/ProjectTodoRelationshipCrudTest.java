@@ -4,9 +4,9 @@ import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 
@@ -19,7 +19,7 @@ public class ProjectTodoRelationshipCrudTest {
     // https://github.com/eviltester/thingifier/blob/master/docs/rest_testing/TodoManagerThingifier.postman_collection.json
 
 
-    @BeforeClass
+    @BeforeAll
     public static void clearDataFromEnv(){
 
         // avoid the use of Environment.getEnv("/todos") etc. to keep code a little clearer
@@ -33,7 +33,7 @@ public class ProjectTodoRelationshipCrudTest {
 
         final int newNumberOfTodos = clearedData.getList("todos").size();
 
-        Assert.assertEquals(0, newNumberOfTodos);
+        Assertions.assertEquals(0, newNumberOfTodos);
     }
 
 
@@ -83,11 +83,11 @@ public class ProjectTodoRelationshipCrudTest {
                 contentType(ContentType.JSON).
                 and().extract().response();
 
-        Assert.assertEquals(1, response.getBody().jsonPath().getList("todos").size());
-        Assert.assertEquals(specificTodoGuid, response.getBody().jsonPath().get("todos[0].guid"));
+        Assertions.assertEquals(1, response.getBody().jsonPath().getList("todos").size());
+        Assertions.assertEquals(specificTodoGuid, response.getBody().jsonPath().get("todos[0].guid"));
         // if non-compressed relationship rendering is used then this path
-        Assert.assertEquals(specificProjectGuid, response.getBody().jsonPath().get("todos[0].relationships[0].task-of[0].projects[0].guid"));
-        //Assert.assertEquals(specificProjectGuid, response.getBody().jsonPath().get("todos[0].task-of[0].guid"));
+        Assertions.assertEquals(specificProjectGuid, response.getBody().jsonPath().get("todos[0].relationships[0].task-of[0].projects[0].guid"));
+        //Assertions.assertEquals(specificProjectGuid, response.getBody().jsonPath().get("todos[0].task-of[0].guid"));
 
 
         // DELETE the Project Todos Relationship TO DO
@@ -104,7 +104,7 @@ public class ProjectTodoRelationshipCrudTest {
                 contentType(ContentType.JSON).
                 and().extract().response();
 
-        Assert.assertEquals(0, response.getBody().jsonPath().getList("todos").size());
+        Assertions.assertEquals(0, response.getBody().jsonPath().getList("todos").size());
 
         // GET project and check no relationships listed
         response = when().get("/projects/" + specificProjectGuid).
@@ -113,7 +113,7 @@ public class ProjectTodoRelationshipCrudTest {
                 contentType(ContentType.JSON).
                 and().extract().response();
 
-        Assert.assertNull(response.getBody().jsonPath().get("projects[0].relationships"));
+        Assertions.assertNull(response.getBody().jsonPath().get("projects[0].relationships"));
 
         // DELETE the Project Todos Relationship TO DO again
         when().delete("/projects/" + specificProjectGuid + "/tasks/" +specificTodoGuid).

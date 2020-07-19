@@ -9,6 +9,7 @@ public class ThingifierApiConfig {
     // todo: api request level allow filtering e.g. on some /things allow filtering but not others
     private final ParamConfig paramsConfig;
 
+
     // Plurals
     // todo: enforcePluralsInApiCalls true/false i.e. throw404ErrorIfWrongPluralSingluarUsed default is true
     // - showUrlsAsPluralOrSingular, allow toggling between plural or singular
@@ -25,8 +26,14 @@ public class ThingifierApiConfig {
 
     // todo: willApiAllowJsonRequests i.e. process when Json content submitted, if not then throw error
 
-    // willApiEnforceAcceptHeaderForResponses i.e. respond with 415 if asked for but not allowed XML responses (default: true)
+    // willApiEnforceAcceptHeaderForResponses i.e. respond with 406 if asked for but not allowed XML responses (default: true)
     boolean willApiEnforceAcceptHeaderForResponses;
+
+    // willApiEnforceAcceptHeaderForResponses i.e. respond with 406 if asked for but not allowed XML responses (default: true)
+    boolean willApiEnforceContentTypeHeaderForRequests;
+    private boolean acceptXmlContent;
+    private boolean acceptJsonContent;
+
 
     /*
         *** Responses ***
@@ -65,7 +72,9 @@ public class ThingifierApiConfig {
         willApiAllowXmlResponses = true;
         willApiAllowJsonResponses = true;
         willApiEnforceAcceptHeaderForResponses = false; // default to whatever is allowed by default
-
+        willApiEnforceContentTypeHeaderForRequests = true;
+        acceptXmlContent = true;
+        acceptJsonContent = true;
 
         paramsConfig = new ParamConfig();
 
@@ -144,6 +153,10 @@ public class ThingifierApiConfig {
         return this;
     }
 
+    public ThingifierApiConfig setApiToEnforceContentTypeForRequests(boolean config) {
+        willApiEnforceContentTypeHeaderForRequests=config;
+        return this;
+    }
     public boolean willUrlShowInstancesAsPlural() {
         return willShowSingleInstancesAsPlural;
     }
@@ -172,6 +185,10 @@ public class ThingifierApiConfig {
         return willApiEnforceAcceptHeaderForResponses;
     }
 
+    public boolean willApiEnforceContentTypeHeaderForRequests(){
+        return willApiEnforceContentTypeHeaderForRequests;
+    }
+
     public ParamConfig forParams() {
         return paramsConfig;
     }
@@ -180,5 +197,23 @@ public class ThingifierApiConfig {
         return statusCodeConfig;
     }
 
+
+    public boolean willAcceptXMLContent() {
+        return acceptXmlContent;
+    }
+
+    public boolean willAcceptJSONContent() {
+        return acceptJsonContent;
+    }
+
+    public ThingifierApiConfig setApiToAllowXmlForContentType(boolean allow) {
+        acceptXmlContent = allow;
+        return this;
+    }
+
+    public ThingifierApiConfig setApiToAllowJsonForContentType(boolean allow) {
+        acceptJsonContent = allow;
+        return this;
+    }
 
 }

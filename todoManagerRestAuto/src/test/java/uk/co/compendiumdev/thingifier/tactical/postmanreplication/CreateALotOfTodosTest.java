@@ -4,9 +4,10 @@ import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
 
 import java.util.HashMap;
 
@@ -18,7 +19,7 @@ public class CreateALotOfTodosTest {
     // replicate the automated execution and assertion from Postman project
     // https://github.com/eviltester/thingifier/blob/master/docs/rest_testing/TodoManagerThingifier.postman_collection.json
 
-    @BeforeClass
+    @BeforeAll
     public static void clearDataFromEnv(){
 
         // avoid the use of Environment.getEnv("/todos") etc. to keep code a little clearer
@@ -32,7 +33,7 @@ public class CreateALotOfTodosTest {
 
         final int newNumberOfTodos = clearedData.getList("todos").size();
 
-        Assert.assertEquals(0, newNumberOfTodos);
+        Assertions.assertEquals(0, newNumberOfTodos);
     }
 
 
@@ -61,7 +62,7 @@ public class CreateALotOfTodosTest {
 
         final JsonPath clearedData = response.getBody().jsonPath();
         final int newNumberOfTodos = clearedData.getList("todos").size();
-        Assert.assertEquals(100, newNumberOfTodos);
+        Assertions.assertEquals(100, newNumberOfTodos);
 
         System.out.println(response.getBody().prettyPrint());
 

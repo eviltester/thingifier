@@ -53,22 +53,86 @@ final public class ThingifierHttpApi {
 
         String acceptHeader = request.getHeader("Accept", "");
 
-        // Config Validation
+        HttpApiResponse httpResponse = runTheHttpApiRequestHooksOn(request);
+        ApiResponse apiResponse = null;
 
-        ApiResponse apiResponse=null;
+        if(httpResponse==null) {
+            // Config Validation
+            apiResponse = validateAcceptHeader(acceptHeader);
 
+            if (apiResponse == null) {
+                // only validate content if it contains content
+                if(verb == HttpVerb.POST || verb == HttpVerb.PUT || verb == HttpVerb.PATCH) {
+                    apiResponse = validateContentTypeHeader(
+                            request.getHeader("Content-Type", ""));
+                }
+            }
+
+            if (apiResponse != null) {
+                httpResponse = new HttpApiResponse(request.getHeaders(), apiResponse,
+                        jsonThing, thingifier.apiConfig());
+            }
+        }
+
+        if(httpResponse==null) {
+            apiResponse = routeRequest(request, verb);
+
+            httpResponse = new HttpApiResponse(request.getHeaders(), apiResponse,
+                    jsonThing, thingifier.apiConfig());
+        }
+
+        return runTheHttpApiResponseHooksOn(request, httpResponse);
+    }
+
+    private ApiResponse validateContentTypeHeader(final String header) {
+
+        // we don't validate content type header
+        if(!thingifier.apiConfig().willApiEnforceContentTypeHeaderForRequests()){
+            return null;
+        }
+
+        if(header == null || header.trim().length()==0 || header.contains("text/plain")){
+            //todo: have a config for enforce presence of content-type header
+            // assume that we can derive content type from the actual content
+            return null;
+        }
+
+        final AcceptContentTypeParser accept = new AcceptContentTypeParser(header);
+
+        int statusContentTypeNotSupported = thingifier.apiConfig().statusCodes().
+                                            contentTypeNotSupported();
+
+        if(!accept.isXML() && !accept.isJSON()){
+            return ApiResponse.error(statusContentTypeNotSupported,
+                    "Unsupported Content Type - " + header);
+        }
+
+        if(accept.isXML() && !thingifier.apiConfig().willAcceptXMLContent()){
+            return ApiResponse.error(statusContentTypeNotSupported, "XML Not Supported");
+        }
+
+        if(accept.isJSON() && !thingifier.apiConfig().willAcceptJSONContent()){
+            return ApiResponse.error(statusContentTypeNotSupported, "JSON Not Supported");
+        }
+
+        return null;
+    }
+
+    private ApiResponse validateAcceptHeader(final String acceptHeader) {
         final AcceptHeaderParser accept = new AcceptHeaderParser(acceptHeader);
+        ApiResponse apiResponse=null;
 
         int statusAcceptTypeNotSupported = thingifier.apiConfig().statusCodes().acceptTypeNotSupported();
 
         if(thingifier.apiConfig().willApiEnforceAcceptHeaderForResponses()){
             if (!accept.willAcceptXml() ||
-                !accept.willAcceptJson()){
+                    !accept.willAcceptJson()){
                 apiResponse = ApiResponse.error(statusAcceptTypeNotSupported, "Unrecognised Accept Type");
             }
         }
+
         boolean willOnlyAcceptXML = accept.hasAskedFor(AcceptHeaderParser.ACCEPT_TYPE.XML) &&
-                                    !accept.willAcceptJson();
+                !accept.willAcceptJson();
         if (    willOnlyAcceptXML &&
                 !thingifier.apiConfig().willApiAllowXmlForResponses() &&
                 thingifier.apiConfig().willApiEnforceAcceptHeaderForResponses()
@@ -77,7 +141,7 @@ final public class ThingifierHttpApi {
         }
 
         boolean willOnlyAcceptJSON = accept.hasAskedFor(AcceptHeaderParser.ACCEPT_TYPE.JSON) &&
-                                    !accept.willAcceptXml();
+                !accept.willAcceptXml();
         if (    willOnlyAcceptJSON &&
                 !thingifier.apiConfig().willApiAllowJsonForResponses() &&
                 thingifier.apiConfig().willApiEnforceAcceptHeaderForResponses()
@@ -85,24 +149,7 @@ final public class ThingifierHttpApi {
             apiResponse = ApiResponse.error(statusAcceptTypeNotSupported, "JSON not supported");
         }
 
-        if(apiResponse!=null){
-            return new HttpApiResponse(request.getHeaders(), apiResponse,
-                    jsonThing, thingifier.apiConfig());
-        }
-
-
-        HttpApiResponse httpResponse = runTheHttpApiRequestHooksOn(request);
-
-        if(httpResponse!=null){
-            return httpResponse;
-        }
-
-        apiResponse = routeRequest(request, verb);
-
-        httpResponse = new HttpApiResponse(request.getHeaders(), apiResponse,
-                jsonThing, thingifier.apiConfig());
-
-        return runTheHttpApiResponseHooksOn(request, httpResponse);
+        return apiResponse;
     }
 
     public ApiResponse routeRequest(final HttpApiRequest request,

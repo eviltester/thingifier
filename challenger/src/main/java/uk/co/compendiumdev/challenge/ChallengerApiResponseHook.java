@@ -74,6 +74,12 @@ public class ChallengerApiResponseHook implements HttpApiResponseHook {
             challenges.pass(POST_TODOS_BAD_DONE_STATUS);
         }
 
+        if(request.getVerb() == HttpApiRequest.VERB.POST &&
+                request.getPath().matches("todos") &&
+                response.getStatusCode()==415){
+            challenges.pass(POST_TODOS_415);
+        }
+
         // UPDATE
         if(request.getVerb() == HttpApiRequest.VERB.POST &&
                 request.getPath().matches("todos/.*") &&

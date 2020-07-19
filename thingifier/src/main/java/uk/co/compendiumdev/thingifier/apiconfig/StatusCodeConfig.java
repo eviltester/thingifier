@@ -12,6 +12,7 @@ public class StatusCodeConfig {
     /* client side errors */
 
     public int acceptTypeNotSupportedValue; // 406
+    public int contentTypeNotSupportedValue; // 415
 
     public StatusCodeConfig(){
         resetClientSideErrorStatusCodes();
@@ -19,6 +20,7 @@ public class StatusCodeConfig {
 
     public void resetClientSideErrorStatusCodes(){
         acceptTypeNotSupportedValue=406;
+        contentTypeNotSupportedValue=415;
     }
 
     public int acceptTypeNotSupported() {
@@ -27,5 +29,11 @@ public class StatusCodeConfig {
 
     public void setFrom(final StatusCodeConfig statusCodes) {
         acceptTypeNotSupportedValue = statusCodes.acceptTypeNotSupported();
+        contentTypeNotSupportedValue = statusCodes.contentTypeNotSupported();
     }
+
+    public int contentTypeNotSupported() {
+        return contentTypeNotSupportedValue;
+    }
+
 }

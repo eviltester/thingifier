@@ -85,4 +85,30 @@ public class CanCreateTodosWithPOSTTest extends RestAssuredBaseTest {
         Assertions.assertTrue(statuses.getChallengeNamed("POST /todos (400) doneStatus").status);
 
     }
+
+    @Test
+    void can415CreateATodoWithInvalidContentType(){
+
+        Todo todo = new Todo();
+        todo.doneStatus = true;
+        todo.title = "invalid content type";
+        todo.description = "invalid content";
+
+        String payload = new Gson().toJson(todo);
+
+        RestAssured.
+                given().
+                accept("application/json").
+                contentType(ContentType.BINARY).
+                body(payload.getBytes()).
+                post(apiPath( "/todos")).
+                then().
+                statusCode(415).
+                contentType(ContentType.JSON);
+
+        ChallengesStatus statuses = new ChallengesStatus();
+        statuses.get();
+        Assertions.assertTrue(statuses.getChallengeNamed("POST /todos (415)").status);
+
+    }
 }
