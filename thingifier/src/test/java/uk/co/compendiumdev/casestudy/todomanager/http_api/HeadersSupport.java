@@ -9,7 +9,7 @@ public class HeadersSupport {
 
         Map<String, String> acceptXml;
         acceptXml = new HashMap<String, String>();
-        acceptXml.put("Accept", "application/xml");
+        acceptXml.put("accept", "application/xml");
         return acceptXml;
 
     }
@@ -18,7 +18,7 @@ public class HeadersSupport {
 
         Map<String, String> containsXml;
         containsXml = new HashMap<String, String>();
-        containsXml.put("Content-Type", "application/xml");
+        containsXml.put("content-type", "application/xml");
         return containsXml;
 
     }
@@ -28,7 +28,7 @@ public class HeadersSupport {
 
         Map<String, String> acceptJson;
         acceptJson = new HashMap<String, String>();
-        acceptJson.put("Accept", "application/json");
+        acceptJson.put("accept", "application/json");
         return acceptJson;
 
     }
@@ -37,7 +37,7 @@ public class HeadersSupport {
 
         Map<String, String> containsJson;
         containsJson = new HashMap<String, String>();
-        containsJson.put("Content-Type", "application/json");
+        containsJson.put("content-type", "application/json");
         return containsJson;
 
     }

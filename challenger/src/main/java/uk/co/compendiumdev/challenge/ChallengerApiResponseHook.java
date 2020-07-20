@@ -2,6 +2,7 @@ package uk.co.compendiumdev.challenge;
 
 import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.api.http.AcceptContentTypeParser;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiResponse;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
@@ -42,6 +43,25 @@ public class ChallengerApiResponseHook implements HttpApiResponseHook {
             challenges.pass(GET_TODO_404);
         }
 
+        if(request.getVerb() == HttpApiRequest.VERB.GET &&
+                request.getPath().contentEquals("todos") &&
+                request.getQueryParams().size()==0 &&
+                new AcceptContentTypeParser(request.getHeader("accept")).isXML() &&
+                response.getType().contentEquals("application/xml") &&
+                response.getStatusCode()==200
+        ){
+            challenges.pass(GET_ACCEPT_XML);
+        }
+
+        if(request.getVerb() == HttpApiRequest.VERB.GET &&
+                request.getPath().contentEquals("todos") &&
+                request.getQueryParams().size()==0 &&
+                new AcceptContentTypeParser(request.getHeader("accept")).isJSON() &&
+                response.getType().contentEquals("application/json") &&
+                response.getStatusCode()==200
+        ){
+            challenges.pass(GET_ACCEPT_JSON);
+        }
 
         if(request.getVerb() == HttpApiRequest.VERB.GET &&
                 request.getPath().contentEquals("todos") &&

@@ -29,7 +29,10 @@ public final class HttpApiRequest {
     }
 
     public HttpApiRequest setHeaders(final Map<String, String> mapOfHeaderValues) {
-        this.headers.putAll(mapOfHeaderValues);
+        for(Map.Entry<String, String>header : mapOfHeaderValues.entrySet()){
+            addHeader(header.getKey(), header.getValue());
+        }
+
         return this;
     }
 
@@ -51,11 +54,11 @@ public final class HttpApiRequest {
     }
 
     public String getHeader(final String headerName) {
-        return this.headers.get(headerName);
+        return this.headers.get(headerName.toLowerCase());
     }
 
     public void addHeader(final String headerName, final String headerValue) {
-        this.headers.put(headerName, headerValue);
+        this.headers.put(headerName.trim().toLowerCase(), headerValue.trim().toLowerCase());
     }
 
     public HttpApiRequest setQueryParams(final Map<String, String> queryParamsAsMap) {

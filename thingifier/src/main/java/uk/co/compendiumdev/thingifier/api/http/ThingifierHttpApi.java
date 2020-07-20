@@ -91,13 +91,16 @@ final public class ThingifierHttpApi {
             return null;
         }
 
-        if(header == null || header.trim().length()==0 || header.contains("text/plain")){
-            //todo: have a config for enforce presence of content-type header
+        final AcceptContentTypeParser accept = new AcceptContentTypeParser(header);
+
+        if(accept.isMissing() || accept.isText()){
+            // todo: have a config for enforce presence of content-type header, when false then derive content type from content when parsing message
+            // todo: have a config for treatContentTypeTextAsMissingContentType - which is what this code current does
             // assume that we can derive content type from the actual content
             return null;
         }
 
-        final AcceptContentTypeParser accept = new AcceptContentTypeParser(header);
+
 
         int statusContentTypeNotSupported = thingifier.apiConfig().statusCodes().
                                             contentTypeNotSupported();

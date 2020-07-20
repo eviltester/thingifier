@@ -89,6 +89,7 @@ Remember the REST descriptions are 'guidelines'. APIs can still 'work' when they
 
 - `Content-Type`
     - `415` status code if content-type not supported ([415](https://httpstatuses.com/415)) e.g. XML supplied, but system only accepts JSON
+    - If the `Content-Type` header is not present then systems might not issue a `415` they may instead, try to derive the content-type from the payload, and potentially throw a `400` error if they can't parse it.
 
 ## References
 

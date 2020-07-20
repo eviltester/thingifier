@@ -35,7 +35,8 @@ public class Challenges {
         GET_TODOS_NOT_PLURAL_404,
         OPTIONS_TODOS,
         GET_HEAD_TODOS,
-        POST_TODOS_415;
+        POST_TODOS_415,
+        GET_ACCEPT_XML, GET_ACCEPT_JSON;
     }
 
     public Challenges(){
@@ -88,6 +89,21 @@ public class Challenges {
         addChallenge(CHALLENGE.OPTIONS_TODOS, "OPTIONS /todos (200)",
                 "Issue an OPTIONS request on the `/todos` end point to check the 'Allow' header in the resonse");
 
+        // GET accept type
+        //      specify accept type - XML
+        //      specify accept type - JSON
+        //      specify accept type - */* (ANY) to get default
+        //      specify multiple accept type with a preference for XML - should receive XML
+        //      none specified - get default
+        //      cannot supply accepted type 406
+
+        addChallenge(CHALLENGE.GET_ACCEPT_XML, "GET /todos (200) XML",
+                "Issue a GET request on the `/todos` end point with a Content-Type header of `application/xml` to receive results in XML format");
+
+        addChallenge(CHALLENGE.GET_ACCEPT_JSON, "GET /todos (200) JSON",
+                "Issue a GET request on the `/todos` end point with a Content-Type header of `application/json` to receive results in JSON format");
+
+
         // todo: expand out the challenges
 
         // POST control content type
@@ -102,13 +118,7 @@ public class Challenges {
         // POST
         //      not idempotent - same values, different results i.e. id different
 
-        // accept type
-        //      specify accept type - XML
-        //      specify accept type - JSON
-        //      specify accept type - */* (ANY) to get default
-        //      specify multiple accept type with a preference for XML - should receive XML
-        //      none specified - get default
-        //      cannot supply accepted type 406
+
 
         // PUT
         //      idempotent - same result each time

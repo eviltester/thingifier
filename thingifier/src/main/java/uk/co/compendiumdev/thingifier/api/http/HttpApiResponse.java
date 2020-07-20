@@ -84,8 +84,8 @@ final public class HttpApiResponse {
             return "";
         }
 
-        if (requestHeaders.containsKey(name)) {
-            return requestHeaders.get(name);
+        if (requestHeaders.containsKey(name.toLowerCase())) {
+            return requestHeaders.get(name.toLowerCase());
         }
         return "";
     }

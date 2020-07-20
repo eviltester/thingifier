@@ -38,7 +38,7 @@ public class AcceptHeaderParser {
         if(acceptHeader== null){
             this.acceptHeader="";
         }else{
-            this.acceptHeader = acceptHeader;
+            this.acceptHeader = acceptHeader.trim().toLowerCase();
         }
 
         acceptedTypes = new HashMap<ACCEPT_TYPE, List<String>>();
