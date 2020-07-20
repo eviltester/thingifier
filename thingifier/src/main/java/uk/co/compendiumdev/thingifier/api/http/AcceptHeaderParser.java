@@ -30,6 +30,36 @@ public class AcceptHeaderParser {
         return willAccept(ACCEPT_TYPE.JSON);
     }
 
+    public boolean hasAskedForXML() {
+        return hasAskedFor(AcceptHeaderParser.ACCEPT_TYPE.XML);
+    }
+    public boolean hasAskedForJSON() {
+        return hasAskedFor(ACCEPT_TYPE.JSON);
+    }
+    public boolean hasAskedForANY() {
+        return hasAskedFor(ACCEPT_TYPE.ANYTHING);
+    }
+
+    public boolean missingAcceptHeader() {
+        return this.acceptHeader.length()==0;
+    }
+
+    public boolean isSupportedHeader() {
+        boolean supported = false;
+
+        if(acceptMediaTypeDefinitionsList.size()==0){
+            // we are allowed blank or missing accept - that counts as default
+            supported=true;
+        }
+
+        for(String askedFor : acceptMediaTypeDefinitionsList){
+            if(getMatchingType(askedFor)!=ACCEPT_TYPE.NO_MATCHING_TYPE){
+                supported=true;
+            }
+        }
+        return supported;
+    }
+
 
     public enum ACCEPT_TYPE{ XML, JSON, ANYTHING, NO_MATCHING_TYPE};
 

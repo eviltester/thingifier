@@ -50,4 +50,20 @@ public class TodosApi {
 
         return todosList.todos;
     }
+
+    public Todo getTodo(final String id) {
+        String todosEndPoint = Environment.getEnv("/todos");
+
+        Todos todos = RestAssured.
+                given().
+                accept("application/json").
+                get(todosEndPoint + "/"  + id).
+                then().
+                statusCode(200).
+                contentType(ContentType.JSON).
+                and().extract().body().
+                as(Todos.class);
+
+        return todos.todos.get(0);
+    }
 }

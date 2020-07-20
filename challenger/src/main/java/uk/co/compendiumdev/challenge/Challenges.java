@@ -36,7 +36,20 @@ public class Challenges {
         OPTIONS_TODOS,
         GET_HEAD_TODOS,
         POST_TODOS_415,
-        GET_ACCEPT_XML, GET_ACCEPT_JSON;
+        GET_ACCEPT_XML,
+        GET_ACCEPT_JSON,
+        GET_ACCEPT_ANY_DEFAULT_JSON,
+        GET_ACCEPT_XML_PREFERRED,
+        GET_JSON_BY_DEFAULT_NO_ACCEPT,
+        GET_UNSUPPORTED_ACCEPT_406,
+        POST_CREATE_XML,
+        POST_CREATE_JSON,
+        GET_HEARTBEAT_204,
+        DELETE_HEARTBEAT_405,
+        POST_CREATE_JSON_ACCEPT_XML,
+        POST_CREATE_XML_ACCEPT_JSON,
+        TRACE_HEARTBEAT_501,
+        PATCH_HEARTBEAT_500;
     }
 
     public Challenges(){
@@ -98,17 +111,34 @@ public class Challenges {
         //      cannot supply accepted type 406
 
         addChallenge(CHALLENGE.GET_ACCEPT_XML, "GET /todos (200) XML",
-                "Issue a GET request on the `/todos` end point with a Content-Type header of `application/xml` to receive results in XML format");
+                "Issue a GET request on the `/todos` end point with a `Accept` header of `application/xml` to receive results in XML format");
 
         addChallenge(CHALLENGE.GET_ACCEPT_JSON, "GET /todos (200) JSON",
-                "Issue a GET request on the `/todos` end point with a Content-Type header of `application/json` to receive results in JSON format");
+                "Issue a GET request on the `/todos` end point with a `Accept` header of `application/json` to receive results in JSON format");
+
+        addChallenge(CHALLENGE.GET_ACCEPT_ANY_DEFAULT_JSON, "GET /todos (200) ANY",
+                "Issue a GET request on the `/todos` end point with a `Accept` header of `*/*` to receive results in default JSON format");
+
+        addChallenge(CHALLENGE.GET_ACCEPT_XML_PREFERRED, "GET /todos (200) XML pref",
+                "Issue a GET request on the `/todos` end point with a `Accept` header of `application/xml, application/json` to receive results in preferred XML format");
+
+        addChallenge(CHALLENGE.GET_JSON_BY_DEFAULT_NO_ACCEPT, "GET /todos (200) no accept",
+                "Issue a GET request on the `/todos` end point with no `Accept` header to receive results in default JSON format");
+
+        addChallenge(CHALLENGE.GET_UNSUPPORTED_ACCEPT_406, "GET /todos (406)",
+                "Issue a GET request on the `/todos` end point with `Accept` header `application/gzip` to receive 406 'NOT ACCEPTABLE' status code");
 
 
-        // todo: expand out the challenges
 
         // POST control content type
-        //      control content type - XML
-        //      control content type - JSON
+        //      control content type to create with - XML
+        addChallenge(CHALLENGE.POST_CREATE_XML, "POST /todos XML",
+                "Issue a POST request on the `/todos` end point to create a todo using Content-Type XML");
+
+        //      control content type to create with - JSON
+        addChallenge(CHALLENGE.POST_CREATE_JSON, "POST /todos JSON",
+                "Issue a POST request on the `/todos` end point to create a todo using Content-Type JSON");
+
         //      content type not supported 415 e.g. form encoded
         addChallenge(CHALLENGE.POST_TODOS_415, "POST /todos (415)",
                 "Issue a POST request on the `/todos` end point with an unsupported content type to generate a 415 status code");
@@ -116,19 +146,38 @@ public class Challenges {
 
 
         // POST
-        //      not idempotent - same values, different results i.e. id different
-
-
+        // todo:    POST is not idempotent - same values, different results i.e. id different
 
         // PUT
-        //      idempotent - same result each time
+        // todo:     PUT is idempotent - same result each time
 
-        // POST to create with
+        // POST mixed content and accept
         //      content type XML - accept type JSON
-        //      content type JSON - accept type XML
+        addChallenge(CHALLENGE.POST_CREATE_XML_ACCEPT_JSON, "POST /todos XML to JSON",
+                "Issue a POST request on the `/todos` end point to create a todo using Content-Type `application/xml` but Accept `application/json`");
 
-        // status code challenges
-        //     method not allowed - 405
+        //      content type JSON - accept type XML
+        addChallenge(CHALLENGE.POST_CREATE_JSON_ACCEPT_XML, "POST /todos JSON to XML",
+                "Issue a POST request on the `/todos` end point to create a todo using Content-Type `application/json` but Accept `application/xml`");
+
+
+        // extra status code challenges
+        //      method not allowed - 405
+        addChallenge(CHALLENGE.DELETE_HEARTBEAT_405, "DELETE /heartbeat (405)",
+                "Issue a DELETE request on the `/heartbeat` end point and receive 405 (Method Not Allowed)");
+
+        // cannot process request server error 500
+        addChallenge(CHALLENGE.PATCH_HEARTBEAT_500, "PATCH /heartbeat (500)",
+                "Issue a PATCH request on the `/heartbeat` end point and receive 500 (internal server error)");
+
+        // 501
+        addChallenge(CHALLENGE.TRACE_HEARTBEAT_501, "TRACE /heartbeat (501)",
+                "Issue a TRACE request on the `/heartbeat` end point and receive 501 (Not Implemented)");
+
+        // No Content 204 - ping
+        addChallenge(CHALLENGE.GET_HEARTBEAT_204, "GET /heartbeat (204)",
+                "Issue a GET request on the `/heartbeat` end point and receive 204 when server is running");
+
 
 
 

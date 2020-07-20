@@ -31,7 +31,7 @@ public class CanGetTodosForSpecficAcceptHeaderTest extends RestAssuredBaseTest {
         statuses.get();
         Assertions.assertTrue(statuses.getChallengeNamed("GET /todos (200) JSON").status);
 
-        // should be able to parse with GSON if JSON repsonse
+        // should be able to parse with GSON if JSON response
         new Gson().fromJson(response.body().asString(), Todos.class);
 
     }
@@ -53,11 +53,93 @@ public class CanGetTodosForSpecficAcceptHeaderTest extends RestAssuredBaseTest {
         statuses.get();
         Assertions.assertTrue(statuses.getChallengeNamed("GET /todos (200) XML").status);
 
-        // should be able to parse with GSON if JSON repsonse
+        // XML in response
         Assertions.assertTrue(response.body().asString().contains("<todos>"));
         Assertions.assertTrue(response.body().asString().contains("</todos>"));
 
     }
 
+    @Test
+    void canGetTodosAsAny(){
 
+        final Response response = RestAssured.
+                given().
+                accept("*/*").
+                get(apiPath("/todos")).
+                then().
+                statusCode(200).
+                contentType(ContentType.JSON).
+                extract().response();
+
+
+        ChallengesStatus statuses = new ChallengesStatus();
+        statuses.get();
+        Assertions.assertTrue(statuses.getChallengeNamed("GET /todos (200) ANY").status);
+
+        // should be able to parse with GSON if JSON response by default
+        new Gson().fromJson(response.body().asString(), Todos.class);
+
+    }
+
+    @Test
+    void canGetTodosAsPreferredXML(){
+
+        // ask for multiple but prefer xml
+        final Response response = RestAssured.
+                given().
+                accept("application/xml, application/json").
+                get(apiPath("/todos")).
+                then().
+                statusCode(200).
+                contentType(ContentType.XML).
+                extract().response();
+
+
+        ChallengesStatus statuses = new ChallengesStatus();
+        statuses.get();
+        Assertions.assertTrue(statuses.getChallengeNamed("GET /todos (200) XML pref").status);
+
+        // XML in response
+        Assertions.assertTrue(response.body().asString().contains("<todos>"));
+        Assertions.assertTrue(response.body().asString().contains("</todos>"));
+
+    }
+
+    @Test
+    void canGetTodosAsJSONWhenNoAcceptHeaderSent(){
+
+        final Response response = RestAssured.
+                given().
+                accept("").  // best I can do with RestAssured, setting header to "" - includes header but with no value
+                get(apiPath("/todos")).
+                then().
+                statusCode(200).
+                contentType(ContentType.JSON).
+                extract().response();
+
+        ChallengesStatus statuses = new ChallengesStatus();
+        statuses.get();
+        Assertions.assertTrue(statuses.getChallengeNamed("GET /todos (200) no accept").status);
+
+        // should be able to parse with GSON if JSON response
+        new Gson().fromJson(response.body().asString(), Todos.class);
+    }
+
+    @Test
+    void canGet406WhenUnsupportedAcceptHeaderSent(){
+
+        final Response response = RestAssured.
+                given().
+                accept("application/gzip").
+                get(apiPath("/todos")).
+                then().
+                statusCode(406).
+                contentType(ContentType.JSON).
+                extract().response();
+
+        ChallengesStatus statuses = new ChallengesStatus();
+        statuses.get();
+        Assertions.assertTrue(statuses.getChallengeNamed("GET /todos (406)").status);
+
+    }
 }

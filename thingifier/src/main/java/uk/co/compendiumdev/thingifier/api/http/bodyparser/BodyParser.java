@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import org.json.JSONObject;
 import org.json.XML;
 import uk.co.compendiumdev.thingifier.api.ValidationReport;
+import uk.co.compendiumdev.thingifier.api.http.AcceptContentTypeParser;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.domain.FieldType;
 import uk.co.compendiumdev.thingifier.domain.definitions.Field;
@@ -134,7 +135,8 @@ public class BodyParser {
         // this is just a quick hack to amend it to support XML
         // TODO: try to change this in the future to make it more robust, perhaps the API shouldn't take a String as the body, it should take a parsed class?
         // TODO: BUG - since we remove the wrapper we might send in a POST <project><title>My posted to do on the project</title></project> to /todo and it will work fine if the fields are the same
-        if (request.getHeader("content-type") != null && request.getHeader("content-type").endsWith("/xml")) {
+        final AcceptContentTypeParser contentTypeParser = new AcceptContentTypeParser(request.getHeader("content-type"));
+        if (contentTypeParser.isXML()) {
 
             // PROTOTYPE XML Conversion
             System.out.println(request.getBody());

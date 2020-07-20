@@ -71,7 +71,7 @@ public class ThingifierApiConfig {
 
         willApiAllowXmlResponses = true;
         willApiAllowJsonResponses = true;
-        willApiEnforceAcceptHeaderForResponses = false; // default to whatever is allowed by default
+        willApiEnforceAcceptHeaderForResponses = true; // 406 if not supported header
         willApiEnforceContentTypeHeaderForRequests = true;
         acceptXmlContent = true;
         acceptJsonContent = true;

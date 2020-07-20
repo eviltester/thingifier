@@ -19,10 +19,12 @@ public class CanGetChallengesTest extends RestAssuredBaseTest {
         final Response response = RestAssured.
                 given().
                 accept("application/json").
-                get(apiPath( "/challenges"));
+                get(apiPath( "/challenges")).
+                then().
+                statusCode(200).and().extract().response();
 
         // challenge should be met
-        Assertions.assertEquals(200, response.getStatusCode());
+        // this fails on RestAssured 4.3.1 - downgraded to 4.2.0
         Map<String, Object> challenge = response.body().jsonPath().
                             get("challenges.find { it.name == 'GET /challenges (200)' }");
 

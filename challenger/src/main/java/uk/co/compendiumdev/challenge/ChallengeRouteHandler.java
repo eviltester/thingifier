@@ -9,7 +9,8 @@ import uk.co.compendiumdev.thingifier.htmlgui.DefaultGUIHTML;
 
 import java.util.*;
 
-import static spark.Spark.get;
+import static spark.Spark.*;
+
 
 public class ChallengeRouteHandler {
     private final Thingifier thingifier;
@@ -35,11 +36,92 @@ public class ChallengeRouteHandler {
             return "";
         });
 
+        head("/challenges", (request, result) -> {
+            result.status(200);
+            result.type("application/json");
+            return "";
+        });
+
+        options("/challenges", (request, result) -> {
+            result.status(200);
+            result.type("application/json");
+            result.header("Allow", "GET, HEAD, OPTIONS");
+            return "";
+        });
+
         routes.add(new RoutingDefinition(
                 RoutingVerb.GET,
                 "/challenges",
                 RoutingStatus.returnedFromCall(),
                 null).addDocumentation("Get list of challenges and their completion status"));
+
+        routes.add(new RoutingDefinition(
+                RoutingVerb.OPTIONS,
+                "/challenges",
+                RoutingStatus.returnedFromCall(),
+                null).addDocumentation("Options for list of challenges endpoint"));
+
+        routes.add(new RoutingDefinition(
+                RoutingVerb.HEAD,
+                "/challenges",
+                RoutingStatus.returnedFromCall(),
+                null).addDocumentation("Headers for list of challenges endpoint"));
+
+        // TODO: create some thingifier helper methods for setting up 405 endpoints with range of verbs
+
+        get("/heartbeat", (request, result) -> {
+            result.status(204);
+            return "";
+        });
+
+        head("/heartbeat", (request, result) -> {
+            result.status(204);
+            return "";
+        });
+
+        options("/heartbeat", (request, result) -> {
+            result.status(204);
+            result.header("Allow", "GET, HEAD, OPTIONS");
+            return "";
+        });
+
+        delete("/heartbeat", (request, result) -> {
+            result.status(405);
+            return "";
+        });
+
+        put("/heartbeat", (request, result) -> {
+            result.status(405);
+            return "";
+        });
+
+        patch("/heartbeat", (request, result) -> {
+            result.status(500);
+            return "";
+        });
+
+        trace("/heartbeat", (request, result) -> {
+            result.status(501);
+            return "";
+        });
+
+        routes.add(new RoutingDefinition(
+                RoutingVerb.GET,
+                "/heartbeat",
+                RoutingStatus.returnedFromCall(),
+                null).addDocumentation("Is the server running? YES == 204"));
+
+        routes.add(new RoutingDefinition(
+                RoutingVerb.OPTIONS,
+                "/heartbeat",
+                RoutingStatus.returnedFromCall(),
+                null).addDocumentation("Options for heartbeat endpoint"));
+
+        routes.add(new RoutingDefinition(
+                RoutingVerb.HEAD,
+                "/heartbeat",
+                RoutingStatus.returnedFromCall(),
+                null).addDocumentation("Headers for heartbeat endpoint"));
 
         return this;
     }

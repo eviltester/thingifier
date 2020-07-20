@@ -128,8 +128,7 @@ final public class ThingifierHttpApi {
         int statusAcceptTypeNotSupported = thingifier.apiConfig().statusCodes().acceptTypeNotSupported();
 
         if(thingifier.apiConfig().willApiEnforceAcceptHeaderForResponses()){
-            if (!accept.willAcceptXml() ||
-                    !accept.willAcceptJson()){
+            if (!accept.isSupportedHeader()){
                 apiResponse = ApiResponse.error(statusAcceptTypeNotSupported, "Unrecognised Accept Type");
             }
         }
