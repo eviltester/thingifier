@@ -49,10 +49,26 @@ public class Challenges {
         POST_CREATE_JSON_ACCEPT_XML,
         POST_CREATE_XML_ACCEPT_JSON,
         TRACE_HEARTBEAT_501,
-        PATCH_HEARTBEAT_500;
+        PATCH_HEARTBEAT_500,
+        CREATE_SECRET_TOKEN_401,
+        CREATE_SECRET_TOKEN_201,
+        GET_SECRET_NOTE_401,
+        GET_SECRET_NOTE_403,
+        POST_SECRET_NOTE_403,
+        POST_SECRET_NOTE_401,
+        POST_SECRET_NOTE_200,
+        GET_SECRET_NOTE_200;
     }
 
+
+
+    // todo multi-user challenges via auth token - GET challenges will show the GUID for the challenges associated with this session
+    // todo have GUI show gui/challenges?guid=xxx where guid matches the guid for the auth token
+
     public Challenges(){
+
+        String guid = UUID.randomUUID().toString(); // create a uuid to support multi-user sessions in future
+
         challengeStatus = new HashMap<>();
         orderedChallengeStatus = new ArrayList<>();
 
@@ -178,6 +194,39 @@ public class Challenges {
         addChallenge(CHALLENGE.GET_HEARTBEAT_204, "GET /heartbeat (204)",
                 "Issue a GET request on the `/heartbeat` end point and receive 204 when server is running");
 
+        // TODO: in multi user mode have another token header e.g. X-AUTH-ACTUAL-TOKEN to assign challenge completion status to
+        // authorization and authentication
+        //    POST /secret/token with incorrect username and password credentials get 401
+        addChallenge(CHALLENGE.CREATE_SECRET_TOKEN_401, "POST /secret/token (401)",
+                "Issue a POST request on the `/secret/token` end point and receive 401 when Basic auth username/password is not admin/password");
+
+        //    POST /secret/token with correct username and password credentials get secret token 201
+        addChallenge(CHALLENGE.CREATE_SECRET_TOKEN_201, "POST /secret/token (201)",
+                "Issue a POST request on the `/secret/token` end point and receive 201 when Basic auth username/password is admin/password");
+
+        //    GET /secret/note with no token and 403
+        addChallenge(CHALLENGE.GET_SECRET_NOTE_403, "GET /secret/note (403)",
+                "Issue a GET request on the `/secret/note` end point and receive 403 when X-AUTH-TOKEN does not match a valid token");
+
+        //    GET /secret/note with invalid token and 401
+        addChallenge(CHALLENGE.GET_SECRET_NOTE_401, "GET /secret/note (401)",
+                "Issue a GET request on the `/secret/note` end point and receive 401 when no X-AUTH-TOKEN header present");
+
+        //    POST /secret/note with no token and 403
+        addChallenge(CHALLENGE.POST_SECRET_NOTE_403, "POST /secret/note (403)",
+                "Issue a POST request on the `/secret/note` end point with a note payload {\"note\":\"my note\"} and receive 403 when X-AUTH-TOKEN does not match a valid token");
+
+        //    POST /secret/note with invalid token and 401
+        addChallenge(CHALLENGE.POST_SECRET_NOTE_401, "POST /secret/note (401)",
+                "Issue a POST request on the `/secret/note` end point with a note payload {\"note\":\"my note\"} and receive 401 when no X-AUTH-TOKEN present");
+
+        //    GET /secret/note with token and see token
+        addChallenge(CHALLENGE.GET_SECRET_NOTE_200, "GET /secret/note (200)",
+                "Issue a GET request on the `/secret/note` end point receive 200 when valid X-AUTH-TOKEN used - response body should contain the note");
+
+        //    POST /secret/note with token and update secret note
+        addChallenge(CHALLENGE.POST_SECRET_NOTE_200, "POST /secret/note (200)",
+                "Issue a POST request on the `/secret/note` end point with a note payload e.g. {\"note\":\"my note\"} and receive 200 when valid X-AUTH-TOKEN used");
 
 
 
