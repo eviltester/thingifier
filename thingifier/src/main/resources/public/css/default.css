@@ -63,12 +63,11 @@ h2{
 }
 
 ul.footerlinks {
-    margin-left: 25%;
+
 }
 
 .rootmenu li, .footerlinks li {
-    display: inline;
-    float: left;
+    display: inline-block;
 }
 
 .rootmenu a {

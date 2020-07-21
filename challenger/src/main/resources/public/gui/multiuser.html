@@ -1,0 +1,123 @@
+<html>
+<head>
+    <meta http-equiv='content-language' content='en-us'>
+    <title>Multi-User Help</title>
+    <link rel='stylesheet' href='/css/default.css'>
+</head>
+<body>
+<div class='content'>
+
+    <div class='rootmenu menu'><ul><li><a href='/'>Home</a></li><li><a href='/gui/entities'>Entities Explorer</a></li><li><a href='/gui/challenges'>Challenges</a></li><li><a href='/docs'>API documentation</a></li></ul></div>
+
+
+    <h1>Multi-User Help</h1>
+
+<!--
+
+Getting started with the REST API Challenges can be slightly harder in multi-user mode because you need to tell the API, who you are, so that it can track your individual progress against the challenges.
+
+You don't need to do any of this if you download the application and run it in single user mode.
+
+## Create a Challenger Session
+
+The first thing we have to do is Create a Challenger Session.
+
+And we do that by issuing a `POST` request against the `/challenger` end point.
+
+If it worked then you should receive a `201` `Created` response. With no body. But with a bunch of headers.
+
+e.g.
+
+~~~~~~~~
+Date: Tue, 21 Jul 2020 11:05:21 GMT
+X-CHALLENGER: 9a32ef9f-0ebd-4b30-b975-314460bfd1d1
+Location: /gui/challenges/9a32ef9f-0ebd-4b30-b975-314460bfd1d1
+Content-Type: text/html;charset=utf-8
+Transfer-Encoding: chunked
+Server: Jetty(9.4.12.v20180830)
+~~~~~~~~
+
+When you look at the response to this message you should see an `X-CHALLENGER` header with a GUID.
+
+To track your progress against challenges.
+
+Every request you send to the API should have an `X-CHALLENGER` header with the guid you received.
+
+e.g.
+
+~~~~~~~~
+X-CHALLENGER: 9a32ef9f-0ebd-4b30-b975-314460bfd1d1
+~~~~~~~~
+
+Also, note in the orginal response there was a `Location` header.
+
+If you visit that url for this application then you should see the challenges for your `Challenger` session.
+
+e.g.
+
+~~~~~~~~
+https://apichallenges.herokuapp.com/gui/challenges/9a32ef9f-0ebd-4b30-b975-314460bfd1d1
+~~~~~~~~
+
+Then you should see the status of your challenges.
+
+## 10 Minutes
+
+In multi-user mode each challenger session lasts for 10 minutes without making any requests. So if you don't make any requests for 10 minutes your session will end and you will need to `POST /challenger` again to get a new session.
+
+If you leave the browser open with your challenges status visible:
+
+~~~~~~~~
+/gui/challenges/9a32ef9f-0ebd-4b30-b975-314460bfd1d1
+~~~~~~~~
+
+Then the browser page will periodically make a request to the API on your behalf to keep your session active.
+
+Sessions are not stored when the application is not running, so it is still worth making notes about the challenges you have completed so you can track your progress.
+
+
+
+-->
+
+    <p>Getting started with the REST API Challenges can be slightly harder in multi-user mode because you need to tell the API, who you are, so that it can track your individual progress against the challenges.</p>
+    <p>You don&#39;t need to do any of this if you download the application and run it in single user mode.</p>
+    <h2 id="create-a-challenger-session">Create a Challenger Session</h2>
+    <p>The first thing we have to do is Create a Challenger Session.</p>
+    <p>And we do that by issuing a <code>POST</code> request against the <code>/challenger</code> end point.</p>
+    <p>If it worked then you should receive a <code>201</code> <code>Created</code> response. With no body. But with a bunch of headers.</p>
+    <p>e.g.</p>
+    <pre><code>Date: Tue, <span class="hljs-number">21</span> Jul <span class="hljs-number">2020</span> <span class="hljs-number">11</span>:<span class="hljs-number">05</span>:<span class="hljs-number">21</span> GMT
+X-CHALLENGER: 9a32ef9f-<span class="hljs-number">0ebd</span>-<span class="hljs-number">4b30</span>-b975-314460bfd1d1
+Location: /gui/challenges/9a32ef9f-<span class="hljs-number">0ebd</span>-<span class="hljs-number">4b30</span>-b975-314460bfd1d1
+Content-Type: text/html;charset=utf-<span class="hljs-number">8</span>
+Transfer-Encoding: chunked
+Server: Jetty(<span class="hljs-number">9.4</span>.12.v20180830)
+</code></pre><p>When you look at the response to this message you should see an <code>X-CHALLENGER</code> header with a GUID.</p>
+    <p>To track your progress against challenges.</p>
+    <p>Every request you send to the API should have an <code>X-CHALLENGER</code> header with the guid you received.</p>
+    <p>e.g.</p>
+    <pre><code>X-CHALLENGER: 9a32ef9f-<span class="hljs-number">0ebd</span>-<span class="hljs-number">4b30</span>-b975-314460bfd1d1
+</code></pre><p>Also, note in the orginal response there was a <code>Location</code> header.</p>
+    <p>If you visit that url for this application then you should see the challenges for your <code>Challenger</code> session.</p>
+    <p>e.g.</p>
+    <pre><code>https://apichallenges.herokuapp.com/gui/challenges/9a32ef9f-<span class="hljs-number">0ebd</span>-<span class="hljs-number">4b30</span>-b975-314460bfd1d1
+</code></pre><p>Then you should see the status of your challenges.</p>
+    <h2 id="10-minutes">10 Minutes</h2>
+    <p>In multi-user mode each challenger session lasts for 10 minutes without making any requests. So if you don&#39;t make any requests for 10 minutes your session will end and you will need to <code>POST /challenger</code> again to get a new session.</p>
+    <p>If you leave the browser open with your challenges status visible:</p>
+    <pre><code>/gui/challenges/9a32ef9f-<span class="hljs-number">0ebd</span>-<span class="hljs-number">4b30</span>-b975-314460bfd1d1
+</code></pre><p>Then the browser page will periodically make a request to the API on your behalf to keep your session active.</p>
+    <p>Sessions are not stored when the application is not running, so it is still worth making notes about the challenges you have completed so you can track your progress.</p>
+
+
+
+
+
+    <p>&nbsp;</p><hr/><div class='footer'><p>Copyright Compendium Developments Ltd 2020 </p>
+    <ul class='footerlinks'><li><a href='https://eviltester.com/apichallenges'>API Challenges Info</a></li>
+        <li><a href='https://eviltester.com'>EvilTester.com</a></li>
+    </ul></div>
+
+</div>
+</body>
+</html>

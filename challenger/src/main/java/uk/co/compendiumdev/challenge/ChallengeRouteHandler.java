@@ -351,7 +351,9 @@ public class ChallengeRouteHandler {
     }
 
     public void setupGui(DefaultGUIHTML guiManagement) {
-        guiManagement.addMenuItem("Challenges", "/gui/challenges");
+        guiManagement.appendMenuItem("Challenges", "/gui/challenges");
+        guiManagement.removeMenuItem("Home");
+        guiManagement.prefixMenuItem("Home", "/");
 
         guiManagement.setHomePageContent("    <h2 id=\"challenges\">Challenges</h2>\n" +
                 "    <p>The challenges can be completed by issuing API requests to the API.</p>\n" +
@@ -359,10 +361,12 @@ public class ChallengeRouteHandler {
                 "    <p>You can also <code>GET http://localhost:4567/challenges</code> to get the list of challenges and their status as an API call. </p>\n"
                 );
 
-        get("/", (request, result) -> {
-            result.redirect("/gui");
-            return "";
-        });
+        guiManagement.setFooter(getChallengesFooter());
+
+//        get("/", (request, result) -> {
+//            result.redirect("/gui");
+//            return "";
+//        });
 
         // single user / default session
         get("/gui/challenges", (request, result) -> {
@@ -375,12 +379,16 @@ public class ChallengeRouteHandler {
 
             // todo explain challenges - single user mode
 
+
             List<ChallengeData> reportOn = new ArrayList<>();
 
             if(single_player_mode){
+                html.append(playerChallengesIntro());
                 reportOn = new ChallengesPayload(challengeDefinitions, challengers.SINGLE_PLAYER).getAsChallenges();
             }else{
-                html.append("<p><strong>Unknown Challenger ID</strong></p>");
+                html.append("<div style='clear:both'><p><strong>Unknown Challenger ID</strong></p></div>");
+                html.append(multiUserShortHelp());
+
                 reportOn = new ChallengesPayload(challengeDefinitions, challengers.DEFAULT_PLAYER_DATA).getAsChallenges();
             }
 
@@ -400,7 +408,8 @@ public class ChallengeRouteHandler {
             html.append(guiManagement.getPageStart("Challenges"));
             html.append(guiManagement.getMenuAsHTML());
 
-            // todo explain challenges - multi user mode
+            html.append(playerChallengesIntro());
+
 
             List<ChallengeData> reportOn = null;
 
@@ -408,6 +417,7 @@ public class ChallengeRouteHandler {
             final ChallengerAuthData challenger = challengers.getChallenger(xChallenger);
             if(challenger==null){
                 html.append("<p><strong>Unknown Challenger ID</strong></p>");
+                html.append(multiUserShortHelp());
                 reportOn = new ChallengesPayload(challengeDefinitions, challengers.DEFAULT_PLAYER_DATA).getAsChallenges();
             }else{
                 reportOn = new ChallengesPayload(challengeDefinitions, challenger).getAsChallenges();
@@ -420,6 +430,31 @@ public class ChallengeRouteHandler {
             html.append(guiManagement.getPageEnd());
             return html.toString();
         });
+    }
+
+    private String getChallengesFooter() {
+        return "<p>&nbsp;</p><hr/><div class='footer'><p>Copyright Compendium Developments Ltd 2020 </p>\n" +
+                "<ul class='footerlinks'><li><a href='https://eviltester.com/apichallenges'>API Challenges Info</a></li>\n" +
+                "<li><a href='https://eviltester.com'>EvilTester.com</a></li>\n" +
+                "</ul></div>";
+    }
+
+    private String playerChallengesIntro() {
+        final StringBuilder html = new StringBuilder();
+        html.append("<div style='clear:both'>");
+        html.append("<p>Use the Descriptions of the challenges below to explore the API and solve the challenges. Remember to use the API documentation to see the format of POST requests.</p>");
+        html.append("</div>");
+        return html.toString();
+    }
+
+    private String multiUserShortHelp() {
+        final StringBuilder html = new StringBuilder();
+        html.append("<div style='clear:both' class='headertextblock'>");
+        html.append("<p>To view your challenges status in multi-user mode, make sure you have registered as a challenger using a `POST` request to `/challenger` and are including an `X-CHALLENGER` header in all your requests.</p>");
+        html.append("<p>Then view the challenges in the GUI by visiting `/gui/challenges/{GUID}`, where `{GUID}` is the value in the `X-CHALLENGER` header.<p>");
+        html.append("<p>You can find more information about this on the <a href='multiuser.html'>Multi User Help Page</a><p>");
+        html.append("</div>");
+        return html.toString();
     }
 
     private String refreshScriptFor(final String xChallenger) {
@@ -436,6 +471,9 @@ public class ChallengeRouteHandler {
         return html.toString();
     }
 
+    // todo: save challenge status in local storage
+    // todo: post challenge status from local storage to current X-CHALLENGER session
+    // todo: clear local storage challenge status
 
     private String renderChallengeData(final List<ChallengeData> reportOn) {
         StringBuilder html = new StringBuilder();

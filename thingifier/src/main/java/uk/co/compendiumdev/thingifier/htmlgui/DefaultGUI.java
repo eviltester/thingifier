@@ -65,7 +65,7 @@ public class DefaultGUI {
         });
 
 
-        templates.addMenuItem("Home", "/gui");
+        templates.appendMenuItem("Home", "/gui");
 
         publicRoutes.add(new RoutingDefinition(
                                 RoutingVerb.GET,
@@ -74,7 +74,7 @@ public class DefaultGUI {
                                 null
                             ).addDocumentation("Show the Default GUI"));
 
-        templates.addMenuItem("Entities Explorer", "/gui/entities");
+        templates.appendMenuItem("Entities Explorer", "/gui/entities");
 
         get("/gui/entities", (request, response) -> {
             response.type("text/html");

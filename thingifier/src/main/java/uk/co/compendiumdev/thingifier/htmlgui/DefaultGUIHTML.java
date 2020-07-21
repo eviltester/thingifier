@@ -8,15 +8,34 @@ import java.util.List;
 public class DefaultGUIHTML {
 
     private String homePageContent;
+    private String customFooter;
     List<GuiMenuItem> menuItems;
 
     public DefaultGUIHTML(){
         menuItems = new ArrayList<>();
         this.homePageContent = "";
+        this.customFooter = "";
     }
 
-    public void addMenuItem(final String title, final String url) {
+    public void appendMenuItem(final String title, final String url) {
         menuItems.add(new GuiMenuItem(title, url));
+    }
+
+    public void prefixMenuItem(final String title, final String url) {
+        menuItems.add(0, new GuiMenuItem(title, url));
+    }
+
+    public void removeMenuItem(final String title) {
+        GuiMenuItem removeme=null;
+        for(GuiMenuItem item : menuItems){
+            if(item.menuTitle.contentEquals(title)){
+                removeme = item;
+                break;
+            }
+        }
+        if(removeme!=null) {
+            menuItems.remove(removeme);
+        }
     }
 
     public void setHomePageContent(final String content) {
@@ -25,6 +44,12 @@ public class DefaultGUIHTML {
 
     public String getHomePageContent() {
         return homePageContent;
+    }
+
+    public void setFooter(final String footer) {
+        if(footer!=null) {
+            this.customFooter = footer;
+        }
     }
 
     private class GuiMenuItem {
@@ -63,6 +88,11 @@ public class DefaultGUIHTML {
     }
 
     public String getPageFooter(){
+
+        if(customFooter.length()>0){
+            return customFooter;
+        }
+
         StringBuilder html = new StringBuilder();
         html.append("<p>&nbsp;</p><hr/>");
         html.append("<div class='footer'>");

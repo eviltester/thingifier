@@ -1,0 +1,6 @@
+For heroku:
+
+Deploy the challenger app full jar
+
+- cd challenger
+- `heroku deploy:jar target/apichallenges.jar --app apichallenges`

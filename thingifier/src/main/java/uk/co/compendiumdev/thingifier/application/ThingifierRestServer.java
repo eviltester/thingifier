@@ -96,7 +96,7 @@ public class ThingifierRestServer {
                     getApiDocumentation(routingDefinitions, additionalRoutes, this.urlPath);
         });
 
-        guiManagement.addMenuItem("API documentation","/docs");
+        guiManagement.appendMenuItem("API documentation","/docs");
 
 
         for (RoutingDefinition defn : routingDefinitions.definitions()) {

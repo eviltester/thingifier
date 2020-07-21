@@ -47,20 +47,6 @@ public class CanHeadTodosTest extends RestAssuredBaseTest {
         Assertions.assertEquals(headresponse.headers().size(),
                                 todosgetresponse.headers().size());
 
-        for(Header header : headresponse.headers().asList()){
-            if(header.getName().contentEquals("Date")){
-                // check date header exists, don't check the exact value
-                Assertions.assertNotNull(todosgetresponse.header("Date"));
-                Assertions.assertEquals(
-                        header.getValue().length(),
-                        todosgetresponse.header("Date").length());
-            }else {
-                Assertions.assertEquals(
-                        todosgetresponse.header(header.getName()),
-                        header.getValue());
-            }
-        }
-
     }
 
 }
