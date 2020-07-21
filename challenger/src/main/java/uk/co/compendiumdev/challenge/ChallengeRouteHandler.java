@@ -62,6 +62,15 @@ public class ChallengeRouteHandler {
             result.type("application/json");
 
             ChallengerAuthData challenger = challengers.getChallenger(request.headers("X-CHALLENGER"));
+
+            if(!single_player_mode){
+                if(challenger!=null){
+                    result.header("Location", "/gui/challenges/" + challenger.getXChallenger());
+                }
+            }else{
+                result.header("Location", "/gui/challenges");
+            }
+
             result.body(new ChallengesPayload(challengeDefinitions, challenger).getAsJson());
             return "";
         });
@@ -161,11 +170,29 @@ public class ChallengeRouteHandler {
 
     private void configureChallengerTrackingRoutes() {
 
-        // create a challenger
+        // refresh challenger to avoid purging
+        get("/challenger/*", (request, result) -> {
+            String xChallengerGuid = request.splat()[0];
+            if(xChallengerGuid != null && xChallengerGuid.trim()!=""){
+                ChallengerAuthData challenger = challengers.getChallenger(xChallengerGuid);
+                if(challenger!=null){
+                    challenger.touch();
+                    result.status(204);
+                }else{
+                    result.status(404);
+                }
+            }else{
+                result.status(404);
+            }
+            return "";
+        });
+
+            // create a challenger
         post("/challenger", (request, result) -> {
 
             if(single_player_mode){
                 result.header("X-CHALLENGER", challengers.SINGLE_PLAYER.getXChallenger());
+                result.header("Location", "/gui/challenges");
                 result.status(201);
                 return "";
             }
@@ -175,6 +202,7 @@ public class ChallengeRouteHandler {
                 // create a new challenger
                 final ChallengerAuthData challenger = challengers.createNewChallenger();
                 result.header("X-CHALLENGER", challenger.getXChallenger());
+                result.header("Location", "/gui/challenges/" + challenger.getXChallenger());
                 result.status(201);
                 return "";
             }else {
@@ -187,6 +215,7 @@ public class ChallengeRouteHandler {
                 }else{
                     // if X-CHALLENGER header exists, and has a valid UUID, and UUID exists, then return 200
                     result.header("X-CHALLENGER", challenger.getXChallenger());
+                    result.header("Location", "/gui/challenges/" + challenger.getXChallenger());
                     result.status(200);
                 }
                 // todo: if X-CHALLENGER header exists, and has a valid UUID, and UUID does not exist, then use this to create the challenger, return 201
@@ -197,12 +226,13 @@ public class ChallengeRouteHandler {
             return "Unknown Challenger State";
         });
 
+
         if(!single_player_mode) {
             routes.add(new RoutingDefinition(
                     RoutingVerb.POST,
                     "/challenger",
                     RoutingStatus.returnedFromCall(),
-                    null).addDocumentation("Create an X-CHALLENGER guid to allow tracking challenges, use this header in all requests for multi-user tracking"));
+                    null).addDocumentation("Create an X-CHALLENGER guid to allow tracking challenges, use the X-CHALLENGER header in all requests to track challenge completion for multi-user tracking."));
         }
     }
 
@@ -381,6 +411,7 @@ public class ChallengeRouteHandler {
                 reportOn = new ChallengesPayload(challengeDefinitions, challengers.DEFAULT_PLAYER_DATA).getAsChallenges();
             }else{
                 reportOn = new ChallengesPayload(challengeDefinitions, challenger).getAsChallenges();
+                html.append(refreshScriptFor(challenger.getXChallenger()));
             }
 
             html.append(renderChallengeData(reportOn));
@@ -389,6 +420,20 @@ public class ChallengeRouteHandler {
             html.append(guiManagement.getPageEnd());
             return html.toString();
         });
+    }
+
+    private String refreshScriptFor(final String xChallenger) {
+        StringBuilder html = new StringBuilder();
+
+        html.append("<script>");
+        html.append("/* keep session alive */");
+        html.append("setInterval(function(){");
+        html.append("var oReq = new XMLHttpRequest();\n" +
+                "oReq.open('GET', '/challenger/" + xChallenger +"');\n" +
+                "oReq.send();");
+        html.append("},300000);");
+        html.append("</script>");
+        return html.toString();
     }
 
 

@@ -43,7 +43,7 @@ public class Challengers {
         final long cutOffTime = System.currentTimeMillis();
         for(ChallengerAuthData data : authData.values()){
             if(data.expiresAt() < cutOffTime ){
-                deleteMe.add(data.getXAuthToken());
+                deleteMe.add(data.getXChallenger());
             }
         }
 

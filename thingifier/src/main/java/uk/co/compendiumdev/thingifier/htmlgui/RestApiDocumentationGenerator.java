@@ -312,13 +312,26 @@ public class RestApiDocumentationGenerator {
 
         output.append(heading(4, "/docs"));
         output.append(paragraph("e.g. <span class='endpoint'>" + url("/docs") + "</span"));
-        output.append(paragraph("Show this documentation as HTML."));
+        output.append(String.format("<ul>%n<li class='endpoint'>%n<strong>%s /%s</strong><ul><li class='normal'>%s</li></ul></li>%n</ul>",
+                "GET", url("/docs"), "Show this documentation as HTML."));
 
+        List<String> processedAdditionalRoutes = new ArrayList<>();
         if(additionalRoutes!=null) {
             for (RoutingDefinition route : additionalRoutes) {
-                output.append(heading(4, route.url()));
-                output.append(paragraph("e.g. <span class='endpoint'>" + url(route.url()) + "</span"));
-                output.append(paragraph(route.getDocumentation()));
+                if (!processedAdditionalRoutes.contains(route.url())){
+                    output.append(heading(4, "/" + route.url()));
+                    processedAdditionalRoutes.add(route.url());
+                    output.append(paragraph("e.g. <span class='endpoint'>" + url(route.url()) + "</span"));
+
+                    // handle all verbs for this route
+                    for (RoutingDefinition subroute : additionalRoutes) {
+                        if (subroute.url().contentEquals(route.url())) {
+                            output.append(String.format("<ul>%n<li class='endpoint'>%n<strong>%s /%s</strong><ul><li class='normal'>%s</li></ul></li>%n</ul>",
+                                    subroute.verb(), subroute.url(), subroute.getDocumentation()));
+                        }
+                    }
+
+                }
             }
         }
 

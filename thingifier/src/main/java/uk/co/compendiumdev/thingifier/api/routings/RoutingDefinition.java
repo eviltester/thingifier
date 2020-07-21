@@ -14,7 +14,11 @@ public class RoutingDefinition {
 
     public RoutingDefinition(RoutingVerb verb, String url, RoutingStatus routingStatus, ResponseHeader header) {
         this.verb = verb;
-        this.url = url;
+        if(url.startsWith("/")){
+            this.url = url.substring(1);
+        }else{
+            this.url = url;
+        }
         this.routingStatus = routingStatus;
         this.header = header;
         this.isFilterable=false;
