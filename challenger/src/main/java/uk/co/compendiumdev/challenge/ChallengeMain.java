@@ -21,6 +21,14 @@ public class ChallengeMain {
 
         // setup routes required for challenges
         ChallengeRouteHandler challenger = new ChallengeRouteHandler(thingifier);
+        challenger.setToMultiPlayerMode();
+        for (String arg : args) {
+            if (arg.startsWith("-multiplayer")) {
+                System.out.println("Running in multiplayer mode");
+                challenger.setToMultiPlayerMode();
+            }
+        }
+
         challenger.configureRoutes();
 
         app.addAdditionalRoutes(challenger.getRoutes());

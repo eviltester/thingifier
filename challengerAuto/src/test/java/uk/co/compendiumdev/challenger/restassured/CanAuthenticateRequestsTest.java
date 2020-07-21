@@ -13,6 +13,7 @@ public class CanAuthenticateRequestsTest extends RestAssuredBaseTest {
 
         RestAssured.
             given().
+                header("X-CHALLENGER", xChallenger).
                 accept("application/json").
                 contentType("application/json").
                 auth().preemptive().basic("admin","incorrect").
@@ -32,6 +33,7 @@ public class CanAuthenticateRequestsTest extends RestAssuredBaseTest {
 
         String token = RestAssured.
                 given().
+                    header("X-CHALLENGER", xChallenger).
                     accept("application/json").
                     contentType("application/json").
                 auth().preemptive().basic("admin","password").

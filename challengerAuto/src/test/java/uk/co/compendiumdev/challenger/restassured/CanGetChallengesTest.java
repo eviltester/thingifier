@@ -18,6 +18,7 @@ public class CanGetChallengesTest extends RestAssuredBaseTest {
         // challenges should be set as soon as we get it - no need for multiple calls
         final Response response = RestAssured.
                 given().
+                header("X-CHALLENGER", xChallenger).
                 accept("application/json").
                 get(apiPath( "/challenges")).
                 then().

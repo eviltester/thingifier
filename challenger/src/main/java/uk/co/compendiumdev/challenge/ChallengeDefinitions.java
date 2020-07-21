@@ -4,73 +4,19 @@ import com.google.gson.Gson;
 
 import java.util.*;
 
-public class Challenges {
+public class ChallengeDefinitions {
 
-    Map<CHALLENGE, ChallengeData> challengeStatus;
-    List<ChallengeData> orderedChallengeStatus;
-
-    public void pass(final CHALLENGE id) {
-        try{
-            challengeStatus.get(id).status=true;
-        }catch(Exception e){
-            System.out.println("Challenge Error " + id.name() + " " + e.getMessage() );
-        }
-    }
+    Map<CHALLENGE, ChallengeData> challengeData;
+    List<ChallengeData> orderedChallenges;
 
     public Collection<ChallengeData> getChallenges() {
-        return orderedChallengeStatus;
+        return orderedChallenges;
     }
 
-    public enum CHALLENGE{
-        GET_CHALLENGES,
-        GET_TODOS,
-        GET_TODO,
-        GET_TODO_404,
-        POST_TODOS,
-        POST_UPDATE_TODO,
-        POST_TODOS_BAD_DONE_STATUS,
-        DELETE_A_TODO,
-        DELETE_ALL_TODOS,
-        GET_TODOS_FILTERED,
-        GET_TODOS_NOT_PLURAL_404,
-        OPTIONS_TODOS,
-        GET_HEAD_TODOS,
-        POST_TODOS_415,
-        GET_ACCEPT_XML,
-        GET_ACCEPT_JSON,
-        GET_ACCEPT_ANY_DEFAULT_JSON,
-        GET_ACCEPT_XML_PREFERRED,
-        GET_JSON_BY_DEFAULT_NO_ACCEPT,
-        GET_UNSUPPORTED_ACCEPT_406,
-        POST_CREATE_XML,
-        POST_CREATE_JSON,
-        GET_HEARTBEAT_204,
-        DELETE_HEARTBEAT_405,
-        POST_CREATE_JSON_ACCEPT_XML,
-        POST_CREATE_XML_ACCEPT_JSON,
-        TRACE_HEARTBEAT_501,
-        PATCH_HEARTBEAT_500,
-        CREATE_SECRET_TOKEN_401,
-        CREATE_SECRET_TOKEN_201,
-        GET_SECRET_NOTE_401,
-        GET_SECRET_NOTE_403,
-        POST_SECRET_NOTE_403,
-        POST_SECRET_NOTE_401,
-        POST_SECRET_NOTE_200,
-        GET_SECRET_NOTE_200;
-    }
+    public ChallengeDefinitions(){
 
-
-
-    // todo multi-user challenges via auth token - GET challenges will show the GUID for the challenges associated with this session
-    // todo have GUI show gui/challenges?guid=xxx where guid matches the guid for the auth token
-
-    public Challenges(){
-
-        String guid = UUID.randomUUID().toString(); // create a uuid to support multi-user sessions in future
-
-        challengeStatus = new HashMap<>();
-        orderedChallengeStatus = new ArrayList<>();
+        challengeData = new HashMap<>();
+        orderedChallenges = new ArrayList<>();
 
         // READ
         addChallenge(CHALLENGE.GET_CHALLENGES, "GET /challenges (200)",
@@ -226,16 +172,14 @@ public class Challenges {
 
         //    POST /secret/note with token and update secret note
         addChallenge(CHALLENGE.POST_SECRET_NOTE_200, "POST /secret/note (200)",
-                "Issue a POST request on the `/secret/note` end point with a note payload e.g. {\"note\":\"my note\"} and receive 200 when valid X-AUTH-TOKEN used");
-
-
+                "Issue a POST request on the `/secret/note` end point with a note payload e.g. {\"note\":\"my note\"} and receive 200 when valid X-AUTH-TOKEN used. Note is maximum length 100 chars and will be truncated when stored.");
 
         Set challengeNames = new HashSet();
-        for(ChallengeData challenge : orderedChallengeStatus){
+        for(ChallengeData challenge : orderedChallenges){
             System.out.println("Challenge: " + challenge.name);
             challengeNames.add(challenge.name);
         }
-        if(challengeNames.size()!=orderedChallengeStatus.size()) {
+        if(challengeNames.size()!= orderedChallenges.size()) {
             throw new RuntimeException(
                     "Number of names, does not match number of challenges" +
                             ", possible duplicate name");
@@ -244,17 +188,17 @@ public class Challenges {
 
     private void addChallenge(final CHALLENGE id, final String name, final String description) {
         ChallengeData challenge = new ChallengeData( name, description);
-        challengeStatus.put(id, challenge);
-        orderedChallengeStatus.add(challenge);
+        challengeData.put(id, challenge);
+        orderedChallenges.add(challenge);
     }
 
-    private class ChallengesPayload{
-        List<ChallengeData> challenges;
-    }
 
-    public String getAsJson(){
-        final ChallengesPayload payload = new ChallengesPayload();
-        payload.challenges = orderedChallengeStatus;
-        return new Gson().toJson(payload);
+    public CHALLENGE getChallenge(final String name) {
+        for(Map.Entry<CHALLENGE, ChallengeData>challenge : challengeData.entrySet()){
+            if(challenge.getValue().name.contentEquals(name)){
+                return challenge.getKey();
+            }
+        }
+        return null;
     }
 }

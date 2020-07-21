@@ -77,6 +77,7 @@ public class CanCreateTodosWithPOSTTest extends RestAssuredBaseTest {
 
         RestAssured.
             given().
+                header("X-CHALLENGER", xChallenger).
             accept("application/json").
             contentType("application/json").
             body(createMeJson).
@@ -103,6 +104,7 @@ public class CanCreateTodosWithPOSTTest extends RestAssuredBaseTest {
 
         RestAssured.
                 given().
+                header("X-CHALLENGER", xChallenger).
                 accept("application/json").
                 contentType(ContentType.BINARY).
                 body(payload.getBytes()).
@@ -133,6 +135,7 @@ public class CanCreateTodosWithPOSTTest extends RestAssuredBaseTest {
 
         final Response response = RestAssured.
                 given().
+                header("X-CHALLENGER", xChallenger).
                 accept("application/xml").
                 contentType("application/xml").
                 body(createMe).
@@ -174,6 +177,7 @@ public class CanCreateTodosWithPOSTTest extends RestAssuredBaseTest {
 
         final Response response = RestAssured.
                 given().
+                header("X-CHALLENGER", xChallenger).
                 accept("application/json").
                 contentType("application/json").
                 body(createMe).
@@ -215,6 +219,7 @@ public class CanCreateTodosWithPOSTTest extends RestAssuredBaseTest {
 
         final Todo todo = RestAssured.
                 given().
+                header("X-CHALLENGER", xChallenger).
                 accept("application/xml").
                 contentType("application/json").
                 body(createMe).
@@ -244,6 +249,7 @@ public class CanCreateTodosWithPOSTTest extends RestAssuredBaseTest {
 
         final Todo todo = RestAssured.
                 given().
+                header("X-CHALLENGER", xChallenger).
                 accept("application/json").
                 contentType("application/xml").
                 body(createMe).

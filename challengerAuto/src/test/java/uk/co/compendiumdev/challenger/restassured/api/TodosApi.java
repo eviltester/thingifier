@@ -9,6 +9,8 @@ import uk.co.compendiumdev.sparkstart.Environment;
 
 import java.util.List;
 
+import static uk.co.compendiumdev.challenger.restassured.api.RestAssuredBaseTest.xChallenger;
+
 public class TodosApi {
     public Todo createTodo(final String title,
                            final String description,
@@ -23,6 +25,7 @@ public class TodosApi {
 
         final Response response = RestAssured.
                 given().
+                header("X-CHALLENGER", xChallenger).
                 accept("application/json").
                 contentType("application/json").
                 body(payload).
@@ -40,6 +43,7 @@ public class TodosApi {
 
         Todos todosList = RestAssured.
                 given().
+                header("X-CHALLENGER", xChallenger).
                 accept("application/json").
                 contentType("application/json").
                 get(todosEndPoint).
@@ -56,6 +60,7 @@ public class TodosApi {
 
         Todos todos = RestAssured.
                 given().
+                header("X-CHALLENGER", xChallenger).
                 accept("application/json").
                 get(todosEndPoint + "/"  + id).
                 then().

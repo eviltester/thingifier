@@ -20,6 +20,7 @@ public class CanCheckHeartbeatStatusCodesTest extends RestAssuredBaseTest {
         // heartbeat returns 204 when running
         RestAssured.
                 given().
+                header("X-CHALLENGER", xChallenger).
                 get(apiPath( "/heartbeat")).
                 then().
                 statusCode(204);
@@ -36,6 +37,7 @@ public class CanCheckHeartbeatStatusCodesTest extends RestAssuredBaseTest {
         // heartbeat returns 204 when running
         RestAssured.
                 given().
+                header("X-CHALLENGER", xChallenger).
                 delete(apiPath( "/heartbeat")).
                 then().
                 statusCode(405);
@@ -51,6 +53,7 @@ public class CanCheckHeartbeatStatusCodesTest extends RestAssuredBaseTest {
 
         RestAssured.
                 given().
+                header("X-CHALLENGER", xChallenger).
                 request(
                         Method.PATCH,
                         apiPath("/heartbeat")).
@@ -69,6 +72,7 @@ public class CanCheckHeartbeatStatusCodesTest extends RestAssuredBaseTest {
 
         RestAssured.
                 given().
+                header("X-CHALLENGER", xChallenger).
                 request(
                         Method.TRACE,
                         apiPath("/heartbeat")).

@@ -16,6 +16,7 @@ public class CanGetTodosTest extends RestAssuredBaseTest {
 
         RestAssured.
             given().
+                header("X-CHALLENGER", xChallenger).
                 accept("application/json").
                 get(apiPath( "/todos")).
             then().
@@ -39,6 +40,7 @@ public class CanGetTodosTest extends RestAssuredBaseTest {
 
         RestAssured.
             given().
+                header("X-CHALLENGER", xChallenger).
                 accept("application/json").
                 get(apiPath( "/todos/" + todo.id)).
             then().
@@ -57,6 +59,7 @@ public class CanGetTodosTest extends RestAssuredBaseTest {
 
         RestAssured.
                 given().
+                header("X-CHALLENGER", xChallenger).
                 accept("application/json").
                 get(apiPath( "/todos/9999999")).
                 then().
@@ -74,6 +77,7 @@ public class CanGetTodosTest extends RestAssuredBaseTest {
 
         RestAssured.
             given().
+                header("X-CHALLENGER", xChallenger).
                 get(apiPath( "/todo")).
             then().
                 statusCode(404);

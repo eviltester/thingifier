@@ -10,7 +10,6 @@ import uk.co.compendiumdev.thingifier.application.ThingifierRestServer;
 import uk.co.compendiumdev.thingifier.htmlgui.DefaultGUIHTML;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static spark.Spark.*;
 
@@ -24,14 +23,22 @@ public class ChallengeRouteHandler {
     // todo: associate challenges GUID with a session id - let spark manage sessions
     // todo: if session has no challenge guid associated then associate it with "global"
 
-    Challenges challenges;
-    Map<String,ChallengeAuthData> authData;
+    ChallengeDefinitions challengeDefinitions;
+    Challengers challengers;
+    private boolean single_player_mode;
+
 
     public ChallengeRouteHandler(Thingifier thingifier){
         routes = new ArrayList();
-        challenges = new Challenges(); //default global challenges
+        challengeDefinitions = new ChallengeDefinitions(); //default global challenges
         this.thingifier = thingifier;
-        authData = new ConcurrentHashMap<>();
+        challengers = new Challengers();
+        single_player_mode = true;
+    }
+
+    public void setToMultiPlayerMode(){
+        single_player_mode = false;
+        challengers.setMultiPlayerMode();
     }
 
     public List<RoutingDefinition> getRoutes(){
@@ -41,6 +48,7 @@ public class ChallengeRouteHandler {
     public ChallengeRouteHandler configureRoutes() {
 
         // TODO: create some thingifier helper methods for setting up 405 endpoints with range of verbs
+        configureChallengerTrackingRoutes();
         configureChallengesRoutes();
         configureHeartBeatRoutes();
         configureAuthRoutes();
@@ -52,7 +60,9 @@ public class ChallengeRouteHandler {
         get("/challenges", (request, result) -> {
             result.status(200);
             result.type("application/json");
-            result.body(challenges.getAsJson());
+
+            ChallengerAuthData challenger = challengers.getChallenger(request.headers("X-CHALLENGER"));
+            result.body(new ChallengesPayload(challengeDefinitions, challenger).getAsJson());
             return "";
         });
 
@@ -149,8 +159,54 @@ public class ChallengeRouteHandler {
                 null).addDocumentation("Headers for heartbeat endpoint"));
     }
 
+    private void configureChallengerTrackingRoutes() {
+
+        // create a challenger
+        post("/challenger", (request, result) -> {
+
+            if(single_player_mode){
+                result.header("X-CHALLENGER", challengers.SINGLE_PLAYER.getXChallenger());
+                result.status(201);
+                return "";
+            }
+
+            String xChallengerGuid = request.headers("X-CHALLENGER");
+            if(xChallengerGuid == null || xChallengerGuid.trim()==""){
+                // create a new challenger
+                final ChallengerAuthData challenger = challengers.createNewChallenger();
+                result.header("X-CHALLENGER", challenger.getXChallenger());
+                result.status(201);
+                return "";
+            }else {
+                ChallengerAuthData challenger = challengers.getChallenger(xChallengerGuid);
+                if(challenger==null){
+                    // if X-CHALLENGER header exists, and is not a known UUID,
+                    // return 410, challenger ID not valid
+                    result.header("X-CHALLENGER", "Challenger not found");
+                    result.status(422);
+                }else{
+                    // if X-CHALLENGER header exists, and has a valid UUID, and UUID exists, then return 200
+                    result.header("X-CHALLENGER", challenger.getXChallenger());
+                    result.status(200);
+                }
+                // todo: if X-CHALLENGER header exists, and has a valid UUID, and UUID does not exist, then use this to create the challenger, return 201
+
+
+            }
+            result.status(400);
+            return "Unknown Challenger State";
+        });
+
+        if(!single_player_mode) {
+            routes.add(new RoutingDefinition(
+                    RoutingVerb.POST,
+                    "/challenger",
+                    RoutingStatus.returnedFromCall(),
+                    null).addDocumentation("Create an X-CHALLENGER guid to allow tracking challenges, use this header in all requests for multi-user tracking"));
+        }
+    }
+
     private void configureAuthRoutes() {
-        // todo: delete out of date and not used for 15 minutes data prior to every http request
         // authentication and authorisation
         // - create a 'secret' note which can be stored against session using an auth token
 
@@ -166,10 +222,15 @@ public class ChallengeRouteHandler {
                 return "";
             }
 
-            final ChallengeAuthData secret = new ChallengeAuthData();
-            authData.put(secret.getGuid(), secret);
+            ChallengerAuthData challenger = challengers.getChallenger(request.headers("X-CHALLENGER"));
+
+            if(challenger==null){
+                result.status(401);
+                result.header("X-CHALLENGER", "Challenger not recognised");
+            }
+
             // if no header X-AUTH-TOKEN then grant one
-            result.header("X-AUTH-TOKEN", secret.getGuid());
+            result.header("X-AUTH-TOKEN", challenger.getXAuthToken());
             result.status(201);
             return "";
         });
@@ -187,8 +248,15 @@ public class ChallengeRouteHandler {
                 result.status(401);
                 return "";
             }
-            ChallengeAuthData data = authData.get(authToken);
-            if(data==null){
+
+            ChallengerAuthData challenger = challengers.getChallenger(request.headers("X-CHALLENGER"));
+
+            if(challenger==null){
+                result.status(401);
+                result.header("X-CHALLENGER", "Challenger not recognised");
+            }
+
+            if(!authToken.contentEquals(challenger.getXAuthToken())){
                 result.status(403); // given token is not allowed to access anything
                 return "";
             }
@@ -196,7 +264,7 @@ public class ChallengeRouteHandler {
             result.status(200);
             result.header("Content-Type", "application/json");
             final JsonObject note = new JsonObject();
-            note.addProperty("note", data.getNote());
+            note.addProperty("note", challenger.getNote());
             return new Gson().toJson(note);
         });
 
@@ -207,8 +275,15 @@ public class ChallengeRouteHandler {
                 result.status(401);
                 return "";
             }
-            ChallengeAuthData data = authData.get(authToken);
-            if(data==null){
+
+            ChallengerAuthData challenger = challengers.getChallenger(request.headers("X-CHALLENGER"));
+
+            if(challenger==null){
+                result.status(401);
+                result.header("X-CHALLENGER", "Challenger not recognised");
+            }
+
+            if(!authToken.contentEquals(challenger.getXAuthToken())){
                 result.status(403); // given token is not allowed to access anything
                 return "";
             }
@@ -216,13 +291,13 @@ public class ChallengeRouteHandler {
             try{
                 final HashMap body = new Gson().fromJson(request.body(), HashMap.class);
                 if(body.containsKey("note")){
-                    data.setNote((String)body.get("note"));
+                    challenger.setNote((String)body.get("note"));
                 }
 
                 result.status(200);
                 result.header("Content-Type", "application/json");
                 final JsonObject note = new JsonObject();
-                note.addProperty("note", data.getNote());
+                note.addProperty("note", challenger.getNote());
                 return new Gson().toJson(note);
 
             }catch(Exception e){
@@ -235,12 +310,14 @@ public class ChallengeRouteHandler {
 
     }
 
+
+
     public void addHooks(final ThingifierRestServer restServer) {
 
-        restServer.registerPreRequestHook(new ChallengerSparkHTTPRequestHook(challenges, authData));
-        restServer.registerPostResponseHook(new ChallengerSparkHTTPResponseHook(challenges));
-        restServer.registerHttpApiRequestHook(new ChallengerApiRequestHook(challenges));
-        restServer.registerHttpApiResponseHook(new ChallengerApiResponseHook(challenges, thingifier));
+        restServer.registerPreRequestHook(new ChallengerSparkHTTPRequestHook(challengers));
+        restServer.registerPostResponseHook(new ChallengerSparkHTTPResponseHook(challengers));
+        restServer.registerHttpApiRequestHook(new ChallengerApiRequestHook(challengers));
+        restServer.registerHttpApiResponseHook(new ChallengerApiResponseHook(challengers, thingifier));
     }
 
     public void setupGui(DefaultGUIHTML guiManagement) {
@@ -257,42 +334,89 @@ public class ChallengeRouteHandler {
             return "";
         });
 
+        // single user / default session
         get("/gui/challenges", (request, result) -> {
             result.type("text/html");
             result.status(200);
+
             StringBuilder html = new StringBuilder();
             html.append(guiManagement.getPageStart("Challenges"));
             html.append(guiManagement.getMenuAsHTML());
 
-            html.append("<table>");
-            html.append("<thead>");
-            html.append("<tr>");
+            // todo explain challenges - single user mode
 
-            html.append("<th>Challenge</th>");
-            html.append("<th>Done</th>");
-            html.append("<th>Description</th>");
-            html.append("</tr>");
-            html.append("</thead>");
-            html.append("<tbody>");
+            List<ChallengeData> reportOn = new ArrayList<>();
 
-            for(ChallengeData challenge : challenges.getChallenges()){
-                html.append("<tr>");
-                html.append(String.format("<td>%s</td>", challenge.name));
-                html.append(String.format("<td>%b</td>", challenge.status));
-                html.append(String.format("<td>%s</td>", challenge.description));
-                html.append("</tr>");
+            if(single_player_mode){
+                reportOn = new ChallengesPayload(challengeDefinitions, challengers.SINGLE_PLAYER).getAsChallenges();
+            }else{
+                html.append("<p><strong>Unknown Challenger ID</strong></p>");
+                reportOn = new ChallengesPayload(challengeDefinitions, challengers.DEFAULT_PLAYER_DATA).getAsChallenges();
             }
 
-            html.append("</tbody>");
-            html.append("</table>");
+            html.append(renderChallengeData(reportOn));
 
             html.append(guiManagement.getPageFooter());
             html.append(guiManagement.getPageEnd());
             return html.toString();
         });
 
+        // multi user
+        get("/gui/challenges/*", (request, result) -> {
+            result.type("text/html");
+            result.status(200);
+
+            StringBuilder html = new StringBuilder();
+            html.append(guiManagement.getPageStart("Challenges"));
+            html.append(guiManagement.getMenuAsHTML());
+
+            // todo explain challenges - multi user mode
+
+            List<ChallengeData> reportOn = null;
+
+            String xChallenger = request.splat()[0];
+            final ChallengerAuthData challenger = challengers.getChallenger(xChallenger);
+            if(challenger==null){
+                html.append("<p><strong>Unknown Challenger ID</strong></p>");
+                reportOn = new ChallengesPayload(challengeDefinitions, challengers.DEFAULT_PLAYER_DATA).getAsChallenges();
+            }else{
+                reportOn = new ChallengesPayload(challengeDefinitions, challenger).getAsChallenges();
+            }
+
+            html.append(renderChallengeData(reportOn));
+
+            html.append(guiManagement.getPageFooter());
+            html.append(guiManagement.getPageEnd());
+            return html.toString();
+        });
+    }
 
 
+    private String renderChallengeData(final List<ChallengeData> reportOn) {
+        StringBuilder html = new StringBuilder();
 
+        html.append("<table>");
+        html.append("<thead>");
+        html.append("<tr>");
+
+        html.append("<th>Challenge</th>");
+        html.append("<th>Done</th>");
+        html.append("<th>Description</th>");
+        html.append("</tr>");
+        html.append("</thead>");
+        html.append("<tbody>");
+
+        for(ChallengeData challenge : reportOn){
+            html.append("<tr>");
+            html.append(String.format("<td>%s</td>", challenge.name));
+            html.append(String.format("<td>%b</td>", challenge.status));
+            html.append(String.format("<td>%s</td>", challenge.description));
+            html.append("</tr>");
+        }
+
+        html.append("</tbody>");
+        html.append("</table>");
+
+        return html.toString();
     }
 }

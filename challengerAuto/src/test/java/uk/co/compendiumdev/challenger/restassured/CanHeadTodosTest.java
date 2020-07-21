@@ -8,10 +8,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.challenger.restassured.api.ChallengesStatus;
 import uk.co.compendiumdev.challenger.restassured.api.RestAssuredBaseTest;
-import uk.co.compendiumdev.challenger.restassured.api.TodosApi;
 
-import java.util.Arrays;
-import java.util.List;
 
 public class CanHeadTodosTest extends RestAssuredBaseTest {
 
@@ -21,6 +18,7 @@ public class CanHeadTodosTest extends RestAssuredBaseTest {
 
         final Response headresponse = RestAssured.
                 given().
+                    header("X-CHALLENGER", xChallenger).
                     accept("application/json").
                 head(apiPath( "/todos")).
                 then().
@@ -38,6 +36,7 @@ public class CanHeadTodosTest extends RestAssuredBaseTest {
 
         final Response todosgetresponse = RestAssured.
                 given().
+                header("X-CHALLENGER", xChallenger).
                 accept("application/json").
                 get(apiPath( "/todos")).
                 then().

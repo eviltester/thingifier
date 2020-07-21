@@ -19,6 +19,7 @@ public class CanGetTodosForSpecficAcceptHeaderTest extends RestAssuredBaseTest {
 
         final Response response = RestAssured.
                 given().
+                header("X-CHALLENGER", xChallenger).
                 accept("application/json").
                 get(apiPath("/todos")).
                 then().
@@ -41,6 +42,7 @@ public class CanGetTodosForSpecficAcceptHeaderTest extends RestAssuredBaseTest {
 
         final Response response = RestAssured.
                 given().
+                header("X-CHALLENGER", xChallenger).
                 accept("application/xml").
                 get(apiPath("/todos")).
                 then().
@@ -64,6 +66,7 @@ public class CanGetTodosForSpecficAcceptHeaderTest extends RestAssuredBaseTest {
 
         final Response response = RestAssured.
                 given().
+                header("X-CHALLENGER", xChallenger).
                 accept("*/*").
                 get(apiPath("/todos")).
                 then().
@@ -87,6 +90,7 @@ public class CanGetTodosForSpecficAcceptHeaderTest extends RestAssuredBaseTest {
         // ask for multiple but prefer xml
         final Response response = RestAssured.
                 given().
+                header("X-CHALLENGER", xChallenger).
                 accept("application/xml, application/json").
                 get(apiPath("/todos")).
                 then().
@@ -110,6 +114,7 @@ public class CanGetTodosForSpecficAcceptHeaderTest extends RestAssuredBaseTest {
 
         final Response response = RestAssured.
                 given().
+                header("X-CHALLENGER", xChallenger).
                 accept("").  // best I can do with RestAssured, setting header to "" - includes header but with no value
                 get(apiPath("/todos")).
                 then().
@@ -130,6 +135,7 @@ public class CanGetTodosForSpecficAcceptHeaderTest extends RestAssuredBaseTest {
 
         final Response response = RestAssured.
                 given().
+                header("X-CHALLENGER", xChallenger).
                 accept("application/gzip").
                 get(apiPath("/todos")).
                 then().

@@ -22,6 +22,7 @@ public class CanGetFilteredTodosTest extends RestAssuredBaseTest {
 
         Todos todosList = RestAssured.
                 given().
+                header("X-CHALLENGER", xChallenger).
                 accept("application/json").
                 get(apiPath("/todos?doneStatus=true")).
                 then().

@@ -24,6 +24,7 @@ public class CanDeleteTodosTest extends RestAssuredBaseTest {
 
         RestAssured.
             given().
+                header("X-CHALLENGER", xChallenger).
                 accept("application/json").
                 delete(apiPath( "/todos/" + created.id)).
             then().
@@ -55,6 +56,7 @@ public class CanDeleteTodosTest extends RestAssuredBaseTest {
 
             RestAssured.
                 given().
+                    header("X-CHALLENGER", xChallenger).
                     accept("application/json").
                     delete(apiPath("/todos/" + todo.id)).
                 then().

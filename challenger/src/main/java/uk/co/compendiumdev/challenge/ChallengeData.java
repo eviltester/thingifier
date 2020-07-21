@@ -4,7 +4,7 @@ public class ChallengeData {
 
     public final String name;
     public final String description;
-    public boolean status;
+    public Boolean status;
 
     public ChallengeData(String name, String description){
         this.name=name;

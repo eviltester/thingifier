@@ -20,6 +20,7 @@ public class CanOptionsTodosTest extends RestAssuredBaseTest {
 
         final Response response = RestAssured.
                 given().
+                    header("X-CHALLENGER", xChallenger).
                     accept("application/json").
                 options(apiPath( "/todos")).
                 then().

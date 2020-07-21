@@ -19,6 +19,7 @@ public class CanUseAuthenticationTokensTest extends RestAssuredBaseTest {
         }
         validToken =  RestAssured.
             given().
+                header("X-CHALLENGER", xChallenger).
                 accept("application/json").
                 contentType("application/json").
                 auth().preemptive().basic("admin","password").
@@ -37,6 +38,7 @@ public class CanUseAuthenticationTokensTest extends RestAssuredBaseTest {
 
         RestAssured.
             given().
+                header("X-CHALLENGER", xChallenger).
                 header("X-AUTH-TOKEN","incorrecttoken").
             when().
                 get(apiPath("/secret/note")).
@@ -54,6 +56,7 @@ public class CanUseAuthenticationTokensTest extends RestAssuredBaseTest {
 
         RestAssured.
             given().
+                header("X-CHALLENGER", xChallenger).
             when().
                 get(apiPath("/secret/note")).
             then().
@@ -70,6 +73,7 @@ public class CanUseAuthenticationTokensTest extends RestAssuredBaseTest {
 
         RestAssured.
             given().
+                header("X-CHALLENGER", xChallenger).
                 contentType(ContentType.JSON).
                 body("{\"note\":\"my note\"}").
                 header("X-AUTH-TOKEN","incorrecttoken").
@@ -89,6 +93,7 @@ public class CanUseAuthenticationTokensTest extends RestAssuredBaseTest {
 
         RestAssured.
                 given().
+                    header("X-CHALLENGER", xChallenger).
                     contentType(ContentType.JSON).
                     body("{\"note\":\"my note\"}").
                 when().
@@ -107,6 +112,7 @@ public class CanUseAuthenticationTokensTest extends RestAssuredBaseTest {
 
         RestAssured.
             given().
+                header("X-CHALLENGER", xChallenger).
                 contentType(ContentType.JSON).
                 body("{\"note\":\"my note\"}").
                 header("X-AUTH-TOKEN", getAuthToken()).
@@ -127,6 +133,7 @@ public class CanUseAuthenticationTokensTest extends RestAssuredBaseTest {
 
         final HashMap note = RestAssured.
                 given().
+                    header("X-CHALLENGER", xChallenger).
                     accept(ContentType.JSON).
                     header("X-AUTH-TOKEN", validToken).
                 when().

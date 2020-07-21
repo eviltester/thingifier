@@ -8,6 +8,8 @@ import uk.co.compendiumdev.sparkstart.Environment;
 import java.util.ArrayList;
 import java.util.List;
 
+import static uk.co.compendiumdev.challenger.restassured.api.RestAssuredBaseTest.xChallenger;
+
 public class ChallengesStatus {
 
 
@@ -22,6 +24,7 @@ public class ChallengesStatus {
 
         challengeStatuses = RestAssured.
                 given().
+                header("X-CHALLENGER", xChallenger).
                 accept("application/json").
                 get(Environment.getEnv("/challenges")).
                 then().

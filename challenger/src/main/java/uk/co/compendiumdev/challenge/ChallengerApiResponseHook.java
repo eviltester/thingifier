@@ -10,19 +10,17 @@ import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.application.httpapimessagehooks.HttpApiResponseHook;
 import uk.co.compendiumdev.thingifier.domain.definitions.FieldValue;
 import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
-
-import java.io.File;
 import java.util.Collection;
 
-import static uk.co.compendiumdev.challenge.Challenges.CHALLENGE.*;
+
 
 public class ChallengerApiResponseHook implements HttpApiResponseHook {
 
-    private final Challenges challenges;
+    private final Challengers challengers;
     private final Thingifier thingifier;
 
-    public ChallengerApiResponseHook(final Challenges challenges, Thingifier thingifier) {
-        this.challenges = challenges;
+    public ChallengerApiResponseHook(final Challengers challengers, Thingifier thingifier) {
+        this.challengers = challengers;
         this.thingifier = thingifier;
     }
 
@@ -31,17 +29,24 @@ public class ChallengerApiResponseHook implements HttpApiResponseHook {
                                final HttpApiResponse response,
                                final ThingifierApiConfig config) {
 
+        ChallengerAuthData challenger = challengers.getChallenger(request.getHeader("X-CHALLENGER"));
+
+        if(challenger==null){
+            // cannot track challenges
+            return null;
+        }
+
         // READ
         if(request.getVerb() == HttpApiRequest.VERB.GET &&
                 request.getPath().matches("todos/.*") &&
                 response.getStatusCode()==200){
-            challenges.pass(GET_TODO);
+            challenger.pass(CHALLENGE.GET_TODO);
         }
 
         if(request.getVerb() == HttpApiRequest.VERB.GET &&
                 request.getPath().matches("todos/.*") &&
                 response.getStatusCode()==404){
-            challenges.pass(GET_TODO_404);
+            challenger.pass(CHALLENGE.GET_TODO_404);
         }
 
         final AcceptHeaderParser acceptParser = new AcceptHeaderParser(request.getHeader("accept"));
@@ -54,7 +59,7 @@ public class ChallengerApiResponseHook implements HttpApiResponseHook {
                 response.getType().contentEquals("application/xml") &&
                 response.getStatusCode()==200
         ){
-            challenges.pass(GET_ACCEPT_XML);
+            challenger.pass(CHALLENGE.GET_ACCEPT_XML);
         }
 
         if(request.getVerb() == HttpApiRequest.VERB.GET &&
@@ -64,7 +69,7 @@ public class ChallengerApiResponseHook implements HttpApiResponseHook {
                 response.getType().contentEquals("application/json") &&
                 response.getStatusCode()==200
         ){
-            challenges.pass(GET_ACCEPT_JSON);
+            challenger.pass(CHALLENGE.GET_ACCEPT_JSON);
         }
 
         if(request.getVerb() == HttpApiRequest.VERB.GET &&
@@ -74,7 +79,7 @@ public class ChallengerApiResponseHook implements HttpApiResponseHook {
                 response.getType().contentEquals("application/json") &&
                 response.getStatusCode()==200
         ){
-            challenges.pass(GET_JSON_BY_DEFAULT_NO_ACCEPT);
+            challenger.pass(CHALLENGE.GET_JSON_BY_DEFAULT_NO_ACCEPT);
         }
 
         if(request.getVerb() == HttpApiRequest.VERB.GET &&
@@ -83,7 +88,7 @@ public class ChallengerApiResponseHook implements HttpApiResponseHook {
                 !acceptParser.isSupportedHeader() &&
                 response.getStatusCode()==406
         ){
-            challenges.pass(GET_UNSUPPORTED_ACCEPT_406);
+            challenger.pass(CHALLENGE.GET_UNSUPPORTED_ACCEPT_406);
         }
 
         if(request.getVerb() == HttpApiRequest.VERB.GET &&
@@ -93,7 +98,7 @@ public class ChallengerApiResponseHook implements HttpApiResponseHook {
                 response.getType().contentEquals("application/json") &&
                 response.getStatusCode()==200
         ){
-            challenges.pass(GET_ACCEPT_ANY_DEFAULT_JSON);
+            challenger.pass(CHALLENGE.GET_ACCEPT_ANY_DEFAULT_JSON);
         }
 
         if(request.getVerb() == HttpApiRequest.VERB.GET &&
@@ -105,7 +110,7 @@ public class ChallengerApiResponseHook implements HttpApiResponseHook {
                 response.getType().contentEquals("application/xml") &&
                 response.getStatusCode()==200
         ){
-            challenges.pass(GET_ACCEPT_XML_PREFERRED);
+            challenger.pass(CHALLENGE.GET_ACCEPT_XML_PREFERRED);
         }
 
 
@@ -119,7 +124,7 @@ public class ChallengerApiResponseHook implements HttpApiResponseHook {
             final ThingInstance aDoneThing = thing.findInstanceByField(FieldValue.is("doneStatus", "true"));
             final ThingInstance aNotDoneThing = thing.findInstanceByField(FieldValue.is("doneStatus", "false"));
             if(aDoneThing!=null && aNotDoneThing!=null) {
-                challenges.pass(GET_TODOS_FILTERED);
+                challenger.pass(CHALLENGE.GET_TODOS_FILTERED);
             }
         }
 
@@ -129,7 +134,7 @@ public class ChallengerApiResponseHook implements HttpApiResponseHook {
         if(request.getVerb() == HttpApiRequest.VERB.POST &&
                 request.getPath().matches("todos") &&
                 response.getStatusCode()==201){
-            challenges.pass(POST_TODOS);
+            challenger.pass(CHALLENGE.POST_TODOS);
         }
 
         if(request.getVerb() == HttpApiRequest.VERB.POST &&
@@ -137,7 +142,7 @@ public class ChallengerApiResponseHook implements HttpApiResponseHook {
                 contentTypeParser.isXML() &&
                 response.getType().contentEquals("application/xml") &&
                 response.getStatusCode()==201){
-            challenges.pass(POST_CREATE_XML);
+            challenger.pass(CHALLENGE.POST_CREATE_XML);
         }
 
         if(request.getVerb() == HttpApiRequest.VERB.POST &&
@@ -145,7 +150,7 @@ public class ChallengerApiResponseHook implements HttpApiResponseHook {
                 contentTypeParser.isJSON() &&
                 response.getType().contentEquals("application/json") &&
                 response.getStatusCode()==201){
-            challenges.pass(POST_CREATE_JSON);
+            challenger.pass(CHALLENGE.POST_CREATE_JSON);
         }
 
         if(request.getVerb() == HttpApiRequest.VERB.POST &&
@@ -153,7 +158,7 @@ public class ChallengerApiResponseHook implements HttpApiResponseHook {
                 contentTypeParser.isJSON() &&
                 response.getType().contentEquals("application/xml") &&
                 response.getStatusCode()==201){
-            challenges.pass(POST_CREATE_JSON_ACCEPT_XML);
+            challenger.pass(CHALLENGE.POST_CREATE_JSON_ACCEPT_XML);
         }
 
         if(request.getVerb() == HttpApiRequest.VERB.POST &&
@@ -161,7 +166,7 @@ public class ChallengerApiResponseHook implements HttpApiResponseHook {
                 contentTypeParser.isXML() &&
                 response.getType().contentEquals("application/json") &&
                 response.getStatusCode()==201){
-            challenges.pass(POST_CREATE_XML_ACCEPT_JSON);
+            challenger.pass(CHALLENGE.POST_CREATE_XML_ACCEPT_JSON);
         }
 
 
@@ -171,20 +176,20 @@ public class ChallengerApiResponseHook implements HttpApiResponseHook {
                 response.getStatusCode()==400 &&
                 collate(response.apiResponse().getErrorMessages()).contains(
                         "Failed Validation: doneStatus should be BOOLEAN")){
-            challenges.pass(POST_TODOS_BAD_DONE_STATUS);
+            challenger.pass(CHALLENGE.POST_TODOS_BAD_DONE_STATUS);
         }
 
         if(request.getVerb() == HttpApiRequest.VERB.POST &&
                 request.getPath().matches("todos") &&
                 response.getStatusCode()==415){
-            challenges.pass(POST_TODOS_415);
+            challenger.pass(CHALLENGE.POST_TODOS_415);
         }
 
         // UPDATE
         if(request.getVerb() == HttpApiRequest.VERB.POST &&
                 request.getPath().matches("todos/.*") &&
                 response.getStatusCode()==200){
-            challenges.pass(POST_UPDATE_TODO);
+            challenger.pass(CHALLENGE.POST_UPDATE_TODO);
         }
 
 
@@ -192,14 +197,14 @@ public class ChallengerApiResponseHook implements HttpApiResponseHook {
         if(request.getVerb() == HttpApiRequest.VERB.DELETE &&
                 request.getPath().matches("todos/.*") &&
                 response.getStatusCode()==200){
-            challenges.pass(DELETE_A_TODO);
+            challenger.pass(CHALLENGE.DELETE_A_TODO);
         }
 
         if(request.getVerb() == HttpApiRequest.VERB.DELETE &&
                 request.getPath().matches("todos/.*") &&
                 response.getStatusCode()==200 &&
                 thingifier.getThingWithPluralNamed("todos").countInstances()==0){
-            challenges.pass(DELETE_ALL_TODOS);
+            challenger.pass(CHALLENGE.DELETE_ALL_TODOS);
         }
 
 
