@@ -6,6 +6,7 @@
 - `/nouns/` - a trailing slash means `nouns` with (`/`) 'missing value', so will usually result in a [404](https://httpstatuses.com/404)
 - `/nouns/{guid}` - `{guid}` is some sort of unique id or GUID, varies per system, if item is not found then status [404](https://httpstatuses.com/404) returned
 
+
 Query Arguments:
 
 - `?id=1` query arguments are often supported for filtering e.g. `/nouns?status=true` would return all `noun` with a status of true
@@ -107,3 +108,7 @@ Remember the REST descriptions are 'guidelines'. APIs can still 'work' when they
 - [restfulapi.net](https://restfulapi.net/)
 - [httpstatuses.com](https://httpstatuses.com)
 - [Mozilla HTTP MDN Web Docs](https://developer.mozilla.org/en-US/docs/Web/HTTP)
+
+Security:
+
+- [OWASP REST API Security Cheatsheet](https://cheatsheetseries.owasp.org/cheatsheets/REST_Security_Cheat_Sheet.html)
