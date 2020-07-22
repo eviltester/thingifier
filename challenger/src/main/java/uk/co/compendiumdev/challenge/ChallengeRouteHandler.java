@@ -8,6 +8,7 @@ import uk.co.compendiumdev.thingifier.api.routings.RoutingStatus;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingVerb;
 import uk.co.compendiumdev.thingifier.application.ThingifierRestServer;
 import uk.co.compendiumdev.thingifier.htmlgui.DefaultGUIHTML;
+import uk.co.compendiumdev.thingifier.spark.SimpleRouteConfig;
 
 import java.util.*;
 
@@ -17,20 +18,13 @@ import static spark.Spark.*;
 public class ChallengeRouteHandler {
     private final Thingifier thingifier;
     List<RoutingDefinition> routes;
-    // todo: create a map of challenges where key is the Challenges guid
-    // todo: create a key of 'global' with a Challenges to use as default
-    // todo: delete any Challenges which have not been 'accessed' in 15 minutes
-    // todo: associate challenges GUID with a session id - let spark manage sessions
-    // todo: if session has no challenge guid associated then associate it with "global"
-
     ChallengeDefinitions challengeDefinitions;
     Challengers challengers;
     private boolean single_player_mode;
 
-
     public ChallengeRouteHandler(Thingifier thingifier){
         routes = new ArrayList();
-        challengeDefinitions = new ChallengeDefinitions(); //default global challenges
+        challengeDefinitions = new ChallengeDefinitions();
         this.thingifier = thingifier;
         challengers = new Challengers();
         single_player_mode = true;
@@ -47,7 +41,6 @@ public class ChallengeRouteHandler {
 
     public ChallengeRouteHandler configureRoutes() {
 
-        // TODO: create some thingifier helper methods for setting up 405 endpoints with range of verbs
         configureChallengerTrackingRoutes();
         configureChallengesRoutes();
         configureHeartBeatRoutes();
@@ -88,6 +81,10 @@ public class ChallengeRouteHandler {
             return "";
         });
 
+        SimpleRouteConfig.routeStatusWhenNot(
+                405, "/challenges",
+                "get", "head", "options");
+
         routes.add(new RoutingDefinition(
                 RoutingVerb.GET,
                 "/challenges",
@@ -108,62 +105,36 @@ public class ChallengeRouteHandler {
     }
 
     private void configureHeartBeatRoutes() {
-        get("/heartbeat", (request, result) -> {
-            result.status(204);
-            return "";
-        });
 
-        head("/heartbeat", (request, result) -> {
-            result.status(204);
-            return "";
-        });
+        String endpoint ="/heartbeat";
 
-        options("/heartbeat", (request, result) -> {
+        options(endpoint, (request, result) -> {
             result.status(204);
             result.header("Allow", "GET, HEAD, OPTIONS");
             return "";
         });
 
-        post("/heartbeat", (request, result) -> {
-            result.status(405);
-            return "";
-        });
-
-        delete("/heartbeat", (request, result) -> {
-            result.status(405);
-            return "";
-        });
-
-        put("/heartbeat", (request, result) -> {
-            result.status(405);
-            return "";
-        });
-
-        patch("/heartbeat", (request, result) -> {
-            result.status(500);
-            return "";
-        });
-
-        trace("/heartbeat", (request, result) -> {
-            result.status(501);
-            return "";
-        });
+        new SimpleRouteConfig(endpoint).
+            status(204, "get", "head").
+            status(405,  "post", "delete", "put").
+            status(500,  "patch").
+            status(501, "trace");
 
         routes.add(new RoutingDefinition(
                 RoutingVerb.GET,
-                "/heartbeat",
+                endpoint,
                 RoutingStatus.returnedFromCall(),
                 null).addDocumentation("Is the server running? YES == 204"));
 
         routes.add(new RoutingDefinition(
                 RoutingVerb.OPTIONS,
-                "/heartbeat",
+                endpoint,
                 RoutingStatus.returnedFromCall(),
                 null).addDocumentation("Options for heartbeat endpoint"));
 
         routes.add(new RoutingDefinition(
                 RoutingVerb.HEAD,
-                "/heartbeat",
+                endpoint,
                 RoutingStatus.returnedFromCall(),
                 null).addDocumentation("Headers for heartbeat endpoint"));
     }
@@ -186,6 +157,10 @@ public class ChallengeRouteHandler {
             }
             return "";
         });
+
+        SimpleRouteConfig.
+            routeStatusWhenNot(
+            405, "/challenger/*", "get");
 
             // create a challenger
         post("/challenger", (request, result) -> {
@@ -226,6 +201,9 @@ public class ChallengeRouteHandler {
             return "Unknown Challenger State";
         });
 
+        SimpleRouteConfig.
+                routeStatusWhenNot(
+                        405, "/challenger", "post");
 
         if(!single_player_mode) {
             routes.add(new RoutingDefinition(
@@ -264,6 +242,10 @@ public class ChallengeRouteHandler {
             result.status(201);
             return "";
         });
+
+        SimpleRouteConfig.routeStatusWhenNot(
+    405, "/secret/token", "post");
+
 
         // GET /secret/token returns the secret token or 401 if not authenticated
         // POST /secret/note GET /secret/note - limit note to 100 chars
@@ -337,6 +319,9 @@ public class ChallengeRouteHandler {
 
         });
 
+        SimpleRouteConfig.routeStatusWhenNot(
+                405, "/secret/note", "get", "post");
+
 
     }
 
@@ -363,6 +348,7 @@ public class ChallengeRouteHandler {
 
         guiManagement.setFooter(getChallengesFooter());
 
+        // use the index.html to allow easier creation of docs and landing page
 //        get("/", (request, result) -> {
 //            result.redirect("/gui");
 //            return "";

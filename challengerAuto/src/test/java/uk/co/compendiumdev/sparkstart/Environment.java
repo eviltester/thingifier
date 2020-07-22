@@ -13,8 +13,8 @@ public class Environment {
     public static String getBaseUri() {
 
         // return environment if want to run externally
-        if(true)
-            return "https://apichallenges.herokuapp.com";
+//        if(true)
+//            return "https://apichallenges.herokuapp.com";
 
 
         // if not running then start the spark
