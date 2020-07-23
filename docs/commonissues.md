@@ -18,3 +18,17 @@
 
 - post, put, patch - used without properly discriminating between them
 - `404` returned instead of `405` when endpoint exists, but not configured for a verb
+
+## Payloads
+
+-Malformed payloads typically trigger errors in the surrounding frameworks, not the api, but if not handled properly can cause server errors
+
+## Headers
+
+- Duplicate headers can cause systems to only validate contents of first header, but use the second header, allowing bypass of validation
+- Extra / Unrecognised headers can sometimes server error APIs
+
+
+## Conversion
+
+- various technologies can mean conversion issues slip through e.g. JSON Integers to floats, boolean to string. Check field types.

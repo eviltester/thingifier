@@ -74,7 +74,8 @@ public class ApiRoutingDefinitionGenerator {
             // we should be able to get things e.g. GET project
             defn.addRouting(
                     String.format("return all the instances of %s", thing.definition().getName()),
-                    RoutingVerb.GET, pluralUrl, RoutingStatus.returnedFromCall());
+                    RoutingVerb.GET, pluralUrl, RoutingStatus.returnedFromCall()).
+                    setAsFilterableFrom(thing.definition());
 
             defn.addRouting(String.format("headers for all the instances of %s", thing.definition().getName()),
                     RoutingVerb.HEAD, pluralUrl, RoutingStatus.returnedFromCall());
@@ -105,8 +106,7 @@ public class ApiRoutingDefinitionGenerator {
             defn.addRouting(
                     String.format("return a specific instances of %s using a %s",
                             thing.definition().getName(),uniqueIdFieldName),
-                    RoutingVerb.GET, aUrlWGuid, RoutingStatus.returnedFromCall()).
-                    setAsFilterableFrom(thing.definition());
+                    RoutingVerb.GET, aUrlWGuid, RoutingStatus.returnedFromCall());
 
             defn.addRouting(String.format("headers for a specific instances of %s using a %s",
                             thing.definition().getName(),uniqueIdFieldName),
