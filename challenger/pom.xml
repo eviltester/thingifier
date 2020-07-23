@@ -20,11 +20,20 @@
         </dependency>
         <!-- https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk -->
         <!-- experimental cloud storage of challenger sessions -->
+        <!-- 180 meg!
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk</artifactId>
             <version>1.11.825</version>
         </dependency>
+        -->
+
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-s3</artifactId>
+            <version>1.11.825</version>
+        </dependency>
+
     </dependencies>
 
     <build>

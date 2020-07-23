@@ -431,7 +431,12 @@ public class ChallengeRouteHandler {
             List<ChallengeData> reportOn = null;
 
             String xChallenger = request.splat()[0];
-            final ChallengerAuthData challenger = challengers.getChallenger(xChallenger);
+            ChallengerAuthData challenger = challengers.getChallenger(xChallenger);
+
+            if(challenger==null){
+                challenger = tryToLoadChallengerFromPersistence(challengers, xChallenger);
+            }
+
             if(challenger==null){
                 html.append("<p><strong>Unknown Challenger ID</strong></p>");
                 html.append(multiUserShortHelp());

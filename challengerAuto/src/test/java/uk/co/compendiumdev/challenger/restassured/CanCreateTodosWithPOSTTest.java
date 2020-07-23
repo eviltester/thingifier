@@ -80,7 +80,7 @@ public class CanCreateTodosWithPOSTTest extends RestAssuredBaseTest {
                 header("X-CHALLENGER", xChallenger).
             accept("application/json").
             contentType("application/json").
-            body(createMeJson).
+            body(createMeJson.toString()).
             post(apiPath( "/todos")).
             then().
             statusCode(400).

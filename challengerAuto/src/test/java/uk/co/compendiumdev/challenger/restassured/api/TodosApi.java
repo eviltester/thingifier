@@ -17,6 +17,7 @@ public class TodosApi {
                            final boolean doneStatus) {
 
         Todo payload = new Todo();
+        payload.id =null;
         payload.title = title;
         payload.description = description;
         payload.doneStatus = doneStatus;

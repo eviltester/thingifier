@@ -1,7 +1,5 @@
 package uk.co.compendiumdev.challenge.persistence;
 
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
@@ -13,6 +11,8 @@ import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import java.io.*;
 
 public class AwsS3Storage implements PersistenceMechanism{
+
+    static AmazonS3 s3Client;
 
     // to work we need environment variables for
     // AWSBUCKET
@@ -31,9 +31,7 @@ public class AwsS3Storage implements PersistenceMechanism{
         String bucketName = System.getenv("AWSBUCKET");
 
         try{
-            AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
-                    .withRegion(Regions.US_EAST_2)
-                    .build();
+            ensureClientExists();
 
 
             final String dataString = new Gson().toJson(data);
@@ -45,15 +43,25 @@ public class AwsS3Storage implements PersistenceMechanism{
         }
     }
 
+    private void ensureClientExists() {
+        if(s3Client!=null){
+            return;
+        }
+
+        s3Client = AmazonS3ClientBuilder.standard()
+                .withRegion(Regions.US_EAST_2)
+                .build();
+
+    }
+
     @Override
     public ChallengerAuthData loadChallengerStatus(final String guid) {
 
         String bucketName = System.getenv("AWSBUCKET");
 
         try {
-            AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
-                    .withRegion(Regions.US_EAST_2)
-                    .build();
+            ensureClientExists();
+
             final S3Object fullObject = s3Client.getObject(new GetObjectRequest(bucketName, guid));
             String dataString = getObjectContent(fullObject.getObjectContent());
             return new Gson().fromJson(dataString, ChallengerAuthData.class);
