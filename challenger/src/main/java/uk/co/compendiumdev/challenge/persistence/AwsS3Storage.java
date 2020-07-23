@@ -1,0 +1,76 @@
+package uk.co.compendiumdev.challenge.persistence;
+
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.regions.Regions;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.model.GetObjectRequest;
+import com.amazonaws.services.s3.model.S3Object;
+import com.google.gson.Gson;
+import uk.co.compendiumdev.challenge.ChallengerAuthData;
+
+import java.io.*;
+
+public class AwsS3Storage implements PersistenceMechanism{
+
+    // to work we need environment variables for
+    // AWSBUCKET
+    // AWS_ACCESS_KEY_ID
+    // AWS_SECRET_ACCESS_KEY
+
+    // https://docs.aws.amazon.com/AmazonS3/latest/dev/RetrievingObjectUsingJava.html
+    // https://docs.aws.amazon.com/AmazonS3/latest/dev/UploadObjSingleOpJava.html
+
+    @Override
+    public void saveChallengerStatus(final ChallengerAuthData data) {
+
+        if(data==null)
+            return;
+
+        String bucketName = System.getenv("AWSBUCKET");
+
+        try{
+            AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
+                    .withRegion(Regions.US_EAST_2)
+                    .build();
+
+
+            final String dataString = new Gson().toJson(data);
+            // Upload a text string as a new object.
+            s3Client.putObject(bucketName, data.getXChallenger(), dataString);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("Error storing data to bucket for guid: " + data.getXChallenger());
+        }
+    }
+
+    @Override
+    public ChallengerAuthData loadChallengerStatus(final String guid) {
+
+        String bucketName = System.getenv("AWSBUCKET");
+
+        try {
+            AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
+                    .withRegion(Regions.US_EAST_2)
+                    .build();
+            final S3Object fullObject = s3Client.getObject(new GetObjectRequest(bucketName, guid));
+            String dataString = getObjectContent(fullObject.getObjectContent());
+            return new Gson().fromJson(dataString, ChallengerAuthData.class);
+        } catch (Exception e) {
+            e.getStackTrace();
+            System.out.println("Error Reading Challenge Status From S3: " + guid);
+            return null;
+        }
+    }
+
+    private static String getObjectContent(InputStream input) throws IOException {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+        String line = null;
+        String content = "";
+        while ((line = reader.readLine()) != null) {
+            content=content + line + "\n";
+        }
+        return content;
+    }
+}

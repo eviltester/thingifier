@@ -18,6 +18,13 @@
             <artifactId>thingifier</artifactId>
             <version>${thingifier.version}</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk -->
+        <!-- experimental cloud storage of challenger sessions -->
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk</artifactId>
+            <version>1.11.825</version>
+        </dependency>
     </dependencies>
 
     <build>

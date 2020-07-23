@@ -44,7 +44,7 @@ public class ChallengeRouteHandler {
     }
 
     public void setToCloudPersistenceMode(){
-        persistenceLayer = new PersistenceLayer(PersistenceLayer.StorageType.CLOUD);
+        persistenceLayer.setToCloud();
     }
 
     public List<RoutingDefinition> getRoutes(){
