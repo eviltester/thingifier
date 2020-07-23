@@ -1,6 +1,7 @@
-package uk.co.compendiumdev.challenge;
+package uk.co.compendiumdev.challenge.challenges;
 
-import com.google.gson.Gson;
+import uk.co.compendiumdev.challenge.CHALLENGE;
+import uk.co.compendiumdev.challenge.challenges.ChallengeData;
 
 import java.util.*;
 

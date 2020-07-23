@@ -26,7 +26,13 @@ public class ChallengeMain {
                 System.out.println("Running in multiplayer mode");
                 challenger.setToMultiPlayerMode();
             }
+
+            if (arg.startsWith("-cloudstorage")) {
+                System.out.println("Setting persistence mechanism to cloud");
+                challenger.setToCloudPersistenceMode();
+            }
         }
+
 
         challenger.configureRoutes();
 

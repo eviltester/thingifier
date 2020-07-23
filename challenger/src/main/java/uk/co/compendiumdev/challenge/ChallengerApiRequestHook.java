@@ -1,5 +1,6 @@
 package uk.co.compendiumdev.challenge;
 
+import uk.co.compendiumdev.challenge.challengers.Challengers;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiResponse;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
@@ -24,13 +25,13 @@ public class ChallengerApiRequestHook implements HttpApiRequestHook {
         if(request.getVerb() == HttpApiRequest.VERB.GET &&
             request.getPath().contentEquals("todos") &&
             request.getQueryParams().size()==0){
-            challenger.pass(CHALLENGE.GET_TODOS);
+            challengers.pass(challenger,CHALLENGE.GET_TODOS);
         }
 
         if(request.getVerb() == HttpApiRequest.VERB.HEAD &&
                 request.getPath().contentEquals("todos") &&
                 request.getQueryParams().size()==0){
-            challenger.pass(CHALLENGE.GET_HEAD_TODOS);
+            challengers.pass(challenger,CHALLENGE.GET_HEAD_TODOS);
         }
 
         return null;

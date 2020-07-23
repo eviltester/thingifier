@@ -2,6 +2,10 @@ package uk.co.compendiumdev.challenge;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import uk.co.compendiumdev.challenge.challengers.Challengers;
+import uk.co.compendiumdev.challenge.challenges.ChallengeData;
+import uk.co.compendiumdev.challenge.challenges.ChallengeDefinitions;
+import uk.co.compendiumdev.challenge.persistence.PersistenceLayer;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingStatus;
@@ -21,6 +25,7 @@ public class ChallengeRouteHandler {
     ChallengeDefinitions challengeDefinitions;
     Challengers challengers;
     private boolean single_player_mode;
+    PersistenceLayer persistenceLayer;
 
     public ChallengeRouteHandler(Thingifier thingifier){
         routes = new ArrayList();
@@ -28,11 +33,18 @@ public class ChallengeRouteHandler {
         this.thingifier = thingifier;
         challengers = new Challengers();
         single_player_mode = true;
+        persistenceLayer = new PersistenceLayer(PersistenceLayer.StorageType.LOCAL);
+        challengers.setPersistenceLayer(persistenceLayer);
+        tryToLoadChallengerFromPersistence(challengers, challengers.SINGLE_PLAYER_GUID);
     }
 
     public void setToMultiPlayerMode(){
         single_player_mode = false;
         challengers.setMultiPlayerMode();
+    }
+
+    public void setToCloudPersistenceMode(){
+        persistenceLayer = new PersistenceLayer(PersistenceLayer.StorageType.CLOUD);
     }
 
     public List<RoutingDefinition> getRoutes(){
@@ -67,6 +79,8 @@ public class ChallengeRouteHandler {
             result.body(new ChallengesPayload(challengeDefinitions, challenger).getAsJson());
             return "";
         });
+
+        // todo: allow filtering challenges e.g. find all done, not done, etc.
 
         head("/challenges", (request, result) -> {
             result.status(200);
@@ -150,7 +164,13 @@ public class ChallengeRouteHandler {
                     challenger.touch();
                     result.status(204);
                 }else{
-                    result.status(404);
+                    // todo try to load challenger from persistence
+                    challenger = tryToLoadChallengerFromPersistence(challengers, xChallengerGuid);
+                    if(challenger==null) {
+                        result.status(404);
+                    }else{
+                        result.status(204);
+                    }
                 }
             }else{
                 result.status(404);
@@ -183,6 +203,10 @@ public class ChallengeRouteHandler {
             }else {
                 ChallengerAuthData challenger = challengers.getChallenger(xChallengerGuid);
                 if(challenger==null){
+                    // try to load challenger status
+                    challenger = tryToLoadChallengerFromPersistence(challengers, xChallengerGuid);
+                }
+                if(challenger==null){
                     // if X-CHALLENGER header exists, and is not a known UUID,
                     // return 410, challenger ID not valid
                     result.header("X-CHALLENGER", "Challenger not found");
@@ -193,9 +217,6 @@ public class ChallengeRouteHandler {
                     result.header("Location", "/gui/challenges/" + challenger.getXChallenger());
                     result.status(200);
                 }
-                // todo: if X-CHALLENGER header exists, and has a valid UUID, and UUID does not exist, then use this to create the challenger, return 201
-
-
             }
             result.status(400);
             return "Unknown Challenger State";
@@ -212,6 +233,16 @@ public class ChallengeRouteHandler {
                     RoutingStatus.returnedFromCall(),
                     null).addDocumentation("Create an X-CHALLENGER guid to allow tracking challenges, use the X-CHALLENGER header in all requests to track challenge completion for multi-user tracking."));
         }
+    }
+
+    private ChallengerAuthData tryToLoadChallengerFromPersistence(final Challengers challengers, final String xChallengerGuid) {
+        ChallengerAuthData challenger=null;
+        challenger = persistenceLayer.loadChallengerStatus(xChallengerGuid);
+        if(challenger!=null){
+            challenger.touch(); // refresh last accessed date
+            challengers.put(challenger);
+        }
+        return challenger;
     }
 
     private void configureAuthRoutes() {

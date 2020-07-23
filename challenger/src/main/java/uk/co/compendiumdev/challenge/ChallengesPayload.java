@@ -1,6 +1,8 @@
 package uk.co.compendiumdev.challenge;
 
 import com.google.gson.Gson;
+import uk.co.compendiumdev.challenge.challenges.ChallengeData;
+import uk.co.compendiumdev.challenge.challenges.ChallengeDefinitions;
 
 import java.util.ArrayList;
 import java.util.List;

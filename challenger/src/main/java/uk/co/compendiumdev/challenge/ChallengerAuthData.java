@@ -10,7 +10,7 @@ public class ChallengerAuthData {
 
     private final String xAuthToken;
     private final long extratime;
-    private final String xChallenger;
+    private String xChallenger;
     private long lastAccessed;
     private long expiresin;
     private String secretNote;
@@ -83,5 +83,9 @@ public class ChallengerAuthData {
         }catch(Exception e){
             System.out.println("Challenge Error " + id.name() + " " + e.getMessage() );
         }
+    }
+
+    public void setGUID(final String guid) {
+        this.xChallenger = guid;
     }
 }

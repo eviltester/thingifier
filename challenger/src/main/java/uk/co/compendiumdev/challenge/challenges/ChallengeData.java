@@ -1,4 +1,4 @@
-package uk.co.compendiumdev.challenge;
+package uk.co.compendiumdev.challenge.challenges;
 
 public class ChallengeData {
 

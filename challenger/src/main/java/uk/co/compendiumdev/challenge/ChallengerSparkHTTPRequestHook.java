@@ -2,6 +2,7 @@ package uk.co.compendiumdev.challenge;
 
 import spark.Request;
 import spark.Response;
+import uk.co.compendiumdev.challenge.challengers.Challengers;
 import uk.co.compendiumdev.thingifier.application.sparkhttpmessageHooks.SparkRequestResponseHook;
 
 public class ChallengerSparkHTTPRequestHook implements SparkRequestResponseHook {
@@ -26,27 +27,27 @@ public class ChallengerSparkHTTPRequestHook implements SparkRequestResponseHook 
 
         if(request.requestMethod().toUpperCase().contentEquals("GET") &&
                 request.pathInfo().contentEquals("/challenges")){
-            challenger.pass(CHALLENGE.GET_CHALLENGES);
+            challengers.pass(challenger,CHALLENGE.GET_CHALLENGES);
         }
 
         if(request.requestMethod().toUpperCase().contentEquals("GET") &&
                 request.pathInfo().contentEquals("/heartbeat")){
-            challenger.pass(CHALLENGE.GET_HEARTBEAT_204);
+            challengers.pass(challenger,CHALLENGE.GET_HEARTBEAT_204);
         }
 
         if(request.requestMethod().toUpperCase().contentEquals("DELETE") &&
                 request.pathInfo().contentEquals("/heartbeat")){
-            challenger.pass(CHALLENGE.DELETE_HEARTBEAT_405);
+            challengers.pass(challenger,CHALLENGE.DELETE_HEARTBEAT_405);
         }
 
         if(request.requestMethod().toUpperCase().contentEquals("PATCH") &&
                 request.pathInfo().contentEquals("/heartbeat")){
-            challenger.pass(CHALLENGE.PATCH_HEARTBEAT_500);
+            challengers.pass(challenger,CHALLENGE.PATCH_HEARTBEAT_500);
         }
 
         if(request.requestMethod().toUpperCase().contentEquals("TRACE") &&
                 request.pathInfo().contentEquals("/heartbeat")){
-            challenger.pass(CHALLENGE.TRACE_HEARTBEAT_501);
+            challengers.pass(challenger,CHALLENGE.TRACE_HEARTBEAT_501);
         }
     }
 
