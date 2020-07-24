@@ -26,6 +26,7 @@ public class ChallengeRouteHandler {
     Challengers challengers;
     private boolean single_player_mode;
     PersistenceLayer persistenceLayer;
+    private boolean guiStayAlive=false; // gui makes a call every 5 mins to keep session alive, not needed when storing data
 
     public ChallengeRouteHandler(Thingifier thingifier){
         routes = new ArrayList();
@@ -38,6 +39,10 @@ public class ChallengeRouteHandler {
         tryToLoadChallengerFromPersistence(challengers, challengers.SINGLE_PLAYER_GUID);
     }
 
+    public void setGuiToKeepSessionAlive(){
+        guiStayAlive=true;
+    }
+
     public void setToMultiPlayerMode(){
         single_player_mode = false;
         challengers.setMultiPlayerMode();
@@ -46,6 +51,11 @@ public class ChallengeRouteHandler {
     public void setToCloudPersistenceMode(){
         persistenceLayer.setToCloud();
     }
+
+    public void setToNoPersistenceMode() {
+        persistenceLayer.switchOffPersistence();
+    }
+
 
     public List<RoutingDefinition> getRoutes(){
         return routes;
@@ -405,6 +415,7 @@ public class ChallengeRouteHandler {
             }else{
                 html.append("<div style='clear:both'><p><strong>Unknown Challenger ID</strong></p></div>");
                 html.append(multiUserShortHelp());
+                html.append(showPreviousGuids());
 
                 reportOn = new ChallengesPayload(challengeDefinitions, challengers.DEFAULT_PLAYER_DATA).getAsChallenges();
             }
@@ -440,8 +451,10 @@ public class ChallengeRouteHandler {
             if(challenger==null){
                 html.append("<p><strong>Unknown Challenger ID</strong></p>");
                 html.append(multiUserShortHelp());
+                html.append(showPreviousGuids());
                 reportOn = new ChallengesPayload(challengeDefinitions, challengers.DEFAULT_PLAYER_DATA).getAsChallenges();
             }else{
+                html.append(storeCurrentGuidInLocalStorage(xChallenger));
                 reportOn = new ChallengesPayload(challengeDefinitions, challenger).getAsChallenges();
                 html.append(refreshScriptFor(challenger.getXChallenger()));
             }
@@ -452,6 +465,28 @@ public class ChallengeRouteHandler {
             html.append(guiManagement.getPageEnd());
             return html.toString();
         });
+    }
+
+    private String storeCurrentGuidInLocalStorage(final String xChallenger) {
+        return "<script>" +
+                "var guids = localStorage.getItem('challenges-guids') || '';" +
+                String.format("if(guids==null || !guids.includes('|%s|')){", xChallenger) +
+                String.format("localStorage.setItem('challenges-guids',guids + '|%s|');",xChallenger) +
+                "}" +
+                "</script>";
+    }
+
+    private String showPreviousGuids() {
+        // todo: show a delete button to delete from local storage - not delete from persistent storage
+        return "<script>" +
+                "var guids = localStorage.getItem('challenges-guids') || '';" +
+                "if(guids.length>0){document.writeln('<p><strong>Previously Used</strong></p>')}" +
+                "var guidsArray = guids.match(/\\|(.*)\\|/g);" +
+                "for(guidItem in guidsArray){" +
+                    "var myguid = guidsArray[guidItem].replace(/\\|/g,'');" +
+                    "document.writeln(\"<p><a href='/gui/challenges/\"+myguid+\"'>\"+myguid+\"</a></p>\")" +
+                "}" +
+                "</script>";
     }
 
     private String getChallengesFooter() {
@@ -480,6 +515,10 @@ public class ChallengeRouteHandler {
     }
 
     private String refreshScriptFor(final String xChallenger) {
+
+        if(!guiStayAlive)
+            return "";
+
         StringBuilder html = new StringBuilder();
 
         html.append("<script>");
@@ -524,4 +563,5 @@ public class ChallengeRouteHandler {
 
         return html.toString();
     }
+
 }

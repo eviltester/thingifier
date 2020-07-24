@@ -5,6 +5,8 @@ import uk.co.compendiumdev.challenge.ChallengerAuthData;
 public class PersistenceLayer {
 
     private StorageType storeOn;
+
+    // todo: add all active storage mechanisms in a list and store on all - switch it off by removing from list
     PersistenceMechanism file = new ChallengerFileStorage();
     static PersistenceMechanism aws;
 
@@ -12,13 +14,21 @@ public class PersistenceLayer {
         storeOn = PersistenceLayer.StorageType.CLOUD;
     }
 
-    public enum StorageType{LOCAL, CLOUD};
+    public void switchOffPersistence() {
+        storeOn=StorageType.NONE;
+    }
+
+    public enum StorageType{LOCAL, CLOUD, NONE};
 
     public PersistenceLayer(StorageType storeWhere){
         this.storeOn = storeWhere;
     }
 
     public void saveChallengerStatus(ChallengerAuthData data){
+
+        if(storeOn==StorageType.NONE){
+            return;
+        }
 
         if(storeOn== StorageType.LOCAL){
             file.saveChallengerStatus(data);
@@ -31,6 +41,11 @@ public class PersistenceLayer {
     }
 
     public ChallengerAuthData loadChallengerStatus(String guid){
+
+        if(storeOn==StorageType.NONE){
+            return null;
+        }
+
         if(storeOn== StorageType.LOCAL){
             return file.loadChallengerStatus(guid);
         }else{

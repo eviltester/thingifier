@@ -31,6 +31,16 @@ public class ChallengeMain {
                 System.out.println("Setting persistence mechanism to cloud");
                 challenger.setToCloudPersistenceMode();
             }
+
+            if(arg.startsWith("-guikeepalive")){
+                System.out.println("Setting GUI to keep session alive through XHR");
+                challenger.setGuiToKeepSessionAlive();
+            }
+
+            if (arg.startsWith("-memory")) {
+                System.out.println("Setting persistence mechanism to no persistence");
+                challenger.setToNoPersistenceMode();
+            }
         }
 
 

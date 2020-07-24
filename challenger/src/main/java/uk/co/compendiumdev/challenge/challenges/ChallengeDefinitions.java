@@ -63,7 +63,7 @@ public class ChallengeDefinitions {
 
         // OPTIONS
         addChallenge(CHALLENGE.OPTIONS_TODOS, "OPTIONS /todos (200)",
-                "Issue an OPTIONS request on the `/todos` end point to check the 'Allow' header in the resonse");
+                "Issue an OPTIONS request on the `/todos` end point to check the 'Allow' header in the response");
 
         // GET accept type
         //      specify accept type - XML
