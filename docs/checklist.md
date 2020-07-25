@@ -108,6 +108,8 @@ Remember the REST descriptions are 'guidelines'. APIs can still 'work' when they
 - [restfulapi.net](https://restfulapi.net/)
 - [httpstatuses.com](https://httpstatuses.com)
 - [Mozilla HTTP MDN Web Docs](https://developer.mozilla.org/en-US/docs/Web/HTTP)
+- [Open API Spec Group](https://www.openapis.org/)
+- [Open API Spec](https://github.com/OAI/OpenAPI-Specification)
 
 Security:
 

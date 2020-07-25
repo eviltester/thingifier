@@ -19,6 +19,12 @@ public class ChallengeDefinitions {
         challengeData = new HashMap<>();
         orderedChallenges = new ArrayList<>();
 
+        // todo: challenge to POST /challenger and create a challenger
+        // todo: challenge to GET /challenger/{guid} and restore a challenger session
+        // todo: challenge to POST /challenger with X-CHALLENGER header of existing challenger to restore a challenger
+        // todo: challenge to POST /challenger with X-CHALLENGER header of existing challenger and body of a stored challenge set to update the challenger in the system
+
+
         // READ
         addChallenge(CHALLENGE.GET_CHALLENGES, "GET /challenges (200)",
                 "Issue a GET request on the `/challenges` end point");
@@ -59,11 +65,11 @@ public class ChallengeDefinitions {
                 "Issue a DELETE request to successfully delete a todo");
 
         addChallenge(CHALLENGE.DELETE_ALL_TODOS, "DELETE /todos/{id} (200) all",
-                "Issue a DELETE request to successfully delete the last todo");
+                "Issue a DELETE request to successfully delete the last todo in system so that there are no more todos in the system");
 
         // OPTIONS
         addChallenge(CHALLENGE.OPTIONS_TODOS, "OPTIONS /todos (200)",
-                "Issue an OPTIONS request on the `/todos` end point to check the 'Allow' header in the response");
+                "Issue an OPTIONS request on the `/todos` end point. You might want to manually check the 'Allow' header in the response is as expected.");
 
         // GET accept type
         //      specify accept type - XML
@@ -74,33 +80,33 @@ public class ChallengeDefinitions {
         //      cannot supply accepted type 406
 
         addChallenge(CHALLENGE.GET_ACCEPT_XML, "GET /todos (200) XML",
-                "Issue a GET request on the `/todos` end point with a `Accept` header of `application/xml` to receive results in XML format");
+                "Issue a GET request on the `/todos` end point with an `Accept` header of `application/xml` to receive results in XML format");
 
         addChallenge(CHALLENGE.GET_ACCEPT_JSON, "GET /todos (200) JSON",
-                "Issue a GET request on the `/todos` end point with a `Accept` header of `application/json` to receive results in JSON format");
+                "Issue a GET request on the `/todos` end point with an `Accept` header of `application/json` to receive results in JSON format");
 
         addChallenge(CHALLENGE.GET_ACCEPT_ANY_DEFAULT_JSON, "GET /todos (200) ANY",
-                "Issue a GET request on the `/todos` end point with a `Accept` header of `*/*` to receive results in default JSON format");
+                "Issue a GET request on the `/todos` end point with an `Accept` header of `*/*` to receive results in default JSON format");
 
         addChallenge(CHALLENGE.GET_ACCEPT_XML_PREFERRED, "GET /todos (200) XML pref",
-                "Issue a GET request on the `/todos` end point with a `Accept` header of `application/xml, application/json` to receive results in preferred XML format");
+                "Issue a GET request on the `/todos` end point with an `Accept` header of `application/xml, application/json` to receive results in the preferred XML format");
 
         addChallenge(CHALLENGE.GET_JSON_BY_DEFAULT_NO_ACCEPT, "GET /todos (200) no accept",
-                "Issue a GET request on the `/todos` end point with no `Accept` header to receive results in default JSON format");
+                "Issue a GET request on the `/todos` end point with no `Accept` header present in the message to receive results in default JSON format");
 
         addChallenge(CHALLENGE.GET_UNSUPPORTED_ACCEPT_406, "GET /todos (406)",
-                "Issue a GET request on the `/todos` end point with `Accept` header `application/gzip` to receive 406 'NOT ACCEPTABLE' status code");
+                "Issue a GET request on the `/todos` end point with an `Accept` header `application/gzip` to receive 406 'NOT ACCEPTABLE' status code");
 
 
 
         // POST control content type
         //      control content type to create with - XML
         addChallenge(CHALLENGE.POST_CREATE_XML, "POST /todos XML",
-                "Issue a POST request on the `/todos` end point to create a todo using Content-Type XML");
+                "Issue a POST request on the `/todos` end point to create a todo using Content-Type `application/xml`");
 
         //      control content type to create with - JSON
         addChallenge(CHALLENGE.POST_CREATE_JSON, "POST /todos JSON",
-                "Issue a POST request on the `/todos` end point to create a todo using Content-Type JSON");
+                "Issue a POST request on the `/todos` end point to create a todo using Content-Type `application/json`");
 
         //      content type not supported 415 e.g. form encoded
         addChallenge(CHALLENGE.POST_TODOS_415, "POST /todos (415)",
@@ -141,7 +147,6 @@ public class ChallengeDefinitions {
         addChallenge(CHALLENGE.GET_HEARTBEAT_204, "GET /heartbeat (204)",
                 "Issue a GET request on the `/heartbeat` end point and receive 204 when server is running");
 
-        // TODO: in multi user mode have another token header e.g. X-AUTH-ACTUAL-TOKEN to assign challenge completion status to
         // authorization and authentication
         //    POST /secret/token with incorrect username and password credentials get 401
         addChallenge(CHALLENGE.CREATE_SECRET_TOKEN_401, "POST /secret/token (401)",
