@@ -7,6 +7,8 @@ import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
 import uk.co.compendiumdev.thingifier.application.sparkhttpmessageHooks.SparkRequestResponseHook;
 
+import java.util.concurrent.ExecutionException;
+
 
 public class ChallengerSparkHTTPResponseHook implements SparkRequestResponseHook {
 
@@ -21,6 +23,20 @@ public class ChallengerSparkHTTPResponseHook implements SparkRequestResponseHook
     public void run(final Request request, final Response response) {
 
         ChallengerAuthData challenger = challengers.getChallenger(request.headers("X-CHALLENGER"));
+
+        // we can complete a challenge while the user is null - creating the user
+        if(request.requestMethod()== "POST" &&
+                request.pathInfo().contentEquals("/challenger") &&
+                response.status() ==201){
+            // challenger did not exist so we need to find it to pass the challenge
+            try {
+                String challengerId = response.raw().getHeader("X-Challenger");
+                challenger = challengers.getChallenger(challengerId);
+                challengers.pass(challenger, CHALLENGE.CREATE_NEW_CHALLENGER);
+            }catch(Exception e){
+                // just in case something fails and challenger is null
+            }
+        }
 
         if(challenger==null){
             if(!request.pathInfo().contentEquals("/challenger")) {
@@ -47,11 +63,7 @@ public class ChallengerSparkHTTPResponseHook implements SparkRequestResponseHook
             challengers.pass(challenger,CHALLENGE.OPTIONS_TODOS);
         }
 
-        if(request.requestMethod()== "POST" &&
-                request.pathInfo().contentEquals("/challenger") &&
-                response.status() ==201){
-            challengers.pass(challenger,CHALLENGE.CREATE_NEW_CHALLENGER);
-        }
+
 
         if(request.requestMethod()== "POST" &&
                 request.pathInfo().contentEquals("/secret/token") &&
