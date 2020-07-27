@@ -51,5 +51,6 @@ v0.1
 
 ## How Tos
 
-
+- [About the application](https://github.com/eviltester/thingifier/blob/master/challenger/info/00_welcome.md)
+- [Creating a Multi-User Session](https://github.com/eviltester/thingifier/blob/master/challenger/info/10_how_to_register_cloud_challenger.md)
 
