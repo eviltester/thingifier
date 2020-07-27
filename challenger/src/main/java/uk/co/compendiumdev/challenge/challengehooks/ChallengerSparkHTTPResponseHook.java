@@ -1,7 +1,9 @@
-package uk.co.compendiumdev.challenge;
+package uk.co.compendiumdev.challenge.challengehooks;
 
 import spark.Request;
 import spark.Response;
+import uk.co.compendiumdev.challenge.CHALLENGE;
+import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
 import uk.co.compendiumdev.thingifier.application.sparkhttpmessageHooks.SparkRequestResponseHook;
 
@@ -36,13 +38,19 @@ public class ChallengerSparkHTTPResponseHook implements SparkRequestResponseHook
         if(request.requestMethod() == "GET" &&
                 request.pathInfo().contentEquals("/todo") &&
                 response.status()==404){
-            challengers.pass(challenger,CHALLENGE.GET_TODOS_NOT_PLURAL_404);
+            challengers.pass(challenger, CHALLENGE.GET_TODOS_NOT_PLURAL_404);
         }
 
         if(request.requestMethod()== "OPTIONS" &&
                 request.pathInfo().contentEquals("/todos") &&
                 response.status() ==200){
             challengers.pass(challenger,CHALLENGE.OPTIONS_TODOS);
+        }
+
+        if(request.requestMethod()== "POST" &&
+                request.pathInfo().contentEquals("/challenger") &&
+                response.status() ==201){
+            challengers.pass(challenger,CHALLENGE.CREATE_NEW_CHALLENGER);
         }
 
         if(request.requestMethod()== "POST" &&

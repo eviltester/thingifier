@@ -1,5 +1,7 @@
-package uk.co.compendiumdev.challenge;
+package uk.co.compendiumdev.challenge.challengehooks;
 
+import uk.co.compendiumdev.challenge.CHALLENGE;
+import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
 import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
@@ -41,7 +43,7 @@ public class ChallengerApiResponseHook implements HttpApiResponseHook {
         if(request.getVerb() == HttpApiRequest.VERB.GET &&
                 request.getPath().matches("todos/.*") &&
                 response.getStatusCode()==200){
-            challengers.pass(challenger,CHALLENGE.GET_TODO);
+            challengers.pass(challenger, CHALLENGE.GET_TODO);
         }
 
         if(request.getVerb() == HttpApiRequest.VERB.GET &&

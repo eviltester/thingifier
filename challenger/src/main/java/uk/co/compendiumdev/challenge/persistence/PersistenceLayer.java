@@ -1,6 +1,7 @@
 package uk.co.compendiumdev.challenge.persistence;
 
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
+import uk.co.compendiumdev.challenge.challengers.Challengers;
 
 public class PersistenceLayer {
 
@@ -16,6 +17,16 @@ public class PersistenceLayer {
 
     public void switchOffPersistence() {
         storeOn=StorageType.NONE;
+    }
+
+    public ChallengerAuthData tryToLoadChallenger(final Challengers challengers, final String xChallengerGuid) {
+        ChallengerAuthData challenger=null;
+        challenger = loadChallengerStatus(xChallengerGuid);
+        if(challenger!=null){
+            challenger.touch(); // refresh last accessed date
+            challengers.put(challenger);
+        }
+        return challenger;
     }
 
     public enum StorageType{LOCAL, CLOUD, NONE};

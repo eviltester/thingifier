@@ -19,11 +19,14 @@ public class ChallengeDefinitions {
         challengeData = new HashMap<>();
         orderedChallenges = new ArrayList<>();
 
-        // todo: challenge to POST /challenger and create a challenger
         // todo: challenge to GET /challenger/{guid} and restore a challenger session
         // todo: challenge to POST /challenger with X-CHALLENGER header of existing challenger to restore a challenger
         // todo: challenge to POST /challenger with X-CHALLENGER header of existing challenger and body of a stored challenge set to update the challenger in the system
 
+        // create a challenger to persist challenge sessions
+        // CREATE_NEW_CHALLENGER
+        addChallenge(CHALLENGE.CREATE_NEW_CHALLENGER, "POST /challenger (201)",
+                "Issue a POST request on the `/challenger` end point, with no body, to create a new challenger session. Use the generated X-CHALLENGER header in future requests to track challenge completion.");
 
         // READ
         addChallenge(CHALLENGE.GET_CHALLENGES, "GET /challenges (200)",

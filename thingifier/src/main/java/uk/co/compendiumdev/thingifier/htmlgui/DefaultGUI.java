@@ -67,12 +67,13 @@ public class DefaultGUI {
 
         templates.appendMenuItem("Home", "/gui");
 
-        publicRoutes.add(new RoutingDefinition(
-                                RoutingVerb.GET,
-                                "/gui",
-                                RoutingStatus.returnedFromCall(),
-                                null
-                            ).addDocumentation("Show the Default GUI"));
+        // This is not an API call - don't show it in API documentation
+//        publicRoutes.add(new RoutingDefinition(
+//                                RoutingVerb.GET,
+//                                "/gui",
+//                                RoutingStatus.returnedFromCall(),
+//                                null
+//                            ).addDocumentation("Show the Default GUI"));
 
         templates.appendMenuItem("Entities Explorer", "/gui/entities");
 

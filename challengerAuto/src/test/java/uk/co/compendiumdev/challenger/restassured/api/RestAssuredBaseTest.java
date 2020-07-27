@@ -7,6 +7,8 @@ import io.restassured.http.ContentType;
 import org.junit.jupiter.api.BeforeAll;
 import uk.co.compendiumdev.sparkstart.Environment;
 
+import java.io.File;
+
 public class RestAssuredBaseTest {
 
     static String environment="";
@@ -21,6 +23,17 @@ public class RestAssuredBaseTest {
                 new ResponseLoggingFilter());
 
         if(xChallenger==""){
+
+            // because we are unit tests we are running in single player mode so delete the single player data
+            try {
+                final File dataFile = new File(System.getProperty("User.dir"), "rest-api-challenges-single-player.data.txt");
+                if(dataFile.exists()){
+                    dataFile.delete();
+                }
+            }catch(Exception e){
+
+            }
+
             xChallenger = RestAssured.
                 given().
                     post(Environment.getEnv( "/challenger")).

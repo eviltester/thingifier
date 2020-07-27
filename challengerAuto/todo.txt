@@ -12,6 +12,7 @@ WRAPPER:
 
 LIBRARIES:
 
+- JSoup
 - OkHttp - https://square.github.io/okhttp/
 - UniRest - http://kong.github.io/unirest-java/
 

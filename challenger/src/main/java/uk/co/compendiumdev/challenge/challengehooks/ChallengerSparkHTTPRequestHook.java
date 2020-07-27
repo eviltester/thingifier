@@ -1,7 +1,9 @@
-package uk.co.compendiumdev.challenge;
+package uk.co.compendiumdev.challenge.challengehooks;
 
 import spark.Request;
 import spark.Response;
+import uk.co.compendiumdev.challenge.CHALLENGE;
+import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
 import uk.co.compendiumdev.thingifier.application.sparkhttpmessageHooks.SparkRequestResponseHook;
 
@@ -27,7 +29,7 @@ public class ChallengerSparkHTTPRequestHook implements SparkRequestResponseHook 
 
         if(request.requestMethod().toUpperCase().contentEquals("GET") &&
                 request.pathInfo().contentEquals("/challenges")){
-            challengers.pass(challenger,CHALLENGE.GET_CHALLENGES);
+            challengers.pass(challenger, CHALLENGE.GET_CHALLENGES);
         }
 
         if(request.requestMethod().toUpperCase().contentEquals("GET") &&
