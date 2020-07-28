@@ -7,8 +7,6 @@ import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
 import uk.co.compendiumdev.thingifier.application.sparkhttpmessageHooks.SparkRequestResponseHook;
 
-import java.util.concurrent.ExecutionException;
-
 
 public class ChallengerSparkHTTPResponseHook implements SparkRequestResponseHook {
 
@@ -47,7 +45,9 @@ public class ChallengerSparkHTTPResponseHook implements SparkRequestResponseHook
         }
 
         if(challenger!=null){
-            response.header("X-CHALLENGER", challenger.getXChallenger());
+            if(response.raw().getHeader("X-CHALLENGER") ==null) {
+                response.header("X-CHALLENGER", challenger.getXChallenger());
+            }
         }
 
         // No endpoint defined so this 404 created by Spark routing
@@ -62,8 +62,6 @@ public class ChallengerSparkHTTPResponseHook implements SparkRequestResponseHook
                 response.status() ==200){
             challengers.pass(challenger,CHALLENGE.OPTIONS_TODOS);
         }
-
-
 
         if(request.requestMethod()== "POST" &&
                 request.pathInfo().contentEquals("/secret/token") &&
