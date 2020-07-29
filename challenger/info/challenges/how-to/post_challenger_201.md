@@ -54,3 +54,6 @@ Content-Type: text/html;charset=utf-8
 Transfer-Encoding: chunked
 Server: Jetty(9.4.z-SNAPSHOT)
 ~~~~~~~~
+
+
+_NOTE: the first version of apichallenger.jar had a bug where the `X-CHALLENGER` header would be repeated. In theory this wouldn't make any real difference, but these are the types of bugs which can cause applications issues, particularly if the values were different. It is always worth reading the headers carefully to make sure they are as we expect._

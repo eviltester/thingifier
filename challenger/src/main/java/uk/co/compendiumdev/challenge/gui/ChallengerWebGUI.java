@@ -193,6 +193,7 @@ public class ChallengerWebGUI {
         html.append("<thead>");
         html.append("<tr>");
 
+        html.append("<style>.statustrue{background:palegreen}</style>");
         html.append("<th>Challenge</th>");
         html.append("<th>Done</th>");
         html.append("<th>Description</th>");
@@ -201,7 +202,7 @@ public class ChallengerWebGUI {
         html.append("<tbody>");
 
         for(ChallengeData challenge : reportOn){
-            html.append("<tr>");
+            html.append(String.format("<tr class='status%b'>", challenge.status));
             html.append(String.format("<td>%s</td>", challenge.name));
             html.append(String.format("<td>%b</td>", challenge.status));
             html.append(String.format("<td>%s</td>", challenge.description));
