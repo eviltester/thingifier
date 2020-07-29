@@ -4,6 +4,7 @@ import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfigProfile;
+import uk.co.compendiumdev.thingifier.application.data.TodoManagerAPIDataPopulator;
 import uk.co.compendiumdev.thingifier.domain.FieldType;
 import uk.co.compendiumdev.thingifier.domain.definitions.validation.VRule;
 import uk.co.compendiumdev.thingifier.domain.definitions.Field;
@@ -96,25 +97,7 @@ public class TodoManagerThingifier {
 
         // Some hard coded test data for experimenting with
         // TODO: allow importing from a JSON to create data in bulk
-        ThingInstance paperwork = todo.createInstance().setValue("title", "scan paperwork");
-        todo.addInstance(paperwork);
-
-        ThingInstance filework = todo.createInstance().setValue("title", "file paperwork");
-        todo.addInstance(filework);
-
-        ThingInstance officeCategory = category.createInstance().setValue("title", "Office");
-        category.addInstance(officeCategory);
-
-        ThingInstance homeCategory = category.createInstance().setValue("title", "Home");
-        category.addInstance(homeCategory);
-
-        ThingInstance officeWork = project.createInstance().setValue("title", "Office Work");
-        project.addInstance(officeWork);
-
-        officeWork.connects("tasks", paperwork);
-        officeWork.connects("tasks", filework);
-
-        paperwork.connects("categories", officeCategory);
+        todoManager.setDataGenerator(new TodoManagerAPIDataPopulator());
 
 
         // PROFILES

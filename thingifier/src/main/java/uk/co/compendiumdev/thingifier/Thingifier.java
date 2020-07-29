@@ -4,6 +4,7 @@ import uk.co.compendiumdev.thingifier.api.ThingifierRestAPIHandler;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfigProfile;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfigProfiles;
+import uk.co.compendiumdev.thingifier.domain.data.ThingifierDataPopulator;
 import uk.co.compendiumdev.thingifier.domain.definitions.Cardinality;
 import uk.co.compendiumdev.thingifier.domain.definitions.FieldValue;
 import uk.co.compendiumdev.thingifier.domain.definitions.RelationshipDefinition;
@@ -18,6 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 final public class Thingifier {
 
+    private ThingifierDataPopulator initialDataGenerator;
     private Map<String, Thing> things;
     private Map<String, RelationshipDefinition> relationships;
     private String title;
@@ -32,6 +34,7 @@ final public class Thingifier {
         initialParagraph = "";
         apiConfig = new ThingifierApiConfig();
         apiConfigProfiles = new ThingifierApiConfigProfiles();
+        initialDataGenerator=null; // todo consider having a default random data generator
     }
     /*
         TODO: configure the REST API from the entities and relationship definitions
@@ -202,5 +205,15 @@ final public class Thingifier {
         }else {
             apiConfig.setFrom(profileToUse.apiConfig());
         }
+    }
+
+    public void generateData() {
+        if(initialDataGenerator!=null) {
+            initialDataGenerator.populate(this);
+        }
+    }
+
+    public void setDataGenerator(ThingifierDataPopulator dataPopulator) {
+        initialDataGenerator = dataPopulator;
     }
 }

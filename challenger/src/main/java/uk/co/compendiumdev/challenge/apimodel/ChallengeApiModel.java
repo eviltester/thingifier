@@ -1,11 +1,10 @@
-package uk.co.compendiumdev.challenge;
+package uk.co.compendiumdev.challenge.apimodel;
 
 import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.domain.FieldType;
 import uk.co.compendiumdev.thingifier.domain.definitions.Field;
 import uk.co.compendiumdev.thingifier.domain.definitions.validation.VRule;
-import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
 
 import static uk.co.compendiumdev.thingifier.domain.FieldType.STRING;
 
@@ -35,11 +34,8 @@ public class ChallengeApiModel {
                 );
 
 
-        ThingInstance paperwork = todo.createInstance().setValue("title", "scan paperwork");
-        todo.addInstance(paperwork);
-
-        ThingInstance filework = todo.createInstance().setValue("title", "file paperwork");
-        todo.addInstance(filework);
+        todoList.setDataGenerator(new TodoAPIDataPopulator());
+        todoList.generateData();
 
         todoList.apiConfig().setResponsesToShowGuids(false);
 

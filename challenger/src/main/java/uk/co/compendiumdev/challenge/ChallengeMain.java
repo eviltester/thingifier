@@ -1,5 +1,6 @@
 package uk.co.compendiumdev.challenge;
 
+import uk.co.compendiumdev.challenge.apimodel.ChallengeApiModel;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.application.MainImplementation;
 import uk.co.compendiumdev.thingifier.application.ThingifierRestServer;

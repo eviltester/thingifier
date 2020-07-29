@@ -4,6 +4,7 @@ import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfigProfile;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
+import uk.co.compendiumdev.thingifier.application.data.TodoAPIDataPopulator;
 import uk.co.compendiumdev.thingifier.domain.FieldType;
 import uk.co.compendiumdev.thingifier.domain.definitions.Field;
 import uk.co.compendiumdev.thingifier.domain.definitions.validation.VRule;
@@ -44,12 +45,9 @@ public class TodoListThingifier {
                         );
 
 
-        // TODO: create a 'sample data' definition
-        ThingInstance paperwork = todo.createInstance().setValue("title", "scan paperwork");
-        todo.addInstance(paperwork);
-
-        ThingInstance filework = todo.createInstance().setValue("title", "file paperwork");
-        todo.addInstance(filework);
+        // TODO: have a data generator per profile
+        todoList.setDataGenerator(new TodoAPIDataPopulator());
+        todoList.generateData();
 
         // API Config Profiles
 
