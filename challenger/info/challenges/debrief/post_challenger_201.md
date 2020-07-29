@@ -39,9 +39,18 @@ We use a `POST` request to do that.
 
 If I used a `GET` request, and the system created a `challenger` session in response then that is not in the spirit of the HTTP specification.
 
-`GET` should be cacheable, and return information, not create information.
-
+`GET` should be cacheable, and return information, not create information as a side-effect.
+ 
 `POST` is used to create information on the server.
+
+## Status Code
+
+- `201` Created
+- What other status codes could be provided?
+   - API documentation doesn't say
+   - Assume: 405
+   - https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/405
+   - https://httpstatuses.com/405
 
 ## What are the headers in the response?
 
@@ -49,3 +58,26 @@ The response has two important headers for us.
 
 - `X-CHALLENGER`
 - `LOCATION`
+
+Notes:
+
+- `X-CHALLENGER` is a custom header.
+- applications are free to create custom headers
+- `X-...` used to be the standard recommended approach
+- Based on this 'standard' it is now a deprecated recommendation, but still used https://tools.ietf.org/html/rfc6648
+    - "this is a matter for the designers of those protocols"
+    
+Notes: `Location`
+
+- https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Location
+- used with 303 and 201
+- if a browser then it will follow Location header
+- semantics are 'looser' for APIs
+
+## Cookies?
+
+- Cookies are not used in APIs as frequently as GUI
+- Cookies can often be scraped from GUI and passed to API
+     - not always the best approach
+     - "The Pulper" practice app can use cookies to access the data, if you want to practice with cookies then try that.
+     - https://www.eviltester.com/page/tools/thepulper/

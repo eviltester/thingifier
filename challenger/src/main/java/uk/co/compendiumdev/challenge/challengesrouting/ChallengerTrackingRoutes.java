@@ -91,19 +91,23 @@ public class ChallengerTrackingRoutes {
                 routeStatusWhenNot(
                         405, "/challenger", "post");
 
-        if(!single_player_mode) {
-            routes.add(new RoutingDefinition(
-                    RoutingVerb.POST,
-                    "/challenger",
-                    RoutingStatus.returnedFromCall(),
-                    null).addDocumentation("Create an X-CHALLENGER guid to allow tracking challenges, use the X-CHALLENGER header in all requests to track challenge completion for multi-user tracking."));
-
-            routes.add(new RoutingDefinition(
-                    RoutingVerb.GET,
-                    "/challenger/:guid",
-                    RoutingStatus.returnedFromCall(),
-                    null).addDocumentation("Restore a saved challenger matching the supplied X-CHALLENGER guid to allow continued tracking of challenges."));
+        String explanation = "";
+        if(single_player_mode) {
+            explanation =  "Not necessary in single user mode.";
         }
+
+
+        routes.add(new RoutingDefinition(
+                RoutingVerb.POST,
+                "/challenger",
+                RoutingStatus.returnedFromCall(),
+                null).addDocumentation("Create an X-CHALLENGER guid to allow tracking challenges, use the X-CHALLENGER header in all requests to track challenge completion for multi-user tracking." + explanation));
+
+        routes.add(new RoutingDefinition(
+                RoutingVerb.GET,
+                "/challenger/:guid",
+                RoutingStatus.returnedFromCall(),
+                null).addDocumentation("Restore a saved challenger matching the supplied X-CHALLENGER guid to allow continued tracking of challenges." + explanation));
 
     }
 }

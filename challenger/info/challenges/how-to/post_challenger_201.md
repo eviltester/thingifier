@@ -56,4 +56,4 @@ Server: Jetty(9.4.z-SNAPSHOT)
 ~~~~~~~~
 
 
-_NOTE: the first version of apichallenger.jar had a bug where the `X-CHALLENGER` header would be repeated. In theory this wouldn't make any real difference, but these are the types of bugs which can cause applications issues, particularly if the values were different. It is always worth reading the headers carefully to make sure they are as we expect._
+_NOTE: the first version of apichallenger.jar had a bug where the `X-CHALLENGER` header would be repeated. In theory this wouldn't make any real difference, but these are the types of bugs which can cause applications issues, particularly if the values were different. It is always worth reading the headers carefully to make sure they are as we expect. This type of issue is more severe on the server side, so is worth testing for. It can cause the server side to only validate one of the headers, but potentially allow unvalidated data to be processed. This can also be quite hard to generate because often our tooling prevents us from generating invalid requests._
