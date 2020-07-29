@@ -93,7 +93,7 @@ public class ChallengerTrackingRoutes {
 
         String explanation = "";
         if(single_player_mode) {
-            explanation =  "Not necessary in single user mode.";
+            explanation =  " Not necessary in single user mode.";
         }
 
 
