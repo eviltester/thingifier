@@ -98,7 +98,7 @@ public class TodoManagerThingifier {
         // Some hard coded test data for experimenting with
         // TODO: allow importing from a JSON to create data in bulk
         todoManager.setDataGenerator(new TodoManagerAPIDataPopulator());
-
+        todoManager.generateData();
 
         // PROFILES
         // can have different -version params which configure the TodoManagerThingifier in different ways
