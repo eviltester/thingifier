@@ -370,4 +370,8 @@ public class MainImplementation {
     public DefaultGUIHTML getGuiManagement() {
         return guiManagement;
     }
+
+    public ThingifierApiDefn getApiDefn() {
+        return apiDefn;
+    }
 }

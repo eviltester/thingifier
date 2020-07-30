@@ -335,6 +335,8 @@ public class RestApiDocumentationGenerator {
             }
         }
 
+        output.append(paragraph(href("[download swagger file]","/docs/swagger")));
+
         output.append(defaultGui.getPageFooter());
         output.append(defaultGui.getPageEnd());
         return output.toString();

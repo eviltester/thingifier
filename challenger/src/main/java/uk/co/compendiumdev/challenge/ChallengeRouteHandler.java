@@ -32,9 +32,9 @@ public class ChallengeRouteHandler {
     private boolean guiStayAlive=false; // when set gui makes a call every 5 mins to keep session alive,
                                         // not needed when storing data
 
-    public ChallengeRouteHandler(Thingifier thingifier){
+    public ChallengeRouteHandler(Thingifier thingifier, ThingifierApiDefn apiDefn){
 
-        this.apiDefn = new ThingifierApiDefn();
+        this.apiDefn = apiDefn;
         apiDefn.setThingifier(thingifier);
 
         apiDefn.addServer("https://apichallenges.herokuapp.com", "heroku hosted version");

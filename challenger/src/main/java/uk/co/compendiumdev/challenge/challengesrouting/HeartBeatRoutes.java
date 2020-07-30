@@ -33,20 +33,23 @@ public class HeartBeatRoutes {
                 RoutingVerb.GET,
                 endpoint,
                 RoutingStatus.returnedFromCall(),
-                null).addDocumentation("Is the server running? YES == 204"));
+                null).addDocumentation("Is the server running? YES 204").
+                addPossibleStatuses(204));
 
         apiDefn.addAdditionalRoute(
                 new RoutingDefinition(
                 RoutingVerb.OPTIONS,
                 endpoint,
                 RoutingStatus.returnedFromCall(),
-                null).addDocumentation("Options for heartbeat endpoint"));
+                null).addDocumentation("Options for heartbeat endpoint")
+                        .addPossibleStatuses(204));
 
         apiDefn.addAdditionalRoute(
                 new RoutingDefinition(
                 RoutingVerb.HEAD,
                 endpoint,
                 RoutingStatus.returnedFromCall(),
-                null).addDocumentation("Headers for heartbeat endpoint"));
+                null).addDocumentation("Headers for heartbeat endpoint")
+                    .addPossibleStatuses(204));
     }
 }

@@ -61,21 +61,24 @@ public class ChallengesRoutes {
                 RoutingVerb.GET,
                 "/challenges",
                 RoutingStatus.returnedFromCall(),
-                null).addDocumentation("Get list of challenges and their completion status"));
+                null).addDocumentation("Get list of challenges and their completion status").
+                        addPossibleStatuses(200));
 
         apiDefn.addAdditionalRoute(
                 new RoutingDefinition(
                 RoutingVerb.OPTIONS,
                 "/challenges",
                 RoutingStatus.returnedFromCall(),
-                null).addDocumentation("Options for list of challenges endpoint"));
+                null).addDocumentation("Options for list of challenges endpoint").
+                        addPossibleStatuses(200));
 
         apiDefn.addAdditionalRoute(
                 new RoutingDefinition(
                 RoutingVerb.HEAD,
                 "/challenges",
                 RoutingStatus.returnedFromCall(),
-                null).addDocumentation("Headers for list of challenges endpoint"));
+                null).addDocumentation("Headers for list of challenges endpoint")
+                        .addPossibleStatuses(200));
     }
 
 }

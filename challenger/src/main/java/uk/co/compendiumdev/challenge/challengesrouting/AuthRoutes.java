@@ -58,7 +58,8 @@ public class AuthRoutes {
                 RoutingVerb.POST,
                 "/secret/token",
                 RoutingStatus.returnedFromCall(),
-                null).addDocumentation("POST /secret/token with basic auth to get a secret/token to use as X-AUTH-TOKEN header, to allow access to the /secret/note end points."));
+                null).addDocumentation("POST /secret/token with basic auth to get a secret/token to use as X-AUTH-TOKEN header, to allow access to the /secret/note end points.").
+                    addPossibleStatuses(201,401));
 
         // todo: GET /secret/token returns the secret token or 401 if not authenticated
 
@@ -100,7 +101,9 @@ public class AuthRoutes {
                 RoutingVerb.GET,
                 "/secret/note",
                 RoutingStatus.returnedFromCall(),
-                null).addDocumentation("GET /secret/note with X-AUTH-TOKEN to return the secret note for the user."));
+                null).addDocumentation(
+                        "GET /secret/note with X-AUTH-TOKEN to return the secret note for the user.").
+                        addPossibleStatuses(200,401,403));
 
 
         post("/secret/note", (request, result) -> {
@@ -150,7 +153,8 @@ public class AuthRoutes {
                 RoutingVerb.POST,
                 "/secret/note",
                 RoutingStatus.returnedFromCall(),
-                null).addDocumentation("POST /secret/note with X-AUTH-TOKEN, and a payload of `{'note':'contents of note'}` to amend the contents of the secret note."));
+                null).addDocumentation("POST /secret/note with X-AUTH-TOKEN, and a payload of `{'note':'contents of note'}` to amend the contents of the secret note.").
+                addPossibleStatuses(200,400,401,403));
 
 
     }

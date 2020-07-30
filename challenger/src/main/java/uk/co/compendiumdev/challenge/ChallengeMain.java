@@ -21,7 +21,7 @@ public class ChallengeMain {
         app.setupBuiltInConfigurableRoutes();
 
         // setup routes required for challenges
-        ChallengeRouteHandler challenger = new ChallengeRouteHandler(thingifier);
+        ChallengeRouteHandler challenger = new ChallengeRouteHandler(thingifier, app.getApiDefn());
         for (String arg : args) {
             if (arg.startsWith("-multiplayer")) {
                 System.out.println("Running in multiplayer mode");
@@ -46,8 +46,6 @@ public class ChallengeMain {
 
 
         challenger.configureRoutes();
-
-        app.addAdditionalRoutes(challenger.getRoutes());
 
         app.chooseThingifier();
         // can set profile by adding more configs, or just

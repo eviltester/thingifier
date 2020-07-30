@@ -10,7 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>challenger</artifactId>
-    <version>1.0</version>
+    <version>1.0.1</version>
 
     <dependencies>
         <dependency>
@@ -75,3 +75,16 @@
         </plugins>
     </build>
 </project>
+
+<!--
+
+1.0.1
+
+- highlighting of completed challenges
+- swagger file download from the API Documentation page
+
+1.0.0
+
+- initial release
+
+-->

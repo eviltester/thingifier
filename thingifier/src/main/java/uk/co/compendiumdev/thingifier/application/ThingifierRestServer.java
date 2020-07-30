@@ -12,6 +12,7 @@ import uk.co.compendiumdev.thingifier.application.httpapimessagehooks.HttpApiRes
 import uk.co.compendiumdev.thingifier.application.sparkhttpmessageHooks.SparkRequestResponseHook;
 import uk.co.compendiumdev.thingifier.htmlgui.DefaultGUIHTML;
 import uk.co.compendiumdev.thingifier.htmlgui.RestApiDocumentationGenerator;
+import uk.co.compendiumdev.thingifier.swaggerizer.Swaggerizer;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -32,6 +33,7 @@ public class ThingifierRestServer {
 
 
     // todo : we should be able to configure the API routing for authorisation and support logging
+    // todo: we should split the REST and Documentation stuff out and have thingifier as a core non-http set of libraries
 
 
     public ThingifierRestServer(final String path,
@@ -97,6 +99,24 @@ public class ThingifierRestServer {
             return new RestApiDocumentationGenerator(thingifier, guiManagement).
                     getApiDocumentation(routingDefinitions, apiDefn.getAdditionalRoutes(), this.urlPath);
         });
+
+        // now that we have an api definition we should be able to generate swagger
+        get("/docs/swagger", (request, response) -> {
+            response.type("text/html");
+            response.status(200);
+            String nameprefix = "";
+            try {
+                nameprefix = apiDefn.getThingifier().getTitle().replace(" ", "-") + "-";
+            }catch (Exception e){
+                // invalid apidefn setup
+                System.out.println("Possibly incomplete swagger generation, api not defined from model");
+            }
+            response.header("Content-Type", "application/octet-stream");
+            response.header("Content-Disposition",
+                    String.format("attachment; filename=\"%sswagger.json\"",nameprefix));
+            return new Swaggerizer(apiDefn).asJson();
+        });
+
 
         guiManagement.appendMenuItem("API documentation","/docs");
 

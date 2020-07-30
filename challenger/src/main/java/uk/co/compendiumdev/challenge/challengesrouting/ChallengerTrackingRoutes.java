@@ -74,9 +74,9 @@ public class ChallengerTrackingRoutes {
                 }
                 if(challenger==null){
                     // if X-CHALLENGER header exists, and is not a known UUID,
-                    // return 410, challenger ID not valid
+                    // return 404, challenger ID not valid
                     result.header("X-CHALLENGER", "Challenger not found");
-                    result.status(422);
+                    result.status(404);
                 }else{
                     // if X-CHALLENGER header exists, and has a valid UUID, and UUID exists, then return 200
                     result.header("X-CHALLENGER", challenger.getXChallenger());
@@ -102,14 +102,17 @@ public class ChallengerTrackingRoutes {
                 RoutingVerb.POST,
                 "/challenger",
                 RoutingStatus.returnedFromCall(),
-                null).addDocumentation("Create an X-CHALLENGER guid to allow tracking challenges, use the X-CHALLENGER header in all requests to track challenge completion for multi-user tracking." + explanation));
+                null).
+                addDocumentation("Create an X-CHALLENGER guid to allow tracking challenges, use the X-CHALLENGER header in all requests to track challenge completion for multi-user tracking." + explanation).
+                    addPossibleStatuses(200,400,404));
 
         apiDefn.addAdditionalRoute(
             new RoutingDefinition(
                 RoutingVerb.GET,
                 "/challenger/:guid",
                 RoutingStatus.returnedFromCall(),
-                null).addDocumentation("Restore a saved challenger matching the supplied X-CHALLENGER guid to allow continued tracking of challenges." + explanation));
+                null).addDocumentation("Restore a saved challenger matching the supplied X-CHALLENGER guid to allow continued tracking of challenges." + explanation)
+                    .addPossibleStatuses(204,404));
 
     }
 }

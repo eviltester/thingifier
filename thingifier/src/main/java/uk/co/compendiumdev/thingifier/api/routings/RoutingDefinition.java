@@ -31,6 +31,13 @@ public class RoutingDefinition {
         this.possibleStatusResponses= new ArrayList<>();
     }
 
+    private List<RoutingStatus> getDefaultPossibleStatusResponses() {
+        List<RoutingStatus> defaultPossibleStatusResponses = new ArrayList<>();
+        defaultPossibleStatusResponses.add(RoutingStatus.returnValue(200));
+        defaultPossibleStatusResponses.add(RoutingStatus.returnValue(404));
+        return defaultPossibleStatusResponses;
+    }
+
     public RoutingVerb verb() {
         return this.verb;
     }
@@ -87,6 +94,9 @@ public class RoutingDefinition {
     }
 
     public List<RoutingStatus> getPossibleStatusReponses() {
+        if(possibleStatusResponses.size()==0){
+            return getDefaultPossibleStatusResponses();
+        }
         return possibleStatusResponses;
     }
 
