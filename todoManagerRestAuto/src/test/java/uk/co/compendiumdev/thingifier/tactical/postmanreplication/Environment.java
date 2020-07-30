@@ -5,6 +5,7 @@ import io.restassured.filter.log.RequestLoggingFilter;
 import io.restassured.filter.log.ResponseLoggingFilter;
 import spark.Spark;
 import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.api.ThingifierApiDefn;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.application.ThingifierRestServer;
 import uk.co.compendiumdev.thingifier.application.examples.TodoManagerThingifier;
@@ -45,8 +46,8 @@ public class Environment {
             thingifier.apiConfig().jsonOutput().setRelationshipsUseIdsIfAvailable(false);
             thingifier.apiConfig().jsonOutput().setConvertFieldsToDefinedTypes(false);
 
-            List<RoutingDefinition> additionalRoutes = new ArrayList<>();
-            new ThingifierRestServer("", thingifier, additionalRoutes, new DefaultGUIHTML());
+            ThingifierApiDefn apiDefn = new ThingifierApiDefn().setThingifier(thingifier);
+            new ThingifierRestServer("", thingifier, apiDefn, new DefaultGUIHTML());
             return "http://localhost:4567";
         }
 

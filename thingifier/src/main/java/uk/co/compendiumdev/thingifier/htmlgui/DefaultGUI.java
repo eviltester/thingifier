@@ -33,20 +33,14 @@ public class DefaultGUI {
     private final XmlThing xmlThing;
     private final ThingifierApiConfig apiConfig;
 
-    private List<RoutingDefinition> publicRoutes;
-
     public DefaultGUI(final Thingifier thingifier, DefaultGUIHTML defaultGui) {
         this.thingifier=thingifier;
         this.apiConfig = thingifier.apiConfig();
         this.jsonThing = new JsonThing(apiConfig.jsonOutput());
         this.xmlThing = new XmlThing(jsonThing);
         this.templates = defaultGui;
-        publicRoutes = new ArrayList<>();
     }
 
-    public List<RoutingDefinition> getRoutes(){
-        return publicRoutes;
-    }
     public DefaultGUI configureRoutes(){
 
         get("/gui", (request, response) -> {

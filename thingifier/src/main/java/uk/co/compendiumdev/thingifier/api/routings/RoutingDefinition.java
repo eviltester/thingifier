@@ -1,7 +1,11 @@
 package uk.co.compendiumdev.thingifier.api.routings;
 
+import org.eclipse.jetty.http.HttpFields;
 import uk.co.compendiumdev.thingifier.api.response.ResponseHeader;
 import uk.co.compendiumdev.thingifier.domain.definitions.ThingDefinition;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class RoutingDefinition {
     private final RoutingVerb verb;
@@ -11,6 +15,7 @@ public class RoutingDefinition {
     private String documentation = "";
     private boolean isFilterable;
     private ThingDefinition filterableEntityDefn;
+    private List<RoutingStatus> possibleStatusResponses;
 
     public RoutingDefinition(RoutingVerb verb, String url, RoutingStatus routingStatus, ResponseHeader header) {
         this.verb = verb;
@@ -23,6 +28,7 @@ public class RoutingDefinition {
         this.header = header;
         this.isFilterable=false;
         filterableEntityDefn=null;
+        this.possibleStatusResponses= new ArrayList<>();
     }
 
     public RoutingVerb verb() {
@@ -73,5 +79,22 @@ public class RoutingDefinition {
 
     public ThingDefinition getFilterableEntity() {
         return filterableEntityDefn;
+    }
+
+    public RoutingDefinition addPossibleStatus(final RoutingStatus status) {
+        possibleStatusResponses.add(status);
+        return this;
+    }
+
+    public List<RoutingStatus> getPossibleStatusReponses() {
+        return possibleStatusResponses;
+    }
+
+    // quick hack method to allow creating a bunch of default rendered possible status codes
+    public RoutingDefinition addPossibleStatuses(final Integer... statusCodes) {
+        for(Integer statusCode : statusCodes){
+            addPossibleStatus(RoutingStatus.returnValue(statusCode));
+        }
+        return this;
     }
 }

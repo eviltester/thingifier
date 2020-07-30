@@ -75,10 +75,13 @@ public class ApiRoutingDefinitionGenerator {
             defn.addRouting(
                     String.format("return all the instances of %s", thing.definition().getName()),
                     RoutingVerb.GET, pluralUrl, RoutingStatus.returnedFromCall()).
+                    addPossibleStatus(RoutingStatus.returnValue(
+                                200, String.format("All the %s", thing.definition().getPlural()))).
                     setAsFilterableFrom(thing.definition());
 
             defn.addRouting(String.format("headers for all the instances of %s", thing.definition().getName()),
-                    RoutingVerb.HEAD, pluralUrl, RoutingStatus.returnedFromCall());
+                    RoutingVerb.HEAD, pluralUrl, RoutingStatus.returnedFromCall()).
+                    addPossibleStatus(RoutingStatus.returnValue(200));
 
             // TODO: more granularity if singleUrl!=pluralUrl then we need two paths here
             // e.g. GET projects, POST project - which also changes the Options
@@ -86,11 +89,15 @@ public class ApiRoutingDefinitionGenerator {
             defn.addRouting(
                     String.format("we should be able to create %s without a %s using the field values in the body of the message",
                                         thing.definition().getName(), uniqueIdFieldName.toUpperCase()),
-                    RoutingVerb.POST, pluralUrl, RoutingStatus.returnedFromCall());
+                    RoutingVerb.POST, pluralUrl, RoutingStatus.returnedFromCall()).
+                    addPossibleStatus(RoutingStatus.returnValue(
+                            201, String.format("Created a %s", thing.definition().getName()))).
+                    addPossibleStatus(RoutingStatus.returnValue(
+                            400, String.format("Error when creating a %s", thing.definition().getName())));
 
             defn.addRouting(
                     String.format("show all Options for endpoint of %s", pluralUrl),
-                    RoutingVerb.OPTIONS, pluralUrl, RoutingStatus.returnValue(200),
+                    RoutingVerb.OPTIONS, pluralUrl, RoutingStatus.returnValue(200, "the endpoint verb options"),
                     new ResponseHeader("Allow", "OPTIONS, GET, HEAD, POST"));
 
             // the following are not handled so return 405
@@ -106,17 +113,29 @@ public class ApiRoutingDefinitionGenerator {
             defn.addRouting(
                     String.format("return a specific instances of %s using a %s",
                             thing.definition().getName(),uniqueIdFieldName),
-                    RoutingVerb.GET, aUrlWGuid, RoutingStatus.returnedFromCall());
+                    RoutingVerb.GET, aUrlWGuid, RoutingStatus.returnedFromCall()).
+                    addPossibleStatus(RoutingStatus.returnValue(
+                            200, String.format("A specific %s", thing.definition().getName()))).
+                    addPossibleStatus(RoutingStatus.returnValue(
+                            404, String.format("Could not find a specific %s", thing.definition().getName())));
 
             defn.addRouting(String.format("headers for a specific instances of %s using a %s",
                             thing.definition().getName(),uniqueIdFieldName),
-                    RoutingVerb.HEAD, aUrlWGuid, RoutingStatus.returnedFromCall());
+                    RoutingVerb.HEAD, aUrlWGuid, RoutingStatus.returnedFromCall()).
+                    addPossibleStatus(RoutingStatus.returnValue(
+                            200, String.format("Headers for a specific %s", thing.definition().getName()))).
+                    addPossibleStatus(RoutingStatus.returnValue(
+                            404, String.format("Could not find a specific %s", thing.definition().getName())));;
 
             // we should be able to amend things with a GUID e.g. POST project/GUID with body
             defn.addRouting(
                     String.format("amend a specific instances of %s using a %s with a body containing the fields to amend",
                             thing.definition().getName(), uniqueIdFieldName),
-                    RoutingVerb.POST, aUrlWGuid, RoutingStatus.returnedFromCall());
+                    RoutingVerb.POST, aUrlWGuid, RoutingStatus.returnedFromCall()).
+                    addPossibleStatus(RoutingStatus.returnValue(
+                            200, String.format("Amended the specific %s", thing.definition().getName()))).
+                    addPossibleStatus(RoutingStatus.returnValue(
+                            404, String.format("Could not find a specific %s", thing.definition().getName())));;
 
             // we should be able to amend things with PUT and a GUID e.g. PUT project/GUID
             String ifGUIDamendment="";
@@ -127,13 +146,21 @@ public class ApiRoutingDefinitionGenerator {
             defn.addRouting(
                     String.format("amend a specific instances of %1$s using a %2$s with a body containing the fields to amend",
                             thing.definition().getName(),uniqueIdFieldName )+ifGUIDamendment,
-                    RoutingVerb.PUT, aUrlWGuid, RoutingStatus.returnedFromCall());
+                    RoutingVerb.PUT, aUrlWGuid, RoutingStatus.returnedFromCall()).
+                    addPossibleStatus(RoutingStatus.returnValue(
+                            200, String.format("Replaced the specific %s details", thing.definition().getName()))).
+                    addPossibleStatus(RoutingStatus.returnValue(
+                            404, String.format("Could not find a specific %s", thing.definition().getName())));;
 
             // we should be able to delete specific things e.g. DELETE project/GUID
             defn.addRouting(
                     String.format("delete a specific instances of %s using a %s",
                                 thing.definition().getName(), uniqueIdFieldName),
-                    RoutingVerb.DELETE, aUrlWGuid, RoutingStatus.returnedFromCall());
+                    RoutingVerb.DELETE, aUrlWGuid, RoutingStatus.returnedFromCall()).
+                    addPossibleStatus(RoutingStatus.returnValue(
+                            200, String.format("Deleted a specific %s", thing.definition().getName()))).
+                    addPossibleStatus(RoutingStatus.returnValue(
+                            404, String.format("Could not find a specific %s", thing.definition().getName())));;
 
             defn.addRouting(
                     String.format("show all Options for endpoint of %s", aUrlWGuid),
@@ -181,11 +208,16 @@ public class ApiRoutingDefinitionGenerator {
         defn.addRouting(
                 String.format("return all the %s items related to %s, with given %s, by the relationship named %s",
                         toName, fromName, uniqueIdFieldName, relationshipName),
-                RoutingVerb.GET, aUrl, RoutingStatus.returnedFromCall());
+                RoutingVerb.GET, aUrl, RoutingStatus.returnedFromCall()).
+                addPossibleStatus(RoutingStatus.returnValue(
+                200, String.format("all the related the %s items", toName)));
 
         defn.addRouting(String.format("headers for the %s items related to %s, with given %s, by the relationship named %s",
                 toName, fromName, uniqueIdFieldName, relationshipName),
-                RoutingVerb.HEAD, aUrl, RoutingStatus.returnedFromCall());
+                RoutingVerb.HEAD, aUrl, RoutingStatus.returnedFromCall()).
+                addPossibleStatus(RoutingStatus.returnValue(
+                200, String.format("headers for all the related the %s items", toName)));
+
 
         defn.addRouting(
                 String.format("show all Options for endpoint of %s", aUrl),
@@ -196,7 +228,11 @@ public class ApiRoutingDefinitionGenerator {
         defn.addRouting(
                 String.format("create an instance of a relationship named %s between %s instance %s and the %s instance represented by the %s in the body of the message",
                         relationshipName, fromName, uniqueIdentifier, toName, uniqueIdFieldName),
-                RoutingVerb.POST, aUrl, RoutingStatus.returnedFromCall());
+                RoutingVerb.POST, aUrl, RoutingStatus.returnedFromCall()).
+                addPossibleStatus(RoutingStatus.returnValue(
+                        201, String.format("created the relationship"))).
+                addPossibleStatus(RoutingStatus.returnValue(
+                        400, String.format("error when creating the relationship")));
 
         defn.addRouting("method not allowed", RoutingVerb.DELETE, aUrl, RoutingStatus.returnValue(405));
         defn.addRouting("method not allowed", RoutingVerb.PATCH, aUrl, RoutingStatus.returnValue(405));
@@ -207,7 +243,13 @@ public class ApiRoutingDefinitionGenerator {
         final String aUrlDelete = fromNameForUrl + "/" + uniqueIdentifier +"/" + relationshipName + "/" + uniqueIdentifier;
         defn.addRouting(
                 String.format("delete the instance of the relationship named %s between %s and %s using the %s", relationshipName,  fromName, toName, uniqueIdentifier),
-                RoutingVerb.DELETE, aUrlDelete, RoutingStatus.returnedFromCall());
+                RoutingVerb.DELETE, aUrlDelete, RoutingStatus.returnedFromCall()).
+                addPossibleStatus(RoutingStatus.returnValue(
+                        200, String.format("deleted the relationship"))).
+                addPossibleStatus(RoutingStatus.returnValue(
+                        400, String.format("error when deleting the relationship"))).
+                addPossibleStatus(RoutingStatus.returnValue(
+                        404, String.format("relationship not found")));
 
         defn.addRouting(
                 String.format("show all Options for endpoint of %s", aUrlDelete),

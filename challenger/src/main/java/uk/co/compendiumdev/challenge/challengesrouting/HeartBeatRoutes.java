@@ -1,5 +1,6 @@
 package uk.co.compendiumdev.challenge.challengesrouting;
 
+import uk.co.compendiumdev.thingifier.api.ThingifierApiDefn;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingStatus;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingVerb;
@@ -11,7 +12,7 @@ import static spark.Spark.options;
 
 public class HeartBeatRoutes {
 
-    public void configure(final List<RoutingDefinition> routes) {
+    public void configure(final ThingifierApiDefn apiDefn) {
 
         String endpoint ="/heartbeat";
 
@@ -27,19 +28,22 @@ public class HeartBeatRoutes {
                 status(500,  "patch").
                 status(501, "trace");
 
-        routes.add(new RoutingDefinition(
+        apiDefn.addAdditionalRoute(
+                new RoutingDefinition(
                 RoutingVerb.GET,
                 endpoint,
                 RoutingStatus.returnedFromCall(),
                 null).addDocumentation("Is the server running? YES == 204"));
 
-        routes.add(new RoutingDefinition(
+        apiDefn.addAdditionalRoute(
+                new RoutingDefinition(
                 RoutingVerb.OPTIONS,
                 endpoint,
                 RoutingStatus.returnedFromCall(),
                 null).addDocumentation("Options for heartbeat endpoint"));
 
-        routes.add(new RoutingDefinition(
+        apiDefn.addAdditionalRoute(
+                new RoutingDefinition(
                 RoutingVerb.HEAD,
                 endpoint,
                 RoutingStatus.returnedFromCall(),

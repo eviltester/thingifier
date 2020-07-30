@@ -1,13 +1,10 @@
 package uk.co.compendiumdev.challenge;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 import uk.co.compendiumdev.challenge.challengehooks.ChallengerApiRequestHook;
 import uk.co.compendiumdev.challenge.challengehooks.ChallengerApiResponseHook;
 import uk.co.compendiumdev.challenge.challengehooks.ChallengerSparkHTTPRequestHook;
 import uk.co.compendiumdev.challenge.challengehooks.ChallengerSparkHTTPResponseHook;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
-import uk.co.compendiumdev.challenge.challenges.ChallengeData;
 import uk.co.compendiumdev.challenge.challenges.ChallengeDefinitions;
 import uk.co.compendiumdev.challenge.challengesrouting.AuthRoutes;
 import uk.co.compendiumdev.challenge.challengesrouting.ChallengerTrackingRoutes;
@@ -16,6 +13,7 @@ import uk.co.compendiumdev.challenge.challengesrouting.HeartBeatRoutes;
 import uk.co.compendiumdev.challenge.gui.ChallengerWebGUI;
 import uk.co.compendiumdev.challenge.persistence.PersistenceLayer;
 import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.api.ThingifierApiDefn;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.application.ThingifierRestServer;
 import uk.co.compendiumdev.thingifier.htmlgui.DefaultGUIHTML;
@@ -25,7 +23,8 @@ import java.util.*;
 
 public class ChallengeRouteHandler {
     private final Thingifier thingifier;
-    List<RoutingDefinition> routes;
+    //List<RoutingDefinition> routes;
+    ThingifierApiDefn apiDefn;
     ChallengeDefinitions challengeDefinitions;
     Challengers challengers;
     private boolean single_player_mode;
@@ -34,7 +33,14 @@ public class ChallengeRouteHandler {
                                         // not needed when storing data
 
     public ChallengeRouteHandler(Thingifier thingifier){
-        routes = new ArrayList();
+
+        this.apiDefn = new ThingifierApiDefn();
+        apiDefn.setThingifier(thingifier);
+
+        apiDefn.addServer("https://apichallenges.herokuapp.com", "heroku hosted version");
+        apiDefn.addServer("http://localhost:4567", "local execution");
+        apiDefn.setVersion("1.0.0");
+
         challengeDefinitions = new ChallengeDefinitions();
         this.thingifier = thingifier;
         challengers = new Challengers();
@@ -63,15 +69,15 @@ public class ChallengeRouteHandler {
 
 
     public List<RoutingDefinition> getRoutes(){
-        return routes;
+        return apiDefn.getAdditionalRoutes();
     }
 
     public ChallengeRouteHandler configureRoutes() {
 
-        new ChallengerTrackingRoutes().configure(challengers, single_player_mode, routes, persistenceLayer);
-        new ChallengesRoutes().configure(challengers, single_player_mode, routes, challengeDefinitions);
-        new HeartBeatRoutes().configure(routes);
-        new AuthRoutes().configure(challengers, routes);
+        new ChallengerTrackingRoutes().configure(challengers, single_player_mode, apiDefn, persistenceLayer);
+        new ChallengesRoutes().configure(challengers, single_player_mode, apiDefn, challengeDefinitions);
+        new HeartBeatRoutes().configure(apiDefn);
+        new AuthRoutes().configure(challengers, apiDefn);
 
         return this;
     }

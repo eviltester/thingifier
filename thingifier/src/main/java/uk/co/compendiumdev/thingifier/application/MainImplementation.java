@@ -2,6 +2,7 @@ package uk.co.compendiumdev.thingifier.application;
 
 import spark.Spark;
 import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.api.ThingifierApiDefn;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfigProfile;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfigProfiles;
@@ -28,7 +29,7 @@ public class MainImplementation {
     private Map<String,Thingifier> thingifierModels;
     private String defaultModelName;
     private String staticFilePath;
-    private List<RoutingDefinition> additionalRoutes;
+    private ThingifierApiDefn apiDefn;
     private Thingifier thingifier;
     private ThingifierApiConfigProfile profileToUse;
     ThingifierRestServer restServer;
@@ -57,7 +58,7 @@ public class MainImplementation {
             proxyport = getHerokuAssignedPort();
         }
 
-        additionalRoutes =  new ArrayList<>();
+        apiDefn =  new ThingifierApiDefn();
         thingifierModels = new HashMap<>();
         defaultModelName="";
 
@@ -244,10 +245,10 @@ public class MainImplementation {
 
     public void setupBuiltInConfigurableRoutes() {
         if(allowShutdown) {
-            additionalRoutes.addAll(
-                    new ShutdownRouteHandler().
-                            configureRoutes().
-                            getRoutes());
+            apiDefn.addAdditionalRoutes(
+                new ShutdownRouteHandler().
+                    configureRoutes().
+                    getRoutes());
         }
     }
 
@@ -271,16 +272,13 @@ public class MainImplementation {
     }
 
     public void addAdditionalRoutes(final List<RoutingDefinition> routes) {
-        additionalRoutes.addAll(routes);
+        apiDefn.addAdditionalRoutes(routes);
     }
 
     public void setupDefaultGui() {
 
-        additionalRoutes.addAll(
             new DefaultGUI(thingifier, guiManagement).
-                configureRoutes().
-                getRoutes()
-        );
+                configureRoutes();
     }
 
     public ThingifierRestServer startRestServer() {
@@ -289,9 +287,11 @@ public class MainImplementation {
             throw new RuntimeException("No Thingifier Model Setup");
         }
 
+        apiDefn.setThingifier(thingifier);
+
         restServer = new ThingifierRestServer( "",
                                     thingifier,
-                                    additionalRoutes,
+                                    apiDefn,
                                     guiManagement);
 
         System.out.println("Running on " + Spark.port());

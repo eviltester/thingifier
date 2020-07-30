@@ -2,6 +2,7 @@ package uk.co.compendiumdev.thingifier.application;
 
 import spark.Request;
 import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.api.ThingifierApiDefn;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponseError;
 import uk.co.compendiumdev.thingifier.api.routings.ApiRoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.routings.ApiRoutingDefinitionGenerator;
@@ -21,7 +22,8 @@ import static spark.Spark.*;
 
 public class ThingifierRestServer {
 
-    private final List<RoutingDefinition> additionalRoutes;
+
+    private final ThingifierApiDefn apiDefn;
     private String urlPath;
     private List<SparkRequestResponseHook> preRequestHooks;
     private List<SparkRequestResponseHook> postResponseHooks;
@@ -34,10 +36,10 @@ public class ThingifierRestServer {
 
     public ThingifierRestServer(final String path,
                                 final Thingifier thingifier,
-                                final List<RoutingDefinition> additionalDocumentedRoutes,
+                                ThingifierApiDefn apiDefn,
                                 DefaultGUIHTML guiManagement) {
 
-        this.additionalRoutes = additionalDocumentedRoutes;
+        this.apiDefn = apiDefn;
 
         preRequestHooks = new ArrayList<>();
         postResponseHooks = new ArrayList<>();
@@ -93,7 +95,7 @@ public class ThingifierRestServer {
             response.type("text/html");
             response.status(200);
             return new RestApiDocumentationGenerator(thingifier, guiManagement).
-                    getApiDocumentation(routingDefinitions, additionalRoutes, this.urlPath);
+                    getApiDocumentation(routingDefinitions, apiDefn.getAdditionalRoutes(), this.urlPath);
         });
 
         guiManagement.appendMenuItem("API documentation","/docs");

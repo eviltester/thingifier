@@ -4,6 +4,7 @@ import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.ChallengesPayload;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
 import uk.co.compendiumdev.challenge.challenges.ChallengeDefinitions;
+import uk.co.compendiumdev.thingifier.api.ThingifierApiDefn;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingStatus;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingVerb;
@@ -15,7 +16,9 @@ import static spark.Spark.*;
 
 public class ChallengesRoutes {
 
-    public void configure(final Challengers challengers, final boolean single_player_mode, final List<RoutingDefinition> routes, final ChallengeDefinitions challengeDefinitions){
+    public void configure(final Challengers challengers, final boolean single_player_mode,
+                          final ThingifierApiDefn apiDefn,
+                          final ChallengeDefinitions challengeDefinitions){
         get("/challenges", (request, result) -> {
             result.status(200);
             result.type("application/json");
@@ -53,19 +56,22 @@ public class ChallengesRoutes {
                 405, "/challenges",
                 "get", "head", "options");
 
-        routes.add(new RoutingDefinition(
+        apiDefn.addAdditionalRoute(
+                new RoutingDefinition(
                 RoutingVerb.GET,
                 "/challenges",
                 RoutingStatus.returnedFromCall(),
                 null).addDocumentation("Get list of challenges and their completion status"));
 
-        routes.add(new RoutingDefinition(
+        apiDefn.addAdditionalRoute(
+                new RoutingDefinition(
                 RoutingVerb.OPTIONS,
                 "/challenges",
                 RoutingStatus.returnedFromCall(),
                 null).addDocumentation("Options for list of challenges endpoint"));
 
-        routes.add(new RoutingDefinition(
+        apiDefn.addAdditionalRoute(
+                new RoutingDefinition(
                 RoutingVerb.HEAD,
                 "/challenges",
                 RoutingStatus.returnedFromCall(),

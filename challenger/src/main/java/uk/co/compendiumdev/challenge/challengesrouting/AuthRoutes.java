@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import uk.co.compendiumdev.challenge.BasicAuthHeader;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
+import uk.co.compendiumdev.thingifier.api.ThingifierApiDefn;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingStatus;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingVerb;
@@ -17,7 +18,8 @@ import static spark.Spark.get;
 import static spark.Spark.post;
 
 public class AuthRoutes {
-    public void configure(final Challengers challengers, final List<RoutingDefinition> routes) {
+    public void configure(final Challengers challengers,
+                          final ThingifierApiDefn apiDefn) {
         // authentication and authorisation
         // - create a 'secret' note which can be stored against session using an auth token
 
@@ -51,7 +53,8 @@ public class AuthRoutes {
         SimpleRouteConfig.routeStatusWhenNot(
                 405, "/secret/token", "post");
 
-        routes.add(new RoutingDefinition(
+        apiDefn.addAdditionalRoute(
+                new RoutingDefinition(
                 RoutingVerb.POST,
                 "/secret/token",
                 RoutingStatus.returnedFromCall(),
@@ -92,7 +95,8 @@ public class AuthRoutes {
             return new Gson().toJson(note);
         });
 
-        routes.add(new RoutingDefinition(
+        apiDefn.addAdditionalRoute(
+                new RoutingDefinition(
                 RoutingVerb.GET,
                 "/secret/note",
                 RoutingStatus.returnedFromCall(),
@@ -141,7 +145,8 @@ public class AuthRoutes {
         SimpleRouteConfig.routeStatusWhenNot(
                 405, "/secret/note", "get", "post");
 
-        routes.add(new RoutingDefinition(
+        apiDefn.addAdditionalRoute(
+                new RoutingDefinition(
                 RoutingVerb.POST,
                 "/secret/note",
                 RoutingStatus.returnedFromCall(),
