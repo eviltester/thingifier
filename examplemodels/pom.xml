@@ -28,6 +28,7 @@
             <artifactId>thingifier</artifactId>
             <version>${thingifier.version}</version>
         </dependency>
+
     </dependencies>
 
     <build>
