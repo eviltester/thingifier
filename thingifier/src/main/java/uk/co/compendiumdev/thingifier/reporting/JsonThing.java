@@ -8,6 +8,7 @@ import uk.co.compendiumdev.thingifier.domain.FieldType;
 import uk.co.compendiumdev.thingifier.domain.definitions.Field;
 import uk.co.compendiumdev.thingifier.domain.definitions.RelationshipVector;
 import uk.co.compendiumdev.thingifier.domain.definitions.ThingDefinition;
+import uk.co.compendiumdev.thingifier.domain.instances.InstanceFields;
 import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
 
 import java.util.*;
@@ -52,43 +53,26 @@ public class JsonThing {
         return jsonArray;
     }
 
-    /**
-     * Suitable for JSON Output as it is just the object
-     * @param thingInstance
-     * @return
-     */
-    public JsonObject asJsonObject(final ThingInstance thingInstance) {
-        // hide guids is a quick hack to remove guids from nested objects - this should not be needed
-        // if we split Thing into Thing (with guid,and relationships) + Object (fields and values)
-        return asJsonObject(thingInstance, false);
-    }
 
-    public JsonObject asJsonObject(final ThingInstance thingInstance, boolean hideGuids) {
 
-        // todo: I swallowed exception generation in here because I was passing in the 'input' representations
-        // for the report generation - perhaps the reporting instances should have reporting entities which
-        // don't mention the fields e.g. guid and id, then this will work without exception because
-        // it would never try to getValue?
 
+    public JsonObject asJsonObject(final InstanceFields fields){
         final JsonObject jsonobj = new JsonObject();
 
-        if (thingInstance == null) {
+        if (fields == null) {
             return jsonobj;
         }
 
-        for (String fieldName : thingInstance.getEntity().getFieldNames()) {
-            Field theField = thingInstance.getEntity().getField(fieldName);
+        for (String fieldName : fields.getDefinition().getFieldNames()) {
+            Field theField = fields.getDefinition().getField(fieldName);
             // if hiding guids then skip them
-            if(hideGuids && theField.getType()== FieldType.GUID){
-                continue;
-            }
             if(!apiConfig.willRenderGuidsInResponse() && theField.getType()== FieldType.GUID)
                 continue;
 
             String fieldValue = "";
 
             try {
-                fieldValue = thingInstance.getValue(theField.getName());
+                fieldValue = fields.getValue(theField.getName());
 
                 if(apiConfig.willRenderFieldsAsDefinedTypes()) {
                     switch (theField.getType()) {
@@ -106,7 +90,7 @@ public class JsonThing {
                             break;
                         case OBJECT:
                             jsonobj.add(fieldName, asJsonObject(
-                                                thingInstance.getObjectInstance(fieldName), true));
+                                        fields.getObjectField(fieldName)));
                             break;
                         default:
                             jsonobj.addProperty(fieldName, fieldValue);
@@ -115,7 +99,7 @@ public class JsonThing {
                     // output as string
                     if(theField.getType()==FieldType.OBJECT){
                         jsonobj.add(fieldName, asJsonObject(
-                                thingInstance.getObjectInstance(fieldName), true));
+                                    fields.getObjectField(fieldName)));
                     }else {
                         jsonobj.addProperty(fieldName, fieldValue);
                     }
@@ -126,6 +110,77 @@ public class JsonThing {
 //                            " with value " + fieldValue + " " + e.getMessage());
             }
         }
+
+        return jsonobj;
+    }
+
+    /**
+     * Suitable for JSON Output as it is just the object
+     * @param thingInstance
+     * @return
+     */
+    public JsonObject asJsonObject(final ThingInstance thingInstance) {
+
+        // todo: I swallowed exception generation in here because I was passing in the 'input' representations
+        // for the report generation - perhaps the reporting instances should have reporting entities which
+        // don't mention the fields e.g. guid and id, then this will work without exception because
+        // it would never try to getValue?
+
+        if (thingInstance == null) {
+            return new JsonObject();
+        }
+
+        final JsonObject jsonobj = asJsonObject(thingInstance.getFields());
+//        for (String fieldName : thingInstance.getEntity().getFieldNames()) {
+//            Field theField = thingInstance.getEntity().getField(fieldName);
+//            // if hiding guids then skip them
+//            if(hideGuids && theField.getType()== FieldType.GUID){
+//                continue;
+//            }
+//            if(!apiConfig.willRenderGuidsInResponse() && theField.getType()== FieldType.GUID)
+//                continue;
+//
+//            String fieldValue = "";
+//
+//            try {
+//                fieldValue = thingInstance.getValue(theField.getName());
+//
+//                if(apiConfig.willRenderFieldsAsDefinedTypes()) {
+//                    switch (theField.getType()) {
+//                        case BOOLEAN:
+//                            jsonobj.addProperty(fieldName, Boolean.valueOf(fieldValue));
+//                            break;
+//                        case INTEGER:
+//                            jsonobj.addProperty(fieldName, Integer.valueOf(fieldValue));
+//                            break;
+//                        case FLOAT:
+//                            jsonobj.addProperty(fieldName, Float.valueOf(fieldValue));
+//                            break;
+//                        case ID:
+//                            jsonobj.addProperty(fieldName, Integer.valueOf(fieldValue));
+//                            break;
+//                        case OBJECT:
+//                            jsonobj.add(fieldName, asJsonObject(
+//                                                thingInstance.getObjectInstance(fieldName), true));
+//                            break;
+//                        default:
+//                            jsonobj.addProperty(fieldName, fieldValue);
+//                    }
+//                }else {
+//                    // output as string
+//                    if(theField.getType()==FieldType.OBJECT){
+//                        jsonobj.add(fieldName, asJsonObject(
+//                                thingInstance.getObjectInstance(fieldName), true));
+//                    }else {
+//                        jsonobj.addProperty(fieldName, fieldValue);
+//                    }
+//                }
+//            }catch(Exception e){
+//                // ignore
+////                System.out.println("Error processing " + fieldName +
+////                            " with value " + fieldValue + " " + e.getMessage());
+//            }
+//        }
 
         /*
             "relationships" : [

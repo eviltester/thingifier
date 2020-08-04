@@ -27,7 +27,7 @@ public final class Field {
     // todo: use BigDecimal for the internal float representations
     private float maximumFloatValue;
     private float minimumFloatValue;
-    private ThingDefinition objectDefinition;
+    private DefinedFields objectDefinition;
 
     // allow this being switched off
     private boolean shouldValidateValuesAgainstType;
@@ -380,13 +380,13 @@ public final class Field {
 
     public Field withField(final Field childField) {
         if(objectDefinition==null){
-            objectDefinition = ThingDefinition.create(name, name);
+            objectDefinition = new DefinedFields();
         }
         objectDefinition.addField(childField);
         return this;
     }
 
-    public ThingDefinition getObjectDefinition() {
+    public DefinedFields getObjectDefinition() {
         return objectDefinition;
     }
 

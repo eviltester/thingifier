@@ -82,6 +82,7 @@ public class StringFieldInstanceTest {
                 withValidation(VRule.maximumLength(10)));
 
         ThingInstance instance = new ThingInstance(stringFieldEntity);
+        instance.overrideValue("field","12345678901");
 
         ValidationReport report = instance.validate();
 

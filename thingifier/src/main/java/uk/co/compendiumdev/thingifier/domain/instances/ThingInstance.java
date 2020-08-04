@@ -3,6 +3,7 @@ package uk.co.compendiumdev.thingifier.domain.instances;
 import uk.co.compendiumdev.thingifier.api.ValidationReport;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.domain.FieldType;
+import uk.co.compendiumdev.thingifier.domain.definitions.DefinedFields;
 import uk.co.compendiumdev.thingifier.domain.definitions.Field;
 import uk.co.compendiumdev.thingifier.domain.definitions.RelationshipVector;
 import uk.co.compendiumdev.thingifier.domain.definitions.ThingDefinition;
@@ -18,8 +19,9 @@ public class ThingInstance {
 
     private final Relationships relationships;
     private final ThingDefinition entityDefinition;
+
     private final InstanceFields instanceFields;
-    private Map<String, ThingInstance> objectFields;
+
 
     public ThingInstance(ThingDefinition eDefn) {
         this(eDefn, true);
@@ -39,7 +41,7 @@ public class ThingInstance {
      */
     private ThingInstance(ThingDefinition eDefn, boolean addIds) {
         this.entityDefinition = eDefn;
-        this.instanceFields = new InstanceFields();
+        this.instanceFields = new InstanceFields(eDefn.getFieldDefinitions());
         instanceFields.addValue("guid", UUID.randomUUID().toString());
         if(addIds) {
             eDefn.addIdsToInstance(instanceFields);
@@ -110,7 +112,7 @@ public class ThingInstance {
             fieldNames.addAll(Arrays.asList(fields));
             fieldNames.remove(0);
             // need to track the instance with it
-            final ThingInstance fieldInstance = getObjectInstance(toplevelFieldName);
+            final InstanceFields fieldInstance = getObjectInstance(toplevelFieldName);
 
             return setFieldValue(fieldInstance, fieldNames, value);
         }else{
@@ -122,10 +124,10 @@ public class ThingInstance {
         return this;
     }
 
-    private ThingInstance setFieldValue(final ThingInstance fieldInstance, final List<String> fieldNames, final String value) {
+    private ThingInstance setFieldValue(final InstanceFields fieldInstance, final List<String> fieldNames, final String value) {
 
         String fieldName = fieldNames.get(0);
-        final ThingDefinition defn = fieldInstance.entityDefinition;
+        final DefinedFields defn = fieldInstance.getDefinition();
         if(defn==null || !defn.hasFieldNameDefined(fieldName)){
             reportCannotFindFieldError(fieldName);
         }
@@ -133,7 +135,8 @@ public class ThingInstance {
         final Field nextField = defn.getField(fieldName);
 
         if(fieldNames.size()==1){
-            return fieldInstance.setFieldValue(nextField, fieldName, value);
+             fieldInstance.setFieldValue(nextField, fieldName, value);
+             return this;
         }else{
 
             if(nextField.getType()!= FieldType.OBJECT){
@@ -142,7 +145,7 @@ public class ThingInstance {
             }
             fieldNames.remove(0);
 
-            final ThingInstance nextFieldInstance = fieldInstance.getObjectInstance(fieldName);
+            final InstanceFields nextFieldInstance = fieldInstance.getObjectField(fieldName);
             return setFieldValue(nextFieldInstance, fieldNames, value);
         }
 
@@ -150,17 +153,7 @@ public class ThingInstance {
 
     /* for a given field in this instance, set the value */
     private ThingInstance setFieldValue(final Field field, final String fieldName, final String value) {
-        final ValidationReport validationReport = field.validate(value);
-        if (validationReport.isValid()) {
-            this.instanceFields.addValue(
-                                    fieldName,
-                                    field.getValueToAdd(value));
-
-        } else {
-            throw new IllegalArgumentException(
-                    validationReport.getCombinedErrorMessages());
-        }
-
+        instanceFields.setFieldValue(field, fieldName, value);
         return this;
     }
 
@@ -213,21 +206,7 @@ public class ThingInstance {
                 return "";
             }
 
-            String assignedValue = this.instanceFields.getValue(fieldName);
-            if (assignedValue == null) {
-                // does definition have a default value?
-                if (this.entityDefinition.getField(fieldName).hasDefaultValue()) {
-                    return getDefaultValue(fieldName);
-                } else {
-                    // return the field type default value
-                    String defaultVal = this.entityDefinition.getField(fieldName).getType().getDefault();
-                    if (defaultVal != null) {
-                        return defaultVal;
-                    }
-                }
-            } else {
-                return assignedValue;
-            }
+            return this.instanceFields.getValue(fieldName);
         }
 
         reportCannotFindFieldError(fieldName);
@@ -321,7 +300,7 @@ public class ThingInstance {
         for (String fieldName : entityDefinition.getFieldNames()) {
             if(!excluding.contains(fieldName)) {
                 Field field = entityDefinition.getField(fieldName);
-                ValidationReport validity = field.validate(instanceFields.getValue(fieldName));
+                ValidationReport validity = field.validate(instanceFields.getAssignedValue(fieldName));
                 report.combine(validity);
             }
         }
@@ -397,26 +376,22 @@ public class ThingInstance {
         }
     }
 
-    public ThingInstance getObjectInstance(final String objectFieldName) {
+    public InstanceFields getObjectInstance(final String objectFieldName) {
         Field objectField = entityDefinition.getField(objectFieldName);
         if(objectField.getType()==FieldType.OBJECT){
-            if(objectFields==null){
-                objectFields = new HashMap<>();
-            }
-            ThingInstance instance = objectFields.get(objectFieldName);
+
+            InstanceFields instance = instanceFields.getObjectField(objectFieldName);
             if(instance==null){
-                instance = new ThingInstance(objectField.getObjectDefinition());
-                addObjectInstance(objectFieldName, instance);
+                instance = new InstanceFields(objectField.getObjectDefinition());
+                instanceFields.addObjectInstance(objectFieldName, instance);
             }
             return instance;
         }
         return null;
     }
 
-    private void addObjectInstance(final String objectFieldName, final ThingInstance thingInstance) {
-        if(objectFields==null){
-            objectFields = new HashMap<>();
-        }
-        objectFields.put(objectFieldName, thingInstance);
+
+    public InstanceFields getFields() {
+        return instanceFields;
     }
 }

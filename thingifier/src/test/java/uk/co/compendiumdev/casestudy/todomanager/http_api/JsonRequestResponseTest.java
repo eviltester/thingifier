@@ -235,6 +235,7 @@ public class JsonRequestResponseTest {
 
         final ThingInstance aTodo = todo.findInstanceByGUID(guid);
 
+        Assertions.assertEquals("false", aTodo.getValue("doneStatus"));
         Assertions.assertEquals("title from json", aTodo.getValue("title"));
 
         Assertions.assertTrue(response.getBody().startsWith("<todo><doneStatus>false</doneStatus>"),

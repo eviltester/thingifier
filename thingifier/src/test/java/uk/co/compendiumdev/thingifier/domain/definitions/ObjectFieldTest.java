@@ -7,6 +7,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.apiconfig.JsonOutputConfig;
 import uk.co.compendiumdev.thingifier.domain.FieldType;
+import uk.co.compendiumdev.thingifier.domain.instances.InstanceFields;
 import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
 import uk.co.compendiumdev.thingifier.reporting.JsonThing;
 import uk.co.compendiumdev.thingifier.reporting.XmlThing;
@@ -32,9 +33,9 @@ public class ObjectFieldTest {
 
 
         instance = new ThingInstance(defn);
-        final ThingInstance person = instance.getObjectInstance("person");
-        person.setValue("firstname", "Connie");
-        person.setValue("surname", "Dobbs");
+        final InstanceFields person = instance.getObjectInstance("person");
+        person.addValue("firstname", "Connie");
+        person.addValue("surname", "Dobbs");
 
     }
 

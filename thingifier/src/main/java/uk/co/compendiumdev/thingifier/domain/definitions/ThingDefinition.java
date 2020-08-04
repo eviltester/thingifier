@@ -11,7 +11,7 @@ public class ThingDefinition {
     private String name;
     private String plural;
 
-    DefinedFields fields;
+    private DefinedFields fields;
     private DefinedRelationships relationships;
 
     private int nextId;
@@ -71,6 +71,10 @@ public class ThingDefinition {
 
     public boolean hasFieldNameDefined(String fieldName) {
         return fields.hasFieldNameDefined(fieldName);
+    }
+
+    public DefinedFields getFieldDefinitions() {
+        return fields;
     }
 
     public ThingDefinition and() {
@@ -152,6 +156,7 @@ public class ThingDefinition {
     public Collection<RelationshipVector> getRelationships() {
         return relationships.getRelationships();
     }
+
 
 
 }
