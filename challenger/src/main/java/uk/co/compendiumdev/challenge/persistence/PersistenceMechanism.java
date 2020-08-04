@@ -4,6 +4,6 @@ import uk.co.compendiumdev.challenge.ChallengerAuthData;
 
 public interface PersistenceMechanism {
 
-    void saveChallengerStatus(ChallengerAuthData data);
-    ChallengerAuthData loadChallengerStatus(String guid);
+    PersistenceResponse saveChallengerStatus(ChallengerAuthData data);
+    PersistenceResponse loadChallengerStatus(String guid);
 }

@@ -6,6 +6,7 @@ import uk.co.compendiumdev.challenge.challengers.Challengers;
 import uk.co.compendiumdev.challenge.challenges.ChallengeData;
 import uk.co.compendiumdev.challenge.challenges.ChallengeDefinitions;
 import uk.co.compendiumdev.challenge.persistence.PersistenceLayer;
+import uk.co.compendiumdev.challenge.persistence.PersistenceResponse;
 import uk.co.compendiumdev.thingifier.htmlgui.DefaultGUIHTML;
 
 import java.util.ArrayList;
@@ -93,13 +94,15 @@ public class ChallengerWebGUI {
 
             String xChallenger = request.splat()[0];
             ChallengerAuthData challenger = challengers.getChallenger(xChallenger);
+            PersistenceResponse persistence = new PersistenceResponse();
 
             if(challenger==null){
-                challenger = persistenceLayer.tryToLoadChallenger(challengers, xChallenger);
+                persistence = persistenceLayer.tryToLoadChallenger(challengers, xChallenger);
             }
 
             if(challenger==null){
-                html.append("<p><strong>Unknown Challenger ID</strong></p>");
+                html.append(String.format("<p><strong>Unknown Challenger ID %s</strong></p>",
+                                persistence.getErrorMessage()));
                 html.append(multiUserShortHelp());
                 html.append(showPreviousGuids());
                 reportOn = new ChallengesPayload(challengeDefinitions, challengers.DEFAULT_PLAYER_DATA).getAsChallenges();

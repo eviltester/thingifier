@@ -27,10 +27,11 @@ public class AwsS3Storage implements PersistenceMechanism{
     // https://docs.aws.amazon.com/AmazonS3/latest/dev/UploadObjSingleOpJava.html
 
     @Override
-    public void saveChallengerStatus(final ChallengerAuthData data) {
+    public PersistenceResponse saveChallengerStatus(final ChallengerAuthData data) {
 
-        if(data==null)
-            return;
+        if(data==null){
+            return new PersistenceResponse().withSuccess(false).withErrorMessage("no data provided");
+        }
 
         String bucketName = System.getenv("AWSBUCKET");
 
@@ -41,9 +42,11 @@ public class AwsS3Storage implements PersistenceMechanism{
             final String dataString = new Gson().toJson(data);
             // Upload a text string as a new object.
             s3Client.putObject(bucketName, data.getXChallenger(), dataString);
+            return new PersistenceResponse().withSuccess(true);
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("Error storing data to bucket for guid: " + data.getXChallenger());
+            return new PersistenceResponse().withSuccess(false).withErrorMessage(e.getMessage());
         }
     }
 
@@ -59,7 +62,7 @@ public class AwsS3Storage implements PersistenceMechanism{
     }
 
     @Override
-    public ChallengerAuthData loadChallengerStatus(final String guid) {
+    public PersistenceResponse loadChallengerStatus(final String guid) {
 
         String bucketName = System.getenv("AWSBUCKET");
 
@@ -68,11 +71,14 @@ public class AwsS3Storage implements PersistenceMechanism{
 
             final S3Object fullObject = s3Client.getObject(new GetObjectRequest(bucketName, guid));
             String dataString = getObjectContent(fullObject.getObjectContent());
-            return new Gson().fromJson(dataString, ChallengerAuthData.class);
+            return new PersistenceResponse().withSuccess(true).withChallengerAuthData(
+                    new Gson().fromJson(dataString, ChallengerAuthData.class));
         } catch (Exception e) {
             e.getStackTrace();
             System.out.println("Error Reading Challenge Status From S3: " + guid);
-            return null;
+            return new PersistenceResponse().
+                    withSuccess(false).
+                    withErrorMessage(e.getMessage());
         }
     }
 

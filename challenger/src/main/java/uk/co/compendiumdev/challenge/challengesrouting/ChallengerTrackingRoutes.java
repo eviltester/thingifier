@@ -3,6 +3,7 @@ package uk.co.compendiumdev.challenge.challengesrouting;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
 import uk.co.compendiumdev.challenge.persistence.PersistenceLayer;
+import uk.co.compendiumdev.challenge.persistence.PersistenceResponse;
 import uk.co.compendiumdev.thingifier.api.ThingifierApiDefn;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingStatus;
@@ -31,9 +32,11 @@ public class ChallengerTrackingRoutes {
                     result.status(204);
                 }else{
                     // try to load challenger from persistence
-                    challenger = persistenceLayer.tryToLoadChallenger(challengers, xChallengerGuid);
-                    if(challenger==null) {
+                    final PersistenceResponse persistence =
+                            persistenceLayer.tryToLoadChallenger(challengers, xChallengerGuid);
+                    if(!persistence.isSuccess()) {
                         result.status(404);
+                        result.header("X-CHALLENGER", persistence.getErrorMessage());
                     }else{
                         result.status(204);
                     }
@@ -68,14 +71,16 @@ public class ChallengerTrackingRoutes {
                 return "";
             }else {
                 ChallengerAuthData challenger = challengers.getChallenger(xChallengerGuid);
+                PersistenceResponse persistence= new PersistenceResponse();
                 if(challenger==null){
                     // try to load challenger status
-                    challenger = persistenceLayer.tryToLoadChallenger(challengers, xChallengerGuid);
+                    persistence = persistenceLayer.tryToLoadChallenger(challengers, xChallengerGuid);
                 }
                 if(challenger==null){
                     // if X-CHALLENGER header exists, and is not a known UUID,
                     // return 404, challenger ID not valid
-                    result.header("X-CHALLENGER", "Challenger not found");
+                    result.header("X-CHALLENGER", "Challenger not found " +
+                                                        persistence.getErrorMessage());
                     result.status(404);
                 }else{
                     // if X-CHALLENGER header exists, and has a valid UUID, and UUID exists, then return 200

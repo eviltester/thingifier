@@ -9,15 +9,20 @@ import java.nio.file.Files;
 public class ChallengerFileStorage implements PersistenceMechanism {
 
     @Override
-    public void saveChallengerStatus(final ChallengerAuthData data) {
+    public PersistenceResponse saveChallengerStatus(final ChallengerAuthData data) {
 
         File file = new File(System.getProperty("User.dir") , getFileNameFor(data.getXChallenger()));
         try(FileOutputStream out = new FileOutputStream(file)) {
             final String dataString = new Gson().toJson(data);
             out.write(dataString.getBytes());
+            return new PersistenceResponse().
+                    withSuccess(true);
         } catch (IOException e) {
             e.printStackTrace();
             System.out.println("Error writing to file: " + file.getAbsolutePath());
+            return new PersistenceResponse().
+                    withSuccess(false).
+                    withErrorMessage(e.getMessage());
         }
     }
 
@@ -26,16 +31,21 @@ public class ChallengerFileStorage implements PersistenceMechanism {
     }
 
     @Override
-    public ChallengerAuthData loadChallengerStatus(final String guid) {
+    public PersistenceResponse loadChallengerStatus(final String guid) {
         File file = new File(System.getProperty("User.dir") , getFileNameFor(guid));
         try {
             final byte[] data = Files.readAllBytes(file.toPath());
             final String dataString = new String(data);
-            return new Gson().fromJson(dataString, ChallengerAuthData.class);
+            return new PersistenceResponse().
+                    withSuccess(true).
+                    withChallengerAuthData(
+                            new Gson().fromJson(dataString, ChallengerAuthData.class));
         } catch (IOException e) {
             e.getMessage();
             System.out.println("Error Reading Challenge Status From file: " + file.getAbsolutePath());
-            return null;
+            return new PersistenceResponse().
+                    withSuccess(false).
+                    withErrorMessage(e.getMessage());
         }
     }
 }

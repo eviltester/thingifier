@@ -19,14 +19,18 @@ public class PersistenceLayer {
         storeOn=StorageType.NONE;
     }
 
-    public ChallengerAuthData tryToLoadChallenger(final Challengers challengers, final String xChallengerGuid) {
-        ChallengerAuthData challenger=null;
-        challenger = loadChallengerStatus(xChallengerGuid);
-        if(challenger!=null){
+    public PersistenceResponse tryToLoadChallenger(final Challengers challengers,
+                                                  final String xChallengerGuid) {
+
+        final PersistenceResponse response = loadChallengerStatus(xChallengerGuid);
+
+        if(response.isSuccess()){
+            ChallengerAuthData challenger = response.getAuthData();
             challenger.touch(); // refresh last accessed date
             challengers.put(challenger);
         }
-        return challenger;
+
+        return response;
     }
 
     public enum StorageType{LOCAL, CLOUD, NONE};
@@ -35,26 +39,26 @@ public class PersistenceLayer {
         this.storeOn = storeWhere;
     }
 
-    public void saveChallengerStatus(ChallengerAuthData data){
+    public PersistenceResponse saveChallengerStatus(ChallengerAuthData data){
 
         if(storeOn==StorageType.NONE){
-            return;
+            return new PersistenceResponse().withSuccess(true);
         }
 
         if(storeOn== StorageType.LOCAL){
-            file.saveChallengerStatus(data);
+            return file.saveChallengerStatus(data);
         }else{
             if(aws==null){
                 aws=new AwsS3Storage();
             }
-            aws.saveChallengerStatus(data);
+            return aws.saveChallengerStatus(data);
         }
     }
 
-    public ChallengerAuthData loadChallengerStatus(String guid){
+    public PersistenceResponse loadChallengerStatus(String guid){
 
         if(storeOn==StorageType.NONE){
-            return null;
+            return new PersistenceResponse().withSuccess(true);
         }
 
         if(storeOn== StorageType.LOCAL){
