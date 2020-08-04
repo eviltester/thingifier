@@ -16,6 +16,8 @@ public class AwsS3Storage implements PersistenceMechanism{
 
     static AmazonS3 s3Client;
 
+    // TODO: capture any error messages and report them in the X-Challenger header - just in case an S3 problem happens
+
     // to work we need environment variables for
     // AWSBUCKET
     // AWS_ACCESS_KEY_ID
