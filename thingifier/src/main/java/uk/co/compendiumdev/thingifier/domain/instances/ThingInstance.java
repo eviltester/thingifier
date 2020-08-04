@@ -52,7 +52,6 @@ public class ThingInstance {
         instanceFields.addValue("guid", guid);
     }
 
-    // todo: put this in a 'reporting' class
     public String toString() {
 
         StringBuilder output = new StringBuilder();
