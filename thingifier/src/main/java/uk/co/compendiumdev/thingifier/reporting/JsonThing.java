@@ -58,6 +58,12 @@ public class JsonThing {
      * @return
      */
     public JsonObject asJsonObject(final ThingInstance thingInstance) {
+        // hide guids is a quick hack to remove guids from nested objects - this should not be needed
+        // if we split Thing into Thing (with guid,and relationships) + Object (fields and values)
+        return asJsonObject(thingInstance, false);
+    }
+
+    public JsonObject asJsonObject(final ThingInstance thingInstance, boolean hideGuids) {
 
         // todo: I swallowed exception generation in here because I was passing in the 'input' representations
         // for the report generation - perhaps the reporting instances should have reporting entities which
@@ -73,6 +79,9 @@ public class JsonThing {
         for (String fieldName : thingInstance.getEntity().getFieldNames()) {
             Field theField = thingInstance.getEntity().getField(fieldName);
             // if hiding guids then skip them
+            if(hideGuids && theField.getType()== FieldType.GUID){
+                continue;
+            }
             if(!apiConfig.willRenderGuidsInResponse() && theField.getType()== FieldType.GUID)
                 continue;
 
@@ -95,12 +104,21 @@ public class JsonThing {
                         case ID:
                             jsonobj.addProperty(fieldName, Integer.valueOf(fieldValue));
                             break;
+                        case OBJECT:
+                            jsonobj.add(fieldName, asJsonObject(
+                                                thingInstance.getObjectInstance(fieldName), true));
+                            break;
                         default:
                             jsonobj.addProperty(fieldName, fieldValue);
                     }
                 }else {
                     // output as string
-                    jsonobj.addProperty(fieldName, fieldValue);
+                    if(theField.getType()==FieldType.OBJECT){
+                        jsonobj.add(fieldName, asJsonObject(
+                                thingInstance.getObjectInstance(fieldName), true));
+                    }else {
+                        jsonobj.addProperty(fieldName, fieldValue);
+                    }
                 }
             }catch(Exception e){
                 // ignore

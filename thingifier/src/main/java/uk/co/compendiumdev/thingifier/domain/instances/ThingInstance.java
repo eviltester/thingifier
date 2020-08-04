@@ -13,7 +13,7 @@ import static uk.co.compendiumdev.thingifier.domain.definitions.Optionality.MAND
 public class ThingInstance {
 
     // TODO: this is messy because of cloning and documentation - find a way to simplify
-    // TODO split 'objectInstance' from ThingInstance i.e. without relationships
+    // TODO split 'objectInstance' from ThingInstance i.e. without relationships and without a GUID
     private final List<RelationshipInstance> relationships;
     private final ThingDefinition entityDefinition;
     private final InstanceFields instanceFields;
@@ -171,6 +171,11 @@ public class ThingInstance {
 
     public String getValue(String fieldName) {
         if (this.entityDefinition.hasFieldNameDefined(fieldName)) {
+            // if an object, just return "", we should be using this to get the value
+            if(this.entityDefinition.getField(fieldName).getType()==FieldType.OBJECT){
+                return "";
+            }
+
             String assignedValue = this.instanceFields.getValue(fieldName);
             if (assignedValue == null) {
                 // does definition have a default value?
