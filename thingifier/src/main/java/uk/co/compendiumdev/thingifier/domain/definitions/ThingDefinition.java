@@ -8,6 +8,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 
 public class ThingDefinition {
+
+    // TODO: split ObjectDefinition from ThingDefintion i.e. without relationships
+
     private String name;
     private Map<String, Field> fields = new ConcurrentHashMap<String, Field>();
     // to control field order

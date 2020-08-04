@@ -13,10 +13,11 @@ import static uk.co.compendiumdev.thingifier.domain.definitions.Optionality.MAND
 public class ThingInstance {
 
     // TODO: this is messy because of cloning and documentation - find a way to simplify
-
+    // TODO split 'objectInstance' from ThingInstance i.e. without relationships
     private final List<RelationshipInstance> relationships;
     private final ThingDefinition entityDefinition;
     private final InstanceFields instanceFields;
+    private Map<String, ThingInstance> objectFields;
 
     public ThingInstance(ThingDefinition eDefn) {
         this(eDefn, true);
@@ -467,5 +468,26 @@ public class ThingInstance {
         return cloneInstance;
     }
 
+    public ThingInstance getObjectInstance(final String objectFieldName) {
+        Field objectField = entityDefinition.getField(objectFieldName);
+        if(objectField.getType()==FieldType.OBJECT){
+            if(objectFields==null){
+                objectFields = new HashMap<>();
+            }
+            ThingInstance instance = objectFields.get(objectFieldName);
+            if(instance==null){
+                instance = new ThingInstance(objectField.getObjectDefinition());
+                addObjectInstance(objectFieldName, instance);
+            }
+            return instance;
+        }
+        return null;
+    }
 
+    private void addObjectInstance(final String objectFieldName, final ThingInstance thingInstance) {
+        if(objectFields==null){
+            objectFields = new HashMap<>();
+        }
+        objectFields.put(objectFieldName, thingInstance);
+    }
 }

@@ -64,7 +64,8 @@ Notes:
 - `X-CHALLENGER` is a custom header.
 - applications are free to create custom headers
 - `X-...` used to be the standard recommended approach
-- Based on this 'standard' it is now a deprecated recommendation, but still used https://tools.ietf.org/html/rfc6648
+- Based on this 'standard' it is now a deprecated recommendation, but still used
+    - https://tools.ietf.org/html/rfc6648
     - "this is a matter for the designers of those protocols"
     
 Notes: `Location`
@@ -81,3 +82,40 @@ Notes: `Location`
      - not always the best approach
      - "The Pulper" practice app can use cookies to access the data, if you want to practice with cookies then try that.
      - https://www.eviltester.com/page/tools/thepulper/
+     
+     
+     
+## Video
+
+> API Challenges - POST Challenger 201 Debrief
+
+[youtu.be/YJDyCow1QTE](https://youtu.be/YJDyCow1QTE)
+
+A debrief and lessons learned on the "POST Challenger 201"
+
+- What is a POST Request?
+- How does POST Request differe from a GET request?
+- How to identify a Custom HTTP Header?
+- What is a Custom HTTP Header?
+- Standards for Custom HTTP Headers?
+- What is a 201 status code?
+- Dangers of duplicate headers.
+- How to learn about status codes?
+- What is a Location header?
+
+Useful links:
+
+- https://tools.ietf.org/html/rfc6648
+- https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/201
+- https://httpstatuses.com/201
+- https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/405
+- https://httpstatuses.com/405
+- https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Location
+
+Find the application links and more information at:
+
+- https://eviltester.com/apichallenges
+     
+---
+
+Patreon ad free video version: https://www.patreon.com/posts/39882304     

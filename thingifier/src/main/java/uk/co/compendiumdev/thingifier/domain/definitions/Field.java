@@ -27,6 +27,7 @@ public final class Field {
     // todo: use BigDecimal for the internal float representations
     private float maximumFloatValue;
     private float minimumFloatValue;
+    private ThingDefinition objectDefinition;
 
     // allow this being switched off
     private boolean shouldValidateValuesAgainstType;
@@ -375,5 +376,17 @@ public final class Field {
 
     public boolean willEnforceLength() {
         return validateIfStringIsTooLong;
+    }
+
+    public Field withField(final Field childField) {
+        if(objectDefinition==null){
+            objectDefinition = ThingDefinition.create(name, name);
+        }
+        objectDefinition.addField(childField);
+        return this;
+    }
+
+    public ThingDefinition getObjectDefinition() {
+        return objectDefinition;
     }
 }

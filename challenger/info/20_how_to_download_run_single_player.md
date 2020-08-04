@@ -97,4 +97,28 @@ You don't need to `POST /challenger`.
 - and if I close the app and start it again
 - then my challenge status has been tracked in the file 
 
+ ---
  
+## Video
+
+> API Challenges - How to Run the Application locally
+
+[youtu.be/FIYKZiTDoAI](https://youtu.be/FIYKZiTDoAI)
+
+The API Challenges application has a cloud version, but because it is multi-user it can be useful to run locally so you don't compete with other people for data.
+
+This video shows how to:
+
+- download the jar file
+- run the jar file
+- stop the app
+
+With instructions for both Mac and Windows.
+
+Find the application links and more information at:
+
+- https://eviltester.com/apichallenges
+ 
+  
+ 
+ Patreon ad free video: https://www.patreon.com/posts/39849331

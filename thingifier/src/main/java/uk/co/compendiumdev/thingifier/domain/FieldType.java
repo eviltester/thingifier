@@ -9,7 +9,8 @@ public enum FieldType {
     BOOLEAN("FALSE"),
     ENUM(""), // remember to set example values
     ID(null), // TODO: validate against more than one against a thing
-    GUID(null); // TODO: validate against more than one against a thing
+    GUID(null), // TODO: validate against more than one against a thing
+    OBJECT(null); // essentially a hashmap of other fields
 
     private final String defaultValue;
 
