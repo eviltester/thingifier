@@ -15,7 +15,8 @@ public class ThingInstance {
 
     // TODO: this is messy because of cloning and documentation - find a way to simplify
     // TODO split 'objectInstance' from ThingInstance i.e. without relationships and without a GUID
-    private final List<RelationshipInstance> relationships;
+
+    private final Relationships relationships;
     private final ThingDefinition entityDefinition;
     private final InstanceFields instanceFields;
     private Map<String, ThingInstance> objectFields;
@@ -43,7 +44,7 @@ public class ThingInstance {
         if(addIds) {
             eDefn.addIdsToInstance(instanceFields);
         }
-        this.relationships = new ArrayList<RelationshipInstance>();
+        this.relationships = new Relationships(this);
     }
 
     public ThingInstance(ThingDefinition entityTestSession, String guid) {
@@ -62,22 +63,7 @@ public class ThingInstance {
             output.append(String.format("\t\t\t\t %s : %s %n", fieldName, getValue(fieldName)));
         }
 
-        if (relationships.size() > 0) {
-            output.append(String.format("\t\t\t\t\t Relationships:%n"));
-            for (RelationshipInstance relatesTo : relationships) {
-                if (relatesTo.getFrom() == this) {
-                    output.append(String.format("\t\t\t\t\t %s : %s (%s)%n",
-                            relatesTo.getRelationship().getName(),
-                            relatesTo.getTo().getGUID(),
-                            relatesTo.getTo().getEntity().getName()));
-                } else {
-                    output.append(String.format("\t\t\t\t\t %s : %s (%s)%n",
-                            relatesTo.getRelationship().getReversedRelationship().getName(),
-                            relatesTo.getFrom().getGUID(),
-                            relatesTo.getFrom().getEntity().getName()));
-                }
-            }
-        }
+        output.append(relationships.toString());
 
         return output.toString();
     }
@@ -100,33 +86,43 @@ public class ThingInstance {
         } else {
 
             if(fieldName.contains(".")){
-                // processing a complex set of fields
-                final String[] fields = fieldName.split("\\.");
-                if (this.entityDefinition.hasFieldNameDefined(fields[0])){
-                    Field field = entityDefinition.getField(fields[0]);
-                    if(field.getType()!= FieldType.OBJECT){
-                        throw new RuntimeException(
-                                "Cannot reference fields on non object fields: " + fieldName + " on Entity " + this.entityDefinition.getName());
-                    }
-                    final List<String> fieldNames = new ArrayList();
-                    fieldNames.addAll(Arrays.asList(fields));
-                    fieldNames.remove(0);
-                    // need to track the instance with it
-                    final ThingInstance fieldInstance = getObjectInstance(fields[0]);
+                return processFieldNameAsObject(fieldName, value);
 
-                    return setFieldValue(fieldInstance, fieldNames, value);
-                }else{
-                    // if it is not a relationship then we should throw an error
-                    if(!this.entityDefinition.hasRelationship(fields[0])) {
-                        reportCannotFindFieldError(fieldName);
-                    }
-                }
             }else {
                 reportCannotFindFieldError(fieldName);
             }
         }
         return this;
     }
+
+    private ThingInstance processFieldNameAsObject(final String fieldName, final String value) {
+        // processing a complex set of fields
+        final String[] fields = fieldName.split("\\.");
+        String toplevelFieldName = fields[0];
+        if (this.entityDefinition.hasFieldNameDefined(toplevelFieldName)){
+
+            // process a setField on an Object field
+            Field field = entityDefinition.getField(toplevelFieldName);
+            if(field.getType()!= FieldType.OBJECT){
+                throw new RuntimeException(
+                        "Cannot reference fields on non object fields: " + fieldName + " on Entity " + this.entityDefinition.getName());
+            }
+            final List<String> fieldNames = new ArrayList();
+            fieldNames.addAll(Arrays.asList(fields));
+            fieldNames.remove(0);
+            // need to track the instance with it
+            final ThingInstance fieldInstance = getObjectInstance(toplevelFieldName);
+
+            return setFieldValue(fieldInstance, fieldNames, value);
+        }else{
+            // if it is not a relationship then we should throw an error because we don't recognise it as an object
+            if(!this.entityDefinition.hasRelationship(toplevelFieldName)) {
+                reportCannotFindFieldError(fieldName);
+            }
+        }
+        return this;
+    }
+
     private ThingInstance setFieldValue(final ThingInstance fieldInstance, final List<String> fieldNames, final String value) {
 
         String fieldName = fieldNames.get(0);
@@ -152,41 +148,14 @@ public class ThingInstance {
         }
 
     }
+
+    /* for a given field in this instance, set the value */
     private ThingInstance setFieldValue(final Field field, final String fieldName, final String value) {
         final ValidationReport validationReport = field.validate(value);
         if (validationReport.isValid()) {
-
-            String valueToAdd = value;
-
-            if(field.getType()== FieldType.STRING){
-                if(field.shouldTruncate()){
-                    valueToAdd = valueToAdd.substring(0,field.getMaximumAllowedLength());
-                }
-            }
-
-            if(field.getType()== FieldType.INTEGER || field.getType()==FieldType.ID){
-                // enforce an int of possible
-                try {
-                    Double dVal = Double.parseDouble(value);
-                    valueToAdd = String.valueOf(dVal.intValue());
-                }catch(Exception e){
-                    valueToAdd = Integer.valueOf(valueToAdd).toString();
-                }
-            }
-
-//            if(field.getType()== FieldType.INTEGER){
-//                valueToAdd = Integer.valueOf(valueToAdd).toString();
-//            }
-
-            if(field.getType()== FieldType.BOOLEAN){
-                valueToAdd = Boolean.valueOf(valueToAdd).toString();
-            }
-
-            if(field.getType()== FieldType.FLOAT){
-                valueToAdd = Float.valueOf(valueToAdd).toString();
-            }
-
-            this.instanceFields.addValue(fieldName, valueToAdd);
+            this.instanceFields.addValue(
+                                    fieldName,
+                                    field.getValueToAdd(value));
 
         } else {
             throw new IllegalArgumentException(
@@ -275,141 +244,71 @@ public class ThingInstance {
         return entityDefinition.getField(defaultFieldValue).getDefaultValue();
     }
 
+    public boolean hasIDField() {
+        return entityDefinition.hasIDField();
+    }
+
+    public String getID() {
+        String value = "";
+        final Field field = entityDefinition.getIDField();
+        if(field!=null) {
+            value = getValue(field.getName());
+        }
+        return value;
+    }
 
     /**
      * connect this thing to another thing using the relationship relationshipName
      */
     public void connects(String relationshipName, ThingInstance thing) {
-
-        // TODO: enforce cardinality
-
-        // find relationship
-        if (!entityDefinition.hasRelationship(relationshipName)) {
-            throw new IllegalArgumentException(String.format("Unknown Relationship %s for %s : %s", relationshipName, entityDefinition.getName(), getGUID()));
-        }
-
-        RelationshipVector relationship = entityDefinition.getRelationship(relationshipName, thing.entityDefinition);
-
-        RelationshipInstance related = new RelationshipInstance(relationship.getRelationshipDefinition(), this, thing);
-        this.relationships.add(related);
-
-        thing.isNowRelatedVia(related);
-
+        relationships.connect( relationshipName, thing);
     }
 
-    private void isNowRelatedVia(RelationshipInstance relationship) {
-
+    protected void isNowRelatedVia(RelationshipInstance relationship) {
         // if the relationship vector has a parent that is both ways then we need to create a relationship of the reverse type to the thing that called us
         if (relationship.getRelationship().isTwoWay()) {
-            this.relationships.add(relationship);
+            relationships.add(relationship);
         }
     }
 
     public ThingDefinition typeOfConnectedItems(String relationshipName) {
-
-        for (RelationshipVector relationship : entityDefinition.getRelationships()) {
-            if (relationship.getRelationshipDefinition().isKnownAs(relationshipName)) {
-                if (relationship.getTo().definition() == this.entityDefinition) {
-                    return relationship.getFrom().definition();
-                } else {
-                    return relationship.getTo().definition();
-                }
-            }
-        }
-
-        return null;
+        return relationships.getTypeOfConnectedItems(relationshipName);
     }
 
     public Collection<ThingInstance> connectedItems(String relationshipName) {
-        Set<ThingInstance> theConnectedItems = new HashSet<ThingInstance>();
-        for (RelationshipInstance relationship : relationships) {
-            if (relationship.getRelationship().isKnownAs(relationshipName)) {
-                if (relationship.getTo() == this) {
-                    theConnectedItems.add(relationship.getFrom());
-                } else {
-                    theConnectedItems.add(relationship.getTo());
-                }
-            }
-        }
-
-        return theConnectedItems;
+        return relationships.getConnectedItems(relationshipName);
     }
 
     public void removeRelationshipsTo(ThingInstance thing, String relationshipName) {
-        List<RelationshipInstance> toDelete = new ArrayList<RelationshipInstance>();
-
-        for (RelationshipInstance relationship : relationships) {
-            if (relationship.getRelationship().isKnownAs(relationshipName)) {
-                if (relationship.getTo() == thing || relationship.getFrom() == thing) {
-                    toDelete.add(relationship);
-                    thing.isNoLongerRelatedVia(relationship);
-                }
-            }
-        }
-
-        relationships.removeAll(toDelete);
+        relationships.removeRelationshipsTo(thing, relationshipName);
 
     }
 
     public List<ThingInstance> removeAllRelationships() {
-
-        List<ThingInstance> deleteThese = new ArrayList<>();
-
-        for (RelationshipInstance item : relationships) {
-            if (item.getFrom() != this) {
-                item.getFrom().removeRelationshipsInvolvingMe(this);
-                if (item.getRelationship().getOptionalityFrom() == MANDATORY_RELATIONSHIP) {
-                    // I am deleted, therefor any mandatory relationship to me, must result in the related thing being
-                    // deleted also
-                    deleteThese.add(item.getFrom());
-                }
-            } else {
-                item.getTo().removeRelationshipsInvolvingMe(this);
-
-//                if (item.getRelationship().getOptionalityTo() == MANDATORY_RELATIONSHIP) {
-//                    // I am being deleted therefore it does not matter if relationship to other is mandatory
-//                }
-            }
-        }
-
-        relationships.clear();
-
-        return deleteThese;
-
+        return relationships.removeAllRelationships();
     }
 
-    private void isNoLongerRelatedVia(RelationshipInstance relationship) {
+    public void isNoLongerRelatedVia(RelationshipInstance relationship) {
         // delete any relationship to or from
         relationships.remove(relationship);
     }
 
-    private void removeRelationshipsInvolvingMe(ThingInstance thing) {
-        List<RelationshipInstance> toDelete = new ArrayList<RelationshipInstance>();
-
-        for (RelationshipInstance relationship : relationships) {
-            if (relationship.getTo() == thing) {
-                toDelete.add(relationship);
-            }
-            if (relationship.getFrom() == thing) {
-                toDelete.add(relationship);
-            }
-        }
-
-        relationships.removeAll(toDelete);
+    public void removeRelationshipsInvolvingMe(ThingInstance thing) {
+        relationships.removeAllRelationshipsInvolving(thing);
     }
 
     public List<ThingInstance> connectedItemsOfType(String type) {
-        List<ThingInstance> theConnectedItems = new ArrayList<ThingInstance>();
-        for (RelationshipInstance relationship : relationships) {
-            if (relationship.getTo().getEntity().getName().toLowerCase().contentEquals(type.toLowerCase())) {
-                theConnectedItems.add(relationship.getTo());
-            }
-        }
-        return theConnectedItems;
+        return relationships.connectedItemsOfType(type);
     }
 
+    public boolean hasAnyRelationshipInstances() {
+        return relationships.hasAnyRelationshipInstances();
 
+    }
 
+    /*
+        Validation - suspect this could be a separate class for a ThingInstanceValidator
+     */
 
     public ValidationReport validateFields(){
         return validateFields(new ArrayList<>());
@@ -440,33 +339,8 @@ public class ThingInstance {
     }
 
     public ValidationReport validateRelationships(){
-        ValidationReport report = new ValidationReport();
+        return relationships.validateRelationships();
 
-
-        // TODO: relationship cardinality validation e.g. too many, not enough etc.
-
-        // Optionality Relationship Validation
-        final Collection<RelationshipVector> theRelationshipVectors = entityDefinition.getRelationships();
-        for(RelationshipVector vector : theRelationshipVectors){
-            // for each definition, does it have relationships that match
-            if(vector.getOptionality() == MANDATORY_RELATIONSHIP){
-                boolean foundRelationship = false;
-                for(RelationshipInstance relationship : relationships){
-                    if(relationship.getRelationship()==vector.getRelationshipDefinition()){
-                        foundRelationship=true;
-                    }
-                }
-                if(!foundRelationship){
-                    report.combine(
-                            new ValidationReport().
-                                    setValid(false).
-                                    addErrorMessage(String.format("Mandatory Relationship not found %s", vector.getName()))
-                    );
-                }
-            }
-        }
-
-        return report;
     }
 
     public ValidationReport validate() {
@@ -481,26 +355,9 @@ public class ThingInstance {
 
 
 
-    public boolean hasAnyRelationshipInstances() {
-        return (relationships.size() >0);
-    }
-
-    public boolean hasIDField() {
-        return entityDefinition.hasIDField();
-    }
-
-    public String getID() {
-        String value = "";
-        final Field field = entityDefinition.getIDField();
-        if(field!=null) {
-            value = getValue(field.getName());
-        }
-        return value;
-    }
 
 
     // Cloning and documentation
-
 
     public void clearAllFields() {
         List<String>ignoreFields = new ArrayList<>();
@@ -531,15 +388,14 @@ public class ThingInstance {
     public ThingInstance createDuplicateWithRelationships() {
         ThingInstance cloneInstance = new ThingInstance(entityDefinition, false);
         cloneInstance.setCloneFieldValuesFrom(instanceFields.asMap());
-        for(RelationshipInstance relationship : relationships){
-            RelationshipInstance clonedRelationship = new RelationshipInstance(
-                                                            relationship.getRelationship(),
-                                                            relationship.getFrom(),
-                                                            relationship.getTo()
-            );
-            cloneInstance.relationships.add(clonedRelationship);
-        }
+        cloneInstance.setCloneRelationships(relationships.createClonedRelationships());
         return cloneInstance;
+    }
+
+    private void setCloneRelationships(final List<RelationshipInstance> clonedRelationships) {
+        for(RelationshipInstance relationship : clonedRelationships){
+            relationships.add(relationship);
+        }
     }
 
     public ThingInstance getObjectInstance(final String objectFieldName) {

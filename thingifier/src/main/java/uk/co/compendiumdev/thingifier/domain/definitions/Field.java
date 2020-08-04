@@ -389,4 +389,39 @@ public final class Field {
     public ThingDefinition getObjectDefinition() {
         return objectDefinition;
     }
+
+    public String getValueToAdd(final String value) {
+
+        String valueToAdd = value;
+
+        switch (type){
+            case BOOLEAN:
+                return Boolean.valueOf(valueToAdd).toString();
+            case FLOAT:
+                return Float.valueOf(valueToAdd).toString();
+            case STRING:
+                if(shouldTruncate()){
+                    return valueToAdd.substring(0,getMaximumAllowedLength());
+                }else{
+                    return valueToAdd;
+                }
+            case INTEGER:
+            case ID:
+                try {
+                    Double dVal = Double.parseDouble(value);
+                    return String.valueOf(dVal.intValue());
+                }catch(Exception e){
+                    return Integer.valueOf(valueToAdd).toString();
+                }
+            case GUID:
+            case OBJECT:
+            case ENUM:
+            case DATE:
+                return valueToAdd;
+            default:
+                System.out.println("Unhandled value to add on set");
+                return valueToAdd;
+        }
+
+    }
 }
