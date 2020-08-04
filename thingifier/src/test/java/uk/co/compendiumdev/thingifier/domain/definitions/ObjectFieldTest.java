@@ -78,5 +78,6 @@ public class ObjectFieldTest {
         Assertions.assertTrue(xmlOutput.contains("<surname>Dobbs</surname>"));
     }
 
+    // todo REST API input of object fields
 
     }
