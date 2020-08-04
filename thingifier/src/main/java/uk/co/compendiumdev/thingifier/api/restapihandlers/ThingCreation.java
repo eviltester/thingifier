@@ -57,8 +57,6 @@ public class ThingCreation {
 
     private ApiResponse addNewThingWithFields(final BodyParser bodyargs, final ThingInstance instance, final Thing thing) {
 
-        final Map<String, String> args = bodyargs.getStringMap();
-
         if(thingifier.apiConfig().willApiEnforceDeclaredTypesInInput()) {
             ValidationReport validatedTypes = bodyargs.validateAgainstType(instance.getEntity());
             if(!validatedTypes.isValid()){
@@ -67,7 +65,7 @@ public class ThingCreation {
         }
 
         try {
-            instance.setFieldValuesFrom(args);
+            instance.setFieldValuesFrom(bodyargs);
         } catch (Exception e) {
             return ApiResponse.error(400, e.getMessage());
         }

@@ -27,9 +27,6 @@ public class ThingAmendment {
             }
         }
 
-        // integer values and ids will be represented as decimal so convert
-        args = bodyargs.convertArgsToSpecifiedType(args, instance.getEntity());
-
         ThingInstance cloned = null;
 
         try {
@@ -41,7 +38,7 @@ public class ThingAmendment {
                 cloned.clearAllFields();
 
             }
-            cloned.setFieldValuesFrom(args);
+            cloned.setFieldValuesFrom(bodyargs);
 
         } catch (Exception e) {
             return ApiResponse.error(400, e.getMessage());
@@ -59,7 +56,7 @@ public class ThingAmendment {
                 // delete all existing relationships for idempotent amend
                 instance.removeAllRelationships();
             }
-            instance.setFieldValuesFrom(args);
+            instance.setFieldValuesFrom(bodyargs);
 
             final ApiResponse relresponse = new RelationshipCreator(thingifier).createRelationships(bodyargs, instance);
 

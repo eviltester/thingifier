@@ -1,6 +1,7 @@
 package uk.co.compendiumdev.thingifier.domain.instances;
 
 import uk.co.compendiumdev.thingifier.api.ValidationReport;
+import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.domain.FieldType;
 import uk.co.compendiumdev.thingifier.domain.definitions.Field;
 import uk.co.compendiumdev.thingifier.domain.definitions.RelationshipVector;
@@ -90,49 +91,117 @@ public class ThingInstance {
     }
 
     public ThingInstance setValue(String fieldName, String value) {
+
         if (this.entityDefinition.hasFieldNameDefined(fieldName)) {
+
             Field field = entityDefinition.getField(fieldName);
-            final ValidationReport validationReport = field.validate(value);
-            if (validationReport.isValid()) {
+            return setFieldValue(field, fieldName, value);
 
-                String valueToAdd = value;
+        } else {
 
-                if(field.getType()== FieldType.STRING){
-                    if(field.shouldTruncate()){
-                        valueToAdd = valueToAdd.substring(0,field.getMaximumAllowedLength());
+            if(fieldName.contains(".")){
+                // processing a complex set of fields
+                final String[] fields = fieldName.split("\\.");
+                if (this.entityDefinition.hasFieldNameDefined(fields[0])){
+                    Field field = entityDefinition.getField(fields[0]);
+                    if(field.getType()!= FieldType.OBJECT){
+                        throw new RuntimeException(
+                                "Cannot reference fields on non object fields: " + fieldName + " on Entity " + this.entityDefinition.getName());
+                    }
+                    final List<String> fieldNames = new ArrayList();
+                    fieldNames.addAll(Arrays.asList(fields));
+                    fieldNames.remove(0);
+                    // need to track the instance with it
+                    final ThingInstance fieldInstance = getObjectInstance(fields[0]);
+
+                    return setFieldValue(fieldInstance, fieldNames, value);
+                }else{
+                    // if it is not a relationship then we should throw an error
+                    if(!this.entityDefinition.hasRelationship(fields[0])) {
+                        reportCannotFindFieldError(fieldName);
                     }
                 }
-
-                if(field.getType()== FieldType.INTEGER){
-                        valueToAdd = Integer.valueOf(valueToAdd).toString();
-                }
-
-                if(field.getType()== FieldType.BOOLEAN){
-                    valueToAdd = Boolean.valueOf(valueToAdd).toString();
-                }
-
-                if(field.getType()== FieldType.FLOAT){
-                    valueToAdd = Float.valueOf(valueToAdd).toString();
-                }
-
-                this.instanceFields.addValue(fieldName, valueToAdd);
-
-            } else {
-                throw new IllegalArgumentException(
-                        validationReport.getCombinedErrorMessages());
+            }else {
+                reportCannotFindFieldError(fieldName);
             }
-        } else {
-            reportCannotFindFieldError(fieldName);
         }
         return this;
     }
+    private ThingInstance setFieldValue(final ThingInstance fieldInstance, final List<String> fieldNames, final String value) {
 
-    public ThingInstance setFieldValuesFrom(final Map<String, String> args) {
+        String fieldName = fieldNames.get(0);
+        final ThingDefinition defn = fieldInstance.entityDefinition;
+        if(defn==null || !defn.hasFieldNameDefined(fieldName)){
+            reportCannotFindFieldError(fieldName);
+        }
+
+        final Field nextField = defn.getField(fieldName);
+
+        if(fieldNames.size()==1){
+            return fieldInstance.setFieldValue(nextField, fieldName, value);
+        }else{
+
+            if(nextField.getType()!= FieldType.OBJECT){
+                throw new RuntimeException(
+                        "Cannot reference fields on non object fields: " + fieldName + " on Entity " + this.entityDefinition.getName());
+            }
+            fieldNames.remove(0);
+
+            final ThingInstance nextFieldInstance = fieldInstance.getObjectInstance(fieldName);
+            return setFieldValue(nextFieldInstance, fieldNames, value);
+        }
+
+    }
+    private ThingInstance setFieldValue(final Field field, final String fieldName, final String value) {
+        final ValidationReport validationReport = field.validate(value);
+        if (validationReport.isValid()) {
+
+            String valueToAdd = value;
+
+            if(field.getType()== FieldType.STRING){
+                if(field.shouldTruncate()){
+                    valueToAdd = valueToAdd.substring(0,field.getMaximumAllowedLength());
+                }
+            }
+
+            if(field.getType()== FieldType.INTEGER || field.getType()==FieldType.ID){
+                // enforce an int of possible
+                try {
+                    Double dVal = Double.parseDouble(value);
+                    valueToAdd = String.valueOf(dVal.intValue());
+                }catch(Exception e){
+                    valueToAdd = Integer.valueOf(valueToAdd).toString();
+                }
+            }
+
+//            if(field.getType()== FieldType.INTEGER){
+//                valueToAdd = Integer.valueOf(valueToAdd).toString();
+//            }
+
+            if(field.getType()== FieldType.BOOLEAN){
+                valueToAdd = Boolean.valueOf(valueToAdd).toString();
+            }
+
+            if(field.getType()== FieldType.FLOAT){
+                valueToAdd = Float.valueOf(valueToAdd).toString();
+            }
+
+            this.instanceFields.addValue(fieldName, valueToAdd);
+
+        } else {
+            throw new IllegalArgumentException(
+                    validationReport.getCombinedErrorMessages());
+        }
+
+        return this;
+    }
+
+    public ThingInstance setFieldValuesFrom(final BodyParser args) {
 
         // protected fields
         List<String> idOrGuidFields = entityDefinition.getProtectedFieldNamesList();
 
-        for (Map.Entry<String, String> entry : args.entrySet()) {
+        for (Map.Entry<String, String> entry : args.getFlattenedStringMap()) {
 
             // Handle attempt to amend a protected field
             if (!idOrGuidFields.contains(entry.getKey())) {
