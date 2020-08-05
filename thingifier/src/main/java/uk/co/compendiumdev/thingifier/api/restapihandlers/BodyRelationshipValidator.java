@@ -57,7 +57,6 @@ public class BodyRelationshipValidator {
             final ThingDefinition thingDefinition, final ValidationReport report,
             final String complexKey, final String complexKeyValue) {
 
-        boolean validRelationships=true;
         String[] parts = complexKey.split("\\.");
 
         if(parts.length!=2){
@@ -74,13 +73,12 @@ public class BodyRelationshipValidator {
             return false;
         }
 
-        // find the other thing
+        // can we relate via that field?
         List<String> linkingFields = thingDefinition.getProtectedFieldNamesList();
         if(!linkingFields.contains(fieldToMatchForGuid)){
-            validRelationships = false;
             report.addErrorMessage(String.format(
                     "Do not support relationship references using %s", fieldToMatchForGuid));
-            return validRelationships;
+            return false;
         }
 
         ThingInstance thingToRelateTo = thingifier.findThingInstanceByGuid(guidValue);
@@ -97,11 +95,10 @@ public class BodyRelationshipValidator {
         }
 
         if(thingToRelateTo==null){
-            validRelationships=false;
             report.addErrorMessage(
                     String.format("cannot find %s to relate to with %s %s",
                             relationShipName, fieldToMatchForGuid, guidValue));
-            return validRelationships;
+            return false;
         }
 
         if(!validRelationshipBetweenThings(
@@ -112,7 +109,7 @@ public class BodyRelationshipValidator {
         }
 
         // check that the thing we want to relate with exists
-        return validRelationships;
+        return true;
     }
 
 
@@ -121,7 +118,7 @@ public class BodyRelationshipValidator {
                     final ThingDefinition thingDefinition, final ValidationReport report,
                     final String complexKey, final String complexKeyValue) {
         String[] parts = complexKey.split("\\.");
-        Boolean validRelationships = true;
+
         if(parts.length!=4){
             reportIsNotValidRelationship(complexKey, report);
             return false;
@@ -153,12 +150,13 @@ public class BodyRelationshipValidator {
                             FieldValue.is(relationshipFieldPart, uniqueId));
         }
         if(thingToRelateTo==null){
-            validRelationships=false;
             report.addErrorMessage(
                     String.format("cannot find %s of %s to relate to with %s %s",
                             relationshipFieldPart, relationshipToPart, relationshipFieldPart, uniqueId));
+            return false;
         }
-        return validRelationships;
+
+        return true;
     }
 
 

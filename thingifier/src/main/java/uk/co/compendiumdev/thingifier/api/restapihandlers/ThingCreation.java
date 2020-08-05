@@ -51,6 +51,15 @@ public class ThingCreation {
             return ApiResponse.error404(String.format("Invalid GUID for %s entity %s", instanceGuid, thing.definition().getName()));
         }
 
+        ValidationReport validated = new BodyRelationshipValidator(thingifier).validate(bodyargs, thing);
+
+        if(!validated.isValid()){
+            return ApiResponse.error(400, String.format("Invalid relationships: %s",validated.getCombinedErrorMessages()));
+        }
+
+        // todo: reject if any ids mentioned in this are already associated with an item
+        // todo: any next id counts should be higher than the ids mentioned in here
+
         return addNewThingWithFields(bodyargs, instance, thing);
     }
 
@@ -65,6 +74,7 @@ public class ThingCreation {
         }
 
         try {
+            // if any guids or ids then throw an error if they are not the same
             instance.setFieldValuesFrom(bodyargs);
         } catch (Exception e) {
             return ApiResponse.error(400, e.getMessage());

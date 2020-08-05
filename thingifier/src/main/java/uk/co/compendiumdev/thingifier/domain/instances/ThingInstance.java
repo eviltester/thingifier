@@ -159,23 +159,73 @@ public class ThingInstance {
 
     public ThingInstance setFieldValuesFrom(final BodyParser args) {
 
+        final List<String> anyErrors = findAnyGuidOrIdDifferences(args);
+        if(anyErrors.size()>0){
+            throw new RuntimeException(anyErrors.get(0));
+        }
+
+        setFieldValuesFromArgsIgnoring(args, entityDefinition.getProtectedFieldNamesList());
+
+//        // protected fields
+//        List<String> idOrGuidFields = entityDefinition.getProtectedFieldNamesList();
+//
+//        for (Map.Entry<String, String> entry : args.getFlattenedStringMap()) {
+//
+//            // Handle attempt to amend a protected field
+//            if (!idOrGuidFields.contains(entry.getKey())) {
+//                // set the value because it is not protected
+//                setValue(entry.getKey(), entry.getValue());
+//            } else {
+//                // if editing it then throw error, ignore if same value
+//                String existingValue = instanceFields.getValue(entry.getKey());
+//                if (existingValue != null && existingValue.trim().length() > 0) {
+//
+//                    // if value is different then it is an attempt to amend it
+//                    if (!existingValue.equalsIgnoreCase(entry.getValue())) {
+//                        throw new RuntimeException(
+//                                String.format("Can not amend %s on Entity %s from %s to %s",
+//                                        entry.getKey(),
+//                                        this.entityDefinition.getName(),
+//                                        existingValue,
+//                                        entry.getValue()));
+//                    }
+//                }
+//            }
+//        }
+        return this;
+    }
+
+    private void setFieldValuesFromArgsIgnoring(final BodyParser args,
+                                                final List<String> ignoreFields) {
+
+        for (Map.Entry<String, String> entry : args.getFlattenedStringMap()) {
+
+            // Handle attempt to amend a protected field
+            if (!ignoreFields.contains(entry.getKey())) {
+                // set the value because it is not protected
+                setValue(entry.getKey(), entry.getValue());
+            }
+        }
+
+    }
+
+    public List<String> findAnyGuidOrIdDifferences(final BodyParser args) {
+
+        List<String> errorMessages = new ArrayList<>();
+
         // protected fields
         List<String> idOrGuidFields = entityDefinition.getProtectedFieldNamesList();
 
         for (Map.Entry<String, String> entry : args.getFlattenedStringMap()) {
 
             // Handle attempt to amend a protected field
-            if (!idOrGuidFields.contains(entry.getKey())) {
-                // set the value because it is not protected
-                setValue(entry.getKey(), entry.getValue());
-            } else {
+            if (idOrGuidFields.contains(entry.getKey())) {
                 // if editing it then throw error, ignore if same value
                 String existingValue = instanceFields.getValue(entry.getKey());
                 if (existingValue != null && existingValue.trim().length() > 0) {
-
                     // if value is different then it is an attempt to amend it
                     if (!existingValue.equalsIgnoreCase(entry.getValue())) {
-                        throw new RuntimeException(
+                        errorMessages.add(
                                 String.format("Can not amend %s on Entity %s from %s to %s",
                                         entry.getKey(),
                                         this.entityDefinition.getName(),
@@ -185,9 +235,8 @@ public class ThingInstance {
                 }
             }
         }
-        return this;
+        return errorMessages;
     }
-
 
 
     public void overrideValue(final String key, final String value) {

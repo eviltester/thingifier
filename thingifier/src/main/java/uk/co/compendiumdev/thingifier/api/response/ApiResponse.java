@@ -61,7 +61,7 @@ public final class ApiResponse {
         thingsToReturn.clear();
         thingsToReturn.add(instance);
         typeOfResults = instance.getEntity();
-        andThisHasABody();
+        this.hasBody = true;
         return this;
     }
 
@@ -72,7 +72,7 @@ public final class ApiResponse {
         if (items.size() > 0) {
             typeOfResults = items.get(0).getEntity();
         }
-        andThisHasABody();
+        this.hasBody = true;
         return this;
     }
 
@@ -120,15 +120,10 @@ public final class ApiResponse {
             if(apiConfig.willResponsesShowGuids()) {
                 response.setHeader(ApiResponse.GUID_HEADER, thingInstance.getGUID());
             }
-            response.andThisHasABody();
+            response.hasBody = true;
         }
 
         return response;
-    }
-
-    private ApiResponse andThisHasABody() {
-        this.hasBody = true;
-        return this;
     }
 
 
