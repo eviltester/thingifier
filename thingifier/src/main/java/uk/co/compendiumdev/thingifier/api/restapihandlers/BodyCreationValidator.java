@@ -4,7 +4,9 @@ import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.ValidationReport;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
+import uk.co.compendiumdev.thingifier.domain.definitions.FieldValue;
 import uk.co.compendiumdev.thingifier.domain.definitions.ThingDefinition;
+import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
 
 import java.util.List;
 import java.util.Map;
@@ -35,6 +37,35 @@ public class BodyCreationValidator {
             }
         }
 
+        return report;
+    }
+
+    public ValidationReport areFieldsUnique(final BodyParser bodyargs, final Thing thing,
+                                            List<String> uniqueFields) {
+
+        final ValidationReport report = new ValidationReport();
+
+
+        for (Map.Entry<String, String> entry : bodyargs.getFlattenedStringMap()) {
+
+            if (uniqueFields.contains(entry.getKey())) {
+                String existingValue = entry.getValue();
+
+                if (existingValue != null && existingValue.trim().length() > 0) {
+                    // not unique if we can find something by that field value
+                    final ThingInstance foundInstance = thing.findInstanceByField(
+                            FieldValue.is(entry.getKey(),
+                                    entry.getValue()));
+
+                    if (foundInstance!=null) {
+                        report.setValid(false);
+                        report.addErrorMessage(
+                                String.format("Found Existing item with %s of %s",
+                                        entry.getKey(), entry.getValue()));
+                    }
+                }
+            }
+        }
         return report;
     }
 }

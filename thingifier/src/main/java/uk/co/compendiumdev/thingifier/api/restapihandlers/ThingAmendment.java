@@ -16,7 +16,8 @@ public class ThingAmendment {
         this.thingifier = thingifier;
     }
 
-    public ApiResponse amendInstance(final BodyParser bodyargs, final ThingInstance instance, final Boolean clearFieldsBeforeSettingFromArgs) {
+    public ApiResponse amendInstance(final BodyParser bodyargs, final ThingInstance instance,
+                                     final Boolean clearFieldsBeforeSettingFromArgs) {
 
         Map<String, String> args = bodyargs.getStringMap();
 

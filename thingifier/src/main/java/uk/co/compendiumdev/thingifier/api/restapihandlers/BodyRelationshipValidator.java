@@ -9,6 +9,7 @@ import uk.co.compendiumdev.thingifier.domain.definitions.RelationshipVector;
 import uk.co.compendiumdev.thingifier.domain.definitions.ThingDefinition;
 import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -195,5 +196,6 @@ public class BodyRelationshipValidator {
 
         return false;
     }
+
 
 }

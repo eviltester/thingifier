@@ -49,7 +49,6 @@ public class RestApiPutHandler {
             // it does not exist, but we have a GUID - create it
             // if we were given an ID then this will fail because
             // ID will not match GUID formatting
-            // TODO: reconsider this, as we would also need to support PUT an id
             return new ThingCreation(thingifier).withGuid(instanceGuid, args, thing);
         } else {
             // when amending existing thing with PUT it must be idempotent so

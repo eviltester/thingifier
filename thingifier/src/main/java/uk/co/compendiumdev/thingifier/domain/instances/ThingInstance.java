@@ -166,36 +166,10 @@ public class ThingInstance {
 
         setFieldValuesFromArgsIgnoring(args, entityDefinition.getProtectedFieldNamesList());
 
-//        // protected fields
-//        List<String> idOrGuidFields = entityDefinition.getProtectedFieldNamesList();
-//
-//        for (Map.Entry<String, String> entry : args.getFlattenedStringMap()) {
-//
-//            // Handle attempt to amend a protected field
-//            if (!idOrGuidFields.contains(entry.getKey())) {
-//                // set the value because it is not protected
-//                setValue(entry.getKey(), entry.getValue());
-//            } else {
-//                // if editing it then throw error, ignore if same value
-//                String existingValue = instanceFields.getValue(entry.getKey());
-//                if (existingValue != null && existingValue.trim().length() > 0) {
-//
-//                    // if value is different then it is an attempt to amend it
-//                    if (!existingValue.equalsIgnoreCase(entry.getValue())) {
-//                        throw new RuntimeException(
-//                                String.format("Can not amend %s on Entity %s from %s to %s",
-//                                        entry.getKey(),
-//                                        this.entityDefinition.getName(),
-//                                        existingValue,
-//                                        entry.getValue()));
-//                    }
-//                }
-//            }
-//        }
         return this;
     }
 
-    private void setFieldValuesFromArgsIgnoring(final BodyParser args,
+    public void setFieldValuesFromArgsIgnoring(final BodyParser args,
                                                 final List<String> ignoreFields) {
 
         for (Map.Entry<String, String> entry : args.getFlattenedStringMap()) {
@@ -206,7 +180,19 @@ public class ThingInstance {
                 setValue(entry.getKey(), entry.getValue());
             }
         }
+    }
 
+    public void overrideFieldValuesFromArgsIgnoring(final BodyParser args,
+                                               final List<String> ignoreFields) {
+
+        for (Map.Entry<String, String> entry : args.getFlattenedStringMap()) {
+
+            // Handle attempt to amend a protected field
+            if (!ignoreFields.contains(entry.getKey())) {
+                // set the value because it is not protected
+                overrideValue(entry.getKey(), entry.getValue());
+            }
+        }
     }
 
     public List<String> findAnyGuidOrIdDifferences(final BodyParser args) {
@@ -240,8 +226,8 @@ public class ThingInstance {
 
 
     public void overrideValue(final String key, final String value) {
-        // bypass all validation
-        this.instanceFields.addValue(key, value);
+        // bypass all validation - except, field must exist
+        this.instanceFields.putFieldValue(key, value);
     }
 
     private void reportCannotFindFieldError(final String fieldName) {
@@ -338,10 +324,10 @@ public class ThingInstance {
      */
 
     public ValidationReport validateFields(){
-        return validateFields(new ArrayList<>());
+        return validateFields(new ArrayList<>(), false);
     }
 
-    public ValidationReport validateFields(List<String> excluding){
+    public ValidationReport validateFields(List<String> excluding, boolean amAllowedToSetIds){
         ValidationReport report = new ValidationReport();
 
         // Field validation
@@ -349,16 +335,18 @@ public class ThingInstance {
         for (String fieldName : entityDefinition.getFieldNames()) {
             if(!excluding.contains(fieldName)) {
                 Field field = entityDefinition.getField(fieldName);
-                ValidationReport validity = field.validate(instanceFields.getAssignedValue(fieldName));
+                ValidationReport validity = field.validate(instanceFields.getAssignedValue(fieldName),
+                                                amAllowedToSetIds);
                 report.combine(validity);
             }
         }
 
         return report;
     }
+
     public ValidationReport validateNonProtectedFields() {
         List<String> excluding = getProtectedFieldNamesList(); // guid and ids
-        return validateFields(excluding);
+        return validateFields(excluding, false);
     }
 
     private List<String> getProtectedFieldNamesList() {

@@ -100,6 +100,12 @@ public class InstanceFields {
         return objectDefinition;
     }
 
+    public InstanceFields putFieldValue(final String fieldName, final String value) {
+        if(objectDefinition.hasFieldNameDefined(fieldName)){
+            addValue(fieldName, value);
+        }
+        return this;
+    }
     public InstanceFields setFieldValue(final Field field, final String fieldName, final String value) {
         final ValidationReport validationReport = field.validate(value);
         if (validationReport.isValid()) {

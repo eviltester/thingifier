@@ -1,14 +1,13 @@
 package uk.co.compendiumdev.thingifier;
 
 import uk.co.compendiumdev.thingifier.api.ThingifierRestAPIHandler;
+import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfigProfile;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfigProfiles;
+import uk.co.compendiumdev.thingifier.domain.FieldType;
 import uk.co.compendiumdev.thingifier.domain.data.ThingifierDataPopulator;
-import uk.co.compendiumdev.thingifier.domain.definitions.Cardinality;
-import uk.co.compendiumdev.thingifier.domain.definitions.FieldValue;
-import uk.co.compendiumdev.thingifier.domain.definitions.RelationshipDefinition;
-import uk.co.compendiumdev.thingifier.domain.definitions.RelationshipVector;
+import uk.co.compendiumdev.thingifier.domain.definitions.*;
 import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
 import uk.co.compendiumdev.thingifier.domain.dsl.relationship.AndCall;
 import uk.co.compendiumdev.thingifier.domain.dsl.relationship.Between;
@@ -215,5 +214,17 @@ final public class Thingifier {
 
     public void setDataGenerator(ThingifierDataPopulator dataPopulator) {
         initialDataGenerator = dataPopulator;
+    }
+
+    public void setNextIdsToAccomodate(final BodyParser bodyargs, final Thing thing) {
+        final List<Map.Entry<String, String>> fieldNamesAndValues = bodyargs.getFlattenedStringMap();
+        final ThingDefinition defn = thing.definition();
+        // todo: process nested objects - currently assume these are not ids, but they might be
+        for(Map.Entry<String, String> fieldNameValue : fieldNamesAndValues){
+            final Field field = defn.getField(fieldNameValue.getKey());
+            if(field!=null && field.getType()== FieldType.ID) {
+                defn.ensureNextIdAbove(fieldNameValue.getValue());
+            }
+        }
     }
 }

@@ -104,7 +104,7 @@ public class ThingDefinition {
 
     // TODO: this could support multiple ids by giving them a name and keeping them in a HashSet
     //      e.g. an IDCounter idCounter.getNext("name")
-    private String getNextIdValue() {
+    public String getNextIdValue() {
         int id = nextId;
         nextId++;
         return String.valueOf(id);
@@ -158,5 +158,14 @@ public class ThingDefinition {
     }
 
 
-
+    public void ensureNextIdAbove(final String value) {
+        try{
+            final int desiredId = Integer.parseInt(value);
+            if(nextId<=desiredId){
+                nextId=desiredId+1;
+            }
+        }catch(Exception e){
+            // ignore conversion errors
+        }
+    }
 }

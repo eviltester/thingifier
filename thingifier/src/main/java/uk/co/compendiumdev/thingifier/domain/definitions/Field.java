@@ -101,6 +101,12 @@ public final class Field {
     }
 
     public ValidationReport validate(String value) {
+        boolean NOT_ALLOWED_TO_SET_IDs = false;
+        return validate(value, NOT_ALLOWED_TO_SET_IDs);
+
+    }
+
+    public ValidationReport validate(String value, boolean allowedToSetIds) {
 
 
         ValidationReport report = new ValidationReport();
@@ -112,14 +118,13 @@ public final class Field {
             return report;
         }
 
-        if(type == FieldType.ID){
-            report.setValid(false);
-            report.addErrorMessage(String.format("%s : field is an ID, you can't set it", this.getName()));
-            return report;
+        if(!allowedToSetIds) {
+            if (type == FieldType.ID) {
+                report.setValid(false);
+                report.addErrorMessage(String.format("%s : field is an ID, you can't set it", this.getName()));
+                return report;
+            }
         }
-        // TODO: if we do allow setting ids then we have to check if it is higher or equal to the nextId
-        // and adjust nextId to be this id +1
-
 
         if (!fieldIsOptional && value == null) {
             report.setValid(false);
@@ -424,4 +429,5 @@ public final class Field {
         }
 
     }
+
 }

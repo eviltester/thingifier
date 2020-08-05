@@ -7,6 +7,8 @@ import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -35,11 +37,22 @@ public class ThingCreation {
         return addNewThingWithFields(bodyargs, thing.createInstance(), thing);
     }
 
+    // create with GUID and IDs is normally associated with PUT or 'insert'
     public ApiResponse withGuid(final String instanceGuid, final BodyParser bodyargs, final Thing thing) {
 
         final Map<String, String> args = bodyargs.getStringMap();
 
         ThingInstance instance;
+        ValidationReport validated;
+
+        validated = new BodyCreationValidator(thingifier).
+                areFieldsUnique(bodyargs, thing,
+                        thing.definition().getProtectedFieldNamesList());
+        if(!validated.isValid()){
+            return ApiResponse.error(409,"Cannot Create with duplicate values: "+
+                    validated.getCombinedErrorMessages());
+        }
+
 
         try {
             String aGUID = UUID.fromString(instanceGuid).toString();
@@ -51,20 +64,25 @@ public class ThingCreation {
             return ApiResponse.error404(String.format("Invalid GUID for %s entity %s", instanceGuid, thing.definition().getName()));
         }
 
-        ValidationReport validated = new BodyRelationshipValidator(thingifier).validate(bodyargs, thing);
+        validated = new BodyRelationshipValidator(thingifier).validate(bodyargs, thing);
 
         if(!validated.isValid()){
-            return ApiResponse.error(400, String.format("Invalid relationships: %s",validated.getCombinedErrorMessages()));
+            return ApiResponse.error(400,
+                    String.format("Invalid relationships: %s",
+                            validated.getCombinedErrorMessages()));
         }
 
-        // todo: reject if any ids mentioned in this are already associated with an item
-        // todo: any next id counts should be higher than the ids mentioned in here
 
-        return addNewThingWithFields(bodyargs, instance, thing);
+
+        // any next id counts should be set higher than the ids mentioned in here
+        thingifier.setNextIdsToAccomodate(bodyargs, thing);
+
+        return insertNewThingWithFields(bodyargs, instance, thing);
     }
 
 
-    private ApiResponse addNewThingWithFields(final BodyParser bodyargs, final ThingInstance instance, final Thing thing) {
+    private ApiResponse addNewThingWithFields(final BodyParser bodyargs, final ThingInstance instance,
+                                              final Thing thing) {
 
         if(thingifier.apiConfig().willApiEnforceDeclaredTypesInInput()) {
             ValidationReport validatedTypes = bodyargs.validateAgainstType(instance.getEntity());
@@ -94,6 +112,38 @@ public class ThingCreation {
         }
     }
 
+    private ApiResponse insertNewThingWithFields(final BodyParser bodyargs, final ThingInstance instance,
+                                              final Thing thing) {
+
+        if(thingifier.apiConfig().willApiEnforceDeclaredTypesInInput()) {
+            ValidationReport validatedTypes = bodyargs.validateAgainstType(instance.getEntity());
+            if(!validatedTypes.isValid()){
+                return ApiResponse.error(400, validatedTypes.getCombinedErrorMessages());
+            }
+        }
+
+        try {
+            // set all the fields and values
+            List<String> ignoreFields = new ArrayList<>();
+            ignoreFields.add("guid");  // todo guid might not be called guid
+            instance.overrideFieldValuesFromArgsIgnoring(bodyargs, ignoreFields);
+        } catch (Exception e) {
+            return ApiResponse.error(400, e.getMessage());
+        }
+
+
+        ValidationReport validation = instance.validateFields(new ArrayList<>(), true);
+
+        if (validation.isValid()) {
+            thing.addInstance(instance);
+
+            return new RelationshipCreator(thingifier).createRelationships(bodyargs, instance);
+
+        } else {
+            // do not add it, report the errors
+            return ApiResponse.error(400, validation.getErrorMessages());
+        }
+    }
 
 }
 
