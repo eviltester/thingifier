@@ -1,4 +1,4 @@
-package uk.co.compendiumdev.thingifier.api.restapihandlers;
+package uk.co.compendiumdev.thingifier.api.restapihandlers.commonerrorresponse;
 
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 

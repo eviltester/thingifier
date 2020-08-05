@@ -61,22 +61,17 @@ public class BodyRelationshipValidator {
         String[] parts = complexKey.split("\\.");
 
         if(parts.length!=2){
-            // invalid relationship
-            validRelationships = false;
-            report.addErrorMessage(String.format("%s is not a valid relationship",complexKey));
-            return validRelationships;
+            reportIsNotValidRelationship(complexKey, report);
+            return false;
         }
+
         String relationShipName = parts[0];
         String fieldToMatchForGuid = parts[1];
         String guidValue = complexKeyValue;
 
         // is it a valid relationship name for this thing
-        if(!thingDefinition.hasRelationship(relationShipName)){
-            validRelationships = false;
-            report.addErrorMessage(
-                    String.format("%s is not a valid relationship for %s",
-                            relationShipName, thingDefinition.getName()));
-            return validRelationships;
+        if(!isValidRelationship(thingDefinition, relationShipName, report)){
+            return false;
         }
 
         // find the other thing
@@ -109,24 +104,18 @@ public class BodyRelationshipValidator {
             return validRelationships;
         }
 
-        // is it a valid relationship to the other thing
-        boolean foundRelationship=false;
-        for(RelationshipVector relationships : thingDefinition.getRelationships(relationShipName)){
-            if(relationships.getTo().definition().getPlural().equals(
-                            thingToRelateTo.getEntity().getPlural())){
-                foundRelationship=true;
-            }
+        if(!validRelationshipBetweenThings(
+                            thingDefinition, relationShipName,
+                            thingToRelateTo.getEntity().getPlural()
+                            , report)){
+            return false;
         }
-        if(!foundRelationship){
-            validRelationships=false;
-            report.addErrorMessage(
-                    String.format("%s to %s is not a valid relationship for %s",
-                            relationShipName, thingToRelateTo.getEntity().getName(), thingDefinition.getName()));
-            return validRelationships;
-        }
+
         // check that the thing we want to relate with exists
         return validRelationships;
     }
+
+
 
     private boolean validateComplexFourPartRelationshipDefinition(
                     final ThingDefinition thingDefinition, final ValidationReport report,
@@ -134,10 +123,8 @@ public class BodyRelationshipValidator {
         String[] parts = complexKey.split("\\.");
         Boolean validRelationships = true;
         if(parts.length!=4){
-            // invalid relationship
-            validRelationships = false;
-            report.addErrorMessage(String.format("%s is not a valid relationship",complexKey));
-            return validRelationships;
+            reportIsNotValidRelationship(complexKey, report);
+            return false;
         }
 
         String relationshipsPart = parts[0];
@@ -146,27 +133,15 @@ public class BodyRelationshipValidator {
         String relationshipFieldPart = parts[3];
 
         // is it a valid relationship name for this thing
-        if(!thingDefinition.hasRelationship(relationshipNamePart)){
-            validRelationships = false;
-            report.addErrorMessage(
-                    String.format("%s is not a valid relationship for %s",
-                            relationshipNamePart, thingDefinition.getName()));
-            return validRelationships;
+        if(!isValidRelationship(thingDefinition, relationshipNamePart, report)){
+            return false;
         }
-        // is it a valid relationship to the other thing
-        boolean foundRelationship=false;
-        for(RelationshipVector relationships : thingDefinition.getRelationships(relationshipNamePart)){
-            if(relationships.getTo().definition().getPlural().equals(relationshipToPart)){
-                foundRelationship=true;
-            }
+
+        if(!validRelationshipBetweenThings(thingDefinition, relationshipNamePart,
+                                relationshipToPart, report)){
+            return false;
         }
-        if(!foundRelationship){
-            validRelationships=false;
-            report.addErrorMessage(
-                    String.format("%s to %s is not a valid relationship for %s",
-                            relationshipNamePart, relationshipToPart, thingDefinition.getName()));
-            return validRelationships;
-        }
+
         // check that the thing we want to relate with exists
         String uniqueId = complexKeyValue;
         ThingInstance thingToRelateTo = thingifier.
@@ -185,4 +160,42 @@ public class BodyRelationshipValidator {
         }
         return validRelationships;
     }
+
+
+    private boolean isValidRelationship(final ThingDefinition thingDefinition,
+                                        final String relationShipName,
+                                        final ValidationReport report) {
+        if(!thingDefinition.hasRelationship(relationShipName)){
+            report.addErrorMessage(
+                    String.format("%s is not a valid relationship for %s",
+                            relationShipName, thingDefinition.getName()));
+            return false;
+        }
+        return true;
+    }
+
+    private void reportIsNotValidRelationship(final String relationshipToMention, ValidationReport report) {
+        report.addErrorMessage(String.format("%s is not a valid relationship",relationshipToMention));
+    }
+
+    private boolean validRelationshipBetweenThings(final ThingDefinition thingDefinition,
+                                                   final String relationShipName,
+                                                   final String thingToRelateTo,
+                                                   final ValidationReport report) {
+        // is it a valid relationship to the other thing
+
+        for(RelationshipVector relationships : thingDefinition.getRelationships(relationShipName)){
+            if(relationships.getTo().definition().getPlural().equals(
+                    thingToRelateTo)){
+                return true;
+            }
+        }
+
+        report.addErrorMessage(
+                String.format("%s to %s is not a valid relationship for %s",
+                        relationShipName, thingToRelateTo, thingDefinition.getName()));
+
+        return false;
+    }
+
 }
