@@ -237,8 +237,7 @@ public class VerbPutEntityInstanceApiNonHttpTest {
         ThingInstance newProject = project.findInstanceByField(FieldValue.is("guid", guid));
         Assertions.assertEquals("12", newProject.getValue("id"));
 
-        Assertions.assertEquals("13", todoManager.getThingNamed("project").
-                                                definition().getNextIdValue());
+        Assertions.assertEquals("13", anIdField.getNextIdValue());
     }
 
 

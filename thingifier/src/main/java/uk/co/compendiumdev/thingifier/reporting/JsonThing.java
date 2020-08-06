@@ -90,7 +90,7 @@ public class JsonThing {
                             break;
                         case OBJECT:
                             jsonobj.add(fieldName, asJsonObject(
-                                        fields.getObjectField(fieldName)));
+                                        fields.getObjectInstance(fieldName)));
                             break;
                         default:
                             jsonobj.addProperty(fieldName, fieldValue);
@@ -99,7 +99,7 @@ public class JsonThing {
                     // output as string
                     if(theField.getType()==FieldType.OBJECT){
                         jsonobj.add(fieldName, asJsonObject(
-                                    fields.getObjectField(fieldName)));
+                                    fields.getObjectInstance(fieldName)));
                     }else {
                         jsonobj.addProperty(fieldName, fieldValue);
                     }
@@ -131,56 +131,7 @@ public class JsonThing {
         }
 
         final JsonObject jsonobj = asJsonObject(thingInstance.getFields());
-//        for (String fieldName : thingInstance.getEntity().getFieldNames()) {
-//            Field theField = thingInstance.getEntity().getField(fieldName);
-//            // if hiding guids then skip them
-//            if(hideGuids && theField.getType()== FieldType.GUID){
-//                continue;
-//            }
-//            if(!apiConfig.willRenderGuidsInResponse() && theField.getType()== FieldType.GUID)
-//                continue;
-//
-//            String fieldValue = "";
-//
-//            try {
-//                fieldValue = thingInstance.getValue(theField.getName());
-//
-//                if(apiConfig.willRenderFieldsAsDefinedTypes()) {
-//                    switch (theField.getType()) {
-//                        case BOOLEAN:
-//                            jsonobj.addProperty(fieldName, Boolean.valueOf(fieldValue));
-//                            break;
-//                        case INTEGER:
-//                            jsonobj.addProperty(fieldName, Integer.valueOf(fieldValue));
-//                            break;
-//                        case FLOAT:
-//                            jsonobj.addProperty(fieldName, Float.valueOf(fieldValue));
-//                            break;
-//                        case ID:
-//                            jsonobj.addProperty(fieldName, Integer.valueOf(fieldValue));
-//                            break;
-//                        case OBJECT:
-//                            jsonobj.add(fieldName, asJsonObject(
-//                                                thingInstance.getObjectInstance(fieldName), true));
-//                            break;
-//                        default:
-//                            jsonobj.addProperty(fieldName, fieldValue);
-//                    }
-//                }else {
-//                    // output as string
-//                    if(theField.getType()==FieldType.OBJECT){
-//                        jsonobj.add(fieldName, asJsonObject(
-//                                thingInstance.getObjectInstance(fieldName), true));
-//                    }else {
-//                        jsonobj.addProperty(fieldName, fieldValue);
-//                    }
-//                }
-//            }catch(Exception e){
-//                // ignore
-////                System.out.println("Error processing " + fieldName +
-////                            " with value " + fieldValue + " " + e.getMessage());
-//            }
-//        }
+
 
         /*
             "relationships" : [

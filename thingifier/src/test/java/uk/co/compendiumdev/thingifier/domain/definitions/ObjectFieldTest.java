@@ -33,7 +33,7 @@ public class ObjectFieldTest {
 
 
         instance = new ThingInstance(defn);
-        final InstanceFields person = instance.getObjectInstance("person");
+        final InstanceFields person = instance.getObjectValue("person");
         person.addValue("firstname", "Connie");
         person.addValue("surname", "Dobbs");
 
@@ -44,7 +44,7 @@ public class ObjectFieldTest {
     public void canCreateObjectField() {
 
         Assertions.assertEquals("Connie",
-                instance.getObjectInstance("person").getValue("firstname"));
+                instance.getObjectValue("person").getValue("firstname"));
     }
 
     @Test

@@ -33,6 +33,8 @@ public final class Field {
     private boolean shouldValidateValuesAgainstType;
     private boolean validateIfStringIsTooLong;
 
+    private int nextId; // only used for id fields
+
     private Field(final String name, final FieldType type) {
         this.name = name;
         this.type = type;
@@ -47,6 +49,7 @@ public final class Field {
         allowedNullable=false;
         shouldValidateValuesAgainstType=true;
         validateIfStringIsTooLong = false;
+        nextId=1;
     }
 
     public static Field is(String name) {
@@ -60,6 +63,24 @@ public final class Field {
 
     public String getName() {
         return name;
+    }
+
+    public String getNextIdValue() {
+        int id = nextId;
+        nextId++;
+        return String.valueOf(id);
+    }
+
+    // an external way to set the next id
+    public void ensureNextIdAbove(final String value) {
+        try{
+            final int desiredId = Integer.parseInt(value);
+            if(nextId<=desiredId){
+                nextId=desiredId+1;
+            }
+        }catch(Exception e){
+            // ignore conversion errors
+        }
     }
 
     public Field ignoreTypeValidation(){

@@ -132,7 +132,7 @@ public class ThingCreation {
         }
 
 
-        ValidationReport validation = instance.validateFields(new ArrayList<>(), true);
+        ValidationReport validation = instance.validateFieldValues(new ArrayList<>(), true);
 
         if (validation.isValid()) {
             thing.addInstance(instance);

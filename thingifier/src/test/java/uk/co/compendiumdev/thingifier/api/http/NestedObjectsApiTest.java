@@ -43,7 +43,7 @@ public class NestedObjectsApiTest {
     void canAmendConnie(){
 
         instance = new ThingInstance(defn);
-        final InstanceFields person = instance.getObjectInstance("person");
+        final InstanceFields person = instance.getObjectValue("person");
         person.addValue("firstname", "Connie");
         person.addValue("surname", "Dobbs");
 
@@ -62,8 +62,7 @@ public class NestedObjectsApiTest {
 
         Assertions.assertEquals(200, response.getStatusCode());
         Assertions.assertEquals("bob",
-                instance.getObjectInstance("person").
-                        getValue("firstname"));
+                instance.getObjectValue("person").getValue("firstname"));
     }
 
     @Test
@@ -85,7 +84,7 @@ public class NestedObjectsApiTest {
         Assertions.assertEquals(1,thing.countInstances());
 
         for(ThingInstance bob : thing.getInstances()){
-            Assertions.assertEquals("bob", bob.getObjectInstance("person").getValue("firstname"));
+            Assertions.assertEquals("bob", bob.getObjectValue("person").getValue("firstname"));
         }
     }
 }

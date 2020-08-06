@@ -32,6 +32,7 @@ public class ThingAmendment {
 
         try {
 
+            // todo: this 'clone' is actually just a cloned instance fields not the Instance
             cloned = instance.createDuplicateWithoutRelationships();
 
             if(clearFieldsBeforeSettingFromArgs){

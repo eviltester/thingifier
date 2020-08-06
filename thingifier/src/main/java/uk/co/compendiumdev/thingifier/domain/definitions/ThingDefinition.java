@@ -14,12 +14,12 @@ public class ThingDefinition {
     private DefinedFields fields;
     private DefinedRelationships relationships;
 
-    private int nextId;
+
 
     private ThingDefinition() {
         relationships = new DefinedRelationships();
         fields = new DefinedFields();
-        nextId=1;
+
     }
 
     public static ThingDefinition create(String name, String plural) {
@@ -96,19 +96,13 @@ public class ThingDefinition {
         for(Field aField : idfields){
             if(aField.getType()==FieldType.ID){
                 if(!instance.hasFieldNamed(aField.getName())) {
-                    instance.addValue(aField.getName(), getNextIdValue());
+                    instance.addValue(aField.getName(), aField.getNextIdValue());
                 }
             }
         }
     }
 
-    // TODO: this could support multiple ids by giving them a name and keeping them in a HashSet
-    //      e.g. an IDCounter idCounter.getNext("name")
-    public String getNextIdValue() {
-        int id = nextId;
-        nextId++;
-        return String.valueOf(id);
-    }
+
 
     public boolean hasIDField() {
         return fields.getFieldsOfType(FieldType.ID).size()>0;
@@ -158,14 +152,5 @@ public class ThingDefinition {
     }
 
 
-    public void ensureNextIdAbove(final String value) {
-        try{
-            final int desiredId = Integer.parseInt(value);
-            if(nextId<=desiredId){
-                nextId=desiredId+1;
-            }
-        }catch(Exception e){
-            // ignore conversion errors
-        }
-    }
+
 }

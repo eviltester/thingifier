@@ -223,7 +223,7 @@ final public class Thingifier {
         for(Map.Entry<String, String> fieldNameValue : fieldNamesAndValues){
             final Field field = defn.getField(fieldNameValue.getKey());
             if(field!=null && field.getType()== FieldType.ID) {
-                defn.ensureNextIdAbove(fieldNameValue.getValue());
+                field.ensureNextIdAbove(fieldNameValue.getValue());
             }
         }
     }
