@@ -91,9 +91,11 @@ public class ThingCreation {
             }
         }
 
+        // todo: need to separate relationships from field in the path prior to sending through to setFields
+
         try {
             // if any guids or ids then throw an error if they are not the same
-            instance.setFieldValuesFrom(bodyargs);
+            instance.setFieldValuesFrom(new BodyArgsProcessor(thingifier, bodyargs).removeRelationshipsFrom(instance));
         } catch (Exception e) {
             return ApiResponse.error(400, e.getMessage());
         }
@@ -126,7 +128,7 @@ public class ThingCreation {
             // set all the fields and values
             List<String> ignoreFields = new ArrayList<>();
             ignoreFields.add("guid");  // todo guid might not be called guid
-            instance.overrideFieldValuesFromArgsIgnoring(bodyargs, ignoreFields);
+            instance.overrideFieldValuesFromArgsIgnoring(new BodyArgsProcessor(thingifier, bodyargs).removeRelationshipsFrom(instance), ignoreFields);
         } catch (Exception e) {
             return ApiResponse.error(400, e.getMessage());
         }

@@ -58,10 +58,17 @@ final public class FieldValue {
 
     public FieldValue cloned() {
         final FieldValue clone = new FieldValue(fieldName, fieldValue);
+        if(objectValue!=null){
+            clone.setValue(objectValue.cloned());
+        }
         return clone;
     }
 
     public String asString() {
         return fieldValue;
+    }
+
+    public InstanceFields asObject() {
+        return objectValue;
     }
 }

@@ -43,9 +43,8 @@ public class NestedObjectsApiTest {
     void canAmendConnie(){
 
         instance = new ThingInstance(defn);
-        final InstanceFields person = instance.getObjectValue("person");
-        person.addValue("firstname", "Connie");
-        person.addValue("surname", "Dobbs");
+        instance.setValue("person.firstname", "Connie");
+        instance.setValue("person.surname", "Dobbs");
 
         thing.addInstance(instance);
 

@@ -1,7 +1,6 @@
 package uk.co.compendiumdev.thingifier.domain.instances;
 
 import uk.co.compendiumdev.thingifier.api.ValidationReport;
-import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.domain.definitions.Field;
 import uk.co.compendiumdev.thingifier.domain.definitions.FieldValue;
 import uk.co.compendiumdev.thingifier.domain.definitions.ThingDefinition;
@@ -76,7 +75,7 @@ public class ThingInstance {
         return this;
     }
 
-    public ThingInstance setFieldValuesFrom(final BodyParser args) {
+    public ThingInstance setFieldValuesFrom(final List<Map.Entry<String, String>> args) {
 
         final List<String> anyErrors = instanceFields.findAnyGuidOrIdDifferences(args);
         if(anyErrors.size()>0){
@@ -88,10 +87,10 @@ public class ThingInstance {
         return this;
     }
 
-    public void setFieldValuesFromArgsIgnoring(final BodyParser args,
+    public void setFieldValuesFromArgsIgnoring(final List<Map.Entry<String, String>> args,
                                                 final List<String> ignoreFields) {
 
-        for (Map.Entry<String, String> entry : args.getFlattenedStringMap()) {
+        for (Map.Entry<String, String> entry : args) {
 
             // Handle attempt to amend a protected field
             if (!ignoreFields.contains(entry.getKey())) {
@@ -101,10 +100,10 @@ public class ThingInstance {
         }
     }
 
-    public void overrideFieldValuesFromArgsIgnoring(final BodyParser args,
+    public void overrideFieldValuesFromArgsIgnoring(final List<Map.Entry<String, String>> args,
                                                final List<String> ignoreFields) {
 
-        for (Map.Entry<String, String> entry : args.getFlattenedStringMap()) {
+        for (Map.Entry<String, String> entry : args) {
 
             // Handle attempt to amend a protected field
             if (!ignoreFields.contains(entry.getKey())) {

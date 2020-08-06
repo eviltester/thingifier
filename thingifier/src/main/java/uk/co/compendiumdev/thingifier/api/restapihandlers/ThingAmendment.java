@@ -40,7 +40,7 @@ public class ThingAmendment {
                 cloned.clearAllFields();
 
             }
-            cloned.setFieldValuesFrom(bodyargs);
+            cloned.setFieldValuesFrom(new BodyArgsProcessor(thingifier, bodyargs).removeRelationshipsFrom(instance));
 
         } catch (Exception e) {
             return ApiResponse.error(400, e.getMessage());
@@ -58,8 +58,9 @@ public class ThingAmendment {
                 // delete all existing relationships for idempotent amend
                 instance.removeAllRelationships();
             }
-            instance.setFieldValuesFrom(bodyargs);
+            instance.setFieldValuesFrom(new BodyArgsProcessor(thingifier, bodyargs).removeRelationshipsFrom(instance));
 
+            // todo: should we check that this was actually a success?
             final ApiResponse relresponse = new RelationshipCreator(thingifier).createRelationships(bodyargs, instance);
 
             return ApiResponse.success().returnSingleInstance(instance);

@@ -1,7 +1,6 @@
 package uk.co.compendiumdev.thingifier.domain.instances;
 
 import uk.co.compendiumdev.thingifier.api.ValidationReport;
-import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.domain.FieldType;
 import uk.co.compendiumdev.thingifier.domain.definitions.DefinedFields;
 import uk.co.compendiumdev.thingifier.domain.definitions.Field;
@@ -13,9 +12,6 @@ public class InstanceFields {
 
     private final DefinedFields objectDefinition;
     private Map<String, FieldValue> values = new HashMap<String, FieldValue>();
-
-    // todo: this should not be required, instead we should have the InstanceFields in the FieldValue itself
-    private Map<String, InstanceFields> objectFields;
 
     public InstanceFields(final DefinedFields objectDefinition) {
         this.objectDefinition = objectDefinition;
@@ -39,13 +35,14 @@ public class InstanceFields {
             reportCannotFindFieldError(fieldName);
         }
 
+        // bypass default processing for OBJECT, ARRAY - at the moment
+        // todo: allow defaults for OBJECT, ARRAY, etc.
         Field field = objectDefinition.getField(fieldName);
         if(field.getType()==FieldType.OBJECT){
-            // todo: this should already be in the field - this is temporary till full migration for FieldValue is complete
-            // currently use getObjectField to find values of object
-            return FieldValue.is(fieldName,objectFields.get(fieldName));
+            getAssignedValue(fieldName);
         }
 
+        // pass back any defaults setup
         FieldValue assignedValue = getAssignedValue(fieldName);
         if (assignedValue == null) {
             // does definition have a default value?
@@ -61,6 +58,25 @@ public class InstanceFields {
         }
 
         return assignedValue;
+    }
+
+    // todo perhaps we should return a FieldValue and then allow the 'caller'
+    //  to getObject(), getString(), getInteger() etc. on that value?
+    // that would make it easier to handle objects, nested objects and arrays
+    public InstanceFields getObjectInstance(final String objectFieldName) {
+
+        // todo handle nested objects e.g. person.phonenumbers
+        Field objectField = objectDefinition.getField(objectFieldName);
+        if(objectField.getType()==FieldType.OBJECT){
+
+            InstanceFields instance = getValue(objectFieldName).asObject();
+            if(instance==null){
+                instance = new InstanceFields(objectField.getObjectDefinition());
+                addValue(objectFieldName, FieldValue.is(objectFieldName, instance));
+            }
+            return instance;
+        }
+        return null;
     }
 
     public String toString() {
@@ -101,12 +117,7 @@ public class InstanceFields {
     }
 
 
-    private void addObjectInstance(final String objectFieldName, final InstanceFields instance) {
-        if(objectFields==null){
-            objectFields = new HashMap<>();
-        }
-        objectFields.put(objectFieldName, instance);
-    }
+
 
     public DefinedFields getDefinition() {
         return objectDefinition;
@@ -136,85 +147,74 @@ public class InstanceFields {
     }
 
 
-    private InstanceFields getObjectField(final String objectFieldName) {
-        if(objectFields==null){
-            objectFields = new HashMap<>();
-        }
-        return objectFields.get(objectFieldName);
-    }
-
-    // todo perhaps we should return a FieldValue and then allow the 'caller'
-    //  to getObject(), getString(), getInteger() etc. on that value?
-    // that would make it easier to handle objects, nested objects and arrays
-    public InstanceFields getObjectInstance(final String objectFieldName) {
-
-        // todo handle nested objects e.g. person.phonenumbers
-        Field objectField = objectDefinition.getField(objectFieldName);
-        if(objectField.getType()==FieldType.OBJECT){
-
-            InstanceFields instance = getObjectField(objectFieldName);
-            if(instance==null){
-                instance = new InstanceFields(objectField.getObjectDefinition());
-                addObjectInstance(objectFieldName, instance);
-            }
-            return instance;
-        }
-        return null;
-    }
 
 
 
-    private InstanceFields processFieldNameAsObject(final String fieldName, final String value) {
+
+    /*
+        set a value in the object hierarchy and create objects as we go
+        note that this can create partial objects which may not actually
+        match validation rules
+    */
+    private void setFieldNameAsObject(final String fieldName, final String value) {
         // processing a complex set of fields
+
         final String[] fields = fieldName.split("\\.");
-        String toplevelFieldName = fields[0];
-        if (objectDefinition.hasFieldNameDefined(toplevelFieldName)){
+        final List<String> fieldNames = new ArrayList();
+        fieldNames.addAll(Arrays.asList(fields));
 
-            // process a setField on an Object field
-            Field field = objectDefinition.getField(toplevelFieldName);
-            if(field.getType()!= FieldType.OBJECT){
-                throw new RuntimeException(
-                        "Cannot reference fields on non object fields: " + fieldName);
-            }
-            final List<String> fieldNames = new ArrayList();
-            fieldNames.addAll(Arrays.asList(fields));
-            fieldNames.remove(0);
-            // need to track the instance with it
-            final InstanceFields fieldInstance = getObjectInstance(toplevelFieldName);
-
-            return setFieldValue(fieldInstance, fieldNames, value);
-        }
-        return this;
+        // start recursive call to work through list
+        setFieldValue(fieldNames, value);
     }
 
     /*
         recursive setFieldValue to handle 'objects'
      */
-    private InstanceFields setFieldValue(final InstanceFields fieldInstance, final List<String> fieldNames, final String value) {
+    protected void setFieldValue(final List<String> fieldNames, final String value) {
 
         String fieldName = fieldNames.get(0);
-        final DefinedFields defn = fieldInstance.getDefinition();
-        if(defn==null || !defn.hasFieldNameDefined(fieldName)){
+        if(!objectDefinition.hasFieldNameDefined(fieldName)){
             reportCannotFindFieldError(fieldName);
         }
 
-        final Field nextField = defn.getField(fieldName);
+        final Field field = objectDefinition.getField(fieldName);
 
         if(fieldNames.size()==1){
-            fieldInstance.setFieldValue(nextField, fieldName, value);
-            return this;
+            // set the primitive value
+            setFieldValue(field, fieldName, value);
+            return;
         }else{
 
-            if(nextField.getType()!= FieldType.OBJECT){
+            if(field.getType()!= FieldType.OBJECT){
                 throw new RuntimeException(
                         "Cannot reference fields on non object fields: " + fieldName);
             }
-            fieldNames.remove(0);
 
-            final InstanceFields nextFieldInstance = fieldInstance.getObjectField(fieldName);
-            return setFieldValue(nextFieldInstance, fieldNames, value);
+            // to traverse to next object, may need to create it
+            FieldValue objectValue = getAssignedValue(fieldName);
+            if(objectValue==null){
+                objectValue = createObjectField(fieldName);
+            }
+            final InstanceFields fieldInstance = objectValue.asObject();
+
+            fieldNames.remove(0); // processed this field
+
+            fieldInstance.setFieldValue(fieldNames, value);
         }
 
+    }
+
+    private FieldValue createObjectField(final String fieldName) {
+        if(objectDefinition.hasFieldNameDefined(fieldName)){
+            Field field = objectDefinition.getField(fieldName);
+            if(field.getType()==FieldType.OBJECT){
+                final FieldValue objectValue = FieldValue.is(fieldName,
+                        new InstanceFields(field.getObjectDefinition()));
+                addValue(fieldName, objectValue);
+                return objectValue;
+            }
+        }
+        return null;
     }
 
     private void reportCannotFindFieldError(final String fieldName) {
@@ -224,14 +224,12 @@ public class InstanceFields {
     public InstanceFields setValue(final String fieldName, final String value) {
 
         if (objectDefinition.hasFieldNameDefined(fieldName)) {
-
-            return setFieldValue(objectDefinition.getField(fieldName), fieldName, value);
-
+            setFieldValue(objectDefinition.getField(fieldName), fieldName, value);
         } else {
-
             if(fieldName.contains(".")){
-                return processFieldNameAsObject(fieldName, value);
-
+                // this will throw an error if called with a 'relationship'
+                // up to the caller to make sure that doesnt' happen
+                setFieldNameAsObject(fieldName, value);
             }else {
                 reportCannotFindFieldError(fieldName);
             }
@@ -259,7 +257,7 @@ public class InstanceFields {
     }
 
     // TODO: this probably should not take a body parser as arg - seems too high level
-    public List<String> findAnyGuidOrIdDifferences(final BodyParser args) {
+    public List<String> findAnyGuidOrIdDifferences(final List<Map.Entry<String, String>> args) {
 
         List<String> errorMessages = new ArrayList<>();
 
@@ -267,7 +265,7 @@ public class InstanceFields {
         List<Field> idOrGuidFields = objectDefinition.getFieldsOfType(FieldType.GUID);
         idOrGuidFields.addAll(objectDefinition.getFieldsOfType(FieldType.ID));
 
-        for (Map.Entry<String, String> entry : args.getFlattenedStringMap()) {
+        for (Map.Entry<String, String> entry : args) {
 
             // Handle attempt to amend a protected field
             Field field = objectDefinition.getField(entry.getKey());
