@@ -14,6 +14,7 @@ public class InstanceFields {
     private final DefinedFields objectDefinition;
     private Map<String, FieldValue> values = new HashMap<String, FieldValue>();
 
+    // todo: this should not be required, instead we should have the InstanceFields in the FieldValue itself
     private Map<String, InstanceFields> objectFields;
 
     public InstanceFields(final DefinedFields objectDefinition) {
