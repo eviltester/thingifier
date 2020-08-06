@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.domain.definitions.DefinedFields;
 import uk.co.compendiumdev.thingifier.domain.definitions.Field;
+import uk.co.compendiumdev.thingifier.domain.definitions.FieldValue;
 import uk.co.compendiumdev.thingifier.domain.instances.InstanceFields;
 
 public class InstanceFieldsTest {
@@ -18,12 +19,13 @@ public class InstanceFieldsTest {
 
         InstanceFields instance = new InstanceFields(fieldsDefn);
 
-        instance.addValue("Title", "This Item title");
-        instance.addValue("Ref", "Reference");
+
+        instance.setValue("Title", "This Item title");
+        instance.setValue("Ref", "Reference");
 
         Assertions.assertNotNull(instance.getAssignedValue("Title"), "fields did not contain 'title'");
         Assertions.assertNotNull(instance.getAssignedValue("Ref"), "fields did not contain 'ref'");
 
-        Assertions.assertEquals("Reference", instance.getValue("Ref").asString());
+        Assertions.assertEquals("Reference", instance.getFieldValue("Ref").asString());
     }
 }

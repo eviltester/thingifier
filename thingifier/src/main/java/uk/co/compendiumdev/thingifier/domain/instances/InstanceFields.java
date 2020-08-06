@@ -17,19 +17,29 @@ public class InstanceFields {
         this.objectDefinition = objectDefinition;
     }
 
-    public void addValue(String fieldName, String value) {
-        values.put(fieldName.toLowerCase(), FieldValue.is(fieldName.toLowerCase(), value));
+    public InstanceFields addIdsToInstance() {
+        List<Field>idfields = objectDefinition.getFieldsOfType(FieldType.ID);
+        for(Field aField : idfields){
+            if(aField.getType()==FieldType.ID){
+                if(!values.containsKey(aField.getName().toLowerCase())) {
+                    addValue(FieldValue.is(aField.getName(), aField.getNextIdValue()));
+                }
+            }
+        }
+        return this;
     }
 
-    private void addValue(final String name, final FieldValue value) {
-        values.put(name.toLowerCase(), value);
+    public void addValue(final FieldValue value) {
+        values.put(value.getName().toLowerCase(), value);
     }
 
     public FieldValue getAssignedValue(String fieldName) {
         return values.get(fieldName.toLowerCase());
     }
 
-    public FieldValue getValue(String fieldName) {
+    public FieldValue getFieldValue(String fieldName) {
+
+        // todo support complex fieldNames e.g. person.firstname
 
         if(!objectDefinition.hasFieldNameDefined(fieldName)){
             reportCannotFindFieldError(fieldName);
@@ -60,25 +70,6 @@ public class InstanceFields {
         return assignedValue;
     }
 
-    // todo perhaps we should return a FieldValue and then allow the 'caller'
-    //  to getObject(), getString(), getInteger() etc. on that value?
-    // that would make it easier to handle objects, nested objects and arrays
-    public InstanceFields getObjectInstance(final String objectFieldName) {
-
-        // todo handle nested objects e.g. person.phonenumbers
-        Field objectField = objectDefinition.getField(objectFieldName);
-        if(objectField.getType()==FieldType.OBJECT){
-
-            InstanceFields instance = getValue(objectFieldName).asObject();
-            if(instance==null){
-                instance = new InstanceFields(objectField.getObjectDefinition());
-                addValue(objectFieldName, FieldValue.is(objectFieldName, instance));
-            }
-            return instance;
-        }
-        return null;
-    }
-
     public String toString() {
 
         StringBuilder output = new StringBuilder();
@@ -106,37 +97,53 @@ public class InstanceFields {
     public InstanceFields cloned(){
         final InstanceFields clone = new InstanceFields(objectDefinition);
         for(FieldValue value : values.values()){
-            clone.addValue(value.getName(), value.cloned());
+            clone.addValue(value.cloned());
         }
         return clone;
     }
-
-    public boolean hasFieldNamed(String fieldName) {
-        // todo: handle objects with . referencing e.g. person.name
-        return values.keySet().contains(fieldName);
-    }
-
-
 
 
     public DefinedFields getDefinition() {
         return objectDefinition;
     }
 
-    public InstanceFields putFieldValue(final String fieldName, final String value) {
+    public InstanceFields putValue(final String fieldName, final String value) {
         if(objectDefinition.hasFieldNameDefined(fieldName)){
-            addValue(fieldName, value);
+            addValue(FieldValue.is(fieldName, value));
+        } else {
+            if (fieldName.contains(".")) {
+                // this will throw an error if called with a 'relationship'
+                // up to the caller to make sure that doesnt' happen
+                setFieldNameAsPath(fieldName, value, false);
+            } else {
+                reportCannotFindFieldError(fieldName);
+            }
         }
         return this;
     }
 
-    private InstanceFields setFieldValue(final Field field, final String fieldName, final String value) {
+    public InstanceFields setValue(final String fieldName, final String value) {
+
+        if (objectDefinition.hasFieldNameDefined(fieldName)) {
+            setFieldValue(objectDefinition.getField(fieldName), FieldValue.is(fieldName, value));
+        } else {
+            if(fieldName.contains(".")){
+                // this will throw an error if called with a 'relationship'
+                // up to the caller to make sure that doesnt' happen
+                setFieldNameAsPath(fieldName, value, true);
+            }else {
+                reportCannotFindFieldError(fieldName);
+            }
+        }
+
+        return this;
+    }
+
+    private InstanceFields setFieldValue(final Field field, final FieldValue value) {
 
         final ValidationReport validationReport = field.validate(value);
         if (validationReport.isValid()) {
-            addValue(
-                    fieldName,
-                    field.getValueToAdd(value));
+            addValue(FieldValue.is(value.getName(), field.getValueToAdd(value.asString())));
 
         } else {
             throw new IllegalArgumentException(
@@ -147,16 +154,12 @@ public class InstanceFields {
     }
 
 
-
-
-
-
     /*
         set a value in the object hierarchy and create objects as we go
         note that this can create partial objects which may not actually
         match validation rules
     */
-    private void setFieldNameAsObject(final String fieldName, final String value) {
+    private void setFieldNameAsPath(final String fieldName, final String value, boolean shouldValidateValue) {
         // processing a complex set of fields
 
         final String[] fields = fieldName.split("\\.");
@@ -164,13 +167,13 @@ public class InstanceFields {
         fieldNames.addAll(Arrays.asList(fields));
 
         // start recursive call to work through list
-        setFieldValue(fieldNames, value);
+        setFieldValue(fieldNames, value, shouldValidateValue);
     }
 
     /*
         recursive setFieldValue to handle 'objects'
      */
-    protected void setFieldValue(final List<String> fieldNames, final String value) {
+    protected void setFieldValue(final List<String> fieldNames, final String value, boolean shouldValidateValue) {
 
         String fieldName = fieldNames.get(0);
         if(!objectDefinition.hasFieldNameDefined(fieldName)){
@@ -181,7 +184,11 @@ public class InstanceFields {
 
         if(fieldNames.size()==1){
             // set the primitive value
-            setFieldValue(field, fieldName, value);
+            if(shouldValidateValue) {
+                setFieldValue(field, FieldValue.is(fieldName, value));
+            }else{
+                addValue(FieldValue.is(fieldName, value));
+            }
             return;
         }else{
 
@@ -199,7 +206,7 @@ public class InstanceFields {
 
             fieldNames.remove(0); // processed this field
 
-            fieldInstance.setFieldValue(fieldNames, value);
+            fieldInstance.setFieldValue(fieldNames, value, shouldValidateValue);
         }
 
     }
@@ -209,8 +216,9 @@ public class InstanceFields {
             Field field = objectDefinition.getField(fieldName);
             if(field.getType()==FieldType.OBJECT){
                 final FieldValue objectValue = FieldValue.is(fieldName,
-                        new InstanceFields(field.getObjectDefinition()));
-                addValue(fieldName, objectValue);
+                        new InstanceFields(field.getObjectDefinition()).
+                                addIdsToInstance());
+                addValue(objectValue);
                 return objectValue;
             }
         }
@@ -221,22 +229,7 @@ public class InstanceFields {
         throw new RuntimeException("Could not find field: " + fieldName);
     }
 
-    public InstanceFields setValue(final String fieldName, final String value) {
 
-        if (objectDefinition.hasFieldNameDefined(fieldName)) {
-            setFieldValue(objectDefinition.getField(fieldName), fieldName, value);
-        } else {
-            if(fieldName.contains(".")){
-                // this will throw an error if called with a 'relationship'
-                // up to the caller to make sure that doesnt' happen
-                setFieldNameAsObject(fieldName, value);
-            }else {
-                reportCannotFindFieldError(fieldName);
-            }
-        }
-
-        return this;
-    }
 
     public ValidationReport validateFields(final List<String> excluding, final boolean amAllowedToSetIds) {
         ValidationReport report = new ValidationReport();
@@ -256,14 +249,12 @@ public class InstanceFields {
         return report;
     }
 
-    // TODO: this probably should not take a body parser as arg - seems too high level
     public List<String> findAnyGuidOrIdDifferences(final List<Map.Entry<String, String>> args) {
 
         List<String> errorMessages = new ArrayList<>();
 
-        // protected fields
-        List<Field> idOrGuidFields = objectDefinition.getFieldsOfType(FieldType.GUID);
-        idOrGuidFields.addAll(objectDefinition.getFieldsOfType(FieldType.ID));
+        List<Field> idOrGuidFields = objectDefinition.getFieldsOfType(
+                                        FieldType.GUID, FieldType.ID);
 
         for (Map.Entry<String, String> entry : args) {
 
@@ -271,7 +262,7 @@ public class InstanceFields {
             Field field = objectDefinition.getField(entry.getKey());
             if (idOrGuidFields.contains(field)) {
                 // if editing it then throw error, ignore if same value
-                String existingValue = getValue(entry.getKey()).asString();
+                String existingValue = getFieldValue(entry.getKey()).asString();
                 if (existingValue != null && existingValue.trim().length() > 0) {
                     // if value is different then it is an attempt to amend it
                     if (!existingValue.equalsIgnoreCase(entry.getValue())) {
@@ -291,7 +282,7 @@ public class InstanceFields {
         for(String fieldName : objectDefinition.getFieldNames()){
             FieldValue value = args.getAssignedValue(fieldName);
             if(value!=null){
-                addValue(fieldName, value);
+                addValue(value);
             }
         }
     }

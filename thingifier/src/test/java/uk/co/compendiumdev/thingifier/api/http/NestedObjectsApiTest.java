@@ -8,7 +8,6 @@ import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.domain.FieldType;
 import uk.co.compendiumdev.thingifier.domain.definitions.Field;
 import uk.co.compendiumdev.thingifier.domain.definitions.ThingDefinition;
-import uk.co.compendiumdev.thingifier.domain.instances.InstanceFields;
 import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
 
 
@@ -61,7 +60,7 @@ public class NestedObjectsApiTest {
 
         Assertions.assertEquals(200, response.getStatusCode());
         Assertions.assertEquals("bob",
-                instance.getObjectValue("person").getValue("firstname").asString());
+                instance.getFieldValue("person").asObject().getFieldValue("firstname").asString());
     }
 
     @Test
@@ -83,8 +82,8 @@ public class NestedObjectsApiTest {
         Assertions.assertEquals(1,thing.countInstances());
 
         for(ThingInstance bob : thing.getInstances()){
-            Assertions.assertEquals("bob", bob.getObjectValue("person").
-                                    getValue("firstname").asString());
+            Assertions.assertEquals("bob", bob.getFieldValue("person").asObject().
+                    getFieldValue("firstname").asString());
         }
     }
 }

@@ -25,8 +25,7 @@ public enum FieldType {
 
 // TODO: TIME field type
 // TODO: DATE_TIME field type
-// TODO: ARRAY to contain an array of Entity Instances
-// TODO: OBJECT to contain an instance of a specific Entity Type
+// TODO: ARRAY to contain an array of other fields
 // TODO add type for CREATEDDATE - automatically maintained - possibly allow configuring format
 // TODO add type for AMENDEDDATE - automatically maintained - possibly allow configuring format
 

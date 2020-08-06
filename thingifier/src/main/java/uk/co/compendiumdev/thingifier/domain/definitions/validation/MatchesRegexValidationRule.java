@@ -1,5 +1,7 @@
 package uk.co.compendiumdev.thingifier.domain.definitions.validation;
 
+import uk.co.compendiumdev.thingifier.domain.definitions.FieldValue;
+
 import java.util.regex.Pattern;
 
 public class MatchesRegexValidationRule implements ValidationRule {
@@ -13,8 +15,9 @@ public class MatchesRegexValidationRule implements ValidationRule {
     }
 
     @Override
-    public boolean validates(final String value) {
-        return pattern.matcher(value).matches();
+    public boolean validates(final FieldValue value) {
+        final String stringValue = value.asString();
+        return pattern.matcher(stringValue).matches();
     }
 
     @Override

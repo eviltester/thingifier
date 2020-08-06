@@ -1,5 +1,7 @@
 package uk.co.compendiumdev.thingifier.domain.definitions.validation;
 
+import uk.co.compendiumdev.thingifier.domain.definitions.FieldValue;
+
 public class MaximumLengthValidationRule implements ValidationRule {
     private final int maxLength;
 
@@ -8,11 +10,15 @@ public class MaximumLengthValidationRule implements ValidationRule {
     }
 
     @Override
-    public boolean validates(final String value) {
-        if(value==null){
+    public boolean validates(final FieldValue value) {
+
+        final String stringValue = value.asString();
+
+        if(stringValue==null){
             return true;
         }
-        if(value.length()>maxLength){
+
+        if(stringValue.length()>maxLength){
             return false;
         }
 

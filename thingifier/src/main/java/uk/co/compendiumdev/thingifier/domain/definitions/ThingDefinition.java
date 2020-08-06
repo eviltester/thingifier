@@ -91,18 +91,6 @@ public class ThingDefinition {
         return fields.getField(fieldName);
     }
 
-    public void addIdsToInstance(final InstanceFields instance) {
-        List<Field>idfields = fields.getFieldsOfType(FieldType.ID);
-        for(Field aField : idfields){
-            if(aField.getType()==FieldType.ID){
-                if(!instance.hasFieldNamed(aField.getName())) {
-                    instance.addValue(aField.getName(), aField.getNextIdValue());
-                }
-            }
-        }
-    }
-
-
 
     public boolean hasIDField() {
         return fields.getFieldsOfType(FieldType.ID).size()>0;

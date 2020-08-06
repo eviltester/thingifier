@@ -1,13 +1,18 @@
 package uk.co.compendiumdev.thingifier.domain.definitions.validation;
 
+import uk.co.compendiumdev.thingifier.domain.definitions.FieldValue;
+
 public class NotEmptyValidationRule implements ValidationRule {
 
-    public boolean validates(final String value) {
-        if (value == null) {
+    public boolean validates(final FieldValue value) {
+
+        final String stringValue = value.asString();
+
+        if (stringValue == null) {
             return false;
         }
 
-        return value.trim().length() != 0;
+        return stringValue.trim().length() != 0;
     }
 
     @Override

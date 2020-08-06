@@ -7,7 +7,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.apiconfig.JsonOutputConfig;
 import uk.co.compendiumdev.thingifier.domain.FieldType;
-import uk.co.compendiumdev.thingifier.domain.instances.InstanceFields;
 import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
 import uk.co.compendiumdev.thingifier.reporting.JsonThing;
 import uk.co.compendiumdev.thingifier.reporting.XmlThing;
@@ -43,8 +42,8 @@ public class ObjectFieldTest {
     public void canCreateObjectField() {
 
         Assertions.assertEquals("Connie",
-                instance.getObjectValue("person").
-                        getValue("firstname").asString());
+                instance.getFieldValue("person").asObject().
+                        getFieldValue("firstname").asString());
     }
 
     @Test

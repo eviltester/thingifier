@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 import uk.co.compendiumdev.thingifier.apiconfig.JsonOutputConfig;
 import uk.co.compendiumdev.thingifier.domain.FieldType;
 import uk.co.compendiumdev.thingifier.domain.definitions.Field;
+import uk.co.compendiumdev.thingifier.domain.definitions.FieldValue;
 import uk.co.compendiumdev.thingifier.domain.definitions.RelationshipVector;
 import uk.co.compendiumdev.thingifier.domain.definitions.ThingDefinition;
 import uk.co.compendiumdev.thingifier.domain.instances.InstanceFields;
@@ -72,7 +73,7 @@ public class JsonThing {
             String fieldValue = "";
 
             try {
-                fieldValue = fields.getValue(theField.getName()).asString();
+                fieldValue = fields.getFieldValue(theField.getName()).asString();
 
                 if(apiConfig.willRenderFieldsAsDefinedTypes()) {
                     switch (theField.getType()) {
@@ -89,8 +90,11 @@ public class JsonThing {
                             jsonobj.addProperty(fieldName, Integer.valueOf(fieldValue));
                             break;
                         case OBJECT:
-                            jsonobj.add(fieldName, asJsonObject(
-                                        fields.getObjectInstance(fieldName)));
+                            final FieldValue objectFieldValue = fields.getFieldValue(fieldName);
+                            if(objectFieldValue!=null) {
+                                jsonobj.add(fieldName, asJsonObject(
+                                        objectFieldValue.asObject()));
+                            }
                             break;
                         default:
                             jsonobj.addProperty(fieldName, fieldValue);
@@ -98,8 +102,11 @@ public class JsonThing {
                 }else {
                     // output as string
                     if(theField.getType()==FieldType.OBJECT){
-                        jsonobj.add(fieldName, asJsonObject(
-                                    fields.getObjectInstance(fieldName)));
+                        final FieldValue objectFieldValue = fields.getFieldValue(fieldName);
+                        if(objectFieldValue!=null) {
+                            jsonobj.add(fieldName, asJsonObject(
+                                    objectFieldValue.asObject()));
+                        }
                     }else {
                         jsonobj.addProperty(fieldName, fieldValue);
                     }

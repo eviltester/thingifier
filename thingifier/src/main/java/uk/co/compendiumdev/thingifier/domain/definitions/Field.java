@@ -35,6 +35,9 @@ public final class Field {
 
     private int nextId; // only used for id fields
 
+    // todo: rather than all these fields, consider moving to more validation rules
+    // to help keep the class to a more manageable size
+
     private Field(final String name, final FieldType type) {
         this.name = name;
         this.type = type;
@@ -163,6 +166,7 @@ public final class Field {
 
             String stringValue = value.asString();
 
+            // todo: move all these into validation rules e.g. TypeValidationForBoolean
             if (type == FieldType.BOOLEAN) {
                 if (!(stringValue.toLowerCase().contentEquals("true")
                         || stringValue.toLowerCase().contentEquals("false"))) {
@@ -236,10 +240,8 @@ public final class Field {
             }
         }
 
-        // TODO : ValidationRule should use FieldValue not String
         for (ValidationRule rule : validationRules) {
-            String stringValue = value.asString();
-            if (!rule.validates(stringValue)) {
+            if (!rule.validates(value)) {
                 report.setValid(false);
                 report.addErrorMessage(rule.getErrorMessage(this.getName()));
             }

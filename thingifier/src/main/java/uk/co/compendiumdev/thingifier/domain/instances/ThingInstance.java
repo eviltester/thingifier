@@ -35,16 +35,16 @@ public class ThingInstance {
     private ThingInstance(ThingDefinition eDefn, boolean addIds) {
         this.entityDefinition = eDefn;
         this.instanceFields = new InstanceFields(eDefn.getFieldDefinitions());
-        instanceFields.addValue("guid", UUID.randomUUID().toString());
+        instanceFields.addValue(FieldValue.is("guid", UUID.randomUUID().toString()));
         if(addIds) {
-            eDefn.addIdsToInstance(instanceFields);
+            instanceFields.addIdsToInstance();
         }
         this.relationships = new Relationships(this);
     }
 
     public ThingInstance(ThingDefinition entityTestSession, String guid) {
         this(entityTestSession);
-        instanceFields.addValue("guid", guid);
+        instanceFields.addValue(FieldValue.is("guid", guid));
     }
 
     public String toString() {
@@ -63,7 +63,7 @@ public class ThingInstance {
     }
 
     public String getGUID() {
-        return instanceFields.getValue("guid").asString();
+        return instanceFields.getFieldValue("guid").asString();
     }
 
     public List<String> getFieldNames() {
@@ -115,17 +115,13 @@ public class ThingInstance {
 
     public void overrideValue(final String key, final String value) {
         // bypass all validation - except, field must exist
-        this.instanceFields.putFieldValue(key, value);
+        this.instanceFields.putValue(key, value);
     }
 
     public FieldValue getFieldValue(String fieldName){
-        return instanceFields.getValue(fieldName);
+        return instanceFields.getFieldValue(fieldName);
     }
 
-    // todo this should use getValue
-    public InstanceFields getObjectValue(String fieldName){
-        return instanceFields.getObjectInstance(fieldName);
-    }
 
     public ThingDefinition getEntity() {
         return this.entityDefinition;

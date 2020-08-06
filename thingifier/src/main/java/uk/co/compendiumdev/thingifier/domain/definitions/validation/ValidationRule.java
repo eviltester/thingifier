@@ -1,8 +1,10 @@
 package uk.co.compendiumdev.thingifier.domain.definitions.validation;
 
+import uk.co.compendiumdev.thingifier.domain.definitions.FieldValue;
+
 public interface ValidationRule {
 
-    boolean validates(String value);
+    boolean validates(FieldValue value);
 
     String getErrorMessage(String fieldName);
 }
