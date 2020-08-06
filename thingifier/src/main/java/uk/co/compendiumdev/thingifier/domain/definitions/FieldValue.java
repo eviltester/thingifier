@@ -16,6 +16,14 @@ final public class FieldValue {
         this.fieldValue = fieldValue;
     }
 
+    @Override
+    public String toString() {
+        return "FieldValue{" +
+                "fieldName='" + fieldName + '\'' +
+                ", fieldValue='" + fieldValue + '\'' +
+                '}';
+    }
+
     public static FieldValue is(String fieldName, String fieldValue) {
         return new FieldValue(fieldName, fieldValue);
     }

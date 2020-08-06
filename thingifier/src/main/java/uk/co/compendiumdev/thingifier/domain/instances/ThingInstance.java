@@ -226,11 +226,6 @@ public class ThingInstance {
         return report;
     }
 
-
-
-
-
-
     // Cloning and documentation
 
     public void clearAllFields() {

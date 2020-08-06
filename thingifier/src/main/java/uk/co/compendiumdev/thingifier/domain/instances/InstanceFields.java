@@ -5,14 +5,14 @@ import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.domain.FieldType;
 import uk.co.compendiumdev.thingifier.domain.definitions.DefinedFields;
 import uk.co.compendiumdev.thingifier.domain.definitions.Field;
+import uk.co.compendiumdev.thingifier.domain.definitions.FieldValue;
 
 import java.util.*;
 
 public class InstanceFields {
 
     private final DefinedFields objectDefinition;
-    // todo perhaps this should be a list of FieldValue, not strings?
-    private Map<String, String> values = new HashMap<String, String>();
+    private Map<String, FieldValue> values = new HashMap<String, FieldValue>();
 
     private Map<String, InstanceFields> objectFields;
 
@@ -21,11 +21,15 @@ public class InstanceFields {
     }
 
     public void addValue(String fieldName, String value) {
-        values.put(fieldName.toLowerCase(), value);
+        values.put(fieldName.toLowerCase(), FieldValue.is(fieldName.toLowerCase(), value));
     }
 
     public String getAssignedValue(String fieldName) {
-        return values.get(fieldName.toLowerCase());
+        FieldValue value = values.get(fieldName.toLowerCase());
+        if(value==null){
+            return null;
+        }
+        return value.getValue();
     }
 
     public String getValue(String fieldName) {
@@ -56,6 +60,7 @@ public class InstanceFields {
         return assignedValue;
     }
 
+    // todo: rename to getFieldNames
     public List<String> getFields() {
         List<String> fields = new ArrayList<String>(values.keySet());
         return fields;
@@ -65,7 +70,7 @@ public class InstanceFields {
 
         StringBuilder output = new StringBuilder();
 
-        for (Map.Entry<String, String> entry : values.entrySet()) {
+        for (Map.Entry<String, FieldValue> entry : values.entrySet()) {
             output.append("\n\t\t\t\t" + entry.getKey() + " : " + entry.getValue() + "\n");
         }
 
@@ -85,9 +90,13 @@ public class InstanceFields {
         }
     }
 
+    /* todo, this should really be a 'clone' */
+    /* todo, this does not handle objects */
     public Map<String, String> asMap() {
         HashMap<String, String> aMap = new HashMap<String, String>();
-        aMap.putAll(values);
+        for(FieldValue value : values.values()){
+            aMap.put(value.getName(), value.getValue());
+        }
         return aMap;
     }
 
