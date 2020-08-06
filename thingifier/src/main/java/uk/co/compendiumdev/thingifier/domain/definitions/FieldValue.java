@@ -5,11 +5,13 @@ import java.util.Map;
 
 final public class FieldValue {
 
-    private final String fieldName;
+    private final String fieldName; // should this be name or should it be a Field reference?
     private final String fieldValue;
-    private Map<String, FieldValue> fieldValues;
+    // todo: InstanceFields for an object
+    // todo: list of strings for an array
+    // todo: list of InstanceFields for an array of objects
 
-    public FieldValue(String fieldName, String fieldValue) {
+    private FieldValue(String fieldName, String fieldValue) {
         this.fieldName = fieldName;
         this.fieldValue = fieldValue;
     }
@@ -26,16 +28,4 @@ final public class FieldValue {
         return fieldValue;
     }
 
-    public Map<String, FieldValue> getValues() {
-        return fieldValues;
-    }
-
-    public void addObjectField(String fieldName, String fieldValue){
-
-        if(fieldValues==null){
-            this.fieldValues = new HashMap<>();
-        }
-
-        fieldValues.put(fieldName, new FieldValue(fieldName, fieldValue));
-    }
 }

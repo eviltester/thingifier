@@ -11,6 +11,7 @@ import java.util.*;
 public class InstanceFields {
 
     private final DefinedFields objectDefinition;
+    // todo perhaps this should be a list of FieldValue, not strings?
     private Map<String, String> values = new HashMap<String, String>();
 
     private Map<String, InstanceFields> objectFields;
