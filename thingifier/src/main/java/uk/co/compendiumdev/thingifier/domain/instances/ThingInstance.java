@@ -239,24 +239,22 @@ public class ThingInstance {
         instanceFields.deleteAllFieldsExcept(ignoreFields);
     }
 
-    public ThingInstance setCloneFieldValuesFrom(final Map<String, String> args) {
+    public ThingInstance setCloneFieldValuesFrom(final InstanceFields args) {
 
-        for (Map.Entry<String, String> entry : args.entrySet()) {
-            overrideValue(entry.getKey(), entry.getValue());
-        }
+        instanceFields.setValuesFromClone(args);
 
         return this;
     }
 
     public ThingInstance createDuplicateWithoutRelationships() {
         ThingInstance cloneInstance = new ThingInstance(entityDefinition, false);
-        cloneInstance.setCloneFieldValuesFrom(instanceFields.asMap());
+        cloneInstance.setCloneFieldValuesFrom(instanceFields.cloned());
         return cloneInstance;
     }
 
     public ThingInstance createDuplicateWithRelationships() {
         ThingInstance cloneInstance = new ThingInstance(entityDefinition, false);
-        cloneInstance.setCloneFieldValuesFrom(instanceFields.asMap());
+        cloneInstance.setCloneFieldValuesFrom(instanceFields.cloned());
         cloneInstance.setCloneRelationships(relationships.createClonedRelationships());
         return cloneInstance;
     }

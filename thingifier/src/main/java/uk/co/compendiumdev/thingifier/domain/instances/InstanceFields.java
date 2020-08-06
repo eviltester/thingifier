@@ -24,12 +24,12 @@ public class InstanceFields {
         values.put(fieldName.toLowerCase(), FieldValue.is(fieldName.toLowerCase(), value));
     }
 
-    public String getAssignedValue(String fieldName) {
-        FieldValue value = values.get(fieldName.toLowerCase());
-        if(value==null){
-            return null;
-        }
-        return value.getValue();
+    private void addValue(final String name, final FieldValue value) {
+        values.put(name.toLowerCase(), value);
+    }
+
+    public FieldValue getAssignedValue(String fieldName) {
+        return values.get(fieldName.toLowerCase());
     }
 
     public String getValue(String fieldName) {
@@ -43,7 +43,7 @@ public class InstanceFields {
             return ""; // should use getObjectField to find values of object
         }
 
-        String assignedValue = getAssignedValue(fieldName);
+        FieldValue assignedValue = getAssignedValue(fieldName);
         if (assignedValue == null) {
             // does definition have a default value?
             if (objectDefinition.getField(fieldName).hasDefaultValue()) {
@@ -57,13 +57,7 @@ public class InstanceFields {
             }
         }
 
-        return assignedValue;
-    }
-
-    // todo: rename to getFieldNames
-    public List<String> getFields() {
-        List<String> fields = new ArrayList<String>(values.keySet());
-        return fields;
+        return assignedValue.getValue();
     }
 
     public String toString() {
@@ -100,6 +94,14 @@ public class InstanceFields {
         return aMap;
     }
 
+    public InstanceFields cloned(){
+        final InstanceFields clone = new InstanceFields(objectDefinition);
+        for(FieldValue value : values.values()){
+            clone.addValue(value.getName(), value.cloned());
+        }
+        return clone;
+    }
+
     public boolean hasFieldNamed(String fieldName) {
         // todo: handle objects with . referencing e.g. person.name
         return values.keySet().contains(fieldName);
@@ -118,6 +120,13 @@ public class InstanceFields {
     }
 
     public InstanceFields putFieldValue(final String fieldName, final String value) {
+        if(objectDefinition.hasFieldNameDefined(fieldName)){
+            addValue(fieldName, value);
+        }
+        return this;
+    }
+
+    public InstanceFields putFieldValue(final String fieldName, final FieldValue value) {
         if(objectDefinition.hasFieldNameDefined(fieldName)){
             addValue(fieldName, value);
         }
@@ -292,5 +301,14 @@ public class InstanceFields {
             }
         }
         return errorMessages;
+    }
+
+    public void setValuesFromClone(final InstanceFields args) {
+        for(String fieldName : objectDefinition.getFieldNames()){
+            FieldValue value = args.getAssignedValue(fieldName);
+            if(value!=null){
+                addValue(fieldName, value);
+            }
+        }
     }
 }

@@ -124,7 +124,18 @@ public final class Field {
     public ValidationReport validate(String value) {
         boolean NOT_ALLOWED_TO_SET_IDs = false;
         return validate(value, NOT_ALLOWED_TO_SET_IDs);
+    }
 
+    public ValidationReport validate(FieldValue value) {
+        boolean NOT_ALLOWED_TO_SET_IDs = false;
+        return validate(value, NOT_ALLOWED_TO_SET_IDs);
+    }
+
+    public ValidationReport validate(FieldValue value, boolean allowedToSetIds) {
+        if(value!=null){
+            return validate(value.getValue(), allowedToSetIds);
+        }
+        return validate((String)null, allowedToSetIds);
     }
 
     public ValidationReport validate(String value, boolean allowedToSetIds) {

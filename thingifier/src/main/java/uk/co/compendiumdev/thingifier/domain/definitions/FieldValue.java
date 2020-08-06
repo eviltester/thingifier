@@ -36,4 +36,8 @@ final public class FieldValue {
         return fieldValue;
     }
 
+    public FieldValue cloned() {
+        final FieldValue clone = new FieldValue(fieldName, fieldValue);
+        return clone;
+    }
 }

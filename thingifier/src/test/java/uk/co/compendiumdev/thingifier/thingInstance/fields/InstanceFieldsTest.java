@@ -23,11 +23,8 @@ public class InstanceFieldsTest {
         instance.addValue("Title", "This Item title");
         instance.addValue("Ref", "Reference");
 
-        List<String> fields = instance.getFields();
-
-        Assertions.assertEquals(2, fields.size());
-        Assertions.assertTrue(fields.contains("title"), "fields did not contain 'title'");
-        Assertions.assertTrue(fields.contains("ref"), "fields did not contain 'ref'");
+        Assertions.assertNotNull(instance.getAssignedValue("Title"), "fields did not contain 'title'");
+        Assertions.assertNotNull(instance.getAssignedValue("Ref"), "fields did not contain 'ref'");
 
         Assertions.assertEquals("Reference", instance.getValue("Ref"));
     }
