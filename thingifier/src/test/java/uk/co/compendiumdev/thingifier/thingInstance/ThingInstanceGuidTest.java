@@ -40,7 +40,7 @@ public class ThingInstanceGuidTest {
         ThingInstance session;
         session = new ThingInstance(entityTestSession);
 
-        Assertions.assertEquals(session.getGUID(), session.getValue("guid"));
+        Assertions.assertEquals(session.getGUID(), session.getFieldValue("guid").asString());
 
     }
 }

@@ -44,7 +44,8 @@ public class ObjectFieldTest {
     public void canCreateObjectField() {
 
         Assertions.assertEquals("Connie",
-                instance.getObjectValue("person").getValue("firstname"));
+                instance.getObjectValue("person").
+                        getValue("firstname").asString());
     }
 
     @Test

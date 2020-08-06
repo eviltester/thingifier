@@ -21,7 +21,7 @@ public class StringFieldInstanceTest {
 
         ThingInstance instance = new ThingInstance(stringFieldEntity);
 
-        Assertions.assertEquals("", instance.getValue("defaultString"));
+        Assertions.assertEquals("", instance.getFieldValue("defaultString").asString());
     }
 
     @Test
@@ -32,7 +32,7 @@ public class StringFieldInstanceTest {
 
         ThingInstance instance = new ThingInstance(stringFieldEntity);
 
-        Assertions.assertEquals("bob", instance.getValue("defaultString"));
+        Assertions.assertEquals("bob", instance.getFieldValue("defaultString").asString());
     }
 
     @Test
@@ -51,7 +51,7 @@ public class StringFieldInstanceTest {
 
         instance.setValue("defaultString", "Eris");
         Assertions.assertTrue(instance.validate().isValid());
-        Assertions.assertEquals("Eris", instance.getValue("defaultString"));
+        Assertions.assertEquals("Eris", instance.getFieldValue("defaultString").asString());
     }
 
     @Test
@@ -66,7 +66,7 @@ public class StringFieldInstanceTest {
         ThingInstance instance = new ThingInstance(stringFieldEntity);
 
         instance.setValue("field", "This is too long");
-        String fieldValue = instance.getValue("field");
+        String fieldValue = instance.getFieldValue("field").asString();
 
         Assertions.assertEquals(10, fieldValue.length());
         Assertions.assertEquals("This is to",fieldValue );

@@ -133,8 +133,8 @@ public class JsonRequestResponseTest {
         final TodoCollectionResponse todos = new Gson().fromJson(response.getBody(), TodoCollectionResponse.class);
 
         Assertions.assertEquals(2, todos.todos.length);
-        Assertions.assertEquals(todos.todos[0].title, todo.findInstanceByGUID(todos.todos[0].guid).getValue("title"));
-        Assertions.assertEquals(todos.todos[1].title, todo.findInstanceByGUID(todos.todos[1].guid).getValue("title"));
+        Assertions.assertEquals(todos.todos[0].title, todo.findInstanceByGUID(todos.todos[0].guid).getFieldValue("title").asString());
+        Assertions.assertEquals(todos.todos[1].title, todo.findInstanceByGUID(todos.todos[1].guid).getFieldValue("title").asString());
 
     }
 
@@ -194,7 +194,7 @@ public class JsonRequestResponseTest {
 
         final ThingInstance aTodo = todo.findInstanceByGUID(guid);
 
-        Assertions.assertEquals("title from json", aTodo.getValue("title"));
+        Assertions.assertEquals("title from json", aTodo.getFieldValue("title").asString());
 
         Assertions.assertTrue(response.getBody().startsWith("{\"guid\":\""),
                 "Should have returned json");
@@ -235,8 +235,8 @@ public class JsonRequestResponseTest {
 
         final ThingInstance aTodo = todo.findInstanceByGUID(guid);
 
-        Assertions.assertEquals("false", aTodo.getValue("doneStatus"));
-        Assertions.assertEquals("title from json", aTodo.getValue("title"));
+        Assertions.assertEquals("false", aTodo.getFieldValue("doneStatus").asString());
+        Assertions.assertEquals("title from json", aTodo.getFieldValue("title").asString());
 
         Assertions.assertTrue(response.getBody().startsWith("<todo><doneStatus>false</doneStatus>"),
                 "Should have returned xml");
@@ -278,7 +278,7 @@ public class JsonRequestResponseTest {
 
         Assertions.assertEquals(1, todo.countInstances());
 
-        Assertions.assertEquals("title from json", atodo.getValue("title"));
+        Assertions.assertEquals("title from json", atodo.getFieldValue("title").asString());
 
     }
 
@@ -316,7 +316,7 @@ public class JsonRequestResponseTest {
 
         Assertions.assertEquals(1, todo.countInstances());
 
-        Assertions.assertEquals("title from json", atodo.getValue("title"));
+        Assertions.assertEquals("title from json", atodo.getFieldValue("title").asString());
 
     }
 

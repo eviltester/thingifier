@@ -3,6 +3,7 @@ package uk.co.compendiumdev.thingifier.domain.instances;
 import uk.co.compendiumdev.thingifier.api.ValidationReport;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.domain.definitions.Field;
+import uk.co.compendiumdev.thingifier.domain.definitions.FieldValue;
 import uk.co.compendiumdev.thingifier.domain.definitions.ThingDefinition;
 
 import java.util.*;
@@ -54,7 +55,7 @@ public class ThingInstance {
         output.append("\t\t\t" + entityDefinition.getName() + "\n");
         //output.append(instance.toString() + "\n");
         for (String fieldName : entityDefinition.getFieldNames()) {
-            output.append(String.format("\t\t\t\t %s : %s %n", fieldName, getValue(fieldName)));
+            output.append(String.format("\t\t\t\t %s : %s %n", fieldName, getFieldValue(fieldName).asString()));
         }
 
         output.append(relationships.toString());
@@ -63,7 +64,7 @@ public class ThingInstance {
     }
 
     public String getGUID() {
-        return instanceFields.getValue("guid");
+        return instanceFields.getValue("guid").asString();
     }
 
     public List<String> getFieldNames() {
@@ -118,10 +119,11 @@ public class ThingInstance {
         this.instanceFields.putFieldValue(key, value);
     }
 
-    public String getValue(String fieldName) {
+    public FieldValue getFieldValue(String fieldName){
         return instanceFields.getValue(fieldName);
     }
 
+    // todo this should use getValue
     public InstanceFields getObjectValue(String fieldName){
         return instanceFields.getObjectInstance(fieldName);
     }
@@ -140,7 +142,7 @@ public class ThingInstance {
         String value = "";
         final Field field = entityDefinition.getIDField();
         if(field!=null) {
-            value = getValue(field.getName());
+            value = getFieldValue(field.getName()).asString();
         }
         return value;
     }

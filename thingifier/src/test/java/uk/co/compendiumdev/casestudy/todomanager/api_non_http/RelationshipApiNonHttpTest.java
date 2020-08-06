@@ -499,7 +499,7 @@ public class RelationshipApiNonHttpTest {
 
         // check todo exists
         ThingInstance myCreatedTodo = todo.findInstanceByGUID(locationGuid);
-        Assertions.assertEquals(expectedTitle, myCreatedTodo.getValue("title"));
+        Assertions.assertEquals(expectedTitle, myCreatedTodo.getFieldValue("title").asString());
 
         // check todo is also related to the project since relationship is two way
         Collection<ThingInstance> items = myCreatedTodo.connectedItems("task-of");
@@ -619,8 +619,8 @@ public class RelationshipApiNonHttpTest {
 
         // check estimate exists
         ThingInstance myCreatedItem = estimates.findInstanceByGUID(locationGuid);
-        Assertions.assertEquals(expectedDescription, myCreatedItem.getValue("description"));
-        Assertions.assertEquals("3", myCreatedItem.getValue("duration"));
+        Assertions.assertEquals(expectedDescription, myCreatedItem.getFieldValue("description").asString());
+        Assertions.assertEquals("3", myCreatedItem.getFieldValue("duration").asString());
 
         // check estimate is related to the todo since relationship is two way
         Collection<ThingInstance> items = myCreatedItem.connectedItems("estimate");
@@ -705,7 +705,7 @@ public class RelationshipApiNonHttpTest {
         // and it is the estimate we expected
         final ArrayList<ThingInstance> estimatesList = new ArrayList();
         estimatesList.addAll(myTodo.connectedItems("estimates"));
-        Assertions.assertEquals(expectedDescription, estimatesList.get(0).getValue("description"));
+        Assertions.assertEquals(expectedDescription, estimatesList.get(0).getFieldValue("description").asString());
 
     }
 

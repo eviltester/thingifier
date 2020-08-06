@@ -47,7 +47,7 @@ final public class Thing {
     public ThingInstance findInstanceByField(FieldValue fieldValue) {
 
         for (ThingInstance thing : instances.values()) {
-            if (thing.getValue(fieldValue.getName()).contentEquals(fieldValue.getValue())) {
+            if (thing.getFieldValue(fieldValue.getName()).asString().contentEquals(fieldValue.getValue())) {
                 return thing;
             }
         }

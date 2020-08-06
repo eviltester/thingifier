@@ -7,8 +7,6 @@ import uk.co.compendiumdev.thingifier.domain.definitions.DefinedFields;
 import uk.co.compendiumdev.thingifier.domain.definitions.Field;
 import uk.co.compendiumdev.thingifier.domain.instances.InstanceFields;
 
-import java.util.List;
-
 public class InstanceFieldsTest {
 
     @Test
@@ -26,6 +24,6 @@ public class InstanceFieldsTest {
         Assertions.assertNotNull(instance.getAssignedValue("Title"), "fields did not contain 'title'");
         Assertions.assertNotNull(instance.getAssignedValue("Ref"), "fields did not contain 'ref'");
 
-        Assertions.assertEquals("Reference", instance.getValue("Ref"));
+        Assertions.assertEquals("Reference", instance.getValue("Ref").asString());
     }
 }

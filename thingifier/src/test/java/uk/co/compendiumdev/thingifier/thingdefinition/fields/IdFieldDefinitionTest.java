@@ -17,6 +17,6 @@ public class IdFieldDefinitionTest {
         Assertions.assertEquals(null,
                 entity.getField("id").
                         getDefaultValue().
-                        getValueAsString());
+                        asString());
     }
 }

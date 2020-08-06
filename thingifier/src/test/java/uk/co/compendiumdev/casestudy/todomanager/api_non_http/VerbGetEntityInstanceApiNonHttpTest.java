@@ -1,16 +1,12 @@
 package uk.co.compendiumdev.casestudy.todomanager.api_non_http;
 
-import com.google.gson.Gson;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.casestudy.todomanager.TodoManagerModel;
 import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
-import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
-import uk.co.compendiumdev.thingifier.domain.definitions.FieldValue;
 import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
 
 import java.util.*;
@@ -69,8 +65,8 @@ public class VerbGetEntityInstanceApiNonHttpTest {
                 "Should be a single item, rather than a collection");
         Assertions.assertTrue(apiResponse.hasABody());
 
-        Assertions.assertEquals(findThis.getValue("title"), apiResponse.getReturnedInstance().getValue("title"));
-        Assertions.assertEquals(findThis.getValue("guid"), apiResponse.getReturnedInstance().getValue("guid"));
+        Assertions.assertEquals(findThis.getFieldValue("title").asString(), apiResponse.getReturnedInstance().getFieldValue("title").asString());
+        Assertions.assertEquals(findThis.getFieldValue("guid").asString(), apiResponse.getReturnedInstance().getFieldValue("guid").asString());
 
         Assertions.assertEquals(findThis, apiResponse.getReturnedInstance());
         Assertions.assertEquals(0, apiResponse.getErrorMessages().size());

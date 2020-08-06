@@ -20,7 +20,7 @@ public class QueryInstanceFilter {
             String fieldName = field.getKey();
 
             if(defn.hasFieldNameDefined(fieldName)){
-                if(!instance.getValue(fieldName).
+                if(!instance.getFieldValue(fieldName).asString().
                         equals(field.getValue())){
                     return false;
                 }

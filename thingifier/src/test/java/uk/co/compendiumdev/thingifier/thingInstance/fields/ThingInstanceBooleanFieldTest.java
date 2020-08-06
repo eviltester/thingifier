@@ -29,13 +29,13 @@ public class ThingInstanceBooleanFieldTest {
         ThingInstance session = new ThingInstance(entityTestSession);
 
         // false by default
-        Assertions.assertEquals("true", session.getValue("review"));
+        Assertions.assertEquals("true", session.getFieldValue("review").asString());
 
         session.setValue("review", "false");
-        Assertions.assertEquals("false", session.getValue("review"));
+        Assertions.assertEquals("false", session.getFieldValue("review").asString());
 
         session.setValue("review", "true");
-        Assertions.assertEquals("true", session.getValue("review"));
+        Assertions.assertEquals("true", session.getFieldValue("review").asString());
     }
 
     @Test
@@ -48,7 +48,7 @@ public class ThingInstanceBooleanFieldTest {
         });
 
         // unchanged from default
-        Assertions.assertEquals("true", session.getValue("review"));
+        Assertions.assertEquals("true", session.getFieldValue("review").asString());
     }
 
 
@@ -58,7 +58,7 @@ public class ThingInstanceBooleanFieldTest {
         ThingInstance session = new ThingInstance(entityTestSession);
 
         // false by default
-        Assertions.assertEquals("FALSE", session.getValue("falsey"));
+        Assertions.assertEquals("FALSE", session.getFieldValue("falsey").asString());
     }
 
 }

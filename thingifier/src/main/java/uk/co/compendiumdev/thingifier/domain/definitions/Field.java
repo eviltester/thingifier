@@ -161,7 +161,7 @@ public final class Field {
 
         if(shouldValidateValuesAgainstType) {
 
-            String stringValue = value.getValueAsString();
+            String stringValue = value.asString();
 
             if (type == FieldType.BOOLEAN) {
                 if (!(stringValue.toLowerCase().contentEquals("true")
@@ -238,7 +238,7 @@ public final class Field {
 
         // TODO : ValidationRule should use FieldValue not String
         for (ValidationRule rule : validationRules) {
-            String stringValue = value.getValueAsString();
+            String stringValue = value.asString();
             if (!rule.validates(stringValue)) {
                 report.setValid(false);
                 report.addErrorMessage(rule.getErrorMessage(this.getName()));

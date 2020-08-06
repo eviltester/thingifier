@@ -119,7 +119,7 @@ public class XmlRequestResponseTest {
 
         final ThingInstance aTodo = todo.findInstanceByGUID(guid);
 
-        Assertions.assertEquals("test title", aTodo.getValue("title"));
+        Assertions.assertEquals("test title", aTodo.getFieldValue("title").asString());
 
         Assertions.assertTrue(response.getBody().startsWith("<todo><doneStatus>false</doneStatus>"),
                 "Should have returned xml as body: " + response.getBody());
@@ -150,7 +150,7 @@ public class XmlRequestResponseTest {
 
         Assertions.assertEquals(1, todo.countInstances());
 
-        Assertions.assertEquals("test title", atodo.getValue("title"));
+        Assertions.assertEquals("test title", atodo.getFieldValue("title").asString());
 
     }
 
@@ -187,7 +187,7 @@ public class XmlRequestResponseTest {
 
         final ThingInstance aTodo = todo.findInstanceByGUID(guid);
 
-        Assertions.assertEquals("test title", aTodo.getValue("title"));
+        Assertions.assertEquals("test title", aTodo.getFieldValue("title").asString());
 
         //{"doneStatus":"FALSE","guid":
         Assertions.assertTrue(response.getBody().startsWith("{\"guid\":"),
@@ -228,7 +228,7 @@ public class XmlRequestResponseTest {
 
         Assertions.assertEquals(1, todo.countInstances());
 
-        Assertions.assertEquals("test title", atodo.getValue("title"));
+        Assertions.assertEquals("test title", atodo.getFieldValue("title").asString());
 
     }
 

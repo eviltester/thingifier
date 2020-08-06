@@ -42,7 +42,7 @@ public class IdBasedInstanceNonHttpTest {
         Assertions.assertEquals(200, apiResponse.getStatusCode());
         Assertions.assertEquals(existingInstance, apiResponse.getReturnedInstance());
 
-        final ApiResponse idApiResponse = model.api().get("/thing/" + existingInstance.getValue("id"));
+        final ApiResponse idApiResponse = model.api().get("/thing/" + existingInstance.getFieldValue("id").asString());
         Assertions.assertEquals(200, idApiResponse.getStatusCode());
         Assertions.assertEquals(existingInstance, idApiResponse.getReturnedInstance());
 

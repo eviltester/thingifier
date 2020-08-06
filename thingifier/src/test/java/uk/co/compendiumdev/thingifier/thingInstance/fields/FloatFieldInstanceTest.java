@@ -17,6 +17,6 @@ public class FloatFieldInstanceTest {
 
         // TODO: allow nullable optional floats
         ThingInstance instance = new ThingInstance(enumFieldEntity);
-        Assertions.assertEquals("0.0", instance.getValue("float"));
+        Assertions.assertEquals("0.0", instance.getFieldValue("float").asString());
     }
 }

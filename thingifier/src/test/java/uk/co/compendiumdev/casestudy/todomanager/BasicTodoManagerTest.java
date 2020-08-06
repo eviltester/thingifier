@@ -31,7 +31,7 @@ public class BasicTodoManagerTest {
 
         Assertions.assertEquals("false", todo.definition().
                                                     getField("doneStatus").
-                                                    getDefaultValue().getValueAsString());
+                                                    getDefaultValue().asString());
 
     }
 
@@ -90,12 +90,12 @@ public class BasicTodoManagerTest {
 
         todos.addInstance(paperwork);
 
-        Assertions.assertEquals("false", paperwork.getValue("doneStatus"));
+        Assertions.assertEquals("false", paperwork.getFieldValue("doneStatus").asString());
 
         System.out.println(todoManager.toString());
 
         tidy.setValue("doneStatus", "true");
-        Assertions.assertEquals("true", tidy.getValue("doneStatus"));
+        Assertions.assertEquals("true", tidy.getFieldValue("doneStatus").asString());
         System.out.println(todoManager.toString());
 
     }
@@ -115,7 +115,7 @@ public class BasicTodoManagerTest {
 
         ThingInstance foundit = todos.findInstanceByGUID(tidy.getGUID());
 
-        Assertions.assertEquals("Delete this todo", foundit.getValue("title"));
+        Assertions.assertEquals("Delete this todo", foundit.getFieldValue("title").asString());
 
         todoManager.deleteThing(foundit);
         Assertions.assertEquals(originalTodosCount, todos.countInstances());
@@ -151,7 +151,7 @@ public class BasicTodoManagerTest {
 
         ThingInstance foundit = todos.findInstanceByGUID(guid);
 
-        Assertions.assertEquals("Delete this todo", foundit.getValue("title"));
+        Assertions.assertEquals("Delete this todo", foundit.getFieldValue("title").asString());
 
         todoManager.deleteThing(foundit);
 

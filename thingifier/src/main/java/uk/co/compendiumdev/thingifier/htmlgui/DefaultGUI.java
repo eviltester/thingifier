@@ -4,9 +4,6 @@ import com.google.gson.GsonBuilder;
 import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
-import uk.co.compendiumdev.thingifier.api.routings.RoutingDefinition;
-import uk.co.compendiumdev.thingifier.api.routings.RoutingStatus;
-import uk.co.compendiumdev.thingifier.api.routings.RoutingVerb;
 import uk.co.compendiumdev.thingifier.domain.FieldType;
 import uk.co.compendiumdev.thingifier.domain.definitions.Field;
 import uk.co.compendiumdev.thingifier.domain.definitions.FieldValue;
@@ -16,9 +13,7 @@ import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
 import uk.co.compendiumdev.thingifier.reporting.JsonThing;
 import uk.co.compendiumdev.thingifier.reporting.XmlThing;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 import static spark.Spark.get;
 
@@ -244,7 +239,7 @@ public class DefaultGUI {
         for(String field : definition.getFieldNames()) {
             if (!field.equals("guid")) {
                 html.append(String.format("<li>%s<ul><li>%s</li></ul></li>",
-                        field, htmlsanitise(instance.getValue(field))));
+                        field, htmlsanitise(instance.getFieldValue(field).asString())));
             }
         }
         html.append("</ul>");
@@ -284,10 +279,10 @@ public class DefaultGUI {
             Field field = definition.getField(fieldName);
             if(field.getType()==FieldType.GUID){
                 if(apiConfig.willResponsesShowGuids()) {
-                    html.append(String.format("<td>%s</td>",instance.getValue(fieldName)));
+                    html.append(String.format("<td>%s</td>", instance.getFieldValue(fieldName).asString()));
                 }
             }else{
-                html.append(String.format("<td>%s</td>",htmlsanitise(instance.getValue(fieldName))));
+                html.append(String.format("<td>%s</td>",htmlsanitise(instance.getFieldValue(fieldName).asString())));
             }
         }
 
@@ -327,7 +322,7 @@ public class DefaultGUI {
                 if(theField.getType()== FieldType.ID){
                     // make ids clickable
                     String renderAs = String.format("<a href='/gui/instance?entity=%1$s&%2$s=%3$s'>%3$s</a>",
-                            definition.getName(),theField.getName(), instance.getValue(field));
+                            definition.getName(),theField.getName(), instance.getFieldValue(field).asString());
                     html.append(String.format("<td>%s</td>", renderAs));
                 }
 
@@ -338,7 +333,7 @@ public class DefaultGUI {
         for(String field : definition.getFieldNames()) {
             Field theField = definition.getField(field);
             if(theField.getType()!= FieldType.ID && theField.getType()!=FieldType.GUID){
-                html.append(String.format("<td>%s</td>", htmlsanitise(instance.getValue(field))));
+                html.append(String.format("<td>%s</td>", htmlsanitise(instance.getFieldValue(field).asString())));
             }
         }
         html.append("</tr>");

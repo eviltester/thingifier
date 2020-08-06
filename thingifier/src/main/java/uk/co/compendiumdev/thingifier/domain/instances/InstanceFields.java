@@ -32,8 +32,7 @@ public class InstanceFields {
         return values.get(fieldName.toLowerCase());
     }
 
-    // todo: this should return the FieldValue
-    public String getValue(String fieldName) {
+    public FieldValue getValue(String fieldName) {
 
         if(!objectDefinition.hasFieldNameDefined(fieldName)){
             reportCannotFindFieldError(fieldName);
@@ -41,25 +40,26 @@ public class InstanceFields {
 
         Field field = objectDefinition.getField(fieldName);
         if(field.getType()==FieldType.OBJECT){
-            return ""; // should use getObjectField to find values of object
+            // todo: this should already be in the field - this is temporary till full migration for FieldValue is complete
+            // currently use getObjectField to find values of object
+            return FieldValue.is(fieldName,objectFields.get(fieldName));
         }
 
         FieldValue assignedValue = getAssignedValue(fieldName);
         if (assignedValue == null) {
             // does definition have a default value?
             if (objectDefinition.getField(fieldName).hasDefaultValue()) {
-                return objectDefinition.getField(fieldName).
-                        getDefaultValue().getValueAsString();
+                return objectDefinition.getField(fieldName).getDefaultValue();
             } else {
                 // return the field type default value
                 String defaultVal = objectDefinition.getField(fieldName).getType().getDefault();
                 if (defaultVal != null) {
-                    return defaultVal;
+                    return FieldValue.is(fieldName, defaultVal);
                 }
             }
         }
 
-        return assignedValue.getValue();
+        return assignedValue;
     }
 
     public String toString() {
@@ -272,7 +272,7 @@ public class InstanceFields {
             Field field = objectDefinition.getField(entry.getKey());
             if (idOrGuidFields.contains(field)) {
                 // if editing it then throw error, ignore if same value
-                String existingValue = getValue(entry.getKey());
+                String existingValue = getValue(entry.getKey()).asString();
                 if (existingValue != null && existingValue.trim().length() > 0) {
                     // if value is different then it is an attempt to amend it
                     if (!existingValue.equalsIgnoreCase(entry.getValue())) {

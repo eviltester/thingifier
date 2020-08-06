@@ -62,7 +62,7 @@ public class NestedObjectsApiTest {
 
         Assertions.assertEquals(200, response.getStatusCode());
         Assertions.assertEquals("bob",
-                instance.getObjectValue("person").getValue("firstname"));
+                instance.getObjectValue("person").getValue("firstname").asString());
     }
 
     @Test
@@ -84,7 +84,8 @@ public class NestedObjectsApiTest {
         Assertions.assertEquals(1,thing.countInstances());
 
         for(ThingInstance bob : thing.getInstances()){
-            Assertions.assertEquals("bob", bob.getObjectValue("person").getValue("firstname"));
+            Assertions.assertEquals("bob", bob.getObjectValue("person").
+                                    getValue("firstname").asString());
         }
     }
 }

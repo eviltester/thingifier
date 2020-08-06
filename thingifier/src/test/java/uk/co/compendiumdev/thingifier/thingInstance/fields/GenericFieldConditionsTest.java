@@ -22,7 +22,7 @@ public class GenericFieldConditionsTest {
     public void defaultValuesAreReturnedByGetValue(){
 
         ThingInstance session = new ThingInstance(entityTestSession);
-        Assertions.assertEquals("Not Completed", session.getValue("CompletedStatus"));
+        Assertions.assertEquals("Not Completed", session.getFieldValue("CompletedStatus").asString());
     }
 
     @Test
@@ -41,10 +41,10 @@ public class GenericFieldConditionsTest {
     public void fieldNameAccessIsCaseInsensitive(){
         ThingInstance session = new ThingInstance(entityTestSession);
 
-        Assertions.assertEquals("Not Completed", session.getValue("CompletedStatus"));
-        Assertions.assertEquals("Not Completed", session.getValue("CoMpletedStatus"));
-        Assertions.assertEquals("Not Completed", session.getValue("CompletedSTATUS"));
-        Assertions.assertEquals("Not Completed", session.getValue("completedstatus"));
+        Assertions.assertEquals("Not Completed", session.getFieldValue("CompletedStatus").asString());
+        Assertions.assertEquals("Not Completed", session.getFieldValue("CoMpletedStatus").asString());
+        Assertions.assertEquals("Not Completed", session.getFieldValue("CompletedSTATUS").asString());
+        Assertions.assertEquals("Not Completed", session.getFieldValue("completedstatus").asString());
     }
 
 }

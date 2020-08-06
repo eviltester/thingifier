@@ -72,7 +72,7 @@ public class JsonThing {
             String fieldValue = "";
 
             try {
-                fieldValue = fields.getValue(theField.getName());
+                fieldValue = fields.getValue(theField.getName()).asString();
 
                 if(apiConfig.willRenderFieldsAsDefinedTypes()) {
                     switch (theField.getType()) {
@@ -187,7 +187,7 @@ public class JsonThing {
                             if (useIdsInRelationshipRenderingIfAvailable) {
                                 if (item.hasIDField()) {
                                     fieldNameAsUniqueId = item.getEntity().getIDField().getName();
-                                    valueOfUniqueId = item.getValue(fieldNameAsUniqueId);
+                                    valueOfUniqueId = item.getFieldValue(fieldNameAsUniqueId).asString();
                                 }
                             }
                             itemGuidObject.addProperty(fieldNameAsUniqueId, valueOfUniqueId);

@@ -10,7 +10,6 @@ import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
-import uk.co.compendiumdev.thingifier.domain.definitions.FieldValue;
 import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
 
 import java.util.*;
@@ -73,9 +72,9 @@ public class VerbPostEntityInstanceApiNonHttpTest {
         ThingInstance createdInstance = apiresponse.getReturnedInstance();
 
         String officeWorkGuid = createdInstance.getGUID();
-        Assertions.assertEquals(title, createdInstance.getValue("title"));
-        Assertions.assertEquals(description, createdInstance.getValue("description"));
-        Assertions.assertEquals(doneStatus, createdInstance.getValue("doneStatus"));
+        Assertions.assertEquals(title, createdInstance.getFieldValue("title").asString());
+        Assertions.assertEquals(description, createdInstance.getFieldValue("description").asString());
+        Assertions.assertEquals(doneStatus, createdInstance.getFieldValue("doneStatus").asString());
 
 
         // Check header for GUID
@@ -120,9 +119,9 @@ public class VerbPostEntityInstanceApiNonHttpTest {
         ThingInstance createdInstance = apiresponse.getReturnedInstance();
 
         String officeWorkGuid = createdInstance.getGUID();
-        Assertions.assertEquals(title, createdInstance.getValue("title"));
-        Assertions.assertEquals("", createdInstance.getValue("description"));
-        Assertions.assertEquals("false", createdInstance.getValue("doneStatus"));
+        Assertions.assertEquals(title, createdInstance.getFieldValue("title").asString());
+        Assertions.assertEquals("", createdInstance.getFieldValue("description").asString());
+        Assertions.assertEquals("false", createdInstance.getFieldValue("doneStatus").asString());
 
         // Check header for GUID
         String headerLocation = apiresponse.getHeaderValue("Location");
@@ -169,9 +168,9 @@ public class VerbPostEntityInstanceApiNonHttpTest {
         ThingInstance createdInstance = apiresponse.getReturnedInstance();
 
         Assertions.assertEquals(relTodo.getGUID(), createdInstance.getGUID());
-        Assertions.assertEquals(title, createdInstance.getValue("title"));
-        Assertions.assertEquals(description, createdInstance.getValue("description"));
-        Assertions.assertEquals("false", createdInstance.getValue("doneStatus"));
+        Assertions.assertEquals(title, createdInstance.getFieldValue("title").asString());
+        Assertions.assertEquals(description, createdInstance.getFieldValue("description").asString());
+        Assertions.assertEquals("false", createdInstance.getFieldValue("doneStatus").asString());
 
     }
 
@@ -219,8 +218,8 @@ public class VerbPostEntityInstanceApiNonHttpTest {
         Assertions.assertTrue(apiresponse.hasABody());
 
 
-        Assertions.assertEquals(originalTitle, amendTodo.getValue("title"));
-        Assertions.assertEquals(originalDescription, amendTodo.getValue("description"));
+        Assertions.assertEquals(originalTitle, amendTodo.getFieldValue("title").asString());
+        Assertions.assertEquals(originalDescription, amendTodo.getFieldValue("description").asString());
 
 
         requestBody = new HashMap<String, String>();
@@ -234,8 +233,8 @@ public class VerbPostEntityInstanceApiNonHttpTest {
         Assertions.assertTrue(apiresponse.hasABody());
 
 
-        Assertions.assertEquals(originalTitle, amendTodo.getValue("title"));
-        Assertions.assertEquals(originalDescription, amendTodo.getValue("description"));
+        Assertions.assertEquals(originalTitle, amendTodo.getFieldValue("title").asString());
+        Assertions.assertEquals(originalDescription, amendTodo.getFieldValue("description").asString());
 
     }
 
@@ -261,10 +260,10 @@ public class VerbPostEntityInstanceApiNonHttpTest {
         // amend existing project with PUT - this should validate that all required fields are present
         apiresponse = todoManager.api().put(String.format("project/%s", officeWork.getGUID()),  getSimpleParser(requestBody));
         Assertions.assertEquals(200, apiresponse.getStatusCode());
-        Assertions.assertEquals("My Office Work", officeWork.getValue("title"));
+        Assertions.assertEquals("My Office Work", officeWork.getFieldValue("title").asString());
 
         officeWork.setValue("title", "office");
-        Assertions.assertEquals("office", officeWork.getValue("title"));
+        Assertions.assertEquals("office", officeWork.getFieldValue("title").asString());
         Assertions.assertNotNull(officeWorkGuid);
 
         Assertions.assertTrue(apiresponse.hasABody());

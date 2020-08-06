@@ -57,9 +57,9 @@ public class UsageTest {
         person.addInstance(eris);
 
         Assertions.assertEquals(2, person.countInstances());
-        Assertions.assertEquals("Bob", bob.getValue("name"));
-        Assertions.assertEquals("56", bob.getValue("age"));
-        Assertions.assertEquals("1000", person.findInstanceByField(FieldValue.is("name","Eris")).getValue("age"));
+        Assertions.assertEquals("Bob", bob.getFieldValue("name").asString());
+        Assertions.assertEquals("56", bob.getFieldValue("age").asString());
+        Assertions.assertEquals("1000", person.findInstanceByField(FieldValue.is("name", "Eris")).getFieldValue("age").asString());
 
     }
 
@@ -92,7 +92,7 @@ public class UsageTest {
         System.out.println("==========");
 
         for(ThingInstance aURL : instances){
-            System.out.println(String.format("%s\t%s", aURL.getValue("name"), aURL.getValue("url")));
+            System.out.println(String.format("%s\t%s", aURL.getFieldValue("name").asString(), aURL.getFieldValue("url").asString()));
         }
 
         Assertions.assertEquals(2, instances.size());
@@ -159,7 +159,7 @@ public class UsageTest {
 
         Assertions.assertEquals("FALSE", todo.definition().
                                                     getField("doneStatus").
-                                                    getDefaultValue().getValueAsString());
+                                                    getDefaultValue().asString());
 
 
     }

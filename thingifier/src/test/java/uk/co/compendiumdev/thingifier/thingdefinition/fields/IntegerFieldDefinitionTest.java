@@ -16,7 +16,7 @@ public class IntegerFieldDefinitionTest {
 
         Assertions.assertEquals("0", enumFieldEntity.
                                             getField("integer").
-                                                getDefaultValue().getValueAsString());
+                                                getDefaultValue().asString());
     }
 
     @Test

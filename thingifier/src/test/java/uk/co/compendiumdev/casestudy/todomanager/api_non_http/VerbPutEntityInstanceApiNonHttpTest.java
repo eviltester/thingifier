@@ -77,10 +77,10 @@ public class VerbPutEntityInstanceApiNonHttpTest {
         // amend existing project with PUT - this should validate that all required fields are present
         apiresponse = todoManager.api().put(String.format("project/%s", officeWork.getGUID()),  getSimpleParser(requestBody));
         Assertions.assertEquals(200, apiresponse.getStatusCode());
-        Assertions.assertEquals("My Office Work", officeWork.getValue("title"));
+        Assertions.assertEquals("My Office Work", officeWork.getFieldValue("title").asString());
 
         officeWork.setValue("title", "office");
-        Assertions.assertEquals("office", officeWork.getValue("title"));
+        Assertions.assertEquals("office", officeWork.getFieldValue("title").asString());
         Assertions.assertNotNull(officeWorkGuid);
 
         Assertions.assertTrue(apiresponse.hasABody());
@@ -115,8 +115,8 @@ public class VerbPutEntityInstanceApiNonHttpTest {
 
         apiresponse = todoManager.api().put(String.format("project/%s", officeWork.getGUID()),  getSimpleParser(requestBody));
         Assertions.assertEquals(200, apiresponse.getStatusCode());
-        Assertions.assertEquals("My Office Work", officeWork.getValue("title"));
-        Assertions.assertEquals("", officeWork.getValue("description"));
+        Assertions.assertEquals("My Office Work", officeWork.getFieldValue("title").asString());
+        Assertions.assertEquals("", officeWork.getFieldValue("description").asString());
 
         Assertions.assertTrue(apiresponse.hasABody());
         Assertions.assertFalse(apiresponse.isCollection());
@@ -153,9 +153,9 @@ public class VerbPutEntityInstanceApiNonHttpTest {
         apiresponse = todoManager.api().put(String.format("project/%s", originalGUID),  getSimpleParser(requestBody));
 
         Assertions.assertEquals(400, apiresponse.getStatusCode());
-        Assertions.assertEquals("An Existing Project", officeWork.getValue("title"));
-        Assertions.assertEquals("my original description", officeWork.getValue("description"));
-        Assertions.assertEquals(originalGUID, officeWork.getValue("guid"));
+        Assertions.assertEquals("An Existing Project", officeWork.getFieldValue("title").asString());
+        Assertions.assertEquals("my original description", officeWork.getFieldValue("description").asString());
+        Assertions.assertEquals(originalGUID, officeWork.getFieldValue("guid").asString());
 
         Assertions.assertTrue(apiresponse.hasABody());
         Assertions.assertTrue(apiresponse.isErrorResponse());
@@ -196,8 +196,8 @@ public class VerbPutEntityInstanceApiNonHttpTest {
 
         ThingInstance newProject = project.findInstanceByField(FieldValue.is("guid", guid));
 
-        Assertions.assertEquals(title, newProject.getValue("title"));
-        Assertions.assertEquals(guid, newProject.getValue("guid"));
+        Assertions.assertEquals(title, newProject.getFieldValue("title").asString());
+        Assertions.assertEquals(guid, newProject.getFieldValue("guid").asString());
 
         Assertions.assertTrue(apiresponse.hasABody());
         Assertions.assertFalse(apiresponse.isCollection());
@@ -235,7 +235,7 @@ public class VerbPutEntityInstanceApiNonHttpTest {
 
 
         ThingInstance newProject = project.findInstanceByField(FieldValue.is("guid", guid));
-        Assertions.assertEquals("12", newProject.getValue("id"));
+        Assertions.assertEquals("12", newProject.getFieldValue("id").asString());
 
         Assertions.assertEquals("13", anIdField.getNextIdValue());
     }
@@ -259,7 +259,7 @@ public class VerbPutEntityInstanceApiNonHttpTest {
         String title = "My Office Work " + System.currentTimeMillis();
         requestBody.put("title", title);
         // duplicate id
-        requestBody.put("id", String.valueOf(instance.getValue("id")));
+        requestBody.put("id", String.valueOf(instance.getFieldValue("id").asString()));
 
         Assertions.assertEquals(1, project.countInstances());
 
