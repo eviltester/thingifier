@@ -32,6 +32,7 @@ public class InstanceFields {
         return values.get(fieldName.toLowerCase());
     }
 
+    // todo: this should return the FieldValue
     public String getValue(String fieldName) {
 
         if(!objectDefinition.hasFieldNameDefined(fieldName)){
@@ -47,7 +48,8 @@ public class InstanceFields {
         if (assignedValue == null) {
             // does definition have a default value?
             if (objectDefinition.getField(fieldName).hasDefaultValue()) {
-                return objectDefinition.getField(fieldName).getDefaultValue();
+                return objectDefinition.getField(fieldName).
+                        getDefaultValue().getValueAsString();
             } else {
                 // return the field type default value
                 String defaultVal = objectDefinition.getField(fieldName).getType().getDefault();
@@ -84,16 +86,6 @@ public class InstanceFields {
         }
     }
 
-    /* todo, this should really be a 'clone' */
-    /* todo, this does not handle objects */
-    public Map<String, String> asMap() {
-        HashMap<String, String> aMap = new HashMap<String, String>();
-        for(FieldValue value : values.values()){
-            aMap.put(value.getName(), value.getValue());
-        }
-        return aMap;
-    }
-
     public InstanceFields cloned(){
         final InstanceFields clone = new InstanceFields(objectDefinition);
         for(FieldValue value : values.values()){
@@ -120,13 +112,6 @@ public class InstanceFields {
     }
 
     public InstanceFields putFieldValue(final String fieldName, final String value) {
-        if(objectDefinition.hasFieldNameDefined(fieldName)){
-            addValue(fieldName, value);
-        }
-        return this;
-    }
-
-    public InstanceFields putFieldValue(final String fieldName, final FieldValue value) {
         if(objectDefinition.hasFieldNameDefined(fieldName)){
             addValue(fieldName, value);
         }

@@ -14,7 +14,9 @@ public class IntegerFieldDefinitionTest {
         ThingDefinition enumFieldEntity = ThingDefinition.create("thing", "things");
         enumFieldEntity.addFields(Field.is("integer", FieldType.INTEGER));
 
-        Assertions.assertEquals("0", enumFieldEntity.getField("integer").getDefaultValue());
+        Assertions.assertEquals("0", enumFieldEntity.
+                                            getField("integer").
+                                                getDefaultValue().getValueAsString());
     }
 
     @Test

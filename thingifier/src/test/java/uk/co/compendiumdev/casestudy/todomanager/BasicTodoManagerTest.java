@@ -29,7 +29,9 @@ public class BasicTodoManagerTest {
         Assertions.assertTrue(todo.definition().hasFieldNameDefined("description"));
         Assertions.assertTrue(todo.definition().hasFieldNameDefined("doneStatus"));
 
-        Assertions.assertEquals("false", todo.definition().getField("doneStatus").getDefaultValue());
+        Assertions.assertEquals("false", todo.definition().
+                                                    getField("doneStatus").
+                                                    getDefaultValue().getValueAsString());
 
     }
 

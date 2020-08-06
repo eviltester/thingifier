@@ -40,4 +40,8 @@ final public class FieldValue {
         final FieldValue clone = new FieldValue(fieldName, fieldValue);
         return clone;
     }
+
+    public String getValueAsString() {
+        return fieldValue;
+    }
 }

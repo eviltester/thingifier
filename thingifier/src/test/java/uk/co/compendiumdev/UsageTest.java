@@ -157,7 +157,9 @@ public class UsageTest {
         Assertions.assertTrue(todo.definition().hasFieldNameDefined("description"));
         Assertions.assertTrue(todo.definition().hasFieldNameDefined("doneStatus"));
 
-        Assertions.assertEquals("FALSE", todo.definition().getField("doneStatus").getDefaultValue());
+        Assertions.assertEquals("FALSE", todo.definition().
+                                                    getField("doneStatus").
+                                                    getDefaultValue().getValueAsString());
 
 
     }

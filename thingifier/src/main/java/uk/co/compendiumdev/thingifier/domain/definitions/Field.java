@@ -94,13 +94,14 @@ public final class Field {
         return this;
     }
 
-    public String getDefaultValue() {
+    public FieldValue getDefaultValue() {
         // todo: allow configuration of allowedNullable
+        // todo: handle defaults of object and array
         if(defaultValue==null && !allowedNullable){
             // get the definition default
-            return type.getDefault();
+            return FieldValue.is(name, type.getDefault());
         }
-        return defaultValue;
+        return FieldValue.is(name, defaultValue);
     }
 
     public boolean hasDefaultValue() {
@@ -123,7 +124,7 @@ public final class Field {
 
     public ValidationReport validate(String value) {
         boolean NOT_ALLOWED_TO_SET_IDs = false;
-        return validate(value, NOT_ALLOWED_TO_SET_IDs);
+        return validate(FieldValue.is(name, value), NOT_ALLOWED_TO_SET_IDs);
     }
 
     public ValidationReport validate(FieldValue value) {
@@ -132,13 +133,6 @@ public final class Field {
     }
 
     public ValidationReport validate(FieldValue value, boolean allowedToSetIds) {
-        if(value!=null){
-            return validate(value.getValue(), allowedToSetIds);
-        }
-        return validate((String)null, allowedToSetIds);
-    }
-
-    public ValidationReport validate(String value, boolean allowedToSetIds) {
 
 
         ValidationReport report = new ValidationReport();
@@ -166,38 +160,41 @@ public final class Field {
 
 
         if(shouldValidateValuesAgainstType) {
+
+            String stringValue = value.getValueAsString();
+
             if (type == FieldType.BOOLEAN) {
-                if (!(value.toLowerCase().contentEquals("true")
-                        || value.toLowerCase().contentEquals("false"))) {
+                if (!(stringValue.toLowerCase().contentEquals("true")
+                        || stringValue.toLowerCase().contentEquals("false"))) {
                     report.setValid(false);
                     report.addErrorMessage(
                             String.format(
-                                    "%s : %s does not match type %s (true, false)", this.getName(), value, type));
+                                    "%s : %s does not match type %s (true, false)", this.getName(), stringValue, type));
                 }
             }
 
             if (type == FieldType.INTEGER) {
                 try {
-                    int intVal = Integer.valueOf(value);
+                    int intVal = Integer.valueOf(stringValue);
                     if (!withinAllowedIntegerRange(intVal)) {
                         report.setValid(false);
                         report.addErrorMessage(
                                 String.format(
                                         "%s : %s is not within range for type %s (%d to %d)",
-                                        this.getName(), value, type, minimumIntegerValue, maximumIntegerValue));
+                                        this.getName(), stringValue, type, minimumIntegerValue, maximumIntegerValue));
                     }
                 } catch (NumberFormatException e) {
                     report.setValid(false);
                     report.addErrorMessage(
                             String.format(
-                                    "%s : %s does not match type %s", this.getName(), value, type));
+                                    "%s : %s does not match type %s", this.getName(), stringValue, type));
                 }
             }
 
 
             if(type == FieldType.STRING){
                 if(validateIfStringIsTooLong){
-                    if(value.length()>maximumStringLength){
+                    if(stringValue.length()>maximumStringLength){
                         report.setValid(false);
                         report.addErrorMessage(
                                 String.format(
@@ -209,37 +206,40 @@ public final class Field {
 
             if (type == FieldType.FLOAT) {
                 try {
-                    float floatValue = Float.valueOf(value);
+                    float floatValue = Float.valueOf(stringValue);
                     if (!withinAllowedFloatRange(floatValue)) {
                         report.setValid(false);
                         report.addErrorMessage(
                                 String.format(
                                         "%s : %s is not within range for type %s (%f to %f)",
-                                        this.getName(), value, type, minimumFloatValue, maximumFloatValue));
+                                        this.getName(), stringValue, type, minimumFloatValue, maximumFloatValue));
                     }
 
                 } catch (NumberFormatException e) {
                     report.setValid(false);
                     report.addErrorMessage(
                             String.format(
-                                    "%s : %s does not match type %s", this.getName(), value, type));
+                                    "%s : %s does not match type %s", this.getName(), stringValue, type));
                 }
             }
 
             // TODO : add validation for DATE
             // TODO : add validation for ENUM
+            // TODO : add validation for OBJECT
             if (type == FieldType.ENUM) {
-                if (!getExamples().contains(value)) {
+                if (!getExamples().contains(stringValue)) {
                     report.setValid(false);
                     report.addErrorMessage(
                             String.format(
-                                    "%s : %s does not match type %s", this.getName(), value, type));
+                                    "%s : %s does not match type %s", this.getName(), stringValue, type));
                 }
             }
         }
 
+        // TODO : ValidationRule should use FieldValue not String
         for (ValidationRule rule : validationRules) {
-            if (!rule.validates(value)) {
+            String stringValue = value.getValueAsString();
+            if (!rule.validates(stringValue)) {
                 report.setValid(false);
                 report.addErrorMessage(rule.getErrorMessage(this.getName()));
             }

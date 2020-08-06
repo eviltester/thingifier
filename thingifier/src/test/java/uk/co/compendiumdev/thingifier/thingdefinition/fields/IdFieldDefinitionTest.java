@@ -14,10 +14,9 @@ public class IdFieldDefinitionTest {
         ThingDefinition entity = ThingDefinition.create("thing", "things");
         entity.addFields(Field.is("id", FieldType.ID));
 
-        // todo: add some validation so that an entity only has one ID type
-
-        // ids are managed at the entity level, not the field level
         Assertions.assertEquals(null,
-                entity.getField("id").getDefaultValue());
+                entity.getField("id").
+                        getDefaultValue().
+                        getValueAsString());
     }
 }

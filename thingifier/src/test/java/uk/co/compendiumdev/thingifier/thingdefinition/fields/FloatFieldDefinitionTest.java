@@ -14,7 +14,8 @@ public class FloatFieldDefinitionTest {
         ThingDefinition enumFieldEntity = ThingDefinition.create("thing", "things");
         enumFieldEntity.addFields(Field.is("float", FieldType.FLOAT));
 
-        Assertions.assertEquals("0.0",  enumFieldEntity.getField("float").getDefaultValue());
+        Assertions.assertEquals("0.0",  enumFieldEntity.getField("float").
+                                                    getDefaultValue().getValueAsString());
     }
 
 
