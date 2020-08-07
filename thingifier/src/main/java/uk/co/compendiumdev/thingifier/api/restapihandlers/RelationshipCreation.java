@@ -59,7 +59,7 @@ public class RelationshipCreation {
 
         // if we have a parent thing, but no GUID then can we create a Thing and connect it later?
         if (relatedItem == null) {
-            List<RelationshipVector> possibleRelationships = connectThis.getEntity().getRelationships(relationshipName);
+            List<RelationshipVector> possibleRelationships = connectThis.getEntity().related().getRelationships(relationshipName);
             // if no way to narrow it down then use the first one TODO: potential bug if multiple named relationshps
             relationshipToUse = possibleRelationships.get(0);
             ThingDefinition createThing = relationshipToUse.getTo().definition();
@@ -78,7 +78,7 @@ public class RelationshipCreation {
 
         } else {
             // we know what we are connecting to, find the correct relationship
-            relationshipToUse = connectThis.getEntity().getRelationship(relationshipName, relatedItem.getEntity());
+            relationshipToUse = connectThis.getEntity().related().getRelationship(relationshipName, relatedItem.getEntity());
         }
 
 

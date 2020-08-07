@@ -71,7 +71,7 @@ final public class SimpleQuery {
 
                 // what I want to store is the relationship between the parent Thing and the relationship name
                 Thing thingToCheckForRelationship = currentThing == null ? parentThing : currentThing;
-                lastRelationshipsFound = thingToCheckForRelationship.definition().getRelationships(term);
+                lastRelationshipsFound = thingToCheckForRelationship.definition().related().getRelationships(term);
                 lastRelationshipFound = lastRelationshipsFound.get(0);
 
                 foundItemsHistoryList.add(lastRelationshipFound);

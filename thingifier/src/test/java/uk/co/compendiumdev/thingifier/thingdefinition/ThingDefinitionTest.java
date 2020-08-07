@@ -19,13 +19,8 @@ public class ThingDefinitionTest {
         Assertions.assertEquals(1, eDefn.getFieldNames().size()); // guid exists
         Assertions.assertTrue(eDefn.getFieldNames().contains("guid"));
 
-        eDefn.setName("aRequirement");
-        eDefn.setPlural("theRequirements");
-
         eDefn.addField(Field.is("Title"));
 
-        Assertions.assertEquals("aRequirement", eDefn.getName());
-        Assertions.assertEquals("theRequirements", eDefn.getPlural());
         Assertions.assertEquals(2, eDefn.getFieldNames().size());
 
         Assertions.assertTrue(eDefn.getFieldNames().contains("Title"));

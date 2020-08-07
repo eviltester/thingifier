@@ -1,10 +1,8 @@
 package uk.co.compendiumdev.thingifier.domain.definitions;
 
 import uk.co.compendiumdev.thingifier.domain.FieldType;
-import uk.co.compendiumdev.thingifier.domain.instances.InstanceFields;
-
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+
 
 
 public class ThingDefinition {
@@ -12,20 +10,20 @@ public class ThingDefinition {
     private String plural;
 
     private DefinedFields fields;
-    private DefinedRelationships relationships;
+    private DefinedRelationships definedRelationships;
 
 
 
-    private ThingDefinition() {
-        relationships = new DefinedRelationships();
+    private ThingDefinition(String name, String plural) {
+        this.name = name;
+        this.plural = plural;
+        definedRelationships = new DefinedRelationships();
         fields = new DefinedFields();
 
     }
 
     public static ThingDefinition create(String name, String plural) {
-        ThingDefinition entityDefinition = new ThingDefinition();
-        entityDefinition.setName(name);
-        entityDefinition.setPlural(plural);
+        ThingDefinition entityDefinition = new ThingDefinition(name, plural);
         entityDefinition.addField(Field.is("guid", FieldType.GUID));
         return entityDefinition;
     }
@@ -39,22 +37,11 @@ public class ThingDefinition {
         return output.toString();
     }
 
-    public ThingDefinition setName(String name) {
-        this.name = name;
-        if (plural == null || plural.length() == 0) {
-            this.setPlural(name);
-        }
-        return this;
-    }
 
     public String getName() {
         return name;
     }
 
-    public ThingDefinition setPlural(String plural) {
-        this.plural = plural;
-        return this;
-    }
 
     public String getPlural() {
         return plural;
@@ -116,29 +103,8 @@ public class ThingDefinition {
         return protectedNames;
     }
 
-    /*
-        RELATIONSHIPS
-     */
-    public boolean hasRelationship(String relationshipName) {
-        return relationships.hasRelationship(relationshipName);
+    public DefinedRelationships related(){
+        return definedRelationships;
     }
-
-    public RelationshipVector getRelationship(String relationshipName, ThingDefinition toEntityDefinition) {
-        return relationships.getRelationship(relationshipName, toEntityDefinition);
-    }
-
-    public void addRelationship(RelationshipVector relationship) {
-        relationships.addRelationship(relationship);
-    }
-
-    public List<RelationshipVector> getRelationships(String relationshipName) {
-        return relationships.getRelationships(relationshipName);
-    }
-
-    public Collection<RelationshipVector> getRelationships() {
-        return relationships.getRelationships();
-    }
-
-
 
 }

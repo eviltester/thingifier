@@ -29,7 +29,7 @@ public class RelationshipDefinition {
         RelationshipDefinition defn = new RelationshipDefinition(from, to, fromVector);
 
         // and add the relationship Vector
-        from.definition().addRelationship(fromVector);
+        from.definition().related().addRelationship(fromVector);
         return defn;
     }
 
@@ -41,7 +41,7 @@ public class RelationshipDefinition {
     public RelationshipDefinition withReverse(RelationshipVector toVector) {
         toFrom = toVector;
         toVector.addFromAndToFor(to, from, this);
-        to.definition().addRelationship(toVector);
+        to.definition().related().addRelationship(toVector);
         return this;
     }
 

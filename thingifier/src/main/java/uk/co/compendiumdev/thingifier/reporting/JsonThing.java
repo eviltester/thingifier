@@ -153,7 +153,7 @@ public class JsonThing {
                 }
             ]
          */
-        final Collection<RelationshipVector> relationships = thingInstance.getEntity().getRelationships();
+        final Collection<RelationshipVector> relationships = thingInstance.getEntity().related().getRelationships();
 
         // compressed relationships are possible when relationship_name is not a field name
         /*

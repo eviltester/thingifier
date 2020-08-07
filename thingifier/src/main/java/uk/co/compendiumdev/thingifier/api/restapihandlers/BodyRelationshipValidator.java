@@ -9,7 +9,6 @@ import uk.co.compendiumdev.thingifier.domain.definitions.RelationshipVector;
 import uk.co.compendiumdev.thingifier.domain.definitions.ThingDefinition;
 import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -43,7 +42,7 @@ public class BodyRelationshipValidator {
                 if(complexKey.contains(".")){
                     // it might be a relationship
                     String[] parts = complexKey.split("\\.");
-                    if(thingDefinition.hasRelationship(parts[0])) {
+                    if(thingDefinition.related().hasRelationship(parts[0])) {
                         validRelationships = validateCompressedRelationshipDefinition(thingDefinition, report, complexKey, complexKeyValue.getValue());
                     }
                 }
@@ -85,7 +84,7 @@ public class BodyRelationshipValidator {
         ThingInstance thingToRelateTo = thingifier.findThingInstanceByGuid(guidValue);
         // if we cannot find it by a guid then we need to identify the relationship type and find it by id for things
         if(thingToRelateTo==null) {
-            final List<RelationshipVector> relationshipsNamed = thingDefinition.getRelationships(relationShipName);
+            final List<RelationshipVector> relationshipsNamed = thingDefinition.related().getRelationships(relationShipName);
             for(RelationshipVector vector : relationshipsNamed){
                 final Thing thingToRelationship = vector.getTo();
                 thingToRelateTo = thingToRelationship.findInstanceByGUIDorID(guidValue);
@@ -164,7 +163,7 @@ public class BodyRelationshipValidator {
     private boolean isValidRelationship(final ThingDefinition thingDefinition,
                                         final String relationShipName,
                                         final ValidationReport report) {
-        if(!thingDefinition.hasRelationship(relationShipName)){
+        if(!thingDefinition.related().hasRelationship(relationShipName)){
             report.addErrorMessage(
                     String.format("%s is not a valid relationship for %s",
                             relationShipName, thingDefinition.getName()));
@@ -183,7 +182,7 @@ public class BodyRelationshipValidator {
                                                    final ValidationReport report) {
         // is it a valid relationship to the other thing
 
-        for(RelationshipVector relationships : thingDefinition.getRelationships(relationShipName)){
+        for(RelationshipVector relationships : thingDefinition.related().getRelationships(relationShipName)){
             if(relationships.getTo().definition().getPlural().equals(
                     thingToRelateTo)){
                 return true;

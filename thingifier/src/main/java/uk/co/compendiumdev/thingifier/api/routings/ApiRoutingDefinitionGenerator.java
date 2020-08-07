@@ -170,7 +170,7 @@ public class ApiRoutingDefinitionGenerator {
             defn.addRouting("method not allowed", RoutingVerb.PATCH, aUrlWGuid, RoutingStatus.returnValue(405));
 
 
-            for (RelationshipVector rel : thing.definition().getRelationships()) {
+            for (RelationshipVector rel : thing.definition().related().getRelationships()) {
                 addRoutingsForRelationship(defn, rel);
             }
         }

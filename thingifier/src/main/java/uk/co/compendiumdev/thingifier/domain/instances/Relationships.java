@@ -47,13 +47,12 @@ public class Relationships {
         // TODO: enforce cardinality
 
         // find relationship
-        if (!entityDefinition.hasRelationship(relationshipName)) {
+        if (!entityDefinition.related().hasRelationship(relationshipName)) {
             throw new IllegalArgumentException(String.format("Unknown Relationship %s for %s : %s",
                     relationshipName, entityDefinition.getName(), forThis.getGUID()));
         }
 
-        RelationshipVector relationship = entityDefinition.getRelationship(
-                                        relationshipName, thing.getEntity());
+        RelationshipVector relationship = entityDefinition.related().getRelationship(relationshipName, thing.getEntity());
 
         RelationshipInstance related = new RelationshipInstance(
                                                 relationship.getRelationshipDefinition(),
@@ -69,7 +68,7 @@ public class Relationships {
 
     public ThingDefinition getTypeOfConnectedItems(final String relationshipName) {
 
-        for (RelationshipVector relationship : entityDefinition.getRelationships()) {
+        for (RelationshipVector relationship : entityDefinition.related().getRelationships()) {
             if (relationship.getRelationshipDefinition().isKnownAs(relationshipName)) {
                 if (relationship.getTo().definition() == this.entityDefinition) {
                     return relationship.getFrom().definition();
@@ -190,7 +189,7 @@ public class Relationships {
         // TODO: relationship cardinality validation e.g. too many, not enough etc.
 
         // Optionality Relationship Validation
-        final Collection<RelationshipVector> theRelationshipVectors = entityDefinition.getRelationships();
+        final Collection<RelationshipVector> theRelationshipVectors = entityDefinition.related().getRelationships();
         for(RelationshipVector vector : theRelationshipVectors){
             // for each definition, does it have relationships that match
             if(vector.getOptionality() == MANDATORY_RELATIONSHIP){

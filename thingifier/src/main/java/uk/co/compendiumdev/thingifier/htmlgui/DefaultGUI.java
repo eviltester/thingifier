@@ -177,7 +177,7 @@ public class DefaultGUI {
 
                         html.append("<h2>Relationships</h2>");
 
-                        for (RelationshipVector relationship : definition.getRelationships()) {
+                        for (RelationshipVector relationship : definition.related().getRelationships()) {
                             final Collection<ThingInstance> relatedItems = instance.connectedItems(relationship.getName());
                             html.append("<h3>" + relationship.getName() + "</h3>");
                             if (relatedItems.size() > 0) {
