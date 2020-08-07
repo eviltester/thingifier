@@ -9,6 +9,7 @@ import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
 import java.util.List;
 import java.util.Map;
 
+// todo: potentially move this into the BodyParser
 public class BodyArgsProcessor {
 
     private final Thingifier thingifier;
