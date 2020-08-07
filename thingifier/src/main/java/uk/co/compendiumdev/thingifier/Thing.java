@@ -13,12 +13,10 @@ final public class Thing {
     private final ThingDefinition definition;
     private Map<String, ThingInstance> instances = new ConcurrentHashMap<>();
 
-    public Thing(ThingDefinition thingDefinition) {
+    private Thing(ThingDefinition thingDefinition) {
         this.definition = thingDefinition;
     }
 
-
-    // TODO should probably create a Thing with a populated definition rather than this way round
     public static Thing create(String name, String plural) {
         Thing thing = new Thing(ThingDefinition.create(name, plural));
         return thing;
@@ -37,7 +35,6 @@ final public class Thing {
         instances.put(instance.getGUID(), instance);
         return this;
     }
-
 
     public int countInstances() {
         return instances.size();

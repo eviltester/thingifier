@@ -9,6 +9,7 @@ import uk.co.compendiumdev.thingifier.api.routings.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingVerb;
 import uk.co.compendiumdev.thingifier.domain.FieldType;
 import uk.co.compendiumdev.thingifier.domain.definitions.Field;
+import uk.co.compendiumdev.thingifier.domain.definitions.FieldValue;
 import uk.co.compendiumdev.thingifier.domain.definitions.RelationshipDefinition;
 import uk.co.compendiumdev.thingifier.domain.definitions.ThingDefinition;
 import uk.co.compendiumdev.thingifier.domain.definitions.validation.ValidationRule;
@@ -155,7 +156,8 @@ public class RestApiDocumentationGenerator {
                     output.append("<td>");
                     output.append("<ul>");
                     for (ValidationRule validation : theField.validationRules()) {
-                        output.append("<li>" + validation.getErrorMessage("") + "</li>\n");
+                        //use the validation error message in the documentation
+                        output.append("<li>" + validation.getErrorMessage(FieldValue.is("","")) + "</li>\n");
                     }
 
                     output.append(String.format("<li>Mandatory?: %b</li>", theField.isMandatory()));

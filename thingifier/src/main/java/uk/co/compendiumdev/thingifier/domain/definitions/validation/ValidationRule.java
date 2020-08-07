@@ -6,5 +6,5 @@ public interface ValidationRule {
 
     boolean validates(FieldValue value);
 
-    String getErrorMessage(String fieldName);
+    String getErrorMessage(FieldValue value);
 }

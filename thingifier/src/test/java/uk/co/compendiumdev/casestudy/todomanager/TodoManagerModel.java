@@ -114,7 +114,7 @@ could implement a Thingifier URL query matcher to return instances based on quer
 
         todo.definition()
                 .addFields( Field.is("title", STRING).
-                                mandatory().
+                                makeMandatory().
                                 withValidation(
                                         VRule.notEmpty()),
                         Field.is("description",STRING),
@@ -141,7 +141,7 @@ could implement a Thingifier URL query matcher to return instances based on quer
         category.definition()
                 .addFields(
                         Field.is("title", STRING).
-                                mandatory().
+                                makeMandatory().
                                 withValidation(VRule.notEmpty()),
                         Field.is("description",STRING));
 
@@ -161,7 +161,7 @@ could implement a Thingifier URL query matcher to return instances based on quer
         estimate.definition()
                 .addFields(
                         Field.is("duration", INTEGER).
-                                mandatory().
+                                makeMandatory().
                                 withValidation(VRule.notEmpty()),
                         Field.is("description", STRING));
 

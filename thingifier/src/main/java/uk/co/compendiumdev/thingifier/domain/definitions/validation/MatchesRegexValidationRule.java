@@ -21,7 +21,7 @@ public class MatchesRegexValidationRule implements ValidationRule {
     }
 
     @Override
-    public String getErrorMessage(final String fieldName) {
-        return String.format("%s does not match the regex %s",fieldName, this.regexToMatch);
+    public String getErrorMessage(final FieldValue value) {
+        return String.format("%s does not match the regex %s",value.getName(), this.regexToMatch);
     }
 }

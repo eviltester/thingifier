@@ -26,9 +26,9 @@ public class MaximumLengthValidationRule implements ValidationRule {
     }
 
     @Override
-    public String getErrorMessage(final String fieldName) {
+    public String getErrorMessage(final FieldValue value) {
         return String.format(
                 "Maximum allowable length exceeded for %s - maximum allowed is %d",
-                fieldName, maxLength);
+                value.getName(), maxLength);
     }
 }

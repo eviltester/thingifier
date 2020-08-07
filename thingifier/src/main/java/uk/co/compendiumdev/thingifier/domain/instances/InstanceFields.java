@@ -243,6 +243,18 @@ public class InstanceFields {
                                                     getAssignedValue(fieldName),
                                                 amAllowedToSetIds);
                 report.combine(validity);
+
+                // if object then need to go deeper and recursively validate the instance fields
+                if(field.getType() == FieldType.OBJECT){
+                    // if instantiated
+                    FieldValue object = getAssignedValue(fieldName);
+                    if(object!= null && object.asObject()!=null){
+                        final ValidationReport objectValidity =
+                                object.asObject().
+                                validateFields(new ArrayList<>(), true);
+                        report.combine(objectValidity);
+                    }
+                }
             }
         }
 

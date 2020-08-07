@@ -1,4 +1,4 @@
-package uk.co.compendiumdev.thingifier.thingdefinition.fields;
+package uk.co.compendiumdev.thingifier.domain.definitions.fielddefinitions;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

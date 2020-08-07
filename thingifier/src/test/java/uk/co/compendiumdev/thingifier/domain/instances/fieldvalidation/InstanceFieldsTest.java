@@ -1,11 +1,10 @@
-package uk.co.compendiumdev.thingifier.thingInstance.fields;
+package uk.co.compendiumdev.thingifier.domain.instances.fieldvalidation;
 
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.domain.definitions.DefinedFields;
 import uk.co.compendiumdev.thingifier.domain.definitions.Field;
-import uk.co.compendiumdev.thingifier.domain.definitions.FieldValue;
 import uk.co.compendiumdev.thingifier.domain.instances.InstanceFields;
 
 public class InstanceFieldsTest {

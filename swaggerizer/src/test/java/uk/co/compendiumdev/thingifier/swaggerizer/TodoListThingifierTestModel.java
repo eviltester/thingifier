@@ -34,7 +34,7 @@ public class TodoListThingifierTestModel {
                 .addFields(
                         Field.is("id",FieldType.ID),
                         Field.is("title", STRING).
-                                mandatory().
+                                makeMandatory().
                                 withValidation(
                                         VRule.notEmpty()),
                         Field.is("doneStatus", FieldType.BOOLEAN).

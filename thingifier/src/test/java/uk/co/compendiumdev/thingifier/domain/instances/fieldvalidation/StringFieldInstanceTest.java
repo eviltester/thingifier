@@ -1,4 +1,4 @@
-package uk.co.compendiumdev.thingifier.thingInstance.fields;
+package uk.co.compendiumdev.thingifier.domain.instances.fieldvalidation;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -40,7 +40,7 @@ public class StringFieldInstanceTest {
 
         ThingDefinition stringFieldEntity = ThingDefinition.create("entity", "entities");
         stringFieldEntity.addFields(Field.is("defaultString").
-                                        mandatory().
+                makeMandatory().
                                         withDefaultValue("").
                                         withValidation(VRule.notEmpty()));
 
@@ -59,7 +59,7 @@ public class StringFieldInstanceTest {
 
         ThingDefinition stringFieldEntity = ThingDefinition.create("entity", "entities");
         stringFieldEntity.addFields(Field.is("field").
-                mandatory().
+                makeMandatory().
                 withDefaultValue("").
                 withValidation(VRule.notEmpty()).truncateStringTo(10));
 
@@ -77,7 +77,7 @@ public class StringFieldInstanceTest {
 
         ThingDefinition stringFieldEntity = ThingDefinition.create("entity", "entities");
         stringFieldEntity.addFields(Field.is("field").
-                mandatory().
+                makeMandatory().
                 withDefaultValue("").
                 withValidation(VRule.maximumLength(10)));
 
@@ -95,7 +95,7 @@ public class StringFieldInstanceTest {
 
         ThingDefinition stringFieldEntity = ThingDefinition.create("entity", "entities");
         stringFieldEntity.addFields(Field.is("field").
-                mandatory().
+                makeMandatory().
                 withDefaultValue("").
                 withValidation(VRule.matchesRegex("^Bug:.*")));
 
@@ -114,7 +114,7 @@ public class StringFieldInstanceTest {
 
         ThingDefinition stringFieldEntity = ThingDefinition.create("entity", "entities");
         stringFieldEntity.addFields(Field.is("field").
-                mandatory().
+                makeMandatory().
                 withDefaultValue("").
                 withValidation(VRule.maximumLength(10),
                                 VRule.satisfiesRegex("^Bug:"),

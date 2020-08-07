@@ -8,7 +8,6 @@ import uk.co.compendiumdev.thingifier.application.data.TodoAPIDataPopulator;
 import uk.co.compendiumdev.thingifier.domain.FieldType;
 import uk.co.compendiumdev.thingifier.domain.definitions.Field;
 import uk.co.compendiumdev.thingifier.domain.definitions.validation.VRule;
-import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
 
 import static uk.co.compendiumdev.thingifier.domain.FieldType.STRING;
 
@@ -36,7 +35,7 @@ public class TodoListThingifier {
                 .addFields(
                         Field.is("id",FieldType.ID),
                         Field.is("title", STRING).
-                                mandatory().
+                                makeMandatory().
                                 withValidation(
                                         VRule.notEmpty()),
                         Field.is("doneStatus", FieldType.BOOLEAN).

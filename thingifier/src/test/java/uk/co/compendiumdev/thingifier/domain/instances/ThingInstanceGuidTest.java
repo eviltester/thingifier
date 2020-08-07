@@ -1,4 +1,4 @@
-package uk.co.compendiumdev.thingifier.thingInstance;
+package uk.co.compendiumdev.thingifier.domain.instances;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;

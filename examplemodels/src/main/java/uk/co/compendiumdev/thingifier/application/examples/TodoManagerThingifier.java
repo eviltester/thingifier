@@ -11,7 +11,6 @@ import uk.co.compendiumdev.thingifier.domain.definitions.Field;
 import uk.co.compendiumdev.thingifier.domain.dsl.relationship.AndCall;
 import uk.co.compendiumdev.thingifier.domain.dsl.relationship.Between;
 import uk.co.compendiumdev.thingifier.domain.dsl.relationship.WithCardinality;
-import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
 
 import static uk.co.compendiumdev.thingifier.domain.FieldType.STRING;
 
@@ -56,7 +55,7 @@ public class TodoManagerThingifier {
         todo.definition()
                 .addFields(Field.is("id", FieldType.ID),
                         Field.is("title", STRING).
-                                mandatory().
+                                makeMandatory().
                                 withValidation(
                                         VRule.notEmpty()),
                         Field.is("doneStatus", FieldType.BOOLEAN).
@@ -83,7 +82,7 @@ public class TodoManagerThingifier {
                 .addFields(
                         Field.is("id", FieldType.ID),
                         Field.is("title", STRING).
-                                mandatory().
+                                makeMandatory().
                                 withValidation(VRule.notEmpty()),
                         Field.is("description", STRING));
 

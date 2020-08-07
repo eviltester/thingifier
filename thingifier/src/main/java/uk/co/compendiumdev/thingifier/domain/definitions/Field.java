@@ -135,6 +135,7 @@ public final class Field {
         return validate(value, NOT_ALLOWED_TO_SET_IDs);
     }
 
+    // allowedToSetIds is a bit of hack - refactor other code so not required
     public ValidationReport validate(FieldValue value, boolean allowedToSetIds) {
 
 
@@ -166,7 +167,6 @@ public final class Field {
 
             String stringValue = value.asString();
 
-            // todo: move all these into validation rules e.g. TypeValidationForBoolean
             if (type == FieldType.BOOLEAN) {
                 if (!(stringValue.toLowerCase().contentEquals("true")
                         || stringValue.toLowerCase().contentEquals("false"))) {
@@ -227,9 +227,6 @@ public final class Field {
                 }
             }
 
-            // TODO : add validation for DATE
-            // TODO : add validation for ENUM
-            // TODO : add validation for OBJECT
             if (type == FieldType.ENUM) {
                 if (!getExamples().contains(stringValue)) {
                     report.setValid(false);
@@ -238,12 +235,20 @@ public final class Field {
                                     "%s : %s does not match type %s", this.getName(), stringValue, type));
                 }
             }
+
+            // TODO : add validation for DATE
+            if(type == FieldType.OBJECT){
+                // cannot validate object content here,
+                // need to do that at a higher level
+                // rely on validation rules for object validation e.g. ObjectNotNull
+            }
+
         }
 
         for (ValidationRule rule : validationRules) {
             if (!rule.validates(value)) {
                 report.setValid(false);
-                report.addErrorMessage(rule.getErrorMessage(this.getName()));
+                report.addErrorMessage(rule.getErrorMessage(value));
             }
         }
 
@@ -260,7 +265,7 @@ public final class Field {
         return !fieldIsOptional;
     }
 
-    public Field mandatory() {
+    public Field makeMandatory() {
         fieldIsOptional = false;
         return this;
     }
