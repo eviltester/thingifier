@@ -1,4 +1,4 @@
-package uk.co.compendiumdev.thingifier.domain.instances.fieldvalidation;
+package uk.co.compendiumdev.thingifier.domain.instances.fieldinstantiation;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,13 +28,16 @@ public class ThingInstanceBooleanFieldTest {
 
         ThingInstance session = new ThingInstance(entityTestSession);
 
-        // false by default
-        Assertions.assertEquals("true", session.getFieldValue("review").asString());
-
         session.setValue("review", "false");
         Assertions.assertEquals("false", session.getFieldValue("review").asString());
 
+        session.setValue("review", "faLSE");
+        Assertions.assertEquals("false", session.getFieldValue("review").asString());
+
         session.setValue("review", "true");
+        Assertions.assertEquals("true", session.getFieldValue("review").asString());
+
+        session.setValue("review", "TRUE");
         Assertions.assertEquals("true", session.getFieldValue("review").asString());
     }
 
@@ -58,7 +61,16 @@ public class ThingInstanceBooleanFieldTest {
         ThingInstance session = new ThingInstance(entityTestSession);
 
         // false by default
-        Assertions.assertEquals("FALSE", session.getFieldValue("falsey").asString());
+        Assertions.assertEquals("false", session.getFieldValue("falsey").asString());
+    }
+
+    @Test
+    public void booleanFieldsDefaultCanBeConfigured(){
+
+        ThingInstance session = new ThingInstance(entityTestSession);
+
+        // false by default
+        Assertions.assertEquals("true", session.getFieldValue("review").asString());
     }
 
 }

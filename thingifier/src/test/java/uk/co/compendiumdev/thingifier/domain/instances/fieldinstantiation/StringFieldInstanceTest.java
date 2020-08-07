@@ -1,4 +1,4 @@
-package uk.co.compendiumdev.thingifier.domain.instances.fieldvalidation;
+package uk.co.compendiumdev.thingifier.domain.instances.fieldinstantiation;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

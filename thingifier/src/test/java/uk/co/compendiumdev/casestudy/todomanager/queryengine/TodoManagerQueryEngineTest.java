@@ -1,8 +1,9 @@
-package uk.co.compendiumdev.casestudy.todomanager;
+package uk.co.compendiumdev.casestudy.todomanager.queryengine;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import uk.co.compendiumdev.casestudy.todomanager.TodoManagerModel;
 import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;

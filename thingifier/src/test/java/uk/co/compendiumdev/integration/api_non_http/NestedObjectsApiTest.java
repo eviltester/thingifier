@@ -1,13 +1,17 @@
-package uk.co.compendiumdev.thingifier.api.http;
+package uk.co.compendiumdev.integration.api_non_http;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
+import uk.co.compendiumdev.thingifier.api.http.HttpApiResponse;
+import uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi;
 import uk.co.compendiumdev.thingifier.domain.FieldType;
 import uk.co.compendiumdev.thingifier.domain.definitions.Field;
 import uk.co.compendiumdev.thingifier.domain.definitions.ThingDefinition;
+import uk.co.compendiumdev.thingifier.domain.definitions.validation.VRule;
 import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
 
 
@@ -34,7 +38,6 @@ public class NestedObjectsApiTest {
                         withField(
                                 Field.is("surname").withExample("D'obbs")
                         ));
-
 
     }
 
@@ -85,5 +88,31 @@ public class NestedObjectsApiTest {
             Assertions.assertEquals("bob", bob.getFieldValue("person").asObject().
                     getFieldValue("firstname").asString());
         }
+    }
+
+    @Test
+    public void failValidationAtObjectFieldLevel() {
+
+        defn.getField("person").
+                getObjectDefinition().
+                getField("surname").makeMandatory();
+
+        api = new ThingifierHttpApi(thingifier,
+                null, null);
+
+        Assertions.assertEquals(0,thing.countInstances());
+
+        final HttpApiRequest failToCreateBobRequest = new HttpApiRequest("/things");
+        failToCreateBobRequest.setVerb(HttpApiRequest.VERB.POST);
+        //{"person" : {"firstname": "bob"}}
+        failToCreateBobRequest.setBody("{\"person\" : {\"firstname\": \"bob\"}}");
+
+        final HttpApiResponse response = api.post(failToCreateBobRequest);
+
+        Assertions.assertEquals(400, response.getStatusCode());
+        Assertions.assertEquals(0,thing.countInstances());
+
+        Assertions.assertTrue(
+            response.apiResponse().getErrorMessages().contains("surname : field is mandatory"));
     }
 }

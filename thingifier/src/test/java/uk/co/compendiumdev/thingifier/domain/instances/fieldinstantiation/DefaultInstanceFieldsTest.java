@@ -1,23 +1,26 @@
-package uk.co.compendiumdev.thingifier.domain.instances.fieldvalidation;
+package uk.co.compendiumdev.thingifier.domain.instances.fieldinstantiation;
 
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import uk.co.compendiumdev.thingifier.domain.FieldType;
 import uk.co.compendiumdev.thingifier.domain.definitions.DefinedFields;
 import uk.co.compendiumdev.thingifier.domain.definitions.Field;
 import uk.co.compendiumdev.thingifier.domain.instances.InstanceFields;
 
-public class InstanceFieldsTest {
+public class DefaultInstanceFieldsTest {
 
     @Test
-    public void canCreateAGenericInstance(){
+    public void byDefaultFieldIsAString(){
 
         DefinedFields fieldsDefn = new DefinedFields();
         fieldsDefn.addField(Field.is("Title"));
         fieldsDefn.addField(Field.is("Ref"));
 
-        InstanceFields instance = new InstanceFields(fieldsDefn);
+        Assertions.assertEquals(FieldType.STRING,
+                fieldsDefn.getField("Title").getType());
 
+        InstanceFields instance = new InstanceFields(fieldsDefn);
 
         instance.setValue("Title", "This Item title");
         instance.setValue("Ref", "Reference");

@@ -71,4 +71,11 @@ final public class FieldValue {
     public InstanceFields asObject() {
         return objectValue;
     }
+
+    public float asFloat() {
+        if(fieldValue==""){
+            return 0.0F;
+        }
+        return Float.valueOf(fieldValue);
+    }
 }

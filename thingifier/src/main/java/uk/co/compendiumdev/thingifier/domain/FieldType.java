@@ -6,10 +6,10 @@ public enum FieldType {
     INTEGER("0"),
     FLOAT("0.0"),
     DATE(null), // todo
-    BOOLEAN("FALSE"),
+    BOOLEAN("false"),
     ENUM(""), // remember to set example values
-    ID(null), // TODO: validate against more than one against a thing
-    GUID(null), // TODO: validate against more than one against a thing
+    ID(null),
+    GUID(null),
     OBJECT(null); // essentially a hashmap of other fields
 
     private final String defaultValue;

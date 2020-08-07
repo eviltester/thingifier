@@ -1,4 +1,4 @@
-package uk.co.compendiumdev.casestudy.todomanager.api_non_http;
+package uk.co.compendiumdev.integration.api_non_http;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

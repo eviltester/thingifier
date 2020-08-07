@@ -1,4 +1,4 @@
-package uk.co.compendiumdev.thingifier.domain.instances.fieldvalidation;
+package uk.co.compendiumdev.thingifier.domain.instances.fieldinstantiation;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -10,7 +10,7 @@ import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
 public class IdFieldInstanceTest {
 
     @Test
-    public void byDefaultAFloatFieldIsOne(){
+    public void byDefaultAnIDFieldIsOne(){
 
         ThingDefinition entity = ThingDefinition.create("thing", "things");
         entity.addFields(Field.is("id", FieldType.ID));

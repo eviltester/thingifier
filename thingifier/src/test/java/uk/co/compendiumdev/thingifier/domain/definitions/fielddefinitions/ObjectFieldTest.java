@@ -129,11 +129,10 @@ public class ObjectFieldTest {
         final String xmlOutput = new XmlThing(jsonThing).getSingleObjectXml(instance);
         System.out.println(xmlOutput);
 
+        Assertions.assertTrue(xmlOutput.contains("<thing>"));
         Assertions.assertTrue(xmlOutput.contains("<person>"));
         Assertions.assertTrue(xmlOutput.contains("<firstname>Connie</firstname>"));
         Assertions.assertTrue(xmlOutput.contains("<surname>Dobbs</surname>"));
     }
-
-    // todo REST API input of object fields
 
     }
