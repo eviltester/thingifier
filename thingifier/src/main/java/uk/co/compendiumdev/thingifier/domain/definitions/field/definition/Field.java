@@ -327,8 +327,6 @@ public final class Field {
 
     public ArrayList<String> getExamples() {
 
-        // todo add the default, any examples to retExamples and any extra stuff below
-        // combine, don't replace
         Set<String> buildExamples = new HashSet<>();
 
         if (type == FieldType.BOOLEAN) {
