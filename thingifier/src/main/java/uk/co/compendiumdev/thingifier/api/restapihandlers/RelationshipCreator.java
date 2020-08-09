@@ -3,13 +3,11 @@ package uk.co.compendiumdev.thingifier.api.restapihandlers;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
-import uk.co.compendiumdev.thingifier.domain.definitions.FieldValue;
-import uk.co.compendiumdev.thingifier.domain.definitions.RelationshipVector;
+import uk.co.compendiumdev.thingifier.domain.definitions.fielddefinition.FieldValue;
 import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class RelationshipCreator {
     private final Thingifier thingifier;

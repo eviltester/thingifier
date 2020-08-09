@@ -1,6 +1,6 @@
 package uk.co.compendiumdev.thingifier.domain.definitions.validation;
 
-import uk.co.compendiumdev.thingifier.domain.definitions.FieldValue;
+import uk.co.compendiumdev.thingifier.domain.definitions.fielddefinition.FieldValue;
 
 public class MaximumLengthValidationRule implements ValidationRule {
     private final int maxLength;

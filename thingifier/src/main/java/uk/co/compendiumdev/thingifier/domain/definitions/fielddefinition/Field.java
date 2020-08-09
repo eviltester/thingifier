@@ -1,13 +1,18 @@
-package uk.co.compendiumdev.thingifier.domain.definitions;
+package uk.co.compendiumdev.thingifier.domain.definitions.fielddefinition;
 
 import uk.co.compendiumdev.thingifier.api.ValidationReport;
-import uk.co.compendiumdev.thingifier.domain.FieldType;
+import uk.co.compendiumdev.thingifier.domain.definitions.DefinedFields;
 import uk.co.compendiumdev.thingifier.domain.data.RandomString;
 import uk.co.compendiumdev.thingifier.domain.definitions.validation.ValidationRule;
 
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
+// todo: beginning to think that we should have an XField for each field type
+// e.g. IdField, StringField, etc. - possibly with an interface or abstract
+//      AField class - e.g. for 'mandatory'
+//      then we would not have 'maximumStringLength' 'maximumIntegerValue' etc.
+//      would have 'maximum' 'minimum' methods - some fields would have unique methods
 public final class Field {
 
     private final String name;
@@ -125,11 +130,6 @@ public final class Field {
         return this;
     }
 
-    public ValidationReport validate(String value) {
-        boolean NOT_ALLOWED_TO_SET_IDs = false;
-        return validate(FieldValue.is(name, value), NOT_ALLOWED_TO_SET_IDs);
-    }
-
     public ValidationReport validate(FieldValue value) {
         boolean NOT_ALLOWED_TO_SET_IDs = false;
         return validate(value, NOT_ALLOWED_TO_SET_IDs);
@@ -238,10 +238,15 @@ public final class Field {
 
             // TODO : add validation for DATE
             if(type == FieldType.OBJECT){
-                // cannot validate object content here,
-                // need to do that at a higher level
-                // rely on validation rules for object validation e.g. ObjectNotNull
+                FieldValue object = value;
+                if(object!= null && object.asObject()!=null){
+                    final ValidationReport objectValidity =
+                            object.asObject().
+                                    validateFields(new ArrayList<>(), true);
+                    report.combine(objectValidity);
+                }
             }
+
 
         }
 
@@ -338,7 +343,7 @@ public final class Field {
             buildExamples.add(String.valueOf(rndFloat));
         }
 
-        // string might have examples
+        // field might have examples in definition
         if(fieldExamples.size()>0){
             buildExamples.addAll(fieldExamples);
         }
@@ -432,41 +437,6 @@ public final class Field {
 
     public DefinedFields getObjectDefinition() {
         return objectDefinition;
-    }
-
-    public String getValueToAdd(final String value) {
-
-        String valueToAdd = value;
-
-        switch (type){
-            case BOOLEAN:
-                return Boolean.valueOf(valueToAdd).toString();
-            case FLOAT:
-                return Float.valueOf(valueToAdd).toString();
-            case STRING:
-                if(shouldTruncate()){
-                    return valueToAdd.substring(0,getMaximumAllowedLength());
-                }else{
-                    return valueToAdd;
-                }
-            case INTEGER:
-            case ID:
-                try {
-                    Double dVal = Double.parseDouble(value);
-                    return String.valueOf(dVal.intValue());
-                }catch(Exception e){
-                    return Integer.valueOf(valueToAdd).toString();
-                }
-            case GUID:
-            case OBJECT:
-            case ENUM:
-            case DATE:
-                return valueToAdd;
-            default:
-                System.out.println("Unhandled value to add on set");
-                return valueToAdd;
-        }
-
     }
 
 }

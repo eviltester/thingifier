@@ -1,16 +1,12 @@
-package uk.co.compendiumdev.thingifier.domain.definitions;
+package uk.co.compendiumdev.thingifier.domain.definitions.fielddefinition;
 
 import uk.co.compendiumdev.thingifier.domain.instances.InstanceFields;
-
-import java.util.HashMap;
-import java.util.Map;
 
 final public class FieldValue {
 
     private final String fieldName; // should this be name or should it be a Field reference?
     private final String fieldValue;
     private InstanceFields objectValue;
-    // todo: InstanceFields for an object
     // todo: list of strings for an array
     // todo: list of InstanceFields for an array of objects
 
@@ -22,10 +18,15 @@ final public class FieldValue {
 
     @Override
     public String toString() {
-        return "FieldValue{" +
-                "fieldName='" + fieldName + '\'' +
-                ", fieldValue='" + fieldValue + '\'' +
-                '}';
+        String string =  "FieldValue{" +
+                "fieldName='" + fieldName + "'" +
+                ", fieldValue='" + fieldValue + "'";
+        if(objectValue!=null){
+            string = string + ",{ " + objectValue.toString() + " }";
+        }
+        string = string + "}";
+
+        return string;
     }
 
     public static FieldValue is(String fieldName, String fieldValue) {
@@ -47,21 +48,13 @@ final public class FieldValue {
         return fieldName;
     }
 
-    /**
-     *
-     * @deprecated We should be using asString, asInteger, asObject, asArray style methods
-     */
-    @Deprecated
-    public String getValue() {
-        return fieldValue;
-    }
 
     public FieldValue cloned() {
-        final FieldValue clone = new FieldValue(fieldName, fieldValue);
         if(objectValue!=null){
-            clone.setValue(objectValue.cloned());
+            return FieldValue.is(fieldName, objectValue.cloned());
+        }else{
+            return FieldValue.is(fieldName, fieldValue);
         }
-        return clone;
     }
 
     public String asString() {
@@ -73,9 +66,6 @@ final public class FieldValue {
     }
 
     public float asFloat() {
-        if(fieldValue==""){
-            return 0.0F;
-        }
         return Float.valueOf(fieldValue);
     }
 }

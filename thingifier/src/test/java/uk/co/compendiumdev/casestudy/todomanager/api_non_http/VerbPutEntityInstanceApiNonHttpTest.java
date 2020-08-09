@@ -10,9 +10,9 @@ import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
-import uk.co.compendiumdev.thingifier.domain.FieldType;
-import uk.co.compendiumdev.thingifier.domain.definitions.Field;
-import uk.co.compendiumdev.thingifier.domain.definitions.FieldValue;
+import uk.co.compendiumdev.thingifier.domain.definitions.fielddefinition.FieldType;
+import uk.co.compendiumdev.thingifier.domain.definitions.fielddefinition.Field;
+import uk.co.compendiumdev.thingifier.domain.definitions.fielddefinition.FieldValue;
 import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
 
 import java.util.*;

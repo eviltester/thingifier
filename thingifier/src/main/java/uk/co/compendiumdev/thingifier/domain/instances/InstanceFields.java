@@ -1,10 +1,10 @@
 package uk.co.compendiumdev.thingifier.domain.instances;
 
 import uk.co.compendiumdev.thingifier.api.ValidationReport;
-import uk.co.compendiumdev.thingifier.domain.FieldType;
+import uk.co.compendiumdev.thingifier.domain.definitions.fielddefinition.FieldType;
 import uk.co.compendiumdev.thingifier.domain.definitions.DefinedFields;
-import uk.co.compendiumdev.thingifier.domain.definitions.Field;
-import uk.co.compendiumdev.thingifier.domain.definitions.FieldValue;
+import uk.co.compendiumdev.thingifier.domain.definitions.fielddefinition.Field;
+import uk.co.compendiumdev.thingifier.domain.definitions.fielddefinition.FieldValue;
 
 import java.util.*;
 
@@ -143,7 +143,10 @@ public class InstanceFields {
 
         final ValidationReport validationReport = field.validate(value);
         if (validationReport.isValid()) {
-            addValue(FieldValue.is(value.getName(), field.getValueToAdd(value.asString())));
+            addValue(FieldValue.is(value.getName(),
+                                    getActualValueToAdd(
+                                        field,
+                                        value.asString())));
 
         } else {
             throw new IllegalArgumentException(
@@ -153,6 +156,45 @@ public class InstanceFields {
         return this;
     }
 
+    /**
+     * When values are recieved from json they might be "0.0" for integers etc.
+     * So conver them prior to setting
+     * @param field
+     * @param value
+     * @return
+     */
+    private String getActualValueToAdd(final Field field, final String value) {
+
+        switch (field.getType()){
+            case BOOLEAN:
+                return Boolean.valueOf(value).toString();
+            case FLOAT:
+                return Float.valueOf(value).toString();
+            case STRING:
+                if(field.shouldTruncate()){
+                    return value.substring(0,field.getMaximumAllowedLength());
+                }else{
+                    return value;
+                }
+            case INTEGER:
+            case ID:
+                try {
+                    Double dVal = Double.parseDouble(value);
+                    return String.valueOf(dVal.intValue());
+                }catch(Exception e){
+                    return Integer.valueOf(value).toString();
+                }
+            case GUID:
+            case OBJECT:
+            case ENUM:
+            case DATE:
+                return value;
+            default:
+                System.out.println("Unhandled value to add on set");
+                return value;
+        }
+
+    }
 
     /*
         set a value in the object hierarchy and create objects as we go
@@ -245,16 +287,16 @@ public class InstanceFields {
                 report.combine(validity);
 
                 // if object then need to go deeper and recursively validate the instance fields
-                if(field.getType() == FieldType.OBJECT){
-                    // if instantiated
-                    FieldValue object = getAssignedValue(fieldName);
-                    if(object!= null && object.asObject()!=null){
-                        final ValidationReport objectValidity =
-                                object.asObject().
-                                validateFields(new ArrayList<>(), true);
-                        report.combine(objectValidity);
-                    }
-                }
+//                if(field.getType() == FieldType.OBJECT){
+//                    // if instantiated
+//                    FieldValue object = getAssignedValue(fieldName);
+//                    if(object!= null && object.asObject()!=null){
+//                        final ValidationReport objectValidity =
+//                                object.asObject().
+//                                validateFields(new ArrayList<>(), true);
+//                        report.combine(objectValidity);
+//                    }
+//                }
             }
         }
 

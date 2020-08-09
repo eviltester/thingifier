@@ -1,6 +1,7 @@
 package uk.co.compendiumdev.thingifier.domain.definitions;
 
-import uk.co.compendiumdev.thingifier.domain.FieldType;
+import uk.co.compendiumdev.thingifier.domain.definitions.fielddefinition.Field;
+import uk.co.compendiumdev.thingifier.domain.definitions.fielddefinition.FieldType;
 
 import java.util.ArrayList;
 import java.util.Arrays;

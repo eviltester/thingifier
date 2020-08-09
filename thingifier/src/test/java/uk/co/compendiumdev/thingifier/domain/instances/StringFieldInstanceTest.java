@@ -1,9 +1,9 @@
-package uk.co.compendiumdev.thingifier.domain.instances.fieldinstantiation;
+package uk.co.compendiumdev.thingifier.domain.instances;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.api.ValidationReport;
-import uk.co.compendiumdev.thingifier.domain.definitions.Field;
+import uk.co.compendiumdev.thingifier.domain.definitions.fielddefinition.Field;
 import uk.co.compendiumdev.thingifier.domain.definitions.ThingDefinition;
 import uk.co.compendiumdev.thingifier.domain.definitions.validation.VRule;
 import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
@@ -55,7 +55,7 @@ public class StringFieldInstanceTest {
     }
 
     @Test
-    public void canConfigureStringsToTruncateIfTooLarge(){
+    public void canConfigureStringsToTruncateIfTooLargeWhenSetting(){
 
         ThingDefinition stringFieldEntity = ThingDefinition.create("entity", "entities");
         stringFieldEntity.addFields(Field.is("field").
@@ -91,7 +91,7 @@ public class StringFieldInstanceTest {
     }
 
     @Test
-    public void canConfigureStringsToThrowErrorValidationErrorIfNotMatchRegex(){
+    public void canConfigureStringsToValidateonSetting(){
 
         ThingDefinition stringFieldEntity = ThingDefinition.create("entity", "entities");
         stringFieldEntity.addFields(Field.is("field").
@@ -108,26 +108,5 @@ public class StringFieldInstanceTest {
         System.out.println(e.getMessage());
         Assertions.assertTrue(e.getMessage().contains("not match"));
     }
-
-    @Test
-    public void canConfigureStringToMatchMultipleRules(){
-
-        ThingDefinition stringFieldEntity = ThingDefinition.create("entity", "entities");
-        stringFieldEntity.addFields(Field.is("field").
-                makeMandatory().
-                withDefaultValue("").
-                withValidation(VRule.maximumLength(10),
-                                VRule.satisfiesRegex("^Bug:"),
-                                VRule.matchesRegex("^Bug:.*")
-                ));
-
-        ThingInstance instance = new ThingInstance(stringFieldEntity);
-        instance.setValue("field", "Bug: short");
-
-        ValidationReport report = instance.validate();
-        Assertions.assertTrue(report.isValid(), report.getCombinedErrorMessages());
-    }
-
-
 
 }

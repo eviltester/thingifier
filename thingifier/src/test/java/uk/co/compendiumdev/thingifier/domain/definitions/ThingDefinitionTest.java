@@ -2,6 +2,7 @@ package uk.co.compendiumdev.thingifier.domain.definitions;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import uk.co.compendiumdev.thingifier.domain.definitions.fielddefinition.Field;
 
 
 public class ThingDefinitionTest {

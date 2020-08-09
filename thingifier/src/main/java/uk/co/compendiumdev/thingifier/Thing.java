@@ -1,6 +1,6 @@
 package uk.co.compendiumdev.thingifier;
 
-import uk.co.compendiumdev.thingifier.domain.definitions.FieldValue;
+import uk.co.compendiumdev.thingifier.domain.definitions.fielddefinition.FieldValue;
 import uk.co.compendiumdev.thingifier.domain.definitions.ThingDefinition;
 import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
 
@@ -44,7 +44,8 @@ final public class Thing {
     public ThingInstance findInstanceByField(FieldValue fieldValue) {
 
         for (ThingInstance thing : instances.values()) {
-            if (thing.getFieldValue(fieldValue.getName()).asString().contentEquals(fieldValue.getValue())) {
+            if (thing.getFieldValue(fieldValue.getName())
+                    .asString().contentEquals(fieldValue.asString())) {
                 return thing;
             }
         }

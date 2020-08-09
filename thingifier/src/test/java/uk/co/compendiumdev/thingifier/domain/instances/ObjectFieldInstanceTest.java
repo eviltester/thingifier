@@ -1,4 +1,4 @@
-package uk.co.compendiumdev.thingifier.domain.definitions.fielddefinitions;
+package uk.co.compendiumdev.thingifier.domain.instances;
 
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
@@ -7,15 +7,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.api.ValidationReport;
 import uk.co.compendiumdev.thingifier.apiconfig.JsonOutputConfig;
-import uk.co.compendiumdev.thingifier.domain.FieldType;
-import uk.co.compendiumdev.thingifier.domain.definitions.Field;
 import uk.co.compendiumdev.thingifier.domain.definitions.ThingDefinition;
+import uk.co.compendiumdev.thingifier.domain.definitions.fielddefinition.Field;
+import uk.co.compendiumdev.thingifier.domain.definitions.fielddefinition.FieldType;
 import uk.co.compendiumdev.thingifier.domain.definitions.validation.VRule;
 import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
 import uk.co.compendiumdev.thingifier.reporting.JsonThing;
 import uk.co.compendiumdev.thingifier.reporting.XmlThing;
 
-public class ObjectFieldTest {
+public class ObjectFieldInstanceTest {
 
     ThingDefinition defn;
     ThingInstance instance;
@@ -102,6 +102,7 @@ public class ObjectFieldTest {
 
         Assertions.assertTrue(e.getMessage().contains("surname : can not be empty"));
     }
+
 
     @Test
     public void outputAsJson(){

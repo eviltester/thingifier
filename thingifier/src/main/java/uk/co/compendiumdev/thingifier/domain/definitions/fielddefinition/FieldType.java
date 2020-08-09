@@ -1,16 +1,19 @@
-package uk.co.compendiumdev.thingifier.domain;
+package uk.co.compendiumdev.thingifier.domain.definitions.fielddefinition;
 
 public enum FieldType {
 
-    STRING(""),
-    INTEGER("0"),
     FLOAT("0.0"),
+    ID(null),
+    INTEGER("0"),
+    OBJECT(null),
+    STRING(""),
+
+
     DATE(null), // todo
     BOOLEAN("false"),
     ENUM(""), // remember to set example values
-    ID(null),
-    GUID(null),
-    OBJECT(null); // essentially a hashmap of other fields
+    GUID(null);
+
 
     private final String defaultValue;
 

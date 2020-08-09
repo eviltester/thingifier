@@ -6,8 +6,8 @@ import org.json.XML;
 import uk.co.compendiumdev.thingifier.api.ValidationReport;
 import uk.co.compendiumdev.thingifier.api.http.AcceptContentTypeParser;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
-import uk.co.compendiumdev.thingifier.domain.FieldType;
-import uk.co.compendiumdev.thingifier.domain.definitions.Field;
+import uk.co.compendiumdev.thingifier.domain.definitions.fielddefinition.FieldType;
+import uk.co.compendiumdev.thingifier.domain.definitions.fielddefinition.Field;
 import uk.co.compendiumdev.thingifier.domain.definitions.ThingDefinition;
 
 import java.util.*;

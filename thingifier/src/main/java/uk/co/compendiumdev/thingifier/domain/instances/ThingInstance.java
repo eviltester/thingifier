@@ -1,8 +1,8 @@
 package uk.co.compendiumdev.thingifier.domain.instances;
 
 import uk.co.compendiumdev.thingifier.api.ValidationReport;
-import uk.co.compendiumdev.thingifier.domain.definitions.Field;
-import uk.co.compendiumdev.thingifier.domain.definitions.FieldValue;
+import uk.co.compendiumdev.thingifier.domain.definitions.fielddefinition.Field;
+import uk.co.compendiumdev.thingifier.domain.definitions.fielddefinition.FieldValue;
 import uk.co.compendiumdev.thingifier.domain.definitions.ThingDefinition;
 
 import java.util.*;

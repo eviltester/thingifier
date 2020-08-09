@@ -2,16 +2,16 @@ package uk.co.compendiumdev.casestudy.todomanager;
 
 import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.domain.FieldType;
-import uk.co.compendiumdev.thingifier.domain.definitions.Field;
+import uk.co.compendiumdev.thingifier.domain.definitions.fielddefinition.FieldType;
+import uk.co.compendiumdev.thingifier.domain.definitions.fielddefinition.Field;
 import uk.co.compendiumdev.thingifier.domain.definitions.RelationshipDefinition;
 import uk.co.compendiumdev.thingifier.domain.definitions.validation.VRule;
 import uk.co.compendiumdev.thingifier.domain.dsl.relationship.AndCall;
 import uk.co.compendiumdev.thingifier.domain.dsl.relationship.Between;
 import uk.co.compendiumdev.thingifier.domain.dsl.relationship.WithCardinality;
 
-import static uk.co.compendiumdev.thingifier.domain.FieldType.INTEGER;
-import static uk.co.compendiumdev.thingifier.domain.FieldType.STRING;
+import static uk.co.compendiumdev.thingifier.domain.definitions.fielddefinition.FieldType.INTEGER;
+import static uk.co.compendiumdev.thingifier.domain.definitions.fielddefinition.FieldType.STRING;
 
 public class TodoManagerModel {
 

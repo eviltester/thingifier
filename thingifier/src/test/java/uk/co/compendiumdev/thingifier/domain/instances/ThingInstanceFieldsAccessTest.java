@@ -1,84 +1,42 @@
-package uk.co.compendiumdev.thingifier.domain.instances.fieldinstantiation;
+package uk.co.compendiumdev.thingifier.domain.instances;
+
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import uk.co.compendiumdev.thingifier.domain.definitions.Field;
 import uk.co.compendiumdev.thingifier.domain.definitions.ThingDefinition;
-import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.domain.definitions.fielddefinition.FieldType;
+import uk.co.compendiumdev.thingifier.domain.definitions.DefinedFields;
+import uk.co.compendiumdev.thingifier.domain.definitions.fielddefinition.Field;
+import uk.co.compendiumdev.thingifier.domain.instances.InstanceFields;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public class GenericFieldConditionsTest {
+public class ThingInstanceFieldsAccessTest {
 
     ThingDefinition entityTestSession;
 
     @BeforeEach
-    public void createEntity(){
-
-        entityTestSession = ThingDefinition.create("Test Session", "Test Sessions");
-        entityTestSession.addFields(Field.is("CompletedStatus").withDefaultValue("Not Completed"));
+    public void createDefinition(){
+        entityTestSession =
+                ThingDefinition.create("Test Session", "Test Sessions");
+        entityTestSession.addField(Field.is("CompletedStatus").withDefaultValue("Not Completed"));
     }
 
     @Test
     public void defaultValuesAreReturnedByGetValue(){
 
         ThingInstance session = new ThingInstance(entityTestSession);
-        Assertions.assertEquals("Not Completed", session.getFieldValue("CompletedStatus").asString());
-    }
-
-    @Test
-    public void canCreateFieldWithExamples(){
-
-        entityTestSession.addField(Field.is("complicated").withExample("nuclear physics"));
-
-        Assertions.assertEquals(1,
-                entityTestSession.getField("complicated").getExamples().size());
-
-        Assertions.assertEquals("nuclear physics",
-                entityTestSession.getField("complicated").getRandomExampleValue());
-    }
-
-    @Test
-    public void randomExamplesReturnsAll(){
-
-        List<String> expectedValues = new ArrayList<>();
-        expectedValues.add("nuclear physics");
-        expectedValues.add("people");
-        expectedValues.add("decisions");
-
-        entityTestSession.addField(Field.is("complicated").
-                            withExample("nuclear physics").
-                            withExample("people").
-                            withExample("decisions"));
-
-        Assertions.assertEquals(3,
-                entityTestSession.getField("complicated").getExamples().size());
-
-        int tries = 0;
-        // potential for intermittency,
-        // but it really shouldn't take 100 tries to generate all out of 3
-        while(expectedValues.size()!=0 && tries<100){
-
-            String randomValue = entityTestSession.
-                    getField("complicated").
-                    getRandomExampleValue();
-            System.out.println(randomValue);
-            expectedValues.remove(randomValue);
-
-            tries++;
-        }
-
-        System.out.println("all random examples generated in " + tries);
-        Assertions.assertEquals(0, expectedValues.size());
+        Assertions.assertEquals("Not Completed",
+                session.getFieldValue("CompletedStatus").asString());
     }
 
 
-
     @Test
-    public void fieldNameAccessIsCaseInsensitive(){
+    public void fieldValueAccessIsCaseInsensitive(){
+
         ThingInstance session = new ThingInstance(entityTestSession);
 
         Assertions.assertEquals("Not Completed",
@@ -93,6 +51,7 @@ public class GenericFieldConditionsTest {
 
     @Test
     public void fieldNameSettingIsCaseInsensitive(){
+
         ThingInstance session = new ThingInstance(entityTestSession);
 
         session.setValue("CompletedStatus", "in progress");
@@ -114,6 +73,7 @@ public class GenericFieldConditionsTest {
 
     @Test
     public void fieldNameSettingIsReallyCaseInsensitive() {
+
         ThingInstance session = new ThingInstance(entityTestSession);
 
         for(int x=0; x<100; x++) {
@@ -144,5 +104,4 @@ public class GenericFieldConditionsTest {
 
         return ret.toString();
     }
-
-    }
+}

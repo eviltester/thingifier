@@ -5,11 +5,11 @@ import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
-import uk.co.compendiumdev.thingifier.domain.FieldType;
-import uk.co.compendiumdev.thingifier.domain.definitions.Field;
+import uk.co.compendiumdev.thingifier.domain.definitions.fielddefinition.FieldType;
+import uk.co.compendiumdev.thingifier.domain.definitions.fielddefinition.Field;
 import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
 
-import static uk.co.compendiumdev.thingifier.domain.FieldType.STRING;
+import static uk.co.compendiumdev.thingifier.domain.definitions.fielddefinition.FieldType.STRING;
 
 public class IdBasedInstanceNonHttpTest {
 

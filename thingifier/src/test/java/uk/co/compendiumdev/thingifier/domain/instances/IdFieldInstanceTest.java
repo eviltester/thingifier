@@ -1,16 +1,16 @@
-package uk.co.compendiumdev.thingifier.domain.instances.fieldinstantiation;
+package uk.co.compendiumdev.thingifier.domain.instances;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import uk.co.compendiumdev.thingifier.domain.FieldType;
-import uk.co.compendiumdev.thingifier.domain.definitions.Field;
+import uk.co.compendiumdev.thingifier.domain.definitions.fielddefinition.FieldType;
+import uk.co.compendiumdev.thingifier.domain.definitions.fielddefinition.Field;
 import uk.co.compendiumdev.thingifier.domain.definitions.ThingDefinition;
 import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
 
 public class IdFieldInstanceTest {
 
     @Test
-    public void byDefaultAnIDFieldIsOne(){
+    public void byDefaultAnIDFieldIsOneWhenInstantiated(){
 
         ThingDefinition entity = ThingDefinition.create("thing", "things");
         entity.addFields(Field.is("id", FieldType.ID));
@@ -18,6 +18,8 @@ public class IdFieldInstanceTest {
         ThingInstance instance = new ThingInstance(entity);
         Assertions.assertEquals("1", instance.getFieldValue("id").asString());
     }
+
+
 
     @Test
     public void idsShouldAutoIncrementWhenInstancesCreated(){

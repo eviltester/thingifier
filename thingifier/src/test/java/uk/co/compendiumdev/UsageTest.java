@@ -5,15 +5,15 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.domain.definitions.Field;
-import uk.co.compendiumdev.thingifier.domain.FieldType;
-import uk.co.compendiumdev.thingifier.domain.definitions.FieldValue;
+import uk.co.compendiumdev.thingifier.domain.definitions.fielddefinition.Field;
+import uk.co.compendiumdev.thingifier.domain.definitions.fielddefinition.FieldType;
+import uk.co.compendiumdev.thingifier.domain.definitions.fielddefinition.FieldValue;
 import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
 
 import java.util.Collection;
 
-import static uk.co.compendiumdev.thingifier.domain.FieldType.INTEGER;
-import static uk.co.compendiumdev.thingifier.domain.FieldType.STRING;
+import static uk.co.compendiumdev.thingifier.domain.definitions.fielddefinition.FieldType.INTEGER;
+import static uk.co.compendiumdev.thingifier.domain.definitions.fielddefinition.FieldType.STRING;
 
 
 public class UsageTest {
