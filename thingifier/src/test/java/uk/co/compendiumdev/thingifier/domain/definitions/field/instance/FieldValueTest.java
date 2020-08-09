@@ -1,23 +1,23 @@
-package uk.co.compendiumdev.thingifier.domain.definitions.fielddefinition;
+package uk.co.compendiumdev.thingifier.domain.definitions.field.instance;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class FieldValueTest {
+class FieldValueTest {
 
     @Test
-    public void canCreateAndAccessName(){
+    void canCreateAndAccessName(){
         final FieldValue value = FieldValue.is("generic", "value");
         Assertions.assertEquals("generic", value.getName());
     }
     @Test
-    public void canCreateAndGetValue(){
+    void canCreateAndGetValue(){
         final FieldValue value = FieldValue.is("generic", "value");
         Assertions.assertEquals("value", value.asString());
     }
 
     @Test
-    public void canSetGetFloatValue(){
+    void canSetGetFloatValue(){
 
         final FieldValue value = FieldValue.is("afloat", "4.3");
         Assertions.assertEquals("4.3", value.asString());
@@ -25,7 +25,7 @@ public class FieldValueTest {
     }
 
     @Test
-    public void canCloneSimpleValue(){
+    void canCloneSimpleValue(){
 
         final FieldValue value = FieldValue.is("simple", "value");
         final FieldValue clonedValue = value.cloned();
@@ -36,13 +36,11 @@ public class FieldValueTest {
     }
 
     @Test
-    public void floatValueShouldBeSetAsValid_NoConversionPerformed(){
+    void floatValueShouldBeSetAsValid_NoConversionPerformed(){
 
         final FieldValue value = FieldValue.is("afloat", "");
 
         Assertions.assertThrows(NumberFormatException.class,
                 ()-> {value.asFloat();});
     }
-
-    // todo field as object test
 }

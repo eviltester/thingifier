@@ -1,12 +1,13 @@
-package uk.co.compendiumdev.thingifier.domain.definitions.fielddefinition;
+package uk.co.compendiumdev.thingifier.domain.definitions.field.definition;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import uk.co.compendiumdev.thingifier.domain.definitions.field.instance.FieldValue;
 
-public class BooleanFieldTest {
+class BooleanFieldTest {
 
     @Test
-    public void byDefaultABooleanFieldIsFalse(){
+    void byDefaultABooleanFieldIsFalse(){
 
         final Field field = Field.is("false", FieldType.BOOLEAN);
 
@@ -14,7 +15,7 @@ public class BooleanFieldTest {
     }
 
     @Test
-    public void canConfigureBooleanDefaultAsTrue(){
+    void canConfigureBooleanDefaultAsTrue(){
 
         final Field field = Field.is("false", FieldType.BOOLEAN).withDefaultValue("true");
 
@@ -22,7 +23,7 @@ public class BooleanFieldTest {
     }
 
     @Test
-    public void booleanCanOnlyBeFalseOrTrue(){
+    void booleanCanOnlyBeFalseOrTrue(){
 
         final Field field = Field.is("boolean", FieldType.BOOLEAN);
 

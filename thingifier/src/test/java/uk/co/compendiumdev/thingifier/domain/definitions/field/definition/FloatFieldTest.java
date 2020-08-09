@@ -1,13 +1,14 @@
-package uk.co.compendiumdev.thingifier.domain.definitions.fielddefinition;
+package uk.co.compendiumdev.thingifier.domain.definitions.field.definition;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import uk.co.compendiumdev.thingifier.domain.definitions.ThingDefinition;
+import uk.co.compendiumdev.thingifier.domain.definitions.field.definition.Field;
+import uk.co.compendiumdev.thingifier.domain.definitions.field.definition.FieldType;
 
-public class FloatFieldTest {
+class FloatFieldTest {
 
     @Test
-    public void byDefaultAFloatFieldIsZero(){
+    void byDefaultAFloatFieldIsZero(){
 
         final Field field = Field.is("float", FieldType.FLOAT);
 
@@ -17,7 +18,7 @@ public class FloatFieldTest {
 
 
     @Test
-    public void examplesForFloatFieldsBasedOnMinAndMax() {
+    void examplesForFloatFieldsBasedOnMinAndMax() {
 
         final Field field = Field.is("float", FieldType.FLOAT).
                 withMaximumValue(10.0F).

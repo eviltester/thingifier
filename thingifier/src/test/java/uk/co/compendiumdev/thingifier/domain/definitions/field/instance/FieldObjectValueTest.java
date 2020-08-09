@@ -1,16 +1,19 @@
-package uk.co.compendiumdev.thingifier.domain.definitions.fielddefinition;
+package uk.co.compendiumdev.thingifier.domain.definitions.field.instance;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import uk.co.compendiumdev.thingifier.domain.definitions.field.definition.Field;
+import uk.co.compendiumdev.thingifier.domain.definitions.field.definition.FieldType;
+import uk.co.compendiumdev.thingifier.domain.definitions.field.instance.FieldValue;
 import uk.co.compendiumdev.thingifier.domain.instances.InstanceFields;
 
-public class FieldObjectValueTest {
+class FieldObjectValueTest {
 
     private Field field;
 
     @BeforeEach
-    public void defineObjectField(){
+    void defineObjectField(){
 
         field = Field.is("person", FieldType.OBJECT)
                 .withField(
@@ -23,7 +26,7 @@ public class FieldObjectValueTest {
     }
 
     @Test
-    public void canCreateObjectField() {
+    void canCreateObjectField() {
 
         final FieldValue person =
                             FieldValue.is("person",
@@ -33,13 +36,15 @@ public class FieldObjectValueTest {
         person.asObject().setValue("firstname", "Connie");
         person.asObject().setValue("surname", "dobbs");
 
+        System.out.println(person);
+
         Assertions.assertEquals("Connie",
                 person.asObject().getFieldValue("firstname")
                         .asString());
     }
 
     @Test
-    public void canCloneObjectField() {
+    void canCloneObjectField() {
 
         final FieldValue person =
                 FieldValue.is("person",

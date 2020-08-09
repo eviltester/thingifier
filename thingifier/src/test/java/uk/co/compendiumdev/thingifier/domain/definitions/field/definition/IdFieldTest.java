@@ -1,29 +1,24 @@
-package uk.co.compendiumdev.thingifier.domain.definitions.fielddefinition;
+package uk.co.compendiumdev.thingifier.domain.definitions.field.definition;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.api.ValidationReport;
-import uk.co.compendiumdev.thingifier.domain.definitions.ThingDefinition;
-import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.domain.definitions.field.instance.FieldValue;
 
 import java.util.ArrayList;
 
-public class IdFieldTest {
+class IdFieldTest {
 
     @Test
-    public void defaultValueForAnIdIsNull(){
+    void defaultValueForAnIdIsNull(){
 
-        ThingDefinition entity = ThingDefinition.create("thing", "things");
-        entity.addFields(Field.is("id", FieldType.ID));
+        final Field field = Field.is("id", FieldType.ID);
 
-        Assertions.assertEquals(null,
-                entity.getField("id").
-                        getDefaultValue().
-                        asString());
+        Assertions.assertNull(field.getDefaultValue().asString());
     }
 
     @Test
-    public void idFieldNextValueStartsAt_1(){
+    void idFieldNextValueStartsAt_1(){
 
         final Field field = Field.is("id", FieldType.ID);
 
@@ -32,7 +27,7 @@ public class IdFieldTest {
     }
 
     @Test
-    public void idAdjustedInFieldWhenHighValueEnsured(){
+    void idAdjustedInFieldWhenHighValueEnsured(){
 
         final Field field = Field.is("id", FieldType.ID);
 
@@ -43,7 +38,7 @@ public class IdFieldTest {
     }
 
     @Test
-    public void normalValidateAgainstTypeForIdDoesNotAllowSetting(){
+    void normalValidateAgainstTypeForIdDoesNotAllowSetting(){
 
         final Field field = Field.is("id", FieldType.ID);
 
@@ -53,7 +48,7 @@ public class IdFieldTest {
     }
 
     @Test
-    public void canValidateForIdAllowingSetting(){
+    void canValidateForIdAllowingSetting(){
         // e.g. for cloning, and for setting objects
         final Field field = Field.is("id", FieldType.ID);
 
@@ -64,7 +59,7 @@ public class IdFieldTest {
     }
 
     @Test
-    public void examplesIDIsOneExample() {
+    void examplesIDIsOneExample() {
 
         final Field field = Field.is("id", FieldType.ID);
 
@@ -74,7 +69,7 @@ public class IdFieldTest {
     }
 
     @Test
-    public void exampleIDIsAnIntegerBetween_1_and_100(){
+    void exampleIDIsAnIntegerBetween_1_and_100(){
 
         final Field field = Field.is("id", FieldType.ID);
 

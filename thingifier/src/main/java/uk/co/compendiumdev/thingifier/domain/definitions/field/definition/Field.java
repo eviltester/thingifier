@@ -1,8 +1,9 @@
-package uk.co.compendiumdev.thingifier.domain.definitions.fielddefinition;
+package uk.co.compendiumdev.thingifier.domain.definitions.field.definition;
 
 import uk.co.compendiumdev.thingifier.api.ValidationReport;
 import uk.co.compendiumdev.thingifier.domain.definitions.DefinedFields;
 import uk.co.compendiumdev.thingifier.domain.data.RandomString;
+import uk.co.compendiumdev.thingifier.domain.definitions.field.instance.FieldValue;
 import uk.co.compendiumdev.thingifier.domain.definitions.validation.ValidationRule;
 
 import java.util.*;
@@ -34,8 +35,7 @@ public final class Field {
     private float minimumFloatValue;
     private DefinedFields objectDefinition;
 
-    // allow this being switched off
-    private boolean shouldValidateValuesAgainstType;
+
     private boolean validateIfStringIsTooLong;
 
     private int nextId; // only used for id fields
@@ -55,7 +55,6 @@ public final class Field {
         maximumFloatValue = Float.MAX_VALUE;
         minimumFloatValue = Float.MIN_VALUE;
         allowedNullable=false;
-        shouldValidateValuesAgainstType=true;
         validateIfStringIsTooLong = false;
         nextId=1;
     }
@@ -89,11 +88,6 @@ public final class Field {
         }catch(Exception e){
             // ignore conversion errors
         }
-    }
-
-    public Field ignoreTypeValidation(){
-        shouldValidateValuesAgainstType=true;
-        return this;
     }
 
     public Field withDefaultValue(String aDefaultValue) {
@@ -162,8 +156,8 @@ public final class Field {
             return report;
         }
 
-
-        if(shouldValidateValuesAgainstType) {
+        // always validate against type
+        //if(shouldValidateValuesAgainstType) {
 
             String stringValue = value.asString();
 
@@ -248,7 +242,7 @@ public final class Field {
             }
 
 
-        }
+        //}
 
         for (ValidationRule rule : validationRules) {
             if (!rule.validates(value)) {
@@ -417,10 +411,6 @@ public final class Field {
 
     public Float getMaximumFloatValue() {
         return maximumFloatValue;
-    }
-
-    public boolean willValidate() {
-        return shouldValidateValuesAgainstType;
     }
 
     public boolean willEnforceLength() {

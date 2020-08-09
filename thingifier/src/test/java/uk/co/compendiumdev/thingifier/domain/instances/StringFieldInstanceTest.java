@@ -3,10 +3,9 @@ package uk.co.compendiumdev.thingifier.domain.instances;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.api.ValidationReport;
-import uk.co.compendiumdev.thingifier.domain.definitions.fielddefinition.Field;
+import uk.co.compendiumdev.thingifier.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.domain.definitions.ThingDefinition;
 import uk.co.compendiumdev.thingifier.domain.definitions.validation.VRule;
-import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
 
 public class StringFieldInstanceTest {
 

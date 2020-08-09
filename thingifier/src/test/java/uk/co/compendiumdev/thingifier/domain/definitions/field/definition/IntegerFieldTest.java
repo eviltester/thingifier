@@ -1,16 +1,14 @@
-package uk.co.compendiumdev.thingifier.domain.definitions.fielddefinition;
+package uk.co.compendiumdev.thingifier.domain.definitions.field.definition;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import uk.co.compendiumdev.thingifier.domain.definitions.ThingDefinition;
-
 import java.util.HashSet;
 import java.util.Set;
 
-public class IntegerFieldTest {
+class IntegerFieldTest {
 
     @Test
-    public void byDefaultAnIntegerFieldIsZero(){
+    void byDefaultAnIntegerFieldIsZero(){
 
         final Field field = Field.is("integer", FieldType.INTEGER);
 
@@ -19,7 +17,7 @@ public class IntegerFieldTest {
     }
 
     @Test
-    public void examplesForIntegerFieldsBasedOnMinAndMax() {
+    void examplesForIntegerFieldsBasedOnMinAndMax() {
 
         final Field field = Field.is("integer", FieldType.INTEGER).
                 withMaximumValue(10).

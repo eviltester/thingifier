@@ -4,11 +4,11 @@ import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfigProfile;
-import uk.co.compendiumdev.thingifier.domain.definitions.fielddefinition.FieldType;
-import uk.co.compendiumdev.thingifier.domain.definitions.fielddefinition.Field;
+import uk.co.compendiumdev.thingifier.domain.definitions.field.definition.FieldType;
+import uk.co.compendiumdev.thingifier.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.domain.definitions.validation.VRule;
 
-import static uk.co.compendiumdev.thingifier.domain.definitions.fielddefinition.FieldType.STRING;
+import static uk.co.compendiumdev.thingifier.domain.definitions.field.definition.FieldType.STRING;
 
 public class TodoListThingifierTestModel {
 

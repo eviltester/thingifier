@@ -8,8 +8,8 @@ import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiResponse;
 import uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi;
-import uk.co.compendiumdev.thingifier.domain.definitions.fielddefinition.FieldType;
-import uk.co.compendiumdev.thingifier.domain.definitions.fielddefinition.Field;
+import uk.co.compendiumdev.thingifier.domain.definitions.field.definition.FieldType;
+import uk.co.compendiumdev.thingifier.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.domain.definitions.ThingDefinition;
 import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
 

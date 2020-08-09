@@ -1,4 +1,4 @@
-package uk.co.compendiumdev.thingifier.domain.definitions.fielddefinition;
+package uk.co.compendiumdev.thingifier.domain.definitions.field.instance;
 
 import uk.co.compendiumdev.thingifier.domain.instances.InstanceFields;
 

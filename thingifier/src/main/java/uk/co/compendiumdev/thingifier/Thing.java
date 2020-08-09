@@ -1,6 +1,6 @@
 package uk.co.compendiumdev.thingifier;
 
-import uk.co.compendiumdev.thingifier.domain.definitions.fielddefinition.FieldValue;
+import uk.co.compendiumdev.thingifier.domain.definitions.field.instance.FieldValue;
 import uk.co.compendiumdev.thingifier.domain.definitions.ThingDefinition;
 import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
 

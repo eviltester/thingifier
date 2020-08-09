@@ -1,20 +1,14 @@
-package uk.co.compendiumdev.thingifier.domain.definitions.fielddefinition;
+package uk.co.compendiumdev.thingifier.domain.definitions.field.definition;
 
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonObject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.api.ValidationReport;
-import uk.co.compendiumdev.thingifier.apiconfig.JsonOutputConfig;
-import uk.co.compendiumdev.thingifier.domain.definitions.ThingDefinition;
+import uk.co.compendiumdev.thingifier.domain.definitions.field.instance.FieldValue;
 import uk.co.compendiumdev.thingifier.domain.definitions.validation.VRule;
 import uk.co.compendiumdev.thingifier.domain.instances.InstanceFields;
-import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
-import uk.co.compendiumdev.thingifier.reporting.JsonThing;
-import uk.co.compendiumdev.thingifier.reporting.XmlThing;
 
-public class ObjectFieldTest {
+class ObjectFieldTest {
 
     private Field field;
 
@@ -32,7 +26,7 @@ public class ObjectFieldTest {
     }
 
     @Test
-    public void canCreateObjectField() {
+    void canCreateObjectField() {
 
         Assertions.assertEquals(FieldType.OBJECT, field.getType());
         Assertions.assertEquals("Bob",
@@ -42,7 +36,7 @@ public class ObjectFieldTest {
     }
 
     @Test
-    public void canValidateAtObjectFieldLevel() {
+    void canValidateAtObjectFieldLevel() {
 
         field.
                 getObjectDefinition().
@@ -58,7 +52,7 @@ public class ObjectFieldTest {
     }
 
     @Test
-    public void canEnforceObjectValuesWithValidationRules() {
+    void canEnforceObjectValuesWithValidationRules() {
 
         field.
                 getObjectDefinition().
@@ -69,13 +63,14 @@ public class ObjectFieldTest {
                 new InstanceFields(field.getObjectDefinition()));
         value.asObject().setValue("firstname", "Eris");
 
+        final InstanceFields surname = value.asObject();
         Assertions.assertThrows(IllegalArgumentException.class,
-                () ->{value.asObject().setValue("surname", "");}
+                () -> {surname.setValue("surname", "");}
                 );
     }
 
     @Test
-    public void canValidateAtObjectFieldLevelWithValidationRules() {
+    void canValidateAtObjectFieldLevelWithValidationRules() {
 
         field.
                 getObjectDefinition().
@@ -96,7 +91,7 @@ public class ObjectFieldTest {
 
 
     @Test
-    public void canCloneAnObjectField(){
+    void canCloneAnObjectField(){
 
         final FieldValue value = FieldValue.is("person",
                 new InstanceFields(field.getObjectDefinition()));

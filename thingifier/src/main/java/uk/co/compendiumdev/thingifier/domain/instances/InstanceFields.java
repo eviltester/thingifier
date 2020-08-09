@@ -1,10 +1,10 @@
 package uk.co.compendiumdev.thingifier.domain.instances;
 
 import uk.co.compendiumdev.thingifier.api.ValidationReport;
-import uk.co.compendiumdev.thingifier.domain.definitions.fielddefinition.FieldType;
+import uk.co.compendiumdev.thingifier.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.domain.definitions.DefinedFields;
-import uk.co.compendiumdev.thingifier.domain.definitions.fielddefinition.Field;
-import uk.co.compendiumdev.thingifier.domain.definitions.fielddefinition.FieldValue;
+import uk.co.compendiumdev.thingifier.domain.definitions.field.definition.Field;
+import uk.co.compendiumdev.thingifier.domain.definitions.field.instance.FieldValue;
 
 import java.util.*;
 

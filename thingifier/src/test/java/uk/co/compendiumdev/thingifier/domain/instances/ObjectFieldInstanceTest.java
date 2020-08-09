@@ -8,10 +8,9 @@ import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.api.ValidationReport;
 import uk.co.compendiumdev.thingifier.apiconfig.JsonOutputConfig;
 import uk.co.compendiumdev.thingifier.domain.definitions.ThingDefinition;
-import uk.co.compendiumdev.thingifier.domain.definitions.fielddefinition.Field;
-import uk.co.compendiumdev.thingifier.domain.definitions.fielddefinition.FieldType;
+import uk.co.compendiumdev.thingifier.domain.definitions.field.definition.Field;
+import uk.co.compendiumdev.thingifier.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.domain.definitions.validation.VRule;
-import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
 import uk.co.compendiumdev.thingifier.reporting.JsonThing;
 import uk.co.compendiumdev.thingifier.reporting.XmlThing;
 

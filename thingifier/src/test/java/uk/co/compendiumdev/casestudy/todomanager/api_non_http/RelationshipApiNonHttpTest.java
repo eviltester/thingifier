@@ -12,7 +12,7 @@ import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponseAsJson;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponseAsXml;
-import uk.co.compendiumdev.thingifier.domain.definitions.fielddefinition.FieldValue;
+import uk.co.compendiumdev.thingifier.domain.definitions.field.instance.FieldValue;
 import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
 import uk.co.compendiumdev.thingifier.reporting.JsonThing;
 

@@ -1,14 +1,15 @@
-package uk.co.compendiumdev.thingifier.domain.definitions.fielddefinition;
+package uk.co.compendiumdev.thingifier.domain.definitions.field.definition;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import uk.co.compendiumdev.thingifier.domain.definitions.field.instance.FieldValue;
 
 import java.util.ArrayList;
 
-public class EnumFieldTest {
+class EnumFieldTest {
 
     @Test
-    public void byDefaultAnEnumFieldIsEmpty(){
+    void byDefaultAnEnumFieldIsEmpty(){
 
         final Field field = Field.is("enum", FieldType.ENUM);
 
@@ -16,7 +17,7 @@ public class EnumFieldTest {
     }
 
     @Test
-    public void enumFieldCanHaveADefault(){
+    void enumFieldCanHaveADefault(){
         // todo: currently an enum is constructed by default and examples
         //  should it be withValue(), withDefaultValue()? and example is drawn from values
         final Field field = Field.is("enum", FieldType.ENUM).
@@ -27,7 +28,7 @@ public class EnumFieldTest {
     }
 
     @Test
-    public void examplesAreAllEnumValues(){
+    void examplesAreAllEnumValues(){
 
         final Field field = Field.is("enum", FieldType.ENUM).
                 withDefaultValue("bob").
@@ -44,7 +45,7 @@ public class EnumFieldTest {
     }
 
     @Test
-    public void randomExampleIsOneOfTheEnumValues(){
+    void randomExampleIsOneOfTheEnumValues(){
 
         final Field field = Field.is("enum", FieldType.ENUM).
                 withDefaultValue("bob").
@@ -61,7 +62,7 @@ public class EnumFieldTest {
     }
 
     @Test
-    public void canValidateAgainstDefaultAndExamples(){
+    void canValidateAgainstDefaultAndExamples(){
 
         final Field field = Field.is("enum", FieldType.ENUM).
                 withDefaultValue("bob").

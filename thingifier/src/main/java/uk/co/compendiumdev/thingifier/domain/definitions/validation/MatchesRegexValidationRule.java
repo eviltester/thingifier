@@ -1,6 +1,6 @@
 package uk.co.compendiumdev.thingifier.domain.definitions.validation;
 
-import uk.co.compendiumdev.thingifier.domain.definitions.fielddefinition.FieldValue;
+import uk.co.compendiumdev.thingifier.domain.definitions.field.instance.FieldValue;
 
 import java.util.regex.Pattern;
 

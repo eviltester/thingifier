@@ -1,34 +1,31 @@
-package uk.co.compendiumdev.thingifier.domain.definitions.fielddefinition;
+package uk.co.compendiumdev.thingifier.domain.definitions.field.definition;
 
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import uk.co.compendiumdev.thingifier.domain.definitions.fielddefinition.Field;
-import uk.co.compendiumdev.thingifier.domain.definitions.ThingDefinition;
-import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.domain.definitions.field.definition.Field;
+import uk.co.compendiumdev.thingifier.domain.definitions.field.definition.FieldType;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
-public class GenericFieldTest {
+class GenericFieldTest {
 
     @Test
-    public void byDefaultAFieldIsString(){
+    void byDefaultAFieldIsString(){
 
         final Field field = Field.is("CompletedStatus");
         Assertions.assertEquals(FieldType.STRING, field.getType());
     }
 
     @Test
-    public void defaultValuesAreReturned(){
+    void defaultValuesAreReturned(){
 
         final Field field = Field.is("CompletedStatus").withDefaultValue("Not Completed");
         Assertions.assertEquals("Not Completed", field.getDefaultValue().asString());
     }
 
     @Test
-    public void canCreateFieldWithExamples(){
+    void canCreateFieldWithExamples(){
 
         final Field field = Field.is("complicated").withExample("nuclear physics");
 
@@ -40,7 +37,7 @@ public class GenericFieldTest {
     }
 
     @Test
-    public void examplesAreDefaultsWhenNoExamples(){
+    void examplesAreDefaultsWhenNoExamples(){
 
         final Field field = Field.is("example").withDefaultValue("default");
 
@@ -52,7 +49,7 @@ public class GenericFieldTest {
     }
 
     @Test
-    public void randomExamplesReturnsAllExamples(){
+    void randomExamplesReturnsAllExamples(){
 
         List<String> expectedValues = new ArrayList<>();
         expectedValues.add("nuclear physics");

@@ -1,16 +1,17 @@
-package uk.co.compendiumdev.thingifier.domain.definitions.fielddefinition;
+package uk.co.compendiumdev.thingifier.domain.definitions.field.definition;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.api.ValidationReport;
-import uk.co.compendiumdev.thingifier.domain.definitions.ThingDefinition;
+import uk.co.compendiumdev.thingifier.domain.definitions.field.definition.Field;
+import uk.co.compendiumdev.thingifier.domain.definitions.field.definition.FieldType;
+import uk.co.compendiumdev.thingifier.domain.definitions.field.instance.FieldValue;
 import uk.co.compendiumdev.thingifier.domain.definitions.validation.VRule;
-import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
 
-public class StringFieldTest {
+class StringFieldTest {
 
     @Test
-    public void byDefaultAFieldIsAnOptionalString(){
+    void byDefaultAFieldIsAnOptionalString(){
 
         final Field field = Field.is("defaultString");
         Assertions.assertEquals(FieldType.STRING, field.getType());
@@ -18,7 +19,7 @@ public class StringFieldTest {
     }
 
     @Test
-    public void canHaveStringFieldWithExamples(){
+    void canHaveStringFieldWithExamples(){
 
         final Field field = Field.is("example", FieldType.STRING)
                 .withExample("Eris").withExample("Dukes");
@@ -32,7 +33,7 @@ public class StringFieldTest {
     }
 
     @Test
-    public void canConfigureStringsToThrowErrorValidationErrorIfTooLarge(){
+    void canConfigureStringsToThrowErrorValidationErrorIfTooLarge(){
 
         final Field field = Field.is("field").
                 makeMandatory().
@@ -48,7 +49,7 @@ public class StringFieldTest {
     }
 
     @Test
-    public void canConfigureStringsToThrowErrorValidationErrorIfNotMatchRegex(){
+    void canConfigureStringsToThrowErrorValidationErrorIfNotMatchRegex(){
 
         final Field field = Field.is("field").
                 makeMandatory().
@@ -65,7 +66,7 @@ public class StringFieldTest {
     }
 
     @Test
-    public void canConfigureStringToMatchMultipleRules(){
+    void canConfigureStringToMatchMultipleRules(){
 
         final Field field = Field.is("field").
                 makeMandatory().
