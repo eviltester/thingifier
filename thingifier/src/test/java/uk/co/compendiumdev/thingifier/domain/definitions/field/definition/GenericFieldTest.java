@@ -20,7 +20,12 @@ class GenericFieldTest {
     @Test
     void defaultValuesAreReturned(){
 
-        final Field field = Field.is("CompletedStatus").withDefaultValue("Not Completed");
+        final Field field = Field.is("CompletedStatus");
+
+        Assertions.assertFalse(field.hasDefaultValue());
+
+        field.withDefaultValue("Not Completed");
+
         Assertions.assertEquals("Not Completed", field.getDefaultValue().asString());
     }
 

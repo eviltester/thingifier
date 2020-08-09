@@ -68,4 +68,19 @@ final public class FieldValue {
     public float asFloat() {
         return Float.valueOf(fieldValue);
     }
+
+    public boolean asBoolean() {
+        if (fieldValue.toLowerCase().contentEquals("true")){
+            return true;
+        }
+        if(fieldValue.toLowerCase().contentEquals("false")) {
+            return false;
+        }
+
+        throw new IllegalArgumentException(fieldValue + " is not boolean");
+    }
+
+    public int asInteger() {
+        return Integer.valueOf(fieldValue);
+    }
 }

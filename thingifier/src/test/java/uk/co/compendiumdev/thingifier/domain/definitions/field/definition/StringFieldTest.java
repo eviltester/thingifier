@@ -33,6 +33,18 @@ class StringFieldTest {
     }
 
     @Test
+    void stringWithoutExamplesIsRandom(){
+
+        final Field field = Field.is("example", FieldType.STRING);
+
+        final String example = field.getRandomExampleValue();
+        System.out.println(example);
+        Assertions.assertNotNull(example);
+        Assertions.assertTrue(example.trim().length()>0);
+        Assertions.assertTrue(example.length()<=20);
+    }
+
+    @Test
     void canConfigureStringsToThrowErrorValidationErrorIfTooLarge(){
 
         final Field field = Field.is("field").
@@ -55,7 +67,6 @@ class StringFieldTest {
                 makeMandatory().
                 withDefaultValue("").
                 withValidation(VRule.matchesRegex("^Bug:.*"));
-
 
         final ValidationReport report =
                 field.validate(
@@ -81,6 +92,31 @@ class StringFieldTest {
                         FieldValue.is("field", "Bug: short"));
 
         Assertions.assertTrue(report.isValid(), report.getCombinedErrorMessages());
+    }
+
+    @Test
+    void byDefaultTheStringHasNoValidationRules(){
+
+        final Field field = Field.is("field");
+
+        Assertions.assertNotNull(field.validationRules());
+        Assertions.assertEquals(0,
+                field.validationRules().size());
+    }
+
+    @Test
+    void stringFieldTruncation(){
+
+        final Field field = Field.is("field").
+                truncateStringTo(4);
+
+        Assertions.assertEquals("1234",
+                field.getActualValueToAdd(
+                    FieldValue.is("field", "12345")));
+
+        Assertions.assertEquals("123",
+                field.getActualValueToAdd(
+                        FieldValue.is("field", "123")));
     }
 
 

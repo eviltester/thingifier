@@ -61,6 +61,16 @@ class EnumFieldTest {
         }
     }
 
+    // todo: we should have a model verification stage that reports this as an error
+    @Test
+    void whenNoExamplesSetupRandomIsEmpty(){
+
+        final Field field = Field.is("enum", FieldType.ENUM);
+
+        Assertions.assertEquals("",
+                field.getRandomExampleValue());
+    }
+
     @Test
     void canValidateAgainstDefaultAndExamples(){
 

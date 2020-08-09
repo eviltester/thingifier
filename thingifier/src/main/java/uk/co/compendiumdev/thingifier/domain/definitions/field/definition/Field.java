@@ -26,7 +26,7 @@ public final class Field {
     private String defaultValue;
     private List<ValidationRule> validationRules;
     private boolean truncateStringIfTooLong;
-    private int maximumStringLength;
+
     private int maximumIntegerValue;
     private int minimumIntegerValue;
     private boolean allowedNullable;
@@ -36,9 +36,8 @@ public final class Field {
     private DefinedFields objectDefinition;
 
 
-    private boolean validateIfStringIsTooLong;
-
     private int nextId; // only used for id fields
+    private int truncatedStringLength;
 
     // todo: rather than all these fields, consider moving to more validation rules
     // to help keep the class to a more manageable size
@@ -49,13 +48,13 @@ public final class Field {
         validationRules = new ArrayList<>();
         fieldIsOptional = true;
         truncateStringIfTooLong=false;
+        truncatedStringLength=-1;
         fieldExamples = new HashSet<>();
         maximumIntegerValue = Integer.MAX_VALUE;
         minimumIntegerValue = Integer.MIN_VALUE;
         maximumFloatValue = Float.MAX_VALUE;
         minimumFloatValue = Float.MIN_VALUE;
         allowedNullable=false;
-        validateIfStringIsTooLong = false;
         nextId=1;
     }
 
@@ -159,86 +158,30 @@ public final class Field {
         // always validate against type
         //if(shouldValidateValuesAgainstType) {
 
-            String stringValue = value.asString();
-
             if (type == FieldType.BOOLEAN) {
-                if (!(stringValue.toLowerCase().contentEquals("true")
-                        || stringValue.toLowerCase().contentEquals("false"))) {
-                    report.setValid(false);
-                    report.addErrorMessage(
-                            String.format(
-                                    "%s : %s does not match type %s (true, false)", this.getName(), stringValue, type));
-                }
+                validateBooleanValue(value, report);
             }
 
             if (type == FieldType.INTEGER) {
-                try {
-                    int intVal = Integer.valueOf(stringValue);
-                    if (!withinAllowedIntegerRange(intVal)) {
-                        report.setValid(false);
-                        report.addErrorMessage(
-                                String.format(
-                                        "%s : %s is not within range for type %s (%d to %d)",
-                                        this.getName(), stringValue, type, minimumIntegerValue, maximumIntegerValue));
-                    }
-                } catch (NumberFormatException e) {
-                    report.setValid(false);
-                    report.addErrorMessage(
-                            String.format(
-                                    "%s : %s does not match type %s", this.getName(), stringValue, type));
-                }
+                validateIntegerValue(value, report);
             }
 
-
             if(type == FieldType.STRING){
-                if(validateIfStringIsTooLong){
-                    if(stringValue.length()>maximumStringLength){
-                        report.setValid(false);
-                        report.addErrorMessage(
-                                String.format(
-                                        "%s : is too long (max %d)",
-                                        this.getName(), maximumStringLength));
-                    }
-                }
+                validateStringValue(value, report);
             }
 
             if (type == FieldType.FLOAT) {
-                try {
-                    float floatValue = Float.valueOf(stringValue);
-                    if (!withinAllowedFloatRange(floatValue)) {
-                        report.setValid(false);
-                        report.addErrorMessage(
-                                String.format(
-                                        "%s : %s is not within range for type %s (%f to %f)",
-                                        this.getName(), stringValue, type, minimumFloatValue, maximumFloatValue));
-                    }
-
-                } catch (NumberFormatException e) {
-                    report.setValid(false);
-                    report.addErrorMessage(
-                            String.format(
-                                    "%s : %s does not match type %s", this.getName(), stringValue, type));
-                }
+                validateFloatValue(value, report);
             }
 
             if (type == FieldType.ENUM) {
-                if (!getExamples().contains(stringValue)) {
-                    report.setValid(false);
-                    report.addErrorMessage(
-                            String.format(
-                                    "%s : %s does not match type %s", this.getName(), stringValue, type));
-                }
+                validateEnumValue(value, report);
             }
 
             // TODO : add validation for DATE
+
             if(type == FieldType.OBJECT){
-                FieldValue object = value;
-                if(object!= null && object.asObject()!=null){
-                    final ValidationReport objectValidity =
-                            object.asObject().
-                                    validateFields(new ArrayList<>(), true);
-                    report.combine(objectValidity);
-                }
+                validateObjectValue(value, report);
             }
 
 
@@ -254,6 +197,89 @@ public final class Field {
         return report;
     }
 
+    private void validateObjectValue(final FieldValue value, final ValidationReport report) {
+        FieldValue object = value;
+        if(object!= null && object.asObject()!=null){
+            final ValidationReport objectValidity =
+                    object.asObject().
+                            validateFields(new ArrayList<>(), true);
+            report.combine(objectValidity);
+        }
+    }
+
+    private void validateEnumValue(final FieldValue value, final ValidationReport report) {
+        if (!getExamples().contains(value.asString())) {
+            report.setValid(false);
+            report.addErrorMessage(
+                    String.format(
+                            "%s : %s does not match type %s",
+                            this.getName(), value.asString(), type));
+        }
+    }
+
+    private void validateFloatValue(final FieldValue value, final ValidationReport report) {
+        try {
+            float floatValue = value.asFloat();
+            if (!withinAllowedFloatRange(floatValue)) {
+                report.setValid(false);
+                report.addErrorMessage(
+                        String.format(
+                                "%s : %s is not within range for type %s (%f to %f)",
+                                this.getName(), value.asString(),
+                                type, minimumFloatValue, maximumFloatValue));
+            }
+
+        } catch (NumberFormatException e) {
+            report.setValid(false);
+            report.addErrorMessage(
+                    String.format(
+                            "%s : %s does not match type %s",
+                            this.getName(), value.asString(), type));
+        }
+    }
+
+    private void validateStringValue(final FieldValue value,
+                                     final ValidationReport report) {
+
+        // length was moved to a validation rule
+    }
+
+    private void validateIntegerValue(final FieldValue value,
+                                      final ValidationReport report) {
+        try {
+
+            int intVal = value.asInteger();
+
+            if (!withinAllowedIntegerRange(intVal)) {
+                report.setValid(false);
+                report.addErrorMessage(
+                        String.format(
+                                "%s : %s is not within range for type %s (%d to %d)",
+                                this.getName(), value.asString(),
+                                type, minimumIntegerValue, maximumIntegerValue));
+            }
+        } catch (NumberFormatException e) {
+            report.setValid(false);
+            report.addErrorMessage(
+                    String.format(
+                            "%s : %s does not match type %s", this.getName(),
+                            value.asString(), type));
+        }
+    }
+
+    private void validateBooleanValue(final FieldValue value,
+                                      final ValidationReport report) {
+        try{
+            boolean bool = value.asBoolean();
+        }catch(IllegalArgumentException e){
+            report.setValid(false);
+            report.addErrorMessage(
+                    String.format(
+                            "%s : %s does not match type %s (true, false)",
+                            this.getName(),
+                            value.asString(), type));
+        }
+    }
 
 
     public List<ValidationRule> validationRules() {
@@ -269,15 +295,14 @@ public final class Field {
         return this;
     }
 
+    /*
+       todo: consider adding Formatting Rules
+        instead of truncateString To -
+        could be useful for integers, float rounding, dates, etc.
+     */
     public Field truncateStringTo(final int maximumTruncatedLengthOfString) {
         truncateStringIfTooLong = true;
-        maximumStringLength =maximumTruncatedLengthOfString;
-        return this;
-    }
-
-    public Field maximumStringLength(final int maximumLengthOfString) {
-        validateIfStringIsTooLong = true;
-        maximumStringLength =maximumLengthOfString;
+        truncatedStringLength =maximumTruncatedLengthOfString;
         return this;
     }
 
@@ -285,17 +310,12 @@ public final class Field {
         return truncateStringIfTooLong;
     }
 
-    public int getMaximumAllowedLength() {
-        if(truncateStringIfTooLong){
-            return maximumStringLength;
-        }
-        return -1; // no limit
-    }
-
-    public String truncatedString(String toMakeWithinLimits){
-        String truncated = toMakeWithinLimits;
-        if(truncateStringIfTooLong){
-            truncated = toMakeWithinLimits.substring(0,getMaximumAllowedLength());
+    public String getAsTruncatedString(FieldValue value){
+        String truncated = value.asString();
+        if(truncateStringIfTooLong && truncatedStringLength>-1){
+            if(truncated.length()>truncatedStringLength) {
+                truncated = truncated.substring(0, truncatedStringLength);
+            }
         }
         return truncated;
     }
@@ -345,7 +365,11 @@ public final class Field {
         // TODO: try to use regex in matching rules to generate
         if(type==FieldType.STRING){
             if(fieldExamples.size()==0){
-                buildExamples.add(truncatedString(new RandomString().get(20)));
+                buildExamples.add(
+                    getAsTruncatedString(
+                        FieldValue.is(getName(), new RandomString().get(20))
+                    )
+                );
             }
         }
 
@@ -390,11 +414,7 @@ public final class Field {
 
     public boolean withinAllowedFloatRange(final float floatValue) {
         return (floatValue>=minimumFloatValue &&
-                floatValue<=maximumIntegerValue);
-    }
-
-    public int truncateLength() {
-        return maximumStringLength;
+                floatValue<=maximumFloatValue);
     }
 
     public int getMaximumIntegerValue() {
@@ -413,10 +433,6 @@ public final class Field {
         return maximumFloatValue;
     }
 
-    public boolean willEnforceLength() {
-        return validateIfStringIsTooLong;
-    }
-
     public Field withField(final Field childField) {
         if(objectDefinition==null){
             objectDefinition = new DefinedFields();
@@ -427,6 +443,34 @@ public final class Field {
 
     public DefinedFields getObjectDefinition() {
         return objectDefinition;
+    }
+
+    public String getActualValueToAdd(final FieldValue value) {
+
+        switch (type){
+            case BOOLEAN:
+                return Boolean.valueOf(value.asString()).toString();
+            case FLOAT:
+                return Float.valueOf(value.asString()).toString();
+            case STRING:
+                if(shouldTruncate()){
+                    return getAsTruncatedString(value);
+                }else{
+                    return value.asString();
+                }
+            case INTEGER:
+            case ID:
+                Double dVal = Double.parseDouble(value.asString());
+                return String.valueOf(dVal.intValue());
+            case GUID:
+            case OBJECT:
+            case ENUM:
+            case DATE:
+                return value.asString();
+            default:
+                System.out.println("Unhandled value to add on set");
+                return value.asString();
+        }
     }
 
 }

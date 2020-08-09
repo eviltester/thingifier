@@ -162,16 +162,6 @@ public class RestApiDocumentationGenerator {
 
                     output.append(String.format("<li>Mandatory?: %b</li>", theField.isMandatory()));
 
-                    if(theField.shouldTruncate()){
-                        output.append(String.format("<li>Truncate to: %d characters</li>", theField.truncateLength()));
-                    }
-
-                    if(theField.getType()== FieldType.STRING) {
-                        if (theField.willEnforceLength()) {
-                            output.append(String.format("<li>Max Length: %d characters</li>", theField.truncateLength()));
-                        }
-                    }
-
                     if(theField.getType()== FieldType.INTEGER){
                         output.append(String.format("<li>Values Between: \"%d\" to \"%d\" </li>",
                                 theField.getMinimumIntegerValue(), theField.getMaximumIntegerValue()));
