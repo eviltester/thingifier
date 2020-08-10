@@ -4,6 +4,9 @@ import uk.co.compendiumdev.thingifier.domain.definitions.field.instance.FieldVal
 
 import java.util.regex.Pattern;
 
+/*
+    Does the regex appear anywhere in the text?
+ */
 public class FindsRegexValidationRule implements ValidationRule {
     private final String regexToMatch;
     private final Pattern pattern;

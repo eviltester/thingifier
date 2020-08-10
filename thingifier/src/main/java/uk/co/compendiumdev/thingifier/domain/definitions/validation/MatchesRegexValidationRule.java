@@ -4,6 +4,9 @@ import uk.co.compendiumdev.thingifier.domain.definitions.field.instance.FieldVal
 
 import java.util.regex.Pattern;
 
+/*
+    Does the regex match the whole text? i.e ^regex$
+ */
 public class MatchesRegexValidationRule implements ValidationRule {
     private final String regexToMatch;
     private final Pattern pattern;
