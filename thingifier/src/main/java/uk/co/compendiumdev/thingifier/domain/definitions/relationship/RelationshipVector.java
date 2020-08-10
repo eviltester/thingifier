@@ -1,8 +1,9 @@
-package uk.co.compendiumdev.thingifier.domain.definitions;
+package uk.co.compendiumdev.thingifier.domain.definitions.relationship;
 
 import uk.co.compendiumdev.thingifier.Thing;
+import uk.co.compendiumdev.thingifier.domain.definitions.Cardinality;
 
-import static uk.co.compendiumdev.thingifier.domain.definitions.Optionality.*;
+import static uk.co.compendiumdev.thingifier.domain.definitions.relationship.Optionality.*;
 
 public class RelationshipVector {
 

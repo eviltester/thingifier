@@ -4,7 +4,7 @@ import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.domain.definitions.field.definition.Field;
-import uk.co.compendiumdev.thingifier.domain.definitions.RelationshipDefinition;
+import uk.co.compendiumdev.thingifier.domain.definitions.relationship.RelationshipDefinition;
 import uk.co.compendiumdev.thingifier.domain.definitions.validation.VRule;
 import uk.co.compendiumdev.thingifier.domain.dsl.relationship.AndCall;
 import uk.co.compendiumdev.thingifier.domain.dsl.relationship.Between;

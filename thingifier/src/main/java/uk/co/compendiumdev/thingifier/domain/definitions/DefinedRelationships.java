@@ -1,5 +1,7 @@
 package uk.co.compendiumdev.thingifier.domain.definitions;
 
+import uk.co.compendiumdev.thingifier.domain.definitions.relationship.RelationshipVector;
+
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 

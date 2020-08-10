@@ -1,4 +1,4 @@
-package uk.co.compendiumdev.thingifier.domain.definitions;
+package uk.co.compendiumdev.thingifier.domain.definitions.relationship;
 
 /**
  * Relationship Optionalities

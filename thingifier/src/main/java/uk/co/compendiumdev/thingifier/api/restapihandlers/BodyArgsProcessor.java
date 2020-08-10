@@ -3,7 +3,7 @@ package uk.co.compendiumdev.thingifier.api.restapihandlers;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.domain.definitions.field.instance.FieldValue;
-import uk.co.compendiumdev.thingifier.domain.definitions.RelationshipVector;
+import uk.co.compendiumdev.thingifier.domain.definitions.relationship.RelationshipVector;
 import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
 
 import java.util.List;

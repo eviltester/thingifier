@@ -1,7 +1,9 @@
-package uk.co.compendiumdev.thingifier.domain.definitions;
+package uk.co.compendiumdev.thingifier.domain.definitions.relationship;
 
 
 import uk.co.compendiumdev.thingifier.Thing;
+import uk.co.compendiumdev.thingifier.domain.definitions.Cardinality;
+import uk.co.compendiumdev.thingifier.domain.definitions.ThingDefinition;
 import uk.co.compendiumdev.thingifier.domain.dsl.relationship.AndCall;
 
 public class RelationshipDefinition {

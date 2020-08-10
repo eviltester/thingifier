@@ -10,6 +10,8 @@ import uk.co.compendiumdev.thingifier.domain.definitions.field.definition.FieldT
 import uk.co.compendiumdev.thingifier.domain.data.ThingifierDataPopulator;
 import uk.co.compendiumdev.thingifier.domain.definitions.*;
 import uk.co.compendiumdev.thingifier.domain.definitions.field.instance.FieldValue;
+import uk.co.compendiumdev.thingifier.domain.definitions.relationship.RelationshipDefinition;
+import uk.co.compendiumdev.thingifier.domain.definitions.relationship.RelationshipVector;
 import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
 import uk.co.compendiumdev.thingifier.domain.dsl.relationship.AndCall;
 import uk.co.compendiumdev.thingifier.domain.dsl.relationship.Between;

@@ -1,7 +1,7 @@
 package uk.co.compendiumdev.thingifier.domain.instances;
 
-import uk.co.compendiumdev.thingifier.domain.definitions.RelationshipDefinition;
-import uk.co.compendiumdev.thingifier.domain.definitions.RelationshipVector;
+import uk.co.compendiumdev.thingifier.domain.definitions.relationship.RelationshipDefinition;
+import uk.co.compendiumdev.thingifier.domain.definitions.relationship.RelationshipVector;
 
 public class RelationshipInstance {
 

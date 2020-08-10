@@ -1,12 +1,12 @@
 package uk.co.compendiumdev.thingifier.domain.instances;
 
 import uk.co.compendiumdev.thingifier.api.ValidationReport;
-import uk.co.compendiumdev.thingifier.domain.definitions.RelationshipVector;
+import uk.co.compendiumdev.thingifier.domain.definitions.relationship.RelationshipVector;
 import uk.co.compendiumdev.thingifier.domain.definitions.ThingDefinition;
 
 import java.util.*;
 
-import static uk.co.compendiumdev.thingifier.domain.definitions.Optionality.MANDATORY_RELATIONSHIP;
+import static uk.co.compendiumdev.thingifier.domain.definitions.relationship.Optionality.MANDATORY_RELATIONSHIP;
 
 public class Relationships {
 

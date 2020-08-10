@@ -1,12 +1,17 @@
 package uk.co.compendiumdev.thingifier.domain.definitions;
 
 // todo: cardinality is not used or enforced yet
+//  https://en.wikipedia.org/wiki/Cardinality_(data_modeling)
 public class Cardinality {
-    private final String from;
-    private final String to;
+    private final String left;
+    private final String right;
 
     public Cardinality(final String fromAmount, final String toAmount) {
-        this.from = fromAmount;
-        this.to = toAmount;
+        this.left = fromAmount;
+        this.right = toAmount;
+    }
+
+    public String right() {
+        return this.right;
     }
 }
