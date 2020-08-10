@@ -51,7 +51,8 @@ public class DefinedRelationships {
         return retRels;
     }
 
-    public Collection<RelationshipVector> getRelationships() {
+    public Set<RelationshipVector> getRelationships() {
+
         Set<RelationshipVector> myRelationships = new HashSet<>();
         for (List<RelationshipVector> list : relationships.values()) {
             for (RelationshipVector rel : list) {

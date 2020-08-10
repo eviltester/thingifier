@@ -1,5 +1,6 @@
 package uk.co.compendiumdev.thingifier.domain.definitions;
 
+// todo: cardinality is not used or enforced yet
 public class Cardinality {
     private final String from;
     private final String to;

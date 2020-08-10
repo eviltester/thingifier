@@ -13,11 +13,7 @@
 
     <version>1.0.1</version>
 
-    <properties>
-        <junit.jupiter.version>5.6.2</junit.jupiter.version>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
-    </properties>
+    <!-- uses parent properties -->
 
     <dependencies>
         <!-- include to allow dynamic setup for 'unit' html testing -->

@@ -35,9 +35,6 @@ public class DefinedFields {
 
     public List<String> getFieldNames() {
         ArrayList<String> fieldNames = new ArrayList<String>();
-//        for (Field field : fields.values()) {
-//            fieldNames.add(field.getName());
-//        }
         fieldNames.addAll(orderedFieldNames);
         return fieldNames;
     }
