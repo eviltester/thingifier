@@ -10,7 +10,7 @@ public class RelationshipDefinition {
 
     /*
         A RelationshipDefinition defines the whole scope of the relationship
-        Things will only know about the vectors that relate outwards from themselves.
+        Things will only know about the specific Relationship vectors that relate outwards from themselves.
      */
     private final String name;
     private final Thing from;
@@ -19,31 +19,26 @@ public class RelationshipDefinition {
     private RelationshipVector toFrom;
 
 
-    private RelationshipDefinition(Thing from, Thing to, RelationshipVector fromVector) {
-        this.from = from;
-        this.to = to;
+    private RelationshipDefinition(RelationshipVector fromVector) {
+        this.from = fromVector.getFrom();
+        this.to = fromVector.getTo();
         fromTo = fromVector;
-        fromVector.addFromAndToFor(from, to, this);
+        fromVector.forRelationship(this);
         this.name = fromVector.getName();
     }
 
-    public static RelationshipDefinition create(Thing from, Thing to, RelationshipVector fromVector) {
-        RelationshipDefinition defn = new RelationshipDefinition(from, to, fromVector);
-
-        // and add the relationship Vector
-        from.definition().related().addRelationship(fromVector);
+    public static RelationshipDefinition create(RelationshipVector fromVector) {
+        RelationshipDefinition defn = new RelationshipDefinition(fromVector);
+        // and add the relationship Vector to the from thing
+        defn.from().definition().related().addRelationship(fromVector);
         return defn;
     }
 
     public RelationshipDefinition whenReversed(Cardinality of, AndCall it) {
-        withReverse(new RelationshipVector(it.isCalled(), of));
-        return this;
-    }
-
-    public RelationshipDefinition withReverse(RelationshipVector toVector) {
-        toFrom = toVector;
-        toVector.addFromAndToFor(to, from, this);
-        to.definition().related().addRelationship(toVector);
+        final RelationshipVector vector = new RelationshipVector(this.to, it.isCalled(), this.from, of);
+        vector.forRelationship(this);
+        toFrom = vector;
+        to.definition().related().addRelationship(vector);
         return this;
     }
 

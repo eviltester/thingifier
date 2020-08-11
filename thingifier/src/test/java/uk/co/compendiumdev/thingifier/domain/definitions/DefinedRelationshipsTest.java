@@ -20,8 +20,10 @@ public class DefinedRelationshipsTest {
                 rels.hasRelationship("bob"));
 
         rels.addRelationship(new RelationshipVector(
+                Thing.create("thing1", "thing1"),
                 "bob",
-                            new Cardinality("1", "1")));
+                Thing.create("thing2", "thing2"),
+                            Cardinality.one_to_many));
 
         Assertions.assertTrue(
                 rels.hasRelationship("bob"));
@@ -33,12 +35,16 @@ public class DefinedRelationshipsTest {
         final DefinedRelationships rels = new DefinedRelationships();
 
         rels.addRelationship(new RelationshipVector(
+                Thing.create("thing1", "thing1"),
                 "bob",
-                new Cardinality("1", "1")));
+                Thing.create("thing2", "thing2"),
+                Cardinality.one_to_one));
 
         rels.addRelationship(new RelationshipVector(
+                Thing.create("thing2", "thing2"),
                 "bob",
-                new Cardinality("1", "*")));
+                Thing.create("thing3", "thing3"),
+                Cardinality.one_to_many));
 
         final List<RelationshipVector> vectors = rels.getRelationships("bob");
         Assertions.assertEquals(2, vectors.size());
@@ -60,23 +66,31 @@ public class DefinedRelationshipsTest {
         final DefinedRelationships rels = new DefinedRelationships();
 
         final RelationshipVector bob1 = new RelationshipVector(
+                Thing.create("thing1", "thing1"),
                 "bob",
-                new Cardinality("1", "1"));
+                Thing.create("thing2", "thing2"),
+                Cardinality.one_to_one);
         rels.addRelationship(bob1);
 
         final RelationshipVector bob2 = new RelationshipVector(
+                Thing.create("thing2", "thing2"),
                 "bob",
-                new Cardinality("1", "*"));
+                Thing.create("thing3", "thing3"),
+                Cardinality.one_to_many);
         rels.addRelationship(bob2);
 
         final RelationshipVector connie1 = new RelationshipVector(
+                Thing.create("thing1", "thing1"),
                 "connie",
-                new Cardinality("0", "*"));
+                Thing.create("thing2", "thing2"),
+                Cardinality.one_to_many);
         rels.addRelationship(connie1);
 
         final RelationshipVector dobbs1 = new RelationshipVector(
+                Thing.create("thing1", "thing1"),
                 "dobbs",
-                new Cardinality("0", "0"));
+                Thing.create("thing2", "thing2"),
+                Cardinality.one_to_many);
         rels.addRelationship(dobbs1);
 
         final List<RelationshipVector> bobs = rels.getRelationships("bob");
@@ -102,7 +116,7 @@ public class DefinedRelationshipsTest {
 
 
     // todo: this seems too high level to be tested at DefinedRelationship
-    // perhaps this method should be on the Thing
+    // perhaps this method should be on the Thing, not the defined relationships
     @Test
     void canHaveNamedRelationshipBetweenThings(){
 
@@ -110,8 +124,11 @@ public class DefinedRelationshipsTest {
         final Thing slack = Thing.create("slack", "slack");
 
         final RelationshipVector vec =
-                new RelationshipVector("withbob", new Cardinality("1", "0"));
-        final RelationshipDefinition defn = RelationshipDefinition.create(stress, slack, vec);
+                new RelationshipVector( stress,
+                        "withbob",
+                        slack,
+                        Cardinality.one_to_many);
+        final RelationshipDefinition defn = RelationshipDefinition.create(vec);
 
 
         final DefinedRelationships rels = new DefinedRelationships();
