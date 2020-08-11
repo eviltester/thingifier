@@ -81,20 +81,20 @@ public class ThingDefinition {
 
 
     public boolean hasIDField() {
-        return fields.getFieldsOfType(FieldType.ID).size()>0;
+        return !fields.getFieldsOfType(FieldType.ID).isEmpty();
     }
 
     // todo: this suggests there is only one, but there might be more and that could prove problematic
     public Field getIDField() {
         List<Field> ids = fields.getFieldsOfType(FieldType.ID);
-        if(ids.size()>0){
+        if(!ids.isEmpty()){
             return ids.get(0);
         }
         return null;
     }
 
     public List<String> getProtectedFieldNamesList() {
-        List<String> protectedNames = new ArrayList();
+        List<String> protectedNames = new ArrayList<>();
         List<Field> protectedFields = fields.getFieldsOfType(FieldType.ID, FieldType.GUID);
 
         for(Field field : protectedFields){

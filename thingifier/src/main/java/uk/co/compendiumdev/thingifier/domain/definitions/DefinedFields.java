@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class DefinedFields {
 
-    private Map<String, Field> fields = new ConcurrentHashMap<String, Field>();
+    private Map<String, Field> fields = new ConcurrentHashMap<>();
     // to control field order
     private List<String> orderedFieldNames = new ArrayList<>();
 
@@ -34,7 +34,7 @@ public class DefinedFields {
     }
 
     public List<String> getFieldNames() {
-        ArrayList<String> fieldNames = new ArrayList<String>();
+        ArrayList<String> fieldNames = new ArrayList<>();
         fieldNames.addAll(orderedFieldNames);
         return fieldNames;
     }

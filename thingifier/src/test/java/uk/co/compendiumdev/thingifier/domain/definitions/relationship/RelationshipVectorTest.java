@@ -23,13 +23,13 @@ public class RelationshipVectorTest {
                         estimate,
                         "estimate-of",
                         task,
-                        Cardinality.one_to_many);
+                        Cardinality.ONE_TO_MANY);
     }
 
     @Test
     void canCreateADefaultRelationshipVector(){
 
-        Assertions.assertEquals(Cardinality.one_to_many, vector.getCardinality());
+        Assertions.assertEquals(Cardinality.ONE_TO_MANY, vector.getCardinality());
         Assertions.assertEquals("estimate-of", vector.getName());
         Assertions.assertEquals(Optionality.OPTIONAL_RELATIONSHIP, vector.getOptionality());
         Assertions.assertEquals(estimate, vector.getFrom());

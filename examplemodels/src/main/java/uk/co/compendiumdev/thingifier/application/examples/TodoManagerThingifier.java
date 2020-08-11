@@ -84,13 +84,13 @@ public class TodoManagerThingifier {
                                 withValidation(VRule.notEmpty()),
                         Field.is("description", STRING));
 
-        todoManager.defineRelationship(project, todo, "tasks", Cardinality.one_to_many).
-                whenReversed(Cardinality.one_to_many, "task-of");
+        todoManager.defineRelationship(project, todo, "tasks", Cardinality.ONE_TO_MANY).
+                whenReversed(Cardinality.ONE_TO_MANY, "task-of");
 
-        todoManager.defineRelationship(project, category, "categories", Cardinality.one_to_many);
-        todoManager.defineRelationship(category, todo, "todos", Cardinality.one_to_many);
-        todoManager.defineRelationship(category, project, "projects", Cardinality.one_to_many);
-        todoManager.defineRelationship(todo, category, "categories", Cardinality.one_to_many);
+        todoManager.defineRelationship(project, category, "categories", Cardinality.ONE_TO_MANY);
+        todoManager.defineRelationship(category, todo, "todos", Cardinality.ONE_TO_MANY);
+        todoManager.defineRelationship(category, project, "projects", Cardinality.ONE_TO_MANY);
+        todoManager.defineRelationship(todo, category, "categories", Cardinality.ONE_TO_MANY);
 
         // Some hard coded test data for experimenting with
         // TODO: allow importing from a JSON to create data in bulk

@@ -144,13 +144,13 @@ could implement a Thingifier URL query matcher to return instances based on quer
                                 withValidation(VRule.notEmpty()),
                         Field.is("description",STRING));
 
-        todoManager.defineRelationship(project, todo, "tasks", Cardinality.one_to_many).
-                whenReversed(Cardinality.one_to_many,"task-of");
+        todoManager.defineRelationship(project, todo, "tasks", Cardinality.ONE_TO_MANY).
+                whenReversed(Cardinality.ONE_TO_MANY,"task-of");
 
-        todoManager.defineRelationship(project, category, "categories", Cardinality.one_to_many);
-        todoManager.defineRelationship(category, todo, "todos", Cardinality.one_to_many);
-        todoManager.defineRelationship(category, project, "projects", Cardinality.one_to_many);
-        todoManager.defineRelationship(todo, category, "categories", Cardinality.one_to_many);
+        todoManager.defineRelationship(project, category, "categories", Cardinality.ONE_TO_MANY);
+        todoManager.defineRelationship(category, todo, "todos", Cardinality.ONE_TO_MANY);
+        todoManager.defineRelationship(category, project, "projects", Cardinality.ONE_TO_MANY);
+        todoManager.defineRelationship(todo, category, "categories", Cardinality.ONE_TO_MANY);
 
 
         // TODO create mandatory relationships = at the moment all entities can exist without relationship
@@ -168,8 +168,8 @@ could implement a Thingifier URL query matcher to return instances based on quer
         final RelationshipDefinition estimated = todoManager.defineRelationship(
                 estimate, todo,
                 "estimate",
-                Cardinality.one_to_many).
-                whenReversed(Cardinality.one_to_many, "estimates");
+                Cardinality.ONE_TO_MANY).
+                whenReversed(Cardinality.ONE_TO_MANY, "estimates");
 
         // an estimate must have a todo, a todo does not need to have an estimate
         estimated.getFromRelationship().setOptionality(Optionality.MANDATORY_RELATIONSHIP);

@@ -4,8 +4,8 @@ package uk.co.compendiumdev.thingifier.domain.definitions;
 //  https://en.wikipedia.org/wiki/Cardinality_(data_modeling)
 public enum Cardinality {
 
-    one_to_many("1", "*"),
-    one_to_one("1", "1" );
+    ONE_TO_MANY("1", "*"),
+    ONE_TO_ONE("1", "1" );
 
     private final String left;
     private final String right;

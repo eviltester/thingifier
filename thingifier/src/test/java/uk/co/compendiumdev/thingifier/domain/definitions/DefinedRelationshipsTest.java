@@ -23,7 +23,7 @@ public class DefinedRelationshipsTest {
                 Thing.create("thing1", "thing1"),
                 "bob",
                 Thing.create("thing2", "thing2"),
-                            Cardinality.one_to_many));
+                            Cardinality.ONE_TO_MANY));
 
         Assertions.assertTrue(
                 rels.hasRelationship("bob"));
@@ -38,13 +38,13 @@ public class DefinedRelationshipsTest {
                 Thing.create("thing1", "thing1"),
                 "bob",
                 Thing.create("thing2", "thing2"),
-                Cardinality.one_to_one));
+                Cardinality.ONE_TO_ONE));
 
         rels.addRelationship(new RelationshipVector(
                 Thing.create("thing2", "thing2"),
                 "bob",
                 Thing.create("thing3", "thing3"),
-                Cardinality.one_to_many));
+                Cardinality.ONE_TO_MANY));
 
         final List<RelationshipVector> vectors = rels.getRelationships("bob");
         Assertions.assertEquals(2, vectors.size());
@@ -69,28 +69,28 @@ public class DefinedRelationshipsTest {
                 Thing.create("thing1", "thing1"),
                 "bob",
                 Thing.create("thing2", "thing2"),
-                Cardinality.one_to_one);
+                Cardinality.ONE_TO_ONE);
         rels.addRelationship(bob1);
 
         final RelationshipVector bob2 = new RelationshipVector(
                 Thing.create("thing2", "thing2"),
                 "bob",
                 Thing.create("thing3", "thing3"),
-                Cardinality.one_to_many);
+                Cardinality.ONE_TO_MANY);
         rels.addRelationship(bob2);
 
         final RelationshipVector connie1 = new RelationshipVector(
                 Thing.create("thing1", "thing1"),
                 "connie",
                 Thing.create("thing2", "thing2"),
-                Cardinality.one_to_many);
+                Cardinality.ONE_TO_MANY);
         rels.addRelationship(connie1);
 
         final RelationshipVector dobbs1 = new RelationshipVector(
                 Thing.create("thing1", "thing1"),
                 "dobbs",
                 Thing.create("thing2", "thing2"),
-                Cardinality.one_to_many);
+                Cardinality.ONE_TO_MANY);
         rels.addRelationship(dobbs1);
 
         final List<RelationshipVector> bobs = rels.getRelationships("bob");
@@ -127,7 +127,7 @@ public class DefinedRelationshipsTest {
                 new RelationshipVector( stress,
                         "withbob",
                         slack,
-                        Cardinality.one_to_many);
+                        Cardinality.ONE_TO_MANY);
         final RelationshipDefinition defn = RelationshipDefinition.create(vec);
 
 

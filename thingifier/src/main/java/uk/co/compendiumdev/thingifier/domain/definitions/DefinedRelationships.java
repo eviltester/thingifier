@@ -10,7 +10,7 @@ public class DefinedRelationships {
     private Map<String, List<RelationshipVector>> relationships;
 
     public DefinedRelationships(){
-        this.relationships = new ConcurrentHashMap<String, List<RelationshipVector>>();
+        this.relationships = new ConcurrentHashMap<>();
     }
 
     public boolean hasRelationship(final String relationshipName) {
@@ -40,7 +40,7 @@ public class DefinedRelationships {
         List<RelationshipVector> relationshipsWithThisName = relationships.get(relationship.getName());
         if (relationshipsWithThisName == null) {
             // there is no relationship with this name
-            relationshipsWithThisName = new ArrayList<RelationshipVector>();
+            relationshipsWithThisName = new ArrayList<>();
             relationships.put(relationship.getName(), relationshipsWithThisName);
         }
 
@@ -49,8 +49,7 @@ public class DefinedRelationships {
 
     public List<RelationshipVector> getRelationships(final String relationshipName) {
         List<RelationshipVector> myrelationships = relationships.get(relationshipName.toLowerCase());
-        ArrayList<RelationshipVector> retRels = new ArrayList<RelationshipVector>(myrelationships);
-        return retRels;
+        return new ArrayList<>(myrelationships);
     }
 
     public Set<RelationshipVector> getRelationships() {

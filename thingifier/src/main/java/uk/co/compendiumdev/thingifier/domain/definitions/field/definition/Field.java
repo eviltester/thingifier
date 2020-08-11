@@ -63,8 +63,7 @@ public final class Field {
     }
 
     public static Field is(String name, FieldType type) {
-        Field aField = new Field(name, type);
-        return aField;
+        return new Field(name, type);
     }
 
     public String getName() {
@@ -167,7 +166,7 @@ public final class Field {
             }
 
             if(type == FieldType.STRING){
-                validateStringValue(value, report);
+                // length is validated by a rule
             }
 
             if (type == FieldType.FLOAT) {
@@ -209,11 +208,7 @@ public final class Field {
 
     private void validateEnumValue(final FieldValue value, final ValidationReport report) {
         if (!getExamples().contains(value.asString())) {
-            report.setValid(false);
-            report.addErrorMessage(
-                    String.format(
-                            "%s : %s does not match type %s",
-                            this.getName(), value.asString(), type));
+            reportThisValueDoesNotMatchType(report, value.asString());
         }
     }
 
@@ -230,18 +225,8 @@ public final class Field {
             }
 
         } catch (NumberFormatException e) {
-            report.setValid(false);
-            report.addErrorMessage(
-                    String.format(
-                            "%s : %s does not match type %s",
-                            this.getName(), value.asString(), type));
+            reportThisValueDoesNotMatchType(report, value.asString());
         }
-    }
-
-    private void validateStringValue(final FieldValue value,
-                                     final ValidationReport report) {
-
-        // length was moved to a validation rule
     }
 
     private void validateIntegerValue(final FieldValue value,
@@ -259,12 +244,18 @@ public final class Field {
                                 type, minimumIntegerValue, maximumIntegerValue));
             }
         } catch (NumberFormatException e) {
-            report.setValid(false);
-            report.addErrorMessage(
-                    String.format(
-                            "%s : %s does not match type %s", this.getName(),
-                            value.asString(), type));
+            reportThisValueDoesNotMatchType(report, value.asString());
+
         }
+    }
+
+    private void reportThisValueDoesNotMatchType(final ValidationReport report,
+                                                 final String valueString) {
+        report.setValid(false);
+        report.addErrorMessage(
+                String.format(
+                        "%s : %s does not match type %s",
+                        name,  valueString, type));
     }
 
     private void validateBooleanValue(final FieldValue value,
@@ -325,7 +316,7 @@ public final class Field {
         return this;
     }
 
-    public ArrayList<String> getExamples() {
+    public List<String> getExamples() {
 
         Set<String> buildExamples = new HashSet<>();
 
@@ -356,13 +347,13 @@ public final class Field {
         }
 
         // field might have examples in definition
-        if(fieldExamples.size()>0){
+        if(!fieldExamples.isEmpty()){
             buildExamples.addAll(fieldExamples);
         }
 
         // TODO: try to use regex in matching rules to generate
         if(type==FieldType.STRING){
-            if(fieldExamples.size()==0){
+            if(fieldExamples.isEmpty()){
                 buildExamples.add(
                     getAsTruncatedString(
                         FieldValue.is(getName(), new RandomString().get(20))
@@ -372,13 +363,13 @@ public final class Field {
         }
 
         // return as a list
-        return new ArrayList<String>(buildExamples);
+        return new ArrayList<>(buildExamples);
     }
 
     public String getRandomExampleValue() {
-        final ArrayList<String> examples = getExamples();
+        final List<String> examples = getExamples();
 
-        if(examples.size()==0){
+        if(examples.isEmpty()){
             return "";
         }
 

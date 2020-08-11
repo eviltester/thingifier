@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.domain.definitions.Cardinality;
 
-public class RelationshipDefinitionTest {
+class RelationshipDefinitionTest {
 
     private Thing task;
     private Thing estimate;
@@ -23,7 +23,7 @@ public class RelationshipDefinitionTest {
                         estimate,
                         "estimate-of",
                         task,
-                        Cardinality.one_to_many);
+                        Cardinality.ONE_TO_MANY);
 
     }
 
@@ -52,7 +52,7 @@ public class RelationshipDefinitionTest {
         final RelationshipDefinition rel = RelationshipDefinition.
                 create(estimateToTask);
 
-        rel.whenReversed(Cardinality.one_to_many, "estimates");
+        rel.whenReversed(Cardinality.ONE_TO_MANY, "estimates");
 
         Assertions.assertTrue(rel.isTwoWay());
 

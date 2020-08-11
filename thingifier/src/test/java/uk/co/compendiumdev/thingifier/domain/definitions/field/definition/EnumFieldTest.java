@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.domain.definitions.field.instance.FieldValue;
 
-import java.util.ArrayList;
+import java.util.List;
 
 class EnumFieldTest {
 
@@ -35,7 +35,7 @@ class EnumFieldTest {
                 withExample("connie").
                 withExample("eris");
 
-        final ArrayList<String> examples = field.getExamples();
+        final List<String> examples = field.getExamples();
 
         Assertions.assertEquals(3, examples.size());
 

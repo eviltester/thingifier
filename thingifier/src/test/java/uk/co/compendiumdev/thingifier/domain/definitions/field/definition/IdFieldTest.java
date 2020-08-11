@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.api.ValidationReport;
 import uk.co.compendiumdev.thingifier.domain.definitions.field.instance.FieldValue;
 
-import java.util.ArrayList;
+import java.util.List;
 
 class IdFieldTest {
 
@@ -63,7 +63,7 @@ class IdFieldTest {
 
         final Field field = Field.is("id", FieldType.ID);
 
-        final ArrayList<String> examples = field.getExamples();
+        final List<String> examples = field.getExamples();
 
         Assertions.assertEquals(1, examples.size());
     }

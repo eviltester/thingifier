@@ -19,8 +19,7 @@ public class RelationshipDefinition {
     }
 
     public static RelationshipDefinition create(RelationshipVector fromVector) {
-        RelationshipDefinition defn = new RelationshipDefinition(fromVector);
-        return defn;
+        return new RelationshipDefinition(fromVector);
     }
 
     public RelationshipDefinition whenReversed(Cardinality of, String named) {
