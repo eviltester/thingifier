@@ -28,18 +28,48 @@ public class RelationshipDefinitionTest {
     }
 
     @Test
-    void aRelationshipIsCreatedFromaVector(){
+    void aRelationshipIsCreatedFromVector(){
 
         final RelationshipDefinition rel = RelationshipDefinition.
                                             create(estimateToTask);
 
-        // todo: in theory these have no meaning
-        //  because the relationship is 'between' or 'involving'
-        // the 'to', 'from' concept is at the vector level
-        Assertions.assertEquals(estimate,rel.from());
-        Assertions.assertEquals(task,rel.to());
-
+        Assertions.assertEquals(estimate,rel.getFromRelationship().getFrom());
+        Assertions.assertEquals(task,rel.getFromRelationship().getTo());
+        Assertions.assertEquals(estimateToTask,rel.getFromRelationship());
+        Assertions.assertNull(rel.getReversedRelationship());
         Assertions.assertFalse(rel.isTwoWay());
+
+        Assertions.assertTrue(rel.isKnownAs("estimate-of"));
+        Assertions.assertFalse(rel.isKnownAs("estimates"));
+
+        System.out.println(rel.toString());
+
     }
 
+    @Test
+    void aReverseRelationshipVectorIsCreatedFromRelationship(){
+
+        final RelationshipDefinition rel = RelationshipDefinition.
+                create(estimateToTask);
+
+        rel.whenReversed(Cardinality.one_to_many, "estimates");
+
+        Assertions.assertTrue(rel.isTwoWay());
+
+        Assertions.assertEquals(estimate,rel.getFromRelationship().getFrom());
+        Assertions.assertEquals(task,rel.getFromRelationship().getTo());
+        Assertions.assertEquals(estimateToTask,rel.getFromRelationship());
+
+        Assertions.assertNotNull(rel.getReversedRelationship());
+        Assertions.assertEquals(task,rel.getReversedRelationship().getFrom());
+        Assertions.assertEquals(estimate,rel.getReversedRelationship().getTo());
+        Assertions.assertEquals("estimates",rel.getReversedRelationship().getName());
+
+        Assertions.assertTrue(rel.isKnownAs("estimate-of"));
+        Assertions.assertTrue(rel.isKnownAs("estimates"));
+
+
+        System.out.println(rel.toString());
+
+    }
 }

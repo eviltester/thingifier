@@ -5,6 +5,7 @@ import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.domain.definitions.Cardinality;
 import uk.co.compendiumdev.thingifier.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.domain.definitions.field.definition.Field;
+import uk.co.compendiumdev.thingifier.domain.definitions.relationship.Optionality;
 import uk.co.compendiumdev.thingifier.domain.definitions.relationship.RelationshipDefinition;
 import uk.co.compendiumdev.thingifier.domain.definitions.validation.VRule;
 
@@ -171,7 +172,8 @@ could implement a Thingifier URL query matcher to return instances based on quer
                 whenReversed(Cardinality.one_to_many, "estimates");
 
         // an estimate must have a todo, a todo does not need to have an estimate
-        estimated.hasOptionality("M", "O");
+        estimated.getFromRelationship().setOptionality(Optionality.MANDATORY_RELATIONSHIP);
+
 
         // TODO there is a special case of Mandatory : Mandatory which we need to be able to 'create' entities at same time as relationships
 

@@ -117,7 +117,7 @@ public class Relationships {
         for (RelationshipInstance item : relationships) {
             if (item.getFrom() != forThis) {
                 item.getFrom().removeRelationshipsInvolvingMe(forThis);
-                if (item.getRelationship().getOptionalityFrom() == MANDATORY_RELATIONSHIP) {
+                if (item.getRelationship().getFromRelationship().getOptionality() == MANDATORY_RELATIONSHIP) {
                     // I am deleted, therefor any mandatory relationship to me, must result in the related thing being
                     // deleted also
                     deleteThese.add(item.getFrom());
@@ -125,7 +125,7 @@ public class Relationships {
             } else {
                 item.getTo().removeRelationshipsInvolvingMe(forThis);
 
-//                if (item.getRelationship().getOptionalityTo() == MANDATORY_RELATIONSHIP) {
+//                if (item.getRelationship().getToRelationship().getOptionalityTo() == MANDATORY_RELATIONSHIP) {
 //                    // I am being deleted therefore it does not matter if relationship to other is mandatory
 //                }
             }

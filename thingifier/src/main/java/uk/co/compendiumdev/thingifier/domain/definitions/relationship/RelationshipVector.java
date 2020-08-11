@@ -31,6 +31,9 @@ public class RelationshipVector {
         this.to = to;
         this.cardinality = cardinality;
         this.optionality = OPTIONAL_RELATIONSHIP;
+
+        // assign to the thing
+        from.withDefinedRelationship(this);
     }
 
     public String getName() {

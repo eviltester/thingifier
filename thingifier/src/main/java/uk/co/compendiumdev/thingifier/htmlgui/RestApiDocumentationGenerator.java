@@ -254,8 +254,8 @@ public class RestApiDocumentationGenerator {
                     reportLine = String.format("<li>%1$s/%2$s : %3$s =(%1$s)=> %4$s / %4$s =(%2$s)=> %3$s %n",
                             relationship.getFromRelationship().getName(),
                             relationship.getReversedRelationship().getName(),
-                            relationship.from().definition().getName(),
-                            relationship.to().definition().getName());
+                            relationship.getFromRelationship().getFrom().definition().getName(),
+                            relationship.getFromRelationship().getTo().definition().getName());
                 }
 
                 output.append(reportLine);
