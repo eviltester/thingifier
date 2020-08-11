@@ -13,8 +13,6 @@ import uk.co.compendiumdev.thingifier.domain.definitions.field.instance.FieldVal
 import uk.co.compendiumdev.thingifier.domain.definitions.relationship.RelationshipDefinition;
 import uk.co.compendiumdev.thingifier.domain.definitions.relationship.RelationshipVector;
 import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
-import uk.co.compendiumdev.thingifier.domain.dsl.relationship.AndCall;
-import uk.co.compendiumdev.thingifier.domain.dsl.relationship.Between;
 import uk.co.compendiumdev.thingifier.reporting.ThingReporter;
 
 import java.util.*;
@@ -67,15 +65,15 @@ final public class Thingifier {
     }
 
 
-    public RelationshipDefinition defineRelationship(final Between giventhings, final AndCall it, final Cardinality of) {
+    public RelationshipDefinition defineRelationship(Thing from, Thing to, final String named, final Cardinality of) {
         RelationshipDefinition relationship =
                 RelationshipDefinition.create(
                         new RelationshipVector(
-                                giventhings.from(),
-                                it.isCalled(),
-                                giventhings.to(),
+                                from,
+                                named,
+                                to,
                                 of));
-        relationships.put(it.isCalled(), relationship);
+        relationships.put(named, relationship);
         return relationship;
     }
 

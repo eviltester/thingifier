@@ -14,7 +14,6 @@ import static uk.co.compendiumdev.thingifier.domain.definitions.relationship.Opt
  * task to estimate would be called 'estimates' and would be 1(o):M i.e. 1 task can have 0 to many estimates
  * estimate to task would be called 'estimate-of' and would be 1:1 an estimate must have 1 task
  *
- * todo: in theory we don't need 'relationship' since we could just create two vectors
  *
  */
 public class RelationshipVector {
@@ -54,6 +53,7 @@ public class RelationshipVector {
         return parentRelationship;
     }
 
+    // todo: not sure if this should exist, or if we should have 0:M mean 1(optional):M
     public void setOptionality(final Optionality aGivenOptionality) {
         this.optionality = aGivenOptionality;
     }

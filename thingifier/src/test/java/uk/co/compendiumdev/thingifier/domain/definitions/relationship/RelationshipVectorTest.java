@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.domain.definitions.Cardinality;
-import uk.co.compendiumdev.thingifier.domain.definitions.ThingDefinition;
 
 public class RelationshipVectorTest {
 
@@ -44,13 +43,15 @@ public class RelationshipVectorTest {
                         task,
                         Cardinality.one_to_many);
 
+        vector.setOptionality(Optionality.MANDATORY_RELATIONSHIP);
 
         final RelationshipDefinition rel = RelationshipDefinition.create(vector);
 
 
         Assertions.assertEquals(Cardinality.one_to_many, vector.getCardinality());
         Assertions.assertEquals("estimate-of", vector.getName());
-        Assertions.assertEquals(Optionality.OPTIONAL_RELATIONSHIP, vector.getOptionality());
+
+        Assertions.assertEquals(Optionality.MANDATORY_RELATIONSHIP, vector.getOptionality());
 
         Assertions.assertEquals(rel, vector.getRelationshipDefinition());
         Assertions.assertEquals(estimate, vector.getFrom());

@@ -9,8 +9,6 @@ import uk.co.compendiumdev.thingifier.domain.definitions.Cardinality;
 import uk.co.compendiumdev.thingifier.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.domain.definitions.validation.VRule;
 import uk.co.compendiumdev.thingifier.domain.definitions.field.definition.Field;
-import uk.co.compendiumdev.thingifier.domain.dsl.relationship.AndCall;
-import uk.co.compendiumdev.thingifier.domain.dsl.relationship.Between;
 
 import static uk.co.compendiumdev.thingifier.domain.definitions.field.definition.FieldType.STRING;
 
@@ -86,13 +84,13 @@ public class TodoManagerThingifier {
                                 withValidation(VRule.notEmpty()),
                         Field.is("description", STRING));
 
-        todoManager.defineRelationship(Between.things(project, todo), AndCall.it("tasks"), Cardinality.one_to_many).
-                whenReversed(Cardinality.one_to_many, AndCall.it("task-of"));
+        todoManager.defineRelationship(project, todo, "tasks", Cardinality.one_to_many).
+                whenReversed(Cardinality.one_to_many, "task-of");
 
-        todoManager.defineRelationship(Between.things(project, category), AndCall.it("categories"), Cardinality.one_to_many);
-        todoManager.defineRelationship(Between.things(category, todo), AndCall.it("todos"), Cardinality.one_to_many);
-        todoManager.defineRelationship(Between.things(category, project), AndCall.it("projects"), Cardinality.one_to_many);
-        todoManager.defineRelationship(Between.things(todo, category), AndCall.it("categories"), Cardinality.one_to_many);
+        todoManager.defineRelationship(project, category, "categories", Cardinality.one_to_many);
+        todoManager.defineRelationship(category, todo, "todos", Cardinality.one_to_many);
+        todoManager.defineRelationship(category, project, "projects", Cardinality.one_to_many);
+        todoManager.defineRelationship(todo, category, "categories", Cardinality.one_to_many);
 
         // Some hard coded test data for experimenting with
         // TODO: allow importing from a JSON to create data in bulk

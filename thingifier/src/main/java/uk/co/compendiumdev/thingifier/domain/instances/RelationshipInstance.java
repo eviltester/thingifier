@@ -43,7 +43,7 @@ public class RelationshipInstance {
         StringBuilder output = new StringBuilder();
 
         String format = String.format("%s FROM: %s %s TO: %s %s",
-                relationship.getName(),
+                relationship.getFromRelationship().getName(),
                 from.getEntity().getName(),
                 from.getGUID(),
                 to.getEntity().getName(),

@@ -3,8 +3,6 @@ package uk.co.compendiumdev.thingifier.domain.definitions.relationship;
 
 import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.domain.definitions.Cardinality;
-import uk.co.compendiumdev.thingifier.domain.definitions.ThingDefinition;
-import uk.co.compendiumdev.thingifier.domain.dsl.relationship.AndCall;
 
 public class RelationshipDefinition {
 
@@ -12,33 +10,36 @@ public class RelationshipDefinition {
         A RelationshipDefinition defines the whole scope of the relationship
         Things will only know about the specific Relationship vectors that relate outwards from themselves.
      */
-    private final String name;
+    // todo: consider if we need this, or if we are allowing a high level 'relationship' name
+    //private String name;
     private final Thing from;
     private final Thing to;
     private RelationshipVector fromTo;
     private RelationshipVector toFrom;
 
+    //todo: in theory we don't need 'relationship' since we could just have two vectors
+    // at the moment the 'thing' only knows about the vector when managed as a relationship
 
     private RelationshipDefinition(RelationshipVector fromVector) {
         this.from = fromVector.getFrom();
         this.to = fromVector.getTo();
         fromTo = fromVector;
         fromVector.forRelationship(this);
-        this.name = fromVector.getName();
+        //this.name=null; // by default it uses the from relationship name
     }
 
     public static RelationshipDefinition create(RelationshipVector fromVector) {
         RelationshipDefinition defn = new RelationshipDefinition(fromVector);
         // and add the relationship Vector to the from thing
-        defn.from().definition().related().addRelationship(fromVector);
+        defn.from().withDefinedRelationship(fromVector);
         return defn;
     }
 
-    public RelationshipDefinition whenReversed(Cardinality of, AndCall it) {
-        final RelationshipVector vector = new RelationshipVector(this.to, it.isCalled(), this.from, of);
+    public RelationshipDefinition whenReversed(Cardinality of, String named) {
+        final RelationshipVector vector = new RelationshipVector(this.to, named, this.from, of);
         vector.forRelationship(this);
         toFrom = vector;
-        to.definition().related().addRelationship(vector);
+        to.withDefinedRelationship(vector);
         return this;
     }
 
@@ -48,22 +49,26 @@ public class RelationshipDefinition {
         // TODO: the <=> should reflect the cardinality defined vectors created
         if (toFrom == null) {
             output.append(String.format("\t\t%s : %s <=> %s %n",
-                    this.name, from.definition().getName(), to.definition().getName()));
+                    fromTo.getName(), from.definition().getName(), to.definition().getName()));
         } else {
             output.append(String.format("\t\t%1$s : %2$s <%1$s/%4$s> %3$s %n",
-                    this.name, from.definition().getName(), to.definition().getName(), toFrom.getName()));
+                    fromTo.getName(), from.definition().getName(), to.definition().getName(), toFrom.getName()));
 
         }
 
         return output.toString();
     }
 
-    public String getName() {
-        return name;
-    }
+//    public String getName() {
+//        if(name==null){
+//            // use the from relationship name
+//            return fromTo.getName();
+//        }
+//        return name;
+//    }
 
-    public ThingDefinition to() {
-        return to.definition();
+    public Thing to() {
+        return to;
     }
 
     public Thing from() {

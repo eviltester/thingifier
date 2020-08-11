@@ -7,8 +7,6 @@ import uk.co.compendiumdev.thingifier.domain.definitions.field.definition.FieldT
 import uk.co.compendiumdev.thingifier.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.domain.definitions.relationship.RelationshipDefinition;
 import uk.co.compendiumdev.thingifier.domain.definitions.validation.VRule;
-import uk.co.compendiumdev.thingifier.domain.dsl.relationship.AndCall;
-import uk.co.compendiumdev.thingifier.domain.dsl.relationship.Between;
 
 import static uk.co.compendiumdev.thingifier.domain.definitions.field.definition.FieldType.INTEGER;
 import static uk.co.compendiumdev.thingifier.domain.definitions.field.definition.FieldType.STRING;
@@ -145,13 +143,13 @@ could implement a Thingifier URL query matcher to return instances based on quer
                                 withValidation(VRule.notEmpty()),
                         Field.is("description",STRING));
 
-        todoManager.defineRelationship(Between.things(project, todo), AndCall.it("tasks"), Cardinality.one_to_many).
-                whenReversed(Cardinality.one_to_many,AndCall.it("task-of"));
+        todoManager.defineRelationship(project, todo, "tasks", Cardinality.one_to_many).
+                whenReversed(Cardinality.one_to_many,"task-of");
 
-        todoManager.defineRelationship(Between.things(project, category), AndCall.it("categories"), Cardinality.one_to_many);
-        todoManager.defineRelationship(Between.things(category, todo), AndCall.it("todos"), Cardinality.one_to_many);
-        todoManager.defineRelationship(Between.things(category, project), AndCall.it("projects"), Cardinality.one_to_many);
-        todoManager.defineRelationship(Between.things(todo, category), AndCall.it("categories"), Cardinality.one_to_many);
+        todoManager.defineRelationship(project, category, "categories", Cardinality.one_to_many);
+        todoManager.defineRelationship(category, todo, "todos", Cardinality.one_to_many);
+        todoManager.defineRelationship(category, project, "projects", Cardinality.one_to_many);
+        todoManager.defineRelationship(todo, category, "categories", Cardinality.one_to_many);
 
 
         // TODO create mandatory relationships = at the moment all entities can exist without relationship
@@ -167,10 +165,10 @@ could implement a Thingifier URL query matcher to return instances based on quer
 
         // a todo can only have one estimate, and an estimate is for one todo
         final RelationshipDefinition estimated = todoManager.defineRelationship(
-                Between.things(estimate, todo),
-                AndCall.it("estimate"),
+                estimate, todo,
+                "estimate",
                 Cardinality.one_to_many).
-                whenReversed(Cardinality.one_to_many, AndCall.it("estimates"));
+                whenReversed(Cardinality.one_to_many, "estimates");
 
         // an estimate must have a todo, a todo does not need to have an estimate
         estimated.hasOptionality("M", "O");

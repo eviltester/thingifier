@@ -12,6 +12,7 @@ import uk.co.compendiumdev.thingifier.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.domain.definitions.field.instance.FieldValue;
 import uk.co.compendiumdev.thingifier.domain.definitions.relationship.RelationshipDefinition;
 import uk.co.compendiumdev.thingifier.domain.definitions.ThingDefinition;
+import uk.co.compendiumdev.thingifier.domain.definitions.relationship.RelationshipVector;
 import uk.co.compendiumdev.thingifier.domain.definitions.validation.ValidationRule;
 import uk.co.compendiumdev.thingifier.domain.instances.DocumentationThingInstance;
 import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
@@ -237,12 +238,13 @@ public class RestApiDocumentationGenerator {
 
             for (RelationshipDefinition relationship : relationships) {
 
+                RelationshipVector fromToRelationship = relationship.getFromRelationship();
 
                 //task-of : task => project
                 String reportLine = String.format("<li>%s : %s => %s%n",
-                        relationship.getName(),
-                        relationship.from().definition().getName(),
-                        relationship.to().getName());
+                        fromToRelationship.getName(),
+                        fromToRelationship.getFrom().definition().getName(),
+                        fromToRelationship.getTo().definition().getName());
 
 
                 // for a two way relationship can it be combined on to one line e.g.
@@ -250,10 +252,10 @@ public class RestApiDocumentationGenerator {
 
                 if (relationship.isTwoWay()) {
                     reportLine = String.format("<li>%1$s/%2$s : %3$s =(%1$s)=> %4$s / %4$s =(%2$s)=> %3$s %n",
-                            relationship.getName(),
+                            relationship.getFromRelationship().getName(),
                             relationship.getReversedRelationship().getName(),
                             relationship.from().definition().getName(),
-                            relationship.to().getName());
+                            relationship.to().definition().getName());
                 }
 
                 output.append(reportLine);

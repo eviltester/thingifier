@@ -2,6 +2,7 @@ package uk.co.compendiumdev.thingifier;
 
 import uk.co.compendiumdev.thingifier.domain.definitions.field.instance.FieldValue;
 import uk.co.compendiumdev.thingifier.domain.definitions.ThingDefinition;
+import uk.co.compendiumdev.thingifier.domain.definitions.relationship.RelationshipVector;
 import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
 
 import java.util.*;
@@ -124,5 +125,9 @@ final public class Thing {
             }
         }
         return instance;
+    }
+
+    public void withDefinedRelationship(final RelationshipVector fromVector) {
+        definition().related().addRelationship(fromVector);
     }
 }

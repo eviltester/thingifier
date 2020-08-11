@@ -28,7 +28,7 @@ public class Relationships {
             for (RelationshipInstance relatesTo : relationships) {
                 if (relatesTo.getFrom() == forThis) {
                     output.append(String.format("\t\t\t\t\t %s : %s (%s)%n",
-                            relatesTo.getRelationship().getName(),
+                            relatesTo.getRelationship().getFromRelationship().getName(),
                             relatesTo.getTo().getGUID(),
                             relatesTo.getTo().getEntity().getName()));
                 } else {
