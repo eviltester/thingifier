@@ -69,4 +69,16 @@ public class DefinedFields {
 
         return returnFields;
     }
+
+    public List<String> getFieldNamesOfType(final FieldType... types) {
+
+        List<String> fieldNames = new ArrayList<>();
+        List<Field> typedFields = getFieldsOfType(types);
+
+        for(Field field : typedFields){
+            fieldNames.add(field.getName());
+        }
+
+        return fieldNames;
+    }
 }

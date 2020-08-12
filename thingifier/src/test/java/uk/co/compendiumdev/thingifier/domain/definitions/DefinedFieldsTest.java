@@ -111,6 +111,18 @@ public class DefinedFieldsTest {
     }
 
     @Test
+    public void canGetNamesOfSpecificFieldTypes(){
+
+        final List<String> strings = multipleFields.getFieldNamesOfType(FieldType.STRING);
+
+        Assertions.assertEquals(3, strings.size());
+
+        Assertions.assertTrue(strings.contains("string1"));
+        Assertions.assertTrue(strings.contains("string2"));
+        Assertions.assertTrue(strings.contains("string3"));
+    }
+
+    @Test
     public void canGetMultipleFieldTypes(){
 
         final List<Field> others = multipleFields.getFieldsOfType(

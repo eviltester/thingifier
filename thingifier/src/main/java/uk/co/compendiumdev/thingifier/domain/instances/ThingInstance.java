@@ -130,13 +130,17 @@ public class ThingInstance {
 
 
     public boolean hasIDField() {
-        return entityDefinition.hasIDField();
+        return !entityDefinition.getFieldsOfType(FieldType.ID).isEmpty();
     }
 
     // todo assumes that there is one id field - should allow more
     public String getID() {
         String value = "";
-        final Field field = entityDefinition.getIDField();
+        final List<Field> idFields = entityDefinition.getFieldsOfType(FieldType.ID);
+        Field field = null;
+        if(!idFields.isEmpty()){
+            field = idFields.get(0);
+        }
         if(field!=null) {
             value = getFieldValue(field.getName()).asString();
         }
@@ -229,10 +233,10 @@ public class ThingInstance {
     public void clearAllFields() {
         List<String>ignoreFields = new ArrayList<>();
 
-        ignoreFields.add("guid");
-        if(hasIDField()){
-            ignoreFields.add(getEntity().getIDField().getName());
-        }
+        ignoreFields.addAll(getEntity().
+                                getFieldNamesOfType(
+                                    FieldType.ID,
+                                    FieldType.GUID));
 
         instanceFields.deleteAllFieldsExcept(ignoreFields);
     }

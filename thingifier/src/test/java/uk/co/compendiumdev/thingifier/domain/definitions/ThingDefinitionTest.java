@@ -7,6 +7,9 @@ import uk.co.compendiumdev.thingifier.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.domain.definitions.relationship.RelationshipDefinition;
 import uk.co.compendiumdev.thingifier.domain.definitions.relationship.RelationshipVector;
+import uk.co.compendiumdev.thingifier.domain.instances.InstanceFields;
+
+import java.util.List;
 
 
 public class ThingDefinitionTest {
@@ -57,6 +60,30 @@ public class ThingDefinitionTest {
         Assertions.assertTrue(eDefn.getFieldNames().contains("Description"));
 
         System.out.println(eDefn.toString());
+    }
+
+    @Test
+    public void canGetFieldsOfType() {
+        ThingDefinition eDefn;
+        eDefn = ThingDefinition.create("Requirement", "Requirements");
+
+        eDefn.addFields(Field.is("Title"),
+                        Field.is("Description"));
+
+        final Field anIdField = Field.is("anId", FieldType.ID);
+        final Field anotherIdField = Field.is("anotherID", FieldType.ID);
+        eDefn.addFields(anIdField, anotherIdField);
+
+        final List<String> stringFieldNames = eDefn.getFieldNamesOfType(FieldType.STRING);
+        Assertions.assertEquals(2, stringFieldNames.size());
+
+        final List<Field> fields = eDefn.getFieldsOfType(FieldType.ID);
+
+        Assertions.assertEquals(2, fields.size());
+        Assertions.assertTrue(fields.contains(anIdField));
+        Assertions.assertTrue(fields.contains(anotherIdField));
+
+
     }
 
     @Test
@@ -112,33 +139,18 @@ public class ThingDefinitionTest {
 
 
     @Test
-    public void entityDoesNotNeedToHaveIdFields() {
+    public void canInstantiateFieldDefinitions() {
         ThingDefinition eDefn;
         eDefn = ThingDefinition.create("Requirement", "Requirements");
 
-        Assertions.assertFalse(eDefn.hasIDField());
-    }
-    @Test
-    public void reportWhenItHasIdFields() {
-        ThingDefinition eDefn;
+        eDefn.addFields(Field.is("anId", FieldType.ID));
 
-        eDefn = ThingDefinition.create("Requirement", "Requirements");
+        final InstanceFields instance1 = eDefn.instantiateFields();
 
-        eDefn.addField(Field.is("anid", FieldType.ID));
+        // all this does is associate the instances with the definitions
+        // the values are null
 
-        Assertions.assertTrue(eDefn.hasIDField());
+        Assertions.assertNull(instance1.getFieldValue("anId"));
     }
 
-    @Test
-    public void returnFirstIDField() {
-        ThingDefinition eDefn;
-
-        eDefn = ThingDefinition.create("Requirement", "Requirements");
-
-        eDefn.addFields(Field.is("firstid", FieldType.ID),
-                Field.is("secondid", FieldType.ID));
-
-        Assertions.assertNotNull(eDefn.getIDField());
-        Assertions.assertEquals("secondid", eDefn.getIDField().getName());
-    }
 }

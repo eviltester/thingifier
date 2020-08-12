@@ -71,29 +71,12 @@ public class ThingDefinition {
         return fields.getField(fieldName);
     }
 
-
-    public boolean hasIDField() {
-        return !getFieldsOfType(FieldType.ID).isEmpty();
-    }
-
-    // todo: this suggests there is only one, but there might be more and that could prove problematic
-    public Field getIDField() {
-        return getFieldsOfType(FieldType.ID).isEmpty() ? null : getFieldsOfType(FieldType.ID).get(0);
-    }
-
     public List<Field> getFieldsOfType(final FieldType... types) {
         return  fields.getFieldsOfType(types);
     }
 
     public List<String> getFieldNamesOfType(final FieldType... types) {
-        List<String> protectedNames = new ArrayList<>();
-        List<Field> protectedFields = fields.getFieldsOfType(types);
-
-        for(Field field : protectedFields){
-            protectedNames.add(field.getName());
-        }
-
-        return protectedNames;
+        return  fields.getFieldNamesOfType(types);
     }
 
     public DefinedRelationships related(){

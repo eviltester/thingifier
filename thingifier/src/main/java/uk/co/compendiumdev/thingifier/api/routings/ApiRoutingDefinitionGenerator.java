@@ -4,7 +4,12 @@ import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.api.response.ResponseHeader;
+import uk.co.compendiumdev.thingifier.domain.definitions.ThingDefinition;
+import uk.co.compendiumdev.thingifier.domain.definitions.field.definition.Field;
+import uk.co.compendiumdev.thingifier.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.domain.definitions.relationship.RelationshipVector;
+
+import java.util.List;
 
 public class ApiRoutingDefinitionGenerator {
 
@@ -56,9 +61,12 @@ public class ApiRoutingDefinitionGenerator {
 
             String uniqueIdentifier;
             String uniqueIdFieldName;
-            if(config.willUrlsShowIdsIfAvailable() && thing.definition().hasIDField()){
+            // todo: a thing can have many id fields, so should choose one to be in the url
+            // e.g. set a field as 'usedForIndividualRouting'
+            final List<Field> idFields = thing.definition().getFieldsOfType(FieldType.ID);
+            if(config.willUrlsShowIdsIfAvailable() && !idFields.isEmpty()){
                 uniqueIdentifier=uniqueID;
-                uniqueIdFieldName = thing.definition().getIDField().getName();
+                uniqueIdFieldName = idFields.get(0).getName();
             }else{
                 uniqueIdentifier=uniqueGUID;
                 uniqueIdFieldName="guid";
@@ -188,9 +196,11 @@ public class ApiRoutingDefinitionGenerator {
         final Thing thing = relationship.getFrom();
         String uniqueIdentifier;
         String uniqueIdFieldName;
-        if(config.willUrlsShowIdsIfAvailable() && thing.definition().hasIDField()){
+        // todo: should mark a field as being used as identifiers for a thing
+        final List<Field> idFields = thing.definition().getFieldsOfType(FieldType.ID);
+        if(config.willUrlsShowIdsIfAvailable() && !idFields.isEmpty()){
             uniqueIdentifier=uniqueID;
-            uniqueIdFieldName = thing.definition().getIDField().getName();
+            uniqueIdFieldName = idFields.get(0).getName();
         }else{
             uniqueIdentifier=uniqueGUID;
             uniqueIdFieldName="guid";

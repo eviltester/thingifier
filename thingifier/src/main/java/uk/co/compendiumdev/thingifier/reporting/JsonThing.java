@@ -192,8 +192,9 @@ public class JsonThing {
 
                         try {
                             if (useIdsInRelationshipRenderingIfAvailable) {
-                                if (item.hasIDField()) {
-                                    fieldNameAsUniqueId = item.getEntity().getIDField().getName();
+                                final List<Field> idFields = item.getEntity().getFieldsOfType(FieldType.ID);
+                                if (!idFields.isEmpty()) {
+                                    fieldNameAsUniqueId = idFields.get(0).getName();
                                     valueOfUniqueId = item.getFieldValue(fieldNameAsUniqueId).asString();
                                 }
                             }

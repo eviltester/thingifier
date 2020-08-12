@@ -1,5 +1,7 @@
 package uk.co.compendiumdev.thingifier;
 
+import uk.co.compendiumdev.thingifier.domain.definitions.field.definition.Field;
+import uk.co.compendiumdev.thingifier.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.domain.definitions.field.instance.FieldValue;
 import uk.co.compendiumdev.thingifier.domain.definitions.ThingDefinition;
 import uk.co.compendiumdev.thingifier.domain.definitions.relationship.RelationshipVector;
@@ -114,13 +116,15 @@ final public class Thing {
     }
 
 
+    // todo: not comfortable with this method, we should be using specific field names
     public ThingInstance findInstanceByGUIDorID(final String instanceGuid) {
         ThingInstance instance = findInstanceByGUID(instanceGuid);
         if(instance==null){
-            if(definition.hasIDField()) {
+            final List<Field> idFields = definition.getFieldsOfType(FieldType.ID);
+            if(!idFields.isEmpty()) {
                 instance = findInstanceByField(
                         FieldValue.is(
-                                definition.getIDField().getName(),
+                                (idFields.get(0)).getName(),
                                 instanceGuid));
             }
         }
