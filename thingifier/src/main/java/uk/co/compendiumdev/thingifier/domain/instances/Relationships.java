@@ -46,13 +46,14 @@ public class Relationships {
     public void connect(final String relationshipName, final ThingInstance thing) {
         // TODO: enforce cardinality
 
-        // find relationship
+        // check if relationship is defined
         if (!entityDefinition.related().hasRelationship(relationshipName)) {
             throw new IllegalArgumentException(String.format("Unknown Relationship %s for %s : %s",
                     relationshipName, entityDefinition.getName(), forThis.getGUID()));
         }
 
-        RelationshipVector relationship = entityDefinition.related().getRelationship(relationshipName, thing.getEntity());
+        // get the relationship vector between this thing and the passed in thing
+        RelationshipVector relationship = entityDefinition.getNamedRelationshipTo(relationshipName, thing.getEntity());
 
         RelationshipInstance related = new RelationshipInstance(
                                                 relationship.getRelationshipDefinition(),

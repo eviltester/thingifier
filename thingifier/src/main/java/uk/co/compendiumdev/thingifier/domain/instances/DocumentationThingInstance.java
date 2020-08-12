@@ -1,6 +1,7 @@
 package uk.co.compendiumdev.thingifier.domain.instances;
 
 import uk.co.compendiumdev.thingifier.domain.definitions.ThingDefinition;
+import uk.co.compendiumdev.thingifier.domain.definitions.field.definition.FieldType;
 
 public class DocumentationThingInstance{
 
@@ -18,7 +19,7 @@ public class DocumentationThingInstance{
 
     public ThingInstance getInstanceWithoutProtectedFields(){
         ThingInstance duplicate = instance.createDuplicateWithRelationships();
-        for(String name : definition.getProtectedFieldNamesList()){
+        for(String name : definition.getFieldNamesOfType(FieldType.ID, FieldType.GUID)){
             duplicate.overrideValue(name, null);
         }
         return duplicate;

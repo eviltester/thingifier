@@ -115,28 +115,5 @@ public class DefinedRelationshipsTest {
     }
 
 
-    // todo: this seems too high level to be tested at DefinedRelationship
-    // perhaps this method should be on the Thing, not the defined relationships
-    @Test
-    void canHaveNamedRelationshipBetweenThings(){
 
-        final Thing stress = Thing.create("stress", "stress");
-        final Thing slack = Thing.create("slack", "slack");
-
-        final RelationshipVector vec =
-                new RelationshipVector( stress,
-                        "withbob",
-                        slack,
-                        Cardinality.ONE_TO_MANY);
-        final RelationshipDefinition defn = RelationshipDefinition.create(vec);
-
-
-        final DefinedRelationships rels = new DefinedRelationships();
-        rels.addRelationship(vec);
-
-        Assertions.assertNull(rels.getRelationship("pink", stress.definition()));
-
-        Assertions.assertNull(rels.getRelationship("withbob", stress.definition()));
-        Assertions.assertNotNull(rels.getRelationship("withbob", slack.definition()));
-    }
 }

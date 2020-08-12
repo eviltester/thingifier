@@ -4,6 +4,7 @@ import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.ValidationReport;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
+import uk.co.compendiumdev.thingifier.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.domain.definitions.field.instance.FieldValue;
 import uk.co.compendiumdev.thingifier.domain.definitions.ThingDefinition;
 import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
@@ -28,7 +29,8 @@ public class BodyCreationValidator {
 
         // on creation, we should not have any protected fields in the body i.e. id or guid
 
-        List<String> notAllowedToCreateWithList = thingDefinition.getProtectedFieldNamesList();
+        List<String> notAllowedToCreateWithList =
+                thingDefinition.getFieldNamesOfType(FieldType.ID, FieldType.GUID);
         final Map<String, Object> bodyFields = bodyargs.getMap();
         for(String fieldName : notAllowedToCreateWithList){
             if(bodyFields.containsKey(fieldName)){

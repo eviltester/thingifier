@@ -2,6 +2,7 @@ package uk.co.compendiumdev.thingifier.domain.instances;
 
 import uk.co.compendiumdev.thingifier.api.ValidationReport;
 import uk.co.compendiumdev.thingifier.domain.definitions.field.definition.Field;
+import uk.co.compendiumdev.thingifier.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.domain.definitions.field.instance.FieldValue;
 import uk.co.compendiumdev.thingifier.domain.definitions.ThingDefinition;
 
@@ -34,7 +35,7 @@ public class ThingInstance {
      */
     private ThingInstance(ThingDefinition eDefn, boolean addIds) {
         this.entityDefinition = eDefn;
-        this.instanceFields = new InstanceFields(eDefn.getFieldDefinitions());
+        this.instanceFields = eDefn.instantiateFields();
         instanceFields.addValue(FieldValue.is("guid", UUID.randomUUID().toString()));
         if(addIds) {
             instanceFields.addIdsToInstance();
@@ -82,7 +83,7 @@ public class ThingInstance {
             throw new RuntimeException(anyErrors.get(0));
         }
 
-        setFieldValuesFromArgsIgnoring(args, entityDefinition.getProtectedFieldNamesList());
+        setFieldValuesFromArgsIgnoring(args, entityDefinition.getFieldNamesOfType(FieldType.ID, FieldType.GUID));
 
         return this;
     }
@@ -205,7 +206,7 @@ public class ThingInstance {
 
     public ValidationReport validateNonProtectedFields() {
         return validateFieldValues(
-                    entityDefinition.getProtectedFieldNamesList(),
+                entityDefinition.getFieldNamesOfType(FieldType.ID, FieldType.GUID),
                     false);
     }
 

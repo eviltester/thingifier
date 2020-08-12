@@ -5,6 +5,7 @@ import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.ValidationReport;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
+import uk.co.compendiumdev.thingifier.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
 
 import java.util.ArrayList;
@@ -47,7 +48,7 @@ public class ThingCreation {
 
         validated = new BodyCreationValidator(thingifier).
                 areFieldsUnique(bodyargs, thing,
-                        thing.definition().getProtectedFieldNamesList());
+                        thing.definition().getFieldNamesOfType(FieldType.ID, FieldType.GUID));
         if(!validated.isValid()){
             return ApiResponse.error(409,"Cannot Create with duplicate values: "+
                     validated.getCombinedErrorMessages());

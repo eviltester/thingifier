@@ -17,25 +17,6 @@ public class DefinedRelationships {
         return relationships.containsKey(relationshipName.toLowerCase());
     }
 
-    public RelationshipVector getRelationship(final String relationshipName,
-                                              final ThingDefinition toEntityDefinition) {
-        List<RelationshipVector> relationshipsWithThisName =
-                this.relationships.get(relationshipName.toLowerCase());
-        if (relationshipsWithThisName == null) {
-            // there is no relationship with this name
-            return null;
-        }
-
-        for (RelationshipVector relationship : relationshipsWithThisName) {
-            if (relationship.getTo().definition() == toEntityDefinition) {
-                return relationship;
-            }
-        }
-
-        // there is no relationship with this name between the things we want
-        return null;
-    }
-
     public void addRelationship(final RelationshipVector relationship) {
         List<RelationshipVector> relationshipsWithThisName = relationships.get(relationship.getName());
         if (relationshipsWithThisName == null) {
@@ -48,7 +29,14 @@ public class DefinedRelationships {
     }
 
     public List<RelationshipVector> getRelationships(final String relationshipName) {
-        List<RelationshipVector> myrelationships = relationships.get(relationshipName.toLowerCase());
+
+        String seekName = relationshipName.toLowerCase();
+
+        if(!relationships.containsKey(seekName)){
+            return new ArrayList<>();
+        }
+
+        List<RelationshipVector> myrelationships = relationships.get(seekName);
         return new ArrayList<>(myrelationships);
     }
 

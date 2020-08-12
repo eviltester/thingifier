@@ -78,7 +78,8 @@ public class RelationshipCreation {
 
         } else {
             // we know what we are connecting to, find the correct relationship
-            relationshipToUse = connectThis.getEntity().related().getRelationship(relationshipName, relatedItem.getEntity());
+            relationshipToUse = connectThis.getEntity().getNamedRelationshipTo(relationshipName, relatedItem.getEntity());
+//            relationshipToUse = connectThis.getEntity().related().getRelationship(relationshipName, relatedItem.getEntity());
         }
 
 
