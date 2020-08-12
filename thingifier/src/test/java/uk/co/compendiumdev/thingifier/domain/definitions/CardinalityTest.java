@@ -3,7 +3,7 @@ package uk.co.compendiumdev.thingifier.domain.definitions;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class CardinalityTest {
+class CardinalityTest {
 
     @Test
     void canGetLeftAndRightValues(){

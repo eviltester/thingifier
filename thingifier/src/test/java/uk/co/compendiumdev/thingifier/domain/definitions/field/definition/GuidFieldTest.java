@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
 
-public class GuidFieldTest {
+class GuidFieldTest {
 
     @Test
     void canValidateExampleGuid(){

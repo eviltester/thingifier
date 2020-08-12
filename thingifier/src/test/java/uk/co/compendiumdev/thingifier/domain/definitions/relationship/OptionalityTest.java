@@ -3,7 +3,7 @@ package uk.co.compendiumdev.thingifier.domain.definitions.relationship;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class OptionalityTest {
+class OptionalityTest {
 
     @Test
     void mandatoryFromStringM() {

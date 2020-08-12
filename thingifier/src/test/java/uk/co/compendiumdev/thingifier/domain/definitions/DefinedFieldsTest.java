@@ -9,13 +9,13 @@ import uk.co.compendiumdev.thingifier.domain.definitions.field.definition.FieldT
 import java.util.ArrayList;
 import java.util.List;
 
-public class DefinedFieldsTest {
+class DefinedFieldsTest {
 
 
     private DefinedFields multipleFields;
 
     @Test
-    public void initiallyNoFields(){
+    void initiallyNoFields(){
         DefinedFields fields = new DefinedFields();
 
         final List<String> orderedFieldNames = fields.getFieldNames();
@@ -23,7 +23,7 @@ public class DefinedFieldsTest {
     }
 
     @Test
-    public void fieldNamesAreAddedInOrder(){
+    void fieldNamesAreAddedInOrder(){
 
         DefinedFields fields = new DefinedFields();
         fields.addField(Field.is("zacharay"));
@@ -41,7 +41,7 @@ public class DefinedFieldsTest {
     }
 
     @Test
-    public void canAddFieldsInBulk(){
+    void canAddFieldsInBulk(){
 
         DefinedFields fields = new DefinedFields();
         fields.addField(Field.is("zacharay"));
@@ -57,7 +57,7 @@ public class DefinedFieldsTest {
     }
 
     @Test
-    public void canReportOnFieldExistence(){
+    void canReportOnFieldExistence(){
 
         DefinedFields fields = new DefinedFields();
         fields.addField(Field.is("zacharay"));
@@ -67,7 +67,7 @@ public class DefinedFieldsTest {
     }
 
     @Test
-    public void canGetExistingFields(){
+    void canGetExistingFields(){
 
         DefinedFields fields = new DefinedFields();
         fields.addField(Field.is("zacharay"));
@@ -93,7 +93,7 @@ public class DefinedFieldsTest {
     }
 
     @Test
-    public void canGetSpecificFieldTypes(){
+    void canGetSpecificFieldTypes(){
 
         final List<Field> strings = multipleFields.getFieldsOfType(FieldType.STRING);
 
@@ -111,7 +111,7 @@ public class DefinedFieldsTest {
     }
 
     @Test
-    public void canGetNamesOfSpecificFieldTypes(){
+    void canGetNamesOfSpecificFieldTypes(){
 
         final List<String> strings = multipleFields.getFieldNamesOfType(FieldType.STRING);
 
@@ -123,7 +123,7 @@ public class DefinedFieldsTest {
     }
 
     @Test
-    public void canGetMultipleFieldTypes(){
+    void canGetMultipleFieldTypes(){
 
         final List<Field> others = multipleFields.getFieldsOfType(
                                                 FieldType.GUID,
@@ -138,7 +138,7 @@ public class DefinedFieldsTest {
     }
 
     @Test
-    public void noFieldsReturnsNoAdditionalResults(){
+    void noFieldsReturnsNoAdditionalResults(){
 
         final List<Field> others = multipleFields.getFieldsOfType(
                 FieldType.GUID,
@@ -155,7 +155,7 @@ public class DefinedFieldsTest {
     }
 
     @Test
-    public void noFieldsReturnsNoResults(){
+    void noFieldsReturnsNoResults(){
 
         final List<Field> none = multipleFields.getFieldsOfType(
                 FieldType.FLOAT,

@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.domain.definitions.Cardinality;
 
-public class RelationshipVectorTest {
+class RelationshipVectorTest {
     private Thing task;
     private Thing estimate;
     private RelationshipVector vector;

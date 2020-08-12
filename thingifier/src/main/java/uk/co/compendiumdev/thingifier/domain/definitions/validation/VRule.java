@@ -2,6 +2,10 @@ package uk.co.compendiumdev.thingifier.domain.definitions.validation;
 
 public class VRule {
 
+    private VRule(){
+        // don't be tempted, this is a factory class
+    }
+
     public static ValidationRule notEmpty() {
         return new NotEmptyValidationRule();
     }

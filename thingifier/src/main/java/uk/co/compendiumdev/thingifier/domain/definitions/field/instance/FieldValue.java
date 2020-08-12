@@ -2,17 +2,17 @@ package uk.co.compendiumdev.thingifier.domain.definitions.field.instance;
 
 import uk.co.compendiumdev.thingifier.domain.instances.InstanceFields;
 
-final public class FieldValue {
+public final class FieldValue {
 
     private final String fieldName; // should this be name or should it be a Field reference?
-    private final String fieldValue;
+    private final String valueOfField;
     private InstanceFields objectValue;
     // todo: list of strings for an array
     // todo: list of InstanceFields for an array of objects
 
     private FieldValue(String fieldName, String fieldValue) {
         this.fieldName = fieldName;
-        this.fieldValue = fieldValue;
+        this.valueOfField = fieldValue;
         this.objectValue = null;
     }
 
@@ -20,7 +20,7 @@ final public class FieldValue {
     public String toString() {
         String string =  "FieldValue{" +
                 "fieldName='" + fieldName + "'" +
-                ", fieldValue='" + fieldValue + "'";
+                ", fieldValue='" + valueOfField + "'";
         if(objectValue!=null){
             string = string + ",{ " + objectValue.toString() + " }";
         }
@@ -53,12 +53,12 @@ final public class FieldValue {
         if(objectValue!=null){
             return FieldValue.is(fieldName, objectValue.cloned());
         }else{
-            return FieldValue.is(fieldName, fieldValue);
+            return FieldValue.is(fieldName, valueOfField);
         }
     }
 
     public String asString() {
-        return fieldValue;
+        return valueOfField;
     }
 
     public InstanceFields asObject() {
@@ -66,21 +66,21 @@ final public class FieldValue {
     }
 
     public float asFloat() {
-        return Float.valueOf(fieldValue);
+        return Float.valueOf(valueOfField);
     }
 
     public boolean asBoolean() {
-        if (fieldValue.toLowerCase().contentEquals("true")){
+        if (valueOfField.toLowerCase().contentEquals("true")){
             return true;
         }
-        if(fieldValue.toLowerCase().contentEquals("false")) {
+        if(valueOfField.toLowerCase().contentEquals("false")) {
             return false;
         }
 
-        throw new IllegalArgumentException(fieldValue + " is not boolean");
+        throw new IllegalArgumentException(valueOfField + " is not boolean");
     }
 
     public int asInteger() {
-        return Integer.valueOf(fieldValue);
+        return Integer.valueOf(valueOfField);
     }
 }

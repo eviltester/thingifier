@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.domain.definitions.field.instance.FieldValue;
 
-public class NotEmptyValidationRuleTest {
+class NotEmptyValidationRuleTest {
 
     @Test
     void ruleFailsWhenNotSatisfied(){

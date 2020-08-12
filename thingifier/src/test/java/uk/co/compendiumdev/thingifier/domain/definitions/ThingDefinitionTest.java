@@ -12,10 +12,10 @@ import uk.co.compendiumdev.thingifier.domain.instances.InstanceFields;
 import java.util.List;
 
 
-public class ThingDefinitionTest {
+class ThingDefinitionTest {
 
     @Test
-    public void entityDefinitionCreation() {
+    void entityDefinitionCreation() {
         ThingDefinition eDefn;
         eDefn = ThingDefinition.create("Requirement", "Requirements");
 
@@ -29,7 +29,7 @@ public class ThingDefinitionTest {
     }
 
     @Test
-    public void addFieldToEntityDefinition() {
+    void addFieldToEntityDefinition() {
         ThingDefinition eDefn;
         eDefn = ThingDefinition.create("Requirement", "Requirements");
 
@@ -48,7 +48,7 @@ public class ThingDefinitionTest {
     }
 
     @Test
-    public void addMultipleFieldsToEntityDefinition() {
+    void addMultipleFieldsToEntityDefinition() {
         ThingDefinition eDefn;
         eDefn = ThingDefinition.create("Requirement", "Requirements");
 
@@ -63,7 +63,7 @@ public class ThingDefinitionTest {
     }
 
     @Test
-    public void canGetFieldsOfType() {
+    void canGetFieldsOfType() {
         ThingDefinition eDefn;
         eDefn = ThingDefinition.create("Requirement", "Requirements");
 
@@ -87,7 +87,7 @@ public class ThingDefinitionTest {
     }
 
     @Test
-    public void fieldsOrderingIsTheOrderWhenDefined() {
+    void fieldsOrderingIsTheOrderWhenDefined() {
 
         ThingDefinition defn = ThingDefinition.create("thing", "things");
 
@@ -139,7 +139,7 @@ public class ThingDefinitionTest {
 
 
     @Test
-    public void canInstantiateFieldDefinitions() {
+    void canInstantiateFieldDefinitions() {
         ThingDefinition eDefn;
         eDefn = ThingDefinition.create("Requirement", "Requirements");
 
