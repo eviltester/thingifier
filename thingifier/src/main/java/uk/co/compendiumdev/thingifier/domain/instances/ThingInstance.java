@@ -158,72 +158,11 @@ public class ThingInstance {
         return this.entityDefinition;
     }
 
-
-    public boolean hasIDField() {
-        return !entityDefinition.getFieldsOfType(FieldType.ID).isEmpty();
-    }
-
-    // todo assumes that there is one id field - should allow more
-    public String getID() {
-        String value = "";
-        final List<Field> idFields = entityDefinition.getFieldsOfType(FieldType.ID);
-        Field field = null;
-        if(!idFields.isEmpty()){
-            field = idFields.get(0);
-        }
-        if(field!=null) {
-            value = getFieldValue(field.getName()).asString();
-        }
-        return value;
-    }
-
     /**
      * connect this thing to another thing using the relationship relationshipName
      */
-    public void connects(String relationshipName, ThingInstance thing) {
-        relationships.connect( relationshipName, thing);
-    }
-
-    protected void isNowRelatedVia(RelationshipInstance relationship) {
-        // if the relationship vector has a parent that is both ways then we need to create a relationship of the reverse type to the thing that called us
-        if (relationship.getRelationship().isTwoWay()) {
-            relationships.add(relationship);
-        }
-    }
-
-    public ThingDefinition typeOfConnectedItems(String relationshipName) {
-        return relationships.getTypeOfConnectedItems(relationshipName);
-    }
-
-    public Collection<ThingInstance> connectedItems(String relationshipName) {
-        return relationships.getConnectedItems(relationshipName);
-    }
-
-    public void removeRelationshipsTo(ThingInstance thing, String relationshipName) {
-        relationships.removeRelationshipsTo(thing, relationshipName);
-
-    }
-
-    public List<ThingInstance> removeAllRelationships() {
-        return relationships.removeAllRelationships();
-    }
-
-    public void isNoLongerRelatedVia(RelationshipInstance relationship) {
-        // delete any relationship to or from
-        relationships.remove(relationship);
-    }
-
-    public void removeRelationshipsInvolvingMe(ThingInstance thing) {
-        relationships.removeAllRelationshipsInvolving(thing);
-    }
-
-    public List<ThingInstance> connectedItemsOfType(String type) {
-        return relationships.connectedItemsOfType(type);
-    }
-
-    public boolean hasAnyRelationshipInstances() {
-        return relationships.hasAnyRelationshipInstances();
-
+    public Relationships getRelationships(){
+        return relationships;
     }
 
     /*
@@ -246,7 +185,6 @@ public class ThingInstance {
 
     public ValidationReport validateRelationships(){
         return relationships.validateRelationships();
-
     }
 
     public ValidationReport validate() {
@@ -284,21 +222,6 @@ public class ThingInstance {
         return cloneInstance;
     }
 
-    // this was only used in the documentation,
-    // and the relationships were not used
-    // and even if they were, there would not be any because the instance is 'blank'
-//    public ThingInstance createDuplicateWithRelationships() {
-//        ThingInstance cloneInstance = new ThingInstance(entityDefinition);
-//        cloneInstance.setCloneFieldValuesFrom(instanceFields.cloned());
-//        cloneInstance.setCloneRelationships(relationships.createClonedRelationships());
-//        return cloneInstance;
-//    }
-
-//    private void setCloneRelationships(final List<RelationshipInstance> clonedRelationships) {
-//        for(RelationshipInstance relationship : clonedRelationships){
-//            relationships.add(relationship);
-//        }
-//    }
 
     public InstanceFields getFields() {
         return instanceFields;

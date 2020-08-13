@@ -3,6 +3,8 @@ package uk.co.compendiumdev.thingifier.query;
 import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.apiconfig.ParamConfig;
+import uk.co.compendiumdev.thingifier.domain.definitions.field.definition.Field;
+import uk.co.compendiumdev.thingifier.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.domain.definitions.relationship.RelationshipVector;
 import uk.co.compendiumdev.thingifier.domain.definitions.ThingDefinition;
 import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
@@ -78,13 +80,13 @@ final public class SimpleQuery {
 
 
                 if (foundItems != null && foundItems.size() > 0) {
-                    resultContainsDefinition = foundItems.get(0).typeOfConnectedItems(term);
+                    resultContainsDefinition = foundItems.get(0).getRelationships().getTypeOfConnectedItems(term);
                 }
 
                 List<ThingInstance> newitems = new ArrayList<ThingInstance>();
                 if (foundItems != null) {
                     for (ThingInstance instance : foundItems) {
-                        newitems.addAll(instance.connectedItems(term));
+                        newitems.addAll(instance.getRelationships().getConnectedItems(term));
                     }
                 }
 
@@ -128,13 +130,13 @@ final public class SimpleQuery {
                     foundItemsHistoryList.add(thingifier.getThingNamed(term));
 
                     if (foundItems != null && foundItems.size() > 0) {
-                        resultContainsDefinition = foundItems.get(0).typeOfConnectedItems(term);
+                        resultContainsDefinition = foundItems.get(0).getRelationships().getTypeOfConnectedItems(term);
                     }
 
                     List<ThingInstance> newitems = new ArrayList<ThingInstance>();
                     if (foundItems != null) {
                         for (ThingInstance instance : foundItems) {
-                            List<ThingInstance> matchedInstances = instance.connectedItemsOfType(term);
+                            List<ThingInstance> matchedInstances = instance.getRelationships().connectedItemsOfType(term);
                             newitems.addAll(matchedInstances);
                         }
                     }
@@ -156,9 +158,16 @@ final public class SimpleQuery {
             for (ThingInstance instance : foundItems) {
 
                 boolean matchBasedOnIdOrGUID = false;
-                if(instance.hasIDField() && instance.getID().contentEquals(term)){
-                    // found based on ID
-                    matchBasedOnIdOrGUID = true;
+
+                // found based on ID ?
+                final List<Field> idFields = instance.getEntity().
+                        getFieldsOfType(FieldType.ID);
+                if(!idFields.isEmpty()){
+                    final String idValue = instance.getFieldValue(
+                            idFields.get(0).getName()).asString();
+                    if(idValue.contentEquals(term)){
+                        matchBasedOnIdOrGUID=true;
+                    }
                 }
 
                 if (instance.getGUID().contentEquals(term)) {

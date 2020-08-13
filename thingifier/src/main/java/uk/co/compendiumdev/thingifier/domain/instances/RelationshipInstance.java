@@ -60,4 +60,15 @@ public class RelationshipInstance {
         return from;
     }
 
+    public boolean involves(final ThingInstance thing) {
+        return (to == thing || from == thing);
+    }
+
+    public ThingInstance getOtherThingInstance(final ThingInstance forThis) {
+        if (to == forThis) {
+            return from;
+        }
+
+        return to;
+    }
 }

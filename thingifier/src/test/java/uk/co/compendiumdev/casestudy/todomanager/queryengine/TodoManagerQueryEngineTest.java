@@ -44,7 +44,7 @@ public class TodoManagerQueryEngineTest {
         category.addInstance(homeCategory);
 
 
-        paperwork.connects("categories", officeCategory);
+        paperwork.getRelationships().connect("categories", officeCategory);
 
     }
 
@@ -197,8 +197,8 @@ public class TodoManagerQueryEngineTest {
         ThingInstance officeWork = project.createInstance().setValue("title", "Office Work");
         project.addInstance(officeWork);
 
-        officeWork.connects("tasks", paperwork);
-        officeWork.connects("tasks", filework);
+        officeWork.getRelationships().connect("tasks", paperwork);
+        officeWork.getRelationships().connect("tasks", filework);
 
 
         // match on relationships

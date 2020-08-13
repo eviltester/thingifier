@@ -52,23 +52,23 @@ public class BasicTodoManagerTest {
         ThingInstance officeWork = project.createInstance().setValue("title", "Office Work");
         project.addInstance(officeWork);
 
-        officeWork.connects("tasks", paperwork);
-        officeWork.connects("tasks", filework);
+        officeWork.getRelationships().connect("tasks", paperwork);
+        officeWork.getRelationships().connect("tasks", filework);
 
-        Collection<ThingInstance> relatedItems = officeWork.connectedItems("tasks");
+        Collection<ThingInstance> relatedItems = officeWork.getRelationships().getConnectedItems("tasks");
 
         Assertions.assertTrue(relatedItems.contains(paperwork));
         Assertions.assertTrue(relatedItems.contains(filework));
 
 
-        relatedItems = officeWork.connectedItems("tasks");
+        relatedItems = officeWork.getRelationships().getConnectedItems("tasks");
         Assertions.assertTrue(relatedItems.contains(paperwork));
         Assertions.assertTrue(relatedItems.contains(filework));
 
         todoManager.deleteThing(paperwork);
 
 
-        relatedItems = officeWork.connectedItems("tasks");
+        relatedItems = officeWork.getRelationships().getConnectedItems("tasks");
         Assertions.assertFalse(relatedItems.contains(paperwork));
         Assertions.assertTrue(relatedItems.contains(filework));
     }

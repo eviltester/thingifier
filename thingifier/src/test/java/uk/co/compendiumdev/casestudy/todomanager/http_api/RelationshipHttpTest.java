@@ -44,7 +44,7 @@ public class RelationshipHttpTest {
         final ThingInstance aproject = project.createInstance().setValue("title", "a Project");
         project.addInstance(aproject);
 
-        Assertions.assertEquals(0,aproject.connectedItems("tasks").size());
+        Assertions.assertEquals(0, aproject.getRelationships().getConnectedItems("tasks").size());
 
         HttpApiRequest request = new HttpApiRequest("projects/" + aproject.getGUID() + "/tasks");
         request.getHeaders().putAll(HeadersSupport.acceptJson());
@@ -56,7 +56,7 @@ public class RelationshipHttpTest {
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).post(request);
         Assertions.assertEquals(201, response.getStatusCode());
 
-        Assertions.assertEquals(1,aproject.connectedItems("tasks").size());
+        Assertions.assertEquals(1, aproject.getRelationships().getConnectedItems("tasks").size());
 
     }
 
@@ -66,7 +66,7 @@ public class RelationshipHttpTest {
         final ThingInstance aproject = project.createInstance().setValue("title", "a Project");
         project.addInstance(aproject);
 
-        Assertions.assertEquals(0,aproject.connectedItems("tasks").size());
+        Assertions.assertEquals(0, aproject.getRelationships().getConnectedItems("tasks").size());
         Assertions.assertEquals(0,todo.countInstances());
 
         HttpApiRequest request = new HttpApiRequest("projects/" + aproject.getGUID() + "/tasks");
@@ -80,7 +80,7 @@ public class RelationshipHttpTest {
 
         Assertions.assertEquals(201, response.getStatusCode());
 
-        Assertions.assertEquals(1,aproject.connectedItems("tasks").size());
+        Assertions.assertEquals(1, aproject.getRelationships().getConnectedItems("tasks").size());
         Assertions.assertEquals(1,todo.countInstances());
 
         final ThingInstance inMemoryTodo = todo.findInstanceByGUID(response.getHeaders().get(ApiResponse.GUID_HEADER));
@@ -99,7 +99,7 @@ public class RelationshipHttpTest {
         final ThingInstance aproject = project.createInstance().setValue("title", "a Project");
         project.addInstance(aproject);
 
-        Assertions.assertEquals(0,aproject.connectedItems("tasks").size());
+        Assertions.assertEquals(0, aproject.getRelationships().getConnectedItems("tasks").size());
 
         HttpApiRequest request = new HttpApiRequest("projects/" + aproject.getGUID() + "/tasks");
         request.getHeaders().putAll(HeadersSupport.acceptJson());
@@ -111,7 +111,7 @@ public class RelationshipHttpTest {
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).post(request);
         Assertions.assertEquals(400, response.getStatusCode());
 
-        Assertions.assertEquals(0,aproject.connectedItems("tasks").size());
+        Assertions.assertEquals(0, aproject.getRelationships().getConnectedItems("tasks").size());
 
         final ErrorMessages errors = new Gson().fromJson(response.getBody(), ErrorMessages.class);
 
@@ -130,7 +130,7 @@ public class RelationshipHttpTest {
         final ThingInstance aproject = project.createInstance().setValue("title", "a Project");
         project.addInstance(aproject);
 
-        Assertions.assertEquals(0,aproject.connectedItems("tasks").size());
+        Assertions.assertEquals(0, aproject.getRelationships().getConnectedItems("tasks").size());
 
         HttpApiRequest request = new HttpApiRequest("projects/" + aproject.getGUID() + "/tasks");
         request.getHeaders().putAll(HeadersSupport.acceptJson());
@@ -162,7 +162,7 @@ public class RelationshipHttpTest {
         final ThingInstance atodo = todo.createInstance().setValue("title", "a TODO");
         todo.addInstance(atodo);
 
-        Assertions.assertEquals(0,acategory.connectedItems("todos").size());
+        Assertions.assertEquals(0, acategory.getRelationships().getConnectedItems("todos").size());
 
         HttpApiRequest request = new HttpApiRequest("categories/" + acategory.getGUID() + "/todos");
         request.getHeaders().putAll(HeadersSupport.acceptJson());
@@ -174,7 +174,7 @@ public class RelationshipHttpTest {
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).post(request);
         Assertions.assertEquals(201, response.getStatusCode());
 
-        Assertions.assertEquals(1,acategory.connectedItems("todos").size());
+        Assertions.assertEquals(1, acategory.getRelationships().getConnectedItems("todos").size());
 
     }
 
@@ -185,7 +185,7 @@ public class RelationshipHttpTest {
         categories.addInstance(acategory);
 
 
-        Assertions.assertEquals(0,acategory.connectedItems("todos").size());
+        Assertions.assertEquals(0, acategory.getRelationships().getConnectedItems("todos").size());
         Assertions.assertEquals(0,todo.countInstances());
 
         HttpApiRequest request = new HttpApiRequest("categories/" + acategory.getGUID() + "/todos");
@@ -199,7 +199,7 @@ public class RelationshipHttpTest {
 
         Assertions.assertEquals(201, response.getStatusCode());
 
-        Assertions.assertEquals(1,acategory.connectedItems("todos").size());
+        Assertions.assertEquals(1, acategory.getRelationships().getConnectedItems("todos").size());
         Assertions.assertEquals(1,todo.countInstances());
 
         final ThingInstance inMemoryTodo = todo.findInstanceByGUID(response.getHeaders().get(ApiResponse.GUID_HEADER));
@@ -217,7 +217,7 @@ public class RelationshipHttpTest {
         final ThingInstance aproject = project.createInstance().setValue("title", "a Project");
         project.addInstance(aproject);
 
-        Assertions.assertEquals(0,aproject.connectedItems("tasks").size());
+        Assertions.assertEquals(0, aproject.getRelationships().getConnectedItems("tasks").size());
 
         HttpApiRequest request = new HttpApiRequest("projects/" + aproject.getGUID() + "/tasks");
         request.getHeaders().putAll(HeadersSupport.containsXml());
@@ -228,7 +228,7 @@ public class RelationshipHttpTest {
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).post(request);
         Assertions.assertEquals(201, response.getStatusCode());
 
-        Assertions.assertEquals(1,aproject.connectedItems("tasks").size());
+        Assertions.assertEquals(1, aproject.getRelationships().getConnectedItems("tasks").size());
 
     }
 
@@ -241,9 +241,9 @@ public class RelationshipHttpTest {
         final ThingInstance aproject = project.createInstance().setValue("title", "a Project");
         project.addInstance(aproject);
 
-        aproject.connects("tasks", atodo);
+        aproject.getRelationships().connect("tasks", atodo);
 
-        Assertions.assertEquals(1,aproject.connectedItems("tasks").size());
+        Assertions.assertEquals(1, aproject.getRelationships().getConnectedItems("tasks").size());
         Assertions.assertEquals(1, todo.countInstances());
         Assertions.assertEquals(1, project.countInstances());
 
@@ -253,7 +253,7 @@ public class RelationshipHttpTest {
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).delete(request);
         Assertions.assertEquals(200, response.getStatusCode());
 
-        Assertions.assertEquals(0,aproject.connectedItems("tasks").size());
+        Assertions.assertEquals(0, aproject.getRelationships().getConnectedItems("tasks").size());
         Assertions.assertEquals(1, todo.countInstances());
         Assertions.assertEquals(1, project.countInstances());
 
@@ -270,9 +270,9 @@ public class RelationshipHttpTest {
         final ThingInstance atodo = todo.createInstance().setValue("title", "a TODO");
         todo.addInstance(atodo);
 
-        acategory.connects("todos", atodo);
+        acategory.getRelationships().connect("todos", atodo);
 
-        Assertions.assertEquals(1,acategory.connectedItems("todos").size());
+        Assertions.assertEquals(1, acategory.getRelationships().getConnectedItems("todos").size());
         Assertions.assertEquals(1, todo.countInstances());
         Assertions.assertEquals(1, categories.countInstances());
 
@@ -281,7 +281,7 @@ public class RelationshipHttpTest {
         HttpApiResponse response = new ThingifierHttpApi(todoManager).delete(request);
         Assertions.assertEquals(200, response.getStatusCode());
 
-        Assertions.assertEquals(0,acategory.connectedItems("todos").size());
+        Assertions.assertEquals(0, acategory.getRelationships().getConnectedItems("todos").size());
         Assertions.assertEquals(1, todo.countInstances());
         Assertions.assertEquals(1, categories.countInstances());
 
@@ -289,7 +289,7 @@ public class RelationshipHttpTest {
         response = new ThingifierHttpApi(todoManager).delete(request);
         Assertions.assertEquals(404, response.getStatusCode());
 
-        Assertions.assertEquals(0,acategory.connectedItems("todos").size());
+        Assertions.assertEquals(0, acategory.getRelationships().getConnectedItems("todos").size());
         Assertions.assertEquals(1, todo.countInstances());
         Assertions.assertEquals(1, categories.countInstances());
     }
@@ -342,7 +342,7 @@ public class RelationshipHttpTest {
         Assertions.assertEquals(201, response.getStatusCode());
 
         Assertions.assertEquals(1, todoManager.getThingNamed("estimate").countInstances());
-        Assertions.assertEquals(1, atodo.connectedItems("estimates").size());
+        Assertions.assertEquals(1, atodo.getRelationships().getConnectedItems("estimates").size());
 
     }
 
@@ -359,9 +359,9 @@ public class RelationshipHttpTest {
         final ThingInstance anEstimate = estimates.createInstance().setValue("duration", "7");
         estimates.addInstance(anEstimate);
 
-        anEstimate.connects("estimate", atodo);
+        anEstimate.getRelationships().connect("estimate", atodo);
 
-        Assertions.assertEquals(1, atodo.connectedItems("estimates").size());
+        Assertions.assertEquals(1, atodo.getRelationships().getConnectedItems("estimates").size());
         Assertions.assertEquals(1, estimates.countInstances());
         Assertions.assertEquals(1, todo.countInstances());
 
@@ -389,9 +389,9 @@ public class RelationshipHttpTest {
         final ThingInstance anEstimate = estimates.createInstance().setValue("duration", "7").setValue("description", "an estimate");
         estimates.addInstance(anEstimate);
 
-        anEstimate.connects("estimate", atodo);
+        anEstimate.getRelationships().connect("estimate", atodo);
 
-        Assertions.assertEquals(1, atodo.connectedItems("estimates").size());
+        Assertions.assertEquals(1, atodo.getRelationships().getConnectedItems("estimates").size());
         Assertions.assertEquals(1, estimates.countInstances());
         Assertions.assertEquals(1, todo.countInstances());
 

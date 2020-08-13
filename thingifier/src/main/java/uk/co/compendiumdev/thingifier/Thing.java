@@ -90,7 +90,7 @@ final public class Thing {
 
         instances.remove(guid);
 
-        final List<ThingInstance> alsoDelete = item.removeAllRelationships();
+        final List<ThingInstance> alsoDelete = item.getRelationships().removeAllRelationships();
 
 
         return alsoDelete;

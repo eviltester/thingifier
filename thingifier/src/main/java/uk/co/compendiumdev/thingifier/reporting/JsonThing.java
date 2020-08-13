@@ -166,12 +166,12 @@ public class JsonThing {
         Boolean useIdsInRelationshipRenderingIfAvailable = apiConfig.willRenderRelationshipsWithIdsIfAvailable(); // todo: allow configuring relationship rendering at an app or api level
 
         // "relationships" : [
-        if(relationships.size()>0 && thingInstance.hasAnyRelationshipInstances()){
+        if(relationships.size()>0 && thingInstance.getRelationships().hasAnyRelationshipInstances()){
             final JsonArray relationshipsArray = new JsonArray();
 
             // fill the array "relationship_name" : [
             for(RelationshipVector relationship : relationships){
-                final Collection<ThingInstance> relatedItems = thingInstance.connectedItems(relationship.getName());
+                final Collection<ThingInstance> relatedItems = thingInstance.getRelationships().getConnectedItems(relationship.getName());
 
                 boolean isCompressedRelationship=true;
                 if(thingInstance.getEntity().hasFieldNameDefined(relationship.getName())){

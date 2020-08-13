@@ -29,10 +29,10 @@ public class TodoManagerAPIDataPopulator implements ThingifierDataPopulator {
         ThingInstance officeWork = project.createInstance().setValue("title", "Office Work");
         project.addInstance(officeWork);
 
-        officeWork.connects("tasks", paperwork);
-        officeWork.connects("tasks", filework);
+        officeWork.getRelationships().connect("tasks", paperwork);
+        officeWork.getRelationships().connect("tasks", filework);
 
-        paperwork.connects("categories", officeCategory);
+        paperwork.getRelationships().connect("categories", officeCategory);
 
     }
 }

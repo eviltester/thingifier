@@ -114,7 +114,7 @@ public class RelationshipCreation {
                 return response;
             }
 
-            connectThis.connects(relationshipToUse.getName(), relatedItem);
+            connectThis.getRelationships().connect(relationshipToUse.getName(), relatedItem);
 
             // enforce cardinality on relationship
             ValidationReport validNow = relatedItem.validateRelationships();

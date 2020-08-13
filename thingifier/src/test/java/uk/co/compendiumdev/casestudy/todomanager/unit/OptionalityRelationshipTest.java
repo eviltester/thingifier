@@ -84,14 +84,14 @@ public class OptionalityRelationshipTest {
         ThingInstance tidyRoomEstimate = estimates.createInstance().
                 setValue("duration", "1");
 
-        tidyRoomEstimate.connects("estimate", tidy);
+        tidyRoomEstimate.getRelationships().connect("estimate", tidy);
 
         // it should be valid because the estimate has a relationship with a to do
         Assertions.assertTrue(tidyRoomEstimate.validate().isValid());
 
         estimates.addInstance(tidyRoomEstimate);
 
-        final Collection<ThingInstance> relatedEstimates = tidy.connectedItems("estimate");
+        final Collection<ThingInstance> relatedEstimates = tidy.getRelationships().getConnectedItems("estimate");
         Assertions.assertEquals(1, relatedEstimates.size());
 
     }
@@ -115,14 +115,14 @@ public class OptionalityRelationshipTest {
         ThingInstance tidyRoomEstimate = estimates.createInstance().
                 setValue("duration", "1");
 
-        tidyRoomEstimate.connects("estimate", tidy);
+        tidyRoomEstimate.getRelationships().connect("estimate", tidy);
 
         // it should be valid because the estimate has a relationship with a to do
         Assertions.assertTrue(tidyRoomEstimate.validate().isValid());
 
         estimates.addInstance(tidyRoomEstimate);
 
-        final Collection<ThingInstance> relatedEstimates = tidy.connectedItems("estimates");
+        final Collection<ThingInstance> relatedEstimates = tidy.getRelationships().getConnectedItems("estimates");
         Assertions.assertEquals(1, relatedEstimates.size());
         Assertions.assertEquals(1, estimates.getInstances().size());
         Assertions.assertEquals(1, todos.getInstances().size());

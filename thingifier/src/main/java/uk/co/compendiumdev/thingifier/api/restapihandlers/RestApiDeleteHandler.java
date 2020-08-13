@@ -29,7 +29,7 @@ public class RestApiDeleteHandler {
             // delete the relationships not the items
             ThingInstance parent = queryresult.getParentInstance();
             ThingInstance child = queryresult.getLastInstance();
-            parent.removeRelationshipsTo(child, queryresult.getLastRelationshipName());
+            parent.getRelationships().removeRelationshipsInvolving(child, queryresult.getLastRelationshipName());
         } else {
             List<ThingInstance> items = queryresult.getListThingInstance();
             if (items.size() == 0) {

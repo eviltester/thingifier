@@ -1,6 +1,7 @@
 package uk.co.compendiumdev.thingifier.domain.instances;
 
 import uk.co.compendiumdev.thingifier.api.ValidationReport;
+import uk.co.compendiumdev.thingifier.domain.definitions.relationship.RelationshipDefinition;
 import uk.co.compendiumdev.thingifier.domain.definitions.relationship.RelationshipVector;
 import uk.co.compendiumdev.thingifier.domain.definitions.ThingDefinition;
 
@@ -43,14 +44,23 @@ public class Relationships {
         }
 
         // get the relationship vector between this thing and the passed in thing
-        RelationshipVector relationship = entityDefinition.getNamedRelationshipTo(relationshipName, thing.getEntity());
+        RelationshipVector relationship = entityDefinition.
+                                            getNamedRelationshipTo(
+                                                    relationshipName,
+                                                    thing.getEntity());
+
+        RelationshipDefinition relationshipDefinition =
+                        relationship.getRelationshipDefinition();
 
         RelationshipInstance related = new RelationshipInstance(
-                                                relationship.getRelationshipDefinition(),
+                                                relationshipDefinition,
                                                 forThis, thing);
         this.relationships.add(related);
 
-        thing.isNowRelatedVia(related);
+        if (relationshipDefinition.isTwoWay()) {
+            thing.getRelationships().add(related);
+        }
+
     }
 
     public void add(final RelationshipInstance relationship) {
@@ -78,25 +88,23 @@ public class Relationships {
         Set<ThingInstance> theConnectedItems = new HashSet<ThingInstance>();
         for (RelationshipInstance relationship : relationships) {
             if (relationship.getRelationship().isKnownAs(relationshipName)) {
-                if (relationship.getTo() == forThis) {
-                    theConnectedItems.add(relationship.getFrom());
-                } else {
-                    theConnectedItems.add(relationship.getTo());
-                }
+                theConnectedItems.add(
+                        relationship.getOtherThingInstance(forThis));
             }
         }
 
         return theConnectedItems;
     }
 
-    public void removeRelationshipsTo(final ThingInstance thing, final String relationshipName) {
+    public void removeRelationshipsInvolving(final ThingInstance thing, final String relationshipName) {
         List<RelationshipInstance> toDelete = new ArrayList<RelationshipInstance>();
 
         for (RelationshipInstance relationship : relationships) {
             if (relationship.getRelationship().isKnownAs(relationshipName)) {
-                if (relationship.getTo() == thing || relationship.getFrom() == thing) {
+                if (relationship.involves(thing)) {
                     toDelete.add(relationship);
-                    thing.isNoLongerRelatedVia(relationship);
+                    // delete any relationship to or from
+                    thing.getRelationships().remove(relationship);
                 }
             }
         }
@@ -109,14 +117,14 @@ public class Relationships {
 
         for (RelationshipInstance item : relationships) {
             if (item.getFrom() != forThis) {
-                item.getFrom().removeRelationshipsInvolvingMe(forThis);
+                item.getFrom().getRelationships().removeAllRelationshipsInvolving(forThis);
                 if (item.getRelationship().getFromRelationship().getOptionality() == MANDATORY_RELATIONSHIP) {
                     // I am deleted, therefor any mandatory relationship to me, must result in the related thing being
                     // deleted also
                     deleteThese.add(item.getFrom());
                 }
             } else {
-                item.getTo().removeRelationshipsInvolvingMe(forThis);
+                item.getTo().getRelationships().removeAllRelationshipsInvolving(forThis);
 
 //                if (item.getRelationship().getToRelationship().getOptionalityTo() == MANDATORY_RELATIONSHIP) {
 //                    // I am being deleted therefore it does not matter if relationship to other is mandatory
@@ -137,10 +145,7 @@ public class Relationships {
         List<RelationshipInstance> toDelete = new ArrayList<RelationshipInstance>();
 
         for (RelationshipInstance relationship : relationships) {
-            if (relationship.getTo() == thing) {
-                toDelete.add(relationship);
-            }
-            if (relationship.getFrom() == thing) {
+            if(relationship.involves(thing)){
                 toDelete.add(relationship);
             }
         }
@@ -159,7 +164,7 @@ public class Relationships {
     }
 
     public boolean hasAnyRelationshipInstances() {
-        return (relationships.size() >0);
+        return !relationships.isEmpty();
     }
 
 

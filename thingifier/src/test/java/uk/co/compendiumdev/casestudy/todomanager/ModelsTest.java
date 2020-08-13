@@ -3,7 +3,6 @@ package uk.co.compendiumdev.casestudy.todomanager;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import uk.co.compendiumdev.casestudy.todomanager.TodoManagerModel;
 import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
@@ -70,13 +69,13 @@ public class ModelsTest {
 
         for(ThingInstance project : projects.getInstances()){
 
-            project.connects("tasks", getRandomThingInstance(todos.getInstances()));
+            project.getRelationships().connect("tasks", getRandomThingInstance(todos.getInstances()));
         }
 
 
         for(ThingInstance todo : todos.getInstances()){
 
-            todo.connects("task-of", getRandomThingInstance(projects.getInstances()));
+            todo.getRelationships().connect("task-of", getRandomThingInstance(projects.getInstances()));
         }
 
         System.out.println(todoManager.toString());

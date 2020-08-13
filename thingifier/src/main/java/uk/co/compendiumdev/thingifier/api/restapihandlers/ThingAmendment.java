@@ -56,7 +56,7 @@ public class ThingAmendment {
             if(clearFieldsBeforeSettingFromArgs){
                 instance.clearAllFields();
                 // delete all existing relationships for idempotent amend
-                instance.removeAllRelationships();
+                instance.getRelationships().removeAllRelationships();
             }
             instance.setFieldValuesFrom(new BodyArgsProcessor(thingifier, bodyargs).removeRelationshipsFrom(instance));
 

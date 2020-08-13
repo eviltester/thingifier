@@ -173,12 +173,12 @@ public class DefaultGUI {
                     html.append("</details>");
 
 
-                    if (instance.hasAnyRelationshipInstances()) {
+            if (instance.getRelationships().hasAnyRelationshipInstances()) {
 
                         html.append("<h2>Relationships</h2>");
 
                         for (RelationshipVector relationship : definition.related().getRelationships()) {
-                            final Collection<ThingInstance> relatedItems = instance.connectedItems(relationship.getName());
+                            final Collection<ThingInstance> relatedItems = instance.getRelationships().getConnectedItems(relationship.getName());
                             html.append("<h3>" + relationship.getName() + "</h3>");
                             if (relatedItems.size() > 0) {
                                 boolean header = true;
