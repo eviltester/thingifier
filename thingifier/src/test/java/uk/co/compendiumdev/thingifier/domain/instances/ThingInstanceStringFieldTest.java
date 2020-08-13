@@ -7,7 +7,7 @@ import uk.co.compendiumdev.thingifier.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.domain.definitions.ThingDefinition;
 import uk.co.compendiumdev.thingifier.domain.definitions.validation.VRule;
 
-public class StringFieldInstanceTest {
+public class ThingInstanceStringFieldTest {
 
     // TODO: allow nullable string fields to have fully optional fields
     // TODO: add specific tests around the validation rule classes - currently these are 'used' not 'tested'

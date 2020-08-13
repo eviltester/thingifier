@@ -6,7 +6,7 @@ import uk.co.compendiumdev.thingifier.domain.definitions.field.definition.FieldT
 import uk.co.compendiumdev.thingifier.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.domain.definitions.ThingDefinition;
 
-public class FloatFieldInstanceTest {
+public class ThingInstanceFloatFieldTest {
 
     @Test
     public void byDefaultAFloatFieldIsZero(){

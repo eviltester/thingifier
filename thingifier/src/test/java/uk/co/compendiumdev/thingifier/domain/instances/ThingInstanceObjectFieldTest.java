@@ -14,7 +14,7 @@ import uk.co.compendiumdev.thingifier.domain.definitions.validation.VRule;
 import uk.co.compendiumdev.thingifier.reporting.JsonThing;
 import uk.co.compendiumdev.thingifier.reporting.XmlThing;
 
-public class ObjectFieldInstanceTest {
+public class ThingInstanceObjectFieldTest {
 
     ThingDefinition defn;
     ThingInstance instance;

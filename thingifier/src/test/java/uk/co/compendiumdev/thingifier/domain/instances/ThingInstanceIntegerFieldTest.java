@@ -6,7 +6,7 @@ import uk.co.compendiumdev.thingifier.domain.definitions.field.definition.FieldT
 import uk.co.compendiumdev.thingifier.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.domain.definitions.ThingDefinition;
 
-public class IntegerFieldInstanceTest {
+public class ThingInstanceIntegerFieldTest {
 
     @Test
     public void byDefaultAnIntegerFieldIsZero(){

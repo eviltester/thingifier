@@ -215,7 +215,10 @@ public class InstanceFields {
 
 
 
-    public ValidationReport validateFields(final List<String> excluding, final boolean amAllowedToSetIds) {
+    // todo: not sure about the amAllowedToSetIds would prefer a different
+    // way to configure the validation rules or exceptions to the rules
+    public ValidationReport validateFields(final List<String> excluding,
+                                           final boolean amAllowedToSetIds) {
         ValidationReport report = new ValidationReport();
 
         // Field validation
@@ -227,13 +230,20 @@ public class InstanceFields {
                                                     getAssignedValue(fieldName),
                                                 amAllowedToSetIds);
                 report.combine(validity);
-
             }
         }
 
         return report;
     }
 
+    /**
+     * Given a list of field values
+     * look at all the GUIDs and IDs referenced
+     * if they have different values to current then
+     * report the differences as errormessages
+     * @param args
+     * @return a List of error messages about the GUIDs and IDs mentioned
+     */
     public List<String> findAnyGuidOrIdDifferences(final  List<FieldValue> args) {
 
         List<String> errorMessages = new ArrayList<>();
