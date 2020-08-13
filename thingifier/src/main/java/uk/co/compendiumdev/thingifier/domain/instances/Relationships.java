@@ -63,7 +63,7 @@ public class Relationships {
 
     }
 
-    public void add(final RelationshipInstance relationship) {
+    private void add(final RelationshipInstance relationship) {
         relationships.add(relationship);
     }
 
@@ -137,7 +137,7 @@ public class Relationships {
         return deleteThese;
     }
 
-    public void remove(final RelationshipInstance relationship) {
+    private void remove(final RelationshipInstance relationship) {
         relationships.remove(relationship);
     }
 
