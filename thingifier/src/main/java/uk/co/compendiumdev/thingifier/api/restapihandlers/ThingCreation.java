@@ -6,6 +6,7 @@ import uk.co.compendiumdev.thingifier.api.ValidationReport;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.domain.definitions.field.definition.FieldType;
+import uk.co.compendiumdev.thingifier.domain.definitions.field.instance.FieldValue;
 import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
 
 import java.util.ArrayList;
@@ -74,9 +75,12 @@ public class ThingCreation {
         }
 
 
-
         // any next id counts should be set higher than the ids mentioned in here
-        thingifier.setNextIdsToAccomodate(bodyargs, thing);
+        List<FieldValue> fieldValues = FieldValues.
+                            fromListMapEntryStringString(
+                                    bodyargs.getFlattenedStringMap());
+
+        thingifier.setNextIdsToAccomodate(fieldValues, thing);
 
         return insertNewThingWithFields(bodyargs, instance, thing);
     }
@@ -96,7 +100,12 @@ public class ThingCreation {
 
         try {
             // if any guids or ids then throw an error if they are not the same
-            instance.setFieldValuesFrom(new BodyArgsProcessor(thingifier, bodyargs).removeRelationshipsFrom(instance));
+            List<FieldValue> fieldValues = FieldValues.
+                    fromListMapEntryStringString(
+                            new BodyArgsProcessor(thingifier, bodyargs).
+                                    removeRelationshipsFrom(instance));
+
+            instance.setFieldValuesFrom(fieldValues);
         } catch (Exception e) {
             return ApiResponse.error(400, e.getMessage());
         }
@@ -129,7 +138,13 @@ public class ThingCreation {
             // set all the fields and values
             List<String> ignoreFields = new ArrayList<>();
             ignoreFields.add("guid");  // todo guid might not be called guid
-            instance.overrideFieldValuesFromArgsIgnoring(new BodyArgsProcessor(thingifier, bodyargs).removeRelationshipsFrom(instance), ignoreFields);
+
+            List<FieldValue> fieldValues = FieldValues.
+                    fromListMapEntryStringString(
+                            new BodyArgsProcessor(thingifier, bodyargs).
+                                    removeRelationshipsFrom(instance));
+
+            instance.overrideFieldValuesFromArgsIgnoring(fieldValues, ignoreFields);
         } catch (Exception e) {
             return ApiResponse.error(400, e.getMessage());
         }

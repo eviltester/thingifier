@@ -2,6 +2,8 @@ package uk.co.compendiumdev.thingifier;
 
 import uk.co.compendiumdev.thingifier.api.ThingifierRestAPIHandler;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
+import uk.co.compendiumdev.thingifier.api.restapihandlers.BodyArgsProcessor;
+import uk.co.compendiumdev.thingifier.api.restapihandlers.FieldValues;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfigProfile;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfigProfiles;
@@ -224,14 +226,15 @@ final public class Thingifier {
         initialDataGenerator = dataPopulator;
     }
 
-    public void setNextIdsToAccomodate(final BodyParser bodyargs, final Thing thing) {
-        final List<Map.Entry<String, String>> fieldNamesAndValues = bodyargs.getFlattenedStringMap();
+    public void setNextIdsToAccomodate(List<FieldValue> fieldValues, final Thing thing) {
+
+
         final ThingDefinition defn = thing.definition();
         // todo: process nested objects - currently assume these are not ids, but they might be
-        for(Map.Entry<String, String> fieldNameValue : fieldNamesAndValues){
-            final Field field = defn.getField(fieldNameValue.getKey());
+        for(FieldValue fieldNameValue : fieldValues){
+            final Field field = defn.getField(fieldNameValue.getName());
             if(field!=null && field.getType()== FieldType.ID) {
-                field.ensureNextIdAbove(fieldNameValue.getValue());
+                field.ensureNextIdAbove(fieldNameValue.asString());
             }
         }
     }

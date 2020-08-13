@@ -256,28 +256,28 @@ public class InstanceFields {
         return report;
     }
 
-    public List<String> findAnyGuidOrIdDifferences(final List<Map.Entry<String, String>> args) {
+    public List<String> findAnyGuidOrIdDifferences(final  List<FieldValue> args) {
 
         List<String> errorMessages = new ArrayList<>();
 
         List<Field> idOrGuidFields = objectDefinition.getFieldsOfType(
                                         FieldType.GUID, FieldType.ID);
 
-        for (Map.Entry<String, String> entry : args) {
+        for (FieldValue entry : args) {
 
             // Handle attempt to amend a protected field
-            Field field = objectDefinition.getField(entry.getKey());
+            Field field = objectDefinition.getField(entry.getName());
             if (idOrGuidFields.contains(field)) {
                 // if editing it then throw error, ignore if same value
-                String existingValue = getFieldValue(entry.getKey()).asString();
+                String existingValue = getFieldValue(entry.getName()).asString();
                 if (existingValue != null && existingValue.trim().length() > 0) {
                     // if value is different then it is an attempt to amend it
-                    if (!existingValue.equalsIgnoreCase(entry.getValue())) {
+                    if (!existingValue.equalsIgnoreCase(entry.asString())) {
                         errorMessages.add(
                                 String.format("Can not amend %s from %s to %s",
-                                        entry.getKey(),
+                                        entry.getName(),
                                         existingValue,
-                                        entry.getValue()));
+                                        entry.asString()));
                     }
                 }
             }

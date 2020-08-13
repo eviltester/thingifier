@@ -25,7 +25,7 @@ public class ThingInstance {
      */
     public static ThingInstance createExampleInstance(ThingDefinition eDefn){
         // ideally we don't want this thing instance to impact the ids
-        // so don't set the ids and instead use the default values
+        // so don't set the ids and instead use the default and example values from definition
         return new ThingInstance(eDefn);
     }
 
@@ -38,10 +38,6 @@ public class ThingInstance {
         this.entityDefinition = eDefn;
         this.instanceFields = eDefn.instantiateFields();
         this.relationships = new Relationships(this);
-
-        // use the static factory methods to create the different variants
-//        addGUIDtoInstance();
-//        addIdsToInstance();
     }
 
     private void addGUIDtoInstance(){
@@ -61,22 +57,12 @@ public class ThingInstance {
         return instance;
     }
 
-//    public ThingInstance(ThingDefinition entityTestSession, String guid) {
-//        this(entityTestSession);
-//        instanceFields.addValue(FieldValue.is("guid", guid));
-//    }
-
     static public ThingInstance create(ThingDefinition entityDefn){
         ThingInstance instance = new ThingInstance(entityDefn);
         instance.addGUIDtoInstance();
         instance.addIdsToInstance();
         return instance;
     }
-
-//    public ThingInstance(ThingDefinition eDefn) {
-//        this(eDefn, true);
-//    }
-
 
     public String toString() {
 
@@ -106,40 +92,40 @@ public class ThingInstance {
         return this;
     }
 
-    public ThingInstance setFieldValuesFrom(final List<Map.Entry<String, String>> args) {
+    public ThingInstance setFieldValuesFrom(List<FieldValue> fieldValues) {
 
-        final List<String> anyErrors = instanceFields.findAnyGuidOrIdDifferences(args);
+
+        final List<String> anyErrors = instanceFields.findAnyGuidOrIdDifferences(fieldValues);
         if(anyErrors.size()>0){
             throw new RuntimeException(anyErrors.get(0));
         }
 
-        setFieldValuesFromArgsIgnoring(args, entityDefinition.getFieldNamesOfType(FieldType.ID, FieldType.GUID));
+        setFieldValuesFromArgsIgnoring(fieldValues, entityDefinition.getFieldNamesOfType(FieldType.ID, FieldType.GUID));
 
         return this;
     }
 
-    public void setFieldValuesFromArgsIgnoring(final List<Map.Entry<String, String>> args,
+    public void setFieldValuesFromArgsIgnoring(List<FieldValue> fieldValues,
                                                 final List<String> ignoreFields) {
 
-        for (Map.Entry<String, String> entry : args) {
+        for (FieldValue entry : fieldValues) {
 
             // Handle attempt to amend a protected field
-            if (!ignoreFields.contains(entry.getKey())) {
+            if (!ignoreFields.contains(entry.getName())) {
                 // set the value because it is not protected
-                setValue(entry.getKey(), entry.getValue());
+                setValue(entry.getName(), entry.asString());
             }
         }
     }
 
-    public void overrideFieldValuesFromArgsIgnoring(final List<Map.Entry<String, String>> args,
+    public void overrideFieldValuesFromArgsIgnoring(final List<FieldValue> fieldValues,
                                                final List<String> ignoreFields) {
-
-        for (Map.Entry<String, String> entry : args) {
+        for (FieldValue entry : fieldValues) {
 
             // Handle attempt to amend a protected field
-            if (!ignoreFields.contains(entry.getKey())) {
+            if (!ignoreFields.contains(entry.getName())) {
                 // set the value because it is not protected
-                overrideValue(entry.getKey(), entry.getValue());
+                overrideValue(entry.getName(), entry.asString());
             }
         }
     }

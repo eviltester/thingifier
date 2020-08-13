@@ -4,8 +4,10 @@ import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.ValidationReport;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
+import uk.co.compendiumdev.thingifier.domain.definitions.field.instance.FieldValue;
 import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
 
+import java.util.List;
 import java.util.Map;
 
 public class ThingAmendment {
@@ -40,7 +42,11 @@ public class ThingAmendment {
                 cloned.clearAllFields();
 
             }
-            cloned.setFieldValuesFrom(new BodyArgsProcessor(thingifier, bodyargs).removeRelationshipsFrom(instance));
+            List<FieldValue> fieldValues = FieldValues.
+                                        fromListMapEntryStringString(
+                                                new BodyArgsProcessor(thingifier, bodyargs).
+                                                        removeRelationshipsFrom(instance));
+            cloned.setFieldValuesFrom(fieldValues);
 
         } catch (Exception e) {
             return ApiResponse.error(400, e.getMessage());
@@ -58,7 +64,11 @@ public class ThingAmendment {
                 // delete all existing relationships for idempotent amend
                 instance.getRelationships().removeAllRelationships();
             }
-            instance.setFieldValuesFrom(new BodyArgsProcessor(thingifier, bodyargs).removeRelationshipsFrom(instance));
+            List<FieldValue> fieldValues = FieldValues.
+                    fromListMapEntryStringString(
+                            new BodyArgsProcessor(thingifier, bodyargs).
+                                    removeRelationshipsFrom(instance));
+            instance.setFieldValuesFrom(fieldValues);
 
             // todo: should we check that this was actually a success?
             final ApiResponse relresponse = new RelationshipCreator(thingifier).createRelationships(bodyargs, instance);
