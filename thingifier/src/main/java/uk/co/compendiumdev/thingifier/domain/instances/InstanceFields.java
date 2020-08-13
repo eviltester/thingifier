@@ -285,12 +285,4 @@ public class InstanceFields {
         return errorMessages;
     }
 
-    public void setValuesFromClone(final InstanceFields args) {
-        for(String fieldName : objectDefinition.getFieldNames()){
-            FieldValue value = args.getAssignedValue(fieldName);
-            if(value!=null){
-                addValue(value);
-            }
-        }
-    }
 }

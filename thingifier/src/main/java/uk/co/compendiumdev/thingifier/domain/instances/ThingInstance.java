@@ -195,17 +195,21 @@ public class ThingInstance {
         instanceFields.deleteAllFieldValuesExcept(ignoreFields);
     }
 
-    public ThingInstance setCloneFieldValuesFrom(final InstanceFields args) {
-
-        instanceFields.setValuesFromClone(args);
-
-        return this;
-    }
-
     public ThingInstance createDuplicateWithoutRelationships() {
         ThingInstance cloneInstance = new ThingInstance(entityDefinition);
-        cloneInstance.setCloneFieldValuesFrom(instanceFields.cloned());
+
+        for(String fieldName : instanceFields.getDefinition().getFieldNames()){
+            FieldValue value = instanceFields.getAssignedValue(fieldName);
+            if(value!=null){
+                cloneInstance.overrideValue(value.cloned());
+            }
+        }
+
         return cloneInstance;
+    }
+
+    private void overrideValue(final FieldValue useThis) {
+        instanceFields.addValue(useThis);
     }
 
 
