@@ -201,15 +201,11 @@ public class ThingInstance {
         for(String fieldName : instanceFields.getDefinition().getFieldNames()){
             FieldValue value = instanceFields.getAssignedValue(fieldName);
             if(value!=null){
-                cloneInstance.overrideValue(value.cloned());
+                cloneInstance.instanceFields.addValue(value.cloned());
             }
         }
 
         return cloneInstance;
-    }
-
-    private void overrideValue(final FieldValue useThis) {
-        instanceFields.addValue(useThis);
     }
 
 
