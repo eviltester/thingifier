@@ -12,11 +12,9 @@ public class Relationships {
 
     private final List<RelationshipInstance> relationships;
     private final ThingInstance forThis;
-    private final ThingDefinition entityDefinition;
 
     public Relationships(final ThingInstance thingInstance){
         this.forThis = thingInstance;
-        this.entityDefinition = thingInstance.getEntity();
         this.relationships = new ArrayList<>();
     }
 
@@ -26,17 +24,7 @@ public class Relationships {
         if (relationships.size() > 0) {
             output.append(String.format("\t\t\t\t\t Relationships:%n"));
             for (RelationshipInstance relatesTo : relationships) {
-                if (relatesTo.getFrom() == forThis) {
-                    output.append(String.format("\t\t\t\t\t %s : %s (%s)%n",
-                            relatesTo.getRelationship().getFromRelationship().getName(),
-                            relatesTo.getTo().getGUID(),
-                            relatesTo.getTo().getEntity().getName()));
-                } else {
-                    output.append(String.format("\t\t\t\t\t %s : %s (%s)%n",
-                            relatesTo.getRelationship().getReversedRelationship().getName(),
-                            relatesTo.getFrom().getGUID(),
-                            relatesTo.getFrom().getEntity().getName()));
-                }
+                output.append("\t\t\t\t\t" + relatesTo.toString());
             }
         }
 
@@ -45,6 +33,8 @@ public class Relationships {
 
     public void connect(final String relationshipName, final ThingInstance thing) {
         // TODO: enforce cardinality
+
+        final ThingDefinition entityDefinition = forThis.getEntity();
 
         // check if relationship is defined
         if (!entityDefinition.related().hasRelationship(relationshipName)) {
@@ -69,9 +59,11 @@ public class Relationships {
 
     public ThingDefinition getTypeOfConnectedItems(final String relationshipName) {
 
+        final ThingDefinition entityDefinition = forThis.getEntity();
+
         for (RelationshipVector relationship : entityDefinition.related().getRelationships()) {
             if (relationship.getRelationshipDefinition().isKnownAs(relationshipName)) {
-                if (relationship.getTo().definition() == this.entityDefinition) {
+                if (relationship.getTo().definition() == entityDefinition) {
                     return relationship.getFrom().definition();
                 } else {
                     return relationship.getTo().definition();
@@ -170,24 +162,15 @@ public class Relationships {
         return (relationships.size() >0);
     }
 
-    public List<RelationshipInstance> createClonedRelationships() {
-        List<RelationshipInstance> cloned = new ArrayList<>();
-        for(RelationshipInstance relationship : relationships){
-            cloned.add( new RelationshipInstance(
-                                relationship.getRelationship(),
-                                relationship.getFrom(),
-                                relationship.getTo()
-                        )
-                    );
-        }
-        return cloned;
-    }
+
 
     public ValidationReport validateRelationships() {
         ValidationReport report = new ValidationReport();
 
 
         // TODO: relationship cardinality validation e.g. too many, not enough etc.
+
+        final ThingDefinition entityDefinition = forThis.getEntity();
 
         // Optionality Relationship Validation
         final Collection<RelationshipVector> theRelationshipVectors = entityDefinition.related().getRelationships();
@@ -212,4 +195,17 @@ public class Relationships {
 
         return report;
     }
+
+//    public List<RelationshipInstance> createClonedRelationships() {
+//        List<RelationshipInstance> cloned = new ArrayList<>();
+//        for(RelationshipInstance relationship : relationships){
+//            cloned.add( new RelationshipInstance(
+//                            relationship.getRelationship(),
+//                            relationship.getFrom(),
+//                            relationship.getTo()
+//                    )
+//            );
+//        }
+//        return cloned;
+//    }
 }

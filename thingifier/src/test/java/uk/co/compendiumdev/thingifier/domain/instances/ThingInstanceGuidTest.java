@@ -22,7 +22,7 @@ public class ThingInstanceGuidTest {
     public void anInstanceHasAGuid() {
 
         ThingInstance session;
-        session = new ThingInstance(entityTestSession);
+        session = ThingInstance.create(entityTestSession);
 
         Assertions.assertNotNull(session.getGUID());
         Assertions.assertTrue(
@@ -37,7 +37,7 @@ public class ThingInstanceGuidTest {
     public void anInstanceCanAccessGuidAsFieldOrMethod() {
 
         ThingInstance session;
-        session = new ThingInstance(entityTestSession);
+        session = ThingInstance.create(entityTestSession);
 
         Assertions.assertEquals(session.getGUID(), session.getFieldValue("guid").asString());
 

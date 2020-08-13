@@ -15,7 +15,7 @@ public class EnumFieldInstanceTest {
         enumFieldEntity.addFields(Field.is("enum", FieldType.ENUM));
 
         // TODO: have a validation process for the definition and make it a syntax error for Enum fields to have no values
-        ThingInstance instance = new ThingInstance(enumFieldEntity);
+        ThingInstance instance = ThingInstance.create(enumFieldEntity);
         Assertions.assertEquals("", instance.getFieldValue("enum").asString());
     }
 
@@ -29,7 +29,7 @@ public class EnumFieldInstanceTest {
                                         withExample("dobbs")
         );
 
-        ThingInstance instance = new ThingInstance(stringFieldEntity);
+        ThingInstance instance = ThingInstance.create(stringFieldEntity);
 
         // use example
         instance.setValue("enum", "dukes");
@@ -50,7 +50,7 @@ public class EnumFieldInstanceTest {
                 withExample("dobbs")
         );
 
-        ThingInstance instance = new ThingInstance(stringFieldEntity);
+        ThingInstance instance = ThingInstance.create(stringFieldEntity);
 
         Assertions.assertThrows(IllegalArgumentException.class, ()-> {
             instance.setValue("enum", "connie");

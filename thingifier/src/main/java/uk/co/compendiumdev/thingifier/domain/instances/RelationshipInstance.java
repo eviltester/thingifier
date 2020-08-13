@@ -9,13 +9,6 @@ public class RelationshipInstance {
     private ThingInstance from;
     private ThingInstance to;
 
-    // TODO : should a relationship instance be associated with a vector rather than a definition?
-    public RelationshipInstance(RelationshipVector relationship, ThingInstance from, ThingInstance to) {
-        this.from = from;
-        this.to = to;
-        this.relationship = relationship.getRelationshipDefinition();
-    }
-
     public RelationshipInstance(RelationshipDefinition relationship, ThingInstance from, ThingInstance to) {
         this.from = from;
         this.to = to;

@@ -23,7 +23,7 @@ public class ThingInstanceFieldsAccessTest {
     @Test
     public void defaultValuesAreReturnedByGetValue(){
 
-        ThingInstance session = new ThingInstance(entityTestSession);
+        ThingInstance session = ThingInstance.create(entityTestSession);
         Assertions.assertEquals("Not Completed",
                 session.getFieldValue("CompletedStatus").asString());
     }
@@ -32,7 +32,7 @@ public class ThingInstanceFieldsAccessTest {
     @Test
     public void fieldValueAccessIsCaseInsensitive(){
 
-        ThingInstance session = new ThingInstance(entityTestSession);
+        ThingInstance session = ThingInstance.create(entityTestSession);
 
         Assertions.assertEquals("Not Completed",
                 session.getFieldValue("CompletedStatus").asString());
@@ -47,7 +47,7 @@ public class ThingInstanceFieldsAccessTest {
     @Test
     public void fieldNameSettingIsCaseInsensitive(){
 
-        ThingInstance session = new ThingInstance(entityTestSession);
+        ThingInstance session = ThingInstance.create(entityTestSession);
 
         session.setValue("CompletedStatus", "in progress");
         Assertions.assertEquals("in progress",
@@ -69,7 +69,7 @@ public class ThingInstanceFieldsAccessTest {
     @Test
     public void fieldNameSettingIsReallyCaseInsensitive() {
 
-        ThingInstance session = new ThingInstance(entityTestSession);
+        ThingInstance session = ThingInstance.create(entityTestSession);
 
         for(int x=0; x<100; x++) {
             String setAs = randomCaseSwitcher("CompletedStatus");

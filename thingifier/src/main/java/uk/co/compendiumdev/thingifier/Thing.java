@@ -26,11 +26,11 @@ final public class Thing {
     }
 
     public ThingInstance createInstance() {
-        return new ThingInstance(definition);
+        return ThingInstance.create(definition);
     }
 
     public ThingInstance createInstance(String guid) {
-        return new ThingInstance(definition, guid);
+        return ThingInstance.create(definition, guid);
     }
 
     public Thing addInstance(ThingInstance instance) {

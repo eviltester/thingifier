@@ -8,6 +8,12 @@ import uk.co.compendiumdev.thingifier.domain.definitions.field.instance.FieldVal
 
 import java.util.*;
 
+/*
+    InstanceFields is a sparse list, i.e. it might not have a value
+    for a specific field, in which case the default from the DefinedFields
+    will be used instead.
+
+ */
 public class InstanceFields {
 
     private final DefinedFields objectDefinition;
@@ -82,7 +88,7 @@ public class InstanceFields {
     }
 
 
-    public void deleteAllFieldsExcept(List fieldNamesToIgnore) {
+    public void deleteAllFieldValuesExcept(List fieldNamesToIgnore) {
 
         Set<String> ignorekeys = new HashSet<>(fieldNamesToIgnore);
         Set<String> keys = new HashSet(values.keySet());

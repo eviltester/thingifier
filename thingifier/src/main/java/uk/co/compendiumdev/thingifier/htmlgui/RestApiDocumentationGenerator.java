@@ -14,7 +14,6 @@ import uk.co.compendiumdev.thingifier.domain.definitions.relationship.Relationsh
 import uk.co.compendiumdev.thingifier.domain.definitions.ThingDefinition;
 import uk.co.compendiumdev.thingifier.domain.definitions.relationship.RelationshipVector;
 import uk.co.compendiumdev.thingifier.domain.definitions.validation.ValidationRule;
-import uk.co.compendiumdev.thingifier.domain.instances.DocumentationThingInstance;
 import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
 import uk.co.compendiumdev.thingifier.reporting.JsonThing;
 import uk.co.compendiumdev.thingifier.reporting.XmlThing;
@@ -213,7 +212,7 @@ public class RestApiDocumentationGenerator {
                 }
 
                 output.append("<p>Example JSON Input to API calls</p>\n");
-                ThingInstance createableExampleThing = exampleThing.getInstanceWithoutProtectedFields();
+                ThingInstance createableExampleThing = exampleThing.withoutIDsOrGUIDs();
                 output.append("<pre class='json'>\n");
                 output.append("<code class='json'>\n");
                 output.append(new GsonBuilder().setPrettyPrinting()

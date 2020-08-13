@@ -17,36 +17,66 @@ public class ThingInstance {
     private final InstanceFields instanceFields;
 
 
-    public ThingInstance(ThingDefinition eDefn) {
-        this(eDefn, true);
-    }
-
-    protected static ThingInstance getInstanceWithoutIds(ThingDefinition eDefn){
-        return new ThingInstance(eDefn, false);
+    /**
+     * example instance does not instantiate the ids or impact the
+     * system management of instances
+     *
+     * @return
+     */
+    public static ThingInstance createExampleInstance(ThingDefinition eDefn){
+        // ideally we don't want this thing instance to impact the ids
+        // so don't set the ids and instead use the default values
+        return new ThingInstance(eDefn);
     }
 
     /**
-     * Without ids this would be a dangerous thing instance since
-     * the ids are supposed to be global to the entity
-     * without ids should only be used for creating documentation or
-     * example instances
+     * Use the static factory methods to create the different variants
+     *
      * @param eDefn
-     * @param addIds
      */
-    private ThingInstance(ThingDefinition eDefn, boolean addIds) {
+    private ThingInstance(ThingDefinition eDefn) {
         this.entityDefinition = eDefn;
         this.instanceFields = eDefn.instantiateFields();
-        instanceFields.addValue(FieldValue.is("guid", UUID.randomUUID().toString()));
-        if(addIds) {
-            instanceFields.addIdsToInstance();
-        }
         this.relationships = new Relationships(this);
+
+        // use the static factory methods to create the different variants
+//        addGUIDtoInstance();
+//        addIdsToInstance();
     }
 
-    public ThingInstance(ThingDefinition entityTestSession, String guid) {
-        this(entityTestSession);
-        instanceFields.addValue(FieldValue.is("guid", guid));
+    private void addGUIDtoInstance(){
+        // todo: this adds a field called 'guid' but there may be other GUID fields,
+        // allow GUIDs to be defined as being 'auto' in which case we will auto generate them
+        instanceFields.addValue(FieldValue.is("guid", UUID.randomUUID().toString()));
     }
+
+    private void addIdsToInstance() {
+        instanceFields.addIdsToInstance();
+    }
+
+    static public ThingInstance create(ThingDefinition entityDefn, String guid){
+        ThingInstance instance = new ThingInstance(entityDefn);
+        instance.overrideValue("guid", guid);
+        instance.addIdsToInstance();
+        return instance;
+    }
+
+//    public ThingInstance(ThingDefinition entityTestSession, String guid) {
+//        this(entityTestSession);
+//        instanceFields.addValue(FieldValue.is("guid", guid));
+//    }
+
+    static public ThingInstance create(ThingDefinition entityDefn){
+        ThingInstance instance = new ThingInstance(entityDefn);
+        instance.addGUIDtoInstance();
+        instance.addIdsToInstance();
+        return instance;
+    }
+
+//    public ThingInstance(ThingDefinition eDefn) {
+//        this(eDefn, true);
+//    }
+
 
     public String toString() {
 
@@ -238,7 +268,7 @@ public class ThingInstance {
                                     FieldType.ID,
                                     FieldType.GUID));
 
-        instanceFields.deleteAllFieldsExcept(ignoreFields);
+        instanceFields.deleteAllFieldValuesExcept(ignoreFields);
     }
 
     public ThingInstance setCloneFieldValuesFrom(final InstanceFields args) {
@@ -249,23 +279,26 @@ public class ThingInstance {
     }
 
     public ThingInstance createDuplicateWithoutRelationships() {
-        ThingInstance cloneInstance = new ThingInstance(entityDefinition, false);
+        ThingInstance cloneInstance = new ThingInstance(entityDefinition);
         cloneInstance.setCloneFieldValuesFrom(instanceFields.cloned());
         return cloneInstance;
     }
 
-    public ThingInstance createDuplicateWithRelationships() {
-        ThingInstance cloneInstance = new ThingInstance(entityDefinition, false);
-        cloneInstance.setCloneFieldValuesFrom(instanceFields.cloned());
-        cloneInstance.setCloneRelationships(relationships.createClonedRelationships());
-        return cloneInstance;
-    }
+    // this was only used in the documentation,
+    // and the relationships were not used
+    // and even if they were, there would not be any because the instance is 'blank'
+//    public ThingInstance createDuplicateWithRelationships() {
+//        ThingInstance cloneInstance = new ThingInstance(entityDefinition);
+//        cloneInstance.setCloneFieldValuesFrom(instanceFields.cloned());
+//        cloneInstance.setCloneRelationships(relationships.createClonedRelationships());
+//        return cloneInstance;
+//    }
 
-    private void setCloneRelationships(final List<RelationshipInstance> clonedRelationships) {
-        for(RelationshipInstance relationship : clonedRelationships){
-            relationships.add(relationship);
-        }
-    }
+//    private void setCloneRelationships(final List<RelationshipInstance> clonedRelationships) {
+//        for(RelationshipInstance relationship : clonedRelationships){
+//            relationships.add(relationship);
+//        }
+//    }
 
     public InstanceFields getFields() {
         return instanceFields;

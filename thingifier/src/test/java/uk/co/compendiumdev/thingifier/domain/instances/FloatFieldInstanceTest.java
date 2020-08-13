@@ -15,7 +15,7 @@ public class FloatFieldInstanceTest {
         enumFieldEntity.addFields(Field.is("float", FieldType.FLOAT));
 
         // TODO: allow nullable optional floats
-        ThingInstance instance = new ThingInstance(enumFieldEntity);
+        ThingInstance instance = ThingInstance.create(enumFieldEntity);
         Assertions.assertEquals("0.0", instance.getFieldValue("float").asString());
     }
 
@@ -25,7 +25,7 @@ public class FloatFieldInstanceTest {
         ThingDefinition enumFieldEntity = ThingDefinition.create("thing", "things");
         enumFieldEntity.addFields(Field.is("float", FieldType.FLOAT));
 
-        ThingInstance instance = new ThingInstance(enumFieldEntity);
+        ThingInstance instance = ThingInstance.create(enumFieldEntity);
 
         final IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class,
                 () -> {
@@ -42,7 +42,7 @@ public class FloatFieldInstanceTest {
         ThingDefinition enumFieldEntity = ThingDefinition.create("thing", "things");
         enumFieldEntity.addFields(Field.is("float", FieldType.FLOAT));
 
-        ThingInstance instance = new ThingInstance(enumFieldEntity);
+        ThingInstance instance = ThingInstance.create(enumFieldEntity);
 
         instance.setValue("float", "4.3");
 
