@@ -45,7 +45,7 @@ public class InstanceFields {
 
     public FieldValue getFieldValue(String fieldName) {
 
-        // todo support complex fieldNames e.g. person.firstname
+        // todo : support complex fieldNames e.g. person.firstname
 
         if(!objectDefinition.hasFieldNameDefined(fieldName)){
             reportCannotFindFieldError(fieldName);
@@ -114,34 +114,12 @@ public class InstanceFields {
     }
 
     public InstanceFields putValue(final String fieldName, final String value) {
-        if(objectDefinition.hasFieldNameDefined(fieldName)){
-            addValue(FieldValue.is(fieldName, value));
-        } else {
-            if (fieldName.contains(".")) {
-                // this will throw an error if called with a 'relationship'
-                // up to the caller to make sure that doesnt' happen
-                setFieldNameAsPath(fieldName, value, false);
-            } else {
-                reportCannotFindFieldError(fieldName);
-            }
-        }
+        setFieldNameAsPath(fieldName, value, false);
         return this;
     }
 
     public InstanceFields setValue(final String fieldName, final String value) {
-
-        if (objectDefinition.hasFieldNameDefined(fieldName)) {
-            setFieldValue(objectDefinition.getField(fieldName), FieldValue.is(fieldName, value));
-        } else {
-            if(fieldName.contains(".")){
-                // this will throw an error if called with a 'relationship'
-                // up to the caller to make sure that doesnt' happen
-                setFieldNameAsPath(fieldName, value, true);
-            }else {
-                reportCannotFindFieldError(fieldName);
-            }
-        }
-
+        setFieldNameAsPath(fieldName, value, true);
         return this;
     }
 
@@ -179,7 +157,7 @@ public class InstanceFields {
     /*
         recursive setFieldValue to handle 'objects'
      */
-    protected void setFieldValue(final List<String> fieldNames, final String value, boolean shouldValidateValue) {
+    private void setFieldValue(final List<String> fieldNames, final String value, boolean shouldValidateValue) {
 
         String fieldName = fieldNames.get(0);
         if(!objectDefinition.hasFieldNameDefined(fieldName)){
