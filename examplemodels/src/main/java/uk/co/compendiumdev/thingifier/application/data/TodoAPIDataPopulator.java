@@ -1,9 +1,9 @@
 package uk.co.compendiumdev.thingifier.application.data;
 
-import uk.co.compendiumdev.thingifier.Thing;
+import uk.co.compendiumdev.thingifier.core.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.domain.data.ThingifierDataPopulator;
-import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.core.domain.data.ThingifierDataPopulator;
+import uk.co.compendiumdev.thingifier.core.domain.instances.ThingInstance;
 
 public class TodoAPIDataPopulator implements ThingifierDataPopulator {
 

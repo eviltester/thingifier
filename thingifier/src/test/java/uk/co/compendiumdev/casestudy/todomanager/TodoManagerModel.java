@@ -1,16 +1,16 @@
 package uk.co.compendiumdev.casestudy.todomanager;
 
-import uk.co.compendiumdev.thingifier.Thing;
+import uk.co.compendiumdev.thingifier.core.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.domain.definitions.Cardinality;
-import uk.co.compendiumdev.thingifier.domain.definitions.field.definition.FieldType;
-import uk.co.compendiumdev.thingifier.domain.definitions.field.definition.Field;
-import uk.co.compendiumdev.thingifier.domain.definitions.relationship.Optionality;
-import uk.co.compendiumdev.thingifier.domain.definitions.relationship.RelationshipDefinition;
-import uk.co.compendiumdev.thingifier.domain.definitions.validation.VRule;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.Cardinality;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.Optionality;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.validation.VRule;
 
-import static uk.co.compendiumdev.thingifier.domain.definitions.field.definition.FieldType.INTEGER;
-import static uk.co.compendiumdev.thingifier.domain.definitions.field.definition.FieldType.STRING;
+import static uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType.INTEGER;
+import static uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType.STRING;
 
 public class TodoManagerModel {
 

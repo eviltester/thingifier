@@ -1,12 +1,12 @@
 package uk.co.compendiumdev.challenge.apimodel;
 
-import uk.co.compendiumdev.thingifier.Thing;
+import uk.co.compendiumdev.thingifier.core.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.domain.definitions.field.definition.FieldType;
-import uk.co.compendiumdev.thingifier.domain.definitions.field.definition.Field;
-import uk.co.compendiumdev.thingifier.domain.definitions.validation.VRule;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.validation.VRule;
 
-import static uk.co.compendiumdev.thingifier.domain.definitions.field.definition.FieldType.STRING;
+import static uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType.STRING;
 
 public class ChallengeApiModel {
     public Thingifier get() {

@@ -3,17 +3,17 @@ package uk.co.compendiumdev;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import uk.co.compendiumdev.thingifier.Thing;
+import uk.co.compendiumdev.thingifier.core.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.domain.definitions.field.definition.Field;
-import uk.co.compendiumdev.thingifier.domain.definitions.field.definition.FieldType;
-import uk.co.compendiumdev.thingifier.domain.definitions.field.instance.FieldValue;
-import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
+import uk.co.compendiumdev.thingifier.core.domain.instances.ThingInstance;
 
 import java.util.Collection;
 
-import static uk.co.compendiumdev.thingifier.domain.definitions.field.definition.FieldType.INTEGER;
-import static uk.co.compendiumdev.thingifier.domain.definitions.field.definition.FieldType.STRING;
+import static uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType.INTEGER;
+import static uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType.STRING;
 
 
 public class UsageTest {

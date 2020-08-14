@@ -1,7 +1,7 @@
 package uk.co.compendiumdev.thingifier.api.response;
 
 import com.google.gson.Gson;
-import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.ThingInstance;
 import uk.co.compendiumdev.thingifier.reporting.JsonThing;
 
 import java.util.*;

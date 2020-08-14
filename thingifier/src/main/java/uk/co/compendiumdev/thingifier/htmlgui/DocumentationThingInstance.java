@@ -1,8 +1,8 @@
 package uk.co.compendiumdev.thingifier.htmlgui;
 
-import uk.co.compendiumdev.thingifier.domain.definitions.ThingDefinition;
-import uk.co.compendiumdev.thingifier.domain.definitions.field.definition.FieldType;
-import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.ThingDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
+import uk.co.compendiumdev.thingifier.core.domain.instances.ThingInstance;
 
 public class DocumentationThingInstance{
 

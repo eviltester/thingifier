@@ -2,9 +2,7 @@ package uk.co.compendiumdev.thingifier.application.sparkhttpmessageHooks;
 
 import spark.Request;
 import spark.Response;
-import uk.co.compendiumdev.thingifier.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
 
 public class ClearDataPreSparkRequestHook implements SparkRequestResponseHook {
     private long lastReset;

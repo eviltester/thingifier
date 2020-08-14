@@ -1,20 +1,18 @@
 package uk.co.compendiumdev.thingifier;
 
 import uk.co.compendiumdev.thingifier.api.ThingifierRestAPIHandler;
-import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
-import uk.co.compendiumdev.thingifier.api.restapihandlers.BodyArgsProcessor;
-import uk.co.compendiumdev.thingifier.api.restapihandlers.FieldValues;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfigProfile;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfigProfiles;
-import uk.co.compendiumdev.thingifier.domain.definitions.field.definition.Field;
-import uk.co.compendiumdev.thingifier.domain.definitions.field.definition.FieldType;
-import uk.co.compendiumdev.thingifier.domain.data.ThingifierDataPopulator;
-import uk.co.compendiumdev.thingifier.domain.definitions.*;
-import uk.co.compendiumdev.thingifier.domain.definitions.field.instance.FieldValue;
-import uk.co.compendiumdev.thingifier.domain.definitions.relationship.RelationshipDefinition;
-import uk.co.compendiumdev.thingifier.domain.definitions.relationship.RelationshipVector;
-import uk.co.compendiumdev.thingifier.domain.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.core.Thing;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
+import uk.co.compendiumdev.thingifier.core.domain.data.ThingifierDataPopulator;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.*;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVector;
+import uk.co.compendiumdev.thingifier.core.domain.instances.ThingInstance;
 import uk.co.compendiumdev.thingifier.reporting.ThingReporter;
 
 import java.util.*;

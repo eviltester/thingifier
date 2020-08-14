@@ -1,8 +1,7 @@
 package uk.co.compendiumdev.thingifier.api.routings;
 
-import org.eclipse.jetty.http.HttpFields;
 import uk.co.compendiumdev.thingifier.api.response.ResponseHeader;
-import uk.co.compendiumdev.thingifier.domain.definitions.ThingDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.ThingDefinition;
 
 import java.util.ArrayList;
 import java.util.List;
