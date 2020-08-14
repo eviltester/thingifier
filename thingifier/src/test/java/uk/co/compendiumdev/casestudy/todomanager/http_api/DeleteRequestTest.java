@@ -37,8 +37,7 @@ public class DeleteRequestTest {
     public void canDeleteItem(){
 
 
-        final ThingInstance instance = todo.createInstance().setValue("title", "my title");
-        todo.addInstance(instance);
+        final ThingInstance instance = todo.createManagedInstance().setValue("title", "my title");
 
         Assertions.assertEquals(1, todo.countInstances());
 
@@ -56,8 +55,7 @@ public class DeleteRequestTest {
     public void cannotDeleteItemThatDoesNotExist(){
 
 
-        final ThingInstance instance = todo.createInstance().setValue("title", "my title");
-        todo.addInstance(instance);
+        final ThingInstance instance = todo.createManagedInstance().setValue("title", "my title");
 
         Assertions.assertEquals(1, todo.countInstances());
 
@@ -75,8 +73,7 @@ public class DeleteRequestTest {
     public void cannotDeleteRootItem(){
 
 
-        final ThingInstance instance = todo.createInstance().setValue("title", "my title");
-        todo.addInstance(instance);
+        final ThingInstance instance = todo.createManagedInstance().setValue("title", "my title");
 
         Assertions.assertEquals(1, todo.countInstances());
 

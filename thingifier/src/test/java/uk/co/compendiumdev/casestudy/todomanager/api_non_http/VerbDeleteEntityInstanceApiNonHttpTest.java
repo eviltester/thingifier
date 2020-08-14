@@ -50,8 +50,8 @@ public class VerbDeleteEntityInstanceApiNonHttpTest {
     public void deleteAnEntityInstanceAPI() {
         ApiResponse apiresponse;
 
-        ThingInstance officeWork = project.createInstance().setValue("title", "An Existing Project");
-        project.addInstance(officeWork);
+        ThingInstance officeWork = project.createManagedInstance().
+                setValue("title", "An Existing Project");
 
         Assertions.assertEquals(1, project.countInstances());
 

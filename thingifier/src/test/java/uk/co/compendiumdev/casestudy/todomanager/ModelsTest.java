@@ -38,7 +38,8 @@ public class ModelsTest {
         final Thing todos = todoManager.getThingNamed("todo");
 
         for(int todoCount=0; todoCount < 100; todoCount++){
-            todos.addInstance(todos.createInstance().setValue("title", "title " + System.nanoTime()));
+            todos.createManagedInstance().
+                    setValue("title", "title " + System.nanoTime());
         }
 
         Assertions.assertEquals(100, todos.countInstances());
@@ -54,13 +55,15 @@ public class ModelsTest {
         final Thing todos = todoManager.getThingNamed("todo");
 
         for(int todoCount=0; todoCount < 100; todoCount++){
-            todos.addInstance(todos.createInstance().setValue("title", "title " + System.nanoTime()));
+            todos.createManagedInstance().
+                    setValue("title", "title " + System.nanoTime());
         }
 
         final Thing projects = todoManager.getThingNamed("project");
 
         for(int todoCount=0; todoCount < 50; todoCount++){
-            projects.addInstance(projects.createInstance().setValue("title", "title " + System.nanoTime()));
+            projects.createManagedInstance().
+                    setValue("title", "title " + System.nanoTime());
         }
 
 

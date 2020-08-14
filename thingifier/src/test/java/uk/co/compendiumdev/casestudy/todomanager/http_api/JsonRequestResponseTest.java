@@ -53,7 +53,7 @@ public class JsonRequestResponseTest {
     public void canGetJsonItems() {
 
 
-        todo.addInstance(todo.createInstance().setValue("title", "my title"));
+        todo.createManagedInstance().setValue("title", "my title");
 
         HttpApiRequest request = new HttpApiRequest("/todos");
         request.getHeaders().putAll(HeadersSupport.acceptJson());
@@ -74,8 +74,7 @@ public class JsonRequestResponseTest {
     public void canGetJsonItemAsACollection() {
 
 
-        final ThingInstance aTodo = todo.createInstance().setValue("title", "my title");
-        todo.addInstance(aTodo);
+        final ThingInstance aTodo = todo.createManagedInstance().setValue("title", "my title");
 
         HttpApiRequest request = new HttpApiRequest("/todos/" + aTodo.getGUID());
         request.getHeaders().putAll(HeadersSupport.acceptJson());
@@ -98,8 +97,7 @@ public class JsonRequestResponseTest {
     public void canGetJsonItemAsAnInstance() {
 
 
-        final ThingInstance aTodo = todo.createInstance().setValue("title", "my title");
-        todo.addInstance(aTodo);
+        final ThingInstance aTodo = todo.createManagedInstance().setValue("title", "my title");
 
         HttpApiRequest request = new HttpApiRequest("/todo/" + aTodo.getGUID());
         request.getHeaders().putAll(HeadersSupport.acceptJson());
@@ -120,8 +118,8 @@ public class JsonRequestResponseTest {
     public void canGetMultipleJsonItems() {
 
 
-        todo.addInstance(todo.createInstance().setValue("title", "my title"));
-        todo.addInstance(todo.createInstance().setValue("title", "my other title"));
+        todo.createManagedInstance().setValue("title", "my title");
+        todo.createManagedInstance().setValue("title", "my other title");
 
         HttpApiRequest request = new HttpApiRequest("todos");
         request.getHeaders().putAll(HeadersSupport.acceptJson());
@@ -142,8 +140,8 @@ public class JsonRequestResponseTest {
     public void cannotGetFromMissingEndpoint() {
 
 
-        todo.addInstance(todo.createInstance().setValue("title", "my title"));
-        todo.addInstance(todo.createInstance().setValue("title", "my other title"));
+        todo.createManagedInstance().setValue("title", "my title");
+        todo.createManagedInstance().setValue("title", "my other title");
 
         HttpApiRequest request = new HttpApiRequest("todos" + System.nanoTime());
         request.getHeaders().putAll(HeadersSupport.acceptJson());
@@ -256,8 +254,7 @@ public class JsonRequestResponseTest {
     @Test
     public void canPostToAmendAnItemWithJson() {
 
-        final ThingInstance atodo = todo.createInstance().setValue("title", "my title");
-        todo.addInstance(atodo);
+        final ThingInstance atodo = todo.createManagedInstance().setValue("title", "my title");
 
         Assertions.assertEquals(1, todo.countInstances());
 
@@ -293,8 +290,7 @@ public class JsonRequestResponseTest {
     @Test
     public void canPutToAmendAnItemWithJson() {
 
-        final ThingInstance atodo = todo.createInstance().setValue("title", "my title");
-        todo.addInstance(atodo);
+        final ThingInstance atodo = todo.createManagedInstance().setValue("title", "my title");
 
         Assertions.assertEquals(1, todo.countInstances());
 

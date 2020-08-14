@@ -31,11 +31,11 @@ final public class Thingifier {
     public Thingifier(){
         things = new ConcurrentHashMap<String, Thing>();
         relationships = new ConcurrentHashMap<String, RelationshipDefinition>();
+        initialDataGenerator=null; // todo consider having a default random data generator
         title = "";
         initialParagraph = "";
         apiConfig = new ThingifierApiConfig();
         apiConfigProfiles = new ThingifierApiConfigProfiles();
-        initialDataGenerator=null; // todo consider having a default random data generator
     }
     /*
         TODO: configure the REST API from the entities and relationship definitions
@@ -53,6 +53,7 @@ final public class Thingifier {
      */
 
 
+    // THINGS
 
     public Thing createThing(final String thingName, final String pluralName) {
         Thing aThing = Thing.create(thingName, pluralName);
@@ -65,48 +66,6 @@ final public class Thingifier {
     }
 
 
-    public RelationshipDefinition defineRelationship(Thing from, Thing to, final String named, final Cardinality of) {
-        RelationshipDefinition relationship =
-                RelationshipDefinition.create(
-                        new RelationshipVector(
-                                from,
-                                named,
-                                to,
-                                of));
-        relationships.put(named, relationship);
-        return relationship;
-    }
-
-
-    public String toString() {
-
-        return new ThingReporter(this).basicReport();
-    }
-
-
-    public ThingifierRestAPIHandler api() {
-        return new ThingifierRestAPIHandler(this);
-    }
-
-    public boolean hasRelationshipNamed(final String relationshipName) {
-        if (relationships.containsKey(relationshipName.toLowerCase())) {
-            return true;
-        }
-
-        // perhaps it is a reverse relationship?
-        for (RelationshipDefinition defn : relationships.values()) {
-            if (defn.isTwoWay()) {
-                if (defn.getReversedRelationship().getName().equalsIgnoreCase(relationshipName)) {
-                    return true;
-                }
-            }
-
-        }
-
-        return false;
-    }
-
-
     public ThingInstance findThingInstanceByGuid(final String thingGUID) {
         for (Thing aThing : things.values()) {
             ThingInstance instance = aThing.findInstanceByField(FieldValue.is("guid", thingGUID));
@@ -116,26 +75,6 @@ final public class Thingifier {
         }
         return null;
     }
-
-    public Collection<RelationshipDefinition> getRelationshipDefinitions() {
-        return relationships.values();
-    }
-
-    public void setDocumentation(final String modelTitle, final String anInitialParagraph) {
-        this.title = modelTitle;
-        this.initialParagraph = anInitialParagraph;
-
-
-    }
-
-    public String getTitle() {
-        return this.title;
-    }
-
-    public String getInitialParagraph() {
-        return this.initialParagraph;
-    }
-
 
     public boolean hasThingNamed(final String aName) {
         return things.containsKey(aName);
@@ -198,6 +137,93 @@ final public class Thingifier {
         return names;
     }
 
+    // data generation
+
+    public void generateData() {
+        if(initialDataGenerator!=null) {
+            initialDataGenerator.populate(this);
+        }
+    }
+
+    public void setDataGenerator(ThingifierDataPopulator dataPopulator) {
+        initialDataGenerator = dataPopulator;
+    }
+
+    public void setNextIdsToAccomodate(List<FieldValue> fieldValues, final Thing thing) {
+
+        final ThingDefinition defn = thing.definition();
+        // todo: process nested objects - currently assume these are not ids, but they might be
+        for(FieldValue fieldNameValue : fieldValues){
+            final Field field = defn.getField(fieldNameValue.getName());
+            if(field!=null && field.getType()== FieldType.ID) {
+                field.ensureNextIdAbove(fieldNameValue.asString());
+            }
+        }
+    }
+
+    // RELATIONSHIPS
+
+    public Collection<RelationshipDefinition> getRelationshipDefinitions() {
+        return relationships.values();
+    }
+
+    public RelationshipDefinition defineRelationship(Thing from, Thing to, final String named, final Cardinality of) {
+        RelationshipDefinition relationship =
+                RelationshipDefinition.create(
+                        new RelationshipVector(
+                                from,
+                                named,
+                                to,
+                                of));
+        relationships.put(named, relationship);
+        return relationship;
+    }
+
+    public boolean hasRelationshipNamed(final String relationshipName) {
+        if (relationships.containsKey(relationshipName.toLowerCase())) {
+            return true;
+        }
+
+        // perhaps it is a reverse relationship?
+        for (RelationshipDefinition defn : relationships.values()) {
+            if (defn.isTwoWay()) {
+                if (defn.getReversedRelationship().getName().equalsIgnoreCase(relationshipName)) {
+                    return true;
+                }
+            }
+
+        }
+
+        return false;
+    }
+
+
+    public String toString() {
+
+        return new ThingReporter(this).basicReport();
+    }
+
+    //API
+
+    public ThingifierRestAPIHandler api() {
+        return new ThingifierRestAPIHandler(this);
+    }
+
+    public void setDocumentation(final String modelTitle, final String anInitialParagraph) {
+        this.title = modelTitle;
+        this.initialParagraph = anInitialParagraph;
+    }
+
+    public String getTitle() {
+        return this.title;
+    }
+
+    public String getInitialParagraph() {
+        return this.initialParagraph;
+    }
+
+
+
     public ThingifierApiConfig apiConfig() {
         return apiConfig;
     }
@@ -214,26 +240,5 @@ final public class Thingifier {
         }
     }
 
-    public void generateData() {
-        if(initialDataGenerator!=null) {
-            initialDataGenerator.populate(this);
-        }
-    }
 
-    public void setDataGenerator(ThingifierDataPopulator dataPopulator) {
-        initialDataGenerator = dataPopulator;
-    }
-
-    public void setNextIdsToAccomodate(List<FieldValue> fieldValues, final Thing thing) {
-
-
-        final ThingDefinition defn = thing.definition();
-        // todo: process nested objects - currently assume these are not ids, but they might be
-        for(FieldValue fieldNameValue : fieldValues){
-            final Field field = defn.getField(fieldNameValue.getName());
-            if(field!=null && field.getType()== FieldType.ID) {
-                field.ensureNextIdAbove(fieldNameValue.asString());
-            }
-        }
-    }
 }

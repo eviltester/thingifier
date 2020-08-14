@@ -38,11 +38,9 @@ public class RelationshipHttpTest {
     @Test
     public void canCreateARelationshipBetweenProjectAndTodoViaTasks(){
 
-        final ThingInstance atodo = todo.createInstance().setValue("title", "a TODO");
-        todo.addInstance(atodo);
+        final ThingInstance atodo = todo.createManagedInstance().setValue("title", "a TODO");
 
-        final ThingInstance aproject = project.createInstance().setValue("title", "a Project");
-        project.addInstance(aproject);
+        final ThingInstance aproject = project.createManagedInstance().setValue("title", "a Project");
 
         Assertions.assertEquals(0, aproject.getRelationships().getConnectedItems("tasks").size());
 
@@ -63,8 +61,7 @@ public class RelationshipHttpTest {
     @Test
     public void canCreateARelationshipAndTodoBetweenProjectAndTodoViaTasks(){
 
-        final ThingInstance aproject = project.createInstance().setValue("title", "a Project");
-        project.addInstance(aproject);
+        final ThingInstance aproject = project.createManagedInstance().setValue("title", "a Project");
 
         Assertions.assertEquals(0, aproject.getRelationships().getConnectedItems("tasks").size());
         Assertions.assertEquals(0,todo.countInstances());
@@ -93,11 +90,9 @@ public class RelationshipHttpTest {
     public void cannotCreateARelationshipBetweenProjectAndCategoryViaTasks(){
 
 
-        final ThingInstance acategory = categories.createInstance().setValue("title", "a Category");
-        todo.addInstance(acategory);
+        final ThingInstance acategory = categories.createManagedInstance().setValue("title", "a Category");
 
-        final ThingInstance aproject = project.createInstance().setValue("title", "a Project");
-        project.addInstance(aproject);
+        final ThingInstance aproject = project.createManagedInstance().setValue("title", "a Project");
 
         Assertions.assertEquals(0, aproject.getRelationships().getConnectedItems("tasks").size());
 
@@ -124,11 +119,9 @@ public class RelationshipHttpTest {
     public void cannotCreateARelationshipWhenGivenGuidDoesNotExist(){
 
 
-        final ThingInstance atodo = todo.createInstance().setValue("title", "a TODO");
-        todo.addInstance(atodo);
+        final ThingInstance atodo = todo.createManagedInstance().setValue("title", "a TODO");
 
-        final ThingInstance aproject = project.createInstance().setValue("title", "a Project");
-        project.addInstance(aproject);
+        final ThingInstance aproject = project.createManagedInstance().setValue("title", "a Project");
 
         Assertions.assertEquals(0, aproject.getRelationships().getConnectedItems("tasks").size());
 
@@ -156,11 +149,9 @@ public class RelationshipHttpTest {
     public void canCreateARelationshipBetweenCategoryAndTodoViaTodos(){
 
 
-        final ThingInstance acategory = categories.createInstance().setValue("title", "a Category");
-        categories.addInstance(acategory);
+        final ThingInstance acategory = categories.createManagedInstance().setValue("title", "a Category");
 
-        final ThingInstance atodo = todo.createInstance().setValue("title", "a TODO");
-        todo.addInstance(atodo);
+        final ThingInstance atodo = todo.createManagedInstance().setValue("title", "a TODO");
 
         Assertions.assertEquals(0, acategory.getRelationships().getConnectedItems("todos").size());
 
@@ -181,9 +172,7 @@ public class RelationshipHttpTest {
     @Test
     public void canCreateARelationshipAndTodoBetweenCategoryAndTodoViaTodos(){
 
-        final ThingInstance acategory = categories.createInstance().setValue("title", "a Category");
-        categories.addInstance(acategory);
-
+        final ThingInstance acategory = categories.createManagedInstance().setValue("title", "a Category");
 
         Assertions.assertEquals(0, acategory.getRelationships().getConnectedItems("todos").size());
         Assertions.assertEquals(0,todo.countInstances());
@@ -211,11 +200,9 @@ public class RelationshipHttpTest {
     @Test
     public void canCreateARelationshipBetweenProjectAndTodoViaTasksUsingXml(){
 
-        final ThingInstance atodo = todo.createInstance().setValue("title", "a TODO");
-        todo.addInstance(atodo);
+        final ThingInstance atodo = todo.createManagedInstance().setValue("title", "a TODO");
 
-        final ThingInstance aproject = project.createInstance().setValue("title", "a Project");
-        project.addInstance(aproject);
+        final ThingInstance aproject = project.createManagedInstance().setValue("title", "a Project");
 
         Assertions.assertEquals(0, aproject.getRelationships().getConnectedItems("tasks").size());
 
@@ -235,11 +222,9 @@ public class RelationshipHttpTest {
     @Test
     public void canDeleteARelationshipBetweenProjectAndTodoViaTasks(){
 
-        final ThingInstance atodo = todo.createInstance().setValue("title", "a TODO");
-        todo.addInstance(atodo);
+        final ThingInstance atodo = todo.createManagedInstance().setValue("title", "a TODO");
 
-        final ThingInstance aproject = project.createInstance().setValue("title", "a Project");
-        project.addInstance(aproject);
+        final ThingInstance aproject = project.createManagedInstance().setValue("title", "a Project");
 
         aproject.getRelationships().connect("tasks", atodo);
 
@@ -264,11 +249,9 @@ public class RelationshipHttpTest {
     public void canDeleteARelationshipBetweenCategoryAndTodoViaTodos(){
 
 
-        final ThingInstance acategory = categories.createInstance().setValue("title", "a Category");
-        categories.addInstance(acategory);
+        final ThingInstance acategory = categories.createManagedInstance().setValue("title", "a Category");
 
-        final ThingInstance atodo = todo.createInstance().setValue("title", "a TODO");
-        todo.addInstance(atodo);
+        final ThingInstance atodo = todo.createManagedInstance().setValue("title", "a TODO");
 
         acategory.getRelationships().connect("todos", atodo);
 
@@ -328,8 +311,7 @@ public class RelationshipHttpTest {
     @Test
     public void canCreateAnEstimateForTodoMandatoryRelationship(){
 
-        final ThingInstance atodo = todo.createInstance().setValue("title", "a TODO for estimating");
-        todo.addInstance(atodo);
+        final ThingInstance atodo = todo.createManagedInstance().setValue("title", "a TODO for estimating");
 
 
         HttpApiRequest request = new HttpApiRequest("todos/" + atodo.getGUID() + "/estimates" );
@@ -352,12 +334,10 @@ public class RelationshipHttpTest {
 
 
 
-        final ThingInstance atodo = todo.createInstance().setValue("title", "a TODO for estimating");
-        todo.addInstance(atodo);
+        final ThingInstance atodo = todo.createManagedInstance().setValue("title", "a TODO for estimating");
 
         final Thing estimates = todoManager.getThingNamed("estimate");
-        final ThingInstance anEstimate = estimates.createInstance().setValue("duration", "7");
-        estimates.addInstance(anEstimate);
+        final ThingInstance anEstimate = estimates.createManagedInstance().setValue("duration", "7");
 
         anEstimate.getRelationships().connect("estimate", atodo);
 
@@ -382,12 +362,10 @@ public class RelationshipHttpTest {
 
 
 
-        final ThingInstance atodo = todo.createInstance().setValue("title", "a TODO for estimating");
-        todo.addInstance(atodo);
+        final ThingInstance atodo = todo.createManagedInstance().setValue("title", "a TODO for estimating");
 
         final Thing estimates = todoManager.getThingNamed("estimate");
-        final ThingInstance anEstimate = estimates.createInstance().setValue("duration", "7").setValue("description", "an estimate");
-        estimates.addInstance(anEstimate);
+        final ThingInstance anEstimate = estimates.createManagedInstance().setValue("duration", "7").setValue("description", "an estimate");
 
         anEstimate.getRelationships().connect("estimate", atodo);
 

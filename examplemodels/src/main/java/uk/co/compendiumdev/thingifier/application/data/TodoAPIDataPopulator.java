@@ -23,9 +23,8 @@ public class TodoAPIDataPopulator implements ThingifierDataPopulator {
         Thing todo = thingifier.getThingNamed("todo");
 
         for(String todoItem : todos){
-            ThingInstance instance = todo.createInstance().
-                                    setValue("title", todoItem);
-            todo.addInstance(instance);
+            todo.createManagedInstance().
+                    setValue("title", todoItem);
         }
     }
 }

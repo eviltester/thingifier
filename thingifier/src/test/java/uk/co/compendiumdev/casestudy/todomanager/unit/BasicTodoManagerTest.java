@@ -44,13 +44,10 @@ public class BasicTodoManagerTest {
         Thing todo = todoManager.getThingNamed("todo");
         Thing project = todoManager.getThingNamed("project");
 
-        ThingInstance paperwork = todo.createInstance().setValue("title", "scan paperwork");
-        todo.addInstance(paperwork);
-        ThingInstance filework = todo.createInstance().setValue("title", "file paperwork");
-        todo.addInstance(filework);
+        ThingInstance paperwork = todo.createManagedInstance().setValue("title", "scan paperwork");
+        ThingInstance filework = todo.createManagedInstance().setValue("title", "file paperwork");
 
-        ThingInstance officeWork = project.createInstance().setValue("title", "Office Work");
-        project.addInstance(officeWork);
+        ThingInstance officeWork = project.createManagedInstance().setValue("title", "Office Work");
 
         officeWork.getRelationships().connect("tasks", paperwork);
         officeWork.getRelationships().connect("tasks", filework);
@@ -79,17 +76,13 @@ public class BasicTodoManagerTest {
 
         Thing todos = todoManager.getThingNamed("todo");
 
-        ThingInstance tidy = todos.createInstance().
+        ThingInstance tidy = todos.createManagedInstance().
                 setValue("title", "Tidy up my room").
                 setValue("description", "I need to tidy up my room because it is a mess");
 
-        todos.addInstance(tidy);
-
-        ThingInstance paperwork = todos.createInstance().
+        ThingInstance paperwork = todos.createManagedInstance().
                 setValue("title","Do Paperwork").
                 setValue("description", "Scan everything in, upload to document management system and file paperwork");
-
-        todos.addInstance(paperwork);
 
         Assertions.assertEquals("false", paperwork.getFieldValue("doneStatus").asString());
 
@@ -108,11 +101,9 @@ public class BasicTodoManagerTest {
 
         int originalTodosCount = todos.countInstances();
 
-        ThingInstance tidy = todos.createInstance().
+        ThingInstance tidy = todos.createManagedInstance().
                 setValue("title","Delete this todo").
                 setValue("description", "I need to be deleted");
-
-        todos.addInstance(tidy);
 
         ThingInstance foundit = todos.findInstanceByGUID(tidy.getGUID());
 

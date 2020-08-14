@@ -25,10 +25,10 @@ public class QueryFiltersTest {
         Thing thing = aThingifier.createThing("thing", "things");
         thing.definition().addField(Field.is("truefalse", FieldType.BOOLEAN));
 
-        thing.addInstance(thing.createInstance().setValue("truefalse", "true"));
-        thing.addInstance(thing.createInstance().setValue("truefalse", "true"));
-        thing.addInstance(thing.createInstance().setValue("truefalse", "true"));
-        thing.addInstance(thing.createInstance().setValue("truefalse", "false"));
+        thing.createManagedInstance().setValue("truefalse", "true");
+        thing.createManagedInstance().setValue("truefalse", "true");
+        thing.createManagedInstance().setValue("truefalse", "true");
+        thing.createManagedInstance().setValue("truefalse", "false");
 
         // TODO: risk that Spark does not pass in args in a way that flow through to simple query
         //       so test this at an HTTP level as well

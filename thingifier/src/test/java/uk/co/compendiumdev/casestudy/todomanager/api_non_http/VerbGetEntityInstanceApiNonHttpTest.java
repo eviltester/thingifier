@@ -48,14 +48,14 @@ public class VerbGetEntityInstanceApiNonHttpTest {
     public void getCanReturnASingleEntityInstance() {
 
         // add some data
-        todo.addInstance(todo.createInstance().setValue("title", "My Title" + System.nanoTime()));
-        todo.addInstance(todo.createInstance().setValue("title", "My Title" + System.nanoTime()));
+        todo.createManagedInstance().setValue("title", "My Title" + System.nanoTime());
+        todo.createManagedInstance().setValue("title", "My Title" + System.nanoTime());
 
 
-        ThingInstance findThis = todo.createInstance().setValue("title", "My Title" + System.nanoTime());
-        todo.addInstance(findThis);
+        ThingInstance findThis = todo.createManagedInstance().
+                setValue("title", "My Title" + System.nanoTime());
 
-        todo.addInstance(todo.createInstance().setValue("title", "My Title" + System.nanoTime()));
+        todo.createManagedInstance().setValue("title", "My Title" + System.nanoTime());
 
 
         ApiResponse apiResponse = todoManager.api().get("/todo/" + findThis.getGUID());
@@ -77,10 +77,10 @@ public class VerbGetEntityInstanceApiNonHttpTest {
     public void getCanReturnMultipleEntityInstances() {
 
         // add some data
-        todo.addInstance(todo.createInstance().setValue("title", "My Title" + System.nanoTime()));
-        todo.addInstance(todo.createInstance().setValue("title", "My Title" + System.nanoTime()));
-        todo.addInstance(todo.createInstance().setValue("title", "My Title" + System.nanoTime()));
-        todo.addInstance(todo.createInstance().setValue("title", "My Title" + System.nanoTime()));
+        todo.createManagedInstance().setValue("title", "My Title" + System.nanoTime());
+        todo.createManagedInstance().setValue("title", "My Title" + System.nanoTime());
+        todo.createManagedInstance().setValue("title", "My Title" + System.nanoTime());
+        todo.createManagedInstance().setValue("title", "My Title" + System.nanoTime());
 
 
         ApiResponse apiResponse = todoManager.api().get("/todo");

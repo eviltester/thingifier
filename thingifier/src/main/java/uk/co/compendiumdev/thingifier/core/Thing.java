@@ -34,9 +34,15 @@ final public class Thing {
     }
 
     public Thing addInstance(ThingInstance instance) {
-
         instances.put(instance.getGUID(), instance);
         return this;
+    }
+
+    /* create and add */
+    public ThingInstance createManagedInstance() {
+        final ThingInstance instance = ThingInstance.create(definition);
+        addInstance(instance);
+        return instance;
     }
 
     public int countInstances() {

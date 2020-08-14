@@ -10,24 +10,25 @@ public class TodoManagerAPIDataPopulator implements ThingifierDataPopulator {
     public void populate(final Thingifier thingifier) {
 
         Thing todo = thingifier.getThingNamed("todo");
-        ThingInstance paperwork = todo.createInstance().setValue("title", "scan paperwork");
-        todo.addInstance(paperwork);
+        ThingInstance paperwork = todo.createManagedInstance().
+                setValue("title", "scan paperwork");
 
-        ThingInstance filework = todo.createInstance().setValue("title", "file paperwork");
-        todo.addInstance(filework);
+        ThingInstance filework = todo.createManagedInstance().
+                setValue("title", "file paperwork");
 
         Thing category = thingifier.getThingNamed("category");
 
-        ThingInstance officeCategory = category.createInstance().setValue("title", "Office");
-        category.addInstance(officeCategory);
+        ThingInstance officeCategory = category.createManagedInstance().
+                setValue("title", "Office");
 
-        ThingInstance homeCategory = category.createInstance().setValue("title", "Home");
-        category.addInstance(homeCategory);
+
+        ThingInstance homeCategory = category.createManagedInstance().
+                setValue("title", "Home");
 
         Thing project = thingifier.getThingNamed("project");
 
-        ThingInstance officeWork = project.createInstance().setValue("title", "Office Work");
-        project.addInstance(officeWork);
+        ThingInstance officeWork = project.createManagedInstance().
+                setValue("title", "Office Work");
 
         officeWork.getRelationships().connect("tasks", paperwork);
         officeWork.getRelationships().connect("tasks", filework);

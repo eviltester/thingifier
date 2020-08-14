@@ -34,9 +34,8 @@ public class IdBasedInstanceNonHttpTest {
         Thingifier model = getThingifier();
 
         final Thing thing = model.getThingNamed("thing");
-        final ThingInstance existingInstance = thing.createInstance().setValue("title",
+        final ThingInstance existingInstance = thing.createManagedInstance().setValue("title",
                 "My Title" + System.nanoTime());
-        thing.addInstance(existingInstance);
 
         final ApiResponse apiResponse = model.api().get("/thing/" + existingInstance.getGUID());
         Assertions.assertEquals(200, apiResponse.getStatusCode());

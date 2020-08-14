@@ -33,14 +33,14 @@ public class OptionalityRelationshipTest {
 
         Thing projects = todoManager.getThingNamed("project");
 
-        ThingInstance aProject = projects.createInstance().setValue("title", "myproject");
+        ThingInstance aProject = projects.createManagedInstance().setValue("title", "myproject");
 
         Assertions.assertTrue(aProject.validate().isValid());
 
 
         Thing todos = todoManager.getThingNamed("todo");
 
-        ThingInstance tidy = todos.createInstance().
+        ThingInstance tidy = todos.createManagedInstance().
                 setValue("title", "Tidy up my room").
                 setValue("description", "I need to tidy up my room because it is a mess");
 
@@ -54,13 +54,13 @@ public class OptionalityRelationshipTest {
 
         Thing todos = todoManager.getThingNamed("todo");
 
-        ThingInstance tidy = todos.createInstance().
+        ThingInstance tidy = todos.createManagedInstance().
                 setValue("title", "Tidy up my room").
                 setValue("description", "I need to tidy up my room because it is a mess");
 
         Thing estimates = todoManager.getThingNamed("estimate");
 
-        ThingInstance tidyRoomEstimate = estimates.createInstance().
+        ThingInstance tidyRoomEstimate = estimates.createManagedInstance().
                                         setValue("duration", "1");
 
         // it should be invalid because the estimate does not have a relationship with a to do
@@ -73,23 +73,19 @@ public class OptionalityRelationshipTest {
 
         Thing todos = todoManager.getThingNamed("todo");
 
-        ThingInstance tidy = todos.createInstance().
+        ThingInstance tidy = todos.createManagedInstance().
                 setValue("title", "Tidy up my room").
                 setValue("description", "I need to tidy up my room because it is a mess");
 
-        todos.addInstance(tidy);
-
         Thing estimates = todoManager.getThingNamed("estimate");
 
-        ThingInstance tidyRoomEstimate = estimates.createInstance().
+        ThingInstance tidyRoomEstimate = estimates.createManagedInstance().
                 setValue("duration", "1");
 
         tidyRoomEstimate.getRelationships().connect("estimate", tidy);
 
         // it should be valid because the estimate has a relationship with a to do
         Assertions.assertTrue(tidyRoomEstimate.validate().isValid());
-
-        estimates.addInstance(tidyRoomEstimate);
 
         final Collection<ThingInstance> relatedEstimates = tidy.getRelationships().getConnectedItems("estimate");
         Assertions.assertEquals(1, relatedEstimates.size());
@@ -104,23 +100,20 @@ public class OptionalityRelationshipTest {
 
         Thing todos = todoManager.getThingNamed("todo");
 
-        ThingInstance tidy = todos.createInstance().
+        ThingInstance tidy = todos.createManagedInstance().
                 setValue("title", "Tidy up my room").
                 setValue("description", "I need to tidy up my room because it is a mess");
 
-        todos.addInstance(tidy);
 
         Thing estimates = todoManager.getThingNamed("estimate");
 
-        ThingInstance tidyRoomEstimate = estimates.createInstance().
+        ThingInstance tidyRoomEstimate = estimates.createManagedInstance().
                 setValue("duration", "1");
 
         tidyRoomEstimate.getRelationships().connect("estimate", tidy);
 
         // it should be valid because the estimate has a relationship with a to do
         Assertions.assertTrue(tidyRoomEstimate.validate().isValid());
-
-        estimates.addInstance(tidyRoomEstimate);
 
         final Collection<ThingInstance> relatedEstimates = tidy.getRelationships().getConnectedItems("estimates");
         Assertions.assertEquals(1, relatedEstimates.size());

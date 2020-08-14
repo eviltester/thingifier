@@ -86,8 +86,7 @@ public class ApiResponseTest {
         todo.definition().addFields( Field.is("title", STRING));
         Thing todos = thingifier.getThingNamed("todo");
 
-        ThingInstance aTodo = todos.createInstance().setValue("title", "a todo");
-        todos.addInstance(aTodo);
+        ThingInstance aTodo = todos.createManagedInstance().setValue("title", "a todo");
 
         ApiResponse response = ApiResponse.success().returnSingleInstance(aTodo);
 
@@ -108,10 +107,8 @@ public class ApiResponseTest {
         todo.definition().addFields( Field.is("title", STRING));
         Thing todos = thingifier.getThingNamed("todo");
 
-        ThingInstance aTodo = todos.createInstance().setValue("title", "a todo");
-        todos.addInstance(aTodo);
-        ThingInstance anotherTodo = todos.createInstance().setValue("title", "another todo");
-        todos.addInstance(anotherTodo);
+        ThingInstance aTodo = todos.createManagedInstance().setValue("title", "a todo");
+        ThingInstance anotherTodo = todos.createManagedInstance().setValue("title", "another todo");
 
         ApiResponse response = ApiResponse.success().returnInstanceCollection(new ArrayList(todos.getInstances()));
 

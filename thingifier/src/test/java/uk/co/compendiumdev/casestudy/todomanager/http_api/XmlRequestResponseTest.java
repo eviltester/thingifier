@@ -54,7 +54,7 @@ public class XmlRequestResponseTest {
     public void canGetXmlItemsWhenAskedForXml(){
 
 
-        todo.addInstance(todo.createInstance().setValue("title", "my title"));
+        todo.createManagedInstance().setValue("title", "my title");
 
         HttpApiRequest request = new HttpApiRequest("todos");
         request.getHeaders().putAll(HeadersSupport.acceptXml());
@@ -70,7 +70,7 @@ public class XmlRequestResponseTest {
     public void canGetXmlErrorMessagesWhenAskedForXml(){
 
 
-        todo.addInstance(todo.createInstance().setValue("title", "my title"));
+        todo.createManagedInstance().setValue("title", "my title");
 
         HttpApiRequest request = new HttpApiRequest("todosyoohoo");
         request.getHeaders().putAll(HeadersSupport.acceptXml());
@@ -129,8 +129,7 @@ public class XmlRequestResponseTest {
     @Test
     public void canPostAndAmendAnItemWithXml(){
 
-        final ThingInstance atodo = todo.createInstance().setValue("title", "my title");
-        todo.addInstance(atodo);
+        final ThingInstance atodo = todo.createManagedInstance().setValue("title", "my title");
 
         Assertions.assertEquals(1, todo.countInstances());
 
@@ -207,8 +206,7 @@ public class XmlRequestResponseTest {
     @Test
     public void canPutToAmendAnItemWithJson(){
 
-        final ThingInstance atodo = todo.createInstance().setValue("title", "my title");
-        todo.addInstance(atodo);
+        final ThingInstance atodo = todo.createManagedInstance().setValue("title", "my title");
 
         Assertions.assertEquals(1, todo.countInstances());
 

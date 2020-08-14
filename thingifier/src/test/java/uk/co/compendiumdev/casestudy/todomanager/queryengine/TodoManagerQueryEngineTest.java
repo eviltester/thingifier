@@ -29,19 +29,15 @@ public class TodoManagerQueryEngineTest {
         project = todoManager.getThingNamed("project");
         Thing category = todoManager.getThingNamed("category");
 
-        paperwork = todo.createInstance().setValue("title", "scan paperwork");
-        todo.addInstance(paperwork);
+        paperwork = todo.createManagedInstance().setValue("title", "scan paperwork");
 
         //System.out.println(new Gson().toJson(JsonThing.asJsonObject(paperwork)));
 
-        filework = todo.createInstance().setValue("title", "file paperwork");
-        todo.addInstance(filework);
+        filework = todo.createManagedInstance().setValue("title", "file paperwork");
 
-        officeCategory = category.createInstance().setValue("title", "Office");
-        category.addInstance(officeCategory);
+        officeCategory = category.createManagedInstance().setValue("title", "Office");
 
-        ThingInstance homeCategory = category.createInstance().setValue("title", "Home");
-        category.addInstance(homeCategory);
+        ThingInstance homeCategory = category.createManagedInstance().setValue("title", "Home");
 
 
         paperwork.getRelationships().connect("categories", officeCategory);
@@ -194,8 +190,7 @@ public class TodoManagerQueryEngineTest {
         List<ThingInstance> queryResults;
 
         //
-        ThingInstance officeWork = project.createInstance().setValue("title", "Office Work");
-        project.addInstance(officeWork);
+        ThingInstance officeWork = project.createManagedInstance().setValue("title", "Office Work");
 
         officeWork.getRelationships().connect("tasks", paperwork);
         officeWork.getRelationships().connect("tasks", filework);

@@ -52,19 +52,16 @@ public class UsageTest {
         Assertions.assertTrue(urls.definition().hasFieldNameDefined("url"));
         Assertions.assertTrue(urls.definition().hasFieldNameDefined("name"));
 
-        ThingInstance evilTester_dot_com = urls.createInstance().
-                setValue("name","EvilTester.com").setValue("url","http://eviltester.com");
-
-        urls.addInstance(evilTester_dot_com);
+        urls.createManagedInstance().
+                setValue("name","EvilTester.com").
+                setValue("url","http://eviltester.com");
 
         Thing user = things.createThing("USER", "users");
 
         user.definition().addFields(Field.is("name"));
 
-        ThingInstance alan = user.createInstance().
+        ThingInstance alan = user.createManagedInstance().
                 setValue("name","alan");
-
-        user.addInstance(alan);
 
 
         // TODO fix relationshps so that they have values

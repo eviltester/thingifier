@@ -142,8 +142,8 @@ public class VerbPostEntityInstanceApiNonHttpTest {
     @Test
     public void postCanAmendAnExistingEntity() {
 
-        ThingInstance relTodo = todo.createInstance().setValue("title", "Todo for amending");
-        todo.addInstance(relTodo);
+        ThingInstance relTodo = todo.createManagedInstance().
+                setValue("title", "Todo for amending");
 
 
         // POST project
@@ -203,8 +203,8 @@ public class VerbPostEntityInstanceApiNonHttpTest {
         String originalTitle = "Todo for amending " + System.currentTimeMillis();
         String originalDescription = "my description " + System.currentTimeMillis();
 
-        ThingInstance amendTodo = todo.createInstance().setValue("title", originalTitle).setValue("description", originalDescription);
-        todo.addInstance(amendTodo);
+        ThingInstance amendTodo = todo.createManagedInstance().
+                setValue("title", originalTitle).setValue("description", originalDescription);
 
 
         // Mandatory field validation
@@ -251,8 +251,8 @@ public class VerbPostEntityInstanceApiNonHttpTest {
         requestBody = new HashMap<String, String>();
         requestBody.put("title", "My Office Work");
 
-        ThingInstance officeWork = project.createInstance().setValue("title", "An Existing Project");
-        project.addInstance(officeWork);
+        ThingInstance officeWork = project.createManagedInstance().
+                setValue("title", "An Existing Project");
 
         String officeWorkGuid = officeWork.getGUID();
         Assertions.assertNotNull(officeWorkGuid);
@@ -303,8 +303,8 @@ public class VerbPostEntityInstanceApiNonHttpTest {
         requestBody.put("title", "A new TODO Item");
         requestBody.put("doneStatus", "FALSEY");
 
-        ThingInstance paperwork = todo.createInstance().setValue("title", "Todo for amending");
-        todo.addInstance(paperwork);
+        ThingInstance paperwork = todo.createManagedInstance().
+                setValue("title", "Todo for amending");
 
         apiresponse = todoManager.api().post(String.format("todo/%s", paperwork.getGUID()), getSimpleParser(requestBody));
         Assertions.assertEquals(400, apiresponse.getStatusCode());

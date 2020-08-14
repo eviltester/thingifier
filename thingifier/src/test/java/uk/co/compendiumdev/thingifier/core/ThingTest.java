@@ -24,16 +24,13 @@ public class ThingTest {
         person.definition().
                 addFields(Field.is("name"), Field.is("age", INTEGER));
 
-        ThingInstance bob = person.createInstance().
+        ThingInstance bob = person.createManagedInstance().
                 setValue("name","Bob");
-        person.addInstance(bob);
 
         bob.setValue("age", "56");
 
-        ThingInstance eris = person.createInstance().
+        ThingInstance eris = person.createManagedInstance().
                 setValue("name","Eris").setValue("age", "1000");
-
-        person.addInstance(eris);
 
         Assertions.assertEquals(2, person.countInstances());
         Assertions.assertEquals("Bob", bob.getFieldValue("name").asString());
@@ -55,15 +52,15 @@ public class ThingTest {
         Assertions.assertTrue(url.definition().hasFieldNameDefined("visited"));
 
 
-        url.addInstance(
-                url.createInstance().
-                        setValue("name","EvilTester.com").setValue("url", "http://eviltester.com")
-        );
+        url.createManagedInstance().
+           setValue("name","EvilTester.com").
+            setValue("url", "http://eviltester.com");
 
-        url.addInstance(
-                url.createInstance().
-                        setValue("name","JavaForTesters.com").setValue("url", "http://javaForTesters.com")
-        );
+
+        url.createManagedInstance().
+            setValue("name","JavaForTesters.com").
+            setValue("url", "http://javaForTesters.com");
+
 
         Collection<ThingInstance> instances = url.getInstances();
 
