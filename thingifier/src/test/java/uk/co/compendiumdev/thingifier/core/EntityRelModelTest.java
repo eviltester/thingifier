@@ -2,6 +2,7 @@ package uk.co.compendiumdev.thingifier.core;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import uk.co.compendiumdev.thingifier.core.domain.datapopulator.DataPopulator;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.Cardinality;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.ThingDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.Optionality;
@@ -146,6 +147,20 @@ public class EntityRelModelTest {
     }
 
     @Test
+    public void canFindAReversedRelationship() {
+
+        EntityRelModel erm = new EntityRelModel();
+        Thing thing = erm.createThing("thing", "things");
+        Thing dependent = erm.createThing("dependantthing", "dthings");
+        erm.defineRelationship(thing, dependent, "things", Cardinality.ONE_TO_MANY)
+                .whenReversed(Cardinality.ONE_TO_ONE, "idiewithoutyou").
+                getReversedRelationship().
+                setOptionality(Optionality.MANDATORY_RELATIONSHIP);
+
+        Assertions.assertTrue(erm.hasRelationshipNamed("idiewithoutyou"));
+    }
+
+    @Test
     public void canDeleteAThingWithRelationships() {
 
         EntityRelModel erm = new EntityRelModel();
@@ -179,5 +194,28 @@ public class EntityRelModelTest {
         Assertions.assertEquals(0,
                 erm.getThingNamed("dependantthing").countInstances());
 
+    }
+
+    @Test
+    public void canFunctionWithoutADataGenerator(){
+        EntityRelModel erm = new EntityRelModel();
+        erm.generateData();
+        Assertions.assertEquals(0, erm.getThings().size());
+    }
+
+    @Test
+    public void canSetAndUseADataGenerator(){
+        EntityRelModel erm = new EntityRelModel();
+
+        erm.setDataGenerator(new DataPopulator() {
+            @Override
+            public void populate(final EntityRelModel model) {
+                model.createThing("thing", "things");
+            }
+        });
+
+        erm.generateData();
+
+        Assertions.assertEquals(1, erm.getThings().size());
     }
 }
