@@ -35,69 +35,6 @@ public class UsageTest {
     // todo: delete definitions - and all things
 
 
-    @Test
-    public void usageExample(){
-
-
-        Thing person = Thing.
-                        create("person", "people");
-
-        person.definition().
-                        addFields(Field.is("name"), Field.is("age", INTEGER));
-
-        ThingInstance bob = person.createInstance().
-                                setValue("name","Bob");
-        person.addInstance(bob);
-
-        bob.setValue("age", "56");
-
-        ThingInstance eris = person.createInstance().
-                setValue("name","Eris").setValue("age", "1000");
-
-        person.addInstance(eris);
-
-        Assertions.assertEquals(2, person.countInstances());
-        Assertions.assertEquals("Bob", bob.getFieldValue("name").asString());
-        Assertions.assertEquals("56", bob.getFieldValue("age").asString());
-        Assertions.assertEquals("1000", person.findInstanceByField(FieldValue.is("name", "Eris")).getFieldValue("age").asString());
-
-    }
-
-    @Test
-    public void moreUsageExamples(){
-
-        Thing url = Thing.create("URL", "URLs");
-
-        url.definition().addFields(Field.is("url"),
-                                 Field.is("visited", INTEGER), Field.is("name",STRING));
-
-        Assertions.assertTrue(url.definition().hasFieldNameDefined("url"));
-        Assertions.assertTrue(url.definition().hasFieldNameDefined("name"));
-        Assertions.assertTrue(url.definition().hasFieldNameDefined("visited"));
-
-
-        url.addInstance(
-                url.createInstance().
-                setValue("name","EvilTester.com").setValue("url", "http://eviltester.com")
-        );
-
-        url.addInstance(
-                url.createInstance().
-                setValue("name","JavaForTesters.com").setValue("url", "http://javaForTesters.com")
-        );
-
-        Collection<ThingInstance> instances = url.getInstances();
-
-        System.out.println("NAME\tURL");
-        System.out.println("==========");
-
-        for(ThingInstance aURL : instances){
-            System.out.println(String.format("%s\t%s", aURL.getFieldValue("name").asString(), aURL.getFieldValue("url").asString()));
-        }
-
-        Assertions.assertEquals(2, instances.size());
-
-    }
 
 
 
@@ -142,27 +79,7 @@ public class UsageTest {
     }
 
 
-    @Test
-    public void todoModelUsageExamples(){
 
-        // Start simple with a to do manager model e.g. to do items, context, project (can also be a sub-project), task group
-
-        Thing todo = Thing.create("ToDo", "ToDos");
-
-        todo.definition()
-                .addFields(Field.is("title", STRING), Field.is("description",STRING),
-                        Field.is("doneStatus",FieldType.BOOLEAN).withDefaultValue("FALSE"));
-
-        Assertions.assertTrue(todo.definition().hasFieldNameDefined("title"));
-        Assertions.assertTrue(todo.definition().hasFieldNameDefined("description"));
-        Assertions.assertTrue(todo.definition().hasFieldNameDefined("doneStatus"));
-
-        Assertions.assertEquals("FALSE", todo.definition().
-                                                    getField("doneStatus").
-                                                    getDefaultValue().asString());
-
-
-    }
 
 
 }
