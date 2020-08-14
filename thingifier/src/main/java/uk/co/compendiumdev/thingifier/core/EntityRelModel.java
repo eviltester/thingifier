@@ -1,17 +1,20 @@
 package uk.co.compendiumdev.thingifier.core;
 
-import uk.co.compendiumdev.thingifier.core.domain.datapopulator.ThingifierDataPopulator;
+import uk.co.compendiumdev.thingifier.core.domain.datapopulator.DataPopulator;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.Cardinality;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVector;
 import uk.co.compendiumdev.thingifier.core.domain.instances.ThingInstance;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class EntityRelModel {
 
-    private ThingifierDataPopulator initialDataGenerator;
+    private DataPopulator initialDataGenerator;
     private final ConcurrentHashMap<String, Thing> things;
     private final ConcurrentHashMap<String, RelationshipDefinition> relationships;
 
@@ -96,5 +99,61 @@ public class EntityRelModel {
         List<String> names = new ArrayList();
         names.addAll(things.keySet());
         return names;
+    }
+
+    public void clearAllData() {
+        // clear all instance data
+        for (Thing aThing : things.values()) {
+            for(ThingInstance instance : aThing.getInstances()) {
+                deleteThing(instance);
+            }
+        }
+    }
+
+    // data generation
+    public void generateData() {
+        if(initialDataGenerator!=null) {
+            initialDataGenerator.populate(this);
+        }
+    }
+
+    public void setDataGenerator(DataPopulator dataPopulator) {
+        initialDataGenerator = dataPopulator;
+    }
+
+    // Relationships
+
+    public Collection<RelationshipDefinition> getRelationshipDefinitions() {
+        return relationships.values();
+    }
+
+    public RelationshipDefinition defineRelationship(Thing from, Thing to, final String named, final Cardinality of) {
+        RelationshipDefinition relationship =
+                RelationshipDefinition.create(
+                        new RelationshipVector(
+                                from,
+                                named,
+                                to,
+                                of));
+        relationships.put(named, relationship);
+        return relationship;
+    }
+
+    public boolean hasRelationshipNamed(final String relationshipName) {
+        if (relationships.containsKey(relationshipName.toLowerCase())) {
+            return true;
+        }
+
+        // perhaps it is a reverse relationship?
+        for (RelationshipDefinition defn : relationships.values()) {
+            if (defn.isTwoWay()) {
+                if (defn.getReversedRelationship().getName().equalsIgnoreCase(relationshipName)) {
+                    return true;
+                }
+            }
+
+        }
+
+        return false;
     }
 }

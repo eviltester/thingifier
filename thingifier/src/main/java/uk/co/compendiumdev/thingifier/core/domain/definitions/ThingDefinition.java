@@ -2,6 +2,7 @@ package uk.co.compendiumdev.thingifier.core.domain.definitions;
 
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVector;
 import uk.co.compendiumdev.thingifier.core.domain.instances.InstanceFields;
 
@@ -101,5 +102,22 @@ public class ThingDefinition {
 
     public InstanceFields instantiateFields() {
         return new InstanceFields(fields);
+    }
+
+    /*
+        given a list of field values,
+        if any of those match an id field
+        then set our 'next id' for that field to above
+        the value provided
+     */
+    public void setNextIdsToAccomodate(final List<FieldValue> fieldValues) {
+        // todo: process nested objects - currently assume these are not ids, but they might be
+        for(FieldValue fieldNameValue : fieldValues){
+            final Field field = fields.getField(fieldNameValue.getName());
+            if(field!=null && field.getType()== FieldType.ID) {
+                field.ensureNextIdAbove(fieldNameValue.asString());
+            }
+        }
+
     }
 }

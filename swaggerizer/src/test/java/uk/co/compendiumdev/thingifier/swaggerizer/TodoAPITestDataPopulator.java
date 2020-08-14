@@ -1,14 +1,14 @@
 package uk.co.compendiumdev.thingifier.swaggerizer;
 
+import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.core.domain.datapopulator.ThingifierDataPopulator;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.core.domain.datapopulator.DataPopulator;
 
-public class TodoAPITestDataPopulator implements ThingifierDataPopulator {
+public class TodoAPITestDataPopulator implements DataPopulator {
 
     @Override
-    public void populate(final Thingifier thingifier) {
+    public void populate(final EntityRelModel erm) {
 
         String [] todos={
                         "scan paperwork",
@@ -20,7 +20,7 @@ public class TodoAPITestDataPopulator implements ThingifierDataPopulator {
                         "train staff",
                         "schedule meeting"};
 
-        Thing todo = thingifier.getThingNamed("todo");
+        Thing todo = erm.getThingNamed("todo");
 
         for(String todoItem : todos){
             todo.createManagedInstance().

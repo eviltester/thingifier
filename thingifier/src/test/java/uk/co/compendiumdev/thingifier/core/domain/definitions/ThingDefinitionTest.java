@@ -5,10 +5,12 @@ import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.core.Thing;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVector;
 import uk.co.compendiumdev.thingifier.core.domain.instances.InstanceFields;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -151,6 +153,36 @@ class ThingDefinitionTest {
         // the values are null
 
         Assertions.assertNull(instance1.getFieldValue("anId"));
+    }
+
+
+    @Test
+    void canIncreaseNextIds() {
+        ThingDefinition eDefn;
+        eDefn = ThingDefinition.create("Requirement", "Requirements");
+
+        eDefn.addFields(Field.is("anId", FieldType.ID));
+        eDefn.addFields(Field.is("anotherId", FieldType.ID));
+
+        List<FieldValue> nextIds = new ArrayList<>();
+        nextIds.add(FieldValue.is("anId", "46"));
+        nextIds.add(FieldValue.is("anotherId", "71"));
+
+        eDefn.setNextIdsToAccomodate(nextIds);
+        Assertions.assertEquals("47",
+                eDefn.getField("anId").getNextIdValue());
+        Assertions.assertEquals("72",
+                eDefn.getField("anotherId").getNextIdValue());
+
+        final InstanceFields instance1 = eDefn.instantiateFields();
+        instance1.addIdsToInstance();
+
+        Assertions.assertEquals(48,
+                instance1.getFieldValue("anId").asInteger());
+        Assertions.assertEquals(73,
+                instance1.getFieldValue("anotherId").asInteger());
+
+
     }
 
 }

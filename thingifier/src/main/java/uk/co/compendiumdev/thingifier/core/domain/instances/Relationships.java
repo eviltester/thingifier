@@ -112,23 +112,28 @@ public class Relationships {
         relationships.removeAll(toDelete);
     }
 
+    // todo: this clearly hasn't been tested, relationships need a thorough definition and test
     public List<ThingInstance> removeAllRelationships() {
         List<ThingInstance> deleteThese = new ArrayList<>();
 
         for (RelationshipInstance item : relationships) {
             if (item.getFrom() != forThis) {
+                // this is a relationship to me, not from me
                 item.getFrom().getRelationships().removeAllRelationshipsInvolving(forThis);
                 if (item.getRelationship().getFromRelationship().getOptionality() == MANDATORY_RELATIONSHIP) {
-                    // I am deleted, therefor any mandatory relationship to me, must result in the related thing being
+                    // I am deleted, therefore any mandatory relationship to me, must result in the related thing being
                     // deleted also
                     deleteThese.add(item.getFrom());
                 }
             } else {
+                // this is a relationship from me, to something else
                 item.getTo().getRelationships().removeAllRelationshipsInvolving(forThis);
 
-//                if (item.getRelationship().getToRelationship().getOptionalityTo() == MANDATORY_RELATIONSHIP) {
-//                    // I am being deleted therefore it does not matter if relationship to other is mandatory
-//                }
+                if (item.getRelationship().getReversedRelationship().getOptionality() == MANDATORY_RELATIONSHIP) {
+                    // I am being deleted therefore the other thing should be deleted to
+                    // since the relationship to other is mandatory
+                    deleteThese.add(item.getTo());
+                }
             }
         }
 

@@ -80,7 +80,7 @@ public class ThingCreation {
                             fromListMapEntryStringString(
                                     bodyargs.getFlattenedStringMap());
 
-        thingifier.setNextIdsToAccomodate(fieldValues, thing);
+        thing.definition().setNextIdsToAccomodate(fieldValues);
 
         return insertNewThingWithFields(bodyargs, instance, thing);
     }

@@ -2,7 +2,9 @@ package uk.co.compendiumdev.thingifier.core;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.Cardinality;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.ThingDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.Optionality;
 import uk.co.compendiumdev.thingifier.core.domain.instances.ThingInstance;
 
 public class EntityRelModelTest {
@@ -74,5 +76,108 @@ public class EntityRelModelTest {
                 erm.findThingInstanceByGuid(instance.getGUID()));
         Assertions.assertEquals(instance,
                     erm.findThingInstanceByGuid(instance.getGUID()));
+    }
+
+    @Test
+    public void canDeleteAThingInAModel() {
+
+        EntityRelModel erm = new EntityRelModel();
+        Thing thing = erm.createThing("thing", "things");
+
+        final ThingInstance instance = thing.createManagedInstance();
+        erm.deleteThing(instance);
+
+        Assertions.assertNull(
+                erm.findThingInstanceByGuid(instance.getGUID()));
+        Assertions.assertEquals(0,
+                erm.getThingNamed(
+                        instance.getEntity().getName()).countInstances());
+    }
+
+    @Test
+    public void canClearAllDataInAModel() {
+
+        EntityRelModel erm = new EntityRelModel();
+        Thing thing = erm.createThing("thing", "things");
+        Thing thing2 = erm.createThing("thing2", "thing2");
+
+        thing.createManagedInstance();
+        thing.createManagedInstance();
+        thing2.createManagedInstance();
+        thing2.createManagedInstance();
+        thing2.createManagedInstance();
+
+        Assertions.assertEquals(2, erm.getThings().size());
+        Assertions.assertEquals(2,
+                erm.getThingNamed("thing").getInstances().size());
+        Assertions.assertEquals(3,
+                erm.getThingNamed("thing2").getInstances().size());
+
+        erm.clearAllData();
+
+        Assertions.assertEquals(2, erm.getThings().size());
+        Assertions.assertEquals(0,
+                erm.getThingNamed("thing").getInstances().size());
+        Assertions.assertEquals(0,
+                erm.getThingNamed("thing2").getInstances().size());
+    }
+
+    @Test
+    public void canCreateWithNoRelationships() {
+
+        EntityRelModel erm = new EntityRelModel();
+
+        Assertions.assertNotNull(erm.getRelationshipDefinitions());
+        Assertions.assertEquals(0, erm.getRelationshipDefinitions().size());
+        Assertions.assertFalse(erm.hasRelationshipNamed("bob"));
+    }
+
+    @Test
+    public void canCreateRelationships() {
+
+        EntityRelModel erm = new EntityRelModel();
+        final Thing thing1 = erm.createThing("thing1", "thing1");
+        final Thing thing2 = erm.createThing("thing2", "thing2");
+        erm.defineRelationship(thing1, thing2, "things", Cardinality.ONE_TO_MANY);
+
+        Assertions.assertNotNull(erm.getRelationshipDefinitions());
+        Assertions.assertEquals(1, erm.getRelationshipDefinitions().size());
+        Assertions.assertTrue(erm.hasRelationshipNamed("things"));
+    }
+
+    @Test
+    public void canDeleteAThingWithRelationships() {
+
+        EntityRelModel erm = new EntityRelModel();
+        Thing thing = erm.createThing("thing", "things");
+        Thing dependent = erm.createThing("dependantthing", "dthings");
+        erm.defineRelationship(thing, dependent, "things", Cardinality.ONE_TO_MANY)
+            .whenReversed(Cardinality.ONE_TO_ONE,"idiewithoutyou").
+            getReversedRelationship().
+            setOptionality(Optionality.MANDATORY_RELATIONSHIP);
+
+        final ThingInstance mainThing = thing.createManagedInstance();
+        mainThing.getRelationships().connect("things",
+                dependent.createManagedInstance());
+        mainThing.getRelationships().connect("things",
+                dependent.createManagedInstance());
+        mainThing.getRelationships().connect("things",
+                dependent.createManagedInstance());
+
+        Assertions.assertEquals(2, erm.getThings().size());
+        Assertions.assertEquals(3, mainThing.getRelationships().
+                                            getConnectedItems("things").size());
+        Assertions.assertEquals(3, erm.getThingNamed("dependantthing").
+                                            getInstances().size());
+
+        erm.deleteThing(mainThing);
+
+        Assertions.assertNull(
+                erm.findThingInstanceByGuid(mainThing.getGUID()));
+        Assertions.assertEquals(0,
+                erm.getThingNamed("thing").countInstances());
+        Assertions.assertEquals(0,
+                erm.getThingNamed("dependantthing").countInstances());
+
     }
 }
