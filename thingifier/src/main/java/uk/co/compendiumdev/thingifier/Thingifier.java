@@ -7,7 +7,7 @@ import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfigProfiles;
 import uk.co.compendiumdev.thingifier.core.Thing;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
-import uk.co.compendiumdev.thingifier.core.domain.data.ThingifierDataPopulator;
+import uk.co.compendiumdev.thingifier.core.domain.datapopulator.ThingifierDataPopulator;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.*;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipDefinition;
@@ -21,8 +21,8 @@ import java.util.concurrent.ConcurrentHashMap;
 final public class Thingifier {
 
     private ThingifierDataPopulator initialDataGenerator;
-    private Map<String, Thing> things;
-    private Map<String, RelationshipDefinition> relationships;
+    private final Map<String, Thing> things;
+    private final Map<String, RelationshipDefinition> relationships;
     private String title;
     private String initialParagraph;
     private final ThingifierApiConfig apiConfig;

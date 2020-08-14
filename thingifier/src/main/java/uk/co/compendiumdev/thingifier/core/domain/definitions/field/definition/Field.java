@@ -2,7 +2,7 @@ package uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition;
 
 import uk.co.compendiumdev.thingifier.api.ValidationReport;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.DefinedFields;
-import uk.co.compendiumdev.thingifier.core.domain.data.RandomString;
+import uk.co.compendiumdev.thingifier.core.domain.randomdata.RandomString;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.validation.ValidationRule;
 

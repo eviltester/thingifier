@@ -1,4 +1,4 @@
-package uk.co.compendiumdev.thingifier.core.domain.data;
+package uk.co.compendiumdev.thingifier.core.domain.randomdata;
 
 import java.util.concurrent.ThreadLocalRandom;
 
