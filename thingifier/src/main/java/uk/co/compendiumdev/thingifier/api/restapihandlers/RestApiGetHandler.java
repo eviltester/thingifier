@@ -42,13 +42,17 @@ public class RestApiGetHandler {
         if (queryResults.lastMatchWasInstance()) {
             if (queryResults.isResultACollection()) {
                 // if we asked for /projects then we should always return a collection
-                return ApiResponse.success().returnInstanceCollection(queryResults.getListThingInstance());
+                return ApiResponse.success().
+                        returnInstanceCollection(
+                                queryResults.getListThingInstance());
             } else {
                 return ApiResponse.success().returnSingleInstance(queryResults.getLastInstance());
             }
         } else {
 
-            return ApiResponse.success().returnInstanceCollection(queryItems).resultContainsType(queryResults.resultContainsDefn());
+            return ApiResponse.success().
+                    returnInstanceCollection(queryItems).
+                    resultContainsType(queryResults.resultContainsDefn());
         }
     }
 

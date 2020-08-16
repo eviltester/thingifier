@@ -80,7 +80,7 @@ final public class SimpleQuery {
 
 
                 if (foundItems != null && foundItems.size() > 0) {
-                    resultContainsDefinition = foundItems.get(0).getRelationships().getTypeOfConnectedItems(term);
+                    resultContainsDefinition = foundItems.get(0).getRelationships().getTypeOfConnectableItems(term);
                 }
 
                 List<ThingInstance> newitems = new ArrayList<ThingInstance>();
@@ -130,13 +130,13 @@ final public class SimpleQuery {
                     foundItemsHistoryList.add(thingifier.getThingNamed(term));
 
                     if (foundItems != null && foundItems.size() > 0) {
-                        resultContainsDefinition = foundItems.get(0).getRelationships().getTypeOfConnectedItems(term);
+                        resultContainsDefinition = foundItems.get(0).getRelationships().getTypeOfConnectableItems(term);
                     }
 
                     List<ThingInstance> newitems = new ArrayList<ThingInstance>();
                     if (foundItems != null) {
                         for (ThingInstance instance : foundItems) {
-                            List<ThingInstance> matchedInstances = instance.getRelationships().connectedItemsOfType(term);
+                            List<ThingInstance> matchedInstances = instance.getRelationships().getConnectedItemsOfType(term);
                             newitems.addAll(matchedInstances);
                         }
                     }

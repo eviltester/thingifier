@@ -5,6 +5,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.Relat
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVector;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.ThingDefinition;
 
+import java.lang.reflect.Array;
 import java.util.*;
 
 import static uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.Optionality.MANDATORY_RELATIONSHIP;
@@ -67,8 +68,9 @@ public class Relationships {
         relationships.add(relationship);
     }
 
-    public ThingDefinition getTypeOfConnectedItems(final String relationshipName) {
-
+    public ThingDefinition getTypeOfConnectableItems(final String relationshipName) {
+        // This doesn't 'use' getConnectedItems because we might want to know the
+        // types of related items, even if there are no actual relationships
         final ThingDefinition entityDefinition = forThis.getEntity();
 
         for (RelationshipVector relationship : entityDefinition.related().getRelationships()) {
@@ -93,6 +95,16 @@ public class Relationships {
             }
         }
 
+        return theConnectedItems;
+    }
+
+    public List<ThingInstance> getConnectedItemsOfType(final String type) {
+        List<ThingInstance> theConnectedItems = new ArrayList<ThingInstance>();
+        for (RelationshipInstance relationship : relationships) {
+            if (relationship.getTo().getEntity().getName().toLowerCase().contentEquals(type.toLowerCase())) {
+                theConnectedItems.add(relationship.getTo());
+            }
+        }
         return theConnectedItems;
     }
 
@@ -158,15 +170,7 @@ public class Relationships {
         relationships.removeAll(toDelete);
     }
 
-    public List<ThingInstance> connectedItemsOfType(final String type) {
-        List<ThingInstance> theConnectedItems = new ArrayList<ThingInstance>();
-        for (RelationshipInstance relationship : relationships) {
-            if (relationship.getTo().getEntity().getName().toLowerCase().contentEquals(type.toLowerCase())) {
-                theConnectedItems.add(relationship.getTo());
-            }
-        }
-        return theConnectedItems;
-    }
+
 
     public boolean hasAnyRelationshipInstances() {
         return !relationships.isEmpty();
