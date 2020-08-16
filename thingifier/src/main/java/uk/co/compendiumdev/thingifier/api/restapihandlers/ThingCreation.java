@@ -111,7 +111,8 @@ public class ThingCreation {
         }
 
 
-        ValidationReport validation = instance.validateNonProtectedFields();
+        final List<String> protectedFieldNames = instance.getEntity().getFieldNamesOfType(FieldType.ID, FieldType.GUID);
+        ValidationReport validation = instance.validateFieldValues(protectedFieldNames, false);
 
         if (validation.isValid()) {
             thing.addInstance(instance);

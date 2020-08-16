@@ -35,6 +35,8 @@ public class ThingInstanceCreationTest {
         Assertions.assertEquals("My Test Session", session.getFieldValue("Title").asString());
 
         Assertions.assertEquals("Test Session", session.getEntity().getName());
+
+        System.out.println(session.toString());
     }
 
 

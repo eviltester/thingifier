@@ -6,8 +6,11 @@ import uk.co.compendiumdev.thingifier.api.ValidationReport;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.api.restapihandlers.commonerrorresponse.NoSuchEntity;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.instances.ThingInstance;
 import uk.co.compendiumdev.thingifier.core.query.SimpleQuery;
+
+import java.util.List;
 
 public class RestApiPostHandler {
     private final Thingifier thingifier;
@@ -33,8 +36,10 @@ public class RestApiPostHandler {
                 return response;
             }
 
-            ValidationReport validity = response.getReturnedInstance().validateNonProtectedFields();
-            validity.combine(response.getReturnedInstance().validateRelationships());
+            ThingInstance returnedInstance = response.getReturnedInstance();
+            final List<String> protectedFieldNames = returnedInstance.getEntity().getFieldNamesOfType(FieldType.ID, FieldType.GUID);
+            ValidationReport validity = returnedInstance.validateFieldValues(protectedFieldNames, false);
+            validity.combine(returnedInstance.validateRelationships());
 
             if(validity.isValid()){
                 return response;

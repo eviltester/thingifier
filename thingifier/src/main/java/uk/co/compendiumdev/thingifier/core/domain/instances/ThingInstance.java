@@ -71,6 +71,9 @@ public class ThingInstance {
         //output.append(instance.toString() + "\n");
         for (String fieldName : entityDefinition.getFieldNames()) {
             output.append(String.format("\t\t\t\t %s : %s %n", fieldName, getFieldValue(fieldName).asString()));
+            if(entityDefinition.getField(fieldName).getType()==FieldType.OBJECT){
+                output.append("\t\t\t\t\t\t" + getFieldValue(fieldName).asObject().toString());
+            }
         }
 
         output.append(relationships.toString());
@@ -91,43 +94,6 @@ public class ThingInstance {
         return this;
     }
 
-    public ThingInstance setFieldValuesFrom(List<FieldValue> fieldValues) {
-
-
-        final List<String> anyErrors = instanceFields.findAnyGuidOrIdDifferences(fieldValues);
-        if(anyErrors.size()>0){
-            throw new RuntimeException(anyErrors.get(0));
-        }
-
-        setFieldValuesFromArgsIgnoring(fieldValues, entityDefinition.getFieldNamesOfType(FieldType.ID, FieldType.GUID));
-
-        return this;
-    }
-
-    public void setFieldValuesFromArgsIgnoring(List<FieldValue> fieldValues,
-                                                final List<String> ignoreFields) {
-
-        for (FieldValue entry : fieldValues) {
-
-            // Handle attempt to amend a protected field
-            if (!ignoreFields.contains(entry.getName())) {
-                // set the value because it is not protected
-                setValue(entry.getName(), entry.asString());
-            }
-        }
-    }
-
-    public void overrideFieldValuesFromArgsIgnoring(final List<FieldValue> fieldValues,
-                                               final List<String> ignoreFields) {
-        for (FieldValue entry : fieldValues) {
-
-            // Handle attempt to amend a protected field
-            if (!ignoreFields.contains(entry.getName())) {
-                // set the value because it is not protected
-                overrideValue(entry.getName(), entry.asString());
-            }
-        }
-    }
 
     public void overrideValue(final String key, final String value) {
         // bypass all validation - except, field must exist
@@ -162,11 +128,7 @@ public class ThingInstance {
         return instanceFields.validateFields(excluding, amAllowedToSetIds);
     }
 
-    public ValidationReport validateNonProtectedFields() {
-        return validateFieldValues(
-                entityDefinition.getFieldNamesOfType(FieldType.ID, FieldType.GUID),
-                    false);
-    }
+
 
     public ValidationReport validateRelationships(){
         return relationships.validateRelationships();
@@ -211,4 +173,52 @@ public class ThingInstance {
     public InstanceFields getFields() {
         return instanceFields;
     }
+
+
+    /**
+     *
+     * Suspect these should not be in core and should be in the API handling
+     *
+     * We can have a setFieldValuesFrom and an overrideFieldValuesFrom
+     * - but not the 'ignoring' lists
+     *
+     */
+
+    public ThingInstance setFieldValuesFrom(List<FieldValue> fieldValues) {
+
+        final List<String> anyErrors = instanceFields.findAnyGuidOrIdDifferences(fieldValues);
+        if(anyErrors.size()>0){
+            throw new RuntimeException(anyErrors.get(0));
+        }
+
+        setFieldValuesFromArgsIgnoring(fieldValues, entityDefinition.getFieldNamesOfType(FieldType.ID, FieldType.GUID));
+
+        return this;
+    }
+
+    public void setFieldValuesFromArgsIgnoring(List<FieldValue> fieldValues,
+                                               final List<String> ignoreFields) {
+
+        for (FieldValue entry : fieldValues) {
+
+            // Handle attempt to amend a protected field
+            if (!ignoreFields.contains(entry.getName())) {
+                // set the value because it is not protected
+                setValue(entry.getName(), entry.asString());
+            }
+        }
+    }
+
+    public void overrideFieldValuesFromArgsIgnoring(final List<FieldValue> fieldValues,
+                                                    final List<String> ignoreFields) {
+        for (FieldValue entry : fieldValues) {
+
+            // Handle attempt to amend a protected field
+            if (!ignoreFields.contains(entry.getName())) {
+                // set the value because it is not protected
+                overrideValue(entry.getName(), entry.asString());
+            }
+        }
+    }
+
 }

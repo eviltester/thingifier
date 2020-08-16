@@ -45,6 +45,8 @@ public class ThingInstanceObjectFieldTest {
         Assertions.assertEquals("Connie",
                 instance.getFieldValue("person").asObject().
                         getFieldValue("firstname").asString());
+
+        System.out.println(instance.toString());
     }
 
     @Test

@@ -4,6 +4,7 @@ import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.ValidationReport;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
 import uk.co.compendiumdev.thingifier.core.domain.instances.ThingInstance;
 
@@ -51,7 +52,8 @@ public class ThingAmendment {
             return ApiResponse.error(400, e.getMessage());
         }
 
-        ValidationReport validation = cloned.validateNonProtectedFields();
+        final List<String> protectedFieldNames = cloned.getEntity().getFieldNamesOfType(FieldType.ID, FieldType.GUID);
+        ValidationReport validation = cloned.validateFieldValues(protectedFieldNames, false);
 
         // validate the relationships as well
         ValidationReport relationshipsValidation = new BodyRelationshipValidator(thingifier).validate(bodyargs, cloned.getEntity());
