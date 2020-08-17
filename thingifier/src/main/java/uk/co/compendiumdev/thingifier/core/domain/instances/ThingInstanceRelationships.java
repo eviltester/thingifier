@@ -9,14 +9,12 @@ import java.util.*;
 
 import static uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.Optionality.MANDATORY_RELATIONSHIP;
 
-// todo: rename to ThingInstanceRelationships
-
-public class Relationships {
+public class ThingInstanceRelationships {
 
     private final List<RelationshipInstance> relationships;
     private final ThingInstance forThis;
 
-    public Relationships(final ThingInstance thingInstance){
+    public ThingInstanceRelationships(final ThingInstance thingInstance){
         this.forThis = thingInstance;
         this.relationships = new ArrayList<>();
     }
@@ -24,7 +22,7 @@ public class Relationships {
     public String toString() {
         StringBuilder output = new StringBuilder();
 
-        if (relationships.size() > 0) {
+        if (!relationships.isEmpty()) {
             output.append(String.format("\t\t\t\t\t Relationships:%n"));
             for (RelationshipInstance relatesTo : relationships) {
                 output.append("\t\t\t\t\t" + relatesTo.toString());
@@ -96,7 +94,7 @@ public class Relationships {
     }
 
     public Collection<ThingInstance> getConnectedItems(final String relationshipName) {
-        Set<ThingInstance> theConnectedItems = new HashSet<ThingInstance>();
+        Set<ThingInstance> theConnectedItems = new HashSet<>();
         for (RelationshipInstance relationship : relationships) {
             if (relationship.getRelationship().isKnownAs(relationshipName)) {
                 theConnectedItems.add(
@@ -108,7 +106,7 @@ public class Relationships {
     }
 
     public List<ThingInstance> getConnectedItemsOfType(final String type) {
-        List<ThingInstance> theConnectedItems = new ArrayList<ThingInstance>();
+        List<ThingInstance> theConnectedItems = new ArrayList<>();
         for (RelationshipInstance relationship : relationships) {
             if (relationship.getTo().getEntity().getName().
                     toLowerCase().contentEquals(type.toLowerCase())) {
@@ -122,7 +120,7 @@ public class Relationships {
                                                             final String relationshipName) {
 
         List<ThingInstance> thingsToDelete = new ArrayList<>();
-        List<RelationshipInstance> toDelete = new ArrayList<RelationshipInstance>();
+        List<RelationshipInstance> toDelete = new ArrayList<>();
 
         for (RelationshipInstance relationship : relationships) {
             if (relationship.getRelationship().isKnownAs(relationshipName)) {
@@ -176,7 +174,7 @@ public class Relationships {
 
         List<ThingInstance> deleteThings = new ArrayList<>();
 
-        List<RelationshipInstance> toDelete = new ArrayList<RelationshipInstance>();
+        List<RelationshipInstance> toDelete = new ArrayList<>();
 
         for (RelationshipInstance relationship : relationships) {
             if(relationship.involves(thing)){
@@ -229,17 +227,4 @@ public class Relationships {
 
         return report;
     }
-
-//    public List<RelationshipInstance> createClonedRelationships() {
-//        List<RelationshipInstance> cloned = new ArrayList<>();
-//        for(RelationshipInstance relationship : relationships){
-//            cloned.add( new RelationshipInstance(
-//                            relationship.getRelationship(),
-//                            relationship.getFrom(),
-//                            relationship.getTo()
-//                    )
-//            );
-//        }
-//        return cloned;
-//    }
 }

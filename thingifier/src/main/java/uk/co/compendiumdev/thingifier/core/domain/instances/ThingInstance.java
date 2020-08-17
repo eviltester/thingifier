@@ -11,7 +11,7 @@ public class ThingInstance {
 
     // TODO: this is messy because of cloning and documentation - find a way to simplify
 
-    private final Relationships relationships;
+    private final ThingInstanceRelationships relationships;
     private final ThingDefinition entityDefinition;
     private final InstanceFields instanceFields;
 
@@ -36,7 +36,7 @@ public class ThingInstance {
     private ThingInstance(ThingDefinition eDefn) {
         this.entityDefinition = eDefn;
         this.instanceFields = eDefn.instantiateFields();
-        this.relationships = new Relationships(this);
+        this.relationships = new ThingInstanceRelationships(this);
     }
 
     private void addGUIDtoInstance(){
@@ -112,7 +112,7 @@ public class ThingInstance {
     /**
      * connect this thing to another thing using the relationship relationshipName
      */
-    public Relationships getRelationships(){
+    public ThingInstanceRelationships getRelationships(){
         return relationships;
     }
 

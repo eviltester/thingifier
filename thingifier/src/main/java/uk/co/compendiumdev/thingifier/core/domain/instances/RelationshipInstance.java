@@ -16,7 +16,7 @@ public class RelationshipInstance {
     private ThingInstance from;
     private ThingInstance to;
 
-    // todo: this should be a vector not a RelationshipDefinition
+    // todo: this should be a vector not a RelationshipDefinition because it represents a from / to
     // todo: rename to RelationshipVectorInstance
     public RelationshipInstance(RelationshipDefinition relationship, ThingInstance from, ThingInstance to) {
         this.from = from;

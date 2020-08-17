@@ -1,7 +1,6 @@
 package uk.co.compendiumdev.thingifier.core.domain.instances;
 
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.api.ValidationReport;
@@ -14,7 +13,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.Relat
 import java.util.Collection;
 import java.util.List;
 
-public class RelationshipsTest {
+class RelationshipsTest {
 
     private ThingInstance fromInstance;
     private ThingInstance toInstance;
@@ -39,7 +38,7 @@ public class RelationshipsTest {
     @Test
     void canCreateAThingInstanceRelationships(){
 
-        final Relationships relationships = new Relationships(fromInstance);
+        final ThingInstanceRelationships relationships = new ThingInstanceRelationships(fromInstance);
 
         System.out.println(relationships.toString());
 
@@ -60,7 +59,7 @@ public class RelationshipsTest {
     @Test
     void canConnectToThingWhenRelationshipIsDefined(){
 
-        final Relationships relationships = new Relationships(fromInstance);
+        final ThingInstanceRelationships relationships = new ThingInstanceRelationships(fromInstance);
 
         relationships.connect("fromto", toInstance);
         Assertions.assertTrue(relationships.hasAnyRelationshipInstances());
@@ -83,7 +82,7 @@ public class RelationshipsTest {
     @Test
     void cannotConnectToThingWhenNoRelationshipIsDefined(){
 
-        final Relationships relationships = new Relationships(fromInstance);
+        final ThingInstanceRelationships relationships = new ThingInstanceRelationships(fromInstance);
 
         final IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class,
                 () -> relationships.connect(
@@ -96,12 +95,14 @@ public class RelationshipsTest {
     @Test
     void cannotConnectToThingWhenRelationshipIsNotForTypePassedIn(){
 
-        final Relationships relationships = new Relationships(fromInstance);
+        final ThingInstanceRelationships relationships = new ThingInstanceRelationships(fromInstance);
+
+        final ThingInstance instance = thingfrom.createManagedInstance();
 
         final IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class,
                 () -> relationships.connect(
                         "fromto",
-                        thingfrom.createManagedInstance()));
+                        instance));
 
         Assertions.assertTrue(
             e.getMessage().contains("Unknown Relationship"),
@@ -114,7 +115,7 @@ public class RelationshipsTest {
     @Test
     void canCreateATwoWayConnection(){
 
-        final Relationships relationships = new Relationships(fromInstance);
+        final ThingInstanceRelationships relationships = new ThingInstanceRelationships(fromInstance);
 
         defn.whenReversed(Cardinality.ONE_TO_ONE, "tofrom");
 
@@ -147,7 +148,7 @@ public class RelationshipsTest {
     @Test
     void nullWhenNoRelationshipsForTypes(){
 
-        final Relationships relationships = new Relationships(fromInstance);
+        final ThingInstanceRelationships relationships = new ThingInstanceRelationships(fromInstance);
 
         Assertions.assertNull(
             relationships.
@@ -157,7 +158,7 @@ public class RelationshipsTest {
     @Test
     void removeRelationshipsBasedOnName(){
 
-        final Relationships relationships = new Relationships(fromInstance);
+        final ThingInstanceRelationships relationships = new ThingInstanceRelationships(fromInstance);
 
         relationships.connect("fromto", toInstance);
         Assertions.assertTrue(relationships.hasAnyRelationshipInstances());
@@ -171,7 +172,7 @@ public class RelationshipsTest {
     @Test
     void removeRelationshipsBasedOnThingInstance(){
 
-        final Relationships relationships = new Relationships(fromInstance);
+        final ThingInstanceRelationships relationships = new ThingInstanceRelationships(fromInstance);
 
         relationships.connect("fromto", toInstance);
         Assertions.assertTrue(relationships.hasAnyRelationshipInstances());
@@ -184,7 +185,7 @@ public class RelationshipsTest {
     @Test
     void removeAllRelationshipsNonTwoWay(){
 
-        final Relationships relationships = new Relationships(fromInstance);
+        final ThingInstanceRelationships relationships = new ThingInstanceRelationships(fromInstance);
 
         relationships.connect("fromto", toInstance);
         Assertions.assertTrue(relationships.hasAnyRelationshipInstances());
@@ -197,7 +198,7 @@ public class RelationshipsTest {
     @Test
     void removeAllRelationshipsTwoWay(){
 
-        final Relationships relationships = new Relationships(fromInstance);
+        final ThingInstanceRelationships relationships = new ThingInstanceRelationships(fromInstance);
 
         defn.whenReversed(Cardinality.ONE_TO_ONE, "tofrom");
         defn.getReversedRelationship().setOptionality(Optionality.MANDATORY_RELATIONSHIP);

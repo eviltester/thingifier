@@ -7,7 +7,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.Cardinality;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVector;
 
-public class RelationshipInstanceTest {
+class RelationshipInstanceTest {
 
     @Test
     void canCreateARelationshipInstance(){

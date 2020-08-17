@@ -63,6 +63,7 @@ public class ThingAmendment {
             if(clearFieldsBeforeSettingFromArgs){
                 instance.clearAllFields();
                 // delete all existing relationships for idempotent amend
+                // todo: this returns a list of 'items' to be removed based on relationship
                 instance.getRelationships().removeAllRelationships();
             }
             List<FieldValue> fieldValues = FieldValues.
@@ -73,7 +74,8 @@ public class ThingAmendment {
 
             // todo: should we check that this was actually a success?
             final ApiResponse relresponse = new RelationshipCreator(thingifier).createRelationships(bodyargs, instance);
-
+            // todo: should check if any of the 'removed items due to relationship removal' need to be removed
+            // and remove them if we do
             return ApiResponse.success().returnSingleInstance(instance);
         } else {
             // do not add it, report the errors
