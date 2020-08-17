@@ -14,22 +14,6 @@ public class RelationshipInstance {
         this.relationship = relationship;
     }
 
-    public RelationshipInstance setRelationship(RelationshipDefinition relationship) {
-        this.relationship = relationship;
-        return this;
-    }
-
-    public RelationshipInstance from(ThingInstance aThingInstance) {
-        this.from = aThingInstance;
-        return this;
-    }
-
-    public RelationshipInstance to(ThingInstance aThingInstance) {
-        this.to = aThingInstance;
-        return this;
-    }
-
-
     public String toString() {
 
         StringBuilder output = new StringBuilder();
