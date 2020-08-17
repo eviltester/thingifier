@@ -5,10 +5,11 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.Relat
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVector;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.ThingDefinition;
 
-import java.lang.reflect.Array;
 import java.util.*;
 
 import static uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.Optionality.MANDATORY_RELATIONSHIP;
+
+// todo: rename to ThingInstanceRelationships
 
 public class Relationships {
 
@@ -49,6 +50,14 @@ public class Relationships {
                                             getNamedRelationshipTo(
                                                     relationshipName,
                                                     thing.getEntity());
+
+        if (relationship==null) {
+            throw new IllegalArgumentException(
+                    String.format("Unknown Relationship %s for %s : %s",
+                        relationshipName, entityDefinition.getName(),
+                        thing.getEntity().getName()));
+        }
+
 
         RelationshipDefinition relationshipDefinition =
                         relationship.getRelationshipDefinition();
@@ -101,20 +110,25 @@ public class Relationships {
     public List<ThingInstance> getConnectedItemsOfType(final String type) {
         List<ThingInstance> theConnectedItems = new ArrayList<ThingInstance>();
         for (RelationshipInstance relationship : relationships) {
-            if (relationship.getTo().getEntity().getName().toLowerCase().contentEquals(type.toLowerCase())) {
+            if (relationship.getTo().getEntity().getName().
+                    toLowerCase().contentEquals(type.toLowerCase())) {
                 theConnectedItems.add(relationship.getTo());
             }
         }
         return theConnectedItems;
     }
 
-    public void removeRelationshipsInvolving(final ThingInstance thing, final String relationshipName) {
+    public List<ThingInstance> removeRelationshipsInvolving(final ThingInstance thing,
+                                                            final String relationshipName) {
+
+        List<ThingInstance> thingsToDelete = new ArrayList<>();
         List<RelationshipInstance> toDelete = new ArrayList<RelationshipInstance>();
 
         for (RelationshipInstance relationship : relationships) {
             if (relationship.getRelationship().isKnownAs(relationshipName)) {
                 if (relationship.involves(thing)) {
                     toDelete.add(relationship);
+                    thingsToDelete.addAll(relationship.instancesSubjectToMandatoryRelationship());
                     // delete any relationship to or from
                     thing.getRelationships().remove(relationship);
                 }
@@ -122,31 +136,31 @@ public class Relationships {
         }
 
         relationships.removeAll(toDelete);
+
+        return thingsToDelete;
     }
 
-    // todo: this clearly hasn't been tested, relationships need a thorough definition and test
+    /*
+        Remove all relationships and, as a knock on side-effect, return any of the
+        'things' that are no longer valid since they were involved in a mandatory relationship.
+     */
     public List<ThingInstance> removeAllRelationships() {
         List<ThingInstance> deleteThese = new ArrayList<>();
 
-        for (RelationshipInstance item : relationships) {
-            if (item.getFrom() != forThis) {
-                // this is a relationship to me, not from me
-                item.getFrom().getRelationships().removeAllRelationshipsInvolving(forThis);
-                if (item.getRelationship().getFromRelationship().getOptionality() == MANDATORY_RELATIONSHIP) {
-                    // I am deleted, therefore any mandatory relationship to me, must result in the related thing being
-                    // deleted also
-                    deleteThese.add(item.getFrom());
-                }
-            } else {
-                // this is a relationship from me, to something else
-                item.getTo().getRelationships().removeAllRelationshipsInvolving(forThis);
+        final ThingInstance me = forThis;
+        ThingInstance them;
 
-                if (item.getRelationship().getReversedRelationship().getOptionality() == MANDATORY_RELATIONSHIP) {
-                    // I am being deleted therefore the other thing should be deleted to
-                    // since the relationship to other is mandatory
-                    deleteThese.add(item.getTo());
-                }
+        for (RelationshipInstance relationship : relationships) {
+            if (relationship.getFrom() == forThis) {
+                // me -> them
+                them= relationship.getTo();
+            } else {
+                // them -> me
+                them = relationship.getFrom();
             }
+
+            them.getRelationships().removeAllRelationshipsInvolving(me);
+            deleteThese.addAll(relationship.instancesSubjectToMandatoryRelationship());
         }
 
         relationships.clear();
@@ -158,16 +172,22 @@ public class Relationships {
         relationships.remove(relationship);
     }
 
-    public void removeAllRelationshipsInvolving(final ThingInstance thing) {
+    public List<ThingInstance> removeAllRelationshipsInvolving(final ThingInstance thing) {
+
+        List<ThingInstance> deleteThings = new ArrayList<>();
+
         List<RelationshipInstance> toDelete = new ArrayList<RelationshipInstance>();
 
         for (RelationshipInstance relationship : relationships) {
             if(relationship.involves(thing)){
                 toDelete.add(relationship);
+                deleteThings.addAll(relationship.instancesSubjectToMandatoryRelationship());
             }
         }
 
         relationships.removeAll(toDelete);
+
+        return deleteThings;
     }
 
 
