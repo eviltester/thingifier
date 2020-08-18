@@ -23,7 +23,7 @@ public class RestApiDeleteHandler {
             return ApiResponse.error(405, "Cannot delete root level entity");
         }
 
-        SimpleQuery queryresult = new SimpleQuery(thingifier, url).performQuery();
+        SimpleQuery queryresult = new SimpleQuery(thingifier.getERmodel(), url).performQuery();
 
         if (queryresult.wasItemFoundUnderARelationship()) {
             // delete the relationships not the items

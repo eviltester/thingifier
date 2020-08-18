@@ -165,4 +165,7 @@ final public class Thingifier {
     }
 
 
+    public EntityRelModel getERmodel() {
+        return erm;
+    }
 }

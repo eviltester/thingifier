@@ -2,7 +2,7 @@ package uk.co.compendiumdev.thingifier.api.restapihandlers;
 
 import uk.co.compendiumdev.thingifier.core.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.api.ValidationReport;
+import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.api.restapihandlers.commonerrorresponse.NoSuchEntity;
@@ -85,7 +85,7 @@ public class RestApiPostHandler {
             Match a Relationship
          */
         // get the things to post to
-        SimpleQuery query = new SimpleQuery(thingifier, url).performQuery();
+        SimpleQuery query = new SimpleQuery(thingifier.getERmodel(), url).performQuery();
         if (query.lastMatchWasRelationship()) {
             return new RelationshipCreation(thingifier).create(url, args, query);
         }

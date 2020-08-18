@@ -3,7 +3,7 @@ package uk.co.compendiumdev.thingifier.api.http.bodyparser;
 import com.google.gson.Gson;
 import org.json.JSONObject;
 import org.json.XML;
-import uk.co.compendiumdev.thingifier.api.ValidationReport;
+import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 import uk.co.compendiumdev.thingifier.api.http.AcceptContentTypeParser;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;

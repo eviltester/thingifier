@@ -23,6 +23,11 @@
 
   <dependencies>
       <dependency>
+          <groupId>uk.co.compendiumdev</groupId>
+          <artifactId>ercoremodel</artifactId>
+          <version>${thingifier.version}</version>
+      </dependency>
+      <dependency>
           <groupId>org.junit.jupiter</groupId>
           <artifactId>junit-jupiter-api</artifactId>
           <version>${junit.jupiter.version}</version>

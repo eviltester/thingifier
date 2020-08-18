@@ -20,7 +20,7 @@
     <version>${thingifier.version}</version>
     <packaging>jar</packaging>
 
-    <name>thingifier</name>
+    <name>er core model</name>
     <url>https://compendiumdev.co.uk</url>
 
     <properties>

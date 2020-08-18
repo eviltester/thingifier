@@ -20,6 +20,7 @@
     </properties>
 
     <modules>
+        <module>ercoremodel</module>
         <module>thingifier</module>
         <module>examplemodels</module>
         <module>todoManagerRestAuto</module>
@@ -29,8 +30,6 @@
         <module>standAloneTodoListManagerRestApi</module>
         <module>thingifierapp</module>
         <module>swaggerizer</module>
-        <module>ercoremodel</module>
-
     </modules>
 
 

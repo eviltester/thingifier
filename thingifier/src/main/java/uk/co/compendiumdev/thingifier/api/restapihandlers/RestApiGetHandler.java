@@ -26,9 +26,14 @@ public class RestApiGetHandler {
                         String.format("Can not use query parameters with %s", url));
         }
 
-        SimpleQuery queryResults = new SimpleQuery(thingifier, url).performQuery(
-                                                queryParams,
-                                                thingifier.apiConfig().forParams());
+        SimpleQuery queryResults;
+
+        if(thingifier.apiConfig().forParams().willAllowFilteringThroughUrlParams()){
+           queryResults = new SimpleQuery(thingifier.getERmodel(), url).performQuery(
+                   queryParams);
+        }else{
+            queryResults = new SimpleQuery(thingifier.getERmodel(), url).performQuery();
+        }
 
         List<ThingInstance> queryItems = queryResults.getListThingInstance();
 
