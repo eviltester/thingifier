@@ -42,6 +42,7 @@ public class AuthRoutes {
             if(challenger==null){
                 result.status(401);
                 result.header("X-CHALLENGER", "Challenger not recognised");
+                return "";
             }
 
             // if no header X-AUTH-TOKEN then grant one
@@ -82,6 +83,7 @@ public class AuthRoutes {
             if(challenger==null){
                 result.status(401);
                 result.header("X-CHALLENGER", "Challenger not recognised");
+                return "";
             }
 
             if(!authToken.contentEquals(challenger.getXAuthToken())){
@@ -119,6 +121,7 @@ public class AuthRoutes {
             if(challenger==null){
                 result.status(401);
                 result.header("X-CHALLENGER", "Challenger not recognised");
+                return "";
             }
 
             if(!authToken.contentEquals(challenger.getXAuthToken())){
@@ -155,7 +158,5 @@ public class AuthRoutes {
                 RoutingStatus.returnedFromCall(),
                 null).addDocumentation("POST /secret/note with X-AUTH-TOKEN, and a payload of `{'note':'contents of note'}` to amend the contents of the secret note.").
                 addPossibleStatuses(200,400,401,403));
-
-
     }
 }

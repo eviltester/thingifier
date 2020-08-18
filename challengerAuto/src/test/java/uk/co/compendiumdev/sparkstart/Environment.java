@@ -4,7 +4,12 @@ package uk.co.compendiumdev.sparkstart;
 import spark.Spark;
 import uk.co.compendiumdev.challenge.ChallengeMain;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+
 public class Environment {
+
+    public static boolean SINGLE_PLAYER_MODE = false;
 
     public static String getEnv(String urlPath){
         return  getBaseUri() + urlPath;
@@ -23,7 +28,15 @@ public class Environment {
         }else{
             //start it up
             Spark.port(4567);
-            String [] args = {};
+            String [] args;
+
+            if(SINGLE_PLAYER_MODE){
+                args = "".split(",");
+            }else{
+                args = "-multiplayer".split(",");
+            };
+
+
             ChallengeMain.main(args);
 
             // wait till running

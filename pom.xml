@@ -40,6 +40,10 @@
 1.5.5
 
 - under development
+- fixed defect where Challenger data was only loaded from AWS when GET /challenger was used, so harder to use between sessions
+    - this mainly only affected the 'secret' token session because challenger was loaded during persistence of 'passing' a challenge
+- fixed defect where, when no Challenger X-CHALLENGER header on /secret the 401 response did not return, and so passed through into null pointer processing
+
 
 1.5.4
 

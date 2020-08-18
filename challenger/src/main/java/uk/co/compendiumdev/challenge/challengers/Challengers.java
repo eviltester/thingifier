@@ -3,6 +3,7 @@ package uk.co.compendiumdev.challenge.challengers;
 import uk.co.compendiumdev.challenge.CHALLENGE;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.persistence.PersistenceLayer;
+import uk.co.compendiumdev.challenge.persistence.PersistenceResponse;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,7 +39,20 @@ public class Challengers {
             return null;
         }
 
-        return authData.get(challengerGuid);
+        ChallengerAuthData challenger = authData.get(challengerGuid);
+
+        if(challenger==null){
+            // we don't have challenger in memory, are they available in persistent store?
+            if (persistenceLayer != null) {
+                final PersistenceResponse response =
+                        persistenceLayer.tryToLoadChallenger(this, challengerGuid.trim());
+                if(response.isSuccess()){
+                    challenger = authData.get(challengerGuid);
+                }
+            }
+        }
+
+        return challenger;
     }
 
     public void purgeOldAuthData() {
