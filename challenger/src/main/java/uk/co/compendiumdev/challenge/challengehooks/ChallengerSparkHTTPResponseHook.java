@@ -17,6 +17,10 @@ public class ChallengerSparkHTTPResponseHook implements SparkRequestResponseHook
     }
 
 
+    // todo: create an pre/post http request routing hook which has a domain http request, rather than
+    // a Spark HTTP request, then the spark http request and response hooks are for amending the
+    // actual request and responses and create a mechanism for 'instant return' i.e. we amended
+    // the response, return it
     @Override
     public void run(final Request request, final Response response) {
 

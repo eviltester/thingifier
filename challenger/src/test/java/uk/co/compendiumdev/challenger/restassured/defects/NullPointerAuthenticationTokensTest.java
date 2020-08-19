@@ -1,14 +1,9 @@
 package uk.co.compendiumdev.challenger.restassured.defects;
 
 import io.restassured.RestAssured;
-import io.restassured.http.ContentType;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import uk.co.compendiumdev.challenger.restassured.api.ChallengesStatus;
 import uk.co.compendiumdev.challenger.restassured.api.RestAssuredBaseTest;
 import uk.co.compendiumdev.sparkstart.Environment;
-
-import java.util.HashMap;
 
 public class NullPointerAuthenticationTokensTest extends RestAssuredBaseTest {
 
