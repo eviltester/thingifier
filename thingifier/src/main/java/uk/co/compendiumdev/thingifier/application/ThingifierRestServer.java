@@ -11,9 +11,7 @@ import uk.co.compendiumdev.thingifier.api.routings.ApiRoutingDefinitionGenerator
 import uk.co.compendiumdev.thingifier.api.routings.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.application.httpapimessagehooks.HttpApiRequestHook;
 import uk.co.compendiumdev.thingifier.application.httpapimessagehooks.HttpApiResponseHook;
-import uk.co.compendiumdev.thingifier.application.internalhttpconversion.HttpApiResponseToSpark;
-import uk.co.compendiumdev.thingifier.application.internalhttpconversion.NewThingifierHttpApiBridge;
-import uk.co.compendiumdev.thingifier.application.internalhttpconversion.SparkToHttpApiRequest;
+import uk.co.compendiumdev.thingifier.application.internalhttpconversion.*;
 import uk.co.compendiumdev.thingifier.application.sparkhttpmessageHooks.SparkRequestResponseHook;
 import uk.co.compendiumdev.thingifier.htmlgui.DefaultGUIHTML;
 import uk.co.compendiumdev.thingifier.htmlgui.RestApiDocumentationGenerator;
@@ -53,7 +51,7 @@ public class ThingifierRestServer {
         httpApiRequestHooks = new ArrayList<>();
         httpApiResponseHooks = new ArrayList<>();
 
-        NewThingifierHttpApiBridge apiBridge = new NewThingifierHttpApiBridge(
+        ThingifierHttpApiBridge apiBridge = new ThingifierHttpApiBridge(
                                                 thingifier,
                                                 httpApiRequestHooks, httpApiResponseHooks);
 
@@ -83,11 +81,23 @@ public class ThingifierRestServer {
             }
 
             // todo:
-            //InternalHttpRequest iRequest = SparkToHttpApiRequest.convert(request);
+            // HttpApiRequest iRequest = SparkToHttpApiRequest.convert(request);
+            // now run the HttpApiRequestHook hooks on this iRequest
 
         });
 
         after((request, response) -> {
+
+            // todo:
+//            InternalHttpResponse iResponse = SparkResponseToInternalHttpResponse.
+//                                                    convert(response);
+            // now run the HttpApiResponseHook hooks
+            // on this iRequest and iResponse
+//
+//            SparkResponseToInternalHttpResponse.
+//                    updateResponseFromInternal(response,iResponse);
+
+
             if(postResponseHooks !=null){
                 for(SparkRequestResponseHook hook : postResponseHooks){
                     // todo: catch exceptions and let the response return

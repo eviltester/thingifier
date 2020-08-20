@@ -1,8 +1,6 @@
 package uk.co.compendiumdev.thingifier.application.internalhttpconversion;
 
 
-import spark.Request;
-import spark.Response;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiResponse;
@@ -12,7 +10,7 @@ import uk.co.compendiumdev.thingifier.application.httpapimessagehooks.HttpApiRes
 
 import java.util.*;
 
-final public class NewThingifierHttpApiBridge {
+final public class ThingifierHttpApiBridge {
 
     // todo: the methods here are all very similar, we should refactor this commonality
 
@@ -21,13 +19,13 @@ final public class NewThingifierHttpApiBridge {
     private List<HttpApiRequestHook> apiRequestHooks;
     private List<HttpApiResponseHook> apiResponseHooks;
 
-    public NewThingifierHttpApiBridge(final Thingifier aThingifier){
+    public ThingifierHttpApiBridge(final Thingifier aThingifier){
         this(aThingifier, null, null);
     }
 
-    public NewThingifierHttpApiBridge(final Thingifier aThingifier,
-                                      List<HttpApiRequestHook> apiRequestHooks,
-                                      List<HttpApiResponseHook> apiResponseHooks) {
+    public ThingifierHttpApiBridge(final Thingifier aThingifier,
+                                   List<HttpApiRequestHook> apiRequestHooks,
+                                   List<HttpApiResponseHook> apiResponseHooks) {
         this.thingifier = aThingifier;
         if(apiRequestHooks==null){
             this.apiRequestHooks = new ArrayList<>();
