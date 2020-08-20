@@ -2,6 +2,7 @@ package uk.co.compendiumdev.thingifier.api.http;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public final class HttpApiRequest {
 
@@ -10,6 +11,11 @@ public final class HttpApiRequest {
     private String body;
     private Map<String, String> queryParams;
     private VERB verb;
+
+    public HttpApiRequest setVerb(final String requestMethod) {
+        verb = VERB.valueOf(requestMethod.toUpperCase());
+        return this;
+    }
 
     public enum VERB{ GET, HEAD, POST, PUT, DELETE, PATCH, OPTIONS, CONNECT, TRACE}
 

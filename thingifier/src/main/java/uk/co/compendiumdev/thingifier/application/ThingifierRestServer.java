@@ -3,12 +3,17 @@ package uk.co.compendiumdev.thingifier.application;
 import spark.Request;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.ThingifierApiDefn;
+import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
+import uk.co.compendiumdev.thingifier.api.http.HttpApiResponse;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponseError;
 import uk.co.compendiumdev.thingifier.api.routings.ApiRoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.routings.ApiRoutingDefinitionGenerator;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.application.httpapimessagehooks.HttpApiRequestHook;
 import uk.co.compendiumdev.thingifier.application.httpapimessagehooks.HttpApiResponseHook;
+import uk.co.compendiumdev.thingifier.application.internalhttpconversion.HttpApiResponseToSpark;
+import uk.co.compendiumdev.thingifier.application.internalhttpconversion.NewThingifierHttpApiBridge;
+import uk.co.compendiumdev.thingifier.application.internalhttpconversion.SparkToHttpApiRequest;
 import uk.co.compendiumdev.thingifier.application.sparkhttpmessageHooks.SparkRequestResponseHook;
 import uk.co.compendiumdev.thingifier.htmlgui.DefaultGUIHTML;
 import uk.co.compendiumdev.thingifier.htmlgui.RestApiDocumentationGenerator;
@@ -48,7 +53,7 @@ public class ThingifierRestServer {
         httpApiRequestHooks = new ArrayList<>();
         httpApiResponseHooks = new ArrayList<>();
 
-        ThingifierHttpApiBridge apiBridge = new ThingifierHttpApiBridge(
+        NewThingifierHttpApiBridge apiBridge = new NewThingifierHttpApiBridge(
                                                 thingifier,
                                                 httpApiRequestHooks, httpApiResponseHooks);
 
@@ -72,15 +77,20 @@ public class ThingifierRestServer {
 
             if(preRequestHooks!=null){
                 for(SparkRequestResponseHook hook : preRequestHooks){
+                    // todo: catch exceptions and `halt`
                     hook.run(request, response);
                 }
             }
+
+            // todo:
+            //InternalHttpRequest iRequest = SparkToHttpApiRequest.convert(request);
 
         });
 
         after((request, response) -> {
             if(postResponseHooks !=null){
                 for(SparkRequestResponseHook hook : postResponseHooks){
+                    // todo: catch exceptions and let the response return
                     hook.run(request, response);
                 }
             }
@@ -126,21 +136,30 @@ public class ThingifierRestServer {
                 case GET:
                     if (defn.status().isReturnedFromCall()) {
                         get(defn.url(), (request, response) -> {
-                            return apiBridge.get(request, response);
+                            //return apiBridge.get(request, response);
+                            final HttpApiRequest theRequest = SparkToHttpApiRequest.convert(request);
+                            final HttpApiResponse theResponse = apiBridge.get(theRequest);
+                            return HttpApiResponseToSpark.convert(theResponse, response);
                         });
                     }
                     break;
                 case POST:
                     if (defn.status().isReturnedFromCall()) {
                         post(defn.url(), (request, response) -> {
-                            return apiBridge.post(request, response);
+                            //return apiBridge.post(request, response);
+                            final HttpApiRequest theRequest = SparkToHttpApiRequest.convert(request);
+                            final HttpApiResponse theResponse = apiBridge.post(theRequest);
+                            return HttpApiResponseToSpark.convert(theResponse, response);
                         });
                     }
                     break;
                 case HEAD:
                     if (defn.status().isReturnedFromCall()) {
                         head(defn.url(), (request, response) -> {
-                            return apiBridge.head(request, response);
+                            //return apiBridge.head(request, response);
+                            final HttpApiRequest theRequest = SparkToHttpApiRequest.convert(request);
+                            final HttpApiResponse theResponse = apiBridge.head(theRequest);
+                            return HttpApiResponseToSpark.convert(theResponse, response);
                         });
                     }
                     break;
@@ -152,7 +171,10 @@ public class ThingifierRestServer {
                         });
                     } else {
                         delete(defn.url(), (request, response) -> {
-                            return apiBridge.delete(request, response);
+                            //return apiBridge.delete(request, response);
+                            final HttpApiRequest theRequest = SparkToHttpApiRequest.convert(request);
+                            final HttpApiResponse theResponse = apiBridge.delete(theRequest);
+                            return HttpApiResponseToSpark.convert(theResponse, response);
                         });
                     }
                     break;
@@ -172,7 +194,10 @@ public class ThingifierRestServer {
                         });
                     } else {
                         put(defn.url(), (request, response) -> {
-                            return apiBridge.put(request, response);
+                            //return apiBridge.put(request, response);
+                            final HttpApiRequest theRequest = SparkToHttpApiRequest.convert(request);
+                            final HttpApiResponse theResponse = apiBridge.put(theRequest);
+                            return HttpApiResponseToSpark.convert(theResponse, response);
                         });
                     }
                     break;
@@ -190,7 +215,10 @@ public class ThingifierRestServer {
 
         // Undocumented admin interface - this needs to be authentication controlled and toggelable from command line
         get("/admin/query/*", (request, response) -> {
-            return apiBridge.query(request, response, request.splat()[0]);
+            //return apiBridge.query(request, response, request.splat()[0]);
+            final HttpApiRequest theRequest = SparkToHttpApiRequest.convert(request);
+            final HttpApiResponse theResponse = apiBridge.query(theRequest, request.splat()[0]);
+            return HttpApiResponseToSpark.convert(theResponse, response);
         });
 
         // Undocumented admin interface - this needs to be authentication controlled and toggelable from command line

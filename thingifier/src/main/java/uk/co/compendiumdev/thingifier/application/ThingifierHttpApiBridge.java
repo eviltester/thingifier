@@ -122,6 +122,7 @@ final public class ThingifierHttpApiBridge {
                                             setBody(request.body()).
                                             setVerb(HttpApiRequest.VERB.PUT);
 
+
         HttpApiResponse theResponse = thingifierHttpApi.put(theRequest);
 
         updateResponseFromHttpResponse(theResponse, response);
