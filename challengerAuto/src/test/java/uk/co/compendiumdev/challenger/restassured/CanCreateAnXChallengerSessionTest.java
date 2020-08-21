@@ -12,7 +12,7 @@ public class CanCreateAnXChallengerSessionTest extends RestAssuredBaseTest {
     public void xChallengerSessionCreatedForTests(){
 
         // POST /challenger is in the @BeforeAll of the RestAssuredBaseTest
-        // and tracked invisibly to the tests with the xChallenger variale
+        // and tracked invisibly to the tests with the xChallenger variable
 
         Assertions.assertNotNull(xChallenger);
         Assertions.assertTrue(xChallenger.length()>5);

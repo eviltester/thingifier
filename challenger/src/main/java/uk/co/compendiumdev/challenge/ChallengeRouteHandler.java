@@ -81,8 +81,7 @@ public class ChallengeRouteHandler {
 
     public void addHooks(final ThingifierRestServer restServer) {
 
-        restServer.registerPreRequestHook(new ChallengerSparkHTTPRequestHook(challengers));
-        restServer.registerPostResponseHook(new ChallengerSparkHTTPResponseHook(challengers));
+        restServer.registerInternalHttpResponseHook(new ChallengerInternalHTTPResponseHook(challengers));
         restServer.registerInternalHttpRequestHook(new ChallengerInternalHTTPRequestHook(challengers));
         restServer.registerHttpApiRequestHook(new ChallengerApiRequestHook(challengers));
         restServer.registerHttpApiResponseHook(new ChallengerApiResponseHook(challengers, thingifier));

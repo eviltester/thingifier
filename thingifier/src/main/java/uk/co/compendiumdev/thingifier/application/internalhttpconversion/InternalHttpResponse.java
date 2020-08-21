@@ -33,7 +33,7 @@ public class InternalHttpResponse {
     }
 
     public void setHeader(final String headerName, final String header) {
-
+        headers.put(headerName.toUpperCase(), header);
     }
 
     public int getStatusCode() {
@@ -54,5 +54,9 @@ public class InternalHttpResponse {
 
     public String getBody() {
         return body;
+    }
+
+    public String getHeader(final String headerName) {
+        return headers.get(headerName.toUpperCase());
     }
 }

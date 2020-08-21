@@ -7,6 +7,8 @@ import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 
+import java.lang.reflect.Field;
+
 public class ChallengerInternalHttpRequestHookTest {
 
     @Test
@@ -33,15 +35,17 @@ public class ChallengerInternalHttpRequestHookTest {
 
         Challengers challengers = new Challengers();
         final ChallengerAuthData challenger = challengers.createNewChallenger();
-        long initialTouchTime = challenger.getLastAccessed();
 
         // risk that this test is intermittent if it all happens in the same millisecond
         // if so could 'wait' in the test, or 'hack the object to have a different last accessed time'
         // set private variable that test will 'touch'
-//        Field lastAccessedField = ChallengerAuthData.class.getDeclaredField("lastAccessed");
-//        lastAccessedField.setAccessible(true);
-//        lastAccessedField.set(challenger, 0L);
-//        Assertions.assertEquals(0, challenger.getLastAccessed());
+        // when using mock at spark level, did not need to 'hack' the object
+        Field lastAccessedField = ChallengerAuthData.class.getDeclaredField("lastAccessed");
+        lastAccessedField.setAccessible(true);
+        lastAccessedField.set(challenger, 0L);
+        Assertions.assertEquals(0, challenger.getLastAccessed());
+
+        long initialTouchTime = challenger.getLastAccessed();
 
         challengers.setMultiPlayerMode();
 
