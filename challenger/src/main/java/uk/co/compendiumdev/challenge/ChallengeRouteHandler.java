@@ -1,9 +1,6 @@
 package uk.co.compendiumdev.challenge;
 
-import uk.co.compendiumdev.challenge.challengehooks.ChallengerApiRequestHook;
-import uk.co.compendiumdev.challenge.challengehooks.ChallengerApiResponseHook;
-import uk.co.compendiumdev.challenge.challengehooks.ChallengerSparkHTTPRequestHook;
-import uk.co.compendiumdev.challenge.challengehooks.ChallengerSparkHTTPResponseHook;
+import uk.co.compendiumdev.challenge.challengehooks.*;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
 import uk.co.compendiumdev.challenge.challenges.ChallengeDefinitions;
 import uk.co.compendiumdev.challenge.challengesrouting.AuthRoutes;
@@ -86,6 +83,7 @@ public class ChallengeRouteHandler {
 
         restServer.registerPreRequestHook(new ChallengerSparkHTTPRequestHook(challengers));
         restServer.registerPostResponseHook(new ChallengerSparkHTTPResponseHook(challengers));
+        restServer.registerInternalHttpRequestHook(new ChallengerInternalHTTPRequestHook(challengers));
         restServer.registerHttpApiRequestHook(new ChallengerApiRequestHook(challengers));
         restServer.registerHttpApiResponseHook(new ChallengerApiResponseHook(challengers, thingifier));
     }

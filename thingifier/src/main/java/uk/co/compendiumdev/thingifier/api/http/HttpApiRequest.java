@@ -2,7 +2,6 @@ package uk.co.compendiumdev.thingifier.api.http;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 public final class HttpApiRequest {
 
@@ -63,8 +62,9 @@ public final class HttpApiRequest {
         return this.headers.get(headerName.toLowerCase());
     }
 
-    public void addHeader(final String headerName, final String headerValue) {
+    public HttpApiRequest addHeader(final String headerName, final String headerValue) {
         this.headers.put(headerName.trim().toLowerCase(), headerValue.trim().toLowerCase());
+        return this;
     }
 
     public HttpApiRequest setQueryParams(final Map<String, String> queryParamsAsMap) {

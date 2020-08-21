@@ -1,6 +1,7 @@
 package uk.co.compendiumdev.challenge.challengehooks;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import spark.Request;
 import spark.Response;
@@ -8,11 +9,10 @@ import uk.co.compendiumdev.challenge.CHALLENGE;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
 
-import java.lang.reflect.Field;
-
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@Disabled("migrating to internal hooks rather than spark hooks")
 public class ChallengerSparkHTTPRequestHookTest {
 
     @Test
@@ -119,4 +119,30 @@ public class ChallengerSparkHTTPRequestHookTest {
                 challengers.SINGLE_PLAYER.statusOfChallenge
                         (CHALLENGE.GET_CHALLENGES));
     }
+
+//    @Test
+//    public void inMultiUserModeCanGetHeartbeat(){
+//
+//        Challengers challengers = new Challengers();
+//        challengers.setMultiPlayerMode();
+//        final ChallengerAuthData challenger =
+//                challengers.createNewChallenger();
+//
+//        final ChallengerSparkHTTPRequestHook hook = new
+//                ChallengerSparkHTTPRequestHook(challengers);
+//
+//        Request request = mock(Request.class);
+//        Response response = mock(Response.class);
+//        when(request.headers("X-CHALLENGER")).
+//                thenReturn(challenger.getXChallenger());
+//        when(request.requestMethod()).thenReturn("GET");
+//        when(request.pathInfo()).thenReturn("/heartbeat");
+//        hook.run(request, response);
+//
+//        // we passed the GET /challenges for default user
+//        Assertions.assertTrue(
+//                challenger.statusOfChallenge
+//                        (CHALLENGE.GET_HEARTBEAT_204));
+//    }
+
 }

@@ -27,30 +27,32 @@ public class ChallengerSparkHTTPRequestHook implements SparkRequestResponseHook 
             return;
         }
 
-        if(request.requestMethod().toUpperCase().contentEquals("GET") &&
-                request.pathInfo().contentEquals("/challenges")){
-            challengers.pass(challenger, CHALLENGE.GET_CHALLENGES);
-        }
+        String method = request.requestMethod().toUpperCase();
+        String path = request.pathInfo();
+//        if(method.equals("GET") &&
+//                path.equals("/challenges")){
+//            challengers.pass(challenger, CHALLENGE.GET_CHALLENGES);
+//        }
 
-        if(request.requestMethod().toUpperCase().contentEquals("GET") &&
-                request.pathInfo().contentEquals("/heartbeat")){
-            challengers.pass(challenger,CHALLENGE.GET_HEARTBEAT_204);
-        }
+//        if(method.equals("GET") &&
+//                path.equals("/heartbeat")){
+//            challengers.pass(challenger,CHALLENGE.GET_HEARTBEAT_204);
+//        }
 
-        if(request.requestMethod().toUpperCase().contentEquals("DELETE") &&
-                request.pathInfo().contentEquals("/heartbeat")){
-            challengers.pass(challenger,CHALLENGE.DELETE_HEARTBEAT_405);
-        }
-
-        if(request.requestMethod().toUpperCase().contentEquals("PATCH") &&
-                request.pathInfo().contentEquals("/heartbeat")){
-            challengers.pass(challenger,CHALLENGE.PATCH_HEARTBEAT_500);
-        }
-
-        if(request.requestMethod().toUpperCase().contentEquals("TRACE") &&
-                request.pathInfo().contentEquals("/heartbeat")){
-            challengers.pass(challenger,CHALLENGE.TRACE_HEARTBEAT_501);
-        }
+//        if(method.equals("DELETE") &&
+//                path.equals("/heartbeat")){
+//            challengers.pass(challenger,CHALLENGE.DELETE_HEARTBEAT_405);
+//        }
+//
+//        if(method.equals("PATCH") &&
+//                path.equals("/heartbeat")){
+//            challengers.pass(challenger,CHALLENGE.PATCH_HEARTBEAT_500);
+//        }
+//
+//        if(method.equals("TRACE") &&
+//                path.equals("/heartbeat")){
+//            challengers.pass(challenger,CHALLENGE.TRACE_HEARTBEAT_501);
+//        }
     }
 
     private void updateAuthTokenFrom(final String header) {

@@ -5,7 +5,7 @@ import spark.Response;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiResponse;
 
-public interface HttpApiRequestHook {
+public interface InternalHttpRequestHook {
     // return an HttpApiResponse if you want to end immediately from the hook
     HttpApiResponse run(HttpApiRequest request);
 }

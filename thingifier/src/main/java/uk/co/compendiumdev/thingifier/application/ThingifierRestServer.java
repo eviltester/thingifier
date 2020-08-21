@@ -12,6 +12,8 @@ import uk.co.compendiumdev.thingifier.api.routings.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.application.httpapimessagehooks.HttpApiRequestHook;
 import uk.co.compendiumdev.thingifier.application.httpapimessagehooks.HttpApiResponseHook;
 import uk.co.compendiumdev.thingifier.application.internalhttpconversion.*;
+import uk.co.compendiumdev.thingifier.application.sparkhttpmessageHooks.InternalHttpRequestHook;
+import uk.co.compendiumdev.thingifier.application.sparkhttpmessageHooks.InternalHttpResponseHook;
 import uk.co.compendiumdev.thingifier.application.sparkhttpmessageHooks.SparkRequestResponseHook;
 import uk.co.compendiumdev.thingifier.htmlgui.DefaultGUIHTML;
 import uk.co.compendiumdev.thingifier.htmlgui.RestApiDocumentationGenerator;
@@ -29,8 +31,10 @@ public class ThingifierRestServer {
 
     private final ThingifierApiDefn apiDefn;
     private String urlPath;
-    private List<SparkRequestResponseHook> preRequestHooks;
-    private List<SparkRequestResponseHook> postResponseHooks;
+    private List<SparkRequestResponseHook> preSparkHttpRequestHooks;
+    private List<SparkRequestResponseHook> postSparkHttpResponseHooks;
+    private List<InternalHttpRequestHook> preInternalHttpRequestHooks;
+    private List<InternalHttpResponseHook> postInternalHttpResponseHooks;
     private List<HttpApiRequestHook> httpApiRequestHooks;
     private final List<HttpApiResponseHook> httpApiResponseHooks;
 
@@ -46,8 +50,15 @@ public class ThingifierRestServer {
 
         this.apiDefn = apiDefn;
 
-        preRequestHooks = new ArrayList<>();
-        postResponseHooks = new ArrayList<>();
+        // hooks that take Spark request and responses pre and post the http message receipt / sending
+        preSparkHttpRequestHooks = new ArrayList<>();
+        postSparkHttpResponseHooks = new ArrayList<>();
+
+        // hooks that take internal representations of HTTP pre and post
+        preInternalHttpRequestHooks = new ArrayList<>();
+        postInternalHttpResponseHooks = new ArrayList<>();
+
+        // pre and post api request processing, using internal representations
         httpApiRequestHooks = new ArrayList<>();
         httpApiResponseHooks = new ArrayList<>();
 
@@ -73,40 +84,51 @@ public class ThingifierRestServer {
                 }
             }
 
-            if(preRequestHooks!=null){
-                for(SparkRequestResponseHook hook : preRequestHooks){
+            if(preSparkHttpRequestHooks !=null){
+                for(SparkRequestResponseHook hook : preSparkHttpRequestHooks){
                     // todo: catch exceptions and `halt`
                     hook.run(request, response);
                 }
             }
 
-            // todo:
-            // HttpApiRequest iRequest = SparkToHttpApiRequest.convert(request);
+            HttpApiRequest iRequest = SparkToHttpApiRequest.convert(request);
             // now run the HttpApiRequestHook hooks on this iRequest
-
+            if(preInternalHttpRequestHooks !=null){
+                for(InternalHttpRequestHook hook : preInternalHttpRequestHooks){
+                    // todo: catch exceptions and `halt`
+                    hook.run(iRequest);
+                }
+            }
         });
 
         after((request, response) -> {
 
-            // todo:
-//            InternalHttpResponse iResponse = SparkResponseToInternalHttpResponse.
-//                                                    convert(response);
             // now run the HttpApiResponseHook hooks
             // on this iRequest and iResponse
-//
-//            SparkResponseToInternalHttpResponse.
-//                    updateResponseFromInternal(response,iResponse);
+            HttpApiRequest iRequest = SparkToHttpApiRequest.convert(request);
+            InternalHttpResponse iResponse = SparkResponseToInternalHttpResponse.
+                                                   convert(response);
+
+            // now run the HttpApiRequestHook hooks on this iRequest
+            if(postInternalHttpResponseHooks !=null){
+                for(InternalHttpResponseHook hook : postInternalHttpResponseHooks){
+                    // todo: catch exceptions and `halt`
+                    hook.run(iRequest, iResponse);
+                }
+            }
+
+            SparkResponseToInternalHttpResponse.
+                    updateResponseFromInternal(response, iResponse);
 
 
-            if(postResponseHooks !=null){
-                for(SparkRequestResponseHook hook : postResponseHooks){
+            if(postSparkHttpResponseHooks !=null){
+                for(SparkRequestResponseHook hook : postSparkHttpResponseHooks){
                     // todo: catch exceptions and let the response return
                     hook.run(request, response);
                 }
             }
         });
 
-        // TODO : this now needs HTTP level automated coverage
 
         // configure it based on a thingifier
         ApiRoutingDefinition routingDefinitions = new ApiRoutingDefinitionGenerator(thingifier).generate();
@@ -291,12 +313,12 @@ public class ThingifierRestServer {
 
     public void registerPreRequestHook(final SparkRequestResponseHook hook) {
         // pre-request hooks run pre-every-request
-        preRequestHooks.add(hook);
+        preSparkHttpRequestHooks.add(hook);
     }
 
     public void registerPostResponseHook(final SparkRequestResponseHook hook) {
         // post-request hooks run after-every-response
-        postResponseHooks.add(hook);
+        postSparkHttpResponseHooks.add(hook);
     }
 
     public void registerHttpApiRequestHook(final HttpApiRequestHook hook) {
@@ -308,4 +330,15 @@ public class ThingifierRestServer {
         // pre-request hooks run pre-every-api-request
         httpApiResponseHooks.add(hook);
     }
+
+    public void registerInternalHttpResponseHook(final InternalHttpResponseHook hook) {
+        // pre-request hooks run post api processing on an internal http representation
+        postInternalHttpResponseHooks.add(hook);
+    }
+
+    public void registerInternalHttpRequestHook(final InternalHttpRequestHook hook) {
+        // pre-request hooks run pre api routing on an internal http representation
+        preInternalHttpRequestHooks.add(hook);
+    }
+
 }
