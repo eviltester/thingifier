@@ -20,20 +20,24 @@ public class InternalHttpResponse {
         headers = new HashMap<>();
     }
 
-    public void setStatus(final int status) {
+    public InternalHttpResponse setStatus(final int status) {
         this.status = status;
+        return this;
     }
 
-    public void setType(final String contentType) {
+    public InternalHttpResponse setType(final String contentType) {
         this.contentType = contentType;
+        return this;
     }
 
-    public void setBody(final String body) {
+    public InternalHttpResponse setBody(final String body) {
         this.body = body;
+        return this;
     }
 
-    public void setHeader(final String headerName, final String header) {
+    public InternalHttpResponse setHeader(final String headerName, final String header) {
         headers.put(headerName.toUpperCase(), header);
+        return this;
     }
 
     public int getStatusCode() {
