@@ -74,10 +74,13 @@ public class HttpRequestSender implements CanSendHttpRequests {
             }
 
 
+            lastRequest = new HttpRequestDetails();
+
             // SET HEADERS
             for(String headerName : headers.keySet()){
                 con.setRequestProperty(headerName, headers.get(headerName));
                 System.out.println("Header - " + headerName + " : " +  headers.get(headerName) );
+                lastRequest.addHeader(headerName, headers.get(headerName));
             }
 
             String payload = body;
@@ -110,7 +113,7 @@ public class HttpRequestSender implements CanSendHttpRequests {
             response.body = responseBody.toString();
 
 
-            // add the headers
+            // add the headers to readable response
             Map<String, String> responseHeaders = new HashMap<>();
             for(String headerKey : con.getHeaderFields().keySet()){
                 String headerValue =  con.getHeaderField(headerKey);
@@ -119,14 +122,12 @@ public class HttpRequestSender implements CanSendHttpRequests {
             }
             response.setHeaders(responseHeaders);
 
-            lastRequest = new HttpRequestDetails();
 
             lastResponse = response;
 
             for(String sentHeader : lastRequest.getHeaders().keySet()){
                 System.out.println(String.format("Request Header - %s:%s", sentHeader, lastRequest.getHeaders().get(sentHeader)));
             }
-
 
             if(body.length()>0) {
                 lastRequest.body = body;
