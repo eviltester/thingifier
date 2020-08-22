@@ -71,6 +71,7 @@ public class HttpClientRequestSender implements CanSendHttpRequests {
             for(Map.Entry<String, List<String>> actualHeader :
                     actualRequest.headers().map().entrySet()){
                 lastRequest.addHeader(actualHeader.getKey(), actualHeader.getValue().get(0));
+                System.out.println(String.format("Request Header - %s:%s", actualHeader.getKey(), actualHeader.getValue().get(0)));
             }
 
             final HttpResponse<String> actualResponse = client.send(actualRequest, HttpResponse.BodyHandlers.ofString());
@@ -98,9 +99,7 @@ public class HttpClientRequestSender implements CanSendHttpRequests {
 
             lastResponse = response;
 
-            for(String sentHeader : lastRequest.getHeaders().keySet()){
-                System.out.println(String.format("Request Header - %s:%s", sentHeader, lastRequest.getHeaders().get(sentHeader)));
-            }
+
 
 
         }catch(Exception e){

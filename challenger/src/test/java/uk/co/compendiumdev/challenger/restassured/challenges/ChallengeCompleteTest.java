@@ -8,7 +8,6 @@ import uk.co.compendiumdev.challenge.CHALLENGE;
 import uk.co.compendiumdev.challenge.ChallengeMain;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
-import uk.co.compendiumdev.challenger.payloads.Challenge;
 import uk.co.compendiumdev.challenger.restassured.http.HttpMessageSender;
 import uk.co.compendiumdev.challenger.restassured.http.HttpResponseDetails;
 import uk.co.compendiumdev.sparkstart.Environment;
@@ -23,11 +22,13 @@ public class ChallengeCompleteTest{
     private static Challengers challengers;
     private static ChallengerAuthData challenger;
     private static HttpMessageSender http;
+
+    private static Map<String, String> headers;
     private static Map<String, String> x_challenger_header;
     private static Map<String, String> content_application_json;
-    private static Map<String, String> headers;
     private static Map<String, String> accept_xml_header;
     private static Map<String, String> accept_json_header;
+    private static Map<String, String> content_application_xml;
 
     @BeforeAll
     public static void createAChallengerToUse(){
@@ -41,6 +42,9 @@ public class ChallengeCompleteTest{
 
         content_application_json = new HashMap<>();
         content_application_json.put("Content-Type", "application/json");
+
+        content_application_xml = new HashMap<>();
+        content_application_xml.put("Content-Type", "application/xml");
 
         accept_xml_header = new HashMap<>();
         accept_xml_header.put("Accept", "application/xml");
@@ -187,6 +191,75 @@ public class ChallengeCompleteTest{
         Assertions.assertEquals(200, response.statusCode);
         Assertions.assertTrue(challenger.statusOfChallenge(CHALLENGE.POST_UPDATE_TODO));
     }
+
+    @Test
+    public void canPostTodosAsJsonAndAcceptXmlPass() {
+
+        headers.clear();
+        headers.putAll(x_challenger_header);
+        headers.putAll(content_application_json);
+        headers.putAll(accept_xml_header);
+
+        //{"title":"mytodo","description":"a todo","doneStatus":false}
+        final HttpResponseDetails response =
+                http.send("/todos", "POST", headers,
+                        "{\"title\":\"mytodo\",\"description\":\"a todo\",\"doneStatus\":false}");
+
+        Assertions.assertEquals(201, response.statusCode);
+        Assertions.assertTrue(challenger.statusOfChallenge(CHALLENGE.POST_CREATE_JSON_ACCEPT_XML));
+    }
+
+    @Test
+    public void canPostTodosAsXmlAndAcceptJsonPass() {
+
+        headers.clear();
+        headers.putAll(x_challenger_header);
+        headers.putAll(content_application_xml);
+        headers.putAll(accept_json_header);
+
+        //<todo><title>mytodo</title><description>a todo</description><doneStatus>false</doneStatus></todo>
+        final HttpResponseDetails response =
+                http.send("/todos", "POST", headers,
+                        "<todo><title>mytodo</title><description>a todo</description><doneStatus>false</doneStatus></todo>");
+
+        Assertions.assertEquals(201, response.statusCode);
+        Assertions.assertTrue(challenger.statusOfChallenge(CHALLENGE.POST_CREATE_XML_ACCEPT_JSON));
+    }
+
+
+    @Test
+    public void canPostTodosAsXml() {
+
+        headers.clear();
+        headers.putAll(x_challenger_header);
+        headers.putAll(content_application_xml);
+        headers.putAll(accept_xml_header);
+
+        //<todo><title>mytodo</title><description>a todo</description><doneStatus>false</doneStatus></todo>
+        final HttpResponseDetails response =
+                http.send("/todos", "POST", headers,
+                        "<todo><title>mytodo</title><description>a todo</description><doneStatus>false</doneStatus></todo>");
+
+        Assertions.assertEquals(201, response.statusCode);
+        Assertions.assertTrue(challenger.statusOfChallenge(CHALLENGE.POST_CREATE_XML));
+    }
+
+    @Test
+    public void canPostTodosWithInvalidContentType() {
+
+        headers.clear();
+        headers.putAll(x_challenger_header);
+        headers.put("Content-type", "application/x-www-form-urlencoded");
+
+        //<todo><title>mytodo</title><description>a todo</description><doneStatus>false</doneStatus></todo>
+        final HttpResponseDetails response =
+                http.send("/todos", "POST", headers,
+                        "<todo><title>mytodo</title><description>a todo</description><doneStatus>false</doneStatus></todo>");
+
+        Assertions.assertEquals(415, response.statusCode);
+        Assertions.assertTrue(challenger.statusOfChallenge(CHALLENGE.POST_TODOS_415));
+    }
+
 
     @Test
     public void canDeleteTodosPass() {
@@ -349,6 +422,16 @@ public class ChallengeCompleteTest{
 
         Assertions.assertEquals(501, response.statusCode);
         Assertions.assertTrue(challenger.statusOfChallenge(CHALLENGE.TRACE_HEARTBEAT_501));
+    }
+
+    @Test
+    public void canGetHeartbeatPass() {
+
+        final HttpResponseDetails response =
+                http.send("/heartbeat", "GET", x_challenger_header, "");
+
+        Assertions.assertEquals(204, response.statusCode);
+        Assertions.assertTrue(challenger.statusOfChallenge(CHALLENGE.GET_HEARTBEAT_204));
     }
 
 
