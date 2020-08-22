@@ -29,6 +29,7 @@ public class ChallengeCompleteTest{
     private static Map<String, String> accept_xml_header;
     private static Map<String, String> accept_json_header;
     private static Map<String, String> content_application_xml;
+    private static ChallengerAuthData newChallenger;
 
     @BeforeAll
     public static void createAChallengerToUse(){
@@ -62,6 +63,12 @@ public class ChallengeCompleteTest{
         int remainingChallengeCount = 0;
 
         for(CHALLENGE challenge : CHALLENGE.values()){
+            if(newChallenger!=null &&
+                    challenge==CHALLENGE.CREATE_NEW_CHALLENGER){
+                if(newChallenger.statusOfChallenge(challenge)){
+                    continue;
+                }
+            }
             if(!challenger.statusOfChallenge(challenge)){
                 remainingChallengeCount++;
                 System.out.println(challenge.toString());
@@ -72,6 +79,10 @@ public class ChallengeCompleteTest{
             String.format(
                 "%d challenges left to complete",
                 remainingChallengeCount));
+
+        if(remainingChallengeCount>0){
+            Assertions.fail();
+        }
     }
 
     @Test
@@ -185,7 +196,8 @@ public class ChallengeCompleteTest{
         headers.putAll(content_application_json);
 
         final HttpResponseDetails response =
-                http.send("/todos/" + todo.getGUID(), "POST", headers,
+                http.send("/todos/" + todo.getFieldValue("id").asString(),
+                        "POST", headers,
                         "{\"title\":\"mytodo\",\"description\":\"a todo\"}");
 
         Assertions.assertEquals(200, response.statusCode);
@@ -271,7 +283,8 @@ public class ChallengeCompleteTest{
         headers.putAll(x_challenger_header);
 
         final HttpResponseDetails response =
-                http.send("/todos/" + todo.getGUID(), "DELETE", headers, "");
+                http.send("/todos/" + todo.getFieldValue("id").asString(),
+                        "DELETE", headers, "");
 
         Assertions.assertEquals(200, response.statusCode);
         Assertions.assertTrue(challenger.statusOfChallenge(CHALLENGE.DELETE_A_TODO));
@@ -284,7 +297,8 @@ public class ChallengeCompleteTest{
         final ThingInstance todo = todos.createManagedInstance();
 
         final HttpResponseDetails response =
-                http.send("/todos/" + todo.getGUID(), "GET", x_challenger_header, "");
+                http.send("/todos/" + todo.getFieldValue("id").asString(),
+                        "GET", x_challenger_header, "");
 
         Assertions.assertEquals(200, response.statusCode);
         Assertions.assertTrue(challenger.statusOfChallenge(CHALLENGE.GET_TODO));
@@ -432,6 +446,182 @@ public class ChallengeCompleteTest{
 
         Assertions.assertEquals(204, response.statusCode);
         Assertions.assertTrue(challenger.statusOfChallenge(CHALLENGE.GET_HEARTBEAT_204));
+    }
+
+    /*
+        SECRET TOKEN
+     */
+
+    @Test
+    public void canCreateSecretToken401() {
+
+        headers.clear();
+        headers.putAll(x_challenger_header);
+        headers.put("Authorization","basic YWRtaW46YWRtaW4="); // admin:admin
+
+        final HttpResponseDetails response =
+                http.send("/secret/token", "POST", headers, "");
+
+        Assertions.assertEquals(401, response.statusCode);
+        Assertions.assertTrue(challenger.
+                statusOfChallenge(CHALLENGE.CREATE_SECRET_TOKEN_401));
+    }
+
+    @Test
+    public void canCreateSecretToken201() {
+
+        headers.clear();
+        headers.putAll(x_challenger_header);
+        headers.put("Authorization","basic YWRtaW46cGFzc3dvcmQ="); // admin:password
+
+        final HttpResponseDetails response =
+                http.send("/secret/token", "POST", headers, "");
+
+        Assertions.assertEquals(201, response.statusCode);
+        Assertions.assertTrue(challenger.
+                statusOfChallenge(CHALLENGE.CREATE_SECRET_TOKEN_201));
+    }
+
+    /**
+     * SECRET NOTE
+     */
+
+    @Test
+    public void canNotGetSecretTokenWhenBadAuth403() {
+
+        headers.clear();
+        headers.putAll(x_challenger_header);
+        headers.put("X-AUTH-TOKEN",challenger.getXAuthToken() + "bob");
+
+        final HttpResponseDetails response =
+                http.send("/secret/note", "GET", headers, "");
+
+        Assertions.assertEquals(403, response.statusCode);
+        Assertions.assertTrue(challenger.
+                statusOfChallenge(CHALLENGE.GET_SECRET_NOTE_403));
+    }
+
+    @Test
+    public void canNotGetSecretTokenWhenNoAuth401() {
+
+        headers.clear();
+        headers.putAll(x_challenger_header);
+
+        final HttpResponseDetails response =
+                http.send("/secret/note", "GET", headers, "");
+
+        Assertions.assertEquals(401, response.statusCode);
+        Assertions.assertTrue(challenger.
+                statusOfChallenge(CHALLENGE.GET_SECRET_NOTE_401));
+    }
+
+    @Test
+    public void canGetSecretTokenWhenAuth200() {
+
+        headers.clear();
+        headers.putAll(x_challenger_header);
+        headers.put("X-AUTH-TOKEN",challenger.getXAuthToken());
+
+        final HttpResponseDetails response =
+                http.send("/secret/note", "GET", headers, "");
+
+        Assertions.assertEquals(200, response.statusCode);
+        Assertions.assertTrue(challenger.
+                statusOfChallenge(CHALLENGE.GET_SECRET_NOTE_200));
+    }
+
+    @Test
+    public void canPostSecretTokenWhenAuth200() {
+
+        headers.clear();
+        headers.putAll(x_challenger_header);
+        headers.put("X-AUTH-TOKEN",challenger.getXAuthToken());
+
+        //{"note":"bob"}
+        final HttpResponseDetails response =
+                http.send("/secret/note", "POST", headers,
+                        "{\"note\":\"bob\"}");
+
+        Assertions.assertEquals(200, response.statusCode);
+        Assertions.assertTrue(challenger.
+                statusOfChallenge(CHALLENGE.POST_SECRET_NOTE_200));
+    }
+
+    @Test
+    public void cannotPostSecretTokenWhenNoAuth401() {
+
+        headers.clear();
+        headers.putAll(x_challenger_header);
+
+        //{"note":"bob"}
+        final HttpResponseDetails response =
+                http.send("/secret/note", "POST", headers,
+                        "{\"note\":\"bob\"}");
+
+        Assertions.assertEquals(401, response.statusCode);
+        Assertions.assertTrue(challenger.
+                statusOfChallenge(CHALLENGE.POST_SECRET_NOTE_401));
+    }
+
+    @Test
+    public void cannotPostSecretTokenWhenWrongAuth403() {
+
+        headers.clear();
+        headers.putAll(x_challenger_header);
+        headers.put("X-AUTH-TOKEN",challenger.getXAuthToken() + "bob");
+
+        //{"note":"bob"}
+        final HttpResponseDetails response =
+                http.send("/secret/note", "POST", headers,
+                        "{\"note\":\"bob\"}");
+
+        Assertions.assertEquals(403, response.statusCode);
+        Assertions.assertTrue(challenger.
+                statusOfChallenge(CHALLENGE.POST_SECRET_NOTE_403));
+    }
+
+    @Test
+    public void canCreateANewChallenger() {
+
+        headers.clear();
+
+        //{"note":"bob"}
+        final HttpResponseDetails response =
+                http.send("/challenger", "POST", headers, "");
+
+        Assertions.assertEquals(201, response.statusCode);
+
+        final String challengerCode = response.getHeaders().get("x-challenger");
+
+        newChallenger = ChallengeMain.getChallenger().
+                    getChallengers().getChallenger(challengerCode);
+
+        Assertions.assertTrue(newChallenger.
+                statusOfChallenge(CHALLENGE.CREATE_NEW_CHALLENGER));
+    }
+
+    @Test
+    public void canDeleteAllTodos() {
+
+        final Thing todos = ChallengeMain.getChallenger().getThingifier().getThingNamed("todo");
+
+        for(ThingInstance instance : todos.getInstances()){
+            final HttpResponseDetails response =
+                    http.send("/todos/" + instance.getFieldValue("id").asString(),
+                            "DELETE",
+                            x_challenger_header, "");
+        }
+
+        Assertions.assertTrue(challenger.
+                statusOfChallenge(CHALLENGE.DELETE_ALL_TODOS));
+
+        // add some todos in case this is not the last test
+
+        todos.createManagedInstance();
+        todos.createManagedInstance();
+        todos.createManagedInstance();
+        todos.createManagedInstance();
+
     }
 
 
