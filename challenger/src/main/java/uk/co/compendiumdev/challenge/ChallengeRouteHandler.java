@@ -95,4 +95,8 @@ public class ChallengeRouteHandler {
     public Challengers getChallengers(){
         return challengers;
     }
+
+    public Thingifier getThingifier() {
+        return thingifier;
+    }
 }

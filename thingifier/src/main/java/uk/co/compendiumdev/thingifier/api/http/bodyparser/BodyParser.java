@@ -158,6 +158,12 @@ public class BodyParser {
         }
 
         args = new Gson().fromJson(request.getBody(), Map.class);
+
+        if(args==null) {
+            // something went wrong during conversion, could report as json/xml error
+            args = new HashMap<>();
+        }
+
     }
 
 
