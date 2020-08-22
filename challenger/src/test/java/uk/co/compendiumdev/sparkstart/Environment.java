@@ -20,25 +20,24 @@ public class Environment {
 
 
         // if not running then start the spark
-        if(Port.inUse("localhost", 4567)) {
-            return "http://localhost:4567";
-        }else{
+        if(!Port.inUse("localhost", 4567)) {
             //start it up
             Spark.port(4567);
-            String [] args;
+            String[] args;
 
-            if(SINGLE_PLAYER_MODE){
+            if (SINGLE_PLAYER_MODE) {
                 args = "".split(",");
-            }else{
+            } else {
                 args = "-multiplayer".split(",");
-            };
+            }
+            ;
 
 
             ChallengeMain.main(args);
 
             // wait till running
-            int maxtries=10;
-            while(!Port.inUse("localhost", 4567)){
+            int maxtries = 10;
+            while (!Port.inUse("localhost", 4567)) {
                 maxtries--;
                 try {
                     Thread.sleep(500);
@@ -46,9 +45,9 @@ public class Environment {
                     e.printStackTrace();
                 }
             }
-
-            return "http://localhost:4567";
         }
+
+        return "http://localhost:4567";
 
         // TODO: incorporate browsermob proxy and allow configuration of all
         //  requests through a proxy file to output a HAR file of all requests for later review

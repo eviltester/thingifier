@@ -7,8 +7,9 @@ import uk.co.compendiumdev.thingifier.application.ThingifierRestServer;
 
 public class ChallengeMain {
 
-    public static void main(String[] args) {
+    static ChallengeRouteHandler challenger;
 
+    public static void main(String[] args) {
 
         MainImplementation app = new MainImplementation();
         Thingifier thingifier = new ChallengeApiModel().get();
@@ -21,7 +22,8 @@ public class ChallengeMain {
         app.setupBuiltInConfigurableRoutes();
 
         // setup routes required for challenges
-        ChallengeRouteHandler challenger = new ChallengeRouteHandler(thingifier, app.getApiDefn());
+        challenger = new ChallengeRouteHandler(thingifier, app.getApiDefn());
+
         for (String arg : args) {
             if (arg.startsWith("-multiplayer")) {
                 System.out.println("Running in multiplayer mode");
@@ -61,5 +63,9 @@ public class ChallengeMain {
 
         challenger.addHooks(restServer);
 
+    }
+
+    public static ChallengeRouteHandler getChallenger(){
+        return challenger;
     }
 }

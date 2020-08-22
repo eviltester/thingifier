@@ -91,4 +91,8 @@ public class ChallengeRouteHandler {
         new ChallengerWebGUI(guiManagement, guiStayAlive).setup(challengers, challengeDefinitions,
                                                 persistenceLayer, single_player_mode);
     }
+
+    public Challengers getChallengers(){
+        return challengers;
+    }
 }
