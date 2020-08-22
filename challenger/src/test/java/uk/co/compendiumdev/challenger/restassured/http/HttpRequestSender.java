@@ -11,7 +11,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Created by Alan on 04/07/2017.
+ * Limitations HttpURLConnection does not sent PATCH or CONNECT verbs
+ * these need to use the X-HTTP-Method-Override header which not every server honours
  */
 public class HttpRequestSender implements CanSendHttpRequests {
 

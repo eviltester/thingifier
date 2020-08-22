@@ -80,8 +80,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.3</version>
                 <configuration>
-                    <source>${java.version}</source>
-                    <target>${java.version}</target>
+                    <source>11</source> <!-- 11 required to use HttpClient -->
+                    <target>11</target>
                 </configuration>
             </plugin>
             <plugin>

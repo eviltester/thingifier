@@ -36,7 +36,7 @@ public class HttpMessageSender {
 
         headers = new HashMap<>();
 
-        sender = new HttpRequestSender(null, 0);
+        sender = new HttpClientRequestSender(null, 0);
     }
 
     public HttpRequestDetails getLastRequest(){
@@ -49,7 +49,8 @@ public class HttpMessageSender {
     public void setProxy(String ip, int port){
         proxyHost = ip;
         proxyPort = port;
-        sender = new HttpRequestSender(proxyHost, proxyPort);
+        //sender = new HttpRequestSender(proxyHost, proxyPort);
+        sender = new HttpClientRequestSender(proxyHost, proxyPort);
     }
 
     public void setUserAgent(){

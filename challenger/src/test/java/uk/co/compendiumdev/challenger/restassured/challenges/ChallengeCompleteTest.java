@@ -60,6 +60,7 @@ public class ChallengeCompleteTest{
         for(CHALLENGE challenge : CHALLENGE.values()){
             if(!challenger.statusOfChallenge(challenge)){
                 remainingChallengeCount++;
+                System.out.println(challenge.toString());
             }
         }
 
@@ -313,6 +314,41 @@ public class ChallengeCompleteTest{
 
         Assertions.assertEquals(200, response.statusCode);
         Assertions.assertTrue(challenger.statusOfChallenge(CHALLENGE.GET_TODOS_FILTERED));
+    }
+
+
+    /**
+     * Heartbeat
+     */
+
+    @Test
+    public void can405DeleteHeartbeatPass() {
+
+        final HttpResponseDetails response =
+                http.send("/heartbeat", "DELETE", x_challenger_header, "");
+
+        Assertions.assertEquals(405, response.statusCode);
+        Assertions.assertTrue(challenger.statusOfChallenge(CHALLENGE.DELETE_HEARTBEAT_405));
+    }
+
+    @Test
+    public void can500PatchHeartbeatPass() {
+
+        final HttpResponseDetails response =
+                http.send("/heartbeat", "PATCH", x_challenger_header, "");
+
+        Assertions.assertEquals(500, response.statusCode);
+        Assertions.assertTrue(challenger.statusOfChallenge(CHALLENGE.PATCH_HEARTBEAT_500));
+    }
+
+    @Test
+    public void can501TraceHeartbeatPass() {
+
+        final HttpResponseDetails response =
+                http.send("/heartbeat", "TRACE", x_challenger_header, "");
+
+        Assertions.assertEquals(501, response.statusCode);
+        Assertions.assertTrue(challenger.statusOfChallenge(CHALLENGE.TRACE_HEARTBEAT_501));
     }
 
 
