@@ -31,15 +31,8 @@ public class ChallengerTrackingRoutes {
                     challenger.touch();
                     result.status(204);
                 }else{
-                    // try to load challenger from persistence
-                    final PersistenceResponse persistence =
-                            persistenceLayer.tryToLoadChallenger(challengers, xChallengerGuid);
-                    if(!persistence.isSuccess()) {
-                        result.status(404);
-                        result.header("X-CHALLENGER", persistence.getErrorMessage());
-                    }else{
-                        result.status(204);
-                    }
+                    result.status(404);
+                    result.header("X-CHALLENGER", "UNKNOWN CHALLENGER - Challenger not found");
                 }
             }else{
                 result.status(404);
@@ -71,16 +64,10 @@ public class ChallengerTrackingRoutes {
                 return "";
             }else {
                 ChallengerAuthData challenger = challengers.getChallenger(xChallengerGuid);
-                PersistenceResponse persistence= new PersistenceResponse();
-                if(challenger==null){
-                    // try to load challenger status
-                    persistence = persistenceLayer.tryToLoadChallenger(challengers, xChallengerGuid);
-                }
                 if(challenger==null){
                     // if X-CHALLENGER header exists, and is not a known UUID,
                     // return 404, challenger ID not valid
-                    result.header("X-CHALLENGER", "Challenger not found " +
-                                                        persistence.getErrorMessage());
+                    result.header("X-CHALLENGER", "UNKNOWN CHALLENGER - Challenger not found");
                     result.status(404);
                 }else{
                     // if X-CHALLENGER header exists, and has a valid UUID, and UUID exists, then return 200
