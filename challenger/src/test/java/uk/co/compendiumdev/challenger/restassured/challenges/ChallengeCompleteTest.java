@@ -1,5 +1,6 @@
 package uk.co.compendiumdev.challenger.restassured.challenges;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -7,6 +8,7 @@ import uk.co.compendiumdev.challenge.CHALLENGE;
 import uk.co.compendiumdev.challenge.ChallengeMain;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
+import uk.co.compendiumdev.challenger.payloads.Challenge;
 import uk.co.compendiumdev.challenger.restassured.http.HttpMessageSender;
 import uk.co.compendiumdev.challenger.restassured.http.HttpResponseDetails;
 import uk.co.compendiumdev.sparkstart.Environment;
@@ -24,6 +26,8 @@ public class ChallengeCompleteTest{
     private static Map<String, String> x_challenger_header;
     private static Map<String, String> content_application_json;
     private static Map<String, String> headers;
+    private static Map<String, String> accept_xml_header;
+    private static Map<String, String> accept_json_header;
 
     @BeforeAll
     public static void createAChallengerToUse(){
@@ -38,10 +42,32 @@ public class ChallengeCompleteTest{
         content_application_json = new HashMap<>();
         content_application_json.put("Content-Type", "application/json");
 
+        accept_xml_header = new HashMap<>();
+        accept_xml_header.put("Accept", "application/xml");
+
+        accept_json_header = new HashMap<>();
+        accept_json_header.put("Accept", "application/json");
+
         headers = new HashMap<>();
     }
 
     // After all - check that all challenges are complete
+    @AfterAll
+    static void alldone(){
+
+        int remainingChallengeCount = 0;
+
+        for(CHALLENGE challenge : CHALLENGE.values()){
+            if(!challenger.statusOfChallenge(challenge)){
+                remainingChallengeCount++;
+            }
+        }
+
+        System.out.print(
+            String.format(
+                "%d challenges left to complete",
+                remainingChallengeCount));
+    }
 
     @Test
     public void canGetChallengesPass() {
@@ -51,6 +77,7 @@ public class ChallengeCompleteTest{
 
         Assertions.assertEquals(200, response.statusCode);
         Assertions.assertTrue(challenger.statusOfChallenge(CHALLENGE.GET_CHALLENGES));
+
     }
 
     @Test
@@ -61,6 +88,20 @@ public class ChallengeCompleteTest{
 
         Assertions.assertEquals(200, response.statusCode);
         Assertions.assertTrue(challenger.statusOfChallenge(CHALLENGE.GET_TODOS));
+    }
+
+    @Test
+    public void canGetTodosNoAcceptHeaderPass() {
+
+        headers.clear();
+        headers.putAll(x_challenger_header);
+        headers.put("Accept","");
+
+        final HttpResponseDetails response =
+                http.send("/todos", "GET", headers, "");
+
+        Assertions.assertEquals(200, response.statusCode);
+        Assertions.assertTrue(challenger.statusOfChallenge(CHALLENGE.GET_JSON_BY_DEFAULT_NO_ACCEPT));
     }
 
     @Test
@@ -81,6 +122,16 @@ public class ChallengeCompleteTest{
 
         Assertions.assertEquals(200, response.statusCode);
         Assertions.assertTrue(challenger.statusOfChallenge(CHALLENGE.GET_HEAD_TODOS));
+    }
+
+    @Test
+    public void canOptionsTodosPass() {
+
+        final HttpResponseDetails response =
+                http.send("/todos", "OPTIONS", x_challenger_header, "");
+
+        Assertions.assertEquals(200, response.statusCode);
+        Assertions.assertTrue(challenger.statusOfChallenge(CHALLENGE.OPTIONS_TODOS));
     }
 
     /**
@@ -119,21 +170,124 @@ public class ChallengeCompleteTest{
     }
 
     @Test
+    public void canPostTodosUpdatePass() {
+
+        final Thing todos = ChallengeMain.getChallenger().getThingifier().getThingNamed("todo");
+        final ThingInstance todo = todos.createManagedInstance();
+
+        headers.clear();
+        headers.putAll(x_challenger_header);
+        headers.putAll(content_application_json);
+
+        final HttpResponseDetails response =
+                http.send("/todos/" + todo.getGUID(), "POST", headers,
+                        "{\"title\":\"mytodo\",\"description\":\"a todo\"}");
+
+        Assertions.assertEquals(200, response.statusCode);
+        Assertions.assertTrue(challenger.statusOfChallenge(CHALLENGE.POST_UPDATE_TODO));
+    }
+
+    @Test
+    public void canDeleteTodosPass() {
+
+        final Thing todos = ChallengeMain.getChallenger().getThingifier().getThingNamed("todo");
+        final ThingInstance todo = todos.createManagedInstance();
+
+        headers.clear();
+        headers.putAll(x_challenger_header);
+
+        final HttpResponseDetails response =
+                http.send("/todos/" + todo.getGUID(), "DELETE", headers, "");
+
+        Assertions.assertEquals(200, response.statusCode);
+        Assertions.assertTrue(challenger.statusOfChallenge(CHALLENGE.DELETE_A_TODO));
+    }
+
+    @Test
     public void canGetSpecificTodoPass() {
 
         final Thing todos = ChallengeMain.getChallenger().getThingifier().getThingNamed("todo");
-
-        String todoGuid="";
-        for(ThingInstance todo : todos.getInstances()){
-            todoGuid = todo.getGUID();
-            break;
-        };
+        final ThingInstance todo = todos.createManagedInstance();
 
         final HttpResponseDetails response =
-                http.send("/todos/" + todoGuid, "GET", x_challenger_header, "");
+                http.send("/todos/" + todo.getGUID(), "GET", x_challenger_header, "");
 
         Assertions.assertEquals(200, response.statusCode);
         Assertions.assertTrue(challenger.statusOfChallenge(CHALLENGE.GET_TODO));
+    }
+
+    @Test
+    public void canGetTodosXMLPass() {
+
+        headers.clear();
+        headers.putAll(x_challenger_header);
+        headers.putAll(accept_xml_header);
+
+        final HttpResponseDetails response =
+                http.send("/todos", "GET",
+                        headers, "");
+
+        Assertions.assertEquals(200, response.statusCode);
+        Assertions.assertTrue(challenger.statusOfChallenge(CHALLENGE.GET_ACCEPT_XML));
+    }
+
+    @Test
+    public void canGetTodoJsonPass() {
+
+        headers.clear();
+        headers.putAll(x_challenger_header);
+        headers.putAll(accept_json_header);
+
+        final HttpResponseDetails response =
+                http.send("/todos" , "GET",
+                        headers, "");
+
+        Assertions.assertEquals(200, response.statusCode);
+        Assertions.assertTrue(challenger.statusOfChallenge(CHALLENGE.GET_ACCEPT_JSON));
+    }
+
+    @Test
+    public void canGetTodoAnyPass() {
+
+        headers.clear();
+        headers.putAll(x_challenger_header);
+        headers.put("Accept","*/*");
+
+        final HttpResponseDetails response =
+                http.send("/todos" , "GET",
+                        headers, "");
+
+        Assertions.assertEquals(200, response.statusCode);
+        Assertions.assertTrue(challenger.statusOfChallenge(CHALLENGE.GET_ACCEPT_ANY_DEFAULT_JSON));
+    }
+
+    @Test
+    public void canGetTodoXmlPreferredPass() {
+
+        headers.clear();
+        headers.putAll(x_challenger_header);
+        headers.put("Accept","application/xml, application/json");
+
+        final HttpResponseDetails response =
+                http.send("/todos" , "GET", headers, "");
+
+        Assertions.assertEquals(200, response.statusCode);
+        Assertions.assertTrue(challenger.statusOfChallenge(CHALLENGE.GET_ACCEPT_XML_PREFERRED));
+
+    }
+
+    @Test
+    public void canGetTodosNotAcceptGzip() {
+
+        headers.clear();
+        headers.putAll(x_challenger_header);
+        headers.put("Accept","application/gzip");
+
+        final HttpResponseDetails response =
+                http.send("/todos" , "GET", headers, "");
+
+        Assertions.assertEquals(406, response.statusCode);
+        Assertions.assertTrue(challenger.statusOfChallenge(CHALLENGE.GET_UNSUPPORTED_ACCEPT_406));
     }
 
     @Test
@@ -160,6 +314,8 @@ public class ChallengeCompleteTest{
         Assertions.assertEquals(200, response.statusCode);
         Assertions.assertTrue(challenger.statusOfChallenge(CHALLENGE.GET_TODOS_FILTERED));
     }
+
+
 }
 
 
