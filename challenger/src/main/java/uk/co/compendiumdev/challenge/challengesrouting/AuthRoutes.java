@@ -2,7 +2,7 @@ package uk.co.compendiumdev.challenge.challengesrouting;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import uk.co.compendiumdev.challenge.BasicAuthHeader;
+import uk.co.compendiumdev.challenge.BasicAuthHeaderParser;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
 import uk.co.compendiumdev.thingifier.api.ThingifierApiDefn;
@@ -12,7 +12,6 @@ import uk.co.compendiumdev.thingifier.api.routings.RoutingVerb;
 import uk.co.compendiumdev.thingifier.spark.SimpleRouteConfig;
 
 import java.util.HashMap;
-import java.util.List;
 
 import static spark.Spark.get;
 import static spark.Spark.post;
@@ -28,7 +27,7 @@ public class AuthRoutes {
         // todo: or {username, password} payload
         post("/secret/token", (request, result) -> {
 
-            BasicAuthHeader basicAuth = new BasicAuthHeader(request.headers("Authorization"));
+            BasicAuthHeaderParser basicAuth = new BasicAuthHeaderParser(request.headers("Authorization"));
 
             // admin/password as default username:password
             if(!basicAuth.matches("admin","password")){

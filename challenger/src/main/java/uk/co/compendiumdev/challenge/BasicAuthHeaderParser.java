@@ -1,16 +1,17 @@
 package uk.co.compendiumdev.challenge;
 
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.List;
 
-public class BasicAuthHeader {
+public class BasicAuthHeaderParser {
     private final String authHeader;
     private String password;
-    private String[] parts;
     private String basic;
     private String base64UserNamePass;
     private String username;
 
-    public BasicAuthHeader(final String header) {
+    public BasicAuthHeaderParser(final String header) {
         if(header==null){
             this.authHeader = "";
         }else{
@@ -49,17 +50,38 @@ public class BasicAuthHeader {
     }
 
     private void splitParts(final String authHeader) {
-        this.parts = authHeader.split(" ");
-        if(parts.length>=1){
-            basic = parts[0];
+
+        List<String> parts = new ArrayList<>();
+
+        String[] theparts = authHeader.split(" ");
+        for(String aPart : theparts){
+            if(aPart.trim().length()>0){
+                parts.add(aPart);
+            }
         }
-        if(parts.length>=2){
-            base64UserNamePass = parts[1];
+        if(parts.size()>=1){
+            basic = parts.get(0).toLowerCase();
+        }
+        if(parts.size()>=2){
+            base64UserNamePass = parts.get(1);
         }
     }
 
 
     public boolean matches(final String username, final String password) {
+
+        if(!basic.equals("basic")){
+            return false;
+        }
+
+        if(username==null){
+            return false;
+        }
+
+        if(password==null){
+            return false;
+        }
+
         return this.username.contentEquals(username) &&
                 this.password.contentEquals(password);
     }
