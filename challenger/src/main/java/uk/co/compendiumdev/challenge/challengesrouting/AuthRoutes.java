@@ -123,27 +123,34 @@ public class AuthRoutes {
                 return "";
             }
 
+            result.header("X-CHALLENGER", challenger.getXChallenger());
+
             if(!authToken.contentEquals(challenger.getXAuthToken())){
                 result.status(403); // given token is not allowed to access anything
                 return "";
             }
 
-            try{
-                final HashMap body = new Gson().fromJson(request.body(), HashMap.class);
-                if(body.containsKey("note")){
-                    challenger.setNote((String)body.get("note"));
-                }
+            result.header("Content-Type", "application/json");
 
-                result.status(200);
-                result.header("Content-Type", "application/json");
-                final JsonObject note = new JsonObject();
-                note.addProperty("note", challenger.getNote());
-                return new Gson().toJson(note);
+            final HashMap body = new Gson().fromJson(request.body(), HashMap.class);
 
-            }catch(Exception e){
+            // could not parse input
+            if(body==null){
                 result.status(400);
                 return "";
             }
+
+            if(body.containsKey("note")){
+                challenger.setNote((String)body.get("note"));
+            }else{
+                result.status(400);
+                return "";
+            }
+
+            result.status(200);
+            final JsonObject note = new JsonObject();
+            note.addProperty("note", challenger.getNote());
+            return new Gson().toJson(note);
 
         });
 

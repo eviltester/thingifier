@@ -40,7 +40,9 @@ public class ChallengerInternalHTTPResponseHook implements InternalHttpResponseH
 
         if(challenger==null){
             if(!request.getPath().contentEquals("challenger")) {
-                response.setHeader("X-CHALLENGER", "UNKNOWN CHALLENGER - NO CHALLENGES TRACKED");
+                if(response.getHeader("X-CHALLENGER") == null) {
+                    response.setHeader("X-CHALLENGER", "UNKNOWN CHALLENGER - NO CHALLENGES TRACKED");
+                }
             }
             // cannot track challenges
             return;
