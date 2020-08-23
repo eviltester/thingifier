@@ -591,7 +591,7 @@ public class ChallengeCompleteTest{
 
         Assertions.assertEquals(201, response.statusCode);
 
-        final String challengerCode = response.getHeaders().get("x-challenger");
+        final String challengerCode = response.getHeader("x-challenger");
 
         newChallenger = ChallengeMain.getChallenger().
                     getChallengers().getChallenger(challengerCode);
