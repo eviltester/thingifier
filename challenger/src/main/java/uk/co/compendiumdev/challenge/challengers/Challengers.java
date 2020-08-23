@@ -22,7 +22,7 @@ public class Challengers {
     public Challengers(){
         authData = new ConcurrentHashMap<>();
         SINGLE_PLAYER = new ChallengerAuthData();
-        SINGLE_PLAYER.setGUID(SINGLE_PLAYER_GUID);
+        SINGLE_PLAYER.setXChallengerGUID(SINGLE_PLAYER_GUID);
         this.singlePlayerMode=true;
     }
 
@@ -49,6 +49,8 @@ public class Challengers {
                 if(response.isSuccess()){
                     challenger = authData.get(challengerGuid);
                 }
+                // todo: surface persistence errors i.e. response.getErrorMessage()
+
             }
         }
 

@@ -52,7 +52,7 @@ public class ChallengerAuthData {
         if(note.length()<=maxLen){
             secretNote=note;
         }else {
-            secretNote = note.substring(0, maxLen-1);
+            secretNote = note.substring(0, maxLen);
         }
     }
 
@@ -78,14 +78,10 @@ public class ChallengerAuthData {
     }
 
     public void pass(final CHALLENGE id) {
-        try{
-            challengeStatus.put(id, true);
-        }catch(Exception e){
-            System.out.println("Challenge Error " + id.name() + " " + e.getMessage() );
-        }
+        challengeStatus.put(id, true);
     }
 
-    public void setGUID(final String guid) {
+    public void setXChallengerGUID(final String guid) {
         this.xChallenger = guid;
     }
 }
