@@ -24,18 +24,23 @@ public class ChallengerTrackingRoutes {
 
         // refresh challenger to avoid purging
         get("/challenger/*", (request, result) -> {
-            String xChallengerGuid = request.splat()[0];
+            String xChallengerGuid =null;
+            if(request.splat().length>0) {
+                xChallengerGuid = request.splat()[0];
+            }
             if(xChallengerGuid != null && xChallengerGuid.trim()!=""){
                 ChallengerAuthData challenger = challengers.getChallenger(xChallengerGuid);
                 if(challenger!=null){
                     challenger.touch();
                     result.status(204);
+                    result.header("X-CHALLENGER",challenger.getXChallenger());
                 }else{
                     result.status(404);
                     result.header("X-CHALLENGER", "UNKNOWN CHALLENGER - Challenger not found");
                 }
             }else{
                 result.status(404);
+                result.header("X-CHALLENGER", "UNKNOWN CHALLENGER - Challenger not found");
             }
             return "";
         });
@@ -69,15 +74,15 @@ public class ChallengerTrackingRoutes {
                     // return 404, challenger ID not valid
                     result.header("X-CHALLENGER", "UNKNOWN CHALLENGER - Challenger not found");
                     result.status(404);
+                    return "";
                 }else{
                     // if X-CHALLENGER header exists, and has a valid UUID, and UUID exists, then return 200
                     result.header("X-CHALLENGER", challenger.getXChallenger());
                     result.header("Location", "/gui/challenges/" + challenger.getXChallenger());
                     result.status(200);
+                    return "";
                 }
             }
-            result.status(400);
-            return "Unknown Challenger State";
         });
 
         SimpleRouteConfig.
