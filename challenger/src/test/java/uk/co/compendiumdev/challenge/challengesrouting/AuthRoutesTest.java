@@ -426,4 +426,166 @@ public class AuthRoutesTest {
         Assertions.assertEquals("application/json",
                 response.getHeader("Content-Type"));
     }
+
+    // can get secret note if we have a valid bearer token
+    @Test
+    void canGetSecretNoteIfValidBearerToken(){
+
+        final ChallengerAuthData aNewChallenger = ChallengeMain.getChallenger().getChallengers().createNewChallenger();
+
+        http.clearHeaders();
+        http.setHeader("X-CHALLENGER", aNewChallenger.getXChallenger());
+        //http.setHeader("X-AUTH-TOKEN", aNewChallenger.getXAuthToken());
+        http.setHeader("Authorization", "bearer " + aNewChallenger.getXAuthToken());
+
+        final HttpResponseDetails response = http.send("/secret/note", "get");
+
+        Assertions.assertEquals(200, response.statusCode);
+        Assertions.assertEquals("application/json",
+                response.getHeader("Content-Type"));
+        Assertions.assertEquals(aNewChallenger.getXChallenger(),
+                response.getHeader("X-CHALLENGER"));
+        //{"note":""}
+        Assertions.assertEquals("{\"note\":\"\"}", response.body);
+    }
+    // can not get secret note if given bearer token is not valid
+    @Test
+    void canNotGetSecretNoteWhenInValidBearerToken(){
+
+        final ChallengerAuthData aNewChallenger = ChallengeMain.getChallenger().getChallengers().createNewChallenger();
+
+        http.clearHeaders();
+        http.setHeader("X-CHALLENGER", aNewChallenger.getXChallenger());
+        //http.setHeader("X-AUTH-TOKEN", aNewChallenger.getXAuthToken());
+        http.setHeader("Authorization", "bearer not" + aNewChallenger.getXAuthToken());
+
+        final HttpResponseDetails response = http.send("/secret/note", "get");
+
+        Assertions.assertEquals(403, response.statusCode);
+        Assertions.assertEquals("application/json",
+                response.getHeader("Content-Type"));
+        Assertions.assertEquals(aNewChallenger.getXChallenger(),
+                response.getHeader("X-CHALLENGER"));
+    }
+
+    // get secret note bearer token takes precedence over x-auth-token
+    @Test
+    void getSecretNoteTakesPrecendenceOverAuthToken(){
+
+        final ChallengerAuthData aNewChallenger = ChallengeMain.getChallenger().getChallengers().createNewChallenger();
+
+        http.clearHeaders();
+        http.setHeader("X-CHALLENGER", aNewChallenger.getXChallenger());
+        http.setHeader("X-AUTH-TOKEN", aNewChallenger.getXAuthToken()+"bob");
+        http.setHeader("Authorization", "bearer " + aNewChallenger.getXAuthToken());
+
+        final HttpResponseDetails response = http.send("/secret/note", "get");
+
+        Assertions.assertEquals(200, response.statusCode);
+        Assertions.assertEquals("application/json",
+                response.getHeader("Content-Type"));
+        Assertions.assertEquals(aNewChallenger.getXChallenger(),
+                response.getHeader("X-CHALLENGER"));
+        //{"note":""}
+        Assertions.assertEquals("{\"note\":\"\"}", response.body);
+    }
+    // get secret note bearer token takes precedence over x-auth-token even if it is invalid
+    @Test
+    void getSecretNoteBearerTakesPrecendenceOverAuthTokenEvenIfInvalid(){
+
+        final ChallengerAuthData aNewChallenger = ChallengeMain.getChallenger().getChallengers().createNewChallenger();
+
+        http.clearHeaders();
+        http.setHeader("X-CHALLENGER", aNewChallenger.getXChallenger());
+        http.setHeader("X-AUTH-TOKEN", aNewChallenger.getXAuthToken());
+        http.setHeader("Authorization", "bearer not" + aNewChallenger.getXAuthToken());
+
+        final HttpResponseDetails response = http.send("/secret/note", "get");
+
+        Assertions.assertEquals(403, response.statusCode);
+        Assertions.assertEquals("application/json",
+                response.getHeader("Content-Type"));
+        Assertions.assertEquals(aNewChallenger.getXChallenger(),
+                response.getHeader("X-CHALLENGER"));
+    }
+
+
+    @Test
+    void canPostSecretNoteUsingBearerAuth(){
+
+        http.clearHeaders();
+        http.setHeader("X-CHALLENGER", challenger.getXChallenger());
+        //http.setHeader("X-AUTH-TOKEN", challenger.getXAuthToken());
+        http.setHeader("Authorization", "bearer " + challenger.getXAuthToken());
+
+        //{"note":"hello"}
+        final HttpResponseDetails response = http.post("/secret/note", "{\"note\":\"hello\"}");
+
+        Assertions.assertEquals(200, response.statusCode);
+        Assertions.assertNull(
+                response.getHeader("X-AUTH-TOKEN"));
+        Assertions.assertEquals(challenger.getXChallenger(),
+                response.getHeader("X-CHALLENGER"));
+        Assertions.assertEquals("application/json",
+                response.getHeader("Content-Type"));
+
+
+        Assertions.assertEquals("{\"note\":\"hello\"}", response.body);
+
+        // and get to check
+
+        final HttpResponseDetails getresponse = http.get("/secret/note");
+        Assertions.assertEquals("{\"note\":\"hello\"}", getresponse.body);
+    }
+
+    @Test
+    void canPostSecretNoteUsingBearerAuthTakingPrecedence(){
+
+        http.clearHeaders();
+        http.setHeader("X-CHALLENGER", challenger.getXChallenger());
+        http.setHeader("X-AUTH-TOKEN", challenger.getXAuthToken() + "bob");
+        http.setHeader("Authorization", "bearer " + challenger.getXAuthToken());
+
+        //{"note":"hello"}
+        final HttpResponseDetails response = http.post("/secret/note", "{\"note\":\"hello\"}");
+
+        Assertions.assertEquals(200, response.statusCode);
+        Assertions.assertNull(
+                response.getHeader("X-AUTH-TOKEN"));
+        Assertions.assertEquals(challenger.getXChallenger(),
+                response.getHeader("X-CHALLENGER"));
+        Assertions.assertEquals("application/json",
+                response.getHeader("Content-Type"));
+
+
+        Assertions.assertEquals("{\"note\":\"hello\"}", response.body);
+
+        // and get to check
+
+        final HttpResponseDetails getresponse = http.get("/secret/note");
+        Assertions.assertEquals("{\"note\":\"hello\"}", getresponse.body);
+    }
+
+    @Test
+    void cannotPostSecretNoteUsingIncorrectBearerAuthTakingPrecedence(){
+
+        http.clearHeaders();
+        http.setHeader("X-CHALLENGER", challenger.getXChallenger());
+        http.setHeader("X-AUTH-TOKEN", challenger.getXAuthToken());
+        http.setHeader("Authorization", "bearer not" + challenger.getXAuthToken());
+
+        //{"note":"hello"}
+        final HttpResponseDetails response = http.post("/secret/note", "{\"note\":\"hello\"}");
+
+        Assertions.assertEquals(403, response.statusCode);
+        Assertions.assertNull(
+                response.getHeader("X-AUTH-TOKEN"));
+        Assertions.assertEquals(challenger.getXChallenger(),
+                response.getHeader("X-CHALLENGER"));
+        Assertions.assertEquals("application/json",
+                response.getHeader("Content-Type"));
+        Assertions.assertEquals("", response.body);
+    }
+
+
 }

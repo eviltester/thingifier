@@ -3,6 +3,7 @@ package uk.co.compendiumdev.challenge.challengesrouting;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import uk.co.compendiumdev.challenge.BasicAuthHeaderParser;
+import uk.co.compendiumdev.challenge.BearerAuthHeaderParser;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
 import uk.co.compendiumdev.thingifier.api.ThingifierApiDefn;
@@ -71,17 +72,34 @@ public class AuthRoutes {
 
         get("/secret/note", (request, result) -> {
 
-            final String authToken = request.headers("X-AUTH-TOKEN");
-            if(authToken==null || authToken.length()==0){
-                result.status(401);
-                return "";
-            }
+            // todo: allow the X-AUTH-TOKEN to be sent as an Authorization: Bearer <token>
+            // todo: the bearer token should take precendence
+            String authToken = request.headers("X-AUTH-TOKEN");
+            final String authorization = request.headers("Authorization");
+
+            result.header("Content-Type", "application/json");
 
             ChallengerAuthData challenger = challengers.getChallenger(request.headers("X-CHALLENGER"));
+
+            // todo: if no X-CHALLENGER provided then, search memory for authToken and use associated
+            //       challenger
 
             if(challenger==null){
                 result.status(401);
                 result.header("X-CHALLENGER", "Challenger not recognised");
+                return "";
+            }
+
+            // authorization bearer token will take precedence over X-AUTH-HEADER
+            if(authorization!=null && authorization.length()!=0){
+                final BearerAuthHeaderParser bearerToken = new BearerAuthHeaderParser(authorization);
+                if(bearerToken.isBearerToken() && bearerToken.isValid()){
+                    authToken = bearerToken.getToken();
+                }
+            }
+
+            if(authToken==null || authToken.length()==0){
+                result.status(401);
                 return "";
             }
 
@@ -91,7 +109,6 @@ public class AuthRoutes {
             }
 
             result.status(200);
-            result.header("Content-Type", "application/json");
             final JsonObject note = new JsonObject();
             note.addProperty("note", challenger.getNote());
             return new Gson().toJson(note);
@@ -109,12 +126,11 @@ public class AuthRoutes {
 
         post("/secret/note", (request, result) -> {
 
-            final String authToken = request.headers("X-AUTH-TOKEN");
-            if(authToken==null || authToken.length()==0){
-                result.status(401);
-                return "";
-            }
+            final String authorization = request.headers("Authorization");
+            String authToken = request.headers("X-AUTH-TOKEN");
 
+            // todo: if no X-CHALLENGER provided then, search memory for authToken and use associated
+            //       challenger
             ChallengerAuthData challenger = challengers.getChallenger(request.headers("X-CHALLENGER"));
 
             if(challenger==null){
@@ -124,13 +140,25 @@ public class AuthRoutes {
             }
 
             result.header("X-CHALLENGER", challenger.getXChallenger());
+            result.header("Content-Type", "application/json");
+
+            // authorization bearer token will take precedence over X-AUTH-HEADER
+            if(authorization!=null && authorization.length()!=0){
+                final BearerAuthHeaderParser bearerToken = new BearerAuthHeaderParser(authorization);
+                if(bearerToken.isBearerToken() && bearerToken.isValid()){
+                    authToken = bearerToken.getToken();
+                }
+            }
+
+            if(authToken==null || authToken.length()==0){
+                result.status(401);
+                return "";
+            }
 
             if(!authToken.contentEquals(challenger.getXAuthToken())){
                 result.status(403); // given token is not allowed to access anything
                 return "";
             }
-
-            result.header("Content-Type", "application/json");
 
             final HashMap body = new Gson().fromJson(request.body(), HashMap.class);
 
