@@ -183,6 +183,15 @@ public class ChallengeDefinitions {
         addChallenge(CHALLENGE.POST_SECRET_NOTE_200, "POST /secret/note (200)",
                 "Issue a POST request on the `/secret/note` end point with a note payload e.g. {\"note\":\"my note\"} and receive 200 when valid X-AUTH-TOKEN used. Note is maximum length 100 chars and will be truncated when stored.");
 
+        //    GET /secret/note with bearer token authorization
+        addChallenge(CHALLENGE.GET_SECRET_NOTE_BEARER_200, "GET /secret/note (Bearer)",
+                "Issue a GET request on the `/secret/note` end point receive 200 when using the X-AUTH-TOKEN value as an Authorization Bearer token - response body should contain the note");
+
+        //    POST /secret/note with token and update secret note
+        addChallenge(CHALLENGE.POST_SECRET_NOTE_BEARER_200, "POST /secret/note (Bearer)",
+                "Issue a POST request on the `/secret/note` end point with a note payload e.g. {\"note\":\"my note\"} and receive 200 when valid X-AUTH-TOKEN value used as an Authorization Bearer token. Status code 200 received. Note is maximum length 100 chars and will be truncated when stored.");
+
+
         Set challengeNames = new HashSet();
         for(ChallengeData challenge : orderedChallenges){
             System.out.println("Challenge: " + challenge.name);

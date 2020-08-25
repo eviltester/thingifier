@@ -6,14 +6,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import uk.co.compendiumdev.challenge.CHALLENGE;
-import uk.co.compendiumdev.challenge.ChallengerAuthData;
-import uk.co.compendiumdev.challenge.challengers.Challengers;
-import uk.co.compendiumdev.challenger.restassured.http.HttpMessageSender;
-import uk.co.compendiumdev.challenger.restassured.http.HttpResponseDetails;
+import uk.co.compendiumdev.challenger.http.http.HttpMessageSender;
+import uk.co.compendiumdev.challenger.http.http.HttpResponseDetails;
 import uk.co.compendiumdev.sparkstart.Environment;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;

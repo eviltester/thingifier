@@ -1,8 +1,7 @@
-package uk.co.compendiumdev.challenger.restassured.http;
+package uk.co.compendiumdev.challenger.http.http;
 
 //import sun.net.www.MessageHeader;
 
-import java.io.*;
 import java.net.*;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;

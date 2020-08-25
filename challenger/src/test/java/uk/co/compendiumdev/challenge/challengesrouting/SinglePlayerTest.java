@@ -6,8 +6,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import spark.Spark;
 import uk.co.compendiumdev.challenge.ChallengeMain;
-import uk.co.compendiumdev.challenger.restassured.http.HttpMessageSender;
-import uk.co.compendiumdev.challenger.restassured.http.HttpResponseDetails;
+import uk.co.compendiumdev.challenger.http.http.HttpMessageSender;
+import uk.co.compendiumdev.challenger.http.http.HttpResponseDetails;
 import uk.co.compendiumdev.sparkstart.Environment;
 
 public class SinglePlayerTest {

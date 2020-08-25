@@ -1,4 +1,4 @@
-package uk.co.compendiumdev.challenger.restassured.challenges;
+package uk.co.compendiumdev.challenger.http.challenges;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
@@ -8,8 +8,8 @@ import uk.co.compendiumdev.challenge.CHALLENGE;
 import uk.co.compendiumdev.challenge.ChallengeMain;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
-import uk.co.compendiumdev.challenger.restassured.http.HttpMessageSender;
-import uk.co.compendiumdev.challenger.restassured.http.HttpResponseDetails;
+import uk.co.compendiumdev.challenger.http.http.HttpResponseDetails;
+import uk.co.compendiumdev.challenger.http.http.HttpMessageSender;
 import uk.co.compendiumdev.sparkstart.Environment;
 import uk.co.compendiumdev.thingifier.core.Thing;
 import uk.co.compendiumdev.thingifier.core.domain.instances.ThingInstance;
@@ -487,7 +487,7 @@ public class ChallengeCompleteTest{
      */
 
     @Test
-    public void canNotGetSecretTokenWhenBadAuth403() {
+    public void canNotGetSecretNoteWhenBadAuth403() {
 
         headers.clear();
         headers.putAll(x_challenger_header);
@@ -502,7 +502,7 @@ public class ChallengeCompleteTest{
     }
 
     @Test
-    public void canNotGetSecretTokenWhenNoAuth401() {
+    public void canNotGetSecretNoteWhenNoAuth401() {
 
         headers.clear();
         headers.putAll(x_challenger_header);
@@ -516,7 +516,7 @@ public class ChallengeCompleteTest{
     }
 
     @Test
-    public void canGetSecretTokenWhenAuth200() {
+    public void canGetSecretNoteWhenAuthToken200() {
 
         headers.clear();
         headers.putAll(x_challenger_header);
@@ -531,7 +531,22 @@ public class ChallengeCompleteTest{
     }
 
     @Test
-    public void canPostSecretTokenWhenAuth200() {
+    public void canGetSecretNoteWhenBearerAuthToken200() {
+
+        headers.clear();
+        headers.putAll(x_challenger_header);
+        headers.put("Authorization","bearer " + challenger.getXAuthToken());
+
+        final HttpResponseDetails response =
+                http.send("/secret/note", "GET", headers, "");
+
+        Assertions.assertEquals(200, response.statusCode);
+        Assertions.assertTrue(challenger.
+                statusOfChallenge(CHALLENGE.GET_SECRET_NOTE_BEARER_200));
+    }
+
+    @Test
+    public void canPostSecretNoteWhenAuth200() {
 
         headers.clear();
         headers.putAll(x_challenger_header);
@@ -548,7 +563,25 @@ public class ChallengeCompleteTest{
     }
 
     @Test
-    public void cannotPostSecretTokenWhenNoAuth401() {
+    public void canPostSecretNoteWhenBearerAuth200() {
+
+        headers.clear();
+        headers.putAll(x_challenger_header);
+        headers.put("Authorization","bearer " + challenger.getXAuthToken());
+
+        //{"note":"bob"}
+        final HttpResponseDetails response =
+                http.send("/secret/note", "POST", headers,
+                        "{\"note\":\"bob\"}");
+
+        Assertions.assertEquals(200, response.statusCode);
+        Assertions.assertTrue(challenger.
+                statusOfChallenge(CHALLENGE.POST_SECRET_NOTE_BEARER_200));
+    }
+
+
+    @Test
+    public void cannotPostSecretNoteWhenNoAuth401() {
 
         headers.clear();
         headers.putAll(x_challenger_header);
@@ -564,7 +597,7 @@ public class ChallengeCompleteTest{
     }
 
     @Test
-    public void cannotPostSecretTokenWhenWrongAuth403() {
+    public void cannotPostSecretNoteWhenWrongAuth403() {
 
         headers.clear();
         headers.putAll(x_challenger_header);

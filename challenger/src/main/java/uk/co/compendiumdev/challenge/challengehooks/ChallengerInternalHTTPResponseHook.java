@@ -1,5 +1,6 @@
 package uk.co.compendiumdev.challenge.challengehooks;
 
+import uk.co.compendiumdev.challenge.BearerAuthHeaderParser;
 import uk.co.compendiumdev.challenge.CHALLENGE;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
@@ -127,6 +128,23 @@ public class ChallengerInternalHTTPResponseHook implements InternalHttpResponseH
                 request.getHeader("X-AUTH-TOKEN")!=null &&
                 response.getStatusCode() ==200){
             challengers.pass(challenger,CHALLENGE.GET_SECRET_NOTE_200);
+        }
+
+        if(request.getVerb()== GET &&
+                request.getPath().contentEquals("secret/note") &&
+                request.getHeader("Authorization")!=null &&
+                new BearerAuthHeaderParser(request.getHeader("Authorization")).isValid() &&
+                response.getStatusCode() ==200){
+            challengers.pass(challenger,CHALLENGE.GET_SECRET_NOTE_BEARER_200);
+        }
+
+        if(request.getVerb()== POST &&
+                request.getPath().contentEquals("secret/note") &&
+                request.getHeader("Authorization")!=null &&
+                new BearerAuthHeaderParser(request.getHeader("Authorization")).isValid() &&
+                request.getBody().contains("\"note\"") &&
+                response.getStatusCode() ==200){
+            challengers.pass(challenger,CHALLENGE.POST_SECRET_NOTE_BEARER_200);
         }
 
     }

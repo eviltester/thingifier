@@ -1,9 +1,9 @@
-package uk.co.compendiumdev.challenger.restassured.defects;
+package uk.co.compendiumdev.challenger.http.defects;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import uk.co.compendiumdev.challenger.restassured.http.HttpMessageSender;
-import uk.co.compendiumdev.challenger.restassured.http.HttpResponseDetails;
+import uk.co.compendiumdev.challenger.http.http.HttpResponseDetails;
+import uk.co.compendiumdev.challenger.http.http.HttpMessageSender;
 import uk.co.compendiumdev.sparkstart.Environment;
 
 import java.io.File;
