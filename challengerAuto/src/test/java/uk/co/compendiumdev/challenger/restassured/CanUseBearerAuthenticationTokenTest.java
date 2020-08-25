@@ -49,7 +49,7 @@ public class CanUseBearerAuthenticationTokenTest extends RestAssuredBaseTest {
 
         ChallengesStatus statuses = new ChallengesStatus();
         statuses.get();
-        Assertions.assertTrue(statuses.getChallengeNamed("POST /secret/note (200)").status);
+        Assertions.assertTrue(statuses.getChallengeNamed("POST /secret/note (Bearer)").status);
 
 
 
@@ -66,7 +66,7 @@ public class CanUseBearerAuthenticationTokenTest extends RestAssuredBaseTest {
 
         statuses = new ChallengesStatus();
         statuses.get();
-        Assertions.assertTrue(statuses.getChallengeNamed("GET /secret/note (200)").status);
+        Assertions.assertTrue(statuses.getChallengeNamed("GET /secret/note (Bearer)").status);
 
         Assertions.assertEquals("my note", note.get("note"));
 
