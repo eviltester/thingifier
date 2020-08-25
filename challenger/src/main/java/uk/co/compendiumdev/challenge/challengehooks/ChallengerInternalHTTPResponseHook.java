@@ -29,12 +29,11 @@ public class ChallengerInternalHTTPResponseHook implements InternalHttpResponseH
                 request.getPath().contentEquals("challenger") &&
                 response.getStatusCode() ==201){
             // challenger did not exist so we need to find it to pass the challenge
-            try {
-                String challengerId = response.getHeader("X-Challenger");
-                challenger = challengers.getChallenger(challengerId);
+
+            String challengerId = response.getHeader("X-Challenger");
+            challenger = challengers.getChallenger(challengerId);
+            if(challenger!=null) {
                 challengers.pass(challenger, CHALLENGE.CREATE_NEW_CHALLENGER);
-            }catch(Exception e){
-                // just in case something fails and challenger is null
             }
         }
 

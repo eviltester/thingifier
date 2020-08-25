@@ -20,7 +20,7 @@ public class Environment {
 
 
         // if not running then start the spark
-        if(!Port.inUse("localhost", 4567)) {
+        if(ChallengeMain.getChallenger()==null || !Port.inUse("localhost", 4567)) {
             //start it up
             Spark.port(4567);
             String[] args;
@@ -30,26 +30,31 @@ public class Environment {
             } else {
                 args = "-multiplayer".split(",");
             }
-            ;
 
 
             ChallengeMain.main(args);
-
-            // wait till running
-            int maxtries = 10;
-            while (!Port.inUse("localhost", 4567)) {
-                maxtries--;
-                try {
-                    Thread.sleep(500);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
+            waitTillRunningStatus(true);
         }
 
         return "http://localhost:4567";
 
         // TODO: incorporate browsermob proxy and allow configuration of all
         //  requests through a proxy file to output a HAR file of all requests for later review
+    }
+
+    public static void waitTillRunningStatus(final boolean running) {
+        // wait till running
+        int maxtries = 10;
+        while (!Port.inUse("localhost", 4567)) {
+            maxtries--;
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            if(maxtries<=0){
+                return;
+            }
+        }
     }
 }

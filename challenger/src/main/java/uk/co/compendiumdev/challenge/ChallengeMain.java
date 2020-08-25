@@ -68,4 +68,8 @@ public class ChallengeMain {
     public static ChallengeRouteHandler getChallenger(){
         return challenger;
     }
+
+    public static void stop(){
+        challenger = null;
+    }
 }

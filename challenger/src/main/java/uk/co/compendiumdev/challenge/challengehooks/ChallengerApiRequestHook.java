@@ -15,6 +15,7 @@ public class ChallengerApiRequestHook implements HttpApiRequestHook {
     public ChallengerApiRequestHook(Challengers challengers){
         this.challengers = challengers;
     }
+
     @Override
     public HttpApiResponse run(final HttpApiRequest request, final ThingifierApiConfig config) {
 

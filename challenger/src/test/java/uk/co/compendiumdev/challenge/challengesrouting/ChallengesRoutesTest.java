@@ -41,6 +41,11 @@ public class ChallengesRoutesTest {
         Assertions.assertEquals(challenger.getXChallenger(),
                 response.getHeader("X-CHALLENGER"));
 
+        Assertions.assertEquals(
+                    "/gui/challenges/" +
+                        challenger.getXChallenger(),
+                response.getHeader("Location"));
+
         Assertions.assertNotNull(response.body);
         Assertions.assertTrue(response.body.length()>200);
 
@@ -60,7 +65,6 @@ public class ChallengesRoutesTest {
 
         Assertions.assertEquals("application/json",
                 response.getHeader("Content-Type"));
-
     }
 
 
