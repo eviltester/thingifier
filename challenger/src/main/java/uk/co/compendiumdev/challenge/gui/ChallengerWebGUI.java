@@ -1,15 +1,18 @@
 package uk.co.compendiumdev.challenge.gui;
 
+import uk.co.compendiumdev.challenge.CHALLENGE;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.ChallengesPayload;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
 import uk.co.compendiumdev.challenge.challenges.ChallengeData;
 import uk.co.compendiumdev.challenge.challenges.ChallengeDefinitions;
+import uk.co.compendiumdev.challenge.challenges.ChallengeSection;
 import uk.co.compendiumdev.challenge.persistence.PersistenceLayer;
 import uk.co.compendiumdev.challenge.persistence.PersistenceResponse;
 import uk.co.compendiumdev.thingifier.htmlgui.DefaultGUIHTML;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import static spark.Spark.get;
@@ -58,20 +61,22 @@ public class ChallengerWebGUI {
             // todo explain challenges - single user mode
 
 
-            List<ChallengeData> reportOn = new ArrayList<>();
+            //List<ChallengeData> reportOn = new ArrayList<>();
 
             if(single_player_mode){
                 html.append(playerChallengesIntro());
-                reportOn = new ChallengesPayload(challengeDefinitions, challengers.SINGLE_PLAYER).getAsChallenges();
+                //reportOn = new ChallengesPayload(challengeDefinitions, challengers.SINGLE_PLAYER).getAsChallenges();
+                html.append(renderChallengeData(challengeDefinitions, challengers.SINGLE_PLAYER));
             }else{
                 html.append("<div style='clear:both'><p><strong>Unknown Challenger ID</strong></p></div>");
                 html.append(multiUserShortHelp());
                 html.append(showPreviousGuids());
 
-                reportOn = new ChallengesPayload(challengeDefinitions, challengers.DEFAULT_PLAYER_DATA).getAsChallenges();
+                //reportOn = new ChallengesPayload(challengeDefinitions, challengers.DEFAULT_PLAYER_DATA).getAsChallenges();
+                html.append(renderChallengeData(challengeDefinitions, challengers.DEFAULT_PLAYER_DATA));
             }
 
-            html.append(renderChallengeData(reportOn));
+            //html.append(renderChallengeData(reportOn));
 
             html.append(guiManagement.getPageFooter());
             html.append(guiManagement.getPageEnd());
@@ -90,7 +95,7 @@ public class ChallengerWebGUI {
             html.append(playerChallengesIntro());
 
 
-            List<ChallengeData> reportOn = null;
+            //List<ChallengeData> reportOn = null;
 
             String xChallenger = request.splat()[0];
             ChallengerAuthData challenger = challengers.getChallenger(xChallenger);
@@ -105,20 +110,24 @@ public class ChallengerWebGUI {
                                 persistence.getErrorMessage()));
                 html.append(multiUserShortHelp());
                 html.append(showPreviousGuids());
-                reportOn = new ChallengesPayload(challengeDefinitions, challengers.DEFAULT_PLAYER_DATA).getAsChallenges();
+                //reportOn = new ChallengesPayload(challengeDefinitions, challengers.DEFAULT_PLAYER_DATA).getAsChallenges();
+                html.append(renderChallengeData(challengeDefinitions, challengers.DEFAULT_PLAYER_DATA));
             }else{
                 html.append(storeCurrentGuidInLocalStorage(xChallenger));
-                reportOn = new ChallengesPayload(challengeDefinitions, challenger).getAsChallenges();
+                //reportOn = new ChallengesPayload(challengeDefinitions, challenger).getAsChallenges();
+                html.append(renderChallengeData(challengeDefinitions, challenger));
                 html.append(refreshScriptFor(challenger.getXChallenger()));
             }
 
-            html.append(renderChallengeData(reportOn));
+            //html.append(renderChallengeData(reportOn));
 
             html.append(guiManagement.getPageFooter());
             html.append(guiManagement.getPageEnd());
             return html.toString();
         });
     }
+
+
 
     private String storeCurrentGuidInLocalStorage(final String xChallenger) {
         return "<script>" +
@@ -134,7 +143,7 @@ public class ChallengerWebGUI {
         return "<script>" +
                 "var guids = localStorage.getItem('challenges-guids') || '';" +
                 "if(guids.length>0){document.writeln('<p><strong>Previously Used</strong></p>')}" +
-                "var guidsArray = guids.match(/\\|(.*)\\|/g);" +
+                "var guidsArray = guids.match(/\\|([^|]*)\\|/g);" +
                 "for(guidItem in guidsArray){" +
                 "var myguid = guidsArray[guidItem].replace(/\\|/g,'');" +
                 "document.writeln(\"<p><a href='/gui/challenges/\"+myguid+\"'>\"+myguid+\"</a></p>\")" +
@@ -214,6 +223,34 @@ public class ChallengerWebGUI {
 
         html.append("</tbody>");
         html.append("</table>");
+
+        return html.toString();
+    }
+
+    private String renderChallengeData(final ChallengeDefinitions challengeDefinitions, final ChallengerAuthData challenger) {
+        StringBuilder html = new StringBuilder();
+
+        final Collection<ChallengeSection> sections = challengeDefinitions.getChallengeSections();
+
+        for(ChallengeSection section : sections){
+
+            html.append("<h2>" + section.getTitle() + "</h2>");
+            html.append("<p class='challengesectiondescription'>" + section.getDescription() + "</p>");
+
+            List<ChallengeData> sectionData = new ArrayList<>();
+            for(ChallengeData challenge : section.getChallenges()){
+                final ChallengeData data = new ChallengeData(challenge.name, challenge.description);
+                CHALLENGE challengeKey = challengeDefinitions.getChallenge(challenge.name);
+                if(challenge!=null) {
+                    data.status = challenger.statusOfChallenge(challengeKey);
+                }
+                sectionData.add(data);
+            }
+
+            html.append(renderChallengeData(sectionData));
+        }
+
+        // todo: collate challenges and find any missing challenges to add as an EXTRAs section
 
         return html.toString();
     }
