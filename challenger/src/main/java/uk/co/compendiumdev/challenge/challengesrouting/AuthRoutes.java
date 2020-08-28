@@ -32,7 +32,7 @@ public class AuthRoutes {
 
             // admin/password as default username:password
             if(!basicAuth.matches("admin","password")){
-                result.header("WWW-Authenticate","Basic realm=\"User Visible Realm\"");
+                result.raw().setHeader("WWW-Authenticate","Basic realm=\"User Visible Realm\"");
                 result.status(401);
                 return "";
             }
@@ -41,12 +41,12 @@ public class AuthRoutes {
 
             if(challenger==null){
                 result.status(401);
-                result.header("X-CHALLENGER", "Challenger not recognised");
+                result.raw().setHeader("X-CHALLENGER", "Challenger not recognised");
                 return "";
             }
 
             // if no header X-AUTH-TOKEN then grant one
-            result.header("X-AUTH-TOKEN", challenger.getXAuthToken());
+            result.raw().setHeader("X-AUTH-TOKEN", challenger.getXAuthToken());
             result.status(201);
             return "";
         });
@@ -86,7 +86,7 @@ public class AuthRoutes {
 
             if(challenger==null){
                 result.status(401);
-                result.header("X-CHALLENGER", "Challenger not recognised");
+                result.raw().setHeader("X-CHALLENGER", "Challenger not recognised");
                 return "";
             }
 
@@ -135,11 +135,11 @@ public class AuthRoutes {
 
             if(challenger==null){
                 result.status(401);
-                result.header("X-CHALLENGER", "Challenger not recognised");
+                result.raw().setHeader("X-CHALLENGER", "Challenger not recognised");
                 return "";
             }
 
-            result.header("X-CHALLENGER", challenger.getXChallenger());
+            result.raw().setHeader("X-CHALLENGER", challenger.getXChallenger());
             result.header("Content-Type", "application/json");
 
             // authorization bearer token will take precedence over X-AUTH-HEADER

@@ -151,6 +151,7 @@ public class ChallengerApiResponseHook implements HttpApiResponseHook {
         if(request.getVerb() == HttpApiRequest.VERB.POST &&
                 request.getPath().matches("todos") &&
                 contentTypeParser.isJSON() &&
+                acceptParser.hasAskedForJSON() &&
                 response.getType().contentEquals("application/json") &&
                 response.getStatusCode()==201){
             challengers.pass(challenger,CHALLENGE.POST_CREATE_JSON);
@@ -166,6 +167,7 @@ public class ChallengerApiResponseHook implements HttpApiResponseHook {
 
         if(request.getVerb() == HttpApiRequest.VERB.POST &&
                 request.getPath().matches("todos") &&
+                acceptParser.hasAskedForJSON() &&
                 contentTypeParser.isXML() &&
                 response.getType().contentEquals("application/json") &&
                 response.getStatusCode()==201){

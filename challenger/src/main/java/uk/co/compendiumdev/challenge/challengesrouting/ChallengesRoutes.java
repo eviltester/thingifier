@@ -27,10 +27,10 @@ public class ChallengesRoutes {
 
             if(!single_player_mode){
                 if(challenger!=null){
-                    result.header("Location", "/gui/challenges/" + challenger.getXChallenger());
+                    result.raw().setHeader("Location", "/gui/challenges/" + challenger.getXChallenger());
                 }
             }else{
-                result.header("Location", "/gui/challenges");
+                result.raw().setHeader("Location", "/gui/challenges");
             }
 
             result.body(new ChallengesPayload(challengeDefinitions, challenger).getAsJson());

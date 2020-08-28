@@ -33,14 +33,14 @@ public class ChallengerTrackingRoutes {
                 if(challenger!=null){
                     challenger.touch();
                     result.status(204);
-                    result.header("X-CHALLENGER",challenger.getXChallenger());
+                    result.raw().setHeader("X-CHALLENGER",challenger.getXChallenger());
                 }else{
                     result.status(404);
-                    result.header("X-CHALLENGER", "UNKNOWN CHALLENGER - Challenger not found");
+                    result.raw().setHeader("X-CHALLENGER", "UNKNOWN CHALLENGER - Challenger not found");
                 }
             }else{
                 result.status(404);
-                result.header("X-CHALLENGER", "UNKNOWN CHALLENGER - Challenger not found");
+                result.raw().setHeader("X-CHALLENGER", "UNKNOWN CHALLENGER - Challenger not found");
             }
             return "";
         });
@@ -53,8 +53,8 @@ public class ChallengerTrackingRoutes {
         post("/challenger", (request, result) -> {
 
             if(single_player_mode){
-                result.header("X-CHALLENGER", challengers.SINGLE_PLAYER.getXChallenger());
-                result.header("Location", "/gui/challenges");
+                result.raw().setHeader("X-CHALLENGER", challengers.SINGLE_PLAYER.getXChallenger());
+                result.raw().setHeader("Location", "/gui/challenges");
                 result.status(201);
                 return "";
             }
@@ -63,8 +63,8 @@ public class ChallengerTrackingRoutes {
             if(xChallengerGuid == null || xChallengerGuid.trim()==""){
                 // create a new challenger
                 final ChallengerAuthData challenger = challengers.createNewChallenger();
-                result.header("X-CHALLENGER", challenger.getXChallenger());
-                result.header("Location", "/gui/challenges/" + challenger.getXChallenger());
+                result.raw().setHeader("X-CHALLENGER", challenger.getXChallenger());
+                result.raw().setHeader("Location", "/gui/challenges/" + challenger.getXChallenger());
                 result.status(201);
                 return "";
             }else {
@@ -72,13 +72,13 @@ public class ChallengerTrackingRoutes {
                 if(challenger==null){
                     // if X-CHALLENGER header exists, and is not a known UUID,
                     // return 404, challenger ID not valid
-                    result.header("X-CHALLENGER", "UNKNOWN CHALLENGER - Challenger not found");
+                    result.raw().setHeader("X-CHALLENGER", "UNKNOWN CHALLENGER - Challenger not found");
                     result.status(404);
                     return "";
                 }else{
                     // if X-CHALLENGER header exists, and has a valid UUID, and UUID exists, then return 200
-                    result.header("X-CHALLENGER", challenger.getXChallenger());
-                    result.header("Location", "/gui/challenges/" + challenger.getXChallenger());
+                    result.raw().setHeader("X-CHALLENGER", challenger.getXChallenger());
+                    result.raw().setHeader("Location", "/gui/challenges/" + challenger.getXChallenger());
                     result.status(200);
                     return "";
                 }

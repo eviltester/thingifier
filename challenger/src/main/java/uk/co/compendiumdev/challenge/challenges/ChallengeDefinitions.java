@@ -72,9 +72,6 @@ public class ChallengeDefinitions {
             createChallenge(CHALLENGE.GET_TODO_404, "GET /todos/{id} (404)",
                 "Issue a GET request on the `/todos/{id}` end point for a todo that does not exist"));
 
-        getChallenges.addChallenge(
-            createChallenge(CHALLENGE.GET_TODOS_FILTERED, "GET /todos (200) ?filter",
-                "Issue a GET request on the `/todos` end point with a query filter to get only todos which are 'done'. There must exist both 'done' and 'not done' todos, to pass this challenge."));
 
         // HEAD
         ChallengeSection headChallenges = new ChallengeSection("HEAD Challenges",
@@ -94,6 +91,10 @@ public class ChallengeDefinitions {
         postCreateChallenges.addChallenge(
             createChallenge(CHALLENGE.POST_TODOS, "POST /todos (201)",
                 "Issue a POST request to successfully create a todo"));
+
+        postCreateChallenges.addChallenge(
+                createChallenge(CHALLENGE.GET_TODOS_FILTERED, "GET /todos (200) ?filter",
+                        "Issue a GET request on the `/todos` end point with a query filter to get only todos which are 'done'. There must exist both 'done' and 'not done' todos, to pass this challenge."));
 
         postCreateChallenges.addChallenge(
             createChallenge(CHALLENGE.POST_TODOS_BAD_DONE_STATUS, "POST /todos (400) doneStatus",
@@ -169,16 +170,16 @@ public class ChallengeDefinitions {
                 "The `Content-Type` header, tells the server what format type your 'body' content is, e.g. are you sending XML or JSON.");
         sections.add(contentTypeChallenges);
 
-        // POST control content type
+        // POST control content type, and Accepting only XML ie. Accept header of `application/xml`
         //      control content type to create with - XML
         contentTypeChallenges.addChallenge(
             createChallenge(CHALLENGE.POST_CREATE_XML, "POST /todos XML",
-                "Issue a POST request on the `/todos` end point to create a todo using Content-Type `application/xml`"));
+                "Issue a POST request on the `/todos` end point to create a todo using Content-Type `application/xml`, and Accepting only XML ie. Accept header of `application/xml`"));
 
         //      control content type to create with - JSON
         contentTypeChallenges.addChallenge(
             createChallenge(CHALLENGE.POST_CREATE_JSON, "POST /todos JSON",
-                "Issue a POST request on the `/todos` end point to create a todo using Content-Type `application/json`"));
+                "Issue a POST request on the `/todos` end point to create a todo using Content-Type `application/json`, and Accepting only JSON ie. Accept header of `application/json`"));
 
         //      content type not supported 415 e.g. form encoded
         contentTypeChallenges.addChallenge(
@@ -298,7 +299,7 @@ public class ChallengeDefinitions {
         // misc
 
         ChallengeSection miscChallenges = new ChallengeSection("Miscellaneous Challenges",
-                "We left these challenges to the end because the seemed fun, but... different.");
+                "We left these challenges to the end because they seemed fun, but... different.");
         sections.add(miscChallenges);
 
         // todo: consider only enabling this challenge in single user mode
