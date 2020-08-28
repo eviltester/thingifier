@@ -265,35 +265,39 @@ public class ChallengeDefinitions {
             createChallenge(CHALLENGE.GET_SECRET_NOTE_401, "GET /secret/note (401)",
                 "Issue a GET request on the `/secret/note` end point and receive 401 when no X-AUTH-TOKEN header present"));
 
+        //    GET /secret/note with token and see token
+        authorizationChallenges.addChallenge(
+                createChallenge(CHALLENGE.GET_SECRET_NOTE_200, "GET /secret/note (200)",
+                        "Issue a GET request on the `/secret/note` end point receive 200 when valid X-AUTH-TOKEN used - response body should contain the note"));
+
+        //    POST /secret/note with token and update secret note
+        authorizationChallenges.addChallenge(
+                createChallenge(CHALLENGE.POST_SECRET_NOTE_200, "POST /secret/note (200)",
+                        "Issue a POST request on the `/secret/note` end point with a note payload e.g. {\"note\":\"my note\"} and receive 200 when valid X-AUTH-TOKEN used. Note is maximum length 100 chars and will be truncated when stored."));
+
+        //    POST /secret/note with invalid token and 401
+        authorizationChallenges.addChallenge(
+                createChallenge(CHALLENGE.POST_SECRET_NOTE_401, "POST /secret/note (401)",
+                        "Issue a POST request on the `/secret/note` end point with a note payload {\"note\":\"my note\"} and receive 401 when no X-AUTH-TOKEN present"));
+
         //    POST /secret/note with no token and 403
         authorizationChallenges.addChallenge(
             createChallenge(CHALLENGE.POST_SECRET_NOTE_403, "POST /secret/note (403)",
                 "Issue a POST request on the `/secret/note` end point with a note payload {\"note\":\"my note\"} and receive 403 when X-AUTH-TOKEN does not match a valid token"));
 
-        //    POST /secret/note with invalid token and 401
-        authorizationChallenges.addChallenge(
-            createChallenge(CHALLENGE.POST_SECRET_NOTE_401, "POST /secret/note (401)",
-                "Issue a POST request on the `/secret/note` end point with a note payload {\"note\":\"my note\"} and receive 401 when no X-AUTH-TOKEN present"));
 
-        //    GET /secret/note with token and see token
-        authorizationChallenges.addChallenge(
-            createChallenge(CHALLENGE.GET_SECRET_NOTE_200, "GET /secret/note (200)",
-                "Issue a GET request on the `/secret/note` end point receive 200 when valid X-AUTH-TOKEN used - response body should contain the note"));
-
-        //    POST /secret/note with token and update secret note
-        authorizationChallenges.addChallenge(
-            createChallenge(CHALLENGE.POST_SECRET_NOTE_200, "POST /secret/note (200)",
-                "Issue a POST request on the `/secret/note` end point with a note payload e.g. {\"note\":\"my note\"} and receive 200 when valid X-AUTH-TOKEN used. Note is maximum length 100 chars and will be truncated when stored."));
 
         //    GET /secret/note with bearer token authorization
         authorizationChallenges.addChallenge(
-            createChallenge(CHALLENGE.GET_SECRET_NOTE_BEARER_200, "GET /secret/note (Bearer)",
-                "Issue a GET request on the `/secret/note` end point receive 200 when using the X-AUTH-TOKEN value as an Authorization Bearer token - response body should contain the note"));
+                createChallenge(CHALLENGE.GET_SECRET_NOTE_BEARER_200, "GET /secret/note (Bearer)",
+                        "Issue a GET request on the `/secret/note` end point receive 200 when using the X-AUTH-TOKEN value as an Authorization Bearer token - response body should contain the note"));
 
         //    POST /secret/note with token and update secret note
         authorizationChallenges.addChallenge(
-            createChallenge(CHALLENGE.POST_SECRET_NOTE_BEARER_200, "POST /secret/note (Bearer)",
-                "Issue a POST request on the `/secret/note` end point with a note payload e.g. {\"note\":\"my note\"} and receive 200 when valid X-AUTH-TOKEN value used as an Authorization Bearer token. Status code 200 received. Note is maximum length 100 chars and will be truncated when stored."));
+                createChallenge(CHALLENGE.POST_SECRET_NOTE_BEARER_200, "POST /secret/note (Bearer)",
+                        "Issue a POST request on the `/secret/note` end point with a note payload e.g. {\"note\":\"my note\"} and receive 200 when valid X-AUTH-TOKEN value used as an Authorization Bearer token. Status code 200 received. Note is maximum length 100 chars and will be truncated when stored."));
+
+
 
 
         // misc
