@@ -25,6 +25,9 @@ public class ChallengerInternalHTTPResponseHook implements InternalHttpResponseH
 
         ChallengerAuthData challenger = challengers.getChallenger(request.getHeader("X-CHALLENGER"));
 
+        // allow cross origin requests
+        response.setHeader("Access-Control-Allow-Origin", "*");
+
         // we can complete a challenge while the user is null - creating the user
         if(request.getVerb()== POST &&
                 request.getPath().contentEquals("challenger") &&
