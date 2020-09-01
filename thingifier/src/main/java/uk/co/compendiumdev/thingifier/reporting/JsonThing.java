@@ -187,6 +187,7 @@ public class JsonThing {
                     for(ThingInstance item : relatedItems) {
                         final JsonObject itemGuidObject = new JsonObject();
 
+                        // todo: warning - we allow multiple guid fields - hardcoding name will not be future proof
                         String fieldNameAsUniqueId = "guid";
                         String valueOfUniqueId = item.getGUID();
 

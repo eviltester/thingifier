@@ -1,14 +1,18 @@
 package uk.co.compendiumdev.thingifier.api.routings;
 
+import uk.co.compendiumdev.thingifier.api.ThingifierRestAPIHandler;
 import uk.co.compendiumdev.thingifier.core.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.api.response.ResponseHeader;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVector;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ApiRoutingDefinitionGenerator {
 
@@ -18,10 +22,15 @@ public class ApiRoutingDefinitionGenerator {
 
     private final String uniqueGUID = ":guid";
     private final String uniqueID = ":id";
+    private final Map<FieldType, String> uniqueReferenceText;
 
     public ApiRoutingDefinitionGenerator(final Thingifier thingifier) {
         this.thingifier = thingifier;
         this.config = thingifier.apiConfig();
+
+        uniqueReferenceText = new HashMap<>();
+        uniqueReferenceText.put(FieldType.ID, ":id");
+        uniqueReferenceText.put(FieldType.GUID, ":guid");
     }
 
     // TODO: generate /_plural_ instead of /_entityName_ for top level routing (make this toggelable from command line (to inject buggyness) but make plural the default
@@ -58,18 +67,25 @@ public class ApiRoutingDefinitionGenerator {
 
         for (Thing thing : thingifier.getThings()) {
 
-            String uniqueIdentifier;
-            String uniqueIdFieldName;
-            // todo: a thing can have many id fields, so should choose one to be in the url
+            String uniqueIdentifier="?";
+            String uniqueIdFieldName="fieldName";
+
+            // a thing can have many id fields, so should choose one to be in the url
             // e.g. set a field as 'usedForIndividualRouting'
-            final List<Field> idFields = thing.definition().getFieldsOfType(FieldType.ID);
-            if(config.willUrlsShowIdsIfAvailable() && !idFields.isEmpty()){
-                uniqueIdentifier=uniqueID;
-                uniqueIdFieldName = idFields.get(0).getName();
-            }else{
-                uniqueIdentifier=uniqueGUID;
-                uniqueIdFieldName="guid";
+            Field uniqueIdField = getUniqueIdField(thing);
+            if(uniqueIdField!=null){
+                uniqueIdentifier = uniqueReferenceText.get(uniqueIdField.getType());
+                uniqueIdFieldName = uniqueIdField.getName();
             }
+//            final List<Field> idFields = thing.definition().getFieldsOfType(FieldType.ID);
+//            if(config.willUrlsShowIdsIfAvailable() && !idFields.isEmpty()){
+//                uniqueIdentifier=uniqueID;
+//                uniqueIdFieldName = idFields.get(0).getName();
+//            }else{
+//                final List<Field> guidFields = thing.definition().getFieldsOfType(FieldType.GUID);
+//                uniqueIdentifier=uniqueGUID;
+//                uniqueIdFieldName=guidFields.get(0).getName();
+//            }
 
             String pluralUrl;
             if(config.willUrlShowInstancesAsPlural()) {
@@ -185,6 +201,20 @@ public class ApiRoutingDefinitionGenerator {
         return defn;
     }
 
+    private Field getUniqueIdField(final Thing thing) {
+        final List<Field> idFields = thing.definition().getFieldsOfType(FieldType.ID);
+        if(config.willUrlsShowIdsIfAvailable() && !idFields.isEmpty()){
+            return idFields.get(0);
+        }else{
+            final List<Field> guidFields = thing.definition().getFieldsOfType(FieldType.GUID);
+            if(!guidFields.isEmpty()) {
+                return guidFields.get(0);
+            }else{
+                return null;
+            }
+        }
+    }
+
     private void addRoutingsForRelationship(final ApiRoutingDefinition defn, final RelationshipVector relationship) {
 
         String fromName = relationship.getFrom().definition().getName();
@@ -193,17 +223,27 @@ public class ApiRoutingDefinitionGenerator {
 
 
         final Thing thing = relationship.getFrom();
-        String uniqueIdentifier;
-        String uniqueIdFieldName;
+
+
+
+        String uniqueIdentifier="?";
+        String uniqueIdFieldName="fieldName";
+
         // todo: should mark a field as being used as identifiers for a thing
-        final List<Field> idFields = thing.definition().getFieldsOfType(FieldType.ID);
-        if(config.willUrlsShowIdsIfAvailable() && !idFields.isEmpty()){
-            uniqueIdentifier=uniqueID;
-            uniqueIdFieldName = idFields.get(0).getName();
-        }else{
-            uniqueIdentifier=uniqueGUID;
-            uniqueIdFieldName="guid";
+        Field uniqueIdField = getUniqueIdField(thing);
+        if(uniqueIdField!=null){
+            uniqueIdentifier = uniqueReferenceText.get(uniqueIdField.getType());
+            uniqueIdFieldName = uniqueIdField.getName();
         }
+
+//        final List<Field> idFields = thing.definition().getFieldsOfType(FieldType.ID);
+//        if(config.willUrlsShowIdsIfAvailable() && !idFields.isEmpty()){
+//            uniqueIdentifier=uniqueID;
+//            uniqueIdFieldName = idFields.get(0).getName();
+//        }else{
+//            uniqueIdentifier=uniqueGUID;
+//            uniqueIdFieldName="guid";
+//        }
 
         String fromNameForUrl;
         if(config.willUrlShowInstancesAsPlural()) {

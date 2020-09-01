@@ -2,6 +2,7 @@ package uk.co.compendiumdev.thingifier.core;
 
 import uk.co.compendiumdev.thingifier.core.domain.datapopulator.DataPopulator;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.Cardinality;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVector;
@@ -40,10 +41,15 @@ public class EntityRelModel {
 
     public ThingInstance findThingInstanceByGuid(final String thingGUID) {
         for (Thing aThing : things.values()) {
-            ThingInstance instance = aThing.findInstanceByField(FieldValue.is("guid", thingGUID));
-            if (instance != null) {
-                return instance;
+            final List<String> guidFields = aThing.definition().getFieldNamesOfType(FieldType.GUID);
+            for(String fieldName : guidFields){
+                ThingInstance instance = aThing.
+                        findInstanceByField(FieldValue.is(fieldName, thingGUID));
+                if (instance != null) {
+                    return instance;
+                }
             }
+
         }
         return null;
     }

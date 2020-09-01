@@ -85,7 +85,7 @@ public class TodoManagerThingifier {
                         Field.is("description", STRING));
 
         todoManager.defineRelationship(project, todo, "tasks", Cardinality.ONE_TO_MANY).
-                whenReversed(Cardinality.ONE_TO_MANY, "task-of");
+                whenReversed(Cardinality.ONE_TO_MANY, "tasksof");
 
         todoManager.defineRelationship(project, category, "categories", Cardinality.ONE_TO_MANY);
         todoManager.defineRelationship(category, todo, "todos", Cardinality.ONE_TO_MANY);

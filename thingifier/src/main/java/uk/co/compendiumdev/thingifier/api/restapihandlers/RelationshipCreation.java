@@ -73,14 +73,6 @@ public class RelationshipCreation {
             matchingFieldNames = matchingFieldNames.trim().replace(" ", ", ");
             return ApiResponse.error404(String.format("Could not find thing matching value for %s", matchingFieldNames));
         }
-//        if (args.containsKey("guid")) {
-//            String thingGUID = args.get("guid");
-//
-//            relatedItem = thingifier.findThingInstanceByGuid(thingGUID);
-//            if (relatedItem == null) {
-//                return ApiResponse.error404(String.format("Could not find thing with GUID %s", thingGUID));
-//            }
-//        }
 
         ThingInstance returnThing = null;
 

@@ -2,6 +2,7 @@ package uk.co.compendiumdev.thingifier.api.restapihandlers;
 
 import uk.co.compendiumdev.thingifier.core.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
@@ -111,7 +112,8 @@ public class ThingCreation {
         }
 
 
-        final List<String> protectedFieldNames = instance.getEntity().getFieldNamesOfType(FieldType.ID, FieldType.GUID);
+        final List<String> protectedFieldNames = instance.getEntity().
+                                getFieldNamesOfType(FieldType.ID, FieldType.GUID);
         ValidationReport validation = instance.validateFieldValues(protectedFieldNames, false);
 
         if (validation.isValid()) {
@@ -136,9 +138,9 @@ public class ThingCreation {
         }
 
         try {
-            // set all the fields and values
-            List<String> ignoreFields = new ArrayList<>();
-            ignoreFields.add("guid");  // todo guid might not be called guid
+            // set all the fields and values, except guids
+            List<String> ignoreFields = instance.getEntity().
+                                getFieldNamesOfType(FieldType.GUID);
 
             List<FieldValue> fieldValues = FieldValues.
                     fromListMapEntryStringString(
