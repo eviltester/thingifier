@@ -59,6 +59,30 @@ public class RelationshipHttpTest {
     }
 
     @Test
+    public void canCreateARelationshipBetweenProjectAndTodoViaTasksUsingID(){
+
+        final ThingInstance atodo = todo.createManagedInstance().setValue("title", "a TODO");
+
+        final ThingInstance aproject = project.createManagedInstance().setValue("title", "a Project");
+
+        Assertions.assertEquals(0, aproject.getRelationships().getConnectedItems("tasks").size());
+
+        HttpApiRequest request = new HttpApiRequest("projects/" + aproject.getGUID() + "/tasks");
+        request.getHeaders().putAll(HeadersSupport.acceptJson());
+
+        //{"guid":"%s"}
+        String body = String.format("{\"id\":\"%s\"}", atodo.getFieldValue("id").asString());
+        request.setBody(body);
+
+        final HttpApiResponse response = new ThingifierHttpApi(todoManager).post(request);
+        Assertions.assertEquals(201, response.getStatusCode());
+
+        Assertions.assertEquals(1, aproject.getRelationships().getConnectedItems("tasks").size());
+
+    }
+
+
+    @Test
     public void canCreateARelationshipAndTodoBetweenProjectAndTodoViaTasks(){
 
         final ThingInstance aproject = project.createManagedInstance().setValue("title", "a Project");
@@ -104,7 +128,7 @@ public class RelationshipHttpTest {
         request.setBody(body);
 
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).post(request);
-        Assertions.assertEquals(400, response.getStatusCode());
+        Assertions.assertEquals(404, response.getStatusCode());
 
         Assertions.assertEquals(0, aproject.getRelationships().getConnectedItems("tasks").size());
 
@@ -112,7 +136,7 @@ public class RelationshipHttpTest {
 
         Assertions.assertEquals(1,errors.errorMessages.length);
 
-        Assertions.assertEquals("Could not find a relationship named tasks between project and a category", errors.errorMessages[0]);
+        Assertions.assertEquals("Could not find thing matching value for guid", errors.errorMessages[0]);
     }
 
     @Test
@@ -138,9 +162,7 @@ public class RelationshipHttpTest {
         final ErrorMessages errors = new Gson().fromJson(response.getBody(), ErrorMessages.class);
         Assertions.assertEquals(1,errors.errorMessages.length);
 
-        Assertions.assertTrue(errors.errorMessages[0].startsWith("Could not find thing with GUID "),
-                errors.errorMessages[0]);
-        Assertions.assertTrue(errors.errorMessages[0].endsWith("bob"),
+        Assertions.assertTrue(errors.errorMessages[0].startsWith("Could not find thing"),
                 errors.errorMessages[0]);
     }
 

@@ -2,6 +2,9 @@ package uk.co.compendiumdev.thingifier.api.restapihandlers;
 
 import uk.co.compendiumdev.thingifier.core.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
@@ -32,17 +35,6 @@ public class RelationshipCreation {
 
         ThingInstance relatedItem = null;
 
-        // if there is a guid in the body then use that to try and find a thing that matches it
-        if (args.containsKey("guid")) {
-            String thingGUID = args.get("guid");
-
-            relatedItem = thingifier.findThingInstanceByGuid(thingGUID);
-            if (relatedItem == null) {
-                return ApiResponse.error404(String.format("Could not find thing with GUID %s", thingGUID));
-            }
-        }
-
-
         // find the thing from the query to connect the relatedItem to
         ThingInstance connectThis = query.getParentInstance();
         if (connectThis == null) {
@@ -50,18 +42,53 @@ public class RelationshipCreation {
             return ApiResponse.error404(String.format("Could not find parent thing for relationship %s", url));
         }
 
+        RelationshipVector relationshipToUse;
+        List<RelationshipVector> possibleRelationships = connectThis.getEntity().related().getRelationships(relationshipName);
+        // if no way to narrow it down then use the first one TODO: potential bug if multiple named relationshps
+        relationshipToUse = possibleRelationships.get(0);
+
+        Thing thingTo = relationshipToUse.getTo();
+
+        // if there is a guid in the body then use that to try and find a thing that matches it
+        // if there is a guid field or an id field then use whichever first matches a thing
+        Boolean amExpectingARelatedItem = false;
+        String matchingFieldNames = "";
+        for(String fieldName : args.keySet()){
+            final Field field = thingTo.definition().getField(fieldName);
+            // in theory this is any 'key' unique field
+            if(field.getType()== FieldType.GUID || field.getType() == FieldType.ID){
+                amExpectingARelatedItem=true;
+                if(!matchingFieldNames.contains(fieldName+ " ")){
+                    matchingFieldNames = matchingFieldNames + fieldName +" ";
+                }
+                relatedItem = thingTo.findInstanceByField(
+                            FieldValue.is(fieldName, args.get(fieldName)));
+                if(relatedItem!=null){
+                    // found something
+                    break;
+                }
+            }
+        }
+        if(amExpectingARelatedItem && relatedItem==null){
+            matchingFieldNames = matchingFieldNames.trim().replace(" ", ", ");
+            return ApiResponse.error404(String.format("Could not find thing matching value for %s", matchingFieldNames));
+        }
+//        if (args.containsKey("guid")) {
+//            String thingGUID = args.get("guid");
+//
+//            relatedItem = thingifier.findThingInstanceByGuid(thingGUID);
+//            if (relatedItem == null) {
+//                return ApiResponse.error404(String.format("Could not find thing with GUID %s", thingGUID));
+//            }
+//        }
 
         ThingInstance returnThing = null;
 
-        RelationshipVector relationshipToUse;
         Thing thingToCreate = null;
         ApiResponse response = null;
 
         // if we have a parent thing, but no GUID then can we create a Thing and connect it later?
         if (relatedItem == null) {
-            List<RelationshipVector> possibleRelationships = connectThis.getEntity().related().getRelationships(relationshipName);
-            // if no way to narrow it down then use the first one TODO: potential bug if multiple named relationshps
-            relationshipToUse = possibleRelationships.get(0);
             ThingDefinition createThing = relationshipToUse.getTo().definition();
 
             thingToCreate = thingifier.getThingNamed(createThing.getName());

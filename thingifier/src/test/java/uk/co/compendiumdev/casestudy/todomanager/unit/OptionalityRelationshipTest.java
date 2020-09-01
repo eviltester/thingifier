@@ -9,6 +9,7 @@ import uk.co.compendiumdev.thingifier.core.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.core.domain.instances.ThingInstance;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 public class OptionalityRelationshipTest {
@@ -44,7 +45,7 @@ public class OptionalityRelationshipTest {
                 setValue("title", "Tidy up my room").
                 setValue("description", "I need to tidy up my room because it is a mess");
 
-        Assertions.assertTrue(tidy.validate().isValid());
+        Assertions.assertTrue(tidy.validateFieldValues(new ArrayList<>(), true).isValid());
 
 
     }

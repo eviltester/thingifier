@@ -9,8 +9,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.Optio
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.validation.VRule;
 
-import static uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType.INTEGER;
-import static uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType.STRING;
+import static uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType.*;
 
 public class TodoManagerModel {
 
@@ -116,6 +115,7 @@ could implement a Thingifier URL query matcher to return instances based on quer
                                 makeMandatory().
                                 withValidation(
                                         VRule.notEmpty()),
+                        Field.is("id", ID),
                         Field.is("description",STRING),
                         Field.is("doneStatus",FieldType.BOOLEAN).
                                 withDefaultValue("false")
@@ -180,6 +180,9 @@ could implement a Thingifier URL query matcher to return instances based on quer
         todoManager.apiConfig().setApiToEnforceDeclaredTypesInInput(false);
         todoManager.apiConfig().jsonOutput().setConvertFieldsToDefinedTypes(false);
         todoManager.apiConfig().setApiToEnforceContentTypeForRequests(false);
+        todoManager.apiConfig().setResponsesToShowIdsIfAvailable(false);
+        todoManager.apiConfig().setResponsesToShowGuids(true);
+        todoManager.apiConfig().setUrlToShowIdsInUrlsIfAvailable(false);
 
         return todoManager;
     }
