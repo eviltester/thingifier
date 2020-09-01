@@ -31,7 +31,6 @@
         <module>standAloneTodoListManagerRestApiAuto</module>
         <module>thingifierapp</module>
         <module>swaggerizer</module>
-        <module>standAloneTodoListManagerRestApiAuto</module>
     </modules>
 
 

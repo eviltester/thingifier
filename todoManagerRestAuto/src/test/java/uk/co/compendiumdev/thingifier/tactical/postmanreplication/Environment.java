@@ -25,6 +25,8 @@ public class Environment {
         return  getBaseUri() + urlPath;
     }
 
+    // todo instead of setting up the Thingifier instantiate the Main with different version numbers
+    // todo move these tests into the appropriate version package for the standAloneTodoListManagerRestAuto project
     public static String getBaseUri() {
 
         // setup rest assured logging

@@ -86,7 +86,7 @@ public class ProjectTodoRelationshipCrudTest {
         Assertions.assertEquals(1, response.getBody().jsonPath().getList("todos").size());
         Assertions.assertEquals(specificTodoGuid, response.getBody().jsonPath().get("todos[0].guid"));
         // if non-compressed relationship rendering is used then this path
-        Assertions.assertEquals(specificProjectGuid, response.getBody().jsonPath().get("todos[0].relationships[0].task-of[0].projects[0].guid"));
+        Assertions.assertEquals(specificProjectGuid, response.getBody().jsonPath().get("todos[0].relationships[0].tasksof[0].projects[0].guid"));
         //Assertions.assertEquals(specificProjectGuid, response.getBody().jsonPath().get("todos[0].task-of[0].guid"));
 
 
