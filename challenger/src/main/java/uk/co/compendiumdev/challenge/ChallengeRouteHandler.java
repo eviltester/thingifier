@@ -56,6 +56,11 @@ public class ChallengeRouteHandler {
         challengers.setMultiPlayerMode();
     }
 
+    public boolean isSinglePlayerMode(){
+        return single_player_mode;
+    }
+
+
     public void setToCloudPersistenceMode(){
         persistenceLayer.setToCloud();
     }

@@ -57,6 +57,10 @@ public class ChallengeMain {
         app.setupDefaultGui();
         challenger.setupGui(app.getGuiManagement());
 
+        if(challenger.isSinglePlayerMode()){
+            System.out.println("Running in Single User Mode");
+        }
+
         final ThingifierRestServer restServer = app.startRestServer();
 
         app.addBuiltInArgConfiguredHooks();
