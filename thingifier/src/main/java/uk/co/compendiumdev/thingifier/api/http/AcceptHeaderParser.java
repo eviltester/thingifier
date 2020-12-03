@@ -81,7 +81,7 @@ public class AcceptHeaderParser {
         String[] acceptMediaTypeDefinitions = this.acceptHeader.split(",");
         acceptMediaTypeDefinitionsList = new ArrayList<>();
         for(String type : acceptMediaTypeDefinitions){
-            if(type!=null & type.trim().length()>0){
+            if(type!=null && type.trim().length()>0){
                 acceptMediaTypeDefinitionsList.add(type.trim());
             }
         }
