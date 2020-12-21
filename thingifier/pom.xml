@@ -43,7 +43,7 @@
           <!-- at the moment this is just for testing - but I might use for main processing-->
           <groupId>com.thoughtworks.xstream</groupId>
           <artifactId>xstream</artifactId>
-          <version>1.4.12</version>
+          <version>1.4.15</version>
           <scope>test</scope>
       </dependency>
       <dependency>
