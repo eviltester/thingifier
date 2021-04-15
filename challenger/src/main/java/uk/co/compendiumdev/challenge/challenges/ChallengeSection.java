@@ -6,15 +6,15 @@ import java.util.List;
 public class ChallengeSection {
     private final String title;
     private final String description;
-    private final ArrayList<ChallengeData> challenges;
+    private final ArrayList<ChallengeDefinitionData> challenges;
 
     public ChallengeSection(final String title, final String description) {
         this.title = title;
         this.description = description;
-        this.challenges = new ArrayList<ChallengeData>();
+        this.challenges = new ArrayList<ChallengeDefinitionData>();
     }
 
-    public void addChallenge(final ChallengeData challenge) {
+    public void addChallenge(final ChallengeDefinitionData challenge) {
         challenges.add(challenge);
     }
 
@@ -26,7 +26,7 @@ public class ChallengeSection {
         return description;
     }
 
-    public List<ChallengeData> getChallenges() {
+    public List<ChallengeDefinitionData> getChallenges() {
         return this.challenges;
     }
 }

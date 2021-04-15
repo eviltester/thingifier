@@ -2,11 +2,8 @@ package uk.co.compendiumdev.challenge.gui;
 
 import uk.co.compendiumdev.challenge.CHALLENGE;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
-import uk.co.compendiumdev.challenge.ChallengesPayload;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
-import uk.co.compendiumdev.challenge.challenges.ChallengeData;
-import uk.co.compendiumdev.challenge.challenges.ChallengeDefinitions;
-import uk.co.compendiumdev.challenge.challenges.ChallengeSection;
+import uk.co.compendiumdev.challenge.challenges.*;
 import uk.co.compendiumdev.challenge.persistence.PersistenceLayer;
 import uk.co.compendiumdev.challenge.persistence.PersistenceResponse;
 import uk.co.compendiumdev.thingifier.htmlgui.DefaultGUIHTML;
@@ -198,7 +195,7 @@ public class ChallengerWebGUI {
     // todo: post challenge status from local storage to current X-CHALLENGER session
     // todo: clear local storage challenge status
 
-    private String renderChallengeData(final List<ChallengeData> reportOn) {
+    private String renderChallengeData(final List<ChallengeDefinitionData> reportOn) {
         StringBuilder html = new StringBuilder();
 
         html.append("<table>");
@@ -206,6 +203,7 @@ public class ChallengerWebGUI {
         html.append("<tr>");
 
         html.append("<style>.statustrue{background:palegreen}</style>");
+        html.append("<th>ID</th>");
         html.append("<th>Challenge</th>");
         html.append("<th>Done</th>");
         html.append("<th>Description</th>");
@@ -213,11 +211,45 @@ public class ChallengerWebGUI {
         html.append("</thead>");
         html.append("<tbody>");
 
-        for(ChallengeData challenge : reportOn){
+        for(ChallengeDefinitionData challenge : reportOn){
             html.append(String.format("<tr class='status%b'>", challenge.status));
+            html.append(String.format("<td>%s</td>", challenge.id));
             html.append(String.format("<td>%s</td>", challenge.name));
             html.append(String.format("<td>%b</td>", challenge.status));
-            html.append(String.format("<td>%s</td>", challenge.description));
+
+            String descriptionHTML = String.format("<p>%s</p>",challenge.description);
+            if(challenge.hasHints() || challenge.hasSolutionLinks()){
+                descriptionHTML = descriptionHTML + "<br/>";
+            }
+            if(challenge.hasHints()){
+                descriptionHTML = descriptionHTML + "<details><summary>Hints</summary>";
+                descriptionHTML = descriptionHTML + "<ul>";
+                String hintHtml = "";
+                for(ChallengeHint hint : challenge.hints){
+                    hintHtml = hintHtml + "<li>" + hint.hintText;
+                    if(hint.hintLink!=null && hint.hintLink.length()>0){
+                        hintHtml = hintHtml +
+                                String.format(" <a href='%s' target='_blank'>Learn More</a>",
+                                        hint.hintLink);
+                    }
+                    hintHtml = hintHtml + "</li>";
+                }
+                descriptionHTML = descriptionHTML + hintHtml + "</ul>";
+                descriptionHTML = descriptionHTML + "</details>";
+            }
+            if(challenge.hasSolutionLinks()){
+
+                descriptionHTML = descriptionHTML + "<details><summary>Solution</summary>";
+                descriptionHTML = descriptionHTML + "<ul>";
+                String solutionsHtml = "";
+                for(ChallengeSolutionLink solution : challenge.solutions){
+                    solutionsHtml = solutionsHtml + "<li>" + solution.asHtmlAHref() + "</li>";
+                }
+                descriptionHTML = descriptionHTML + solutionsHtml + "</ul>";
+                descriptionHTML = descriptionHTML + "</details>";
+            }
+
+            html.append(String.format("<td>%s</td>", descriptionHTML));
             html.append("</tr>");
         }
 
@@ -237,12 +269,14 @@ public class ChallengerWebGUI {
             html.append("<h2>" + section.getTitle() + "</h2>");
             html.append("<p class='challengesectiondescription'>" + section.getDescription() + "</p>");
 
-            List<ChallengeData> sectionData = new ArrayList<>();
-            for(ChallengeData challenge : section.getChallenges()){
-                final ChallengeData data = new ChallengeData(challenge.name, challenge.description);
+            List<ChallengeDefinitionData> sectionData = new ArrayList<>();
+            for(ChallengeDefinitionData challenge : section.getChallenges()){
+                final ChallengeDefinitionData data = new ChallengeDefinitionData(challenge.id, challenge.name, challenge.description);
                 CHALLENGE challengeKey = challengeDefinitions.getChallenge(challenge.name);
                 if(challenge!=null) {
                     data.status = challenger.statusOfChallenge(challengeKey);
+                    data.addHints(challenge.hints);
+                    data.addSolutions(challenge.solutions);
                 }
                 sectionData.add(data);
             }

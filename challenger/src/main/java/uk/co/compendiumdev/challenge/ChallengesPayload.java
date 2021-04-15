@@ -2,6 +2,7 @@ package uk.co.compendiumdev.challenge;
 
 import com.google.gson.Gson;
 import uk.co.compendiumdev.challenge.challenges.ChallengeData;
+import uk.co.compendiumdev.challenge.challenges.ChallengeDefinitionData;
 import uk.co.compendiumdev.challenge.challenges.ChallengeDefinitions;
 
 import java.util.ArrayList;
@@ -28,8 +29,9 @@ public class ChallengesPayload {
 
     public List<ChallengeData> getAsChallenges(){
         List<ChallengeData> challengesList = new ArrayList<>();
-        for(ChallengeData challenge : challenges.getChallenges()){
-            ChallengeData challengeStatus = new ChallengeData(challenge.name, challenge.description);
+        for(ChallengeDefinitionData challenge : challenges.getChallenges()){
+            ChallengeData challengeStatus = new ChallengeData(challenge.id, challenge.name,
+                                                            challenge.description);
             if(this.challenger!=null){
                 challengeStatus.status = challenger.statusOfChallenge(challenges.getChallenge(challenge.name));
             }

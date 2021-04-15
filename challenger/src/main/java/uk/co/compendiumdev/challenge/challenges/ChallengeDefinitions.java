@@ -1,6 +1,5 @@
 package uk.co.compendiumdev.challenge.challenges;
 
-import spark.Spark;
 import uk.co.compendiumdev.challenge.CHALLENGE;
 
 import java.util.*;
@@ -8,10 +7,10 @@ import java.util.*;
 public class ChallengeDefinitions {
 
     private final List<ChallengeSection> sections;
-    Map<CHALLENGE, ChallengeData> challengeData;
-    List<ChallengeData> orderedChallenges;
+    Map<CHALLENGE, ChallengeDefinitionData> challengeData;
+    List<ChallengeDefinitionData> orderedChallenges;
 
-    public Collection<ChallengeData> getChallenges() {
+    public Collection<ChallengeDefinitionData> getChallenges() {
         return orderedChallenges;
     }
 
@@ -36,9 +35,14 @@ public class ChallengeDefinitions {
 
         // create a challenger to persist challenge sessions
         // CREATE_NEW_CHALLENGER
-        getStarted.addChallenge(
-                createChallenge(CHALLENGE.CREATE_NEW_CHALLENGER, "POST /challenger (201)",
-                "Issue a POST request on the `/challenger` end point, with no body, to create a new challenger session. Use the generated X-CHALLENGER header in future requests to track challenge completion."));
+        ChallengeDefinitionData aChallenge = createChallenge(CHALLENGE.CREATE_NEW_CHALLENGER,
+                "01", "POST /challenger (201)",
+                "Issue a POST request on the `/challenger` end point, with no body, to create a new challenger session. Use the generated X-CHALLENGER header in future requests to track challenge completion."
+        );
+        aChallenge.addHint("In multi-user mode, you need to create an X-CHALLENGER Session first", "/gui/multiuser.html");
+        aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/post-challenger-201");
+        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "tNGuZMQgHxw");
+        getStarted.addChallenge(aChallenge);
 
 
 
@@ -48,85 +52,119 @@ public class ChallengeDefinitions {
         sections.add(firstChallenge);
 
         // READ
-        firstChallenge.addChallenge(
-                createChallenge(CHALLENGE.GET_CHALLENGES, "GET /challenges (200)",
-                "Issue a GET request on the `/challenges` end point"));
+        aChallenge = createChallenge(CHALLENGE.GET_CHALLENGES, "02", "GET /challenges (200)",
+                "Issue a GET request on the `/challenges` end point");
+        firstChallenge.addChallenge(aChallenge);
+        aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/get-challenges-200/");
+        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "DrAjk2NaPRo");
 
         ChallengeSection getChallenges = new ChallengeSection("GET Challenges",
                 "To retrieve, or read information from an API we issue GET requests. This section has a bunch of GET request challenges to try out.");
         sections.add(getChallenges);
 
-        getChallenges.addChallenge(
-                createChallenge(CHALLENGE.GET_TODOS, "GET /todos (200)",
-                "Issue a GET request on the `/todos` end point"));
+        aChallenge = createChallenge(CHALLENGE.GET_TODOS, "03", "GET /todos (200)",
+                "Issue a GET request on the `/todos` end point");
+        getChallenges.addChallenge(aChallenge);
+        aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/get-todos-200");
+        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "OpisB0UZq0c");
 
-        getChallenges.addChallenge(
-            createChallenge(CHALLENGE.GET_TODOS_NOT_PLURAL_404, "GET /todo (404) not plural",
-                "Issue a GET request on the `/todo` end point should 404 because nouns should be plural"));
+        aChallenge = createChallenge(CHALLENGE.GET_TODOS_NOT_PLURAL_404, "04", "GET /todo (404) not plural",
+                "Issue a GET request on the `/todo` end point should 404 because nouns should be plural");
+        getChallenges.addChallenge(aChallenge);
+        aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/get-todo-404");
+        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "gAJzqgcN9dc");
 
-        getChallenges.addChallenge(
-            createChallenge(CHALLENGE.GET_TODO, "GET /todos/{id} (200)",
-                "Issue a GET request on the `/todos/{id}` end point to return a specific todo"));
+        aChallenge = createChallenge(CHALLENGE.GET_TODO, "05", "GET /todos/{id} (200)",
+                "Issue a GET request on the `/todos/{id}` end point to return a specific todo");
+        getChallenges.addChallenge(aChallenge);
+        aChallenge.addHint("Make sure you don't use {id} in the url, replace that with the id of a todo e.g. /todos/1");
+        aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/get-todos-id-200");
+        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "JDbbSY3U_rY");
 
-        getChallenges.addChallenge(
-            createChallenge(CHALLENGE.GET_TODO_404, "GET /todos/{id} (404)",
-                "Issue a GET request on the `/todos/{id}` end point for a todo that does not exist"));
-
+        aChallenge = createChallenge(CHALLENGE.GET_TODO_404, "06", "GET /todos/{id} (404)",
+                "Issue a GET request on the `/todos/{id}` end point for a todo that does not exist");
+        getChallenges.addChallenge(aChallenge);
+        aChallenge.addHint("Make sure you don't use {id} in the url, replace that with the id of a todo e.g. /todos/1");
+        aChallenge.addHint("Make sure the id is an integer e.g. /todos/1");
+        aChallenge.addHint("Make sure you are using the /todos end point e.g. /todos/1");
+        aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/get-todos-id-404");
+        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "1S5kpd8-xfM");
 
         // HEAD
         ChallengeSection headChallenges = new ChallengeSection("HEAD Challenges",
                 "A HEAD request, is like a GET request, but only returns the headers and status code.");
         sections.add(headChallenges);
 
-        headChallenges.addChallenge(
-                createChallenge(CHALLENGE.GET_HEAD_TODOS, "HEAD /todos (200)",
-                "Issue a HEAD request on the `/todos` end point"));
-
+        aChallenge = createChallenge(CHALLENGE.GET_HEAD_TODOS, "07", "HEAD /todos (200)",
+                "Issue a HEAD request on the `/todos` end point");
+        headChallenges.addChallenge(aChallenge);
+        aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/head-todos-200");
+        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "zKbytTelP84");
 
         // CREATE
         ChallengeSection postCreateChallenges = new ChallengeSection("Creation Challenges with POST",
                 "A POST request can be used to create and update data, these challenges are to 'create' data. As a Hint, if you are not sure what the message body should be, try copying in the response from the assocated GET request, and amending it.");
         sections.add(postCreateChallenges);
 
-        postCreateChallenges.addChallenge(
-            createChallenge(CHALLENGE.POST_TODOS, "POST /todos (201)",
-                "Issue a POST request to successfully create a todo"));
+        aChallenge = createChallenge(CHALLENGE.POST_TODOS, "08", "POST /todos (201)",
+                "Issue a POST request to successfully create a todo");
+        postCreateChallenges.addChallenge(aChallenge);
+        aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/post-todos-201");
+        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "T0LFHwavsNA");
 
-        postCreateChallenges.addChallenge(
-                createChallenge(CHALLENGE.GET_TODOS_FILTERED, "GET /todos (200) ?filter",
-                        "Issue a GET request on the `/todos` end point with a query filter to get only todos which are 'done'. There must exist both 'done' and 'not done' todos, to pass this challenge."));
+        aChallenge = createChallenge(CHALLENGE.GET_TODOS_FILTERED, "09", "GET /todos (200) ?filter",
+                        "Issue a GET request on the `/todos` end point with a query filter to get only todos which are 'done'. There must exist both 'done' and 'not done' todos, to pass this challenge.");
+        postCreateChallenges.addChallenge(aChallenge);
+        aChallenge.addHint("A query filter is a URL parameter using the field name and a value");
+        aChallenge.addHint("A URL parameter is added to the end of a url with a ? e.g. /todos?id=1");
+        aChallenge.addHint("To filter on 'done' we use the 'doneStatus' field  ? e.g. ?doneStatus=true");
+        aChallenge.addHint("Make sure there are todos which are done, and not yet done");
+        aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/get-todos-200-filter");
+        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "G-sLuhyPMuw");
 
-        postCreateChallenges.addChallenge(
-            createChallenge(CHALLENGE.POST_TODOS_BAD_DONE_STATUS, "POST /todos (400) doneStatus",
-                "Issue a POST request to create a todo but fail validation on the `doneStatus` field"));
+        aChallenge = createChallenge(CHALLENGE.POST_TODOS_BAD_DONE_STATUS, "10", "POST /todos (400) doneStatus",
+                "Issue a POST request to create a todo but fail validation on the `doneStatus` field");
+        postCreateChallenges.addChallenge(aChallenge);
+        aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/post-todos-400");
+        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "tlye5bQ72g0");
 
         // UPDATE
         ChallengeSection postUpdateChallenges = new ChallengeSection("Update Challenges with POST",
                 "Use a POST request to amend something that already exists. These are 'partial' content updates so you useually don't need to have all details of the entity in the request, e.g. you could just update a title, or a description, or a status");
         sections.add(postUpdateChallenges);
 
-        postUpdateChallenges.addChallenge(
-            createChallenge(CHALLENGE.POST_UPDATE_TODO, "POST /todos/{id} (200)",
-                "Issue a POST request to successfully update a todo"));
+        aChallenge = createChallenge(CHALLENGE.POST_UPDATE_TODO, "11", "POST /todos/{id} (200)",
+                "Issue a POST request to successfully update a todo");
+        postUpdateChallenges.addChallenge(aChallenge);
+        aChallenge.addHint("Make sure you don't use {id} in the url, replace that with the id of a todo e.g. /todos/1");
+        aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/post-todos-id-200");
+        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "feXdRpZ_tgs");
 
         // DELETE
         ChallengeSection deleteChallenges = new ChallengeSection("DELETE Challenges",
                 "Use a DELETE request to delete an entity. Since this is an extreme request, normall you have to be logged in or authenticated, but we wanted to make life easier for you so we cover authentication later. Anyone can delete To Do items without authentication in this system.");
         sections.add(deleteChallenges);
 
-        deleteChallenges.addChallenge(
-            createChallenge(CHALLENGE.DELETE_A_TODO, "DELETE /todos/{id} (200)",
-                "Issue a DELETE request to successfully delete a todo"));
-
+        aChallenge =
+            createChallenge(CHALLENGE.DELETE_A_TODO, "12", "DELETE /todos/{id} (200)",
+                "Issue a DELETE request to successfully delete a todo");
+        deleteChallenges.addChallenge(aChallenge);
+        aChallenge.addHint("Make sure you don't use {id} in the url, replace that with the id of a todo e.g. /todos/1");
+        aChallenge.addHint("Make sure a todo with the id exists prior to issuing the request");
+        aChallenge.addHint("Check it was deleted by issuing a GET or HEAD on the /todos/{id}");
+        aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/delete-todos-id-200");
+        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "6MXTkaXn9qU");
 
         // OPTIONS
         ChallengeSection optionsChallenges = new ChallengeSection("OPTIONS Challenges",
                 "Use an OPTIONS verb and check the `Allow` header, this will show you what verbs are allowed to be used on an endpoint. When you test APIs it is worth checking to see if all the verbs listed are allowed or not.");
         sections.add(optionsChallenges);
 
-        optionsChallenges.addChallenge(
-            createChallenge(CHALLENGE.OPTIONS_TODOS, "OPTIONS /todos (200)",
-                "Issue an OPTIONS request on the `/todos` end point. You might want to manually check the 'Allow' header in the response is as expected."));
+        aChallenge =
+            createChallenge(CHALLENGE.OPTIONS_TODOS, "13", "OPTIONS /todos (200)",
+                "Issue an OPTIONS request on the `/todos` end point. You might want to manually check the 'Allow' header in the response is as expected.");
+        optionsChallenges.addChallenge(aChallenge);
+        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "Ld5h1TSnXWA");
 
         // GET accept type
         //      specify accept type - XML
@@ -140,29 +178,41 @@ public class ChallengeDefinitions {
                 "The `Accept` header, tells the server what format you want the response to be in. By changing the `Accept` header you can specify JSON or XML.");
         sections.add(acceptChallenges);
 
-        acceptChallenges.addChallenge(
-            createChallenge(CHALLENGE.GET_ACCEPT_XML, "GET /todos (200) XML",
-                "Issue a GET request on the `/todos` end point with an `Accept` header of `application/xml` to receive results in XML format"));
+        aChallenge =
+            createChallenge(CHALLENGE.GET_ACCEPT_XML, "14", "GET /todos (200) XML",
+                "Issue a GET request on the `/todos` end point with an `Accept` header of `application/xml` to receive results in XML format");
+        acceptChallenges.addChallenge(aChallenge);
+        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "cLeEuZm2VG8");
 
-        acceptChallenges.addChallenge(
-            createChallenge(CHALLENGE.GET_ACCEPT_JSON, "GET /todos (200) JSON",
-                "Issue a GET request on the `/todos` end point with an `Accept` header of `application/json` to receive results in JSON format"));
+        aChallenge =
+            createChallenge(CHALLENGE.GET_ACCEPT_JSON, "15", "GET /todos (200) JSON",
+                "Issue a GET request on the `/todos` end point with an `Accept` header of `application/json` to receive results in JSON format");
+        acceptChallenges.addChallenge(aChallenge);
+        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "79JTHiby2Qw");
 
-        acceptChallenges.addChallenge(
-            createChallenge(CHALLENGE.GET_ACCEPT_ANY_DEFAULT_JSON, "GET /todos (200) ANY",
-                "Issue a GET request on the `/todos` end point with an `Accept` header of `*/*` to receive results in default JSON format"));
+        aChallenge =
+            createChallenge(CHALLENGE.GET_ACCEPT_ANY_DEFAULT_JSON, "16", "GET /todos (200) ANY",
+                "Issue a GET request on the `/todos` end point with an `Accept` header of `*/*` to receive results in default JSON format");
+        acceptChallenges.addChallenge(aChallenge);
+        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "O4DhJ8Ohkk8");
 
-        acceptChallenges.addChallenge(
-            createChallenge(CHALLENGE.GET_ACCEPT_XML_PREFERRED, "GET /todos (200) XML pref",
-                "Issue a GET request on the `/todos` end point with an `Accept` header of `application/xml, application/json` to receive results in the preferred XML format"));
+        aChallenge =
+            createChallenge(CHALLENGE.GET_ACCEPT_XML_PREFERRED, "17", "GET /todos (200) XML pref",
+                "Issue a GET request on the `/todos` end point with an `Accept` header of `application/xml, application/json` to receive results in the preferred XML format");
+        acceptChallenges.addChallenge(aChallenge);
+        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "sLChuy9pc9U");
 
-        acceptChallenges.addChallenge(
-            createChallenge(CHALLENGE.GET_JSON_BY_DEFAULT_NO_ACCEPT, "GET /todos (200) no accept",
-                "Issue a GET request on the `/todos` end point with no `Accept` header present in the message to receive results in default JSON format"));
+        aChallenge =
+            createChallenge(CHALLENGE.GET_JSON_BY_DEFAULT_NO_ACCEPT, "18", "GET /todos (200) no accept",
+                "Issue a GET request on the `/todos` end point with no `Accept` header present in the message to receive results in default JSON format");
+        acceptChallenges.addChallenge(aChallenge);
+        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "4ExR3qRr5G8");
 
-        acceptChallenges.addChallenge(
-            createChallenge(CHALLENGE.GET_UNSUPPORTED_ACCEPT_406, "GET /todos (406)",
-                "Issue a GET request on the `/todos` end point with an `Accept` header `application/gzip` to receive 406 'NOT ACCEPTABLE' status code"));
+        aChallenge =
+            createChallenge(CHALLENGE.GET_UNSUPPORTED_ACCEPT_406, "19", "GET /todos (406)",
+                "Issue a GET request on the `/todos` end point with an `Accept` header `application/gzip` to receive 406 'NOT ACCEPTABLE' status code");
+        acceptChallenges.addChallenge(aChallenge);
+        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "QzfbegkY1ok");
 
 
 
@@ -172,19 +222,25 @@ public class ChallengeDefinitions {
 
         // POST control content type, and Accepting only XML ie. Accept header of `application/xml`
         //      control content type to create with - XML
-        contentTypeChallenges.addChallenge(
-            createChallenge(CHALLENGE.POST_CREATE_XML, "POST /todos XML",
-                "Issue a POST request on the `/todos` end point to create a todo using Content-Type `application/xml`, and Accepting only XML ie. Accept header of `application/xml`"));
+        aChallenge =
+            createChallenge(CHALLENGE.POST_CREATE_XML, "20", "POST /todos XML",
+                "Issue a POST request on the `/todos` end point to create a todo using Content-Type `application/xml`, and Accepting only XML ie. Accept header of `application/xml`");
+        contentTypeChallenges.addChallenge(aChallenge);
+        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "2-KBYHwb7MM");
 
         //      control content type to create with - JSON
-        contentTypeChallenges.addChallenge(
-            createChallenge(CHALLENGE.POST_CREATE_JSON, "POST /todos JSON",
-                "Issue a POST request on the `/todos` end point to create a todo using Content-Type `application/json`, and Accepting only JSON ie. Accept header of `application/json`"));
+        aChallenge =
+            createChallenge(CHALLENGE.POST_CREATE_JSON, "21", "POST /todos JSON",
+                "Issue a POST request on the `/todos` end point to create a todo using Content-Type `application/json`, and Accepting only JSON ie. Accept header of `application/json`");
+        contentTypeChallenges.addChallenge(aChallenge);
+        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "VS9qIhgp51Q");
 
         //      content type not supported 415 e.g. form encoded
-        contentTypeChallenges.addChallenge(
-            createChallenge(CHALLENGE.POST_TODOS_415, "POST /todos (415)",
-                "Issue a POST request on the `/todos` end point with an unsupported content type to generate a 415 status code"));
+        aChallenge =
+            createChallenge(CHALLENGE.POST_TODOS_415, "22", "POST /todos (415)",
+                "Issue a POST request on the `/todos` end point with an unsupported content type to generate a 415 status code");
+        contentTypeChallenges.addChallenge(aChallenge);
+        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "L8H-vkbXyr0");
 
 
 
@@ -200,14 +256,18 @@ public class ChallengeDefinitions {
                 "We can mix the `Accept` and `Content-Type` headers so that we can send JSON but receive XML. These challenges encourage you to explore some combinations.");
         sections.add(mixAcceptContentTypeChallenges);
 
-        mixAcceptContentTypeChallenges.addChallenge(
-            createChallenge(CHALLENGE.POST_CREATE_XML_ACCEPT_JSON, "POST /todos XML to JSON",
-                "Issue a POST request on the `/todos` end point to create a todo using Content-Type `application/xml` but Accept `application/json`"));
+        aChallenge =
+            createChallenge(CHALLENGE.POST_CREATE_XML_ACCEPT_JSON, "23", "POST /todos XML to JSON",
+                "Issue a POST request on the `/todos` end point to create a todo using Content-Type `application/xml` but Accept `application/json`");
+        mixAcceptContentTypeChallenges.addChallenge(aChallenge);
+        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "kfe7VtaV7u0");
 
         //      content type JSON - accept type XML
-        mixAcceptContentTypeChallenges.addChallenge(
-            createChallenge(CHALLENGE.POST_CREATE_JSON_ACCEPT_XML, "POST /todos JSON to XML",
-                "Issue a POST request on the `/todos` end point to create a todo using Content-Type `application/json` but Accept `application/xml`"));
+        aChallenge =
+            createChallenge(CHALLENGE.POST_CREATE_JSON_ACCEPT_XML, "24", "POST /todos JSON to XML",
+                "Issue a POST request on the `/todos` end point to create a todo using Content-Type `application/json` but Accept `application/xml`");
+        mixAcceptContentTypeChallenges.addChallenge(aChallenge);
+        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "6w6sJQOxpPY");
 
 
         ChallengeSection miscStatusCodes = new ChallengeSection("Status Code Challenges",
@@ -216,24 +276,32 @@ public class ChallengeDefinitions {
 
         // extra status code challenges
         //      method not allowed - 405
-        miscStatusCodes.addChallenge(
-            createChallenge(CHALLENGE.DELETE_HEARTBEAT_405, "DELETE /heartbeat (405)",
-                "Issue a DELETE request on the `/heartbeat` end point and receive 405 (Method Not Allowed)"));
+        aChallenge =
+            createChallenge(CHALLENGE.DELETE_HEARTBEAT_405, "25", "DELETE /heartbeat (405)",
+                "Issue a DELETE request on the `/heartbeat` end point and receive 405 (Method Not Allowed)");
+        miscStatusCodes.addChallenge(aChallenge);
+        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "SGfKVFdylVI");
 
         // cannot process request server error 500
-        miscStatusCodes.addChallenge(
-            createChallenge(CHALLENGE.PATCH_HEARTBEAT_500, "PATCH /heartbeat (500)",
-                "Issue a PATCH request on the `/heartbeat` end point and receive 500 (internal server error)"));
+        aChallenge =
+            createChallenge(CHALLENGE.PATCH_HEARTBEAT_500, "26", "PATCH /heartbeat (500)",
+                "Issue a PATCH request on the `/heartbeat` end point and receive 500 (internal server error)");
+        miscStatusCodes.addChallenge(aChallenge);
+        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "SGfKVFdylVI");
 
         // 501
-        miscStatusCodes.addChallenge(
-            createChallenge(CHALLENGE.TRACE_HEARTBEAT_501, "TRACE /heartbeat (501)",
-                "Issue a TRACE request on the `/heartbeat` end point and receive 501 (Not Implemented)"));
+        aChallenge =
+            createChallenge(CHALLENGE.TRACE_HEARTBEAT_501, "27", "TRACE /heartbeat (501)",
+                "Issue a TRACE request on the `/heartbeat` end point and receive 501 (Not Implemented)");
+        miscStatusCodes.addChallenge(aChallenge);
+        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "SGfKVFdylVI");
 
         // No Content 204 - ping
-        miscStatusCodes.addChallenge(
-            createChallenge(CHALLENGE.GET_HEARTBEAT_204, "GET /heartbeat (204)",
-                "Issue a GET request on the `/heartbeat` end point and receive 204 when server is running"));
+        aChallenge =
+            createChallenge(CHALLENGE.GET_HEARTBEAT_204, "28", "GET /heartbeat (204)",
+                "Issue a GET request on the `/heartbeat` end point and receive 204 when server is running");
+        miscStatusCodes.addChallenge(aChallenge);
+        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "SGfKVFdylVI");
 
 
         ChallengeSection authenticationChallenges = new ChallengeSection("Authentication Challenges",
@@ -242,60 +310,90 @@ public class ChallengeDefinitions {
 
         // authorization and authentication
         //    POST /secret/token with incorrect username and password credentials get 401
-        authenticationChallenges.addChallenge(
-            createChallenge(CHALLENGE.CREATE_SECRET_TOKEN_401, "POST /secret/token (401)",
-                "Issue a POST request on the `/secret/token` end point and receive 401 when Basic auth username/password is not admin/password"));
+        aChallenge =
+            createChallenge(CHALLENGE.CREATE_SECRET_TOKEN_401, "29", "POST /secret/token (401)",
+                "Issue a POST request on the `/secret/token` end point and receive 401 when Basic auth username/password is not admin/password");
+        authenticationChallenges.addChallenge(aChallenge);
+        aChallenge.addHint("Remember to add your X-CHALLENGER guid header");
+        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "RSQGADU3SLA");
 
         //    POST /secret/token with correct username and password credentials get secret token 201
-        authenticationChallenges.addChallenge(
-            createChallenge(CHALLENGE.CREATE_SECRET_TOKEN_201, "POST /secret/token (201)",
-                "Issue a POST request on the `/secret/token` end point and receive 201 when Basic auth username/password is admin/password"));
+        aChallenge =
+            createChallenge(CHALLENGE.CREATE_SECRET_TOKEN_201, "30", "POST /secret/token (201)",
+                "Issue a POST request on the `/secret/token` end point and receive 201 when Basic auth username/password is admin/password");
+        authenticationChallenges.addChallenge(aChallenge);
+        aChallenge.addHint("Remember to add your X-CHALLENGER guid header");
+        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "J2GQiuEfHkI");
 
         ChallengeSection authorizationChallenges = new ChallengeSection("Authorization Challenges",
                 "Once the system knows who you are, authorization is if you have the correct level of access. In these challenges the authorization is granted using a custom API header X-AUTH-TOKEN or using a Bearer Authorization header.");
         sections.add(authorizationChallenges);
 
         //    GET /secret/note with no token and 403
-        authorizationChallenges.addChallenge(
-            createChallenge(CHALLENGE.GET_SECRET_NOTE_403, "GET /secret/note (403)",
-                "Issue a GET request on the `/secret/note` end point and receive 403 when X-AUTH-TOKEN does not match a valid token"));
+        aChallenge =
+            createChallenge(CHALLENGE.GET_SECRET_NOTE_403, "31", "GET /secret/note (403)",
+                "Issue a GET request on the `/secret/note` end point and receive 403 when X-AUTH-TOKEN does not match a valid token");
+        authorizationChallenges.addChallenge(aChallenge);
+        aChallenge.addHint("Remember to add your X-CHALLENGER guid header");
+        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "77mnUQezdas");
 
         //    GET /secret/note with invalid token and 401
-        authorizationChallenges.addChallenge(
-            createChallenge(CHALLENGE.GET_SECRET_NOTE_401, "GET /secret/note (401)",
-                "Issue a GET request on the `/secret/note` end point and receive 401 when no X-AUTH-TOKEN header present"));
+        aChallenge =
+            createChallenge(CHALLENGE.GET_SECRET_NOTE_401, "32", "GET /secret/note (401)",
+                "Issue a GET request on the `/secret/note` end point and receive 401 when no X-AUTH-TOKEN header present");
+        authorizationChallenges.addChallenge(aChallenge);
+        aChallenge.addHint("Remember to add your X-CHALLENGER guid header");
+        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "__uZlQZ48io");
 
         //    GET /secret/note with token and see token
-        authorizationChallenges.addChallenge(
-                createChallenge(CHALLENGE.GET_SECRET_NOTE_200, "GET /secret/note (200)",
-                        "Issue a GET request on the `/secret/note` end point receive 200 when valid X-AUTH-TOKEN used - response body should contain the note"));
+        aChallenge =
+                createChallenge(CHALLENGE.GET_SECRET_NOTE_200, "33", "GET /secret/note (200)",
+                        "Issue a GET request on the `/secret/note` end point receive 200 when valid X-AUTH-TOKEN used - response body should contain the note");
+        authorizationChallenges.addChallenge(aChallenge);
+        aChallenge.addHint("Remember to add your X-CHALLENGER guid header");
+        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "2uRpzr2OmEY");
 
         //    POST /secret/note with token and update secret note
-        authorizationChallenges.addChallenge(
-                createChallenge(CHALLENGE.POST_SECRET_NOTE_200, "POST /secret/note (200)",
-                        "Issue a POST request on the `/secret/note` end point with a note payload e.g. {\"note\":\"my note\"} and receive 200 when valid X-AUTH-TOKEN used. Note is maximum length 100 chars and will be truncated when stored."));
+        aChallenge =
+                createChallenge(CHALLENGE.POST_SECRET_NOTE_200, "34","POST /secret/note (200)",
+                        "Issue a POST request on the `/secret/note` end point with a note payload e.g. {\"note\":\"my note\"} and receive 200 when valid X-AUTH-TOKEN used. Note is maximum length 100 chars and will be truncated when stored.");
+        authorizationChallenges.addChallenge(aChallenge);
+        aChallenge.addHint("Remember to add your X-CHALLENGER guid header");
+        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "A9T9yjzEOEE");
 
         //    POST /secret/note with invalid token and 401
-        authorizationChallenges.addChallenge(
-                createChallenge(CHALLENGE.POST_SECRET_NOTE_401, "POST /secret/note (401)",
-                        "Issue a POST request on the `/secret/note` end point with a note payload {\"note\":\"my note\"} and receive 401 when no X-AUTH-TOKEN present"));
+        aChallenge =
+                createChallenge(CHALLENGE.POST_SECRET_NOTE_401, "35","POST /secret/note (401)",
+                        "Issue a POST request on the `/secret/note` end point with a note payload {\"note\":\"my note\"} and receive 401 when no X-AUTH-TOKEN present");
+        authorizationChallenges.addChallenge(aChallenge);
+        aChallenge.addHint("Remember to add your X-CHALLENGER guid header");
+        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "76U5TEvLzLI");
 
         //    POST /secret/note with no token and 403
-        authorizationChallenges.addChallenge(
-            createChallenge(CHALLENGE.POST_SECRET_NOTE_403, "POST /secret/note (403)",
-                "Issue a POST request on the `/secret/note` end point with a note payload {\"note\":\"my note\"} and receive 403 when X-AUTH-TOKEN does not match a valid token"));
+        aChallenge =
+            createChallenge(CHALLENGE.POST_SECRET_NOTE_403, "36","POST /secret/note (403)",
+                "Issue a POST request on the `/secret/note` end point with a note payload {\"note\":\"my note\"} and receive 403 when X-AUTH-TOKEN does not match a valid token");
+        authorizationChallenges.addChallenge(aChallenge);
+        aChallenge.addHint("Remember to add your X-CHALLENGER guid header");
+        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "76U5TEvLzLI");
 
 
 
         //    GET /secret/note with bearer token authorization
-        authorizationChallenges.addChallenge(
-                createChallenge(CHALLENGE.GET_SECRET_NOTE_BEARER_200, "GET /secret/note (Bearer)",
-                        "Issue a GET request on the `/secret/note` end point receive 200 when using the X-AUTH-TOKEN value as an Authorization Bearer token - response body should contain the note"));
+        aChallenge =
+                createChallenge(CHALLENGE.GET_SECRET_NOTE_BEARER_200, "37","GET /secret/note (Bearer)",
+                        "Issue a GET request on the `/secret/note` end point receive 200 when using the X-AUTH-TOKEN value as an Authorization Bearer token - response body should contain the note");
+        authorizationChallenges.addChallenge(aChallenge);
+        aChallenge.addHint("Remember to add your X-CHALLENGER guid header");
+        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "8GsMTZxEItw");
 
         //    POST /secret/note with token and update secret note
-        authorizationChallenges.addChallenge(
-                createChallenge(CHALLENGE.POST_SECRET_NOTE_BEARER_200, "POST /secret/note (Bearer)",
-                        "Issue a POST request on the `/secret/note` end point with a note payload e.g. {\"note\":\"my note\"} and receive 200 when valid X-AUTH-TOKEN value used as an Authorization Bearer token. Status code 200 received. Note is maximum length 100 chars and will be truncated when stored."));
+        aChallenge =
+                createChallenge(CHALLENGE.POST_SECRET_NOTE_BEARER_200, "38","POST /secret/note (Bearer)",
+                        "Issue a POST request on the `/secret/note` end point with a note payload e.g. {\"note\":\"my note\"} and receive 200 when valid X-AUTH-TOKEN value used as an Authorization Bearer token. Status code 200 received. Note is maximum length 100 chars and will be truncated when stored.");
+        authorizationChallenges.addChallenge(aChallenge);
+        aChallenge.addHint("Remember to add your X-CHALLENGER guid header");
+        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "8GsMTZxEItw");
 
 
 
@@ -307,13 +405,16 @@ public class ChallengeDefinitions {
         sections.add(miscChallenges);
 
         // todo: consider only enabling this challenge in single user mode
-        miscChallenges.addChallenge(
-            createChallenge(CHALLENGE.DELETE_ALL_TODOS, "DELETE /todos/{id} (200) all",
-                "Issue a DELETE request to successfully delete the last todo in system so that there are no more todos in the system"));
+        aChallenge =
+            createChallenge(CHALLENGE.DELETE_ALL_TODOS, "39","DELETE /todos/{id} (200) all",
+                "Issue a DELETE request to successfully delete the last todo in system so that there are no more todos in the system");
+        miscChallenges.addChallenge(aChallenge);
+        aChallenge.addHint("After deleting the last todo, there will be no todos left in the application");
+        aChallenge.addHint("Make sure you don't use {id} in the url, replace that with the id of a todo e.g. /todos/1");
 
 
         Set challengeNames = new HashSet();
-        for(ChallengeData challenge : orderedChallenges){
+        for(ChallengeDefinitionData challenge : orderedChallenges){
             System.out.println("Challenge: " + challenge.name);
             challengeNames.add(challenge.name);
         }
@@ -333,8 +434,11 @@ public class ChallengeDefinitions {
         }
     }
 
-    private ChallengeData createChallenge(final CHALLENGE id, final String name, final String description) {
-        ChallengeData challenge = new ChallengeData( name, description);
+    private ChallengeDefinitionData createChallenge(final CHALLENGE id,
+                                                    final String orderId,
+                                                    final String name,
+                                                    final String description) {
+        ChallengeDefinitionData challenge = new ChallengeDefinitionData( orderId, name, description);
         challengeData.put(id, challenge);
         orderedChallenges.add(challenge);
         return challenge;
@@ -342,7 +446,7 @@ public class ChallengeDefinitions {
 
 
     public CHALLENGE getChallenge(final String name) {
-        for(Map.Entry<CHALLENGE, ChallengeData>challenge : challengeData.entrySet()){
+        for(Map.Entry<CHALLENGE, ChallengeDefinitionData>challenge : challengeData.entrySet()){
             if(challenge.getValue().name.contentEquals(name)){
                 return challenge.getKey();
             }
