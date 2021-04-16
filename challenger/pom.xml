@@ -102,6 +102,11 @@
 
 <!--
 
+1.0.2
+
+- Added Ids to the displayed challenges list to match the Solution tutorial numbers
+- Challenges list now has hints and solution links to available blog posts and youtube videos
+
 1.0.1
 
 - highlighting of completed challenges
