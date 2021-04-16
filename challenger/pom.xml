@@ -10,7 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>challenger</artifactId>
-    <version>1.0.2</version>
+    <version>1.0.3-SNAPSHOT</version>
 
     <dependencies>
         <dependency>
@@ -21,11 +21,7 @@
         <!-- https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk -->
         <!-- experimental cloud storage of challenger sessions -->
         <!-- 180 meg!
-        <dependency>
-            <groupId>com.amazonaws</groupId>
-            <artifactId>aws-java-sdk</artifactId>
-            <version>1.11.825</version>
-        </dependency>
+
         -->
 
         <dependency>
