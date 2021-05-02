@@ -267,7 +267,7 @@ public class ChallengeDefinitions {
             createChallenge(CHALLENGE.POST_CREATE_JSON_ACCEPT_XML, "24", "POST /todos JSON to XML",
                 "Issue a POST request on the `/todos` end point to create a todo using Content-Type `application/json` but Accept `application/xml`");
         mixAcceptContentTypeChallenges.addChallenge(aChallenge);
-        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "6w6sJQOxpPY");
+        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "uw1Jq8t1em4");
 
 
         ChallengeSection miscStatusCodes = new ChallengeSection("Status Code Challenges",

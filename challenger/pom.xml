@@ -98,6 +98,10 @@
 
 <!--
 
+1.0.3-SNAPSHOT
+
+- fixed YouTube video for solution 24 (it was dupe of 23!)
+
 1.0.2
 
 - Added Ids to the displayed challenges list to match the Solution tutorial numbers
