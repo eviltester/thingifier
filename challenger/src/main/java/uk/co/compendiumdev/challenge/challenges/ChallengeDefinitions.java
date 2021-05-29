@@ -206,7 +206,7 @@ public class ChallengeDefinitions {
             createChallenge(CHALLENGE.GET_JSON_BY_DEFAULT_NO_ACCEPT, "18", "GET /todos (200) no accept",
                 "Issue a GET request on the `/todos` end point with no `Accept` header present in the message to receive results in default JSON format");
         acceptChallenges.addChallenge(aChallenge);
-        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "4ExR3qRr5G8");
+        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "CSVP2PcvOdg");
 
         aChallenge =
             createChallenge(CHALLENGE.GET_UNSUPPORTED_ACCEPT_406, "19", "GET /todos (406)",
