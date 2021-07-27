@@ -256,6 +256,7 @@ public class AuthRoutesTest {
         http.clearHeaders();
         http.setHeader("X-CHALLENGER", challenger.getXChallenger());
         http.setHeader("Authorization", "basic " + base64("admin:password"));
+        http.setHeader("Content-Type","application/json");
 
         final HttpResponseDetails response = http.send("/secret/note", "post");
 
@@ -273,6 +274,7 @@ public class AuthRoutesTest {
         http.setHeader("X-CHALLENGER", challenger.getXChallenger());
         http.setHeader("X-AUTH-TOKEN", "");
         http.setHeader("Authorization", "basic " + base64("admin:password"));
+        http.setHeader("Content-Type","application/json");
 
         final HttpResponseDetails response = http.send("/secret/note", "post");
 
@@ -290,6 +292,7 @@ public class AuthRoutesTest {
         http.setHeader("X-CHALLENGER", challenger.getXChallenger() + "wrong");
         http.setHeader("X-AUTH-TOKEN", challenger.getXAuthToken());
         http.setHeader("Authorization", "basic " + base64("admin:password"));
+        http.setHeader("Content-Type","application/json");
 
         final HttpResponseDetails response = http.send("/secret/note", "post");
 
@@ -307,6 +310,7 @@ public class AuthRoutesTest {
         http.setHeader("X-CHALLENGER", challenger.getXChallenger());
         http.setHeader("X-AUTH-TOKEN", challenger.getXAuthToken()+  "wrong");
         http.setHeader("Authorization", "basic " + base64("admin:password"));
+        http.setHeader("Content-Type","application/json");
 
         final HttpResponseDetails response = http.send("/secret/note", "post");
 
@@ -324,6 +328,7 @@ public class AuthRoutesTest {
         http.setHeader("X-CHALLENGER", challenger.getXChallenger());
         http.setHeader("X-AUTH-TOKEN", challenger.getXAuthToken());
         http.setHeader("Authorization", "basic " + base64("admin:password"));
+        http.setHeader("Content-Type","application/json");
 
         //{"note":"hello"}
         final HttpResponseDetails response = http.post("/secret/note", "{\"note\":\"hello\"}");
@@ -353,6 +358,7 @@ public class AuthRoutesTest {
         http.setHeader("X-CHALLENGER", challenger.getXChallenger());
         http.setHeader("X-AUTH-TOKEN", challenger.getXAuthToken());
         http.setHeader("Authorization", "basic " + base64("admin:password"));
+        http.setHeader("Content-Type","application/json");
 
         //{"note":"hello"}
         final HttpResponseDetails response = http.post("/secret/note", "{\"note\":\"hello\"");
@@ -376,6 +382,7 @@ public class AuthRoutesTest {
         http.setHeader("X-CHALLENGER", challenger.getXChallenger());
         http.setHeader("X-AUTH-TOKEN", challenger.getXAuthToken());
         http.setHeader("Authorization", "basic " + base64("admin:password"));
+        http.setHeader("Content-Type","application/json");
 
         final HttpResponseDetails response = http.post("/secret/note", "{}");
 
@@ -395,6 +402,7 @@ public class AuthRoutesTest {
         http.setHeader("X-CHALLENGER", challenger.getXChallenger());
         http.setHeader("X-AUTH-TOKEN", challenger.getXAuthToken());
         http.setHeader("Authorization", "basic " + base64("admin:password"));
+        http.setHeader("Content-Type","application/json");
 
         final HttpResponseDetails response = http.post("/secret/note", "");
 
@@ -414,6 +422,7 @@ public class AuthRoutesTest {
         http.setHeader("X-CHALLENGER", challenger.getXChallenger());
         http.setHeader("X-AUTH-TOKEN", challenger.getXAuthToken());
         http.setHeader("Authorization", "basic " + base64("admin:password"));
+        http.setHeader("Content-Type","application/json");
 
         //{"name":"bob"}
         final HttpResponseDetails response = http.post("/secret/note", "{\"name\":\"bob\"}");
@@ -517,6 +526,7 @@ public class AuthRoutesTest {
         http.setHeader("X-CHALLENGER", challenger.getXChallenger());
         //http.setHeader("X-AUTH-TOKEN", challenger.getXAuthToken());
         http.setHeader("Authorization", "bearer " + challenger.getXAuthToken());
+        http.setHeader("Content-Type","application/json");
 
         //{"note":"hello"}
         final HttpResponseDetails response = http.post("/secret/note", "{\"note\":\"hello\"}");
@@ -545,6 +555,7 @@ public class AuthRoutesTest {
         http.setHeader("X-CHALLENGER", challenger.getXChallenger());
         http.setHeader("X-AUTH-TOKEN", challenger.getXAuthToken() + "bob");
         http.setHeader("Authorization", "bearer " + challenger.getXAuthToken());
+        http.setHeader("Content-Type","application/json");
 
         //{"note":"hello"}
         final HttpResponseDetails response = http.post("/secret/note", "{\"note\":\"hello\"}");
@@ -573,6 +584,7 @@ public class AuthRoutesTest {
         http.setHeader("X-CHALLENGER", challenger.getXChallenger());
         http.setHeader("X-AUTH-TOKEN", challenger.getXAuthToken());
         http.setHeader("Authorization", "bearer not" + challenger.getXAuthToken());
+        http.setHeader("Content-Type","application/json");
 
         //{"note":"hello"}
         final HttpResponseDetails response = http.post("/secret/note", "{\"note\":\"hello\"}");

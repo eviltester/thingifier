@@ -2,11 +2,15 @@ package uk.co.compendiumdev.challenge.challengesrouting;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import org.json.XML;
+import spark.Response;
 import uk.co.compendiumdev.challenge.BasicAuthHeaderParser;
 import uk.co.compendiumdev.challenge.BearerAuthHeaderParser;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
 import uk.co.compendiumdev.thingifier.api.ThingifierApiDefn;
+import uk.co.compendiumdev.thingifier.api.http.AcceptContentTypeParser;
+import uk.co.compendiumdev.thingifier.api.http.AcceptHeaderParser;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingStatus;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingVerb;
@@ -72,8 +76,6 @@ public class AuthRoutes {
 
         get("/secret/note", (request, result) -> {
 
-            // todo: allow the X-AUTH-TOKEN to be sent as an Authorization: Bearer <token>
-            // todo: the bearer token should take precendence
             String authToken = request.headers("X-AUTH-TOKEN");
             final String authorization = request.headers("Authorization");
 
@@ -108,10 +110,8 @@ public class AuthRoutes {
                 return "";
             }
 
-            result.status(200);
-            final JsonObject note = new JsonObject();
-            note.addProperty("note", challenger.getNote());
-            return new Gson().toJson(note);
+            return resultBasedOnAcceptHeader(result, request.headers("ACCEPT"), challenger.getNote());
+
         });
 
         apiDefn.addAdditionalRoute(
@@ -129,6 +129,18 @@ public class AuthRoutes {
             final String authorization = request.headers("Authorization");
             String authToken = request.headers("X-AUTH-TOKEN");
 
+            AcceptHeaderParser acceptHeaderParser = new AcceptHeaderParser(request.headers("ACCEPT"));
+            if(!acceptHeaderParser.missingAcceptHeader() && !acceptHeaderParser.isSupportedHeader()){
+                result.status(406);
+                return "";
+            }
+
+            AcceptContentTypeParser contentTypeParser = new AcceptContentTypeParser(request.headers("CONTENT-TYPE"));
+            if(!contentTypeParser.isJSON() && !contentTypeParser.isXML()){
+                result.status(415);
+                return "";
+            }
+
             // todo: if no X-CHALLENGER provided then, search memory for authToken and use associated
             //       challenger
             ChallengerAuthData challenger = challengers.getChallenger(request.headers("X-CHALLENGER"));
@@ -140,7 +152,13 @@ public class AuthRoutes {
             }
 
             result.raw().setHeader("X-CHALLENGER", challenger.getXChallenger());
-            result.header("Content-Type", "application/json");
+            // set content-type header for error responses
+            if(acceptHeaderParser.hasAPreferenceForXml()){
+                result.header("Content-Type", "application/xml");
+            }else{
+                result.header("Content-Type", "application/json");
+            }
+
 
             // authorization bearer token will take precedence over X-AUTH-HEADER
             if(authorization!=null && authorization.length()!=0){
@@ -160,26 +178,39 @@ public class AuthRoutes {
                 return "";
             }
 
-            final HashMap body = new Gson().fromJson(request.body(), HashMap.class);
+            String note=null;
+            if(contentTypeParser.isJSON()){
+                final HashMap body = new Gson().fromJson(request.body(), HashMap.class);
 
-            // could not parse input
-            if(body==null){
-                result.status(400);
-                return "";
+                // could not parse input
+                if(body==null){
+                    result.status(400);
+                    return "";
+                }
+
+                if(body.containsKey("note")) {
+                    note = (String) body.get("note");
+                }
+            }else{
+
+                try{
+                     note = XML.toJSONObject(request.body()).
+                                getJSONObject("secretnote").
+                                    getString("note");
+                }catch(Exception e){
+                    result.status(400);
+                    return e.getMessage();
+                }
             }
 
-            if(body.containsKey("note")){
-                challenger.setNote((String)body.get("note"));
+            if(note !=null){
+                challenger.setNote(note);
             }else{
                 result.status(400);
                 return "";
             }
 
-            result.status(200);
-            final JsonObject note = new JsonObject();
-            note.addProperty("note", challenger.getNote());
-            return new Gson().toJson(note);
-
+            return resultBasedOnAcceptHeader(result, request.headers("ACCEPT"), challenger.getNote());
         });
 
         SimpleRouteConfig.routeStatusWhenNot(
@@ -192,5 +223,35 @@ public class AuthRoutes {
                 RoutingStatus.returnedFromCall(),
                 null).addDocumentation("POST /secret/note with X-AUTH-TOKEN, and a payload of `{'note':'contents of note'}` to amend the contents of the secret note.").
                 addPossibleStatuses(200,400,401,403));
+    }
+
+    // todoL format error messages like the rest of the api
+    // todo: make it easier for custom route handling to convert json and xml
+    private String resultBasedOnAcceptHeader(final Response result, final String accept, String note) {
+        AcceptHeaderParser acceptHeaderParser = new AcceptHeaderParser(accept);
+        if(!acceptHeaderParser.missingAcceptHeader() && !acceptHeaderParser.isSupportedHeader()){
+            result.status(406);
+            return "";
+        }
+
+        result.status(200);
+
+        if(acceptHeaderParser.hasAPreferenceForXml()){
+            result.raw().setHeader("CONTENT-TYPE", "application/xml");
+            return getNoteAsXML(note);
+        }else{
+            result.raw().setHeader("CONTENT-TYPE", "application/json");
+            return getNoteAsJson(note);
+        }
+    }
+
+    private String getNoteAsJson(final String noteString) {
+        final JsonObject note = new JsonObject();
+        note.addProperty("note", noteString);
+        return new Gson().toJson(note);
+    }
+
+    private String getNoteAsXML(final String noteString) {
+        return "<secretnote><note>" + XML.escape(noteString) + "</note></secretnote>";
     }
 }

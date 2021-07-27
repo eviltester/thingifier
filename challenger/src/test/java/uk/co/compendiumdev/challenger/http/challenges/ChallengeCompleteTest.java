@@ -222,6 +222,23 @@ public class ChallengeCompleteTest{
     }
 
     @Test
+    public void canPostTodosAsJsonAndAcceptJSONPass() {
+
+        headers.clear();
+        headers.putAll(x_challenger_header);
+        headers.putAll(content_application_json);
+        headers.putAll(accept_json_header);
+
+        //{"title":"mytodo","description":"a todo","doneStatus":false}
+        final HttpResponseDetails response =
+                http.send("/todos", "POST", headers,
+                        "{\"title\":\"mytodo\",\"description\":\"a todo\",\"doneStatus\":false}");
+
+        Assertions.assertEquals(201, response.statusCode);
+        Assertions.assertTrue(challenger.statusOfChallenge(CHALLENGE.POST_CREATE_JSON));
+    }
+
+    @Test
     public void canPostTodosAsXmlAndAcceptJsonPass() {
 
         headers.clear();
@@ -551,6 +568,7 @@ public class ChallengeCompleteTest{
         headers.clear();
         headers.putAll(x_challenger_header);
         headers.put("X-AUTH-TOKEN",challenger.getXAuthToken());
+        headers.put("Content-Type","application/json");
 
         //{"note":"bob"}
         final HttpResponseDetails response =
@@ -568,6 +586,7 @@ public class ChallengeCompleteTest{
         headers.clear();
         headers.putAll(x_challenger_header);
         headers.put("Authorization","bearer " + challenger.getXAuthToken());
+        headers.put("Content-Type","application/json");
 
         //{"note":"bob"}
         final HttpResponseDetails response =
@@ -585,6 +604,7 @@ public class ChallengeCompleteTest{
 
         headers.clear();
         headers.putAll(x_challenger_header);
+        headers.put("Content-Type","application/json");
 
         //{"note":"bob"}
         final HttpResponseDetails response =
@@ -602,6 +622,7 @@ public class ChallengeCompleteTest{
         headers.clear();
         headers.putAll(x_challenger_header);
         headers.put("X-AUTH-TOKEN",challenger.getXAuthToken() + "bob");
+        headers.put("Content-Type","application/json");
 
         //{"note":"bob"}
         final HttpResponseDetails response =

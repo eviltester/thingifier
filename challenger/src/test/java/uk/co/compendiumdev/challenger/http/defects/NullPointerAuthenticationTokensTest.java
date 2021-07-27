@@ -40,6 +40,7 @@ public class NullPointerAuthenticationTokensTest{
 
         final HttpMessageSender http = new HttpMessageSender(Environment.getBaseUri());
         http.setHeader("Authorization", "basic YWRtaW46cGFzc3dvcmQ="); // admin:password
+        http.setHeader("Content-Type","application/json");
 
         final HttpResponseDetails response = http.send("/secret/note", "POST");
         Assertions.assertEquals(401, response.statusCode);
