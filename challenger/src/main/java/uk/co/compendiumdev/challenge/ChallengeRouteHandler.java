@@ -3,10 +3,7 @@ package uk.co.compendiumdev.challenge;
 import uk.co.compendiumdev.challenge.challengehooks.*;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
 import uk.co.compendiumdev.challenge.challenges.ChallengeDefinitions;
-import uk.co.compendiumdev.challenge.challengesrouting.AuthRoutes;
-import uk.co.compendiumdev.challenge.challengesrouting.ChallengerTrackingRoutes;
-import uk.co.compendiumdev.challenge.challengesrouting.ChallengesRoutes;
-import uk.co.compendiumdev.challenge.challengesrouting.HeartBeatRoutes;
+import uk.co.compendiumdev.challenge.challengesrouting.*;
 import uk.co.compendiumdev.challenge.gui.ChallengerWebGUI;
 import uk.co.compendiumdev.challenge.persistence.PersistenceLayer;
 import uk.co.compendiumdev.thingifier.Thingifier;
@@ -80,6 +77,7 @@ public class ChallengeRouteHandler {
         new ChallengesRoutes().configure(challengers, single_player_mode, apiDefn, challengeDefinitions);
         new HeartBeatRoutes().configure(apiDefn);
         new AuthRoutes().configure(challengers, apiDefn);
+        new MirrorRoutes().configure(apiDefn);
 
         return this;
     }

@@ -16,18 +16,23 @@ public class AcceptHeaderParser {
             "application/*", "*/*"
     };
 
+    private final String[] acceptedTextStrings = {
+            "text/plain", "text/html"
+    };
+
     private final Map<ACCEPT_TYPE, List<String>> acceptedTypes;
 
     public boolean willAcceptAnything() {
         return willAccept(ACCEPT_TYPE.ANYTHING);
     }
-
     public boolean willAcceptXml() {
         return willAccept(ACCEPT_TYPE.XML);
     }
-
     public boolean willAcceptJson() {
         return willAccept(ACCEPT_TYPE.JSON);
+    }
+    public boolean willAcceptText() {
+        return willAccept(ACCEPT_TYPE.TEXT);
     }
 
     public boolean hasAskedForXML() {
@@ -38,6 +43,9 @@ public class AcceptHeaderParser {
     }
     public boolean hasAskedForANY() {
         return hasAskedFor(ACCEPT_TYPE.ANYTHING);
+    }
+    public boolean hasAskedForTEXT() {
+        return hasAskedFor(ACCEPT_TYPE.TEXT);
     }
 
     public boolean missingAcceptHeader() {
@@ -61,7 +69,7 @@ public class AcceptHeaderParser {
     }
 
 
-    public enum ACCEPT_TYPE{ XML, JSON, ANYTHING, NO_MATCHING_TYPE};
+    public enum ACCEPT_TYPE{ XML, JSON, ANYTHING, NO_MATCHING_TYPE, TEXT};
 
     public AcceptHeaderParser(final String acceptHeader) {
 
@@ -76,6 +84,7 @@ public class AcceptHeaderParser {
         acceptedTypes.put(ACCEPT_TYPE.JSON, Arrays.asList(acceptedJsonStrings));
         acceptedTypes.put(ACCEPT_TYPE.ANYTHING, Arrays.asList(acceptedAnythingStrings));
         acceptedTypes.put(ACCEPT_TYPE.NO_MATCHING_TYPE, new ArrayList<>());
+        acceptedTypes.put(ACCEPT_TYPE.TEXT, Arrays.asList(acceptedTextStrings));
 
         // TODO: use ;q=0.9 to sort items in the array
         String[] acceptMediaTypeDefinitions = this.acceptHeader.split(",");
