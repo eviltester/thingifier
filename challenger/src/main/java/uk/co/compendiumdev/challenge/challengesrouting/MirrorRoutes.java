@@ -23,6 +23,9 @@ public class MirrorRoutes {
         // /mirror should be the GUI
         String endpoint ="/mirror/request";
 
+        // redirect a GET to "/fromPath" to "/toPath"
+        redirect.get("/mirror", "/mirror.html");
+
         options(endpoint, (request, result) -> {
             result.status(204);
             result.header("Allow", "GET, POST, PUT, DELETE, PATCH, HEAD, OPTIONS, TRACE");

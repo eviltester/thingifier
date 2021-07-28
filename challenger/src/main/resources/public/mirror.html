@@ -1,0 +1,109 @@
+<html>
+<head>
+    <meta http-equiv='content-language' content='en-us'>
+    <title>HTTP Request Mirror</title>
+    <link rel='stylesheet' href='/css/default.css'>
+</head>
+<body>
+<div class='content'>
+
+    <div class='rootmenu menu'><ul><li><a href='/'>Home</a></li><li><a href='/gui/entities'>Entities Explorer</a></li><li><a href='/gui/challenges'>Challenges</a></li><li><a href='/mirror'>HTTP Mirror</a></li><li><a href='/docs'>API documentation</a></li></ul></div>
+
+
+    <h1>Mirror Mode</h1>
+
+<!--
+
+The API has a mirror mode, this allows you to experiment with different verbs and configurations.
+
+You will see, in your API tool, a response showing you the details of the request that you sent.
+
+e.g.
+
+```
+GET https://apichallenges.herokuapp.com/mirror/request
+```
+
+Will return 200... everything (almost) returns a 200.
+
+And...
+
+```
+GET http://apichallenges.herokuapp.com/mirror/request
+
+Query Params
+============
+
+IP
+=======
+0:0:0:0:0:0:0:1
+
+Headers
+=======
+Accept: */*
+Content-Length: 0
+Host: localhost:4567
+User-Agent: insomnia/2021.2.2
+
+Body
+====
+
+
+```
+
+Only `options` and `head` respond differently... because `options` and `head` should respond differently.
+
+Useful for getting started and getting used to your tooling.
+
+If you want the response in XML or JSON then add the relevant `Accept` header.
+
+-->
+
+    <p>The API has a mirror mode, this allows you to experiment with different verbs and configurations.</p>
+    <p>You will see, in your API tool, a response showing you the details of the request that you sent.</p>
+    <p>e.g.</p>
+    <pre><code>GET https:<span class="hljs-regexp">//</span><span class="currenthost">apichallenges.herokuapp.com</span><span class="hljs-regexp">/mirror/</span>request
+</code></pre><p>Will return 200... everything (almost) returns a 200.</p>
+    <p>And...</p>
+    <pre><code>GET http://<span class="currenthost">apichallenges.herokuapp.com</span>/mirror/request
+
+<span class="hljs-section">Query Params
+============</span>
+
+<span class="hljs-section">IP
+=======</span>
+0:0:0:0:0:0:0:1
+
+<span class="hljs-section">Headers
+=======</span>
+Accept: <span class="hljs-strong">*/*</span>
+Content-Length: 0
+Host: <span class="currenthost">localhost:4567</span>
+User-Agent: insomnia/2021.2.2
+
+<span class="hljs-section">Body
+====</span>
+</code></pre><p>Only <code>options</code> and <code>head</code> respond differently... because <code>options</code> and <code>head</code> should respond differently.</p>
+    <p>Useful for getting started and getting used to your tooling.</p>
+    <p>If you want the response in XML or JSON then add the relevant <code>Accept</code> header.</p>
+
+
+
+
+    <script>
+        let spans =document.querySelectorAll(".currenthost");
+        spans.forEach(element =>{
+            element.innerHTML = document.location.host;
+            }
+        );
+    </script>
+
+
+    <p>&nbsp;</p><hr/><div class='footer'><p>Copyright Compendium Developments Ltd 2020 </p>
+    <ul class='footerlinks'><li><a href='https://eviltester.com/apichallenges'>API Challenges Info</a></li>
+        <li><a href='https://eviltester.com'>EvilTester.com</a></li>
+    </ul></div>
+
+</div>
+</body>
+</html>

@@ -31,6 +31,7 @@ public class ChallengerWebGUI {
         guiManagement.appendMenuItem("Challenges", "/gui/challenges");
         guiManagement.removeMenuItem("Home");
         guiManagement.prefixMenuItem("Home", "/");
+        guiManagement.appendMenuItem("HTTP Mirror", "/mirror");
 
         guiManagement.setHomePageContent("    <h2 id=\"challenges\">Challenges</h2>\n" +
                 "    <p>The challenges can be completed by issuing API requests to the API.</p>\n" +
