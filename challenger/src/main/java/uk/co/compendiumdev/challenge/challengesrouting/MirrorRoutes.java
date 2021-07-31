@@ -88,6 +88,7 @@ public class MirrorRoutes {
 
         head("/mirror/request", (request, result) -> {
 
+            // TODO: add RejectRequestTooLarge as a default validation rule for the API handling
             // reject large requests
             if(rejectRequestTooLong(request, result))
                 return asError(request.headers("Accept"), "Error: Request too large", result);

@@ -17,12 +17,10 @@ final public class ThingifierHttpApi {
     private List<HttpApiRequestHook> apiRequestHooks;
     private List<HttpApiResponseHook> apiResponseHooks;
 
-
-
-    private enum HttpVerb{
+    public enum HttpVerb{
         GET, DELETE, POST, PUT, HEAD,
         // NOT Handled
-        OPTIONS, PATCH,
+        OPTIONS, PATCH, TRACE
     };
 
     public ThingifierHttpApi(final Thingifier aThingifier){
@@ -49,29 +47,44 @@ final public class ThingifierHttpApi {
     }
 
 
+    public ApiResponse validateRequestSyntax(final HttpApiRequest request, final HttpVerb verb){
+        // Config Validation
+        String acceptHeader = request.getHeader("Accept", "");
+        ApiResponse apiResponse = validateAcceptHeader(acceptHeader);
+
+        if (apiResponse == null) {
+            // only validate content if it contains content
+            if(verb == HttpVerb.POST || verb == HttpVerb.PUT || verb == HttpVerb.PATCH) {
+                apiResponse = validateContentTypeHeader(
+                        request.getHeader("Content-Type", ""));
+
+                // validate the content syntax format against content type
+                if(apiResponse==null){
+                    BodyParser parser = new BodyParser(request, new ArrayList<>());
+                    String parsingError = parser.validBodyBasedOnContentType();
+                    if(parsingError.length()!=0){
+                        apiResponse = ApiResponse.error(400, parsingError);
+                    }
+                }
+            }
+        }
+
+        return apiResponse;
+    }
+
     private HttpApiResponse requestWrapper(final HttpApiRequest request, HttpVerb verb){
 
-        String acceptHeader = request.getHeader("Accept", "");
-
         HttpApiResponse httpResponse = runTheHttpApiRequestHooksOn(request);
+
         ApiResponse apiResponse = null;
 
         if(httpResponse==null) {
-            // Config Validation
-            apiResponse = validateAcceptHeader(acceptHeader);
+            apiResponse = validateRequestSyntax(request, verb);
+        }
 
-            if (apiResponse == null) {
-                // only validate content if it contains content
-                if(verb == HttpVerb.POST || verb == HttpVerb.PUT || verb == HttpVerb.PATCH) {
-                    apiResponse = validateContentTypeHeader(
-                            request.getHeader("Content-Type", ""));
-                }
-            }
-
-            if (apiResponse != null) {
-                httpResponse = new HttpApiResponse(request.getHeaders(), apiResponse,
-                        jsonThing, thingifier.apiConfig());
-            }
+        if (apiResponse != null) {
+            httpResponse = new HttpApiResponse(request.getHeaders(), apiResponse,
+                    jsonThing, thingifier.apiConfig());
         }
 
         if(httpResponse==null) {

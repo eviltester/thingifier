@@ -115,10 +115,32 @@ public class BodyParser {
         return args;
     }
 
+    /*
+        valid if error message returned is empty
+     */
+    public String validBodyBasedOnContentType(){
+        final AcceptContentTypeParser contentTypeParser = new AcceptContentTypeParser(request.getHeader("content-type"));
+        if (contentTypeParser.isXML()) {
+            try{
+                XML.toJSONObject(request.getBody());
+            }catch(Exception e){
+                return e.getMessage();
+            }
+        }
+        if(contentTypeParser.isJSON()){
+            try{
+                new Gson().fromJson(request.getBody(), Map.class);
+            }catch(Exception e){
+                return e.getMessage();
+            }
+        }
+        return "";
+    }
+
     /**
      * Only parse it once and then cache the converted map
      */
-    private void parseMap() {
+    public void parseMap() {
 
         if(args!=null)
             return;

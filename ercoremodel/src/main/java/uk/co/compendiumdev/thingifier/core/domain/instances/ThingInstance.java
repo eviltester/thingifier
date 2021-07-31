@@ -95,9 +95,10 @@ public class ThingInstance {
     }
 
 
-    public void overrideValue(final String key, final String value) {
+    public ThingInstance overrideValue(final String key, final String value) {
         // bypass all validation - except, field must exist
         this.instanceFields.putValue(key, value);
+        return this;
     }
 
     public FieldValue getFieldValue(String fieldName){

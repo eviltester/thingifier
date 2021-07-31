@@ -27,7 +27,7 @@ public final class ApiResponse {
     private ThingDefinition typeOfResults;
 
 
-    private ApiResponse(final int aStatusCode) {
+    public ApiResponse(final int aStatusCode) {
         this.statusCode = aStatusCode;
         headers = new HashMap<>();
         thingsToReturn = new ArrayList();
@@ -37,7 +37,7 @@ public final class ApiResponse {
         hasBody = false;
     }
 
-    private ApiResponse(final int aStatusCode, final boolean isError, final Collection<String> theErrorMessages) {
+    public ApiResponse(final int aStatusCode, final boolean isError, final Collection<String> theErrorMessages) {
         this(aStatusCode);
         isErrorResponse = isError;
         if (isError) {
@@ -82,7 +82,7 @@ public final class ApiResponse {
             HEADERS
      */
 
-    private ApiResponse setHeader(final String headername, final String value) {
+    public ApiResponse setHeader(final String headername, final String value) {
         this.headers.put(headername, value);
         return this;
     }
@@ -91,7 +91,7 @@ public final class ApiResponse {
         return headers.get(headername);
     }
 
-    private ApiResponse setLocationHeader(final String location) {
+    public ApiResponse setLocationHeader(final String location) {
         return setHeader("Location", location);
     }
 

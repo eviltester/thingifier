@@ -164,6 +164,7 @@ public class ChallengeDefinitions {
             createChallenge(CHALLENGE.OPTIONS_TODOS, "13", "OPTIONS /todos (200)",
                 "Issue an OPTIONS request on the `/todos` end point. You might want to manually check the 'Allow' header in the response is as expected.");
         optionsChallenges.addChallenge(aChallenge);
+        aChallenge.addSolutionLink("Read Solution", "HREF","https://www.eviltester.com/apichallenges/howto/options-todos-200/");
         aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "Ld5h1TSnXWA");
 
         // GET accept type
@@ -182,36 +183,42 @@ public class ChallengeDefinitions {
             createChallenge(CHALLENGE.GET_ACCEPT_XML, "14", "GET /todos (200) XML",
                 "Issue a GET request on the `/todos` end point with an `Accept` header of `application/xml` to receive results in XML format");
         acceptChallenges.addChallenge(aChallenge);
+        aChallenge.addSolutionLink("Read Solution", "HREF","https://www.eviltester.com/apichallenges/howto/get-todos-xml-200/");
         aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "cLeEuZm2VG8");
 
         aChallenge =
             createChallenge(CHALLENGE.GET_ACCEPT_JSON, "15", "GET /todos (200) JSON",
                 "Issue a GET request on the `/todos` end point with an `Accept` header of `application/json` to receive results in JSON format");
         acceptChallenges.addChallenge(aChallenge);
+        aChallenge.addSolutionLink("Read Solution", "HREF","https://www.eviltester.com/apichallenges/howto/get-todos-json-200/");
         aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "79JTHiby2Qw");
 
         aChallenge =
             createChallenge(CHALLENGE.GET_ACCEPT_ANY_DEFAULT_JSON, "16", "GET /todos (200) ANY",
                 "Issue a GET request on the `/todos` end point with an `Accept` header of `*/*` to receive results in default JSON format");
         acceptChallenges.addChallenge(aChallenge);
+        aChallenge.addSolutionLink("Read Solution", "HREF","https://www.eviltester.com/apichallenges/howto/get-todos-any-200/");
         aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "O4DhJ8Ohkk8");
 
         aChallenge =
             createChallenge(CHALLENGE.GET_ACCEPT_XML_PREFERRED, "17", "GET /todos (200) XML pref",
                 "Issue a GET request on the `/todos` end point with an `Accept` header of `application/xml, application/json` to receive results in the preferred XML format");
         acceptChallenges.addChallenge(aChallenge);
+        aChallenge.addSolutionLink("Read Solution", "HREF","https://www.eviltester.com/apichallenges/howto/get-todos-xml-preference-200/");
         aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "sLChuy9pc9U");
 
         aChallenge =
             createChallenge(CHALLENGE.GET_JSON_BY_DEFAULT_NO_ACCEPT, "18", "GET /todos (200) no accept",
                 "Issue a GET request on the `/todos` end point with no `Accept` header present in the message to receive results in default JSON format");
         acceptChallenges.addChallenge(aChallenge);
+        aChallenge.addSolutionLink("Read Solution", "HREF","https://www.eviltester.com/apichallenges/howto/get-todos-no-accept-200/");
         aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "CSVP2PcvOdg");
 
         aChallenge =
             createChallenge(CHALLENGE.GET_UNSUPPORTED_ACCEPT_406, "19", "GET /todos (406)",
                 "Issue a GET request on the `/todos` end point with an `Accept` header `application/gzip` to receive 406 'NOT ACCEPTABLE' status code");
         acceptChallenges.addChallenge(aChallenge);
+        aChallenge.addSolutionLink("Read Solution", "HREF","https://www.eviltester.com/apichallenges/howto/19-get-todos-invalid-accept-406/");
         aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "QzfbegkY1ok");
 
 
@@ -226,6 +233,7 @@ public class ChallengeDefinitions {
             createChallenge(CHALLENGE.POST_CREATE_XML, "20", "POST /todos XML",
                 "Issue a POST request on the `/todos` end point to create a todo using Content-Type `application/xml`, and Accepting only XML ie. Accept header of `application/xml`");
         contentTypeChallenges.addChallenge(aChallenge);
+        aChallenge.addSolutionLink("Read Solution", "HREF","https://www.eviltester.com/apichallenges/howto/20-post-todos-xml/");
         aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "2-KBYHwb7MM");
 
         //      control content type to create with - JSON
@@ -233,6 +241,7 @@ public class ChallengeDefinitions {
             createChallenge(CHALLENGE.POST_CREATE_JSON, "21", "POST /todos JSON",
                 "Issue a POST request on the `/todos` end point to create a todo using Content-Type `application/json`, and Accepting only JSON ie. Accept header of `application/json`");
         contentTypeChallenges.addChallenge(aChallenge);
+        aChallenge.addSolutionLink("Read Solution", "HREF","https://www.eviltester.com/apichallenges/howto/21-post-todos-json/");
         aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "VS9qIhgp51Q");
 
         //      content type not supported 415 e.g. form encoded
@@ -240,6 +249,7 @@ public class ChallengeDefinitions {
             createChallenge(CHALLENGE.POST_TODOS_415, "22", "POST /todos (415)",
                 "Issue a POST request on the `/todos` end point with an unsupported content type to generate a 415 status code");
         contentTypeChallenges.addChallenge(aChallenge);
+        aChallenge.addSolutionLink("Read Solution", "HREF","https://www.eviltester.com/apichallenges/howto/22-post-todos-unsupported-415/");
         aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "L8H-vkbXyr0");
 
 
@@ -260,6 +270,7 @@ public class ChallengeDefinitions {
             createChallenge(CHALLENGE.POST_CREATE_XML_ACCEPT_JSON, "23", "POST /todos XML to JSON",
                 "Issue a POST request on the `/todos` end point to create a todo using Content-Type `application/xml` but Accept `application/json`");
         mixAcceptContentTypeChallenges.addChallenge(aChallenge);
+        aChallenge.addSolutionLink("Read Solution", "HREF","https://www.eviltester.com/apichallenges/howto/23-post-xml-accept-json/");
         aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "kfe7VtaV7u0");
 
         //      content type JSON - accept type XML
@@ -267,6 +278,7 @@ public class ChallengeDefinitions {
             createChallenge(CHALLENGE.POST_CREATE_JSON_ACCEPT_XML, "24", "POST /todos JSON to XML",
                 "Issue a POST request on the `/todos` end point to create a todo using Content-Type `application/json` but Accept `application/xml`");
         mixAcceptContentTypeChallenges.addChallenge(aChallenge);
+        aChallenge.addSolutionLink("Read Solution", "HREF","https://www.eviltester.com/apichallenges/howto/24-post-json-accept-xml/");
         aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "uw1Jq8t1em4");
 
 
@@ -280,6 +292,7 @@ public class ChallengeDefinitions {
             createChallenge(CHALLENGE.DELETE_HEARTBEAT_405, "25", "DELETE /heartbeat (405)",
                 "Issue a DELETE request on the `/heartbeat` end point and receive 405 (Method Not Allowed)");
         miscStatusCodes.addChallenge(aChallenge);
+        aChallenge.addSolutionLink("Read Solution", "HREF","https://www.eviltester.com/apichallenges/howto/25-26-27-28-status-codes-405-500-501-204/");
         aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "SGfKVFdylVI");
 
         // cannot process request server error 500
@@ -287,6 +300,7 @@ public class ChallengeDefinitions {
             createChallenge(CHALLENGE.PATCH_HEARTBEAT_500, "26", "PATCH /heartbeat (500)",
                 "Issue a PATCH request on the `/heartbeat` end point and receive 500 (internal server error)");
         miscStatusCodes.addChallenge(aChallenge);
+        aChallenge.addSolutionLink("Read Solution", "HREF","https://www.eviltester.com/apichallenges/howto/25-26-27-28-status-codes-405-500-501-204/");
         aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "SGfKVFdylVI");
 
         // 501
@@ -294,6 +308,7 @@ public class ChallengeDefinitions {
             createChallenge(CHALLENGE.TRACE_HEARTBEAT_501, "27", "TRACE /heartbeat (501)",
                 "Issue a TRACE request on the `/heartbeat` end point and receive 501 (Not Implemented)");
         miscStatusCodes.addChallenge(aChallenge);
+        aChallenge.addSolutionLink("Read Solution", "HREF","https://www.eviltester.com/apichallenges/howto/25-26-27-28-status-codes-405-500-501-204/");
         aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "SGfKVFdylVI");
 
         // No Content 204 - ping
@@ -301,6 +316,7 @@ public class ChallengeDefinitions {
             createChallenge(CHALLENGE.GET_HEARTBEAT_204, "28", "GET /heartbeat (204)",
                 "Issue a GET request on the `/heartbeat` end point and receive 204 when server is running");
         miscStatusCodes.addChallenge(aChallenge);
+        aChallenge.addSolutionLink("Read Solution", "HREF","https://www.eviltester.com/apichallenges/howto/25-26-27-28-status-codes-405-500-501-204/");
         aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "SGfKVFdylVI");
 
 
@@ -315,6 +331,7 @@ public class ChallengeDefinitions {
                 "Issue a POST request on the `/secret/token` end point and receive 401 when Basic auth username/password is not admin/password");
         authenticationChallenges.addChallenge(aChallenge);
         aChallenge.addHint("Remember to add your X-CHALLENGER guid header");
+        aChallenge.addSolutionLink("Read Solution", "HREF","https://www.eviltester.com/apichallenges/howto/29-authentication-post-secret-token/");
         aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "RSQGADU3SLA");
 
         //    POST /secret/token with correct username and password credentials get secret token 201
@@ -323,6 +340,7 @@ public class ChallengeDefinitions {
                 "Issue a POST request on the `/secret/token` end point and receive 201 when Basic auth username/password is admin/password");
         authenticationChallenges.addChallenge(aChallenge);
         aChallenge.addHint("Remember to add your X-CHALLENGER guid header");
+        aChallenge.addSolutionLink("Read Solution", "HREF","https://www.eviltester.com/apichallenges/howto/30-authentication-post-secret-token-201/");
         aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "J2GQiuEfHkI");
 
         ChallengeSection authorizationChallenges = new ChallengeSection("Authorization Challenges",
@@ -335,6 +353,7 @@ public class ChallengeDefinitions {
                 "Issue a GET request on the `/secret/note` end point and receive 403 when X-AUTH-TOKEN does not match a valid token");
         authorizationChallenges.addChallenge(aChallenge);
         aChallenge.addHint("Remember to add your X-CHALLENGER guid header");
+        aChallenge.addSolutionLink("Read Solution", "HREF","https://www.eviltester.com/apichallenges/howto/31-secret-note-forbidden-403/");
         aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "77mnUQezdas");
 
         //    GET /secret/note with invalid token and 401
@@ -343,6 +362,7 @@ public class ChallengeDefinitions {
                 "Issue a GET request on the `/secret/note` end point and receive 401 when no X-AUTH-TOKEN header present");
         authorizationChallenges.addChallenge(aChallenge);
         aChallenge.addHint("Remember to add your X-CHALLENGER guid header");
+        aChallenge.addSolutionLink("Read Solution", "HREF","https://www.eviltester.com/apichallenges/howto/32-secret-note-401-unauthorized/");
         aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "__uZlQZ48io");
 
         //    GET /secret/note with token and see token
@@ -351,6 +371,7 @@ public class ChallengeDefinitions {
                         "Issue a GET request on the `/secret/note` end point receive 200 when valid X-AUTH-TOKEN used - response body should contain the note");
         authorizationChallenges.addChallenge(aChallenge);
         aChallenge.addHint("Remember to add your X-CHALLENGER guid header");
+        aChallenge.addSolutionLink("Read Solution", "HREF","https://www.eviltester.com/apichallenges/howto/33-authorized-get-secret-note-200/");
         aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "2uRpzr2OmEY");
 
         //    POST /secret/note with token and update secret note
@@ -359,6 +380,7 @@ public class ChallengeDefinitions {
                         "Issue a POST request on the `/secret/note` end point with a note payload e.g. {\"note\":\"my note\"} and receive 200 when valid X-AUTH-TOKEN used. Note is maximum length 100 chars and will be truncated when stored.");
         authorizationChallenges.addChallenge(aChallenge);
         aChallenge.addHint("Remember to add your X-CHALLENGER guid header");
+        aChallenge.addSolutionLink("Read Solution", "HREF","https://www.eviltester.com/apichallenges/howto/34-post-amend-secret-note-200/");
         aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "A9T9yjzEOEE");
 
         //    POST /secret/note with invalid token and 401
@@ -367,6 +389,7 @@ public class ChallengeDefinitions {
                         "Issue a POST request on the `/secret/note` end point with a note payload {\"note\":\"my note\"} and receive 401 when no X-AUTH-TOKEN present");
         authorizationChallenges.addChallenge(aChallenge);
         aChallenge.addHint("Remember to add your X-CHALLENGER guid header");
+        aChallenge.addSolutionLink("Read Solution", "HREF","https://www.eviltester.com/apichallenges/howto/35-36-post-unauthorised-401-403/");
         aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "76U5TEvLzLI");
 
         //    POST /secret/note with no token and 403
@@ -375,6 +398,7 @@ public class ChallengeDefinitions {
                 "Issue a POST request on the `/secret/note` end point with a note payload {\"note\":\"my note\"} and receive 403 when X-AUTH-TOKEN does not match a valid token");
         authorizationChallenges.addChallenge(aChallenge);
         aChallenge.addHint("Remember to add your X-CHALLENGER guid header");
+        aChallenge.addSolutionLink("Read Solution", "HREF","https://www.eviltester.com/apichallenges/howto/35-36-post-unauthorised-401-403/");
         aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "76U5TEvLzLI");
 
 
@@ -385,6 +409,7 @@ public class ChallengeDefinitions {
                         "Issue a GET request on the `/secret/note` end point receive 200 when using the X-AUTH-TOKEN value as an Authorization Bearer token - response body should contain the note");
         authorizationChallenges.addChallenge(aChallenge);
         aChallenge.addHint("Remember to add your X-CHALLENGER guid header");
+        aChallenge.addSolutionLink("Read Solution", "HREF","https://www.eviltester.com/apichallenges/howto/37-38-bearer-token-access/");
         aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "8GsMTZxEItw");
 
         //    POST /secret/note with token and update secret note
@@ -393,6 +418,7 @@ public class ChallengeDefinitions {
                         "Issue a POST request on the `/secret/note` end point with a note payload e.g. {\"note\":\"my note\"} and receive 200 when valid X-AUTH-TOKEN value used as an Authorization Bearer token. Status code 200 received. Note is maximum length 100 chars and will be truncated when stored.");
         authorizationChallenges.addChallenge(aChallenge);
         aChallenge.addHint("Remember to add your X-CHALLENGER guid header");
+        aChallenge.addSolutionLink("Read Solution", "HREF","https://www.eviltester.com/apichallenges/howto/37-38-bearer-token-access/");
         aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "8GsMTZxEItw");
 
 
@@ -411,6 +437,7 @@ public class ChallengeDefinitions {
         miscChallenges.addChallenge(aChallenge);
         aChallenge.addHint("After deleting the last todo, there will be no todos left in the application");
         aChallenge.addHint("Make sure you don't use {id} in the url, replace that with the id of a todo e.g. /todos/1");
+        aChallenge.addHint("You have to delete all the todo items in the system to complete this challenge");
 
 
         Set challengeNames = new HashSet();

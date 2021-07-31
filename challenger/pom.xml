@@ -10,7 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>challenger</artifactId>
-    <version>1.0.3-SNAPSHOT</version>
+    <version>1.0.3</version>
 
     <dependencies>
         <dependency>
@@ -98,9 +98,12 @@
 
 <!--
 
-1.0.3-SNAPSHOT
+1.0.3
 
 - fixed YouTube video for solution 24 (it was dupe of 23!)
+- added all solution writeups and videos
+- added mirror mode
+- added simulation mode
 
 1.0.2
 

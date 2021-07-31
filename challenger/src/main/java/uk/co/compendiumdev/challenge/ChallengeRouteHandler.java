@@ -78,6 +78,7 @@ public class ChallengeRouteHandler {
         new HeartBeatRoutes().configure(apiDefn);
         new AuthRoutes().configure(challengers, apiDefn);
         new MirrorRoutes().configure(apiDefn);
+        new SimulationRoutes().configure(apiDefn);
 
         return this;
     }
