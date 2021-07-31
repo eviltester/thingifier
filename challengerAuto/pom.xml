@@ -20,7 +20,7 @@
         <dependency>
             <groupId>uk.co.compendiumdev.thingifier</groupId>
             <artifactId>challenger</artifactId>
-            <version>1.0.3-SNAPSHOT</version>
+            <version>1.0.3</version>
             <scope>test</scope>
         </dependency>
 
@@ -41,6 +41,13 @@
             <groupId>io.rest-assured</groupId>
             <artifactId>rest-assured</artifactId>
             <version>${rest-assured-version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>${gson-version}</version>
             <scope>test</scope>
         </dependency>
 
