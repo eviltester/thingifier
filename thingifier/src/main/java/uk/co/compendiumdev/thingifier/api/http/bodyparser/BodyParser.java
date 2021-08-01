@@ -122,11 +122,13 @@ public class BodyParser {
         final AcceptContentTypeParser contentTypeParser = new AcceptContentTypeParser(request.getHeader("content-type"));
         if (contentTypeParser.isXML()) {
             try{
+                // TODO: use xstream or a different XML parser because this does not catch enough XML errors
                 XML.toJSONObject(request.getBody());
             }catch(Exception e){
                 return e.getMessage();
             }
         }
+
         if(contentTypeParser.isJSON()){
             try{
                 new Gson().fromJson(request.getBody(), Map.class);

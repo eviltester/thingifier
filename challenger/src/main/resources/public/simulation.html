@@ -11,47 +11,85 @@
 
 <!--
 
-# Learning
-
-## Mirror Mode
-
-The Mirror mode is a good way to test out your tooling and see the details of your requests without using a proxy.
-
-[Access the Mirror Mode Here](/mirror.html)
-
-## Simulation Mode
+# Simulation Mode
 
 The API has a simulation mode, it uses hard coded data in responses, but tries to mimic some conditions.
 
 e.g. it expects you to post a specific JSON payload or XML payload and responds 'as if' you sent it. But... it also checks if you sent valid json, or valid xml, and responds based on your headers e.g. returning XML if you ask for it.
 
-The simulator is stateless and does not track your usage, making it deterministic for multiple users.
+The simulator is stateless and does not track your usage, making it deterministic for multiple users. Which means:
 
-The simulator is a good place to get started because it will respond nicely... unless you mess up the request syntax.
+*   Entities created do not show in the 'entities' call, but can be retrieved by a 'GET'
+*   Entities deleted do not show in the 'entities' and respond to a 404, but the delete for them will return a 200... you can only delete 'specific' entities, other entities will respond with a forbidden request.
+*   etc. there are 'inconsistencies' but they are logical based on the needs of a stateless simulator. Use the actual API that underpins the challenges if you want a 'real' API.
 
-[Access the Simulator Here](/simulator.html)
+Try the verbs and payloads listed below as a way of making sure your tooling is setup and you understand the absolute basics about API usage and Testing.
 
-## Automating and Testing a REST API Book
+GET https://<span class="currenthost">CURRENTHOST</span>/sim/entities (200)
 
-Alan Richardson wrote a book [Automating and Testing a REST API](https://www.eviltester.com/page/books/automating-testing-api-casestudy/)
+*   Entities 1-10
+*   Get all the entities in the simulator
 
-Buying the book helps support this web site and application.
+GET https://<span class="currenthost">CURRENTHOST</span>/sim/entities/1 (200)
 
-## Challenge Tutorials
+*   Return entity number 1... try any of the entities listed
+*   Entities 1-8 are suitable for getting, 9 and 10 are for deletes and amendments so you may not get the response you are expecting
 
-All of the Challenges have solution tutorials that are available on the [EvilTester.com](https://eviltester.com) blog.
+GET https://<span class="currenthost">CURRENTHOST</span>/sim/entities/404 (404)
 
-[Read the API Challenges Posts](https://www.eviltester.com/categories/api-challenges/)
+*   Entity does not exist, receive a 404 response
 
-## Open Source Workshops
+POST https://<span class="currenthost">CURRENTHOST</span>/sim/entities (201)
 
-All the material from Alan Richardson's REST API Training workshops have been released to Github.
+*   Create an entity...note we assume you are creating with the payload below, because that is what we return. Creates an entity that is not listed in the /entities list, but it will be returned by GET to keep consistent with the location header.
+*   Will create Entity with ID 11
+*   Entity 11 - Get will work for this but it will not show in the entities list. It will appear in the location header
 
-[Find the Workshop Material Here](https://www.eviltester.com/post/rest-api-workshops/)
+    {"name": "bob"}
+
+POST https://<span class="currenthost">CURRENTHOST</span>/sim/entities/10 (200)
+
+*   Amend an entity...note we assume you are amending to the payload below, because that is what we return. Creates an entity that is not listed in the /entities list, but it will be returned by GET to keep consistent with the location header.
+*   Will amend Entity with ID 10, once you amend you can GET this item and check it has amended
+*   Entity 10 - Get will show the amendment, but the list view will show the original name "entity number 10"
+
+    {"name": "eris"}
+
+PUT https://<span class="currenthost">CURRENTHOST</span>/sim/entities/id (200)
+
+*   Amend an entity...note we assume you are amending to the payload below, because that is what we return. Creates an entity that is not listed in the /entities list, but it will be returned by GET to keep consistent with the location header.
+*   Can amend Entity with ID 10, once you amend you can GET this item and check it has amended
+*   Entity 10 - Get will show the amendment, but the list view will show the original name "entity number 10"
+
+    {"name": "eris"}
+
+*   Can also create entity with id 11
+
+    {"name": "bob"}
+
+DELETE https://<span class="currenthost">CURRENTHOST</span>/sim/entities/id (204)
+
+*   the only entity you can delete is id 9
+*   if you GET id 9 then you will find it 404's
+
+Other things to try:
+
+*   Try malformed XML and JSON for POST and PUT
+*   Try amending the Content-Type to XML and passing in `<entity><name>bob</name></entity>`
+*   Try accept `application/xml` and `application/json`
+*   Delete an entity listed in the /entities call is forbidden id < 9
+*   POST/PUT an entity listed in the /entities call is forbidden id < 10
+*   PATCH and TRACE should be 501 Unimplemented for all end endpoints
+*   other /sim/* endpoints should 404
 
 -->
 
-    <h1 id="simulation-mode">Simulation Mode</h1>
+<h1 id="simulation-mode">Simulation Mode</h1>
+
+<h2>Simulation Mode Overview</h2>
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/jlbLr2Ddo6s" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
     <p>The API has a simulation mode, it uses hard coded data in responses, but tries to mimic some conditions.</p>
     <p>e.g. it expects you to post a specific JSON payload or XML payload and responds &#39;as if&#39; you sent it. But... it also checks if you sent valid json, or valid xml, and responds based on your headers e.g. returning XML if you ask for it.</p>
     <p>The simulator is stateless and does not track your usage, making it deterministic for multiple users. Which means:</p>
@@ -126,6 +164,14 @@ All the material from Alan Richardson's REST API Training workshops have been re
         );
     </script>
 
+
+<h2>Simulation Mode Walkthrough - Insomnia</h2>
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/CG3G5lpxE0Y" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+<h2>Simulation Mode Walkthrough - Postman</h2>
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/CF3gVz9zc2s" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
     <p>&nbsp;</p><hr/><div class='footer'><p>Copyright Compendium Developments Ltd 2020 </p>
     <ul class='footerlinks'><li><a href='https://eviltester.com/apichallenges'>API Challenges Info</a></li>
