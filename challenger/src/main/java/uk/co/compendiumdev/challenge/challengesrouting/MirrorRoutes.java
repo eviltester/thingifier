@@ -1,18 +1,24 @@
 package uk.co.compendiumdev.challenge.challengesrouting;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import org.json.XML;
 import spark.Request;
 import spark.Response;
-import uk.co.compendiumdev.challenge.BasicAuthHeaderParser;
-import uk.co.compendiumdev.challenge.ChallengerAuthData;
+import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.ThingifierApiDefn;
 import uk.co.compendiumdev.thingifier.api.http.AcceptHeaderParser;
+import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
+import uk.co.compendiumdev.thingifier.api.http.HttpApiResponse;
+import uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi;
+import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingStatus;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingVerb;
-import uk.co.compendiumdev.thingifier.spark.SimpleRouteConfig;
+import uk.co.compendiumdev.thingifier.application.internalhttpconversion.HttpApiResponseToSpark;
+import uk.co.compendiumdev.thingifier.application.internalhttpconversion.SparkToHttpApiRequest;
+import uk.co.compendiumdev.thingifier.core.Thing;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
+import uk.co.compendiumdev.thingifier.core.domain.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.reporting.JsonThing;
 
 import static spark.Spark.*;
 
@@ -88,39 +94,24 @@ public class MirrorRoutes {
 
         head("/mirror/request", (request, result) -> {
 
-            // TODO: add RejectRequestTooLarge as a default validation rule for the API handling
-            // reject large requests
-            if(rejectRequestTooLong(request, result))
-                return asError(request.headers("Accept"), "Error: Request too large", result);
-
-            final AcceptHeaderParser parser = new AcceptHeaderParser(request.headers("Accept"));
-
-            if(parser.hasAPreferenceForXml()){
-                result.header("Content-Type", "application/xml");
-            }else {
-                result.header("Content-Type", "application/json");
+            String body = mirrorRequest(request, result);
+            if(result.status()==200){
+                result.status(204);
+                body = "";
             }
 
-            result.status(204);
-            return "";
+            return body;
         });
 
         head("/mirror/request/*", (request, result) -> {
 
-            // reject large requests
-            if(rejectRequestTooLong(request, result))
-                return asError(request.headers("Accept"), "Error: Request too large", result);
-
-            final AcceptHeaderParser parser = new AcceptHeaderParser(request.headers("Accept"));
-
-            if(parser.hasAPreferenceForXml()){
-                result.header("Content-Type", "application/xml");
-            }else {
-                result.header("Content-Type", "application/json");
+            String body = mirrorRequest(request, result);
+            if(result.status()==200){
+                result.status(204);
+                body = "";
             }
 
-            result.status(204);
-            return "";
+            return body;
         });
 
 
@@ -189,47 +180,66 @@ public class MirrorRoutes {
                     .addPossibleStatuses(200));
     }
 
+    // TODO: pull the code below into a RequestMirror class
+    // new RequestMirror().mirrorRequest(request, result);
     private String mirrorRequest(final Request request, final Response result) {
-        // reject large requests
-        if(rejectRequestTooLong(request, result))
-            return asError(request.headers("Accept"), "Error: Request too large", result);
 
-        // convert request into a string - getRequestDetails
+        final Thingifier mirrorThingifier = new Thingifier();
+        mirrorThingifier.apiConfig().setResponsesToShowGuids(false);
+        mirrorThingifier.apiConfig().setResponsesToShowIdsIfAvailable(false);
+
+        final Thing entityDefn = mirrorThingifier.createThing("messageDetails", "messagesDetails");
+
+        entityDefn.definition().addFields(
+                Field.is("details", FieldType.STRING));
+
+        final HttpApiRequest myRequest = SparkToHttpApiRequest.convert(request);
+
+        final JsonThing jsonThing = new JsonThing(mirrorThingifier.apiConfig().jsonOutput());
+
+
+        ApiResponse response;
+
+        // reject large requests
+        if(rejectRequestTooLong(request, result)){
+
+            response = ApiResponse.error(413, "Error: Request too large");
+            final HttpApiResponse httpApiResponse = new HttpApiResponse(myRequest.getHeaders(), response,
+                    jsonThing, mirrorThingifier.apiConfig());
+
+            return HttpApiResponseToSpark.convert(httpApiResponse, result);
+        }
+
+        // handle input validation - mirror does not validate
+//        response = httpApi.validateRequestSyntax(myRequest,
+//                ThingifierHttpApi.HttpVerb.GET);
+
+
+        // convert request into a string for message body- getRequestDetails
         String requestDetails = getRequestDetails(request);
 
-        // return based on accept header format
-        result.status(200);
-        return asTextResponse(request.headers("Accept"), requestDetails, result);
+        final AcceptHeaderParser parser = new AcceptHeaderParser(
+                                                myRequest.getHeader("accept"));
 
-    }
+        // handle text separately as the main api does not 'do' text
+        // todo: add an api configuration to allow text as response type
 
-    private String asTextResponse(final String acceptHeader, final String requestDetails, final Response result) {
-        return asField("messageDetails", acceptHeader, requestDetails, result);
-    }
-
-    private String asError(final String acceptHeader, final String errorMessage, final Response result) {
-        return asField("error", acceptHeader, errorMessage, result);
-    }
-
-    private String asField(final String fieldName, final String acceptHeader, final String message, final Response result) {
-        final AcceptHeaderParser parser = new AcceptHeaderParser(acceptHeader);
-
-        if(parser.hasAPreferenceForXml()){
-            result.header("Content-Type", "application/xml");
-            return String.format("<%1$s>%2$s</%1$s>",fieldName, XML.escape(message));
+        if(parser.hasAskedForTEXT()){
+            result.header("Content-Type", "text/plain");
+            result.status(200);
+            return requestDetails;
         }
 
-        if(parser.hasAPreferenceForJson()){
-            result.header("Content-Type", "application/json");
-            final JsonObject note = new JsonObject();
-            note.addProperty(fieldName, message);
-            return new Gson().toJson(note);
-        }
+        // let main code handle formatting etc.
+        ThingInstance fake = entityDefn.createInstance().
+                setValue("details", requestDetails);
+        response = ApiResponse.success().returnSingleInstance(fake);
 
-        // default to text for mirroring
-        result.header("Content-Type", "text/plain");
-        return message;
 
+        final HttpApiResponse httpApiResponse = new HttpApiResponse(myRequest.getHeaders(), response,
+                jsonThing, mirrorThingifier.apiConfig());
+
+        return HttpApiResponseToSpark.convert(httpApiResponse, result);
     }
 
     private boolean rejectRequestTooLong(final Request request, final Response result) {
