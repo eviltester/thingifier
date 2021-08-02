@@ -229,7 +229,7 @@ public class AuthRoutesTest {
     }
 
     @Test
-    void canGetSecretNote(){
+    void canGetSecretNoteDefaultJSON(){
 
         final ChallengerAuthData aNewChallenger = ChallengeMain.getChallenger().getChallengers().createNewChallenger();
 
@@ -249,6 +249,49 @@ public class AuthRoutesTest {
         Assertions.assertEquals("{\"note\":\"\"}", response.body);
     }
 
+    @Test
+    void canGetSecretNoteAsXML(){
+
+        final ChallengerAuthData aNewChallenger = ChallengeMain.getChallenger().getChallengers().createNewChallenger();
+
+        http.clearHeaders();
+        http.setHeader("X-CHALLENGER", aNewChallenger.getXChallenger());
+        http.setHeader("X-AUTH-TOKEN", aNewChallenger.getXAuthToken());
+        http.setHeader("Authorization", "basic " + base64("admin:password"));
+        http.setHeader("Accept", "application/xml");
+
+        final HttpResponseDetails response = http.send("/secret/note", "get");
+
+        Assertions.assertEquals(200, response.statusCode);
+        Assertions.assertEquals("application/xml",
+                response.getHeader("Content-Type"));
+        Assertions.assertEquals(aNewChallenger.getXChallenger(),
+                response.getHeader("X-CHALLENGER"));
+        //{"note":""}
+        Assertions.assertEquals("<secretnote><note></note></secretnote>", response.body);
+    }
+
+    @Test
+    void cannoteGetSecretNoteWrongTypeRequested(){
+
+        final ChallengerAuthData aNewChallenger = ChallengeMain.getChallenger().getChallengers().createNewChallenger();
+
+        http.clearHeaders();
+        http.setHeader("X-CHALLENGER", aNewChallenger.getXChallenger());
+        http.setHeader("X-AUTH-TOKEN", aNewChallenger.getXAuthToken());
+        http.setHeader("Authorization", "basic " + base64("admin:password"));
+        http.setHeader("Accept", "bob");
+
+        final HttpResponseDetails response = http.send("/secret/note", "get");
+
+        Assertions.assertEquals(406, response.statusCode);
+        Assertions.assertEquals("application/json",
+                response.getHeader("Content-Type"));
+        Assertions.assertEquals(aNewChallenger.getXChallenger(),
+                response.getHeader("X-CHALLENGER"));
+        //{"note":""}
+        Assertions.assertEquals("", response.body);
+    }
 
     @Test
     void cannotPostSecretNoteWhenNoAuthToken(){
@@ -322,7 +365,7 @@ public class AuthRoutesTest {
     }
 
     @Test
-    void canPostSecretNote(){
+    void canPostSecretNoteUsingJSON(){
 
         http.clearHeaders();
         http.setHeader("X-CHALLENGER", challenger.getXChallenger());
@@ -348,6 +391,37 @@ public class AuthRoutesTest {
 
         final HttpResponseDetails getresponse = http.get("/secret/note");
         Assertions.assertEquals("{\"note\":\"hello\"}", getresponse.body);
+
+    }
+
+    @Test
+    void canPostSecretNoteUsingXML(){
+
+        http.clearHeaders();
+        http.setHeader("X-CHALLENGER", challenger.getXChallenger());
+        http.setHeader("X-AUTH-TOKEN", challenger.getXAuthToken());
+        http.setHeader("Authorization", "basic " + base64("admin:password"));
+        http.setHeader("Content-Type","application/xml");
+        http.setHeader("Accept","application/xml");
+
+        //{"note":"hello"}
+        final HttpResponseDetails response = http.post("/secret/note", "<secretnote><note>hello</note></secretnote>");
+
+        Assertions.assertEquals(200, response.statusCode);
+        Assertions.assertNull(
+                response.getHeader("X-AUTH-TOKEN"));
+        Assertions.assertEquals(challenger.getXChallenger(),
+                response.getHeader("X-CHALLENGER"));
+        Assertions.assertEquals("application/xml",
+                response.getHeader("Content-Type"));
+
+
+        Assertions.assertEquals("<secretnote><note>hello</note></secretnote>", response.body);
+
+        // and get to check
+
+        final HttpResponseDetails getresponse = http.get("/secret/note");
+        Assertions.assertEquals("<secretnote><note>hello</note></secretnote>", getresponse.body);
 
     }
 
