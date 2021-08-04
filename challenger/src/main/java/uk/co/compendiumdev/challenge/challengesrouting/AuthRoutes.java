@@ -8,25 +8,66 @@ import uk.co.compendiumdev.challenge.BasicAuthHeaderParser;
 import uk.co.compendiumdev.challenge.BearerAuthHeaderParser;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
+import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.ThingifierApiDefn;
-import uk.co.compendiumdev.thingifier.api.http.AcceptContentTypeParser;
-import uk.co.compendiumdev.thingifier.api.http.AcceptHeaderParser;
+import uk.co.compendiumdev.thingifier.api.http.*;
+import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
+import uk.co.compendiumdev.thingifier.api.http.bodyparser.xml.XMLParserAbstraction;
+import uk.co.compendiumdev.thingifier.api.http.bodyparser.xml.XMLParserFactory;
+import uk.co.compendiumdev.thingifier.api.http.bodyparser.xml.XMLParserUsingOrgJson;
+import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
+import uk.co.compendiumdev.thingifier.api.restapihandlers.ThingCreation;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingStatus;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingVerb;
+import uk.co.compendiumdev.thingifier.application.internalhttpconversion.HttpApiResponseToSpark;
+import uk.co.compendiumdev.thingifier.application.internalhttpconversion.SparkToHttpApiRequest;
+import uk.co.compendiumdev.thingifier.core.Thing;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.validation.MaximumLengthValidationRule;
+import uk.co.compendiumdev.thingifier.core.domain.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
+import uk.co.compendiumdev.thingifier.reporting.JsonThing;
 import uk.co.compendiumdev.thingifier.spark.SimpleRouteConfig;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 
 import static spark.Spark.get;
 import static spark.Spark.post;
 
+// TODO: This should be using a Thingifier to do the work of XML JSON etc... like the simulation
 public class AuthRoutes {
+    private Thingifier secretNoteStore;
+    private Thing secretNode;
+    private ThingifierHttpApi httpApi;
+    private JsonThing jsonThing;
+
     public void configure(final Challengers challengers,
                           final ThingifierApiDefn apiDefn) {
         // authentication and authorisation
         // - create a 'secret' note which can be stored against session using an auth token
 
+        this.secretNoteStore = new Thingifier();
+
+        // todo, should really use the api config from existing thingifier
+        this.secretNoteStore.apiConfig().setResponsesToShowGuids(false);
+        this.secretNoteStore.apiConfig().setResponsesToShowIdsIfAvailable(false);
+
+        this.secretNode = this.secretNoteStore.createThing("secretnote", "secretnotes");
+
+        this.secretNode.definition().addFields(
+                Field.is("note", FieldType.STRING).
+                        makeMandatory().
+                        withValidation(new MaximumLengthValidationRule(100)).
+                        withDefaultValue("")
+        );
+
+        this.httpApi = new ThingifierHttpApi(this.secretNoteStore);
+        this.jsonThing = new JsonThing(this.secretNoteStore.apiConfig().jsonOutput());
 
         // POST /secret/token with basic auth to get a secret/token to use as X-AUTH-TOKEN header
         // todo: or {username, password} payload
@@ -110,7 +151,23 @@ public class AuthRoutes {
                 return "";
             }
 
-            return resultBasedOnAcceptHeader(result, request.headers("ACCEPT"), challenger.getNote());
+            AcceptHeaderParser acceptHeaderParser = new AcceptHeaderParser(request.headers("ACCEPT"));
+            if(!acceptHeaderParser.missingAcceptHeader() && !acceptHeaderParser.isSupportedHeader()){
+                result.status(406);
+                return "";
+            }
+
+            final HttpApiRequest myRequest = SparkToHttpApiRequest.convert(request);
+
+            ThingInstance note = this.secretNode.createInstance().setValue("note", challenger.getNote());
+            final ApiResponse response = ApiResponse.success().returnSingleInstance(note);
+
+            final HttpApiResponse httpApiResponse = new HttpApiResponse(myRequest.getHeaders(), response,
+                    jsonThing, this.secretNoteStore.apiConfig());
+
+            return HttpApiResponseToSpark.convert(httpApiResponse, result);
+
+            //return resultBasedOnAcceptHeader(result, request.headers("ACCEPT"), challenger.getNote());
 
         });
 
@@ -159,7 +216,6 @@ public class AuthRoutes {
                 result.header("Content-Type", "application/json");
             }
 
-
             // authorization bearer token will take precedence over X-AUTH-HEADER
             if(authorization!=null && authorization.length()!=0){
                 final BearerAuthHeaderParser bearerToken = new BearerAuthHeaderParser(authorization);
@@ -178,39 +234,78 @@ public class AuthRoutes {
                 return "";
             }
 
-            String note=null;
-            if(contentTypeParser.isJSON()){
-                final HashMap body = new Gson().fromJson(request.body(), HashMap.class);
-
-                // could not parse input
-                if(body==null){
-                    result.status(400);
-                    return "";
-                }
-
-                if(body.containsKey("note")) {
-                    note = (String) body.get("note");
-                }
-            }else{
-
-                try{
-                     note = XML.toJSONObject(request.body()).
-                                getJSONObject("secretnote").
-                                    getString("note");
-                }catch(Exception e){
-                    result.status(400);
-                    return e.getMessage();
-                }
-            }
-
-            if(note !=null){
-                challenger.setNote(note);
-            }else{
-                result.status(400);
+            if(!acceptHeaderParser.missingAcceptHeader() && !acceptHeaderParser.isSupportedHeader()){
+                result.status(406);
                 return "";
             }
 
-            return resultBasedOnAcceptHeader(result, request.headers("ACCEPT"), challenger.getNote());
+            final HttpApiRequest myRequest = SparkToHttpApiRequest.convert(request);
+            ApiResponse response = this.httpApi.validateRequestSyntax(myRequest,
+                                        ThingifierHttpApi.HttpVerb.POST);
+
+            // TODO: this should be simpler to use by apps building on thingifier
+            if(response==null) {
+                response = new ThingCreation(this.secretNoteStore).with(
+                        new BodyParser(myRequest, Arrays.asList("secretnote")),
+                        this.secretNoteStore.getThingNamed("secretnote"));
+                if (!response.isErrorResponse()) {
+
+                    ThingInstance returnedInstance = response.getReturnedInstance();
+                    final List<String> protectedFieldNames = returnedInstance.getEntity().getFieldNamesOfType(FieldType.ID, FieldType.GUID);
+                    ValidationReport validity = returnedInstance.validateFieldValues(protectedFieldNames, false);
+                    validity.combine(returnedInstance.validateRelationships());
+
+                    this.secretNoteStore.deleteThing(response.getReturnedInstance());
+
+                    if (!validity.isValid()) {
+                        response = ApiResponse.error(400, validity.getCombinedErrorMessages());
+                    }else{
+                        final ThingInstance postedThing = response.getReturnedInstance();
+                        response = ApiResponse.success().returnSingleInstance(postedThing);
+                        challenger.setNote(response.getReturnedInstance().
+                                            getFieldValue("note").asString());
+                    }
+                }
+            }
+
+            final HttpApiResponse httpApiResponse = new HttpApiResponse(myRequest.getHeaders(), response,
+                    jsonThing, this.secretNoteStore.apiConfig());
+
+            return HttpApiResponseToSpark.convert(httpApiResponse, result);
+
+//            String note=null;
+//            if(contentTypeParser.isJSON()){
+//                final HashMap body = new Gson().fromJson(request.body(), HashMap.class);
+//
+//                // could not parse input
+//                if(body==null){
+//                    result.status(400);
+//                    return "";
+//                }
+//
+//                if(body.containsKey("note")) {
+//                    note = (String) body.get("note");
+//                }
+//            }else{
+//
+//                try{
+//                     note = XML.toJSONObject(request.body()).
+//                                getJSONObject("secretnote").
+//                                    getString("note");
+//                }catch(Exception e){
+//                    result.status(400);
+//                    return e.getMessage();
+//                }
+//            }
+//
+//            if(note !=null){
+//                challenger.setNote(note);
+//            }else{
+//                result.status(400);
+//                return "";
+//            }
+
+           // return resultBasedOnAcceptHeader(result, request.headers("ACCEPT"), challenger.getNote());
         });
 
         SimpleRouteConfig.routeStatusWhenNot(
@@ -225,33 +320,5 @@ public class AuthRoutes {
                 addPossibleStatuses(200,400,401,403));
     }
 
-    // todoL format error messages like the rest of the api
-    // todo: make it easier for custom route handling to convert json and xml
-    private String resultBasedOnAcceptHeader(final Response result, final String accept, String note) {
-        AcceptHeaderParser acceptHeaderParser = new AcceptHeaderParser(accept);
-        if(!acceptHeaderParser.missingAcceptHeader() && !acceptHeaderParser.isSupportedHeader()){
-            result.status(406);
-            return "";
-        }
 
-        result.status(200);
-
-        if(acceptHeaderParser.hasAPreferenceForXml()){
-            result.raw().setHeader("CONTENT-TYPE", "application/xml");
-            return getNoteAsXML(note);
-        }else{
-            result.raw().setHeader("CONTENT-TYPE", "application/json");
-            return getNoteAsJson(note);
-        }
-    }
-
-    private String getNoteAsJson(final String noteString) {
-        final JsonObject note = new JsonObject();
-        note.addProperty("note", noteString);
-        return new Gson().toJson(note);
-    }
-
-    private String getNoteAsXML(final String noteString) {
-        return "<secretnote><note>" + XML.escape(noteString) + "</note></secretnote>";
-    }
 }

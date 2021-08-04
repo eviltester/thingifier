@@ -1,11 +1,8 @@
 package uk.co.compendiumdev.thingifier.api.http.bodyparser;
 
 import com.google.gson.Gson;
-import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.io.StreamException;
-import com.thoughtworks.xstream.io.xml.DomDriver;
-import org.json.JSONObject;
-import org.json.XML;
+import uk.co.compendiumdev.thingifier.api.http.bodyparser.xml.XMLParserAbstraction;
+import uk.co.compendiumdev.thingifier.api.http.bodyparser.xml.XMLParserUsingOrgJson;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 import uk.co.compendiumdev.thingifier.api.http.AcceptContentTypeParser;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
@@ -19,11 +16,14 @@ public class BodyParser {
 
     private final HttpApiRequest request;
     private final List<String> thingNames;
+    private final XMLParserAbstraction xmlParser;
     private Map<String, Object> args = null;
 
     public BodyParser(final HttpApiRequest aGivenRequest, final List<String> thingNames) {
         this.request = aGivenRequest;
         this.thingNames = thingNames;
+        this.xmlParser = new XMLParserUsingOrgJson(this.request.getBody(), this.thingNames);
+        //this.xmlParser = new XMLParserUsingXstream(this.request.getBody(), this.thingNames);
     }
 
 
@@ -124,16 +124,9 @@ public class BodyParser {
     public String validBodyBasedOnContentType(){
         final AcceptContentTypeParser contentTypeParser = new AcceptContentTypeParser(request.getHeader("content-type"));
         if (contentTypeParser.isXML()) {
-            try{
-                XStream xStream = new XStream(new DomDriver());
-                xStream.alias("map", java.util.Map.class);
-                Map<String,Object> map2 = (Map<String,Object>) xStream.fromXML(request.getBody());
-            }catch(Exception e){
-                if(e instanceof StreamException) {
-                    return e.getCause().toString();
-                }else{
-                    return e.getMessage();
-                }
+            String validateResultsErrorReport = this.xmlParser.validateXML();
+            if(validateResultsErrorReport.length()!=0){
+                return validateResultsErrorReport;
             }
         }
 
@@ -169,27 +162,12 @@ public class BodyParser {
         // TODO: BUG - since we remove the wrapper we might send in a POST <project><title>My posted to do on the project</title></project> to /todo and it will work fine if the fields are the same
         final AcceptContentTypeParser contentTypeParser = new AcceptContentTypeParser(request.getHeader("content-type"));
         if (contentTypeParser.isXML()) {
-
-            // PROTOTYPE XML Conversion
             System.out.println(request.getBody());
-            System.out.println(XML.toJSONObject(request.getBody()).toString());
-            JSONObject conv = XML.toJSONObject(request.getBody());
-            if (conv.keySet().size() == 1) {
-                // if the key is an entity type then we just want the body
-                ArrayList<String> keys = new ArrayList<String>(conv.keySet());
-
-                if (thingNames.contains(keys.get(0))) {
-                    // just the body
-                    String justTheBody = conv.get(keys.get(0)).toString();
-                    System.out.println(justTheBody);
-                    args = new Gson().fromJson(justTheBody, Map.class);
-                    return;
-                }
-
-            }
+            args = this.xmlParser.xmlAsMap();
+        }else{
+            // assume it is json
+            args = new Gson().fromJson(request.getBody(), Map.class);
         }
-
-        args = new Gson().fromJson(request.getBody(), Map.class);
 
         if(args==null) {
             // something went wrong during conversion, could report as json/xml error

@@ -268,7 +268,7 @@ public class AuthRoutesTest {
         Assertions.assertEquals(aNewChallenger.getXChallenger(),
                 response.getHeader("X-CHALLENGER"));
         //{"note":""}
-        Assertions.assertEquals("<secretnote><note></note></secretnote>", response.body);
+        Assertions.assertEquals("<secretnote><note/></secretnote>", response.body);
     }
 
     @Test
