@@ -1,6 +1,9 @@
 package uk.co.compendiumdev.thingifier.api.http.bodyparser;
 
 import com.google.gson.Gson;
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.StreamException;
+import com.thoughtworks.xstream.io.xml.DomDriver;
 import org.json.JSONObject;
 import org.json.XML;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
@@ -122,10 +125,15 @@ public class BodyParser {
         final AcceptContentTypeParser contentTypeParser = new AcceptContentTypeParser(request.getHeader("content-type"));
         if (contentTypeParser.isXML()) {
             try{
-                // TODO: use xstream or a different XML parser because this does not catch enough XML errors
-                XML.toJSONObject(request.getBody());
+                XStream xStream = new XStream(new DomDriver());
+                xStream.alias("map", java.util.Map.class);
+                Map<String,Object> map2 = (Map<String,Object>) xStream.fromXML(request.getBody());
             }catch(Exception e){
-                return e.getMessage();
+                if(e instanceof StreamException) {
+                    return e.getCause().toString();
+                }else{
+                    return e.getMessage();
+                }
             }
         }
 

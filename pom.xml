@@ -42,6 +42,7 @@
 
 - amended the startup messages to not be so "Error" instead - logging that a single user file is being created
 - fixed an error in thingifier where we could not create relationships via relationship url endpoint when using ids
+- using XStream for XML validation
 
 1.5.5
 

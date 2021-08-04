@@ -40,11 +40,9 @@
           <scope>test</scope>
       </dependency>
       <dependency>
-          <!-- at the moment this is just for testing - but I might use for main processing-->
           <groupId>com.thoughtworks.xstream</groupId>
           <artifactId>xstream</artifactId>
           <version>1.4.17</version>
-          <scope>test</scope>
       </dependency>
       <dependency>
           <groupId>com.sparkjava</groupId>
