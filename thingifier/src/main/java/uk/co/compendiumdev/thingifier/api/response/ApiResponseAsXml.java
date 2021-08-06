@@ -1,5 +1,6 @@
 package uk.co.compendiumdev.thingifier.api.response;
 
+import uk.co.compendiumdev.thingifier.api.http.bodyparser.xml.StringToXML;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.ThingDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.ThingInstance;
 import uk.co.compendiumdev.thingifier.reporting.JsonThing;
@@ -39,7 +40,7 @@ final public class ApiResponseAsXml {
                 // would be returned but- ApiResponse should know the Thing that is in the collection
                 ThingDefinition defn = apiResponse.getTypeOfThingReturned();
                 if (defn != null) {
-                    return xmlThing.getEmptyElement(defn.getPlural());
+                    return StringToXML.getEmptyElement(defn.getPlural());
                 } else {
                     // todo should probably throw an exception
                     return "";
@@ -91,6 +92,7 @@ final public class ApiResponseAsXml {
     }
 
     public static String getErrorMessageXml(final Collection<String> myErrorMessages) {
-        return XmlThing.getStringCollectionAsXml("errorMessages", "errorMessage", myErrorMessages);
+        return StringToXML.getStringCollectionAsXml(
+                "errorMessages", "errorMessage", myErrorMessages);
     }
 }

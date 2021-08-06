@@ -20,6 +20,7 @@
         </dependency>
         <!-- https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk -->
         <!-- experimental cloud storage of challenger sessions -->
+        <!-- todo: split into two apps, one aws enabled, one with local persistance only -->
         <!-- 180 meg!
 
         -->

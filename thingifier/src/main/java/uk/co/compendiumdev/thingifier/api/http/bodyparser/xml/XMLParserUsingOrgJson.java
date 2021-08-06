@@ -4,10 +4,7 @@ import com.google.gson.Gson;
 import org.json.JSONObject;
 import org.json.XML;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class XMLParserUsingOrgJson implements XMLParserAbstraction {
     private final String xml;
@@ -48,5 +45,12 @@ public class XMLParserUsingOrgJson implements XMLParserAbstraction {
             }
 
         return new Gson().fromJson(conv.toString(), Map.class);
+    }
+
+    @Override
+    public String getStringCollectionAsXML(final String plural, final String single, final Collection<String> strings) {
+        Map errorResponseBody = new HashMap<String, Collection<String>>();
+        errorResponseBody.put(single, strings);
+        return XML.toString(new JSONObject(errorResponseBody), plural);
     }
 }

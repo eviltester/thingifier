@@ -1,6 +1,7 @@
 package uk.co.compendiumdev.thingifier.htmlgui;
 
 import com.google.gson.GsonBuilder;
+import uk.co.compendiumdev.thingifier.api.http.bodyparser.xml.GenericXMLPrettyPrinter;
 import uk.co.compendiumdev.thingifier.core.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
@@ -31,6 +32,7 @@ public class RestApiDocumentationGenerator {
     private final XmlThing xmlThing;
     private final DefaultGUIHTML defaultGui;
     private final ThingifierApiConfig apiConfig;
+    private final GenericXMLPrettyPrinter XMLPrettyPrinter;
     private String prependPath;
 
     // TODO: DefaultGUIHTML is hard coded in here, need more flexibility
@@ -47,6 +49,7 @@ public class RestApiDocumentationGenerator {
         xmlThing = new XmlThing(jsonThing);
         this.defaultGui = defaultGui;
         prependPath = "";
+        this.XMLPrettyPrinter = new GenericXMLPrettyPrinter();
     }
 
     public String getApiDocumentation(final ApiRoutingDefinition routingDefinitions,
@@ -206,7 +209,7 @@ public class RestApiDocumentationGenerator {
                     output.append("<p>Example XML Output from API calls</p>\n");
                     output.append("<pre class='xml'>\n");
                     output.append("<code class='xml'>\n");
-                    output.append(xmlThing.prettyPrintHtml(xmlThing.getSingleObjectXml(exampleThing.getInstance())));
+                    output.append(this.XMLPrettyPrinter.prettyPrintHtml(xmlThing.getSingleObjectXml(exampleThing.getInstance())));
                     output.append("</code>\n");
                     output.append("</pre>\n");
                 }
@@ -224,7 +227,7 @@ public class RestApiDocumentationGenerator {
                 output.append("<p>Example XML Input to API calls</p>\n");
                 output.append("<pre class='xml'>\n");
                 output.append("<code class='xml'>\n");
-                output.append(xmlThing.prettyPrintHtml(xmlThing.getSingleObjectXml(createableExampleThing)));
+                output.append(this.XMLPrettyPrinter.prettyPrintHtml(xmlThing.getSingleObjectXml(createableExampleThing)));
                 output.append("</code>\n");
                 output.append("</pre>\n");
 

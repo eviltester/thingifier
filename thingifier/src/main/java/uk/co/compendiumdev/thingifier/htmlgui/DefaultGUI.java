@@ -1,6 +1,7 @@
 package uk.co.compendiumdev.thingifier.htmlgui;
 
 import com.google.gson.GsonBuilder;
+import uk.co.compendiumdev.thingifier.api.http.bodyparser.xml.GenericXMLPrettyPrinter;
 import uk.co.compendiumdev.thingifier.core.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
@@ -27,6 +28,7 @@ public class DefaultGUI {
     private final DefaultGUIHTML templates;
     private final XmlThing xmlThing;
     private final ThingifierApiConfig apiConfig;
+    private final GenericXMLPrettyPrinter XMLPrettyPrinter;
 
     public DefaultGUI(final Thingifier thingifier, DefaultGUIHTML defaultGui) {
         this.thingifier=thingifier;
@@ -34,6 +36,7 @@ public class DefaultGUI {
         this.jsonThing = new JsonThing(apiConfig.jsonOutput());
         this.xmlThing = new XmlThing(jsonThing);
         this.templates = defaultGui;
+        this.XMLPrettyPrinter = new GenericXMLPrettyPrinter();
     }
 
     public DefaultGUI configureRoutes(){
@@ -216,7 +219,7 @@ public class DefaultGUI {
                 html.append("<pre class='xml'>");
                 html.append("<code class='xml'>");
                 // pretty print the json
-                html.append(xmlThing.prettyPrintHtml(xmlThing.getSingleObjectXml(instance)));
+                html.append(this.XMLPrettyPrinter.prettyPrintHtml(xmlThing.getSingleObjectXml(instance)));
                 html.append("</code>");
                 html.append("</pre>");
             }
