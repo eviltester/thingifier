@@ -101,70 +101,29 @@ public class MirrorRoutes {
             return body;
         });
 
+        // add the documentation
+        RoutingVerb[] verbs = { RoutingVerb.GET, RoutingVerb.POST, RoutingVerb.PUT,
+                                RoutingVerb.DELETE, RoutingVerb.PATCH, RoutingVerb.TRACE,
+                                RoutingVerb.OPTIONS, RoutingVerb.HEAD};
 
-        apiDefn.addRouteToDocumentation(
-                new RoutingDefinition(
-                RoutingVerb.GET,
-                endpoint,
-                RoutingStatus.returnedFromCall(),
-                null).addDocumentation("Mirror a GET Request").
-                addPossibleStatuses(200));
+        String [] documentation = {"Mirror a GET Request", "Mirror a POST Request", "Mirror a PUT Request",
+                                    "Mirror a DELETE Request", "Mirror a PATCH Request", "Mirror a TRACE Request",
+                                    "Options for mirror endpoint", "Headers for mirror endpoint"};
 
-        apiDefn.addRouteToDocumentation(
-                new RoutingDefinition(
-                        RoutingVerb.POST,
-                        endpoint,
-                        RoutingStatus.returnedFromCall(),
-                        null).addDocumentation("Mirror a POST Request").
-                        addPossibleStatuses(200));
+        int [] statusCodes = {  200, 200, 200,
+                                200, 200, 200,
+                                204, 200};
 
-        apiDefn.addRouteToDocumentation(
-                new RoutingDefinition(
-                        RoutingVerb.PUT,
-                        endpoint,
-                        RoutingStatus.returnedFromCall(),
-                        null).addDocumentation("Mirror a PUT Request").
-                        addPossibleStatuses(200));
+        for(int index=0; index< verbs.length; index++){
+            apiDefn.addRouteToDocumentation(
+                    new RoutingDefinition(
+                            verbs[index],
+                            endpoint,
+                            RoutingStatus.returnedFromCall(),
+                            null).addDocumentation(documentation[index]).
+                            addPossibleStatuses(statusCodes[index]));
+        }
 
-        apiDefn.addRouteToDocumentation(
-                new RoutingDefinition(
-                        RoutingVerb.DELETE,
-                        endpoint,
-                        RoutingStatus.returnedFromCall(),
-                        null).addDocumentation("Mirror a DELETE Request").
-                        addPossibleStatuses(200));
-
-        apiDefn.addRouteToDocumentation(
-                new RoutingDefinition(
-                        RoutingVerb.PATCH,
-                        endpoint,
-                        RoutingStatus.returnedFromCall(),
-                        null).addDocumentation("Mirror a PATCH Request").
-                        addPossibleStatuses(200));
-
-        apiDefn.addRouteToDocumentation(
-                new RoutingDefinition(
-                        RoutingVerb.TRACE,
-                        endpoint,
-                        RoutingStatus.returnedFromCall(),
-                        null).addDocumentation("Mirror a TRACE Request").
-                        addPossibleStatuses(200));
-
-        apiDefn.addRouteToDocumentation(
-                new RoutingDefinition(
-                RoutingVerb.OPTIONS,
-                endpoint,
-                RoutingStatus.returnedFromCall(),
-                null).addDocumentation("Options for mirror endpoint")
-                        .addPossibleStatuses(204));
-
-        apiDefn.addRouteToDocumentation(
-                new RoutingDefinition(
-                RoutingVerb.HEAD,
-                endpoint,
-                RoutingStatus.returnedFromCall(),
-                null).addDocumentation("Headers for mirror endpoint")
-                    .addPossibleStatuses(200));
     }
 
 

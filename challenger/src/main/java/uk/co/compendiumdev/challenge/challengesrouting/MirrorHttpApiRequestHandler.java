@@ -3,10 +3,11 @@ package uk.co.compendiumdev.challenge.challengesrouting;
 import uk.co.compendiumdev.thingifier.api.http.AcceptHeaderParser;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
+import uk.co.compendiumdev.thingifier.application.routehandlers.HttpApiRequestHandler;
 import uk.co.compendiumdev.thingifier.core.Thing;
 import uk.co.compendiumdev.thingifier.core.domain.instances.ThingInstance;
 
-public class MirrorHttpApiRequestHandler implements HttpApiRequestHandler{
+public class MirrorHttpApiRequestHandler implements HttpApiRequestHandler {
     private final Thing entityDefn;
 
     public MirrorHttpApiRequestHandler(final Thing entityDefn) {

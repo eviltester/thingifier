@@ -1,4 +1,4 @@
-package uk.co.compendiumdev.challenge.challengesrouting;
+package uk.co.compendiumdev.thingifier.application.routehandlers;
 
 import spark.Request;
 import spark.Response;

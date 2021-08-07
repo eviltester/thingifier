@@ -267,39 +267,6 @@ public class AuthRoutes {
 
             return HttpApiResponseToSpark.convert(httpApiResponse, result);
 
-//            String note=null;
-//            if(contentTypeParser.isJSON()){
-//                final HashMap body = new Gson().fromJson(request.body(), HashMap.class);
-//
-//                // could not parse input
-//                if(body==null){
-//                    result.status(400);
-//                    return "";
-//                }
-//
-//                if(body.containsKey("note")) {
-//                    note = (String) body.get("note");
-//                }
-//            }else{
-//
-//                try{
-//                     note = XML.toJSONObject(request.body()).
-//                                getJSONObject("secretnote").
-//                                    getString("note");
-//                }catch(Exception e){
-//                    result.status(400);
-//                    return e.getMessage();
-//                }
-//            }
-//
-//            if(note !=null){
-//                challenger.setNote(note);
-//            }else{
-//                result.status(400);
-//                return "";
-//            }
-
-           // return resultBasedOnAcceptHeader(result, request.headers("ACCEPT"), challenger.getNote());
         });
 
         SimpleRouteConfig.routeStatusWhenNot(
