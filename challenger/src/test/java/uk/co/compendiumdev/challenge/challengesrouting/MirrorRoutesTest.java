@@ -19,14 +19,12 @@ import java.util.stream.Stream;
 
 public class MirrorRoutesTest {
     private static HttpMessageSender http;
-    private static ChallengerAuthData challenger;
 
     @BeforeAll
     static void createHttp(){
         // this uses the Environment to startup the spark app to
         // issue http tests and test the routing in spark
         http = new HttpMessageSender(Environment.getBaseUri());
-        challenger = ChallengeMain.getChallenger().getChallengers().createNewChallenger();
     }
 
     static Stream simpleRoutingStatus(){

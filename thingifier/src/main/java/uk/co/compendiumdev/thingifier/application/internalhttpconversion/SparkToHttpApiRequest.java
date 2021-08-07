@@ -18,7 +18,8 @@ public class SparkToHttpApiRequest {
                     setRawQueryParams(rawQueryParamsAsMap(request)).
                     setVerb(request.requestMethod()).
                     setUrl(request.url()).
-                    setIP(request.ip());
+                    setIP(request.ip()).
+                    setUrlParams(request.params());
 
         return apiRequest;
     }

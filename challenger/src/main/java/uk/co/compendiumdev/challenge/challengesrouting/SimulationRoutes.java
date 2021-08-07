@@ -127,63 +127,47 @@ public class SimulationRoutes {
 
         // get a specific entity
         get(endpoint + "/:id", (request, result) -> {
-            final HttpApiRequest myRequest = SparkToHttpApiRequest.convert(request);
 
-            HttpApiResponse httpApiResponse = this.httpApi.validateRequestSyntax(myRequest,
-                    ThingifierHttpApi.HttpVerb.GET);
+            return new SparkApiRequestResponseHandler(request, result, simulation).
+                    usingHandler((anHttpApiRequest) ->{
 
-            if (httpApiResponse == null) {
+                        ApiResponse response=null;
 
-                ApiResponse response=null;
+                        // process it because the request validated
+                        String id = anHttpApiRequest.getUrlParam(":id");
+                        ThingInstance instance = this.entityDefn.findInstanceByGUIDorID(id);
+                        if (instance == null) {
+                            response = ApiResponse.error404("Could not find Entity with ID " + id);
+                        } else {
+                            response = ApiResponse.success().returnSingleInstance(instance);
+                        }
 
-                // process it because the request validated
-                String id = request.params().get(":id");
-                ThingInstance instance = this.entityDefn.findInstanceByGUIDorID(id);
-                if (instance == null) {
-                    response = ApiResponse.error404("Could not find Entity with ID " + id);
-                } else {
-                    response = ApiResponse.success().returnSingleInstance(instance);
-                }
+                        if (id.equals("10")) {
+                            // 10 is the entity we amend to name:eris
+                            ThingInstance fake = this.entityDefn.createInstance().
+                                    overrideValue("id", "10").setValue("name", "eris");
+                            instance = fake;
+                            response = ApiResponse.success().returnSingleInstance(instance);
+                        }
 
-                if (id.equals("10")) {
-                    // 10 is the entity we amend to name:eris
-                    ThingInstance fake = this.entityDefn.createInstance().
-                            overrideValue("id", "10").setValue("name", "eris");
-                    instance = fake;
-                    response = ApiResponse.success().returnSingleInstance(instance);
-                }
+                        if (id.equals("9")) {
+                            // 9 is the entity we delete
+                            response = ApiResponse.error404("Could not find Entity with ID 9");
+                        }
 
-                if (id.equals("9")) {
-                    // 9 is the entity we delete
-                    response = ApiResponse.error404("Could not find Entity with ID 9");
-                }
-
-                httpApiResponse = new HttpApiResponse(myRequest.getHeaders(), response,
-                        jsonThing, this.simulation.apiConfig());
-            }
-
-
-
-            return HttpApiResponseToSpark.convert(httpApiResponse, result);
+                        return response;
+                    }).handle();
         });
 
         // post create new - will create as 11 {"name":"bob"}
         post(endpoint, (request, result) -> {
-            final HttpApiRequest myRequest = SparkToHttpApiRequest.convert(request);
 
-            HttpApiResponse httpApiResponse = this.httpApi.validateRequestSyntax(myRequest,
-                    ThingifierHttpApi.HttpVerb.POST);
-
-            if (httpApiResponse == null) {
-                // process it because the request validated
-                final ApiResponse response = ApiResponse.created(this.entityDefn.findInstanceByGUIDorID("11"),
-                        this.simulation.apiConfig());
-
-                httpApiResponse = new HttpApiResponse(myRequest.getHeaders(), response,
-                        jsonThing, this.simulation.apiConfig());
-            }
-
-            return HttpApiResponseToSpark.convert(httpApiResponse, result);
+            return new SparkApiRequestResponseHandler(request, result, simulation).
+                    usingHandler((anHttpApiRequest) ->{
+                        return ApiResponse.created(this.entityDefn.
+                                        findInstanceByGUIDorID("11"),
+                                this.simulation.apiConfig());
+                    }).handle();
         });
 
         // post amend 10
@@ -266,32 +250,25 @@ public class SimulationRoutes {
         });
 
         delete(endpoint + "/:id", (request, result) -> {
-            final HttpApiRequest myRequest = SparkToHttpApiRequest.convert(request);
 
-            HttpApiResponse httpApiResponse = this.httpApi.validateRequestSyntax(myRequest,
-                    ThingifierHttpApi.HttpVerb.POST);
+            return new SparkApiRequestResponseHandler(request, result, simulation).
+                    usingHandler((anHttpApiRequest) ->{
+                        ApiResponse response = null;
+                        String id = anHttpApiRequest.getUrlParam(":id");
+                        if (id.equals("9")) {
+                            // we can delete id 9
+                            response = new ApiResponse(204);
+                        } else {
+                            final ThingInstance instance = this.entityDefn.findInstanceByGUIDorID(id);
+                            if (instance == null) {
+                                response = ApiResponse.error404("Could not find Entity with ID " + id);
+                            } else {
+                                response = ApiResponse.error(403, "Not authorised to delete that entity");
+                            }
+                        }
+                        return response;
+                    }).handle();
 
-            if (httpApiResponse == null) {
-                // process it because the request validated
-                ApiResponse response = null;
-                String id = request.params().get(":id");
-                if (id.equals("9")) {
-                    // we can delete id 9
-                    response = new ApiResponse(204);
-                } else {
-                    final ThingInstance instance = this.entityDefn.findInstanceByGUIDorID(id);
-                    if (instance == null) {
-                        response = ApiResponse.error404("Could not find Entity with ID " + id);
-                    } else {
-                        response = ApiResponse.error(403, "Not authorised to delete that entity");
-                    }
-                }
-
-                httpApiResponse = new HttpApiResponse(myRequest.getHeaders(), response,
-                        jsonThing, this.simulation.apiConfig());
-            }
-
-            return HttpApiResponseToSpark.convert(httpApiResponse, result);
         });
 
 

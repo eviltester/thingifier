@@ -12,6 +12,7 @@ public final class HttpApiRequest {
     private String url="";
     private Map<String, String> rawQueryParams; // contains all the query param values e.g. ?p=1&p=2
     private String ip="";
+    private Map<String, String>  urlParams;
 
     public HttpApiRequest setVerb(final String requestMethod) {
         verb = VERB.valueOf(requestMethod.toUpperCase());
@@ -38,6 +39,16 @@ public final class HttpApiRequest {
 
     public String getIP() {
         return this.ip;
+    }
+
+    public HttpApiRequest setUrlParams(final Map<String, String> params) {
+        this.urlParams = new HashMap<>();
+        this.urlParams.putAll(params);
+        return this;
+    }
+
+    public String getUrlParam(final String paramKey) {
+        return urlParams.get(paramKey);
     }
 
 
