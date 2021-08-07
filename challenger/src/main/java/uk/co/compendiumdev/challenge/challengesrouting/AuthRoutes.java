@@ -90,7 +90,7 @@ public class AuthRoutes {
         SimpleRouteConfig.routeStatusWhenNot(
                 405, "/secret/token", "post");
 
-        apiDefn.addAdditionalRoute(
+        apiDefn.addRouteToDocumentation(
                 new RoutingDefinition(
                 RoutingVerb.POST,
                 "/secret/token",
@@ -162,7 +162,7 @@ public class AuthRoutes {
 
         });
 
-        apiDefn.addAdditionalRoute(
+        apiDefn.addRouteToDocumentation(
                 new RoutingDefinition(
                 RoutingVerb.GET,
                 "/secret/note",
@@ -305,7 +305,7 @@ public class AuthRoutes {
         SimpleRouteConfig.routeStatusWhenNot(
                 405, "/secret/note", "get", "post");
 
-        apiDefn.addAdditionalRoute(
+        apiDefn.addRouteToDocumentation(
                 new RoutingDefinition(
                 RoutingVerb.POST,
                 "/secret/note",

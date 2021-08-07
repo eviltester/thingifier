@@ -84,6 +84,7 @@ public class ThingifierRestServer {
                 }
             }
 
+            // Run any hooks at the Spark Request and Response level
             if(preSparkHttpRequestHooks !=null){
                 for(SparkRequestResponseHook hook : preSparkHttpRequestHooks){
                     // todo: catch exceptions and `halt`

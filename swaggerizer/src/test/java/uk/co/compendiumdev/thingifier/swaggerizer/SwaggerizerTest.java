@@ -16,7 +16,7 @@ public class SwaggerizerTest {
         ThingifierApiDefn apiDefn = new ThingifierApiDefn();
         apiDefn.setThingifier(t);
 
-        apiDefn.addAdditionalRoute(new RoutingDefinition(
+        apiDefn.addRouteToDocumentation(new RoutingDefinition(
                 RoutingVerb.POST,
                 "/plan",
                 RoutingStatus.returnedFromCall(),

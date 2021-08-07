@@ -6,8 +6,6 @@ import uk.co.compendiumdev.thingifier.api.routings.RoutingStatus;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingVerb;
 import uk.co.compendiumdev.thingifier.spark.SimpleRouteConfig;
 
-import java.util.List;
-
 import static spark.Spark.options;
 
 public class HeartBeatRoutes {
@@ -28,7 +26,7 @@ public class HeartBeatRoutes {
                 status(500,  "patch").
                 status(501, "trace");
 
-        apiDefn.addAdditionalRoute(
+        apiDefn.addRouteToDocumentation(
                 new RoutingDefinition(
                 RoutingVerb.GET,
                 endpoint,
@@ -36,7 +34,7 @@ public class HeartBeatRoutes {
                 null).addDocumentation("Is the server running? YES 204").
                 addPossibleStatuses(204));
 
-        apiDefn.addAdditionalRoute(
+        apiDefn.addRouteToDocumentation(
                 new RoutingDefinition(
                 RoutingVerb.OPTIONS,
                 endpoint,
@@ -44,7 +42,7 @@ public class HeartBeatRoutes {
                 null).addDocumentation("Options for heartbeat endpoint")
                         .addPossibleStatuses(204));
 
-        apiDefn.addAdditionalRoute(
+        apiDefn.addRouteToDocumentation(
                 new RoutingDefinition(
                 RoutingVerb.HEAD,
                 endpoint,

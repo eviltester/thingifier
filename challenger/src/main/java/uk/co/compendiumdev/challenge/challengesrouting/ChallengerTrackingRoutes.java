@@ -3,14 +3,11 @@ package uk.co.compendiumdev.challenge.challengesrouting;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
 import uk.co.compendiumdev.challenge.persistence.PersistenceLayer;
-import uk.co.compendiumdev.challenge.persistence.PersistenceResponse;
 import uk.co.compendiumdev.thingifier.api.ThingifierApiDefn;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingStatus;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingVerb;
 import uk.co.compendiumdev.thingifier.spark.SimpleRouteConfig;
-
-import java.util.List;
 
 import static spark.Spark.get;
 import static spark.Spark.post;
@@ -94,7 +91,7 @@ public class ChallengerTrackingRoutes {
             explanation =  " Not necessary in single user mode.";
         }
 
-        apiDefn.addAdditionalRoute(
+        apiDefn.addRouteToDocumentation(
             new RoutingDefinition(
                 RoutingVerb.POST,
                 "/challenger",
@@ -103,7 +100,7 @@ public class ChallengerTrackingRoutes {
                 addDocumentation("Create an X-CHALLENGER guid to allow tracking challenges, use the X-CHALLENGER header in all requests to track challenge completion for multi-user tracking." + explanation).
                     addPossibleStatuses(200,400,404));
 
-        apiDefn.addAdditionalRoute(
+        apiDefn.addRouteToDocumentation(
             new RoutingDefinition(
                 RoutingVerb.GET,
                 "/challenger/:guid",

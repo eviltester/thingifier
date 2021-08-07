@@ -10,12 +10,11 @@ import uk.co.compendiumdev.thingifier.api.routings.RoutingStatus;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingVerb;
 import uk.co.compendiumdev.thingifier.spark.SimpleRouteConfig;
 
-import java.util.List;
-
 import static spark.Spark.*;
 
 public class ChallengesRoutes {
 
+    // TODO: challenges should responds to request headers and allow conversion into XML or JSON
     public void configure(final Challengers challengers, final boolean single_player_mode,
                           final ThingifierApiDefn apiDefn,
                           final ChallengeDefinitions challengeDefinitions){
@@ -56,7 +55,7 @@ public class ChallengesRoutes {
                 405, "/challenges",
                 "get", "head", "options");
 
-        apiDefn.addAdditionalRoute(
+        apiDefn.addRouteToDocumentation(
                 new RoutingDefinition(
                 RoutingVerb.GET,
                 "/challenges",
@@ -64,7 +63,7 @@ public class ChallengesRoutes {
                 null).addDocumentation("Get list of challenges and their completion status").
                         addPossibleStatuses(200));
 
-        apiDefn.addAdditionalRoute(
+        apiDefn.addRouteToDocumentation(
                 new RoutingDefinition(
                 RoutingVerb.OPTIONS,
                 "/challenges",
@@ -72,7 +71,7 @@ public class ChallengesRoutes {
                 null).addDocumentation("Options for list of challenges endpoint").
                         addPossibleStatuses(200));
 
-        apiDefn.addAdditionalRoute(
+        apiDefn.addRouteToDocumentation(
                 new RoutingDefinition(
                 RoutingVerb.HEAD,
                 "/challenges",

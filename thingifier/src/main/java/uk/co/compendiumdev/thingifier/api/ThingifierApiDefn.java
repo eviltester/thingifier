@@ -35,11 +35,11 @@ public class ThingifierApiDefn {
     }
 
     /*
-        Add an additional route, not managed or defined by the thingifier model itself
-        but for documentation purposes (swagger, docs, code generation, testin etc.),
+        Add an additional route for documentation, not managed or defined by the thingifier model itself
+        but for documentation purposes (swagger, docs, code generation, testing etc.),
         should be considered part of the API
      */
-    public ThingifierApiDefn addAdditionalRoute(final RoutingDefinition routingDefinition) {
+    public ThingifierApiDefn addRouteToDocumentation(final RoutingDefinition routingDefinition) {
         additionalRoutes.add(routingDefinition);
         return this;
     }

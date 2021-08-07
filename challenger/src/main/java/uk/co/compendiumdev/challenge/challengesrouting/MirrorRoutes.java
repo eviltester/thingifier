@@ -1,7 +1,5 @@
 package uk.co.compendiumdev.challenge.challengesrouting;
 
-import spark.Request;
-import spark.Response;
 import uk.co.compendiumdev.thingifier.api.ThingifierApiDefn;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingStatus;
@@ -104,7 +102,7 @@ public class MirrorRoutes {
         });
 
 
-        apiDefn.addAdditionalRoute(
+        apiDefn.addRouteToDocumentation(
                 new RoutingDefinition(
                 RoutingVerb.GET,
                 endpoint,
@@ -112,7 +110,7 @@ public class MirrorRoutes {
                 null).addDocumentation("Mirror a GET Request").
                 addPossibleStatuses(200));
 
-        apiDefn.addAdditionalRoute(
+        apiDefn.addRouteToDocumentation(
                 new RoutingDefinition(
                         RoutingVerb.POST,
                         endpoint,
@@ -120,7 +118,7 @@ public class MirrorRoutes {
                         null).addDocumentation("Mirror a POST Request").
                         addPossibleStatuses(200));
 
-        apiDefn.addAdditionalRoute(
+        apiDefn.addRouteToDocumentation(
                 new RoutingDefinition(
                         RoutingVerb.PUT,
                         endpoint,
@@ -128,7 +126,7 @@ public class MirrorRoutes {
                         null).addDocumentation("Mirror a PUT Request").
                         addPossibleStatuses(200));
 
-        apiDefn.addAdditionalRoute(
+        apiDefn.addRouteToDocumentation(
                 new RoutingDefinition(
                         RoutingVerb.DELETE,
                         endpoint,
@@ -136,7 +134,7 @@ public class MirrorRoutes {
                         null).addDocumentation("Mirror a DELETE Request").
                         addPossibleStatuses(200));
 
-        apiDefn.addAdditionalRoute(
+        apiDefn.addRouteToDocumentation(
                 new RoutingDefinition(
                         RoutingVerb.PATCH,
                         endpoint,
@@ -144,7 +142,7 @@ public class MirrorRoutes {
                         null).addDocumentation("Mirror a PATCH Request").
                         addPossibleStatuses(200));
 
-        apiDefn.addAdditionalRoute(
+        apiDefn.addRouteToDocumentation(
                 new RoutingDefinition(
                         RoutingVerb.TRACE,
                         endpoint,
@@ -152,7 +150,7 @@ public class MirrorRoutes {
                         null).addDocumentation("Mirror a TRACE Request").
                         addPossibleStatuses(200));
 
-        apiDefn.addAdditionalRoute(
+        apiDefn.addRouteToDocumentation(
                 new RoutingDefinition(
                 RoutingVerb.OPTIONS,
                 endpoint,
@@ -160,7 +158,7 @@ public class MirrorRoutes {
                 null).addDocumentation("Options for mirror endpoint")
                         .addPossibleStatuses(204));
 
-        apiDefn.addAdditionalRoute(
+        apiDefn.addRouteToDocumentation(
                 new RoutingDefinition(
                 RoutingVerb.HEAD,
                 endpoint,
