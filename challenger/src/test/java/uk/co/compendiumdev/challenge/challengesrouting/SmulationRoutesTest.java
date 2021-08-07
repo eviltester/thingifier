@@ -55,6 +55,84 @@ public class SmulationRoutesTest {
         Assertions.assertEquals(statusCode, response.statusCode);
     }
 
+    @Test
+    void canSimulateGetOfEntitiesJSON(){
+
+        http.clearHeaders();
+        http.setHeader("Accept", "application/json");
+
+        HttpResponseDetails response = http.get("/sim/entities");
+
+        Assertions.assertEquals(200, response.statusCode);
+        Assertions.assertEquals("application/json",response.getHeader("Content-Type"));
+        Assertions.assertTrue(response.body.startsWith("{\"entities\":[{"));
+        Assertions.assertTrue(response.body.contains("id\":1,"));
+        Assertions.assertTrue(response.body.contains("id\":2,"));
+        Assertions.assertTrue(response.body.contains("id\":3,"));
+        Assertions.assertTrue(response.body.contains("id\":4,"));
+        Assertions.assertTrue(response.body.contains("id\":5,"));
+        Assertions.assertTrue(response.body.contains("id\":6,"));
+        Assertions.assertTrue(response.body.contains("id\":7,"));
+        Assertions.assertTrue(response.body.contains("id\":8,"));
+        Assertions.assertTrue(response.body.contains("id\":9,"));
+        Assertions.assertTrue(response.body.contains("id\":10,"));
+
+        // 11 is in the thingifier but should not be returned
+        Assertions.assertFalse(response.body.contains("id\":11,"));
+    }
+
+    @Test
+    void canSimulateGetOfEntitiesXML(){
+
+        http.clearHeaders();
+        http.setHeader("Accept", "application/xml");
+
+        HttpResponseDetails response = http.get("/sim/entities");
+
+        Assertions.assertEquals(200, response.statusCode);
+        Assertions.assertEquals("application/xml",response.getHeader("Content-Type"));
+        Assertions.assertTrue(response.body.startsWith("<entities><entity>"));
+        Assertions.assertTrue(response.body.contains("<id>1</id>"));
+        Assertions.assertTrue(response.body.contains("<id>2</id>"));
+        Assertions.assertTrue(response.body.contains("<id>3</id>"));
+        Assertions.assertTrue(response.body.contains("<id>4</id>"));
+        Assertions.assertTrue(response.body.contains("<id>5</id>"));
+        Assertions.assertTrue(response.body.contains("<id>6</id>"));
+        Assertions.assertTrue(response.body.contains("<id>7</id>"));
+        Assertions.assertTrue(response.body.contains("<id>8</id>"));
+        Assertions.assertTrue(response.body.contains("<id>9</id>"));
+        Assertions.assertTrue(response.body.contains("<id>10</id>"));
+
+        // 11 is in the thingifier but should not be returned
+        Assertions.assertFalse(response.body.contains("<id>11</id>"));
+    }
+
+    @Test
+    void canSimulateHeadOfEntitiesJSON(){
+
+        http.clearHeaders();
+        http.setHeader("Accept", "application/json");
+
+        HttpResponseDetails response = http.head("/sim/entities");
+
+        Assertions.assertEquals(200, response.statusCode);
+        Assertions.assertEquals("application/json",response.getHeader("Content-Type"));
+        Assertions.assertTrue(response.body.equals(""));
+
+    }
+
+    @Test
+    void canSimulateHeadOfEntitiesXML(){
+
+        http.clearHeaders();
+        http.setHeader("Accept", "application/xml");
+
+        HttpResponseDetails response = http.head("/sim/entities");
+
+        Assertions.assertEquals(200, response.statusCode);
+        Assertions.assertEquals("application/xml",response.getHeader("Content-Type"));
+        Assertions.assertTrue(response.body.equals(""));
+    }
 
 
     @Test
@@ -89,11 +167,10 @@ public class SmulationRoutesTest {
         response = http.get("/sim/entities/9");
         Assertions.assertEquals(404, response.statusCode);
 
-
     }
 
     @Test
-    void getSimulator(){
+    void canSimulateGetEntityId(){
         http.clearHeaders();
         http.setHeader("Accept", "application/json");
 
@@ -110,7 +187,27 @@ public class SmulationRoutesTest {
         Assertions.assertEquals(200, response.statusCode);
         String entity10 = "{\"id\":10,\"name\":\"eris\",\"description\":\"\"}";
         Assertions.assertEquals(entity10, response.body);
+    }
 
+    @Test
+    void canSimulateHeadEntityId(){
+        http.clearHeaders();
+        http.setHeader("Accept", "application/json");
+
+        // cannot get something not in the thingifier
+        HttpResponseDetails response = http.head("/sim/entities/23");
+        Assertions.assertEquals(404, response.statusCode);
+        Assertions.assertEquals("", response.body);
+        
+        // can get something  in the thingifier
+        response = http.head("/sim/entities/3");
+        Assertions.assertEquals(200, response.statusCode);
+        Assertions.assertEquals("", response.body);
+
+        // can get fake TODO: create an amendment test and move this there
+        response = http.head("/sim/entities/10");
+        Assertions.assertEquals(200, response.statusCode);
+        Assertions.assertEquals("", response.body);
     }
 
     @Test
