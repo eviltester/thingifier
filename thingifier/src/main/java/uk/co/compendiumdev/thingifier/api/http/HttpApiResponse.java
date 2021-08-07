@@ -75,6 +75,9 @@ final public class HttpApiResponse {
 
         String returnBody = "";
 
+        if(apiResponse.hasABodyOverride()){
+            return apiResponse.getBody();
+        }
         if (asJson) {
             returnBody = new ApiResponseAsJson(apiResponse, jsonThing).getJson();
         } else {

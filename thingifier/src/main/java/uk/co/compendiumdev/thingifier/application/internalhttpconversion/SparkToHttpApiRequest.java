@@ -15,9 +15,27 @@ public class SparkToHttpApiRequest {
                     setHeaders(headersAsMap(request)).
                     setBody(request.body()).
                     setQueryParams(queryParamsAsMap(request)).
-                    setVerb(request.requestMethod());
+                    setRawQueryParams(rawQueryParamsAsMap(request)).
+                    setVerb(request.requestMethod()).
+                    setUrl(request.url()).
+                    setIP(request.ip());
 
         return apiRequest;
+    }
+
+    private static Map<String, String> rawQueryParamsAsMap(final Request request) {
+        Map<String, String> params = new HashMap<>();
+
+        for(String paramName : request.queryParams()){
+            // todo: figure out what to do if more than one in each value, currently we lose the values
+            String paramValue = request.queryParams(paramName);
+            if(paramValue==null){
+                paramValue="";
+            }
+            params.put(paramName, paramValue);
+        }
+
+        return params;
     }
 
     private static Map<String, String> headersAsMap(final Request request) {
@@ -30,12 +48,13 @@ public class SparkToHttpApiRequest {
         return headers;
     }
 
+    // query params request?param1=value&param2=value;
     private static Map<String, String> queryParamsAsMap(final Request request) {
 
         Map<String, String> params = new HashMap<>();
 
         for(String paramName : request.queryParams()){
-            // todo: figure out what to do if more than one
+            // todo: figure out what to do if more than one in each value, currently we lose the values
             String paramValue = request.queryParamsValues(paramName)[0];
             if(paramValue==null){
                 paramValue="";

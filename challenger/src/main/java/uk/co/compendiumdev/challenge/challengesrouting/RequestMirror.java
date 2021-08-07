@@ -17,6 +17,8 @@ import uk.co.compendiumdev.thingifier.reporting.JsonThing;
 
 public class RequestMirror {
 
+    Thing entityDefn;
+
     // new RequestMirror().mirrorRequest(request, result);
     public String mirrorRequest(final Request request, final Response result) {
 
@@ -24,17 +26,10 @@ public class RequestMirror {
         mirrorThingifier.apiConfig().setResponsesToShowGuids(false);
         mirrorThingifier.apiConfig().setResponsesToShowIdsIfAvailable(false);
 
-        final Thing entityDefn = mirrorThingifier.createThing("messageDetails", "messagesDetails");
+        entityDefn = mirrorThingifier.createThing("messageDetails", "messagesDetails");
 
         entityDefn.definition().addFields(
                 Field.is("details", FieldType.STRING));
-
-        final HttpApiRequest myRequest = SparkToHttpApiRequest.convert(request);
-
-        final JsonThing jsonThing = new JsonThing(mirrorThingifier.apiConfig().jsonOutput());
-
-
-        ApiResponse response;
 
         // reject large requests
         SparkMessageLengthValidator lengthValidator = new SparkMessageLengthValidator();
@@ -44,79 +39,11 @@ public class RequestMirror {
                     mirrorThingifier.apiConfig(), request, result);
         }
 
-        // handle input validation - mirror does not validate
-//        response = httpApi.validateRequestSyntax(myRequest,
-//                ThingifierHttpApi.HttpVerb.GET);
+        return new SparkApiRequestResponseHandler(request, result, mirrorThingifier).
+                usingHandler(
+                        new MirrorHttpApiRequestHandler(this.entityDefn)
+                ).validateRequestSyntax(false).handle();
 
-
-        // convert request into a string for message body- getRequestDetails
-        String requestDetails = getRequestDetails(request);
-
-        final AcceptHeaderParser parser = new AcceptHeaderParser(
-                myRequest.getHeader("accept"));
-
-        // handle text separately as the main api does not 'do' text
-        // todo: add an api configuration to allow text as response type
-
-        if(parser.hasAskedForTEXT()){
-            result.header("Content-Type", "text/plain");
-            result.status(200);
-            return requestDetails;
-        }
-
-        // let main code handle formatting etc.
-        ThingInstance fake = entityDefn.createInstance().
-                setValue("details", requestDetails);
-        response = ApiResponse.success().returnSingleInstance(fake);
-
-
-        final HttpApiResponse httpApiResponse = new HttpApiResponse(myRequest.getHeaders(), response,
-                jsonThing, mirrorThingifier.apiConfig());
-
-        return HttpApiResponseToSpark.convert(httpApiResponse, result);
     }
 
-    private String getRequestDetails(final Request request) {
-
-        StringBuilder output = new StringBuilder();
-
-        output.append(String.format("%s %s",request.requestMethod(), request.url()));
-        output.append("\n");
-
-        output.append("\n");
-        output.append("Query Params");
-        output.append("\n");
-        output.append("============");
-        output.append("\n");
-        for(String queryParam : request.queryParams()){
-            output.append(String.format("%s: %s",queryParam, request.queryParams(queryParam)));
-            output.append("\n");
-        }
-
-        output.append("\n");
-        output.append("IP");
-        output.append("\n");
-        output.append("=======");
-        output.append("\n");
-        output.append(request.ip());
-        output.append("\n");
-
-        output.append("\n");
-        output.append("Headers");
-        output.append("\n");
-        output.append("=======");
-        output.append("\n");
-        for(String header : request.headers()){
-            output.append(String.format("%s: %s",header, request.headers(header)));
-            output.append("\n");
-        }
-        output.append("\n");
-        output.append("Body");
-        output.append("\n");
-        output.append("====");
-        output.append("\n");
-        output.append(request.body());
-        output.append("\n");
-        return output.toString();
-    }
 }

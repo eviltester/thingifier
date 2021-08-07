@@ -1,19 +1,43 @@
 package uk.co.compendiumdev.thingifier.api.http;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public final class HttpApiRequest {
 
-    private final String path;
+    private String path="";
     private Map<String, String> headers;
-    private String body;
-    private Map<String, String> queryParams;
+    private String body="";
+    private Map<String, String> queryParams; // only contains the first query param value
     private VERB verb;
+    private String url="";
+    private Map<String, String> rawQueryParams; // contains all the query param values e.g. ?p=1&p=2
+    private String ip="";
 
     public HttpApiRequest setVerb(final String requestMethod) {
         verb = VERB.valueOf(requestMethod.toUpperCase());
         return this;
+    }
+
+    public String getUrl() {
+        return this.url;
+    }
+
+
+    public Collection<String> getQueryParamNames() {
+        return queryParams.keySet();
+    }
+
+    public String rawQueryParamsValue(final String queryParam) {
+        return rawQueryParams.get(queryParam);
+    }
+
+    public HttpApiRequest setIP(final String ip) {
+        this.ip=ip;
+        return this;
+    }
+
+    public String getIP() {
+        return this.ip;
     }
 
 
@@ -22,7 +46,7 @@ public final class HttpApiRequest {
     public HttpApiRequest(final String pathInfo) {
         this.path = justThePath(pathInfo);
         this.headers = new HashMap<>();
-        this.queryParams = new HashMap<>();
+        queryParams = new HashMap<>();
         body = "";
         verb = VERB.GET;
     }
@@ -32,6 +56,11 @@ public final class HttpApiRequest {
             return path.substring(1);
         }
         return path;
+    }
+
+    public HttpApiRequest setUrl(String url){
+        this.url = url;
+        return this;
     }
 
     public HttpApiRequest setHeaders(final Map<String, String> mapOfHeaderValues) {
@@ -90,6 +119,11 @@ public final class HttpApiRequest {
 
     public HttpApiRequest setQueryParams(final Map<String, String> queryParamsAsMap) {
         queryParams = queryParamsAsMap;
+        return this;
+    }
+
+    public HttpApiRequest setRawQueryParams(final Map<String, String> rawQueryParamsAsMap) {
+        rawQueryParams = rawQueryParamsAsMap;
         return this;
     }
 

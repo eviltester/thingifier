@@ -42,6 +42,7 @@ public class ChallengesRoutes {
                 result.raw().setHeader("Location", "/gui/challenges");
             }
 
+
             final HttpApiRequest myRequest = SparkToHttpApiRequest.convert(request);
 
             HttpApiResponse httpApiResponse=null;

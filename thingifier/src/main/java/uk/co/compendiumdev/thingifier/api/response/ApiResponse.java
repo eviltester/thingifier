@@ -25,6 +25,7 @@ public final class ApiResponse {
 
     private Map<String, String> headers;
     private ThingDefinition typeOfResults;
+    private String body;
 
 
     public ApiResponse(final int aStatusCode) {
@@ -35,6 +36,7 @@ public final class ApiResponse {
         isErrorResponse = false;
         errorMessages = new ArrayList<>();
         hasBody = false;
+        body=null;
     }
 
     public ApiResponse(final int aStatusCode, final boolean isError, final Collection<String> theErrorMessages) {
@@ -200,5 +202,19 @@ public final class ApiResponse {
 
     public void clearBody() {
         this.hasBody = false;
+        this.body=null;
+    }
+
+    public void setBody(final String bodyDetails) {
+        this.hasBody=true;
+        this.body = bodyDetails;
+    }
+
+    public boolean hasABodyOverride() {
+        return this.body!=null;
+    }
+
+    public String getBody() {
+        return this.body;
     }
 }

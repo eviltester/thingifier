@@ -99,10 +99,12 @@ public class SimulationRoutes {
             httpApiResponse = this.httpApi.validateRequestSyntax(myRequest,
                     ThingifierHttpApi.HttpVerb.GET);
 
-            List<Integer> idsToRemove = new ArrayList<>();
-            idsToRemove.add(11);
 
             if (httpApiResponse == null) {
+
+                List<Integer> idsToRemove = new ArrayList<>();
+                idsToRemove.add(11);
+
                 // process it because the request validated
                 List<ThingInstance> instances = new ArrayList();
                 for (ThingInstance possible : this.entityDefn.getInstances()) {
