@@ -136,7 +136,7 @@ public class SmulationRoutesTest {
 
 
     @Test
-    void canSimulateCreateAndGetOfEntity11(){
+    void canSimulatePostCreateAndGetOfEntity11(){
 
         http.clearHeaders();
         http.setHeader("Accept", "application/json");
@@ -154,6 +154,115 @@ public class SmulationRoutesTest {
         Assertions.assertEquals(entity11, response.body);
     }
 
+    @Test
+    void canSimulatePostCreateOfEntity11(){
+
+        http.clearHeaders();
+        http.setHeader("Accept", "application/json");
+
+        HttpResponseDetails response = http.post("/sim/entities/11", "{\"name\":\"bob\"}");
+
+        Assertions.assertEquals(201, response.statusCode);
+        Assertions.assertEquals("application/json",response.getHeader("Content-Type"));
+        Assertions.assertEquals("entities/11", response.getHeader("Location"));
+        String entity11 = "{\"id\":11,\"name\":\"bob\",\"description\":\"\"}";
+        Assertions.assertEquals(entity11, response.body);
+
+        response = http.get("/sim/entities/11");
+        Assertions.assertEquals(200, response.statusCode);
+        Assertions.assertEquals(entity11, response.body);
+    }
+
+    @Test
+    void canSimulatePutCreateOfEntity11(){
+
+        http.clearHeaders();
+        http.setHeader("Accept", "application/json");
+
+        HttpResponseDetails response = http.put("/sim/entities/11", "{\"name\":\"bob\"}");
+
+        Assertions.assertEquals(201, response.statusCode);
+        Assertions.assertEquals("application/json",response.getHeader("Content-Type"));
+        Assertions.assertEquals("entities/11", response.getHeader("Location"));
+        String entity11 = "{\"id\":11,\"name\":\"bob\",\"description\":\"\"}";
+        Assertions.assertEquals(entity11, response.body);
+
+        response = http.get("/sim/entities/11");
+        Assertions.assertEquals(200, response.statusCode);
+        Assertions.assertEquals(entity11, response.body);
+    }
+
+    @Test
+    void canSimulatePostAmendOfEntity10(){
+
+        http.clearHeaders();
+        http.setHeader("Accept", "application/json");
+
+        HttpResponseDetails response = http.post("/sim/entities/10", "{\"name\":\"eris\"}");
+
+        Assertions.assertEquals(200, response.statusCode);
+        Assertions.assertEquals("application/json",response.getHeader("Content-Type"));
+        Assertions.assertEquals(null, response.getHeader("Location"),
+                "expected no location header on amend");
+        String entity11 = "{\"id\":10,\"name\":\"eris\",\"description\":\"\"}";
+        Assertions.assertEquals(entity11, response.body);
+
+        response = http.get("/sim/entities/10");
+        Assertions.assertEquals(200, response.statusCode);
+        String entity10 = "{\"id\":10,\"name\":\"eris\",\"description\":\"\"}";
+        Assertions.assertEquals(entity10, response.body);
+    }
+
+    @Test
+    void canSimulatePutAmendOfEntity10(){
+
+        http.clearHeaders();
+        http.setHeader("Accept", "application/json");
+
+        HttpResponseDetails response = http.put("/sim/entities/10", "{\"name\":\"eris\"}");
+
+        Assertions.assertEquals(200, response.statusCode);
+        Assertions.assertEquals("application/json",response.getHeader("Content-Type"));
+        Assertions.assertEquals(null, response.getHeader("Location"),
+                "expected no location header on amend");
+        String entity11 = "{\"id\":10,\"name\":\"eris\",\"description\":\"\"}";
+        Assertions.assertEquals(entity11, response.body);
+
+        response = http.get("/sim/entities/10");
+        Assertions.assertEquals(200, response.statusCode);
+        String entity10 = "{\"id\":10,\"name\":\"eris\",\"description\":\"\"}";
+        Assertions.assertEquals(entity10, response.body);
+    }
+
+    @Test
+    void canSimulatePostAmendErrors(){
+
+        http.clearHeaders();
+        http.setHeader("Accept", "application/json");
+
+        HttpResponseDetails response = http.post("/sim/entities/23", "{\"name\":\"eris\"}");
+        Assertions.assertEquals(404, response.statusCode);
+        Assertions.assertTrue(response.body.contains("Could not find Entity with ID"));
+
+        response = http.post("/sim/entities/7", "{\"name\":\"eris\"}");
+        Assertions.assertEquals(403, response.statusCode);
+        Assertions.assertTrue(response.body.contains("Not authorised to amend that entity"));
+    }
+
+    @Test
+    void canSimulatePutAmendErrors(){
+
+        http.clearHeaders();
+        http.setHeader("Accept", "application/json");
+
+        HttpResponseDetails response = http.put("/sim/entities/23", "{\"name\":\"eris\"}");
+        Assertions.assertEquals(403, response.statusCode);
+        Assertions.assertTrue(response.body.contains("Not authorised to create that entity"));
+
+        response = http.put("/sim/entities/7", "{\"name\":\"eris\"}");
+        Assertions.assertEquals(403, response.statusCode);
+        Assertions.assertTrue(response.body.contains("Not authorised to amend that entity"));
+    }
 
     @Test
     void canSimulateDeleteOfEntity9() {
@@ -166,7 +275,6 @@ public class SmulationRoutesTest {
 
         response = http.get("/sim/entities/9");
         Assertions.assertEquals(404, response.statusCode);
-
     }
 
     @Test
@@ -181,12 +289,6 @@ public class SmulationRoutesTest {
         // can get something  in the thingifier
         response = http.get("/sim/entities/3");
         Assertions.assertEquals(200, response.statusCode);
-
-        // can get fake TODO: create an amendment test and move this there
-        response = http.get("/sim/entities/10");
-        Assertions.assertEquals(200, response.statusCode);
-        String entity10 = "{\"id\":10,\"name\":\"eris\",\"description\":\"\"}";
-        Assertions.assertEquals(entity10, response.body);
     }
 
     @Test
@@ -198,7 +300,7 @@ public class SmulationRoutesTest {
         HttpResponseDetails response = http.head("/sim/entities/23");
         Assertions.assertEquals(404, response.statusCode);
         Assertions.assertEquals("", response.body);
-        
+
         // can get something  in the thingifier
         response = http.head("/sim/entities/3");
         Assertions.assertEquals(200, response.statusCode);

@@ -166,10 +166,6 @@ public class SimulationRoutes {
             return "";
         });
 
-
-
-
-
         // post create new - will create as 11 {"name":"bob"}
         post(endpoint, (request, result) -> {
 
@@ -181,83 +177,49 @@ public class SimulationRoutes {
                     }).handle();
         });
 
+        HttpApiRequestHandler putAndPostEntityHandler = (HttpApiRequest anHttpApiRequest) -> {
+            // process it because the request validated
+            ApiResponse response = null;
+            String id = anHttpApiRequest.getUrlParam(":id");
+            if (id.equals("11")) {
+                // we can create id 11
+                response = ApiResponse.created(
+                        this.entityDefn.findInstanceByGUIDorID("11"),
+                        this.simulation.apiConfig());
+            } else {
+                if (id.equals("10")) {
+                    // 10 is the entity we amend to name:eris
+                    ThingInstance fake = this.entityDefn.createInstance().
+                            overrideValue("id", "10").setValue("name", "eris");
+                    response = ApiResponse.success().returnSingleInstance(fake);
+                } else {
+                    final ThingInstance instance = this.entityDefn.findInstanceByGUIDorID(id);
+                    if (instance == null) {
+                        if(anHttpApiRequest.getVerb()== HttpApiRequest.VERB.POST) {
+                            response = ApiResponse.error404("Could not find Entity with ID " + id);
+                        }else{ // must be a PUT
+                            response = ApiResponse.error(403, "Not authorised to create that entity");
+                        }
+                    } else {
+                        response = ApiResponse.error(403, "Not authorised to amend that entity");
+                    }
+                }
+            }
+            return response;
+        };
+
         // post amend 10
         // post create - 11
         post(endpoint + "/:id", (request, result) -> {
-            final HttpApiRequest myRequest = SparkToHttpApiRequest.convert(request);
-
-            HttpApiResponse httpApiResponse = this.httpApi.validateRequestSyntax(myRequest,
-                    ThingifierHttpApi.HttpVerb.POST);
-
-            if (httpApiResponse == null) {
-                // process it because the request validated
-                ApiResponse response = null;
-                String id = request.params().get(":id");
-                if (id.equals("11")) {
-                    // we can create id 11
-                    response = ApiResponse.created(
-                            this.entityDefn.findInstanceByGUIDorID("11"),
-                            this.simulation.apiConfig());
-                } else {
-                    if (id.equals("10")) {
-                        // 10 is the entity we amend to name:eris
-                        ThingInstance fake = this.entityDefn.createInstance().
-                                overrideValue("id", "10").setValue("name", "eris");
-                        response = ApiResponse.success().returnSingleInstance(fake);
-                    } else {
-                        final ThingInstance instance = this.entityDefn.findInstanceByGUIDorID(id);
-                        if (instance == null) {
-                            response = ApiResponse.error404("Could not find Entity with ID " + id);
-                        } else {
-                            response = ApiResponse.error(403, "Not authorised to amend that entity");
-                        }
-                    }
-                }
-                httpApiResponse = new HttpApiResponse(myRequest.getHeaders(), response,
-                        jsonThing, this.simulation.apiConfig());
-            }
-
-            return HttpApiResponseToSpark.convert(httpApiResponse, result);
+            return new SparkApiRequestResponseHandler(request, result, simulation).
+                    usingHandler(putAndPostEntityHandler).handle();
         });
 
         // put specific id will create (11),
         //  and can amend with put (10)
         put(endpoint + "/:id", (request, result) -> {
-            final HttpApiRequest myRequest = SparkToHttpApiRequest.convert(request);
-
-            HttpApiResponse httpApiResponse  = this.httpApi.validateRequestSyntax(myRequest,
-                    ThingifierHttpApi.HttpVerb.POST);
-
-            if (httpApiResponse == null) {
-                ApiResponse response = null;
-                // process it because the request validated
-                String id = request.params().get(":id");
-                if (id.equals("11")) {
-                    // we can create id 11
-                    response = ApiResponse.created(
-                            this.entityDefn.findInstanceByGUIDorID("11"),
-                            this.simulation.apiConfig());
-                } else {
-                    if (id.equals("10")) {
-                        // we can amend id 10
-                        ThingInstance fake = this.entityDefn.createInstance().
-                                overrideValue("id", "10").setValue("name", "eris");
-                        response = ApiResponse.success().returnSingleInstance(fake);
-                    } else {
-                        final ThingInstance instance = this.entityDefn.findInstanceByGUIDorID(id);
-                        if (instance == null) {
-                            response = ApiResponse.error(403, "Not authorised to create that entity");
-                        } else {
-                            response = ApiResponse.error(403, "Not authorised to amend that entity");
-                        }
-                    }
-                }
-
-                httpApiResponse = new HttpApiResponse(myRequest.getHeaders(), response,
-                        jsonThing, this.simulation.apiConfig());
-            }
-
-            return HttpApiResponseToSpark.convert(httpApiResponse, result);
+            return new SparkApiRequestResponseHandler(request, result, simulation).
+                    usingHandler(putAndPostEntityHandler).handle();
         });
 
         delete(endpoint + "/:id", (request, result) -> {
@@ -279,12 +241,6 @@ public class SimulationRoutes {
                         }
                         return response;
                     }).handle();
-
         });
-
-
-
-
-
     }
 }
