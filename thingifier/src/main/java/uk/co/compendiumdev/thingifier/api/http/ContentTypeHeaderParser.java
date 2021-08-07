@@ -1,9 +1,9 @@
 package uk.co.compendiumdev.thingifier.api.http;
 
-public class AcceptContentTypeParser {
+public class ContentTypeHeaderParser {
     private final String header;
 
-    public AcceptContentTypeParser(final String header) {
+    public ContentTypeHeaderParser(final String header) {
         if(header==null){
             this.header="";
         }else {

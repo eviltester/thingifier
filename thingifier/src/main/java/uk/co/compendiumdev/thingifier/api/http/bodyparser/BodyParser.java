@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.xml.XMLParserAbstraction;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.xml.XMLParserUsingOrgJson;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
-import uk.co.compendiumdev.thingifier.api.http.AcceptContentTypeParser;
+import uk.co.compendiumdev.thingifier.api.http.ContentTypeHeaderParser;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
@@ -122,7 +122,7 @@ public class BodyParser {
         valid if error message returned is empty
      */
     public String validBodyBasedOnContentType(){
-        final AcceptContentTypeParser contentTypeParser = new AcceptContentTypeParser(request.getHeader("content-type"));
+        final ContentTypeHeaderParser contentTypeParser = new ContentTypeHeaderParser(request.getHeader("content-type"));
         if (contentTypeParser.isXML()) {
             String validateResultsErrorReport = this.xmlParser.validateXML();
             if(validateResultsErrorReport.length()!=0){
@@ -160,7 +160,7 @@ public class BodyParser {
         // this is just a quick hack to amend it to support XML
         // TODO: try to change this in the future to make it more robust, perhaps the API shouldn't take a String as the body, it should take a parsed class?
         // TODO: BUG - since we remove the wrapper we might send in a POST <project><title>My posted to do on the project</title></project> to /todo and it will work fine if the fields are the same
-        final AcceptContentTypeParser contentTypeParser = new AcceptContentTypeParser(request.getHeader("content-type"));
+        final ContentTypeHeaderParser contentTypeParser = new ContentTypeHeaderParser(request.getHeader("content-type"));
         if (contentTypeParser.isXML()) {
             System.out.println(request.getBody());
             args = this.xmlParser.xmlAsMap();

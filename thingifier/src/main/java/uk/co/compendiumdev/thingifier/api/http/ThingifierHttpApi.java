@@ -32,11 +32,14 @@ final public class ThingifierHttpApi {
                              List<HttpApiResponseHook> apiResponseHooks) {
         this.thingifier = aThingifier;
 
+        // request hooks are used to do initial processing and possibly prevent processing
         if(apiRequestHooks==null){
             this.apiRequestHooks = new ArrayList<>();
         }else{
             this.apiRequestHooks = apiRequestHooks;
         }
+
+        // response hooks are used after the main API processing and possibly override values
         if(apiResponseHooks==null){
             this.apiResponseHooks = new ArrayList<>();
         }else{
@@ -47,128 +50,58 @@ final public class ThingifierHttpApi {
     }
 
 
-    public ApiResponse validateRequestSyntax(final HttpApiRequest request, final HttpVerb verb){
-        // Config Validation
-        String acceptHeader = request.getHeader("Accept", "");
-        ApiResponse apiResponse = validateAcceptHeader(acceptHeader);
 
-        if (apiResponse == null) {
-            // only validate content if it contains content
-            if(verb == HttpVerb.POST || verb == HttpVerb.PUT || verb == HttpVerb.PATCH) {
-                apiResponse = validateContentTypeHeader(
-                        request.getHeader("Content-Type", ""));
+    private HttpApiResponse handleRequest(final HttpApiRequest request, HttpVerb verb){
 
-                // validate the content syntax format against content type
-                if(apiResponse==null){
-                    BodyParser parser = new BodyParser(request, new ArrayList<>());
-                    String parsingError = parser.validBodyBasedOnContentType();
-                    if(parsingError.length()!=0){
-                        apiResponse = ApiResponse.error(400, parsingError);
-                    }
-                }
-            }
-        }
-
-        return apiResponse;
-    }
-
-    private HttpApiResponse requestWrapper(final HttpApiRequest request, HttpVerb verb){
-
+        // any pre-request override processing
         HttpApiResponse httpResponse = runTheHttpApiRequestHooksOn(request);
 
         ApiResponse apiResponse = null;
 
+        // TODO: consider 'validation' hooks which can be used to override/augment validation
+
+        // validate request syntax
         if(httpResponse==null) {
-            apiResponse = validateRequestSyntax(request, verb);
+            httpResponse = validateRequestSyntax(request, verb);
         }
 
-        if (apiResponse != null) {
+        // TODO: consider 'processing' hooks which can be used to override the generic processing
+
+        // no httpResponse generated after validation so it is not in error
+        if(httpResponse==null) {
+            apiResponse = routeAndProcessRequest(request, verb);
+
             httpResponse = new HttpApiResponse(request.getHeaders(), apiResponse,
                     jsonThing, thingifier.apiConfig());
         }
 
-        if(httpResponse==null) {
-            apiResponse = routeRequest(request, verb);
-
-            httpResponse = new HttpApiResponse(request.getHeaders(), apiResponse,
-                    jsonThing, thingifier.apiConfig());
-        }
-
+        // run any post processing response hooks
         return runTheHttpApiResponseHooksOn(request, httpResponse);
     }
 
-    private ApiResponse validateContentTypeHeader(final String header) {
+    /**
+     *  return an error response if the request is invalid, null if valid
+     */
+    public HttpApiResponse validateRequestSyntax(final HttpApiRequest request, final HttpVerb verb) {
 
-        // we don't validate content type header
-        if(!thingifier.apiConfig().willApiEnforceContentTypeHeaderForRequests()){
-            return null;
+        final HttpApiRequestValidator requestValidator =
+                new HttpApiRequestValidator(thingifier.apiConfig());
+
+        HttpApiResponse httpResponse=null;
+
+        if(!requestValidator.validateSyntax(request, verb)){
+
+            httpResponse = new HttpApiResponse(
+                                    request.getHeaders(),
+                                    requestValidator.getErrorApiResponse(),
+                                    jsonThing, thingifier.apiConfig());
         }
 
-        final AcceptContentTypeParser accept = new AcceptContentTypeParser(header);
-
-        if(accept.isMissing() || accept.isText()){
-            // todo: have a config for enforce presence of content-type header, when false then derive content type from content when parsing message
-            // todo: have a config for treatContentTypeTextAsMissingContentType - which is what this code current does
-            // assume that we can derive content type from the actual content
-            return null;
-        }
-
-
-
-        int statusContentTypeNotSupported = thingifier.apiConfig().statusCodes().
-                                            contentTypeNotSupported();
-
-        if(!accept.isXML() && !accept.isJSON()){
-            return ApiResponse.error(statusContentTypeNotSupported,
-                    "Unsupported Content Type - " + header);
-        }
-
-        if(accept.isXML() && !thingifier.apiConfig().willAcceptXMLContent()){
-            return ApiResponse.error(statusContentTypeNotSupported, "XML Not Supported");
-        }
-
-        if(accept.isJSON() && !thingifier.apiConfig().willAcceptJSONContent()){
-            return ApiResponse.error(statusContentTypeNotSupported, "JSON Not Supported");
-        }
-
-        return null;
+        return httpResponse;
     }
 
-    private ApiResponse validateAcceptHeader(final String acceptHeader) {
-        final AcceptHeaderParser accept = new AcceptHeaderParser(acceptHeader);
-        ApiResponse apiResponse=null;
-
-        int statusAcceptTypeNotSupported = thingifier.apiConfig().statusCodes().acceptTypeNotSupported();
-
-        if(thingifier.apiConfig().willApiEnforceAcceptHeaderForResponses()){
-            if (!accept.isSupportedHeader()){
-                apiResponse = ApiResponse.error(statusAcceptTypeNotSupported, "Unrecognised Accept Type");
-            }
-        }
-
-        boolean willOnlyAcceptXML = accept.hasAskedFor(AcceptHeaderParser.ACCEPT_TYPE.XML) &&
-                !accept.willAcceptJson();
-        if (    willOnlyAcceptXML &&
-                !thingifier.apiConfig().willApiAllowXmlForResponses() &&
-                thingifier.apiConfig().willApiEnforceAcceptHeaderForResponses()
-        ) {
-            apiResponse = ApiResponse.error(statusAcceptTypeNotSupported, "XML not supported");
-        }
-
-        boolean willOnlyAcceptJSON = accept.hasAskedFor(AcceptHeaderParser.ACCEPT_TYPE.JSON) &&
-                !accept.willAcceptXml();
-        if (    willOnlyAcceptJSON &&
-                !thingifier.apiConfig().willApiAllowJsonForResponses() &&
-                thingifier.apiConfig().willApiEnforceAcceptHeaderForResponses()
-        ) {
-            apiResponse = ApiResponse.error(statusAcceptTypeNotSupported, "JSON not supported");
-        }
-
-        return apiResponse;
-    }
-
-    public ApiResponse routeRequest(final HttpApiRequest request,
-                                        HttpVerb verb) {
+    public ApiResponse routeAndProcessRequest(final HttpApiRequest request,
+                                              HttpVerb verb) {
 
         ApiResponse apiResponse=null;
 
@@ -184,10 +117,12 @@ final public class ThingifierHttpApi {
                 apiResponse = thingifier.api().delete(request.getPath());
                 break;
             case POST:
-                apiResponse = thingifier.api().post(request.getPath(), bodyAsMap(request));
+
+                apiResponse = thingifier.api().post(request.getPath(), new BodyParser(request, thingifier.getThingNames()));
                 break;
             case PUT:
-                apiResponse = thingifier.api().put(request.getPath(), bodyAsMap(request));
+
+                apiResponse = thingifier.api().put(request.getPath(), new BodyParser(request, thingifier.getThingNames()));
                 break;
         }
 
@@ -196,23 +131,23 @@ final public class ThingifierHttpApi {
     }
 
     public HttpApiResponse get(final HttpApiRequest request) {
-        return requestWrapper(request, HttpVerb.GET);
+        return handleRequest(request, HttpVerb.GET);
     }
 
     public HttpApiResponse head(final HttpApiRequest request) {
-        return requestWrapper(request, HttpVerb.HEAD);
+        return handleRequest(request, HttpVerb.HEAD);
     }
 
     public HttpApiResponse delete(final HttpApiRequest request) {
-        return requestWrapper(request, HttpVerb.DELETE);
+        return handleRequest(request, HttpVerb.DELETE);
     }
 
     public HttpApiResponse post(final HttpApiRequest request) {
-        return requestWrapper(request, HttpVerb.POST);
+        return handleRequest(request, HttpVerb.POST);
     }
 
     public HttpApiResponse put(final HttpApiRequest request) {
-        return requestWrapper(request, HttpVerb.PUT);
+        return handleRequest(request, HttpVerb.PUT);
     }
 
     public HttpApiResponse query(final HttpApiRequest request, final String query) {
@@ -226,12 +161,6 @@ final public class ThingifierHttpApi {
         }
 
         return runTheHttpApiResponseHooksOn(request, httpResponse);
-    }
-
-    private BodyParser bodyAsMap(final HttpApiRequest request) {
-
-        return new BodyParser(request, thingifier.getThingNames());
-
     }
 
     private HttpApiResponse runTheHttpApiResponseHooksOn(final HttpApiRequest request, final HttpApiResponse response) {

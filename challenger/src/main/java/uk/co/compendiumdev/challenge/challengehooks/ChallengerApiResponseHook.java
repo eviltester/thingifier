@@ -5,7 +5,7 @@ import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
 import uk.co.compendiumdev.thingifier.core.Thing;
 import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.api.http.AcceptContentTypeParser;
+import uk.co.compendiumdev.thingifier.api.http.ContentTypeHeaderParser;
 import uk.co.compendiumdev.thingifier.api.http.AcceptHeaderParser;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiResponse;
@@ -53,7 +53,7 @@ public class ChallengerApiResponseHook implements HttpApiResponseHook {
         }
 
         final AcceptHeaderParser acceptParser = new AcceptHeaderParser(request.getHeader("accept"));
-        final AcceptContentTypeParser contentTypeParser = new AcceptContentTypeParser(request.getHeader("content-type"));
+        final ContentTypeHeaderParser contentTypeParser = new ContentTypeHeaderParser(request.getHeader("content-type"));
 
         if(request.getVerb() == HttpApiRequest.VERB.GET &&
                 request.getPath().contentEquals("todos") &&

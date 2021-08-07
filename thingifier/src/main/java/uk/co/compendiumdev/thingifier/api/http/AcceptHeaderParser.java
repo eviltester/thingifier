@@ -2,6 +2,7 @@ package uk.co.compendiumdev.thingifier.api.http;
 
 import java.util.*;
 
+// TODO: configure with additional accept strings e.g. to allow text/plain
 public class AcceptHeaderParser {
     private final String acceptHeader;
     private final List<String> acceptMediaTypeDefinitionsList;
@@ -71,6 +72,8 @@ public class AcceptHeaderParser {
 
     public enum ACCEPT_TYPE{ XML, JSON, ANYTHING, NO_MATCHING_TYPE, TEXT};
 
+    // TODO: configure to all new accept headers and remove accept headers
+    //       should probably do this with an AllowedAcceptableHeaders class
     public AcceptHeaderParser(final String acceptHeader) {
 
         if(acceptHeader== null){
@@ -97,8 +100,6 @@ public class AcceptHeaderParser {
     }
 
     public boolean hasAPreferenceFor(final ACCEPT_TYPE type) {
-
-        List<String> preferredHeaderValues = acceptedTypes.get(type);
 
         // if type is found in the array before any other type
         // then assume this is a preference

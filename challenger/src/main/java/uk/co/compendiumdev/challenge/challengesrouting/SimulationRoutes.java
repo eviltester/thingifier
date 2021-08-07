@@ -95,13 +95,15 @@ public class SimulationRoutes {
         get(endpoint, (request, result) -> {
             final HttpApiRequest myRequest = SparkToHttpApiRequest.convert(request);
 
-            ApiResponse response = this.httpApi.validateRequestSyntax(myRequest,
+            HttpApiResponse httpApiResponse=null;
+
+            httpApiResponse = this.httpApi.validateRequestSyntax(myRequest,
                     ThingifierHttpApi.HttpVerb.GET);
 
             List<Integer> idsToRemove = new ArrayList<>();
             idsToRemove.add(11);
 
-            if (response == null) {
+            if (httpApiResponse == null) {
                 // process it because the request validated
                 List<ThingInstance> instances = new ArrayList();
                 for (ThingInstance possible : this.entityDefn.getInstances()) {
@@ -112,12 +114,12 @@ public class SimulationRoutes {
                 }
                 // remove id 11 because that is a POST so not available in the list
 
-                response = ApiResponse.success().returnInstanceCollection(
+                final ApiResponse apiResponse = ApiResponse.success().returnInstanceCollection(
                         instances);
-            }
 
-            final HttpApiResponse httpApiResponse = new HttpApiResponse(myRequest.getHeaders(), response,
-                    jsonThing, this.simulation.apiConfig());
+                httpApiResponse = new HttpApiResponse(myRequest.getHeaders(), apiResponse,
+                        jsonThing, this.simulation.apiConfig());
+            }
 
             return HttpApiResponseToSpark.convert(httpApiResponse, result);
         });
@@ -126,10 +128,13 @@ public class SimulationRoutes {
         get(endpoint + "/:id", (request, result) -> {
             final HttpApiRequest myRequest = SparkToHttpApiRequest.convert(request);
 
-            ApiResponse response = this.httpApi.validateRequestSyntax(myRequest,
+            HttpApiResponse httpApiResponse = this.httpApi.validateRequestSyntax(myRequest,
                     ThingifierHttpApi.HttpVerb.GET);
 
-            if (response == null) {
+            if (httpApiResponse == null) {
+
+                ApiResponse response=null;
+
                 // process it because the request validated
                 String id = request.params().get(":id");
                 ThingInstance instance = this.entityDefn.findInstanceByGUIDorID(id);
@@ -152,10 +157,11 @@ public class SimulationRoutes {
                     response = ApiResponse.error404("Could not find Entity with ID 9");
                 }
 
+                httpApiResponse = new HttpApiResponse(myRequest.getHeaders(), response,
+                        jsonThing, this.simulation.apiConfig());
             }
 
-            final HttpApiResponse httpApiResponse = new HttpApiResponse(myRequest.getHeaders(), response,
-                    jsonThing, this.simulation.apiConfig());
+
 
             return HttpApiResponseToSpark.convert(httpApiResponse, result);
         });
@@ -164,17 +170,17 @@ public class SimulationRoutes {
         post(endpoint, (request, result) -> {
             final HttpApiRequest myRequest = SparkToHttpApiRequest.convert(request);
 
-            ApiResponse response = this.httpApi.validateRequestSyntax(myRequest,
+            HttpApiResponse httpApiResponse = this.httpApi.validateRequestSyntax(myRequest,
                     ThingifierHttpApi.HttpVerb.POST);
 
-            if (response == null) {
+            if (httpApiResponse == null) {
                 // process it because the request validated
-                response = ApiResponse.created(this.entityDefn.findInstanceByGUIDorID("11"),
+                final ApiResponse response = ApiResponse.created(this.entityDefn.findInstanceByGUIDorID("11"),
                         this.simulation.apiConfig());
-            }
 
-            final HttpApiResponse httpApiResponse = new HttpApiResponse(myRequest.getHeaders(), response,
-                    jsonThing, this.simulation.apiConfig());
+                httpApiResponse = new HttpApiResponse(myRequest.getHeaders(), response,
+                        jsonThing, this.simulation.apiConfig());
+            }
 
             return HttpApiResponseToSpark.convert(httpApiResponse, result);
         });
@@ -184,11 +190,12 @@ public class SimulationRoutes {
         post(endpoint + "/:id", (request, result) -> {
             final HttpApiRequest myRequest = SparkToHttpApiRequest.convert(request);
 
-            ApiResponse response = this.httpApi.validateRequestSyntax(myRequest,
+            HttpApiResponse httpApiResponse = this.httpApi.validateRequestSyntax(myRequest,
                     ThingifierHttpApi.HttpVerb.POST);
 
-            if (response == null) {
+            if (httpApiResponse == null) {
                 // process it because the request validated
+                ApiResponse response = null;
                 String id = request.params().get(":id");
                 if (id.equals("11")) {
                     // we can create id 11
@@ -210,10 +217,9 @@ public class SimulationRoutes {
                         }
                     }
                 }
+                httpApiResponse = new HttpApiResponse(myRequest.getHeaders(), response,
+                        jsonThing, this.simulation.apiConfig());
             }
-
-            final HttpApiResponse httpApiResponse = new HttpApiResponse(myRequest.getHeaders(), response,
-                    jsonThing, this.simulation.apiConfig());
 
             return HttpApiResponseToSpark.convert(httpApiResponse, result);
         });
@@ -223,10 +229,11 @@ public class SimulationRoutes {
         put(endpoint + "/:id", (request, result) -> {
             final HttpApiRequest myRequest = SparkToHttpApiRequest.convert(request);
 
-            ApiResponse response = this.httpApi.validateRequestSyntax(myRequest,
+            HttpApiResponse httpApiResponse  = this.httpApi.validateRequestSyntax(myRequest,
                     ThingifierHttpApi.HttpVerb.POST);
 
-            if (response == null) {
+            if (httpApiResponse == null) {
+                ApiResponse response = null;
                 // process it because the request validated
                 String id = request.params().get(":id");
                 if (id.equals("11")) {
@@ -249,10 +256,10 @@ public class SimulationRoutes {
                         }
                     }
                 }
-            }
 
-            final HttpApiResponse httpApiResponse = new HttpApiResponse(myRequest.getHeaders(), response,
-                    jsonThing, this.simulation.apiConfig());
+                httpApiResponse = new HttpApiResponse(myRequest.getHeaders(), response,
+                        jsonThing, this.simulation.apiConfig());
+            }
 
             return HttpApiResponseToSpark.convert(httpApiResponse, result);
         });
@@ -260,11 +267,12 @@ public class SimulationRoutes {
         delete(endpoint + "/:id", (request, result) -> {
             final HttpApiRequest myRequest = SparkToHttpApiRequest.convert(request);
 
-            ApiResponse response = this.httpApi.validateRequestSyntax(myRequest,
+            HttpApiResponse httpApiResponse = this.httpApi.validateRequestSyntax(myRequest,
                     ThingifierHttpApi.HttpVerb.POST);
 
-            if (response == null) {
+            if (httpApiResponse == null) {
                 // process it because the request validated
+                ApiResponse response = null;
                 String id = request.params().get(":id");
                 if (id.equals("9")) {
                     // we can delete id 9
@@ -277,10 +285,10 @@ public class SimulationRoutes {
                         response = ApiResponse.error(403, "Not authorised to delete that entity");
                     }
                 }
-            }
 
-            final HttpApiResponse httpApiResponse = new HttpApiResponse(myRequest.getHeaders(), response,
-                    jsonThing, this.simulation.apiConfig());
+                httpApiResponse = new HttpApiResponse(myRequest.getHeaders(), response,
+                        jsonThing, this.simulation.apiConfig());
+            }
 
             return HttpApiResponseToSpark.convert(httpApiResponse, result);
         });
@@ -290,13 +298,16 @@ public class SimulationRoutes {
 
             final HttpApiRequest myRequest = SparkToHttpApiRequest.convert(request);
 
-            ApiResponse response = this.httpApi.validateRequestSyntax(myRequest,
+            HttpApiResponse httpApiResponse = this.httpApi.validateRequestSyntax(myRequest,
                     ThingifierHttpApi.HttpVerb.GET);
 
             List<Integer> idsToRemove = new ArrayList<>();
             idsToRemove.add(11);
 
-            if (response == null) {
+            if (httpApiResponse == null) {
+
+                ApiResponse response=null;
+
                 // process it because the request validated
                 List<ThingInstance> instances = new ArrayList();
                 for (ThingInstance possible : this.entityDefn.getInstances()) {
@@ -309,10 +320,10 @@ public class SimulationRoutes {
 
                 response = ApiResponse.success().returnInstanceCollection(
                         instances);
-            }
 
-            final HttpApiResponse httpApiResponse = new HttpApiResponse(myRequest.getHeaders(), response,
-                    jsonThing, this.simulation.apiConfig());
+                httpApiResponse = new HttpApiResponse(myRequest.getHeaders(), response,
+                        jsonThing, this.simulation.apiConfig());
+            }
 
             HttpApiResponseToSpark.convert(httpApiResponse, result);
             return "";
@@ -322,10 +333,13 @@ public class SimulationRoutes {
 
             final HttpApiRequest myRequest = SparkToHttpApiRequest.convert(request);
 
-            ApiResponse response = this.httpApi.validateRequestSyntax(myRequest,
+            HttpApiResponse httpApiResponse = this.httpApi.validateRequestSyntax(myRequest,
                     ThingifierHttpApi.HttpVerb.GET);
 
-            if (response == null) {
+            if (httpApiResponse == null) {
+
+                ApiResponse response = null;
+
                 // process it because the request validated
                 String id = request.params().get(":id");
                 ThingInstance instance = this.entityDefn.findInstanceByGUIDorID(id);
@@ -348,10 +362,9 @@ public class SimulationRoutes {
                     response = ApiResponse.error404("Could not find Entity with ID 9");
                 }
 
+                httpApiResponse = new HttpApiResponse(myRequest.getHeaders(), response,
+                        jsonThing, this.simulation.apiConfig());
             }
-
-            final HttpApiResponse httpApiResponse = new HttpApiResponse(myRequest.getHeaders(), response,
-                    jsonThing, this.simulation.apiConfig());
 
             HttpApiResponseToSpark.convert(httpApiResponse, result);
 

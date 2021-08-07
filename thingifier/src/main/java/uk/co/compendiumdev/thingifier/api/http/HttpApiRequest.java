@@ -16,6 +16,7 @@ public final class HttpApiRequest {
         return this;
     }
 
+
     public enum VERB{ GET, HEAD, POST, PUT, DELETE, PATCH, OPTIONS, CONNECT, TRACE}
 
     public HttpApiRequest(final String pathInfo) {
@@ -58,9 +59,29 @@ public final class HttpApiRequest {
         return this.body;
     }
 
+    // common header requests Accept and Content-Type
+    public String getAcceptHeader() {
+        return getHeader("Accept", "");
+    }
+
+    public String getContentTypeHeader() {
+        return getHeader("Content-Type", "");
+    }
+
+
+    public String getHeader(final String headerName, final String aDefault) {
+        String header = getHeader(headerName);
+        if(header==null){
+            header=aDefault;
+        }
+        return header;
+    }
+
     public String getHeader(final String headerName) {
         return this.headers.get(headerName.toLowerCase());
     }
+
+
 
     public HttpApiRequest addHeader(final String headerName, final String headerValue) {
         this.headers.put(headerName.trim().toLowerCase(), headerValue.trim().toLowerCase());
@@ -76,13 +97,7 @@ public final class HttpApiRequest {
         return queryParams;
     }
 
-    public String getHeader(final String headerName, final String aDefault) {
-        String header = getHeader(headerName);
-        if(header==null){
-            header=aDefault;
-        }
-        return header;
-    }
+
 
     public HttpApiRequest setVerb(final VERB verb) {
         this.verb = verb;

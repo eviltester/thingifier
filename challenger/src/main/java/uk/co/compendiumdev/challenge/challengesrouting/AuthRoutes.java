@@ -1,9 +1,5 @@
 package uk.co.compendiumdev.challenge.challengesrouting;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import org.json.XML;
-import spark.Response;
 import uk.co.compendiumdev.challenge.BasicAuthHeaderParser;
 import uk.co.compendiumdev.challenge.BearerAuthHeaderParser;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
@@ -12,9 +8,6 @@ import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.ThingifierApiDefn;
 import uk.co.compendiumdev.thingifier.api.http.*;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
-import uk.co.compendiumdev.thingifier.api.http.bodyparser.xml.XMLParserAbstraction;
-import uk.co.compendiumdev.thingifier.api.http.bodyparser.xml.XMLParserFactory;
-import uk.co.compendiumdev.thingifier.api.http.bodyparser.xml.XMLParserUsingOrgJson;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.api.restapihandlers.ThingCreation;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingDefinition;
@@ -31,9 +24,7 @@ import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 import uk.co.compendiumdev.thingifier.reporting.JsonThing;
 import uk.co.compendiumdev.thingifier.spark.SimpleRouteConfig;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 
 import static spark.Spark.get;
@@ -192,7 +183,7 @@ public class AuthRoutes {
                 return "";
             }
 
-            AcceptContentTypeParser contentTypeParser = new AcceptContentTypeParser(request.headers("CONTENT-TYPE"));
+            ContentTypeHeaderParser contentTypeParser = new ContentTypeHeaderParser(request.headers("CONTENT-TYPE"));
             if(!contentTypeParser.isJSON() && !contentTypeParser.isXML()){
                 result.status(415);
                 return "";
@@ -240,11 +231,13 @@ public class AuthRoutes {
             }
 
             final HttpApiRequest myRequest = SparkToHttpApiRequest.convert(request);
-            ApiResponse response = this.httpApi.validateRequestSyntax(myRequest,
-                                        ThingifierHttpApi.HttpVerb.POST);
+            HttpApiResponse httpApiResponse = this.httpApi.validateRequestSyntax(myRequest,
+                    ThingifierHttpApi.HttpVerb.POST);
 
             // TODO: this should be simpler to use by apps building on thingifier
-            if(response==null) {
+            if(httpApiResponse==null) {
+
+                ApiResponse response=null;
                 response = new ThingCreation(this.secretNoteStore).with(
                         new BodyParser(myRequest, Arrays.asList("secretnote")),
                         this.secretNoteStore.getThingNamed("secretnote"));
@@ -266,10 +259,11 @@ public class AuthRoutes {
                                             getFieldValue("note").asString());
                     }
                 }
+
+                httpApiResponse = new HttpApiResponse(myRequest.getHeaders(), response,
+                        jsonThing, this.secretNoteStore.apiConfig());
             }
 
-            final HttpApiResponse httpApiResponse = new HttpApiResponse(myRequest.getHeaders(), response,
-                    jsonThing, this.secretNoteStore.apiConfig());
 
             return HttpApiResponseToSpark.convert(httpApiResponse, result);
 

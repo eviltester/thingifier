@@ -9,7 +9,7 @@ import java.util.ArrayList;
 
 public class Environment {
 
-    public static boolean SINGLE_PLAYER_MODE = false;
+    public static boolean SINGLE_PLAYER_MODE = true;
 
     public static String getEnv(String urlPath){
         return  getBaseUri() + urlPath;

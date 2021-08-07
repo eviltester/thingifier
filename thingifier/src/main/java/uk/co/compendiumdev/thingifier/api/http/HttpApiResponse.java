@@ -9,6 +9,10 @@ import uk.co.compendiumdev.thingifier.reporting.JsonThing;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Given an internal ApiResponse create an HTTP abstraction response
+ * The requestHeaders are used to configure the content type using the Accept header
+ */
 final public class HttpApiResponse {
 
     private final ApiResponse apiResponse;
@@ -54,6 +58,7 @@ final public class HttpApiResponse {
             asJson=false;
         }
 
+        // TODO: handle text/plain, text/html
         if (asJson) {
             type = "application/json";
         } else {
@@ -65,6 +70,7 @@ final public class HttpApiResponse {
         }
     }
 
+    // TODO: handle text/plain, text/html
     public String getBody() {
 
         String returnBody = "";
