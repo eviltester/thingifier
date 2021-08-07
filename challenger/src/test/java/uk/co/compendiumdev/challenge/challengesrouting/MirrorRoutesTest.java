@@ -103,7 +103,7 @@ public class MirrorRoutesTest {
 
         Assertions.assertEquals(200, response.statusCode);
         Assertions.assertEquals("text/plain",response.getHeader("Content-Type"));
-        Assertions.assertTrue(response.body.startsWith("get "));
+        Assertions.assertTrue(response.body.startsWith("GET "));
     }
 
 
