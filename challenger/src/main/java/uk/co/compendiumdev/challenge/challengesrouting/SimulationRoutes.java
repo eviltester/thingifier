@@ -59,7 +59,6 @@ public class SimulationRoutes {
                         setValue("name", "bob");
 
         // this gives us access to the common http processing functions
-        // TODO: use this approach in the MirrorRoutes class
         this.httpApi = new ThingifierHttpApi(this.simulation);
         this.jsonThing = new JsonThing(this.simulation.apiConfig().jsonOutput());
     }

@@ -17,7 +17,6 @@ import uk.co.compendiumdev.thingifier.reporting.JsonThing;
 
 public class RequestMirror {
 
-    // TODO: pull the code below into a RequestMirror class
     // new RequestMirror().mirrorRequest(request, result);
     public String mirrorRequest(final Request request, final Response result) {
 

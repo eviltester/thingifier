@@ -24,15 +24,13 @@ import static spark.Spark.*;
 
 public class ChallengesRoutes {
 
-    // TODO: challenges should responds to request headers and allow conversion into XML or JSON
+    // TODO: challenges should be ordered, the getInstances should allow return in orderBy("id")
     // todo: allow filtering challenges e.g. find all done, not done, etc.
     public void configure(final Challengers challengers, final boolean single_player_mode,
                           final ThingifierApiDefn apiDefn,
                           final ChallengeDefinitions challengeDefinitions){
 
         get("/challenges", (request, result) -> {
-//            result.status(200);
-//            result.type("application/json");
 
             ChallengerAuthData challenger = challengers.getChallenger(request.headers("X-CHALLENGER"));
 
@@ -44,8 +42,6 @@ public class ChallengesRoutes {
                 result.raw().setHeader("Location", "/gui/challenges");
             }
 
-//            result.body(new ChallengesPayload(challengeDefinitions, challenger).getAsJson());
-//
             final HttpApiRequest myRequest = SparkToHttpApiRequest.convert(request);
 
             HttpApiResponse httpApiResponse=null;
@@ -74,7 +70,6 @@ public class ChallengesRoutes {
 
             return HttpApiResponseToSpark.convert(httpApiResponse, result);
 
-            //return "";
         });
 
 
