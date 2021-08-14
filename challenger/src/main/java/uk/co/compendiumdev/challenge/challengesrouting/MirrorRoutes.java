@@ -6,6 +6,9 @@ import uk.co.compendiumdev.thingifier.api.routings.RoutingStatus;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingVerb;
 
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static spark.Spark.*;
 
 public class MirrorRoutes {
@@ -101,30 +104,36 @@ public class MirrorRoutes {
             return body;
         });
 
-        // add the documentation
-        RoutingVerb[] verbs = { RoutingVerb.GET, RoutingVerb.POST, RoutingVerb.PUT,
-                                RoutingVerb.DELETE, RoutingVerb.PATCH, RoutingVerb.TRACE,
-                                RoutingVerb.OPTIONS, RoutingVerb.HEAD};
+        class Routing{
+            public final RoutingVerb verb;
+            public final String description;
+            public final int statusCode;
 
-        String [] documentation = {"Mirror a GET Request", "Mirror a POST Request", "Mirror a PUT Request",
-                                    "Mirror a DELETE Request", "Mirror a PATCH Request", "Mirror a TRACE Request",
-                                    "Options for mirror endpoint", "Headers for mirror endpoint"};
-
-        int [] statusCodes = {  200, 200, 200,
-                                200, 200, 200,
-                                204, 200};
-
-        for(int index=0; index< verbs.length; index++){
-            apiDefn.addRouteToDocumentation(
-                    new RoutingDefinition(
-                            verbs[index],
-                            endpoint,
-                            RoutingStatus.returnedFromCall(),
-                            null).addDocumentation(documentation[index]).
-                            addPossibleStatuses(statusCodes[index]));
+            Routing(RoutingVerb verb, String description, int statusCode){
+                this.verb = verb;
+                this.description = description;
+                this.statusCode = statusCode;
+            }
         }
 
+        List<Routing> routings = new ArrayList<>();
+        routings.add(new Routing(RoutingVerb.GET, "Mirror a GET Request", 200));
+        routings.add(new Routing(RoutingVerb.POST, "Mirror a POST Request", 200));
+        routings.add(new Routing(RoutingVerb.PUT, "Mirror a PUT Request", 200));
+        routings.add(new Routing(RoutingVerb.DELETE, "Mirror a DELETE Request", 200));
+        routings.add(new Routing(RoutingVerb.PATCH, "Mirror a PATCH Request", 200));
+        routings.add(new Routing(RoutingVerb.TRACE, "Mirror a TRACE Request", 200));
+        routings.add(new Routing(RoutingVerb.OPTIONS, "Options for mirror endpoint", 204));
+        routings.add(new Routing(RoutingVerb.HEAD, "Headers for mirror endpoint", 200));
+
+        for(Routing routing : routings){
+            apiDefn.addRouteToDocumentation(
+                    new RoutingDefinition(
+                            routing.verb,
+                            endpoint,
+                            RoutingStatus.returnedFromCall(),
+                            null).addDocumentation(routing.description).
+                            addPossibleStatuses(routing.statusCode));
+        }
     }
-
-
 }
