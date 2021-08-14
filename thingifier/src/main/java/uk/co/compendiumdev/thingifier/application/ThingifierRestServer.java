@@ -246,20 +246,24 @@ public class ThingifierRestServer {
             }
         }
 
-        // Undocumented admin interface - this needs to be authentication controlled and toggelable from command line
-        get("/admin/query/*", (request, response) -> {
-            //return apiBridge.query(request, response, request.splat()[0]);
-            final HttpApiRequest theRequest = SparkToHttpApiRequest.convert(request);
-            final HttpApiResponse theResponse = apiBridge.query(theRequest, request.splat()[0]);
-            return HttpApiResponseToSpark.convert(theResponse, response);
-        });
+        // Undocumented admin interface
+        if(thingifier.apiConfig().adminConfig().isAdminSearchAllowed()) {
+            get(thingifier.apiConfig().adminConfig().getAdminSearchUrl(), (request, response) -> {
+                //return apiBridge.query(request, response, request.splat()[0]);
+                final HttpApiRequest theRequest = SparkToHttpApiRequest.convert(request);
+                final HttpApiResponse theResponse = apiBridge.query(theRequest, request.splat()[0]);
+                return HttpApiResponseToSpark.convert(theResponse, response);
+            });
+        }
 
-        // Undocumented admin interface - this needs to be authentication controlled and toggelable from command line
-        post("/admin/data/thingifier", (request, response) -> {
-            thingifier.clearAllData();
-            response.status(200);
-            return "";
-        });
+        // Undocumented admin interface
+        if(thingifier.apiConfig().adminConfig().isAdminDataClearAllowed()) {
+            post(thingifier.apiConfig().adminConfig().getAdminDataClearUrl(), (request, response) -> {
+                thingifier.clearAllData();
+                response.status(200);
+                return "";
+            });
+        }
 
         // TODO : allow this to be overwritten by config
         // nothing else is supported

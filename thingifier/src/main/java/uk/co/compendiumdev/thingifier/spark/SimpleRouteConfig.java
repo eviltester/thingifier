@@ -9,6 +9,10 @@ import java.util.List;
 
 import static spark.Spark.*;
 
+/*
+    Simple route config is a 'no code' handler for a verb
+    it just returns the defined status code
+ */
 public class SimpleRouteConfig {
 
     private final String endpoint;

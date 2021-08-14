@@ -47,7 +47,7 @@ public class ThingifierApiConfig {
     // willShowGuidsInResponses e.g. if false then no GUIDs shown in responses at all
     private boolean willShowGuidsInResponses;
 
-
+    private final AdminConfig adminConfig;
 
 
     // Requests
@@ -85,6 +85,8 @@ public class ThingifierApiConfig {
         jsonOutputConfig.setRelationshipsUseIdsIfAvailable(willShowIdsInResponsesIfAvailable);
 
         statusCodeConfig = new StatusCodeConfig();
+
+        adminConfig = new AdminConfig();
     }
 
     public void setFrom(final ThingifierApiConfig apiConfig) {
@@ -101,6 +103,11 @@ public class ThingifierApiConfig {
         paramsConfig.setFrom(apiConfig.forParams());
         statusCodeConfig.setFrom(apiConfig.statusCodes());
         jsonOutputConfig.setFrom(apiConfig.jsonOutput());
+        adminConfig.setFrom(apiConfig.adminConfig());
+    }
+
+    public AdminConfig adminConfig() {
+        return adminConfig;
     }
 
     public JsonOutputConfig jsonOutput() {
@@ -215,5 +222,4 @@ public class ThingifierApiConfig {
         acceptJsonContent = allow;
         return this;
     }
-
 }

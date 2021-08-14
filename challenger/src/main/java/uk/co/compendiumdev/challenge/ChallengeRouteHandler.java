@@ -103,4 +103,9 @@ public class ChallengeRouteHandler {
     public Thingifier getThingifier() {
         return thingifier;
     }
+
+    public void enableAdminApi() {
+        thingifier.apiConfig().adminConfig().enableAdminSearch();
+        thingifier.apiConfig().adminConfig().enableAdminDataClear();
+    }
 }

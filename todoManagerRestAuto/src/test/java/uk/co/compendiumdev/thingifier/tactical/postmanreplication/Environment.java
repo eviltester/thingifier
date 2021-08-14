@@ -40,6 +40,8 @@ public class Environment {
             Spark.port(4567);
             String [] args = {};
             final Thingifier thingifier = new TodoManagerThingifier().get();
+            thingifier.apiConfig().adminConfig().enableAdminDataClear();
+            thingifier.apiConfig().adminConfig().enableAdminSearch();
             thingifier.apiConfig().setResponsesToShowGuids(true);
             thingifier.apiConfig().setUrlToShowIdsInUrlsIfAvailable(false);
             thingifier.apiConfig().setUrlToShowSingleInstancesAsPlural(true);

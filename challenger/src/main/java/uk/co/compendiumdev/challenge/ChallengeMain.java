@@ -44,6 +44,11 @@ public class ChallengeMain {
                 System.out.println("Setting persistence mechanism to no persistence");
                 challenger.setToNoPersistenceMode();
             }
+
+            if (arg.startsWith("-enableAdminApi")) {
+                System.out.println("Enabling Admin Api");
+                challenger.enableAdminApi();
+            }
         }
 
 
