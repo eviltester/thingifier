@@ -1,7 +1,6 @@
 package uk.co.compendiumdev.challenge.challengesrouting;
 
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
-import uk.co.compendiumdev.challenge.ChallengesPayload;
 import uk.co.compendiumdev.challenge.apimodel.ChallengeThingifier;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
 import uk.co.compendiumdev.challenge.challenges.ChallengeDefinitions;
