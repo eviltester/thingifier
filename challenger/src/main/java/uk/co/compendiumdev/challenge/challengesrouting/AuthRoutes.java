@@ -1,7 +1,7 @@
 package uk.co.compendiumdev.challenge.challengesrouting;
 
-import uk.co.compendiumdev.challenge.BasicAuthHeaderParser;
-import uk.co.compendiumdev.challenge.BearerAuthHeaderParser;
+import uk.co.compendiumdev.thingifier.api.http.BasicAuthHeaderParser;
+import uk.co.compendiumdev.thingifier.api.http.BearerAuthHeaderParser;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
 import uk.co.compendiumdev.thingifier.Thingifier;

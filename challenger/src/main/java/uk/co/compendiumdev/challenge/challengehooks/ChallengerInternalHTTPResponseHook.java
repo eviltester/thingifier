@@ -1,6 +1,6 @@
 package uk.co.compendiumdev.challenge.challengehooks;
 
-import uk.co.compendiumdev.challenge.BearerAuthHeaderParser;
+import uk.co.compendiumdev.thingifier.api.http.BearerAuthHeaderParser;
 import uk.co.compendiumdev.challenge.CHALLENGE;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.challengers.Challengers;

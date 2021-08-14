@@ -1,4 +1,4 @@
-package uk.co.compendiumdev.challenge;
+package uk.co.compendiumdev.thingifier.api.http;
 
 import java.util.ArrayList;
 import java.util.List;

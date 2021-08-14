@@ -1,4 +1,4 @@
-package uk.co.compendiumdev.challenge;
+package uk.co.compendiumdev.thingifier.api.http;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
