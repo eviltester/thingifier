@@ -26,6 +26,7 @@ public class ChallengerTrackingRoutesTest {
         // this uses the Environment to startup the spark app to
         // issue http tests and test the routing in spark
         http = new HttpMessageSender(Environment.getBaseUri());
+        //challenger = Environment.getNewChallenger();
         challenger = ChallengeMain.getChallenger().getChallengers().createNewChallenger();
     }
 
@@ -63,7 +64,7 @@ public class ChallengerTrackingRoutesTest {
                 http.send("/challenger/" + "bob", "get");
 
         Assertions.assertEquals(404, response.statusCode);
-        Assertions.assertEquals("UNKNOWN CHALLENGER - Challenger not found",
+        Assertions.assertEquals(XChallengerHeader.NOT_FOUND_ERROR_MESSAGE,
                 response.getHeader("X-CHALLENGER"));
     }
 
@@ -75,7 +76,7 @@ public class ChallengerTrackingRoutesTest {
                 http.send("/challenger/", "get");
 
         Assertions.assertEquals(404, response.statusCode);
-        Assertions.assertEquals("UNKNOWN CHALLENGER - Challenger not found",
+        Assertions.assertEquals(XChallengerHeader.NOT_FOUND_ERROR_MESSAGE,
                 response.getHeader("X-CHALLENGER"));
     }
 
@@ -101,7 +102,7 @@ public class ChallengerTrackingRoutesTest {
                 http.send("/challenger", "post");
 
         Assertions.assertEquals(404, response.statusCode);
-        Assertions.assertEquals("UNKNOWN CHALLENGER - Challenger not found",
+        Assertions.assertEquals(XChallengerHeader.NOT_FOUND_ERROR_MESSAGE,
                 response.getHeader("X-CHALLENGER"));
     }
 
@@ -113,7 +114,7 @@ public class ChallengerTrackingRoutesTest {
                 http.send("/challenger", "post");
 
         Assertions.assertEquals(201, response.statusCode);
-        Assertions.assertNotEquals("UNKNOWN CHALLENGER - Challenger not found",
+        Assertions.assertNotEquals(XChallengerHeader.NOT_FOUND_ERROR_MESSAGE,
                 response.getHeader("X-CHALLENGER"));
 
         final String guid = response.getHeader("X-CHALLENGER");

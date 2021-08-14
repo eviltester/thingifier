@@ -22,23 +22,22 @@ public class ChallengerTrackingRoutes {
         // refresh challenger to avoid purging
         get("/challenger/*", (request, result) -> {
             String xChallengerGuid =null;
+            ChallengerAuthData challenger=null;
             if(request.splat().length>0) {
                 xChallengerGuid = request.splat()[0];
             }
             if(xChallengerGuid != null && xChallengerGuid.trim()!=""){
-                ChallengerAuthData challenger = challengers.getChallenger(xChallengerGuid);
+                challenger = challengers.getChallenger(xChallengerGuid);
                 if(challenger!=null){
                     challenger.touch();
                     result.status(204);
-                    result.raw().setHeader("X-CHALLENGER",challenger.getXChallenger());
                 }else{
                     result.status(404);
-                    result.raw().setHeader("X-CHALLENGER", "UNKNOWN CHALLENGER - Challenger not found");
                 }
             }else{
                 result.status(404);
-                result.raw().setHeader("X-CHALLENGER", "UNKNOWN CHALLENGER - Challenger not found");
             }
+            XChallengerHeader.setResultHeaderBasedOnChallenger(result,challenger);
             return "";
         });
 
@@ -50,7 +49,7 @@ public class ChallengerTrackingRoutes {
         post("/challenger", (request, result) -> {
 
             if(single_player_mode){
-                result.raw().setHeader("X-CHALLENGER", challengers.SINGLE_PLAYER.getXChallenger());
+                XChallengerHeader.setResultHeaderBasedOnChallenger(result, challengers.SINGLE_PLAYER.getXChallenger());
                 result.raw().setHeader("Location", "/gui/challenges");
                 result.status(201);
                 return "";
@@ -60,26 +59,23 @@ public class ChallengerTrackingRoutes {
             if(xChallengerGuid == null || xChallengerGuid.trim()==""){
                 // create a new challenger
                 final ChallengerAuthData challenger = challengers.createNewChallenger();
-                result.raw().setHeader("X-CHALLENGER", challenger.getXChallenger());
+                XChallengerHeader.setResultHeaderBasedOnChallenger(result, challenger);
                 result.raw().setHeader("Location", "/gui/challenges/" + challenger.getXChallenger());
                 result.status(201);
-                return "";
             }else {
                 ChallengerAuthData challenger = challengers.getChallenger(xChallengerGuid);
                 if(challenger==null){
                     // if X-CHALLENGER header exists, and is not a known UUID,
                     // return 404, challenger ID not valid
-                    result.raw().setHeader("X-CHALLENGER", "UNKNOWN CHALLENGER - Challenger not found");
                     result.status(404);
-                    return "";
                 }else{
                     // if X-CHALLENGER header exists, and has a valid UUID, and UUID exists, then return 200
-                    result.raw().setHeader("X-CHALLENGER", challenger.getXChallenger());
                     result.raw().setHeader("Location", "/gui/challenges/" + challenger.getXChallenger());
                     result.status(200);
-                    return "";
                 }
+                XChallengerHeader.setResultHeaderBasedOnChallenger(result, challenger);
             }
+            return "";
         });
 
         SimpleRouteConfig.

@@ -9,7 +9,8 @@ import java.util.ArrayList;
 
 public class Environment {
 
-    public static boolean SINGLE_PLAYER_MODE = true;
+    // these integration tests can work in both single player and multi-player modes
+    public static boolean SINGLE_PLAYER_MODE = false;
 
     public static String getEnv(String urlPath){
         return  getBaseUri() + urlPath;
@@ -21,6 +22,8 @@ public class Environment {
 //        if(true)
 //            return "https://apichallenges.herokuapp.com";
 
+//        if(true)
+//            return "http://localhost:4567";
 
         // if not running then start the spark
         if(Port.inUse("localhost", 4567)) {

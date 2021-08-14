@@ -77,7 +77,7 @@ public class AuthRoutes {
 
             if(challenger==null){
                 result.status(401);
-                result.raw().setHeader("X-CHALLENGER", "Challenger not recognised");
+                XChallengerHeader.setResultHeaderBasedOnChallenger(result, challenger);
                 return "";
             }
 
@@ -118,9 +118,10 @@ public class AuthRoutes {
             // todo: if no X-CHALLENGER provided then, search memory for authToken and use associated
             //       challenger
 
+
             if(challenger==null){
                 result.status(401);
-                result.raw().setHeader("X-CHALLENGER", "Challenger not recognised");
+                XChallengerHeader.setResultHeaderBasedOnChallenger(result,challenger);
                 return "";
             }
 
@@ -195,7 +196,7 @@ public class AuthRoutes {
 
             if(challenger==null){
                 result.status(401);
-                result.raw().setHeader("X-CHALLENGER", "Challenger not recognised");
+                XChallengerHeader.setResultHeaderBasedOnChallenger(result,challenger);
                 return "";
             }
 

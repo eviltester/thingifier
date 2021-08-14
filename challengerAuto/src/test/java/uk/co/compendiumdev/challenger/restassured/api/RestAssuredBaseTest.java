@@ -22,7 +22,7 @@ public class RestAssuredBaseTest {
                 new RequestLoggingFilter(),
                 new ResponseLoggingFilter());
 
-        RestAssured.proxy("localhost",8888);
+        //RestAssured.proxy("localhost",8888);
 
         if(xChallenger==""){
 

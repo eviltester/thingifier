@@ -1,5 +1,6 @@
 package uk.co.compendiumdev.challenge.challengehooks;
 
+import uk.co.compendiumdev.challenge.challengesrouting.XChallengerHeader;
 import uk.co.compendiumdev.thingifier.api.http.BearerAuthHeaderParser;
 import uk.co.compendiumdev.challenge.CHALLENGE;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
@@ -45,10 +46,12 @@ public class ChallengerInternalHTTPResponseHook implements InternalHttpResponseH
             }
         }
 
+
+
         if(challenger==null){
             if(!request.getPath().contentEquals("challenger")) {
                 if(response.getHeader("X-CHALLENGER") == null) {
-                    response.setHeader("X-CHALLENGER", "UNKNOWN CHALLENGER - NO CHALLENGES TRACKED");
+                    XChallengerHeader.setResultHeaderBasedOnChallenger(response, challenger);
                 }
             }
             // cannot track challenges
@@ -57,7 +60,7 @@ public class ChallengerInternalHTTPResponseHook implements InternalHttpResponseH
 
         if(challenger!=null){
             if(response.getHeader("X-CHALLENGER") == null) {
-                response.setHeader("X-CHALLENGER", challenger.getXChallenger());
+                XChallengerHeader.setResultHeaderBasedOnChallenger(response, challenger);
             }
         }
 

@@ -3,9 +3,11 @@ package uk.co.compendiumdev.sparkstart;
 
 import spark.Spark;
 import uk.co.compendiumdev.challenge.ChallengeMain;
+import uk.co.compendiumdev.challenge.ChallengerAuthData;
 
 public class Environment {
 
+    // these unit tests only work in multi-player mode
     public static boolean SINGLE_PLAYER_MODE = false;
 
     public static String getEnv(String urlPath){
@@ -57,4 +59,5 @@ public class Environment {
             }
         }
     }
+
 }
