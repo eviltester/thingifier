@@ -25,6 +25,7 @@ public class RelationshipVector {
     private Thing to;
     private RelationshipDefinition parentRelationship;
 
+    // TODO this should be to/from ThingDefinitions not Things
     public RelationshipVector(Thing from, String relationShipName, Thing to, Cardinality cardinality) {
         this.from = from;
         this.name = relationShipName;

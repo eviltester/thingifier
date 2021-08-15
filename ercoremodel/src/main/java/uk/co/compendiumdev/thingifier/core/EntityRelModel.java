@@ -2,6 +2,7 @@ package uk.co.compendiumdev.thingifier.core;
 
 import uk.co.compendiumdev.thingifier.core.domain.datapopulator.DataPopulator;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.Cardinality;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.ERSchema;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipDefinition;
@@ -23,26 +24,46 @@ public class EntityRelModel {
 
     private DataPopulator initialDataGenerator;
     private final ConcurrentHashMap<String, Thing> things;
-    private final ConcurrentHashMap<String, RelationshipDefinition> relationships;
+    private final ERSchema schema; // all the definitions
 
     public EntityRelModel(){
         things = new ConcurrentHashMap<String, Thing>();
-        relationships = new ConcurrentHashMap<String, RelationshipDefinition>();
+        schema = new ERSchema();
         initialDataGenerator=null; // todo consider having a default random data generator
     }
 
     public Thing createThing(final String thingName, final String pluralName) {
         Thing aThing = Thing.create(thingName, pluralName);
         things.put(thingName, aThing);
+        schema.addThingDefinition(aThing.definition());
         return aThing;
     }
 
-    public List<Thing> getThings() {
-        return new ArrayList<Thing>(things.values());
+    // Schema methods
+    public boolean hasThingNamed(final String aName) {
+        return schema.hasThingNamed(aName);
     }
 
-    public boolean hasThingNamed(final String aName) {
-        return things.containsKey(aName);
+    public List<String> getThingNames() {
+        return schema.getThingNames();
+    }
+
+    public Collection<RelationshipDefinition> getRelationshipDefinitions() {
+        return schema.getRelationships();
+    }
+
+    public RelationshipDefinition defineRelationship(Thing from, Thing to, final String named, final Cardinality of) {
+        return schema.defineRelationship(from, to, named, of);
+    }
+
+    public boolean hasRelationshipNamed(final String relationshipName) {
+        return schema.hasRelationshipNamed(relationshipName);
+    }
+
+    // Instance Methods
+
+    public List<Thing> getThings() {
+        return new ArrayList<Thing>(things.values());
     }
 
     public ThingInstance findThingInstanceByGuid(final String thingGUID) {
@@ -55,7 +76,6 @@ public class EntityRelModel {
                     return instance;
                 }
             }
-
         }
         return null;
     }
@@ -107,11 +127,7 @@ public class EntityRelModel {
         }
     }
 
-    public List<String> getThingNames() {
-        List<String> names = new ArrayList();
-        names.addAll(things.keySet());
-        return names;
-    }
+
 
     public void clearAllData() {
         // clear all instance data
@@ -133,39 +149,5 @@ public class EntityRelModel {
         initialDataGenerator = dataPopulator;
     }
 
-    // Relationships
 
-    public Collection<RelationshipDefinition> getRelationshipDefinitions() {
-        return relationships.values();
-    }
-
-    public RelationshipDefinition defineRelationship(Thing from, Thing to, final String named, final Cardinality of) {
-        RelationshipDefinition relationship =
-                RelationshipDefinition.create(
-                        new RelationshipVector(
-                                from,
-                                named,
-                                to,
-                                of));
-        relationships.put(named, relationship);
-        return relationship;
-    }
-
-    public boolean hasRelationshipNamed(final String relationshipName) {
-        if (relationships.containsKey(relationshipName.toLowerCase())) {
-            return true;
-        }
-
-        // perhaps it is a reverse relationship?
-        for (RelationshipDefinition defn : relationships.values()) {
-            if (defn.isTwoWay()) {
-                if (defn.getReversedRelationship().getName().equalsIgnoreCase(relationshipName)) {
-                    return true;
-                }
-            }
-
-        }
-
-        return false;
-    }
 }

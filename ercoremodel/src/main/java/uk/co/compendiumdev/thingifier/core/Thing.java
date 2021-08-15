@@ -16,7 +16,7 @@ final public class Thing {
     private final ThingDefinition definition;
     private Map<String, ThingInstance> instances = new ConcurrentHashMap<>();
 
-    private Thing(ThingDefinition thingDefinition) {
+    public Thing(ThingDefinition thingDefinition) {
         this.definition = thingDefinition;
     }
 
