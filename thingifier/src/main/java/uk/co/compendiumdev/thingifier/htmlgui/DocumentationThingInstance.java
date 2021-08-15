@@ -11,7 +11,7 @@ public class DocumentationThingInstance{
 
     public DocumentationThingInstance(final ThingDefinition eDefn) {
         this.definition = eDefn;
-        this.instance = ThingInstance.createExampleInstance(eDefn);
+        this.instance = new ThingInstance(eDefn);
     }
 
     public ThingInstance getInstance(){

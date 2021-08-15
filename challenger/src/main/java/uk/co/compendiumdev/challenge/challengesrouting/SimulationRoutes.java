@@ -134,7 +134,7 @@ public class SimulationRoutes {
 
             if (id.equals("10")) {
                 // 10 is the entity we amend to name:eris
-                ThingInstance fake = this.entityDefn.createInstance().
+                ThingInstance fake = new ThingInstance(entityDefn.definition()).
                         overrideValue("id", "10").setValue("name", "eris");
                 instance = fake;
                 response = ApiResponse.success().returnSingleInstance(instance);
@@ -188,7 +188,7 @@ public class SimulationRoutes {
             } else {
                 if (id.equals("10")) {
                     // 10 is the entity we amend to name:eris
-                    ThingInstance fake = this.entityDefn.createInstance().
+                    ThingInstance fake = new ThingInstance(entityDefn.definition()).
                             overrideValue("id", "10").setValue("name", "eris");
                     response = ApiResponse.success().returnSingleInstance(fake);
                 } else {

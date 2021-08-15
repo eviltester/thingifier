@@ -33,7 +33,7 @@ import static spark.Spark.post;
 // TODO: This should be using a Thingifier to do the work of XML JSON etc... like the simulation
 public class AuthRoutes {
     private Thingifier secretNoteStore;
-    private Thing secretNode;
+    private Thing secretNote;
     private ThingifierHttpApi httpApi;
     private JsonThing jsonThing;
 
@@ -48,9 +48,9 @@ public class AuthRoutes {
         this.secretNoteStore.apiConfig().setResponsesToShowGuids(false);
         this.secretNoteStore.apiConfig().setResponsesToShowIdsIfAvailable(false);
 
-        this.secretNode = this.secretNoteStore.createThing("secretnote", "secretnotes");
+        this.secretNote = this.secretNoteStore.createThing("secretnote", "secretnotes");
 
-        this.secretNode.definition().addFields(
+        this.secretNote.definition().addFields(
                 Field.is("note", FieldType.STRING).
                         makeMandatory().
                         withValidation(new MaximumLengthValidationRule(100)).
@@ -151,7 +151,7 @@ public class AuthRoutes {
 
             final HttpApiRequest myRequest = SparkToHttpApiRequest.convert(request);
 
-            ThingInstance note = this.secretNode.createInstance().setValue("note", challenger.getNote());
+            ThingInstance note = new ThingInstance(secretNote.definition()).setValue("note", challenger.getNote());
             final ApiResponse response = ApiResponse.success().returnSingleInstance(note);
 
             final HttpApiResponse httpApiResponse = new HttpApiResponse(myRequest.getHeaders(), response,

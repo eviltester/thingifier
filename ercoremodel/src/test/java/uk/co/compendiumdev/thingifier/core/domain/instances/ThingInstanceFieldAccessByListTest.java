@@ -30,7 +30,7 @@ public class ThingInstanceFieldAccessByListTest {
     @Test
     public void canSetByList() {
 
-        final ThingInstance session = ThingInstance.create(entityTestSession);
+        final ThingInstance session = new ThingInstance(entityTestSession);
 
         List<FieldValue> someFields = new ArrayList<>();
         someFields.add(FieldValue.is("Title", "my title"));
@@ -46,7 +46,9 @@ public class ThingInstanceFieldAccessByListTest {
     @Test
     public void canNotSetSomeFieldsByList() {
 
-        final ThingInstance session = ThingInstance.create(entityTestSession);
+        final ThingInstance session = new ThingInstance(entityTestSession);
+        session.addGUIDtoInstance();
+        session.addIdsToInstance();
 
         List<FieldValue> someFields = new ArrayList<>();
         someFields.add(FieldValue.is("anid", "12"));
@@ -60,7 +62,7 @@ public class ThingInstanceFieldAccessByListTest {
     @Test
     public void canIgnoreSomeSetSomeFieldsByListToAvoidTriggeringValidation() {
 
-        final ThingInstance session = ThingInstance.create(entityTestSession);
+        final ThingInstance session = new ThingInstance(entityTestSession);
 
         List<FieldValue> someFields = new ArrayList<>();
         someFields.add(FieldValue.is("anid", "12"));
@@ -78,7 +80,7 @@ public class ThingInstanceFieldAccessByListTest {
     @Test
     public void canIgnoreSomeOverrideFieldsWithListToAIgnore() {
 
-        final ThingInstance session = ThingInstance.create(entityTestSession);
+        final ThingInstance session = new ThingInstance(entityTestSession);
 
         List<FieldValue> someFields = new ArrayList<>();
         someFields.add(FieldValue.is("anid", "12"));
@@ -101,7 +103,7 @@ public class ThingInstanceFieldAccessByListTest {
     @Test
     public void canClearFields() {
 
-        final ThingInstance session = ThingInstance.create(entityTestSession);
+        final ThingInstance session = new ThingInstance(entityTestSession);
 
         session.setValue("Title", "set Title");
         session.setValue("falsey", "true");

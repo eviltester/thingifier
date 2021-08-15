@@ -25,7 +25,7 @@ public class ThingInstanceBooleanFieldTest {
     @Test
     public void booleanFieldsCanOnlyBeSetAsTrueOrFalse() {
 
-        ThingInstance session = ThingInstance.create(entityTestSession);
+        ThingInstance session = new ThingInstance(entityTestSession);
 
         session.setValue("review", "false");
         Assertions.assertEquals("false", session.getFieldValue("review").asString());
@@ -43,7 +43,7 @@ public class ThingInstanceBooleanFieldTest {
     @Test
     public void booleanFieldsRaiseExceptionForInvalidValue(){
 
-        ThingInstance session = ThingInstance.create(entityTestSession);
+        ThingInstance session = new ThingInstance(entityTestSession);
 
         Assertions.assertThrows(IllegalArgumentException.class, ()->{
             session.setValue("review", "BOB");
@@ -57,7 +57,7 @@ public class ThingInstanceBooleanFieldTest {
     @Test
     public void booleanFieldsByDefaultAreFalse(){
 
-        ThingInstance session = ThingInstance.create(entityTestSession);
+        ThingInstance session = new ThingInstance(entityTestSession);
 
         // false by default
         Assertions.assertEquals("false", session.getFieldValue("falsey").asString());
@@ -66,7 +66,7 @@ public class ThingInstanceBooleanFieldTest {
     @Test
     public void booleanFieldsDefaultCanBeConfigured(){
 
-        ThingInstance session = ThingInstance.create(entityTestSession);
+        ThingInstance session = new ThingInstance(entityTestSession);
 
         // false by default
         Assertions.assertEquals("true", session.getFieldValue("review").asString());

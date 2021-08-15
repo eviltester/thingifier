@@ -15,52 +15,20 @@ public class ThingInstance {
     private final ThingDefinition entityDefinition;
     private final InstanceFields instanceFields;
 
-
-    /**
-     * example instance does not instantiate the ids or impact the
-     * system management of instances
-     *
-     * @return
-     */
-    public static ThingInstance createExampleInstance(ThingDefinition eDefn){
-        // ideally we don't want this thing instance to impact the ids
-        // so don't set the ids and instead use the default and example values from definition
-        return new ThingInstance(eDefn);
-    }
-
-    /**
-     * Use the static factory methods to create the different variants
-     *
-     * @param eDefn
-     */
-    private ThingInstance(ThingDefinition eDefn) {
+    public ThingInstance(ThingDefinition eDefn) {
         this.entityDefinition = eDefn;
         this.instanceFields = eDefn.instantiateFields();
         this.relationships = new ThingInstanceRelationships(this);
     }
 
-    private void addGUIDtoInstance(){
+    public void addGUIDtoInstance(){
         // todo: this adds a field called 'guid' but there may be other GUID fields,
         // allow GUIDs to be defined as being 'auto' in which case we will auto generate them
         instanceFields.addValue(FieldValue.is("guid", UUID.randomUUID().toString()));
     }
 
-    private void addIdsToInstance() {
+    public void addIdsToInstance() {
         instanceFields.addIdsToInstance();
-    }
-
-    static public ThingInstance create(ThingDefinition entityDefn, String guid){
-        ThingInstance instance = new ThingInstance(entityDefn);
-        instance.overrideValue("guid", guid);
-        instance.addIdsToInstance();
-        return instance;
-    }
-
-    static public ThingInstance create(ThingDefinition entityDefn){
-        ThingInstance instance = new ThingInstance(entityDefn);
-        instance.addGUIDtoInstance();
-        instance.addIdsToInstance();
-        return instance;
     }
 
     public String toString() {
@@ -70,9 +38,12 @@ public class ThingInstance {
         output.append("\t\t\t" + entityDefinition.getName() + "\n");
         //output.append(instance.toString() + "\n");
         for (String fieldName : entityDefinition.getFieldNames()) {
-            output.append(String.format("\t\t\t\t %s : %s %n", fieldName, getFieldValue(fieldName).asString()));
-            if(entityDefinition.getField(fieldName).getType()==FieldType.OBJECT){
-                output.append("\t\t\t\t\t\t" + getFieldValue(fieldName).asObject().toString());
+            FieldValue fieldValue = getFieldValue(fieldName);
+            if(fieldValue!=null) {
+                output.append(String.format("\t\t\t\t %s : %s %n", fieldName, fieldValue.asString()));
+                if (entityDefinition.getField(fieldName).getType() == FieldType.OBJECT) {
+                    output.append("\t\t\t\t\t\t" + fieldValue.asObject().toString());
+                }
             }
         }
 

@@ -27,7 +27,9 @@ public class ThingInstanceCreationTest {
     public void canCreateNewEntityInstance() {
 
         ThingInstance session;
-        session = ThingInstance.create(entityTestSession);
+        session = new ThingInstance(entityTestSession);
+        session.addGUIDtoInstance();
+        session.addIdsToInstance();
 
         Assertions.assertEquals(4+1, session.getFieldNames().size()); // +1 for guid
 
@@ -42,10 +44,14 @@ public class ThingInstanceCreationTest {
 
     @Test
     public void canCreateUniqueGUIDs(){
-        ThingInstance session = ThingInstance.create(entityTestSession);
+        ThingInstance session = new ThingInstance(entityTestSession);
+        session.addGUIDtoInstance();
 
         Assertions.assertNotNull(session.getGUID());
-        ThingInstance session2 = ThingInstance.create(entityTestSession);
+
+        ThingInstance session2 = new ThingInstance(entityTestSession);
+        session2.addGUIDtoInstance();
+
         Assertions.assertNotNull(session2.getGUID());
         Assertions.assertTrue(session2.getGUID().length()>10);
 
@@ -57,7 +63,10 @@ public class ThingInstanceCreationTest {
     public void canCreateAThingWithAGUID(){
 
         // note potential bug this is risky if the GUID is later created
-        ThingInstance session = ThingInstance.create(entityTestSession, "1234-1234-1324-1234");
-        Assertions.assertEquals("1234-1234-1324-1234", session.getGUID());
+        ThingInstance instance = new ThingInstance(entityTestSession);
+        instance.overrideValue("guid", "1234-1234-1324-1234");
+        instance.addIdsToInstance();
+
+        Assertions.assertEquals("1234-1234-1324-1234", instance.getGUID());
     }
 }

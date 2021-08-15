@@ -18,7 +18,7 @@ public class ThingInstanceStringFieldTest {
         ThingDefinition stringFieldEntity = new ThingDefinition("Test Session", "Test Sessions");
         stringFieldEntity.addFields(Field.is("defaultString"));
 
-        ThingInstance instance = ThingInstance.create(stringFieldEntity);
+        ThingInstance instance = new ThingInstance(stringFieldEntity);
 
         Assertions.assertEquals("", instance.getFieldValue("defaultString").asString());
     }
@@ -29,7 +29,7 @@ public class ThingInstanceStringFieldTest {
         ThingDefinition stringFieldEntity = new ThingDefinition("Test Session", "Test Sessions");
         stringFieldEntity.addFields(Field.is("defaultString").withDefaultValue("bob"));
 
-        ThingInstance instance = ThingInstance.create(stringFieldEntity);
+        ThingInstance instance = new ThingInstance(stringFieldEntity);
 
         Assertions.assertEquals("bob", instance.getFieldValue("defaultString").asString());
     }
@@ -43,7 +43,7 @@ public class ThingInstanceStringFieldTest {
                                         withDefaultValue("").
                                         withValidation(VRule.notEmpty()));
 
-        ThingInstance instance = ThingInstance.create(stringFieldEntity);
+        ThingInstance instance = new ThingInstance(stringFieldEntity);
 
         // defaultString is not valid because it has an empty string
         Assertions.assertFalse(instance.validate().isValid());
@@ -62,7 +62,7 @@ public class ThingInstanceStringFieldTest {
                 withDefaultValue("").
                 withValidation(VRule.notEmpty()).truncateStringTo(10));
 
-        ThingInstance instance = ThingInstance.create(stringFieldEntity);
+        ThingInstance instance = new ThingInstance(stringFieldEntity);
 
         instance.setValue("field", "This is too long");
         String fieldValue = instance.getFieldValue("field").asString();
@@ -80,7 +80,7 @@ public class ThingInstanceStringFieldTest {
                 withDefaultValue("").
                 withValidation(VRule.maximumLength(10)));
 
-        ThingInstance instance = ThingInstance.create(stringFieldEntity);
+        ThingInstance instance = new ThingInstance(stringFieldEntity);
         instance.overrideValue("field","12345678901");
 
         ValidationReport report = instance.validate();
@@ -98,7 +98,7 @@ public class ThingInstanceStringFieldTest {
                 withDefaultValue("").
                 withValidation(VRule.matchesRegex("^Bug:.*")));
 
-        ThingInstance instance = ThingInstance.create(stringFieldEntity);
+        ThingInstance instance = new ThingInstance(stringFieldEntity);
         IllegalArgumentException e =
                 Assertions.assertThrows(IllegalArgumentException.class, () ->{
             instance.setValue("field", "ISSUE: reporting a bug - this is a bug");

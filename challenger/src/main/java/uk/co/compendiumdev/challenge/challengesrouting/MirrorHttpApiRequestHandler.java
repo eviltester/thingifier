@@ -31,7 +31,7 @@ public class MirrorHttpApiRequestHandler implements HttpApiRequestHandler {
 
         if(response==null) {
             // let main code handle formatting etc.
-            ThingInstance fake = this.entityDefn.createInstance().
+            ThingInstance fake = new ThingInstance(entityDefn.definition()).
                     setValue("details", requestDetails);
             response = ApiResponse.success().returnSingleInstance(fake);
         }

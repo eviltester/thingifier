@@ -30,7 +30,7 @@ public class JsonThingTest {
                         ));
 
 
-        instance = ThingInstance.create(defn);
+        instance = new ThingInstance(defn);
         instance.setValue("person.firstname", "Connie");
         instance.setValue("person.surname", "Dobbs");
     }

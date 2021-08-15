@@ -21,11 +21,17 @@ final public class Thing {
     }
 
     public ThingInstance createInstance() {
-        return ThingInstance.create(definition);
+        ThingInstance instance = new ThingInstance(definition);
+        instance.addGUIDtoInstance();
+        instance.addIdsToInstance();
+        return instance;
     }
 
     public ThingInstance createInstance(String guid) {
-        return ThingInstance.create(definition, guid);
+        ThingInstance instance = new ThingInstance(definition);
+        instance.overrideValue("guid", guid);
+        instance.addIdsToInstance();
+        return instance;
     }
 
     public Thing addInstance(ThingInstance instance) {
@@ -42,7 +48,9 @@ final public class Thing {
 
     /* create and add */
     public ThingInstance createManagedInstance() {
-        final ThingInstance instance = ThingInstance.create(definition);
+        ThingInstance instance = new ThingInstance(definition);
+        instance.addGUIDtoInstance();
+        instance.addIdsToInstance();
         addInstance(instance);
         return instance;
     }

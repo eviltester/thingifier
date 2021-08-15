@@ -28,7 +28,7 @@ public class ThingInstanceObjectFieldTest {
                         ));
 
 
-        instance = ThingInstance.create(defn);
+        instance = new ThingInstance(defn);
         instance.setValue("person.firstname", "Connie");
         instance.setValue("person.surname", "Dobbs");
     }
@@ -50,7 +50,7 @@ public class ThingInstanceObjectFieldTest {
                 getObjectDefinition().
                 getField("surname").makeMandatory();
 
-        instance = ThingInstance.create(defn);
+        instance = new ThingInstance(defn);
         instance.setValue("person.firstname", "Eris");
 
         final ValidationReport validation = instance.validate();
@@ -67,7 +67,7 @@ public class ThingInstanceObjectFieldTest {
                 getField("surname").makeMandatory().
                 withValidation(VRule.notEmpty());
 
-        instance = ThingInstance.create(defn);
+        instance = new ThingInstance(defn);
         instance.setValue("person.firstname", "Eris");
 
         // bypass set validation rules and see if validation picks it up
@@ -86,7 +86,7 @@ public class ThingInstanceObjectFieldTest {
                 getField("surname").
                 withValidation(VRule.notEmpty());
 
-        instance = ThingInstance.create(defn);
+        instance = new ThingInstance(defn);
         instance.setValue("person.firstname", "Eris");
 
         final IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class,

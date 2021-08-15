@@ -14,7 +14,10 @@ public class ThingInstanceIdFieldTest {
         ThingDefinition entity = new ThingDefinition("thing", "things");
         entity.addFields(Field.is("id", FieldType.ID));
 
-        ThingInstance instance = ThingInstance.create(entity);
+        ThingInstance instance = new ThingInstance(entity);
+        instance.addIdsToInstance();
+        instance.addGUIDtoInstance();
+
         Assertions.assertEquals("1", instance.getFieldValue("id").asString());
     }
 
@@ -26,10 +29,12 @@ public class ThingInstanceIdFieldTest {
         ThingDefinition entity = new ThingDefinition("thing", "things");
         entity.addFields(Field.is("id", FieldType.ID));
 
-        ThingInstance instance = ThingInstance.create(entity);
+        ThingInstance instance = new ThingInstance(entity);
+        instance.addIdsToInstance();
         Assertions.assertEquals("1", instance.getFieldValue("id").asString());
 
-        ThingInstance instance2 = ThingInstance.create(entity);
+        ThingInstance instance2 = new ThingInstance(entity);
+        instance2.addIdsToInstance();
         Assertions.assertEquals("2", instance2.getFieldValue("id").asString());
     }
 
@@ -39,7 +44,8 @@ public class ThingInstanceIdFieldTest {
         ThingDefinition entity = new ThingDefinition("thing", "things");
         entity.addFields(Field.is("id", FieldType.ID));
 
-        ThingInstance instance = ThingInstance.create(entity);
+        ThingInstance instance = new ThingInstance(entity);
+        instance.addIdsToInstance();
         Assertions.assertEquals("1", instance.getFieldValue("id").asString());
         Assertions.assertThrows(IllegalArgumentException.class, ()-> {
             instance.setValue("id", "2");

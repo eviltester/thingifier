@@ -15,7 +15,7 @@ public class ThingInstanceIntegerFieldTest {
         enumFieldEntity.addFields(Field.is("integer", FieldType.INTEGER));
 
         // TODO: allow nullable optional integers
-        ThingInstance instance = ThingInstance.create(enumFieldEntity);
+        ThingInstance instance = new ThingInstance(enumFieldEntity);
         Assertions.assertEquals("0", instance.getFieldValue("integer").asString());
     }
 
@@ -29,7 +29,7 @@ public class ThingInstanceIntegerFieldTest {
                 withMinimumValue(50)
         );
 
-        ThingInstance instance = ThingInstance.create(stringFieldEntity);
+        ThingInstance instance = new ThingInstance(stringFieldEntity);
 
         Assertions.assertThrows(IllegalArgumentException.class, ()->{
                 instance.setValue("integer", "101");

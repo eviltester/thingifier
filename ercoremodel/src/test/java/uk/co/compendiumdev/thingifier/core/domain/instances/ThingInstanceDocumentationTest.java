@@ -26,7 +26,7 @@ public class ThingInstanceDocumentationTest {
     @Test
     public void canCreateNewEntityInstance() {
         // thing instance for documentation has no ids or guids
-        final ThingInstance session = ThingInstance.createExampleInstance(entityTestSession);
+        final ThingInstance session = new ThingInstance(entityTestSession);
         Assertions.assertNull(session.getFieldValue("guid"));
         Assertions.assertNull(session.getFieldValue("anid"));
     }
