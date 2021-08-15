@@ -14,7 +14,13 @@ import uk.co.compendiumdev.thingifier.reporting.ThingReporter;
 
 import java.util.*;
 
-
+/* Thingifier
+    is the main class that allows access to:
+    - the ERM Schema
+    - the ERM data
+    - the API Definition and config
+    - TODO: why is the API documentation not in here?
+ */
 final public class Thingifier {
 
     private final EntityRelModel erm;
@@ -130,21 +136,11 @@ final public class Thingifier {
     //API
 
     public ThingifierRestAPIHandler api() {
+        // TODO: why is this created each time?
         return new ThingifierRestAPIHandler(this);
     }
 
-    public void setDocumentation(final String modelTitle, final String anInitialParagraph) {
-        this.title = modelTitle;
-        this.initialParagraph = anInitialParagraph;
-    }
 
-    public String getTitle() {
-        return this.title;
-    }
-
-    public String getInitialParagraph() {
-        return this.initialParagraph;
-    }
 
 
 
@@ -167,5 +163,23 @@ final public class Thingifier {
 
     public EntityRelModel getERmodel() {
         return erm;
+    }
+
+
+    /*
+        TODO: these are documentation methods, why are they not in the
+        documentation classes e.g. ThingifierAPIDefn ?
+     */
+    public void setDocumentation(final String modelTitle, final String anInitialParagraph) {
+        this.title = modelTitle;
+        this.initialParagraph = anInitialParagraph;
+    }
+
+    public String getTitle() {
+        return this.title;
+    }
+
+    public String getInitialParagraph() {
+        return this.initialParagraph;
     }
 }

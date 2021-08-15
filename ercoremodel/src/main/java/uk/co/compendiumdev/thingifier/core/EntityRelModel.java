@@ -13,6 +13,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
+/*
+    TODO: Currently the ERM has the 'model' and the 'instances' combined, separate schema and instances
+    Split the schema into a discrete set of classes separate from the instances
+    This would allow us to have multiple 'databases' in memory at the same time
+    built from the same schema.
+ */
 public class EntityRelModel {
 
     private DataPopulator initialDataGenerator;

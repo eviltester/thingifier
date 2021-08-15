@@ -76,6 +76,29 @@ final public class Thing {
         return instances.values();
     }
 
+    /**
+     * Sorted list of instances
+     */
+    Comparator<ThingInstance> compareByInteger = new Comparator<ThingInstance>() {
+        @Override
+        public int compare(ThingInstance thing1, ThingInstance thing2) {
+            int field1Value = thing1.getFieldValue("ID").asInteger();
+            int field2Value = thing2.getFieldValue("ID").asInteger();
+            return field2Value-field1Value;
+        }
+    };
+
+    // TODO: make generic to allow sorting by any field
+    public Collection<ThingInstance> getInstancesSortByID() {
+        List<ThingInstance>sortedList = new ArrayList<>();
+        sortedList.addAll(instances.values());
+
+        // low to high sort
+        Collections.sort(sortedList, compareByInteger.reversed());
+        return sortedList;
+    }
+
+
 
     /**
      * This deletes the instance but does not delete any mandatorily related items, these need to be handled by

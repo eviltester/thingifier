@@ -66,11 +66,6 @@ public class ChallengeRouteHandler {
         persistenceLayer.switchOffPersistence();
     }
 
-
-    public List<RoutingDefinition> getRoutes(){
-        return apiDefn.getAdditionalRoutes();
-    }
-
     public ChallengeRouteHandler configureRoutes() {
 
         new ChallengerTrackingRoutes().configure(challengers, single_player_mode, apiDefn, persistenceLayer);

@@ -25,27 +25,27 @@ public class ChallengeMain {
         challenger = new ChallengeRouteHandler(thingifier, app.getApiDefn());
 
         for (String arg : args) {
-            if (arg.startsWith("-multiplayer")) {
+            if (arg.toLowerCase().startsWith("-multiplayer")) {
                 System.out.println("Running in multiplayer mode");
                 challenger.setToMultiPlayerMode();
             }
 
-            if (arg.startsWith("-cloudstorage")) {
+            if (arg.toLowerCase().startsWith("-cloudstorage")) {
                 System.out.println("Setting persistence mechanism to cloud");
                 challenger.setToCloudPersistenceMode();
             }
 
-            if(arg.startsWith("-guikeepalive")){
+            if(arg.toLowerCase().startsWith("-guikeepalive")){
                 System.out.println("Setting GUI to keep session alive through XHR");
                 challenger.setGuiToKeepSessionAlive();
             }
 
-            if (arg.startsWith("-memory")) {
+            if (arg.toLowerCase().startsWith("-memory")) {
                 System.out.println("Setting persistence mechanism to no persistence");
                 challenger.setToNoPersistenceMode();
             }
 
-            if (arg.startsWith("-enableAdminApi")) {
+            if (arg.toLowerCase().startsWith("-enableadminapi")) {
                 System.out.println("Enabling Admin Api");
                 challenger.enableAdminApi();
             }

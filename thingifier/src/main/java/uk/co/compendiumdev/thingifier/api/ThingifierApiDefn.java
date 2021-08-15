@@ -6,6 +6,10 @@ import uk.co.compendiumdev.thingifier.api.routings.RoutingDefinition;
 import java.util.ArrayList;
 import java.util.List;
 
+/*
+    API Defn is really API Documentation
+
+ */
 public class ThingifierApiDefn {
 
     private Thingifier thingifier;
@@ -61,7 +65,7 @@ public class ThingifierApiDefn {
         return servers;
     }
 
-    public ThingifierApiDefn addAdditionalRoutes(final List<RoutingDefinition> routes) {
+    public ThingifierApiDefn addRoutesToDocumentation(final List<RoutingDefinition> routes) {
         additionalRoutes.addAll(routes);
         return this;
     }

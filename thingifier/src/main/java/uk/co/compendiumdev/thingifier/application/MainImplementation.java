@@ -13,7 +13,6 @@ import uk.co.compendiumdev.thingifier.application.routehandlers.ShutdownRouteHan
 import uk.co.compendiumdev.thingifier.htmlgui.DefaultGUI;
 import uk.co.compendiumdev.thingifier.htmlgui.DefaultGUIHTML;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -245,7 +244,7 @@ public class MainImplementation {
 
     public void setupBuiltInConfigurableRoutes() {
         if(allowShutdown) {
-            apiDefn.addAdditionalRoutes(
+            apiDefn.addRoutesToDocumentation(
                 new ShutdownRouteHandler().
                     configureRoutes().
                     getRoutes());
@@ -272,7 +271,7 @@ public class MainImplementation {
     }
 
     public void addAdditionalRoutes(final List<RoutingDefinition> routes) {
-        apiDefn.addAdditionalRoutes(routes);
+        apiDefn.addRoutesToDocumentation(routes);
     }
 
     public void setupDefaultGui() {
