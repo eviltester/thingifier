@@ -15,7 +15,7 @@ public class ThingInstanceCreationTest {
     @BeforeEach
     public void createEntity(){
 
-        entityTestSession = ThingDefinition.create("Test Session", "Test Sessions");
+        entityTestSession = new ThingDefinition("Test Session", "Test Sessions");
 
         entityTestSession.addField(Field.is("Title"));
         entityTestSession.addFields(Field.is("CompletedStatus").withDefaultValue("Not Completed"));

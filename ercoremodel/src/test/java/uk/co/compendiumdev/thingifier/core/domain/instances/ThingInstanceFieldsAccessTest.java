@@ -16,7 +16,7 @@ public class ThingInstanceFieldsAccessTest {
     @BeforeEach
     public void createDefinition(){
         entityTestSession =
-                ThingDefinition.create("Test Session", "Test Sessions");
+                new ThingDefinition("Test Session", "Test Sessions");
         entityTestSession.addField(Field.is("CompletedStatus").withDefaultValue("Not Completed"));
     }
 

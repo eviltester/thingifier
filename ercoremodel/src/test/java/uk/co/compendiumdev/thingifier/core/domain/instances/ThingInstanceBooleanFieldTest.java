@@ -14,7 +14,7 @@ public class ThingInstanceBooleanFieldTest {
     @BeforeEach
     public void createEntity(){
 
-        entityTestSession = ThingDefinition.create("Test Session", "Test Sessions");
+        entityTestSession = new ThingDefinition("Test Session", "Test Sessions");
         entityTestSession.addFields(Field.is("review", FieldType.BOOLEAN).withDefaultValue("true"));
         entityTestSession.addFields(Field.is("falsey", FieldType.BOOLEAN));
 

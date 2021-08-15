@@ -15,7 +15,7 @@ public class ThingInstanceStringFieldTest {
     @Test
     public void byDefaultAStringFieldIsEmpty(){
 
-        ThingDefinition stringFieldEntity = ThingDefinition.create("Test Session", "Test Sessions");
+        ThingDefinition stringFieldEntity = new ThingDefinition("Test Session", "Test Sessions");
         stringFieldEntity.addFields(Field.is("defaultString"));
 
         ThingInstance instance = ThingInstance.create(stringFieldEntity);
@@ -26,7 +26,7 @@ public class ThingInstanceStringFieldTest {
     @Test
     public void canSetDefaultValuesOfStringFields(){
 
-        ThingDefinition stringFieldEntity = ThingDefinition.create("Test Session", "Test Sessions");
+        ThingDefinition stringFieldEntity = new ThingDefinition("Test Session", "Test Sessions");
         stringFieldEntity.addFields(Field.is("defaultString").withDefaultValue("bob"));
 
         ThingInstance instance = ThingInstance.create(stringFieldEntity);
@@ -37,7 +37,7 @@ public class ThingInstanceStringFieldTest {
     @Test
     public void canConfigureStringsToValidateOnNotEmpty(){
 
-        ThingDefinition stringFieldEntity = ThingDefinition.create("entity", "entities");
+        ThingDefinition stringFieldEntity = new ThingDefinition("entity", "entities");
         stringFieldEntity.addFields(Field.is("defaultString").
                 makeMandatory().
                                         withDefaultValue("").
@@ -56,7 +56,7 @@ public class ThingInstanceStringFieldTest {
     @Test
     public void canConfigureStringsToTruncateIfTooLargeWhenSetting(){
 
-        ThingDefinition stringFieldEntity = ThingDefinition.create("entity", "entities");
+        ThingDefinition stringFieldEntity = new ThingDefinition("entity", "entities");
         stringFieldEntity.addFields(Field.is("field").
                 makeMandatory().
                 withDefaultValue("").
@@ -74,7 +74,7 @@ public class ThingInstanceStringFieldTest {
     @Test
     public void canConfigureStringsToThrowErrorValidationErrorIfTooLarge(){
 
-        ThingDefinition stringFieldEntity = ThingDefinition.create("entity", "entities");
+        ThingDefinition stringFieldEntity = new ThingDefinition("entity", "entities");
         stringFieldEntity.addFields(Field.is("field").
                 makeMandatory().
                 withDefaultValue("").
@@ -92,7 +92,7 @@ public class ThingInstanceStringFieldTest {
     @Test
     public void canConfigureStringsToValidateonSetting(){
 
-        ThingDefinition stringFieldEntity = ThingDefinition.create("entity", "entities");
+        ThingDefinition stringFieldEntity = new ThingDefinition("entity", "entities");
         stringFieldEntity.addFields(Field.is("field").
                 makeMandatory().
                 withDefaultValue("").

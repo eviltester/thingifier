@@ -11,7 +11,7 @@ public class ThingInstanceIntegerFieldTest {
     @Test
     public void byDefaultAnIntegerFieldIsZero(){
 
-        ThingDefinition enumFieldEntity = ThingDefinition.create("thing", "things");
+        ThingDefinition enumFieldEntity = new ThingDefinition("thing", "things");
         enumFieldEntity.addFields(Field.is("integer", FieldType.INTEGER));
 
         // TODO: allow nullable optional integers
@@ -23,7 +23,7 @@ public class ThingInstanceIntegerFieldTest {
     @Test
     public void cannotSetAValueOutwithMaxMinValueForIntegerFields(){
 
-        ThingDefinition stringFieldEntity = ThingDefinition.create("Test Session", "Test Sessions");
+        ThingDefinition stringFieldEntity = new ThingDefinition("Test Session", "Test Sessions");
         stringFieldEntity.addFields(Field.is("integer", FieldType.INTEGER).
                 withMaximumValue(100).
                 withMinimumValue(50)

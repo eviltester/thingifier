@@ -11,7 +11,7 @@ public class ThingInstanceEnumFieldTest {
     @Test
     public void byDefaultAnEnumFieldIsEmpty(){
 
-        ThingDefinition enumFieldEntity = ThingDefinition.create("thing", "things");
+        ThingDefinition enumFieldEntity = new ThingDefinition("thing", "things");
         enumFieldEntity.addFields(Field.is("enum", FieldType.ENUM));
 
         // TODO: have a validation process for the definition and make it a syntax error for Enum fields to have no values
@@ -22,7 +22,7 @@ public class ThingInstanceEnumFieldTest {
     @Test
     public void canSetAllowableValuesOfEnumFields(){
 
-        ThingDefinition stringFieldEntity = ThingDefinition.create("Test Session", "Test Sessions");
+        ThingDefinition stringFieldEntity = new ThingDefinition("Test Session", "Test Sessions");
         stringFieldEntity.addFields(Field.is("enum", FieldType.ENUM).
                                         withDefaultValue("bob").
                                         withExample("dukes").
@@ -43,7 +43,7 @@ public class ThingInstanceEnumFieldTest {
     @Test
     public void canNotSetUndefinedValueOfEnumFields(){
 
-        ThingDefinition stringFieldEntity = ThingDefinition.create("Test Session", "Test Sessions");
+        ThingDefinition stringFieldEntity = new ThingDefinition("Test Session", "Test Sessions");
         stringFieldEntity.addFields(Field.is("enum", FieldType.ENUM).
                 withDefaultValue("bob").
                 withExample("dukes").

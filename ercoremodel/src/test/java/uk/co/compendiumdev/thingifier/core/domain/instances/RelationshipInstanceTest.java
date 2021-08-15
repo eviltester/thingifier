@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.core.Thing;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.Cardinality;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.ThingDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVector;
 
@@ -12,8 +13,8 @@ class RelationshipInstanceTest {
     @Test
     void canCreateARelationshipInstance(){
 
-        Thing thingfrom = Thing.create("from", "from");
-        Thing thingto = Thing.create("to", "to");
+        Thing thingfrom = new Thing(new ThingDefinition("from", "from"));
+        Thing thingto = new Thing(new ThingDefinition("to", "to"));
         RelationshipVector vector = new RelationshipVector(
                 thingfrom.definition(), "fromto", thingto.definition(), Cardinality.ONE_TO_ONE
         );

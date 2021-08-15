@@ -5,24 +5,25 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.core.Thing;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.Cardinality;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.ThingDefinition;
 
 class RelationshipVectorTest {
-    private Thing task;
-    private Thing estimate;
+    private ThingDefinition task;
+    private ThingDefinition estimate;
     private RelationshipVector vector;
 
     // vector is pretty much a data class
 
     @BeforeEach
     void createDefaultTestVector(){
-        task = Thing.create("task", "tasks");
-        estimate = Thing.create("estimate", "estimates");
+        task = new ThingDefinition("task", "tasks");
+        estimate = new ThingDefinition("estimate", "estimates");
 
         vector =
                 new RelationshipVector(
-                        estimate.definition(),
+                        estimate,
                         "estimate-of",
-                        task.definition(),
+                        task,
                         Cardinality.ONE_TO_MANY);
     }
 
@@ -32,11 +33,11 @@ class RelationshipVectorTest {
         Assertions.assertEquals(Cardinality.ONE_TO_MANY, vector.getCardinality());
         Assertions.assertEquals("estimate-of", vector.getName());
         Assertions.assertEquals(Optionality.OPTIONAL_RELATIONSHIP, vector.getOptionality());
-        Assertions.assertEquals(estimate.definition(), vector.getFrom());
-        Assertions.assertEquals(task.definition(), vector.getTo());
+        Assertions.assertEquals(estimate, vector.getFrom());
+        Assertions.assertEquals(task, vector.getTo());
 
         Assertions.assertTrue(
-                estimate.definition().related().hasRelationship("estimate-of"),
+                estimate.related().hasRelationship("estimate-of"),
                 "Expected the estimate to know about the relationship");
 
         // at this point the vector hasn't been associated with a relationship definition yet

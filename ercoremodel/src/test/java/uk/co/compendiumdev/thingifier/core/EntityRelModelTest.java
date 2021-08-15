@@ -39,7 +39,7 @@ public class EntityRelModelTest {
 
         erm.deleteThing(
                 ThingInstance.create(
-                        ThingDefinition.create("no", "nos")));
+                        new ThingDefinition("no", "nos")));
     }
 
     @Test

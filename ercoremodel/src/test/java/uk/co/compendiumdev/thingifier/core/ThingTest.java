@@ -2,6 +2,7 @@ package uk.co.compendiumdev.thingifier.core;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.ThingDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
@@ -18,8 +19,7 @@ public class ThingTest {
     public void thingUsageExample(){
 
 
-        Thing person = Thing.
-                create("person", "people");
+        Thing person = new Thing(new ThingDefinition("person", "people"));
 
         person.definition().
                 addFields(Field.is("name"), Field.is("age", INTEGER));
@@ -42,7 +42,7 @@ public class ThingTest {
     @Test
     public void moreThingUsageExamples(){
 
-        Thing url = Thing.create("URL", "URLs");
+        Thing url = new Thing(new ThingDefinition("URL", "URLs"));
 
         url.definition().addFields(Field.is("url"),
                 Field.is("visited", INTEGER), Field.is("name",STRING));
@@ -80,7 +80,7 @@ public class ThingTest {
 
         // Start simple with a to do manager model e.g. to do items, context, project (can also be a sub-project), task group
 
-        Thing todo = Thing.create("ToDo", "ToDos");
+        Thing todo = new Thing(new ThingDefinition("ToDo", "ToDos"));
 
         todo.definition()
                 .addFields(Field.is("title", STRING), Field.is("description",STRING),

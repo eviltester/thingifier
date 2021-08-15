@@ -2,7 +2,6 @@ package uk.co.compendiumdev.thingifier.core.domain.definitions;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import uk.co.compendiumdev.thingifier.core.Thing;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
@@ -19,7 +18,7 @@ class ThingDefinitionTest {
     @Test
     void entityDefinitionCreation() {
         ThingDefinition eDefn;
-        eDefn = ThingDefinition.create("Requirement", "Requirements");
+        eDefn = new ThingDefinition("Requirement", "Requirements");
 
         Assertions.assertEquals("Requirement", eDefn.getName());
         Assertions.assertEquals("Requirements", eDefn.getPlural());
@@ -33,7 +32,7 @@ class ThingDefinitionTest {
     @Test
     void addFieldToEntityDefinition() {
         ThingDefinition eDefn;
-        eDefn = ThingDefinition.create("Requirement", "Requirements");
+        eDefn = new ThingDefinition("Requirement", "Requirements");
 
         eDefn.addField(Field.is("Title"));
 
@@ -52,7 +51,7 @@ class ThingDefinitionTest {
     @Test
     void addMultipleFieldsToEntityDefinition() {
         ThingDefinition eDefn;
-        eDefn = ThingDefinition.create("Requirement", "Requirements");
+        eDefn = new ThingDefinition("Requirement", "Requirements");
 
         eDefn.addFields(Field.is("Title"), Field.is("Description"));
 
@@ -67,7 +66,7 @@ class ThingDefinitionTest {
     @Test
     void canGetFieldsOfType() {
         ThingDefinition eDefn;
-        eDefn = ThingDefinition.create("Requirement", "Requirements");
+        eDefn = new ThingDefinition("Requirement", "Requirements");
 
         eDefn.addFields(Field.is("Title"),
                         Field.is("Description"));
@@ -91,7 +90,7 @@ class ThingDefinitionTest {
     @Test
     void fieldsOrderingIsTheOrderWhenDefined() {
 
-        ThingDefinition defn = ThingDefinition.create("thing", "things");
+        ThingDefinition defn = new ThingDefinition("thing", "things");
 
         // add 19 fields
         for (int x = 1; x < 20; x++) {
@@ -117,13 +116,13 @@ class ThingDefinitionTest {
     @Test
     void canHaveNamedRelationshipBetweenThings() {
 
-        final Thing stress = Thing.create("stress", "stress");
-        final Thing slack = Thing.create("slack", "slack");
+        final ThingDefinition stress = new ThingDefinition("stress", "stress");
+        final ThingDefinition slack = new ThingDefinition("slack", "slack");
 
         final RelationshipVector vec =
-                new RelationshipVector(stress.definition(),
+                new RelationshipVector(stress,
                         "withbob",
-                        slack.definition(),
+                        slack,
                         Cardinality.ONE_TO_MANY);
         final RelationshipDefinition defn = RelationshipDefinition.create(vec);
 
@@ -131,19 +130,19 @@ class ThingDefinitionTest {
         final DefinedRelationships rels = new DefinedRelationships();
         rels.addRelationship(vec);
 
-        Assertions.assertNull(slack.definition().getNamedRelationshipTo("pink", stress.definition()));
+        Assertions.assertNull(slack.getNamedRelationshipTo("pink", stress));
 
-        Assertions.assertNull(slack.definition().getNamedRelationshipTo("withbob", stress.definition()));
+        Assertions.assertNull(slack.getNamedRelationshipTo("withbob", stress));
 
-        Assertions.assertNotNull(stress.definition().getNamedRelationshipTo("withbob", slack.definition()));
-        Assertions.assertEquals(vec, stress.definition().getNamedRelationshipTo("withbob", slack.definition()));
+        Assertions.assertNotNull(stress.getNamedRelationshipTo("withbob", slack));
+        Assertions.assertEquals(vec, stress.getNamedRelationshipTo("withbob", slack));
     }
 
 
     @Test
     void canInstantiateFieldDefinitions() {
         ThingDefinition eDefn;
-        eDefn = ThingDefinition.create("Requirement", "Requirements");
+        eDefn = new ThingDefinition("Requirement", "Requirements");
 
         eDefn.addFields(Field.is("anId", FieldType.ID));
 
@@ -159,7 +158,7 @@ class ThingDefinitionTest {
     @Test
     void canIncreaseNextIds() {
         ThingDefinition eDefn;
-        eDefn = ThingDefinition.create("Requirement", "Requirements");
+        eDefn = new ThingDefinition("Requirement", "Requirements");
 
         eDefn.addFields(Field.is("anId", FieldType.ID));
         eDefn.addFields(Field.is("anotherId", FieldType.ID));

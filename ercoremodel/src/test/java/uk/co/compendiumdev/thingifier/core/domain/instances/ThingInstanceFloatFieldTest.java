@@ -11,7 +11,7 @@ public class ThingInstanceFloatFieldTest {
     @Test
     public void byDefaultAFloatFieldIsZero(){
 
-        ThingDefinition enumFieldEntity = ThingDefinition.create("thing", "things");
+        ThingDefinition enumFieldEntity = new ThingDefinition("thing", "things");
         enumFieldEntity.addFields(Field.is("float", FieldType.FLOAT));
 
         // TODO: allow nullable optional floats
@@ -22,7 +22,7 @@ public class ThingInstanceFloatFieldTest {
     @Test
     public void floatShouldValidate(){
 
-        ThingDefinition enumFieldEntity = ThingDefinition.create("thing", "things");
+        ThingDefinition enumFieldEntity = new ThingDefinition("thing", "things");
         enumFieldEntity.addFields(Field.is("float", FieldType.FLOAT));
 
         ThingInstance instance = ThingInstance.create(enumFieldEntity);
@@ -39,7 +39,7 @@ public class ThingInstanceFloatFieldTest {
     @Test
     public void canSetGetFloat(){
 
-        ThingDefinition enumFieldEntity = ThingDefinition.create("thing", "things");
+        ThingDefinition enumFieldEntity = new ThingDefinition("thing", "things");
         enumFieldEntity.addFields(Field.is("float", FieldType.FLOAT));
 
         ThingInstance instance = ThingInstance.create(enumFieldEntity);

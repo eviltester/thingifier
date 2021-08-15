@@ -17,8 +17,7 @@ public class ThingInstanceObjectFieldTest {
     @BeforeEach
     public void createThingWithNestedObjectField(){
 
-        defn = ThingDefinition.
-                create("thing", "things");
+        defn = new ThingDefinition("thing", "things");
 
         defn.addField(Field.is("person", FieldType.OBJECT)
                 .withField(

@@ -20,11 +20,6 @@ final public class Thing {
         this.definition = thingDefinition;
     }
 
-    public static Thing create(String name, String plural) {
-        Thing thing = new Thing(ThingDefinition.create(name, plural));
-        return thing;
-    }
-
     public ThingInstance createInstance() {
         return ThingInstance.create(definition);
     }
@@ -34,6 +29,13 @@ final public class Thing {
     }
 
     public Thing addInstance(ThingInstance instance) {
+
+        if(instance.getEntity()!=definition){
+            throw new RuntimeException(String.format(
+                    "ERROR: Tried to add a %s instance to the %s",
+                    instance.getEntity().getName(), definition.getName()));
+        }
+
         instances.put(instance.getGUID(), instance);
         return this;
     }

@@ -17,20 +17,15 @@ public class ThingDefinition {
     private DefinedFields fields;
     private DefinedRelationships definedRelationships;
 
-    private ThingDefinition(String name, String plural) {
+    public ThingDefinition(String name, String plural) {
         this.name = name;
         this.plural = plural;
         definedRelationships = new DefinedRelationships();
         fields = new DefinedFields();
 
-    }
-
-    public static ThingDefinition create(String name, String plural) {
-        ThingDefinition entityDefinition = new ThingDefinition(name, plural);
         // todo: support overriding this name to allow model to use guid as a user managed field
         // e.g. model.internalUniqueIDFieldName("bob")
-        entityDefinition.addField(Field.is("guid", FieldType.GUID));
-        return entityDefinition;
+        addField(Field.is("guid", FieldType.GUID));
     }
 
     public String toString() {

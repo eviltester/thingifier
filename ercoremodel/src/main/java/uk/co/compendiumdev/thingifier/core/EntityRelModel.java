@@ -3,6 +3,7 @@ package uk.co.compendiumdev.thingifier.core;
 import uk.co.compendiumdev.thingifier.core.domain.datapopulator.DataPopulator;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.Cardinality;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.ERSchema;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.ThingDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipDefinition;
@@ -22,6 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class EntityRelModel {
 
     private DataPopulator initialDataGenerator;
+    // TODO: I suspect this should be an object called ERData
     private final ConcurrentHashMap<String, Thing> things;
     private final ERSchema schema; // all the definitions
 
@@ -32,9 +34,9 @@ public class EntityRelModel {
     }
 
     public Thing createThing(final String thingName, final String pluralName) {
-        Thing aThing = Thing.create(thingName, pluralName);
+        ThingDefinition definition = schema.defineThing(thingName, pluralName);
+        Thing aThing = new Thing(definition);
         things.put(thingName, aThing);
-        schema.addThingDefinition(aThing.definition());
         return aThing;
     }
 

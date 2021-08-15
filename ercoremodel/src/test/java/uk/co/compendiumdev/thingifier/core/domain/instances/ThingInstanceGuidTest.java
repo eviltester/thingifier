@@ -13,7 +13,7 @@ public class ThingInstanceGuidTest {
     @BeforeEach
     public void createEntity(){
 
-        entityTestSession = ThingDefinition.create("Test Session", "Test Sessions");
+        entityTestSession = new ThingDefinition("Test Session", "Test Sessions");
 
         entityTestSession.addField(Field.is("Title"));
     }

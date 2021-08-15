@@ -18,9 +18,10 @@ public class ERSchema {
         thingDefinitions = new ConcurrentHashMap<>();
     }
 
-    public ERSchema addThingDefinition(final ThingDefinition definition) {
+    public ThingDefinition defineThing(final String thingName, final String pluralName) {
+        ThingDefinition definition = new ThingDefinition(thingName, pluralName);
         thingDefinitions.put(definition.getName(), definition);
-        return this;
+        return definition;
     }
 
     public Collection<RelationshipDefinition> getRelationships() {
@@ -65,4 +66,6 @@ public class ERSchema {
         names.addAll(thingDefinitions.keySet());
         return names;
     }
+
+
 }

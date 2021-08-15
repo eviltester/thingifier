@@ -3,6 +3,7 @@ package uk.co.compendiumdev.thingifier.core.domain.instances;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.ThingDefinition;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 import uk.co.compendiumdev.thingifier.core.Thing;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.Cardinality;
@@ -23,8 +24,8 @@ class RelationshipsTest {
 
     @BeforeEach
     void baseData(){
-        thingfrom = Thing.create("from", "from");
-        thingto = Thing.create("to", "to");
+        thingfrom = new Thing(new ThingDefinition("from", "from"));
+        thingto = new Thing(new ThingDefinition("to", "to"));
         RelationshipVector vector = new RelationshipVector(
                 thingfrom.definition(), "fromto", thingto.definition(), Cardinality.ONE_TO_ONE
         );
