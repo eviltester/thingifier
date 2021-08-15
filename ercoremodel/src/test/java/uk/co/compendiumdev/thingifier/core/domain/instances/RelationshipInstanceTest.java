@@ -15,7 +15,7 @@ class RelationshipInstanceTest {
         Thing thingfrom = Thing.create("from", "from");
         Thing thingto = Thing.create("to", "to");
         RelationshipVector vector = new RelationshipVector(
-                thingfrom, "fromto", thingto, Cardinality.ONE_TO_ONE
+                thingfrom.definition(), "fromto", thingto.definition(), Cardinality.ONE_TO_ONE
         );
         RelationshipDefinition defn = RelationshipDefinition.create(vector);
 

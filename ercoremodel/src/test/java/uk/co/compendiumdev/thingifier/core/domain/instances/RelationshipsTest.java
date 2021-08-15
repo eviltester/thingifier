@@ -26,7 +26,7 @@ class RelationshipsTest {
         thingfrom = Thing.create("from", "from");
         thingto = Thing.create("to", "to");
         RelationshipVector vector = new RelationshipVector(
-                thingfrom, "fromto", thingto, Cardinality.ONE_TO_ONE
+                thingfrom.definition(), "fromto", thingto.definition(), Cardinality.ONE_TO_ONE
         );
 
         defn = RelationshipDefinition.create(vector);

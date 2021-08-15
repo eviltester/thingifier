@@ -20,9 +20,9 @@ class RelationshipDefinitionTest {
 
         estimateToTask =
                 new RelationshipVector(
-                        estimate,
+                        estimate.definition(),
                         "estimate-of",
-                        task,
+                        task.definition(),
                         Cardinality.ONE_TO_MANY);
 
     }
@@ -33,8 +33,8 @@ class RelationshipDefinitionTest {
         final RelationshipDefinition rel = RelationshipDefinition.
                                             create(estimateToTask);
 
-        Assertions.assertEquals(estimate,rel.getFromRelationship().getFrom());
-        Assertions.assertEquals(task,rel.getFromRelationship().getTo());
+        Assertions.assertEquals(estimate.definition(),rel.getFromRelationship().getFrom());
+        Assertions.assertEquals(task.definition(),rel.getFromRelationship().getTo());
         Assertions.assertEquals(estimateToTask,rel.getFromRelationship());
         Assertions.assertNull(rel.getReversedRelationship());
         Assertions.assertFalse(rel.isTwoWay());
@@ -56,13 +56,13 @@ class RelationshipDefinitionTest {
 
         Assertions.assertTrue(rel.isTwoWay());
 
-        Assertions.assertEquals(estimate,rel.getFromRelationship().getFrom());
-        Assertions.assertEquals(task,rel.getFromRelationship().getTo());
+        Assertions.assertEquals(estimate.definition(),rel.getFromRelationship().getFrom());
+        Assertions.assertEquals(task.definition(),rel.getFromRelationship().getTo());
         Assertions.assertEquals(estimateToTask,rel.getFromRelationship());
 
         Assertions.assertNotNull(rel.getReversedRelationship());
-        Assertions.assertEquals(task,rel.getReversedRelationship().getFrom());
-        Assertions.assertEquals(estimate,rel.getReversedRelationship().getTo());
+        Assertions.assertEquals(task.definition(),rel.getReversedRelationship().getFrom());
+        Assertions.assertEquals(estimate.definition(),rel.getReversedRelationship().getTo());
         Assertions.assertEquals("estimates",rel.getReversedRelationship().getName());
 
         Assertions.assertTrue(rel.isKnownAs("estimate-of"));

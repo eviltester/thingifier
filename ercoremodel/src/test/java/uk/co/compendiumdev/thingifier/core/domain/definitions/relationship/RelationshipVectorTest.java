@@ -20,9 +20,9 @@ class RelationshipVectorTest {
 
         vector =
                 new RelationshipVector(
-                        estimate,
+                        estimate.definition(),
                         "estimate-of",
-                        task,
+                        task.definition(),
                         Cardinality.ONE_TO_MANY);
     }
 
@@ -32,8 +32,8 @@ class RelationshipVectorTest {
         Assertions.assertEquals(Cardinality.ONE_TO_MANY, vector.getCardinality());
         Assertions.assertEquals("estimate-of", vector.getName());
         Assertions.assertEquals(Optionality.OPTIONAL_RELATIONSHIP, vector.getOptionality());
-        Assertions.assertEquals(estimate, vector.getFrom());
-        Assertions.assertEquals(task, vector.getTo());
+        Assertions.assertEquals(estimate.definition(), vector.getFrom());
+        Assertions.assertEquals(task.definition(), vector.getTo());
 
         Assertions.assertTrue(
                 estimate.definition().related().hasRelationship("estimate-of"),

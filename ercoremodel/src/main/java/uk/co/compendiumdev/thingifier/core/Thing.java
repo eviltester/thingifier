@@ -159,8 +159,4 @@ final public class Thing {
         }
         return instance;
     }
-
-    public void withDefinedRelationship(final RelationshipVector fromVector) {
-        definition().related().addRelationship(fromVector);
-    }
 }

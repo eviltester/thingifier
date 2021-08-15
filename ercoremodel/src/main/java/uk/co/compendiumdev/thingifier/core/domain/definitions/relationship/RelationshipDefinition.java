@@ -40,13 +40,13 @@ public class RelationshipDefinition {
         if (toFrom == null) {
             output.append(String.format("\t\t%s : %s <=> %s %n",
                     fromTo.getName(),
-                    fromTo.getFrom().definition().getName(),
-                    fromTo.getTo().definition().getName()));
+                    fromTo.getFrom().getName(),
+                    fromTo.getTo().getName()));
         } else {
             output.append(String.format("\t\t%1$s : %2$s <%1$s/%4$s> %3$s %n",
                     fromTo.getName(),
-                    fromTo.getFrom().definition().getName(),
-                    fromTo.getTo().definition().getName(),
+                    fromTo.getFrom().getName(),
+                    fromTo.getTo().getName(),
                     toFrom.getName()));
 
         }

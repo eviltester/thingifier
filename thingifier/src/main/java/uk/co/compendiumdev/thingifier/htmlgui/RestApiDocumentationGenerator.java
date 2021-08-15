@@ -245,8 +245,8 @@ public class RestApiDocumentationGenerator {
                 //task-of : task => project
                 String reportLine = String.format("<li>%s : %s => %s%n",
                         fromToRelationship.getName(),
-                        fromToRelationship.getFrom().definition().getName(),
-                        fromToRelationship.getTo().definition().getName());
+                        fromToRelationship.getFrom().getName(),
+                        fromToRelationship.getTo().getName());
 
 
                 // for a two way relationship can it be combined on to one line e.g.
@@ -256,8 +256,8 @@ public class RestApiDocumentationGenerator {
                     reportLine = String.format("<li>%1$s/%2$s : %3$s =(%1$s)=> %4$s / %4$s =(%2$s)=> %3$s %n",
                             relationship.getFromRelationship().getName(),
                             relationship.getReversedRelationship().getName(),
-                            relationship.getFromRelationship().getFrom().definition().getName(),
-                            relationship.getFromRelationship().getTo().definition().getName());
+                            relationship.getFromRelationship().getFrom().getName(),
+                            relationship.getFromRelationship().getTo().getName());
                 }
 
                 output.append(reportLine);

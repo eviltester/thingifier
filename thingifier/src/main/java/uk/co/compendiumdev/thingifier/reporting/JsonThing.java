@@ -217,7 +217,7 @@ public class JsonThing {
                         final JsonArray namedRelationshipInstancesArray = new JsonArray();
                         //"typeofthingsplural": [
                         final JsonObject objectForArrayOfGuids = new JsonObject();
-                        objectForArrayOfGuids.add(relationship.getTo().definition().getPlural(), arrayOfGuids);
+                        objectForArrayOfGuids.add(relationship.getTo().getPlural(), arrayOfGuids);
                         namedRelationshipInstancesArray.add(objectForArrayOfGuids);
 
                         // relationship_name" : [

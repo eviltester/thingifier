@@ -82,10 +82,10 @@ public class ThingInstanceRelationships {
 
         for (RelationshipVector relationship : entityDefinition.related().getRelationships()) {
             if (relationship.getRelationshipDefinition().isKnownAs(relationshipName)) {
-                if (relationship.getTo().definition() == entityDefinition) {
-                    return relationship.getFrom().definition();
+                if (relationship.getTo() == entityDefinition) {
+                    return relationship.getFrom();
                 } else {
-                    return relationship.getTo().definition();
+                    return relationship.getTo();
                 }
             }
         }

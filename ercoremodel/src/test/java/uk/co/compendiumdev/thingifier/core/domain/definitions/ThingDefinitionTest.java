@@ -121,9 +121,9 @@ class ThingDefinitionTest {
         final Thing slack = Thing.create("slack", "slack");
 
         final RelationshipVector vec =
-                new RelationshipVector(stress,
+                new RelationshipVector(stress.definition(),
                         "withbob",
-                        slack,
+                        slack.definition(),
                         Cardinality.ONE_TO_MANY);
         final RelationshipDefinition defn = RelationshipDefinition.create(vec);
 

@@ -2,6 +2,7 @@ package uk.co.compendiumdev.thingifier.api.restapihandlers;
 
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.ThingDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVector;
 import uk.co.compendiumdev.thingifier.core.domain.instances.ThingInstance;
@@ -71,9 +72,11 @@ public class BodyArgsProcessor {
                                 final List<RelationshipVector> relationshipsAre =
                                         instance.getEntity().related().getRelationships(relationshipName);
                                 for(RelationshipVector relate : relationshipsAre){
-                                    instanceToRelateTo = relate.getTo().
-                                            findInstanceByField(
-                                                    FieldValue.is(relationshipFieldName, complexKeyValue.getValue()));
+                                    final ThingDefinition typeOfThing = relate.getTo();
+                                    instanceToRelateTo =  thingifier.getThingNamed(typeOfThing.getName()).
+                                                            findInstanceByField(
+                                                            FieldValue.is(relationshipFieldName,
+                                                                complexKeyValue.getValue()));
                                     if(instanceToRelateTo!=null){
                                         break;
                                     }

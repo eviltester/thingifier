@@ -87,7 +87,7 @@ public class BodyRelationshipValidator {
         if(thingToRelateTo==null) {
             final List<RelationshipVector> relationshipsNamed = thingDefinition.related().getRelationships(relationShipName);
             for(RelationshipVector vector : relationshipsNamed){
-                final Thing thingToRelationship = vector.getTo();
+                final Thing thingToRelationship = thingifier.getThingNamed(vector.getTo().getName());
                 thingToRelateTo = thingToRelationship.findInstanceByGUIDorID(guidValue);
                 if(thingToRelateTo!=null){
                     break;
@@ -184,7 +184,7 @@ public class BodyRelationshipValidator {
         // is it a valid relationship to the other thing
 
         for(RelationshipVector relationships : thingDefinition.related().getRelationships(relationShipName)){
-            if(relationships.getTo().definition().getPlural().equals(
+            if(relationships.getTo().getPlural().equals(
                     thingToRelateTo)){
                 return true;
             }

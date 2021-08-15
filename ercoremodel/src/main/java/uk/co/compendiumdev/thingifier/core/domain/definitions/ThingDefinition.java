@@ -93,7 +93,7 @@ public class ThingDefinition {
                 definedRelationships.getRelationships(relationshipName);
 
         for (RelationshipVector relationship : relationshipsWithThisName) {
-            if (relationship.getTo().definition() == entity) {
+            if (relationship.getTo() == entity) {
                 return relationship;
             }
         }

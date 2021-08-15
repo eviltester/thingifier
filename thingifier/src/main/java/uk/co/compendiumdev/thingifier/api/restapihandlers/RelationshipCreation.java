@@ -47,7 +47,7 @@ public class RelationshipCreation {
         // if no way to narrow it down then use the first one TODO: potential bug if multiple named relationshps
         relationshipToUse = possibleRelationships.get(0);
 
-        Thing thingTo = relationshipToUse.getTo();
+        Thing thingTo = thingifier.getThingNamed(relationshipToUse.getTo().getName());
 
         // if there is a guid in the body then use that to try and find a thing that matches it
         // if there is a guid field or an id field then use whichever first matches a thing
@@ -81,7 +81,7 @@ public class RelationshipCreation {
 
         // if we have a parent thing, but no GUID then can we create a Thing and connect it later?
         if (relatedItem == null) {
-            ThingDefinition createThing = relationshipToUse.getTo().definition();
+            ThingDefinition createThing = relationshipToUse.getTo();
 
             thingToCreate = thingifier.getThingNamed(createThing.getName());
 
@@ -111,13 +111,13 @@ public class RelationshipCreation {
                         relatedItem.getEntity().getName()));
 
             }else {
-                if (relationshipToUse.getTo().definition() != relatedItem.getEntity()) {
+                if (relationshipToUse.getTo() != relatedItem.getEntity()) {
                     response = ApiResponse.error(400, String.format("Could not connect %s (%s) to %s (%s) via relationship %s because it is a %s instead of a %s",
                             connectThis.getGUID(), connectThis.getEntity().getName(),
                             relatedItem.getGUID(), relatedItem.getEntity().getName(),
                             relationshipToUse.getName(),
                             relatedItem.getEntity().getName(),
-                            relationshipToUse.getTo().definition().getName()
+                            relationshipToUse.getTo().getName()
                     ));
                 }
             }

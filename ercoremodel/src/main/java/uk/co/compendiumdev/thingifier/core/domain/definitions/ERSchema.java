@@ -1,6 +1,5 @@
 package uk.co.compendiumdev.thingifier.core.domain.definitions;
 
-import uk.co.compendiumdev.thingifier.core.Thing;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVector;
 
@@ -28,8 +27,7 @@ public class ERSchema {
         return relationships.values();
     }
 
-    // TODO: this should be ThingDefinitions not Things
-    public RelationshipDefinition defineRelationship(final Thing from, final Thing to, final String named, final Cardinality of) {
+    public RelationshipDefinition defineRelationship(final ThingDefinition from, final ThingDefinition to, final String named, final Cardinality of) {
         RelationshipDefinition relationship =
                 RelationshipDefinition.create(
                         new RelationshipVector(

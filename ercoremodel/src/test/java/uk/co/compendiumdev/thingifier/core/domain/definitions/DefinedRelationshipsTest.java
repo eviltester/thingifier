@@ -19,9 +19,9 @@ class DefinedRelationshipsTest {
                 rels.hasRelationship("bob"));
 
         rels.addRelationship(new RelationshipVector(
-                Thing.create("thing1", "thing1"),
+                Thing.create("thing1", "thing1").definition(),
                 "bob",
-                Thing.create("thing2", "thing2"),
+                Thing.create("thing2", "thing2").definition(),
                             Cardinality.ONE_TO_MANY));
 
         Assertions.assertTrue(
@@ -34,15 +34,15 @@ class DefinedRelationshipsTest {
         final DefinedRelationships rels = new DefinedRelationships();
 
         rels.addRelationship(new RelationshipVector(
-                Thing.create("thing1", "thing1"),
+                Thing.create("thing1", "thing1").definition(),
                 "bob",
-                Thing.create("thing2", "thing2"),
+                Thing.create("thing2", "thing2").definition(),
                 Cardinality.ONE_TO_ONE));
 
         rels.addRelationship(new RelationshipVector(
-                Thing.create("thing2", "thing2"),
+                Thing.create("thing2", "thing2").definition(),
                 "bob",
-                Thing.create("thing3", "thing3"),
+                Thing.create("thing3", "thing3").definition(),
                 Cardinality.ONE_TO_MANY));
 
         final List<RelationshipVector> vectors = rels.getRelationships("bob");
@@ -65,30 +65,30 @@ class DefinedRelationshipsTest {
         final DefinedRelationships rels = new DefinedRelationships();
 
         final RelationshipVector bob1 = new RelationshipVector(
-                Thing.create("thing1", "thing1"),
+                Thing.create("thing1", "thing1").definition(),
                 "bob",
-                Thing.create("thing2", "thing2"),
+                Thing.create("thing2", "thing2").definition(),
                 Cardinality.ONE_TO_ONE);
         rels.addRelationship(bob1);
 
         final RelationshipVector bob2 = new RelationshipVector(
-                Thing.create("thing2", "thing2"),
+                Thing.create("thing2", "thing2").definition(),
                 "bob",
-                Thing.create("thing3", "thing3"),
+                Thing.create("thing3", "thing3").definition(),
                 Cardinality.ONE_TO_MANY);
         rels.addRelationship(bob2);
 
         final RelationshipVector connie1 = new RelationshipVector(
-                Thing.create("thing1", "thing1"),
+                Thing.create("thing1", "thing1").definition(),
                 "connie",
-                Thing.create("thing2", "thing2"),
+                Thing.create("thing2", "thing2").definition(),
                 Cardinality.ONE_TO_MANY);
         rels.addRelationship(connie1);
 
         final RelationshipVector dobbs1 = new RelationshipVector(
-                Thing.create("thing1", "thing1"),
+                Thing.create("thing1", "thing1").definition(),
                 "dobbs",
-                Thing.create("thing2", "thing2"),
+                Thing.create("thing2", "thing2").definition(),
                 Cardinality.ONE_TO_MANY);
         rels.addRelationship(dobbs1);
 

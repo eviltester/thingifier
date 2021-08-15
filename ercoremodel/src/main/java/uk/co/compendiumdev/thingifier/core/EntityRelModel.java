@@ -15,10 +15,9 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 /*
-    TODO: Currently the ERM has the 'model' and the 'instances' combined, separate schema and instances
-    Split the schema into a discrete set of classes separate from the instances
-    This would allow us to have multiple 'databases' in memory at the same time
-    built from the same schema.
+    The ERM has the 'model' (ERSchema) and the 'instances' (things).
+    Schema and instances are separate to allow us to have multiple
+    'databases' in memory at the same time built from the same schema.
  */
 public class EntityRelModel {
 
@@ -53,7 +52,7 @@ public class EntityRelModel {
     }
 
     public RelationshipDefinition defineRelationship(Thing from, Thing to, final String named, final Cardinality of) {
-        return schema.defineRelationship(from, to, named, of);
+        return schema.defineRelationship(from.definition(), to.definition(), named, of);
     }
 
     public boolean hasRelationshipNamed(final String relationshipName) {

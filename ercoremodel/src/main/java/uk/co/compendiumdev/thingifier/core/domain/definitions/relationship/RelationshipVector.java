@@ -2,6 +2,7 @@ package uk.co.compendiumdev.thingifier.core.domain.definitions.relationship;
 
 import uk.co.compendiumdev.thingifier.core.Thing;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.Cardinality;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.ThingDefinition;
 
 import static uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.Optionality.*;
 
@@ -21,20 +22,19 @@ public class RelationshipVector {
     private final String name;
     private final Cardinality cardinality;
     private Optionality optionality;
-    private Thing from;
-    private Thing to;
+    private ThingDefinition from;
+    private ThingDefinition to;
     private RelationshipDefinition parentRelationship;
 
-    // TODO this should be to/from ThingDefinitions not Things
-    public RelationshipVector(Thing from, String relationShipName, Thing to, Cardinality cardinality) {
+    public RelationshipVector(ThingDefinition from, String relationShipName, ThingDefinition to, Cardinality cardinality) {
         this.from = from;
         this.name = relationShipName;
         this.to = to;
         this.cardinality = cardinality;
         this.optionality = OPTIONAL_RELATIONSHIP;
 
-        // assign to the thing
-        from.withDefinedRelationship(this);
+        // assign to the from thingDefinition
+        from.related().addRelationship(this);
     }
 
     public String getName() {
@@ -45,11 +45,11 @@ public class RelationshipVector {
         return cardinality;
     }
 
-    public Thing getTo() {
+    public ThingDefinition getTo() {
         return to;
     }
 
-    public Thing getFrom() {
+    public ThingDefinition getFrom() {
         return from;
     }
 
