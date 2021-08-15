@@ -1,9 +1,8 @@
 package uk.co.compendiumdev.challenge.challengesrouting;
 
 import uk.co.compendiumdev.thingifier.api.ThingifierApiDefn;
-import uk.co.compendiumdev.thingifier.api.routings.RoutingDefinition;
-import uk.co.compendiumdev.thingifier.api.routings.RoutingStatus;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingVerb;
+import uk.co.compendiumdev.thingifier.application.AdhocDocumentedSparkRouteConfig;
 import uk.co.compendiumdev.thingifier.spark.SimpleRouteConfig;
 
 import static spark.Spark.options;
@@ -14,40 +13,32 @@ public class HeartBeatRoutes {
 
         String endpoint ="/heartbeat";
 
-        options(endpoint, (request, result) -> {
-            result.status(204);
-            result.header("Allow", "GET, HEAD, OPTIONS");
-            return "";
-        });
+        final AdhocDocumentedSparkRouteConfig sparkRouteConfig =
+                new AdhocDocumentedSparkRouteConfig(apiDefn);
 
+        sparkRouteConfig.add(endpoint,
+                            RoutingVerb.GET, 204,
+                "Is the server running? YES 204");
+
+        sparkRouteConfig.add(endpoint,
+                RoutingVerb.HEAD, 204,
+                "Headers for heartbeat endpoint");
+
+        sparkRouteConfig.add(endpoint,
+                RoutingVerb.OPTIONS, 204,
+                "Options for heartbeat endpoint",
+                (request, result) -> {
+                    result.status(204);
+                    result.header("Allow", "GET, HEAD, OPTIONS");
+                    return "";
+                }
+                );
+
+        // undocumented handlers
         new SimpleRouteConfig(endpoint).
-                status(204, "get", "head").
                 status(405,  "post", "delete", "put").
                 status(500,  "patch").
                 status(501, "trace");
 
-        apiDefn.addRouteToDocumentation(
-                new RoutingDefinition(
-                RoutingVerb.GET,
-                endpoint,
-                RoutingStatus.returnedFromCall(),
-                null).addDocumentation("Is the server running? YES 204").
-                addPossibleStatuses(204));
-
-        apiDefn.addRouteToDocumentation(
-                new RoutingDefinition(
-                RoutingVerb.OPTIONS,
-                endpoint,
-                RoutingStatus.returnedFromCall(),
-                null).addDocumentation("Options for heartbeat endpoint")
-                        .addPossibleStatuses(204));
-
-        apiDefn.addRouteToDocumentation(
-                new RoutingDefinition(
-                RoutingVerb.HEAD,
-                endpoint,
-                RoutingStatus.returnedFromCall(),
-                null).addDocumentation("Headers for heartbeat endpoint")
-                    .addPossibleStatuses(204));
     }
 }

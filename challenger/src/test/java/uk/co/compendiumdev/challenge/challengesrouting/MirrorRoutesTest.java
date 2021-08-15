@@ -32,7 +32,8 @@ public class MirrorRoutesTest {
 
         // get
         args.add(Arguments.of(200, "get", "/mirror/request"));
-        args.add(Arguments.of(204, "head", "/mirror/request"));
+        // 200 same as get
+        args.add(Arguments.of(200, "head", "/mirror/request"));
         args.add(Arguments.of(204, "options", "/mirror/request"));
         // post
         args.add(Arguments.of(200, "post", "/mirror/request"));
@@ -42,7 +43,8 @@ public class MirrorRoutesTest {
         args.add(Arguments.of(200, "trace", "/mirror/request"));
 
         args.add(Arguments.of(200, "get", "/mirror/request/bob"));
-        args.add(Arguments.of(204, "head", "/mirror/request/bob"));
+        // 200 same as get
+        args.add(Arguments.of(200, "head", "/mirror/request/bob"));
         args.add(Arguments.of(204, "options", "/mirror/request/bob"));
         // post
         args.add(Arguments.of(200, "post", "/mirror/request/bob"));

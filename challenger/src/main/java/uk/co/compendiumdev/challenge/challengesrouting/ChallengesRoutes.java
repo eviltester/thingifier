@@ -9,6 +9,7 @@ import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingStatus;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingVerb;
+import uk.co.compendiumdev.thingifier.application.AdhocDocumentedSparkRouteConfig;
 import uk.co.compendiumdev.thingifier.application.routehandlers.SparkApiRequestResponseHandler;
 import uk.co.compendiumdev.thingifier.spark.SimpleRouteConfig;
 
@@ -52,48 +53,34 @@ public class ChallengesRoutes {
 
         });
 
+        apiDefn.addRouteToDocumentation(
+                new RoutingDefinition(
+                        RoutingVerb.GET,
+                        "/challenges",
+                        RoutingStatus.returnedFromCall(),
+                        null).addDocumentation("Get list of challenges and their completion status").
+                        addPossibleStatuses(200));
 
-
-        head("/challenges", (request, result) -> {
-            result.status(200);
-            result.type("application/json");
-            return "";
-        });
-
-        options("/challenges", (request, result) -> {
-            result.status(200);
-            result.type("application/json");
-            result.header("Allow", "GET, HEAD, OPTIONS");
-            return "";
-        });
+        // TODO: because these hardcode contentType and ignore Accept there should be a light weight wrapper available
+        new AdhocDocumentedSparkRouteConfig(apiDefn).
+                add("/challenges", RoutingVerb.HEAD, 200, "Headers for list of challenges endpoint",
+                        (request, result) ->{
+                            result.status(200);
+                            result.type("application/json");
+                            return "";
+                        }).
+                add("/challenges", RoutingVerb.OPTIONS, 200,"Options for list of challenges endpoint",
+                        ((request, result) -> {
+                            result.status(200);
+                            result.type("application/json");
+                            result.header("Allow", "GET, HEAD, OPTIONS");
+                            return "";
+                        }));
 
         SimpleRouteConfig.routeStatusWhenNot(
                 405, "/challenges",
                 "get", "head", "options");
 
-        apiDefn.addRouteToDocumentation(
-                new RoutingDefinition(
-                RoutingVerb.GET,
-                "/challenges",
-                RoutingStatus.returnedFromCall(),
-                null).addDocumentation("Get list of challenges and their completion status").
-                        addPossibleStatuses(200));
-
-        apiDefn.addRouteToDocumentation(
-                new RoutingDefinition(
-                RoutingVerb.OPTIONS,
-                "/challenges",
-                RoutingStatus.returnedFromCall(),
-                null).addDocumentation("Options for list of challenges endpoint").
-                        addPossibleStatuses(200));
-
-        apiDefn.addRouteToDocumentation(
-                new RoutingDefinition(
-                RoutingVerb.HEAD,
-                "/challenges",
-                RoutingStatus.returnedFromCall(),
-                null).addDocumentation("Headers for list of challenges endpoint")
-                        .addPossibleStatuses(200));
     }
 
 }

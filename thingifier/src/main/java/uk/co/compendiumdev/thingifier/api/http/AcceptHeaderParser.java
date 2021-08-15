@@ -99,6 +99,13 @@ public class AcceptHeaderParser {
         }
     }
 
+    public String getPreferredType(){
+        if(acceptMediaTypeDefinitionsList.size()==0){
+            return "";
+        }
+        return acceptMediaTypeDefinitionsList.get(0);
+    }
+
     public boolean hasAPreferenceFor(final ACCEPT_TYPE type) {
 
         // if type is found in the array before any other type

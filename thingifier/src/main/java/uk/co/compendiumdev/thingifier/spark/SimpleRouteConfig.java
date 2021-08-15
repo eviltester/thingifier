@@ -3,6 +3,7 @@ package uk.co.compendiumdev.thingifier.spark;
 import spark.Request;
 import spark.Response;
 import spark.Route;
+import uk.co.compendiumdev.thingifier.api.http.AcceptHeaderParser;
 
 import java.util.Arrays;
 import java.util.List;
@@ -19,6 +20,14 @@ public class SimpleRouteConfig {
 
     public SimpleRouteConfig(String endpoint){
         this.endpoint = endpoint;
+    }
+
+    public SimpleRouteConfig handledRouteStatus(
+                                final String verb,
+                                Route routeHandler) {
+
+        SimpleRouteConfig.addHandler(endpoint, verb, routeHandler);
+        return this;
     }
 
     public SimpleRouteConfig status(final int statusCode, final String...verbs) {
@@ -41,41 +50,51 @@ public class SimpleRouteConfig {
      */
     public static void routeStatus(final int statuscode, final String endpoint, final String... verbs) {
 
-
         for(String verb : verbs){
             String matchVerb = verb.trim().toLowerCase();
 
+            // TODO: this should really reject if the the accept header is one that the main api does not accept
             Route route = (Request request, Response result) -> {
+                final AcceptHeaderParser acceptParser = new AcceptHeaderParser(request.headers("Accept"));
+                String preferred = new AcceptHeaderParser(request.headers("Accept")).getPreferredType();
+                if(preferred == null || preferred.trim().length()==0 || acceptParser.willAcceptAnything()){
+                    preferred="application/json"; // hard coded default
+                }
+                result.header("Content-Type", preferred);
                 result.status(statuscode);
                 return "";
             };
 
-            switch (matchVerb){
-                case "get":
-                    get(endpoint, route);
-                    break;
-                case "head":
-                    head(endpoint, route);
-                    break;
-                case "options":
-                    options(endpoint, route);
-                    break;
-                case "post":
-                    post(endpoint, route);
-                    break;
-                case "put":
-                    put(endpoint, route);
-                    break;
-                case "patch":
-                    patch(endpoint, route);
-                    break;
-                case "delete":
-                    delete(endpoint, route);
-                    break;
-                case "trace":
-                    trace(endpoint, route);
-                    break;
-            }
+            addHandler(endpoint, matchVerb, route);
+        }
+    }
+
+    public static void addHandler(final String endpoint, final String matchVerb, final Route route) {
+        switch (matchVerb.toLowerCase()){
+            case "get":
+                get(endpoint, route);
+                break;
+            case "head":
+                head(endpoint, route);
+                break;
+            case "options":
+                options(endpoint, route);
+                break;
+            case "post":
+                post(endpoint, route);
+                break;
+            case "put":
+                put(endpoint, route);
+                break;
+            case "patch":
+                patch(endpoint, route);
+                break;
+            case "delete":
+                delete(endpoint, route);
+                break;
+            case "trace":
+                trace(endpoint, route);
+                break;
         }
     }
 
