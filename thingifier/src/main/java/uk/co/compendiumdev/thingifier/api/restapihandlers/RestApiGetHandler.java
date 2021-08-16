@@ -2,7 +2,7 @@ package uk.co.compendiumdev.thingifier.api.restapihandlers;
 
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.query.SimpleQuery;
 
 import java.util.HashMap;
@@ -35,7 +35,7 @@ public class RestApiGetHandler {
             queryResults = new SimpleQuery(thingifier.getERmodel(), url).performQuery();
         }
 
-        List<ThingInstance> queryItems = queryResults.getListThingInstance();
+        List<EntityInstance> queryItems = queryResults.getListEntityInstances();
 
         // return a 404 if it doesn't match anything
         if (queryResults.lastMatchWasNothing() ||
@@ -49,7 +49,7 @@ public class RestApiGetHandler {
                 // if we asked for /projects then we should always return a collection
                 return ApiResponse.success().
                         returnInstanceCollection(
-                                queryResults.getListThingInstance());
+                                queryResults.getListEntityInstances());
             } else {
                 return ApiResponse.success().returnSingleInstance(queryResults.getLastInstance());
             }

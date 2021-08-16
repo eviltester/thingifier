@@ -10,14 +10,14 @@ import java.util.*;
 
 
 
-public class ThingDefinition {
+public class EntityDefinition {
     private String name;
     private String plural;
 
     private DefinedFields fields;
     private DefinedRelationships definedRelationships;
 
-    public ThingDefinition(String name, String plural) {
+    public EntityDefinition(String name, String plural) {
         this.name = name;
         this.plural = plural;
         definedRelationships = new DefinedRelationships();
@@ -60,7 +60,7 @@ public class ThingDefinition {
         return fields.hasFieldNameDefined(fieldName);
     }
 
-    public ThingDefinition addFields(Field... theseFields) {
+    public EntityDefinition addFields(Field... theseFields) {
         fields.addFields(theseFields);
         return this;
     }
@@ -82,7 +82,7 @@ public class ThingDefinition {
     }
 
     public RelationshipVector getNamedRelationshipTo(final String relationshipName,
-                                       final ThingDefinition entity) {
+                                       final EntityDefinition entity) {
 
         List<RelationshipVector> relationshipsWithThisName =
                 definedRelationships.getRelationships(relationshipName);

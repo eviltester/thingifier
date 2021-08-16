@@ -5,16 +5,16 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.ThingDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 
 public class ThingInstanceBooleanFieldTest {
 
-    ThingDefinition entityTestSession;
+    EntityDefinition entityTestSession;
 
     @BeforeEach
     public void createEntity(){
 
-        entityTestSession = new ThingDefinition("Test Session", "Test Sessions");
+        entityTestSession = new EntityDefinition("Test Session", "Test Sessions");
         entityTestSession.addFields(Field.is("review", FieldType.BOOLEAN).withDefaultValue("true"));
         entityTestSession.addFields(Field.is("falsey", FieldType.BOOLEAN));
 
@@ -25,7 +25,7 @@ public class ThingInstanceBooleanFieldTest {
     @Test
     public void booleanFieldsCanOnlyBeSetAsTrueOrFalse() {
 
-        ThingInstance session = new ThingInstance(entityTestSession);
+        EntityInstance session = new EntityInstance(entityTestSession);
 
         session.setValue("review", "false");
         Assertions.assertEquals("false", session.getFieldValue("review").asString());
@@ -43,7 +43,7 @@ public class ThingInstanceBooleanFieldTest {
     @Test
     public void booleanFieldsRaiseExceptionForInvalidValue(){
 
-        ThingInstance session = new ThingInstance(entityTestSession);
+        EntityInstance session = new EntityInstance(entityTestSession);
 
         Assertions.assertThrows(IllegalArgumentException.class, ()->{
             session.setValue("review", "BOB");
@@ -57,7 +57,7 @@ public class ThingInstanceBooleanFieldTest {
     @Test
     public void booleanFieldsByDefaultAreFalse(){
 
-        ThingInstance session = new ThingInstance(entityTestSession);
+        EntityInstance session = new EntityInstance(entityTestSession);
 
         // false by default
         Assertions.assertEquals("false", session.getFieldValue("falsey").asString());
@@ -66,7 +66,7 @@ public class ThingInstanceBooleanFieldTest {
     @Test
     public void booleanFieldsDefaultCanBeConfigured(){
 
-        ThingInstance session = new ThingInstance(entityTestSession);
+        EntityInstance session = new EntityInstance(entityTestSession);
 
         // false by default
         Assertions.assertEquals("true", session.getFieldValue("review").asString());

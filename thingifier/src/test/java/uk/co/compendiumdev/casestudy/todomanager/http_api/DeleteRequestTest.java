@@ -5,19 +5,19 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.casestudy.todomanager.TodoManagerModel;
-import uk.co.compendiumdev.thingifier.core.Thing;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiResponse;
 import uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
 public class DeleteRequestTest {
 
     private Thingifier todoManager;
 
-    Thing todo;
-    Thing project;
+    EntityInstanceCollection todo;
+    EntityInstanceCollection project;
 
 
     // TODO: need the http_api tests to achieve 100% of ThingifierRestApiHandler
@@ -27,8 +27,8 @@ public class DeleteRequestTest {
 
         todoManager = TodoManagerModel.definedAsThingifier();
 
-        todo = todoManager.getThingNamed("todo");
-        project = todoManager.getThingNamed("project");
+        todo = todoManager.getThingInstancesNamed("todo");
+        project = todoManager.getThingInstancesNamed("project");
 
 
     }
@@ -37,7 +37,7 @@ public class DeleteRequestTest {
     public void canDeleteItem(){
 
 
-        final ThingInstance instance = todo.createManagedInstance().setValue("title", "my title");
+        final EntityInstance instance = todo.createManagedInstance().setValue("title", "my title");
 
         Assertions.assertEquals(1, todo.countInstances());
 
@@ -55,7 +55,7 @@ public class DeleteRequestTest {
     public void cannotDeleteItemThatDoesNotExist(){
 
 
-        final ThingInstance instance = todo.createManagedInstance().setValue("title", "my title");
+        final EntityInstance instance = todo.createManagedInstance().setValue("title", "my title");
 
         Assertions.assertEquals(1, todo.countInstances());
 
@@ -73,7 +73,7 @@ public class DeleteRequestTest {
     public void cannotDeleteRootItem(){
 
 
-        final ThingInstance instance = todo.createManagedInstance().setValue("title", "my title");
+        final EntityInstance instance = todo.createManagedInstance().setValue("title", "my title");
 
         Assertions.assertEquals(1, todo.countInstances());
 

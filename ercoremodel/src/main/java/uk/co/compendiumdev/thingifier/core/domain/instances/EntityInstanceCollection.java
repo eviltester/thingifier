@@ -1,40 +1,24 @@
-package uk.co.compendiumdev.thingifier.core;
+package uk.co.compendiumdev.thingifier.core.domain.instances;
 
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.ThingDefinition;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVector;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 
-final public class Thing {
+final public class EntityInstanceCollection {
 
-    private final ThingDefinition definition;
-    private Map<String, ThingInstance> instances = new ConcurrentHashMap<>();
+    private final EntityDefinition definition;
+    private Map<String, EntityInstance> instances = new ConcurrentHashMap<>();
 
-    public Thing(ThingDefinition thingDefinition) {
+    public EntityInstanceCollection(EntityDefinition thingDefinition) {
         this.definition = thingDefinition;
     }
 
-    public ThingInstance createInstance() {
-        ThingInstance instance = new ThingInstance(definition);
-        instance.addGUIDtoInstance();
-        instance.addIdsToInstance();
-        return instance;
-    }
-
-    public ThingInstance createInstance(String guid) {
-        ThingInstance instance = new ThingInstance(definition);
-        instance.overrideValue("guid", guid);
-        instance.addIdsToInstance();
-        return instance;
-    }
-
-    public Thing addInstance(ThingInstance instance) {
+    public EntityInstanceCollection addInstance(EntityInstance instance) {
 
         if(instance.getEntity()!=definition){
             throw new RuntimeException(String.format(
@@ -47,8 +31,8 @@ final public class Thing {
     }
 
     /* create and add */
-    public ThingInstance createManagedInstance() {
-        ThingInstance instance = new ThingInstance(definition);
+    public EntityInstance createManagedInstance() {
+        EntityInstance instance = new EntityInstance(definition);
         instance.addGUIDtoInstance();
         instance.addIdsToInstance();
         addInstance(instance);
@@ -60,9 +44,9 @@ final public class Thing {
     }
 
 
-    public ThingInstance findInstanceByField(FieldValue fieldValue) {
+    public EntityInstance findInstanceByField(FieldValue fieldValue) {
 
-        for (ThingInstance thing : instances.values()) {
+        for (EntityInstance thing : instances.values()) {
             if (thing.getFieldValue(fieldValue.getName())
                     .asString().contentEquals(fieldValue.asString())) {
                 return thing;
@@ -72,7 +56,7 @@ final public class Thing {
         return null;
     }
 
-    public ThingInstance findInstanceByGUID(String instanceFieldValue) {
+    public EntityInstance findInstanceByGUID(String instanceFieldValue) {
 
         if (instances.containsKey(instanceFieldValue)) {
             return instances.get(instanceFieldValue);
@@ -82,16 +66,16 @@ final public class Thing {
     }
 
 
-    public Collection<ThingInstance> getInstances() {
+    public Collection<EntityInstance> getInstances() {
         return instances.values();
     }
 
     /**
      * Sorted list of instances
      */
-    Comparator<ThingInstance> compareByInteger = new Comparator<ThingInstance>() {
+    Comparator<EntityInstance> compareByInteger = new Comparator<EntityInstance>() {
         @Override
-        public int compare(ThingInstance thing1, ThingInstance thing2) {
+        public int compare(EntityInstance thing1, EntityInstance thing2) {
             int field1Value = thing1.getFieldValue("ID").asInteger();
             int field2Value = thing2.getFieldValue("ID").asInteger();
             return field2Value-field1Value;
@@ -99,8 +83,8 @@ final public class Thing {
     };
 
     // TODO: make generic to allow sorting by any field
-    public Collection<ThingInstance> getInstancesSortByID() {
-        List<ThingInstance>sortedList = new ArrayList<>();
+    public Collection<EntityInstance> getInstancesSortByID() {
+        List<EntityInstance>sortedList = new ArrayList<>();
         sortedList.addAll(instances.values());
 
         // low to high sort
@@ -117,7 +101,7 @@ final public class Thing {
      * @param guid
      * @return
      */
-    public List<ThingInstance> deleteInstance(String guid) {
+    public List<EntityInstance> deleteInstance(String guid) {
 
         if (!instances.containsKey(guid)) {
             throw new IndexOutOfBoundsException(
@@ -125,11 +109,11 @@ final public class Thing {
                             definition.getName(), guid));
         }
 
-        ThingInstance item = instances.get(guid);
+        EntityInstance item = instances.get(guid);
 
         instances.remove(guid);
 
-        final List<ThingInstance> alsoDelete = item.getRelationships().removeAllRelationships();
+        final List<EntityInstance> alsoDelete = item.getRelationships().removeAllRelationships();
 
 
         return alsoDelete;
@@ -141,13 +125,13 @@ final public class Thing {
 
      */
 
-    public ThingDefinition definition() {
+    public EntityDefinition definition() {
         return definition;
     }
 
     private List<String> getGuidList() {
         List<String> guids = new ArrayList<>();
-        for(ThingInstance instance : instances.values()){
+        for(EntityInstance instance : instances.values()){
             guids.add(instance.getGUID());
         }
 
@@ -156,8 +140,8 @@ final public class Thing {
 
 
     // todo: not comfortable with this method, we should be using specific field names
-    public ThingInstance findInstanceByGUIDorID(final String instanceGuid) {
-        ThingInstance instance = findInstanceByGUID(instanceGuid);
+    public EntityInstance findInstanceByGUIDorID(final String instanceGuid) {
+        EntityInstance instance = findInstanceByGUID(instanceGuid);
         if(instance==null){
             final List<Field> idFields = definition.getFieldsOfType(FieldType.ID);
             if(!idFields.isEmpty()) {
@@ -169,4 +153,5 @@ final public class Thing {
         }
         return instance;
     }
+
 }

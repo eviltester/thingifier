@@ -3,7 +3,7 @@ package uk.co.compendiumdev.thingifier.api;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
 import java.util.List;
 
@@ -14,7 +14,7 @@ public class ApiUrls {
         this.apiConfig = apiConfig;
     }
 
-    public String getCreatedLocationHeader(final ThingInstance thingInstance) {
+    public String getCreatedLocationHeader(final EntityInstance thingInstance) {
         String uniqueID=null;
         String entityPath;
 

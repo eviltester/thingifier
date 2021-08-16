@@ -4,10 +4,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.casestudy.todomanager.TodoManagerModel;
-import uk.co.compendiumdev.thingifier.core.Thing;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
 import java.util.*;
 
@@ -16,8 +16,8 @@ public class VerbDeleteEntityInstanceApiNonHttpTest {
 
     private Thingifier todoManager;
 
-    Thing todo;
-    Thing project;
+    EntityInstanceCollection todo;
+    EntityInstanceCollection project;
 
 
     // TODO: tests that use the TodoManagerModel were created early and are too complicated - simplify
@@ -30,8 +30,8 @@ public class VerbDeleteEntityInstanceApiNonHttpTest {
 
         todoManager = TodoManagerModel.definedAsThingifier();
 
-        todo = todoManager.getThingNamed("todo");
-        project = todoManager.getThingNamed("project");
+        todo = todoManager.getThingInstancesNamed("todo");
+        project = todoManager.getThingInstancesNamed("project");
 
     }
     
@@ -50,7 +50,7 @@ public class VerbDeleteEntityInstanceApiNonHttpTest {
     public void deleteAnEntityInstanceAPI() {
         ApiResponse apiresponse;
 
-        ThingInstance officeWork = project.createManagedInstance().
+        EntityInstance officeWork = project.createManagedInstance().
                 setValue("title", "An Existing Project");
 
         Assertions.assertEquals(1, project.countInstances());

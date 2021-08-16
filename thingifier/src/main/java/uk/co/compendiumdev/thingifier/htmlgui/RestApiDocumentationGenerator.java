@@ -2,7 +2,7 @@ package uk.co.compendiumdev.thingifier.htmlgui;
 
 import com.google.gson.GsonBuilder;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.xml.GenericXMLPrettyPrinter;
-import uk.co.compendiumdev.thingifier.core.Thing;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.api.routings.ApiRoutingDefinition;
@@ -12,10 +12,10 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.F
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipDefinition;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.ThingDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVector;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.validation.ValidationRule;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.reporting.JsonThing;
 import uk.co.compendiumdev.thingifier.reporting.XmlThing;
 
@@ -26,7 +26,7 @@ import java.util.Random;
 
 public class RestApiDocumentationGenerator {
     private final Thingifier thingifier;
-    private final List<Thing> things;
+    private final List<EntityInstanceCollection> things;
     private final Collection<RelationshipDefinition> relationships;
     private final JsonThing jsonThing;
     private final XmlThing xmlThing;
@@ -122,7 +122,7 @@ public class RestApiDocumentationGenerator {
 
         if (things != null) {
             output.append(heading(3, "Things"));
-            for (Thing aThing : things) {
+            for (EntityInstanceCollection aThing : things) {
                 output.append(heading(4, aThing.definition().getName()));
 
                 output.append("Fields:\n");
@@ -215,7 +215,7 @@ public class RestApiDocumentationGenerator {
                 }
 
                 output.append("<p>Example JSON Input to API calls</p>\n");
-                ThingInstance createableExampleThing = exampleThing.withoutIDsOrGUIDs();
+                EntityInstance createableExampleThing = exampleThing.withoutIDsOrGUIDs();
                 output.append("<pre class='json'>\n");
                 output.append("<code class='json'>\n");
                 output.append(new GsonBuilder().setPrettyPrinting()
@@ -337,7 +337,7 @@ public class RestApiDocumentationGenerator {
         return output.toString();
     }
 
-    private String getExampleFilter(final ThingDefinition filterableEntity) {
+    private String getExampleFilter(final EntityDefinition filterableEntity) {
         String exampleFilters = "";
         List<Field> exampleFields = new ArrayList<>();
         List<Integer> indexes = new ArrayList<>();

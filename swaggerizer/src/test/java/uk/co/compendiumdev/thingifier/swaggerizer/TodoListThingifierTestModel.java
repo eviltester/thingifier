@@ -1,6 +1,6 @@
 package uk.co.compendiumdev.thingifier.swaggerizer;
 
-import uk.co.compendiumdev.thingifier.core.Thing;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfigProfile;
@@ -28,7 +28,7 @@ public class TodoListThingifierTestModel {
 
         todoList.setDocumentation("Simple Todo List", para.toString());
 
-        Thing todo = todoList.createThing("todo", "todos");
+        EntityInstanceCollection todo = todoList.createThing("todo", "todos");
 
         todo.definition()
                 .addFields(

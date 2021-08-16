@@ -4,18 +4,18 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.ThingDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 
 public class ThingInstanceIntegerFieldTest {
 
     @Test
     public void byDefaultAnIntegerFieldIsZero(){
 
-        ThingDefinition enumFieldEntity = new ThingDefinition("thing", "things");
+        EntityDefinition enumFieldEntity = new EntityDefinition("thing", "things");
         enumFieldEntity.addFields(Field.is("integer", FieldType.INTEGER));
 
         // TODO: allow nullable optional integers
-        ThingInstance instance = new ThingInstance(enumFieldEntity);
+        EntityInstance instance = new EntityInstance(enumFieldEntity);
         Assertions.assertEquals("0", instance.getFieldValue("integer").asString());
     }
 
@@ -23,13 +23,13 @@ public class ThingInstanceIntegerFieldTest {
     @Test
     public void cannotSetAValueOutwithMaxMinValueForIntegerFields(){
 
-        ThingDefinition stringFieldEntity = new ThingDefinition("Test Session", "Test Sessions");
+        EntityDefinition stringFieldEntity = new EntityDefinition("Test Session", "Test Sessions");
         stringFieldEntity.addFields(Field.is("integer", FieldType.INTEGER).
                 withMaximumValue(100).
                 withMinimumValue(50)
         );
 
-        ThingInstance instance = new ThingInstance(stringFieldEntity);
+        EntityInstance instance = new EntityInstance(stringFieldEntity);
 
         Assertions.assertThrows(IllegalArgumentException.class, ()->{
                 instance.setValue("integer", "101");

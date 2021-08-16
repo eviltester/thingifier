@@ -11,8 +11,8 @@ import uk.co.compendiumdev.challenge.challengers.Challengers;
 import uk.co.compendiumdev.challenger.http.http.HttpResponseDetails;
 import uk.co.compendiumdev.challenger.http.http.HttpMessageSender;
 import uk.co.compendiumdev.sparkstart.Environment;
-import uk.co.compendiumdev.thingifier.core.Thing;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -188,8 +188,8 @@ public class ChallengeCompleteTest{
     @Test
     public void canPostTodosUpdatePass() {
 
-        final Thing todos = ChallengeMain.getChallenger().getThingifier().getThingNamed("todo");
-        final ThingInstance todo = todos.createManagedInstance();
+        final EntityInstanceCollection todos = ChallengeMain.getChallenger().getThingifier().getThingInstancesNamed("todo");
+        final EntityInstance todo = todos.createManagedInstance();
 
         headers.clear();
         headers.putAll(x_challenger_header);
@@ -293,8 +293,8 @@ public class ChallengeCompleteTest{
     @Test
     public void canDeleteTodosPass() {
 
-        final Thing todos = ChallengeMain.getChallenger().getThingifier().getThingNamed("todo");
-        final ThingInstance todo = todos.createManagedInstance();
+        final EntityInstanceCollection todos = ChallengeMain.getChallenger().getThingifier().getThingInstancesNamed("todo");
+        final EntityInstance todo = todos.createManagedInstance();
 
         headers.clear();
         headers.putAll(x_challenger_header);
@@ -310,8 +310,8 @@ public class ChallengeCompleteTest{
     @Test
     public void canGetSpecificTodoPass() {
 
-        final Thing todos = ChallengeMain.getChallenger().getThingifier().getThingNamed("todo");
-        final ThingInstance todo = todos.createManagedInstance();
+        final EntityInstanceCollection todos = ChallengeMain.getChallenger().getThingifier().getThingInstancesNamed("todo");
+        final EntityInstance todo = todos.createManagedInstance();
 
         final HttpResponseDetails response =
                 http.send("/todos/" + todo.getFieldValue("id").asString(),
@@ -408,7 +408,7 @@ public class ChallengeCompleteTest{
     @Test
     public void canFilterTodoPass() {
 
-        final Thing todos = ChallengeMain.getChallenger().getThingifier().getThingNamed("todo");
+        final EntityInstanceCollection todos = ChallengeMain.getChallenger().getThingifier().getThingInstancesNamed("todo");
 
         todos.createManagedInstance().setValue("doneStatus", "true");
         todos.createManagedInstance().setValue("doneStatus", "false");
@@ -657,9 +657,9 @@ public class ChallengeCompleteTest{
     @Test
     public void canDeleteAllTodos() {
 
-        final Thing todos = ChallengeMain.getChallenger().getThingifier().getThingNamed("todo");
+        final EntityInstanceCollection todos = ChallengeMain.getChallenger().getThingifier().getThingInstancesNamed("todo");
 
-        for(ThingInstance instance : todos.getInstances()){
+        for(EntityInstance instance : todos.getInstances()){
             final HttpResponseDetails response =
                     http.send("/todos/" + instance.getFieldValue("id").asString(),
                             "DELETE",

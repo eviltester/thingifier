@@ -4,13 +4,13 @@ import spark.Request;
 import spark.Response;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.application.routehandlers.SparkApiRequestResponseHandler;
-import uk.co.compendiumdev.thingifier.core.Thing;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 
 public class RequestMirror {
 
-    Thing entityDefn;
+    EntityInstanceCollection entityDefn;
 
     // new RequestMirror().mirrorRequest(request, result);
     public String mirrorRequest(final Request request, final Response result) {

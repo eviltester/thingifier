@@ -3,10 +3,10 @@ package uk.co.compendiumdev.thingifier.core.query;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
-import uk.co.compendiumdev.thingifier.core.Thing;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
 import java.util.HashMap;
 import java.util.List;
@@ -22,8 +22,10 @@ public class QueryFiltersTest {
     public void canFilterAQueryToIncludeInstancesWithMatchingFields(){
 
         EntityRelModel aThingifier = new EntityRelModel();
-        Thing thing = aThingifier.createThing("thing", "things");
-        thing.definition().addField(Field.is("truefalse", FieldType.BOOLEAN));
+        aThingifier.createEntityDefinition("thing", "things")
+                .addField(Field.is("truefalse", FieldType.BOOLEAN));
+
+        EntityInstanceCollection thing = aThingifier.getInstanceCollectionForEntityNamed("thing");
 
         thing.createManagedInstance().setValue("truefalse", "true");
         thing.createManagedInstance().setValue("truefalse", "true");
@@ -39,7 +41,7 @@ public class QueryFiltersTest {
                                         performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
-        final List<ThingInstance> instances = queryResults.getListThingInstance();
+        final List<EntityInstance> instances = queryResults.getListEntityInstances();
         Assertions.assertEquals(3, instances.size(), "expected 3 true values");
 
     }

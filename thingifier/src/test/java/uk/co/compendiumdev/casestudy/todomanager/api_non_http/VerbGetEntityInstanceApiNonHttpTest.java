@@ -4,10 +4,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.casestudy.todomanager.TodoManagerModel;
-import uk.co.compendiumdev.thingifier.core.Thing;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
 import java.util.*;
 
@@ -16,8 +16,8 @@ public class VerbGetEntityInstanceApiNonHttpTest {
 
     private Thingifier todoManager;
 
-    Thing todo;
-    Thing project;
+    EntityInstanceCollection todo;
+    EntityInstanceCollection project;
 
 
     // TODO: tests that use the TodoManagerModel were created early and are too complicated - simplify
@@ -30,8 +30,8 @@ public class VerbGetEntityInstanceApiNonHttpTest {
 
         todoManager = TodoManagerModel.definedAsThingifier();
 
-        todo = todoManager.getThingNamed("todo");
-        project = todoManager.getThingNamed("project");
+        todo = todoManager.getThingInstancesNamed("todo");
+        project = todoManager.getThingInstancesNamed("project");
 
     }
     
@@ -52,7 +52,7 @@ public class VerbGetEntityInstanceApiNonHttpTest {
         todo.createManagedInstance().setValue("title", "My Title" + System.nanoTime());
 
 
-        ThingInstance findThis = todo.createManagedInstance().
+        EntityInstance findThis = todo.createManagedInstance().
                 setValue("title", "My Title" + System.nanoTime());
 
         todo.createManagedInstance().setValue("title", "My Title" + System.nanoTime());
@@ -94,7 +94,7 @@ public class VerbGetEntityInstanceApiNonHttpTest {
 
         Set<String> guidSet = new HashSet<>();
 
-        for (ThingInstance item : apiResponse.getReturnedInstanceCollection()) {
+        for (EntityInstance item : apiResponse.getReturnedInstanceCollection()) {
             guidSet.add(item.getGUID());
             Assertions.assertNotNull(todo.findInstanceByGUID(item.getGUID()));
         }

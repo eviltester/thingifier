@@ -7,11 +7,11 @@ import uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.application.routehandlers.HttpApiRequestHandler;
 import uk.co.compendiumdev.thingifier.application.routehandlers.SparkApiRequestResponseHandler;
-import uk.co.compendiumdev.thingifier.core.Thing;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.validation.MaximumLengthValidationRule;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.reporting.JsonThing;
 import uk.co.compendiumdev.thingifier.spark.SimpleRouteConfig;
 
@@ -25,7 +25,7 @@ public class SimulationRoutes {
     private ThingifierHttpApi httpApi;
     private JsonThing jsonThing;
     public Thingifier simulation;
-    public Thing entityDefn;
+    public EntityInstanceCollection entityDefn;
 
     public void setUpData(){
         // fake the data storage
@@ -96,8 +96,8 @@ public class SimulationRoutes {
             idsToRemove.add(11);
 
             // process it because the request validated
-            List<ThingInstance> instances = new ArrayList();
-            for (ThingInstance possible : this.entityDefn.getInstances()) {
+            List<EntityInstance> instances = new ArrayList();
+            for (EntityInstance possible : this.entityDefn.getInstances()) {
                 if (!idsToRemove.contains(
                         possible.getFieldValue("id").asInteger())) {
                     instances.add(possible);
@@ -125,7 +125,7 @@ public class SimulationRoutes {
 
             // process it because the request validated
             String id = anHttpApiRequest.getUrlParam(":id");
-            ThingInstance instance = this.entityDefn.findInstanceByGUIDorID(id);
+            EntityInstance instance = this.entityDefn.findInstanceByGUIDorID(id);
             if (instance == null) {
                 response = ApiResponse.error404("Could not find Entity with ID " + id);
             } else {
@@ -134,7 +134,7 @@ public class SimulationRoutes {
 
             if (id.equals("10")) {
                 // 10 is the entity we amend to name:eris
-                ThingInstance fake = new ThingInstance(entityDefn.definition()).
+                EntityInstance fake = new EntityInstance(entityDefn.definition()).
                         overrideValue("id", "10").setValue("name", "eris");
                 instance = fake;
                 response = ApiResponse.success().returnSingleInstance(instance);
@@ -188,11 +188,11 @@ public class SimulationRoutes {
             } else {
                 if (id.equals("10")) {
                     // 10 is the entity we amend to name:eris
-                    ThingInstance fake = new ThingInstance(entityDefn.definition()).
+                    EntityInstance fake = new EntityInstance(entityDefn.definition()).
                             overrideValue("id", "10").setValue("name", "eris");
                     response = ApiResponse.success().returnSingleInstance(fake);
                 } else {
-                    final ThingInstance instance = this.entityDefn.findInstanceByGUIDorID(id);
+                    final EntityInstance instance = this.entityDefn.findInstanceByGUIDorID(id);
                     if (instance == null) {
                         if(anHttpApiRequest.getVerb()== HttpApiRequest.VERB.POST) {
                             response = ApiResponse.error404("Could not find Entity with ID " + id);
@@ -231,7 +231,7 @@ public class SimulationRoutes {
                             // we can delete id 9
                             response = new ApiResponse(204);
                         } else {
-                            final ThingInstance instance = this.entityDefn.findInstanceByGUIDorID(id);
+                            final EntityInstance instance = this.entityDefn.findInstanceByGUIDorID(id);
                             if (instance == null) {
                                 response = ApiResponse.error404("Could not find Entity with ID " + id);
                             } else {

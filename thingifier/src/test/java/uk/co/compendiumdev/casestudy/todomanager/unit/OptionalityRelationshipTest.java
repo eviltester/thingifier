@@ -5,9 +5,9 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.casestudy.todomanager.TodoManagerModel;
-import uk.co.compendiumdev.thingifier.core.Thing;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -32,16 +32,16 @@ public class OptionalityRelationshipTest {
     public void byDefaultRelationshipsAreOptional(){
 
 
-        Thing projects = todoManager.getThingNamed("project");
+        EntityInstanceCollection projects = todoManager.getThingInstancesNamed("project");
 
-        ThingInstance aProject = projects.createManagedInstance().setValue("title", "myproject");
+        EntityInstance aProject = projects.createManagedInstance().setValue("title", "myproject");
 
         Assertions.assertTrue(aProject.validate().isValid());
 
 
-        Thing todos = todoManager.getThingNamed("todo");
+        EntityInstanceCollection todos = todoManager.getThingInstancesNamed("todo");
 
-        ThingInstance tidy = todos.createManagedInstance().
+        EntityInstance tidy = todos.createManagedInstance().
                 setValue("title", "Tidy up my room").
                 setValue("description", "I need to tidy up my room because it is a mess");
 
@@ -53,15 +53,15 @@ public class OptionalityRelationshipTest {
     @Test
     public void anEstimateWithoutATodoIsInvalid(){
 
-        Thing todos = todoManager.getThingNamed("todo");
+        EntityInstanceCollection todos = todoManager.getThingInstancesNamed("todo");
 
-        ThingInstance tidy = todos.createManagedInstance().
+        EntityInstance tidy = todos.createManagedInstance().
                 setValue("title", "Tidy up my room").
                 setValue("description", "I need to tidy up my room because it is a mess");
 
-        Thing estimates = todoManager.getThingNamed("estimate");
+        EntityInstanceCollection estimates = todoManager.getThingInstancesNamed("estimate");
 
-        ThingInstance tidyRoomEstimate = estimates.createManagedInstance().
+        EntityInstance tidyRoomEstimate = estimates.createManagedInstance().
                                         setValue("duration", "1");
 
         // it should be invalid because the estimate does not have a relationship with a to do
@@ -72,15 +72,15 @@ public class OptionalityRelationshipTest {
     @Test
     public void anEstimateMustHaveATodoToBeValid(){
 
-        Thing todos = todoManager.getThingNamed("todo");
+        EntityInstanceCollection todos = todoManager.getThingInstancesNamed("todo");
 
-        ThingInstance tidy = todos.createManagedInstance().
+        EntityInstance tidy = todos.createManagedInstance().
                 setValue("title", "Tidy up my room").
                 setValue("description", "I need to tidy up my room because it is a mess");
 
-        Thing estimates = todoManager.getThingNamed("estimate");
+        EntityInstanceCollection estimates = todoManager.getThingInstancesNamed("estimate");
 
-        ThingInstance tidyRoomEstimate = estimates.createManagedInstance().
+        EntityInstance tidyRoomEstimate = estimates.createManagedInstance().
                 setValue("duration", "1");
 
         tidyRoomEstimate.getRelationships().connect("estimate", tidy);
@@ -88,7 +88,7 @@ public class OptionalityRelationshipTest {
         // it should be valid because the estimate has a relationship with a to do
         Assertions.assertTrue(tidyRoomEstimate.validate().isValid());
 
-        final Collection<ThingInstance> relatedEstimates = tidy.getRelationships().getConnectedItems("estimate");
+        final Collection<EntityInstance> relatedEstimates = tidy.getRelationships().getConnectedItems("estimate");
         Assertions.assertEquals(1, relatedEstimates.size());
 
     }
@@ -99,16 +99,16 @@ public class OptionalityRelationshipTest {
     @Test
     public void deleteAlsoCoversMandatoryOptionalityRelationships(){
 
-        Thing todos = todoManager.getThingNamed("todo");
+        EntityInstanceCollection todos = todoManager.getThingInstancesNamed("todo");
 
-        ThingInstance tidy = todos.createManagedInstance().
+        EntityInstance tidy = todos.createManagedInstance().
                 setValue("title", "Tidy up my room").
                 setValue("description", "I need to tidy up my room because it is a mess");
 
 
-        Thing estimates = todoManager.getThingNamed("estimate");
+        EntityInstanceCollection estimates = todoManager.getThingInstancesNamed("estimate");
 
-        ThingInstance tidyRoomEstimate = estimates.createManagedInstance().
+        EntityInstance tidyRoomEstimate = estimates.createManagedInstance().
                 setValue("duration", "1");
 
         tidyRoomEstimate.getRelationships().connect("estimate", tidy);
@@ -116,7 +116,7 @@ public class OptionalityRelationshipTest {
         // it should be valid because the estimate has a relationship with a to do
         Assertions.assertTrue(tidyRoomEstimate.validate().isValid());
 
-        final Collection<ThingInstance> relatedEstimates = tidy.getRelationships().getConnectedItems("estimates");
+        final Collection<EntityInstance> relatedEstimates = tidy.getRelationships().getConnectedItems("estimates");
         Assertions.assertEquals(1, relatedEstimates.size());
         Assertions.assertEquals(1, estimates.getInstances().size());
         Assertions.assertEquals(1, todos.getInstances().size());

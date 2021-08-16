@@ -2,8 +2,8 @@ package uk.co.compendiumdev.thingifier.api.response;
 
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.api.ApiUrls;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.ThingDefinition;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
 import java.util.*;
 
@@ -16,7 +16,7 @@ public final class ApiResponse {
     private boolean hasBody;
     // instead of storing a json as the body, store the things to return
     // let getBody do the conversion to json or xml
-    private List<ThingInstance> thingsToReturn;
+    private List<EntityInstance> thingsToReturn;
     // isCollection true, return as collection, false, return as instance
     private boolean isCollection;
     // isErrorResponse true, return the stored collection of error messages
@@ -24,7 +24,7 @@ public final class ApiResponse {
     private Collection<String> errorMessages;
 
     private Map<String, String> headers;
-    private ThingDefinition typeOfResults;
+    private EntityDefinition typeOfResults;
     private String body;
 
 
@@ -58,7 +58,7 @@ public final class ApiResponse {
         return new ApiResponse(200);
     }
 
-    public ApiResponse returnSingleInstance(final ThingInstance instance) {
+    public ApiResponse returnSingleInstance(final EntityInstance instance) {
         this.isCollection = false;
         thingsToReturn.clear();
         thingsToReturn.add(instance);
@@ -67,7 +67,7 @@ public final class ApiResponse {
         return this;
     }
 
-    public ApiResponse returnInstanceCollection(final List<ThingInstance> items) {
+    public ApiResponse returnInstanceCollection(final List<EntityInstance> items) {
         thingsToReturn.clear();
         thingsToReturn.addAll(items);
         isCollection = true;
@@ -109,7 +109,7 @@ public final class ApiResponse {
             SPECIAL CASE RESPONSES
      */
 
-    public static ApiResponse created(final ThingInstance thingInstance, ThingifierApiConfig apiConfig) {
+    public static ApiResponse created(final EntityInstance thingInstance, ThingifierApiConfig apiConfig) {
         ApiResponse response = new ApiResponse(201);
 
         if (thingInstance != null) {
@@ -160,7 +160,7 @@ public final class ApiResponse {
     }
 
 
-    public ThingInstance getReturnedInstance() {
+    public EntityInstance getReturnedInstance() {
         if (isCollection) {
             throw new IllegalStateException("response contains a collection, not an instance");
         }
@@ -168,7 +168,7 @@ public final class ApiResponse {
         return thingsToReturn.get(0);
     }
 
-    public List<ThingInstance> getReturnedInstanceCollection() {
+    public List<EntityInstance> getReturnedInstanceCollection() {
         if (!isCollection) {
             throw new IllegalStateException("response contains an instance, not a collection");
         }
@@ -180,14 +180,14 @@ public final class ApiResponse {
         return isCollection;
     }
 
-    public ApiResponse resultContainsType(final ThingDefinition thingDefinition) {
+    public ApiResponse resultContainsType(final EntityDefinition thingDefinition) {
         if (thingDefinition != null) {
             this.typeOfResults = thingDefinition;
         }
         return this;
     }
 
-    public ThingDefinition getTypeOfThingReturned() {
+    public EntityDefinition getTypeOfThingReturned() {
         return typeOfResults;
     }
 

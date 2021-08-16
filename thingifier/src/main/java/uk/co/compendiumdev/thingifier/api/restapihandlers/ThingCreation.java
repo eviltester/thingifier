@@ -1,14 +1,13 @@
 package uk.co.compendiumdev.thingifier.api.restapihandlers;
 
-import uk.co.compendiumdev.thingifier.core.Thing;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +22,7 @@ public class ThingCreation {
         this.thingifier = thingifier;
     }
 
-    public ApiResponse with(final BodyParser bodyargs, final Thing thing) {
+    public ApiResponse with(final BodyParser bodyargs, final EntityInstanceCollection thing) {
 
         ValidationReport validated = new BodyRelationshipValidator(thingifier).validate(bodyargs, thing);
 
@@ -37,15 +36,18 @@ public class ThingCreation {
         }
 
         // todo: separate validation for creation of 'cannot' create with ID, or cannot create with GUID
-        return addNewThingWithFields(bodyargs, thing.createInstance(), thing);
+        EntityInstance instance = new EntityInstance(thing.definition());
+        instance.addGUIDtoInstance();
+        instance.addIdsToInstance();
+        return addNewThingWithFields(bodyargs, instance, thing);
     }
 
     // create with GUID and IDs is normally associated with PUT or 'insert'
-    public ApiResponse withGuid(final String instanceGuid, final BodyParser bodyargs, final Thing thing) {
+    public ApiResponse withGuid(final String instanceGuid, final BodyParser bodyargs, final EntityInstanceCollection thing) {
 
         final Map<String, String> args = bodyargs.getStringMap();
 
-        ThingInstance instance;
+        EntityInstance instance;
         ValidationReport validated;
 
         validated = new BodyCreationValidator(thingifier).
@@ -56,16 +58,19 @@ public class ThingCreation {
                     validated.getCombinedErrorMessages());
         }
 
+        String aGUID="";
 
         try {
-            String aGUID = UUID.fromString(instanceGuid).toString();
-            instance = thing.createInstance(aGUID);
-
+             aGUID= UUID.fromString(instanceGuid).toString();
         } catch (Exception e) {
             // that is not a valid guid
             System.out.println(e.getMessage());
             return ApiResponse.error404(String.format("Invalid GUID for %s entity %s", instanceGuid, thing.definition().getName()));
         }
+
+        instance = new EntityInstance(thing.definition());
+        instance.overrideValue("guid", aGUID);
+        instance.addIdsToInstance();
 
         validated = new BodyRelationshipValidator(thingifier).validate(bodyargs, thing);
 
@@ -87,8 +92,8 @@ public class ThingCreation {
     }
 
 
-    private ApiResponse addNewThingWithFields(final BodyParser bodyargs, final ThingInstance instance,
-                                              final Thing thing) {
+    private ApiResponse addNewThingWithFields(final BodyParser bodyargs, final EntityInstance instance,
+                                              final EntityInstanceCollection thing) {
 
         if(thingifier.apiConfig().willApiEnforceDeclaredTypesInInput()) {
             ValidationReport validatedTypes = bodyargs.validateAgainstType(instance.getEntity());
@@ -127,8 +132,8 @@ public class ThingCreation {
         }
     }
 
-    private ApiResponse insertNewThingWithFields(final BodyParser bodyargs, final ThingInstance instance,
-                                              final Thing thing) {
+    private ApiResponse insertNewThingWithFields(final BodyParser bodyargs, final EntityInstance instance,
+                                              final EntityInstanceCollection thing) {
 
         if(thingifier.apiConfig().willApiEnforceDeclaredTypesInInput()) {
             ValidationReport validatedTypes = bodyargs.validateAgainstType(instance.getEntity());

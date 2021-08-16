@@ -4,28 +4,28 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.ThingDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 
 public class ThingInstanceFloatFieldTest {
 
     @Test
     public void byDefaultAFloatFieldIsZero(){
 
-        ThingDefinition enumFieldEntity = new ThingDefinition("thing", "things");
+        EntityDefinition enumFieldEntity = new EntityDefinition("thing", "things");
         enumFieldEntity.addFields(Field.is("float", FieldType.FLOAT));
 
         // TODO: allow nullable optional floats
-        ThingInstance instance = new ThingInstance(enumFieldEntity);
+        EntityInstance instance = new EntityInstance(enumFieldEntity);
         Assertions.assertEquals("0.0", instance.getFieldValue("float").asString());
     }
 
     @Test
     public void floatShouldValidate(){
 
-        ThingDefinition enumFieldEntity = new ThingDefinition("thing", "things");
+        EntityDefinition enumFieldEntity = new EntityDefinition("thing", "things");
         enumFieldEntity.addFields(Field.is("float", FieldType.FLOAT));
 
-        ThingInstance instance = new ThingInstance(enumFieldEntity);
+        EntityInstance instance = new EntityInstance(enumFieldEntity);
 
         final IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class,
                 () -> {
@@ -39,10 +39,10 @@ public class ThingInstanceFloatFieldTest {
     @Test
     public void canSetGetFloat(){
 
-        ThingDefinition enumFieldEntity = new ThingDefinition("thing", "things");
+        EntityDefinition enumFieldEntity = new EntityDefinition("thing", "things");
         enumFieldEntity.addFields(Field.is("float", FieldType.FLOAT));
 
-        ThingInstance instance = new ThingInstance(enumFieldEntity);
+        EntityInstance instance = new EntityInstance(enumFieldEntity);
 
         instance.setValue("float", "4.3");
 

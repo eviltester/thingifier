@@ -1,6 +1,6 @@
 package uk.co.compendiumdev.thingifier.api.restapihandlers;
 
-import uk.co.compendiumdev.thingifier.core.Thing;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
@@ -9,8 +9,8 @@ import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVector;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.ThingDefinition;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.query.SimpleQuery;
 
 import java.util.List;
@@ -33,10 +33,10 @@ public class RelationshipCreation {
 
         // find the thing in the body
 
-        ThingInstance relatedItem = null;
+        EntityInstance relatedItem = null;
 
         // find the thing from the query to connect the relatedItem to
-        ThingInstance connectThis = query.getParentInstance();
+        EntityInstance connectThis = query.getParentInstance();
         if (connectThis == null) {
             // TODO: I don't think it is possible to ever hit this line of code
             return ApiResponse.error404(String.format("Could not find parent thing for relationship %s", url));
@@ -47,7 +47,7 @@ public class RelationshipCreation {
         // if no way to narrow it down then use the first one TODO: potential bug if multiple named relationshps
         relationshipToUse = possibleRelationships.get(0);
 
-        Thing thingTo = thingifier.getThingNamed(relationshipToUse.getTo().getName());
+        EntityInstanceCollection thingTo = thingifier.getThingInstancesNamed(relationshipToUse.getTo().getName());
 
         // if there is a guid in the body then use that to try and find a thing that matches it
         // if there is a guid field or an id field then use whichever first matches a thing
@@ -74,16 +74,16 @@ public class RelationshipCreation {
             return ApiResponse.error404(String.format("Could not find thing matching value for %s", matchingFieldNames));
         }
 
-        ThingInstance returnThing = null;
+        EntityInstance returnThing = null;
 
-        Thing thingToCreate = null;
+        EntityInstanceCollection thingToCreate = null;
         ApiResponse response = null;
 
         // if we have a parent thing, but no GUID then can we create a Thing and connect it later?
         if (relatedItem == null) {
-            ThingDefinition createThing = relationshipToUse.getTo();
+            EntityDefinition createThing = relationshipToUse.getTo();
 
-            thingToCreate = thingifier.getThingNamed(createThing.getName());
+            thingToCreate = thingifier.getThingInstancesNamed(createThing.getName());
 
             response = new ThingCreation(thingifier).with(bodyargs, thingToCreate);
             if(response.isErrorResponse()){

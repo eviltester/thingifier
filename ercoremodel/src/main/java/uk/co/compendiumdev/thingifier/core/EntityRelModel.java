@@ -3,17 +3,14 @@ package uk.co.compendiumdev.thingifier.core;
 import uk.co.compendiumdev.thingifier.core.domain.datapopulator.DataPopulator;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.Cardinality;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.ERSchema;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.ThingDefinition;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipDefinition;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVector;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.ERInstanceData;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 
 /*
     The ERM has the 'model' (ERSchema) and the 'instances' (things).
@@ -23,120 +20,79 @@ import java.util.concurrent.ConcurrentHashMap;
 public class EntityRelModel {
 
     private DataPopulator initialDataGenerator;
-    // TODO: I suspect this should be an object called ERData
-    private final ConcurrentHashMap<String, Thing> things;
+    private final ERInstanceData database;
     private final ERSchema schema; // all the definitions
 
     public EntityRelModel(){
-        things = new ConcurrentHashMap<String, Thing>();
         schema = new ERSchema();
+        database = new ERInstanceData(schema);
         initialDataGenerator=null; // todo consider having a default random data generator
     }
 
-    public Thing createThing(final String thingName, final String pluralName) {
-        ThingDefinition definition = schema.defineThing(thingName, pluralName);
-        Thing aThing = new Thing(definition);
-        things.put(thingName, aThing);
-        return aThing;
+    public EntityDefinition createEntityDefinition(final String entityName, final String pluralName) {
+        EntityDefinition defn = schema.defineEntity(entityName, pluralName);
+        database.createInstanceCollectionFor(defn);
+        return defn;
+    }
+
+    public ERSchema getSchema(){
+        return schema;
+    }
+
+    public ERInstanceData getInstanceData(){
+        return database;
     }
 
     // Schema methods
-    public boolean hasThingNamed(final String aName) {
-        return schema.hasThingNamed(aName);
+    public boolean hasEntityNamed(final String aName) {
+        return schema.hasEntityNamed(aName);
     }
 
-    public List<String> getThingNames() {
-        return schema.getThingNames();
+    public List<String> getEntityNames() {
+        return schema.getEntityNames();
     }
 
     public Collection<RelationshipDefinition> getRelationshipDefinitions() {
         return schema.getRelationships();
     }
 
-    public RelationshipDefinition defineRelationship(Thing from, Thing to, final String named, final Cardinality of) {
-        return schema.defineRelationship(from.definition(), to.definition(), named, of);
+    public RelationshipDefinition createRelationshipDefinition(
+            EntityDefinition from, EntityDefinition to, final String named, final Cardinality of) {
+        return schema.defineRelationship(from, to, named, of);
     }
 
     public boolean hasRelationshipNamed(final String relationshipName) {
         return schema.hasRelationshipNamed(relationshipName);
     }
 
+    public boolean hasEntityWithPluralNamed(final String term) {
+        return schema.hasEntityWithPluralNamed(term);
+    }
+
+    public EntityDefinition getEntityDefinitionWithPluralNamed(final String term){
+        return schema.getDefinitionWithPluralNamed(term);
+    }
+
     // Instance Methods
 
-    public List<Thing> getThings() {
-        return new ArrayList<Thing>(things.values());
+    public List<EntityInstanceCollection> getAllEntityInstanceCollections() {
+        return database.getAllInstanceCollections();
     }
 
-    public ThingInstance findThingInstanceByGuid(final String thingGUID) {
-        for (Thing aThing : things.values()) {
-            final List<String> guidFields = aThing.definition().getFieldNamesOfType(FieldType.GUID);
-            for(String fieldName : guidFields){
-                ThingInstance instance = aThing.
-                        findInstanceByField(FieldValue.is(fieldName, thingGUID));
-                if (instance != null) {
-                    return instance;
-                }
-            }
-        }
-        return null;
+    public EntityInstance findEntityInstanceByGuid(final String thingGUID) {
+        return database.findEntityInstanceByGUID(thingGUID);
     }
 
-    public Thing getThingNamed(final String aName) {
-        return things.get(aName);
+    public EntityInstanceCollection getInstanceCollectionForEntityNamed(final String aName) {
+        return database.getInstanceCollectionForEntityNamed(aName);
     }
 
-    public boolean hasThingWithPluralNamed(final String term) {
-        Thing aThing = getThingWithPluralNamed(term);
-        return aThing != null;
+    public void deleteEntityInstance(final EntityInstance anEntityInstance) {
+        database.deleteEntityInstance(anEntityInstance);
     }
-
-    public Thing getThingWithPluralNamed(final String term) {
-        for (Thing aThing : things.values()) {
-            if (aThing.definition().getPlural().equalsIgnoreCase(term)) {
-                return aThing;
-            }
-        }
-        return null;
-    }
-
-    public Thing getThingNamedSingularOrPlural(final String term) {
-        Thing thing = getThingNamed(term);
-        if (thing == null) {
-            if (hasThingWithPluralNamed(term)) {
-                thing = getThingWithPluralNamed(term);
-            }
-        }
-
-        return thing;
-    }
-
-    public void deleteThing(final ThingInstance aThingInstance) {
-        // delete a thing and all related things with mandatory relationships
-        final Thing aThing = getThingNamed(aThingInstance.getEntity().getName());
-
-        if(aThing==null){
-            // if it was a hanging thing, not managed by EntityRelModel
-            return;
-        }
-
-        // we may also have to delete things which are mandatorily related i.e. can't exist on their own
-        final List<ThingInstance> otherThingsToDelete = aThing.deleteInstance(aThingInstance.getGUID());
-
-        // TODO: Warning recursion with no 'cut off' if any cyclical relationships then this might fail
-        for(ThingInstance deleteMe : otherThingsToDelete){
-            deleteThing(deleteMe);
-        }
-    }
-
-
 
     public void clearAllData() {
-        // clear all instance data
-        for (Thing aThing : things.values()) {
-            for(ThingInstance instance : aThing.getInstances()) {
-                deleteThing(instance);
-            }
-        }
+        database.clearAllData();
     }
 
     // data generation

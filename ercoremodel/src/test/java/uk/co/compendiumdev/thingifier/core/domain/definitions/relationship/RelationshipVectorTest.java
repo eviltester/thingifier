@@ -3,21 +3,20 @@ package uk.co.compendiumdev.thingifier.core.domain.definitions.relationship;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import uk.co.compendiumdev.thingifier.core.Thing;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.Cardinality;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.ThingDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 
 class RelationshipVectorTest {
-    private ThingDefinition task;
-    private ThingDefinition estimate;
+    private EntityDefinition task;
+    private EntityDefinition estimate;
     private RelationshipVector vector;
 
     // vector is pretty much a data class
 
     @BeforeEach
     void createDefaultTestVector(){
-        task = new ThingDefinition("task", "tasks");
-        estimate = new ThingDefinition("estimate", "estimates");
+        task = new EntityDefinition("task", "tasks");
+        estimate = new EntityDefinition("estimate", "estimates");
 
         vector =
                 new RelationshipVector(

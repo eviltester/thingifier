@@ -3,22 +3,22 @@ package uk.co.compendiumdev.thingifier.core.domain.instances;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.ThingDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 
 import java.util.*;
 
-public class ThingInstance {
+public class EntityInstance {
 
     // TODO: this is messy because of cloning and documentation - find a way to simplify
 
-    private final ThingInstanceRelationships relationships;
-    private final ThingDefinition entityDefinition;
+    private final EntityInstanceRelationships relationships;
+    private final EntityDefinition entityDefinition;
     private final InstanceFields instanceFields;
 
-    public ThingInstance(ThingDefinition eDefn) {
+    public EntityInstance(EntityDefinition eDefn) {
         this.entityDefinition = eDefn;
         this.instanceFields = eDefn.instantiateFields();
-        this.relationships = new ThingInstanceRelationships(this);
+        this.relationships = new EntityInstanceRelationships(this);
     }
 
     public void addGUIDtoInstance(){
@@ -60,13 +60,13 @@ public class ThingInstance {
         return this.entityDefinition.getFieldNames();
     }
 
-    public ThingInstance setValue(String fieldName, String value) {
+    public EntityInstance setValue(String fieldName, String value) {
         instanceFields.setValue(fieldName, value);
         return this;
     }
 
 
-    public ThingInstance overrideValue(final String key, final String value) {
+    public EntityInstance overrideValue(final String key, final String value) {
         // bypass all validation - except, field must exist
         this.instanceFields.putValue(key, value);
         return this;
@@ -77,14 +77,14 @@ public class ThingInstance {
     }
 
 
-    public ThingDefinition getEntity() {
+    public EntityDefinition getEntity() {
         return this.entityDefinition;
     }
 
     /**
      * connect this thing to another thing using the relationship relationshipName
      */
-    public ThingInstanceRelationships getRelationships(){
+    public EntityInstanceRelationships getRelationships(){
         return relationships;
     }
 
@@ -128,8 +128,8 @@ public class ThingInstance {
         instanceFields.deleteAllFieldValuesExcept(ignoreFields);
     }
 
-    public ThingInstance createDuplicateWithoutRelationships() {
-        ThingInstance cloneInstance = new ThingInstance(entityDefinition);
+    public EntityInstance createDuplicateWithoutRelationships() {
+        EntityInstance cloneInstance = new EntityInstance(entityDefinition);
 
         for(String fieldName : instanceFields.getDefinition().getFieldNames()){
             FieldValue value = instanceFields.getAssignedValue(fieldName);
@@ -156,7 +156,7 @@ public class ThingInstance {
      *
      */
 
-    public ThingInstance setFieldValuesFrom(List<FieldValue> fieldValues) {
+    public EntityInstance setFieldValuesFrom(List<FieldValue> fieldValues) {
 
         final List<String> anyErrors = instanceFields.findAnyGuidOrIdDifferences(fieldValues);
         if(anyErrors.size()>0){

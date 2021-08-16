@@ -4,9 +4,9 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.casestudy.todomanager.TodoManagerModel;
-import uk.co.compendiumdev.thingifier.core.Thing;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import java.util.Collection;
 
 public class BasicTodoManagerTest {
@@ -24,7 +24,7 @@ public class BasicTodoManagerTest {
     public void todoModelDefinitionCheck(){
 
 
-        Thing todo = todoManager.getThingNamed("todo");
+        EntityInstanceCollection todo = todoManager.getThingInstancesNamed("todo");
 
         Assertions.assertTrue(todo.definition().hasFieldNameDefined("title"));
         Assertions.assertTrue(todo.definition().hasFieldNameDefined("description"));
@@ -41,18 +41,18 @@ public class BasicTodoManagerTest {
     public void relationshipDefinitionCheck(){
 
 
-        Thing todo = todoManager.getThingNamed("todo");
-        Thing project = todoManager.getThingNamed("project");
+        EntityInstanceCollection todo = todoManager.getThingInstancesNamed("todo");
+        EntityInstanceCollection project = todoManager.getThingInstancesNamed("project");
 
-        ThingInstance paperwork = todo.createManagedInstance().setValue("title", "scan paperwork");
-        ThingInstance filework = todo.createManagedInstance().setValue("title", "file paperwork");
+        EntityInstance paperwork = todo.createManagedInstance().setValue("title", "scan paperwork");
+        EntityInstance filework = todo.createManagedInstance().setValue("title", "file paperwork");
 
-        ThingInstance officeWork = project.createManagedInstance().setValue("title", "Office Work");
+        EntityInstance officeWork = project.createManagedInstance().setValue("title", "Office Work");
 
         officeWork.getRelationships().connect("tasks", paperwork);
         officeWork.getRelationships().connect("tasks", filework);
 
-        Collection<ThingInstance> relatedItems = officeWork.getRelationships().getConnectedItems("tasks");
+        Collection<EntityInstance> relatedItems = officeWork.getRelationships().getConnectedItems("tasks");
 
         Assertions.assertTrue(relatedItems.contains(paperwork));
         Assertions.assertTrue(relatedItems.contains(filework));
@@ -74,13 +74,13 @@ public class BasicTodoManagerTest {
     @Test
     public void createAndAmendSomeTodos(){
 
-        Thing todos = todoManager.getThingNamed("todo");
+        EntityInstanceCollection todos = todoManager.getThingInstancesNamed("todo");
 
-        ThingInstance tidy = todos.createManagedInstance().
+        EntityInstance tidy = todos.createManagedInstance().
                 setValue("title", "Tidy up my room").
                 setValue("description", "I need to tidy up my room because it is a mess");
 
-        ThingInstance paperwork = todos.createManagedInstance().
+        EntityInstance paperwork = todos.createManagedInstance().
                 setValue("title","Do Paperwork").
                 setValue("description", "Scan everything in, upload to document management system and file paperwork");
 
@@ -97,15 +97,15 @@ public class BasicTodoManagerTest {
     @Test
     public void createAndDeleteTodos(){
 
-        Thing todos = todoManager.getThingNamed("todo");
+        EntityInstanceCollection todos = todoManager.getThingInstancesNamed("todo");
 
         int originalTodosCount = todos.countInstances();
 
-        ThingInstance tidy = todos.createManagedInstance().
+        EntityInstance tidy = todos.createManagedInstance().
                 setValue("title","Delete this todo").
                 setValue("description", "I need to be deleted");
 
-        ThingInstance foundit = todos.findInstanceByGUID(tidy.getGUID());
+        EntityInstance foundit = todos.findInstanceByGUID(tidy.getGUID());
 
         Assertions.assertEquals("Delete this todo", foundit.getFieldValue("title").asString());
 
@@ -130,18 +130,21 @@ public class BasicTodoManagerTest {
     @Test
     public void createAmendAndDeleteATodoWithAGivenGUID(){
 
-        Thing todos = todoManager.getThingNamed("todo");
+        EntityInstanceCollection todos = todoManager.getThingInstancesNamed("todo");
 
         int originalTodosCount = todos.countInstances();
 
         String guid="1234-12334-1234-1234";
 
-        ThingInstance tidy = todos.createInstance(guid).setValue("title", "Delete this todo").
-                setValue("description", "I need to be deleted");
+        EntityInstance tidy = new EntityInstance(todos.definition());
+        tidy.overrideValue("guid", guid);
+        tidy.addIdsToInstance();
+        tidy.setValue("title", "Delete this todo").
+        setValue("description", "I need to be deleted");
 
         todos.addInstance(tidy);
 
-        ThingInstance foundit = todos.findInstanceByGUID(guid);
+        EntityInstance foundit = todos.findInstanceByGUID(guid);
 
         Assertions.assertEquals("Delete this todo", foundit.getFieldValue("title").asString());
 

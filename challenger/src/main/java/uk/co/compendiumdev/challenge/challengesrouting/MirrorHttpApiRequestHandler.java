@@ -4,13 +4,13 @@ import uk.co.compendiumdev.thingifier.api.http.AcceptHeaderParser;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.application.routehandlers.HttpApiRequestHandler;
-import uk.co.compendiumdev.thingifier.core.Thing;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
 public class MirrorHttpApiRequestHandler implements HttpApiRequestHandler {
-    private final Thing entityDefn;
+    private final EntityInstanceCollection entityDefn;
 
-    public MirrorHttpApiRequestHandler(final Thing entityDefn) {
+    public MirrorHttpApiRequestHandler(final EntityInstanceCollection entityDefn) {
         this.entityDefn=entityDefn;
     }
 
@@ -31,7 +31,7 @@ public class MirrorHttpApiRequestHandler implements HttpApiRequestHandler {
 
         if(response==null) {
             // let main code handle formatting etc.
-            ThingInstance fake = new ThingInstance(entityDefn.definition()).
+            EntityInstance fake = new EntityInstance(entityDefn.definition()).
                     setValue("details", requestDetails);
             response = ApiResponse.success().returnSingleInstance(fake);
         }

@@ -2,11 +2,12 @@ package uk.co.compendiumdev.thingifier.core;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.ThingDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 
 import java.util.Collection;
 
@@ -19,17 +20,17 @@ public class ThingTest {
     public void thingUsageExample(){
 
 
-        Thing person = new Thing(new ThingDefinition("person", "people"));
+        EntityInstanceCollection person = new EntityInstanceCollection(new EntityDefinition("person", "people"));
 
         person.definition().
                 addFields(Field.is("name"), Field.is("age", INTEGER));
 
-        ThingInstance bob = person.createManagedInstance().
+        EntityInstance bob = person.createManagedInstance().
                 setValue("name","Bob");
 
         bob.setValue("age", "56");
 
-        ThingInstance eris = person.createManagedInstance().
+        EntityInstance eris = person.createManagedInstance().
                 setValue("name","Eris").setValue("age", "1000");
 
         Assertions.assertEquals(2, person.countInstances());
@@ -42,7 +43,7 @@ public class ThingTest {
     @Test
     public void moreThingUsageExamples(){
 
-        Thing url = new Thing(new ThingDefinition("URL", "URLs"));
+        EntityInstanceCollection url = new EntityInstanceCollection(new EntityDefinition("URL", "URLs"));
 
         url.definition().addFields(Field.is("url"),
                 Field.is("visited", INTEGER), Field.is("name",STRING));
@@ -62,12 +63,12 @@ public class ThingTest {
             setValue("url", "http://javaForTesters.com");
 
 
-        Collection<ThingInstance> instances = url.getInstances();
+        Collection<EntityInstance> instances = url.getInstances();
 
         System.out.println("NAME\tURL");
         System.out.println("==========");
 
-        for(ThingInstance aURL : instances){
+        for(EntityInstance aURL : instances){
             System.out.println(String.format("%s\t%s", aURL.getFieldValue("name").asString(), aURL.getFieldValue("url").asString()));
         }
 
@@ -80,7 +81,7 @@ public class ThingTest {
 
         // Start simple with a to do manager model e.g. to do items, context, project (can also be a sub-project), task group
 
-        Thing todo = new Thing(new ThingDefinition("ToDo", "ToDos"));
+        EntityInstanceCollection todo = new EntityInstanceCollection(new EntityDefinition("ToDo", "ToDos"));
 
         todo.definition()
                 .addFields(Field.is("title", STRING), Field.is("description",STRING),

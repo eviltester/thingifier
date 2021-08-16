@@ -1,24 +1,24 @@
 package uk.co.compendiumdev.thingifier.htmlgui;
 
-import uk.co.compendiumdev.thingifier.core.domain.definitions.ThingDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
 public class DocumentationThingInstance{
 
-    private final ThingInstance instance;
-    private final ThingDefinition definition;
+    private final EntityInstance instance;
+    private final EntityDefinition definition;
 
-    public DocumentationThingInstance(final ThingDefinition eDefn) {
+    public DocumentationThingInstance(final EntityDefinition eDefn) {
         this.definition = eDefn;
-        this.instance = new ThingInstance(eDefn);
+        this.instance = new EntityInstance(eDefn);
     }
 
-    public ThingInstance getInstance(){
+    public EntityInstance getInstance(){
         return this.instance;
     }
 
-    public ThingInstance withoutIDsOrGUIDs(){
+    public EntityInstance withoutIDsOrGUIDs(){
         for(String name : definition.getFieldNamesOfType(FieldType.ID, FieldType.GUID)){
             overrideValue(name, null);
         }

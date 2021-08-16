@@ -8,7 +8,7 @@ import uk.co.compendiumdev.thingifier.api.http.ContentTypeHeaderParser;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.ThingDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 
 import java.util.*;
 
@@ -177,7 +177,7 @@ public class BodyParser {
     }
 
 
-    public ValidationReport validateAgainstType(final ThingDefinition entity) {
+    public ValidationReport validateAgainstType(final EntityDefinition entity) {
         ValidationReport report = new ValidationReport();
         for(Map.Entry<String, Object>arg : args.entrySet()){
 

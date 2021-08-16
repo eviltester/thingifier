@@ -2,15 +2,15 @@ package uk.co.compendiumdev.thingifier.htmlgui;
 
 import com.google.gson.GsonBuilder;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.xml.GenericXMLPrettyPrinter;
-import uk.co.compendiumdev.thingifier.core.Thing;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVector;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.ThingDefinition;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.reporting.JsonThing;
 import uk.co.compendiumdev.thingifier.reporting.XmlThing;
 
@@ -97,20 +97,20 @@ public class DefaultGUI {
 
             html.append(heading(1, entityName + " Instances"));
 
-            final Thing thing = thingifier.getThingNamed(entityName);
+            final EntityInstanceCollection thing = thingifier.getThingInstancesNamed(entityName);
 
             if(thing==null){
                 response.redirect("/gui/entities");
                 return "";
             }
 
-            final ThingDefinition definition = thing.definition();
+            final EntityDefinition definition = thing.definition();
 
             html.append("<h2>" + definition.getPlural() + "</h2>");
 
             html.append(startHtmlTableFor(definition));
 
-            for(ThingInstance instance : thing.getInstances()){
+            for(EntityInstance instance : thing.getInstances()){
                 html.append(htmlTableRowFor(instance));
             }
             html.append("</tbody>");
@@ -127,11 +127,11 @@ public class DefaultGUI {
                     StringBuilder html = new StringBuilder();
 
                     String entityName = "";
-                    Thing thing = null;
+                    EntityInstanceCollection thing = null;
                     for (String queryParam : request.queryParams()) {
                         if (queryParam.contentEquals("entity")) {
                             entityName = request.queryParams("entity");
-                            thing = thingifier.getThingNamed(entityName);
+                            thing = thingifier.getThingInstancesNamed(entityName);
                         }
                     }
 
@@ -153,8 +153,8 @@ public class DefaultGUI {
                         }
                     }
 
-                    final ThingDefinition definition = thing.definition();
-                    ThingInstance instance = thing.findInstanceByField(FieldValue.is(keyName, keyValue));
+                    final EntityDefinition definition = thing.definition();
+                    EntityInstance instance = thing.findInstanceByField(FieldValue.is(keyName, keyValue));
 
                     if (instance == null) {
                         response.redirect("/gui/instances?entity=" + entityName);
@@ -181,12 +181,12 @@ public class DefaultGUI {
                         html.append("<h2>Relationships</h2>");
 
                         for (RelationshipVector relationship : definition.related().getRelationships()) {
-                            final Collection<ThingInstance> relatedItems = instance.getRelationships().getConnectedItems(relationship.getName());
+                            final Collection<EntityInstance> relatedItems = instance.getRelationships().getConnectedItems(relationship.getName());
                             html.append("<h3>" + relationship.getName() + "</h3>");
                             if (relatedItems.size() > 0) {
                                 boolean header = true;
 
-                                for (ThingInstance relatedInstance : relatedItems) {
+                                for (EntityInstance relatedInstance : relatedItems) {
                                     if (header) {
                                         html.append(startHtmlTableFor(relatedInstance.getEntity()));
                                         header = false;
@@ -232,8 +232,8 @@ public class DefaultGUI {
         return this;
     }
 
-    private String getInstanceAsUl(final ThingInstance instance) {
-        final ThingDefinition definition = instance.getEntity();
+    private String getInstanceAsUl(final EntityInstance instance) {
+        final EntityDefinition definition = instance.getEntity();
         StringBuilder html = new StringBuilder();
         html.append("<ul>");
         if(apiConfig.willResponsesShowGuids()) {
@@ -259,9 +259,9 @@ public class DefaultGUI {
                      replace(" ", "&nbsp;");
     }
 
-    private String getInstanceAsTable(ThingInstance instance) {
+    private String getInstanceAsTable(EntityInstance instance) {
 
-        final ThingDefinition definition = instance.getEntity();
+        final EntityDefinition definition = instance.getEntity();
 
         StringBuilder html = new StringBuilder();
         html.append("<table>");
@@ -307,9 +307,9 @@ public class DefaultGUI {
     }
 
 
-    private String htmlTableRowFor(final ThingInstance instance) {
+    private String htmlTableRowFor(final EntityInstance instance) {
         StringBuilder html = new StringBuilder();
-        final ThingDefinition definition = instance.getEntity();
+        final EntityDefinition definition = instance.getEntity();
 
         html.append("<tr>");
         // show keys first
@@ -344,7 +344,7 @@ public class DefaultGUI {
         return html.toString();
     }
 
-    private String startHtmlTableFor(final ThingDefinition definition) {
+    private String startHtmlTableFor(final EntityDefinition definition) {
         StringBuilder html = new StringBuilder();
 
         html.append("<table>");

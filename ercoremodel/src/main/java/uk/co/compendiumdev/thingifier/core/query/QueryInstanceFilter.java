@@ -1,7 +1,7 @@
 package uk.co.compendiumdev.thingifier.core.query;
 
-import uk.co.compendiumdev.thingifier.core.domain.definitions.ThingDefinition;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
 import java.util.Map;
 
@@ -12,10 +12,10 @@ public class QueryInstanceFilter {
         this.params = queryParams;
     }
 
-    public boolean matches(final ThingInstance instance) {
+    public boolean matches(final EntityInstance instance) {
         for(Map.Entry<String,String> field : params.entrySet()){
 
-            final ThingDefinition defn = instance.getEntity();
+            final EntityDefinition defn = instance.getEntity();
 
             String fieldName = field.getKey();
 

@@ -1,6 +1,6 @@
 package uk.co.compendiumdev.casestudy.todomanager;
 
-import uk.co.compendiumdev.thingifier.core.Thing;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.Cardinality;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
@@ -108,7 +108,7 @@ could implement a Thingifier URL query matcher to return instances based on quer
 
         todoManager.setDocumentation("Todo Manager", para.toString());
 
-        Thing todo = todoManager.createThing("todo", "todos");
+        EntityInstanceCollection todo = todoManager.createThing("todo", "todos");
 
         todo.definition()
                 .addFields( Field.is("title", STRING).
@@ -123,7 +123,7 @@ could implement a Thingifier URL query matcher to return instances based on quer
         ;
 
 
-        Thing project = todoManager.createThing("project", "projects");
+        EntityInstanceCollection project = todoManager.createThing("project", "projects");
 
         project.definition()
                 .addFields(
@@ -135,7 +135,7 @@ could implement a Thingifier URL query matcher to return instances based on quer
                                 withDefaultValue("true"));
 
 
-        Thing category = todoManager.createThing("category", "categories");
+        EntityInstanceCollection category = todoManager.createThing("category", "categories");
 
         category.definition()
                 .addFields(
@@ -156,7 +156,7 @@ could implement a Thingifier URL query matcher to return instances based on quer
         // TODO create mandatory relationships = at the moment all entities can exist without relationship
         // e.g. create an estimate for a todo - the estimate must have a todo
 
-        Thing estimate = todoManager.createThing("estimate", "estimates");
+        EntityInstanceCollection estimate = todoManager.createThing("estimate", "estimates");
         estimate.definition()
                 .addFields(
                         Field.is("duration", INTEGER).

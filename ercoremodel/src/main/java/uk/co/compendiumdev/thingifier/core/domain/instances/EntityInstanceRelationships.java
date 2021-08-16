@@ -3,18 +3,18 @@ package uk.co.compendiumdev.thingifier.core.domain.instances;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVector;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.ThingDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 
 import java.util.*;
 
 import static uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.Optionality.MANDATORY_RELATIONSHIP;
 
-public class ThingInstanceRelationships {
+public class EntityInstanceRelationships {
 
     private final List<RelationshipInstance> relationships;
-    private final ThingInstance forThis;
+    private final EntityInstance forThis;
 
-    public ThingInstanceRelationships(final ThingInstance thingInstance){
+    public EntityInstanceRelationships(final EntityInstance thingInstance){
         this.forThis = thingInstance;
         this.relationships = new ArrayList<>();
     }
@@ -32,10 +32,10 @@ public class ThingInstanceRelationships {
         return output.toString();
     }
 
-    public void connect(final String relationshipName, final ThingInstance thing) {
+    public void connect(final String relationshipName, final EntityInstance thing) {
         // TODO: enforce cardinality
 
-        final ThingDefinition entityDefinition = forThis.getEntity();
+        final EntityDefinition entityDefinition = forThis.getEntity();
 
         // check if relationship is defined
         if (!entityDefinition.related().hasRelationship(relationshipName)) {
@@ -75,10 +75,10 @@ public class ThingInstanceRelationships {
         relationships.add(relationship);
     }
 
-    public ThingDefinition getTypeOfConnectableItems(final String relationshipName) {
+    public EntityDefinition getTypeOfConnectableItems(final String relationshipName) {
         // This doesn't 'use' getConnectedItems because we might want to know the
         // types of related items, even if there are no actual relationships
-        final ThingDefinition entityDefinition = forThis.getEntity();
+        final EntityDefinition entityDefinition = forThis.getEntity();
 
         for (RelationshipVector relationship : entityDefinition.related().getRelationships()) {
             if (relationship.getRelationshipDefinition().isKnownAs(relationshipName)) {
@@ -93,8 +93,8 @@ public class ThingInstanceRelationships {
         return null;
     }
 
-    public Collection<ThingInstance> getConnectedItems(final String relationshipName) {
-        Set<ThingInstance> theConnectedItems = new HashSet<>();
+    public Collection<EntityInstance> getConnectedItems(final String relationshipName) {
+        Set<EntityInstance> theConnectedItems = new HashSet<>();
         for (RelationshipInstance relationship : relationships) {
             if (relationship.getRelationship().isKnownAs(relationshipName)) {
                 theConnectedItems.add(
@@ -105,8 +105,8 @@ public class ThingInstanceRelationships {
         return theConnectedItems;
     }
 
-    public List<ThingInstance> getConnectedItemsOfType(final String type) {
-        List<ThingInstance> theConnectedItems = new ArrayList<>();
+    public List<EntityInstance> getConnectedItemsOfType(final String type) {
+        List<EntityInstance> theConnectedItems = new ArrayList<>();
         for (RelationshipInstance relationship : relationships) {
             if (relationship.getTo().getEntity().getName().
                     toLowerCase().contentEquals(type.toLowerCase())) {
@@ -116,10 +116,10 @@ public class ThingInstanceRelationships {
         return theConnectedItems;
     }
 
-    public List<ThingInstance> removeRelationshipsInvolving(final ThingInstance thing,
-                                                            final String relationshipName) {
+    public List<EntityInstance> removeRelationshipsInvolving(final EntityInstance thing,
+                                                             final String relationshipName) {
 
-        List<ThingInstance> thingsToDelete = new ArrayList<>();
+        List<EntityInstance> thingsToDelete = new ArrayList<>();
         List<RelationshipInstance> toDelete = new ArrayList<>();
 
         for (RelationshipInstance relationship : relationships) {
@@ -142,11 +142,11 @@ public class ThingInstanceRelationships {
         Remove all relationships and, as a knock on side-effect, return any of the
         'things' that are no longer valid since they were involved in a mandatory relationship.
      */
-    public List<ThingInstance> removeAllRelationships() {
-        List<ThingInstance> deleteThese = new ArrayList<>();
+    public List<EntityInstance> removeAllRelationships() {
+        List<EntityInstance> deleteThese = new ArrayList<>();
 
-        final ThingInstance me = forThis;
-        ThingInstance them;
+        final EntityInstance me = forThis;
+        EntityInstance them;
 
         for (RelationshipInstance relationship : relationships) {
             if (relationship.getFrom() == forThis) {
@@ -170,22 +170,22 @@ public class ThingInstanceRelationships {
         relationships.remove(relationship);
     }
 
-    public List<ThingInstance> removeAllRelationshipsInvolving(final ThingInstance thing) {
+    public List<EntityInstance> removeAllRelationshipsInvolving(final EntityInstance thing) {
 
-        List<ThingInstance> deleteThings = new ArrayList<>();
+        List<EntityInstance> instancesToDelete = new ArrayList<>();
 
         List<RelationshipInstance> toDelete = new ArrayList<>();
 
         for (RelationshipInstance relationship : relationships) {
             if(relationship.involves(thing)){
                 toDelete.add(relationship);
-                deleteThings.addAll(relationship.instancesSubjectToMandatoryRelationship());
+                instancesToDelete.addAll(relationship.instancesSubjectToMandatoryRelationship());
             }
         }
 
         relationships.removeAll(toDelete);
 
-        return deleteThings;
+        return instancesToDelete;
     }
 
 
@@ -202,7 +202,7 @@ public class ThingInstanceRelationships {
 
         // TODO: relationship cardinality validation e.g. too many, not enough etc.
 
-        final ThingDefinition entityDefinition = forThis.getEntity();
+        final EntityDefinition entityDefinition = forThis.getEntity();
 
         // Optionality Relationship Validation
         final Collection<RelationshipVector> theRelationshipVectors = entityDefinition.related().getRelationships();

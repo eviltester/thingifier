@@ -3,9 +3,9 @@ package uk.co.compendiumdev.casestudy.todomanager;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import uk.co.compendiumdev.thingifier.core.Thing;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
 import java.util.Collection;
 import java.util.Random;
@@ -35,7 +35,7 @@ public class ModelsTest {
     @Test
     public void createAndDelete(){
 
-        final Thing todos = todoManager.getThingNamed("todo");
+        final EntityInstanceCollection todos = todoManager.getThingInstancesNamed("todo");
 
         for(int todoCount=0; todoCount < 100; todoCount++){
             todos.createManagedInstance().
@@ -52,14 +52,14 @@ public class ModelsTest {
     @Test
     public void createAndDeleteRelationships(){
 
-        final Thing todos = todoManager.getThingNamed("todo");
+        final EntityInstanceCollection todos = todoManager.getThingInstancesNamed("todo");
 
         for(int todoCount=0; todoCount < 100; todoCount++){
             todos.createManagedInstance().
                     setValue("title", "title " + System.nanoTime());
         }
 
-        final Thing projects = todoManager.getThingNamed("project");
+        final EntityInstanceCollection projects = todoManager.getThingInstancesNamed("project");
 
         for(int todoCount=0; todoCount < 50; todoCount++){
             projects.createManagedInstance().
@@ -70,13 +70,13 @@ public class ModelsTest {
         Assertions.assertEquals(100, todos.countInstances());
         Assertions.assertEquals(50, projects.countInstances());
 
-        for(ThingInstance project : projects.getInstances()){
+        for(EntityInstance project : projects.getInstances()){
 
             project.getRelationships().connect("tasks", getRandomThingInstance(todos.getInstances()));
         }
 
 
-        for(ThingInstance todo : todos.getInstances()){
+        for(EntityInstance todo : todos.getInstances()){
 
             todo.getRelationships().connect("task-of", getRandomThingInstance(projects.getInstances()));
         }
@@ -91,9 +91,9 @@ public class ModelsTest {
         System.out.println(todoManager.toString());
     }
 
-    private ThingInstance getRandomThingInstance(final Collection<ThingInstance> instances) {
+    private EntityInstance getRandomThingInstance(final Collection<EntityInstance> instances) {
         int pos = new Random().nextInt(instances.size());
-        for(ThingInstance instance : instances){
+        for(EntityInstance instance : instances){
             if(pos==0){
                 return instance;
             }

@@ -3,7 +3,7 @@ package uk.co.compendiumdev.thingifier.core.domain.instances;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.ThingDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
@@ -13,12 +13,12 @@ import java.util.List;
 
 public class ThingInstanceFieldAccessByListTest {
 
-    private ThingDefinition entityTestSession;
+    private EntityDefinition entityTestSession;
 
     @BeforeEach
     public void createEntity() {
 
-        entityTestSession = new ThingDefinition("Test Session", "Test Sessions");
+        entityTestSession = new EntityDefinition("Test Session", "Test Sessions");
 
         entityTestSession.addField(Field.is("Title"));
         entityTestSession.addFields(Field.is("CompletedStatus").withDefaultValue("Not Completed"));
@@ -30,7 +30,7 @@ public class ThingInstanceFieldAccessByListTest {
     @Test
     public void canSetByList() {
 
-        final ThingInstance session = new ThingInstance(entityTestSession);
+        final EntityInstance session = new EntityInstance(entityTestSession);
 
         List<FieldValue> someFields = new ArrayList<>();
         someFields.add(FieldValue.is("Title", "my title"));
@@ -46,7 +46,7 @@ public class ThingInstanceFieldAccessByListTest {
     @Test
     public void canNotSetSomeFieldsByList() {
 
-        final ThingInstance session = new ThingInstance(entityTestSession);
+        final EntityInstance session = new EntityInstance(entityTestSession);
         session.addGUIDtoInstance();
         session.addIdsToInstance();
 
@@ -62,7 +62,7 @@ public class ThingInstanceFieldAccessByListTest {
     @Test
     public void canIgnoreSomeSetSomeFieldsByListToAvoidTriggeringValidation() {
 
-        final ThingInstance session = new ThingInstance(entityTestSession);
+        final EntityInstance session = new EntityInstance(entityTestSession);
 
         List<FieldValue> someFields = new ArrayList<>();
         someFields.add(FieldValue.is("anid", "12"));
@@ -80,7 +80,7 @@ public class ThingInstanceFieldAccessByListTest {
     @Test
     public void canIgnoreSomeOverrideFieldsWithListToAIgnore() {
 
-        final ThingInstance session = new ThingInstance(entityTestSession);
+        final EntityInstance session = new EntityInstance(entityTestSession);
 
         List<FieldValue> someFields = new ArrayList<>();
         someFields.add(FieldValue.is("anid", "12"));
@@ -103,7 +103,7 @@ public class ThingInstanceFieldAccessByListTest {
     @Test
     public void canClearFields() {
 
-        final ThingInstance session = new ThingInstance(entityTestSession);
+        final EntityInstance session = new EntityInstance(entityTestSession);
 
         session.setValue("Title", "set Title");
         session.setValue("falsey", "true");

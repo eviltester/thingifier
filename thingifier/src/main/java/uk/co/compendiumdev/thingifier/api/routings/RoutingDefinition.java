@@ -1,7 +1,7 @@
 package uk.co.compendiumdev.thingifier.api.routings;
 
 import uk.co.compendiumdev.thingifier.api.response.ResponseHeader;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.ThingDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +13,7 @@ public class RoutingDefinition {
     private final ResponseHeader header;
     private String documentation = "";
     private boolean isFilterable;
-    private ThingDefinition filterableEntityDefn;
+    private EntityDefinition filterableEntityDefn;
     private List<RoutingStatus> possibleStatusResponses;
 
     public RoutingDefinition(RoutingVerb verb, String url, RoutingStatus routingStatus, ResponseHeader header) {
@@ -78,12 +78,12 @@ public class RoutingDefinition {
         return isFilterable;
     }
 
-    public void setAsFilterableFrom(final ThingDefinition definition) {
+    public void setAsFilterableFrom(final EntityDefinition definition) {
         isFilterable=true;
         filterableEntityDefn = definition;
     }
 
-    public ThingDefinition getFilterableEntity() {
+    public EntityDefinition getFilterableEntity() {
         return filterableEntityDefn;
     }
 

@@ -2,10 +2,10 @@ package uk.co.compendiumdev.thingifier.api.restapihandlers;
 
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.ThingDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVector;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
 import java.util.List;
 import java.util.Map;
@@ -22,7 +22,7 @@ public class BodyArgsProcessor {
     }
 
 
-    public List<Map.Entry<String,String>> removeRelationshipsFrom(final ThingInstance instance) {
+    public List<Map.Entry<String,String>> removeRelationshipsFrom(final EntityInstance instance) {
 
         List<Map.Entry<String,String>> fullargs = bodyargs.getFlattenedStringMap();
         RelationshipCollector collectedRelationships = new RelationshipCollector();
@@ -38,7 +38,7 @@ public class BodyArgsProcessor {
     }
 
     public void identifyRelationships(List<Map.Entry<String,String>> fullargs,
-                                     final ThingInstance instance,
+                                     final EntityInstance instance,
                                      RelationshipCollector collector){
 
         // assume any relationships errors already reported
@@ -64,7 +64,7 @@ public class BodyArgsProcessor {
                         String relationshipName = parts[0];
                         String relationshipFieldName = parts[1];
                         // assume it is a guid
-                        ThingInstance instanceToRelateTo = thingifier.findThingInstanceByGuid(complexKeyValue.getValue());
+                        EntityInstance instanceToRelateTo = thingifier.findThingInstanceByGuid(complexKeyValue.getValue());
                         if(instanceToRelateTo ==null){
                             // but it might not be
                             // TODO: find other usages of this pattern and refactor to
@@ -72,8 +72,8 @@ public class BodyArgsProcessor {
                                 final List<RelationshipVector> relationshipsAre =
                                         instance.getEntity().related().getRelationships(relationshipName);
                                 for(RelationshipVector relate : relationshipsAre){
-                                    final ThingDefinition typeOfThing = relate.getTo();
-                                    instanceToRelateTo =  thingifier.getThingNamed(typeOfThing.getName()).
+                                    final EntityDefinition typeOfThing = relate.getTo();
+                                    instanceToRelateTo =  thingifier.getThingInstancesNamed(typeOfThing.getName()).
                                                             findInstanceByField(
                                                             FieldValue.is(relationshipFieldName,
                                                                 complexKeyValue.getValue()));

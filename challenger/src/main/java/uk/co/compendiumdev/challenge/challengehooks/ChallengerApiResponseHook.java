@@ -3,7 +3,7 @@ package uk.co.compendiumdev.challenge.challengehooks;
 import uk.co.compendiumdev.challenge.CHALLENGE;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
-import uk.co.compendiumdev.thingifier.core.Thing;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.ContentTypeHeaderParser;
 import uk.co.compendiumdev.thingifier.api.http.AcceptHeaderParser;
@@ -12,7 +12,7 @@ import uk.co.compendiumdev.thingifier.api.http.HttpApiResponse;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.application.httpapimessagehooks.HttpApiResponseHook;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import java.util.Collection;
 
 
@@ -123,9 +123,9 @@ public class ChallengerApiResponseHook implements HttpApiResponseHook {
                 request.getQueryParams().get("doneStatus").contentEquals("true") &&
                 response.getStatusCode()==200){
             // only pass if there are done and not done todos
-            final Thing thing = thingifier.getThingNamed("todo");
-            final ThingInstance aDoneThing = thing.findInstanceByField(FieldValue.is("doneStatus", "true"));
-            final ThingInstance aNotDoneThing = thing.findInstanceByField(FieldValue.is("doneStatus", "false"));
+            final EntityInstanceCollection thing = thingifier.getThingInstancesNamed("todo");
+            final EntityInstance aDoneThing = thing.findInstanceByField(FieldValue.is("doneStatus", "true"));
+            final EntityInstance aNotDoneThing = thing.findInstanceByField(FieldValue.is("doneStatus", "false"));
             if(aDoneThing!=null && aNotDoneThing!=null) {
                 challengers.pass(challenger,CHALLENGE.GET_TODOS_FILTERED);
             }

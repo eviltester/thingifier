@@ -3,9 +3,8 @@ package uk.co.compendiumdev.thingifier.core.domain.instances;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.ThingDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
-import uk.co.compendiumdev.thingifier.core.Thing;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.Cardinality;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.Optionality;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipDefinition;
@@ -16,16 +15,16 @@ import java.util.List;
 
 class RelationshipsTest {
 
-    private ThingInstance fromInstance;
-    private ThingInstance toInstance;
+    private EntityInstance fromInstance;
+    private EntityInstance toInstance;
     private RelationshipDefinition defn;
-    private Thing thingfrom;
-    private Thing thingto;
+    private EntityInstanceCollection thingfrom;
+    private EntityInstanceCollection thingto;
 
     @BeforeEach
     void baseData(){
-        thingfrom = new Thing(new ThingDefinition("from", "from"));
-        thingto = new Thing(new ThingDefinition("to", "to"));
+        thingfrom = new EntityInstanceCollection(new EntityDefinition("from", "from"));
+        thingto = new EntityInstanceCollection(new EntityDefinition("to", "to"));
         RelationshipVector vector = new RelationshipVector(
                 thingfrom.definition(), "fromto", thingto.definition(), Cardinality.ONE_TO_ONE
         );
@@ -39,7 +38,7 @@ class RelationshipsTest {
     @Test
     void canCreateAThingInstanceRelationships(){
 
-        final ThingInstanceRelationships relationships = new ThingInstanceRelationships(fromInstance);
+        final EntityInstanceRelationships relationships = new EntityInstanceRelationships(fromInstance);
 
         System.out.println(relationships.toString());
 
@@ -60,7 +59,7 @@ class RelationshipsTest {
     @Test
     void canConnectToThingWhenRelationshipIsDefined(){
 
-        final ThingInstanceRelationships relationships = new ThingInstanceRelationships(fromInstance);
+        final EntityInstanceRelationships relationships = new EntityInstanceRelationships(fromInstance);
 
         relationships.connect("fromto", toInstance);
         Assertions.assertTrue(relationships.hasAnyRelationshipInstances());
@@ -69,12 +68,12 @@ class RelationshipsTest {
             toInstance.getRelationships().
                 hasAnyRelationshipInstances());
 
-        final Collection<ThingInstance> instances =
+        final Collection<EntityInstance> instances =
                 relationships.getConnectedItems("fromto");
 
         Assertions.assertTrue(instances.contains(toInstance));
 
-        final Collection<ThingInstance> typeinstances =
+        final Collection<EntityInstance> typeinstances =
                 relationships.getConnectedItemsOfType("to");
 
         Assertions.assertTrue(typeinstances.contains(toInstance));
@@ -83,7 +82,7 @@ class RelationshipsTest {
     @Test
     void cannotConnectToThingWhenNoRelationshipIsDefined(){
 
-        final ThingInstanceRelationships relationships = new ThingInstanceRelationships(fromInstance);
+        final EntityInstanceRelationships relationships = new EntityInstanceRelationships(fromInstance);
 
         final IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class,
                 () -> relationships.connect(
@@ -96,9 +95,9 @@ class RelationshipsTest {
     @Test
     void cannotConnectToThingWhenRelationshipIsNotForTypePassedIn(){
 
-        final ThingInstanceRelationships relationships = new ThingInstanceRelationships(fromInstance);
+        final EntityInstanceRelationships relationships = new EntityInstanceRelationships(fromInstance);
 
-        final ThingInstance instance = thingfrom.createManagedInstance();
+        final EntityInstance instance = thingfrom.createManagedInstance();
 
         final IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class,
                 () -> relationships.connect(
@@ -116,7 +115,7 @@ class RelationshipsTest {
     @Test
     void canCreateATwoWayConnection(){
 
-        final ThingInstanceRelationships relationships = new ThingInstanceRelationships(fromInstance);
+        final EntityInstanceRelationships relationships = new EntityInstanceRelationships(fromInstance);
 
         defn.whenReversed(Cardinality.ONE_TO_ONE, "tofrom");
 
@@ -149,7 +148,7 @@ class RelationshipsTest {
     @Test
     void nullWhenNoRelationshipsForTypes(){
 
-        final ThingInstanceRelationships relationships = new ThingInstanceRelationships(fromInstance);
+        final EntityInstanceRelationships relationships = new EntityInstanceRelationships(fromInstance);
 
         Assertions.assertNull(
             relationships.
@@ -159,7 +158,7 @@ class RelationshipsTest {
     @Test
     void removeRelationshipsBasedOnName(){
 
-        final ThingInstanceRelationships relationships = new ThingInstanceRelationships(fromInstance);
+        final EntityInstanceRelationships relationships = new EntityInstanceRelationships(fromInstance);
 
         relationships.connect("fromto", toInstance);
         Assertions.assertTrue(relationships.hasAnyRelationshipInstances());
@@ -173,7 +172,7 @@ class RelationshipsTest {
     @Test
     void removeRelationshipsBasedOnThingInstance(){
 
-        final ThingInstanceRelationships relationships = new ThingInstanceRelationships(fromInstance);
+        final EntityInstanceRelationships relationships = new EntityInstanceRelationships(fromInstance);
 
         relationships.connect("fromto", toInstance);
         Assertions.assertTrue(relationships.hasAnyRelationshipInstances());
@@ -186,7 +185,7 @@ class RelationshipsTest {
     @Test
     void removeAllRelationshipsNonTwoWay(){
 
-        final ThingInstanceRelationships relationships = new ThingInstanceRelationships(fromInstance);
+        final EntityInstanceRelationships relationships = new EntityInstanceRelationships(fromInstance);
 
         relationships.connect("fromto", toInstance);
         Assertions.assertTrue(relationships.hasAnyRelationshipInstances());
@@ -199,7 +198,7 @@ class RelationshipsTest {
     @Test
     void removeAllRelationshipsTwoWay(){
 
-        final ThingInstanceRelationships relationships = new ThingInstanceRelationships(fromInstance);
+        final EntityInstanceRelationships relationships = new EntityInstanceRelationships(fromInstance);
 
         defn.whenReversed(Cardinality.ONE_TO_ONE, "tofrom");
         defn.getReversedRelationship().setOptionality(Optionality.MANDATORY_RELATIONSHIP);
@@ -208,7 +207,7 @@ class RelationshipsTest {
 
         Assertions.assertTrue(relationships.hasAnyRelationshipInstances());
 
-        final List<ThingInstance> thingsToDelete = relationships.removeAllRelationships();
+        final List<EntityInstance> thingsToDelete = relationships.removeAllRelationships();
 
         Assertions.assertFalse(relationships.hasAnyRelationshipInstances());
 
@@ -232,7 +231,7 @@ class RelationshipsTest {
         Assertions.assertTrue(fromInstance.getRelationships().
                 hasAnyRelationshipInstances());
 
-        final List<ThingInstance> thingsToDelete =
+        final List<EntityInstance> thingsToDelete =
                 toInstance.getRelationships().
                         removeAllRelationships();
 

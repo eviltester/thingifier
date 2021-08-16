@@ -2,8 +2,8 @@ package uk.co.compendiumdev.thingifier.reporting;
 
 import org.json.JSONObject;
 import org.json.XML;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.ThingDefinition;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
 import java.util.*;
 
@@ -16,13 +16,13 @@ public class XmlThing {
         this.jsonConvertor = jsonThing;
     }
 
-    public String getSingleObjectXml(final ThingInstance instance) {
+    public String getSingleObjectXml(final EntityInstance instance) {
         String parseForXMLOutput = jsonConvertor.asNamedJsonObject(instance).toString();
         //System.out.println(parseForXMLOutput);
         return XML.toString(new JSONObject(parseForXMLOutput));
     }
 
-    public String getCollectionOfThings(final List<ThingInstance> thingsToReturn, final ThingDefinition typeOfThingReturned) {
+    public String getCollectionOfThings(final List<EntityInstance> thingsToReturn, final EntityDefinition typeOfThingReturned) {
         String parseForXMLOutput = jsonConvertor.asJsonTypedArrayWithContentsTyped(
                                                 thingsToReturn, typeOfThingReturned);
 

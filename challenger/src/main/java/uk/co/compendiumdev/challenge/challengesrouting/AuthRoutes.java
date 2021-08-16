@@ -15,11 +15,11 @@ import uk.co.compendiumdev.thingifier.api.routings.RoutingStatus;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingVerb;
 import uk.co.compendiumdev.thingifier.application.internalhttpconversion.HttpApiResponseToSpark;
 import uk.co.compendiumdev.thingifier.application.internalhttpconversion.SparkToHttpApiRequest;
-import uk.co.compendiumdev.thingifier.core.Thing;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.validation.MaximumLengthValidationRule;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 import uk.co.compendiumdev.thingifier.reporting.JsonThing;
 import uk.co.compendiumdev.thingifier.spark.SimpleRouteConfig;
@@ -33,7 +33,7 @@ import static spark.Spark.post;
 // TODO: This should be using a Thingifier to do the work of XML JSON etc... like the simulation
 public class AuthRoutes {
     private Thingifier secretNoteStore;
-    private Thing secretNote;
+    private EntityInstanceCollection secretNote;
     private ThingifierHttpApi httpApi;
     private JsonThing jsonThing;
 
@@ -151,7 +151,7 @@ public class AuthRoutes {
 
             final HttpApiRequest myRequest = SparkToHttpApiRequest.convert(request);
 
-            ThingInstance note = new ThingInstance(secretNote.definition()).setValue("note", challenger.getNote());
+            EntityInstance note = new EntityInstance(secretNote.definition()).setValue("note", challenger.getNote());
             final ApiResponse response = ApiResponse.success().returnSingleInstance(note);
 
             final HttpApiResponse httpApiResponse = new HttpApiResponse(myRequest.getHeaders(), response,
@@ -241,10 +241,10 @@ public class AuthRoutes {
                 ApiResponse response=null;
                 response = new ThingCreation(this.secretNoteStore).with(
                         new BodyParser(myRequest, Arrays.asList("secretnote")),
-                        this.secretNoteStore.getThingNamed("secretnote"));
+                        this.secretNoteStore.getThingInstancesNamed("secretnote"));
                 if (!response.isErrorResponse()) {
 
-                    ThingInstance returnedInstance = response.getReturnedInstance();
+                    EntityInstance returnedInstance = response.getReturnedInstance();
                     final List<String> protectedFieldNames = returnedInstance.getEntity().getFieldNamesOfType(FieldType.ID, FieldType.GUID);
                     ValidationReport validity = returnedInstance.validateFieldValues(protectedFieldNames, false);
                     validity.combine(returnedInstance.validateRelationships());
@@ -254,7 +254,7 @@ public class AuthRoutes {
                     if (!validity.isValid()) {
                         response = ApiResponse.error(400, validity.getCombinedErrorMessages());
                     }else{
-                        final ThingInstance postedThing = response.getReturnedInstance();
+                        final EntityInstance postedThing = response.getReturnedInstance();
                         response = ApiResponse.success().returnSingleInstance(postedThing);
                         challenger.setNote(response.getReturnedInstance().
                                             getFieldValue("note").asString());

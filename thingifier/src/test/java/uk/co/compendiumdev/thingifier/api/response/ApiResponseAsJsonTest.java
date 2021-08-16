@@ -3,11 +3,11 @@ package uk.co.compendiumdev.thingifier.api.response;
 import com.google.gson.Gson;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import uk.co.compendiumdev.thingifier.core.Thing;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.reporting.JsonThing;
 
 import java.util.ArrayList;
@@ -102,11 +102,11 @@ public class ApiResponseAsJsonTest {
     public void response200WithInstance(){
 
         Thingifier thingifier = new Thingifier();
-        Thing todo = thingifier.createThing("todo", "todos");
+        EntityInstanceCollection todo = thingifier.createThing("todo", "todos");
         todo.definition().addFields( Field.is("title", STRING));
-        Thing todos = thingifier.getThingNamed("todo");
+        EntityInstanceCollection todos = thingifier.getThingInstancesNamed("todo");
 
-        ThingInstance aTodo = todos.createManagedInstance().setValue("title", "a todo");
+        EntityInstance aTodo = todos.createManagedInstance().setValue("title", "a todo");
 
         ApiResponse response = ApiResponse.success().returnSingleInstance(aTodo);
 
@@ -128,12 +128,12 @@ public class ApiResponseAsJsonTest {
     public void response200WithInstances(){
 
         Thingifier thingifier = new Thingifier();
-        Thing todo = thingifier.createThing("todo", "todos");
+        EntityInstanceCollection todo = thingifier.createThing("todo", "todos");
         todo.definition().addFields( Field.is("title", STRING));
-        Thing todos = thingifier.getThingNamed("todo");
+        EntityInstanceCollection todos = thingifier.getThingInstancesNamed("todo");
 
-        ThingInstance aTodo = todos.createManagedInstance().setValue("title", "a todo");
-        ThingInstance anotherTodo = todos.createManagedInstance().setValue("title", "another todo");
+        EntityInstance aTodo = todos.createManagedInstance().setValue("title", "a todo");
+        EntityInstance anotherTodo = todos.createManagedInstance().setValue("title", "another todo");
 
         ApiResponse response = ApiResponse.success().returnInstanceCollection(new ArrayList(todos.getInstances()));
 

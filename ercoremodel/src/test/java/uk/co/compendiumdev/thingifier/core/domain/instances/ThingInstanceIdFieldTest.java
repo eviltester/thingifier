@@ -4,17 +4,17 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.ThingDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 
 public class ThingInstanceIdFieldTest {
 
     @Test
     public void byDefaultAnIDFieldIsOneWhenInstantiated(){
 
-        ThingDefinition entity = new ThingDefinition("thing", "things");
+        EntityDefinition entity = new EntityDefinition("thing", "things");
         entity.addFields(Field.is("id", FieldType.ID));
 
-        ThingInstance instance = new ThingInstance(entity);
+        EntityInstance instance = new EntityInstance(entity);
         instance.addIdsToInstance();
         instance.addGUIDtoInstance();
 
@@ -26,14 +26,14 @@ public class ThingInstanceIdFieldTest {
     @Test
     public void idsShouldAutoIncrementWhenInstancesCreated(){
 
-        ThingDefinition entity = new ThingDefinition("thing", "things");
+        EntityDefinition entity = new EntityDefinition("thing", "things");
         entity.addFields(Field.is("id", FieldType.ID));
 
-        ThingInstance instance = new ThingInstance(entity);
+        EntityInstance instance = new EntityInstance(entity);
         instance.addIdsToInstance();
         Assertions.assertEquals("1", instance.getFieldValue("id").asString());
 
-        ThingInstance instance2 = new ThingInstance(entity);
+        EntityInstance instance2 = new EntityInstance(entity);
         instance2.addIdsToInstance();
         Assertions.assertEquals("2", instance2.getFieldValue("id").asString());
     }
@@ -41,10 +41,10 @@ public class ThingInstanceIdFieldTest {
     @Test
     public void notAllowedToAmendIdOfInstance(){
 
-        ThingDefinition entity = new ThingDefinition("thing", "things");
+        EntityDefinition entity = new EntityDefinition("thing", "things");
         entity.addFields(Field.is("id", FieldType.ID));
 
-        ThingInstance instance = new ThingInstance(entity);
+        EntityInstance instance = new EntityInstance(entity);
         instance.addIdsToInstance();
         Assertions.assertEquals("1", instance.getFieldValue("id").asString());
         Assertions.assertThrows(IllegalArgumentException.class, ()-> {

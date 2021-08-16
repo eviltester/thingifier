@@ -4,7 +4,7 @@ import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +16,7 @@ public class RelationshipCreator {
         this.thingifier = thingifier;
     }
 
-    public ApiResponse createRelationships(final BodyParser bodyargs, final ThingInstance instance) {
+    public ApiResponse createRelationships(final BodyParser bodyargs, final EntityInstance instance) {
         try {
             List<RelationshipDetails> relationships = getRelationshipsFromArgs(bodyargs, instance);
             for (RelationshipDetails relationship : relationships) {
@@ -32,7 +32,7 @@ public class RelationshipCreator {
         }
     }
 
-    private List<RelationshipDetails> getRelationshipsFromArgs(final BodyParser bodyargs, final ThingInstance instance) {
+    private List<RelationshipDetails> getRelationshipsFromArgs(final BodyParser bodyargs, final EntityInstance instance) {
 
         List<RelationshipDetails>relationships = new ArrayList<>();
         RelationshipCollector collector = new RelationshipCollector();

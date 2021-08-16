@@ -1,12 +1,12 @@
 package uk.co.compendiumdev.thingifier.core.query;
 
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
-import uk.co.compendiumdev.thingifier.core.Thing;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVector;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.ThingDefinition;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +16,7 @@ import static uk.co.compendiumdev.thingifier.core.query.SimpleQuery.LastMatchVal
 
 final public class SimpleQuery {
 
-    private final EntityRelModel thingifier;
+    private final EntityRelModel ermodel;
     private final String query;
 
     private boolean isCollection = false;
@@ -29,20 +29,20 @@ final public class SimpleQuery {
     LastMatchValue lastMatch = NOTHING;
 
     // populated during search
-    Thing currentThing = null;
-    ThingInstance currentInstance = null;
-    List<ThingInstance> foundItems = new ArrayList<ThingInstance>();
+    EntityInstanceCollection currentCollection = null;
+    EntityInstance currentInstance = null;
+    List<EntityInstance> foundItems = new ArrayList<EntityInstance>();
     RelationshipVector lastRelationshipFound = null;
     List<RelationshipVector> lastRelationshipsFound = null;
-    Thing parentThing = null;
-    private ThingInstance parentInstance = null;
+    EntityInstanceCollection parentCollection = null;
+    private EntityInstance parentInstance = null;
 
     // TODO: this should be an object with FoundItem objects which have getAsRelationshipDefinition etc.
     List<Object> foundItemsHistoryList = new ArrayList<>();
-    private ThingDefinition resultContainsDefinition;
+    private EntityDefinition resultContainsDefinition;
 
-    public SimpleQuery(EntityRelModel thingifier, String query) {
-        this.thingifier = thingifier;
+    public SimpleQuery(EntityRelModel ermodel, String query) {
+        this.ermodel = ermodel;
 
         if(query.startsWith("/")){
             this.query = query.substring(1);
@@ -68,10 +68,10 @@ final public class SimpleQuery {
             // if we have a parent thing then we want to check for relationships before we check for things
             // if it matches a relationship then get the instances identified by the relationship
             //if(currentThing != null && currentThing.definition().hasRelationship(term)){
-            if (parentThing!=null && thingifier.hasRelationshipNamed(term)) {
+            if (parentCollection !=null && ermodel.hasRelationshipNamed(term)) {
 
                 // what I want to store is the relationship between the parent Thing and the relationship name
-                Thing thingToCheckForRelationship = currentThing == null ? parentThing : currentThing;
+                EntityInstanceCollection thingToCheckForRelationship = currentCollection == null ? parentCollection : currentCollection;
                 lastRelationshipsFound = thingToCheckForRelationship.definition().related().getRelationships(term);
                 lastRelationshipFound = lastRelationshipsFound.get(0);
 
@@ -82,9 +82,9 @@ final public class SimpleQuery {
                     resultContainsDefinition = foundItems.get(0).getRelationships().getTypeOfConnectableItems(term);
                 }
 
-                List<ThingInstance> newitems = new ArrayList<ThingInstance>();
+                List<EntityInstance> newitems = new ArrayList<EntityInstance>();
                 if (foundItems != null) {
-                    for (ThingInstance instance : foundItems) {
+                    for (EntityInstance instance : foundItems) {
                         newitems.addAll(instance.getRelationships().getConnectedItems(term));
                     }
                 }
@@ -94,48 +94,49 @@ final public class SimpleQuery {
 
                 foundItems = newitems;
                 parentInstance = currentInstance;
-                parentThing = currentThing;
-                currentThing = null;
+                parentCollection = currentCollection;
+                currentCollection = null;
                 currentInstance = null;
                 lastMatch = CURRENT_RELATIONSHIP;
                 continue;
             }
 
             // if matches an entity type
-            if (thingifier.hasThingNamed(term) || thingifier.hasThingWithPluralNamed(term)) {
-                if (currentThing == null && foundItems.size() == 0) {
+            if (ermodel.hasEntityNamed(term) || ermodel.hasEntityWithPluralNamed(term)) {
+                if (currentCollection == null && foundItems.size() == 0) {
                     // first thing - find it
-                    currentThing = thingifier.getThingNamed(term);
+                    currentCollection = ermodel.getInstanceCollectionForEntityNamed(term);
                     pluralMatch = false;
 
-                    if (currentThing == null) {
+                    if (currentCollection == null) {
                         // was it the plural?
-                        currentThing = thingifier.getThingWithPluralNamed(term);
+                        final EntityDefinition defn = ermodel.getEntityDefinitionWithPluralNamed(term);
+                        currentCollection = ermodel.getInstanceCollectionForEntityNamed(defn.getName());
                         pluralMatch = true;
                     }
 
                     // entity type is always a collection
                     isCollection = true;
 
-                    resultContainsDefinition = currentThing.definition();
-                    foundItemsHistoryList.add(currentThing);
-                    parentThing = currentThing;
+                    resultContainsDefinition = currentCollection.definition();
+                    foundItemsHistoryList.add(currentCollection);
+                    parentCollection = currentCollection;
                     currentInstance = null;
                     lastMatch = CURRENT_THING;
-                    foundItems = new ArrayList<ThingInstance>(currentThing.getInstances());
+                    foundItems = new ArrayList<EntityInstance>(currentCollection.getInstances());
 
                 } else {
                     // related to another type of thing
-                    foundItemsHistoryList.add(thingifier.getThingNamed(term));
+                    foundItemsHistoryList.add(ermodel.getInstanceCollectionForEntityNamed(term));
 
                     if (foundItems != null && foundItems.size() > 0) {
                         resultContainsDefinition = foundItems.get(0).getRelationships().getTypeOfConnectableItems(term);
                     }
 
-                    List<ThingInstance> newitems = new ArrayList<ThingInstance>();
+                    List<EntityInstance> newitems = new ArrayList<EntityInstance>();
                     if (foundItems != null) {
-                        for (ThingInstance instance : foundItems) {
-                            List<ThingInstance> matchedInstances = instance.getRelationships().getConnectedItemsOfType(term);
+                        for (EntityInstance instance : foundItems) {
+                            List<EntityInstance> matchedInstances = instance.getRelationships().getConnectedItemsOfType(term);
                             newitems.addAll(matchedInstances);
                         }
                     }
@@ -143,8 +144,8 @@ final public class SimpleQuery {
                     // relationship is a collection
                     foundItems = newitems;
                     lastMatch = CURRENT_ITEMS;
-                    parentThing = currentThing;
-                    currentThing = null;
+                    parentCollection = currentCollection;
+                    currentCollection = null;
                     currentInstance = null;
                 }
                 continue;
@@ -154,7 +155,7 @@ final public class SimpleQuery {
 
             // is it a GUID or ID?
             boolean found = false;
-            for (ThingInstance instance : foundItems) {
+            for (EntityInstance instance : foundItems) {
 
                 boolean matchBasedOnIdOrGUID = false;
 
@@ -177,17 +178,17 @@ final public class SimpleQuery {
 
                     foundItemsHistoryList.add(instance);
 
-                    if (currentThing != null) {
-                        parentThing = currentThing;
+                    if (currentCollection != null) {
+                        parentCollection = currentCollection;
                     }
 
                     // if we had a plural term then return this as a collection
                     isCollection = pluralMatch;
 
-                    currentThing = null;
+                    currentCollection = null;
 
                     currentInstance = instance;
-                    foundItems = new ArrayList<ThingInstance>();
+                    foundItems = new ArrayList<EntityInstance>();
                     foundItems.add(instance);
                     lastMatch = CURRENT_INSTANCE;
                     found = true;
@@ -227,8 +228,8 @@ final public class SimpleQuery {
         return this;
     }
 
-    public List<ThingInstance> getListThingInstance() {
-        List<ThingInstance> returnThis = new ArrayList<ThingInstance>();
+    public List<EntityInstance> getListEntityInstances() {
+        List<EntityInstance> returnThis = new ArrayList<EntityInstance>();
 
         if (lastMatch == CURRENT_THING) {
             // if not allow filtering then...
@@ -258,7 +259,7 @@ final public class SimpleQuery {
         return lastRelationshipFound.getName();
     }
 
-    public ThingInstance getParentInstance() {
+    public EntityInstance getParentInstance() {
         return parentInstance;
     }
 
@@ -271,7 +272,7 @@ final public class SimpleQuery {
         return foundItemsHistoryList.get(foundItemsHistoryList.size() - 2) instanceof RelationshipVector;
     }
 
-    public ThingInstance getLastInstance() {
+    public EntityInstance getLastInstance() {
         return currentInstance;
     }
 
@@ -283,7 +284,7 @@ final public class SimpleQuery {
         return lastMatch == NOTHING;
     }
 
-    public ThingDefinition resultContainsDefn() {
+    public EntityDefinition resultContainsDefn() {
         return resultContainsDefinition;
     }
 }

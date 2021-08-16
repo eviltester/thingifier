@@ -11,15 +11,15 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ERSchema {
 
     private final ConcurrentHashMap<String, RelationshipDefinition> relationships;
-    private final ConcurrentHashMap<String, ThingDefinition> thingDefinitions;
+    private final ConcurrentHashMap<String, EntityDefinition> thingDefinitions;
 
     public ERSchema(){
         relationships = new ConcurrentHashMap<>();
         thingDefinitions = new ConcurrentHashMap<>();
     }
 
-    public ThingDefinition defineThing(final String thingName, final String pluralName) {
-        ThingDefinition definition = new ThingDefinition(thingName, pluralName);
+    public EntityDefinition defineEntity(final String thingName, final String pluralName) {
+        EntityDefinition definition = new EntityDefinition(thingName, pluralName);
         thingDefinitions.put(definition.getName(), definition);
         return definition;
     }
@@ -28,7 +28,7 @@ public class ERSchema {
         return relationships.values();
     }
 
-    public RelationshipDefinition defineRelationship(final ThingDefinition from, final ThingDefinition to, final String named, final Cardinality of) {
+    public RelationshipDefinition defineRelationship(final EntityDefinition from, final EntityDefinition to, final String named, final Cardinality of) {
         RelationshipDefinition relationship =
                 RelationshipDefinition.create(
                         new RelationshipVector(
@@ -57,15 +57,36 @@ public class ERSchema {
         return false;
     }
 
-    public boolean hasThingNamed(final String aName) {
+    public boolean hasEntityNamed(final String aName) {
         return thingDefinitions.containsKey(aName);
     }
 
-    public List<String> getThingNames() {
+    public List<String> getEntityNames() {
         List<String> names = new ArrayList();
         names.addAll(thingDefinitions.keySet());
         return names;
     }
 
 
+    public boolean hasEntityWithPluralNamed(final String term) {
+        return getDefinitionWithPluralNamed(term)!=null;
+    }
+
+    public EntityDefinition getDefinitionWithPluralNamed(final String term) {
+        for(EntityDefinition defn : thingDefinitions.values()){
+            if(defn.getPlural().equalsIgnoreCase(term)){
+                return defn;
+            }
+        }
+        return null;
+    }
+
+    public EntityDefinition getDefinitionWithSingularOrPluralNamed(final String term) {
+        if(thingDefinitions.containsKey(term)){
+            return thingDefinitions.get(term);
+        }
+
+        // look for plural
+        return getDefinitionWithPluralNamed(term);
+    }
 }

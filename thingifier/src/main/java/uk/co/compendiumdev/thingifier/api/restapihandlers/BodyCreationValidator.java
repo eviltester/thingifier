@@ -1,13 +1,13 @@
 package uk.co.compendiumdev.thingifier.api.restapihandlers;
 
-import uk.co.compendiumdev.thingifier.core.Thing;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.ThingDefinition;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
 import java.util.List;
 import java.util.Map;
@@ -19,12 +19,12 @@ public class BodyCreationValidator {
         this.thingifier = thingifier;
     }
 
-    public ValidationReport validate(final BodyParser bodyargs, final Thing thing) {
-        final ThingDefinition thingDefinition = thing.definition();
+    public ValidationReport validate(final BodyParser bodyargs, final EntityInstanceCollection thing) {
+        final EntityDefinition thingDefinition = thing.definition();
         return validate(bodyargs, thingDefinition);
     }
 
-    public ValidationReport validate(final BodyParser bodyargs, final ThingDefinition thingDefinition) {
+    public ValidationReport validate(final BodyParser bodyargs, final EntityDefinition thingDefinition) {
         final ValidationReport report = new ValidationReport();
 
         // on creation, we should not have any protected fields in the body i.e. id or guid
@@ -42,7 +42,7 @@ public class BodyCreationValidator {
         return report;
     }
 
-    public ValidationReport areFieldsUnique(final BodyParser bodyargs, final Thing thing,
+    public ValidationReport areFieldsUnique(final BodyParser bodyargs, final EntityInstanceCollection thing,
                                             List<String> uniqueFields) {
 
         final ValidationReport report = new ValidationReport();
@@ -55,7 +55,7 @@ public class BodyCreationValidator {
 
                 if (existingValue != null && existingValue.trim().length() > 0) {
                     // not unique if we can find something by that field value
-                    final ThingInstance foundInstance = thing.findInstanceByField(
+                    final EntityInstance foundInstance = thing.findInstanceByField(
                             FieldValue.is(entry.getKey(),
                                     entry.getValue()));
 

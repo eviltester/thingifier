@@ -1,11 +1,11 @@
 package uk.co.compendiumdev.thingifier.api.restapihandlers;
 
-import uk.co.compendiumdev.thingifier.core.Thing;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.api.restapihandlers.commonerrorresponse.NoSuchEntity;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
 public class RestApiPutHandler {
     final Thingifier thingifier;
@@ -17,7 +17,7 @@ public class RestApiPutHandler {
     public ApiResponse handle(final String url, final BodyParser args) {
         // if queryis empty then need a way to check if the query matched
         // create a thing
-        Thing thing = thingifier.getThingNamedSingularOrPlural(url);
+        EntityInstanceCollection thing = thingifier.getThingNamedSingularOrPlural(url);
         if (thing != null) {
             // can't create a new thing at root level with PUT
             return ApiResponse.error(405, "Cannot create root level entity with a PUT");
@@ -43,7 +43,7 @@ public class RestApiPutHandler {
 
         String instanceGuid = urlParts[1];
 
-        ThingInstance instance = thing.findInstanceByGUIDorID(instanceGuid);
+        EntityInstance instance = thing.findInstanceByGUIDorID(instanceGuid);
 
         if (instance == null) {
             // it does not exist, but we have a GUID - create it
@@ -57,7 +57,7 @@ public class RestApiPutHandler {
         }
     }
 
-    private ApiResponse amendAThingWithPut(final BodyParser bodyargs, final ThingInstance instance) {
+    private ApiResponse amendAThingWithPut(final BodyParser bodyargs, final EntityInstance instance) {
 
         return new ThingAmendment(thingifier).
                 amendInstance(bodyargs, instance, true);

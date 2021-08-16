@@ -6,16 +6,16 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.ThingDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 
 public class ThingInstanceCreationTest {
 
-    ThingDefinition entityTestSession;
+    EntityDefinition entityTestSession;
 
     @BeforeEach
     public void createEntity(){
 
-        entityTestSession = new ThingDefinition("Test Session", "Test Sessions");
+        entityTestSession = new EntityDefinition("Test Session", "Test Sessions");
 
         entityTestSession.addField(Field.is("Title"));
         entityTestSession.addFields(Field.is("CompletedStatus").withDefaultValue("Not Completed"));
@@ -26,8 +26,8 @@ public class ThingInstanceCreationTest {
     @Test
     public void canCreateNewEntityInstance() {
 
-        ThingInstance session;
-        session = new ThingInstance(entityTestSession);
+        EntityInstance session;
+        session = new EntityInstance(entityTestSession);
         session.addGUIDtoInstance();
         session.addIdsToInstance();
 
@@ -44,12 +44,12 @@ public class ThingInstanceCreationTest {
 
     @Test
     public void canCreateUniqueGUIDs(){
-        ThingInstance session = new ThingInstance(entityTestSession);
+        EntityInstance session = new EntityInstance(entityTestSession);
         session.addGUIDtoInstance();
 
         Assertions.assertNotNull(session.getGUID());
 
-        ThingInstance session2 = new ThingInstance(entityTestSession);
+        EntityInstance session2 = new EntityInstance(entityTestSession);
         session2.addGUIDtoInstance();
 
         Assertions.assertNotNull(session2.getGUID());
@@ -63,7 +63,7 @@ public class ThingInstanceCreationTest {
     public void canCreateAThingWithAGUID(){
 
         // note potential bug this is risky if the GUID is later created
-        ThingInstance instance = new ThingInstance(entityTestSession);
+        EntityInstance instance = new EntityInstance(entityTestSession);
         instance.overrideValue("guid", "1234-1234-1324-1234");
         instance.addIdsToInstance();
 

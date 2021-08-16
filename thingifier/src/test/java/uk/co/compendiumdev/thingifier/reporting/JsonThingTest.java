@@ -6,20 +6,20 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.apiconfig.JsonOutputConfig;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.ThingDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
 public class JsonThingTest {
 
-    ThingDefinition defn;
-    ThingInstance instance;
+    EntityDefinition defn;
+    EntityInstance instance;
 
     @BeforeEach
     public void createThingWithNestedObjectField(){
 
-        defn = new ThingDefinition("thing", "things");
+        defn = new EntityDefinition("thing", "things");
 
         defn.addField(Field.is("person", FieldType.OBJECT)
                 .withField(
@@ -30,7 +30,7 @@ public class JsonThingTest {
                         ));
 
 
-        instance = new ThingInstance(defn);
+        instance = new EntityInstance(defn);
         instance.setValue("person.firstname", "Connie");
         instance.setValue("person.surname", "Dobbs");
     }

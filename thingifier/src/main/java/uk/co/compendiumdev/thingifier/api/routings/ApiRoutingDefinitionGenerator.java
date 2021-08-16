@@ -1,14 +1,12 @@
 package uk.co.compendiumdev.thingifier.api.routings;
 
-import uk.co.compendiumdev.thingifier.api.ThingifierRestAPIHandler;
-import uk.co.compendiumdev.thingifier.core.Thing;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.api.response.ResponseHeader;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.ThingDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVector;
 
 import java.util.HashMap;
@@ -66,7 +64,7 @@ public class ApiRoutingDefinitionGenerator {
 
 
 
-        for (Thing thing : thingifier.getThings()) {
+        for (EntityInstanceCollection thing : thingifier.getThings()) {
 
             String uniqueIdentifier="?";
             String uniqueIdFieldName="fieldName";
@@ -202,7 +200,7 @@ public class ApiRoutingDefinitionGenerator {
         return defn;
     }
 
-    private Field getUniqueIdField(final ThingDefinition thingDefn) {
+    private Field getUniqueIdField(final EntityDefinition thingDefn) {
         final List<Field> idFields = thingDefn.getFieldsOfType(FieldType.ID);
         if(config.willUrlsShowIdsIfAvailable() && !idFields.isEmpty()){
             return idFields.get(0);
@@ -223,7 +221,7 @@ public class ApiRoutingDefinitionGenerator {
         String relationshipName = relationship.getName();
 
 
-        final ThingDefinition thingDefn = relationship.getFrom();
+        final EntityDefinition thingDefn = relationship.getFrom();
 
 
 

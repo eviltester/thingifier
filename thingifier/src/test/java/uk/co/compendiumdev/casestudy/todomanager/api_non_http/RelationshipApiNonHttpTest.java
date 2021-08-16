@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.casestudy.todomanager.TodoManagerModel;
-import uk.co.compendiumdev.thingifier.core.Thing;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
@@ -13,7 +13,7 @@ import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponseAsJson;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponseAsXml;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.reporting.JsonThing;
 
 import java.util.*;
@@ -24,8 +24,8 @@ public class RelationshipApiNonHttpTest {
 
 
 
-    Thing todo;
-    Thing project;
+    EntityInstanceCollection todo;
+    EntityInstanceCollection project;
     private JsonThing jsonThing;
 
 
@@ -34,8 +34,8 @@ public class RelationshipApiNonHttpTest {
 
         todoManager = TodoManagerModel.definedAsThingifier();
         jsonThing = new JsonThing(todoManager.apiConfig().jsonOutput());
-        todo = todoManager.getThingNamed("todo");
-        project = todoManager.getThingNamed("project");
+        todo = todoManager.getThingInstancesNamed("todo");
+        project = todoManager.getThingInstancesNamed("project");
 
     }
 
@@ -75,10 +75,10 @@ public class RelationshipApiNonHttpTest {
         ApiResponse apiresponse;
 
 
-        ThingInstance paperwork = todo.createManagedInstance().
+        EntityInstance paperwork = todo.createManagedInstance().
                 setValue("title", "Todo for relating");
 
-        ThingInstance myNewProject = project.createManagedInstance().
+        EntityInstance myNewProject = project.createManagedInstance().
                 setValue("title", "My New Project " + System.currentTimeMillis());
 
         myNewProject.getRelationships().connect("tasks", paperwork);
@@ -93,7 +93,7 @@ public class RelationshipApiNonHttpTest {
         Assertions.assertTrue(apiresponse.isCollection());
         Assertions.assertFalse(apiresponse.isErrorResponse());
 
-        ThingInstance foundInstance = todo.findInstanceByField(FieldValue.is("guid", paperwork.getGUID()));
+        EntityInstance foundInstance = todo.findInstanceByField(FieldValue.is("guid", paperwork.getGUID()));
         Assertions.assertNotNull(
                 foundInstance,
                 "Task should exist, only the relationship should be deleted");
@@ -112,11 +112,11 @@ public class RelationshipApiNonHttpTest {
         ApiResponse apiresponse;
 
 
-        ThingInstance paperwork = todo.createManagedInstance().
+        EntityInstance paperwork = todo.createManagedInstance().
                 setValue("title", "Todo for amending");
 
 
-        ThingInstance myNewProject = project.createManagedInstance().
+        EntityInstance myNewProject = project.createManagedInstance().
                 setValue("title", "My New Project " + System.currentTimeMillis());
 
         myNewProject.getRelationships().connect("tasks", paperwork);
@@ -151,10 +151,10 @@ public class RelationshipApiNonHttpTest {
         ApiResponse apiresponse;
 
 
-        ThingInstance paperwork = todo.createManagedInstance().
+        EntityInstance paperwork = todo.createManagedInstance().
                 setValue("title", "Todo for amending");
 
-        ThingInstance myNewProject = project.createManagedInstance().
+        EntityInstance myNewProject = project.createManagedInstance().
                 setValue("title", "My New Project " + System.currentTimeMillis());
 
 
@@ -193,10 +193,10 @@ public class RelationshipApiNonHttpTest {
         ApiResponse apiresponse;
 
 
-        ThingInstance paperwork = todo.createManagedInstance().
+        EntityInstance paperwork = todo.createManagedInstance().
                 setValue("title", "Todo for amending");
 
-        ThingInstance myNewProject = project.createManagedInstance().
+        EntityInstance myNewProject = project.createManagedInstance().
                 setValue("title", "My New Project " + System.currentTimeMillis());
 
 
@@ -220,10 +220,10 @@ public class RelationshipApiNonHttpTest {
         Assertions.assertEquals(numberOfTasks + 1, myNewProject.getRelationships().getConnectedItems("tasks").size());
 
         // todo should also be connected to project via the associated task-of relationship vector
-        Collection<ThingInstance> projects = paperwork.getRelationships().getConnectedItems("task-of");
+        Collection<EntityInstance> projects = paperwork.getRelationships().getConnectedItems("task-of");
 
         Assertions.assertEquals(1, projects.size());
-        List<ThingInstance> listOfProjects = new ArrayList<ThingInstance>(projects);
+        List<EntityInstance> listOfProjects = new ArrayList<EntityInstance>(projects);
 
         Assertions.assertEquals(myNewProject.getGUID(), listOfProjects.get(0).getGUID());
 
@@ -240,10 +240,10 @@ public class RelationshipApiNonHttpTest {
     public void postCanCreateARelationshipUsingAPI() {
 
 
-        ThingInstance myNewProject = project.createManagedInstance().
+        EntityInstance myNewProject = project.createManagedInstance().
                 setValue("title", "Project For Relationships");
 
-        ThingInstance relTodo = todo.createManagedInstance().
+        EntityInstance relTodo = todo.createManagedInstance().
                 setValue("title", "Todo for relationship testing");
 
 
@@ -277,11 +277,11 @@ public class RelationshipApiNonHttpTest {
     public void postCanCreateARelationshipUsingReversalRelationshipAPI() {
 
 
-        ThingInstance myNewProject = project.createManagedInstance().
+        EntityInstance myNewProject = project.createManagedInstance().
                 setValue("title", "Project For Relationships " + System.currentTimeMillis());
 
 
-        ThingInstance relTodo = todo.createManagedInstance().
+        EntityInstance relTodo = todo.createManagedInstance().
                 setValue("title", "Todo for relationship testing " + System.currentTimeMillis());
 
         // Create a relationship with POST
@@ -348,10 +348,10 @@ public class RelationshipApiNonHttpTest {
     public void deleteARelationshipUsingReversalRelationshipAPI() {
 
 
-        ThingInstance myNewProject = project.createManagedInstance().
+        EntityInstance myNewProject = project.createManagedInstance().
                 setValue("title", "Project For Relationships " + System.currentTimeMillis());
 
-        ThingInstance relTodo = todo.createManagedInstance().
+        EntityInstance relTodo = todo.createManagedInstance().
                 setValue("title", "Todo for relationship testing " + System.currentTimeMillis());
 
         // Create a relationship with POST
@@ -384,7 +384,7 @@ public class RelationshipApiNonHttpTest {
         Assertions.assertEquals(200, apiresponse.getStatusCode());
 
         // project should be related to nothing
-        Collection<ThingInstance> items = myNewProject.getRelationships().getConnectedItems("tasks");
+        Collection<EntityInstance> items = myNewProject.getRelationships().getConnectedItems("tasks");
         Assertions.assertEquals(0, items.size());
 
         // todo should be related to nothing
@@ -406,10 +406,10 @@ public class RelationshipApiNonHttpTest {
     public void deleteAThingInAReversalRelationship() {
 
 
-        ThingInstance myNewProject = project.createManagedInstance().
+        EntityInstance myNewProject = project.createManagedInstance().
                 setValue("title", "Project For Relationships " + System.currentTimeMillis());
 
-        ThingInstance relTodo = todo.createManagedInstance().
+        EntityInstance relTodo = todo.createManagedInstance().
                 setValue("title", "Todo for relationship testing " + System.currentTimeMillis());
 
         // Create a relationship with POST
@@ -449,7 +449,7 @@ public class RelationshipApiNonHttpTest {
 
 
         // project should be related to nothing
-        Collection<ThingInstance> items = myNewProject.getRelationships().getConnectedItems("tasks");
+        Collection<EntityInstance> items = myNewProject.getRelationships().getConnectedItems("tasks");
         Assertions.assertEquals(0, items.size());
 
         // todo should be related to nothing
@@ -466,7 +466,7 @@ public class RelationshipApiNonHttpTest {
     public void postCanCreateARelationshipAndTodoAtSameTimeUsingAPI() {
 
 
-        ThingInstance myNewProject = project.createManagedInstance().
+        EntityInstance myNewProject = project.createManagedInstance().
                 setValue("title", "Project For Relationships");
 
 
@@ -502,15 +502,15 @@ public class RelationshipApiNonHttpTest {
 
 
         // check todo exists
-        ThingInstance myCreatedTodo = todo.findInstanceByGUID(locationGuid);
+        EntityInstance myCreatedTodo = todo.findInstanceByGUID(locationGuid);
         Assertions.assertEquals(expectedTitle, myCreatedTodo.getFieldValue("title").asString());
 
         // check todo is also related to the project since relationship is two way
-        Collection<ThingInstance> items = myCreatedTodo.getRelationships().getConnectedItems("task-of");
+        Collection<EntityInstance> items = myCreatedTodo.getRelationships().getConnectedItems("task-of");
         Assertions.assertEquals(1, items.size(),
                 "Expected task be connected to only 1 project");
 
-        List<ThingInstance> itemList = new ArrayList<>(items);
+        List<EntityInstance> itemList = new ArrayList<>(items);
 
         // item should be myNewProject
         Assertions.assertEquals( myNewProject.getGUID(), itemList.get(0).getGUID(),"Expected to be connected to project");
@@ -523,7 +523,7 @@ public class RelationshipApiNonHttpTest {
 
         // Create a thing and relate through a reverse relationship e.g. POST todo/GUID/task-of
 
-        ThingInstance relTodo = todo.createManagedInstance().
+        EntityInstance relTodo = todo.createManagedInstance().
                 setValue("title", "Todo for relationship testing " + System.currentTimeMillis());
 
 
@@ -550,12 +550,12 @@ public class RelationshipApiNonHttpTest {
         Assertions.assertNotEquals("Should have a body", "", new ApiResponseAsJson(apiresponse, jsonThing).getJson().trim());
         Assertions.assertFalse(apiresponse.isCollection());
 
-        ThingInstance myNewProject = project.findInstanceByGUID(apiresponse.getHeaderValue(ApiResponse.GUID_HEADER));
+        EntityInstance myNewProject = project.findInstanceByGUID(apiresponse.getHeaderValue(ApiResponse.GUID_HEADER));
         Assertions.assertNotNull(myNewProject);
 
 
         // project should be related to task
-        Collection<ThingInstance> items = myNewProject.getRelationships().getConnectedItems("tasks");
+        Collection<EntityInstance> items = myNewProject.getRelationships().getConnectedItems("tasks");
         Assertions.assertEquals(1, items.size());
 
         // a todo instance should be related to project
@@ -582,10 +582,10 @@ public class RelationshipApiNonHttpTest {
 
 
 
-        ThingInstance myTodo = todo.createManagedInstance().
+        EntityInstance myTodo = todo.createManagedInstance().
                 setValue("title", "an estimated todo");
 
-        final Thing estimates = todoManager.getThingNamed("estimate");
+        final EntityInstanceCollection estimates = todoManager.getThingInstancesNamed("estimate");
         int numberOfEstimates = estimates.countInstances();
         Assertions.assertEquals(0, numberOfEstimates );
 
@@ -622,12 +622,12 @@ public class RelationshipApiNonHttpTest {
 
 
         // check estimate exists
-        ThingInstance myCreatedItem = estimates.findInstanceByGUID(locationGuid);
+        EntityInstance myCreatedItem = estimates.findInstanceByGUID(locationGuid);
         Assertions.assertEquals(expectedDescription, myCreatedItem.getFieldValue("description").asString());
         Assertions.assertEquals("3", myCreatedItem.getFieldValue("duration").asString());
 
         // check estimate is related to the todo since relationship is two way
-        Collection<ThingInstance> items = myCreatedItem.getRelationships().getConnectedItems("estimate");
+        Collection<EntityInstance> items = myCreatedItem.getRelationships().getConnectedItems("estimate");
         Assertions.assertEquals( 1, items.size(), "Expected estimate to be connected to only 1 todo");
         Assertions.assertTrue(items.contains(myTodo));
 
@@ -641,10 +641,10 @@ public class RelationshipApiNonHttpTest {
     @Test
     public void postCanNotCreateEstimateWithoutAMandatoryRelationshipUsingAPI() {
 
-        ThingInstance myTodo = todo.createManagedInstance().
+        EntityInstance myTodo = todo.createManagedInstance().
                 setValue("title", "an estimated todo");
 
-        final Thing estimates = todoManager.getThingNamed("estimate");
+        final EntityInstanceCollection estimates = todoManager.getThingInstancesNamed("estimate");
         int numberOfEstimates = estimates.countInstances();
         Assertions.assertEquals(0, numberOfEstimates );
 
@@ -667,7 +667,7 @@ public class RelationshipApiNonHttpTest {
     @Test
     public void postCanCreateEstimateAMandatoryRelationshipUsingAPI() {
 
-        ThingInstance myTodo = todo.createManagedInstance().
+        EntityInstance myTodo = todo.createManagedInstance().
                 setValue("title",
                                     "an estimated todo");
 
@@ -676,7 +676,7 @@ public class RelationshipApiNonHttpTest {
                 0, myTodo.getRelationships().getConnectedItems("estimates").size());
 
         // there are no estimates at all
-        final Thing estimates = todoManager.getThingNamed("estimate");
+        final EntityInstanceCollection estimates = todoManager.getThingInstancesNamed("estimate");
         int numberOfEstimates = estimates.countInstances();
         Assertions.assertEquals(0, numberOfEstimates );
 
@@ -707,7 +707,7 @@ public class RelationshipApiNonHttpTest {
                 1, myTodo.getRelationships().getConnectedItems("estimates").size());
 
         // and it is the estimate we expected
-        final ArrayList<ThingInstance> estimatesList = new ArrayList();
+        final ArrayList<EntityInstance> estimatesList = new ArrayList();
         estimatesList.addAll(myTodo.getRelationships().getConnectedItems("estimates"));
         Assertions.assertEquals(expectedDescription, estimatesList.get(0).getFieldValue("description").asString());
 

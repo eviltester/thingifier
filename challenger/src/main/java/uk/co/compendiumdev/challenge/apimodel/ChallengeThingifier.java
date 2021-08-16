@@ -4,15 +4,15 @@ import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.challenges.ChallengeDefinitionData;
 import uk.co.compendiumdev.challenge.challenges.ChallengeDefinitions;
 import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.core.Thing;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
 public class ChallengeThingifier {
 
     public Thingifier challengeThingifier;
-    public Thing challengeDefn;
+    public EntityInstanceCollection challengeDefn;
     private ChallengeDefinitions challengeDefinitions;
 
     public ChallengeThingifier(){
@@ -50,7 +50,7 @@ public class ChallengeThingifier {
 
     public void populateThingifierFromStatus(ChallengerAuthData challenger){
         for (ChallengeDefinitionData challenge : challengeDefinitions.getChallenges()) {
-            final ThingInstance instance = this.challengeDefn.findInstanceByGUIDorID(challenge.id);
+            final EntityInstance instance = this.challengeDefn.findInstanceByGUIDorID(challenge.id);
             instance.setValue("status",
                                         challenger.statusOfChallenge(
                                                 challengeDefinitions.

@@ -5,12 +5,12 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.casestudy.todomanager.TodoManagerModel;
-import uk.co.compendiumdev.thingifier.core.Thing;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
 import java.util.*;
 
@@ -19,8 +19,8 @@ public class VerbPostEntityInstanceApiNonHttpTest {
 
     private Thingifier todoManager;
 
-    Thing todo;
-    Thing project;
+    EntityInstanceCollection todo;
+    EntityInstanceCollection project;
 
 
     // TODO: tests that use the TodoManagerModel were created early and are too complicated - simplify
@@ -33,8 +33,8 @@ public class VerbPostEntityInstanceApiNonHttpTest {
 
         todoManager = TodoManagerModel.definedAsThingifier();
 
-        todo = todoManager.getThingNamed("todo");
-        project = todoManager.getThingNamed("project");
+        todo = todoManager.getThingInstancesNamed("todo");
+        project = todoManager.getThingInstancesNamed("project");
 
     }
     
@@ -69,7 +69,7 @@ public class VerbPostEntityInstanceApiNonHttpTest {
         Assertions.assertFalse(apiresponse.isCollection());
         Assertions.assertEquals(0, apiresponse.getErrorMessages().size());
 
-        ThingInstance createdInstance = apiresponse.getReturnedInstance();
+        EntityInstance createdInstance = apiresponse.getReturnedInstance();
 
         String officeWorkGuid = createdInstance.getGUID();
         Assertions.assertEquals(title, createdInstance.getFieldValue("title").asString());
@@ -86,7 +86,7 @@ public class VerbPostEntityInstanceApiNonHttpTest {
 
         // check that it is created in the model
 
-        ThingInstance createdProject = todo.findInstanceByGUID(headerGUID);
+        EntityInstance createdProject = todo.findInstanceByGUID(headerGUID);
 
         Assertions.assertEquals(createdProject, createdInstance);
 
@@ -116,7 +116,7 @@ public class VerbPostEntityInstanceApiNonHttpTest {
         Assertions.assertFalse(apiresponse.isCollection());
         Assertions.assertEquals(0, apiresponse.getErrorMessages().size());
 
-        ThingInstance createdInstance = apiresponse.getReturnedInstance();
+        EntityInstance createdInstance = apiresponse.getReturnedInstance();
 
         String officeWorkGuid = createdInstance.getGUID();
         Assertions.assertEquals(title, createdInstance.getFieldValue("title").asString());
@@ -132,7 +132,7 @@ public class VerbPostEntityInstanceApiNonHttpTest {
 
         // check that it is created in the model
 
-        ThingInstance createdProject = todo.findInstanceByGUID(headerGUID);
+        EntityInstance createdProject = todo.findInstanceByGUID(headerGUID);
 
         Assertions.assertEquals(createdProject, createdInstance);
 
@@ -142,7 +142,7 @@ public class VerbPostEntityInstanceApiNonHttpTest {
     @Test
     public void postCanAmendAnExistingEntity() {
 
-        ThingInstance relTodo = todo.createManagedInstance().
+        EntityInstance relTodo = todo.createManagedInstance().
                 setValue("title", "Todo for amending");
 
 
@@ -165,7 +165,7 @@ public class VerbPostEntityInstanceApiNonHttpTest {
 
         // Check response
 
-        ThingInstance createdInstance = apiresponse.getReturnedInstance();
+        EntityInstance createdInstance = apiresponse.getReturnedInstance();
 
         Assertions.assertEquals(relTodo.getGUID(), createdInstance.getGUID());
         Assertions.assertEquals(title, createdInstance.getFieldValue("title").asString());
@@ -203,7 +203,7 @@ public class VerbPostEntityInstanceApiNonHttpTest {
         String originalTitle = "Todo for amending " + System.currentTimeMillis();
         String originalDescription = "my description " + System.currentTimeMillis();
 
-        ThingInstance amendTodo = todo.createManagedInstance().
+        EntityInstance amendTodo = todo.createManagedInstance().
                 setValue("title", originalTitle).setValue("description", originalDescription);
 
 
@@ -251,7 +251,7 @@ public class VerbPostEntityInstanceApiNonHttpTest {
         requestBody = new HashMap<String, String>();
         requestBody.put("title", "My Office Work");
 
-        ThingInstance officeWork = project.createManagedInstance().
+        EntityInstance officeWork = project.createManagedInstance().
                 setValue("title", "An Existing Project");
 
         String officeWorkGuid = officeWork.getGUID();
@@ -303,7 +303,7 @@ public class VerbPostEntityInstanceApiNonHttpTest {
         requestBody.put("title", "A new TODO Item");
         requestBody.put("doneStatus", "FALSEY");
 
-        ThingInstance paperwork = todo.createManagedInstance().
+        EntityInstance paperwork = todo.createManagedInstance().
                 setValue("title", "Todo for amending");
 
         apiresponse = todoManager.api().post(String.format("todo/%s", paperwork.getGUID()), getSimpleParser(requestBody));

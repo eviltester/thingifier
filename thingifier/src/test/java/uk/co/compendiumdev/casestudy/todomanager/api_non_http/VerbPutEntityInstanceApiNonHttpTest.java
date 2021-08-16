@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.casestudy.todomanager.TodoManagerModel;
-import uk.co.compendiumdev.thingifier.core.Thing;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
@@ -13,7 +13,7 @@ import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
 import java.util.*;
 
@@ -22,8 +22,8 @@ public class VerbPutEntityInstanceApiNonHttpTest {
 
     private Thingifier todoManager;
 
-    Thing todo;
-    Thing project;
+    EntityInstanceCollection todo;
+    EntityInstanceCollection project;
 
 
     // TODO: tests that use the TodoManagerModel were created early and are too complicated - simplify
@@ -36,8 +36,8 @@ public class VerbPutEntityInstanceApiNonHttpTest {
 
         todoManager = TodoManagerModel.definedAsThingifier();
 
-        todo = todoManager.getThingNamed("todo");
-        project = todoManager.getThingNamed("project");
+        todo = todoManager.getThingInstancesNamed("todo");
+        project = todoManager.getThingInstancesNamed("project");
 
     }
     
@@ -68,7 +68,7 @@ public class VerbPutEntityInstanceApiNonHttpTest {
         requestBody = new HashMap<String, String>();
         requestBody.put("title", "My Office Work");
 
-        ThingInstance officeWork = project.createManagedInstance().
+        EntityInstance officeWork = project.createManagedInstance().
                 setValue("title", "An Existing Project");
 
         String officeWorkGuid = officeWork.getGUID();
@@ -99,7 +99,7 @@ public class VerbPutEntityInstanceApiNonHttpTest {
         // PUT
 
 
-        ThingInstance officeWork = project.createManagedInstance().
+        EntityInstance officeWork = project.createManagedInstance().
                 setValue("title", "An Existing Project").
                 setValue("description", "my original description");
 
@@ -134,7 +134,7 @@ public class VerbPutEntityInstanceApiNonHttpTest {
         // PUT
 
 
-        ThingInstance officeWork = project.createManagedInstance().
+        EntityInstance officeWork = project.createManagedInstance().
                 setValue("title", "An Existing Project").
                 setValue("description", "my original description");
 
@@ -192,7 +192,7 @@ public class VerbPutEntityInstanceApiNonHttpTest {
         Assertions.assertEquals(currentProjects + 1, project.countInstances());
 
 
-        ThingInstance newProject = project.findInstanceByField(FieldValue.is("guid", guid));
+        EntityInstance newProject = project.findInstanceByField(FieldValue.is("guid", guid));
 
         Assertions.assertEquals(title, newProject.getFieldValue("title").asString());
         Assertions.assertEquals(guid, newProject.getFieldValue("guid").asString());
@@ -210,7 +210,7 @@ public class VerbPutEntityInstanceApiNonHttpTest {
         Map requestBody;
         ApiResponse apiresponse;
 
-        project = todoManager.getThingNamed("project");
+        project = todoManager.getThingInstancesNamed("project");
         final Field anIdField = Field.is("id", FieldType.ID);
         project.definition().addField(anIdField);
 
@@ -232,7 +232,7 @@ public class VerbPutEntityInstanceApiNonHttpTest {
         Assertions.assertEquals(201, apiresponse.getStatusCode());
 
 
-        ThingInstance newProject = project.findInstanceByField(FieldValue.is("guid", guid));
+        EntityInstance newProject = project.findInstanceByField(FieldValue.is("guid", guid));
         Assertions.assertEquals("12", newProject.getFieldValue("id").asString());
 
         Assertions.assertEquals("13", anIdField.getNextIdValue());
@@ -245,11 +245,11 @@ public class VerbPutEntityInstanceApiNonHttpTest {
         Map requestBody;
         ApiResponse apiresponse;
 
-        project = todoManager.getThingNamed("project");
+        project = todoManager.getThingInstancesNamed("project");
         final Field anIdField = Field.is("id", FieldType.ID);
         project.definition().addField(anIdField);
 
-        final ThingInstance instance = project.createManagedInstance();
+        final EntityInstance instance = project.createManagedInstance();
 
         // Want to PUT
         requestBody = new HashMap<String, String>();
@@ -287,7 +287,7 @@ public class VerbPutEntityInstanceApiNonHttpTest {
         Assertions.assertTrue(apiresponse.hasABody());
 
 
-        ThingInstance paperwork = todo.createManagedInstance().setValue("title", "Todo for amending");
+        EntityInstance paperwork = todo.createManagedInstance().setValue("title", "Todo for amending");
 
         // Mandatory field validation PUT amend
         requestBody = new HashMap<String, String>();
@@ -337,7 +337,7 @@ public class VerbPutEntityInstanceApiNonHttpTest {
         ApiResponse apiresponse;
 
 
-        ThingInstance paperwork = todo.createManagedInstance().setValue("title", "Todo for amending");
+        EntityInstance paperwork = todo.createManagedInstance().setValue("title", "Todo for amending");
 
         // Mandatory field validation PUT amend
         requestBody = new HashMap<String, String>();

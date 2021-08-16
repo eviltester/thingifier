@@ -3,24 +3,24 @@ package uk.co.compendiumdev.integration.api_non_http;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import uk.co.compendiumdev.thingifier.core.Thing;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiResponse;
 import uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.ThingDefinition;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
 
 public class NestedObjectsApiTest {
 
     Thingifier thingifier;
-    ThingDefinition defn;
-    ThingInstance instance;
+    EntityDefinition defn;
+    EntityInstance instance;
     ThingifierHttpApi api;
-    Thing thing;
+    EntityInstanceCollection thing;
 
     @BeforeEach
     public void createThingWithNestedObjectField(){
@@ -43,7 +43,7 @@ public class NestedObjectsApiTest {
     @Test
     void canAmendConnie(){
 
-        instance = new ThingInstance(defn);
+        instance = new EntityInstance(defn);
         instance.addGUIDtoInstance();
         instance.addIdsToInstance();
         instance.setValue("person.firstname", "Connie");
@@ -85,7 +85,7 @@ public class NestedObjectsApiTest {
         Assertions.assertEquals(201, response.getStatusCode());
         Assertions.assertEquals(1,thing.countInstances());
 
-        for(ThingInstance bob : thing.getInstances()){
+        for(EntityInstance bob : thing.getInstances()){
             Assertions.assertEquals("bob", bob.getFieldValue("person").asObject().
                     getFieldValue("firstname").asString());
         }

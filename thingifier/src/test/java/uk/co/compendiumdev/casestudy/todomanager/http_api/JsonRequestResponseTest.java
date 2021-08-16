@@ -5,13 +5,13 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.casestudy.todomanager.TodoManagerModel;
-import uk.co.compendiumdev.thingifier.core.Thing;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiResponse;
 import uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
 import java.util.UUID;
 
@@ -19,8 +19,8 @@ public class JsonRequestResponseTest {
 
     private Thingifier todoManager;
 
-    Thing todo;
-    Thing project;
+    EntityInstanceCollection todo;
+    EntityInstanceCollection project;
 
 
     @BeforeEach
@@ -29,8 +29,8 @@ public class JsonRequestResponseTest {
         todoManager = TodoManagerModel.definedAsThingifier();
 
         todoManager.apiConfig().setApiToEnforceAcceptHeaderForResponses(false);
-        todo = todoManager.getThingNamed("todo");
-        project = todoManager.getThingNamed("project");
+        todo = todoManager.getThingInstancesNamed("todo");
+        project = todoManager.getThingInstancesNamed("project");
 
 
     }
@@ -74,7 +74,7 @@ public class JsonRequestResponseTest {
     public void canGetJsonItemAsACollection() {
 
 
-        final ThingInstance aTodo = todo.createManagedInstance().setValue("title", "my title");
+        final EntityInstance aTodo = todo.createManagedInstance().setValue("title", "my title");
 
         HttpApiRequest request = new HttpApiRequest("/todos/" + aTodo.getGUID());
         request.getHeaders().putAll(HeadersSupport.acceptJson());
@@ -97,7 +97,7 @@ public class JsonRequestResponseTest {
     public void canGetJsonItemAsAnInstance() {
 
 
-        final ThingInstance aTodo = todo.createManagedInstance().setValue("title", "my title");
+        final EntityInstance aTodo = todo.createManagedInstance().setValue("title", "my title");
 
         HttpApiRequest request = new HttpApiRequest("/todo/" + aTodo.getGUID());
         request.getHeaders().putAll(HeadersSupport.acceptJson());
@@ -190,7 +190,7 @@ public class JsonRequestResponseTest {
         // header should give me the guid
         String guid = response.getHeaders().get(ApiResponse.GUID_HEADER);
 
-        final ThingInstance aTodo = todo.findInstanceByGUID(guid);
+        final EntityInstance aTodo = todo.findInstanceByGUID(guid);
 
         Assertions.assertEquals("title from json", aTodo.getFieldValue("title").asString());
 
@@ -231,7 +231,7 @@ public class JsonRequestResponseTest {
         // header should give me the guid
         String guid = response.getHeaders().get(ApiResponse.GUID_HEADER);
 
-        final ThingInstance aTodo = todo.findInstanceByGUID(guid);
+        final EntityInstance aTodo = todo.findInstanceByGUID(guid);
 
         Assertions.assertEquals("false", aTodo.getFieldValue("doneStatus").asString());
         Assertions.assertEquals("title from json", aTodo.getFieldValue("title").asString());
@@ -254,7 +254,7 @@ public class JsonRequestResponseTest {
     @Test
     public void canPostToAmendAnItemWithJson() {
 
-        final ThingInstance atodo = todo.createManagedInstance().setValue("title", "my title");
+        final EntityInstance atodo = todo.createManagedInstance().setValue("title", "my title");
 
         Assertions.assertEquals(1, todo.countInstances());
 
@@ -290,7 +290,7 @@ public class JsonRequestResponseTest {
     @Test
     public void canPutToAmendAnItemWithJson() {
 
-        final ThingInstance atodo = todo.createManagedInstance().setValue("title", "my title");
+        final EntityInstance atodo = todo.createManagedInstance().setValue("title", "my title");
 
         Assertions.assertEquals(1, todo.countInstances());
 

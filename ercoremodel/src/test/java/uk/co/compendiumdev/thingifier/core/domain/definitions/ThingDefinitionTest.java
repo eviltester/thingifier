@@ -17,8 +17,8 @@ class ThingDefinitionTest {
 
     @Test
     void entityDefinitionCreation() {
-        ThingDefinition eDefn;
-        eDefn = new ThingDefinition("Requirement", "Requirements");
+        EntityDefinition eDefn;
+        eDefn = new EntityDefinition("Requirement", "Requirements");
 
         Assertions.assertEquals("Requirement", eDefn.getName());
         Assertions.assertEquals("Requirements", eDefn.getPlural());
@@ -31,8 +31,8 @@ class ThingDefinitionTest {
 
     @Test
     void addFieldToEntityDefinition() {
-        ThingDefinition eDefn;
-        eDefn = new ThingDefinition("Requirement", "Requirements");
+        EntityDefinition eDefn;
+        eDefn = new EntityDefinition("Requirement", "Requirements");
 
         eDefn.addField(Field.is("Title"));
 
@@ -50,8 +50,8 @@ class ThingDefinitionTest {
 
     @Test
     void addMultipleFieldsToEntityDefinition() {
-        ThingDefinition eDefn;
-        eDefn = new ThingDefinition("Requirement", "Requirements");
+        EntityDefinition eDefn;
+        eDefn = new EntityDefinition("Requirement", "Requirements");
 
         eDefn.addFields(Field.is("Title"), Field.is("Description"));
 
@@ -65,8 +65,8 @@ class ThingDefinitionTest {
 
     @Test
     void canGetFieldsOfType() {
-        ThingDefinition eDefn;
-        eDefn = new ThingDefinition("Requirement", "Requirements");
+        EntityDefinition eDefn;
+        eDefn = new EntityDefinition("Requirement", "Requirements");
 
         eDefn.addFields(Field.is("Title"),
                         Field.is("Description"));
@@ -90,7 +90,7 @@ class ThingDefinitionTest {
     @Test
     void fieldsOrderingIsTheOrderWhenDefined() {
 
-        ThingDefinition defn = new ThingDefinition("thing", "things");
+        EntityDefinition defn = new EntityDefinition("thing", "things");
 
         // add 19 fields
         for (int x = 1; x < 20; x++) {
@@ -116,8 +116,8 @@ class ThingDefinitionTest {
     @Test
     void canHaveNamedRelationshipBetweenThings() {
 
-        final ThingDefinition stress = new ThingDefinition("stress", "stress");
-        final ThingDefinition slack = new ThingDefinition("slack", "slack");
+        final EntityDefinition stress = new EntityDefinition("stress", "stress");
+        final EntityDefinition slack = new EntityDefinition("slack", "slack");
 
         final RelationshipVector vec =
                 new RelationshipVector(stress,
@@ -141,8 +141,8 @@ class ThingDefinitionTest {
 
     @Test
     void canInstantiateFieldDefinitions() {
-        ThingDefinition eDefn;
-        eDefn = new ThingDefinition("Requirement", "Requirements");
+        EntityDefinition eDefn;
+        eDefn = new EntityDefinition("Requirement", "Requirements");
 
         eDefn.addFields(Field.is("anId", FieldType.ID));
 
@@ -157,8 +157,8 @@ class ThingDefinitionTest {
 
     @Test
     void canIncreaseNextIds() {
-        ThingDefinition eDefn;
-        eDefn = new ThingDefinition("Requirement", "Requirements");
+        EntityDefinition eDefn;
+        eDefn = new EntityDefinition("Requirement", "Requirements");
 
         eDefn.addFields(Field.is("anId", FieldType.ID));
         eDefn.addFields(Field.is("anotherId", FieldType.ID));

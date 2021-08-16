@@ -1,11 +1,9 @@
 package uk.co.compendiumdev.thingifier.core.domain.instances;
 
-import uk.co.compendiumdev.thingifier.core.Thing;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVector;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import static uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.Optionality.MANDATORY_RELATIONSHIP;
@@ -13,12 +11,12 @@ import static uk.co.compendiumdev.thingifier.core.domain.definitions.relationshi
 public class RelationshipInstance {
 
     private RelationshipDefinition relationship;
-    private ThingInstance from;
-    private ThingInstance to;
+    private EntityInstance from;
+    private EntityInstance to;
 
     // todo: this should be a vector not a RelationshipDefinition because it represents a from / to
     // todo: rename to RelationshipVectorInstance
-    public RelationshipInstance(RelationshipDefinition relationship, ThingInstance from, ThingInstance to) {
+    public RelationshipInstance(RelationshipDefinition relationship, EntityInstance from, EntityInstance to) {
         this.from = from;
         this.to = to;
         this.relationship = relationship;
@@ -45,19 +43,19 @@ public class RelationshipInstance {
         return relationship;
     }
 
-    public ThingInstance getTo() {
+    public EntityInstance getTo() {
         return to;
     }
 
-    public ThingInstance getFrom() {
+    public EntityInstance getFrom() {
         return from;
     }
 
-    public boolean involves(final ThingInstance thing) {
+    public boolean involves(final EntityInstance thing) {
         return (to == thing || from == thing);
     }
 
-    public ThingInstance getOtherThingInstance(final ThingInstance forThis) {
+    public EntityInstance getOtherThingInstance(final EntityInstance forThis) {
         if (to == forThis) {
             return from;
         }
@@ -65,9 +63,9 @@ public class RelationshipInstance {
         return to;
     }
 
-    public List<ThingInstance> instancesSubjectToMandatoryRelationship() {
+    public List<EntityInstance> instancesSubjectToMandatoryRelationship() {
 
-        List<ThingInstance> deleteThese = new ArrayList<>();
+        List<EntityInstance> deleteThese = new ArrayList<>();
 
         final RelationshipVector fromVector = relationship.getFromRelationship();
 

@@ -1,9 +1,9 @@
 package uk.co.compendiumdev.thingifier.reporting;
 
-import uk.co.compendiumdev.thingifier.core.Thing;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipDefinition;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
 import java.util.Collection;
 
@@ -11,7 +11,7 @@ import java.util.Collection;
 public class ThingReporter {
 
     private Thingifier thingifier;
-    private Collection<Thing> things;
+    private Collection<EntityInstanceCollection> things;
     private Collection<RelationshipDefinition> relationships;
 
     public ThingReporter(Thingifier thingifier) {
@@ -26,7 +26,7 @@ public class ThingReporter {
         output.append("\nThings:\n");
         output.append("=======\n");
 
-        for (Thing aThing : things) {
+        for (EntityInstanceCollection aThing : things) {
             output.append(aThing.definition());
         }
 
@@ -41,11 +41,11 @@ public class ThingReporter {
         output.append("\nInstances\n");
         output.append("=========\n");
 
-        for (Thing aThing : things) {
+        for (EntityInstanceCollection aThing : things) {
 
             output.append("## Of " + aThing.definition().getName() + "\n");
 
-            for (ThingInstance anInstance : aThing.getInstances()) {
+            for (EntityInstance anInstance : aThing.getInstances()) {
                 output.append(anInstance);
             }
         }

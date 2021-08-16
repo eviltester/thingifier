@@ -1,14 +1,14 @@
 package uk.co.compendiumdev.thingifier.api.restapihandlers;
 
-import uk.co.compendiumdev.thingifier.core.Thing;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVector;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.ThingDefinition;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
 import java.util.List;
 import java.util.Map;
@@ -20,12 +20,12 @@ public class BodyRelationshipValidator {
         this.thingifier = thingifier;
     }
 
-    public ValidationReport validate(final BodyParser bodyargs, final Thing thing) {
-        final ThingDefinition thingDefinition = thing.definition();
+    public ValidationReport validate(final BodyParser bodyargs, final EntityInstanceCollection thing) {
+        final EntityDefinition thingDefinition = thing.definition();
         return validate(bodyargs, thingDefinition);
     }
 
-    public ValidationReport validate(final BodyParser bodyargs, final ThingDefinition thingDefinition) {
+    public ValidationReport validate(final BodyParser bodyargs, final EntityDefinition thingDefinition) {
         final ValidationReport report = new ValidationReport();
 
         List<Map.Entry<String,String>> fullargs = bodyargs.getFlattenedStringMap();
@@ -55,7 +55,7 @@ public class BodyRelationshipValidator {
     }
 
     private boolean validateCompressedRelationshipDefinition(
-            final ThingDefinition thingDefinition, final ValidationReport report,
+            final EntityDefinition thingDefinition, final ValidationReport report,
             final String complexKey, final String complexKeyValue) {
 
         String[] parts = complexKey.split("\\.");
@@ -82,12 +82,12 @@ public class BodyRelationshipValidator {
             return false;
         }
 
-        ThingInstance thingToRelateTo = thingifier.findThingInstanceByGuid(guidValue);
+        EntityInstance thingToRelateTo = thingifier.findThingInstanceByGuid(guidValue);
         // if we cannot find it by a guid then we need to identify the relationship type and find it by id for things
         if(thingToRelateTo==null) {
             final List<RelationshipVector> relationshipsNamed = thingDefinition.related().getRelationships(relationShipName);
             for(RelationshipVector vector : relationshipsNamed){
-                final Thing thingToRelationship = thingifier.getThingNamed(vector.getTo().getName());
+                final EntityInstanceCollection thingToRelationship = thingifier.getThingInstancesNamed(vector.getTo().getName());
                 thingToRelateTo = thingToRelationship.findInstanceByGUIDorID(guidValue);
                 if(thingToRelateTo!=null){
                     break;
@@ -116,8 +116,8 @@ public class BodyRelationshipValidator {
 
 
     private boolean validateComplexFourPartRelationshipDefinition(
-                    final ThingDefinition thingDefinition, final ValidationReport report,
-                    final String complexKey, final String complexKeyValue) {
+            final EntityDefinition thingDefinition, final ValidationReport report,
+            final String complexKey, final String complexKeyValue) {
         String[] parts = complexKey.split("\\.");
 
         if(parts.length!=4){
@@ -140,9 +140,10 @@ public class BodyRelationshipValidator {
             return false;
         }
 
+        // TODO: this is vulnerable to null pointer since getThingNamedSingularOrPlural might return null
         // check that the thing we want to relate with exists
         String uniqueId = complexKeyValue;
-        ThingInstance thingToRelateTo = thingifier.
+        EntityInstance thingToRelateTo = thingifier.
                 getThingNamedSingularOrPlural(relationshipToPart).findInstanceByGUID(uniqueId);
         if(thingToRelateTo==null){
             thingToRelateTo = thingifier.
@@ -161,7 +162,7 @@ public class BodyRelationshipValidator {
     }
 
 
-    private boolean isValidRelationship(final ThingDefinition thingDefinition,
+    private boolean isValidRelationship(final EntityDefinition thingDefinition,
                                         final String relationShipName,
                                         final ValidationReport report) {
         if(!thingDefinition.related().hasRelationship(relationShipName)){
@@ -177,7 +178,7 @@ public class BodyRelationshipValidator {
         report.addErrorMessage(String.format("%s is not a valid relationship",relationshipToMention));
     }
 
-    private boolean validRelationshipBetweenThings(final ThingDefinition thingDefinition,
+    private boolean validRelationshipBetweenThings(final EntityDefinition thingDefinition,
                                                    final String relationShipName,
                                                    final String thingToRelateTo,
                                                    final ValidationReport report) {

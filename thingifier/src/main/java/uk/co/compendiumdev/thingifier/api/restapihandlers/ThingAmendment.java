@@ -6,7 +6,7 @@ import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
 import java.util.List;
 import java.util.Map;
@@ -19,7 +19,7 @@ public class ThingAmendment {
         this.thingifier = thingifier;
     }
 
-    public ApiResponse amendInstance(final BodyParser bodyargs, final ThingInstance instance,
+    public ApiResponse amendInstance(final BodyParser bodyargs, final EntityInstance instance,
                                      final Boolean clearFieldsBeforeSettingFromArgs) {
 
         Map<String, String> args = bodyargs.getStringMap();
@@ -31,7 +31,7 @@ public class ThingAmendment {
             }
         }
 
-        ThingInstance cloned = null;
+        EntityInstance cloned = null;
 
         try {
 

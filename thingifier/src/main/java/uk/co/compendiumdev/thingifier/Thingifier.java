@@ -5,11 +5,11 @@ import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfigProfile;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfigProfiles;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
-import uk.co.compendiumdev.thingifier.core.Thing;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.core.domain.datapopulator.DataPopulator;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.*;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipDefinition;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.reporting.ThingReporter;
 
 import java.util.*;
@@ -54,49 +54,63 @@ final public class Thingifier {
 
     // THINGS
 
-    public Thing createThing(final String thingName, final String pluralName) {
-        return erm.createThing(thingName, pluralName);
+    // TODO: Why is this returning the 'collection of instances' since it is creating a definition
+    // TODO: this should really be called defineThing
+    public EntityInstanceCollection createThing(final String thingName, final String pluralName) {
+        erm.createEntityDefinition(thingName, pluralName);
+        return erm.getInstanceCollectionForEntityNamed(thingName);
     }
 
-    public List<Thing> getThings() {
-        return erm.getThings();
+    public List<EntityInstanceCollection> getThings() {
+        return erm.getAllEntityInstanceCollections();
     }
 
 
-    public ThingInstance findThingInstanceByGuid(final String thingGUID) {
-        return erm.findThingInstanceByGuid(thingGUID);
+    public EntityInstance findThingInstanceByGuid(final String thingGUID) {
+        return erm.findEntityInstanceByGuid(thingGUID);
     }
 
     public boolean hasThingNamed(final String aName) {
-        return erm.hasThingNamed(aName);
+        return erm.hasEntityNamed(aName);
     }
 
-    public Thing getThingNamed(final String aName) {
-        return erm.getThingNamed(aName);
+    public EntityInstanceCollection getThingInstancesNamed(final String aName) {
+        return erm.getInstanceCollectionForEntityNamed(aName);
     }
 
     public boolean hasThingWithPluralNamed(final String term) {
-        return erm.hasThingWithPluralNamed(term);
+        return erm.hasEntityWithPluralNamed(term);
     }
 
-    public Thing getThingWithPluralNamed(final String term) {
-        return erm.getThingWithPluralNamed(term);
+    public EntityInstanceCollection getThingWithPluralNamed(final String term) {
+        final EntityDefinition defn = erm.getSchema().getDefinitionWithPluralNamed(term);
+
+        if(defn!=null) {
+            return erm.getInstanceCollectionForEntityNamed(defn.getName());
+        }
+
+        return null;
     }
 
-    public Thing getThingNamedSingularOrPlural(final String term) {
-        return erm.getThingNamedSingularOrPlural(term);
+    public EntityInstanceCollection getThingNamedSingularOrPlural(final String term) {
+        final EntityDefinition defn = erm.getSchema().getDefinitionWithSingularOrPluralNamed(term);
+        if(defn!=null){
+            return erm.getInstanceCollectionForEntityNamed(defn.getName());
+        }
+
+        return null;
     }
 
     public void clearAllData() {
         erm.clearAllData();
     }
 
-    public void deleteThing(final ThingInstance aThingInstance) {
-        erm.deleteThing(aThingInstance);
+    public void deleteThing(final EntityInstance aThingInstance) {
+        erm.deleteEntityInstance(aThingInstance);
     }
 
     public List<String> getThingNames() {
-        return erm.getThingNames();
+        return erm.getEntityNames();
     }
 
     // data generation
@@ -116,9 +130,10 @@ final public class Thingifier {
         return erm.getRelationshipDefinitions();
     }
 
-    public RelationshipDefinition defineRelationship(Thing from, Thing to,
+    // TODO: why is this accepting collections, use the definitions
+    public RelationshipDefinition defineRelationship(EntityInstanceCollection from, EntityInstanceCollection to,
                                                      final String named, final Cardinality of) {
-        return erm.defineRelationship(from,to,named, of);
+        return erm.createRelationshipDefinition(from.definition(),to.definition(),named, of);
     }
 
     public boolean hasRelationshipNamed(final String relationshipName) {

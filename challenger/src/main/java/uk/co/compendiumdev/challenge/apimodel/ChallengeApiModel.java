@@ -1,6 +1,6 @@
 package uk.co.compendiumdev.challenge.apimodel;
 
-import uk.co.compendiumdev.thingifier.core.Thing;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
@@ -19,7 +19,7 @@ public class ChallengeApiModel {
 
         todoList.setDocumentation("Simple Todo List", para.toString());
 
-        Thing todo = todoList.createThing("todo", "todos");
+        EntityInstanceCollection todo = todoList.createThing("todo", "todos");
 
         todo.definition()
                 .addFields(

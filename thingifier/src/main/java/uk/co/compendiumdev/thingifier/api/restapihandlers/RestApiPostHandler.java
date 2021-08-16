@@ -1,13 +1,13 @@
 package uk.co.compendiumdev.thingifier.api.restapihandlers;
 
-import uk.co.compendiumdev.thingifier.core.Thing;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.api.restapihandlers.commonerrorresponse.NoSuchEntity;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.query.SimpleQuery;
 
 import java.util.List;
@@ -27,7 +27,7 @@ public class RestApiPostHandler {
          */
         // if queryis empty then need a way to check if the query matched
         // create a thing
-        Thing thing = thingifier.getThingNamedSingularOrPlural(url);
+        EntityInstanceCollection thing = thingifier.getThingNamedSingularOrPlural(url);
         if (thing != null) {
             // create a new thing does not enforce relationships
             // TODO: validate before creation so as to only delete in an 'emergency' not as default
@@ -36,7 +36,7 @@ public class RestApiPostHandler {
                 return response;
             }
 
-            ThingInstance returnedInstance = response.getReturnedInstance();
+            EntityInstance returnedInstance = response.getReturnedInstance();
             final List<String> protectedFieldNames = returnedInstance.getEntity().getFieldNamesOfType(FieldType.ID, FieldType.GUID);
             ValidationReport validity = returnedInstance.validateFieldValues(protectedFieldNames, false);
             validity.combine(returnedInstance.validateRelationships());
@@ -70,7 +70,7 @@ public class RestApiPostHandler {
 
             String instanceGuid = urlParts[1];
 
-            ThingInstance instance = thing.findInstanceByGUIDorID(instanceGuid);
+            EntityInstance instance = thing.findInstanceByGUIDorID(instanceGuid);
 
             if (instance == null) {
                 // cannot amend something that does not exist
@@ -96,7 +96,7 @@ public class RestApiPostHandler {
     }
 
 
-    private ApiResponse amendAThingWithPost(BodyParser args, ThingInstance instance) {
+    private ApiResponse amendAThingWithPost(BodyParser args, EntityInstance instance) {
         // with a post we do not want to clear fields before setting - we only amend what we pass in
         return new ThingAmendment(thingifier).amendInstance(args, instance, false);
     }

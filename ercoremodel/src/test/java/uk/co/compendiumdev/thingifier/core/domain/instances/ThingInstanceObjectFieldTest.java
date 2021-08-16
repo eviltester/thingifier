@@ -4,20 +4,20 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.ThingDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.validation.VRule;
 
 public class ThingInstanceObjectFieldTest {
 
-    ThingDefinition defn;
-    ThingInstance instance;
+    EntityDefinition defn;
+    EntityInstance instance;
 
     @BeforeEach
     public void createThingWithNestedObjectField(){
 
-        defn = new ThingDefinition("thing", "things");
+        defn = new EntityDefinition("thing", "things");
 
         defn.addField(Field.is("person", FieldType.OBJECT)
                 .withField(
@@ -28,7 +28,7 @@ public class ThingInstanceObjectFieldTest {
                         ));
 
 
-        instance = new ThingInstance(defn);
+        instance = new EntityInstance(defn);
         instance.setValue("person.firstname", "Connie");
         instance.setValue("person.surname", "Dobbs");
     }
@@ -50,7 +50,7 @@ public class ThingInstanceObjectFieldTest {
                 getObjectDefinition().
                 getField("surname").makeMandatory();
 
-        instance = new ThingInstance(defn);
+        instance = new EntityInstance(defn);
         instance.setValue("person.firstname", "Eris");
 
         final ValidationReport validation = instance.validate();
@@ -67,7 +67,7 @@ public class ThingInstanceObjectFieldTest {
                 getField("surname").makeMandatory().
                 withValidation(VRule.notEmpty());
 
-        instance = new ThingInstance(defn);
+        instance = new EntityInstance(defn);
         instance.setValue("person.firstname", "Eris");
 
         // bypass set validation rules and see if validation picks it up
@@ -86,7 +86,7 @@ public class ThingInstanceObjectFieldTest {
                 getField("surname").
                 withValidation(VRule.notEmpty());
 
-        instance = new ThingInstance(defn);
+        instance = new EntityInstance(defn);
         instance.setValue("person.firstname", "Eris");
 
         final IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class,

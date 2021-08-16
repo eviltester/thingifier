@@ -4,10 +4,11 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
-import uk.co.compendiumdev.thingifier.core.Thing;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.Cardinality;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
 import java.util.List;
 
@@ -16,55 +17,50 @@ import static uk.co.compendiumdev.thingifier.core.domain.definitions.field.defin
 public class TodoManagerQueryEngineTest {
 
     private EntityRelModel todoManager;
-    ThingInstance paperwork;
-    ThingInstance filework;
-    Thing project;
-    ThingInstance officeCategory;
+    EntityInstance paperwork;
+    EntityInstance filework;
+    EntityInstanceCollection projects;
+    EntityInstance officeCategory;
+    private EntityDefinition project;
 
     // todo: simplify setup and move this test into core
     @BeforeEach
     public void createDefinitions(){
 
         todoManager = new EntityRelModel();
-        Thing todo = todoManager.createThing("todo", "todos");
+        final EntityDefinition todo = todoManager.createEntityDefinition("todo", "todos").
+                addFields(Field.is("title", STRING));
 
-        todo.definition()
-                .addFields( Field.is("title", STRING)
-                )
-        ;
-
-
-        project = todoManager.createThing("project", "projects");
-
-        project.definition()
+        project = todoManager.createEntityDefinition("project", "projects")
                 .addFields(
                         Field.is("title", STRING));
 
 
-        Thing category = todoManager.createThing("category", "categories");
-
-        category.definition()
+        final EntityDefinition category = todoManager.createEntityDefinition("category", "categories")
                 .addFields(
                         Field.is("title", STRING));
 
-        todoManager.defineRelationship(project, todo, "tasks", Cardinality.ONE_TO_MANY).
+        todoManager.createRelationshipDefinition(project, todo, "tasks", Cardinality.ONE_TO_MANY).
                 whenReversed(Cardinality.ONE_TO_MANY,"task-of");
 
-        todoManager.defineRelationship(project, category, "categories", Cardinality.ONE_TO_MANY);
-        todoManager.defineRelationship(category, todo, "todos", Cardinality.ONE_TO_MANY);
-        todoManager.defineRelationship(category, project, "projects", Cardinality.ONE_TO_MANY);
-        todoManager.defineRelationship(todo, category, "categories", Cardinality.ONE_TO_MANY);
+        todoManager.createRelationshipDefinition(project, category, "categories", Cardinality.ONE_TO_MANY);
+        todoManager.createRelationshipDefinition(category, todo, "todos", Cardinality.ONE_TO_MANY);
+        todoManager.createRelationshipDefinition(category, project, "projects", Cardinality.ONE_TO_MANY);
+        todoManager.createRelationshipDefinition(todo, category, "categories", Cardinality.ONE_TO_MANY);
 
+        final EntityInstanceCollection todos = todoManager.getInstanceCollectionForEntityNamed("todo");
+        final EntityInstanceCollection categories = todoManager.getInstanceCollectionForEntityNamed("category");
+        projects = todoManager.getInstanceCollectionForEntityNamed("project");
 
-        paperwork = todo.createManagedInstance().setValue("title", "scan paperwork");
+        paperwork = todos.createManagedInstance().setValue("title", "scan paperwork");
 
         //System.out.println(new Gson().toJson(JsonThing.asJsonObject(paperwork)));
 
-        filework = todo.createManagedInstance().setValue("title", "file paperwork");
+        filework = todos.createManagedInstance().setValue("title", "file paperwork");
 
-        officeCategory = category.createManagedInstance().setValue("title", "Office");
+        officeCategory = categories.createManagedInstance().setValue("title", "Office");
 
-        ThingInstance homeCategory = category.createManagedInstance().setValue("title", "Home");
+        EntityInstance homeCategory = categories.createManagedInstance().setValue("title", "Home");
 
 
         paperwork.getRelationships().connect("categories", officeCategory);
@@ -82,7 +78,7 @@ public class TodoManagerQueryEngineTest {
 
         final SimpleQuery query = new SimpleQuery(todoManager, "todo");
 
-        List<ThingInstance> queryResults = query.performQuery().getListThingInstance();
+        List<EntityInstance> queryResults = query.performQuery().getListEntityInstances();
 
         Assertions.assertTrue(query.isResultACollection());
 
@@ -97,7 +93,7 @@ public class TodoManagerQueryEngineTest {
         // todos
         final SimpleQuery query = new SimpleQuery(todoManager, "todos");
 
-        List<ThingInstance> queryResults = query.performQuery().getListThingInstance();
+        List<EntityInstance> queryResults = query.performQuery().getListEntityInstances();
 
         Assertions.assertTrue(query.isResultACollection());
 
@@ -109,13 +105,13 @@ public class TodoManagerQueryEngineTest {
     @Test
     public void canGetSpecificEntityInstanceUsingGUID(){
 
-        List<ThingInstance> queryResults;
+        List<EntityInstance> queryResults;
 
         // to do/_GUID_
 
         final SimpleQuery query = new SimpleQuery(todoManager, "todo/" + paperwork.getGUID());
 
-        queryResults = query.performQuery().getListThingInstance();
+        queryResults = query.performQuery().getListEntityInstances();
 
         Assertions.assertFalse(query.isResultACollection()); // it can still be returned as a collection but is valid to return as a single
 
@@ -128,13 +124,13 @@ public class TodoManagerQueryEngineTest {
     @Test
     public void canGetSpecificEntityInstanceUsingGUIDOnPlural(){
 
-        List<ThingInstance> queryResults;
+        List<EntityInstance> queryResults;
 
         // to do/_GUID_
 
         final SimpleQuery query = new SimpleQuery(todoManager, "todos/" + paperwork.getGUID());
 
-        queryResults = query.performQuery().getListThingInstance();
+        queryResults = query.performQuery().getListEntityInstances();
 
         Assertions.assertTrue(query.isResultACollection()); // plural should always report itself as a collection even on instance
 
@@ -148,17 +144,17 @@ public class TodoManagerQueryEngineTest {
     @Test
     public void cannotGetGuidThatDoesNotExist(){
 
-        List<ThingInstance> queryResults;
+        List<EntityInstance> queryResults;
 
         // to do/_GUID_
 
         final SimpleQuery query = new SimpleQuery(todoManager, "todo/" + paperwork.getGUID() + "bob");
 
-        queryResults = query.performQuery().getListThingInstance();
+        queryResults = query.performQuery().getListEntityInstances();
 
         // even though it doesn not match anything I should know what type of thing this empty collection is
         Assertions.assertTrue(query.isResultACollection());
-        Assertions.assertEquals(todoManager.getThingNamed("todo").definition(), query.resultContainsDefn());
+        Assertions.assertEquals(todoManager.getInstanceCollectionForEntityNamed("todo").definition(), query.resultContainsDefn());
 
         Assertions.assertEquals(0, queryResults.size());
     }
@@ -166,17 +162,17 @@ public class TodoManagerQueryEngineTest {
     @Test
     public void cannotGetGuidThatDoesNotExistWithPlural(){
 
-        List<ThingInstance> queryResults;
+        List<EntityInstance> queryResults;
 
         // to do/_GUID_
 
         final SimpleQuery query = new SimpleQuery(todoManager, "todos/" + paperwork.getGUID() + "bob");
 
-        queryResults = query.performQuery().getListThingInstance();
+        queryResults = query.performQuery().getListEntityInstances();
 
         // even though it doesn not match anything I should know what type of thing this empty collection is
         Assertions.assertTrue(query.isResultACollection());
-        Assertions.assertEquals(todoManager.getThingNamed("todo").definition(), query.resultContainsDefn());
+        Assertions.assertEquals(todoManager.getInstanceCollectionForEntityNamed("todo").definition(), query.resultContainsDefn());
 
         Assertions.assertEquals(0, queryResults.size());
 
@@ -190,10 +186,10 @@ public class TodoManagerQueryEngineTest {
 
         // stuff we could get for free from backend
 
-        List<ThingInstance> queryResults;
+        List<EntityInstance> queryResults;
 
         //
-        ThingInstance officeWork = project.createManagedInstance().setValue("title", "Office Work");
+        EntityInstance officeWork = projects.createManagedInstance().setValue("title", "Office Work");
 
         officeWork.getRelationships().connect("tasks", paperwork);
         officeWork.getRelationships().connect("tasks", filework);
@@ -202,7 +198,7 @@ public class TodoManagerQueryEngineTest {
         // match on relationships
         // project/_GUID_/tasks
 
-        queryResults = new SimpleQuery(todoManager, String.format("project/%s/tasks", officeWork.getGUID())).performQuery().getListThingInstance();
+        queryResults = new SimpleQuery(todoManager, String.format("project/%s/tasks", officeWork.getGUID())).performQuery().getListEntityInstances();
 
         Assertions.assertEquals(2, queryResults.size());
         Assertions.assertTrue(queryResults.contains(paperwork));
@@ -211,7 +207,7 @@ public class TodoManagerQueryEngineTest {
 
         // should be able to get projects for a task
 
-        queryResults = new SimpleQuery(todoManager, String.format("todo/%s/task-of", paperwork.getGUID())).performQuery().getListThingInstance();
+        queryResults = new SimpleQuery(todoManager, String.format("todo/%s/task-of", paperwork.getGUID())).performQuery().getListEntityInstances();
         Assertions.assertEquals(1, queryResults.size());
         Assertions.assertTrue(queryResults.contains(officeWork));
 
@@ -219,7 +215,7 @@ public class TodoManagerQueryEngineTest {
         // match on entity types
         // project/_GUID_/to do
 
-        queryResults = new SimpleQuery(todoManager, String.format("project/%s/todo", officeWork.getGUID())).performQuery().getListThingInstance();
+        queryResults = new SimpleQuery(todoManager, String.format("project/%s/todo", officeWork.getGUID())).performQuery().getListEntityInstances();
 
         Assertions.assertEquals(2, queryResults.size());
         Assertions.assertTrue(queryResults.contains(paperwork));
@@ -227,7 +223,7 @@ public class TodoManagerQueryEngineTest {
 
         // project/_GUID_/to do/category
 
-        queryResults = new SimpleQuery(todoManager, String.format("project/%s/todo/category", officeWork.getGUID())).performQuery().getListThingInstance();
+        queryResults = new SimpleQuery(todoManager, String.format("project/%s/todo/category", officeWork.getGUID())).performQuery().getListEntityInstances();
 
         Assertions.assertEquals(1, queryResults.size());
         Assertions.assertTrue(queryResults.contains(officeCategory));
@@ -235,7 +231,7 @@ public class TodoManagerQueryEngineTest {
         // invalid query should match nothing there is no entity called task
         // project/_GUID_/task
 
-        queryResults = new SimpleQuery(todoManager, String.format("project/%s/task", officeWork.getGUID())).performQuery().getListThingInstance();
+        queryResults = new SimpleQuery(todoManager, String.format("project/%s/task", officeWork.getGUID())).performQuery().getListEntityInstances();
 
         Assertions.assertEquals(0, queryResults.size());
 

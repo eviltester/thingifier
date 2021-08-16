@@ -1,34 +1,33 @@
 package uk.co.compendiumdev.thingifier.application.data;
 
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
-import uk.co.compendiumdev.thingifier.core.Thing;
-import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.core.domain.datapopulator.DataPopulator;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
 public class TodoManagerAPIDataPopulator implements DataPopulator {
     @Override
     public void populate(final EntityRelModel erm) {
 
-        Thing todo = erm.getThingNamed("todo");
-        ThingInstance paperwork = todo.createManagedInstance().
+        EntityInstanceCollection todo = erm.getInstanceCollectionForEntityNamed("todo");
+        EntityInstance paperwork = todo.createManagedInstance().
                 setValue("title", "scan paperwork");
 
-        ThingInstance filework = todo.createManagedInstance().
+        EntityInstance filework = todo.createManagedInstance().
                 setValue("title", "file paperwork");
 
-        Thing category = erm.getThingNamed("category");
+        EntityInstanceCollection category = erm.getInstanceCollectionForEntityNamed("category");
 
-        ThingInstance officeCategory = category.createManagedInstance().
+        EntityInstance officeCategory = category.createManagedInstance().
                 setValue("title", "Office");
 
 
-        ThingInstance homeCategory = category.createManagedInstance().
+        EntityInstance homeCategory = category.createManagedInstance().
                 setValue("title", "Home");
 
-        Thing project = erm.getThingNamed("project");
+        EntityInstanceCollection project = erm.getInstanceCollectionForEntityNamed("project");
 
-        ThingInstance officeWork = project.createManagedInstance().
+        EntityInstance officeWork = project.createManagedInstance().
                 setValue("title", "Office Work");
 
         officeWork.getRelationships().connect("tasks", paperwork);

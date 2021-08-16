@@ -1,8 +1,8 @@
 package uk.co.compendiumdev.thingifier.api.response;
 
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.xml.StringToXML;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.ThingDefinition;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.reporting.JsonThing;
 import uk.co.compendiumdev.thingifier.reporting.XmlThing;
 
@@ -33,12 +33,12 @@ final public class ApiResponseAsXml {
         if (apiResponse.isCollection()) {
 
 
-            List<ThingInstance> thingsToReturn = apiResponse.getReturnedInstanceCollection();
+            List<EntityInstance> thingsToReturn = apiResponse.getReturnedInstanceCollection();
 
             if (thingsToReturn.size() == 0) {
                 // when an XML response is asked for, but the collection is empty then we don't know what to return and {}
                 // would be returned but- ApiResponse should know the Thing that is in the collection
-                ThingDefinition defn = apiResponse.getTypeOfThingReturned();
+                EntityDefinition defn = apiResponse.getTypeOfThingReturned();
                 if (defn != null) {
                     return StringToXML.getEmptyElement(defn.getPlural());
                 } else {
@@ -68,7 +68,7 @@ final public class ApiResponseAsXml {
 
             return output;
         } else {
-            ThingInstance instance = apiResponse.getReturnedInstance();
+            EntityInstance instance = apiResponse.getReturnedInstance();
 
             String output = "";
 

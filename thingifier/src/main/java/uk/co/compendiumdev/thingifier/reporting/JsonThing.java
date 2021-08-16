@@ -8,9 +8,9 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.F
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVector;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.ThingDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.InstanceFields;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ThingInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
 import java.util.*;
 
@@ -29,7 +29,7 @@ public class JsonThing {
      * @param typeName
      * @return
      */
-    public String asJsonTypedArrayWithContentsUntyped(final List<ThingInstance> things, String typeName) {
+    public String asJsonTypedArrayWithContentsUntyped(final List<EntityInstance> things, String typeName) {
         final JsonObject arrayObj = new JsonObject();
         arrayObj.add(typeName, asJsonArray(things));
         return arrayObj.toString();
@@ -40,13 +40,13 @@ public class JsonThing {
      * @param things
      * @return
      */
-    private JsonArray asJsonArray(final Collection<ThingInstance> things) {
+    private JsonArray asJsonArray(final Collection<EntityInstance> things) {
 
         // [{"guid":"bob"}, {"guid":"bob2"}]
 
         final JsonArray jsonArray = new JsonArray();
 
-        for (ThingInstance thing : things) {
+        for (EntityInstance thing : things) {
             jsonArray.add(asJsonObject(thing));
         }
 
@@ -126,7 +126,7 @@ public class JsonThing {
      * @param thingInstance
      * @return
      */
-    public JsonObject asJsonObject(final ThingInstance thingInstance) {
+    public JsonObject asJsonObject(final EntityInstance thingInstance) {
 
         // todo: I swallowed exception generation in here because I was passing in the 'input' representations
         // for the report generation - perhaps the reporting instances should have reporting entities which
@@ -171,7 +171,7 @@ public class JsonThing {
 
             // fill the array "relationship_name" : [
             for(RelationshipVector relationship : relationships){
-                final Collection<ThingInstance> relatedItems = thingInstance.getRelationships().getConnectedItems(relationship.getName());
+                final Collection<EntityInstance> relatedItems = thingInstance.getRelationships().getConnectedItems(relationship.getName());
 
                 boolean isCompressedRelationship=true;
                 if(thingInstance.getEntity().hasFieldNameDefined(relationship.getName())){
@@ -184,7 +184,7 @@ public class JsonThing {
                     // for each thing related to
                     //"typeofthingsplural": [
                     final JsonArray arrayOfGuids = new JsonArray();
-                    for(ThingInstance item : relatedItems) {
+                    for(EntityInstance item : relatedItems) {
                         final JsonObject itemGuidObject = new JsonObject();
 
                         // todo: warning - we allow multiple guid fields - hardcoding name will not be future proof
@@ -244,7 +244,7 @@ public class JsonThing {
      * @param defn
      * @return
      */
-    public String asJsonTypedArrayWithContentsTyped(final List<ThingInstance> things, ThingDefinition defn) {
+    public String asJsonTypedArrayWithContentsTyped(final List<EntityInstance> things, EntityDefinition defn) {
 
         final JsonObject arrayObj = new JsonObject();
         arrayObj.add(defn.getPlural(), asJsonArrayInstanceWrapped(things));
@@ -257,14 +257,14 @@ public class JsonThing {
      * @param things
      * @return
      */
-    private JsonArray asJsonArrayInstanceWrapped(Collection<ThingInstance> things) {
+    private JsonArray asJsonArrayInstanceWrapped(Collection<EntityInstance> things) {
 
 
         // [{"item":{"guid":"bob"}}, {"item":{"guid":"bob2"}}]
 
         final JsonArray jsonArray = new JsonArray();
 
-        for (ThingInstance thing : things) {
+        for (EntityInstance thing : things) {
 
             JsonObject jsonObj = new JsonObject();
             jsonObj.add(thing.getEntity().getName(), asJsonObject(thing));
@@ -282,7 +282,7 @@ public class JsonThing {
     /**
      *   Suitable for XML output as it has a name
      */
-    public JsonObject asNamedJsonObject(final ThingInstance instance) {
+    public JsonObject asNamedJsonObject(final EntityInstance instance) {
 
         final JsonObject retObj = new JsonObject();
         retObj.add(instance.getEntity().getName(), asJsonObject(instance));
