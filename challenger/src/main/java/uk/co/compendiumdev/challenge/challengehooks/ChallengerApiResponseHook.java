@@ -208,7 +208,7 @@ public class ChallengerApiResponseHook implements HttpApiResponseHook {
         if(request.getVerb() == HttpApiRequest.VERB.DELETE &&
                 request.getPath().matches("todos/.*") &&
                 response.getStatusCode()==200 &&
-                thingifier.getThingWithPluralNamed("todos").countInstances()==0){
+                thingifier.getThingInstancesNamed("todo").countInstances()==0){
             challengers.pass(challenger,CHALLENGE.DELETE_ALL_TODOS);
         }
 

@@ -82,17 +82,14 @@ final public class Thingifier {
         return erm.hasEntityWithPluralNamed(term);
     }
 
-    public EntityInstanceCollection getThingWithPluralNamed(final String term) {
-        final EntityDefinition defn = erm.getSchema().getDefinitionWithPluralNamed(term);
-
-        if(defn!=null) {
-            return erm.getInstanceCollectionForEntityNamed(defn.getName());
-        }
-
-        return null;
+    public EntityDefinition getDefinitionNamed(final String term) {
+        return erm.getSchema().getEntityDefinitionNamed(term);
+    }
+    public EntityDefinition getDefinitionWithPluralNamed(final String term) {
+        return erm.getSchema().getDefinitionWithPluralNamed(term);
     }
 
-    public EntityInstanceCollection getThingNamedSingularOrPlural(final String term) {
+    public EntityInstanceCollection getInstancesForSingularOrPluralNamedEntity(final String term) {
         final EntityDefinition defn = erm.getSchema().getDefinitionWithSingularOrPluralNamed(term);
         if(defn!=null){
             return erm.getInstanceCollectionForEntityNamed(defn.getName());

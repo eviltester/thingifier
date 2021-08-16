@@ -73,6 +73,10 @@ public class EntityRelModel {
         return schema.getDefinitionWithPluralNamed(term);
     }
 
+    public EntityDefinition getEntityDefinitionNamed(final String term){
+        return schema.getEntityDefinitionNamed(term);
+    }
+
     // Instance Methods
 
     public List<EntityInstanceCollection> getAllEntityInstanceCollections() {

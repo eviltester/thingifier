@@ -17,7 +17,7 @@ public class RestApiDeleteHandler {
 
     public ApiResponse handle(final String url) {
         // this should probably not delete root items
-        EntityInstanceCollection thing = thingifier.getThingNamedSingularOrPlural(url);
+        EntityInstanceCollection thing = thingifier.getInstancesForSingularOrPluralNamedEntity(url);
         if (thing != null) {
             // can't delete root level with a DELETE
             return ApiResponse.error(405, "Cannot delete root level entity");

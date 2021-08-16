@@ -140,17 +140,27 @@ public class BodyRelationshipValidator {
             return false;
         }
 
-        // TODO: this is vulnerable to null pointer since getThingNamedSingularOrPlural might return null
         // check that the thing we want to relate with exists
         String uniqueId = complexKeyValue;
-        EntityInstance thingToRelateTo = thingifier.
-                getThingNamedSingularOrPlural(relationshipToPart).findInstanceByGUID(uniqueId);
-        if(thingToRelateTo==null){
-            thingToRelateTo = thingifier.
-                    getThingNamedSingularOrPlural(relationshipToPart).
-                        findInstanceByField(
-                            FieldValue.is(relationshipFieldPart, uniqueId));
+        EntityInstance thingToRelateTo = null;
+
+        EntityInstanceCollection things = thingifier.
+                getInstancesForSingularOrPluralNamedEntity(relationshipToPart);
+
+        if(things!=null){
+            thingToRelateTo = things.findInstanceByGUID(uniqueId);
         }
+
+        // haven't found it yet
+        if(thingToRelateTo==null){
+            things = thingifier.getInstancesForSingularOrPluralNamedEntity(relationshipToPart);
+
+            if(things!=null) {
+                thingToRelateTo = things.findInstanceByField(
+                                        FieldValue.is(relationshipFieldPart, uniqueId));
+            }
+        }
+
         if(thingToRelateTo==null){
             report.addErrorMessage(
                     String.format("cannot find %s of %s to relate to with %s %s",

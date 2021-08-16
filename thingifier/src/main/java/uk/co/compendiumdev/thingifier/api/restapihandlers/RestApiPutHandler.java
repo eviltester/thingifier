@@ -17,7 +17,7 @@ public class RestApiPutHandler {
     public ApiResponse handle(final String url, final BodyParser args) {
         // if queryis empty then need a way to check if the query matched
         // create a thing
-        EntityInstanceCollection thing = thingifier.getThingNamedSingularOrPlural(url);
+        EntityInstanceCollection thing = thingifier.getInstancesForSingularOrPluralNamedEntity(url);
         if (thing != null) {
             // can't create a new thing at root level with PUT
             return ApiResponse.error(405, "Cannot create root level entity with a PUT");
@@ -33,7 +33,7 @@ public class RestApiPutHandler {
         }
 
         String thingName = urlParts[0];
-        thing = thingifier.getThingNamedSingularOrPlural(thingName);
+        thing = thingifier.getInstancesForSingularOrPluralNamedEntity(thingName);
 
         if (thing == null) {
             // this is not a URL for thing/guid

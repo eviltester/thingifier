@@ -27,7 +27,7 @@ public class RestApiPostHandler {
          */
         // if queryis empty then need a way to check if the query matched
         // create a thing
-        EntityInstanceCollection thing = thingifier.getThingNamedSingularOrPlural(url);
+        EntityInstanceCollection thing = thingifier.getInstancesForSingularOrPluralNamedEntity(url);
         if (thing != null) {
             // create a new thing does not enforce relationships
             // TODO: validate before creation so as to only delete in an 'emergency' not as default
@@ -59,7 +59,7 @@ public class RestApiPostHandler {
         if (urlParts.length == 2) {
 
             String thingName = urlParts[0];
-            thing = thingifier.getThingNamedSingularOrPlural(thingName);
+            thing = thingifier.getInstancesForSingularOrPluralNamedEntity(thingName);
 
             if (thing == null) {
                 // this is not a URL for thing/guid

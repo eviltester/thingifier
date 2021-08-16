@@ -20,7 +20,9 @@ public class RelationshipCreator {
         try {
             List<RelationshipDetails> relationships = getRelationshipsFromArgs(bodyargs, instance);
             for (RelationshipDetails relationship : relationships) {
-                instance.getRelationships().connect(relationship.relationshipName, thingifier.getThingNamedSingularOrPlural(relationship.toType).
+                instance.getRelationships().connect(
+                        relationship.relationshipName,
+                            thingifier.getInstancesForSingularOrPluralNamedEntity(relationship.toType).
                                         findInstanceByField(
                                                 FieldValue.is(relationship.guidName, relationship.guidValue)));
             }

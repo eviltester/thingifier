@@ -57,9 +57,6 @@ public class ERSchema {
         return false;
     }
 
-    public boolean hasEntityNamed(final String aName) {
-        return thingDefinitions.containsKey(aName);
-    }
 
     public List<String> getEntityNames() {
         List<String> names = new ArrayList();
@@ -67,9 +64,19 @@ public class ERSchema {
         return names;
     }
 
+    public boolean hasEntityNamed(final String aName) {
+        return thingDefinitions.containsKey(aName);
+    }
 
     public boolean hasEntityWithPluralNamed(final String term) {
         return getDefinitionWithPluralNamed(term)!=null;
+    }
+
+    public EntityDefinition getEntityDefinitionNamed(final String term) {
+        if(thingDefinitions.containsKey(term)){
+            return thingDefinitions.get(term);
+        }
+        return null;
     }
 
     public EntityDefinition getDefinitionWithPluralNamed(final String term) {
@@ -82,11 +89,14 @@ public class ERSchema {
     }
 
     public EntityDefinition getDefinitionWithSingularOrPluralNamed(final String term) {
-        if(thingDefinitions.containsKey(term)){
-            return thingDefinitions.get(term);
+        final EntityDefinition defn = getEntityDefinitionNamed(term);
+        if(defn!=null){
+            return defn;
         }
 
         // look for plural
         return getDefinitionWithPluralNamed(term);
     }
+
+
 }
