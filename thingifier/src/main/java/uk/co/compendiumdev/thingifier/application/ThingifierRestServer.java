@@ -17,6 +17,7 @@ import uk.co.compendiumdev.thingifier.application.sparkhttpmessageHooks.Internal
 import uk.co.compendiumdev.thingifier.application.sparkhttpmessageHooks.SparkRequestResponseHook;
 import uk.co.compendiumdev.thingifier.htmlgui.DefaultGUIHTML;
 import uk.co.compendiumdev.thingifier.htmlgui.RestApiDocumentationGenerator;
+import uk.co.compendiumdev.thingifier.spark.SimpleRouteConfig;
 import uk.co.compendiumdev.thingifier.swaggerizer.Swaggerizer;
 
 import java.net.MalformedURLException;
@@ -40,7 +41,6 @@ public class ThingifierRestServer {
 
 
     // todo : we should be able to configure the API routing for authorisation and support logging
-    // todo: we should split the REST and Documentation stuff out and have thingifier as a core non-http set of libraries
 
 
     public ThingifierRestServer(final String path,
@@ -135,7 +135,9 @@ public class ThingifierRestServer {
         ApiRoutingDefinition routingDefinitions = new ApiRoutingDefinitionGenerator(thingifier).generate();
 
 
+        // TODO: config to enable docs and configure the URL
         // / - default for documentation
+        // TODO: move into htmlgui package
         get("/docs", (request, response) -> {
             response.type("text/html");
             response.status(200);
@@ -143,6 +145,10 @@ public class ThingifierRestServer {
                     getApiDocumentation(routingDefinitions, apiDefn.getAdditionalRoutes(), this.urlPath);
         });
 
+        guiManagement.appendMenuItem("API documentation","/docs");
+
+        // TODO: api config to enable swagger and configure the URL
+        // TODO: move into swagger package
         // now that we have an api definition we should be able to generate swagger
         get("/docs/swagger", (request, response) -> {
             response.type("text/html");
@@ -160,8 +166,6 @@ public class ThingifierRestServer {
             return new Swaggerizer(apiDefn).asJson();
         });
 
-
-        guiManagement.appendMenuItem("API documentation","/docs");
 
 
         for (RoutingDefinition defn : routingDefinitions.definitions()) {
@@ -267,34 +271,9 @@ public class ThingifierRestServer {
 
         // TODO : allow this to be overwritten by config
         // nothing else is supported
-        head("*", (request, response) -> {
-            response.status(404);
-            return "";
-        });
-        get("*", (request, response) -> {
-            response.status(404);
-            return "";
-        });
-        options("*", (request, response) -> {
-            response.status(404);
-            return "";
-        });
-        put("*", (request, response) -> {
-            response.status(404);
-            return "";
-        });
-        post("*", (request, response) -> {
-            response.status(404);
-            return "";
-        });
-        patch("*", (request, response) -> {
-            response.status(404);
-            return "";
-        });
-        delete("*", (request, response) -> {
-            response.status(404);
-            return "";
-        });
+        SimpleRouteConfig.routeStatus(404, "*",
+                                        "head","get", "options",
+                                        "put", "post", "patch", "delete");
 
         exception(RuntimeException.class, (e, request, response) -> {
             response.status(400);

@@ -13,6 +13,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+// TODO: this is automatically generating documentation, rename this to ApiDocumentationGenerator
+// TODO: in fact,  think the routings package is actually the 'documentation' package
 public class ApiRoutingDefinitionGenerator {
 
 
