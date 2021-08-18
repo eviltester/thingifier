@@ -35,7 +35,12 @@ public class RestApiGetHandler {
             queryResults = new SimpleQuery(thingifier.getERmodel(), url).performQuery();
         }
 
+        // TODO: we should support pagination through query params
+        // TODO: we should be able to sort using query params
+        // TODO: api config should also support defining sorting for specific end points
+        // e.g. ?sort_by=+id   or ?sort_by=-status  etc.
         List<EntityInstance> queryItems = queryResults.getListEntityInstances();
+
 
         // return a 404 if it doesn't match anything
         if (queryResults.lastMatchWasNothing() ||

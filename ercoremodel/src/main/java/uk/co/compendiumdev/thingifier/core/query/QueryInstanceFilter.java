@@ -3,6 +3,8 @@ package uk.co.compendiumdev.thingifier.core.query;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class QueryInstanceFilter {
@@ -28,5 +30,43 @@ public class QueryInstanceFilter {
         }
 
         return true;
+    }
+
+    public class SortByFieldName{
+        int order=1;
+        String fieldName="";
+    }
+
+    /*
+        return all the sortBy values
+        currently sortBy=-FieldName or sortBy=+FieldName or sortBy=FieldName
+        or sort_by=etc.
+
+        TODO: handle multiple sort fields e.g. sortBy=-FieldName1,+FieldName2
+     */
+    public List<SortByFieldName> sortBys(){
+        List<SortByFieldName>sortbys = new ArrayList<>();
+        for(Map.Entry<String,String> field : params.entrySet()){
+            if(field.getKey().equalsIgnoreCase("sortby") ||
+                    field.getKey().equalsIgnoreCase("sort_by") ){
+                final SortByFieldName aSortBy = new SortByFieldName();
+                String sortByValue = field.getValue();
+                switch (sortByValue.charAt(0)){
+                    case '-':
+                        aSortBy.order=-1;
+                        aSortBy.fieldName=sortByValue.substring(1);
+                        break;
+                    case '+':
+                        aSortBy.order=1;
+                        aSortBy.fieldName=sortByValue.substring(1);
+                        break;
+                    default:
+                        aSortBy.fieldName=sortByValue;
+                        break;
+                }
+                sortbys.add(aSortBy);
+            }
+        }
+        return sortbys;
     }
 }

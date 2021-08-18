@@ -25,6 +25,8 @@ public class ChallengeThingifier {
         this.challengeThingifier = new Thingifier();
 
         this.challengeThingifier.apiConfig().setResponsesToShowGuids(false);
+        this.challengeThingifier.apiConfig().forParams().willEnforceFilteringThroughUrlParams();
+        this.challengeThingifier.apiConfig().forParams().willAllowFilteringThroughUrlParams();
 
         this.challengeDefn = this.challengeThingifier.defineThing(
                                     "challenge", "challenges");

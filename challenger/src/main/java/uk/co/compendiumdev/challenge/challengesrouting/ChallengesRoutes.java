@@ -6,6 +6,7 @@ import uk.co.compendiumdev.challenge.challengers.Challengers;
 import uk.co.compendiumdev.challenge.challenges.ChallengeDefinitions;
 import uk.co.compendiumdev.thingifier.api.ThingifierApiDefn;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
+import uk.co.compendiumdev.thingifier.api.restapihandlers.RestApiGetHandler;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingStatus;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingVerb;
@@ -15,12 +16,12 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.spark.SimpleRouteConfig;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 import static spark.Spark.*;
 
 public class ChallengesRoutes {
-
-    // todo: allow filtering challenges e.g. find all done, not done, etc.
+    
     public void configure(final Challengers challengers, final boolean single_player_mode,
                           final ThingifierApiDefn apiDefn,
                           final ChallengeDefinitions challengeDefinitions){
@@ -44,15 +45,15 @@ public class ChallengesRoutes {
             return new SparkApiRequestResponseHandler(request, result, challengeThingifier.challengeThingifier).
                     usingHandler((anHttpApiRequest)->{
                         challengeThingifier.populateThingifierFromStatus(challenger);
-                        final ApiResponse apiResponse = ApiResponse.success().
-                                returnInstanceCollection(
-                                        new ArrayList(
-                                                challengeThingifier.challengeThingifier.
-                                                        getThingInstancesNamed(
-                                                                challengeDefn.getName()).
-                                                        getInstancesSortByID())
-                                );
-                        return apiResponse;
+                        final Map<String, String> queryParams = anHttpApiRequest.getQueryParams();
+                        if(!queryParams.containsKey("sortBy") &&
+                                !queryParams.containsKey("sort_by")){
+                            // force a sort
+                            queryParams.put("sort_by","+ID");
+                        }
+                        return new RestApiGetHandler(challengeThingifier.challengeThingifier)
+                                .handle(challengeDefn.getPlural(),
+                                        queryParams);
                     }).handle();
 
         });

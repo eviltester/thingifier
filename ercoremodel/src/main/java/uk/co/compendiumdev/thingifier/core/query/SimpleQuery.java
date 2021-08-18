@@ -223,7 +223,12 @@ final public class SimpleQuery {
             return this;
         }
 
-        foundItems = new QueryListFilter(queryParams).filter(foundItems);
+        final QueryListFilter filterer = new QueryListFilter(queryParams);
+
+        foundItems = filterer.filter(foundItems);
+
+        // support sorting after filtering
+        foundItems = filterer.sort(foundItems);
 
         return this;
     }
