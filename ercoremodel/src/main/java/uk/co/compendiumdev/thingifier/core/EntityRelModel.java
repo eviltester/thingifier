@@ -29,6 +29,12 @@ public class EntityRelModel {
         initialDataGenerator=null; // todo consider having a default random data generator
     }
 
+    public EntityRelModel(final DataPopulator initialDataGenerator, final ERSchema schema, final ERInstanceData erInstanceData) {
+        this.schema = schema;
+        this.database = erInstanceData;
+        this.initialDataGenerator=initialDataGenerator;
+    }
+
     public EntityDefinition createEntityDefinition(final String entityName, final String pluralName) {
         EntityDefinition defn = schema.defineEntity(entityName, pluralName);
         database.createInstanceCollectionFor(defn);
@@ -111,4 +117,7 @@ public class EntityRelModel {
     }
 
 
+    public EntityRelModel cloneWithDifferentData(final List<EntityInstance> instances) {
+        return new EntityRelModel(initialDataGenerator, schema, new ERInstanceData(schema, instances));
+    }
 }

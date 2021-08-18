@@ -20,6 +20,14 @@ public class ERInstanceData {
         instanceCollections = new ConcurrentHashMap<>();
     }
 
+    public ERInstanceData(final ERSchema schema, final List<EntityInstance> instances) {
+        this.schema = schema;
+        instanceCollections = new ConcurrentHashMap<>();
+        final EntityInstanceCollection managedInstances =
+                createInstanceCollectionFor(instances.get(0).getEntity());
+        managedInstances.addInstances(instances);
+    }
+
     public EntityInstanceCollection createInstanceCollectionFor(
                                         final EntityDefinition definition) {
         EntityInstanceCollection aCollection = new EntityInstanceCollection(definition);

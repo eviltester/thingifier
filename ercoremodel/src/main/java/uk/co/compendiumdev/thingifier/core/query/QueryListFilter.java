@@ -7,16 +7,14 @@ import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import java.util.*;
 
 public class QueryListFilter {
-    private final Map<String, String> queryParams;
     QueryInstanceFilter instanceFilter;
 
     /*
-        Map of
+        Given a Map of
         FieldName,Value
         sort_by,+-FieldName
      */
     public QueryListFilter(final Map<String, String> queryParams) {
-        this.queryParams = queryParams;
         instanceFilter = new QueryInstanceFilter(queryParams);
     }
 
@@ -67,8 +65,8 @@ public class QueryListFilter {
             @Override
             public int compare(EntityInstance thing1, EntityInstance thing2) {
 
-                if(     fieldDefn.getType() == FieldType.ID ||
-                        fieldDefn.getType() == FieldType.INTEGER ){
+                if( fieldDefn.getType() == FieldType.ID ||
+                    fieldDefn.getType() == FieldType.INTEGER ){
                     int field1Value = thing1.getFieldValue(fieldName).asInteger();
                     int field2Value = thing2.getFieldValue(fieldName).asInteger();
                     return Integer.compare(field1Value, field2Value);

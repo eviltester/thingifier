@@ -5,6 +5,7 @@ import uk.co.compendiumdev.thingifier.api.ThingifierApiDefn;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
+import uk.co.compendiumdev.thingifier.api.restapihandlers.RestApiGetHandler;
 import uk.co.compendiumdev.thingifier.application.routehandlers.HttpApiRequestHandler;
 import uk.co.compendiumdev.thingifier.application.routehandlers.SparkApiRequestResponseHandler;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
@@ -108,7 +109,9 @@ public class SimulationRoutes {
                 }
             }
 
-            return ApiResponse.success().returnInstanceCollection(instances);
+            Thingifier cloned = this.simulation.cloneWithDifferentData(instances);
+            return new RestApiGetHandler(cloned).handle("entities", anHttpApiRequest.getQueryParams());
+            
         };
 
         get(endpoint, (request, result) -> {

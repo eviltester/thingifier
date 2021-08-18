@@ -21,6 +21,7 @@ public class QueryInstanceFilter {
 
             String fieldName = field.getKey();
 
+            // TODO: handle <,>,>=, ranges, like, etc.
             if(defn.hasFieldNameDefined(fieldName)){
                 if(!instance.getFieldValue(fieldName).asString().
                         equals(field.getValue())){

@@ -1,5 +1,6 @@
 package uk.co.compendiumdev.thingifier.core.domain.instances;
 
+import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
@@ -16,6 +17,18 @@ final public class EntityInstanceCollection {
 
     public EntityInstanceCollection(EntityDefinition thingDefinition) {
         this.definition = thingDefinition;
+    }
+
+    public EntityInstanceCollection(final EntityDefinition entity, final List<EntityInstance> instances) {
+       this.definition=entity;
+       addInstances(instances);
+    }
+
+    public EntityInstanceCollection addInstances(List<EntityInstance> instances) {
+        for(EntityInstance instance : instances){
+            addInstance(instance);
+        }
+        return this;
     }
 
     public EntityInstanceCollection addInstance(EntityInstance instance) {

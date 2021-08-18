@@ -36,6 +36,20 @@ final public class Thingifier {
         apiConfig = new ThingifierApiConfig();
         apiConfigProfiles = new ThingifierApiConfigProfiles();
     }
+
+    public Thingifier(final EntityRelModel erm,
+                      final ThingifierApiConfig apiConfig,
+                      final ThingifierApiConfigProfiles apiConfigProfiles,
+                      final String title,
+                      final String initialParagraph) {
+
+        this.erm = erm;
+        this.title = title;
+        this.initialParagraph = initialParagraph;
+        this.apiConfig = apiConfig;
+        this.apiConfigProfiles = apiConfigProfiles;
+    }
+
     /*
         TODO: configure the REST API from the entities and relationship definitions
         at the moment a default REST API is created, consider an API model as separate
@@ -188,5 +202,13 @@ final public class Thingifier {
 
     public String getInitialParagraph() {
         return this.initialParagraph;
+    }
+
+    public Thingifier cloneWithDifferentData(final List<EntityInstance> instances) {
+        return new Thingifier(  this.getERmodel().cloneWithDifferentData(instances),
+                                                    this.apiConfig(),
+                                                    this.apiConfigProfiles(),
+                                                    this.title,
+                                                    this.initialParagraph);
     }
 }
