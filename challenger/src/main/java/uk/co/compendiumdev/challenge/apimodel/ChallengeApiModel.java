@@ -1,5 +1,6 @@
 package uk.co.compendiumdev.challenge.apimodel;
 
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
@@ -19,19 +20,18 @@ public class ChallengeApiModel {
 
         todoList.setDocumentation("Simple Todo List", para.toString());
 
-        EntityInstanceCollection todo = todoList.createThing("todo", "todos");
+        EntityDefinition todo = todoList.defineThing("todo", "todos");
 
-        todo.definition()
-                .addFields(
-                        Field.is("id", FieldType.ID),
-                        Field.is("title", STRING).
-                                makeMandatory().
-                                withValidation(
-                                        VRule.notEmpty()),
-                        Field.is("doneStatus", FieldType.BOOLEAN).
-                                withDefaultValue("false"),
-                        Field.is("description", STRING)
-                );
+        todo.addFields(
+            Field.is("id", FieldType.ID),
+            Field.is("title", STRING).
+                    makeMandatory().
+                    withValidation(
+                            VRule.notEmpty()),
+            Field.is("doneStatus", FieldType.BOOLEAN).
+                    withDefaultValue("false"),
+            Field.is("description", STRING)
+        );
 
 
         todoList.setDataGenerator(new TodoAPIDataPopulator());

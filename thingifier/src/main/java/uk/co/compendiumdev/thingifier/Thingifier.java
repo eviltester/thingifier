@@ -54,11 +54,8 @@ final public class Thingifier {
 
     // THINGS
 
-    // TODO: Why is this returning the 'collection of instances' since it is creating a definition
-    // TODO: this should really be called defineThing
-    public EntityInstanceCollection createThing(final String thingName, final String pluralName) {
-        erm.createEntityDefinition(thingName, pluralName);
-        return erm.getInstanceCollectionForEntityNamed(thingName);
+    public EntityDefinition defineThing(final String thingName, final String pluralName) {
+        return erm.createEntityDefinition(thingName, pluralName);
     }
 
     public List<EntityInstanceCollection> getThings() {
@@ -122,15 +119,13 @@ final public class Thingifier {
 
 
     // RELATIONSHIPS
-
     public Collection<RelationshipDefinition> getRelationshipDefinitions() {
         return erm.getRelationshipDefinitions();
     }
 
-    // TODO: why is this accepting collections, use the definitions
-    public RelationshipDefinition defineRelationship(EntityInstanceCollection from, EntityInstanceCollection to,
+    public RelationshipDefinition defineRelationship(EntityDefinition from, EntityDefinition to,
                                                      final String named, final Cardinality of) {
-        return erm.createRelationshipDefinition(from.definition(),to.definition(),named, of);
+        return erm.createRelationshipDefinition(from,to,named, of);
     }
 
     public boolean hasRelationshipNamed(final String relationshipName) {

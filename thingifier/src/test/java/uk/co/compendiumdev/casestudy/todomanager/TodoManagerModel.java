@@ -1,5 +1,6 @@
 package uk.co.compendiumdev.casestudy.todomanager;
 
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.Cardinality;
@@ -108,9 +109,9 @@ could implement a Thingifier URL query matcher to return instances based on quer
 
         todoManager.setDocumentation("Todo Manager", para.toString());
 
-        EntityInstanceCollection todo = todoManager.createThing("todo", "todos");
+        EntityDefinition todo = todoManager.defineThing("todo", "todos");
 
-        todo.definition()
+        todo
                 .addFields( Field.is("title", STRING).
                                 makeMandatory().
                                 withValidation(
@@ -123,9 +124,9 @@ could implement a Thingifier URL query matcher to return instances based on quer
         ;
 
 
-        EntityInstanceCollection project = todoManager.createThing("project", "projects");
+        EntityDefinition project = todoManager.defineThing("project", "projects");
 
-        project.definition()
+        project
                 .addFields(
                         Field.is("title", STRING),
                         Field.is("description",STRING),
@@ -135,9 +136,9 @@ could implement a Thingifier URL query matcher to return instances based on quer
                                 withDefaultValue("true"));
 
 
-        EntityInstanceCollection category = todoManager.createThing("category", "categories");
+        EntityDefinition category = todoManager.defineThing("category", "categories");
 
-        category.definition()
+        category
                 .addFields(
                         Field.is("title", STRING).
                                 makeMandatory().
@@ -156,8 +157,8 @@ could implement a Thingifier URL query matcher to return instances based on quer
         // TODO create mandatory relationships = at the moment all entities can exist without relationship
         // e.g. create an estimate for a todo - the estimate must have a todo
 
-        EntityInstanceCollection estimate = todoManager.createThing("estimate", "estimates");
-        estimate.definition()
+        EntityDefinition estimate = todoManager.defineThing("estimate", "estimates");
+        estimate
                 .addFields(
                         Field.is("duration", INTEGER).
                                 makeMandatory().

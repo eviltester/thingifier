@@ -3,6 +3,7 @@ package uk.co.compendiumdev;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
@@ -38,7 +39,7 @@ public class UsageTest {
 
         Thingifier things = new Thingifier();
 
-        things.createThing("URL", "URLs").definition().
+        things.defineThing("URL", "URLs").
                     addFields(Field.is("url"),Field.is("name",STRING)
                     );
 
@@ -51,11 +52,11 @@ public class UsageTest {
                 setValue("name","EvilTester.com").
                 setValue("url","http://eviltester.com");
 
-        EntityInstanceCollection user = things.createThing("USER", "users");
+        EntityDefinition user = things.defineThing("USER", "users");
 
-        user.definition().addFields(Field.is("name"));
+        user.addFields(Field.is("name"));
 
-        EntityInstance alan = user.createManagedInstance().
+        EntityInstance alan = things.getThingInstancesNamed("USER").createManagedInstance().
                 setValue("name","alan");
 
 

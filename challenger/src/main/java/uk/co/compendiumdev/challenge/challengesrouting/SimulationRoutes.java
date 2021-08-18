@@ -7,6 +7,7 @@ import uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.application.routehandlers.HttpApiRequestHandler;
 import uk.co.compendiumdev.thingifier.application.routehandlers.SparkApiRequestResponseHandler;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
@@ -25,7 +26,8 @@ public class SimulationRoutes {
     private ThingifierHttpApi httpApi;
     private JsonThing jsonThing;
     public Thingifier simulation;
-    public EntityInstanceCollection entityDefn;
+    public EntityDefinition entityDefn;
+    private EntityInstanceCollection entityStorage;
 
     public void setUpData(){
         // fake the data storage
@@ -33,9 +35,9 @@ public class SimulationRoutes {
 
         this.simulation.apiConfig().setResponsesToShowGuids(false);
 
-        this.entityDefn = this.simulation.createThing("entity", "entities");
+        this.entityDefn = this.simulation.defineThing("entity", "entities");
 
-        this.entityDefn.definition().addFields(
+        this.entityDefn.addFields(
                 Field.is("id", FieldType.ID),
                 Field.is("name", FieldType.STRING).
                         makeMandatory().
@@ -46,14 +48,16 @@ public class SimulationRoutes {
                         withValidation(new MaximumLengthValidationRule(200))
         );
 
+        this.entityStorage = this.simulation.getThingInstancesNamed("entity");
+
         for(int id=1; id<=10; id++){
 
-            this.entityDefn.createManagedInstance().
+            this.entityStorage.createManagedInstance().
                         //setValue("id", String.valueOf(id)).
                         setValue("name", "entity number " +id);
         }
 
-        this.entityDefn.createManagedInstance().
+        this.entityStorage.createManagedInstance().
                 //setValue("id", String.valueOf(id)).
                         setValue("name", "bob");
 
@@ -97,7 +101,7 @@ public class SimulationRoutes {
 
             // process it because the request validated
             List<EntityInstance> instances = new ArrayList();
-            for (EntityInstance possible : this.entityDefn.getInstances()) {
+            for (EntityInstance possible : this.entityStorage.getInstances()) {
                 if (!idsToRemove.contains(
                         possible.getFieldValue("id").asInteger())) {
                     instances.add(possible);
@@ -125,7 +129,7 @@ public class SimulationRoutes {
 
             // process it because the request validated
             String id = anHttpApiRequest.getUrlParam(":id");
-            EntityInstance instance = this.entityDefn.findInstanceByGUIDorID(id);
+            EntityInstance instance = this.entityStorage.findInstanceByGUIDorID(id);
             if (instance == null) {
                 response = ApiResponse.error404("Could not find Entity with ID " + id);
             } else {
@@ -134,7 +138,7 @@ public class SimulationRoutes {
 
             if (id.equals("10")) {
                 // 10 is the entity we amend to name:eris
-                EntityInstance fake = new EntityInstance(entityDefn.definition()).
+                EntityInstance fake = new EntityInstance(entityDefn).
                         overrideValue("id", "10").setValue("name", "eris");
                 instance = fake;
                 response = ApiResponse.success().returnSingleInstance(instance);
@@ -170,7 +174,7 @@ public class SimulationRoutes {
 
             return new SparkApiRequestResponseHandler(request, result, simulation).
                     usingHandler((anHttpApiRequest) ->{
-                        return ApiResponse.created(this.entityDefn.
+                        return ApiResponse.created(this.entityStorage.
                                         findInstanceByGUIDorID("11"),
                                 this.simulation.apiConfig());
                     }).handle();
@@ -183,16 +187,16 @@ public class SimulationRoutes {
             if (id.equals("11")) {
                 // we can create id 11
                 response = ApiResponse.created(
-                        this.entityDefn.findInstanceByGUIDorID("11"),
+                        this.entityStorage.findInstanceByGUIDorID("11"),
                         this.simulation.apiConfig());
             } else {
                 if (id.equals("10")) {
                     // 10 is the entity we amend to name:eris
-                    EntityInstance fake = new EntityInstance(entityDefn.definition()).
+                    EntityInstance fake = new EntityInstance(entityDefn).
                             overrideValue("id", "10").setValue("name", "eris");
                     response = ApiResponse.success().returnSingleInstance(fake);
                 } else {
-                    final EntityInstance instance = this.entityDefn.findInstanceByGUIDorID(id);
+                    final EntityInstance instance = this.entityStorage.findInstanceByGUIDorID(id);
                     if (instance == null) {
                         if(anHttpApiRequest.getVerb()== HttpApiRequest.VERB.POST) {
                             response = ApiResponse.error404("Could not find Entity with ID " + id);
@@ -231,7 +235,7 @@ public class SimulationRoutes {
                             // we can delete id 9
                             response = new ApiResponse(204);
                         } else {
-                            final EntityInstance instance = this.entityDefn.findInstanceByGUIDorID(id);
+                            final EntityInstance instance = this.entityStorage.findInstanceByGUIDorID(id);
                             if (instance == null) {
                                 response = ApiResponse.error404("Could not find Entity with ID " + id);
                             } else {

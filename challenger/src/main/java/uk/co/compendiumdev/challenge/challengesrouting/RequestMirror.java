@@ -4,13 +4,14 @@ import spark.Request;
 import spark.Response;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.application.routehandlers.SparkApiRequestResponseHandler;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 
 public class RequestMirror {
 
-    EntityInstanceCollection entityDefn;
+    EntityDefinition entityDefn;
 
     // new RequestMirror().mirrorRequest(request, result);
     public String mirrorRequest(final Request request, final Response result) {
@@ -19,9 +20,9 @@ public class RequestMirror {
         mirrorThingifier.apiConfig().setResponsesToShowGuids(false);
         mirrorThingifier.apiConfig().setResponsesToShowIdsIfAvailable(false);
 
-        entityDefn = mirrorThingifier.createThing("messageDetails", "messagesDetails");
+        entityDefn = mirrorThingifier.defineThing("messageDetails", "messagesDetails");
 
-        entityDefn.definition().addFields(
+        entityDefn.addFields(
                 Field.is("details", FieldType.STRING));
 
         // reject large requests

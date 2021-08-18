@@ -1,5 +1,6 @@
 package uk.co.compendiumdev.thingifier.swaggerizer;
 
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
@@ -28,9 +29,9 @@ public class TodoListThingifierTestModel {
 
         todoList.setDocumentation("Simple Todo List", para.toString());
 
-        EntityInstanceCollection todo = todoList.createThing("todo", "todos");
+        EntityDefinition todo = todoList.defineThing("todo", "todos");
 
-        todo.definition()
+        todo
                 .addFields(
                         Field.is("id",FieldType.ID),
                         Field.is("title", STRING).

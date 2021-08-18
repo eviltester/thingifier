@@ -11,6 +11,7 @@ import uk.co.compendiumdev.thingifier.api.routings.RoutingStatus;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingVerb;
 import uk.co.compendiumdev.thingifier.application.AdhocDocumentedSparkRouteConfig;
 import uk.co.compendiumdev.thingifier.application.routehandlers.SparkApiRequestResponseHandler;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.spark.SimpleRouteConfig;
 
 import java.util.ArrayList;
@@ -37,6 +38,7 @@ public class ChallengesRoutes {
             }
 
             ChallengeThingifier challengeThingifier = new ChallengeThingifier();
+            final EntityDefinition challengeDefn = challengeThingifier.challengeDefn;
             challengeThingifier.populateThingifierFrom(challengeDefinitions);
 
             return new SparkApiRequestResponseHandler(request, result, challengeThingifier.challengeThingifier).
@@ -45,8 +47,10 @@ public class ChallengesRoutes {
                         final ApiResponse apiResponse = ApiResponse.success().
                                 returnInstanceCollection(
                                         new ArrayList(
-                                                challengeThingifier.
-                                                        challengeDefn.getInstancesSortByID())
+                                                challengeThingifier.challengeThingifier.
+                                                        getThingInstancesNamed(
+                                                                challengeDefn.getName()).
+                                                        getInstancesSortByID())
                                 );
                         return apiResponse;
                     }).handle();

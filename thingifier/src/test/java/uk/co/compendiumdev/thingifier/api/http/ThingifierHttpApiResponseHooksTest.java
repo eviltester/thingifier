@@ -26,7 +26,7 @@ class ThingifierHttpApiResponseHooksTest {
         aThingifier.apiConfig().setApiToEnforceAcceptHeaderForResponses(false);
         aThingifier.apiConfig().setApiToEnforceContentTypeForRequests(false);
 
-        aThingifier.createThing("thing", "things");
+        aThingifier.defineThing("thing", "things");
 
         final ThingifierHttpApi api =
                 new ThingifierHttpApi(aThingifier,

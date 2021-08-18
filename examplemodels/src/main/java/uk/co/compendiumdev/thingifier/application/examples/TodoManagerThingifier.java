@@ -1,5 +1,6 @@
 package uk.co.compendiumdev.thingifier.application.examples;
 
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
@@ -47,10 +48,10 @@ public class TodoManagerThingifier {
 
         todoManager.setDocumentation("Todo Manager", para.toString());
 
-        EntityInstanceCollection todo = todoManager.createThing("todo", "todos");
+        EntityDefinition todo = todoManager.defineThing("todo", "todos");
 
         // todo: show fields in the order we add them, not the hashmap key order
-        todo.definition()
+        todo
                 .addFields(Field.is("id", FieldType.ID),
                         Field.is("title", STRING).
                                 makeMandatory().
@@ -61,9 +62,9 @@ public class TodoManagerThingifier {
                         Field.is("description", STRING)
                         );
 
-        EntityInstanceCollection project = todoManager.createThing("project", "projects");
+        EntityDefinition project = todoManager.defineThing("project", "projects");
 
-        project.definition()
+        project
                 .addFields(
                         Field.is("id", FieldType.ID),
                         Field.is("title", STRING),
@@ -74,9 +75,9 @@ public class TodoManagerThingifier {
                         Field.is("description", STRING));
 
 
-        EntityInstanceCollection category = todoManager.createThing("category", "categories");
+        EntityDefinition category = todoManager.defineThing("category", "categories");
 
-        category.definition()
+        category
                 .addFields(
                         Field.is("id", FieldType.ID),
                         Field.is("title", STRING).

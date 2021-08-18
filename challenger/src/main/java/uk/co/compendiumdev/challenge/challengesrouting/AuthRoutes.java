@@ -15,6 +15,7 @@ import uk.co.compendiumdev.thingifier.api.routings.RoutingStatus;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingVerb;
 import uk.co.compendiumdev.thingifier.application.internalhttpconversion.HttpApiResponseToSpark;
 import uk.co.compendiumdev.thingifier.application.internalhttpconversion.SparkToHttpApiRequest;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
@@ -33,7 +34,7 @@ import static spark.Spark.post;
 // TODO: This should be using a Thingifier to do the work of XML JSON etc... like the simulation
 public class AuthRoutes {
     private Thingifier secretNoteStore;
-    private EntityInstanceCollection secretNote;
+    private EntityDefinition secretNote;
     private ThingifierHttpApi httpApi;
     private JsonThing jsonThing;
 
@@ -48,9 +49,9 @@ public class AuthRoutes {
         this.secretNoteStore.apiConfig().setResponsesToShowGuids(false);
         this.secretNoteStore.apiConfig().setResponsesToShowIdsIfAvailable(false);
 
-        this.secretNote = this.secretNoteStore.createThing("secretnote", "secretnotes");
+        this.secretNote = this.secretNoteStore.defineThing("secretnote", "secretnotes");
 
-        this.secretNote.definition().addFields(
+        this.secretNote.addFields(
                 Field.is("note", FieldType.STRING).
                         makeMandatory().
                         withValidation(new MaximumLengthValidationRule(100)).
@@ -151,7 +152,7 @@ public class AuthRoutes {
 
             final HttpApiRequest myRequest = SparkToHttpApiRequest.convert(request);
 
-            EntityInstance note = new EntityInstance(secretNote.definition()).setValue("note", challenger.getNote());
+            EntityInstance note = new EntityInstance(secretNote).setValue("note", challenger.getNote());
             final ApiResponse response = ApiResponse.success().returnSingleInstance(note);
 
             final HttpApiResponse httpApiResponse = new HttpApiResponse(myRequest.getHeaders(), response,

@@ -28,8 +28,9 @@ public class NestedObjectsApiTest {
         thingifier = new Thingifier();
         thingifier.apiConfig().setApiToEnforceAcceptHeaderForResponses(false);
 
-        thing = thingifier.createThing("thing", "things");
-        defn = thing.definition();
+        defn = thingifier.defineThing("thing", "things");
+        thing = thingifier.getThingInstancesNamed("thing");
+
         defn.addField(Field.is("person", FieldType.OBJECT)
                 .withField(
                         Field.is("firstname").

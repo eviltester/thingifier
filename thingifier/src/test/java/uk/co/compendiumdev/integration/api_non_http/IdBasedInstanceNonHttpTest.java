@@ -2,6 +2,7 @@ package uk.co.compendiumdev.integration.api_non_http;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
@@ -17,8 +18,8 @@ public class IdBasedInstanceNonHttpTest {
         Thingifier thingifier = new Thingifier();
         thingifier.setDocumentation("Model", "test model");
 
-        EntityInstanceCollection thing = thingifier.createThing("thing", "things");
-        thing.definition()
+        EntityDefinition thing = thingifier.defineThing("thing", "things");
+        thing
                 .addFields(Field.is("title", STRING),
                         Field.is("id", FieldType.ID)
                 )

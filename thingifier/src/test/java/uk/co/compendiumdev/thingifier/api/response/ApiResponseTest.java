@@ -2,6 +2,7 @@ package uk.co.compendiumdev.thingifier.api.response;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
@@ -82,8 +83,8 @@ public class ApiResponseTest {
     public void response200WithInstance(){
 
         Thingifier thingifier = new Thingifier();
-        EntityInstanceCollection todo = thingifier.createThing("todo", "todos");
-        todo.definition().addFields( Field.is("title", STRING));
+        EntityDefinition todo = thingifier.defineThing("todo", "todos");
+        todo.addFields( Field.is("title", STRING));
         EntityInstanceCollection todos = thingifier.getThingInstancesNamed("todo");
 
         EntityInstance aTodo = todos.createManagedInstance().setValue("title", "a todo");
@@ -103,8 +104,8 @@ public class ApiResponseTest {
     public void response200WithInstances(){
 
         Thingifier thingifier = new Thingifier();
-        EntityInstanceCollection todo = thingifier.createThing("todo", "todos");
-        todo.definition().addFields( Field.is("title", STRING));
+        EntityDefinition todo = thingifier.defineThing("todo", "todos");
+        todo.addFields( Field.is("title", STRING));
         EntityInstanceCollection todos = thingifier.getThingInstancesNamed("todo");
 
         EntityInstance aTodo = todos.createManagedInstance().setValue("title", "a todo");

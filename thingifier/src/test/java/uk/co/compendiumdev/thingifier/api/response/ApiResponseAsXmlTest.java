@@ -4,6 +4,7 @@ import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.StaxDriver;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
@@ -11,6 +12,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.F
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonThing;
 
+import javax.swing.text.html.parser.Entity;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -119,8 +121,8 @@ public class ApiResponseAsXmlTest {
     public void response200WithInstance(){
 
         Thingifier thingifier = new Thingifier();
-        EntityInstanceCollection todo = thingifier.createThing("todo", "todos");
-        todo.definition().addFields( Field.is("title", STRING));
+        EntityDefinition todo = thingifier.defineThing("todo", "todos");
+        todo.addFields( Field.is("title", STRING));
         EntityInstanceCollection todos = thingifier.getThingInstancesNamed("todo");
 
         EntityInstance aTodo = todos.createManagedInstance().setValue("title", "a todo");
@@ -146,8 +148,8 @@ public class ApiResponseAsXmlTest {
     public void response200WithInstances(){
 
         Thingifier thingifier = new Thingifier();
-        EntityInstanceCollection todo = thingifier.createThing("todo", "todos");
-        todo.definition().addFields( Field.is("title", STRING));
+        EntityDefinition todo = thingifier.defineThing("todo", "todos");
+        todo.addFields( Field.is("title", STRING));
         EntityInstanceCollection todos = thingifier.getThingInstancesNamed("todo");
 
         EntityInstance aTodo = todos.createManagedInstance().setValue("title", "a todo");
@@ -209,8 +211,8 @@ public class ApiResponseAsXmlTest {
 
         ApiResponse response = ApiResponse.success().returnInstanceCollection(new ArrayList());
         Thingifier thingifier = new Thingifier();
-        EntityInstanceCollection todo = thingifier.createThing("todo", "todos");
-        response.resultContainsType(todo.definition());
+        EntityDefinition todo = thingifier.defineThing("todo", "todos");
+        response.resultContainsType(todo);
 
         Assertions.assertEquals(200, response.getStatusCode());
         Assertions.assertEquals(true, response.hasABody());
