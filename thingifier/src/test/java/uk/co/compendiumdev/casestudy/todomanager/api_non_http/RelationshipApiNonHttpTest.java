@@ -14,7 +14,7 @@ import uk.co.compendiumdev.thingifier.api.response.ApiResponseAsJson;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponseAsXml;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-import uk.co.compendiumdev.thingifier.reporting.JsonThing;
+import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonThing;
 
 import java.util.*;
 

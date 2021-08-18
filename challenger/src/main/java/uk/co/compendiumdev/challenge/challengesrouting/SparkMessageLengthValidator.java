@@ -8,7 +8,7 @@ import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.application.internalhttpconversion.HttpApiResponseToSpark;
 import uk.co.compendiumdev.thingifier.application.internalhttpconversion.SparkToHttpApiRequest;
-import uk.co.compendiumdev.thingifier.reporting.JsonThing;
+import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonThing;
 
 public class SparkMessageLengthValidator {
 

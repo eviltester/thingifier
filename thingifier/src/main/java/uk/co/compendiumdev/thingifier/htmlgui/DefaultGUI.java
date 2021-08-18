@@ -11,8 +11,8 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.Fie
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVector;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-import uk.co.compendiumdev.thingifier.reporting.JsonThing;
-import uk.co.compendiumdev.thingifier.reporting.XmlThing;
+import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonThing;
+import uk.co.compendiumdev.thingifier.api.ermodelconversion.XmlThing;
 
 import java.util.Collection;
 

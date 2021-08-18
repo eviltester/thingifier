@@ -5,7 +5,7 @@ import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.application.httpapimessagehooks.HttpApiRequestHook;
 import uk.co.compendiumdev.thingifier.application.httpapimessagehooks.HttpApiResponseHook;
-import uk.co.compendiumdev.thingifier.reporting.JsonThing;
+import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonThing;
 
 import java.util.ArrayList;
 import java.util.List;

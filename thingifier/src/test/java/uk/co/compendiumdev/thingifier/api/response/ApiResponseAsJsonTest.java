@@ -8,7 +8,7 @@ import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-import uk.co.compendiumdev.thingifier.reporting.JsonThing;
+import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonThing;
 
 import java.util.ArrayList;
 import java.util.Arrays;

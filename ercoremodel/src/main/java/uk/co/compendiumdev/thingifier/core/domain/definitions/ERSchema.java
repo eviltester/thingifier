@@ -11,16 +11,16 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ERSchema {
 
     private final ConcurrentHashMap<String, RelationshipDefinition> relationships;
-    private final ConcurrentHashMap<String, EntityDefinition> thingDefinitions;
+    private final ConcurrentHashMap<String, EntityDefinition> entityDefinitions;
 
     public ERSchema(){
         relationships = new ConcurrentHashMap<>();
-        thingDefinitions = new ConcurrentHashMap<>();
+        entityDefinitions = new ConcurrentHashMap<>();
     }
 
     public EntityDefinition defineEntity(final String thingName, final String pluralName) {
         EntityDefinition definition = new EntityDefinition(thingName, pluralName);
-        thingDefinitions.put(definition.getName(), definition);
+        entityDefinitions.put(definition.getName(), definition);
         return definition;
     }
 
@@ -28,6 +28,9 @@ public class ERSchema {
         return relationships.values();
     }
 
+    public Collection<EntityDefinition> getEntityDefinitions() {
+        return entityDefinitions.values();
+    }
     public RelationshipDefinition defineRelationship(final EntityDefinition from, final EntityDefinition to, final String named, final Cardinality of) {
         RelationshipDefinition relationship =
                 RelationshipDefinition.create(
@@ -60,12 +63,12 @@ public class ERSchema {
 
     public List<String> getEntityNames() {
         List<String> names = new ArrayList();
-        names.addAll(thingDefinitions.keySet());
+        names.addAll(entityDefinitions.keySet());
         return names;
     }
 
     public boolean hasEntityNamed(final String aName) {
-        return thingDefinitions.containsKey(aName);
+        return entityDefinitions.containsKey(aName);
     }
 
     public boolean hasEntityWithPluralNamed(final String term) {
@@ -73,14 +76,14 @@ public class ERSchema {
     }
 
     public EntityDefinition getEntityDefinitionNamed(final String term) {
-        if(thingDefinitions.containsKey(term)){
-            return thingDefinitions.get(term);
+        if(entityDefinitions.containsKey(term)){
+            return entityDefinitions.get(term);
         }
         return null;
     }
 
     public EntityDefinition getDefinitionWithPluralNamed(final String term) {
-        for(EntityDefinition defn : thingDefinitions.values()){
+        for(EntityDefinition defn : entityDefinitions.values()){
             if(defn.getPlural().equalsIgnoreCase(term)){
                 return defn;
             }

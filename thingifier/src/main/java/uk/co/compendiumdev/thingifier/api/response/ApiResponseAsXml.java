@@ -3,8 +3,8 @@ package uk.co.compendiumdev.thingifier.api.response;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.xml.StringToXML;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-import uk.co.compendiumdev.thingifier.reporting.JsonThing;
-import uk.co.compendiumdev.thingifier.reporting.XmlThing;
+import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonThing;
+import uk.co.compendiumdev.thingifier.api.ermodelconversion.XmlThing;
 
 import java.util.*;
 

@@ -1,4 +1,4 @@
-package uk.co.compendiumdev.thingifier.reporting;
+package uk.co.compendiumdev.thingifier.api.ermodelconversion;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;

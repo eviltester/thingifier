@@ -1,4 +1,4 @@
-package uk.co.compendiumdev.thingifier.reporting;
+package uk.co.compendiumdev.thingifier.api.ermodelconversion;
 
 import org.json.JSONObject;
 import org.json.XML;

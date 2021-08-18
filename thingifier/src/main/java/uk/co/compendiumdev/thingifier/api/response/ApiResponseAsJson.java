@@ -2,7 +2,7 @@ package uk.co.compendiumdev.thingifier.api.response;
 
 import com.google.gson.Gson;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-import uk.co.compendiumdev.thingifier.reporting.JsonThing;
+import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonThing;
 
 import java.util.*;
 
