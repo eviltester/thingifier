@@ -6,6 +6,8 @@ import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
 import java.util.*;
 
+// TODO: rename EntityInstanceListFilter
+// TODO: split into EntityInstanceListFilter and EntityInstanceListSorter
 public class QueryListFilter {
     QueryInstanceFilter instanceFilter;
 
