@@ -4,6 +4,15 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+/*
+    Validation Report is a generic error wrapper.
+
+    A validation function can return a validation report which
+    makes it easy to see if the validation was in error or not `isValid`
+
+    Pull out the error messages, or combine validation reports if validation
+    functionality is chained.
+ */
 public class ValidationReport {
 
 
