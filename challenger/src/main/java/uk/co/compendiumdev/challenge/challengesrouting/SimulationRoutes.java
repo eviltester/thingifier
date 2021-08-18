@@ -111,7 +111,7 @@ public class SimulationRoutes {
 
             Thingifier cloned = this.simulation.cloneWithDifferentData(instances);
             return new RestApiGetHandler(cloned).handle("entities", anHttpApiRequest.getQueryParams());
-            
+
         };
 
         get(endpoint, (request, result) -> {

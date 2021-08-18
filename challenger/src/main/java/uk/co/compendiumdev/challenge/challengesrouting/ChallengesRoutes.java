@@ -38,6 +38,7 @@ public class ChallengesRoutes {
                 result.raw().setHeader("Location", "/gui/challenges");
             }
 
+            // Todo: use the cloneThingifierWithNewData here and simplify the ChallengeThingifier
             ChallengeThingifier challengeThingifier = new ChallengeThingifier();
             final EntityDefinition challengeDefn = challengeThingifier.challengeDefn;
             challengeThingifier.populateThingifierFrom(challengeDefinitions);
