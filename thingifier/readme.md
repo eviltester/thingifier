@@ -126,3 +126,18 @@ The deployed app does have some sample data for testing purposes, this can easil
         todoManager.defineRelationship(Between.things(todo, category), AndCall.it("categories"), WithCardinality.of("1", "*"));
 ~~~~~~~~
     
+## What is Thingifier
+
+Thingifier is a wrapper around an ER Model to automatically implement a REST API for the ER Model.
+
+In theory it could be split into separate modules, but these are currently represented by the package structure:
+
+- The API definition to model an api on top of an ER Model
+- Generation of a Swagger/Open API file from the API Defn/ER Model  
+- Internal HTTP representations to allow handling of HTTP messages independently of the chosen HTTP Server technology (Spark)
+- The Spark routing generation
+- The main start point for an application that wires it all together and starts the http server 
+
+The intent is that it does as much as possible from the API Defn and ER Model. While supporting hooks to allow other applications to build on top of it e.g. API Challenges has hooks for tracking challenge completion but should not need to implement much of the API.
+
+Current work is to move as much as possible from the API Challenges into the Thingifier and re-work the Thingifier to achieve a better split between package responsibilities and simplify the code.
