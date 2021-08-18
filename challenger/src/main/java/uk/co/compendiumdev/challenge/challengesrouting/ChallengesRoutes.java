@@ -21,7 +21,7 @@ import java.util.Map;
 import static spark.Spark.*;
 
 public class ChallengesRoutes {
-    
+
     public void configure(final Challengers challengers, final boolean single_player_mode,
                           final ThingifierApiDefn apiDefn,
                           final ChallengeDefinitions challengeDefinitions){

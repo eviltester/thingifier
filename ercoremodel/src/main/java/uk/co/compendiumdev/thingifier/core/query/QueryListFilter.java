@@ -10,6 +10,11 @@ public class QueryListFilter {
     private final Map<String, String> queryParams;
     QueryInstanceFilter instanceFilter;
 
+    /*
+        Map of
+        FieldName,Value
+        sort_by,+-FieldName
+     */
     public QueryListFilter(final Map<String, String> queryParams) {
         this.queryParams = queryParams;
         instanceFilter = new QueryInstanceFilter(queryParams);
@@ -81,21 +86,27 @@ public class QueryListFilter {
                     return Boolean.compare(field1Value, field2Value);
                 }
 
-                if( fieldDefn.getType() == FieldType.STRING){
+                if( fieldDefn.getType() == FieldType.STRING ||
+                    fieldDefn.getType() == FieldType.ENUM){
                     String field1Value = thing1.getFieldValue(fieldName).asString();
                     String field2Value = thing2.getFieldValue(fieldName).asString();
                     return field1Value.compareTo(field2Value);
                 }
 
+                // don't know how to handle that field type
+                // so the instances are by default the same
+                // TODO: FieldType.OBJECT, FieldType.DATE
                 return 0;
             }
         };
 
-        // low to high sort
-        if(order>0) {
-            Collections.sort(sortedList, compareByFieldValue.reversed());
-        }else{
+
+        if(order<0) {
+            // (desc)
             Collections.sort(sortedList, compareByFieldValue);
+        }else{
+            // low to high sort (asc)
+            Collections.sort(sortedList, compareByFieldValue.reversed());
         }
 
         return sortedList;
