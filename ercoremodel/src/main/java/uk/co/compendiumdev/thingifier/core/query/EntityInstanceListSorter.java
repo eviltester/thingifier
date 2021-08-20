@@ -6,32 +6,17 @@ import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
 import java.util.*;
 
-// TODO: rename EntityInstanceListFilter
-// TODO: split into EntityInstanceListFilter and EntityInstanceListSorter
-public class QueryListFilter {
+public class EntityInstanceListSorter {
     QueryInstanceFilter instanceFilter;
 
     /*
         Given a Map of
         FieldName,Value
         sort_by,+-FieldName
+
      */
-    public QueryListFilter(final Map<String, String> queryParams) {
+    public EntityInstanceListSorter(final Map<String, String> queryParams) {
         instanceFilter = new QueryInstanceFilter(queryParams);
-    }
-
-    public List<EntityInstance> filter(final List<EntityInstance> foundItems) {
-
-        List<EntityInstance> filtered = new ArrayList<>();
-
-        for(EntityInstance instance : foundItems){
-            // does it match the filter?
-            if(instanceFilter.matches(instance)){
-                filtered.add(instance);
-            }
-        }
-
-        return filtered;
     }
 
     public List<EntityInstance> sort(final List<EntityInstance> foundItems) {

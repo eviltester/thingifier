@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-// TODO: EntityListFilterParamParser + EntityListSortParamParser
+// TODO: split into EntityListFilterParamParser + EntityListSortParamParser
 // TODO: create a matchParams (like sortBys), and use an object to support longer term handling of complex filters like, ranges, etc.
 public class QueryInstanceFilter {
     private final Map<String, String> params;

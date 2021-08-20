@@ -223,12 +223,13 @@ final public class SimpleQuery {
             return this;
         }
 
-        final QueryListFilter filterer = new QueryListFilter(queryParams);
+        final EntityInstanceListFilter filterer = new EntityInstanceListFilter(queryParams);
 
         foundItems = filterer.filter(foundItems);
 
         // support sorting after filtering
-        foundItems = filterer.sort(foundItems);
+        final EntityInstanceListSorter sorter = new EntityInstanceListSorter(queryParams);
+        foundItems = sorter.sort(foundItems);
 
         return this;
     }
