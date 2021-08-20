@@ -1,14 +1,12 @@
 package uk.co.compendiumdev.thingifier.core.query;
 
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
 import java.util.*;
 
 // TODO: split into EntityInstanceListFilter and EntityInstanceListSorter
 public class EntityInstanceListFilter {
-    QueryInstanceFilter instanceFilter;
+    EntityListFilterParamParser instanceFilter;
 
     /*
         Given a Map of
@@ -17,7 +15,7 @@ public class EntityInstanceListFilter {
 
      */
     public EntityInstanceListFilter(final Map<String, String> queryParams) {
-        instanceFilter = new QueryInstanceFilter(queryParams);
+        instanceFilter = new EntityListFilterParamParser(queryParams);
     }
 
     public List<EntityInstance> filter(final List<EntityInstance> foundItems) {

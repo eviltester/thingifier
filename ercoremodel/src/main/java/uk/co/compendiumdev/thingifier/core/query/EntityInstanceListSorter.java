@@ -7,7 +7,7 @@ import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import java.util.*;
 
 public class EntityInstanceListSorter {
-    QueryInstanceFilter instanceFilter;
+    EntityListSortParamParser instanceFilter;
 
     /*
         Given a Map of
@@ -16,14 +16,14 @@ public class EntityInstanceListSorter {
 
      */
     public EntityInstanceListSorter(final Map<String, String> queryParams) {
-        instanceFilter = new QueryInstanceFilter(queryParams);
+        instanceFilter = new EntityListSortParamParser(queryParams);
     }
 
     public List<EntityInstance> sort(final List<EntityInstance> foundItems) {
 
         List<EntityInstance> sorted = new ArrayList<>(foundItems);
 
-        for(QueryInstanceFilter.SortByFieldName sortBy :instanceFilter.sortBys()){
+        for(EntityListSortParamParser.SortByFieldName sortBy :instanceFilter.sortBys()){
             sorted = sortByField(sortBy.fieldName, sortBy.order, sorted);
         }
 

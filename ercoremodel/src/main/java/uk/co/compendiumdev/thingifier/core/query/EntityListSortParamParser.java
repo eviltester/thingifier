@@ -9,30 +9,11 @@ import java.util.Map;
 
 // TODO: split into EntityListFilterParamParser + EntityListSortParamParser
 // TODO: create a matchParams (like sortBys), and use an object to support longer term handling of complex filters like, ranges, etc.
-public class QueryInstanceFilter {
+public class EntityListSortParamParser {
     private final Map<String, String> params;
 
-    public QueryInstanceFilter(final Map<String, String> queryParams) {
+    public EntityListSortParamParser(final Map<String, String> queryParams) {
         this.params = queryParams;
-    }
-
-    public boolean matches(final EntityInstance instance) {
-        for(Map.Entry<String,String> field : params.entrySet()){
-
-            final EntityDefinition defn = instance.getEntity();
-
-            String fieldName = field.getKey();
-
-            // TODO: handle <,>,>=, ranges, like, etc.
-            if(defn.hasFieldNameDefined(fieldName)){
-                if(!instance.getFieldValue(fieldName).asString().
-                        equals(field.getValue())){
-                    return false;
-                }
-            }
-        }
-
-        return true;
     }
 
     public class SortByFieldName{
@@ -50,8 +31,7 @@ public class QueryInstanceFilter {
     public List<SortByFieldName> sortBys(){
         List<SortByFieldName>sortbys = new ArrayList<>();
         for(Map.Entry<String,String> field : params.entrySet()){
-            if(field.getKey().equalsIgnoreCase("sortby") ||
-                    field.getKey().equalsIgnoreCase("sort_by") ){
+            if(isSortByParam(field.getKey()) ){
                 final SortByFieldName aSortBy = new SortByFieldName();
                 String sortByValue = field.getValue();
                 switch (sortByValue.charAt(0)){
@@ -71,5 +51,10 @@ public class QueryInstanceFilter {
             }
         }
         return sortbys;
+    }
+
+    public static boolean isSortByParam(final String key) {
+        return (key.equalsIgnoreCase("sortby") ||
+                key.equalsIgnoreCase("sort_by"));
     }
 }
