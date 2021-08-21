@@ -36,11 +36,11 @@ public class EntityListSortParamParser {
                 String sortByValue = field.getValue();
                 switch (sortByValue.charAt(0)){
                     case '-':
-                        aSortBy.order=-1;
+                        aSortBy.order=1;
                         aSortBy.fieldName=sortByValue.substring(1);
                         break;
                     case '+':
-                        aSortBy.order=1;
+                        aSortBy.order=-1;
                         aSortBy.fieldName=sortByValue.substring(1);
                         break;
                     default:

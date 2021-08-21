@@ -4,6 +4,8 @@ import uk.co.compendiumdev.thingifier.core.domain.instances.InstanceFields;
 
 public final class FieldValue {
 
+    //TODO: Field Value should have the definition and getValue would return default if not set
+    // this would allow field values to compare against each other and simplify other code
     private final String fieldName; // should this be name or should it be a Field reference?
     private final String valueOfField;
     private InstanceFields objectValue;

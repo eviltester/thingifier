@@ -45,6 +45,7 @@ public class EntityInstanceListSorter {
 
         Field fieldDefn = sortedList.get(0).getEntity().getField(fieldName);
 
+        // there is no field of that name
         if(fieldDefn==null)
             return sortedList;
 
@@ -52,36 +53,10 @@ public class EntityInstanceListSorter {
             @Override
             public int compare(EntityInstance thing1, EntityInstance thing2) {
 
-                if( fieldDefn.getType() == FieldType.ID ||
-                    fieldDefn.getType() == FieldType.INTEGER ){
-                    int field1Value = thing1.getFieldValue(fieldName).asInteger();
-                    int field2Value = thing2.getFieldValue(fieldName).asInteger();
-                    return Integer.compare(field1Value, field2Value);
-                }
+                final ComparableFieldValue comparableFieldValue1 = new ComparableFieldValue(fieldDefn, thing1.getFieldValue(fieldName));
+                final ComparableFieldValue comparableFieldValue2 = new ComparableFieldValue(fieldDefn, thing2.getFieldValue(fieldName));
 
-                if( fieldDefn.getType() == FieldType.FLOAT){
-                    float field1Value = thing1.getFieldValue(fieldName).asFloat();
-                    float field2Value = thing2.getFieldValue(fieldName).asFloat();
-                    return Float.compare(field1Value, field2Value);
-                }
-
-                if( fieldDefn.getType() == FieldType.BOOLEAN){
-                    boolean field1Value = thing1.getFieldValue(fieldName).asBoolean();
-                    boolean field2Value = thing2.getFieldValue(fieldName).asBoolean();
-                    return Boolean.compare(field1Value, field2Value);
-                }
-
-                if( fieldDefn.getType() == FieldType.STRING ||
-                    fieldDefn.getType() == FieldType.ENUM){
-                    String field1Value = thing1.getFieldValue(fieldName).asString();
-                    String field2Value = thing2.getFieldValue(fieldName).asString();
-                    return field1Value.compareTo(field2Value);
-                }
-
-                // don't know how to handle that field type
-                // so the instances are by default the same
-                // TODO: FieldType.OBJECT, FieldType.DATE
-                return 0;
+                return comparableFieldValue1.compareTo(comparableFieldValue2);
             }
         };
 
