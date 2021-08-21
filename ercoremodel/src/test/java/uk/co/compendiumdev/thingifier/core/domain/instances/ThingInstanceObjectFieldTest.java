@@ -21,10 +21,10 @@ public class ThingInstanceObjectFieldTest {
 
         defn.addField(Field.is("person", FieldType.OBJECT)
                 .withField(
-                        Field.is("firstname").
+                        Field.is("firstname", FieldType.STRING).
                                 withExample("Bob")).
                         withField(
-                                Field.is("surname").withExample("D'obbs")
+                                Field.is("surname", FieldType.STRING).withExample("D'obbs")
                         ));
 
 

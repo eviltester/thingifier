@@ -11,14 +11,14 @@ class GenericFieldTest {
     @Test
     void byDefaultAFieldIsString(){
 
-        final Field field = Field.is("CompletedStatus");
+        final Field field = Field.is("CompletedStatus", FieldType.STRING);
         Assertions.assertEquals(FieldType.STRING, field.getType());
     }
 
     @Test
     void defaultValuesAreReturned(){
 
-        final Field field = Field.is("CompletedStatus");
+        final Field field = Field.is("CompletedStatus", FieldType.STRING);
 
         Assertions.assertFalse(field.hasDefaultValue());
 
@@ -30,7 +30,7 @@ class GenericFieldTest {
     @Test
     void canCreateFieldWithExamples(){
 
-        final Field field = Field.is("complicated").withExample("nuclear physics");
+        final Field field = Field.is("complicated", FieldType.STRING).withExample("nuclear physics");
 
         Assertions.assertEquals(1,
                 field.getExamples().size());
@@ -42,7 +42,7 @@ class GenericFieldTest {
     @Test
     void examplesAreDefaultsWhenNoExamples(){
 
-        final Field field = Field.is("example").withDefaultValue("default");
+        final Field field = Field.is("example", FieldType.STRING).withDefaultValue("default");
 
         Assertions.assertEquals(
                 1,field.getExamples().size());
@@ -59,7 +59,7 @@ class GenericFieldTest {
         expectedValues.add("people");
         expectedValues.add("decisions");
 
-        final Field field = Field.is("complicated").
+        final Field field = Field.is("complicated", FieldType.STRING).
                 withExample("nuclear physics").
                 withExample("people").
                 withExample("decisions");

@@ -23,7 +23,7 @@ public class ThingTest {
         EntityInstanceCollection person = new EntityInstanceCollection(new EntityDefinition("person", "people"));
 
         person.definition().
-                addFields(Field.is("name"), Field.is("age", INTEGER));
+                addFields(Field.is("name", STRING), Field.is("age", INTEGER));
 
         EntityInstance bob = person.createManagedInstance().
                 setValue("name","Bob");
@@ -45,7 +45,7 @@ public class ThingTest {
 
         EntityInstanceCollection url = new EntityInstanceCollection(new EntityDefinition("URL", "URLs"));
 
-        url.definition().addFields(Field.is("url"),
+        url.definition().addFields(Field.is("url", STRING),
                 Field.is("visited", INTEGER), Field.is("name",STRING));
 
         Assertions.assertTrue(url.definition().hasFieldNameDefined("url"));

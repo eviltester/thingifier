@@ -11,7 +11,7 @@ class StringFieldTest {
     @Test
     void byDefaultAFieldIsAnOptionalString(){
 
-        final Field field = Field.is("defaultString");
+        final Field field = Field.is("defaultString", FieldType.STRING);
         Assertions.assertEquals(FieldType.STRING, field.getType());
         Assertions.assertFalse(field.isMandatory());
     }
@@ -45,7 +45,7 @@ class StringFieldTest {
     @Test
     void canConfigureStringsToThrowErrorValidationErrorIfTooLarge(){
 
-        final Field field = Field.is("field").
+        final Field field = Field.is("field", FieldType.STRING).
                 makeMandatory().
                 withDefaultValue("").
                 withValidation(VRule.maximumLength(10));
@@ -61,7 +61,7 @@ class StringFieldTest {
     @Test
     void canConfigureStringsToThrowErrorValidationErrorIfNotMatchRegex(){
 
-        final Field field = Field.is("field").
+        final Field field = Field.is("field", FieldType.STRING).
                 makeMandatory().
                 withDefaultValue("").
                 withValidation(VRule.matchesRegex("^Bug:.*"));
@@ -77,7 +77,7 @@ class StringFieldTest {
     @Test
     void canConfigureStringToMatchMultipleRules(){
 
-        final Field field = Field.is("field").
+        final Field field = Field.is("field", FieldType.STRING).
                 makeMandatory().
                 withDefaultValue("").
                 withValidation(VRule.maximumLength(10),
@@ -95,7 +95,7 @@ class StringFieldTest {
     @Test
     void byDefaultTheStringHasNoValidationRules(){
 
-        final Field field = Field.is("field");
+        final Field field = Field.is("field", FieldType.STRING);
 
         Assertions.assertNotNull(field.validationRules());
         Assertions.assertEquals(0,
@@ -105,7 +105,7 @@ class StringFieldTest {
     @Test
     void stringFieldTruncation(){
 
-        final Field field = Field.is("field").
+        final Field field = Field.is("field", FieldType.STRING).
                 truncateStringTo(4);
 
         Assertions.assertEquals("1234",

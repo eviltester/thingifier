@@ -5,6 +5,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 
 public class ThingInstanceGuidTest {
 
@@ -15,7 +16,7 @@ public class ThingInstanceGuidTest {
 
         entityTestSession = new EntityDefinition("Test Session", "Test Sessions");
 
-        entityTestSession.addField(Field.is("Title"));
+        entityTestSession.addField(Field.is("Title", FieldType.STRING));
     }
 
     @Test

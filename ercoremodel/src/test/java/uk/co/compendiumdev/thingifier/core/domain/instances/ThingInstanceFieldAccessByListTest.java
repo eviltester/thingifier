@@ -20,8 +20,8 @@ public class ThingInstanceFieldAccessByListTest {
 
         entityTestSession = new EntityDefinition("Test Session", "Test Sessions");
 
-        entityTestSession.addField(Field.is("Title"));
-        entityTestSession.addFields(Field.is("CompletedStatus").withDefaultValue("Not Completed"));
+        entityTestSession.addField(Field.is("Title", FieldType.STRING));
+        entityTestSession.addFields(Field.is("CompletedStatus", FieldType.STRING).withDefaultValue("Not Completed"));
         entityTestSession.addFields(Field.is("review", FieldType.BOOLEAN).withDefaultValue("TRUE"));
         entityTestSession.addFields(Field.is("falsey", FieldType.BOOLEAN));
         entityTestSession.addFields(Field.is("anid", FieldType.ID));

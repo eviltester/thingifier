@@ -26,9 +26,9 @@ class DefinedFieldsTest {
     void fieldNamesAreAddedInOrder(){
 
         DefinedFields fields = new DefinedFields();
-        fields.addField(Field.is("zacharay"));
-        fields.addField(Field.is("middle"));
-        fields.addField(Field.is("abc"));
+        fields.addField(Field.is("zacharay", FieldType.STRING));
+        fields.addField(Field.is("middle", FieldType.STRING));
+        fields.addField(Field.is("abc", FieldType.STRING));
 
         final List<String> orderedFieldNames = fields.getFieldNames();
 
@@ -44,9 +44,9 @@ class DefinedFieldsTest {
     void canAddFieldsInBulk(){
 
         DefinedFields fields = new DefinedFields();
-        fields.addField(Field.is("zacharay"));
+        fields.addField(Field.is("zacharay", FieldType.STRING));
 
-        fields.addFields(Field.is("middle"), Field.is("abc"));
+        fields.addFields(Field.is("middle", FieldType.STRING), Field.is("abc", FieldType.STRING));
 
         final List<String> orderedFieldNames = fields.getFieldNames();
 
@@ -60,7 +60,7 @@ class DefinedFieldsTest {
     void canReportOnFieldExistence(){
 
         DefinedFields fields = new DefinedFields();
-        fields.addField(Field.is("zacharay"));
+        fields.addField(Field.is("zacharay", FieldType.STRING));
 
         Assertions.assertTrue(fields.hasFieldNameDefined("zacharay"));
         Assertions.assertFalse(fields.hasFieldNameDefined("bob"));
@@ -70,8 +70,8 @@ class DefinedFieldsTest {
     void canGetExistingFields(){
 
         DefinedFields fields = new DefinedFields();
-        fields.addField(Field.is("zacharay"));
-        fields.addField(Field.is("dobbs"));
+        fields.addField(Field.is("zacharay", FieldType.STRING));
+        fields.addField(Field.is("dobbs", FieldType.STRING));
 
         Field zach = fields.getField("zacharay");
 

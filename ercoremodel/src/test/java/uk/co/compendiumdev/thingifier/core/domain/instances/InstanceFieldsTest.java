@@ -31,7 +31,7 @@ class InstanceFieldsTest {
     void canDefineInstanceWithFields() {
 
         DefinedFields fieldsDefn = new DefinedFields();
-        fieldsDefn.addField(Field.is("Ref"));
+        fieldsDefn.addField(Field.is("Ref", FieldType.STRING));
 
         InstanceFields instance = new InstanceFields(fieldsDefn);
         Assertions.assertEquals(1, instance.getDefinition().getFieldNames().size());
@@ -43,7 +43,7 @@ class InstanceFieldsTest {
     void canDefineInstanceWithFieldsAndGetTypeDefaultValue() {
 
         DefinedFields fieldsDefn = new DefinedFields();
-        fieldsDefn.addField(Field.is("Ref"));
+        fieldsDefn.addField(Field.is("Ref", FieldType.STRING));
 
         InstanceFields instance = new InstanceFields(fieldsDefn);
 
@@ -57,7 +57,7 @@ class InstanceFieldsTest {
     void canDefineInstanceWithFieldsAndGetDefaultValue() {
 
         DefinedFields fieldsDefn = new DefinedFields();
-        fieldsDefn.addField(Field.is("Ref").withDefaultValue("bob"));
+        fieldsDefn.addField(Field.is("Ref", FieldType.STRING).withDefaultValue("bob"));
 
         InstanceFields instance = new InstanceFields(fieldsDefn);
 
@@ -70,7 +70,7 @@ class InstanceFieldsTest {
     void canSetAndGetValuesForAField() {
 
         DefinedFields fieldsDefn = new DefinedFields();
-        fieldsDefn.addField(Field.is("Ref"));
+        fieldsDefn.addField(Field.is("Ref", FieldType.STRING));
 
         InstanceFields instance = new InstanceFields(fieldsDefn);
 
@@ -199,7 +199,7 @@ class InstanceFieldsTest {
         DefinedFields fieldsDefn = new DefinedFields();
         fieldsDefn.addField(
                 Field.is("intobj", FieldType.OBJECT).
-                        withField(Field.is("name"))
+                        withField(Field.is("name", FieldType.STRING))
         );
 
         InstanceFields instance = new InstanceFields(fieldsDefn);
@@ -220,8 +220,8 @@ class InstanceFieldsTest {
 
         DefinedFields fieldsDefn = new DefinedFields();
         fieldsDefn.addFields(
-                Field.is("firstname").withDefaultValue("bob"),
-                Field.is("surname").withDefaultValue("dobbs"));
+                Field.is("firstname", FieldType.STRING).withDefaultValue("bob"),
+                Field.is("surname", FieldType.STRING).withDefaultValue("dobbs"));
 
         InstanceFields instance = new InstanceFields(fieldsDefn);
 
@@ -250,8 +250,8 @@ class InstanceFieldsTest {
 
         DefinedFields fieldsDefn = new DefinedFields();
         fieldsDefn.addFields(
-                Field.is("firstname").withDefaultValue("bob"),
-                Field.is("surname").withDefaultValue("dobbs"));
+                Field.is("firstname", FieldType.STRING).withDefaultValue("bob"),
+                Field.is("surname", FieldType.STRING).withDefaultValue("dobbs"));
 
         InstanceFields instance = new InstanceFields(fieldsDefn);
 

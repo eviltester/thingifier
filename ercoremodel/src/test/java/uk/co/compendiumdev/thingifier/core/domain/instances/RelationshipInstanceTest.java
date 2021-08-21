@@ -26,7 +26,7 @@ class RelationshipInstanceTest {
 
         System.out.println(rel);
 
-        Assertions.assertEquals(defn, rel.getRelationship());
+        Assertions.assertEquals(defn, rel.getRelationshipDefinition());
         Assertions.assertEquals(toInstance, rel.getTo());
         Assertions.assertEquals(fromInstance, rel.getFrom());
 

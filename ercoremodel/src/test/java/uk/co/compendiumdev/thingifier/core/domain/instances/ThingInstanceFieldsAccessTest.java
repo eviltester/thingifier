@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 
 import java.util.Random;
 
@@ -17,7 +18,7 @@ public class ThingInstanceFieldsAccessTest {
     public void createDefinition(){
         entityTestSession =
                 new EntityDefinition("Test Session", "Test Sessions");
-        entityTestSession.addField(Field.is("CompletedStatus").withDefaultValue("Not Completed"));
+        entityTestSession.addField(Field.is("CompletedStatus", FieldType.STRING).withDefaultValue("Not Completed"));
     }
 
     @Test

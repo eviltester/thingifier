@@ -34,7 +34,7 @@ class ThingDefinitionTest {
         EntityDefinition eDefn;
         eDefn = new EntityDefinition("Requirement", "Requirements");
 
-        eDefn.addField(Field.is("Title"));
+        eDefn.addField(Field.is("Title", FieldType.STRING));
 
         Assertions.assertEquals(2, eDefn.getFieldNames().size());
 
@@ -53,7 +53,7 @@ class ThingDefinitionTest {
         EntityDefinition eDefn;
         eDefn = new EntityDefinition("Requirement", "Requirements");
 
-        eDefn.addFields(Field.is("Title"), Field.is("Description"));
+        eDefn.addFields(Field.is("Title", FieldType.STRING), Field.is("Description", FieldType.STRING));
 
         Assertions.assertEquals(3, eDefn.getFieldNames().size());
 
@@ -68,8 +68,8 @@ class ThingDefinitionTest {
         EntityDefinition eDefn;
         eDefn = new EntityDefinition("Requirement", "Requirements");
 
-        eDefn.addFields(Field.is("Title"),
-                        Field.is("Description"));
+        eDefn.addFields(Field.is("Title", FieldType.STRING),
+                Field.is("Description", FieldType.STRING));
 
         final Field anIdField = Field.is("anId", FieldType.ID);
         final Field anotherIdField = Field.is("anotherID", FieldType.ID);
@@ -94,7 +94,7 @@ class ThingDefinitionTest {
 
         // add 19 fields
         for (int x = 1; x < 20; x++) {
-            defn.addField(Field.is("field" + x));
+            defn.addField(Field.is("field" + x, FieldType.STRING));
         }
 
         // guid added automatically - making 20 fields

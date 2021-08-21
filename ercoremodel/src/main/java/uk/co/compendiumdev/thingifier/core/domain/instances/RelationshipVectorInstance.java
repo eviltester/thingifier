@@ -10,16 +10,15 @@ import static uk.co.compendiumdev.thingifier.core.domain.definitions.relationshi
 
 public class RelationshipVectorInstance {
 
-    private RelationshipVector relationship;
+    private RelationshipVector relationshipVector;
     private EntityInstance from;
     private EntityInstance to;
 
-    // todo: this should be a vector not a RelationshipDefinition because it represents a from / to
-    // todo: rename to RelationshipVectorInstance
-    public RelationshipVectorInstance(RelationshipVector relationship, EntityInstance from, EntityInstance to) {
+    // a vector instance because it represents a from / to
+    public RelationshipVectorInstance(RelationshipVector relationshipVector, EntityInstance from, EntityInstance to) {
         this.from = from;
         this.to = to;
-        this.relationship = relationship;
+        this.relationshipVector = relationshipVector;
     }
 
     public String toString() {
@@ -27,7 +26,7 @@ public class RelationshipVectorInstance {
         StringBuilder output = new StringBuilder();
 
         String format = String.format("%s FROM: %s %s TO: %s %s",
-                relationship.getName(),
+                relationshipVector.getName(),
                 from.getEntity().getName(),
                 from.getGUID(),
                 to.getEntity().getName(),
@@ -39,8 +38,8 @@ public class RelationshipVectorInstance {
         return output.toString();
     }
 
-    public RelationshipDefinition getRelationship() {
-        return relationship.getRelationshipDefinition();
+    public RelationshipDefinition getRelationshipDefinition() {
+        return relationshipVector.getRelationshipDefinition();
     }
 
     public EntityInstance getTo() {
@@ -67,15 +66,15 @@ public class RelationshipVectorInstance {
 
         List<EntityInstance> deleteThese = new ArrayList<>();
 
-        if (relationship.getOptionality() == MANDATORY_RELATIONSHIP) {
+        if (relationshipVector.getOptionality() == MANDATORY_RELATIONSHIP) {
             // mandatory relationship must result in the from thing being deleted
             deleteThese.add(from);
         }
 
-        if (relationship.getRelationshipDefinition().isTwoWay()){
+        if (relationshipVector.getRelationshipDefinition().isTwoWay()){
 
-                final RelationshipVector otherVector = relationship.getRelationshipDefinition().
-                                                        otherVectorOf(relationship);
+                final RelationshipVector otherVector = relationshipVector.getRelationshipDefinition().
+                                                        otherVectorOf(relationshipVector);
 
                 if(otherVector.getOptionality() == MANDATORY_RELATIONSHIP) {
                     // if relationship deleted therefore the other thing should be deleted too

@@ -40,7 +40,7 @@ public class UsageTest {
         Thingifier things = new Thingifier();
 
         things.defineThing("URL", "URLs").
-                    addFields(Field.is("url"),Field.is("name",STRING)
+                    addFields(Field.is("url", STRING),Field.is("name",STRING)
                     );
 
         EntityInstanceCollection urls = things.getThingInstancesNamed("URL");
@@ -54,7 +54,7 @@ public class UsageTest {
 
         EntityDefinition user = things.defineThing("USER", "users");
 
-        user.addFields(Field.is("name"));
+        user.addFields(Field.is("name", STRING));
 
         EntityInstance alan = things.getThingInstancesNamed("USER").createManagedInstance().
                 setValue("name","alan");

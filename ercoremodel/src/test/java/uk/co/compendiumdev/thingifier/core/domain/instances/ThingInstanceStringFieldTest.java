@@ -2,6 +2,7 @@ package uk.co.compendiumdev.thingifier.core.domain.instances;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
@@ -16,7 +17,7 @@ public class ThingInstanceStringFieldTest {
     public void byDefaultAStringFieldIsEmpty(){
 
         EntityDefinition stringFieldEntity = new EntityDefinition("Test Session", "Test Sessions");
-        stringFieldEntity.addFields(Field.is("defaultString"));
+        stringFieldEntity.addFields(Field.is("defaultString", FieldType.STRING));
 
         EntityInstance instance = new EntityInstance(stringFieldEntity);
 
@@ -27,7 +28,7 @@ public class ThingInstanceStringFieldTest {
     public void canSetDefaultValuesOfStringFields(){
 
         EntityDefinition stringFieldEntity = new EntityDefinition("Test Session", "Test Sessions");
-        stringFieldEntity.addFields(Field.is("defaultString").withDefaultValue("bob"));
+        stringFieldEntity.addFields(Field.is("defaultString", FieldType.STRING).withDefaultValue("bob"));
 
         EntityInstance instance = new EntityInstance(stringFieldEntity);
 
@@ -38,7 +39,7 @@ public class ThingInstanceStringFieldTest {
     public void canConfigureStringsToValidateOnNotEmpty(){
 
         EntityDefinition stringFieldEntity = new EntityDefinition("entity", "entities");
-        stringFieldEntity.addFields(Field.is("defaultString").
+        stringFieldEntity.addFields(Field.is("defaultString", FieldType.STRING).
                 makeMandatory().
                                         withDefaultValue("").
                                         withValidation(VRule.notEmpty()));
@@ -57,7 +58,7 @@ public class ThingInstanceStringFieldTest {
     public void canConfigureStringsToTruncateIfTooLargeWhenSetting(){
 
         EntityDefinition stringFieldEntity = new EntityDefinition("entity", "entities");
-        stringFieldEntity.addFields(Field.is("field").
+        stringFieldEntity.addFields(Field.is("field", FieldType.STRING).
                 makeMandatory().
                 withDefaultValue("").
                 withValidation(VRule.notEmpty()).truncateStringTo(10));
@@ -75,7 +76,7 @@ public class ThingInstanceStringFieldTest {
     public void canConfigureStringsToThrowErrorValidationErrorIfTooLarge(){
 
         EntityDefinition stringFieldEntity = new EntityDefinition("entity", "entities");
-        stringFieldEntity.addFields(Field.is("field").
+        stringFieldEntity.addFields(Field.is("field", FieldType.STRING).
                 makeMandatory().
                 withDefaultValue("").
                 withValidation(VRule.maximumLength(10)));
@@ -93,7 +94,7 @@ public class ThingInstanceStringFieldTest {
     public void canConfigureStringsToValidateonSetting(){
 
         EntityDefinition stringFieldEntity = new EntityDefinition("entity", "entities");
-        stringFieldEntity.addFields(Field.is("field").
+        stringFieldEntity.addFields(Field.is("field", FieldType.STRING).
                 makeMandatory().
                 withDefaultValue("").
                 withValidation(VRule.matchesRegex("^Bug:.*")));

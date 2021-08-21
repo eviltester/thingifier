@@ -58,10 +58,6 @@ public final class Field {
         nextId=1;
     }
 
-    public static Field is(String name) {
-        return Field.is(name, FieldType.STRING);
-    }
-
     public static Field is(String name, FieldType type) {
         return new Field(name, type);
     }

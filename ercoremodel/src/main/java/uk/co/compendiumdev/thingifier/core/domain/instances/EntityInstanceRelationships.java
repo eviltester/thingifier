@@ -92,7 +92,7 @@ public class EntityInstanceRelationships {
     public Collection<EntityInstance> getConnectedItems(final String relationshipName) {
         Set<EntityInstance> theConnectedItems = new HashSet<>();
         for (RelationshipVectorInstance relationship : relationships) {
-            if (relationship.getRelationship().isKnownAs(relationshipName)) {
+            if (relationship.getRelationshipDefinition().isKnownAs(relationshipName)) {
                 theConnectedItems.add(
                         relationship.getOtherThingInstance(forThis));
             }
@@ -119,7 +119,7 @@ public class EntityInstanceRelationships {
         List<RelationshipVectorInstance> toDelete = new ArrayList<>();
 
         for (RelationshipVectorInstance relationship : relationships) {
-            if (relationship.getRelationship().isKnownAs(relationshipName)) {
+            if (relationship.getRelationshipDefinition().isKnownAs(relationshipName)) {
                 if (relationship.involves(thing)) {
                     toDelete.add(relationship);
                     thingsToDelete.addAll(relationship.instancesSubjectToMandatoryRelationship());
@@ -207,7 +207,7 @@ public class EntityInstanceRelationships {
             if(vector.getOptionality() == MANDATORY_RELATIONSHIP){
                 boolean foundRelationship = false;
                 for(RelationshipVectorInstance relationship : relationships){
-                    if(relationship.getRelationship()==vector.getRelationshipDefinition()){
+                    if(relationship.getRelationshipDefinition()==vector.getRelationshipDefinition()){
                         foundRelationship=true;
                     }
                 }
