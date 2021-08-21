@@ -1,6 +1,7 @@
 package uk.co.compendiumdev.thingifier.core.query;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
@@ -15,6 +16,73 @@ import java.util.Map;
 public class SortingViaQueryFiltersTest {
 
     // todo: lower level testing at the EntityInstanceListSorter level
+
+    EntityInstanceCollection thing;
+    EntityRelModel aThingifier;
+
+    @BeforeEach
+    public void setupThingifier(){
+
+        aThingifier = new EntityRelModel();
+        aThingifier.createEntityDefinition("thing", "things")
+                .addFields(Field.is("truefalse", FieldType.BOOLEAN),
+                        Field.is("int", FieldType.INTEGER));
+
+        thing = aThingifier.getInstanceCollectionForEntityNamed("thing");
+
+    }
+
+    @Test
+    public void canSortIntViaAQuery(){
+
+        final EntityInstance thing1 = thing.createManagedInstance();
+        thing1.setValue("int", "1");
+
+        final EntityInstance thing2 = thing.createManagedInstance();
+        thing2.setValue("int", "2");
+
+        final EntityInstance thing3 = thing.createManagedInstance();
+        thing3.setValue("int", "3");
+
+        Map<String, String> params = new HashMap<>();
+        params.put("sortBy", "-int");
+
+        SimpleQuery ascSortedResults = new SimpleQuery(aThingifier, "things").
+                performQuery(params);
+
+        Assertions.assertTrue(ascSortedResults.isResultACollection(), "result should be a collection");
+        final List<EntityInstance> instances = ascSortedResults.getListEntityInstances();
+        Assertions.assertEquals(3, instances.size(), "expected 3 values");
+        Assertions.assertEquals(thing3,instances.get(0));
+        Assertions.assertEquals(thing2,instances.get(1));
+
+        // then repeat sort and get different results
+
+        params = new HashMap<>();
+        params.put("sortBy", "+int");
+
+        SimpleQuery descSortedResults = new SimpleQuery(aThingifier, "things").
+                performQuery(params);
+
+        final List<EntityInstance> descInstances = descSortedResults.getListEntityInstances();
+        Assertions.assertEquals(3, descInstances.size(), "expected 3 values");
+        Assertions.assertEquals(thing1,descInstances.get(0));
+        Assertions.assertEquals(thing2,descInstances.get(1));
+        Assertions.assertEquals(thing3,descInstances.get(2));
+
+        // check that default sort is ascending
+        params = new HashMap<>();
+        params.put("sortBy", "int");
+
+        SimpleQuery defaultSortedResults = new SimpleQuery(aThingifier, "things").
+                performQuery(params);
+
+        final List<EntityInstance> defaultSortedInstances = defaultSortedResults.getListEntityInstances();
+        Assertions.assertEquals(3, defaultSortedInstances.size(), "expected 3 values");
+        Assertions.assertEquals(thing1,defaultSortedInstances.get(0));
+        Assertions.assertEquals(thing2,defaultSortedInstances.get(1));
+        Assertions.assertEquals(thing3,defaultSortedInstances.get(2));
+    }
 
     @Test
     public void canSortViaAQuery(){
@@ -32,7 +100,7 @@ public class SortingViaQueryFiltersTest {
         falseThing.setValue("truefalse", "false");
 
         Map<String, String> params = new HashMap<>();
-        params.put("sortBy", "+truefalse");
+        params.put("sortBy", "-truefalse");
 
         SimpleQuery ascSortedResults = new SimpleQuery(aThingifier, "things").
                                         performQuery(params);
@@ -46,7 +114,7 @@ public class SortingViaQueryFiltersTest {
         // then repeat sort and get different results
 
         params = new HashMap<>();
-        params.put("sortBy", "-truefalse");
+        params.put("sortBy", "+truefalse");
 
         SimpleQuery descSortedResults = new SimpleQuery(aThingifier, "things").
                 performQuery(params);
@@ -56,17 +124,15 @@ public class SortingViaQueryFiltersTest {
         Assertions.assertEquals(falseThing,descInstances.get(0));
         Assertions.assertEquals(trueThing,descInstances.get(1));
 
-        // check that default sort is descending
+        // check that default sort is ascending
         params = new HashMap<>();
-        params.put("sortBy", "-truefalse");
+        params.put("sortBy", "truefalse");
 
         SimpleQuery defaultSortedResults = new SimpleQuery(aThingifier, "things").
                 performQuery(params);
 
         final List<EntityInstance> defaultSortedInstances = defaultSortedResults.getListEntityInstances();
         Assertions.assertEquals(2, defaultSortedInstances.size(), "expected 2 values");
-        Assertions.assertEquals(falseThing,defaultSortedInstances.get(0));
-        Assertions.assertEquals(trueThing,defaultSortedInstances.get(1));
         Assertions.assertEquals(falseThing,defaultSortedInstances.get(0));
         Assertions.assertEquals(trueThing,defaultSortedInstances.get(1));
     }

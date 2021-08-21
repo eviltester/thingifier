@@ -21,8 +21,8 @@ class RelationshipInstanceTest {
 
         final EntityInstance fromInstance = thingfrom.createManagedInstance();
         final EntityInstance toInstance = thingfrom.createManagedInstance();
-        RelationshipInstance rel = new RelationshipInstance(
-                                    defn, fromInstance, toInstance);
+        RelationshipVectorInstance rel = new RelationshipVectorInstance(
+                                    vector, fromInstance, toInstance);
 
         System.out.println(rel);
 

@@ -8,15 +8,15 @@ import java.util.List;
 
 import static uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.Optionality.MANDATORY_RELATIONSHIP;
 
-public class RelationshipInstance {
+public class RelationshipVectorInstance {
 
-    private RelationshipDefinition relationship;
+    private RelationshipVector relationship;
     private EntityInstance from;
     private EntityInstance to;
 
     // todo: this should be a vector not a RelationshipDefinition because it represents a from / to
     // todo: rename to RelationshipVectorInstance
-    public RelationshipInstance(RelationshipDefinition relationship, EntityInstance from, EntityInstance to) {
+    public RelationshipVectorInstance(RelationshipVector relationship, EntityInstance from, EntityInstance to) {
         this.from = from;
         this.to = to;
         this.relationship = relationship;
@@ -27,7 +27,7 @@ public class RelationshipInstance {
         StringBuilder output = new StringBuilder();
 
         String format = String.format("%s FROM: %s %s TO: %s %s",
-                relationship.getFromRelationship().getName(),
+                relationship.getName(),
                 from.getEntity().getName(),
                 from.getGUID(),
                 to.getEntity().getName(),
@@ -40,7 +40,7 @@ public class RelationshipInstance {
     }
 
     public RelationshipDefinition getRelationship() {
-        return relationship;
+        return relationship.getRelationshipDefinition();
     }
 
     public EntityInstance getTo() {
@@ -67,18 +67,21 @@ public class RelationshipInstance {
 
         List<EntityInstance> deleteThese = new ArrayList<>();
 
-        final RelationshipVector fromVector = relationship.getFromRelationship();
-
-        if (fromVector.getOptionality() == MANDATORY_RELATIONSHIP) {
+        if (relationship.getOptionality() == MANDATORY_RELATIONSHIP) {
             // mandatory relationship must result in the from thing being deleted
             deleteThese.add(from);
         }
 
-        final RelationshipVector twoWay = relationship.getReversedRelationship();
-        if (twoWay!=null && twoWay.getOptionality() == MANDATORY_RELATIONSHIP) {
-            // if relationship deleted therefore the other thing should be deleted too
-            // since the relationship to other is mandatory
-            deleteThese.add(to);
+        if (relationship.getRelationshipDefinition().isTwoWay()){
+
+                final RelationshipVector otherVector = relationship.getRelationshipDefinition().
+                                                        otherVectorOf(relationship);
+
+                if(otherVector.getOptionality() == MANDATORY_RELATIONSHIP) {
+                    // if relationship deleted therefore the other thing should be deleted too
+                    // since the relationship to other is mandatory
+                    deleteThese.add(to);
+                }
         }
 
         return deleteThese;

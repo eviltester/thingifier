@@ -44,6 +44,7 @@ public class EntityListSortParamParser {
                         aSortBy.fieldName=sortByValue.substring(1);
                         break;
                     default:
+                        aSortBy.order=-1;
                         aSortBy.fieldName=sortByValue;
                         break;
                 }

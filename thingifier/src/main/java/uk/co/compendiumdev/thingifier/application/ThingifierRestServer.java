@@ -137,7 +137,6 @@ public class ThingifierRestServer {
 
         // TODO: config to enable docs and configure the URL
         // / - default for documentation
-        // TODO: move into htmlgui package
         get("/docs", (request, response) -> {
             response.type("text/html");
             response.status(200);

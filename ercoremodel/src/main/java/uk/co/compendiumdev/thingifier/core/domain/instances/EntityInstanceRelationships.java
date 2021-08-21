@@ -1,7 +1,6 @@
 package uk.co.compendiumdev.thingifier.core.domain.instances;
 
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVector;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 
@@ -11,7 +10,7 @@ import static uk.co.compendiumdev.thingifier.core.domain.definitions.relationshi
 
 public class EntityInstanceRelationships {
 
-    private final List<RelationshipInstance> relationships;
+    private final List<RelationshipVectorInstance> relationships;
     private final EntityInstance forThis;
 
     public EntityInstanceRelationships(final EntityInstance thingInstance){
@@ -24,7 +23,7 @@ public class EntityInstanceRelationships {
 
         if (!relationships.isEmpty()) {
             output.append(String.format("\t\t\t\t\t Relationships:%n"));
-            for (RelationshipInstance relatesTo : relationships) {
+            for (RelationshipVectorInstance relatesTo : relationships) {
                 output.append("\t\t\t\t\t" + relatesTo.toString());
             }
         }
@@ -57,21 +56,18 @@ public class EntityInstanceRelationships {
         }
 
 
-        RelationshipDefinition relationshipDefinition =
-                        relationship.getRelationshipDefinition();
-
-        RelationshipInstance related = new RelationshipInstance(
-                                                relationshipDefinition,
+        RelationshipVectorInstance related = new RelationshipVectorInstance(
+                                                relationship,
                                                 forThis, thing);
         this.relationships.add(related);
 
-        if (relationshipDefinition.isTwoWay()) {
+        if (relationship.getRelationshipDefinition().isTwoWay()) {
             thing.getRelationships().add(related);
         }
 
     }
 
-    private void add(final RelationshipInstance relationship) {
+    private void add(final RelationshipVectorInstance relationship) {
         relationships.add(relationship);
     }
 
@@ -95,7 +91,7 @@ public class EntityInstanceRelationships {
 
     public Collection<EntityInstance> getConnectedItems(final String relationshipName) {
         Set<EntityInstance> theConnectedItems = new HashSet<>();
-        for (RelationshipInstance relationship : relationships) {
+        for (RelationshipVectorInstance relationship : relationships) {
             if (relationship.getRelationship().isKnownAs(relationshipName)) {
                 theConnectedItems.add(
                         relationship.getOtherThingInstance(forThis));
@@ -107,7 +103,7 @@ public class EntityInstanceRelationships {
 
     public List<EntityInstance> getConnectedItemsOfType(final String type) {
         List<EntityInstance> theConnectedItems = new ArrayList<>();
-        for (RelationshipInstance relationship : relationships) {
+        for (RelationshipVectorInstance relationship : relationships) {
             if (relationship.getTo().getEntity().getName().
                     toLowerCase().contentEquals(type.toLowerCase())) {
                 theConnectedItems.add(relationship.getTo());
@@ -120,9 +116,9 @@ public class EntityInstanceRelationships {
                                                              final String relationshipName) {
 
         List<EntityInstance> thingsToDelete = new ArrayList<>();
-        List<RelationshipInstance> toDelete = new ArrayList<>();
+        List<RelationshipVectorInstance> toDelete = new ArrayList<>();
 
-        for (RelationshipInstance relationship : relationships) {
+        for (RelationshipVectorInstance relationship : relationships) {
             if (relationship.getRelationship().isKnownAs(relationshipName)) {
                 if (relationship.involves(thing)) {
                     toDelete.add(relationship);
@@ -148,7 +144,7 @@ public class EntityInstanceRelationships {
         final EntityInstance me = forThis;
         EntityInstance them;
 
-        for (RelationshipInstance relationship : relationships) {
+        for (RelationshipVectorInstance relationship : relationships) {
             if (relationship.getFrom() == forThis) {
                 // me -> them
                 them= relationship.getTo();
@@ -166,7 +162,7 @@ public class EntityInstanceRelationships {
         return deleteThese;
     }
 
-    private void remove(final RelationshipInstance relationship) {
+    private void remove(final RelationshipVectorInstance relationship) {
         relationships.remove(relationship);
     }
 
@@ -174,9 +170,9 @@ public class EntityInstanceRelationships {
 
         List<EntityInstance> instancesToDelete = new ArrayList<>();
 
-        List<RelationshipInstance> toDelete = new ArrayList<>();
+        List<RelationshipVectorInstance> toDelete = new ArrayList<>();
 
-        for (RelationshipInstance relationship : relationships) {
+        for (RelationshipVectorInstance relationship : relationships) {
             if(relationship.involves(thing)){
                 toDelete.add(relationship);
                 instancesToDelete.addAll(relationship.instancesSubjectToMandatoryRelationship());
@@ -210,7 +206,7 @@ public class EntityInstanceRelationships {
             // for each definition, does it have relationships that match
             if(vector.getOptionality() == MANDATORY_RELATIONSHIP){
                 boolean foundRelationship = false;
-                for(RelationshipInstance relationship : relationships){
+                for(RelationshipVectorInstance relationship : relationships){
                     if(relationship.getRelationship()==vector.getRelationshipDefinition()){
                         foundRelationship=true;
                     }

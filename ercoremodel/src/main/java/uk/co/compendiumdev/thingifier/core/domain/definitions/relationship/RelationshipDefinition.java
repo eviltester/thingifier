@@ -82,4 +82,18 @@ public class RelationshipDefinition {
     public RelationshipVector getFromRelationship() {
         return fromTo;
     }
+
+    /* given a vector in this relationship, return the other one */
+    public RelationshipVector otherVectorOf(final RelationshipVector relationshipVector) {
+        if(fromTo==relationshipVector){
+            return toFrom;
+        }
+        if(toFrom==relationshipVector){
+            return fromTo;
+        }
+        // this vector is not part of this relationship
+        System.out.println(String.format("Vector %s not part of relationship",
+                                relationshipVector.getName()));
+        return null;
+    }
 }
