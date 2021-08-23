@@ -148,7 +148,7 @@ public class EntityRelModelTest {
         final EntityInstanceCollection thing1 = erm.getInstanceCollectionForEntityNamed("thing1");
         EntityDefinition t2d = erm.createEntityDefinition("thing2", "thing2");
         final EntityInstanceCollection thing2 = erm.getInstanceCollectionForEntityNamed("thing1");
-        erm.createRelationshipDefinition(t1d, t2d, "things", Cardinality.ONE_TO_MANY);
+        erm.createRelationshipDefinition(t1d, t2d, "things", Cardinality.ONE_TO_MANY());
 
         Assertions.assertNotNull(erm.getRelationshipDefinitions());
         Assertions.assertEquals(1, erm.getRelationshipDefinitions().size());
@@ -164,8 +164,8 @@ public class EntityRelModelTest {
         final EntityDefinition dpd = erm.createEntityDefinition("dependantthing", "dthings");
         EntityInstanceCollection dependent = erm.getInstanceCollectionForEntityNamed("dependantthing");
 
-        erm.createRelationshipDefinition(td, dpd, "things", Cardinality.ONE_TO_MANY)
-                .whenReversed(Cardinality.ONE_TO_ONE, "idiewithoutyou").
+        erm.createRelationshipDefinition(td, dpd, "things", Cardinality.ONE_TO_MANY())
+                .whenReversed(Cardinality.ONE_TO_ONE(), "idiewithoutyou").
                 getReversedRelationship().
                 setOptionality(Optionality.MANDATORY_RELATIONSHIP);
 
@@ -181,8 +181,8 @@ public class EntityRelModelTest {
         final EntityDefinition depdefn = erm.createEntityDefinition("dependantthing", "dthings");
         EntityInstanceCollection dependent = erm.getInstanceCollectionForEntityNamed("dependantthing");
 
-        erm.createRelationshipDefinition(thingdefn, depdefn, "things", Cardinality.ONE_TO_MANY)
-            .whenReversed(Cardinality.ONE_TO_ONE,"idiewithoutyou").
+        erm.createRelationshipDefinition(thingdefn, depdefn, "things", Cardinality.ONE_TO_MANY())
+            .whenReversed(Cardinality.ONE_TO_ONE(),"idiewithoutyou").
             getReversedRelationship().
             setOptionality(Optionality.MANDATORY_RELATIONSHIP);
 

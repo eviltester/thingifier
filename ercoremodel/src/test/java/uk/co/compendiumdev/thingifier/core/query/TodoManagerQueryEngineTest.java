@@ -40,13 +40,13 @@ public class TodoManagerQueryEngineTest {
                 .addFields(
                         Field.is("title", STRING));
 
-        todoManager.createRelationshipDefinition(project, todo, "tasks", Cardinality.ONE_TO_MANY).
-                whenReversed(Cardinality.ONE_TO_MANY,"task-of");
+        todoManager.createRelationshipDefinition(project, todo, "tasks", Cardinality.ONE_TO_MANY()).
+                whenReversed(Cardinality.ONE_TO_MANY(),"task-of");
 
-        todoManager.createRelationshipDefinition(project, category, "categories", Cardinality.ONE_TO_MANY);
-        todoManager.createRelationshipDefinition(category, todo, "todos", Cardinality.ONE_TO_MANY);
-        todoManager.createRelationshipDefinition(category, project, "projects", Cardinality.ONE_TO_MANY);
-        todoManager.createRelationshipDefinition(todo, category, "categories", Cardinality.ONE_TO_MANY);
+        todoManager.createRelationshipDefinition(project, category, "categories", Cardinality.ONE_TO_MANY());
+        todoManager.createRelationshipDefinition(category, todo, "todos", Cardinality.ONE_TO_MANY());
+        todoManager.createRelationshipDefinition(category, project, "projects", Cardinality.ONE_TO_MANY());
+        todoManager.createRelationshipDefinition(todo, category, "categories", Cardinality.ONE_TO_MANY());
 
         final EntityInstanceCollection todos = todoManager.getInstanceCollectionForEntityNamed("todo");
         final EntityInstanceCollection categories = todoManager.getInstanceCollectionForEntityNamed("category");

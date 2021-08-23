@@ -7,7 +7,7 @@ class CardinalityTest {
 
     @Test
     void canGetLeftAndRightValues(){
-        Assertions.assertEquals("1", Cardinality.ONE_TO_MANY.left());
-        Assertions.assertEquals("*", Cardinality.ONE_TO_MANY.right());
+        Assertions.assertEquals("1", Cardinality.ONE_TO_MANY().left());
+        Assertions.assertEquals("*", Cardinality.ONE_TO_MANY().right());
     }
 }

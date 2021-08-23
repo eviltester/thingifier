@@ -15,7 +15,7 @@ class RelationshipInstanceTest {
         EntityInstanceCollection thingfrom = new EntityInstanceCollection(new EntityDefinition("from", "from"));
         EntityInstanceCollection thingto = new EntityInstanceCollection(new EntityDefinition("to", "to"));
         RelationshipVectorDefinition vector = new RelationshipVectorDefinition(
-                thingfrom.definition(), "fromto", thingto.definition(), Cardinality.ONE_TO_ONE
+                thingfrom.definition(), "fromto", thingto.definition(), Cardinality.ONE_TO_ONE()
         );
         RelationshipDefinition defn = RelationshipDefinition.create(vector);
 

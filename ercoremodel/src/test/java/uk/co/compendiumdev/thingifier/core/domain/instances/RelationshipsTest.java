@@ -26,7 +26,7 @@ class RelationshipsTest {
         thingfrom = new EntityInstanceCollection(new EntityDefinition("from", "from"));
         thingto = new EntityInstanceCollection(new EntityDefinition("to", "to"));
         RelationshipVectorDefinition vector = new RelationshipVectorDefinition(
-                thingfrom.definition(), "fromto", thingto.definition(), Cardinality.ONE_TO_ONE
+                thingfrom.definition(), "fromto", thingto.definition(), Cardinality.ONE_TO_ONE()
         );
 
         defn = RelationshipDefinition.create(vector);
@@ -117,7 +117,7 @@ class RelationshipsTest {
 
         final EntityInstanceRelationships relationships = new EntityInstanceRelationships(fromInstance);
 
-        defn.whenReversed(Cardinality.ONE_TO_ONE, "tofrom");
+        defn.whenReversed(Cardinality.ONE_TO_ONE(), "tofrom");
 
         relationships.connect("fromto", toInstance);
 
@@ -132,7 +132,7 @@ class RelationshipsTest {
     @Test
     void canCheckForTypesWithoutAnyInstances(){
 
-        defn.whenReversed(Cardinality.ONE_TO_ONE, "bob");
+        defn.whenReversed(Cardinality.ONE_TO_ONE(), "bob");
 
         Assertions.assertEquals(
             thingto.definition(),
@@ -200,7 +200,7 @@ class RelationshipsTest {
 
         final EntityInstanceRelationships relationships = new EntityInstanceRelationships(fromInstance);
 
-        defn.whenReversed(Cardinality.ONE_TO_ONE, "tofrom");
+        defn.whenReversed(Cardinality.ONE_TO_ONE(), "tofrom");
         defn.getReversedRelationship().setOptionality(Optionality.MANDATORY_RELATIONSHIP);
 
         relationships.connect("fromto", toInstance);
@@ -221,7 +221,7 @@ class RelationshipsTest {
     void removeAllRelationshipsTwoWayReversed(){
 
 
-        defn.whenReversed(Cardinality.ONE_TO_ONE, "tofrom");
+        defn.whenReversed(Cardinality.ONE_TO_ONE(), "tofrom");
         defn.getReversedRelationship().
                 setOptionality(Optionality.MANDATORY_RELATIONSHIP);
 

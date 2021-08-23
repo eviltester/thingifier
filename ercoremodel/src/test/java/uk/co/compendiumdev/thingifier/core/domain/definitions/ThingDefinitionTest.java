@@ -123,7 +123,7 @@ class ThingDefinitionTest {
                 new RelationshipVectorDefinition(stress,
                         "withbob",
                         slack,
-                        Cardinality.ONE_TO_MANY);
+                        Cardinality.ONE_TO_MANY());
         final RelationshipDefinition defn = RelationshipDefinition.create(vec);
 
 

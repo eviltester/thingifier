@@ -23,7 +23,7 @@ class RelationshipDefinitionTest {
                         estimate,
                         "estimate-of",
                         task,
-                        Cardinality.ONE_TO_MANY);
+                        Cardinality.ONE_TO_MANY());
 
     }
 
@@ -52,7 +52,7 @@ class RelationshipDefinitionTest {
         final RelationshipDefinition rel = RelationshipDefinition.
                 create(estimateToTask);
 
-        rel.whenReversed(Cardinality.ONE_TO_MANY, "estimates");
+        rel.whenReversed(Cardinality.ONE_TO_MANY(), "estimates");
 
         Assertions.assertTrue(rel.isTwoWay());
 

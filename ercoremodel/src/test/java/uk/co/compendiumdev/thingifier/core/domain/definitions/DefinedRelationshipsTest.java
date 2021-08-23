@@ -21,7 +21,7 @@ class DefinedRelationshipsTest {
                 new EntityDefinition("thing1", "thing1"),
                 "bob",
                 new EntityDefinition("thing2", "thing2"),
-                            Cardinality.ONE_TO_MANY));
+                            Cardinality.ONE_TO_MANY()));
 
         Assertions.assertTrue(
                 rels.hasRelationship("bob"));
@@ -36,13 +36,13 @@ class DefinedRelationshipsTest {
                 new EntityDefinition("thing1", "thing1"),
                 "bob",
                 new EntityDefinition("thing2", "thing2"),
-                Cardinality.ONE_TO_ONE));
+                Cardinality.ONE_TO_ONE()));
 
         rels.addRelationship(new RelationshipVectorDefinition(
                 new EntityDefinition("thing2", "thing2"),
                 "bob",
                 new EntityDefinition("thing3", "thing3"),
-                Cardinality.ONE_TO_MANY));
+                Cardinality.ONE_TO_MANY()));
 
         final List<RelationshipVectorDefinition> vectors = rels.getRelationships("bob");
         Assertions.assertEquals(2, vectors.size());
@@ -67,28 +67,28 @@ class DefinedRelationshipsTest {
                 new EntityDefinition("thing1", "thing1"),
                 "bob",
                 new EntityDefinition("thing2", "thing2"),
-                Cardinality.ONE_TO_ONE);
+                Cardinality.ONE_TO_ONE());
         rels.addRelationship(bob1);
 
         final RelationshipVectorDefinition bob2 = new RelationshipVectorDefinition(
                 new EntityDefinition("thing2", "thing2"),
                 "bob",
                 new EntityDefinition("thing3", "thing3"),
-                Cardinality.ONE_TO_MANY);
+                Cardinality.ONE_TO_MANY());
         rels.addRelationship(bob2);
 
         final RelationshipVectorDefinition connie1 = new RelationshipVectorDefinition(
                 new EntityDefinition("thing1", "thing1"),
                 "connie",
                 new EntityDefinition("thing2", "thing2"),
-                Cardinality.ONE_TO_MANY);
+                Cardinality.ONE_TO_MANY());
         rels.addRelationship(connie1);
 
         final RelationshipVectorDefinition dobbs1 = new RelationshipVectorDefinition(
                 new EntityDefinition("thing1", "thing1"),
                 "dobbs",
                 new EntityDefinition("thing2", "thing2"),
-                Cardinality.ONE_TO_MANY);
+                Cardinality.ONE_TO_MANY());
         rels.addRelationship(dobbs1);
 
         final List<RelationshipVectorDefinition> bobs = rels.getRelationships("bob");

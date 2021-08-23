@@ -43,6 +43,10 @@ public class RelationshipVectorInstance {
         return relationshipVector.getRelationshipDefinition();
     }
 
+    public RelationshipVectorDefinition getDefinition() {
+        return relationshipVector;
+    }
+
     public EntityInstance getTo() {
         return to;
     }

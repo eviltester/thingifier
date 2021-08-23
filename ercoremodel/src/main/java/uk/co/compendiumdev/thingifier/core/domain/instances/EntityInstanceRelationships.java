@@ -68,6 +68,26 @@ public class EntityInstanceRelationships {
     }
 
     private void add(final RelationshipVectorInstance relationship) {
+
+        // enforce validation
+        if(!relationship.involves(forThis)){
+            new RuntimeException(
+                    String.format("Cannot add relationship to %s of type %s not valid",
+                                forThis.getGUID(),
+                            relationship.getDefinition().getName()));
+        }
+
+        if(relationship.getDefinition().getCardinality().hasMaximumLimit()){
+            int maximumLimit = relationship.getDefinition().getCardinality().maximumLimit();
+            if(relationships.size()>=maximumLimit){
+                new RuntimeException(
+                    String.format("Cannot add relationship type %s, exceeds maximum %d",
+                            forThis.getGUID(),
+                            relationship.getRelationshipDefinition().getFromRelationship().getName(),
+                            maximumLimit));
+            }
+        }
+
         relationships.add(relationship);
     }
 
@@ -191,8 +211,6 @@ public class EntityInstanceRelationships {
     public ValidationReport validateRelationships() {
         ValidationReport report = new ValidationReport();
 
-        // TODO: relationship cardinality validation e.g. too many, not enough etc.
-
         final EntityDefinition entityDefinition = forThis.getEntity();
 
 
@@ -210,15 +228,20 @@ public class EntityInstanceRelationships {
             // for each definition vector, does it have relationships Vector Instances that match
             if(vector.getOptionality() == MANDATORY_RELATIONSHIP){
                 if(foundRelationshipCount==0){
-                    report.combine(
-                            new ValidationReport().
-                                    setValid(false).
-                                    addErrorMessage(String.format("Mandatory Relationship not found %s", vector.getName()))
+                    report.setValid(false).
+                            addErrorMessage(String.format("Mandatory Relationship not found %s", vector.getName())
                     );
                 }
             }
 
             // check cardinality here
+            if(vector.getCardinality().hasMaximumLimit()){
+                if(foundRelationshipCount>vector.getCardinality().maximumLimit()){
+                    report.setValid(false).
+                            addErrorMessage(String.format("Maximum related instances exceeded for %s at %d",
+                                    vector.getName(), vector.getCardinality().maximumLimit())) ;
+                }
+            }
         }
 
         // validate each instance in detail
