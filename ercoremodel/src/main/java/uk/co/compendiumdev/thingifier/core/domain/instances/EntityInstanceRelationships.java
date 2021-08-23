@@ -59,7 +59,8 @@ public class EntityInstanceRelationships {
         RelationshipVectorInstance related = new RelationshipVectorInstance(
                                                 relationship,
                                                 forThis, thing);
-        this.relationships.add(related);
+
+        add(related);
 
         if (relationship.getRelationshipDefinition().isTwoWay()) {
             thing.getRelationships().add(related);
@@ -69,20 +70,27 @@ public class EntityInstanceRelationships {
 
     private void add(final RelationshipVectorInstance relationship) {
 
+        String instanceIdentification = "";
+
+        try{
+            instanceIdentification = forThis.getGUID();
+        }catch(Exception e){
+            // ignore, no guid
+        }
+
         // enforce validation
         if(!relationship.involves(forThis)){
-            new RuntimeException(
+            throw new RuntimeException(
                     String.format("Cannot add relationship to %s of type %s not valid",
-                                forThis.getGUID(),
+                            instanceIdentification,
                             relationship.getDefinition().getName()));
         }
 
         if(relationship.getDefinition().getCardinality().hasMaximumLimit()){
             int maximumLimit = relationship.getDefinition().getCardinality().maximumLimit();
             if(relationships.size()>=maximumLimit){
-                new RuntimeException(
+                throw new RuntimeException(
                     String.format("Cannot add relationship type %s, exceeds maximum %d",
-                            forThis.getGUID(),
                             relationship.getRelationshipDefinition().getFromRelationship().getName(),
                             maximumLimit));
             }
