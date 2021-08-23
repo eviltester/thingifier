@@ -2,6 +2,8 @@ package uk.co.compendiumdev.thingifier.core.domain.definitions.relationship;
 
 import uk.co.compendiumdev.thingifier.core.domain.definitions.Cardinality;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.instances.RelationshipVectorInstance;
+import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 
 import static uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.Optionality.*;
 
@@ -16,7 +18,7 @@ import static uk.co.compendiumdev.thingifier.core.domain.definitions.relationshi
  *
  *
  */
-public class RelationshipVector {
+public class RelationshipVectorDefinition {
 
     private final String name;
     private final Cardinality cardinality;
@@ -25,7 +27,7 @@ public class RelationshipVector {
     private EntityDefinition to;
     private RelationshipDefinition parentRelationship;
 
-    public RelationshipVector(EntityDefinition from, String relationShipName, EntityDefinition to, Cardinality cardinality) {
+    public RelationshipVectorDefinition(EntityDefinition from, String relationShipName, EntityDefinition to, Cardinality cardinality) {
         this.from = from;
         this.name = relationShipName;
         this.to = to;
@@ -68,4 +70,6 @@ public class RelationshipVector {
     public void forRelationship(final RelationshipDefinition relationshipDefinition) {
         this.parentRelationship = relationshipDefinition;
     }
+
+
 }

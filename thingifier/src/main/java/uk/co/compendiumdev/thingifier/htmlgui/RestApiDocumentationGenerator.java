@@ -13,7 +13,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.F
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVector;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVectorDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.validation.ValidationRule;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonThing;
@@ -240,7 +240,7 @@ public class RestApiDocumentationGenerator {
 
             for (RelationshipDefinition relationship : relationships) {
 
-                RelationshipVector fromToRelationship = relationship.getFromRelationship();
+                RelationshipVectorDefinition fromToRelationship = relationship.getFromRelationship();
 
                 //task-of : task => project
                 String reportLine = String.format("<li>%s : %s => %s%n",

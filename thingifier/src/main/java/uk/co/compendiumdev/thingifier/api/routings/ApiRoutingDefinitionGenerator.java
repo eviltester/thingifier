@@ -7,7 +7,7 @@ import uk.co.compendiumdev.thingifier.api.response.ResponseHeader;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVector;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVectorDefinition;
 
 import java.util.HashMap;
 import java.util.List;
@@ -194,7 +194,7 @@ public class ApiRoutingDefinitionGenerator {
             defn.addRouting("method not allowed", RoutingVerb.PATCH, aUrlWGuid, RoutingStatus.returnValue(405));
 
 
-            for (RelationshipVector rel : thing.definition().related().getRelationships()) {
+            for (RelationshipVectorDefinition rel : thing.definition().related().getRelationships()) {
                 addRoutingsForRelationship(defn, rel);
             }
         }
@@ -216,7 +216,7 @@ public class ApiRoutingDefinitionGenerator {
         }
     }
 
-    private void addRoutingsForRelationship(final ApiRoutingDefinition defn, final RelationshipVector relationship) {
+    private void addRoutingsForRelationship(final ApiRoutingDefinition defn, final RelationshipVectorDefinition relationship) {
 
         String fromName = relationship.getFrom().getName();
         String toName = relationship.getTo().getName();

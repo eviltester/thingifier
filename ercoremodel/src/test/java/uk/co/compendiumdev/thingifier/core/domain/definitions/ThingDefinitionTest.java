@@ -6,7 +6,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.F
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipDefinition;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVector;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVectorDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.InstanceFields;
 
 import java.util.ArrayList;
@@ -119,8 +119,8 @@ class ThingDefinitionTest {
         final EntityDefinition stress = new EntityDefinition("stress", "stress");
         final EntityDefinition slack = new EntityDefinition("slack", "slack");
 
-        final RelationshipVector vec =
-                new RelationshipVector(stress,
+        final RelationshipVectorDefinition vec =
+                new RelationshipVectorDefinition(stress,
                         "withbob",
                         slack,
                         Cardinality.ONE_TO_MANY);

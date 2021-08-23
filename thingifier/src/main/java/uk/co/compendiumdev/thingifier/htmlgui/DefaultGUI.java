@@ -8,7 +8,7 @@ import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVector;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVectorDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonThing;
@@ -180,7 +180,7 @@ public class DefaultGUI {
 
                         html.append("<h2>Relationships</h2>");
 
-                        for (RelationshipVector relationship : definition.related().getRelationships()) {
+                        for (RelationshipVectorDefinition relationship : definition.related().getRelationships()) {
                             final Collection<EntityInstance> relatedItems = instance.getRelationships().getConnectedItems(relationship.getName());
                             html.append("<h3>" + relationship.getName() + "</h3>");
                             if (relatedItems.size() > 0) {

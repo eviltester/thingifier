@@ -7,7 +7,7 @@ import uk.co.compendiumdev.thingifier.apiconfig.JsonOutputConfig;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVector;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVectorDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.InstanceFields;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
@@ -153,7 +153,7 @@ public class JsonThing {
                 }
             ]
          */
-        final Collection<RelationshipVector> relationships = thingInstance.getEntity().related().getRelationships();
+        final Collection<RelationshipVectorDefinition> relationships = thingInstance.getEntity().related().getRelationships();
 
         // compressed relationships are possible when relationship_name is not a field name
         /*
@@ -170,7 +170,7 @@ public class JsonThing {
             final JsonArray relationshipsArray = new JsonArray();
 
             // fill the array "relationship_name" : [
-            for(RelationshipVector relationship : relationships){
+            for(RelationshipVectorDefinition relationship : relationships){
                 final Collection<EntityInstance> relatedItems = thingInstance.getRelationships().getConnectedItems(relationship.getName());
 
                 boolean isCompressedRelationship=true;

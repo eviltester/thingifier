@@ -8,7 +8,7 @@ import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.Cardinality;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.Optionality;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipDefinition;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVector;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVectorDefinition;
 
 import java.util.Collection;
 import java.util.List;
@@ -25,7 +25,7 @@ class RelationshipsTest {
     void baseData(){
         thingfrom = new EntityInstanceCollection(new EntityDefinition("from", "from"));
         thingto = new EntityInstanceCollection(new EntityDefinition("to", "to"));
-        RelationshipVector vector = new RelationshipVector(
+        RelationshipVectorDefinition vector = new RelationshipVectorDefinition(
                 thingfrom.definition(), "fromto", thingto.definition(), Cardinality.ONE_TO_ONE
         );
 

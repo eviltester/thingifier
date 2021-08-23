@@ -4,7 +4,7 @@ import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVector;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVectorDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
 import java.util.List;
@@ -69,9 +69,9 @@ public class BodyArgsProcessor {
                             // but it might not be
                             // TODO: find other usages of this pattern and refactor to
                             if(instance.getEntity().related().hasRelationship(relationshipName)){
-                                final List<RelationshipVector> relationshipsAre =
+                                final List<RelationshipVectorDefinition> relationshipsAre =
                                         instance.getEntity().related().getRelationships(relationshipName);
-                                for(RelationshipVector relate : relationshipsAre){
+                                for(RelationshipVectorDefinition relate : relationshipsAre){
                                     final EntityDefinition typeOfThing = relate.getTo();
                                     instanceToRelateTo =  thingifier.getThingInstancesNamed(typeOfThing.getName()).
                                                             findInstanceByField(

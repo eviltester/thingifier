@@ -4,7 +4,7 @@ import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVector;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVectorDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
@@ -32,8 +32,8 @@ final public class SimpleQuery {
     EntityInstanceCollection currentCollection = null;
     EntityInstance currentInstance = null;
     List<EntityInstance> foundItems = new ArrayList<EntityInstance>();
-    RelationshipVector lastRelationshipFound = null;
-    List<RelationshipVector> lastRelationshipsFound = null;
+    RelationshipVectorDefinition lastRelationshipFound = null;
+    List<RelationshipVectorDefinition> lastRelationshipsFound = null;
     EntityInstanceCollection parentCollection = null;
     private EntityInstance parentInstance = null;
 
@@ -275,7 +275,7 @@ final public class SimpleQuery {
         if (foundItemsHistoryList.size() - 2 < 0) {
             return false;
         }
-        return foundItemsHistoryList.get(foundItemsHistoryList.size() - 2) instanceof RelationshipVector;
+        return foundItemsHistoryList.get(foundItemsHistoryList.size() - 2) instanceof RelationshipVectorDefinition;
     }
 
     public EntityInstance getLastInstance() {

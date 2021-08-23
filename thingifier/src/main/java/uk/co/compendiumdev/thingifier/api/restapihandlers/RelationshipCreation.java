@@ -8,7 +8,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.Fie
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVector;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVectorDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.query.SimpleQuery;
@@ -42,8 +42,8 @@ public class RelationshipCreation {
             return ApiResponse.error404(String.format("Could not find parent thing for relationship %s", url));
         }
 
-        RelationshipVector relationshipToUse;
-        List<RelationshipVector> possibleRelationships = connectThis.getEntity().related().getRelationships(relationshipName);
+        RelationshipVectorDefinition relationshipToUse;
+        List<RelationshipVectorDefinition> possibleRelationships = connectThis.getEntity().related().getRelationships(relationshipName);
         // if no way to narrow it down then use the first one TODO: potential bug if multiple named relationshps
         relationshipToUse = possibleRelationships.get(0);
 

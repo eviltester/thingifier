@@ -1,7 +1,7 @@
 package uk.co.compendiumdev.thingifier.core.domain.instances;
 
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVector;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVectorDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 
 import java.util.*;
@@ -43,7 +43,7 @@ public class EntityInstanceRelationships {
         }
 
         // get the relationship vector between this thing and the passed in thing
-        RelationshipVector relationship = entityDefinition.
+        RelationshipVectorDefinition relationship = entityDefinition.
                                             getNamedRelationshipTo(
                                                     relationshipName,
                                                     thing.getEntity());
@@ -76,7 +76,7 @@ public class EntityInstanceRelationships {
         // types of related items, even if there are no actual relationships
         final EntityDefinition entityDefinition = forThis.getEntity();
 
-        for (RelationshipVector relationship : entityDefinition.related().getRelationships()) {
+        for (RelationshipVectorDefinition relationship : entityDefinition.related().getRelationships()) {
             if (relationship.getRelationshipDefinition().isKnownAs(relationshipName)) {
                 if (relationship.getTo() == entityDefinition) {
                     return relationship.getFrom();
@@ -184,34 +184,32 @@ public class EntityInstanceRelationships {
         return instancesToDelete;
     }
 
-
-
     public boolean hasAnyRelationshipInstances() {
         return !relationships.isEmpty();
     }
 
-
-
     public ValidationReport validateRelationships() {
         ValidationReport report = new ValidationReport();
-
 
         // TODO: relationship cardinality validation e.g. too many, not enough etc.
 
         final EntityDefinition entityDefinition = forThis.getEntity();
 
+
         // Optionality Relationship Validation
-        final Collection<RelationshipVector> theRelationshipVectors = entityDefinition.related().getRelationships();
-        for(RelationshipVector vector : theRelationshipVectors){
-            // for each definition, does it have relationships that match
-            if(vector.getOptionality() == MANDATORY_RELATIONSHIP){
-                boolean foundRelationship = false;
-                for(RelationshipVectorInstance relationship : relationships){
-                    if(relationship.getRelationshipDefinition()==vector.getRelationshipDefinition()){
-                        foundRelationship=true;
-                    }
+        final Collection<RelationshipVectorDefinition> theRelationshipVectorDefns = entityDefinition.related().getRelationships();
+        for(RelationshipVectorDefinition vector : theRelationshipVectorDefns){
+
+            int foundRelationshipCount = 0;
+            for(RelationshipVectorInstance relationship : relationships){
+                if(relationship.getRelationshipDefinition()==vector.getRelationshipDefinition()){
+                    foundRelationshipCount++;
                 }
-                if(!foundRelationship){
+            }
+
+            // for each definition vector, does it have relationships Vector Instances that match
+            if(vector.getOptionality() == MANDATORY_RELATIONSHIP){
+                if(foundRelationshipCount==0){
                     report.combine(
                             new ValidationReport().
                                     setValid(false).
@@ -219,7 +217,24 @@ public class EntityInstanceRelationships {
                     );
                 }
             }
+
+            // check cardinality here
         }
+
+        // validate each instance in detail
+        for(RelationshipVectorInstance relationship : relationships){
+            ValidationReport vectorInstanceReport = relationship.validate();
+            if(!vectorInstanceReport.isValid()){
+                Collection<String> errorMessages =vectorInstanceReport.getErrorMessages();
+                for(String errorMessage : errorMessages){
+                    report.setValid(false).addErrorMessage(
+                            String.format("Error with EntityInstance relationship %s - %s",
+                            forThis.getGUID(), errorMessage)
+                    );
+                }
+            }
+        }
+
 
         return report;
     }

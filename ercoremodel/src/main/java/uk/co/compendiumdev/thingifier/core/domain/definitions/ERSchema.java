@@ -1,7 +1,7 @@
 package uk.co.compendiumdev.thingifier.core.domain.definitions;
 
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipDefinition;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVector;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVectorDefinition;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -34,7 +34,7 @@ public class ERSchema {
     public RelationshipDefinition defineRelationship(final EntityDefinition from, final EntityDefinition to, final String named, final Cardinality of) {
         RelationshipDefinition relationship =
                 RelationshipDefinition.create(
-                        new RelationshipVector(
+                        new RelationshipVectorDefinition(
                                 from,
                                 named,
                                 to,

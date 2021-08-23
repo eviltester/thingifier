@@ -10,7 +10,7 @@ class RelationshipDefinitionTest {
 
     private EntityDefinition task;
     private EntityDefinition estimate;
-    private RelationshipVector estimateToTask;
+    private RelationshipVectorDefinition estimateToTask;
 
     @BeforeEach
     void defaultVector(){
@@ -19,7 +19,7 @@ class RelationshipDefinitionTest {
         estimate = new EntityDefinition("estimate", "estimates");
 
         estimateToTask =
-                new RelationshipVector(
+                new RelationshipVectorDefinition(
                         estimate,
                         "estimate-of",
                         task,

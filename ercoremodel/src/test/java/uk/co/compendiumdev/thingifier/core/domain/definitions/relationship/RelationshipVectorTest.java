@@ -9,7 +9,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 class RelationshipVectorTest {
     private EntityDefinition task;
     private EntityDefinition estimate;
-    private RelationshipVector vector;
+    private RelationshipVectorDefinition vector;
 
     // vector is pretty much a data class
 
@@ -19,7 +19,7 @@ class RelationshipVectorTest {
         estimate = new EntityDefinition("estimate", "estimates");
 
         vector =
-                new RelationshipVector(
+                new RelationshipVectorDefinition(
                         estimate,
                         "estimate-of",
                         task,

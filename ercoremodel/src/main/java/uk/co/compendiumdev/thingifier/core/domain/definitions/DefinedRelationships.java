@@ -1,13 +1,13 @@
 package uk.co.compendiumdev.thingifier.core.domain.definitions;
 
-import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVector;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVectorDefinition;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class DefinedRelationships {
 
-    private Map<String, List<RelationshipVector>> relationships;
+    private Map<String, List<RelationshipVectorDefinition>> relationships;
 
     public DefinedRelationships(){
         this.relationships = new ConcurrentHashMap<>();
@@ -17,8 +17,8 @@ public class DefinedRelationships {
         return relationships.containsKey(relationshipName.toLowerCase());
     }
 
-    public void addRelationship(final RelationshipVector relationship) {
-        List<RelationshipVector> relationshipsWithThisName = relationships.get(relationship.getName());
+    public void addRelationship(final RelationshipVectorDefinition relationship) {
+        List<RelationshipVectorDefinition> relationshipsWithThisName = relationships.get(relationship.getName());
         if (relationshipsWithThisName == null) {
             // there is no relationship with this name
             relationshipsWithThisName = new ArrayList<>();
@@ -28,7 +28,7 @@ public class DefinedRelationships {
         relationshipsWithThisName.add(relationship);
     }
 
-    public List<RelationshipVector> getRelationships(final String relationshipName) {
+    public List<RelationshipVectorDefinition> getRelationships(final String relationshipName) {
 
         String seekName = relationshipName.toLowerCase();
 
@@ -36,15 +36,15 @@ public class DefinedRelationships {
             return new ArrayList<>();
         }
 
-        List<RelationshipVector> myrelationships = relationships.get(seekName);
+        List<RelationshipVectorDefinition> myrelationships = relationships.get(seekName);
         return new ArrayList<>(myrelationships);
     }
 
-    public Set<RelationshipVector> getRelationships() {
+    public Set<RelationshipVectorDefinition> getRelationships() {
 
-        Set<RelationshipVector> myRelationships = new HashSet<>();
-        for (List<RelationshipVector> list : relationships.values()) {
-            for (RelationshipVector rel : list) {
+        Set<RelationshipVectorDefinition> myRelationships = new HashSet<>();
+        for (List<RelationshipVectorDefinition> list : relationships.values()) {
+            for (RelationshipVectorDefinition rel : list) {
                 myRelationships.add(rel);
             }
 

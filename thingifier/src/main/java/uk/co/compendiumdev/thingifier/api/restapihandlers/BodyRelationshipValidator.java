@@ -6,7 +6,7 @@ import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVector;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVectorDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
@@ -85,8 +85,8 @@ public class BodyRelationshipValidator {
         EntityInstance thingToRelateTo = thingifier.findThingInstanceByGuid(guidValue);
         // if we cannot find it by a guid then we need to identify the relationship type and find it by id for things
         if(thingToRelateTo==null) {
-            final List<RelationshipVector> relationshipsNamed = thingDefinition.related().getRelationships(relationShipName);
-            for(RelationshipVector vector : relationshipsNamed){
+            final List<RelationshipVectorDefinition> relationshipsNamed = thingDefinition.related().getRelationships(relationShipName);
+            for(RelationshipVectorDefinition vector : relationshipsNamed){
                 final EntityInstanceCollection thingToRelationship = thingifier.getThingInstancesNamed(vector.getTo().getName());
                 thingToRelateTo = thingToRelationship.findInstanceByGUIDorID(guidValue);
                 if(thingToRelateTo!=null){
@@ -194,7 +194,7 @@ public class BodyRelationshipValidator {
                                                    final ValidationReport report) {
         // is it a valid relationship to the other thing
 
-        for(RelationshipVector relationships : thingDefinition.related().getRelationships(relationShipName)){
+        for(RelationshipVectorDefinition relationships : thingDefinition.related().getRelationships(relationShipName)){
             if(relationships.getTo().getPlural().equals(
                     thingToRelateTo)){
                 return true;

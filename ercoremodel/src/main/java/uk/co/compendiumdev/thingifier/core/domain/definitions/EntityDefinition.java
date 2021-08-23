@@ -3,7 +3,7 @@ package uk.co.compendiumdev.thingifier.core.domain.definitions;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVector;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVectorDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.InstanceFields;
 
 import java.util.*;
@@ -81,13 +81,13 @@ public class EntityDefinition {
         return definedRelationships;
     }
 
-    public RelationshipVector getNamedRelationshipTo(final String relationshipName,
-                                       final EntityDefinition entity) {
+    public RelationshipVectorDefinition getNamedRelationshipTo(final String relationshipName,
+                                                               final EntityDefinition entity) {
 
-        List<RelationshipVector> relationshipsWithThisName =
+        List<RelationshipVectorDefinition> relationshipsWithThisName =
                 definedRelationships.getRelationships(relationshipName);
 
-        for (RelationshipVector relationship : relationshipsWithThisName) {
+        for (RelationshipVectorDefinition relationship : relationshipsWithThisName) {
             if (relationship.getTo() == entity) {
                 return relationship;
             }

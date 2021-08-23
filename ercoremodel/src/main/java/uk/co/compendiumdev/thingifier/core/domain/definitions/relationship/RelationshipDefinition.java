@@ -8,22 +8,22 @@ public class RelationshipDefinition {
         A RelationshipDefinition defines the whole scope of the relationship
         Things will only know about the specific Relationship vectors that relate outwards from themselves.
      */
-    private RelationshipVector fromTo;
-    private RelationshipVector toFrom;
+    private RelationshipVectorDefinition fromTo;
+    private RelationshipVectorDefinition toFrom;
 
     //todo: in theory we don't need 'relationship' since we could just have two vectors
 
-    private RelationshipDefinition(RelationshipVector fromVector) {
+    private RelationshipDefinition(RelationshipVectorDefinition fromVector) {
         fromTo = fromVector;
         fromVector.forRelationship(this);
     }
 
-    public static RelationshipDefinition create(RelationshipVector fromVector) {
+    public static RelationshipDefinition create(RelationshipVectorDefinition fromVector) {
         return new RelationshipDefinition(fromVector);
     }
 
     public RelationshipDefinition whenReversed(Cardinality of, String named) {
-        final RelationshipVector vector = new RelationshipVector(
+        final RelationshipVectorDefinition vector = new RelationshipVectorDefinition(
                 fromTo.getTo(),
                 named,
                 fromTo.getFrom(),
@@ -61,7 +61,7 @@ public class RelationshipDefinition {
     /*
         Return the representation of the reversal
      */
-    public RelationshipVector getReversedRelationship() {
+    public RelationshipVectorDefinition getReversedRelationship() {
         return toFrom;
     }
 
@@ -79,12 +79,12 @@ public class RelationshipDefinition {
         return false;
     }
 
-    public RelationshipVector getFromRelationship() {
+    public RelationshipVectorDefinition getFromRelationship() {
         return fromTo;
     }
 
     /* given a vector in this relationship, return the other one */
-    public RelationshipVector otherVectorOf(final RelationshipVector relationshipVector) {
+    public RelationshipVectorDefinition otherVectorOf(final RelationshipVectorDefinition relationshipVector) {
         if(fromTo==relationshipVector){
             return toFrom;
         }

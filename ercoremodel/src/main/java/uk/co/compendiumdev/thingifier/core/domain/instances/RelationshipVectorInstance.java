@@ -1,7 +1,8 @@
 package uk.co.compendiumdev.thingifier.core.domain.instances;
 
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipDefinition;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVector;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVectorDefinition;
+import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,12 +11,12 @@ import static uk.co.compendiumdev.thingifier.core.domain.definitions.relationshi
 
 public class RelationshipVectorInstance {
 
-    private RelationshipVector relationshipVector;
+    private RelationshipVectorDefinition relationshipVector;
     private EntityInstance from;
     private EntityInstance to;
 
     // a vector instance because it represents a from / to
-    public RelationshipVectorInstance(RelationshipVector relationshipVector, EntityInstance from, EntityInstance to) {
+    public RelationshipVectorInstance(RelationshipVectorDefinition relationshipVector, EntityInstance from, EntityInstance to) {
         this.from = from;
         this.to = to;
         this.relationshipVector = relationshipVector;
@@ -73,7 +74,7 @@ public class RelationshipVectorInstance {
 
         if (relationshipVector.getRelationshipDefinition().isTwoWay()){
 
-                final RelationshipVector otherVector = relationshipVector.getRelationshipDefinition().
+                final RelationshipVectorDefinition otherVector = relationshipVector.getRelationshipDefinition().
                                                         otherVectorOf(relationshipVector);
 
                 if(otherVector.getOptionality() == MANDATORY_RELATIONSHIP) {
@@ -85,4 +86,52 @@ public class RelationshipVectorInstance {
 
         return deleteThese;
     }
+
+    public ValidationReport validate() {
+
+        final ValidationReport report = new ValidationReport();
+
+        // valid when
+        // we have both sides on the vector
+        // we have a relationship definition
+        // the items on either side match the relationship definition
+
+        if(relationshipVector==null){
+            report.setValid(false).
+                    addErrorMessage("No Relationship found");
+        }
+
+        if(from==null){
+            report.setValid(false).
+                    addErrorMessage("No From Instance found");
+        }
+
+        if(to==null){
+            report.setValid(false).
+                    addErrorMessage("No To Instance found");
+        }
+
+        // short cut validation checking if something major wrong
+        if(!report.isValid()){
+            return report;
+        }
+
+        if(from.getEntity() != relationshipVector.getFrom()){
+            report.setValid(false).
+                    addErrorMessage(
+                        String.format("Found from EntityInstance types %s but expected of type %s",
+                                from.getEntity().getName(), relationshipVector.getFrom().getName()));
+        }
+
+        if(to.getEntity() != relationshipVector.getTo()){
+            report.setValid(false).
+                    addErrorMessage(
+                            String.format("Found to EntityInstance types %s but expected of type %s",
+                                    to.getEntity().getName(), relationshipVector.getTo().getName()));
+        }
+
+        return report;
+    }
+
+
 }
