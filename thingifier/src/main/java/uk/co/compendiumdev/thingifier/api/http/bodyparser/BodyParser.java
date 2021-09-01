@@ -188,8 +188,27 @@ public class BodyParser {
             }
 
             Object theValue = arg.getValue();
+            String isInstanceType = "Something Else";
+            if(theValue instanceof String){
+                isInstanceType = "STRING";
+            }
+            if(theValue instanceof Boolean){
+                isInstanceType = "BOOLEAN";
+            }
+            if(theValue instanceof Integer){
+                isInstanceType = "INTEGER";
+            }
+            if(theValue instanceof Float){
+                isInstanceType = "NUMERIC";
+            }
+            if(theValue instanceof Double){
+                isInstanceType = "NUMERIC";
+            }
 
-            String errorMessage = String.format("%s should be %s", field.getName(), field.getType());
+
+
+            // TODO: add " but was %s" e.g. should be BOOLEAN but was STRING - remember to change in challenges checking
+            String errorMessage = String.format("%s should be %s but was %s", field.getName(), field.getType(), isInstanceType);
 
             if(field.getType()== FieldType.BOOLEAN){
                 if (!(theValue instanceof Boolean )) {
