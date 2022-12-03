@@ -17,6 +17,8 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <java.version>1.8</java.version>
         <rest-assured-version>4.4.0</rest-assured-version>
+        <sonar.organization>tjlatehjr-1</sonar.organization>
+        <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     </properties>
 
     <modules>
@@ -32,7 +34,6 @@
         <module>thingifierapp</module>
         <module>swaggerizer</module>
     </modules>
-
 
 </project>
 
