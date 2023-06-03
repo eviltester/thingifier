@@ -142,7 +142,7 @@ public class ChallengeDefinitions {
 
         // DELETE
         ChallengeSection deleteChallenges = new ChallengeSection("DELETE Challenges",
-                "Use a DELETE request to delete an entity. Since this is an extreme request, normall you have to be logged in or authenticated, but we wanted to make life easier for you so we cover authentication later. Anyone can delete To Do items without authentication in this system.");
+                "Use a DELETE request to delete an entity. Since this is an extreme request, normally you have to be logged in or authenticated, but we wanted to make life easier for you so we cover authentication later. Anyone can delete To Do items without authentication in this system.");
         sections.add(deleteChallenges);
 
         aChallenge =
