@@ -66,12 +66,35 @@ public class IdBasedInstanceNonHttpTest {
     }
 
     @Test
+    public void canGetAThingUsingGuidFromCustomSession(){
+
+        Thingifier model = getThingifier();
+
+        final Map<String,String> headers = new HashMap<>();
+        headers.put(ThingifierHttpApi.HTTP_SESSION_HEADER_NAME.toLowerCase(), "other_things");
+
+        // we are bypassing the HTTP api so need to create the database
+        model.getERmodel().createInstanceDatabase("other_things");
+
+        final ApiResponse idApiResponse = model.api().get("/thing/200", new HashMap<>(), headers);
+        Assertions.assertEquals(404, idApiResponse.getStatusCode());
+
+        // add instance to custom session
+        final EntityInstanceCollection thing = model.getERmodel().getInstanceData("other_things").getInstanceCollectionForEntityNamed("thing");
+        final EntityInstance existingInstance = thing.createManagedInstance().setValue("title", "My Title" + System.nanoTime());
+
+        final ApiResponse idApiResponse2 = model.api().get("/thing/" + existingInstance.getGUID(), new HashMap<>(), headers);
+        Assertions.assertEquals(200, idApiResponse2.getStatusCode());
+        Assertions.assertEquals(existingInstance, idApiResponse2.getReturnedInstance());
+    }
+
+    @Test
     public void canGetAThingUsingIdFromCustomSession(){
 
         Thingifier model = getThingifier();
 
         final Map<String,String> headers = new HashMap<>();
-        headers.put(ThingifierHttpApi.HTTP_SESSION_HEADER_NAME, "other_things");
+        headers.put(ThingifierHttpApi.HTTP_SESSION_HEADER_NAME.toLowerCase(), "other_things");
 
         // we are bypassing the HTTP api so need to create the database
         model.getERmodel().createInstanceDatabase("other_things");
