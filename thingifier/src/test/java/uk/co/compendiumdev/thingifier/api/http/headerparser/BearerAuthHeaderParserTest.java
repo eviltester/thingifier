@@ -1,10 +1,11 @@
-package uk.co.compendiumdev.thingifier.api.http;
+package uk.co.compendiumdev.thingifier.api.http.headerparser;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import uk.co.compendiumdev.thingifier.api.http.BearerAuthHeaderParser;
 
 import java.util.ArrayList;
 import java.util.List;

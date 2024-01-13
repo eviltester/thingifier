@@ -1,13 +1,17 @@
 package uk.co.compendiumdev.thingifier.api.restapihandlers;
 
 import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.api.ThingifierRestAPIHandler;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
+import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.query.SimpleQuery;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi.HTTP_SESSION_HEADER_NAME;
 
 public class RestApiGetHandler {
     private final Thingifier thingifier;
@@ -16,7 +20,7 @@ public class RestApiGetHandler {
         this.thingifier = aThingifier;
     }
 
-    public ApiResponse handle(final String url, final Map<String, String> queryParams) {
+    public ApiResponse handle(final String url, final Map<String, String> queryParams, final Map<String, String> requestHeaders) {
 
         // if there are params, and we are not allowed to filter, and we enforce that
         if(queryParams.size()>0 &&
@@ -26,13 +30,19 @@ public class RestApiGetHandler {
                         String.format("Can not use query parameters with %s", url));
         }
 
+        String sessionHeaderValue = requestHeaders.get(HTTP_SESSION_HEADER_NAME.toLowerCase());
+        String instanceDatabaseName = EntityRelModel.DEFAULT_DATABASE_NAME;
+        if(sessionHeaderValue!=null){
+            instanceDatabaseName = sessionHeaderValue;
+        }
+
         SimpleQuery queryResults;
 
         if(thingifier.apiConfig().forParams().willAllowFilteringThroughUrlParams()){
-           queryResults = new SimpleQuery(thingifier.getERmodel().getSchema(), thingifier.getERmodel().getInstanceData(), url).performQuery(
+           queryResults = new SimpleQuery(thingifier.getERmodel().getSchema(), thingifier.getERmodel().getInstanceData(instanceDatabaseName), url).performQuery(
                    queryParams);
         }else{
-            queryResults = new SimpleQuery(thingifier.getERmodel().getSchema(), thingifier.getERmodel().getInstanceData(), url).performQuery();
+            queryResults = new SimpleQuery(thingifier.getERmodel().getSchema(), thingifier.getERmodel().getInstanceData(instanceDatabaseName), url).performQuery();
         }
 
         // TODO: we should support pagination through query params
@@ -65,10 +75,5 @@ public class RestApiGetHandler {
                     resultContainsType(queryResults.resultContainsDefn());
         }
     }
-
-    public ApiResponse handle(final String url) {
-        return handle(url, new HashMap<>());
-    }
-
 
 }

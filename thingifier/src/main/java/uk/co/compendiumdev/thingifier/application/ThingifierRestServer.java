@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static spark.Spark.*;
+import static uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi.HTTP_SESSION_HEADER_NAME;
 
 public class ThingifierRestServer {
 
@@ -174,7 +175,13 @@ public class ThingifierRestServer {
                         get(defn.url(), (request, response) -> {
                             //return apiBridge.get(request, response);
                             final HttpApiRequest theRequest = SparkToHttpApiRequest.convert(request);
+                            // TODO: allow amending the request and the response at a request level from framework
+                            // .e.g
+                            // Add the Challenger GUID identifier as a Thingifier HTTP Session header
+                            // in a hook we could write - request.addHeader(HTTP_SESSION_HEADER_NAME, challenger.getXChallenger());
+                            //runAnyCustomHttpApiRequestAmendmentHooks(theRequest)
                             final HttpApiResponse theResponse = apiBridge.get(theRequest);
+                            // TODO: similarly allow amending the response from the API
                             return HttpApiResponseToSpark.convert(theResponse, response);
                         });
                     }

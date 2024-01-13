@@ -14,6 +14,8 @@ final public class ThingifierHttpApi {
 
     // TODO: each 'session' could have its own thingifier to support multiple users
     // TODO: would need the ability to create and delete sessions
+    public static final String HTTP_SESSION_HEADER_NAME = "X-THING-HTTP-SESSION-GUID";
+
     private final Thingifier thingifier;
     private final JsonThing jsonThing;
     private List<HttpApiRequestHook> apiRequestHooks;
@@ -107,13 +109,27 @@ final public class ThingifierHttpApi {
 
         ApiResponse apiResponse=null;
 
+        // if there is a session id and we have not created the erm yet, then do that now
+        String sessionId = request.getHeader(HTTP_SESSION_HEADER_NAME);
+        if(sessionId!=null){
+            // make sure database exists
+            thingifier.getERmodel().createInstanceDatabaseIfNotExisting(sessionId);
+            // TODO: the datapopulator should not be passed the erm, instead pass a schema and a database instance
+            // until this is done we can't populate the new database and so it will be blank
+            //thingifier.generateData();
+        }
+
+
         switch (verb){
             case GET:
                 apiResponse = thingifier.api().get(request.getPath(),
-                                            request.getQueryParams());
+                                                    request.getQueryParams(),
+                                                    request.getHeaders());
                 break;
             case HEAD:
-                apiResponse = thingifier.api().head(request.getPath());
+                apiResponse = thingifier.api().head(request.getPath(),
+                                                    request.getQueryParams(),
+                                                    request.getHeaders());
                 break;
             case DELETE:
                 apiResponse = thingifier.api().delete(request.getPath());
@@ -157,7 +173,7 @@ final public class ThingifierHttpApi {
         HttpApiResponse httpResponse = runTheHttpApiRequestHooksOn(request);
 
         if(httpResponse==null) {
-            ApiResponse apiResponse = thingifier.api().get(query);
+            ApiResponse apiResponse = thingifier.api().get(query, request.getQueryParams(), request.getHeaders());
             httpResponse = new HttpApiResponse(request.getHeaders(), apiResponse,
                     jsonThing, thingifier.apiConfig());
         }

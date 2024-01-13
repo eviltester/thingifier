@@ -106,9 +106,7 @@ public class EntityRelModel {
             throw new IllegalStateException("ERM Database Already Exists with name " + databaseKey);
         }
 
-        ERInstanceData aDatabase = new ERInstanceData();
-        aDatabase.createInstanceCollectionFrom(this.schema);
-        databases.put(databaseKey, aDatabase);
+        createInstanceDatabaseIfNotExisting(databaseKey);
     }
 
 
@@ -117,5 +115,15 @@ public class EntityRelModel {
             throw new IllegalStateException("Cannot delete default database");
         }
         databases.remove(databaseKey);
+    }
+
+    public void createInstanceDatabaseIfNotExisting(String databaseKey) {
+        if(databases.containsKey(databaseKey)){
+            return;
+        }
+
+        ERInstanceData aDatabase = new ERInstanceData();
+        aDatabase.createInstanceCollectionFrom(this.schema);
+        databases.put(databaseKey, aDatabase);
     }
 }

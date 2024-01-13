@@ -1,7 +1,10 @@
-package uk.co.compendiumdev.thingifier.api.http;
+package uk.co.compendiumdev.thingifier.api.http.hooks;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
+import uk.co.compendiumdev.thingifier.api.http.HttpApiResponse;
+import uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi;
 import uk.co.compendiumdev.thingifier.apiconfig.JsonOutputConfig;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
@@ -42,6 +45,34 @@ class ThingifierHttpApiRequestHooksTest {
             return new HttpApiResponse(new HashMap<>(),
                     ApiResponse.error(500,"bypassed all processing"),
                     jsonThing, config);
+        }
+    }
+
+    @Test
+    void requestHookCanAmendTheRequest(){
+
+        List<HttpApiRequestHook> requestHooks = new ArrayList<>();
+        requestHooks.add(new AddAdditionalHeader());
+
+        Thingifier thingifier = new Thingifier();
+        thingifier.apiConfig().setApiToEnforceAcceptHeaderForResponses(false);
+
+        final ThingifierHttpApi api =
+                new ThingifierHttpApi(thingifier,
+                        requestHooks, null);
+
+        HttpApiRequest request = new HttpApiRequest("/bob");
+        final HttpApiResponse response = api.get(request);
+        Assertions.assertEquals("dobbs",request.getHeader("X-BOB"));
+
+    }
+
+
+    private class AddAdditionalHeader implements HttpApiRequestHook {
+        @Override
+        public HttpApiResponse run(final HttpApiRequest request, ThingifierApiConfig config) {
+            request.addHeader("X-BOB","dobbs");
+            return null;
         }
     }
 }
