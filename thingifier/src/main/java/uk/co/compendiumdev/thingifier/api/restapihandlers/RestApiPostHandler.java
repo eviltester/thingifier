@@ -32,7 +32,7 @@ public class RestApiPostHandler {
             // create a new thing does not enforce relationships
             // TODO: validate before creation so as to only delete in an 'emergency' not as default
             final ApiResponse response = new ThingCreation(thingifier).with(args, thing);
-            if(response.isErrorResponse()){
+            if (response.isErrorResponse()) {
                 return response;
             }
 
@@ -41,9 +41,9 @@ public class RestApiPostHandler {
             ValidationReport validity = returnedInstance.validateFieldValues(protectedFieldNames, false);
             validity.combine(returnedInstance.validateRelationships());
 
-            if(validity.isValid()){
+            if (validity.isValid()) {
                 return response;
-            }else{
+            } else {
                 thingifier.deleteThing(response.getReturnedInstance());
                 return ApiResponse.error(400, validity.getErrorMessages()).addToErrorMessages("No new item created");
             }
@@ -85,7 +85,7 @@ public class RestApiPostHandler {
             Match a Relationship
          */
         // get the things to post to
-        SimpleQuery query = new SimpleQuery(thingifier.getERmodel(), url).performQuery();
+        SimpleQuery query = new SimpleQuery(thingifier.getERmodel().getSchema(), thingifier.getERmodel().getInstanceData(), url).performQuery();
         if (query.lastMatchWasRelationship()) {
             return new RelationshipCreation(thingifier).create(url, args, query);
         }

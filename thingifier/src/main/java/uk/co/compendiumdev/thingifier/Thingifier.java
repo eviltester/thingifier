@@ -97,7 +97,7 @@ final public class Thingifier {
         return erm.getSchema().getEntityDefinitionNamed(term);
     }
     public EntityDefinition getDefinitionWithPluralNamed(final String term) {
-        return erm.getSchema().getDefinitionWithPluralNamed(term);
+        return erm.getSchema().getEntityDefinitionWithPluralNamed(term);
     }
 
     public EntityInstanceCollection getInstancesForSingularOrPluralNamedEntity(final String term) {

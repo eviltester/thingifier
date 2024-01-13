@@ -12,6 +12,8 @@ import java.util.List;
 
 final public class ThingifierHttpApi {
 
+    // TODO: each 'session' could have its own thingifier to support multiple users
+    // TODO: would need the ability to create and delete sessions
     private final Thingifier thingifier;
     private final JsonThing jsonThing;
     private List<HttpApiRequestHook> apiRequestHooks;

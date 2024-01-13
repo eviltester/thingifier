@@ -28,7 +28,7 @@ public class EntityRelModelTest {
         Assertions.assertNull(erm.findEntityInstanceByGuid("bob"));
         Assertions.assertNull(erm.getInstanceCollectionForEntityNamed("bob"));
         Assertions.assertFalse(erm.hasEntityWithPluralNamed("bob"));
-        Assertions.assertNull(erm.getSchema().getDefinitionWithPluralNamed("bob"));
+        Assertions.assertNull(erm.getSchema().getEntityDefinitionWithPluralNamed("bob"));
         Assertions.assertNull(erm.getSchema().getDefinitionWithSingularOrPluralNamed("bob"));
         Assertions.assertEquals(0, erm.getEntityNames().size());
     }
@@ -59,8 +59,8 @@ public class EntityRelModelTest {
         Assertions.assertNotNull(erm.getInstanceCollectionForEntityNamed("thing"));
         Assertions.assertEquals(thing, erm.getInstanceCollectionForEntityNamed("thing"));
         Assertions.assertTrue(erm.hasEntityWithPluralNamed("things"));
-        Assertions.assertNotNull(erm.getSchema().getDefinitionWithPluralNamed("things"));
-        Assertions.assertEquals(thing.definition(), erm.getSchema().getDefinitionWithPluralNamed("things"));
+        Assertions.assertNotNull(erm.getSchema().getEntityDefinitionWithPluralNamed("things"));
+        Assertions.assertEquals(thing.definition(), erm.getSchema().getEntityDefinitionWithPluralNamed("things"));
         Assertions.assertEquals(thing.definition(), erm.getSchema().getDefinitionWithSingularOrPluralNamed("thing"));
         Assertions.assertEquals(thing.definition(), erm.getSchema().getDefinitionWithSingularOrPluralNamed("things"));
         Assertions.assertEquals(1, erm.getEntityNames().size());

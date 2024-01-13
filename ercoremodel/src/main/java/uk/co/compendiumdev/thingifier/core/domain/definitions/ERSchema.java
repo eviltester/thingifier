@@ -72,7 +72,7 @@ public class ERSchema {
     }
 
     public boolean hasEntityWithPluralNamed(final String term) {
-        return getDefinitionWithPluralNamed(term)!=null;
+        return getEntityDefinitionWithPluralNamed(term)!=null;
     }
 
     public EntityDefinition getEntityDefinitionNamed(final String term) {
@@ -82,7 +82,7 @@ public class ERSchema {
         return null;
     }
 
-    public EntityDefinition getDefinitionWithPluralNamed(final String term) {
+    public EntityDefinition getEntityDefinitionWithPluralNamed(final String term) {
         for(EntityDefinition defn : entityDefinitions.values()){
             if(defn.getPlural().equalsIgnoreCase(term)){
                 return defn;
@@ -98,7 +98,7 @@ public class ERSchema {
         }
 
         // look for plural
-        return getDefinitionWithPluralNamed(term);
+        return getEntityDefinitionWithPluralNamed(term);
     }
 
 

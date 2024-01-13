@@ -29,10 +29,10 @@ public class RestApiGetHandler {
         SimpleQuery queryResults;
 
         if(thingifier.apiConfig().forParams().willAllowFilteringThroughUrlParams()){
-           queryResults = new SimpleQuery(thingifier.getERmodel(), url).performQuery(
+           queryResults = new SimpleQuery(thingifier.getERmodel().getSchema(), thingifier.getERmodel().getInstanceData(), url).performQuery(
                    queryParams);
         }else{
-            queryResults = new SimpleQuery(thingifier.getERmodel(), url).performQuery();
+            queryResults = new SimpleQuery(thingifier.getERmodel().getSchema(), thingifier.getERmodel().getInstanceData(), url).performQuery();
         }
 
         // TODO: we should support pagination through query params

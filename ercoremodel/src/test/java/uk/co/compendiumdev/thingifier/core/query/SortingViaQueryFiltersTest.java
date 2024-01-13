@@ -18,17 +18,17 @@ public class SortingViaQueryFiltersTest {
     // todo: lower level testing at the EntityInstanceListSorter level
 
     EntityInstanceCollection thing;
-    EntityRelModel aThingifier;
+    EntityRelModel erModel;
 
     @BeforeEach
     public void setupThingifier(){
 
-        aThingifier = new EntityRelModel();
-        aThingifier.createEntityDefinition("thing", "things")
+        erModel = new EntityRelModel();
+        erModel.createEntityDefinition("thing", "things")
                 .addFields(Field.is("truefalse", FieldType.BOOLEAN),
                         Field.is("int", FieldType.INTEGER));
 
-        thing = aThingifier.getInstanceCollectionForEntityNamed("thing");
+        thing = erModel.getInstanceCollectionForEntityNamed("thing");
 
     }
 
@@ -47,7 +47,7 @@ public class SortingViaQueryFiltersTest {
         Map<String, String> params = new HashMap<>();
         params.put("sortBy", "-int");
 
-        SimpleQuery ascSortedResults = new SimpleQuery(aThingifier, "things").
+        SimpleQuery ascSortedResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
                 performQuery(params);
 
         Assertions.assertTrue(ascSortedResults.isResultACollection(), "result should be a collection");
@@ -61,7 +61,7 @@ public class SortingViaQueryFiltersTest {
         params = new HashMap<>();
         params.put("sortBy", "+int");
 
-        SimpleQuery descSortedResults = new SimpleQuery(aThingifier, "things").
+        SimpleQuery descSortedResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
                 performQuery(params);
 
         final List<EntityInstance> descInstances = descSortedResults.getListEntityInstances();
@@ -74,7 +74,7 @@ public class SortingViaQueryFiltersTest {
         params = new HashMap<>();
         params.put("sortBy", "int");
 
-        SimpleQuery defaultSortedResults = new SimpleQuery(aThingifier, "things").
+        SimpleQuery defaultSortedResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
                 performQuery(params);
 
         final List<EntityInstance> defaultSortedInstances = defaultSortedResults.getListEntityInstances();
@@ -102,7 +102,7 @@ public class SortingViaQueryFiltersTest {
         Map<String, String> params = new HashMap<>();
         params.put("sortBy", "-truefalse");
 
-        SimpleQuery ascSortedResults = new SimpleQuery(aThingifier, "things").
+        SimpleQuery ascSortedResults = new SimpleQuery(aThingifier.getSchema(), aThingifier.getInstanceData(), "things").
                                         performQuery(params);
 
         Assertions.assertTrue(ascSortedResults.isResultACollection(), "result should be a collection");
@@ -116,7 +116,7 @@ public class SortingViaQueryFiltersTest {
         params = new HashMap<>();
         params.put("sortBy", "+truefalse");
 
-        SimpleQuery descSortedResults = new SimpleQuery(aThingifier, "things").
+        SimpleQuery descSortedResults = new SimpleQuery(aThingifier.getSchema(), aThingifier.getInstanceData(), "things").
                 performQuery(params);
 
         final List<EntityInstance> descInstances = descSortedResults.getListEntityInstances();
@@ -128,7 +128,7 @@ public class SortingViaQueryFiltersTest {
         params = new HashMap<>();
         params.put("sortBy", "truefalse");
 
-        SimpleQuery defaultSortedResults = new SimpleQuery(aThingifier, "things").
+        SimpleQuery defaultSortedResults = new SimpleQuery(aThingifier.getSchema(), aThingifier.getInstanceData(), "things").
                 performQuery(params);
 
         final List<EntityInstance> defaultSortedInstances = defaultSortedResults.getListEntityInstances();

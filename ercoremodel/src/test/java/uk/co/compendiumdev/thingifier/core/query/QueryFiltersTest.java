@@ -24,16 +24,16 @@ public class QueryFiltersTest {
     // TODO: risk that Spark does not pass in args in a way that flow through to simple query
     //       so test this at an HTTP level as well
 
-    EntityRelModel aThingifier;
+    EntityRelModel erModel;
 
     @BeforeEach
     public void setupCollectionTestData(){
-        aThingifier = new EntityRelModel();
-        aThingifier.createEntityDefinition("thing", "things")
+        erModel = new EntityRelModel();
+        erModel.createEntityDefinition("thing", "things")
                 .addFields( Field.is("truefalse", FieldType.BOOLEAN),
                             Field.is("int", FieldType.INTEGER));
 
-        EntityInstanceCollection thing = aThingifier.getInstanceCollectionForEntityNamed("thing");
+        EntityInstanceCollection thing = erModel.getInstanceCollectionForEntityNamed("thing");
 
         thing.createManagedInstance().setValue("truefalse", "true")
                                      .setValue("int", "1");
@@ -52,7 +52,7 @@ public class QueryFiltersTest {
         Map<String, String> params = new HashMap<>();
         params.put("truefalse", "true");
 
-        SimpleQuery queryResults = new SimpleQuery(aThingifier, "things").
+        SimpleQuery queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
                 performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
@@ -66,7 +66,7 @@ public class QueryFiltersTest {
         Map<String, String> params = new HashMap<>();
         params.put("truefalse", "false");
 
-        SimpleQuery queryResults = queryResults = new SimpleQuery(aThingifier, "things").
+        SimpleQuery queryResults = queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
                 performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
@@ -79,7 +79,7 @@ public class QueryFiltersTest {
         Map<String, String> params = new HashMap<>();
         params.put("truefalse", "!false");
 
-        SimpleQuery queryResults = queryResults = new SimpleQuery(aThingifier, "things").
+        SimpleQuery queryResults = queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
                 performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
@@ -92,7 +92,7 @@ public class QueryFiltersTest {
         Map<String, String> params = new HashMap<>();
         params.put("truefalse", "!true");
 
-        SimpleQuery queryResults = queryResults = new SimpleQuery(aThingifier, "things").
+        SimpleQuery queryResults = queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
                 performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
@@ -106,7 +106,7 @@ public class QueryFiltersTest {
         Map<String, String> params = new HashMap<>();
         params.put("int", "1");
 
-        SimpleQuery queryResults = new SimpleQuery(aThingifier, "things").performQuery(params);
+        SimpleQuery queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").performQuery(params);
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
         List<EntityInstance> instances = queryResults.getListEntityInstances();
         Assertions.assertEquals(1, instances.size(), "expected 1 value");
@@ -120,7 +120,7 @@ public class QueryFiltersTest {
         params.put("int", "!1");
         params.put("sortby", "+int");
 
-        SimpleQuery queryResults = new SimpleQuery(aThingifier, "things").performQuery(params);
+        SimpleQuery queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").performQuery(params);
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
         List<EntityInstance> instances = queryResults.getListEntityInstances();
         Assertions.assertEquals(3, instances.size(), "expected 3 value");
@@ -139,7 +139,7 @@ public class QueryFiltersTest {
         params.put("int", "!3");    // but not equal to 3
         params.put("sortby", "+int");
 
-        SimpleQuery queryResults = new SimpleQuery(aThingifier, "things").performQuery(params);
+        SimpleQuery queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").performQuery(params);
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
         List<EntityInstance> instances = queryResults.getListEntityInstances();
         Assertions.assertEquals(2, instances.size(), "expected 2 value");
@@ -153,7 +153,7 @@ public class QueryFiltersTest {
         params.put("int", ">1");
         params.put("sortby", "+int");
 
-        SimpleQuery queryResults = new SimpleQuery(aThingifier, "things").performQuery(params);
+        SimpleQuery queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
         List<EntityInstance> instances = queryResults.getListEntityInstances();
@@ -169,7 +169,7 @@ public class QueryFiltersTest {
         params.put("int", "<2");
         params.put("sortby", "+int");
 
-        SimpleQuery queryResults = new SimpleQuery(aThingifier, "things").performQuery(params);
+        SimpleQuery queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
         List<EntityInstance> instances = queryResults.getListEntityInstances();
@@ -183,7 +183,7 @@ public class QueryFiltersTest {
         params.put("int", "<1");
         params.put("sortby", "+int");
 
-        SimpleQuery queryResults = new SimpleQuery(aThingifier, "things").performQuery(params);
+        SimpleQuery queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
         List<EntityInstance> instances = queryResults.getListEntityInstances();
@@ -196,7 +196,7 @@ public class QueryFiltersTest {
         params.put("int", ">=3");
         params.put("sortby", "+int");
 
-        SimpleQuery queryResults = new SimpleQuery(aThingifier, "things").
+        SimpleQuery queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
                 performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
@@ -212,7 +212,7 @@ public class QueryFiltersTest {
         params.put("int", "<=3");
         params.put("sortby", "+int");
 
-        SimpleQuery queryResults = new SimpleQuery(aThingifier, "things").
+        SimpleQuery queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
                 performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
