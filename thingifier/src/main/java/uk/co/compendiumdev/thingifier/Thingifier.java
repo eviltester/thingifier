@@ -24,6 +24,7 @@ import java.util.*;
 final public class Thingifier {
 
     private final EntityRelModel erm;
+    private DataPopulator dataPopulator;
     private String title;
     private String initialParagraph;
     private final ThingifierApiConfig apiConfig;
@@ -124,11 +125,13 @@ final public class Thingifier {
     // data generation
 
     public void generateData() {
-        erm.generateData();
+        if(dataPopulator!=null){
+            dataPopulator.populate(erm);
+        }
     }
 
     public void setDataGenerator(DataPopulator dataPopulator) {
-        erm.setDataGenerator(dataPopulator);
+        this.dataPopulator = dataPopulator;
     }
 
 

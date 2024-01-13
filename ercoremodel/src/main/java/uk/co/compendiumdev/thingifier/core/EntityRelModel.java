@@ -19,8 +19,6 @@ import java.util.List;
  */
 public class EntityRelModel {
 
-    private DataPopulator initialDataGenerator;
-
     // TODO: this should be a Map so that key, database can be used
     // e.g. key from a 'session', or 'custom' or 'default'
     private final ERInstanceData database;
@@ -29,13 +27,11 @@ public class EntityRelModel {
     public EntityRelModel(){
         schema = new ERSchema();
         database = new ERInstanceData();
-        initialDataGenerator=null; // todo consider having a default random data generator
     }
 
-    public EntityRelModel(final DataPopulator initialDataGenerator, final ERSchema schema, final ERInstanceData erInstanceData) {
+    public EntityRelModel(final ERSchema schema, final ERInstanceData erInstanceData) {
         this.schema = schema;
         this.database = erInstanceData;
-        this.initialDataGenerator=initialDataGenerator;
     }
 
     public EntityDefinition createEntityDefinition(final String entityName, final String pluralName) {
@@ -108,19 +104,7 @@ public class EntityRelModel {
         database.clearAllData();
     }
 
-    // data generation
-    public void generateData() {
-        if(initialDataGenerator!=null) {
-            initialDataGenerator.populate(this);
-        }
-    }
-
-    public void setDataGenerator(DataPopulator dataPopulator) {
-        initialDataGenerator = dataPopulator;
-    }
-
-
     public EntityRelModel cloneWithDifferentData(final List<EntityInstance> instances) {
-        return new EntityRelModel(initialDataGenerator, schema, new ERInstanceData(instances));
+        return new EntityRelModel(schema, new ERInstanceData(instances));
     }
 }

@@ -214,7 +214,6 @@ public class EntityRelModelTest {
     @Test
     public void canFunctionWithoutADataGenerator(){
         EntityRelModel erm = new EntityRelModel();
-        erm.generateData();
         Assertions.assertEquals(0, erm.getAllEntityInstanceCollections().size());
     }
 
@@ -222,14 +221,15 @@ public class EntityRelModelTest {
     public void canSetAndUseADataGenerator(){
         EntityRelModel erm = new EntityRelModel();
 
-        erm.setDataGenerator(new DataPopulator() {
+        DataPopulator dataPopulator = new DataPopulator() {
             @Override
             public void populate(final EntityRelModel model) {
+
                 model.createEntityDefinition("thing", "things");
             }
-        });
+        };
 
-        erm.generateData();
+        dataPopulator.populate(erm);
 
         Assertions.assertEquals(1, erm.getAllEntityInstanceCollections().size());
     }
