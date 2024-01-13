@@ -28,7 +28,7 @@ public class SortingViaQueryFiltersTest {
                 .addFields(Field.is("truefalse", FieldType.BOOLEAN),
                         Field.is("int", FieldType.INTEGER));
 
-        thing = erModel.getInstanceCollectionForEntityNamed("thing");
+        thing = erModel.getInstanceData().getInstanceCollectionForEntityNamed("thing");
 
     }
 
@@ -91,7 +91,7 @@ public class SortingViaQueryFiltersTest {
         aThingifier.createEntityDefinition("thing", "things")
                 .addField(Field.is("truefalse", FieldType.BOOLEAN));
 
-        EntityInstanceCollection thing = aThingifier.getInstanceCollectionForEntityNamed("thing");
+        EntityInstanceCollection thing = aThingifier.getInstanceData().getInstanceCollectionForEntityNamed("thing");
 
         final EntityInstance trueThing = thing.createManagedInstance();
         trueThing.setValue("truefalse", "true");

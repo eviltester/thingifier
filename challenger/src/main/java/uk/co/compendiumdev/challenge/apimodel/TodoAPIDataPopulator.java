@@ -21,7 +21,7 @@ public class TodoAPIDataPopulator implements DataPopulator {
                         "tidy meeting room",
                         "install webcam"};
 
-        EntityInstanceCollection todo = erm.getInstanceCollectionForEntityNamed("todo");
+        EntityInstanceCollection todo = erm.getInstanceData().getInstanceCollectionForEntityNamed("todo");
 
         for(String todoItem : todos){
             todo.createManagedInstance().

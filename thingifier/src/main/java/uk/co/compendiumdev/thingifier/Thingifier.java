@@ -74,12 +74,12 @@ final public class Thingifier {
     }
 
     public List<EntityInstanceCollection> getThings() {
-        return erm.getAllEntityInstanceCollections();
+        return erm.getInstanceData().getAllInstanceCollections();
     }
 
 
     public EntityInstance findThingInstanceByGuid(final String thingGUID) {
-        return erm.findEntityInstanceByGuid(thingGUID);
+        return erm.getInstanceData().findEntityInstanceByGUID(thingGUID);
     }
 
     public boolean hasThingNamed(final String aName) {
@@ -87,7 +87,7 @@ final public class Thingifier {
     }
 
     public EntityInstanceCollection getThingInstancesNamed(final String aName) {
-        return erm.getInstanceCollectionForEntityNamed(aName);
+        return erm.getInstanceData().getInstanceCollectionForEntityNamed(aName);
     }
 
     public boolean hasThingWithPluralNamed(final String term) {
@@ -104,18 +104,19 @@ final public class Thingifier {
     public EntityInstanceCollection getInstancesForSingularOrPluralNamedEntity(final String term) {
         final EntityDefinition defn = erm.getSchema().getDefinitionWithSingularOrPluralNamed(term);
         if(defn!=null){
-            return erm.getInstanceCollectionForEntityNamed(defn.getName());
+            final String entityName = defn.getName();
+            return erm.getInstanceData().getInstanceCollectionForEntityNamed(entityName);
         }
 
         return null;
     }
 
     public void clearAllData() {
-        erm.clearAllData();
+        erm.getInstanceData().clearAllData();
     }
 
     public void deleteThing(final EntityInstance aThingInstance) {
-        erm.deleteEntityInstance(aThingInstance);
+        erm.getInstanceData().deleteEntityInstance(aThingInstance);
     }
 
     public List<String> getThingNames() {

@@ -19,7 +19,7 @@ public class TodoAPIDataPopulator implements DataPopulator {
                         "train staff",
                         "schedule meeting"};
 
-        EntityInstanceCollection todo = erm.getInstanceCollectionForEntityNamed("todo");
+        EntityInstanceCollection todo = erm.getInstanceData().getInstanceCollectionForEntityNamed("todo");
 
         for(String todoItem : todos){
             todo.createManagedInstance().

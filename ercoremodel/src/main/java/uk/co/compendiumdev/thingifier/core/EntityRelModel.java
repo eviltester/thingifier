@@ -1,13 +1,11 @@
 package uk.co.compendiumdev.thingifier.core;
 
-import uk.co.compendiumdev.thingifier.core.domain.datapopulator.DataPopulator;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.Cardinality;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.ERSchema;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.ERInstanceData;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -21,9 +19,9 @@ import java.util.Map;
  */
 public class EntityRelModel {
 
-    private final String DEFAULT_DATABASE_NAME = "__default";
+    public static final String DEFAULT_DATABASE_NAME = "__default";
 
-    // TODO: this should be a Map so that key, database can be used
+    // a Map so that key, database can be used
     // e.g. key from a 'session', or 'custom' or 'default'
     private final Map<String, ERInstanceData> databases;
     private final ERSchema schema; // all the definitions
@@ -56,12 +54,17 @@ public class EntityRelModel {
         return databases.get(DEFAULT_DATABASE_NAME);
     }
 
-    // Object Level
+    public ERInstanceData getInstanceData(String databaseKey) {
+        return databases.get(databaseKey);
+    }
+
+    // ERM Object Level
     public EntityRelModel cloneWithDifferentData(final List<EntityInstance> instances) {
         return new EntityRelModel(schema, new ERInstanceData(instances));
     }
 
     // Schema methods
+    // TODO: consider inlining all of these
     public boolean hasEntityNamed(final String aName) {
         return schema.hasEntityNamed(aName);
     }
@@ -87,35 +90,32 @@ public class EntityRelModel {
         return schema.hasEntityWithPluralNamed(term);
     }
 
-    public EntityDefinition getEntityDefinitionWithPluralNamed(final String term){
-        return schema.getEntityDefinitionWithPluralNamed(term);
+    public EntityDefinition getEntityDefinitionWithPluralNamed(final String pluralName){
+        return schema.getEntityDefinitionWithPluralNamed(pluralName);
     }
 
     public EntityDefinition getEntityDefinitionNamed(final String term){
         return schema.getEntityDefinitionNamed(term);
     }
 
-    // Instance Methods
 
-    public List<EntityInstanceCollection> getAllEntityInstanceCollections() {
-        return getInstanceData().getAllInstanceCollections();
-    }
+    // Multiple Databases
+    public void createInstanceDatabase(String databaseKey) {
 
-    public EntityInstance findEntityInstanceByGuid(final String thingGUID) {
-        return getInstanceData().findEntityInstanceByGUID(thingGUID);
-    }
+        if(databases.containsKey(databaseKey)){
+            throw new IllegalStateException("ERM Database Already Exists with name " + databaseKey);
+        }
 
-    public EntityInstanceCollection getInstanceCollectionForEntityNamed(final String aName) {
-        return getInstanceData().getInstanceCollectionForEntityNamed(aName);
-    }
-
-    public void deleteEntityInstance(final EntityInstance anEntityInstance) {
-        getInstanceData().deleteEntityInstance(anEntityInstance);
-    }
-
-    public void clearAllData() {
-        getInstanceData().clearAllData();
+        ERInstanceData aDatabase = new ERInstanceData();
+        aDatabase.createInstanceCollectionFrom(this.schema);
+        databases.put(databaseKey, aDatabase);
     }
 
 
+    public void deleteInstanceDatabase(String databaseKey) {
+        if(databaseKey.equals(DEFAULT_DATABASE_NAME)){
+            throw new IllegalStateException("Cannot delete default database");
+        }
+        databases.remove(databaseKey);
+    }
 }

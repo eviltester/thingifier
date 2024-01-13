@@ -48,9 +48,9 @@ public class TodoManagerQueryEngineTest {
         todoManager.createRelationshipDefinition(category, project, "projects", Cardinality.ONE_TO_MANY());
         todoManager.createRelationshipDefinition(todo, category, "categories", Cardinality.ONE_TO_MANY());
 
-        final EntityInstanceCollection todos = todoManager.getInstanceCollectionForEntityNamed("todo");
-        final EntityInstanceCollection categories = todoManager.getInstanceCollectionForEntityNamed("category");
-        projects = todoManager.getInstanceCollectionForEntityNamed("project");
+        final EntityInstanceCollection todos = todoManager.getInstanceData().getInstanceCollectionForEntityNamed("todo");
+        final EntityInstanceCollection categories = todoManager.getInstanceData().getInstanceCollectionForEntityNamed("category");
+        projects = todoManager.getInstanceData().getInstanceCollectionForEntityNamed("project");
 
         paperwork = todos.createManagedInstance().setValue("title", "scan paperwork");
 
@@ -154,7 +154,7 @@ public class TodoManagerQueryEngineTest {
 
         // even though it doesn not match anything I should know what type of thing this empty collection is
         Assertions.assertTrue(query.isResultACollection());
-        Assertions.assertEquals(todoManager.getInstanceCollectionForEntityNamed("todo").definition(), query.resultContainsDefn());
+        Assertions.assertEquals(todoManager.getInstanceData().getInstanceCollectionForEntityNamed("todo").definition(), query.resultContainsDefn());
 
         Assertions.assertEquals(0, queryResults.size());
     }
@@ -172,7 +172,7 @@ public class TodoManagerQueryEngineTest {
 
         // even though it doesn not match anything I should know what type of thing this empty collection is
         Assertions.assertTrue(query.isResultACollection());
-        Assertions.assertEquals(todoManager.getInstanceCollectionForEntityNamed("todo").definition(), query.resultContainsDefn());
+        Assertions.assertEquals(todoManager.getInstanceData().getInstanceCollectionForEntityNamed("todo").definition(), query.resultContainsDefn());
 
         Assertions.assertEquals(0, queryResults.size());
 

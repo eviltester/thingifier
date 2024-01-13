@@ -32,6 +32,12 @@ public class ERInstanceData {
         return aCollection;
     }
 
+    public void createInstanceCollectionFrom(ERSchema schema) {
+        for(EntityDefinition defn : schema.getEntityDefinitions()){
+            createInstanceCollectionFor(defn);
+        }
+    }
+
     public List<EntityInstanceCollection> getAllInstanceCollections() {
         return new ArrayList<EntityInstanceCollection>(instanceCollections.values());
     }
@@ -86,4 +92,6 @@ public class ERInstanceData {
             }
         }
     }
+
+
 }

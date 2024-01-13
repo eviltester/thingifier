@@ -23,10 +23,10 @@ public class EntityRelModelTest {
 
         EntityRelModel erm = new EntityRelModel();
 
-        Assertions.assertEquals(0, erm.getAllEntityInstanceCollections().size());
+        Assertions.assertEquals(0, erm.getInstanceData().getAllInstanceCollections().size());
         Assertions.assertFalse(erm.hasEntityNamed("bob"));
-        Assertions.assertNull(erm.findEntityInstanceByGuid("bob"));
-        Assertions.assertNull(erm.getInstanceCollectionForEntityNamed("bob"));
+        Assertions.assertNull(erm.getInstanceData().findEntityInstanceByGUID("bob"));
+        Assertions.assertNull(erm.getInstanceData().getInstanceCollectionForEntityNamed("bob"));
         Assertions.assertFalse(erm.hasEntityWithPluralNamed("bob"));
         Assertions.assertNull(erm.getSchema().getEntityDefinitionWithPluralNamed("bob"));
         Assertions.assertNull(erm.getSchema().getDefinitionWithSingularOrPluralNamed("bob"));
@@ -38,9 +38,9 @@ public class EntityRelModelTest {
 
         EntityRelModel erm = new EntityRelModel();
 
-        erm.deleteEntityInstance(
-                new EntityInstance(
-                        new EntityDefinition("no", "nos")));
+        final EntityInstance anEntityInstance = new EntityInstance(
+                new EntityDefinition("no", "nos"));
+        erm.getInstanceData().deleteEntityInstance(anEntityInstance);
     }
 
     @Test
@@ -49,15 +49,15 @@ public class EntityRelModelTest {
         EntityRelModel erm = new EntityRelModel();
         erm.createEntityDefinition("thing", "things");
 
-        EntityInstanceCollection thing = erm.getInstanceCollectionForEntityNamed("thing");
+        EntityInstanceCollection thing = erm.getInstanceData().getInstanceCollectionForEntityNamed("thing");
 
-        Assertions.assertEquals(1, erm.getAllEntityInstanceCollections().size());
-        Assertions.assertTrue(erm.getAllEntityInstanceCollections().contains(thing));
+        Assertions.assertEquals(1, erm.getInstanceData().getAllInstanceCollections().size());
+        Assertions.assertTrue(erm.getInstanceData().getAllInstanceCollections().contains(thing));
 
         Assertions.assertTrue(erm.hasEntityNamed("thing"));
 
-        Assertions.assertNotNull(erm.getInstanceCollectionForEntityNamed("thing"));
-        Assertions.assertEquals(thing, erm.getInstanceCollectionForEntityNamed("thing"));
+        Assertions.assertNotNull(erm.getInstanceData().getInstanceCollectionForEntityNamed("thing"));
+        Assertions.assertEquals(thing, erm.getInstanceData().getInstanceCollectionForEntityNamed("thing"));
         Assertions.assertTrue(erm.hasEntityWithPluralNamed("things"));
         Assertions.assertNotNull(erm.getSchema().getEntityDefinitionWithPluralNamed("things"));
         Assertions.assertEquals(thing.definition(), erm.getSchema().getEntityDefinitionWithPluralNamed("things"));
@@ -73,14 +73,16 @@ public class EntityRelModelTest {
 
         EntityRelModel erm = new EntityRelModel();
         erm.createEntityDefinition("thing", "things");
-        EntityInstanceCollection thing = erm.getInstanceCollectionForEntityNamed("thing");
+        EntityInstanceCollection thing = erm.getInstanceData().getInstanceCollectionForEntityNamed("thing");
 
         final EntityInstance instance = thing.createManagedInstance();
 
+        final String thingGUID1 = instance.getGUID();
         Assertions.assertNotNull(
-                erm.findEntityInstanceByGuid(instance.getGUID()));
+                erm.getInstanceData().findEntityInstanceByGUID(thingGUID1));
+        final String thingGUID = instance.getGUID();
         Assertions.assertEquals(instance,
-                    erm.findEntityInstanceByGuid(instance.getGUID()));
+                erm.getInstanceData().findEntityInstanceByGUID(thingGUID));
     }
 
     @Test
@@ -88,16 +90,17 @@ public class EntityRelModelTest {
 
         EntityRelModel erm = new EntityRelModel();
         erm.createEntityDefinition("thing", "things");
-        EntityInstanceCollection thing = erm.getInstanceCollectionForEntityNamed("thing");
+        EntityInstanceCollection thing = erm.getInstanceData().getInstanceCollectionForEntityNamed("thing");
 
         final EntityInstance instance = thing.createManagedInstance();
-        erm.deleteEntityInstance(instance);
+        erm.getInstanceData().deleteEntityInstance(instance);
 
+        final String thingGUID = instance.getGUID();
         Assertions.assertNull(
-                erm.findEntityInstanceByGuid(instance.getGUID()));
+                erm.getInstanceData().findEntityInstanceByGUID(thingGUID));
+        final String entityName = instance.getEntity().getName();
         Assertions.assertEquals(0,
-                erm.getInstanceCollectionForEntityNamed(
-                        instance.getEntity().getName()).countInstances());
+                erm.getInstanceData().getInstanceCollectionForEntityNamed(entityName).countInstances());
     }
 
     @Test
@@ -105,9 +108,9 @@ public class EntityRelModelTest {
 
         EntityRelModel erm = new EntityRelModel();
         erm.createEntityDefinition("thing", "things");
-        EntityInstanceCollection thing = erm.getInstanceCollectionForEntityNamed("thing");
+        EntityInstanceCollection thing = erm.getInstanceData().getInstanceCollectionForEntityNamed("thing");
         erm.createEntityDefinition("thing2", "thing2");
-        EntityInstanceCollection thing2 = erm.getInstanceCollectionForEntityNamed("thing2");
+        EntityInstanceCollection thing2 = erm.getInstanceData().getInstanceCollectionForEntityNamed("thing2");
 
         thing.createManagedInstance();
         thing.createManagedInstance();
@@ -115,19 +118,19 @@ public class EntityRelModelTest {
         thing2.createManagedInstance();
         thing2.createManagedInstance();
 
-        Assertions.assertEquals(2, erm.getAllEntityInstanceCollections().size());
+        Assertions.assertEquals(2, erm.getInstanceData().getAllInstanceCollections().size());
         Assertions.assertEquals(2,
-                erm.getInstanceCollectionForEntityNamed("thing").getInstances().size());
+                erm.getInstanceData().getInstanceCollectionForEntityNamed("thing").getInstances().size());
         Assertions.assertEquals(3,
-                erm.getInstanceCollectionForEntityNamed("thing2").getInstances().size());
+                erm.getInstanceData().getInstanceCollectionForEntityNamed("thing2").getInstances().size());
 
-        erm.clearAllData();
+        erm.getInstanceData().clearAllData();
 
-        Assertions.assertEquals(2, erm.getAllEntityInstanceCollections().size());
+        Assertions.assertEquals(2, erm.getInstanceData().getAllInstanceCollections().size());
         Assertions.assertEquals(0,
-                erm.getInstanceCollectionForEntityNamed("thing").getInstances().size());
+                erm.getInstanceData().getInstanceCollectionForEntityNamed("thing").getInstances().size());
         Assertions.assertEquals(0,
-                erm.getInstanceCollectionForEntityNamed("thing2").getInstances().size());
+                erm.getInstanceData().getInstanceCollectionForEntityNamed("thing2").getInstances().size());
     }
 
     @Test
@@ -145,9 +148,9 @@ public class EntityRelModelTest {
 
         EntityRelModel erm = new EntityRelModel();
         EntityDefinition t1d = erm.createEntityDefinition("thing1", "thing1");
-        final EntityInstanceCollection thing1 = erm.getInstanceCollectionForEntityNamed("thing1");
+        final EntityInstanceCollection thing1 = erm.getInstanceData().getInstanceCollectionForEntityNamed("thing1");
         EntityDefinition t2d = erm.createEntityDefinition("thing2", "thing2");
-        final EntityInstanceCollection thing2 = erm.getInstanceCollectionForEntityNamed("thing1");
+        final EntityInstanceCollection thing2 = erm.getInstanceData().getInstanceCollectionForEntityNamed("thing1");
         erm.createRelationshipDefinition(t1d, t2d, "things", Cardinality.ONE_TO_MANY());
 
         Assertions.assertNotNull(erm.getRelationshipDefinitions());
@@ -160,9 +163,9 @@ public class EntityRelModelTest {
 
         EntityRelModel erm = new EntityRelModel();
         final EntityDefinition td = erm.createEntityDefinition("thing", "things");
-        EntityInstanceCollection thing = erm.getInstanceCollectionForEntityNamed("thing");
+        EntityInstanceCollection thing = erm.getInstanceData().getInstanceCollectionForEntityNamed("thing");
         final EntityDefinition dpd = erm.createEntityDefinition("dependantthing", "dthings");
-        EntityInstanceCollection dependent = erm.getInstanceCollectionForEntityNamed("dependantthing");
+        EntityInstanceCollection dependent = erm.getInstanceData().getInstanceCollectionForEntityNamed("dependantthing");
 
         erm.createRelationshipDefinition(td, dpd, "things", Cardinality.ONE_TO_MANY())
                 .whenReversed(Cardinality.ONE_TO_ONE(), "idiewithoutyou").
@@ -177,9 +180,9 @@ public class EntityRelModelTest {
 
         EntityRelModel erm = new EntityRelModel();
         final EntityDefinition thingdefn = erm.createEntityDefinition("thing", "things");
-        EntityInstanceCollection thing = erm.getInstanceCollectionForEntityNamed("thing");
+        EntityInstanceCollection thing = erm.getInstanceData().getInstanceCollectionForEntityNamed("thing");
         final EntityDefinition depdefn = erm.createEntityDefinition("dependantthing", "dthings");
-        EntityInstanceCollection dependent = erm.getInstanceCollectionForEntityNamed("dependantthing");
+        EntityInstanceCollection dependent = erm.getInstanceData().getInstanceCollectionForEntityNamed("dependantthing");
 
         erm.createRelationshipDefinition(thingdefn, depdefn, "things", Cardinality.ONE_TO_MANY())
             .whenReversed(Cardinality.ONE_TO_ONE(),"idiewithoutyou").
@@ -194,27 +197,28 @@ public class EntityRelModelTest {
         mainThing.getRelationships().connect("things",
                 dependent.createManagedInstance());
 
-        Assertions.assertEquals(2, erm.getAllEntityInstanceCollections().size());
+        Assertions.assertEquals(2, erm.getInstanceData().getAllInstanceCollections().size());
         Assertions.assertEquals(3, mainThing.getRelationships().
                                             getConnectedItems("things").size());
-        Assertions.assertEquals(3, erm.getInstanceCollectionForEntityNamed("dependantthing").
+        Assertions.assertEquals(3, erm.getInstanceData().getInstanceCollectionForEntityNamed("dependantthing").
                                             getInstances().size());
 
-        erm.deleteEntityInstance(mainThing);
+        erm.getInstanceData().deleteEntityInstance(mainThing);
 
+        final String thingGUID = mainThing.getGUID();
         Assertions.assertNull(
-                erm.findEntityInstanceByGuid(mainThing.getGUID()));
+                erm.getInstanceData().findEntityInstanceByGUID(thingGUID));
         Assertions.assertEquals(0,
-                erm.getInstanceCollectionForEntityNamed("thing").countInstances());
+                erm.getInstanceData().getInstanceCollectionForEntityNamed("thing").countInstances());
         Assertions.assertEquals(0,
-                erm.getInstanceCollectionForEntityNamed("dependantthing").countInstances());
+                erm.getInstanceData().getInstanceCollectionForEntityNamed("dependantthing").countInstances());
 
     }
 
     @Test
     public void canFunctionWithoutADataGenerator(){
         EntityRelModel erm = new EntityRelModel();
-        Assertions.assertEquals(0, erm.getAllEntityInstanceCollections().size());
+        Assertions.assertEquals(0, erm.getInstanceData().getAllInstanceCollections().size());
     }
 
     @Test
@@ -231,6 +235,6 @@ public class EntityRelModelTest {
 
         dataPopulator.populate(erm);
 
-        Assertions.assertEquals(1, erm.getAllEntityInstanceCollections().size());
+        Assertions.assertEquals(1, erm.getInstanceData().getAllInstanceCollections().size());
     }
 }

@@ -21,7 +21,7 @@ public class ERModelReport {
 
         output.append("\n# Instances\n");
 
-        for (EntityInstanceCollection instances : erModel.getAllEntityInstanceCollections()) {
+        for (EntityInstanceCollection instances : erModel.getInstanceData().getAllInstanceCollections()) {
 
             output.append("## Of " + instances.definition().getName() + "\n");
 

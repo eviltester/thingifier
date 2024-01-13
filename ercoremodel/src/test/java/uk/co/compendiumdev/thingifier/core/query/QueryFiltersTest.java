@@ -33,7 +33,7 @@ public class QueryFiltersTest {
                 .addFields( Field.is("truefalse", FieldType.BOOLEAN),
                             Field.is("int", FieldType.INTEGER));
 
-        EntityInstanceCollection thing = erModel.getInstanceCollectionForEntityNamed("thing");
+        EntityInstanceCollection thing = erModel.getInstanceData().getInstanceCollectionForEntityNamed("thing");
 
         thing.createManagedInstance().setValue("truefalse", "true")
                                      .setValue("int", "1");

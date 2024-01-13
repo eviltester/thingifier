@@ -9,14 +9,14 @@ public class TodoManagerAPIDataPopulator implements DataPopulator {
     @Override
     public void populate(final EntityRelModel erm) {
 
-        EntityInstanceCollection todo = erm.getInstanceCollectionForEntityNamed("todo");
+        EntityInstanceCollection todo = erm.getInstanceData().getInstanceCollectionForEntityNamed("todo");
         EntityInstance paperwork = todo.createManagedInstance().
                 setValue("title", "scan paperwork");
 
         EntityInstance filework = todo.createManagedInstance().
                 setValue("title", "file paperwork");
 
-        EntityInstanceCollection category = erm.getInstanceCollectionForEntityNamed("category");
+        EntityInstanceCollection category = erm.getInstanceData().getInstanceCollectionForEntityNamed("category");
 
         EntityInstance officeCategory = category.createManagedInstance().
                 setValue("title", "Office");
@@ -25,7 +25,7 @@ public class TodoManagerAPIDataPopulator implements DataPopulator {
         EntityInstance homeCategory = category.createManagedInstance().
                 setValue("title", "Home");
 
-        EntityInstanceCollection project = erm.getInstanceCollectionForEntityNamed("project");
+        EntityInstanceCollection project = erm.getInstanceData().getInstanceCollectionForEntityNamed("project");
 
         EntityInstance officeWork = project.createManagedInstance().
                 setValue("title", "Office Work");
