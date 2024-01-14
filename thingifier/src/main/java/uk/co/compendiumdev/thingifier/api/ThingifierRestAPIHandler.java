@@ -8,14 +8,12 @@ import uk.co.compendiumdev.thingifier.api.restapihandlers.*;
 import java.util.Map;
 
 public class ThingifierRestAPIHandler {
-    private final Thingifier thingifier;
     private final RestApiDeleteHandler delete;
     private final RestApiPostHandler post;
     private final RestApiPutHandler put;
     private final RestApiGetHandler get;
 
     public ThingifierRestAPIHandler(final Thingifier aThingifier) {
-        this.thingifier = aThingifier;
         this.get = new RestApiGetHandler(aThingifier);
         this.delete = new RestApiDeleteHandler(aThingifier);
         this.post = new RestApiPostHandler(aThingifier);

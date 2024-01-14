@@ -125,14 +125,15 @@ public class EntityRelModel {
         databases.remove(databaseKey);
     }
 
-    public void createInstanceDatabaseIfNotExisting(String databaseKey) {
+    public boolean createInstanceDatabaseIfNotExisting(String databaseKey) {
         if(databases.containsKey(databaseKey)){
-            return;
+            return false;
         }
 
         ERInstanceData aDatabase = new ERInstanceData();
         aDatabase.createInstanceCollectionFrom(this.schema);
         databases.put(databaseKey, aDatabase);
+        return true;
     }
 
 

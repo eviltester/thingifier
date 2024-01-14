@@ -4,6 +4,8 @@ import uk.co.compendiumdev.challenge.CHALLENGE;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.persistence.PersistenceLayer;
 import uk.co.compendiumdev.challenge.persistence.PersistenceResponse;
+import uk.co.compendiumdev.thingifier.api.ThingifierApiDefn;
+import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +20,7 @@ public class Challengers {
     public final String SINGLE_PLAYER_GUID="rest-api-challenges-single-player";
     public final ChallengerAuthData DEFAULT_PLAYER_DATA = new ChallengerAuthData();
     PersistenceLayer persistenceLayer;
+    private ThingifierApiConfig apiConfig;
 
     public Challengers(){
         authData = new ConcurrentHashMap<>();
@@ -28,6 +31,14 @@ public class Challengers {
 
     public void setMultiPlayerMode(){
         singlePlayerMode=false;
+    }
+
+    public boolean isMultiPlayerMode(){
+        return !singlePlayerMode;
+    }
+
+    public boolean isSinglePlayerMode(){
+        return singlePlayerMode;
     }
 
     public ChallengerAuthData getChallenger(final String challengerGuid) {
@@ -101,5 +112,13 @@ public class Challengers {
 
     public void setPersistenceLayer(final PersistenceLayer persistenceLayer) {
         this.persistenceLayer = persistenceLayer;
+    }
+
+    public void setApiConfig(ThingifierApiConfig apiConfig) {
+        this.apiConfig = apiConfig;
+    }
+
+    public ThingifierApiConfig getApiConfig() {
+        return this.apiConfig;
     }
 }

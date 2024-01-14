@@ -6,6 +6,7 @@ import uk.co.compendiumdev.challenge.challengers.Challengers;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiResponse;
 import uk.co.compendiumdev.thingifier.application.sparkhttpmessageHooks.InternalHttpRequestHook;
+import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 
 import static uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi.HTTP_SESSION_HEADER_NAME;
 
@@ -26,6 +27,9 @@ public class ChallengerInternalHTTPRequestHook  implements InternalHttpRequestHo
             // cannot track challenges
             return null;
         }
+
+        // add challenger guid as session id to request
+        request.addHeader(HTTP_SESSION_HEADER_NAME, challenger.getXChallenger());
 
         HttpApiRequest.VERB method = request.getVerb();
         String path = request.getPath();
