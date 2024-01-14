@@ -1,7 +1,9 @@
 package uk.co.compendiumdev.thingifier.htmlgui;
 
 import com.google.gson.GsonBuilder;
+import spark.Request;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.xml.GenericXMLPrettyPrinter;
+import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
@@ -72,11 +74,15 @@ public class DefaultGUI {
         get("/gui/entities", (request, response) -> {
             response.type("text/html");
             response.status(200);
+
+            String database = getDatabaseNameFromRequest(request);
+            response.cookie("X-CHALLENGER", database);
+
             StringBuilder html = new StringBuilder();
             html.append(templates.getPageStart("Entities Menu"));
 
             html.append(templates.getMenuAsHTML());
-            html.append(getInstancesRootMenuHtml());
+            html.append(getInstancesRootMenuHtml(database));
             //html.append(heading(2, "Choose from the Entities Menu Above"));
             html.append(templates.getPageFooter());
             html.append(templates.getPageEnd());
@@ -88,16 +94,20 @@ public class DefaultGUI {
             response.status(200);
             StringBuilder html = new StringBuilder();
 
+            String database = getDatabaseNameFromRequest(request);
+
             String entityName = request.queryParams("entity");
 
             html.append(templates.getPageStart(entityName + " Instances"));
 
             html.append(templates.getMenuAsHTML());
-            html.append(getInstancesRootMenuHtml());
+            html.append(getInstancesRootMenuHtml(database));
 
             html.append(heading(1, entityName + " Instances"));
 
-            final EntityInstanceCollection thing = thingifier.getThingInstancesNamed(entityName);
+
+
+            final EntityInstanceCollection thing = thingifier.getThingInstancesNamed(entityName, database);
 
             if(thing==null){
                 response.redirect("/gui/entities");
@@ -111,7 +121,7 @@ public class DefaultGUI {
             html.append(startHtmlTableFor(definition));
 
             for(EntityInstance instance : thing.getInstances()){
-                html.append(htmlTableRowFor(instance));
+                html.append(htmlTableRowFor(instance, database));
             }
             html.append("</tbody>");
             html.append("</table>");
@@ -126,12 +136,14 @@ public class DefaultGUI {
                     response.status(200);
                     StringBuilder html = new StringBuilder();
 
+                    String database = getDatabaseNameFromRequest(request);
+
                     String entityName = "";
                     EntityInstanceCollection thing = null;
                     for (String queryParam : request.queryParams()) {
                         if (queryParam.contentEquals("entity")) {
                             entityName = request.queryParams("entity");
-                            thing = thingifier.getThingInstancesNamed(entityName);
+                            thing = thingifier.getThingInstancesNamed(entityName, database);
                         }
                     }
 
@@ -163,7 +175,7 @@ public class DefaultGUI {
 
                     html.append(templates.getPageStart(entityName + " Instance"));
                     html.append(templates.getMenuAsHTML());
-                    html.append(getInstancesRootMenuHtml());
+                    html.append(getInstancesRootMenuHtml(database));
 
                     html.append(heading(1, entityName + " Instance"));
 
@@ -191,7 +203,7 @@ public class DefaultGUI {
                                         html.append(startHtmlTableFor(relatedInstance.getEntity()));
                                         header = false;
                                     }
-                                    html.append(htmlTableRowFor(relatedInstance));
+                                    html.append(htmlTableRowFor(relatedInstance, database));
 
                                 }
                                 html.append("</tbody>");
@@ -230,6 +242,25 @@ public class DefaultGUI {
         });
 
         return this;
+    }
+
+    private String getDatabaseNameFromRequest(Request request) {
+
+        String xchallenger = "";
+
+        if(request.cookie("X-CHALLENGER")!=null){
+            xchallenger=request.cookie("X-CHALLENGER");
+        }
+
+        if(request.queryParams("xchallenger")!=null){
+            xchallenger = request.queryParams("xchallenger");
+        }
+
+        if(xchallenger==""){
+            xchallenger = EntityRelModel.DEFAULT_DATABASE_NAME;
+        }
+
+        return xchallenger;
     }
 
     private String getInstanceAsUl(final EntityInstance instance) {
@@ -294,28 +325,31 @@ public class DefaultGUI {
         return html.toString();
     }
 
-    private String getInstancesRootMenuHtml() {
+    private String getInstancesRootMenuHtml(String database) {
         StringBuilder html = new StringBuilder();
         html.append("<div class='entity-instances-menu menu'>");
         html.append("<ul>");
         for(String thing : thingifier.getThingNames()){
-            html.append(String.format("<li><a href='/gui/instances?entity=%1$s'>%1$s</a></li>",thing));
+            html.append(String.format("<li><a href='/gui/instances?entity=%1$s%2$s'>%1$s</a></li>",thing, databaseParam(database)));
         }
         html.append("</ul>");
         html.append("</div>");
         return html.toString();
     }
 
+    private String databaseParam(final String database){
+        return "&xchallenger="+database;
+    }
 
-    private String htmlTableRowFor(final EntityInstance instance) {
+    private String htmlTableRowFor(final EntityInstance instance, String database) {
         StringBuilder html = new StringBuilder();
         final EntityDefinition definition = instance.getEntity();
 
         html.append("<tr>");
         // show keys first
         if(apiConfig.willResponsesShowGuids()) {
-            html.append(String.format("<td><a href='/gui/instance?entity=%1$s&guid=%2$s'>%2$s</a></td>",
-                    definition.getName(), instance.getGUID()));
+            html.append(String.format("<td><a href='/gui/instance?entity=%1$s&guid=%2$s%3$s'>%2$s</a></td>",
+                    definition.getName(), instance.getGUID(), databaseParam(database)));
         }
 
         // show any clickable id fields
@@ -324,8 +358,12 @@ public class DefaultGUI {
                 Field theField = definition.getField(field);
                 if(theField.getType()== FieldType.ID){
                     // make ids clickable
-                    String renderAs = String.format("<a href='/gui/instance?entity=%1$s&%2$s=%3$s'>%3$s</a>",
-                            definition.getName(),theField.getName(), instance.getFieldValue(field).asString());
+                    String renderAs = String.format("<a href='/gui/instance?entity=%1$s&%2$s=%3$s%4$s'>%3$s</a>",
+                            definition.getName(),
+                            theField.getName(),
+                            instance.getFieldValue(field).asString(),
+                            databaseParam(database)
+                    );
                     html.append(String.format("<td>%s</td>", renderAs));
                 }
 

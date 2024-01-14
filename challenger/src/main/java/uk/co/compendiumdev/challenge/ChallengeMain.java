@@ -51,6 +51,7 @@ public class ChallengeMain {
             }
         }
 
+        challenger.setToMultiPlayerMode();
 
         challenger.configureRoutes();
 
@@ -61,6 +62,8 @@ public class ChallengeMain {
 
         app.setupDefaultGui();
         challenger.setupGui(app.getGuiManagement());
+
+
 
         if(challenger.isSinglePlayerMode()){
             System.out.println("Running in Single User Mode");
