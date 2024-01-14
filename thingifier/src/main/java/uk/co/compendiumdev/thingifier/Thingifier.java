@@ -265,4 +265,18 @@ final public class Thingifier {
     public DataPopulator getDefaultDataPopulator() {
         return dataPopulator;
     }
+
+    public void ensureCreatedAndPopulatedInstanceDatabaseNamed(String databaseName) {
+        if(getERmodel().createInstanceDatabaseIfNotExisting(databaseName)){
+            // if we created it then populate it
+            if(getDefaultDataPopulator()!=null){
+                // Use any default data populator to populate the new database
+                getDefaultDataPopulator().
+                        populate(
+                                getERmodel().getSchema(),
+                                getERmodel().getInstanceData(databaseName)
+                        );
+            }
+        }
+    }
 }

@@ -69,7 +69,7 @@ public class ChallengeRouteHandler {
 
     public ChallengeRouteHandler configureRoutes() {
 
-        new ChallengerTrackingRoutes().configure(challengers, single_player_mode, apiDefn, persistenceLayer);
+        new ChallengerTrackingRoutes().configure(challengers, single_player_mode, apiDefn, persistenceLayer, thingifier);
         new ChallengesRoutes().configure(challengers, single_player_mode, apiDefn, challengeDefinitions);
         new HeartBeatRoutes().configure(apiDefn);
         new AuthRoutes().configure(challengers, apiDefn);

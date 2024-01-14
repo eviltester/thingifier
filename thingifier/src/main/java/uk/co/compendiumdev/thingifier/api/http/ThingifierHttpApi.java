@@ -107,17 +107,7 @@ final public class ThingifierHttpApi {
     private void createDatabaseBasedOnSessionHeaderUIfNecessary(final String sessionHeaderValue){
         if(sessionHeaderValue !=null){
             // make sure database exists
-            if(thingifier.getERmodel().createInstanceDatabaseIfNotExisting(sessionHeaderValue)){
-                // if we created it then populate it
-                if(thingifier.getDefaultDataPopulator()!=null){
-                    // Use any default data populator to populate the new database
-                    thingifier.getDefaultDataPopulator().
-                            populate(
-                                    thingifier.getERmodel().getSchema(),
-                                    thingifier.getERmodel().getInstanceData(sessionHeaderValue)
-                            );
-                }
-            }
+            thingifier.ensureCreatedAndPopulatedInstanceDatabaseNamed(sessionHeaderValue);
         }
     }
 

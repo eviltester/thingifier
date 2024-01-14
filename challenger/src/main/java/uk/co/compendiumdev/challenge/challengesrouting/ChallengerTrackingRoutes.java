@@ -3,6 +3,7 @@ package uk.co.compendiumdev.challenge.challengesrouting;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
 import uk.co.compendiumdev.challenge.persistence.PersistenceLayer;
+import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.ThingifierApiDefn;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingStatus;
@@ -17,7 +18,8 @@ public class ChallengerTrackingRoutes {
     public void configure(final Challengers challengers,
                           final boolean single_player_mode,
                           final ThingifierApiDefn apiDefn,
-                          final PersistenceLayer persistenceLayer){
+                          final PersistenceLayer persistenceLayer,
+                          final Thingifier thingifier){
 
         // refresh challenger to avoid purging
         get("/challenger/*", (request, result) -> {
@@ -57,8 +59,10 @@ public class ChallengerTrackingRoutes {
 
             String xChallengerGuid = request.headers("X-CHALLENGER");
             if(xChallengerGuid == null || xChallengerGuid.trim()==""){
-                // create a new challenger
+                // create a new
                 final ChallengerAuthData challenger = challengers.createNewChallenger();
+                // create the database for the user
+                thingifier.ensureCreatedAndPopulatedInstanceDatabaseNamed(challenger.getXChallenger());
                 XChallengerHeader.setResultHeaderBasedOnChallenger(result, challenger);
                 result.raw().setHeader("Location", "/gui/challenges/" + challenger.getXChallenger());
                 result.status(201);
@@ -69,6 +73,8 @@ public class ChallengerTrackingRoutes {
                     // return 404, challenger ID not valid
                     result.status(404);
                 }else{
+                    // create the database for the user
+                    thingifier.ensureCreatedAndPopulatedInstanceDatabaseNamed(challenger.getXChallenger());
                     // if X-CHALLENGER header exists, and has a valid UUID, and UUID exists, then return 200
                     result.raw().setHeader("Location", "/gui/challenges/" + challenger.getXChallenger());
                     result.status(200);
