@@ -50,6 +50,8 @@ public class EntityRelModel {
         return schema;
     }
 
+    // TODO: use of this is basically deprecated sine is refers to the default database
+    @Deprecated() // we should use the parameterised version
     public ERInstanceData getInstanceData(){
         return databases.get(DEFAULT_DATABASE_NAME);
     }

@@ -4,8 +4,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.core.domain.datapopulator.DataPopulator;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.Cardinality;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.ERSchema;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.Optionality;
+import uk.co.compendiumdev.thingifier.core.domain.instances.ERInstanceData;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 
@@ -227,13 +229,15 @@ public class EntityRelModelTest {
 
         DataPopulator dataPopulator = new DataPopulator() {
             @Override
-            public void populate(final EntityRelModel model) {
+            public void populate(final ERSchema schema, final ERInstanceData database) {
 
-                model.createEntityDefinition("thing", "things");
+                // Normally a populate would deal with the database instance, not the entitiesd
+                schema.defineEntity("thing", "things");
+                database.createInstanceCollectionFrom(schema);
             }
         };
 
-        dataPopulator.populate(erm);
+        dataPopulator.populate(erm.getSchema(), erm.getInstanceData());
 
         Assertions.assertEquals(1, erm.getInstanceData().getAllInstanceCollections().size());
     }

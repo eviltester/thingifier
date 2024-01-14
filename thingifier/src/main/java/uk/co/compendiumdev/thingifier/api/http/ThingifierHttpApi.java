@@ -104,21 +104,23 @@ final public class ThingifierHttpApi {
         return httpResponse;
     }
 
+    private void createDatabaseBasedOnSessionHeaderUIfNecessaryy(final String sessionHeader){
+        if(sessionHeader !=null){
+            // make sure database exists
+            thingifier.getERmodel().createInstanceDatabaseIfNotExisting(sessionHeader);
+            // TODO: the datapopulator should not be passed the erm, instead pass a schema and a database instance
+            // until this is done we can't populate the new database and so it will be blank
+            //thingifier.generateData();
+        }
+    }
+
     public ApiResponse routeAndProcessRequest(final HttpApiRequest request,
                                               HttpVerb verb) {
 
         ApiResponse apiResponse=null;
 
         // if there is a session id and we have not created the erm yet, then do that now
-        String sessionId = request.getHeader(HTTP_SESSION_HEADER_NAME);
-        if(sessionId!=null){
-            // make sure database exists
-            thingifier.getERmodel().createInstanceDatabaseIfNotExisting(sessionId);
-            // TODO: the datapopulator should not be passed the erm, instead pass a schema and a database instance
-            // until this is done we can't populate the new database and so it will be blank
-            //thingifier.generateData();
-        }
-
+         createDatabaseBasedOnSessionHeaderUIfNecessaryy(request.getHeader(HTTP_SESSION_HEADER_NAME));
 
         switch (verb){
             case GET:
@@ -171,6 +173,9 @@ final public class ThingifierHttpApi {
     public HttpApiResponse query(final HttpApiRequest request, final String query) {
 
         HttpApiResponse httpResponse = runTheHttpApiRequestHooksOn(request);
+
+        // if there is a session id and we have not created the erm yet, then do that now
+        createDatabaseBasedOnSessionHeaderUIfNecessaryy(request.getHeader(HTTP_SESSION_HEADER_NAME));
 
         if(httpResponse==null) {
             ApiResponse apiResponse = thingifier.api().get(query, request.getQueryParams(), request.getHeaders());

@@ -127,7 +127,7 @@ final public class Thingifier {
 
     public void generateData() {
         if(dataPopulator!=null){
-            dataPopulator.populate(erm);
+            dataPopulator.populate(erm.getSchema(), erm.getInstanceData());
         }
     }
 
