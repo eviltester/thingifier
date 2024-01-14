@@ -1,6 +1,5 @@
 package uk.co.compendiumdev.thingifier.core.domain.instances;
 
-import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
@@ -101,10 +100,21 @@ final public class EntityInstanceCollection {
 
         EntityInstance item = instances.get(guid);
 
-        instances.remove(guid);
+        return deleteInstance(item);
 
-        final List<EntityInstance> alsoDelete = item.getRelationships().removeAllRelationships();
+    }
 
+    public List<EntityInstance>  deleteInstance(EntityInstance anInstance) {
+
+        if (!instances.containsValue(anInstance)) {
+            throw new IndexOutOfBoundsException(
+                    String.format("Could not find a %s with GUID %s",
+                            definition.getName(), anInstance.getGUID()));
+        }
+
+        instances.remove(anInstance.getGUID());
+
+        final List<EntityInstance> alsoDelete = anInstance.getRelationships().removeAllRelationships();
 
         return alsoDelete;
     }
@@ -143,5 +153,6 @@ final public class EntityInstanceCollection {
         }
         return instance;
     }
+
 
 }

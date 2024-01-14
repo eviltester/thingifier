@@ -43,16 +43,16 @@ public class ThingifierRestAPIHandler {
         return response;
     }
 
-    public ApiResponse delete(final String url) {
-        return delete.handle(url);
+    public ApiResponse delete(final String url, Map<String, String> headers) {
+        return delete.handle(url, headers);
     }
 
-    public ApiResponse post(final String url, final BodyParser args) {
-        return post.handle(url, args);
+    public ApiResponse post(final String url, final BodyParser args, Map<String, String> headers) {
+        return post.handle(url, args, headers);
     }
 
-    public ApiResponse put(final String url, final BodyParser args) {
-        return put.handle(url, args);
+    public ApiResponse put(final String url, final BodyParser args, Map<String, String> headers) {
+        return put.handle(url, args, headers);
     }
 
 

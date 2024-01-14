@@ -26,7 +26,6 @@ import java.util.Random;
 
 public class RestApiDocumentationGenerator {
     private final Thingifier thingifier;
-    private final List<EntityInstanceCollection> things;
     private final Collection<RelationshipDefinition> relationships;
     private final JsonThing jsonThing;
     private final XmlThing xmlThing;
@@ -42,7 +41,6 @@ public class RestApiDocumentationGenerator {
 
     public RestApiDocumentationGenerator(final Thingifier aThingifier, DefaultGUIHTML defaultGui) {
         this.thingifier = aThingifier;
-        this.things = thingifier.getThings();
         this.relationships = thingifier.getRelationshipDefinitions();
         apiConfig = thingifier.apiConfig();
         jsonThing = new JsonThing(apiConfig.jsonOutput());
@@ -120,16 +118,19 @@ public class RestApiDocumentationGenerator {
 
         output.append(heading(2, "Model"));
 
-        if (things != null) {
+        Collection<EntityDefinition> definitions = thingifier.getERmodel().getEntityDefinitions();
+
+        if (definitions != null && !definitions.isEmpty()) {
             output.append(heading(3, "Things"));
-            for (EntityInstanceCollection aThing : things) {
-                output.append(heading(4, aThing.definition().getName()));
+            for (EntityDefinition aThingDefinition : definitions) {
+
+                output.append(heading(4, aThingDefinition.getName()));
 
                 output.append("Fields:\n");
                 output.append("<ul>\n");
 
                 // todo: generate an example Thing
-                final DocumentationThingInstance exampleThing = new DocumentationThingInstance(aThing.definition());
+                final DocumentationThingInstance exampleThing = new DocumentationThingInstance(aThingDefinition);
 
                 output.append("<table>\n");
                 output.append("<thead>\n");
@@ -144,7 +145,7 @@ public class RestApiDocumentationGenerator {
 
                 output.append("<tbody>\n");
 
-                for (String aField : aThing.definition().getFieldNames()) {
+                for (String aField : aThingDefinition.getFieldNames()) {
 
                     output.append("<tr>");
                     if(!apiConfig.willResponsesShowGuids() && aField.contentEquals("guid")){
@@ -153,7 +154,7 @@ public class RestApiDocumentationGenerator {
 
                     output.append(String.format("<td>%s</td>", aField));
 
-                    Field theField = aThing.definition().getField(aField);
+                    Field theField = aThingDefinition.getField(aField);
                     output.append(String.format("<td>%s</td>", theField.getType()));
 
                     output.append("<td>");

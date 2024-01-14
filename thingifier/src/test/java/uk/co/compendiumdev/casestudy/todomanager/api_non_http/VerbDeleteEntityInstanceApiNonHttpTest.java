@@ -55,7 +55,7 @@ public class VerbDeleteEntityInstanceApiNonHttpTest {
 
         Assertions.assertEquals(1, project.countInstances());
 
-        apiresponse = todoManager.api().delete(String.format("project/%s", officeWork.getGUID()));
+        apiresponse = todoManager.api().delete(String.format("project/%s", officeWork.getGUID()), new HashMap<>());
         Assertions.assertEquals(200, apiresponse.getStatusCode());
         Assertions.assertTrue(apiresponse.getErrorMessages().size() == 0);
 
@@ -63,7 +63,7 @@ public class VerbDeleteEntityInstanceApiNonHttpTest {
 
         Assertions.assertEquals(0, project.countInstances());
 
-        apiresponse = todoManager.api().delete(String.format("project/%s", officeWork.getGUID()));
+        apiresponse = todoManager.api().delete(String.format("project/%s", officeWork.getGUID()), new HashMap<>());
         Assertions.assertEquals(404, apiresponse.getStatusCode());
         Assertions.assertTrue(apiresponse.getErrorMessages().size() > 0);
 
@@ -77,7 +77,7 @@ public class VerbDeleteEntityInstanceApiNonHttpTest {
 
         ApiResponse apiresponse;
 
-        apiresponse = todoManager.api().delete(String.format("project/%s", UUID.randomUUID().toString()));
+        apiresponse = todoManager.api().delete(String.format("project/%s", UUID.randomUUID().toString()), new HashMap<>());
         Assertions.assertEquals(404, apiresponse.getStatusCode());
         Assertions.assertTrue(apiresponse.getErrorMessages().size() > 0);
         Assertions.assertTrue(apiresponse.hasABody());

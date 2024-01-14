@@ -104,13 +104,19 @@ final public class ThingifierHttpApi {
         return httpResponse;
     }
 
-    private void createDatabaseBasedOnSessionHeaderUIfNecessaryy(final String sessionHeader){
-        if(sessionHeader !=null){
+    private void createDatabaseBasedOnSessionHeaderUIfNecessary(final String sessionHeaderValue){
+        if(sessionHeaderValue !=null){
             // make sure database exists
-            thingifier.getERmodel().createInstanceDatabaseIfNotExisting(sessionHeader);
-            // TODO: the datapopulator should not be passed the erm, instead pass a schema and a database instance
-            // until this is done we can't populate the new database and so it will be blank
-            //thingifier.generateData();
+            thingifier.getERmodel().createInstanceDatabaseIfNotExisting(sessionHeaderValue);
+            if(thingifier.getDefaultDataPopulator()!=null){
+                // Use any default data populator to populate the new database
+                thingifier.getDefaultDataPopulator().
+                        populate(
+                                thingifier.getERmodel().getSchema(),
+                                thingifier.getERmodel().getInstanceData(sessionHeaderValue)
+                        );
+            }
+
         }
     }
 
@@ -120,7 +126,7 @@ final public class ThingifierHttpApi {
         ApiResponse apiResponse=null;
 
         // if there is a session id and we have not created the erm yet, then do that now
-         createDatabaseBasedOnSessionHeaderUIfNecessaryy(request.getHeader(HTTP_SESSION_HEADER_NAME));
+         createDatabaseBasedOnSessionHeaderUIfNecessary(request.getHeader(HTTP_SESSION_HEADER_NAME));
 
         switch (verb){
             case GET:
@@ -134,15 +140,18 @@ final public class ThingifierHttpApi {
                                                     request.getHeaders());
                 break;
             case DELETE:
-                apiResponse = thingifier.api().delete(request.getPath());
+                apiResponse = thingifier.api().delete(request.getPath(), request.getHeaders());
                 break;
             case POST:
-
-                apiResponse = thingifier.api().post(request.getPath(), new BodyParser(request, thingifier.getThingNames()));
+                apiResponse = thingifier.api().post(request.getPath(),
+                                                    new BodyParser(request, thingifier.getThingNames()),
+                                                    request.getHeaders());
                 break;
             case PUT:
-
-                apiResponse = thingifier.api().put(request.getPath(), new BodyParser(request, thingifier.getThingNames()));
+                apiResponse = thingifier.api().put(request.getPath(),
+                                                    new BodyParser(request, thingifier.getThingNames()),
+                                                    request.getHeaders()
+                                                    );
                 break;
         }
 
@@ -175,7 +184,7 @@ final public class ThingifierHttpApi {
         HttpApiResponse httpResponse = runTheHttpApiRequestHooksOn(request);
 
         // if there is a session id and we have not created the erm yet, then do that now
-        createDatabaseBasedOnSessionHeaderUIfNecessaryy(request.getHeader(HTTP_SESSION_HEADER_NAME));
+        createDatabaseBasedOnSessionHeaderUIfNecessary(request.getHeader(HTTP_SESSION_HEADER_NAME));
 
         if(httpResponse==null) {
             ApiResponse apiResponse = thingifier.api().get(query, request.getQueryParams(), request.getHeaders());

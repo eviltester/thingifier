@@ -11,6 +11,7 @@ import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.query.SimpleQuery;
 
 import java.util.List;
+import java.util.Map;
 
 public class RestApiPostHandler {
     private final Thingifier thingifier;
@@ -19,19 +20,21 @@ public class RestApiPostHandler {
         thingifier = aThingifier;
     }
 
-    public ApiResponse handle(final String url, final BodyParser args) {
+    public ApiResponse handle(final String url, final BodyParser args, final Map<String, String> requestHeaders) {
         // we want to
+
+        String instanceDatabaseName = SessionHeaderParser.getDatabaseNameFromHeaderValue(requestHeaders);
 
         /*
             No GUID and match a Thing
          */
         // if queryis empty then need a way to check if the query matched
         // create a thing
-        EntityInstanceCollection thing = thingifier.getInstancesForSingularOrPluralNamedEntity(url);
-        if (thing != null) {
+        EntityInstanceCollection instancesCollection = thingifier.getInstancesForSingularOrPluralNamedEntity(url, instanceDatabaseName);
+        if (instancesCollection != null) {
             // create a new thing does not enforce relationships
             // TODO: validate before creation so as to only delete in an 'emergency' not as default
-            final ApiResponse response = new ThingCreation(thingifier).with(args, thing);
+            final ApiResponse response = new ThingCreation(thingifier).with(args, instancesCollection, instanceDatabaseName);
             if (response.isErrorResponse()) {
                 return response;
             }
@@ -44,7 +47,7 @@ public class RestApiPostHandler {
             if (validity.isValid()) {
                 return response;
             } else {
-                thingifier.deleteThing(response.getReturnedInstance());
+                instancesCollection.deleteInstance(response.getReturnedInstance());
                 return ApiResponse.error(400, validity.getErrorMessages()).addToErrorMessages("No new item created");
             }
         }
@@ -59,9 +62,9 @@ public class RestApiPostHandler {
         if (urlParts.length == 2) {
 
             String thingName = urlParts[0];
-            thing = thingifier.getInstancesForSingularOrPluralNamedEntity(thingName);
+            instancesCollection = thingifier.getInstancesForSingularOrPluralNamedEntity(thingName, instanceDatabaseName);
 
-            if (thing == null) {
+            if (instancesCollection == null) {
                 // this is not a URL for thing/guid
                 // unknown thing
                 return NoSuchEntity.response(thingName);
@@ -70,14 +73,14 @@ public class RestApiPostHandler {
 
             String instanceGuid = urlParts[1];
 
-            EntityInstance instance = thing.findInstanceByGUIDorID(instanceGuid);
+            EntityInstance instance = instancesCollection.findInstanceByGUIDorID(instanceGuid);
 
             if (instance == null) {
                 // cannot amend something that does not exist
-                return ApiResponse.error404(String.format("No such %s entity instance with GUID or ID %s found", thing.definition().getName(), instanceGuid));
+                return ApiResponse.error404(String.format("No such %s entity instance with GUID or ID %s found", instancesCollection.definition().getName(), instanceGuid));
             }
 
-            return amendAThingWithPost(args, instance);
+            return amendAThingWithPost(args, instance, instanceDatabaseName);
         }
 
 
@@ -85,9 +88,11 @@ public class RestApiPostHandler {
             Match a Relationship
          */
         // get the things to post to
-        SimpleQuery query = new SimpleQuery(thingifier.getERmodel().getSchema(), thingifier.getERmodel().getInstanceData(), url).performQuery();
+        SimpleQuery query = new SimpleQuery(
+                                    thingifier.getERmodel().getSchema(),
+                                    thingifier.getERmodel().getInstanceData(instanceDatabaseName), url).performQuery();
         if (query.lastMatchWasRelationship()) {
-            return new RelationshipCreation(thingifier).create(url, args, query);
+            return new RelationshipCreation(thingifier).create(url, args, query, instanceDatabaseName);
         }
 
         // WHAT was that query?
@@ -96,9 +101,9 @@ public class RestApiPostHandler {
     }
 
 
-    private ApiResponse amendAThingWithPost(BodyParser args, EntityInstance instance) {
+    private ApiResponse amendAThingWithPost(BodyParser args, EntityInstance instance, final String database) {
         // with a post we do not want to clear fields before setting - we only amend what we pass in
-        return new ThingAmendment(thingifier).amendInstance(args, instance, false);
+        return new ThingAmendment(thingifier).amendInstance(args, instance, false, database);
     }
 
 

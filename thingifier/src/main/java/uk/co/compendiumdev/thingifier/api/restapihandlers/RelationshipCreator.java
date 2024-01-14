@@ -16,13 +16,13 @@ public class RelationshipCreator {
         this.thingifier = thingifier;
     }
 
-    public ApiResponse createRelationships(final BodyParser bodyargs, final EntityInstance instance) {
+    public ApiResponse createRelationships(final BodyParser bodyargs, final EntityInstance instance, final String database) {
         try {
-            List<RelationshipDetails> relationships = getRelationshipsFromArgs(bodyargs, instance);
+            List<RelationshipDetails> relationships = getRelationshipsFromArgs(bodyargs, instance, database);
             for (RelationshipDetails relationship : relationships) {
                 instance.getRelationships().connect(
                         relationship.relationshipName,
-                            thingifier.getInstancesForSingularOrPluralNamedEntity(relationship.toType).
+                            thingifier.getInstancesForSingularOrPluralNamedEntity(relationship.toType, database).
                                         findInstanceByField(
                                                 FieldValue.is(relationship.guidName, relationship.guidValue)));
             }
@@ -34,13 +34,13 @@ public class RelationshipCreator {
         }
     }
 
-    private List<RelationshipDetails> getRelationshipsFromArgs(final BodyParser bodyargs, final EntityInstance instance) {
+    private List<RelationshipDetails> getRelationshipsFromArgs(final BodyParser bodyargs, final EntityInstance instance, final String database) {
 
         List<RelationshipDetails>relationships = new ArrayList<>();
         RelationshipCollector collector = new RelationshipCollector();
 
         new BodyArgsProcessor(thingifier, bodyargs).identifyRelationships(
-                bodyargs.getFlattenedStringMap(), instance, collector
+                bodyargs.getFlattenedStringMap(), instance, collector, database
         );
 
         relationships.addAll(collector.getRelationshipDetails());

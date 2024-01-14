@@ -6,11 +6,9 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.ERInstanceData;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /*
     The ERM has the 'model' (ERSchema) and the 'instances' (things).
@@ -50,7 +48,7 @@ public class EntityRelModel {
         return schema;
     }
 
-    // TODO: use of this is basically deprecated sine is refers to the default database
+    // TODO: use of this is basically deprecated since is refers to the default database
     @Deprecated() // we should use the parameterised version
     public ERInstanceData getInstanceData(){
         return databases.get(DEFAULT_DATABASE_NAME);
@@ -58,6 +56,10 @@ public class EntityRelModel {
 
     public ERInstanceData getInstanceData(String databaseKey) {
         return databases.get(databaseKey);
+    }
+
+    public Set<String> getDatabaseNames(){
+        return databases.keySet();
     }
 
     // ERM Object Level
@@ -77,6 +79,10 @@ public class EntityRelModel {
 
     public Collection<RelationshipDefinition> getRelationshipDefinitions() {
         return schema.getRelationships();
+    }
+
+    public Collection<EntityDefinition> getEntityDefinitions() {
+        return schema.getEntityDefinitions();
     }
 
     public RelationshipDefinition createRelationshipDefinition(
@@ -128,4 +134,6 @@ public class EntityRelModel {
         aDatabase.createInstanceCollectionFrom(this.schema);
         databases.put(databaseKey, aDatabase);
     }
+
+
 }

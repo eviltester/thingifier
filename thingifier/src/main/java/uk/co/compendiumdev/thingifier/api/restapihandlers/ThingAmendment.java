@@ -20,7 +20,7 @@ public class ThingAmendment {
     }
 
     public ApiResponse amendInstance(final BodyParser bodyargs, final EntityInstance instance,
-                                     final Boolean clearFieldsBeforeSettingFromArgs) {
+                                     final Boolean clearFieldsBeforeSettingFromArgs, final String database) {
 
         Map<String, String> args = bodyargs.getStringMap();
 
@@ -45,7 +45,7 @@ public class ThingAmendment {
             List<FieldValue> fieldValues = FieldValues.
                                         fromListMapEntryStringString(
                                                 new BodyArgsProcessor(thingifier, bodyargs).
-                                                        removeRelationshipsFrom(instance));
+                                                        removeRelationshipsFrom(instance, database));
             cloned.setFieldValuesFrom(fieldValues);
 
         } catch (Exception e) {
@@ -56,7 +56,7 @@ public class ThingAmendment {
         ValidationReport validation = cloned.validateFieldValues(protectedFieldNames, false);
 
         // validate the relationships as well
-        ValidationReport relationshipsValidation = new BodyRelationshipValidator(thingifier).validate(bodyargs, cloned.getEntity());
+        ValidationReport relationshipsValidation = new BodyRelationshipValidator(thingifier).validate(bodyargs, cloned.getEntity(), database);
         validation.combine(relationshipsValidation);
 
         if (validation.isValid()) {
@@ -69,11 +69,11 @@ public class ThingAmendment {
             List<FieldValue> fieldValues = FieldValues.
                     fromListMapEntryStringString(
                             new BodyArgsProcessor(thingifier, bodyargs).
-                                    removeRelationshipsFrom(instance));
+                                    removeRelationshipsFrom(instance, database));
             instance.setFieldValuesFrom(fieldValues);
 
             // todo: should we check that this was actually a success?
-            final ApiResponse relresponse = new RelationshipCreator(thingifier).createRelationships(bodyargs, instance);
+            final ApiResponse relresponse = new RelationshipCreator(thingifier).createRelationships(bodyargs, instance, database);
             // todo: should check if any of the 'removed items due to relationship removal' need to be removed
             // and remove them if we do
             return ApiResponse.success().returnSingleInstance(instance);

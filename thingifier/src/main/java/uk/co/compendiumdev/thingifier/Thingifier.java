@@ -12,6 +12,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.Relat
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.reporting.ThingReporter;
 
+import javax.xml.crypto.Data;
 import java.util.*;
 
 /* Thingifier
@@ -61,33 +62,20 @@ final public class Thingifier {
          - apiConfig.routing("/todos").disallow("PATCH,POST.UPDATE")
          - apiConfig.hideGUIDsWhenIDAvailable()
          - etc.
-        aliases to entites and relationships to override definitions in the entity etc.
+        aliases to entities and relationships to override definitions in the entity etc.
         create 'queries' to show subsets of data, etc.
         Do not put this into the entities and relationships make this a separate model
      */
 
 
-    // THINGS
+    // Entity Definitions
 
     public EntityDefinition defineThing(final String thingName, final String pluralName) {
         return erm.createEntityDefinition(thingName, pluralName);
     }
 
-    public List<EntityInstanceCollection> getThings() {
-        return erm.getInstanceData().getAllInstanceCollections();
-    }
-
-
-    public EntityInstance findThingInstanceByGuid(final String thingGUID) {
-        return erm.getInstanceData().findEntityInstanceByGUID(thingGUID);
-    }
-
     public boolean hasThingNamed(final String aName) {
         return erm.hasEntityNamed(aName);
-    }
-
-    public EntityInstanceCollection getThingInstancesNamed(final String aName) {
-        return erm.getInstanceData().getInstanceCollectionForEntityNamed(aName);
     }
 
     public boolean hasThingWithPluralNamed(final String term) {
@@ -101,40 +89,9 @@ final public class Thingifier {
         return erm.getSchema().getEntityDefinitionWithPluralNamed(term);
     }
 
-    public EntityInstanceCollection getInstancesForSingularOrPluralNamedEntity(final String term) {
-        final EntityDefinition defn = erm.getSchema().getDefinitionWithSingularOrPluralNamed(term);
-        if(defn!=null){
-            final String entityName = defn.getName();
-            return erm.getInstanceData().getInstanceCollectionForEntityNamed(entityName);
-        }
-
-        return null;
-    }
-
-    public void clearAllData() {
-        erm.getInstanceData().clearAllData();
-    }
-
-    public void deleteThing(final EntityInstance aThingInstance) {
-        erm.getInstanceData().deleteEntityInstance(aThingInstance);
-    }
-
     public List<String> getThingNames() {
         return erm.getEntityNames();
     }
-
-    // data generation
-
-    public void generateData() {
-        if(dataPopulator!=null){
-            dataPopulator.populate(erm.getSchema(), erm.getInstanceData());
-        }
-    }
-
-    public void setDataGenerator(DataPopulator dataPopulator) {
-        this.dataPopulator = dataPopulator;
-    }
-
 
     // RELATIONSHIPS
     public Collection<RelationshipDefinition> getRelationshipDefinitions() {
@@ -150,6 +107,98 @@ final public class Thingifier {
         return erm.hasRelationshipNamed(relationshipName);
     }
 
+    // Instances
+    @Deprecated
+    public List<EntityInstanceCollection> getThings() {
+        return getThings(EntityRelModel.DEFAULT_DATABASE_NAME);
+    }
+
+    public List<EntityInstanceCollection> getThings(final String database) {
+        return erm.getInstanceData(database).getAllInstanceCollections();
+    }
+
+
+    @Deprecated
+    public EntityInstance findThingInstanceByGuid(final String thingGUID) {
+        return findThingInstanceByGuid(thingGUID, EntityRelModel.DEFAULT_DATABASE_NAME);
+    }
+
+    public EntityInstance findThingInstanceByGuid(final String thingGUID, final String database) {
+        return erm.getInstanceData(database).findEntityInstanceByGUID(thingGUID);
+    }
+
+
+    @Deprecated
+    public EntityInstanceCollection getThingInstancesNamed(final String aName) {
+        return getThingInstancesNamed(aName, EntityRelModel.DEFAULT_DATABASE_NAME);
+    }
+
+    public EntityInstanceCollection getThingInstancesNamed(final String aName, final String database) {
+        return erm.getInstanceData(database).getInstanceCollectionForEntityNamed(aName);
+    }
+
+
+
+    @Deprecated // because this is accessing default database directly
+    public EntityInstanceCollection getInstancesForSingularOrPluralNamedEntity(final String term) {
+        return getInstancesForSingularOrPluralNamedEntity(term, EntityRelModel.DEFAULT_DATABASE_NAME);
+    }
+
+    public EntityInstanceCollection getInstancesForSingularOrPluralNamedEntity(final String term, final String database) {
+        final EntityDefinition defn = erm.getSchema().getDefinitionWithSingularOrPluralNamed(term);
+        if(defn!=null){
+            final String entityName = defn.getName();
+            return erm.getInstanceData(database).getInstanceCollectionForEntityNamed(entityName);
+        }
+
+        return null;
+    }
+
+    public void clearAllData() {
+        // clear data in default database but keep database
+        clearAllData(EntityRelModel.DEFAULT_DATABASE_NAME);
+        // delete all the other databases
+        for(String databaseName : erm.getDatabaseNames()){
+            if(!databaseName.equals(EntityRelModel.DEFAULT_DATABASE_NAME)){
+                erm.deleteInstanceDatabase(databaseName);
+            }
+        }
+    }
+
+    public void clearAllData(final String database) {
+        erm.getInstanceData(database).clearAllData();
+    }
+
+    @Deprecated
+    public void deleteThing(final EntityInstance aThingInstance) {
+        deleteThing(aThingInstance, EntityRelModel.DEFAULT_DATABASE_NAME);
+    }
+
+    public void deleteThing(final EntityInstance aThingInstance, final String database) {
+        erm.getInstanceData(database).deleteEntityInstance(aThingInstance);
+    }
+
+
+
+    // data generation
+    @Deprecated // because it is for default database
+    public void generateData() {
+        generateData(EntityRelModel.DEFAULT_DATABASE_NAME);
+    }
+
+    public void generateData(final String database) {
+        if(dataPopulator!=null){
+            dataPopulator.populate(erm.getSchema(), erm.getInstanceData(database));
+        }
+    }
+
+    public void setDataGenerator(DataPopulator dataPopulator) {
+        this.dataPopulator = dataPopulator;
+    }
+
+
+
+
 
     // Generic
 
@@ -164,9 +213,6 @@ final public class Thingifier {
         // TODO: why is this created each time?
         return new ThingifierRestAPIHandler(this);
     }
-
-
-
 
 
     public ThingifierApiConfig apiConfig() {
@@ -214,5 +260,9 @@ final public class Thingifier {
                                                     this.apiConfigProfiles(),
                                                     this.title,
                                                     this.initialParagraph);
+    }
+
+    public DataPopulator getDefaultDataPopulator() {
+        return dataPopulator;
     }
 }

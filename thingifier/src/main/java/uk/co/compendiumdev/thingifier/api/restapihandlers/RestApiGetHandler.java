@@ -30,11 +30,7 @@ public class RestApiGetHandler {
                         String.format("Can not use query parameters with %s", url));
         }
 
-        String sessionHeaderValue = requestHeaders.get(HTTP_SESSION_HEADER_NAME.toLowerCase());
-        String instanceDatabaseName = EntityRelModel.DEFAULT_DATABASE_NAME;
-        if(sessionHeaderValue!=null){
-            instanceDatabaseName = sessionHeaderValue;
-        }
+        String instanceDatabaseName = SessionHeaderParser.getDatabaseNameFromHeaderValue(requestHeaders);
 
         SimpleQuery queryResults;
 
