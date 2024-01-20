@@ -14,7 +14,7 @@ public class ChallengerInternalHttpRequestHookTest {
     @Test
     public void inMultUserModeWeNeedAnXChallengerHeaderToTrackChallenges(){
 
-        Challengers challengers = new Challengers();
+        Challengers challengers = new Challengers(null);
         challengers.setMultiPlayerMode();
 
         final ChallengerInternalHTTPRequestHook hook = new ChallengerInternalHTTPRequestHook(challengers);
@@ -33,7 +33,7 @@ public class ChallengerInternalHttpRequestHookTest {
     @Test
     public void inMultUserModeAddingAnXChallengerHeaderWillTouchTheChallenger() throws NoSuchFieldException, IllegalAccessException {
 
-        Challengers challengers = new Challengers();
+        Challengers challengers = new Challengers(null);
         final ChallengerAuthData challenger = challengers.createNewChallenger();
 
         // risk that this test is intermittent if it all happens in the same millisecond
@@ -74,7 +74,7 @@ public class ChallengerInternalHttpRequestHookTest {
     @Test
     public void inMultUserModeWeNeedAnXChallengerHeaderThatExistsToTrackChallenges(){
 
-        Challengers challengers = new Challengers();
+        Challengers challengers = new Challengers(null);
         challengers.setMultiPlayerMode();
 
         final ChallengerInternalHTTPRequestHook hook = new ChallengerInternalHTTPRequestHook(challengers);
@@ -97,7 +97,7 @@ public class ChallengerInternalHttpRequestHookTest {
     @Test
     public void inSinglePlayerModeNoHeaderMeansUseDefaultChallenger(){
 
-        Challengers challengers = new Challengers();
+        Challengers challengers = new Challengers(null);
 
         final ChallengerInternalHTTPRequestHook hook = new ChallengerInternalHTTPRequestHook(challengers);
 
@@ -117,7 +117,7 @@ public class ChallengerInternalHttpRequestHookTest {
     @Test
     public void canGetHeartbeatInMultiPlayer(){
 
-        Challengers challengers = new Challengers();
+        Challengers challengers = new Challengers(null);
         challengers.setMultiPlayerMode();
         final ChallengerAuthData challenger =
                 challengers.createNewChallenger();
@@ -140,7 +140,7 @@ public class ChallengerInternalHttpRequestHookTest {
     @Test
     public void canTraceHeartbeatInMultiPlayer(){
 
-        Challengers challengers = new Challengers();
+        Challengers challengers = new Challengers(null);
         challengers.setMultiPlayerMode();
         final ChallengerAuthData challenger =
                 challengers.createNewChallenger();
@@ -167,7 +167,7 @@ public class ChallengerInternalHttpRequestHookTest {
     @Test
     public void canDeleteHeartbeatInMultiPlayer(){
 
-        Challengers challengers = new Challengers();
+        Challengers challengers = new Challengers(null);
         challengers.setMultiPlayerMode();
         final ChallengerAuthData challenger =
                 challengers.createNewChallenger();
@@ -194,7 +194,7 @@ public class ChallengerInternalHttpRequestHookTest {
     @Test
     public void canPatchHeartbeatInMultiPlayer(){
 
-        Challengers challengers = new Challengers();
+        Challengers challengers = new Challengers(null);
         challengers.setMultiPlayerMode();
         final ChallengerAuthData challenger =
                 challengers.createNewChallenger();

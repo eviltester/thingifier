@@ -1,6 +1,5 @@
 package uk.co.compendiumdev.challenge.challengehooks;
 
-import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.challenge.CHALLENGE;
@@ -9,14 +8,12 @@ import uk.co.compendiumdev.challenge.challengers.Challengers;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.application.internalhttpconversion.InternalHttpResponse;
 
-import java.lang.reflect.Field;
-
 public class ChallengerInternalHttpResponseHookTest {
 
     @Test
     public void inMultUserModeWeNeedAnNonNullXChallengerHeaderOrSeeUnknownChallengerHeader(){
 
-        Challengers challengers = new Challengers();
+        Challengers challengers = new Challengers(null);
         challengers.setMultiPlayerMode();
 
         final ChallengerInternalHTTPResponseHook hook = new ChallengerInternalHTTPResponseHook(challengers);
@@ -35,7 +32,7 @@ public class ChallengerInternalHttpResponseHookTest {
 
     public void inMultUserModeWeNeedAValidXChallengerHeaderOrSeeUnknownChallengerHeader(){
 
-        Challengers challengers = new Challengers();
+        Challengers challengers = new Challengers(null);
         challengers.setMultiPlayerMode();
 
         final ChallengerInternalHTTPResponseHook hook = new ChallengerInternalHTTPResponseHook(challengers);
@@ -57,7 +54,7 @@ public class ChallengerInternalHttpResponseHookTest {
     @Test
     public void canPostChallengerToCreateAChallenger(){
 
-        Challengers challengers = new Challengers();
+        Challengers challengers = new Challengers(null);
         challengers.setMultiPlayerMode();
 
         ChallengerInternalHTTPResponseHook hook =
@@ -88,7 +85,7 @@ public class ChallengerInternalHttpResponseHookTest {
     @Test
     public void givenAValidChallengerAddTheGuidIntoTheResponse(){
 
-        Challengers challengers = new Challengers();
+        Challengers challengers = new Challengers(null);
         challengers.setMultiPlayerMode();
 
         ChallengerInternalHTTPResponseHook hook =
@@ -117,7 +114,7 @@ public class ChallengerInternalHttpResponseHookTest {
     @Test
     public void getTodoWhichReturns404PassesChallenge(){
 
-        Challengers challengers = new Challengers();
+        Challengers challengers = new Challengers(null);
         challengers.setMultiPlayerMode();
 
         ChallengerInternalHTTPResponseHook hook =
@@ -144,7 +141,7 @@ public class ChallengerInternalHttpResponseHookTest {
     @Test
     public void optionsOnTodosPassesChallenge(){
 
-        Challengers challengers = new Challengers();
+        Challengers challengers = new Challengers(null);
         challengers.setMultiPlayerMode();
 
         ChallengerInternalHTTPResponseHook hook =
@@ -171,7 +168,7 @@ public class ChallengerInternalHttpResponseHookTest {
     @Test
     public void postSecretTokenWrongAuthorizationChallenge(){
 
-        Challengers challengers = new Challengers();
+        Challengers challengers = new Challengers(null);
         challengers.setMultiPlayerMode();
 
         ChallengerInternalHTTPResponseHook hook =
@@ -199,7 +196,7 @@ public class ChallengerInternalHttpResponseHookTest {
     @Test
     public void postSecretTokenCorrectAuthorizationChallenge(){
 
-        Challengers challengers = new Challengers();
+        Challengers challengers = new Challengers(null);
         challengers.setMultiPlayerMode();
 
         ChallengerInternalHTTPResponseHook hook =
@@ -227,7 +224,7 @@ public class ChallengerInternalHttpResponseHookTest {
     @Test
     public void getNoteWithValidXAuthToken(){
 
-        Challengers challengers = new Challengers();
+        Challengers challengers = new Challengers(null);
         challengers.setMultiPlayerMode();
 
         ChallengerInternalHTTPResponseHook hook =
@@ -255,7 +252,7 @@ public class ChallengerInternalHttpResponseHookTest {
     @Test
     public void getNoteWithNoAuthTokenFailChallenge(){
 
-        Challengers challengers = new Challengers();
+        Challengers challengers = new Challengers(null);
         challengers.setMultiPlayerMode();
 
         ChallengerInternalHTTPResponseHook hook =
@@ -282,7 +279,7 @@ public class ChallengerInternalHttpResponseHookTest {
     @Test
     public void cannotAmendNoteWithInvalidAuthTokenFailChallenge(){
 
-        Challengers challengers = new Challengers();
+        Challengers challengers = new Challengers(null);
         challengers.setMultiPlayerMode();
 
         ChallengerInternalHTTPResponseHook hook =
@@ -311,7 +308,7 @@ public class ChallengerInternalHttpResponseHookTest {
     @Test
     public void forbiddenAmendNOAuthTokenForNote(){
 
-        Challengers challengers = new Challengers();
+        Challengers challengers = new Challengers(null);
         challengers.setMultiPlayerMode();
 
         ChallengerInternalHTTPResponseHook hook =
@@ -339,7 +336,7 @@ public class ChallengerInternalHttpResponseHookTest {
     @Test
     public void canAmendNoteUsingAuthTokenPass(){
 
-        Challengers challengers = new Challengers();
+        Challengers challengers = new Challengers(null);
         challengers.setMultiPlayerMode();
 
         ChallengerInternalHTTPResponseHook hook =
@@ -368,7 +365,7 @@ public class ChallengerInternalHttpResponseHookTest {
     @Test
     public void canGetNoteUsingAuthTokenPass() {
 
-        Challengers challengers = new Challengers();
+        Challengers challengers = new Challengers(null);
         challengers.setMultiPlayerMode();
 
         ChallengerInternalHTTPResponseHook hook =
@@ -392,5 +389,5 @@ public class ChallengerInternalHttpResponseHookTest {
                         CHALLENGE.GET_SECRET_NOTE_200)
         );
     }
-    // todo create an internal set of tests which pass the challenges 'for real'
+
 }

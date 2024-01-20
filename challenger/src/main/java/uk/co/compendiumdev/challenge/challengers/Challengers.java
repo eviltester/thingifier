@@ -4,8 +4,8 @@ import uk.co.compendiumdev.challenge.CHALLENGE;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.persistence.PersistenceLayer;
 import uk.co.compendiumdev.challenge.persistence.PersistenceResponse;
-import uk.co.compendiumdev.thingifier.api.ThingifierApiDefn;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
+import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,6 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class Challengers {
 
+    private final EntityRelModel erModel;
     private boolean singlePlayerMode;
     Map<String, ChallengerAuthData> authData;
     public ChallengerAuthData SINGLE_PLAYER;
@@ -22,11 +23,12 @@ public class Challengers {
     PersistenceLayer persistenceLayer;
     private ThingifierApiConfig apiConfig;
 
-    public Challengers(){
+    public Challengers(EntityRelModel erModel){
         authData = new ConcurrentHashMap<>();
         SINGLE_PLAYER = new ChallengerAuthData();
         SINGLE_PLAYER.setXChallengerGUID(SINGLE_PLAYER_GUID);
         this.singlePlayerMode=true;
+        this.erModel = erModel;
     }
 
     public void setMultiPlayerMode(){
@@ -84,6 +86,11 @@ public class Challengers {
 
         for(String deleteKey : deleteMe){
             authData.remove(deleteKey);
+            if(erModel!=null){
+                if(erModel.getDatabaseNames().contains(deleteKey)){
+                    erModel.deleteInstanceDatabase(deleteKey);
+                }
+            }
         }
     }
 

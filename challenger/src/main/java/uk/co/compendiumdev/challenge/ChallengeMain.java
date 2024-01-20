@@ -52,9 +52,6 @@ public class ChallengeMain {
             }
         }
 
-        // only enable this as a hack for local testing
-        //challenger.setToMultiPlayerMode();
-
         challenger.configureRoutes();
 
         app.chooseThingifier();

@@ -37,7 +37,7 @@ public class ChallengeRouteHandler {
 
         challengeDefinitions = new ChallengeDefinitions();
         this.thingifier = thingifier;
-        challengers = new Challengers();
+        challengers = new Challengers(thingifier.getERmodel());
         challengers.setApiConfig(thingifier.apiConfig());
         single_player_mode = true;
         persistenceLayer = new PersistenceLayer(PersistenceLayer.StorageType.LOCAL);
