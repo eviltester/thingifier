@@ -18,8 +18,8 @@ public class ERSchema {
         entityDefinitions = new ConcurrentHashMap<>();
     }
 
-    public EntityDefinition defineEntity(final String thingName, final String pluralName) {
-        EntityDefinition definition = new EntityDefinition(thingName, pluralName);
+    public EntityDefinition defineEntity(final String thingName, final String pluralName, final int maxiumNumberOfInstances) {
+        EntityDefinition definition = new EntityDefinition(thingName, pluralName, maxiumNumberOfInstances);
         entityDefinitions.put(definition.getName(), definition);
         return definition;
     }

@@ -232,7 +232,7 @@ public class EntityRelModelTest {
             public void populate(final ERSchema schema, final ERInstanceData database) {
 
                 // Normally a populate would deal with the database instance, not the entitiesd
-                schema.defineEntity("thing", "things");
+                schema.defineEntity("thing", "things", -1);
                 database.createInstanceCollectionFrom(schema);
             }
         };

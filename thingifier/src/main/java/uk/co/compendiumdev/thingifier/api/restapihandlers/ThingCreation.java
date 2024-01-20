@@ -120,17 +120,10 @@ public class ThingCreation {
 
         final List<String> protectedFieldNames = instance.getEntity().
                                 getFieldNamesOfType(FieldType.ID, FieldType.GUID);
+
         ValidationReport validation = instance.validateFieldValues(protectedFieldNames, false);
 
-        if (validation.isValid()) {
-            thing.addInstance(instance);
-
-            return new RelationshipCreator(thingifier).createRelationships(bodyargs, instance, database);
-
-        } else {
-            // do not add it, report the errors
-            return ApiResponse.error(400, validation.getErrorMessages());
-        }
+        return addValidatedInstance(bodyargs, instance, thing, database, validation);
     }
 
     private ApiResponse insertNewThingWithFields(final BodyParser bodyargs, final EntityInstance instance,
@@ -158,11 +151,18 @@ public class ThingCreation {
             return ApiResponse.error(400, e.getMessage());
         }
 
-
         ValidationReport validation = instance.validateFieldValues(new ArrayList<>(), true);
 
+        return addValidatedInstance(bodyargs, instance, thing, database, validation);
+    }
+
+    private ApiResponse addValidatedInstance(BodyParser bodyargs, EntityInstance instance, EntityInstanceCollection thing, String database, ValidationReport validation) {
         if (validation.isValid()) {
-            thing.addInstance(instance);
+            try {
+                thing.addInstance(instance);
+            }catch(Exception e){
+                return ApiResponse.error(400, e.getMessage());
+            }
 
             return new RelationshipCreator(thingifier).createRelationships(bodyargs, instance, database);
 

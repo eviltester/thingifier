@@ -71,7 +71,11 @@ final public class Thingifier {
     // Entity Definitions
 
     public EntityDefinition defineThing(final String thingName, final String pluralName) {
-        return erm.createEntityDefinition(thingName, pluralName);
+        return defineThing(thingName, pluralName, -1);
+    }
+
+    public EntityDefinition defineThing(final String thingName, final String pluralName, final int maximumNumberOfInstances) {
+        return erm.createEntityDefinition(thingName, pluralName, maximumNumberOfInstances);
     }
 
     public boolean hasThingNamed(final String aName) {

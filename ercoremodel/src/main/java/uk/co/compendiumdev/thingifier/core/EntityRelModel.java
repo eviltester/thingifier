@@ -37,7 +37,11 @@ public class EntityRelModel {
     }
 
     public EntityDefinition createEntityDefinition(final String entityName, final String pluralName) {
-        EntityDefinition defn = schema.defineEntity(entityName, pluralName);
+        return createEntityDefinition(entityName, pluralName, -1);
+    }
+
+    public EntityDefinition createEntityDefinition(final String entityName, final String pluralName, int maximumNumberOfInstances) {
+        EntityDefinition defn = schema.defineEntity(entityName, pluralName, maximumNumberOfInstances);
         for(ERInstanceData database : databases.values()){
             database.createInstanceCollectionFor(defn);
         }

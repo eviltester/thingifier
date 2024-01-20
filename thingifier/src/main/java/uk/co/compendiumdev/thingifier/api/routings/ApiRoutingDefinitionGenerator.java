@@ -110,8 +110,15 @@ public class ApiRoutingDefinitionGenerator {
             // TODO: more granularity if singleUrl!=pluralUrl then we need two paths here
             // e.g. GET projects, POST project - which also changes the Options
             // we should be able to create things without a GUID e.g. POST project
+            String maxLimitInformation = "";
+            if(entityDefn.hasMaxInstanceLimit()){
+                maxLimitInformation= String.format(
+                                        "A maximum of %d %s is allowed.",
+                                        entityDefn.getMaxInstanceLimit(),
+                                        entityDefn.getPlural());
+            }
             defn.addRouting(
-                    String.format("we should be able to create %s without a %s using the field values in the body of the message",
+                    String.format("we should be able to create %s without a %s using the field values in the body of the message. " + maxLimitInformation,
                             entityDefn.getName(), uniqueIdFieldName.toUpperCase()),
                     RoutingVerb.POST, pluralUrl, RoutingStatus.returnedFromCall()).
                     addPossibleStatus(RoutingStatus.returnValue(
