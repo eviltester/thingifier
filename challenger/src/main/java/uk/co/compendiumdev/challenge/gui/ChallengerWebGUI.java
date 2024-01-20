@@ -6,6 +6,8 @@ import uk.co.compendiumdev.challenge.challengers.Challengers;
 import uk.co.compendiumdev.challenge.challenges.*;
 import uk.co.compendiumdev.challenge.persistence.PersistenceLayer;
 import uk.co.compendiumdev.challenge.persistence.PersistenceResponse;
+import uk.co.compendiumdev.thingifier.core.EntityRelModel;
+import uk.co.compendiumdev.thingifier.core.domain.instances.ERInstanceData;
 import uk.co.compendiumdev.thingifier.htmlgui.DefaultGUIHTML;
 
 import java.util.ArrayList;
@@ -27,7 +29,7 @@ public class ChallengerWebGUI {
                       final ChallengeDefinitions challengeDefinitions, 
                       final PersistenceLayer persistenceLayer, 
                       final boolean single_player_mode) {
-        
+
         guiManagement.appendMenuItem("Challenges", "/gui/challenges");
         guiManagement.removeMenuItem("Home");
         guiManagement.prefixMenuItem("Home", "/");
@@ -50,7 +52,7 @@ public class ChallengerWebGUI {
         // single user / default session
         get("/gui/challenges", (request, result) -> {
 
-            if(!request.cookie("X-THINGIFIER-DATABASE-NAME").equals("")){
+            if(request.cookie("X-THINGIFIER-DATABASE-NAME")!=null){
                 // we didn't add a challenger in the URL but we do have one in the cookie
                 result.header("location", "/gui/challenges/" + request.cookie("X-THINGIFIER-DATABASE-NAME"));
                 result.status(302);
@@ -73,6 +75,7 @@ public class ChallengerWebGUI {
                 html.append(playerChallengesIntro());
                 //reportOn = new ChallengesPayload(challengeDefinitions, challengers.SINGLE_PLAYER).getAsChallenges();
                 html.append(renderChallengeData(challengeDefinitions, challengers.SINGLE_PLAYER));
+                html.append(storeThingifierDatabaseNameCookie(challengers.SINGLE_PLAYER.getXChallenger()));
             }else{
                 html.append("<div style='clear:both'><p><strong>Unknown Challenger ID</strong></p></div>");
                 html.append(multiUserShortHelp());
@@ -122,10 +125,15 @@ public class ChallengerWebGUI {
                                 persistence.getErrorMessage()));
                 html.append(multiUserShortHelp());
                 html.append(showPreviousGuids());
+                html.append(inputAChallengeGuidScript());
                 //reportOn = new ChallengesPayload(challengeDefinitions, challengers.DEFAULT_PLAYER_DATA).getAsChallenges();
                 html.append(renderChallengeData(challengeDefinitions, challengers.DEFAULT_PLAYER_DATA));
             }else{
-                html.append(String.format("<p><strong>Progress For Challenger ID %s</strong></p>", xChallenger));
+                if(!single_player_mode) {
+                    html.append(String.format("<p><strong>Progress For Challenger ID %s</strong></p>", xChallenger));
+                    html.append(showPreviousGuids());
+                    html.append(inputAChallengeGuidScript());
+                }
                 html.append(storeThingifierDatabaseNameCookie(xChallenger));
                 html.append(storeCurrentGuidInLocalStorage(xChallenger));
                 //reportOn = new ChallengesPayload(challengeDefinitions, challenger).getAsChallenges();
@@ -179,16 +187,33 @@ public class ChallengerWebGUI {
                 "</script>";
     }
 
-    private String showPreviousGuids() {
-        // todo: show a delete button to delete from local storage - not delete from persistent storage
-        // todo: use the X-THINGIFIER-DATABASE-NAME cookie here as well
+    private String inputAChallengeGuidScript() {
         return "<script>" +
+                "function inputChallengeGuid(){" +
+                "let guid = prompt('Input a Challenger GUID to use');" +
+                "if(guid){location.href=encodeURIComponent(guid);};" +
+                "}" +
+                "</script>"+
+                "<p><button onclick=inputChallengeGuid()>Input a Challenger GUID to use</button></p>";
+    }
+
+    private String showPreviousGuids() {
+        return "<script>" +
+                "function forgetGuid(aguid){\n" +
+                "    var guids = localStorage.getItem('challenges-guids');\n" +
+                "    guids = guids.replace(\"|\" + aguid + \"|\");\n" +
+                "    localStorage.setItem(\"challenges-guids\", guids);\n" +
+                "    document.getElementById('p'+aguid).remove();" +
+                "}"+
                 "var guids = localStorage.getItem('challenges-guids') || '';" +
                 "if(guids.length>0){document.writeln('<p><strong>Previously Used</strong></p>')}" +
                 "var guidsArray = guids.match(/\\|([^|]*)\\|/g);" +
                 "for(guidItem in guidsArray){" +
                 "var myguid = guidsArray[guidItem].replace(/\\|/g,'');" +
-                "document.writeln(\"<p><a href='/gui/challenges/\"+myguid+\"'>\"+myguid+\"</a></p>\")" +
+                "document.writeln(\"<p id='p\" + myguid + \"'>\");" +
+                "document.writeln(\"<a href='/gui/challenges/\"+myguid+\"'>\"+myguid+\"</a>\");" +
+                "document.writeln(\"&nbsp;<button onclick=forgetGuid('\"+myguid+\"')>forget</button>\");" +
+                "document.writeln(\"</p>\");" +
                 "}" +
                 "</script>";
     }

@@ -76,7 +76,8 @@ public class DefaultGUI {
             response.status(200);
 
             String database = getDatabaseNameFromRequest(request);
-            response.cookie("X-THINGIFIER-DATABASE-NAME", database);
+            // by default the GUI does not set the cookie, the 'app' does that
+            //response.cookie("X-THINGIFIER-DATABASE-NAME", database);
 
             StringBuilder html = new StringBuilder();
             html.append(templates.getPageStart("Entities Menu"));
@@ -130,6 +131,8 @@ public class DefaultGUI {
             }
 
             if(htmlErrorMessage.equals("")) {
+
+                html.append(getExploringDatabaseHtml(database));
 
                 html.append(heading(1, entityName + " Instances"));
 
@@ -232,6 +235,8 @@ public class DefaultGUI {
 
             if(htmlErrorMessage.equals("")) {
 
+                html.append(getExploringDatabaseHtml(database));
+
                 try {
                     final EntityDefinition definition = thing.definition();
 
@@ -308,6 +313,10 @@ public class DefaultGUI {
         });
 
         return this;
+    }
+
+    private String getExploringDatabaseHtml(String database) {
+        return String.format("<p>Exploring Entities in %s session database.</p>",htmlsanitise(database));
     }
 
     private String getDatabaseNameFromRequest(Request request) {
@@ -404,7 +413,7 @@ public class DefaultGUI {
     }
 
     private String databaseParam(final String database){
-        return "&xchallenger="+database;
+        return "&database="+database;
     }
 
     private String htmlTableRowFor(final EntityInstance instance, String database) {

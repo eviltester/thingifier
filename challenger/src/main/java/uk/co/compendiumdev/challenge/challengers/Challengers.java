@@ -17,7 +17,7 @@ public class Challengers {
     private boolean singlePlayerMode;
     Map<String, ChallengerAuthData> authData;
     public ChallengerAuthData SINGLE_PLAYER;
-    public final String SINGLE_PLAYER_GUID="rest-api-challenges-single-player";
+    public static final String SINGLE_PLAYER_GUID="rest-api-challenges-single-player";
     public final ChallengerAuthData DEFAULT_PLAYER_DATA = new ChallengerAuthData();
     PersistenceLayer persistenceLayer;
     private ThingifierApiConfig apiConfig;
