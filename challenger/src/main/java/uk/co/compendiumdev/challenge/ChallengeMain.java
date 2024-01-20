@@ -51,7 +51,8 @@ public class ChallengeMain {
             }
         }
 
-        challenger.setToMultiPlayerMode();
+        // only enable this as a hack for local testing
+        //challenger.setToMultiPlayerMode();
 
         challenger.configureRoutes();
 
