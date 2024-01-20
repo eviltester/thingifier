@@ -70,8 +70,10 @@ If you want to generate test data for an api, investigate:
 
 Current TODO List:
 
-- adding multiple instances for an er model
-- adding session ids to make properly multi user
-- amend the GUI to use a session id to pick up the correct database
+- [x] adding multiple instances for an er model
+- [x] adding session ids to make properly multi user
+- [x] amend the GUI to use a session id to pick up the correct database - using cookies set on the challenges page as X-THINGIFIER-DATABASE-NAME
 - amend the challenger UI to make it easier to enter a challenges session and navigate the UI
-- todo add limits on the field lengths for challenger model e.g. max 20 todos and max 200 chars description or title etc.
+- add limits on the field lengths for challenger model e.g. max 200 chars description or title etc.
+- add limits to the number of instances available for an entity max 20 todos and 
+  

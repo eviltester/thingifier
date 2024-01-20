@@ -49,6 +49,14 @@ public class ChallengerWebGUI {
 
         // single user / default session
         get("/gui/challenges", (request, result) -> {
+
+            if(!request.cookie("X-THINGIFIER-DATABASE-NAME").equals("")){
+                // we didn't add a challenger in the URL but we do have one in the cookie
+                result.header("location", "/gui/challenges/" + request.cookie("X-THINGIFIER-DATABASE-NAME"));
+                result.status(302);
+                return "";
+            }
+
             result.type("text/html");
             result.status(200);
 
@@ -83,6 +91,7 @@ public class ChallengerWebGUI {
 
         // multi user
         get("/gui/challenges/*", (request, result) -> {
+
             result.type("text/html");
             result.status(200);
 
@@ -96,9 +105,14 @@ public class ChallengerWebGUI {
             //List<ChallengeData> reportOn = null;
 
             String xChallenger = request.splat()[0];
+
+
+            // is there an in memory challenger with this id?
             ChallengerAuthData challenger = challengers.getChallenger(xChallenger);
+
             PersistenceResponse persistence = new PersistenceResponse();
 
+            // if no inmemory challenger then ask the persistence layer
             if(challenger==null){
                 persistence = persistenceLayer.tryToLoadChallenger(challengers, xChallenger);
             }
@@ -111,6 +125,8 @@ public class ChallengerWebGUI {
                 //reportOn = new ChallengesPayload(challengeDefinitions, challengers.DEFAULT_PLAYER_DATA).getAsChallenges();
                 html.append(renderChallengeData(challengeDefinitions, challengers.DEFAULT_PLAYER_DATA));
             }else{
+                html.append(String.format("<p><strong>Progress For Challenger ID %s</strong></p>", xChallenger));
+                html.append(storeThingifierDatabaseNameCookie(xChallenger));
                 html.append(storeCurrentGuidInLocalStorage(xChallenger));
                 //reportOn = new ChallengesPayload(challengeDefinitions, challenger).getAsChallenges();
                 html.append(renderChallengeData(challengeDefinitions, challenger));
@@ -125,6 +141,33 @@ public class ChallengerWebGUI {
         });
     }
 
+    private String storeThingifierDatabaseNameCookie(String xChallenger) {
+        return "<script>" +
+                "function setCookie(cname,cvalue,exdays) {\n" +
+                "  const d = new Date();\n" +
+                "  d.setTime(d.getTime() + (exdays*24*60*60*1000));\n" +
+                "  let expires = 'expires=' + d.toUTCString();\n" +
+                "  document.cookie = cname + '=' + cvalue + ';' + expires + ';path=/';\n" +
+                "}\n" +
+                "\n" +
+                "function getCookie(cname) {\n" +
+                "  let name = cname + '=';\n" +
+                "  let decodedCookie = decodeURIComponent(document.cookie);\n" +
+                "  let ca = decodedCookie.split(';');\n" +
+                "  for(let i = 0; i < ca.length; i++) {\n" +
+                "    let c = ca[i];\n" +
+                "    while (c.charAt(0) == ' ') {\n" +
+                "      c = c.substring(1);\n" +
+                "    }\n" +
+                "    if (c.indexOf(name) == 0) {\n" +
+                "      return c.substring(name.length, c.length);\n" +
+                "    }\n" +
+                "  }\n" +
+                "  return '';\n" +
+                "}" +
+                "setCookie('X-THINGIFIER-DATABASE-NAME','" + xChallenger +"',365);"+
+                "</script>";
+    }
 
 
     private String storeCurrentGuidInLocalStorage(final String xChallenger) {
@@ -138,6 +181,7 @@ public class ChallengerWebGUI {
 
     private String showPreviousGuids() {
         // todo: show a delete button to delete from local storage - not delete from persistent storage
+        // todo: use the X-THINGIFIER-DATABASE-NAME cookie here as well
         return "<script>" +
                 "var guids = localStorage.getItem('challenges-guids') || '';" +
                 "if(guids.length>0){document.writeln('<p><strong>Previously Used</strong></p>')}" +
@@ -159,7 +203,8 @@ public class ChallengerWebGUI {
     private String playerChallengesIntro() {
         final StringBuilder html = new StringBuilder();
         html.append("<div style='clear:both'>");
-        html.append("<p>Use the Descriptions of the challenges below to explore the API and solve the challenges. Remember to use the API documentation to see the format of POST requests.</p>");
+        html.append("<p>Use the Descriptions of the challenges below to explore the API and solve the challenges." +
+                    " Remember to use the API documentation to see the format of POST requests.</p>");
         html.append("</div>");
         return html.toString();
     }
