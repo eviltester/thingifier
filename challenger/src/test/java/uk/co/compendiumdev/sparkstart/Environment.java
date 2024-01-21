@@ -15,6 +15,10 @@ public class Environment {
     }
 
     public static String getBaseUri() {
+        return Environment.getBaseUri(SINGLE_PLAYER_MODE);
+    }
+
+    public static String getBaseUri(boolean isSinglePlayerMode) {
 
         // return environment if want to run externally
 //        if(true)
@@ -27,7 +31,7 @@ public class Environment {
             Spark.port(4567);
             String[] args;
 
-            if (SINGLE_PLAYER_MODE) {
+            if (isSinglePlayerMode) {
                 args = "".split(",");
             } else {
                 args = "-multiplayer".split(",");
@@ -60,4 +64,9 @@ public class Environment {
         }
     }
 
+    public static void stop(){
+        Spark.stop();
+        Spark.awaitStop();
+        ChallengeMain.stop();
+    }
 }
