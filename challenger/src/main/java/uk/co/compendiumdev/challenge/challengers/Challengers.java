@@ -81,6 +81,8 @@ public class Challengers {
         for(ChallengerAuthData data : authData.values()){
             if(data.expiresAt() < cutOffTime ){
                 deleteMe.add(data.getXChallenger());
+            }else{
+                // System.out.println(String.format("%s expires in %d", data.getXChallenger(), cutOffTime - data.expiresAt()));
             }
         }
 

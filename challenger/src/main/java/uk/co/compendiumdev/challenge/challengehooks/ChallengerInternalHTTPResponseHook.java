@@ -159,7 +159,7 @@ public class ChallengerInternalHTTPResponseHook implements InternalHttpResponseH
             challengers.pass(challenger, CHALLENGE.POST_SECRET_NOTE_BEARER_200);
         }
 
-        if (response.getStatusCode() == 404 && response.getBody().isEmpty()) {
+        if (response.getStatusCode() == 404 && (response.getBody() == null || response.getBody().isEmpty())) {
             setResponseAs404(request, response);
         }
     }
