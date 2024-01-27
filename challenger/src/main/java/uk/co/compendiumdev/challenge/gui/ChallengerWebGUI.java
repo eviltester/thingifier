@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.List;
 
 import static spark.Spark.get;
+import static spark.Spark.notFound;
 
 public class ChallengerWebGUI {
     private final DefaultGUIHTML guiManagement;
@@ -52,7 +53,7 @@ public class ChallengerWebGUI {
         // single user / default session
         get("/gui/challenges", (request, result) -> {
 
-            if(request.cookie("X-THINGIFIER-DATABASE-NAME")!=null){
+            if (request.cookie("X-THINGIFIER-DATABASE-NAME") != null) {
                 // we didn't add a challenger in the URL but we do have one in the cookie
                 result.header("location", "/gui/challenges/" + request.cookie("X-THINGIFIER-DATABASE-NAME"));
                 result.status(302);
@@ -71,15 +72,18 @@ public class ChallengerWebGUI {
 
             //List<ChallengeData> reportOn = new ArrayList<>();
 
-            if(single_player_mode){
+            if (single_player_mode) {
                 html.append(playerChallengesIntro());
                 //reportOn = new ChallengesPayload(challengeDefinitions, challengers.SINGLE_PLAYER).getAsChallenges();
                 html.append(renderChallengeData(challengeDefinitions, challengers.SINGLE_PLAYER));
+                html.append(injectCookieFunctions());
                 html.append(storeThingifierDatabaseNameCookie(challengers.SINGLE_PLAYER.getXChallenger()));
-            }else{
+            } else {
                 html.append("<div style='clear:both'><p><strong>Unknown Challenger ID</strong></p></div>");
                 html.append(multiUserShortHelp());
+                html.append(injectCookieFunctions());
                 html.append(showPreviousGuids());
+                html.append(inputAChallengeGuidScript());
 
                 //reportOn = new ChallengesPayload(challengeDefinitions, challengers.DEFAULT_PLAYER_DATA).getAsChallenges();
                 html.append(renderChallengeData(challengeDefinitions, challengers.DEFAULT_PLAYER_DATA));
@@ -107,33 +111,54 @@ public class ChallengerWebGUI {
 
             //List<ChallengeData> reportOn = null;
 
-            String xChallenger = request.splat()[0];
+            String xChallenger = null;
+
+            try {
+                xChallenger = request.splat()[0];
+            } catch (Exception e) {
+                System.out.println("No challenger id to render");
+            }
 
 
             // is there an in memory challenger with this id?
-            ChallengerAuthData challenger = challengers.getChallenger(xChallenger);
+            ChallengerAuthData challenger = null;
+            PersistenceResponse persistence = null;
 
-            PersistenceResponse persistence = new PersistenceResponse();
+            // only check if an xchallenger was passed in
+            if (xChallenger != null && !xChallenger.trim().isEmpty()) {
+                xChallenger = santitizeChallengerGuid(xChallenger);
+                challenger = challengers.getChallenger(xChallenger);
 
-            // if no inmemory challenger then ask the persistence layer
-            if(challenger==null){
-                persistence = persistenceLayer.tryToLoadChallenger(challengers, xChallenger);
+                persistence = new PersistenceResponse();
+
+                // if no inmemory challenger then ask the persistence layer
+                if (challenger == null) {
+                    persistence = persistenceLayer.tryToLoadChallenger(challengers, xChallenger);
+                }
             }
 
-            if(challenger==null){
+            if (challenger == null) {
+                String persistenceReason = "";
+                if (persistence != null) {
+                    persistenceReason = persistence.getErrorMessage();
+                }
                 html.append(String.format("<p><strong>Unknown Challenger ID %s</strong></p>",
-                                persistence.getErrorMessage()));
+                        persistenceReason));
                 html.append(multiUserShortHelp());
+                html.append(injectCookieFunctions());
                 html.append(showPreviousGuids());
                 html.append(inputAChallengeGuidScript());
                 //reportOn = new ChallengesPayload(challengeDefinitions, challengers.DEFAULT_PLAYER_DATA).getAsChallenges();
                 html.append(renderChallengeData(challengeDefinitions, challengers.DEFAULT_PLAYER_DATA));
-            }else{
-                if(!single_player_mode) {
+            } else {
+                html.append(injectCookieFunctions());
+
+                if (!single_player_mode) {
                     html.append(String.format("<p><strong>Progress For Challenger ID %s</strong></p>", xChallenger));
                     html.append(showPreviousGuids());
                     html.append(inputAChallengeGuidScript());
                 }
+
                 html.append(storeThingifierDatabaseNameCookie(xChallenger));
                 html.append(storeCurrentGuidInLocalStorage(xChallenger));
                 //reportOn = new ChallengesPayload(challengeDefinitions, challenger).getAsChallenges();
@@ -147,9 +172,49 @@ public class ChallengerWebGUI {
             html.append(guiManagement.getPageEnd());
             return html.toString();
         });
+
+        get("/gui/404", (request, result) -> {
+            result.status(404);
+            result.type("text/html");
+
+            StringBuilder html = new StringBuilder();
+            html.append(guiManagement.getPageStart("404 Not Found"));
+            html.append(guiManagement.getMenuAsHTML());
+            html.append("<h1>Page Not Found</h1>");
+            html.append(guiManagement.getPageFooter());
+            html.append(guiManagement.getPageEnd());
+            return html.toString();
+        });
+
+        get("/gui/404/*", (request, result) -> {
+            result.status(404);
+            result.type("text/html");
+
+            String urltoshow = "";
+
+            try {
+                urltoshow = request.splat()[0];
+            } catch (Exception e) {
+                System.out.println("No url to pretend to be on 404");
+            }
+
+            StringBuilder html = new StringBuilder();
+            html.append(guiManagement.getPageStart("404 Not Found"));
+            html.append(guiManagement.getMenuAsHTML());
+            html.append("<h1>Page Not Found</h1>");
+            html.append("<script>window.history.pushState({id:\"404sim\"},\"\",\"/" + urltoshow + "\");</script>");
+            html.append(guiManagement.getPageFooter());
+            html.append(guiManagement.getPageEnd());
+            return html.toString();
+        });
+
     }
 
-    private String storeThingifierDatabaseNameCookie(String xChallenger) {
+    private String santitizeChallengerGuid(String xChallenger) {
+        return xChallenger.replaceAll("[^\\-a-zA-Z0-9]","");
+    }
+
+    private String injectCookieFunctions(){
         return "<script>" +
                 "function setCookie(cname,cvalue,exdays) {\n" +
                 "  const d = new Date();\n" +
@@ -173,6 +238,10 @@ public class ChallengerWebGUI {
                 "  }\n" +
                 "  return '';\n" +
                 "}" +
+                "</script>";
+    }
+    private String storeThingifierDatabaseNameCookie(String xChallenger) {
+        return "<script>" +
                 "setCookie('X-THINGIFIER-DATABASE-NAME','" + xChallenger +"',365);"+
                 "</script>";
     }
@@ -191,7 +260,7 @@ public class ChallengerWebGUI {
         return "<script>" +
                 "function inputChallengeGuid(){" +
                 "let guid = prompt('Input a Challenger GUID to use');" +
-                "if(guid){location.href=encodeURIComponent(guid);};" +
+                "if(guid){location.href=`/gui/challenges/`+encodeURIComponent(guid);};" +
                 "}" +
                 "</script>"+
                 "<p><button onclick=inputChallengeGuid()>Input a Challenger GUID to use</button></p>";
@@ -201,13 +270,17 @@ public class ChallengerWebGUI {
         return "<script>" +
                 "function forgetGuid(aguid){\n" +
                 "    var guids = localStorage.getItem('challenges-guids');\n" +
-                "    guids = guids.replace(\"|\" + aguid + \"|\");\n" +
+                "    guids = guids.replace(`|${aguid}|`, '');\n" +
                 "    localStorage.setItem(\"challenges-guids\", guids);\n" +
-                "    document.getElementById('p'+aguid).remove();" +
+                "    document.getElementById('p'+aguid).remove();\n" +
+                "    if(getCookie('X-THINGIFIER-DATABASE-NAME')== aguid){" +
+                "    setCookie('X-THINGIFIER-DATABASE-NAME','',0);}\n" +
                 "}"+
                 "var guids = localStorage.getItem('challenges-guids') || '';" +
-                "if(guids.length>0){document.writeln('<p><strong>Previously Used</strong></p>')}" +
                 "var guidsArray = guids.match(/\\|([^|]*)\\|/g);" +
+                "currGuid = getCookie('X-THINGIFIER-DATABASE-NAME');" +
+                "if(currGuid!='' && !guidsArray.includes(`|${currGuid}|`)){guidsArray.push(`|${currGuid}|`)}" +
+                "if(guidsArray!=null && guidsArray.length>0){document.writeln('<p><strong>Previously Used</strong></p>')}" +
                 "for(guidItem in guidsArray){" +
                 "var myguid = guidsArray[guidItem].replace(/\\|/g,'');" +
                 "document.writeln(\"<p id='p\" + myguid + \"'>\");" +
