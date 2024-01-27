@@ -167,6 +167,12 @@ public class ChallengerInternalHTTPResponseHook implements InternalHttpResponseH
     private void setResponseAs404(HttpApiRequest request, InternalHttpResponse response) {
 
         if (request.getAcceptHeader() != null && !request.getAcceptHeader().isEmpty()) {
+            if (request.getAcceptHeader().contains("html")){
+                // treat as a GUI request and redirect
+                response.setStatus(307);
+                response.setHeader("Location", "/gui/404/" + request.getPath());
+                return;
+            }
             if (request.getAcceptHeader().startsWith("application/")) {
                 if (request.getAcceptHeader().endsWith("xml")) {
                     response.setType("application/xml");
@@ -180,10 +186,6 @@ public class ChallengerInternalHTTPResponseHook implements InternalHttpResponseH
                 }
             }
         }
-
-        // treat as a GUI request and redirect
-        response.setStatus(307);
-        response.setHeader("Location", "/gui/404/" + request.getPath());
     }
 
 }
