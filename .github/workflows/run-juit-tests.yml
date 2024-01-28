@@ -1,0 +1,26 @@
+# https://help.github.com/en/actions/language-and-framework-guides/building-and-testing-java-with-maven
+# https://github.com/marketplace/actions/setup-java-jdk
+name: Java CI
+
+on:
+  push:
+  workflow_dispatch:
+
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # list of Java versions
+        #java: [ 8, 8.0.192, 9.0.x, 10, 11.0.x, 11.0.3, 12, 13 ]
+        java: [ 8, 11, 17, 21, 25 ]
+    name: Java ${{ matrix.java }} execution
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK ${{ matrix.java }}
+        uses: actions/setup-java@v1
+        with:
+          java-version: ${{ matrix.java }}
+      - name: Build with Maven
+        run: mvn clean test
