@@ -16,6 +16,9 @@ For heroku:
 
 NOTE: need to have `heroku plugins:install java` for the `deploy:jar` to be recognised - more info https://devcenter.heroku.com/articles/deploying-executable-jar-files
 
+NOTE: if you can't deploy then check the Heroku Stack. Heroku prevents deployment if the stack is out of date, but doesn't generate an error message like "The stack is out of date, you cannot deploy". Instead it will write something like "ERROR: status code: 422, reason phrase: Unprocessable Entity". Check information on stack upgrades here https://devcenter.heroku.com/articles/upgrading-to-the-latest-stack but usually you just have to do `heroku stack:set heroku-22 -a apichallenges`
+
+
 Deploy the challenger app full jar
 
 - have the deployment page open in case we need to rollback
