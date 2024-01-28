@@ -14,7 +14,7 @@ jobs:
       matrix:
         # list of Java versions
         #java: [ 8, 8.0.192, 9.0.x, 10, 11.0.x, 11.0.3, 12, 13 ]
-        java: [ 8, 11, 17, 21 ]
+        java: [ 11, 17, 21 ]
     name: Java ${{ matrix.java }} execution
     steps:
       - uses: actions/checkout@v2
