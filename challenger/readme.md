@@ -38,6 +38,11 @@ You can also `GET http://localhost:4567/challenges` to get the list of challenge
 
 ## Version Tracking
 
+v1.1 - 20240128
+
+- in multiuser mode now all the user sessions are independent with a limit of 100 todos
+- there are learning tools like mirror mode and simulator
+
 v1.0 - 20200727
 
 - ready for initial public release
