@@ -1,6 +1,7 @@
 package uk.co.compendiumdev.challenge;
 
 import uk.co.compendiumdev.challenge.apimodel.ChallengeApiModel;
+import uk.co.compendiumdev.challenge.challengers.Challengers;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.application.MainImplementation;
 import uk.co.compendiumdev.thingifier.application.ThingifierRestServer;
@@ -51,7 +52,6 @@ public class ChallengeMain {
             }
         }
 
-
         challenger.configureRoutes();
 
         app.chooseThingifier();
@@ -62,8 +62,11 @@ public class ChallengeMain {
         app.setupDefaultGui();
         challenger.setupGui(app.getGuiManagement());
 
+
+
         if(challenger.isSinglePlayerMode()){
             System.out.println("Running in Single User Mode");
+            challenger.getThingifier().ensureCreatedAndPopulatedInstanceDatabaseNamed(Challengers.SINGLE_PLAYER_GUID);
         }
 
         final ThingifierRestServer restServer = app.startRestServer();

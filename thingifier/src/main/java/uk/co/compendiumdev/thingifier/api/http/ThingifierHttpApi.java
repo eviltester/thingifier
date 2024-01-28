@@ -12,6 +12,10 @@ import java.util.List;
 
 final public class ThingifierHttpApi {
 
+    // TODO: each 'session' could have its own thingifier to support multiple users
+    // TODO: would need the ability to create and delete sessions
+    public static final String HTTP_SESSION_HEADER_NAME = "X-THING-HTTP-SESSION-GUID";
+
     private final Thingifier thingifier;
     private final JsonThing jsonThing;
     private List<HttpApiRequestHook> apiRequestHooks;
@@ -100,29 +104,45 @@ final public class ThingifierHttpApi {
         return httpResponse;
     }
 
+    private void createDatabaseBasedOnSessionHeaderUIfNecessary(final String sessionHeaderValue){
+        if(sessionHeaderValue !=null){
+            // make sure database exists
+            thingifier.ensureCreatedAndPopulatedInstanceDatabaseNamed(sessionHeaderValue);
+        }
+    }
+
     public ApiResponse routeAndProcessRequest(final HttpApiRequest request,
                                               HttpVerb verb) {
 
         ApiResponse apiResponse=null;
 
+        // if there is a session id and we have not created the erm yet, then do that now
+         createDatabaseBasedOnSessionHeaderUIfNecessary(request.getHeader(HTTP_SESSION_HEADER_NAME));
+
         switch (verb){
             case GET:
                 apiResponse = thingifier.api().get(request.getPath(),
-                                            request.getQueryParams());
+                                                    request.getQueryParams(),
+                                                    request.getHeaders());
                 break;
             case HEAD:
-                apiResponse = thingifier.api().head(request.getPath());
+                apiResponse = thingifier.api().head(request.getPath(),
+                                                    request.getQueryParams(),
+                                                    request.getHeaders());
                 break;
             case DELETE:
-                apiResponse = thingifier.api().delete(request.getPath());
+                apiResponse = thingifier.api().delete(request.getPath(), request.getHeaders());
                 break;
             case POST:
-
-                apiResponse = thingifier.api().post(request.getPath(), new BodyParser(request, thingifier.getThingNames()));
+                apiResponse = thingifier.api().post(request.getPath(),
+                                                    new BodyParser(request, thingifier.getThingNames()),
+                                                    request.getHeaders());
                 break;
             case PUT:
-
-                apiResponse = thingifier.api().put(request.getPath(), new BodyParser(request, thingifier.getThingNames()));
+                apiResponse = thingifier.api().put(request.getPath(),
+                                                    new BodyParser(request, thingifier.getThingNames()),
+                                                    request.getHeaders()
+                                                    );
                 break;
         }
 
@@ -154,8 +174,11 @@ final public class ThingifierHttpApi {
 
         HttpApiResponse httpResponse = runTheHttpApiRequestHooksOn(request);
 
+        // if there is a session id and we have not created the erm yet, then do that now
+        createDatabaseBasedOnSessionHeaderUIfNecessary(request.getHeader(HTTP_SESSION_HEADER_NAME));
+
         if(httpResponse==null) {
-            ApiResponse apiResponse = thingifier.api().get(query);
+            ApiResponse apiResponse = thingifier.api().get(query, request.getQueryParams(), request.getHeaders());
             httpResponse = new HttpApiResponse(request.getHeaders(), apiResponse,
                     jsonThing, thingifier.apiConfig());
         }

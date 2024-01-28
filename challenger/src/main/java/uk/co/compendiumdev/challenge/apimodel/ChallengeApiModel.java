@@ -20,17 +20,19 @@ public class ChallengeApiModel {
 
         todoList.setDocumentation("Simple Todo List", para.toString());
 
-        EntityDefinition todo = todoList.defineThing("todo", "todos");
+        // can create a maximum of 20 todos in the challenge todo list
+        EntityDefinition todo = todoList.defineThing("todo", "todos", 20);
 
         todo.addFields(
             Field.is("id", FieldType.ID),
             Field.is("title", STRING).
                     makeMandatory().
                     withValidation(
-                            VRule.notEmpty()),
+                            VRule.notEmpty(),
+                            VRule.maximumLength(50)),
             Field.is("doneStatus", FieldType.BOOLEAN).
                     withDefaultValue("false"),
-            Field.is("description", STRING)
+            Field.is("description", STRING).withValidation(VRule.maximumLength(200))
         );
 
 

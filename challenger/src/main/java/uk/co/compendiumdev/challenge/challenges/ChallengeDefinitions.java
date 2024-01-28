@@ -130,7 +130,7 @@ public class ChallengeDefinitions {
 
         // UPDATE
         ChallengeSection postUpdateChallenges = new ChallengeSection("Update Challenges with POST",
-                "Use a POST request to amend something that already exists. These are 'partial' content updates so you useually don't need to have all details of the entity in the request, e.g. you could just update a title, or a description, or a status");
+                "Use a POST request to amend something that already exists. These are 'partial' content updates so you usually don't need to have all details of the entity in the request, e.g. you could just update a title, or a description, or a status");
         sections.add(postUpdateChallenges);
 
         aChallenge = createChallenge(CHALLENGE.POST_UPDATE_TODO, "11", "POST /todos/{id} (200)",

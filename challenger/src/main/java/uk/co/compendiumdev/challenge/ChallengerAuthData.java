@@ -67,6 +67,9 @@ public class ChallengerAuthData {
     public void touch() {
         lastAccessed = System.currentTimeMillis();
         expiresin = expiresin + extratime;
+        if(expiresin > 600000){
+            expiresin = 600000;
+        }
     }
 
     public String getXChallenger() {

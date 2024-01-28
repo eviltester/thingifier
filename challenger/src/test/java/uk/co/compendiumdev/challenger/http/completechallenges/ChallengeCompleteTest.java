@@ -1,9 +1,6 @@
-package uk.co.compendiumdev.challenger.http.challenges;
+package uk.co.compendiumdev.challenger.http.completechallenges;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import uk.co.compendiumdev.challenge.CHALLENGE;
 import uk.co.compendiumdev.challenge.ChallengeMain;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
@@ -17,43 +14,50 @@ import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ChallengeCompleteTest{
+public abstract class ChallengeCompleteTest{
 
-    private static Challengers challengers;
-    private static ChallengerAuthData challenger;
-    private static HttpMessageSender http;
+    public static boolean isEnvironmentSet = false;
+    public static Challengers challengers;
+    public static ChallengerAuthData challenger;
+    public static HttpMessageSender http;
 
-    private static Map<String, String> headers;
-    private static Map<String, String> x_challenger_header;
-    private static Map<String, String> content_application_json;
-    private static Map<String, String> accept_xml_header;
-    private static Map<String, String> accept_json_header;
-    private static Map<String, String> content_application_xml;
     private static ChallengerAuthData newChallenger;
 
+    public Map<String, String> getXChallengerHeader(String guid){
+        Map<String, String> xchallenger_header = new HashMap<>();
+        xchallenger_header.put("X-CHALLENGER", guid);
+        return xchallenger_header;
+    }
+
     @BeforeAll
-    public static void createAChallengerToUse(){
-        Environment.getBaseUri();
-        challengers = ChallengeMain.getChallenger().getChallengers();
-        challenger = challengers.createNewChallenger();
+    public static void controlEnv(){
+        Environment.stop();
+    }
 
-        http = new HttpMessageSender(Environment.getBaseUri());
-        x_challenger_header = new HashMap<>();
-        x_challenger_header.put("X-CHALLENGER", challenger.getXChallenger());
+    abstract boolean getIsSinglePlayerMode();
 
-        content_application_json = new HashMap<>();
-        content_application_json.put("Content-Type", "application/json");
+    public void createEnvironmentAndChallengerIfNecessary(){
 
-        content_application_xml = new HashMap<>();
-        content_application_xml.put("Content-Type", "application/xml");
+        if(!isEnvironmentSet){
+            Environment.getBaseUri(getIsSinglePlayerMode());
+            isEnvironmentSet=true;
+        }
 
-        accept_xml_header = new HashMap<>();
-        accept_xml_header.put("Accept", "application/xml");
+        if(challengers==null){
+            challengers = ChallengeMain.getChallenger().getChallengers();
+        }
 
-        accept_json_header = new HashMap<>();
-        accept_json_header.put("Accept", "application/json");
+        if(this.challenger==null){
+            if(getIsSinglePlayerMode()){
+                challenger = challengers.SINGLE_PLAYER;
+            }else {
+                challenger = challengers.createNewChallenger();
+            }
+        }
 
-        headers = new HashMap<>();
+        if(http==null){
+            http = new HttpMessageSender(Environment.getBaseUri(getIsSinglePlayerMode()));
+        }
     }
 
     // After all - check that all challenges are complete
@@ -83,10 +87,26 @@ public class ChallengeCompleteTest{
         if(remainingChallengeCount>0){
             Assertions.fail();
         }
+
+        Environment.stop();
+        isEnvironmentSet = false;
+        challengers = null;
+        challenger = null;
+        http = null;
+
+        newChallenger=null;
+    }
+
+    @BeforeEach
+    public void setup(){
+
+        createEnvironmentAndChallengerIfNecessary();
     }
 
     @Test
     public void canGetChallengesPass() {
+
+        Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
 
         final HttpResponseDetails response =
                 http.send("/challenges", "GET", x_challenger_header, "");
@@ -99,6 +119,8 @@ public class ChallengeCompleteTest{
     @Test
     public void canGetTodosPass() {
 
+        Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
+
         final HttpResponseDetails response =
                 http.send("/todos", "GET", x_challenger_header, "");
 
@@ -109,7 +131,9 @@ public class ChallengeCompleteTest{
     @Test
     public void canGetTodosNoAcceptHeaderPass() {
 
-        headers.clear();
+        Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
+
+        Map<String, String> headers = new HashMap<>();
         headers.putAll(x_challenger_header);
         headers.put("Accept","");
 
@@ -123,6 +147,8 @@ public class ChallengeCompleteTest{
     @Test
     public void canGet404TodoPass() {
 
+        Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
+
         final HttpResponseDetails response =
                 http.send("/todo", "GET", x_challenger_header, "");
 
@@ -133,6 +159,8 @@ public class ChallengeCompleteTest{
     @Test
     public void canHeadTodosPass() {
 
+        Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
+
         final HttpResponseDetails response =
                 http.send("/todos", "HEAD", x_challenger_header, "");
 
@@ -142,6 +170,8 @@ public class ChallengeCompleteTest{
 
     @Test
     public void canOptionsTodosPass() {
+
+        Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
 
         final HttpResponseDetails response =
                 http.send("/todos", "OPTIONS", x_challenger_header, "");
@@ -156,9 +186,11 @@ public class ChallengeCompleteTest{
     @Test
     public void canPostTodosPass() {
 
-        headers.clear();
+        Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
+
+        Map<String, String> headers = new HashMap<>();
         headers.putAll(x_challenger_header);
-        headers.putAll(content_application_json);
+        headers.put("Content-Type", "application/json");
 
         //{"title":"mytodo","description":"a todo","doneStatus":false}
         final HttpResponseDetails response =
@@ -172,9 +204,11 @@ public class ChallengeCompleteTest{
     @Test
     public void canPostTodosFailValidationPass() {
 
-        headers.clear();
+        Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
+
+        Map<String, String> headers = new HashMap<>();
         headers.putAll(x_challenger_header);
-        headers.putAll(content_application_json);
+        headers.put("Content-Type", "application/json");
 
         //{"title":"mytodo","description":"a todo","doneStatus":"bob"}
         final HttpResponseDetails response =
@@ -188,12 +222,14 @@ public class ChallengeCompleteTest{
     @Test
     public void canPostTodosUpdatePass() {
 
-        final EntityInstanceCollection todos = ChallengeMain.getChallenger().getThingifier().getThingInstancesNamed("todo");
+        final EntityInstanceCollection todos = ChallengeMain.getChallenger().getThingifier().getThingInstancesNamed("todo", challenger.getXChallenger());
         final EntityInstance todo = todos.createManagedInstance();
 
-        headers.clear();
+        Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
+
+        Map<String, String> headers = new HashMap<>();
         headers.putAll(x_challenger_header);
-        headers.putAll(content_application_json);
+        headers.put("Content-Type", "application/json");
 
         final HttpResponseDetails response =
                 http.send("/todos/" + todo.getFieldValue("id").asString(),
@@ -207,10 +243,12 @@ public class ChallengeCompleteTest{
     @Test
     public void canPostTodosAsJsonAndAcceptXmlPass() {
 
-        headers.clear();
+        Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
+
+        Map<String, String> headers = new HashMap<>();
         headers.putAll(x_challenger_header);
-        headers.putAll(content_application_json);
-        headers.putAll(accept_xml_header);
+        headers.put("Content-Type", "application/json");
+        headers.put("Accept", "application/xml");
 
         //{"title":"mytodo","description":"a todo","doneStatus":false}
         final HttpResponseDetails response =
@@ -224,10 +262,12 @@ public class ChallengeCompleteTest{
     @Test
     public void canPostTodosAsJsonAndAcceptJSONPass() {
 
-        headers.clear();
+        Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
+
+        Map<String, String> headers = new HashMap<>();
         headers.putAll(x_challenger_header);
-        headers.putAll(content_application_json);
-        headers.putAll(accept_json_header);
+        headers.put("Content-Type", "application/json");
+        headers.put("Accept", "application/json");
 
         //{"title":"mytodo","description":"a todo","doneStatus":false}
         final HttpResponseDetails response =
@@ -241,10 +281,12 @@ public class ChallengeCompleteTest{
     @Test
     public void canPostTodosAsXmlAndAcceptJsonPass() {
 
-        headers.clear();
+        Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
+
+        Map<String, String> headers = new HashMap<>();
         headers.putAll(x_challenger_header);
-        headers.putAll(content_application_xml);
-        headers.putAll(accept_json_header);
+        headers.put("Content-Type", "application/xml");
+        headers.put("Accept", "application/json");
 
         //<todo><title>mytodo</title><description>a todo</description><doneStatus>false</doneStatus></todo>
         final HttpResponseDetails response =
@@ -259,10 +301,12 @@ public class ChallengeCompleteTest{
     @Test
     public void canPostTodosAsXml() {
 
-        headers.clear();
+        Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
+
+        Map<String, String> headers = new HashMap<>();
         headers.putAll(x_challenger_header);
-        headers.putAll(content_application_xml);
-        headers.putAll(accept_xml_header);
+        headers.put("Content-Type", "application/xml");
+        headers.put("Accept", "application/xml");
 
         //<todo><title>mytodo</title><description>a todo</description><doneStatus>false</doneStatus></todo>
         final HttpResponseDetails response =
@@ -276,7 +320,9 @@ public class ChallengeCompleteTest{
     @Test
     public void canPostTodosWithInvalidContentType() {
 
-        headers.clear();
+        Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
+
+        Map<String, String> headers = new HashMap<>();
         headers.putAll(x_challenger_header);
         headers.put("Content-type", "application/x-www-form-urlencoded");
 
@@ -293,10 +339,12 @@ public class ChallengeCompleteTest{
     @Test
     public void canDeleteTodosPass() {
 
-        final EntityInstanceCollection todos = ChallengeMain.getChallenger().getThingifier().getThingInstancesNamed("todo");
+        final EntityInstanceCollection todos = ChallengeMain.getChallenger().getThingifier().getThingInstancesNamed("todo", challenger.getXChallenger());
         final EntityInstance todo = todos.createManagedInstance();
 
-        headers.clear();
+        Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
+
+        Map<String, String> headers = new HashMap<>();
         headers.putAll(x_challenger_header);
 
         final HttpResponseDetails response =
@@ -310,8 +358,11 @@ public class ChallengeCompleteTest{
     @Test
     public void canGetSpecificTodoPass() {
 
-        final EntityInstanceCollection todos = ChallengeMain.getChallenger().getThingifier().getThingInstancesNamed("todo");
+        final EntityInstanceCollection todos = ChallengeMain.getChallenger().getThingifier().getThingInstancesNamed("todo", challenger.getXChallenger());
         final EntityInstance todo = todos.createManagedInstance();
+
+        Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
+
 
         final HttpResponseDetails response =
                 http.send("/todos/" + todo.getFieldValue("id").asString(),
@@ -324,9 +375,11 @@ public class ChallengeCompleteTest{
     @Test
     public void canGetTodosXMLPass() {
 
-        headers.clear();
+        Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
+
+        Map<String, String> headers = new HashMap<>();
         headers.putAll(x_challenger_header);
-        headers.putAll(accept_xml_header);
+        headers.put("Accept", "application/xml");
 
         final HttpResponseDetails response =
                 http.send("/todos", "GET",
@@ -339,9 +392,11 @@ public class ChallengeCompleteTest{
     @Test
     public void canGetTodoJsonPass() {
 
-        headers.clear();
+        Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
+
+        Map<String, String> headers = new HashMap<>();
         headers.putAll(x_challenger_header);
-        headers.putAll(accept_json_header);
+        headers.put("Accept", "application/json");
 
         final HttpResponseDetails response =
                 http.send("/todos" , "GET",
@@ -354,7 +409,9 @@ public class ChallengeCompleteTest{
     @Test
     public void canGetTodoAnyPass() {
 
-        headers.clear();
+        Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
+
+        Map<String, String> headers = new HashMap<>();
         headers.putAll(x_challenger_header);
         headers.put("Accept","*/*");
 
@@ -369,7 +426,9 @@ public class ChallengeCompleteTest{
     @Test
     public void canGetTodoXmlPreferredPass() {
 
-        headers.clear();
+        Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
+
+        Map<String, String> headers = new HashMap<>();
         headers.putAll(x_challenger_header);
         headers.put("Accept","application/xml, application/json");
 
@@ -384,7 +443,9 @@ public class ChallengeCompleteTest{
     @Test
     public void canGetTodosNotAcceptGzip() {
 
-        headers.clear();
+        Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
+
+        Map<String, String> headers = new HashMap<>();
         headers.putAll(x_challenger_header);
         headers.put("Accept","application/gzip");
 
@@ -398,6 +459,8 @@ public class ChallengeCompleteTest{
     @Test
     public void todo404pass() {
 
+        Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
+
         final HttpResponseDetails response =
                 http.send("/todos/guiddoesnotexist", "GET", x_challenger_header, "");
 
@@ -408,7 +471,9 @@ public class ChallengeCompleteTest{
     @Test
     public void canFilterTodoPass() {
 
-        final EntityInstanceCollection todos = ChallengeMain.getChallenger().getThingifier().getThingInstancesNamed("todo");
+        Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
+
+        final EntityInstanceCollection todos = ChallengeMain.getChallenger().getThingifier().getThingInstancesNamed("todo", challenger.getXChallenger());
 
         todos.createManagedInstance().setValue("doneStatus", "true");
         todos.createManagedInstance().setValue("doneStatus", "false");
@@ -428,6 +493,8 @@ public class ChallengeCompleteTest{
     @Test
     public void can405DeleteHeartbeatPass() {
 
+        Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
+
         final HttpResponseDetails response =
                 http.send("/heartbeat", "DELETE", x_challenger_header, "");
 
@@ -437,6 +504,8 @@ public class ChallengeCompleteTest{
 
     @Test
     public void can500PatchHeartbeatPass() {
+
+        Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
 
         final HttpResponseDetails response =
                 http.send("/heartbeat", "PATCH", x_challenger_header, "");
@@ -448,6 +517,8 @@ public class ChallengeCompleteTest{
     @Test
     public void can501TraceHeartbeatPass() {
 
+        Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
+
         final HttpResponseDetails response =
                 http.send("/heartbeat", "TRACE", x_challenger_header, "");
 
@@ -457,6 +528,8 @@ public class ChallengeCompleteTest{
 
     @Test
     public void canGetHeartbeatPass() {
+
+        Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
 
         final HttpResponseDetails response =
                 http.send("/heartbeat", "GET", x_challenger_header, "");
@@ -472,7 +545,9 @@ public class ChallengeCompleteTest{
     @Test
     public void canCreateSecretToken401() {
 
-        headers.clear();
+        Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
+
+        Map<String, String> headers = new HashMap<>();
         headers.putAll(x_challenger_header);
         headers.put("Authorization","basic YWRtaW46YWRtaW4="); // admin:admin
 
@@ -487,7 +562,9 @@ public class ChallengeCompleteTest{
     @Test
     public void canCreateSecretToken201() {
 
-        headers.clear();
+        Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
+
+        Map<String, String> headers = new HashMap<>();
         headers.putAll(x_challenger_header);
         headers.put("Authorization","basic YWRtaW46cGFzc3dvcmQ="); // admin:password
 
@@ -506,7 +583,9 @@ public class ChallengeCompleteTest{
     @Test
     public void canNotGetSecretNoteWhenBadAuth403() {
 
-        headers.clear();
+        Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
+
+        Map<String, String> headers = new HashMap<>();
         headers.putAll(x_challenger_header);
         headers.put("X-AUTH-TOKEN",challenger.getXAuthToken() + "bob");
 
@@ -521,7 +600,9 @@ public class ChallengeCompleteTest{
     @Test
     public void canNotGetSecretNoteWhenNoAuth401() {
 
-        headers.clear();
+        Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
+
+        Map<String, String> headers = new HashMap<>();
         headers.putAll(x_challenger_header);
 
         final HttpResponseDetails response =
@@ -535,7 +616,9 @@ public class ChallengeCompleteTest{
     @Test
     public void canGetSecretNoteWhenAuthToken200() {
 
-        headers.clear();
+        Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
+
+        Map<String, String> headers = new HashMap<>();
         headers.putAll(x_challenger_header);
         headers.put("X-AUTH-TOKEN",challenger.getXAuthToken());
 
@@ -550,7 +633,9 @@ public class ChallengeCompleteTest{
     @Test
     public void canGetSecretNoteWhenBearerAuthToken200() {
 
-        headers.clear();
+        Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
+
+        Map<String, String> headers = new HashMap<>();
         headers.putAll(x_challenger_header);
         headers.put("Authorization","bearer " + challenger.getXAuthToken());
 
@@ -565,7 +650,9 @@ public class ChallengeCompleteTest{
     @Test
     public void canPostSecretNoteWhenAuth200() {
 
-        headers.clear();
+        Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
+
+        Map<String, String> headers = new HashMap<>();
         headers.putAll(x_challenger_header);
         headers.put("X-AUTH-TOKEN",challenger.getXAuthToken());
         headers.put("Content-Type","application/json");
@@ -583,7 +670,9 @@ public class ChallengeCompleteTest{
     @Test
     public void canPostSecretNoteWhenBearerAuth200() {
 
-        headers.clear();
+        Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
+
+        Map<String, String> headers = new HashMap<>();
         headers.putAll(x_challenger_header);
         headers.put("Authorization","bearer " + challenger.getXAuthToken());
         headers.put("Content-Type","application/json");
@@ -602,7 +691,9 @@ public class ChallengeCompleteTest{
     @Test
     public void cannotPostSecretNoteWhenNoAuth401() {
 
-        headers.clear();
+        Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
+
+        Map<String, String> headers = new HashMap<>();
         headers.putAll(x_challenger_header);
         headers.put("Content-Type","application/json");
 
@@ -619,7 +710,9 @@ public class ChallengeCompleteTest{
     @Test
     public void cannotPostSecretNoteWhenWrongAuth403() {
 
-        headers.clear();
+        Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
+
+        Map<String, String> headers = new HashMap<>();
         headers.putAll(x_challenger_header);
         headers.put("X-AUTH-TOKEN",challenger.getXAuthToken() + "bob");
         headers.put("Content-Type","application/json");
@@ -637,7 +730,9 @@ public class ChallengeCompleteTest{
     @Test
     public void canCreateANewChallenger() {
 
-        headers.clear();
+        Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
+
+        Map<String, String> headers = new HashMap<>();
 
         //{"note":"bob"}
         final HttpResponseDetails response =
@@ -657,7 +752,10 @@ public class ChallengeCompleteTest{
     @Test
     public void canDeleteAllTodos() {
 
-        final EntityInstanceCollection todos = ChallengeMain.getChallenger().getThingifier().getThingInstancesNamed("todo");
+        Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
+
+
+        final EntityInstanceCollection todos = ChallengeMain.getChallenger().getThingifier().getThingInstancesNamed("todo", challenger.getXChallenger());
 
         for(EntityInstance instance : todos.getInstances()){
             final HttpResponseDetails response =

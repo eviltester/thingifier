@@ -15,6 +15,7 @@ import uk.co.compendiumdev.thingifier.api.routings.RoutingStatus;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingVerb;
 import uk.co.compendiumdev.thingifier.application.internalhttpconversion.HttpApiResponseToSpark;
 import uk.co.compendiumdev.thingifier.application.internalhttpconversion.SparkToHttpApiRequest;
+import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
@@ -242,7 +243,7 @@ public class AuthRoutes {
                 ApiResponse response=null;
                 response = new ThingCreation(this.secretNoteStore).with(
                         new BodyParser(myRequest, Arrays.asList("secretnote")),
-                        this.secretNoteStore.getThingInstancesNamed("secretnote"));
+                        this.secretNoteStore.getThingInstancesNamed("secretnote", EntityRelModel.DEFAULT_DATABASE_NAME), EntityRelModel.DEFAULT_DATABASE_NAME);
                 if (!response.isErrorResponse()) {
 
                     EntityInstance returnedInstance = response.getReturnedInstance();
@@ -250,7 +251,7 @@ public class AuthRoutes {
                     ValidationReport validity = returnedInstance.validateFieldValues(protectedFieldNames, false);
                     validity.combine(returnedInstance.validateRelationships());
 
-                    this.secretNoteStore.deleteThing(response.getReturnedInstance());
+                    this.secretNoteStore.deleteThing(response.getReturnedInstance(), EntityRelModel.DEFAULT_DATABASE_NAME);
 
                     if (!validity.isValid()) {
                         response = ApiResponse.error(400, validity.getCombinedErrorMessages());

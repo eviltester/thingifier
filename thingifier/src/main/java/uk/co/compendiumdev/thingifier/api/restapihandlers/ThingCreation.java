@@ -22,9 +22,9 @@ public class ThingCreation {
         this.thingifier = thingifier;
     }
 
-    public ApiResponse with(final BodyParser bodyargs, final EntityInstanceCollection thing) {
+    public ApiResponse with(final BodyParser bodyargs, final EntityInstanceCollection thing, final String database) {
 
-        ValidationReport validated = new BodyRelationshipValidator(thingifier).validate(bodyargs, thing);
+        ValidationReport validated = new BodyRelationshipValidator(thingifier).validate(bodyargs, thing, database);
 
         if(!validated.isValid()){
             return ApiResponse.error(400, String.format("Invalid relationships: %s",validated.getCombinedErrorMessages()));
@@ -39,11 +39,12 @@ public class ThingCreation {
         EntityInstance instance = new EntityInstance(thing.definition());
         instance.addGUIDtoInstance();
         instance.addIdsToInstance();
-        return addNewThingWithFields(bodyargs, instance, thing);
+        return addNewThingWithFields(bodyargs, instance, thing, database);
     }
 
     // create with GUID and IDs is normally associated with PUT or 'insert'
-    public ApiResponse withGuid(final String instanceGuid, final BodyParser bodyargs, final EntityInstanceCollection thing) {
+    public ApiResponse withGuid(final String instanceGuid, final BodyParser bodyargs,
+                                final EntityInstanceCollection thing, final String database) {
 
         final Map<String, String> args = bodyargs.getStringMap();
 
@@ -72,7 +73,7 @@ public class ThingCreation {
         instance.overrideValue("guid", aGUID);
         instance.addIdsToInstance();
 
-        validated = new BodyRelationshipValidator(thingifier).validate(bodyargs, thing);
+        validated = new BodyRelationshipValidator(thingifier).validate(bodyargs, thing, database);
 
         if(!validated.isValid()){
             return ApiResponse.error(400,
@@ -88,12 +89,12 @@ public class ThingCreation {
 
         thing.definition().setNextIdsToAccomodate(fieldValues);
 
-        return insertNewThingWithFields(bodyargs, instance, thing);
+        return insertNewThingWithFields(bodyargs, instance, thing, database);
     }
 
 
     private ApiResponse addNewThingWithFields(final BodyParser bodyargs, final EntityInstance instance,
-                                              final EntityInstanceCollection thing) {
+                                              final EntityInstanceCollection thing, final String database) {
 
         if(thingifier.apiConfig().willApiEnforceDeclaredTypesInInput()) {
             ValidationReport validatedTypes = bodyargs.validateAgainstType(instance.getEntity());
@@ -109,7 +110,7 @@ public class ThingCreation {
             List<FieldValue> fieldValues = FieldValues.
                     fromListMapEntryStringString(
                             new BodyArgsProcessor(thingifier, bodyargs).
-                                    removeRelationshipsFrom(instance));
+                                    removeRelationshipsFrom(instance, database));
 
             instance.setFieldValuesFrom(fieldValues);
         } catch (Exception e) {
@@ -119,21 +120,14 @@ public class ThingCreation {
 
         final List<String> protectedFieldNames = instance.getEntity().
                                 getFieldNamesOfType(FieldType.ID, FieldType.GUID);
+
         ValidationReport validation = instance.validateFieldValues(protectedFieldNames, false);
 
-        if (validation.isValid()) {
-            thing.addInstance(instance);
-
-            return new RelationshipCreator(thingifier).createRelationships(bodyargs, instance);
-
-        } else {
-            // do not add it, report the errors
-            return ApiResponse.error(400, validation.getErrorMessages());
-        }
+        return addValidatedInstance(bodyargs, instance, thing, database, validation);
     }
 
     private ApiResponse insertNewThingWithFields(final BodyParser bodyargs, final EntityInstance instance,
-                                              final EntityInstanceCollection thing) {
+                                              final EntityInstanceCollection thing, final String database) {
 
         if(thingifier.apiConfig().willApiEnforceDeclaredTypesInInput()) {
             ValidationReport validatedTypes = bodyargs.validateAgainstType(instance.getEntity());
@@ -150,20 +144,27 @@ public class ThingCreation {
             List<FieldValue> fieldValues = FieldValues.
                     fromListMapEntryStringString(
                             new BodyArgsProcessor(thingifier, bodyargs).
-                                    removeRelationshipsFrom(instance));
+                                    removeRelationshipsFrom(instance, database));
 
             instance.overrideFieldValuesFromArgsIgnoring(fieldValues, ignoreFields);
         } catch (Exception e) {
             return ApiResponse.error(400, e.getMessage());
         }
 
-
         ValidationReport validation = instance.validateFieldValues(new ArrayList<>(), true);
 
-        if (validation.isValid()) {
-            thing.addInstance(instance);
+        return addValidatedInstance(bodyargs, instance, thing, database, validation);
+    }
 
-            return new RelationshipCreator(thingifier).createRelationships(bodyargs, instance);
+    private ApiResponse addValidatedInstance(BodyParser bodyargs, EntityInstance instance, EntityInstanceCollection thing, String database, ValidationReport validation) {
+        if (validation.isValid()) {
+            try {
+                thing.addInstance(instance);
+            }catch(Exception e){
+                return ApiResponse.error(400, e.getMessage());
+            }
+
+            return new RelationshipCreator(thingifier).createRelationships(bodyargs, instance, database);
 
         } else {
             // do not add it, report the errors

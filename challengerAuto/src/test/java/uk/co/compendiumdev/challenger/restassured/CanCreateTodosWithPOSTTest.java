@@ -27,6 +27,7 @@ public class CanCreateTodosWithPOSTTest extends RestAssuredBaseTest {
 
         final Response response = RestAssured.
                 given().
+                header("X-CHALLENGER", xChallenger).
                 accept("application/json").
                 contentType("application/json").
                 body(createMe).

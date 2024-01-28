@@ -12,16 +12,13 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ERInstanceData {
-    private final ERSchema schema;
     private final ConcurrentHashMap<String, EntityInstanceCollection> instanceCollections;
 
-    public ERInstanceData(final ERSchema schema) {
-        this.schema = schema;
+    public ERInstanceData() {
         instanceCollections = new ConcurrentHashMap<>();
     }
 
-    public ERInstanceData(final ERSchema schema, final List<EntityInstance> instances) {
-        this.schema = schema;
+    public ERInstanceData(final List<EntityInstance> instances) {
         instanceCollections = new ConcurrentHashMap<>();
         final EntityInstanceCollection managedInstances =
                 createInstanceCollectionFor(instances.get(0).getEntity());
@@ -33,6 +30,12 @@ public class ERInstanceData {
         EntityInstanceCollection aCollection = new EntityInstanceCollection(definition);
         instanceCollections.put(definition.getName(), aCollection);
         return aCollection;
+    }
+
+    public void createInstanceCollectionFrom(ERSchema schema) {
+        for(EntityDefinition defn : schema.getEntityDefinitions()){
+            createInstanceCollectionFor(defn);
+        }
     }
 
     public List<EntityInstanceCollection> getAllInstanceCollections() {
@@ -89,4 +92,6 @@ public class ERInstanceData {
             }
         }
     }
+
+
 }

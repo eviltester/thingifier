@@ -21,14 +21,16 @@ public class EntityInstance {
         this.relationships = new EntityInstanceRelationships(this);
     }
 
-    public void addGUIDtoInstance(){
+    public EntityInstance addGUIDtoInstance(){
         // todo: this adds a field called 'guid' but there may be other GUID fields,
         // allow GUIDs to be defined as being 'auto' in which case we will auto generate them
         instanceFields.addValue(FieldValue.is("guid", UUID.randomUUID().toString()));
+        return this;
     }
 
-    public void addIdsToInstance() {
+    public EntityInstance addIdsToInstance() {
         instanceFields.addIdsToInstance();
+        return this;
     }
 
     public String toString() {

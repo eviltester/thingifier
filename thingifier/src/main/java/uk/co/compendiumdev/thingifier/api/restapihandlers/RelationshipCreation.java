@@ -24,7 +24,7 @@ public class RelationshipCreation {
         this.thingifier = aThingifier;
     }
 
-    public ApiResponse create(final String url, final BodyParser bodyargs, final SimpleQuery query) {
+    public ApiResponse create(final String url, final BodyParser bodyargs, final SimpleQuery query, final String database) {
 
         final Map<String, String> args = bodyargs.getStringMap();
 
@@ -47,11 +47,11 @@ public class RelationshipCreation {
         // if no way to narrow it down then use the first one TODO: potential bug if multiple named relationshps
         relationshipToUse = possibleRelationships.get(0);
 
-        EntityInstanceCollection thingTo = thingifier.getThingInstancesNamed(relationshipToUse.getTo().getName());
+        EntityInstanceCollection thingTo = thingifier.getThingInstancesNamed(relationshipToUse.getTo().getName(), database);
 
         // if there is a guid in the body then use that to try and find a thing that matches it
         // if there is a guid field or an id field then use whichever first matches a thing
-        Boolean amExpectingARelatedItem = false;
+        boolean amExpectingARelatedItem = false;
         String matchingFieldNames = "";
         for(String fieldName : args.keySet()){
             final Field field = thingTo.definition().getField(fieldName);
@@ -83,9 +83,9 @@ public class RelationshipCreation {
         if (relatedItem == null) {
             EntityDefinition createThing = relationshipToUse.getTo();
 
-            thingToCreate = thingifier.getThingInstancesNamed(createThing.getName());
+            thingToCreate = thingifier.getThingInstancesNamed(createThing.getName(), database);
 
-            response = new ThingCreation(thingifier).with(bodyargs, thingToCreate);
+            response = new ThingCreation(thingifier).with(bodyargs, thingToCreate, database);
             if(response.isErrorResponse()){
                 return response;
             }else{
@@ -125,7 +125,7 @@ public class RelationshipCreation {
             if(response != null && response.isErrorResponse()){
                 if(thingToCreate != null){
                     // we had an error so delete the created thing
-                    thingifier.deleteThing(relatedItem);
+                    thingifier.deleteThing(relatedItem, database);
                     response.addToErrorMessages(" the newly created item was deleted. No new items have been created.");
 
                 }
@@ -139,7 +139,7 @@ public class RelationshipCreation {
             ValidationReport validNow = relatedItem.validateRelationships();
             if(!validNow.isValid()){
                 response = ApiResponse.error(400, validNow.getErrorMessages());
-                thingifier.deleteThing(relatedItem);
+                thingifier.deleteThing(relatedItem, database);
                 return response;
             }
 

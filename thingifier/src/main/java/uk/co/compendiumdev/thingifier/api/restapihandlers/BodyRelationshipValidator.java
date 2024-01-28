@@ -20,12 +20,12 @@ public class BodyRelationshipValidator {
         this.thingifier = thingifier;
     }
 
-    public ValidationReport validate(final BodyParser bodyargs, final EntityInstanceCollection thing) {
+    public ValidationReport validate(final BodyParser bodyargs, final EntityInstanceCollection thing, final String database) {
         final EntityDefinition thingDefinition = thing.definition();
-        return validate(bodyargs, thingDefinition);
+        return validate(bodyargs, thingDefinition, database);
     }
 
-    public ValidationReport validate(final BodyParser bodyargs, final EntityDefinition thingDefinition) {
+    public ValidationReport validate(final BodyParser bodyargs, final EntityDefinition thingDefinition, final String database) {
         final ValidationReport report = new ValidationReport();
 
         List<Map.Entry<String,String>> fullargs = bodyargs.getFlattenedStringMap();
@@ -36,15 +36,15 @@ public class BodyRelationshipValidator {
             //is it a relationship?
             String complexKey = complexKeyValue.getKey();
             if(complexKey.startsWith("relationships.")){
-                if(!validateComplexFourPartRelationshipDefinition(thingDefinition, report, complexKey, complexKeyValue.getValue())){
+                if(!validateComplexFourPartRelationshipDefinition(thingDefinition, report, complexKey, complexKeyValue.getValue(), database)){
                     validRelationships=false;
-                };
+                }
             }else{
                 if(complexKey.contains(".")){
                     // it might be a relationship
                     String[] parts = complexKey.split("\\.");
                     if(thingDefinition.related().hasRelationship(parts[0])) {
-                        validRelationships = validateCompressedRelationshipDefinition(thingDefinition, report, complexKey, complexKeyValue.getValue());
+                        validRelationships = validateCompressedRelationshipDefinition(thingDefinition, report, complexKey, complexKeyValue.getValue(), database);
                     }
                 }
             }
@@ -56,7 +56,7 @@ public class BodyRelationshipValidator {
 
     private boolean validateCompressedRelationshipDefinition(
             final EntityDefinition thingDefinition, final ValidationReport report,
-            final String complexKey, final String complexKeyValue) {
+            final String complexKey, final String complexKeyValue, final String database) {
 
         String[] parts = complexKey.split("\\.");
 
@@ -82,12 +82,12 @@ public class BodyRelationshipValidator {
             return false;
         }
 
-        EntityInstance thingToRelateTo = thingifier.findThingInstanceByGuid(guidValue);
+        EntityInstance thingToRelateTo = thingifier.findThingInstanceByGuid(guidValue, database);
         // if we cannot find it by a guid then we need to identify the relationship type and find it by id for things
         if(thingToRelateTo==null) {
             final List<RelationshipVectorDefinition> relationshipsNamed = thingDefinition.related().getRelationships(relationShipName);
             for(RelationshipVectorDefinition vector : relationshipsNamed){
-                final EntityInstanceCollection thingToRelationship = thingifier.getThingInstancesNamed(vector.getTo().getName());
+                final EntityInstanceCollection thingToRelationship = thingifier.getThingInstancesNamed(vector.getTo().getName(), database);
                 thingToRelateTo = thingToRelationship.findInstanceByGUIDorID(guidValue);
                 if(thingToRelateTo!=null){
                     break;
@@ -117,7 +117,7 @@ public class BodyRelationshipValidator {
 
     private boolean validateComplexFourPartRelationshipDefinition(
             final EntityDefinition thingDefinition, final ValidationReport report,
-            final String complexKey, final String complexKeyValue) {
+            final String complexKey, final String complexKeyValue, final String database) {
         String[] parts = complexKey.split("\\.");
 
         if(parts.length!=4){
@@ -145,7 +145,7 @@ public class BodyRelationshipValidator {
         EntityInstance thingToRelateTo = null;
 
         EntityInstanceCollection things = thingifier.
-                getInstancesForSingularOrPluralNamedEntity(relationshipToPart);
+                getInstancesForSingularOrPluralNamedEntity(relationshipToPart, database);
 
         if(things!=null){
             thingToRelateTo = things.findInstanceByGUID(uniqueId);
@@ -153,7 +153,7 @@ public class BodyRelationshipValidator {
 
         // haven't found it yet
         if(thingToRelateTo==null){
-            things = thingifier.getInstancesForSingularOrPluralNamedEntity(relationshipToPart);
+            things = thingifier.getInstancesForSingularOrPluralNamedEntity(relationshipToPart, database);
 
             if(things!=null) {
                 thingToRelateTo = things.findInstanceByField(

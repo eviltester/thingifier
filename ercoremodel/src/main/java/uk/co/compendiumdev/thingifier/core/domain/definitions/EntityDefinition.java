@@ -11,6 +11,7 @@ import java.util.*;
 
 
 public class EntityDefinition {
+    private int maxInstanceCount; // use -ve for no limit
     private String name;
     private String plural;
 
@@ -18,10 +19,17 @@ public class EntityDefinition {
     private DefinedRelationships definedRelationships;
 
     public EntityDefinition(String name, String plural) {
+        this(name,plural,-1);
+    }
+
+    public EntityDefinition(String name, String plural, int maxInstanceCount) {
+
+
         this.name = name;
         this.plural = plural;
         definedRelationships = new DefinedRelationships();
         fields = new DefinedFields();
+        this.maxInstanceCount = maxInstanceCount;
 
         // todo: support overriding this name to allow model to use guid as a user managed field
         // e.g. model.internalUniqueIDFieldName("bob")
@@ -116,5 +124,13 @@ public class EntityDefinition {
             }
         }
 
+    }
+
+    public int getMaxInstanceLimit() {
+        return maxInstanceCount;
+    }
+
+    public boolean hasMaxInstanceLimit() {
+        return maxInstanceCount>=0;
     }
 }

@@ -28,7 +28,9 @@ Command line options are:
 
 An online version of the application can be found at:
 
-- https://apithingifier.herokuapp.com
+- https://apichallenges.eviltester.com
+
+The API Challenges is built on a simple todo thingifier model.
 
 This version will reset all data every 10 minutes.
 
@@ -66,3 +68,9 @@ If you want to generate test data for an api, investigate:
 
 ---
 
+Current TODO List:
+
+- test clear down internal challenger databases after time
+- add additional challenges about instance limits e.g. try to exceed 20
+- add additional challenges around field validation values and limits
+  

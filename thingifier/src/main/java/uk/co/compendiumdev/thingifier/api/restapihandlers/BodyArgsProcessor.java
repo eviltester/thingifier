@@ -22,12 +22,12 @@ public class BodyArgsProcessor {
     }
 
 
-    public List<Map.Entry<String,String>> removeRelationshipsFrom(final EntityInstance instance) {
+    public List<Map.Entry<String,String>> removeRelationshipsFrom(final EntityInstance instance, final String database) {
 
         List<Map.Entry<String,String>> fullargs = bodyargs.getFlattenedStringMap();
         RelationshipCollector collectedRelationships = new RelationshipCollector();
 
-        identifyRelationships(fullargs, instance, collectedRelationships);
+        identifyRelationships(fullargs, instance, collectedRelationships, database);
 
         for(Map.Entry<String, String> removeMe : collectedRelationships.getRelationshipsKeys()) {
             fullargs.remove(removeMe);
@@ -39,7 +39,8 @@ public class BodyArgsProcessor {
 
     public void identifyRelationships(List<Map.Entry<String,String>> fullargs,
                                      final EntityInstance instance,
-                                     RelationshipCollector collector){
+                                     RelationshipCollector collector,
+                                      final String database){
 
         // assume any relationships errors already reported
 
@@ -64,7 +65,7 @@ public class BodyArgsProcessor {
                         String relationshipName = parts[0];
                         String relationshipFieldName = parts[1];
                         // assume it is a guid
-                        EntityInstance instanceToRelateTo = thingifier.findThingInstanceByGuid(complexKeyValue.getValue());
+                        EntityInstance instanceToRelateTo = thingifier.findThingInstanceByGuid(complexKeyValue.getValue(), database);
                         if(instanceToRelateTo ==null){
                             // but it might not be
                             // TODO: find other usages of this pattern and refactor to
@@ -73,7 +74,7 @@ public class BodyArgsProcessor {
                                         instance.getEntity().related().getRelationships(relationshipName);
                                 for(RelationshipVectorDefinition relate : relationshipsAre){
                                     final EntityDefinition typeOfThing = relate.getTo();
-                                    instanceToRelateTo =  thingifier.getThingInstancesNamed(typeOfThing.getName()).
+                                    instanceToRelateTo =  thingifier.getThingInstancesNamed(typeOfThing.getName(), database).
                                                             findInstanceByField(
                                                             FieldValue.is(relationshipFieldName,
                                                                 complexKeyValue.getValue()));

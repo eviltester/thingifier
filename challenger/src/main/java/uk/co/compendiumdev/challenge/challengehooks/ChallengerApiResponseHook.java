@@ -123,7 +123,7 @@ public class ChallengerApiResponseHook implements HttpApiResponseHook {
                 request.getQueryParams().get("doneStatus").contentEquals("true") &&
                 response.getStatusCode()==200){
             // only pass if there are done and not done todos
-            final EntityInstanceCollection thing = thingifier.getThingInstancesNamed("todo");
+            final EntityInstanceCollection thing = thingifier.getThingInstancesNamed("todo", challenger.getXChallenger());
             final EntityInstance aDoneThing = thing.findInstanceByField(FieldValue.is("doneStatus", "true"));
             final EntityInstance aNotDoneThing = thing.findInstanceByField(FieldValue.is("doneStatus", "false"));
             if(aDoneThing!=null && aNotDoneThing!=null) {
@@ -208,7 +208,7 @@ public class ChallengerApiResponseHook implements HttpApiResponseHook {
         if(request.getVerb() == HttpApiRequest.VERB.DELETE &&
                 request.getPath().matches("todos/.*") &&
                 response.getStatusCode()==200 &&
-                thingifier.getThingInstancesNamed("todo").countInstances()==0){
+                thingifier.getThingInstancesNamed("todo", challenger.getXChallenger()).countInstances()==0){
             challengers.pass(challenger,CHALLENGE.DELETE_ALL_TODOS);
         }
 

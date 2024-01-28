@@ -75,7 +75,7 @@ public class VerbPutEntityInstanceApiNonHttpTest {
         Assertions.assertNotNull(officeWorkGuid);
 
         // amend existing project with PUT - this should validate that all required fields are present
-        apiresponse = todoManager.api().put(String.format("project/%s", officeWork.getGUID()),  getSimpleParser(requestBody));
+        apiresponse = todoManager.api().put(String.format("project/%s", officeWork.getGUID()),  getSimpleParser(requestBody), new HashMap<>());
         Assertions.assertEquals(200, apiresponse.getStatusCode());
         Assertions.assertEquals("My Office Work", officeWork.getFieldValue("title").asString());
 
@@ -112,7 +112,7 @@ public class VerbPutEntityInstanceApiNonHttpTest {
         requestBody.put("title", "My Office Work");
         // note, I haven't added a description
 
-        apiresponse = todoManager.api().put(String.format("project/%s", officeWork.getGUID()),  getSimpleParser(requestBody));
+        apiresponse = todoManager.api().put(String.format("project/%s", officeWork.getGUID()),  getSimpleParser(requestBody), new HashMap<>());
         Assertions.assertEquals(200, apiresponse.getStatusCode());
         Assertions.assertEquals("My Office Work", officeWork.getFieldValue("title").asString());
         Assertions.assertEquals("", officeWork.getFieldValue("description").asString());
@@ -148,7 +148,7 @@ public class VerbPutEntityInstanceApiNonHttpTest {
         String newGUID = UUID.randomUUID().toString();
         requestBody.put("guid", newGUID);
 
-        apiresponse = todoManager.api().put(String.format("project/%s", originalGUID),  getSimpleParser(requestBody));
+        apiresponse = todoManager.api().put(String.format("project/%s", originalGUID),  getSimpleParser(requestBody), new HashMap<>());
 
         Assertions.assertEquals(400, apiresponse.getStatusCode());
         Assertions.assertEquals("An Existing Project", officeWork.getFieldValue("title").asString());
@@ -182,7 +182,7 @@ public class VerbPutEntityInstanceApiNonHttpTest {
         String guid = UUID.randomUUID().toString();
 
 
-        apiresponse = todoManager.api().put(String.format("project/%s", guid),  getSimpleParser(requestBody));
+        apiresponse = todoManager.api().put(String.format("project/%s", guid),  getSimpleParser(requestBody), new HashMap<>());
         Assertions.assertEquals(201, apiresponse.getStatusCode());
 
 
@@ -228,7 +228,7 @@ public class VerbPutEntityInstanceApiNonHttpTest {
         String guid = UUID.randomUUID().toString();
 
 
-        apiresponse = todoManager.api().put(String.format("project/%s", guid),  getSimpleParser(requestBody));
+        apiresponse = todoManager.api().put(String.format("project/%s", guid),  getSimpleParser(requestBody), new HashMap<>());
         Assertions.assertEquals(201, apiresponse.getStatusCode());
 
 
@@ -263,7 +263,7 @@ public class VerbPutEntityInstanceApiNonHttpTest {
         // create with a PUT and a given GUID
         String guid = UUID.randomUUID().toString();
 
-        apiresponse = todoManager.api().put(String.format("project/%s", guid),  getSimpleParser(requestBody));
+        apiresponse = todoManager.api().put(String.format("project/%s", guid),  getSimpleParser(requestBody), new HashMap<>());
         Assertions.assertEquals(409, apiresponse.getStatusCode());
 
         Assertions.assertEquals(1, project.countInstances());
@@ -281,7 +281,7 @@ public class VerbPutEntityInstanceApiNonHttpTest {
         // will generate 400 because description should be title
         requestBody.put("description", "A new TODO Item");
         requestBody.put("doneStatus", "TRUE");
-        apiresponse = todoManager.api().put(String.format("todo/%s", UUID.randomUUID().toString()), getSimpleParser(requestBody));
+        apiresponse = todoManager.api().put(String.format("todo/%s", UUID.randomUUID().toString()), getSimpleParser(requestBody), new HashMap<>());
         Assertions.assertEquals(400, apiresponse.getStatusCode());
         Assertions.assertTrue(apiresponse.getErrorMessages().size() > 0);
         Assertions.assertTrue(apiresponse.hasABody());
@@ -294,7 +294,7 @@ public class VerbPutEntityInstanceApiNonHttpTest {
         // will generate 400 because description should be title
         requestBody.put("description", "Amended TODO Item ");
         requestBody.put("doneStatus", "TRUE");
-        apiresponse = todoManager.api().put(String.format("todo/%s", paperwork.getGUID()), getSimpleParser(requestBody));
+        apiresponse = todoManager.api().put(String.format("todo/%s", paperwork.getGUID()), getSimpleParser(requestBody), new HashMap<>());
         Assertions.assertEquals(400, apiresponse.getStatusCode());
         Assertions.assertTrue(apiresponse.getErrorMessages().size() > 0);
         Assertions.assertTrue(apiresponse.hasABody());
@@ -305,7 +305,7 @@ public class VerbPutEntityInstanceApiNonHttpTest {
         requestBody.put("title", "A new TODO Item");
         requestBody.put("description", "A new TODO Item");
         requestBody.put("doneStatus", "FALSEY");
-        apiresponse = todoManager.api().put(String.format("todo/%s", paperwork.getGUID()), getSimpleParser(requestBody));
+        apiresponse = todoManager.api().put(String.format("todo/%s", paperwork.getGUID()), getSimpleParser(requestBody), new HashMap<>());
         Assertions.assertEquals(400, apiresponse.getStatusCode());
         Assertions.assertTrue(apiresponse.getErrorMessages().size() > 0);
         Assertions.assertTrue(apiresponse.hasABody());
@@ -323,7 +323,7 @@ public class VerbPutEntityInstanceApiNonHttpTest {
         // will generate 400 because description should be title
         requestBody.put("description", "A new TODO Item");
         requestBody.put("doneStatus", "TRUE");
-        apiresponse = todoManager.api().put(String.format("todo/%s", UUID.randomUUID().toString()), getSimpleParser(requestBody));
+        apiresponse = todoManager.api().put(String.format("todo/%s", UUID.randomUUID().toString()), getSimpleParser(requestBody), new HashMap<>());
         Assertions.assertEquals(400, apiresponse.getStatusCode());
         Assertions.assertTrue(apiresponse.getErrorMessages().size() > 0);
         Assertions.assertTrue(apiresponse.hasABody());
@@ -344,7 +344,7 @@ public class VerbPutEntityInstanceApiNonHttpTest {
         // will generate 400 because description should be title
         requestBody.put("description", "Amended TODO Item ");
         requestBody.put("doneStatus", "TRUE");
-        apiresponse = todoManager.api().put(String.format("todo/%s", paperwork.getGUID()), getSimpleParser(requestBody));
+        apiresponse = todoManager.api().put(String.format("todo/%s", paperwork.getGUID()), getSimpleParser(requestBody), new HashMap<>());
         Assertions.assertEquals(400, apiresponse.getStatusCode());
         Assertions.assertTrue(apiresponse.getErrorMessages().size() > 0);
         Assertions.assertTrue(apiresponse.hasABody());
@@ -355,7 +355,7 @@ public class VerbPutEntityInstanceApiNonHttpTest {
         requestBody.put("title", "A new TODO Item");
         requestBody.put("description", "A new TODO Item");
         requestBody.put("doneStatus", "FALSEY");
-        apiresponse = todoManager.api().put(String.format("todo/%s", paperwork.getGUID()), getSimpleParser(requestBody));
+        apiresponse = todoManager.api().put(String.format("todo/%s", paperwork.getGUID()), getSimpleParser(requestBody), new HashMap<>());
         Assertions.assertEquals(400, apiresponse.getStatusCode());
         Assertions.assertTrue(apiresponse.getErrorMessages().size() > 0);
         Assertions.assertTrue(apiresponse.hasABody());

@@ -8,14 +8,12 @@ import uk.co.compendiumdev.thingifier.api.restapihandlers.*;
 import java.util.Map;
 
 public class ThingifierRestAPIHandler {
-    private final Thingifier thingifier;
     private final RestApiDeleteHandler delete;
     private final RestApiPostHandler post;
     private final RestApiPutHandler put;
     private final RestApiGetHandler get;
 
     public ThingifierRestAPIHandler(final Thingifier aThingifier) {
-        this.thingifier = aThingifier;
         this.get = new RestApiGetHandler(aThingifier);
         this.delete = new RestApiDeleteHandler(aThingifier);
         this.post = new RestApiPostHandler(aThingifier);
@@ -32,30 +30,27 @@ public class ThingifierRestAPIHandler {
     // TODO: ensure that relationshps enforce the type of thing e.g. if I pass in a GUID of the wrong type then it should not cross ref
     // TODO: possibly consider an X- header which has the number of items in the collection
 
-    public ApiResponse get(final String url) {
-        return get.handle(url);
+
+    public ApiResponse get(final String url, final Map<String, String> queryParams, Map<String, String> headers) {
+        return get.handle(url, queryParams, headers);
     }
 
-    public ApiResponse get(final String url, final Map<String, String> queryParams) {
-        return get.handle(url, queryParams);
-    }
-
-    public ApiResponse head(final String url) {
-        final ApiResponse response = get.handle(url);
+    public ApiResponse head(final String url, final Map<String, String> queryParams, Map<String, String> headers) {
+        final ApiResponse response = get.handle(url, queryParams, headers);
         response.clearBody();
         return response;
     }
 
-    public ApiResponse delete(final String url) {
-        return delete.handle(url);
+    public ApiResponse delete(final String url, Map<String, String> headers) {
+        return delete.handle(url, headers);
     }
 
-    public ApiResponse post(final String url, final BodyParser args) {
-        return post.handle(url, args);
+    public ApiResponse post(final String url, final BodyParser args, Map<String, String> headers) {
+        return post.handle(url, args, headers);
     }
 
-    public ApiResponse put(final String url, final BodyParser args) {
-        return put.handle(url, args);
+    public ApiResponse put(final String url, final BodyParser args, Map<String, String> headers) {
+        return put.handle(url, args, headers);
     }
 
 

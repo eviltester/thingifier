@@ -37,7 +37,8 @@ public class ChallengeRouteHandler {
 
         challengeDefinitions = new ChallengeDefinitions();
         this.thingifier = thingifier;
-        challengers = new Challengers();
+        challengers = new Challengers(thingifier.getERmodel());
+        challengers.setApiConfig(thingifier.apiConfig());
         single_player_mode = true;
         persistenceLayer = new PersistenceLayer(PersistenceLayer.StorageType.LOCAL);
         challengers.setPersistenceLayer(persistenceLayer);
@@ -68,7 +69,7 @@ public class ChallengeRouteHandler {
 
     public ChallengeRouteHandler configureRoutes() {
 
-        new ChallengerTrackingRoutes().configure(challengers, single_player_mode, apiDefn, persistenceLayer);
+        new ChallengerTrackingRoutes().configure(challengers, single_player_mode, apiDefn, persistenceLayer, thingifier);
         new ChallengesRoutes().configure(challengers, single_player_mode, apiDefn, challengeDefinitions);
         new HeartBeatRoutes().configure(apiDefn);
         new AuthRoutes().configure(challengers, apiDefn);

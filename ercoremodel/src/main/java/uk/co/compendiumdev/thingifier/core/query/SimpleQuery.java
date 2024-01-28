@@ -1,6 +1,8 @@
 package uk.co.compendiumdev.thingifier.core.query;
 
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.ERSchema;
+import uk.co.compendiumdev.thingifier.core.domain.instances.ERInstanceData;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
@@ -16,7 +18,9 @@ import static uk.co.compendiumdev.thingifier.core.query.SimpleQuery.LastMatchVal
 
 final public class SimpleQuery {
 
-    private final EntityRelModel ermodel;
+    private final ERInstanceData database;
+    private final ERSchema schema; // all the definitions
+
     private final String query;
 
     private boolean isCollection = false;
@@ -41,8 +45,10 @@ final public class SimpleQuery {
     List<Object> foundItemsHistoryList = new ArrayList<>();
     private EntityDefinition resultContainsDefinition;
 
-    public SimpleQuery(EntityRelModel ermodel, String query) {
-        this.ermodel = ermodel;
+    public SimpleQuery(ERSchema aSchema, ERInstanceData aDatabase, String query) {
+
+        this.schema = aSchema;
+        this.database = aDatabase;
 
         if(query.startsWith("/")){
             this.query = query.substring(1);
@@ -68,7 +74,7 @@ final public class SimpleQuery {
             // if we have a parent thing then we want to check for relationships before we check for things
             // if it matches a relationship then get the instances identified by the relationship
             //if(currentThing != null && currentThing.definition().hasRelationship(term)){
-            if (parentCollection !=null && ermodel.hasRelationshipNamed(term)) {
+            if (parentCollection !=null && schema.hasRelationshipNamed(term)) {
 
                 // what I want to store is the relationship between the parent Thing and the relationship name
                 EntityInstanceCollection thingToCheckForRelationship = currentCollection == null ? parentCollection : currentCollection;
@@ -102,16 +108,16 @@ final public class SimpleQuery {
             }
 
             // if matches an entity type
-            if (ermodel.hasEntityNamed(term) || ermodel.hasEntityWithPluralNamed(term)) {
+            if (schema.hasEntityNamed(term) || schema.hasEntityWithPluralNamed(term)) {
                 if (currentCollection == null && foundItems.size() == 0) {
                     // first thing - find it
-                    currentCollection = ermodel.getInstanceCollectionForEntityNamed(term);
+                    currentCollection = database.getInstanceCollectionForEntityNamed(term);
                     pluralMatch = false;
 
                     if (currentCollection == null) {
                         // was it the plural?
-                        final EntityDefinition defn = ermodel.getEntityDefinitionWithPluralNamed(term);
-                        currentCollection = ermodel.getInstanceCollectionForEntityNamed(defn.getName());
+                        final EntityDefinition defn = schema.getEntityDefinitionWithPluralNamed(term);
+                        currentCollection = database.getInstanceCollectionForEntityNamed(defn.getName());
                         pluralMatch = true;
                     }
 
@@ -127,7 +133,7 @@ final public class SimpleQuery {
 
                 } else {
                     // related to another type of thing
-                    foundItemsHistoryList.add(ermodel.getInstanceCollectionForEntityNamed(term));
+                    foundItemsHistoryList.add(database.getInstanceCollectionForEntityNamed(term));
 
                     if (foundItems != null && foundItems.size() > 0) {
                         resultContainsDefinition = foundItems.get(0).getRelationships().getTypeOfConnectableItems(term);

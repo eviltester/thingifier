@@ -7,6 +7,8 @@ import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.api.restapihandlers.commonerrorresponse.NoSuchEntity;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
+import java.util.Map;
+
 public class RestApiPutHandler {
     final Thingifier thingifier;
 
@@ -14,10 +16,13 @@ public class RestApiPutHandler {
         thingifier = aThingifier;
     }
 
-    public ApiResponse handle(final String url, final BodyParser args) {
+    public ApiResponse handle(final String url, final BodyParser args, final Map<String, String>requestHeaders) {
+
+        String instanceDatabaseName = SessionHeaderParser.getDatabaseNameFromHeaderValue(requestHeaders);
+
         // if queryis empty then need a way to check if the query matched
         // create a thing
-        EntityInstanceCollection thing = thingifier.getInstancesForSingularOrPluralNamedEntity(url);
+        EntityInstanceCollection thing = thingifier.getInstancesForSingularOrPluralNamedEntity(url, instanceDatabaseName);
         if (thing != null) {
             // can't create a new thing at root level with PUT
             return ApiResponse.error(405, "Cannot create root level entity with a PUT");
@@ -33,7 +38,7 @@ public class RestApiPutHandler {
         }
 
         String thingName = urlParts[0];
-        thing = thingifier.getInstancesForSingularOrPluralNamedEntity(thingName);
+        thing = thingifier.getInstancesForSingularOrPluralNamedEntity(thingName, instanceDatabaseName);
 
         if (thing == null) {
             // this is not a URL for thing/guid
@@ -49,17 +54,17 @@ public class RestApiPutHandler {
             // it does not exist, but we have a GUID - create it
             // if we were given an ID then this will fail because
             // ID will not match GUID formatting
-            return new ThingCreation(thingifier).withGuid(instanceGuid, args, thing);
+            return new ThingCreation(thingifier).withGuid(instanceGuid, args, thing, instanceDatabaseName);
         } else {
             // when amending existing thing with PUT it must be idempotent so
             // check that all fields are valid in the args
-            return amendAThingWithPut(args, instance);
+            return amendAThingWithPut(args, instance, instanceDatabaseName);
         }
     }
 
-    private ApiResponse amendAThingWithPut(final BodyParser bodyargs, final EntityInstance instance) {
+    private ApiResponse amendAThingWithPut(final BodyParser bodyargs, final EntityInstance instance, final String database) {
 
         return new ThingAmendment(thingifier).
-                amendInstance(bodyargs, instance, true);
+                amendInstance(bodyargs, instance, true, database);
     }
 }

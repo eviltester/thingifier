@@ -13,7 +13,7 @@ import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 public interface HttpApiRequestHook {
 
     // todo: I'm not really comfortable with passing in the full config here, reconsider this
-    // return a response if you want the request processing
-    // interupted and just return a response
+    // return an HttpApiResponse response if you want the request processing
+    // interrupted and just return that response
     HttpApiResponse run(HttpApiRequest request, ThingifierApiConfig config);
 }

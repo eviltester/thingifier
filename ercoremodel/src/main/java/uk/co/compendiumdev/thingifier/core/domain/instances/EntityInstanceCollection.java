@@ -1,6 +1,5 @@
 package uk.co.compendiumdev.thingifier.core.domain.instances;
 
-import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
@@ -24,10 +23,19 @@ final public class EntityInstanceCollection {
        addInstances(instances);
     }
 
-    public EntityInstanceCollection addInstances(List<EntityInstance> instances) {
-        for(EntityInstance instance : instances){
+    public EntityInstanceCollection addInstances(List<EntityInstance> addInstances) {
+
+        if( definition.hasMaxInstanceLimit() &&
+            ((instances.size() + addInstances.size()) > definition.getMaxInstanceLimit())){
+                throw new RuntimeException(String.format(
+                    "ERROR: Cannot add instances, would exceed maximum limit of %d",
+                    definition.getMaxInstanceLimit()));
+        }
+
+        for(EntityInstance instance : addInstances){
             addInstance(instance);
         }
+
         return this;
     }
 
@@ -39,11 +47,19 @@ final public class EntityInstanceCollection {
                     instance.getEntity().getName(), definition.getName()));
         }
 
+        if(definition.hasMaxInstanceLimit() && instances.size() >= definition.getMaxInstanceLimit()){
+            throw new RuntimeException(String.format(
+                    "ERROR: Cannot add instance, maximum limit of %d reached",
+                    definition.getMaxInstanceLimit()
+            ));
+        }
+
         instances.put(instance.getGUID(), instance);
         return this;
     }
 
     /* create and add */
+    // TODO: this looks like it was added to support testing, consider removing and adding to a test helper
     public EntityInstance createManagedInstance() {
         EntityInstance instance = new EntityInstance(definition);
         instance.addGUIDtoInstance();
@@ -101,10 +117,21 @@ final public class EntityInstanceCollection {
 
         EntityInstance item = instances.get(guid);
 
-        instances.remove(guid);
+        return deleteInstance(item);
 
-        final List<EntityInstance> alsoDelete = item.getRelationships().removeAllRelationships();
+    }
 
+    public List<EntityInstance>  deleteInstance(EntityInstance anInstance) {
+
+        if (!instances.containsValue(anInstance)) {
+            throw new IndexOutOfBoundsException(
+                    String.format("Could not find a %s with GUID %s",
+                            definition.getName(), anInstance.getGUID()));
+        }
+
+        instances.remove(anInstance.getGUID());
+
+        final List<EntityInstance> alsoDelete = anInstance.getRelationships().removeAllRelationships();
 
         return alsoDelete;
     }
@@ -143,5 +170,6 @@ final public class EntityInstanceCollection {
         }
         return instance;
     }
+
 
 }

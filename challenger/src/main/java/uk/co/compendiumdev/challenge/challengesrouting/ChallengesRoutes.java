@@ -54,7 +54,7 @@ public class ChallengesRoutes {
                         }
                         return new RestApiGetHandler(challengeThingifier.challengeThingifier)
                                 .handle(challengeDefn.getPlural(),
-                                        queryParams);
+                                        queryParams, anHttpApiRequest.getHeaders());
                     }).handle();
 
         });

@@ -18,6 +18,7 @@ import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonThing;
 import uk.co.compendiumdev.thingifier.spark.SimpleRouteConfig;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import static spark.Spark.*;
@@ -110,7 +111,7 @@ public class SimulationRoutes {
             }
 
             Thingifier cloned = this.simulation.cloneWithDifferentData(instances);
-            return new RestApiGetHandler(cloned).handle("entities", anHttpApiRequest.getQueryParams());
+            return new RestApiGetHandler(cloned).handle("entities", anHttpApiRequest.getQueryParams(), anHttpApiRequest.getHeaders());
 
         };
 

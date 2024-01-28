@@ -35,7 +35,7 @@ public class MainImplementation {
     private String[] args;
     // prevent shutdown verb as configurable through arguments e.g. -noshutdown
     boolean allowShutdown;
-    // clear data every 10 minutes configuragle through arguments e.g. -autocleardown
+    // clear data every 10 minutes configurable through arguments e.g. -autocleardown
     // -autocleardown=15
     boolean clearDataPeriodically;
     int clearDownMinutes;
