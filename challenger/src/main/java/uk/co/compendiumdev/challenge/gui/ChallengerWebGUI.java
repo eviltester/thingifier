@@ -312,6 +312,7 @@ public class ChallengerWebGUI {
         html.append("<div style='clear:both' class='headertextblock'>");
         html.append("<p>To view your challenges status in multi-user mode, make sure you have registered as a challenger using a `POST` request to `/challenger` and are including an `X-CHALLENGER` header in all your requests.</p>");
         html.append("<p>Then view the challenges in the GUI by visiting `/gui/challenges/{GUID}`, where `{GUID}` is the value in the `X-CHALLENGER` header.<p>");
+        html.append("<p>Challenger sessions are purged from the server memory after 10 minutes of inactivity. To restore your session progress issue an API request with the X-CHALLENGER header (note this will restore the completion state of challenges, but not the data you were using).<p>");
         html.append("<p>You can find more information about this on the <a href='multiuser.html'>Multi User Help Page</a><p>");
         html.append("</div>");
         return html.toString();

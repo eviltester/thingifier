@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import spark.Spark;
 import uk.co.compendiumdev.challenge.ChallengeMain;
+import uk.co.compendiumdev.challenge.challengers.Challengers;
 import uk.co.compendiumdev.challenger.http.http.HttpMessageSender;
 import uk.co.compendiumdev.challenger.http.http.HttpResponseDetails;
 import uk.co.compendiumdev.sparkstart.Environment;
@@ -27,8 +28,7 @@ public class SinglePlayerTest {
             Environment.SINGLE_PLAYER_MODE=true;
             Environment.getBaseUri();
         }
-        singlePlayerGuid = ChallengeMain.getChallenger().
-                getChallengers().SINGLE_PLAYER_GUID;
+        singlePlayerGuid = Challengers.SINGLE_PLAYER_GUID;
 
         http = new HttpMessageSender(Environment.getBaseUri());
     }

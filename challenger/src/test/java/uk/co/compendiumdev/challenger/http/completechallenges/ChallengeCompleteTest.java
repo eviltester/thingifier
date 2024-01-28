@@ -1,4 +1,4 @@
-package uk.co.compendiumdev.challenger.http.challenges;
+package uk.co.compendiumdev.challenger.http.completechallenges;
 
 import org.junit.jupiter.api.*;
 import uk.co.compendiumdev.challenge.CHALLENGE;
@@ -8,7 +8,6 @@ import uk.co.compendiumdev.challenge.challengers.Challengers;
 import uk.co.compendiumdev.challenger.http.http.HttpResponseDetails;
 import uk.co.compendiumdev.challenger.http.http.HttpMessageSender;
 import uk.co.compendiumdev.sparkstart.Environment;
-import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 

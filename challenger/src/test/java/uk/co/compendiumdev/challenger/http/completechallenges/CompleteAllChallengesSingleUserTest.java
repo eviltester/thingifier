@@ -1,6 +1,4 @@
-package uk.co.compendiumdev.challenger.http.challenges;
-
-import org.junit.jupiter.api.BeforeAll;
+package uk.co.compendiumdev.challenger.http.completechallenges;
 
 public class CompleteAllChallengesSingleUserTest extends ChallengeCompleteTest{
 

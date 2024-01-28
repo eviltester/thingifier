@@ -1,4 +1,4 @@
-package uk.co.compendiumdev.challenger.http.challenges;
+package uk.co.compendiumdev.challenger.http.completechallenges;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
