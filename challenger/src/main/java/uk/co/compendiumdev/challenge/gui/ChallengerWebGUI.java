@@ -279,7 +279,8 @@ public class ChallengerWebGUI {
                 "var guids = localStorage.getItem('challenges-guids') || '';" +
                 "var guidsArray = guids.match(/\\|([^|]*)\\|/g);" +
                 "currGuid = getCookie('X-THINGIFIER-DATABASE-NAME');" +
-                "if(currGuid!='' && !guidsArray.includes(`|${currGuid}|`)){guidsArray.push(`|${currGuid}|`)}" +
+                "if(currGuid && !guidsArray){guidsArray=[];}" +
+                "if(currGuid && guidsArray && currGuid!='' && !guidsArray.includes(`|${currGuid}|`)){guidsArray.push(`|${currGuid}|`)}" +
                 "if(guidsArray!=null && guidsArray.length>0){document.writeln('<p><strong>Previously Used</strong></p>')}" +
                 "for(guidItem in guidsArray){" +
                 "var myguid = guidsArray[guidItem].replace(/\\|/g,'');" +

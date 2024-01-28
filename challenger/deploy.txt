@@ -14,6 +14,8 @@ i.e. https://medium.com/@devkosal/switching-java-jdk-versions-on-macos-80bc868e6
 
 For heroku:
 
+NOTE: need to have `heroku plugins:install java` for the `deploy:jar` to be recognised - more info https://devcenter.heroku.com/articles/deploying-executable-jar-files
+
 Deploy the challenger app full jar
 
 - have the deployment page open in case we need to rollback
