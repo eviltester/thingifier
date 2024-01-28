@@ -15,7 +15,7 @@ import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ChallengeCompleteTest{
+public abstract class ChallengeCompleteTest{
 
     public static boolean isEnvironmentSet = false;
     public static Challengers challengers;
@@ -35,9 +35,7 @@ public class ChallengeCompleteTest{
         Environment.stop();
     }
 
-    public boolean getIsSinglePlayerMode(){
-        return false;
-    }
+    abstract boolean getIsSinglePlayerMode();
 
     public void createEnvironmentAndChallengerIfNecessary(){
 

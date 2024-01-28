@@ -80,9 +80,10 @@ public class Challengers {
         final long cutOffTime = System.currentTimeMillis();
         for(ChallengerAuthData data : authData.values()){
             if(data.expiresAt() < cutOffTime ){
+                System.out.printf("PURGING AUTH: %s%n", data.getXChallenger());
                 deleteMe.add(data.getXChallenger());
             }else{
-                // System.out.println(String.format("%s expires in %d", data.getXChallenger(), cutOffTime - data.expiresAt()));
+                System.out.printf("PURGE: %s expires in %d%n", data.getXChallenger(), cutOffTime - data.expiresAt());
             }
         }
 
@@ -90,10 +91,12 @@ public class Challengers {
             authData.remove(deleteKey);
             if(erModel!=null){
                 if(erModel.getDatabaseNames().contains(deleteKey)){
+                    System.out.printf("DELETING DATABASE: %s%n", deleteKey);
                     erModel.deleteInstanceDatabase(deleteKey);
                 }
             }
         }
+        System.out.printf("CURRENT Challenger count: %d%n",authData.values().size());
     }
 
     public ChallengerAuthData createNewChallenger() {
