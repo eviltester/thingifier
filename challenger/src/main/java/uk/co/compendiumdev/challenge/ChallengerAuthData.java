@@ -1,7 +1,5 @@
 package uk.co.compendiumdev.challenge;
 
-import org.slf4j.MDC;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -16,6 +14,8 @@ public class ChallengerAuthData {
     private String secretNote;
     private Map<CHALLENGE, Boolean> challengeStatus;
 
+    private ChallengerState state;
+
     public ChallengerAuthData(){
         this.xChallenger = UUID.randomUUID().toString();
         this.xAuthToken = UUID.randomUUID().toString();
@@ -24,6 +24,7 @@ public class ChallengerAuthData {
         touch();
         this.secretNote = "";
         resetChallengesStatus();
+        this.state = ChallengerState.NEW;
     }
 
     private void resetChallengesStatus() {
@@ -77,6 +78,10 @@ public class ChallengerAuthData {
     }
 
     public Boolean statusOfChallenge(final CHALLENGE challenge) {
+        Boolean status = challengeStatus.get(challenge);
+        if(status==null){
+            return false;
+        }
         return challengeStatus.get(challenge);
     }
 
@@ -86,5 +91,13 @@ public class ChallengerAuthData {
 
     public void setXChallengerGUID(final String guid) {
         this.xChallenger = guid;
+    }
+
+    public void setState(ChallengerState challengerState) {
+        this.state = challengerState;
+    }
+
+    public ChallengerState getState() {
+        return this.state;
     }
 }

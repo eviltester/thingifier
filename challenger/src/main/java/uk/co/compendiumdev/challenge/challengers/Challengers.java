@@ -2,6 +2,7 @@ package uk.co.compendiumdev.challenge.challengers;
 
 import uk.co.compendiumdev.challenge.CHALLENGE;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
+import uk.co.compendiumdev.challenge.ChallengerState;
 import uk.co.compendiumdev.challenge.persistence.PersistenceLayer;
 import uk.co.compendiumdev.challenge.persistence.PersistenceResponse;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
@@ -61,6 +62,7 @@ public class Challengers {
                         persistenceLayer.tryToLoadChallenger(this, challengerGuid.trim());
                 if(response.isSuccess()){
                     challenger = authData.get(challengerGuid);
+                    challenger.setState(ChallengerState.LOADED_FROM_PERSISTENCE);
                 }
                 // todo: surface persistence errors i.e. response.getErrorMessage()
 
@@ -88,7 +90,7 @@ public class Challengers {
         }
 
         for(String deleteKey : deleteMe){
-            authData.remove(deleteKey);
+            delete(deleteKey);
             if(erModel!=null){
                 if(erModel.getDatabaseNames().contains(deleteKey)){
                     System.out.printf("DELETING DATABASE: %s%n", deleteKey);
@@ -101,6 +103,7 @@ public class Challengers {
 
     public ChallengerAuthData createNewChallenger() {
         ChallengerAuthData newChallenger = new ChallengerAuthData();
+        newChallenger.setState(ChallengerState.NEW);
         put(newChallenger);
         return newChallenger;
     }
@@ -113,12 +116,16 @@ public class Challengers {
         }
     }
 
+    public void persistChallengerState(final ChallengerAuthData challenger){
+        if (persistenceLayer != null) {
+            persistenceLayer.saveChallengerStatus(challenger);
+        }
+    }
+
     public void pass(final ChallengerAuthData challenger, final CHALLENGE challengeId) {
         if(challenger!=null) {
             challenger.pass(challengeId);
-            if (persistenceLayer != null) {
-                persistenceLayer.saveChallengerStatus(challenger);
-            }
+            persistChallengerState(challenger);
         }
     }
 
@@ -132,5 +139,9 @@ public class Challengers {
 
     public ThingifierApiConfig getApiConfig() {
         return this.apiConfig;
+    }
+
+    public void delete(String xChallenger) {
+        authData.remove(xChallenger);
     }
 }

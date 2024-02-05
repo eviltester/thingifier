@@ -16,7 +16,6 @@ import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import java.util.Collection;
 
 
-
 public class ChallengerApiResponseHook implements HttpApiResponseHook {
 
     private final Challengers challengers;
@@ -175,13 +174,39 @@ public class ChallengerApiResponseHook implements HttpApiResponseHook {
         }
 
 
-
         if(request.getVerb() == HttpApiRequest.VERB.POST &&
                 request.getPath().matches("todos") &&
                 response.getStatusCode()==400 &&
                 collate(response.apiResponse().getErrorMessages()).contains(
                         "Failed Validation: doneStatus should be BOOLEAN")){
             challengers.pass(challenger,CHALLENGE.POST_TODOS_BAD_DONE_STATUS);
+        }
+
+        if(request.getVerb() == HttpApiRequest.VERB.POST &&
+                // trap when creating or amending
+                request.getPath().startsWith("todo") &&
+                response.getStatusCode()==400 &&
+                collate(response.apiResponse().getErrorMessages()).contains(
+                        "Failed Validation: Maximum allowable length exceeded for title - maximum allowed is 50")){
+            challengers.pass(challenger,CHALLENGE.POST_TODOS_TOO_LONG_TITLE_LENGTH);
+        }
+
+        if(request.getVerb() == HttpApiRequest.VERB.POST &&
+                // trap when creating or amending
+                request.getPath().startsWith("todo") &&
+                response.getStatusCode()==400 &&
+                collate(response.apiResponse().getErrorMessages()).contains(
+                        "Failed Validation: Maximum allowable length exceeded for description - maximum allowed is 200")){
+            challengers.pass(challenger,CHALLENGE.POST_TODOS_TOO_LONG_DESCRIPTION_LENGTH);
+        }
+
+        // POST to create too many todos
+        if (request.getVerb() == HttpApiRequest.VERB.POST &&
+                request.getPath().contentEquals("todos") &&
+                response.getStatusCode() == 400 &&
+                collate(response.apiResponse().getErrorMessages()).contains("ERROR: Cannot add instance, maximum limit of 20 reached")
+        ) {
+            challengers.pass(challenger, CHALLENGE.POST_ALL_TODOS);
         }
 
         if(request.getVerb() == HttpApiRequest.VERB.POST &&

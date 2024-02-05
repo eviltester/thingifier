@@ -51,7 +51,7 @@ public class Environment {
     public static void waitTillRunningStatus(final boolean running) {
         // wait till running
         int maxtries = 10;
-        while (!Port.inUse("localhost", 4567)) {
+        while (Port.inUse("localhost", 4567) != running) {
             maxtries--;
             try {
                 Thread.sleep(500);
@@ -68,5 +68,6 @@ public class Environment {
         Spark.stop();
         Spark.awaitStop();
         ChallengeMain.stop();
+        waitTillRunningStatus(false);
     }
 }

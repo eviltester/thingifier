@@ -1,6 +1,7 @@
 package uk.co.compendiumdev.challenge.persistence;
 
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
+import uk.co.compendiumdev.challenge.ChallengerState;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
 
 public class PersistenceLayer {
@@ -26,7 +27,8 @@ public class PersistenceLayer {
 
         if(response.isSuccess()){
             ChallengerAuthData challenger = response.getAuthData();
-            challenger.touch(); // refresh last accessed date
+            challenger.touch();
+            challenger.setState(ChallengerState.LOADED_FROM_PERSISTENCE);// refresh last accessed date
             challengers.put(challenger);
         }
 

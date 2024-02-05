@@ -6,4 +6,10 @@ public class CompleteAllChallengesSingleUserTest extends ChallengeCompleteTest{
     public boolean getIsSinglePlayerMode(){
         return true;
     }
+
+    @Override
+    public int getNumberOfChallengesToFail(){
+        return 1;
+    }
+    // POST to retrieve session only works in multi-user
 }

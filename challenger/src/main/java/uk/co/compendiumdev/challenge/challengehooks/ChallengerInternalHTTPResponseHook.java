@@ -1,5 +1,6 @@
 package uk.co.compendiumdev.challenge.challengehooks;
 
+import uk.co.compendiumdev.challenge.ChallengerState;
 import uk.co.compendiumdev.challenge.challengesrouting.XChallengerHeader;
 import uk.co.compendiumdev.thingifier.api.http.BearerAuthHeaderParser;
 import uk.co.compendiumdev.challenge.CHALLENGE;
@@ -41,8 +42,31 @@ public class ChallengerInternalHTTPResponseHook implements InternalHttpResponseH
 
             String challengerId = response.getHeader("X-Challenger");
             challenger = challengers.getChallenger(challengerId);
-            if (challenger != null) {
+            if (challenger != null && challenger.getState()== ChallengerState.NEW) {
                 challengers.pass(challenger, CHALLENGE.CREATE_NEW_CHALLENGER);
+            }
+        }
+
+        if (request.getVerb() == GET &&
+                request.getPath().startsWith("challenger/") &&
+                response.getStatusCode() == 204) {
+
+            String challengerId = response.getHeader("X-Challenger");
+            challenger = challengers.getChallenger(challengerId);
+            if (challenger != null && challenger.getState()== ChallengerState.LOADED_FROM_PERSISTENCE) {
+                challengers.pass(challenger, CHALLENGE.GET_RESTORE_EXISTING_CHALLENGER);
+            }
+        }
+
+        if (request.getVerb() == POST &&
+                request.getPath().startsWith("challenger") &&
+                response.getStatusCode() == 200) {
+
+            String givenChallengerId = request.getHeader("X-Challenger");
+            String challengerId = response.getHeader("X-Challenger");
+            challenger = challengers.getChallenger(challengerId);
+            if (challenger != null && givenChallengerId.equals(challengerId) && challenger.getState()== ChallengerState.LOADED_FROM_PERSISTENCE) {
+                challengers.pass(challenger, CHALLENGE.POST_RESTORE_EXISTING_CHALLENGER);
             }
         }
 
@@ -72,6 +96,7 @@ public class ChallengerInternalHTTPResponseHook implements InternalHttpResponseH
                 response.getStatusCode() == 404) {
             challengers.pass(challenger, CHALLENGE.GET_TODOS_NOT_PLURAL_404);
         }
+
 
         if (request.getVerb() == OPTIONS &&
                 request.getPath().contentEquals("todos") &&

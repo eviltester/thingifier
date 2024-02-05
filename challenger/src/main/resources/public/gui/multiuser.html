@@ -71,7 +71,7 @@ Then you should see the status of your challenges.
 
 In multi user mode i.e. when using the `apichallenges.herokuapp.com` installation, you will need to create an `X-CHALLENGER` session. This session will be stored on the cloud so you can revisit it and continue your challenges later.
 
-_Unused sessions will be deleted after a few days._
+_Old sessions will be deleted after a few days/weeks/months (really depends on how many people use the system)._
 
 To start a session:
 
@@ -93,20 +93,13 @@ To view the status of your session in the GUI:
 
 ## 10 Minutes of data
 
-In multi-user mode the data for the application is reset every 10 minutes.
-
-We can not be held responsible for user contributed data into the system.
-
-Please be considerate of other users and only use data that is suitable for a family audience.
-
-Abuse of this system may result in it being taken down and unavailable to support people in their learning.
-
+In multi-user mode the data for the application is reset every 10 minutes, this means that we delete your session data from memory if your session has not been used. Issuing an API request with an X-CHALLENGER header, will keep your data alive in memory.
 
 ## Session Persistence
 
-Each challenger session is stored on the cloud. The sessions are deleted periodically if they are not used.
+Each challenger session progress is stored on the cloud. The sessions are deleted periodically if they are not used.
 
-You can restore a session, by using the same `X-CHALLENGER` header and if available it will be loaded back into the system and you can continue your challenges.
+You can restore a session's progress, by using the same `X-CHALLENGER` header and if available it will be loaded back into the system and you can continue your challenges.
 
 If you view the challenges page:
 
@@ -150,7 +143,7 @@ Server: Jetty(<span class="hljs-number">9.4</span>.12.v20180830)
     <hr>
     <h3 id="how-to-play-summary">How to Play Summary</h3>
     <p>In multi user mode i.e. when using the <code>apichallenges.herokuapp.com</code> installation, you will need to create an <code>X-CHALLENGER</code> session. This session will be stored on the cloud so you can revisit it and continue your challenges later.</p>
-    <p><em>Unused sessions will be deleted after a few days.</em></p>
+    <p><em>Old sessions will be deleted after a few days/weeks/months (really depends on how many people use the system).</em></p>
     <p>To start a session:</p>
     <ul>
         <li>issue a <code>POST</code> request to <code>https://apichallenges.herokuapp.com/</code></li>
@@ -169,10 +162,11 @@ Server: Jetty(<span class="hljs-number">9.4</span>.12.v20180830)
         <li>where <code>[unique-session-value]</code> is the guid that you were issued as the <code>X-CHALLENGER</code> header</li>
     </ul>
     <h2 id="10-minutes-of-data">10 Minutes of data</h2>
-    <p>In multi-user mode the data for the application is reset every 10 minutes.</p>
+    <p>In multi-user mode the data for the application is reset every 10 minutes, this means that we delete your session data from memory if your session has not been used. Issuing an API request with an X-CHALLENGER header, will keep your data alive in memory.
+    </p>
     <h2 id="session-persistence">Session Persistence</h2>
-    <p>Each challenger session is stored on the cloud. The sessions are deleted periodically if they are not used.</p>
-    <p>You can restore a session, by using the same <code>X-CHALLENGER</code> header and if available it will be loaded back into the system and you can continue your challenges.</p>
+    <p>Each challenger session progress is stored on the cloud. The sessions are deleted periodically if they are not used.</p>
+    <p>You can restore a session's progress, by using the same <code>X-CHALLENGER</code> header and if available it will be loaded back into the system and you can continue your challenges.</p>
     <p>If you view the challenges page:</p>
     <ul>
         <li><a href="https://apichallenges.herokuapp.com/gui/challenges">https://apichallenges.herokuapp.com/gui/challenges</a></li>
