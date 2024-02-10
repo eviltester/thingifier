@@ -1,7 +1,6 @@
 package uk.co.compendiumdev.version4.todos;
 
 import io.restassured.RestAssured;
-import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -77,7 +76,7 @@ public class TodoEntityTest {
         Response response = createATodo();
         final Payloads.TodoPayload created = response.body().as(Payloads.TodoPayload.class);
 
-        // get the todo we just created
+        // get the todoinstance we just created
         response = RestAssured.
                 get(Environment.getEnv("/todos/" + created.id));
         Assertions.assertEquals(200, response.getStatusCode());
@@ -98,7 +97,7 @@ public class TodoEntityTest {
         Response response = createATodo();
         final Payloads.TodoPayload created = response.body().as(Payloads.TodoPayload.class);
 
-        // delete the todo we just created
+        // delete the todoinstance we just created
         response = RestAssured.
                 delete(Environment.getEnv("/todos/" + created.id));
         Assertions.assertEquals(200, response.getStatusCode());

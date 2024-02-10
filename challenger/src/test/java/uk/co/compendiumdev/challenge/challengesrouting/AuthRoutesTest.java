@@ -8,8 +8,8 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import uk.co.compendiumdev.challenge.ChallengeMain;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
-import uk.co.compendiumdev.challenger.http.http.HttpMessageSender;
-import uk.co.compendiumdev.challenger.http.http.HttpResponseDetails;
+import uk.co.compendiumdev.challenger.http.httpclient.HttpMessageSender;
+import uk.co.compendiumdev.challenger.http.httpclient.HttpResponseDetails;
 import uk.co.compendiumdev.sparkstart.Environment;
 
 import java.util.ArrayList;

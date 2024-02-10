@@ -15,7 +15,7 @@ public class CanGetFilteredTodosTest extends RestAssuredBaseTest {
     @Test
     void canGetFilteredTodos() {
 
-        // create a todo for true and a todo for false to ensure test passes
+        // create a todoinstance for true and a todoinstance for false to ensure test passes
         TodosApi api = new TodosApi();
         api.createTodo("not done", "this todo is not done", false);
         final Todo doneTodo = api.createTodo("done", "this todo is done", true);

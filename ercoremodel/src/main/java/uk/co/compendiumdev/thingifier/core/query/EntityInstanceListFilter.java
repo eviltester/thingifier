@@ -4,7 +4,6 @@ import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
 import java.util.*;
 
-// TODO: split into EntityInstanceListFilter and EntityInstanceListSorter
 public class EntityInstanceListFilter {
     EntityListFilterParamParser instanceFilter;
 
@@ -16,6 +15,10 @@ public class EntityInstanceListFilter {
      */
     public EntityInstanceListFilter(final Map<String, String> queryParams) {
         instanceFilter = new EntityListFilterParamParser(queryParams);
+    }
+
+    public EntityInstanceListFilter(final List<FilterBy> queryFilterParams) {
+        instanceFilter = new EntityListFilterParamParser(queryFilterParams);
     }
 
     public List<EntityInstance> filter(final List<EntityInstance> foundItems) {

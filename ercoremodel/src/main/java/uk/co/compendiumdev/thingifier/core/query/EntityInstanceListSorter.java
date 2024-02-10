@@ -19,6 +19,10 @@ public class EntityInstanceListSorter {
         instanceFilter = new EntityListSortParamParser(queryParams);
     }
 
+    public EntityInstanceListSorter(final List<FilterBy> queryParams) {
+        instanceFilter = new EntityListSortParamParser(queryParams);
+    }
+
     public List<EntityInstance> sort(final List<EntityInstance> foundItems) {
 
         List<EntityInstance> sorted = new ArrayList<>(foundItems);

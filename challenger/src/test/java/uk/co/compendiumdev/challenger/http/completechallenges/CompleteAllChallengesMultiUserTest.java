@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.challenge.CHALLENGE;
 import uk.co.compendiumdev.challenge.ChallengeMain;
-import uk.co.compendiumdev.challenger.http.http.HttpResponseDetails;
+import uk.co.compendiumdev.challenger.http.httpclient.HttpResponseDetails;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -18,10 +18,11 @@ public class CompleteAllChallengesMultiUserTest extends ChallengeCompleteTest{
 
     @Override
     public int getNumberOfChallengesToFail(){
+        // all challenges work in multi-user mode
         return 0;
     }
 
-    // these tests will only work in multi user mode
+    // these tests below will only work in multi user mode
 
     @Test
     public void restoreChallengeWithPOST() {

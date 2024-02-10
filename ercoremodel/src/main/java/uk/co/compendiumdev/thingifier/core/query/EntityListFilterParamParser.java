@@ -7,19 +7,21 @@ import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Filter;
 
 public class EntityListFilterParamParser {
-    private final Map<String, String> params;
+
     private final List<FilterBy> filterByConditions;
 
     public EntityListFilterParamParser(final Map<String, String> queryParams) {
-        // TODO: because  a map is used to set this up we can't handle multiple conditions
+        // because  a map is used to set this up we can't handle multiple conditions
         // TODO: the combo field would need to be configurable to allow entities
         // to have a field called comoband
         // need a different representation for combinations e.g. comboand=[id<1,id>10]
-        this.params = queryParams;
-        this.filterByConditions = filterBys();
+        this.filterByConditions = paramsMapToList(queryParams);
+    }
+
+    public EntityListFilterParamParser(final List<FilterBy> queryParams) {
+        this.filterByConditions = queryParams;
     }
 
     public boolean matches(final EntityInstance instance) {
@@ -81,55 +83,27 @@ public class EntityListFilterParamParser {
         return true;
     }
 
-    public class FilterBy{
-        String fieldName="";
-        String fieldValue="";
-        String filterOperation="=";
-
-        public FilterBy(String key, String value){
-            // key is the filename
-            fieldName=key;
-
-            // value might contain an operator
-            String []operators = {  "<=", // <= e.g. ?id=<=2 id is less than or equal to 3
-                                    ">=", // >= e.g. ?id=>=3 id is greater than or equal to 3
-                                    "<", // < e.g. ?id=<3 id is less than 3
-                                    ">", // < e.g. ?id=>3 id is > than 3
-                                    "=", // < e.g. ?id==3 id equals 3
-                                    "!", // < e.g. ?id=!3 id not equals 3
-                                    "!=" // < e.g. ?id=!=3 id not equals 3
-                                };  // by default comparison filter will be equals e.g. ?id=3
-
-            String operatorToSet = "=";
-            String valueToSet = value;
-
-            for(String operator : operators) {
-                if (value.startsWith(operator)){
-                    operatorToSet=operator;
-                    valueToSet = value.substring(operator.length());
-                    break;
-                }
-            }
-
-            fieldValue = valueToSet;
-            filterOperation = operatorToSet;
-        }
+    public List<FilterBy> filterBys(){
+        return filterByConditions;
     }
 
-    public List<FilterBy> filterBys(){
-
+    private List<FilterBy> paramsMapToList(Map<String,String> params){
         List<FilterBy>filterbys = new ArrayList<>();
 
-        for(Map.Entry<String,String> field : params.entrySet()) {
-            if (!EntityListSortParamParser.isSortByParam(field.getKey())) {
+        try {
+            for (Map.Entry<String, String> field : params.entrySet()) {
+                if (!EntityListSortParamParser.isSortByParam(field.getKey())) {
 
-                FilterBy filterby = new FilterBy(field.getKey(), field.getValue());
-                filterbys.add(filterby);
+                    FilterBy filterby = new FilterBy(field.getKey(), field.getValue());
+                    filterbys.add(filterby);
+                }
             }
+        }catch(Exception e){
+            System.out.println("Error parsing params map to filter bys");
+            System.out.println(e.getMessage());
         }
 
         return filterbys;
     }
-
 
 }

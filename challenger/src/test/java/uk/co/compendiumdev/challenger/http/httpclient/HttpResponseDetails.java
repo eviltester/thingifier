@@ -1,6 +1,4 @@
-package uk.co.compendiumdev.challenger.http.http;
-
-import com.google.gson.Gson;
+package uk.co.compendiumdev.challenger.http.httpclient;
 
 import java.util.HashMap;
 import java.util.Map;

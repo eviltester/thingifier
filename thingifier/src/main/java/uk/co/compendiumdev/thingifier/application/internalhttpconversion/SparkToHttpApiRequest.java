@@ -16,9 +16,11 @@ public class SparkToHttpApiRequest {
                     setBody(request.body()).
                     setQueryParams(queryParamsAsMap(request)).
                     setRawQueryParams(rawQueryParamsAsMap(request)).
+                    setFilterableQueryParams(request.queryString()). // use our own parser to get params
                     setVerb(request.requestMethod()).
                     setUrl(request.url()).
                     setIP(request.ip()).
+                        //TODO: this is a standard parser and splits on = it does not parse as we need for sorting, filtering etc. e.g. id>=17 becomes id> 17 not id >=17
                     setUrlParams(request.params());
 
         return apiRequest;
@@ -27,6 +29,7 @@ public class SparkToHttpApiRequest {
     private static Map<String, String> rawQueryParamsAsMap(final Request request) {
         Map<String, String> params = new HashMap<>();
 
+        // need to parse the request.queryString() or we lose param content
         for(String paramName : request.queryParams()){
             // todo: figure out what to do if more than one in each value, currently we lose the values
             String paramValue = request.queryParams(paramName);

@@ -18,6 +18,7 @@ public class ThingifierApiDefn {
     private List<ApiServer> servers;
     private String version;
 
+
     // todo: convert internal documentation to use a ThingifierApiDefn
 
     public ThingifierApiDefn() {

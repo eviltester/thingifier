@@ -5,7 +5,6 @@ import uk.co.compendiumdev.challenge.apimodel.ChallengeThingifier;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
 import uk.co.compendiumdev.challenge.challenges.ChallengeDefinitions;
 import uk.co.compendiumdev.thingifier.api.ThingifierApiDefn;
-import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.api.restapihandlers.RestApiGetHandler;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingStatus;
@@ -13,10 +12,9 @@ import uk.co.compendiumdev.thingifier.api.routings.RoutingVerb;
 import uk.co.compendiumdev.thingifier.application.AdhocDocumentedSparkRouteConfig;
 import uk.co.compendiumdev.thingifier.application.routehandlers.SparkApiRequestResponseHandler;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
+import uk.co.compendiumdev.thingifier.core.query.FilterBy;
 import uk.co.compendiumdev.thingifier.spark.SimpleRouteConfig;
-
-import java.util.ArrayList;
-import java.util.Map;
+import java.util.List;
 
 import static spark.Spark.*;
 
@@ -46,12 +44,16 @@ public class ChallengesRoutes {
             return new SparkApiRequestResponseHandler(request, result, challengeThingifier.challengeThingifier).
                     usingHandler((anHttpApiRequest)->{
                         challengeThingifier.populateThingifierFromStatus(challenger);
-                        final Map<String, String> queryParams = anHttpApiRequest.getQueryParams();
-                        if(!queryParams.containsKey("sortBy") &&
-                                !queryParams.containsKey("sort_by")){
-                            // force a sort
-                            queryParams.put("sort_by","+ID");
+                        List<FilterBy> queryParams = anHttpApiRequest.getFilterableQueryParams();
+                       //final Map<String, String> queryParams = anHttpApiRequest.getQueryParams();
+                        if(queryParams.stream().noneMatch(filterBy -> filterBy.fieldName.equals("sortBy") || filterBy.fieldName.equals("sort_by"))){
+                            queryParams.add(new FilterBy("sort_by","+ID"));
                         }
+//                        if(!queryParams.containsKey("sortBy") &&
+//                                !queryParams.containsKey("sort_by")){
+//                            // force a sort
+//                            queryParams.put("sort_by","+ID");
+//                        }
                         return new RestApiGetHandler(challengeThingifier.challengeThingifier)
                                 .handle(challengeDefn.getPlural(),
                                         queryParams, anHttpApiRequest.getHeaders());

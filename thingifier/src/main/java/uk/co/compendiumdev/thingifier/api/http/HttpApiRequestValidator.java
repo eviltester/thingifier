@@ -20,20 +20,35 @@ public class HttpApiRequestValidator {
         // Config Validation
 
         ApiResponse apiResponse = new AcceptHeaderValidator(this.apiConfig).
-                validate(request.getAcceptHeader());;
+                validate(request.getAcceptHeader());
+        ;
+
+        if (apiResponse == null) {
+            if (apiConfig.statusCodes().getMaxRequestBodyLengthBytes() > -1) {
+                // check the request length
+                int maxLengthBytesAllowed = apiConfig.statusCodes().getMaxRequestBodyLengthBytes();
+                if (request.getBody() != null && request.getBody().length() > maxLengthBytesAllowed) {
+                    apiResponse = ApiResponse.error(
+                            413,
+                            String.format(
+                                    "Error: Request body too large, max allowed is %d bytes",
+                                    maxLengthBytesAllowed));
+                }
+            }
+        }
 
         if (apiResponse == null) {
             // only validate content if it contains content
-            if(verb == ThingifierHttpApi.HttpVerb.POST || verb == ThingifierHttpApi.HttpVerb.PUT || verb == ThingifierHttpApi.HttpVerb.PATCH) {
+            if (verb == ThingifierHttpApi.HttpVerb.POST || verb == ThingifierHttpApi.HttpVerb.PUT || verb == ThingifierHttpApi.HttpVerb.PATCH) {
 
                 apiResponse = new ContentTypeHeaderValidator(this.apiConfig).
                         validate(request.getContentTypeHeader());
 
                 // validate the content syntax format against content type
-                if(apiResponse==null){
+                if (apiResponse == null) {
                     BodyParser parser = new BodyParser(request, new ArrayList<>());
                     String parsingError = parser.validBodyBasedOnContentType();
-                    if(parsingError.length()!=0){
+                    if (parsingError.length() != 0) {
                         apiResponse = ApiResponse.error(400, parsingError);
                     }
                 }
@@ -42,7 +57,7 @@ public class HttpApiRequestValidator {
 
         this.errorResponse = apiResponse;
 
-        this.isValid = (apiResponse==null);
+        this.isValid = (apiResponse == null);
         return this.isValid;
     }
 

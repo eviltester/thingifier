@@ -65,7 +65,6 @@ public class Challengers {
                     challenger.setState(ChallengerState.LOADED_FROM_PERSISTENCE);
                 }
                 // todo: surface persistence errors i.e. response.getErrorMessage()
-
             }
         }
 

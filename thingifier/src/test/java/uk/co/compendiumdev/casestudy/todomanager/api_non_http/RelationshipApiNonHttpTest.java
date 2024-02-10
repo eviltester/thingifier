@@ -86,7 +86,7 @@ public class RelationshipApiNonHttpTest {
         int numberOfTasks = myNewProject.getRelationships().getConnectedItems("tasks").size();
         Assertions.assertEquals(1, numberOfTasks);
 
-        apiresponse = todoManager.api().get(String.format("project/%s/tasks", myNewProject.getGUID()), new HashMap<>(), new HashMap<>());
+        apiresponse = todoManager.api().get(String.format("project/%s/tasks", myNewProject.getGUID()), new ArrayList<>(), new HashMap<>());
 
         Assertions.assertEquals(200, apiresponse.getStatusCode());
         Assertions.assertTrue(apiresponse.hasABody());
@@ -300,7 +300,7 @@ public class RelationshipApiNonHttpTest {
         Assertions.assertEquals(0, numberOfProjects);
 
         // get current related projects through api
-        ApiResponse apiresponse = todoManager.api().get(String.format("todo/%s/task-of", relTodo.getGUID()), new HashMap<>(), new HashMap<>());
+        ApiResponse apiresponse = todoManager.api().get(String.format("todo/%s/task-of", relTodo.getGUID()), new ArrayList<>(), new HashMap<>());
 
         Assertions.assertEquals(200, apiresponse.getStatusCode());
         Assertions.assertEquals(0, apiresponse.getReturnedInstanceCollection().size());
@@ -329,7 +329,7 @@ public class RelationshipApiNonHttpTest {
 
 
 
-        apiresponse = todoManager.api().get(String.format("todo/%s/task-of", relTodo.getGUID()), new HashMap<>(), new HashMap<>());
+        apiresponse = todoManager.api().get(String.format("todo/%s/task-of", relTodo.getGUID()), new ArrayList<>(), new HashMap<>());
         Assertions.assertEquals(200, apiresponse.getStatusCode());
 
         Assertions.assertEquals(1, apiresponse.getReturnedInstanceCollection().size());

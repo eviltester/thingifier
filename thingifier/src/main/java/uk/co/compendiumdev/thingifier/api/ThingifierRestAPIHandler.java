@@ -4,7 +4,9 @@ import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.api.restapihandlers.*;
+import uk.co.compendiumdev.thingifier.core.query.FilterBy;
 
+import java.util.List;
 import java.util.Map;
 
 public class ThingifierRestAPIHandler {
@@ -31,11 +33,11 @@ public class ThingifierRestAPIHandler {
     // TODO: possibly consider an X- header which has the number of items in the collection
 
 
-    public ApiResponse get(final String url, final Map<String, String> queryParams, Map<String, String> headers) {
+    public ApiResponse get(final String url, final List<FilterBy> queryParams, Map<String, String> headers) {
         return get.handle(url, queryParams, headers);
     }
 
-    public ApiResponse head(final String url, final Map<String, String> queryParams, Map<String, String> headers) {
+    public ApiResponse head(final String url, final List<FilterBy> queryParams, Map<String, String> headers) {
         final ApiResponse response = get.handle(url, queryParams, headers);
         response.clearBody();
         return response;

@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static spark.Spark.*;
-import static uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi.HTTP_SESSION_HEADER_NAME;
 
 public class ThingifierRestServer {
 

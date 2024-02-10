@@ -24,9 +24,6 @@ public class SparkMessageLengthValidator {
         this.maxLength = maxLength;
     }
 
-    // TODO: make this configurable (non static) and move to thingifier
-    //  e.g. make the API config have a max message length property
-    // and a rejectIfMaxLengthExceeded property
     public boolean rejectRequestTooLong(final Request request, final Response result) {
         if(request.contentLength()>this.maxLength){
             // randomly picked 24K
@@ -41,7 +38,7 @@ public class SparkMessageLengthValidator {
                             final Request request,
                             final Response result) {
         final ApiResponse response = ApiResponse.error(413,
-                                "Error: Request too large");
+                                String.format("Error: Request too large, max allowed is %d bytes", this.maxLength));
 
         final HttpApiRequest myRequest = SparkToHttpApiRequest.convert(request);
         JsonThing jsonThing = new JsonThing(apiConfig.jsonOutput());

@@ -1,17 +1,13 @@
 package uk.co.compendiumdev.thingifier.api.restapihandlers;
 
 import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.api.ThingifierRestAPIHandler;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
-import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import uk.co.compendiumdev.thingifier.core.query.FilterBy;
 import uk.co.compendiumdev.thingifier.core.query.SimpleQuery;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi.HTTP_SESSION_HEADER_NAME;
 
 public class RestApiGetHandler {
     private final Thingifier thingifier;
@@ -20,7 +16,7 @@ public class RestApiGetHandler {
         this.thingifier = aThingifier;
     }
 
-    public ApiResponse handle(final String url, final Map<String, String> queryParams, final Map<String, String> requestHeaders) {
+    public ApiResponse handle(final String url, final List<FilterBy> queryParams, final Map<String, String> requestHeaders) {
 
         // if there are params, and we are not allowed to filter, and we enforce that
         if(queryParams.size()>0 &&

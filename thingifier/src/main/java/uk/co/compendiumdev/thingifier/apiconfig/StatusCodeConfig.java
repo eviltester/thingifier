@@ -14,6 +14,9 @@ public class StatusCodeConfig {
     public int acceptTypeNotSupportedValue; // 406
     public int contentTypeNotSupportedValue; // 415
 
+    private int maxRequestBodyLengthBytes =-1; // by default no limit on request size, if set then generate 413 when exceeded
+    private int maxRequestContentLengthBytes = -1; // by default no limit on content size, this includes headers and generates 413 when exceeded
+
     public StatusCodeConfig(){
         resetClientSideErrorStatusCodes();
     }
@@ -36,4 +39,15 @@ public class StatusCodeConfig {
         return contentTypeNotSupportedValue;
     }
 
+    public int getMaxRequestBodyLengthBytes() {
+        return maxRequestBodyLengthBytes;
+    }
+
+    public void setMaxRequestBodyLengthBytes(int maxRequestLengthBytes) {
+        this.maxRequestBodyLengthBytes = maxRequestLengthBytes;
+    }
+
+    public boolean hasMaxContentLength() {
+        return maxRequestBodyLengthBytes>-1;
+    }
 }

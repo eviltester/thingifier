@@ -130,13 +130,37 @@ public class ChallengerApiResponseHook implements HttpApiResponseHook {
             }
         }
 
-
-
         // CREATE
         if(request.getVerb() == HttpApiRequest.VERB.POST &&
                 request.getPath().matches("todos") &&
                 response.getStatusCode()==201){
             challengers.pass(challenger,CHALLENGE.POST_TODOS);
+        }
+
+        if(request.getVerb() == HttpApiRequest.VERB.POST &&
+                request.getPath().matches("todos") &&
+                response.getStatusCode()==201){
+
+            try {
+                // TODO: create a wrapper or something so I don't have to concern myself with case in headers
+                String location = response.getHeaders().get("Location");
+                String locationParts[] = location.split("/");
+
+                if(locationParts.length>1){
+                    // to check it is an int
+                    int todoId = Integer.parseInt(locationParts[1]);
+                    final EntityInstanceCollection thing = thingifier.getThingInstancesNamed("todo", challenger.getXChallenger());
+                    EntityInstance aTodo = thing.findInstanceByGUIDorID(locationParts[1]);
+                    if(aTodo.getFieldValue("title").asString().length() == 50 &&
+                            aTodo.getFieldValue("description").asString().length() == 200
+                    ){
+                        challengers.pass(challenger, CHALLENGE.POST_MAX_OUT_TITILE_DESCRIPTION_LENGTH);
+                    }
+                }
+            }catch(Exception e){
+                System.out.println("Error checking post todos 201 for max length " + e.getMessage());
+            }
+
         }
 
         if(request.getVerb() == HttpApiRequest.VERB.POST &&
@@ -215,6 +239,22 @@ public class ChallengerApiResponseHook implements HttpApiResponseHook {
             challengers.pass(challenger,CHALLENGE.POST_TODOS_415);
         }
 
+        if(request.getVerb() == HttpApiRequest.VERB.POST &&
+                request.getPath().matches("todos") &&
+                response.getStatusCode()==413 &&
+                collate(response.apiResponse().getErrorMessages()).contains("Error: Request body too large, max allowed is 5000 bytes")
+        ){
+            challengers.pass(challenger,CHALLENGE.POST_TODOS_TOO_LONG_PAYLOAD_SIZE);
+        }
+
+        if(request.getVerb() == HttpApiRequest.VERB.POST &&
+                request.getPath().matches("todos") &&
+                response.getStatusCode()==400 &&
+                collate(response.apiResponse().getErrorMessages()).contains("Could not find field:")
+        ){
+            challengers.pass(challenger,CHALLENGE.POST_TODOS_INVALID_EXTRA_FIELD);
+        }
+
         // UPDATE
         if(request.getVerb() == HttpApiRequest.VERB.POST &&
                 request.getPath().matches("todos/.*") &&
@@ -238,9 +278,7 @@ public class ChallengerApiResponseHook implements HttpApiResponseHook {
         }
 
 
-
         // TODO: challenge - complete all challenges in the minimum number of requests
-        // TODO: challenge - complete all challenges
 
         // do not interfere with api and return null
         return null;

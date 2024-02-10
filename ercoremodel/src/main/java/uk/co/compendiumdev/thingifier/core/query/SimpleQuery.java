@@ -1,6 +1,5 @@
 package uk.co.compendiumdev.thingifier.core.query;
 
-import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.ERSchema;
 import uk.co.compendiumdev.thingifier.core.domain.instances.ERInstanceData;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
@@ -220,6 +219,8 @@ final public class SimpleQuery {
         return isCollection;
     }
 
+    // Should not use map from query processing, instead parse to filters using our parser UrlParamParser
+    @Deprecated()
     public SimpleQuery performQuery(final Map<String, String> queryParams) {
 
         performQuery();
@@ -235,6 +236,26 @@ final public class SimpleQuery {
 
         // support sorting after filtering
         final EntityInstanceListSorter sorter = new EntityInstanceListSorter(queryParams);
+        foundItems = sorter.sort(foundItems);
+
+        return this;
+    }
+
+    public SimpleQuery performQuery(final List<FilterBy> queryFilterParams) {
+
+        performQuery();
+        //filter the results based on the query
+        // todo: should we filter single instances?
+        if(!isCollection){
+            return this;
+        }
+
+        final EntityInstanceListFilter filterer = new EntityInstanceListFilter(queryFilterParams);
+
+        foundItems = filterer.filter(foundItems);
+
+        // support sorting after filtering
+        final EntityInstanceListSorter sorter = new EntityInstanceListSorter(queryFilterParams);
         foundItems = sorter.sort(foundItems);
 
         return this;

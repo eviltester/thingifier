@@ -337,9 +337,6 @@ public class ChallengerWebGUI {
         return html.toString();
     }
 
-    // todo: save challenge status in local storage
-    // todo: post challenge status from local storage to current X-CHALLENGER session
-    // todo: clear local storage challenge status
 
     private String renderChallengeData(final List<ChallengeDefinitionData> reportOn) {
         StringBuilder html = new StringBuilder();
@@ -429,8 +426,6 @@ public class ChallengerWebGUI {
 
             html.append(renderChallengeData(sectionData));
         }
-
-        // todo: collate challenges and find any missing challenges to add as an EXTRAs section
 
         return html.toString();
     }

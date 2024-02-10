@@ -6,28 +6,24 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import uk.co.compendiumdev.challenge.ChallengeMain;
-import uk.co.compendiumdev.challenge.ChallengerAuthData;
-import uk.co.compendiumdev.challenger.http.http.HttpMessageSender;
-import uk.co.compendiumdev.challenger.http.http.HttpResponseDetails;
+import uk.co.compendiumdev.challenger.http.httpclient.HttpMessageSender;
+import uk.co.compendiumdev.challenger.http.httpclient.HttpResponseDetails;
 import uk.co.compendiumdev.sparkstart.Environment;
 
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Stream;
 
 public class MirrorRoutesTest {
     private static HttpMessageSender http;
 
     @BeforeAll
-    static void createHttp(){
+    static void createHttp() {
         // this uses the Environment to startup the spark app to
         // issue http tests and test the routing in spark
         http = new HttpMessageSender(Environment.getBaseUri());
     }
 
-    static Stream simpleRoutingStatus(){
+    static Stream simpleRoutingStatus() {
         List<Arguments> args = new ArrayList<>();
 
         // get
@@ -58,7 +54,7 @@ public class MirrorRoutesTest {
 
     @ParameterizedTest(name = "simple status routing expected {0} for {1} {2}")
     @MethodSource("simpleRoutingStatus")
-    void simpleRoutingTest(int statusCode, String verb, String url){
+    void simpleRoutingTest(int statusCode, String verb, String url) {
         final HttpResponseDetails response =
                 http.send(url, verb);
 
@@ -66,9 +62,8 @@ public class MirrorRoutesTest {
     }
 
 
-
     @Test
-    void canGetJSONFormattedReflection(){
+    void canGetJSONFormattedReflection() {
 
         http.clearHeaders();
         http.setHeader("Accept", "application/json");
@@ -76,12 +71,12 @@ public class MirrorRoutesTest {
         final HttpResponseDetails response = http.send("/mirror/request", "get");
 
         Assertions.assertEquals(200, response.statusCode);
-        Assertions.assertEquals("application/json",response.getHeader("Content-Type"));
+        Assertions.assertEquals("application/json", response.getHeader("Content-Type"));
         Assertions.assertTrue(response.body.startsWith("{"));
     }
 
     @Test
-    void canGetXMLFormattedReflection(){
+    void canGetXMLFormattedReflection() {
 
         http.clearHeaders();
         http.setHeader("Accept", "application/xml");
@@ -89,12 +84,12 @@ public class MirrorRoutesTest {
         final HttpResponseDetails response = http.send("/mirror/request", "get");
 
         Assertions.assertEquals(200, response.statusCode);
-        Assertions.assertEquals("application/xml",response.getHeader("Content-Type"));
+        Assertions.assertEquals("application/xml", response.getHeader("Content-Type"));
         Assertions.assertTrue(response.body.startsWith("<message"));
     }
 
     @Test
-    void canGetPlainTextFormattedReflection(){
+    void canGetPlainTextFormattedReflection() {
 
         http.clearHeaders();
         http.setHeader("Accept", "text/plain");
@@ -102,11 +97,32 @@ public class MirrorRoutesTest {
         final HttpResponseDetails response = http.send("/mirror/request", "get");
 
         Assertions.assertEquals(200, response.statusCode);
-        Assertions.assertEquals("text/plain",response.getHeader("Content-Type"));
+        Assertions.assertEquals("text/plain", response.getHeader("Content-Type"));
         Assertions.assertTrue(response.body.startsWith("GET "));
     }
 
 
+    @Test
+    void requestContentLengthIsCheckedForLength() {
+        http.clearHeaders();
 
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Accept", "text/plain");
+
+        final HttpResponseDetails response = http.send("/mirror/request", "post", headers,
+                                                stringOfLength(24000 + 1));
+
+        Assertions.assertEquals(413, response.statusCode);
+        Assertions.assertEquals("application/json", response.getHeader("Content-Type"));
+        Assertions.assertTrue(response.body.contains("Error: Request too large, max allowed is 24000 bytes"));
+    }
+
+    private String stringOfLength(int length) {
+        StringBuilder str = new StringBuilder();
+        for (int currLen = 0; currLen < length; currLen++) {
+            str.append('a');
+        }
+        return str.toString();
+    }
 
 }

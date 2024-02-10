@@ -2,7 +2,6 @@ package uk.co.compendiumdev.version4.relationships;
 
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
-import io.restassured.internal.common.assertion.Assertion;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -43,14 +42,14 @@ public class Tasks_ProjectToTodosTest {
 
         Assertions.assertEquals(201, crossRefResponse.getStatusCode());
 
-        // check project is cross referenced to todo
+        // check project is cross referenced to todoinstance
         final Response checkProject =
                 RestAssured.get(Environment.getEnv("/projects/" + createdProject.id));
 
         Payloads.ProjectsPayload projects = checkProject.body().as(Payloads.ProjectsPayload.class);
         Assertions.assertEquals(createdTodo.id, projects.projects.get(0).tasks.get(0).id);
 
-        // check project is cross referenced to todo
+        // check project is cross referenced to todoinstance
         final Response checkTodo =
                 RestAssured.get(Environment.getEnv("/todos/" + createdTodo.id));
 
@@ -90,14 +89,14 @@ public class Tasks_ProjectToTodosTest {
 
         Assertions.assertEquals(200, crossRefResponse.getStatusCode());
 
-        // check project is cross referenced to todo
+        // check project is cross referenced to todoinstance
         final Response checkProject =
                 RestAssured.get(Environment.getEnv("/projects/" + createdProject.id));
 
         Payloads.ProjectsPayload projects = checkProject.body().as(Payloads.ProjectsPayload.class);
         Assertions.assertEquals(createdTodo.id, projects.projects.get(0).tasks.get(0).id);
 
-        // check project is cross referenced to todo
+        // check project is cross referenced to todoinstance
         final Response checkTodo =
                 RestAssured.get(Environment.getEnv("/todos/" + createdTodo.id));
 

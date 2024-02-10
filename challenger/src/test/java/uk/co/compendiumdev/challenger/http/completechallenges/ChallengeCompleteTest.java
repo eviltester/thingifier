@@ -5,8 +5,8 @@ import uk.co.compendiumdev.challenge.CHALLENGE;
 import uk.co.compendiumdev.challenge.ChallengeMain;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
-import uk.co.compendiumdev.challenger.http.http.HttpResponseDetails;
-import uk.co.compendiumdev.challenger.http.http.HttpMessageSender;
+import uk.co.compendiumdev.challenger.http.httpclient.HttpResponseDetails;
+import uk.co.compendiumdev.challenger.http.httpclient.HttpMessageSender;
 import uk.co.compendiumdev.sparkstart.Environment;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
@@ -17,6 +17,7 @@ import java.util.Map;
 public abstract class ChallengeCompleteTest{
 
     public static boolean isEnvironmentSet = false;
+    public static int challengesOffset = 0;
     public static Challengers challengers;
     public static ChallengerAuthData challenger;
     public static HttpMessageSender http;
@@ -43,6 +44,8 @@ public abstract class ChallengeCompleteTest{
     abstract int getNumberOfChallengesToFail();
 
     public void createEnvironmentAndChallengerIfNecessary(){
+
+        challengesOffset = getNumberOfChallengesToFail();
 
         if(!isEnvironmentSet){
             Environment.getBaseUri(getIsSinglePlayerMode());
@@ -90,9 +93,11 @@ public abstract class ChallengeCompleteTest{
                 "%d challenges left to complete",
                 remainingChallengeCount));
 
-//        if(remainingChallengeCount>0){
-//            Assertions.fail();
-//        }
+        if(remainingChallengeCount-challengesOffset>0){
+            Assertions.fail(String.format(
+                    "%d challenges left to complete",
+                    remainingChallengeCount));
+        }
 
         Environment.stop();
         isEnvironmentSet = false;
@@ -269,7 +274,76 @@ public abstract class ChallengeCompleteTest{
         Assertions.assertTrue(challenger.statusOfChallenge(CHALLENGE.POST_TODOS_TOO_LONG_DESCRIPTION_LENGTH));
     }
 
-    //"Failed Validation: Maximum allowable length exceeded for description - maximum allowed is 200"
+    @Test
+    public void canPostTodosWithMaxTitleAndDescriptionLengths() {
+
+        Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
+
+        Map<String, String> headers = new HashMap<>();
+        headers.putAll(x_challenger_header);
+        headers.put("Content-Type", "application/json");
+
+        // TODO: should send back multiple error messages to allow all validations to fail in one request e.g. todo status fails validation before title
+        //{"title":"mytodo","description":"a todo","doneStatus":"bob"}
+        final HttpResponseDetails response =
+                http.send("/todos", "POST", headers,
+                        "{\"title\":\"" + stringOfLength(50) + "\",\"description\":\"" + stringOfLength(200) + "\"}");
+
+        Assertions.assertEquals(201, response.statusCode);
+        Assertions.assertTrue(challenger.statusOfChallenge(CHALLENGE.POST_MAX_OUT_TITILE_DESCRIPTION_LENGTH));
+    }
+    @Test
+    public void canPostTodosFailPayloadLenValidationPass() {
+
+        Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
+
+        Map<String, String> headers = new HashMap<>();
+        headers.putAll(x_challenger_header);
+        headers.put("Content-Type", "application/json");
+
+        String fiveThousandChars = stringOfLength(5000);
+
+        // TODO: should send back multiple error messages to allow all validations to fail in one request e.g. todo status fails validation before title
+        //{"title":"mytodo","description":"a todo","doneStatus":"bob"}
+        final HttpResponseDetails response =
+                http.send("/todos", "POST", headers,
+                        "{\"title\":\"title\",\"description\":\"" + fiveThousandChars + "\"}");
+
+        Assertions.assertEquals(413, response.statusCode);
+        Assertions.assertTrue(response.body.contains("Request body too large, max allowed is 5000 bytes"));
+        Assertions.assertTrue(challenger.statusOfChallenge(CHALLENGE.POST_TODOS_TOO_LONG_PAYLOAD_SIZE));
+    }
+
+    @Test
+    public void canPostTodosFailExtraField() {
+
+        Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
+
+        Map<String, String> headers = new HashMap<>();
+        headers.putAll(x_challenger_header);
+        headers.put("Content-Type", "application/json");
+
+        String fiveThousandChars = stringOfLength(5000);
+
+        // TODO: should send back multiple error messages to allow all validations to fail in one request e.g. todo status fails validation before title
+        //{"title":"mytodo","description":"a todo","doneStatus":"bob"}
+        final HttpResponseDetails response =
+                http.send("/todos", "POST", headers,
+                        "{\"title\":\"title\",\"description\":\"description\", \"priority\": \"urgent\"}");
+
+        Assertions.assertEquals(400, response.statusCode);
+        Assertions.assertTrue(response.body.contains("Could not find field: priority"));
+        Assertions.assertTrue(challenger.statusOfChallenge(CHALLENGE.POST_TODOS_INVALID_EXTRA_FIELD));
+    }
+
+    private String stringOfLength(final int desiredLength) {
+        String ofLength = "";
+        while(ofLength.length()<desiredLength){
+            ofLength = ofLength + "a";
+        }
+
+        return ofLength;
+    }
 
     @Test
     public void canPostTodosUpdatePass() {

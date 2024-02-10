@@ -1,6 +1,4 @@
-package uk.co.compendiumdev.challenger.http.http;
-
-//import sun.net.www.MessageHeader;
+package uk.co.compendiumdev.challenger.http.httpclient;
 
 import java.net.*;
 import java.net.http.HttpClient;

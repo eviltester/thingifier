@@ -33,7 +33,7 @@ public class CanGetTodosTest extends RestAssuredBaseTest {
     @Test
     void canGetSpecificTodo(){
 
-        // since tests can run in any order, we should create the todo, to guarantee we can get it
+        // since tests can run in any order, we should create the todoinstance, to guarantee we can get it
         TodosApi api = new TodosApi();
         String name = "get me " + System.currentTimeMillis();
         final Todo todo = api.createTodo(name, "", false);

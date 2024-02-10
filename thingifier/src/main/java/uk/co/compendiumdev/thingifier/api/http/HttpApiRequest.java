@@ -1,5 +1,8 @@
 package uk.co.compendiumdev.thingifier.api.http;
 
+import uk.co.compendiumdev.thingifier.core.query.FilterBy;
+import uk.co.compendiumdev.thingifier.core.query.fromurl.UrlParamParser;
+
 import java.util.*;
 
 public final class HttpApiRequest {
@@ -11,6 +14,8 @@ public final class HttpApiRequest {
     private VERB verb;
     private String url="";
     private Map<String, String> rawQueryParams; // contains all the query param values e.g. ?p=1&p=2
+
+    private List<FilterBy> filterableQueryParams; // contains all the query param values in a form we can use for sorting and filtering e.g. ?id>=1&id<=4
     private String ip="";
     private Map<String, String>  urlParams;
 
@@ -51,6 +56,14 @@ public final class HttpApiRequest {
         return urlParams.get(paramKey);
     }
 
+    public HttpApiRequest setFilterableQueryParams(String queryString) {
+        filterableQueryParams = new UrlParamParser().parse(queryString);
+        return this;
+    }
+
+    public List<FilterBy> getFilterableQueryParams() {
+        return filterableQueryParams;
+    }
 
     public enum VERB{ GET, HEAD, POST, PUT, DELETE, PATCH, OPTIONS, CONNECT, TRACE}
 
@@ -58,6 +71,7 @@ public final class HttpApiRequest {
         this.path = justThePath(pathInfo);
         this.headers = new HashMap<>();
         queryParams = new HashMap<>();
+        filterableQueryParams = new ArrayList<>();
         body = "";
         verb = VERB.GET;
     }

@@ -122,12 +122,12 @@ final public class ThingifierHttpApi {
         switch (verb){
             case GET:
                 apiResponse = thingifier.api().get(request.getPath(),
-                                                    request.getQueryParams(),
+                                                    request.getFilterableQueryParams(),
                                                     request.getHeaders());
                 break;
             case HEAD:
                 apiResponse = thingifier.api().head(request.getPath(),
-                                                    request.getQueryParams(),
+                                                    request.getFilterableQueryParams(),
                                                     request.getHeaders());
                 break;
             case DELETE:
@@ -178,7 +178,7 @@ final public class ThingifierHttpApi {
         createDatabaseBasedOnSessionHeaderUIfNecessary(request.getHeader(HTTP_SESSION_HEADER_NAME));
 
         if(httpResponse==null) {
-            ApiResponse apiResponse = thingifier.api().get(query, request.getQueryParams(), request.getHeaders());
+            ApiResponse apiResponse = thingifier.api().get(query, request.getFilterableQueryParams(), request.getHeaders());
             httpResponse = new HttpApiResponse(request.getHeaders(), apiResponse,
                     jsonThing, thingifier.apiConfig());
         }

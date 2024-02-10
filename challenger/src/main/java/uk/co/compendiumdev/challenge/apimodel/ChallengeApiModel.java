@@ -20,7 +20,7 @@ public class ChallengeApiModel {
 
         todoList.setDocumentation("Simple Todo List", para.toString());
 
-        // can create a maximum of 20 todos in the challenge todo list
+        // can create a maximum of 20 todos in the challenge todos list
         EntityDefinition todo = todoList.defineThing("todo", "todos", 20);
 
         todo.addFields(
@@ -40,6 +40,7 @@ public class ChallengeApiModel {
         todoList.generateData();
 
         todoList.apiConfig().setResponsesToShowGuids(false);
+        todoList.apiConfig().statusCodes().setMaxRequestBodyLengthBytes(5000);
 
         return todoList;
     }

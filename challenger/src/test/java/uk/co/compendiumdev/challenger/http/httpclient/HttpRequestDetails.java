@@ -1,4 +1,4 @@
-package uk.co.compendiumdev.challenger.http.http;
+package uk.co.compendiumdev.challenger.http.httpclient;
 
 
 import java.util.HashMap;

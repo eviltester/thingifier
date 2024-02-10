@@ -17,7 +17,6 @@ import uk.co.compendiumdev.thingifier.application.internalhttpconversion.HttpApi
 import uk.co.compendiumdev.thingifier.application.internalhttpconversion.SparkToHttpApiRequest;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.validation.MaximumLengthValidationRule;
@@ -61,6 +60,8 @@ public class AuthRoutes {
 
         this.httpApi = new ThingifierHttpApi(this.secretNoteStore);
         this.jsonThing = new JsonThing(this.secretNoteStore.apiConfig().jsonOutput());
+
+        // TODO: this all feels too tightly coupled to SparkJava we should have our own routing internally that spark delegates too
 
         // POST /secret/token with basic auth to get a secret/token to use as X-AUTH-TOKEN header
         // todo: or {username, password} payload
@@ -116,10 +117,6 @@ public class AuthRoutes {
             result.header("Content-Type", "application/json");
 
             ChallengerAuthData challenger = challengers.getChallenger(request.headers("X-CHALLENGER"));
-
-            // todo: if no X-CHALLENGER provided then, search memory for authToken and use associated
-            //       challenger
-
 
             if(challenger==null){
                 result.status(401);

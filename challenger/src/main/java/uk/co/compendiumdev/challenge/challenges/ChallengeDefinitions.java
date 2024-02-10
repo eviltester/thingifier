@@ -161,6 +161,34 @@ public class ChallengeDefinitions {
         // TODO: create solution for failing description too long
         challengeOrder++;
 
+        aChallenge = createChallenge(CHALLENGE.POST_MAX_OUT_TITILE_DESCRIPTION_LENGTH, renderChallengeNumber(challengeOrder), "POST /todos (201) max out content",
+                "Issue a POST request to create a todo with maximum length title and description fields.");
+        postCreateChallenges.addChallenge(aChallenge);
+        aChallenge.addHint("Max lengths are listed in the API Documentation");
+        aChallenge.addHint("CounterStrings are very useful for testing with maximum field lengths");
+//        aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/post-todos-400");
+//        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "tlye5bQ72g0");
+        // TODO: create solution for max out title and description
+        challengeOrder++;
+
+        aChallenge = createChallenge(CHALLENGE.POST_TODOS_TOO_LONG_PAYLOAD_SIZE, renderChallengeNumber(challengeOrder), "POST /todos (413) content too long",
+                "Issue a POST request to create a todo but fail payload length validation on the `description` because your whole payload exceeds maximum allowable 5000 characters.");
+        postCreateChallenges.addChallenge(aChallenge);
+        aChallenge.addHint("Try using a long 5000 char string as the description or title text");
+//        aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/post-todos-400");
+//        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "tlye5bQ72g0");
+        // TODO: create solution for failing content too long
+        challengeOrder++;
+
+        aChallenge = createChallenge(CHALLENGE.POST_TODOS_INVALID_EXTRA_FIELD, renderChallengeNumber(challengeOrder), "POST /todos (400) extra",
+                "Issue a POST request to create a todo but fail validation because your payload contains an unrecognised field.");
+        postCreateChallenges.addChallenge(aChallenge);
+        aChallenge.addHint("Try to create a todo with a title, description and a priority");
+//        aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/post-todos-400");
+//        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "tlye5bQ72g0");
+        // TODO: create solution for unrecognised field names
+        challengeOrder++;
+
 
 
         // UPDATE

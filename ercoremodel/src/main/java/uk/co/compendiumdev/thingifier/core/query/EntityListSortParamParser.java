@@ -1,9 +1,7 @@
 package uk.co.compendiumdev.thingifier.core.query;
 
-import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -14,6 +12,15 @@ public class EntityListSortParamParser {
 
     public EntityListSortParamParser(final Map<String, String> queryParams) {
         this.params = queryParams;
+    }
+
+    public EntityListSortParamParser(final List<FilterBy> queryParams) {
+        this.params = new HashMap<>();
+        for(FilterBy filter : queryParams){
+            if(isSortByParam(filter.fieldName)){
+                this.params.put(filter.fieldName, filter.fieldValue);
+            }
+        }
     }
 
     public class SortByFieldName{
