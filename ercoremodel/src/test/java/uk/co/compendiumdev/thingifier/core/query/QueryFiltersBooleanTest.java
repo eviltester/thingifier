@@ -45,7 +45,7 @@ public class QueryFiltersBooleanTest {
     @Test
     public void canFilterBooleanMatchesTrue() {
 
-        Map<String, String> params = new HashMap<>();
+        QueryFilterParams params = new QueryFilterParams();
         params.put("truefalse", "true");
 
         SimpleQuery queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
@@ -59,7 +59,7 @@ public class QueryFiltersBooleanTest {
     @Test
     public void canFilterBooleanMatchesFalse() {
 
-        Map<String, String> params = new HashMap<>();
+        QueryFilterParams params = new QueryFilterParams();
         params.put("truefalse", "false");
 
         SimpleQuery queryResults = queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
@@ -72,7 +72,7 @@ public class QueryFiltersBooleanTest {
 
     @Test
     public void canFilterBooleanMatchesNotFalse() {
-        Map<String, String> params = new HashMap<>();
+        QueryFilterParams params = new QueryFilterParams();
         params.put("truefalse", "!false");
 
         SimpleQuery queryResults = queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
@@ -85,7 +85,7 @@ public class QueryFiltersBooleanTest {
 
     @Test
     public void canFilterBooleanMatchesNotTrue(){
-        Map<String, String> params = new HashMap<>();
+        QueryFilterParams params = new QueryFilterParams();
         params.put("truefalse", "!true");
 
         SimpleQuery queryResults = queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
@@ -98,7 +98,7 @@ public class QueryFiltersBooleanTest {
 
     @Test
     public void canSortBooleanMatchesAsc(){
-        Map<String, String> params = new HashMap<>();
+        QueryFilterParams params = new QueryFilterParams();
         params.put("sortBy", "+truefalse");
 
         SimpleQuery queryResults = queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
@@ -116,7 +116,7 @@ public class QueryFiltersBooleanTest {
 
     @Test
     public void canSortBooleanMatchesDesc(){
-        Map<String, String> params = new HashMap<>();
+        QueryFilterParams params = new QueryFilterParams();
         params.put("sortBy", "-truefalse");
 
         SimpleQuery queryResults = queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").

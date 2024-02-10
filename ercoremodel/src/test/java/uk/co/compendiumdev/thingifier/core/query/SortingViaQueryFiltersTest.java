@@ -44,7 +44,7 @@ public class SortingViaQueryFiltersTest {
         final EntityInstance thing3 = thing.createManagedInstance();
         thing3.setValue("int", "3");
 
-        Map<String, String> params = new HashMap<>();
+        QueryFilterParams params = new QueryFilterParams();
         params.put("sortBy", "-int");
 
         SimpleQuery ascSortedResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
@@ -58,7 +58,7 @@ public class SortingViaQueryFiltersTest {
 
         // then repeat sort and get different results
 
-        params = new HashMap<>();
+        params = new QueryFilterParams();
         params.put("sortBy", "+int");
 
         SimpleQuery descSortedResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
@@ -71,7 +71,7 @@ public class SortingViaQueryFiltersTest {
         Assertions.assertEquals(thing3,descInstances.get(2));
 
         // check that default sort is ascending
-        params = new HashMap<>();
+        params = new QueryFilterParams();
         params.put("sortBy", "int");
 
         SimpleQuery defaultSortedResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
@@ -99,7 +99,7 @@ public class SortingViaQueryFiltersTest {
         final EntityInstance falseThing = thing.createManagedInstance();
         falseThing.setValue("truefalse", "false");
 
-        Map<String, String> params = new HashMap<>();
+        QueryFilterParams params = new QueryFilterParams();
         params.put("sortBy", "-truefalse");
 
         SimpleQuery ascSortedResults = new SimpleQuery(aThingifier.getSchema(), aThingifier.getInstanceData(), "things").
@@ -113,7 +113,7 @@ public class SortingViaQueryFiltersTest {
 
         // then repeat sort and get different results
 
-        params = new HashMap<>();
+        params = new QueryFilterParams();
         params.put("sortBy", "+truefalse");
 
         SimpleQuery descSortedResults = new SimpleQuery(aThingifier.getSchema(), aThingifier.getInstanceData(), "things").
@@ -125,7 +125,7 @@ public class SortingViaQueryFiltersTest {
         Assertions.assertEquals(trueThing,descInstances.get(1));
 
         // check that default sort is ascending
-        params = new HashMap<>();
+        params = new QueryFilterParams();
         params.put("sortBy", "truefalse");
 
         SimpleQuery defaultSortedResults = new SimpleQuery(aThingifier.getSchema(), aThingifier.getInstanceData(), "things").

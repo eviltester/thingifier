@@ -8,6 +8,7 @@ import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollec
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -62,7 +63,7 @@ public class VerbGetEntityInstanceApiNonHttpTest {
         todo.createManagedInstance().setValue("title", "My Title" + System.nanoTime());
 
 
-        ApiResponse apiResponse = todoManager.api().get("/todo/" + findThis.getGUID(), new ArrayList<>(), new HashMap<>());
+        ApiResponse apiResponse = todoManager.api().get("/todo/" + findThis.getGUID(), new QueryFilterParams(), new HashMap<>());
 
         Assertions.assertEquals(200, apiResponse.getStatusCode());
         Assertions.assertFalse(apiResponse.isCollection(),
@@ -87,7 +88,7 @@ public class VerbGetEntityInstanceApiNonHttpTest {
         todo.createManagedInstance().setValue("title", "My Title" + System.nanoTime());
 
 
-        ApiResponse apiResponse = todoManager.api().get("/todo", new ArrayList<>(), new HashMap<>());
+        ApiResponse apiResponse = todoManager.api().get("/todo", new QueryFilterParams(), new HashMap<>());
 
         Assertions.assertEquals(200, apiResponse.getStatusCode());
         Assertions.assertTrue(apiResponse.isCollection(),

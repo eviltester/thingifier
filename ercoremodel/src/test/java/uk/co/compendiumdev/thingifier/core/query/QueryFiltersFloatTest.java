@@ -39,7 +39,7 @@ public class QueryFiltersFloatTest {
     @Test
     public void canFilterFloatEquals() {
 
-        Map<String, String> params = new HashMap<>();
+        QueryFilterParams params = new QueryFilterParams();
         params.put("float", "1.1");
 
         SimpleQuery queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").performQuery(params);
@@ -52,7 +52,7 @@ public class QueryFiltersFloatTest {
     @Test
     public void canFilterFloatNotEquals() {
 
-        Map<String, String> params = new HashMap<>();
+        QueryFilterParams params = new QueryFilterParams();
         params.put("float", "!1.1");
         params.put("sortby", "+float");
 
@@ -65,15 +65,14 @@ public class QueryFiltersFloatTest {
         Assertions.assertEquals(4.4F, instances.get(2).getFieldValue("float").asFloat());
     }
 
-    // Allow params to be supplied as a map for multiple filters
-    @Disabled("todo: because params are supplied as a map so we don't receive multiple filters")
+
     @Test
     public void canFilterFloatCombinationOfConditions() {
 
         // TODO: handle multiple conditions
-        Map<String, String> params = new HashMap<>();
+        QueryFilterParams params = new QueryFilterParams();
         params.put("float", ">1.1");   // greater than 1
-        params.put("float", "!3.3");    // but not equal to 3
+        params.put("float", "!3.3");    // and not equal to 3
         params.put("sortby", "+float");
 
         SimpleQuery queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").performQuery(params);
@@ -86,7 +85,7 @@ public class QueryFiltersFloatTest {
 
     @Test
     public void canFilterFloatGreaterThan() {
-        Map<String, String> params = new HashMap<>();
+        QueryFilterParams params = new QueryFilterParams();
         params.put("float", ">1.1");
         params.put("sortby", "+float");
 
@@ -102,7 +101,7 @@ public class QueryFiltersFloatTest {
 
     @Test
     public void canFilterFloatLessThan() {
-        Map<String, String> params = new HashMap<>();
+        QueryFilterParams params = new QueryFilterParams();
         params.put("float", "<2.0");
         params.put("sortby", "+float");
 
@@ -116,7 +115,7 @@ public class QueryFiltersFloatTest {
 
     @Test
     public void canFilterFloatLessThanNotMatching() {
-        Map<String, String> params = new HashMap<>();
+        QueryFilterParams params = new QueryFilterParams();
         params.put("float", "<1.1");
         params.put("sortby", "+float");
 
@@ -129,7 +128,7 @@ public class QueryFiltersFloatTest {
 
     @Test
     public void canFilterFloatGreaterThanEquals(){
-        Map<String, String> params = new HashMap<>();
+        QueryFilterParams params = new QueryFilterParams();
         params.put("float", ">=3.3");
         params.put("sortby", "+float");
 
@@ -145,7 +144,7 @@ public class QueryFiltersFloatTest {
 
     @Test
     public void canFilterFloatLessThanEquals(){
-        Map<String, String> params = new HashMap<>();
+        QueryFilterParams params = new QueryFilterParams();
         params.put("float", "<=3.3");
         params.put("sortby", "+float");
 
@@ -162,7 +161,7 @@ public class QueryFiltersFloatTest {
 
     @Test
     public void canFilterFloatLessThanEqualsSortDesc(){
-        Map<String, String> params = new HashMap<>();
+        QueryFilterParams params = new QueryFilterParams();
         params.put("float", "<=3.3");
         params.put("sortby", "-float");
 

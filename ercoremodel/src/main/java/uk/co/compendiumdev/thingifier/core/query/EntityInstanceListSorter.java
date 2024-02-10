@@ -1,7 +1,6 @@
 package uk.co.compendiumdev.thingifier.core.query;
 
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
 import java.util.*;
@@ -15,7 +14,7 @@ public class EntityInstanceListSorter {
         sort_by,+-FieldName
 
      */
-    public EntityInstanceListSorter(final Map<String, String> queryParams) {
+    public EntityInstanceListSorter(final QueryFilterParams queryParams) {
         instanceFilter = new EntityListSortParamParser(queryParams);
     }
 
@@ -27,7 +26,7 @@ public class EntityInstanceListSorter {
 
         List<EntityInstance> sorted = new ArrayList<>(foundItems);
 
-        for(EntityListSortParamParser.SortByFieldName sortBy :instanceFilter.sortBys()){
+        for(SortByFieldName sortBy :instanceFilter.sortBys()){
             sorted = sortByField(sortBy.fieldName, sortBy.order, sorted);
         }
 

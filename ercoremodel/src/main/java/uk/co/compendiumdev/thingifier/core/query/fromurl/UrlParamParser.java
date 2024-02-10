@@ -1,6 +1,7 @@
 package uk.co.compendiumdev.thingifier.core.query.fromurl;
 
 import uk.co.compendiumdev.thingifier.core.query.FilterBy;
+import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
 
 import java.net.URLDecoder;
 import java.util.ArrayList;
@@ -20,9 +21,9 @@ public class UrlParamParser {
         return decoded;
     }
 
-    public List<FilterBy> parse(String rawUrlParams) {
+    public QueryFilterParams parse(String rawUrlParams) {
 
-        ArrayList<FilterBy> filters = new ArrayList<>();
+        QueryFilterParams filters = new QueryFilterParams();
 
         if(rawUrlParams==null){
             return filters;

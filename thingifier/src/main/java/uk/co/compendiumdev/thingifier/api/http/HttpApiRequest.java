@@ -1,6 +1,7 @@
 package uk.co.compendiumdev.thingifier.api.http;
 
 import uk.co.compendiumdev.thingifier.core.query.FilterBy;
+import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
 import uk.co.compendiumdev.thingifier.core.query.fromurl.UrlParamParser;
 
 import java.util.*;
@@ -15,7 +16,7 @@ public final class HttpApiRequest {
     private String url="";
     private Map<String, String> rawQueryParams; // contains all the query param values e.g. ?p=1&p=2
 
-    private List<FilterBy> filterableQueryParams; // contains all the query param values in a form we can use for sorting and filtering e.g. ?id>=1&id<=4
+    private QueryFilterParams filterableQueryParams; // contains all the query param values in a form we can use for sorting and filtering e.g. ?id>=1&id<=4
     private String ip="";
     private Map<String, String>  urlParams;
 
@@ -61,7 +62,7 @@ public final class HttpApiRequest {
         return this;
     }
 
-    public List<FilterBy> getFilterableQueryParams() {
+    public QueryFilterParams getFilterableQueryParams() {
         return filterableQueryParams;
     }
 
@@ -71,7 +72,7 @@ public final class HttpApiRequest {
         this.path = justThePath(pathInfo);
         this.headers = new HashMap<>();
         queryParams = new HashMap<>();
-        filterableQueryParams = new ArrayList<>();
+        filterableQueryParams = new QueryFilterParams();
         body = "";
         verb = VERB.GET;
     }

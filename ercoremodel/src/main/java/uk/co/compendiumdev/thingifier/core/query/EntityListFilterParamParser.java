@@ -12,12 +12,12 @@ public class EntityListFilterParamParser {
 
     private final List<FilterBy> filterByConditions;
 
-    public EntityListFilterParamParser(final Map<String, String> queryParams) {
+    public EntityListFilterParamParser(final QueryFilterParams queryParams) {
         // because  a map is used to set this up we can't handle multiple conditions
         // TODO: the combo field would need to be configurable to allow entities
         // to have a field called comoband
         // need a different representation for combinations e.g. comboand=[id<1,id>10]
-        this.filterByConditions = paramsMapToList(queryParams);
+        this.filterByConditions =queryParams.toList();
     }
 
     public EntityListFilterParamParser(final List<FilterBy> queryParams) {

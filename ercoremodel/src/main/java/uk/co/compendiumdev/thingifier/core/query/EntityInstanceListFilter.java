@@ -13,7 +13,7 @@ public class EntityInstanceListFilter {
         sort_by,+-FieldName
 
      */
-    public EntityInstanceListFilter(final Map<String, String> queryParams) {
+    public EntityInstanceListFilter(QueryFilterParams queryParams) {
         instanceFilter = new EntityListFilterParamParser(queryParams);
     }
 

@@ -1,31 +1,24 @@
 package uk.co.compendiumdev.thingifier.core.query;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-// TODO: split into EntityListFilterParamParser + EntityListSortParamParser
 // TODO: create a matchParams (like sortBys), and use an object to support longer term handling of complex filters like, ranges, etc.
 public class EntityListSortParamParser {
-    private final Map<String, String> params;
+    private final QueryFilterParams params;
 
-    public EntityListSortParamParser(final Map<String, String> queryParams) {
+    public EntityListSortParamParser(final QueryFilterParams queryParams) {
         this.params = queryParams;
     }
 
     public EntityListSortParamParser(final List<FilterBy> queryParams) {
-        this.params = new HashMap<>();
+        this.params = new QueryFilterParams();
         for(FilterBy filter : queryParams){
             if(isSortByParam(filter.fieldName)){
                 this.params.put(filter.fieldName, filter.fieldValue);
             }
         }
-    }
-
-    public class SortByFieldName{
-        int order=1;
-        String fieldName="";
     }
 
     /*
@@ -37,10 +30,10 @@ public class EntityListSortParamParser {
      */
     public List<SortByFieldName> sortBys(){
         List<SortByFieldName>sortbys = new ArrayList<>();
-        for(Map.Entry<String,String> field : params.entrySet()){
-            if(isSortByParam(field.getKey()) ){
+        for(FilterBy field : params.sortBys()){
+            if(isSortByParam(field.fieldName) ){
                 final SortByFieldName aSortBy = new SortByFieldName();
-                String sortByValue = field.getValue();
+                String sortByValue = field.fieldValue;
                 switch (sortByValue.charAt(0)){
                     case '-':
                         aSortBy.order=1;

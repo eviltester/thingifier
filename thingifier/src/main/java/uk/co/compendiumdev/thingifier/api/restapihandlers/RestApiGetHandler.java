@@ -4,6 +4,7 @@ import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.query.FilterBy;
+import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
 import uk.co.compendiumdev.thingifier.core.query.SimpleQuery;
 
 import java.util.List;
@@ -16,7 +17,7 @@ public class RestApiGetHandler {
         this.thingifier = aThingifier;
     }
 
-    public ApiResponse handle(final String url, final List<FilterBy> queryParams, final Map<String, String> requestHeaders) {
+    public ApiResponse handle(final String url, final QueryFilterParams queryParams, final Map<String, String> requestHeaders) {
 
         // if there are params, and we are not allowed to filter, and we enforce that
         if(queryParams.size()>0 &&

@@ -13,6 +13,7 @@ import uk.co.compendiumdev.thingifier.application.AdhocDocumentedSparkRouteConfi
 import uk.co.compendiumdev.thingifier.application.routehandlers.SparkApiRequestResponseHandler;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.query.FilterBy;
+import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
 import uk.co.compendiumdev.thingifier.spark.SimpleRouteConfig;
 import java.util.List;
 
@@ -44,9 +45,9 @@ public class ChallengesRoutes {
             return new SparkApiRequestResponseHandler(request, result, challengeThingifier.challengeThingifier).
                     usingHandler((anHttpApiRequest)->{
                         challengeThingifier.populateThingifierFromStatus(challenger);
-                        List<FilterBy> queryParams = anHttpApiRequest.getFilterableQueryParams();
+                        QueryFilterParams queryParams = anHttpApiRequest.getFilterableQueryParams();
                        //final Map<String, String> queryParams = anHttpApiRequest.getQueryParams();
-                        if(queryParams.stream().noneMatch(filterBy -> filterBy.fieldName.equals("sortBy") || filterBy.fieldName.equals("sort_by"))){
+                        if(!queryParams.hasSortBy()){
                             queryParams.add(new FilterBy("sort_by","+ID"));
                         }
 //                        if(!queryParams.containsKey("sortBy") &&

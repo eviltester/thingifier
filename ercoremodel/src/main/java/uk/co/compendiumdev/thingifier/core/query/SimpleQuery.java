@@ -220,8 +220,8 @@ final public class SimpleQuery {
     }
 
     // Should not use map from query processing, instead parse to filters using our parser UrlParamParser
-    @Deprecated()
-    public SimpleQuery performQuery(final Map<String, String> queryParams) {
+
+    public SimpleQuery performQuery(final QueryFilterParams queryParams) {
 
         performQuery();
         //filter the results based on the query
@@ -236,26 +236,6 @@ final public class SimpleQuery {
 
         // support sorting after filtering
         final EntityInstanceListSorter sorter = new EntityInstanceListSorter(queryParams);
-        foundItems = sorter.sort(foundItems);
-
-        return this;
-    }
-
-    public SimpleQuery performQuery(final List<FilterBy> queryFilterParams) {
-
-        performQuery();
-        //filter the results based on the query
-        // todo: should we filter single instances?
-        if(!isCollection){
-            return this;
-        }
-
-        final EntityInstanceListFilter filterer = new EntityInstanceListFilter(queryFilterParams);
-
-        foundItems = filterer.filter(foundItems);
-
-        // support sorting after filtering
-        final EntityInstanceListSorter sorter = new EntityInstanceListSorter(queryFilterParams);
         foundItems = sorter.sort(foundItems);
 
         return this;

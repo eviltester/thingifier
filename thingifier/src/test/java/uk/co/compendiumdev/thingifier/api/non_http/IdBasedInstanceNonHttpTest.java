@@ -11,6 +11,7 @@ import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -45,7 +46,7 @@ public class IdBasedInstanceNonHttpTest {
                 "My Title" + System.nanoTime());
 
         // no session header so use default session
-        final ApiResponse apiResponse = model.api().get("/thing/" + existingInstance.getGUID(), new ArrayList<>(), new HashMap<>());
+        final ApiResponse apiResponse = model.api().get("/thing/" + existingInstance.getGUID(), new QueryFilterParams(), new HashMap<>());
         Assertions.assertEquals(200, apiResponse.getStatusCode());
         Assertions.assertEquals(existingInstance, apiResponse.getReturnedInstance());
     }
@@ -60,7 +61,7 @@ public class IdBasedInstanceNonHttpTest {
                 "My Title" + System.nanoTime());
 
         // no session header so use default session
-        final ApiResponse idApiResponse = model.api().get("/thing/" + existingInstance.getFieldValue("id").asString(), new ArrayList<>(), new HashMap<>());
+        final ApiResponse idApiResponse = model.api().get("/thing/" + existingInstance.getFieldValue("id").asString(), new QueryFilterParams(), new HashMap<>());
         Assertions.assertEquals(200, idApiResponse.getStatusCode());
         Assertions.assertEquals(existingInstance, idApiResponse.getReturnedInstance());
 
@@ -77,14 +78,14 @@ public class IdBasedInstanceNonHttpTest {
         // we are bypassing the HTTP api so need to create the database
         model.getERmodel().createInstanceDatabase("other_things");
 
-        final ApiResponse idApiResponse = model.api().get("/thing/200", new ArrayList<>(), headers);
+        final ApiResponse idApiResponse = model.api().get("/thing/200", new QueryFilterParams(), headers);
         Assertions.assertEquals(404, idApiResponse.getStatusCode());
 
         // add instance to custom session
         final EntityInstanceCollection thing = model.getERmodel().getInstanceData("other_things").getInstanceCollectionForEntityNamed("thing");
         final EntityInstance existingInstance = thing.createManagedInstance().setValue("title", "My Title" + System.nanoTime());
 
-        final ApiResponse idApiResponse2 = model.api().get("/thing/" + existingInstance.getGUID(), new ArrayList<>(), headers);
+        final ApiResponse idApiResponse2 = model.api().get("/thing/" + existingInstance.getGUID(), new QueryFilterParams(), headers);
         Assertions.assertEquals(200, idApiResponse2.getStatusCode());
         Assertions.assertEquals(existingInstance, idApiResponse2.getReturnedInstance());
     }
@@ -100,14 +101,14 @@ public class IdBasedInstanceNonHttpTest {
         // we are bypassing the HTTP api so need to create the database
         model.getERmodel().createInstanceDatabase("other_things");
 
-        final ApiResponse idApiResponse = model.api().get("/thing/200", new ArrayList<>(), headers);
+        final ApiResponse idApiResponse = model.api().get("/thing/200", new QueryFilterParams(), headers);
         Assertions.assertEquals(404, idApiResponse.getStatusCode());
 
         // add instance to custom session
         final EntityInstanceCollection thing = model.getERmodel().getInstanceData("other_things").getInstanceCollectionForEntityNamed("thing");
         final EntityInstance existingInstance = thing.createManagedInstance().setValue("title", "My Title" + System.nanoTime());
 
-        final ApiResponse idApiResponse2 = model.api().get("/thing/" + existingInstance.getFieldValue("id").asString(), new ArrayList<>(), headers);
+        final ApiResponse idApiResponse2 = model.api().get("/thing/" + existingInstance.getFieldValue("id").asString(), new QueryFilterParams(), headers);
         Assertions.assertEquals(200, idApiResponse2.getStatusCode());
         Assertions.assertEquals(existingInstance, idApiResponse2.getReturnedInstance());
     }

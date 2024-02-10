@@ -43,7 +43,7 @@ public class QueryFiltersIntegerTest {
     @Test
     public void canFilterIntegerEquals() {
 
-        Map<String, String> params = new HashMap<>();
+        QueryFilterParams params = new QueryFilterParams();
         params.put("int", "1");
 
         SimpleQuery queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").performQuery(params);
@@ -56,7 +56,7 @@ public class QueryFiltersIntegerTest {
     @Test
     public void canFilterIntegerNotEquals() {
 
-        Map<String, String> params = new HashMap<>();
+        QueryFilterParams params = new QueryFilterParams();
         params.put("int", "!1");
         params.put("sortby", "+int");
 
@@ -69,15 +69,13 @@ public class QueryFiltersIntegerTest {
         Assertions.assertEquals(4, instances.get(2).getFieldValue("int").asInteger());
     }
 
-    // Allow params to be supplied as a map for multiple filters
-    @Disabled("todo: because params are supplied as a map so we don't receive multiple filters")
+
     @Test
     public void canFilterIntegerCombinationOfConditions() {
 
-        // TODO: handle multiple conditions
-        Map<String, String> params = new HashMap<>();
+        QueryFilterParams params = new QueryFilterParams();
         params.put("int", ">1");   // greater than 1
-        params.put("int", "!3");    // but not equal to 3
+        params.put("int", "!3");    // and not equal to 3
         params.put("sortby", "+int");
 
         SimpleQuery queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").performQuery(params);
@@ -90,7 +88,7 @@ public class QueryFiltersIntegerTest {
 
     @Test
     public void canFilterIntegerGreaterThan() {
-        Map<String, String> params = new HashMap<>();
+        QueryFilterParams params = new QueryFilterParams();
         params.put("int", ">1");
         params.put("sortby", "+int");
 
@@ -106,7 +104,7 @@ public class QueryFiltersIntegerTest {
 
     @Test
     public void canFilterIntegerLessThan() {
-        Map<String, String> params = new HashMap<>();
+        QueryFilterParams params = new QueryFilterParams();
         params.put("int", "<2");
         params.put("sortby", "+int");
 
@@ -120,7 +118,7 @@ public class QueryFiltersIntegerTest {
 
     @Test
     public void canFilterIntegerLessThanNotMatching() {
-        Map<String, String> params = new HashMap<>();
+        QueryFilterParams params = new QueryFilterParams();
         params.put("int", "<1");
         params.put("sortby", "+int");
 
@@ -133,7 +131,7 @@ public class QueryFiltersIntegerTest {
 
     @Test
     public void canFilterIntegerGreaterThanEquals(){
-        Map<String, String> params = new HashMap<>();
+        QueryFilterParams params = new QueryFilterParams();
         params.put("int", ">=3");
         params.put("sortby", "+int");
 
@@ -149,7 +147,7 @@ public class QueryFiltersIntegerTest {
 
     @Test
     public void canFilterIntegerLessThanEquals(){
-        Map<String, String> params = new HashMap<>();
+        QueryFilterParams params = new QueryFilterParams();
         params.put("int", "<=3");
         params.put("sortby", "+int");
 
@@ -166,7 +164,7 @@ public class QueryFiltersIntegerTest {
 
     @Test
     public void canFilterIntegerLessThanSortedDesc(){
-        Map<String, String> params = new HashMap<>();
+        QueryFilterParams params = new QueryFilterParams();
         params.put("int", "<3");
         params.put("sortby", "-int");
 
@@ -183,7 +181,7 @@ public class QueryFiltersIntegerTest {
 
     @Test
     public void canIntegerSortedDesc(){
-        Map<String, String> params = new HashMap<>();
+        QueryFilterParams params = new QueryFilterParams();
         params.put("sortby", "-int");
 
         SimpleQuery queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
@@ -200,7 +198,7 @@ public class QueryFiltersIntegerTest {
 
     @Test
     public void canIntegerSortedAsc(){
-        Map<String, String> params = new HashMap<>();
+        QueryFilterParams params = new QueryFilterParams();
         params.put("sortby", "+int");
 
         SimpleQuery queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
