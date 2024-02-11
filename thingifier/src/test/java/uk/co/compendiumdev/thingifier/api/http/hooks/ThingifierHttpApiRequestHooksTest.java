@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiResponse;
 import uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi;
+import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
 import uk.co.compendiumdev.thingifier.apiconfig.JsonOutputConfig;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
@@ -42,7 +43,7 @@ class ThingifierHttpApiRequestHooksTest {
     private class Instant500Error implements HttpApiRequestHook {
         @Override
         public HttpApiResponse run(final HttpApiRequest request, ThingifierApiConfig config) {
-            return new HttpApiResponse(new HashMap<>(),
+            return new HttpApiResponse(new HttpHeadersBlock(),
                     ApiResponse.error(500,"bypassed all processing"),
                     jsonThing, config);
         }

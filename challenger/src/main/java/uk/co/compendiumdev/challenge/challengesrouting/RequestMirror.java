@@ -3,6 +3,8 @@ package uk.co.compendiumdev.challenge.challengesrouting;
 import spark.Request;
 import spark.Response;
 import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.api.http.headers.headerparser.AcceptHeaderParser;
+import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.application.routehandlers.SparkApiRequestResponseHandler;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
@@ -33,11 +35,22 @@ public class RequestMirror {
                     mirrorThingifier.apiConfig(), request, result);
         }
 
-        return new SparkApiRequestResponseHandler(request, result, mirrorThingifier).
+        String returnValue =  new SparkApiRequestResponseHandler(request, result, mirrorThingifier).
                 usingHandler(
                         new MirrorHttpApiRequestHandler(this.entityDefn)
                 ).validateRequestSyntax(false).handle();
 
+        // TODO handle mirror text header here
+        System.out.println("handle text header here");
+
+        final AcceptHeaderParser parser = new AcceptHeaderParser(request.headers("accept"));
+
+        // handle text separately as the main api does not 'do' text
+        if(parser.hasAskedForTEXT()){
+            result.header("Content-Type", "text/plain");
+        }
+
+        return returnValue;
     }
 
 }

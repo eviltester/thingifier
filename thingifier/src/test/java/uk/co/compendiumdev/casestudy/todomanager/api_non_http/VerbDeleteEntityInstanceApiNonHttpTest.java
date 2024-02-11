@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.casestudy.todomanager.TodoManagerModel;
+import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
@@ -55,7 +56,7 @@ public class VerbDeleteEntityInstanceApiNonHttpTest {
 
         Assertions.assertEquals(1, project.countInstances());
 
-        apiresponse = todoManager.api().delete(String.format("project/%s", officeWork.getGUID()), new HashMap<>());
+        apiresponse = todoManager.api().delete(String.format("project/%s", officeWork.getGUID()), new HttpHeadersBlock());
         Assertions.assertEquals(200, apiresponse.getStatusCode());
         Assertions.assertTrue(apiresponse.getErrorMessages().size() == 0);
 
@@ -63,7 +64,7 @@ public class VerbDeleteEntityInstanceApiNonHttpTest {
 
         Assertions.assertEquals(0, project.countInstances());
 
-        apiresponse = todoManager.api().delete(String.format("project/%s", officeWork.getGUID()), new HashMap<>());
+        apiresponse = todoManager.api().delete(String.format("project/%s", officeWork.getGUID()), new HttpHeadersBlock());
         Assertions.assertEquals(404, apiresponse.getStatusCode());
         Assertions.assertTrue(apiresponse.getErrorMessages().size() > 0);
 
@@ -77,7 +78,7 @@ public class VerbDeleteEntityInstanceApiNonHttpTest {
 
         ApiResponse apiresponse;
 
-        apiresponse = todoManager.api().delete(String.format("project/%s", UUID.randomUUID().toString()), new HashMap<>());
+        apiresponse = todoManager.api().delete(String.format("project/%s", UUID.randomUUID().toString()), new HttpHeadersBlock());
         Assertions.assertEquals(404, apiresponse.getStatusCode());
         Assertions.assertTrue(apiresponse.getErrorMessages().size() > 0);
         Assertions.assertTrue(apiresponse.hasABody());

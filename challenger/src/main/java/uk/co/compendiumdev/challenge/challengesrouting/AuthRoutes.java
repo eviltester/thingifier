@@ -1,13 +1,15 @@
 package uk.co.compendiumdev.challenge.challengesrouting;
 
-import uk.co.compendiumdev.thingifier.api.http.BasicAuthHeaderParser;
-import uk.co.compendiumdev.thingifier.api.http.BearerAuthHeaderParser;
+import uk.co.compendiumdev.thingifier.api.http.headers.headerparser.AcceptHeaderParser;
+import uk.co.compendiumdev.thingifier.api.http.headers.headerparser.BasicAuthHeaderParser;
+import uk.co.compendiumdev.thingifier.api.http.headers.headerparser.BearerAuthHeaderParser;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.ThingifierApiDefn;
 import uk.co.compendiumdev.thingifier.api.http.*;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
+import uk.co.compendiumdev.thingifier.api.http.headers.headerparser.ContentTypeHeaderParser;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.api.restapihandlers.ThingCreation;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingDefinition;

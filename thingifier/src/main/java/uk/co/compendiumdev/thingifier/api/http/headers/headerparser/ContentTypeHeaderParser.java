@@ -1,4 +1,4 @@
-package uk.co.compendiumdev.thingifier.api.http;
+package uk.co.compendiumdev.thingifier.api.http.headers.headerparser;
 
 public class ContentTypeHeaderParser {
     private final String header;

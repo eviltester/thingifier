@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.api.ThingifierRestAPIHandler;
 import uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi;
+import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.Thingifier;
@@ -46,7 +47,7 @@ public class IdBasedInstanceNonHttpTest {
                 "My Title" + System.nanoTime());
 
         // no session header so use default session
-        final ApiResponse apiResponse = model.api().get("/thing/" + existingInstance.getGUID(), new QueryFilterParams(), new HashMap<>());
+        final ApiResponse apiResponse = model.api().get("/thing/" + existingInstance.getGUID(), new QueryFilterParams(), new HttpHeadersBlock());
         Assertions.assertEquals(200, apiResponse.getStatusCode());
         Assertions.assertEquals(existingInstance, apiResponse.getReturnedInstance());
     }
@@ -61,7 +62,7 @@ public class IdBasedInstanceNonHttpTest {
                 "My Title" + System.nanoTime());
 
         // no session header so use default session
-        final ApiResponse idApiResponse = model.api().get("/thing/" + existingInstance.getFieldValue("id").asString(), new QueryFilterParams(), new HashMap<>());
+        final ApiResponse idApiResponse = model.api().get("/thing/" + existingInstance.getFieldValue("id").asString(), new QueryFilterParams(), new HttpHeadersBlock());
         Assertions.assertEquals(200, idApiResponse.getStatusCode());
         Assertions.assertEquals(existingInstance, idApiResponse.getReturnedInstance());
 
@@ -72,8 +73,8 @@ public class IdBasedInstanceNonHttpTest {
 
         Thingifier model = getThingifier();
 
-        final Map<String,String> headers = new HashMap<>();
-        headers.put(ThingifierHttpApi.HTTP_SESSION_HEADER_NAME.toLowerCase(), "other_things");
+        final HttpHeadersBlock headers = new HttpHeadersBlock();
+        headers.put(ThingifierHttpApi.HTTP_SESSION_HEADER_NAME, "other_things");
 
         // we are bypassing the HTTP api so need to create the database
         model.getERmodel().createInstanceDatabase("other_things");
@@ -95,8 +96,8 @@ public class IdBasedInstanceNonHttpTest {
 
         Thingifier model = getThingifier();
 
-        final Map<String,String> headers = new HashMap<>();
-        headers.put(ThingifierHttpApi.HTTP_SESSION_HEADER_NAME.toLowerCase(), "other_things");
+        final HttpHeadersBlock headers = new HttpHeadersBlock();
+        headers.put(ThingifierHttpApi.HTTP_SESSION_HEADER_NAME, "other_things");
 
         // we are bypassing the HTTP api so need to create the database
         model.getERmodel().createInstanceDatabase("other_things");

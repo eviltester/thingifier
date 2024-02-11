@@ -2,7 +2,7 @@ package uk.co.compendiumdev.thingifier.api;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import uk.co.compendiumdev.thingifier.api.http.AcceptHeaderParser;
+import uk.co.compendiumdev.thingifier.api.http.headers.headerparser.AcceptHeaderParser;
 
 public class AcceptHeaderParserTest {
 

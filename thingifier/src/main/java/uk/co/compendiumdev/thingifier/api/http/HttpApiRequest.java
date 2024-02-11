@@ -1,5 +1,6 @@
 package uk.co.compendiumdev.thingifier.api.http;
 
+import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
 import uk.co.compendiumdev.thingifier.core.query.FilterBy;
 import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
 import uk.co.compendiumdev.thingifier.core.query.fromurl.UrlParamParser;
@@ -9,7 +10,7 @@ import java.util.*;
 public final class HttpApiRequest {
 
     private String path="";
-    private Map<String, String> headers;
+    private HttpHeadersBlock headers;
     private String body="";
     private Map<String, String> queryParams; // only contains the first query param value
     private VERB verb;
@@ -70,7 +71,7 @@ public final class HttpApiRequest {
 
     public HttpApiRequest(final String pathInfo) {
         this.path = justThePath(pathInfo);
-        this.headers = new HashMap<>();
+        this.headers = new HttpHeadersBlock();
         queryParams = new HashMap<>();
         filterableQueryParams = new QueryFilterParams();
         body = "";
@@ -101,7 +102,7 @@ public final class HttpApiRequest {
         return this.path;
     }
 
-    public Map<String, String> getHeaders() {
+    public HttpHeadersBlock getHeaders() {
         return this.headers;
     }
 
@@ -125,21 +126,18 @@ public final class HttpApiRequest {
 
 
     public String getHeader(final String headerName, final String aDefault) {
-        String header = getHeader(headerName);
-        if(header==null){
-            header=aDefault;
+        if(!this.headers.headerExists(headerName)){
+            return aDefault;
         }
-        return header;
+        return getHeader(headerName);
     }
 
     public String getHeader(final String headerName) {
-        return this.headers.get(headerName.toLowerCase());
+        return this.headers.get(headerName);
     }
 
-
-
     public HttpApiRequest addHeader(final String headerName, final String headerValue) {
-        this.headers.put(headerName.trim().toLowerCase(), headerValue.trim().toLowerCase());
+        this.headers.put(headerName, headerValue.trim().toLowerCase());
         return this;
     }
 

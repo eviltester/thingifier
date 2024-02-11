@@ -4,13 +4,13 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.casestudy.todomanager.TodoManagerModel;
+import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -63,7 +63,7 @@ public class VerbGetEntityInstanceApiNonHttpTest {
         todo.createManagedInstance().setValue("title", "My Title" + System.nanoTime());
 
 
-        ApiResponse apiResponse = todoManager.api().get("/todo/" + findThis.getGUID(), new QueryFilterParams(), new HashMap<>());
+        ApiResponse apiResponse = todoManager.api().get("/todo/" + findThis.getGUID(), new QueryFilterParams(), new HttpHeadersBlock());
 
         Assertions.assertEquals(200, apiResponse.getStatusCode());
         Assertions.assertFalse(apiResponse.isCollection(),
@@ -88,7 +88,7 @@ public class VerbGetEntityInstanceApiNonHttpTest {
         todo.createManagedInstance().setValue("title", "My Title" + System.nanoTime());
 
 
-        ApiResponse apiResponse = todoManager.api().get("/todo", new QueryFilterParams(), new HashMap<>());
+        ApiResponse apiResponse = todoManager.api().get("/todo", new QueryFilterParams(), new HttpHeadersBlock());
 
         Assertions.assertEquals(200, apiResponse.getStatusCode());
         Assertions.assertTrue(apiResponse.isCollection(),

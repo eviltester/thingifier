@@ -2,7 +2,7 @@ package uk.co.compendiumdev.challenge.challengehooks;
 
 import uk.co.compendiumdev.challenge.ChallengerState;
 import uk.co.compendiumdev.challenge.challengesrouting.XChallengerHeader;
-import uk.co.compendiumdev.thingifier.api.http.BearerAuthHeaderParser;
+import uk.co.compendiumdev.thingifier.api.http.headers.headerparser.BearerAuthHeaderParser;
 import uk.co.compendiumdev.challenge.CHALLENGE;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
@@ -30,7 +30,7 @@ public class ChallengerInternalHTTPResponseHook implements InternalHttpResponseH
         // allow cross origin requests
         response.setHeader("Access-Control-Allow-Origin", "*");
         response.setHeader("Access-Control-Allow-Headers", "*");
-        if (request.getVerb() == OPTIONS && request.getHeader("Access-Control-Allow-Methods") != null) {
+        if (request.getVerb() == OPTIONS && request.getHeaders().headerExists("Access-Control-Allow-Methods")) {
             response.setHeader("Access-Control-Allow-Methods", request.getHeader("Access-Control-Allow-Methods"));
         }
 
@@ -73,7 +73,7 @@ public class ChallengerInternalHTTPResponseHook implements InternalHttpResponseH
 
         if (challenger == null) {
             if (!request.getPath().contentEquals("challenger")) {
-                if (response.getHeader("X-CHALLENGER") == null) {
+                if (!response.getHeaders().headerExists("X-CHALLENGER")) {
                     XChallengerHeader.setResultHeaderBasedOnChallenger(response, challenger);
                 }
             }
@@ -85,7 +85,7 @@ public class ChallengerInternalHTTPResponseHook implements InternalHttpResponseH
         }
 
         if (challenger != null) {
-            if (response.getHeader("X-CHALLENGER") == null) {
+            if (!response.getHeaders().headerExists("X-CHALLENGER")) {
                 XChallengerHeader.setResultHeaderBasedOnChallenger(response, challenger);
             }
         }
@@ -106,7 +106,7 @@ public class ChallengerInternalHTTPResponseHook implements InternalHttpResponseH
 
         if (request.getVerb() == POST &&
                 request.getPath().contentEquals("secret/token") &&
-                request.getHeader("Authorization") != null &&
+                request.getHeaders().headerExists("Authorization") &&
                 request.getHeader("Authorization").length() > 10 &&
                 response.getStatusCode() == 401) {
             challengers.pass(challenger, CHALLENGE.CREATE_SECRET_TOKEN_401);
@@ -114,7 +114,7 @@ public class ChallengerInternalHTTPResponseHook implements InternalHttpResponseH
 
         if (request.getVerb() == POST &&
                 request.getPath().contentEquals("secret/token") &&
-                request.getHeader("Authorization") != null &&
+                request.getHeaders().headerExists("Authorization") &&
                 request.getHeader("Authorization").length() > 10 &&
                 response.getStatusCode() == 201) {
             challengers.pass(challenger, CHALLENGE.CREATE_SECRET_TOKEN_201);
@@ -122,7 +122,7 @@ public class ChallengerInternalHTTPResponseHook implements InternalHttpResponseH
 
         if (request.getVerb() == GET &&
                 request.getPath().contentEquals("secret/note") &&
-                request.getHeader("X-AUTH-TOKEN") != null &&
+                request.getHeaders().headerExists("X-AUTH-TOKEN") &&
                 request.getHeader("X-AUTH-TOKEN").length() > 1 &&
                 response.getStatusCode() == 403) {
             challengers.pass(challenger, CHALLENGE.GET_SECRET_NOTE_403);
@@ -130,14 +130,14 @@ public class ChallengerInternalHTTPResponseHook implements InternalHttpResponseH
 
         if (request.getVerb() == GET &&
                 request.getPath().contentEquals("secret/note") &&
-                request.getHeader("X-AUTH-TOKEN") == null &&
+                !request.getHeaders().headerExists("X-AUTH-TOKEN") &&
                 response.getStatusCode() == 401) {
             challengers.pass(challenger, CHALLENGE.GET_SECRET_NOTE_401);
         }
 
         if (request.getVerb() == POST &&
                 request.getPath().contentEquals("secret/note") &&
-                request.getHeader("X-AUTH-TOKEN") != null &&
+                request.getHeaders().headerExists("X-AUTH-TOKEN") &&
                 request.getHeader("X-AUTH-TOKEN").length() > 1 &&
                 request.getBody().contains("\"note\"") &&
                 response.getStatusCode() == 403) {
@@ -146,7 +146,7 @@ public class ChallengerInternalHTTPResponseHook implements InternalHttpResponseH
 
         if (request.getVerb() == POST &&
                 request.getPath().contentEquals("secret/note") &&
-                request.getHeader("X-AUTH-TOKEN") == null &&
+                !request.getHeaders().headerExists("X-AUTH-TOKEN") &&
                 request.getBody().contains("\"note\"") &&
                 response.getStatusCode() == 401) {
             challengers.pass(challenger, CHALLENGE.POST_SECRET_NOTE_401);
@@ -154,7 +154,7 @@ public class ChallengerInternalHTTPResponseHook implements InternalHttpResponseH
 
         if (request.getVerb() == POST &&
                 request.getPath().contentEquals("secret/note") &&
-                request.getHeader("X-AUTH-TOKEN") != null &&
+                request.getHeaders().headerExists("X-AUTH-TOKEN") &&
                 request.getBody().contains("\"note\"") &&
                 response.getStatusCode() == 200) {
             challengers.pass(challenger, CHALLENGE.POST_SECRET_NOTE_200);
@@ -162,14 +162,14 @@ public class ChallengerInternalHTTPResponseHook implements InternalHttpResponseH
 
         if (request.getVerb() == GET &&
                 request.getPath().contentEquals("secret/note") &&
-                request.getHeader("X-AUTH-TOKEN") != null &&
+                request.getHeaders().headerExists("X-AUTH-TOKEN") &&
                 response.getStatusCode() == 200) {
             challengers.pass(challenger, CHALLENGE.GET_SECRET_NOTE_200);
         }
 
         if (request.getVerb() == GET &&
                 request.getPath().contentEquals("secret/note") &&
-                request.getHeader("Authorization") != null &&
+                request.getHeaders().headerExists("Authorization") &&
                 new BearerAuthHeaderParser(request.getHeader("Authorization")).isValid() &&
                 response.getStatusCode() == 200) {
             challengers.pass(challenger, CHALLENGE.GET_SECRET_NOTE_BEARER_200);
@@ -177,7 +177,7 @@ public class ChallengerInternalHTTPResponseHook implements InternalHttpResponseH
 
         if (request.getVerb() == POST &&
                 request.getPath().contentEquals("secret/note") &&
-                request.getHeader("Authorization") != null &&
+                request.getHeaders().headerExists("Authorization") &&
                 new BearerAuthHeaderParser(request.getHeader("Authorization")).isValid() &&
                 request.getBody().contains("\"note\"") &&
                 response.getStatusCode() == 200) {

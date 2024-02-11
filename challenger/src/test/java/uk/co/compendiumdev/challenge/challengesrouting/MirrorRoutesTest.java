@@ -9,6 +9,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import uk.co.compendiumdev.challenger.http.httpclient.HttpMessageSender;
 import uk.co.compendiumdev.challenger.http.httpclient.HttpResponseDetails;
 import uk.co.compendiumdev.sparkstart.Environment;
+import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
 
 import java.util.*;
 import java.util.stream.Stream;
@@ -106,10 +107,10 @@ public class MirrorRoutesTest {
     void requestContentLengthIsCheckedForLength() {
         http.clearHeaders();
 
-        Map<String, String> headers = new HashMap<>();
+        HttpHeadersBlock headers = new HttpHeadersBlock();
         headers.put("Accept", "text/plain");
 
-        final HttpResponseDetails response = http.send("/mirror/request", "post", headers,
+        final HttpResponseDetails response = http.send("/mirror/request", "post", headers.asMap(),
                                                 stringOfLength(24000 + 1));
 
         Assertions.assertEquals(413, response.statusCode);

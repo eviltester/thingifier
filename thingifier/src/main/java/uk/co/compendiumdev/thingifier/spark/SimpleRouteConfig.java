@@ -3,7 +3,7 @@ package uk.co.compendiumdev.thingifier.spark;
 import spark.Request;
 import spark.Response;
 import spark.Route;
-import uk.co.compendiumdev.thingifier.api.http.AcceptHeaderParser;
+import uk.co.compendiumdev.thingifier.api.http.headers.headerparser.AcceptHeaderParser;
 
 import java.util.Arrays;
 import java.util.List;

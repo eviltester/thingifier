@@ -29,7 +29,7 @@ public class SparkResponseToInternalHttpResponse {
             response.type(httpResponse.getType());
         }
 
-        final Set<String> keys = httpResponse.getHeaders().keySet();
+        final Set<String> keys = httpResponse.getHeaders().asMap().keySet();
         for (String headerKey : keys) {
             response.raw().setHeader(headerKey, httpResponse.getHeaders().get(headerKey));
         }

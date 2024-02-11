@@ -1,6 +1,6 @@
 package uk.co.compendiumdev.thingifier.api.response;
 
-import uk.co.compendiumdev.thingifier.api.http.AcceptHeaderParser;
+import uk.co.compendiumdev.thingifier.api.http.headers.headerparser.AcceptHeaderParser;
 
 final public class ApiResponseError {
 

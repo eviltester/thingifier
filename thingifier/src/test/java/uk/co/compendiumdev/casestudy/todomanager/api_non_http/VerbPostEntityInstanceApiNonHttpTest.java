@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.casestudy.todomanager.TodoManagerModel;
+import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
@@ -62,7 +63,7 @@ public class VerbPostEntityInstanceApiNonHttpTest {
         requestBody.put("doneStatus", doneStatus);
 
         // create a project with POST
-        ApiResponse apiresponse = todoManager.api().post("todo", getSimpleParser(requestBody),new HashMap<>());
+        ApiResponse apiresponse = todoManager.api().post("todo", getSimpleParser(requestBody), new HttpHeadersBlock());
 
         Assertions.assertEquals(201, apiresponse.getStatusCode());
         Assertions.assertTrue(apiresponse.hasABody());
@@ -108,7 +109,7 @@ public class VerbPostEntityInstanceApiNonHttpTest {
         requestBody.put("title", title);
 
         // create a project with POST
-        ApiResponse apiresponse = todoManager.api().post("todo",  getSimpleParser(requestBody), new HashMap<>());
+        ApiResponse apiresponse = todoManager.api().post("todo",  getSimpleParser(requestBody), new HttpHeadersBlock());
 
 
         Assertions.assertEquals(201, apiresponse.getStatusCode());
@@ -155,7 +156,7 @@ public class VerbPostEntityInstanceApiNonHttpTest {
         requestBody.put("description", description);
 
         // amend a project with POST
-        ApiResponse apiresponse = todoManager.api().post("todo/" + relTodo.getGUID(),  getSimpleParser(requestBody), new HashMap<>());
+        ApiResponse apiresponse = todoManager.api().post("todo/" + relTodo.getGUID(),  getSimpleParser(requestBody), new HttpHeadersBlock());
 
         Assertions.assertEquals(200, apiresponse.getStatusCode());
         Assertions.assertEquals(0, apiresponse.getHeaders().size());
@@ -184,7 +185,7 @@ public class VerbPostEntityInstanceApiNonHttpTest {
 
         String guid = UUID.randomUUID().toString();
 
-        ApiResponse apiresponse = todoManager.api().post(String.format("project/%s", guid),  getSimpleParser(requestBody), new HashMap<>());
+        ApiResponse apiresponse = todoManager.api().post(String.format("project/%s", guid),  getSimpleParser(requestBody), new HttpHeadersBlock());
         Assertions.assertEquals(404, apiresponse.getStatusCode());
         Assertions.assertTrue(apiresponse.getErrorMessages().size() > 0);
         Assertions.assertTrue(apiresponse.hasABody());
@@ -211,7 +212,7 @@ public class VerbPostEntityInstanceApiNonHttpTest {
         requestBody = new HashMap<String, String>();
         requestBody.put("title", "");
         requestBody.put("description", "Amend Failed new TODO Item");
-        apiresponse = todoManager.api().post(String.format("todo/%s", amendTodo.getGUID()),  getSimpleParser(requestBody), new HashMap<>());
+        apiresponse = todoManager.api().post(String.format("todo/%s", amendTodo.getGUID()),  getSimpleParser(requestBody), new HttpHeadersBlock());
 
         Assertions.assertEquals(400, apiresponse.getStatusCode());
         Assertions.assertTrue(apiresponse.getErrorMessages().size() > 0);
@@ -226,7 +227,7 @@ public class VerbPostEntityInstanceApiNonHttpTest {
         requestBody.put("title", "A new TODO Item");
         requestBody.put("description", "A new TODO Item");
         requestBody.put("doneStatus", "FALSEY");
-        apiresponse = todoManager.api().post(String.format("todo/%s", amendTodo.getGUID()),  getSimpleParser(requestBody), new HashMap<>());
+        apiresponse = todoManager.api().post(String.format("todo/%s", amendTodo.getGUID()),  getSimpleParser(requestBody), new HttpHeadersBlock());
 
         Assertions.assertEquals(400, apiresponse.getStatusCode());
         Assertions.assertTrue(apiresponse.getErrorMessages().size() > 0);
@@ -258,7 +259,7 @@ public class VerbPostEntityInstanceApiNonHttpTest {
         Assertions.assertNotNull(officeWorkGuid);
 
         // amend existing project with PUT - this should validate that all required fields are present
-        apiresponse = todoManager.api().put(String.format("project/%s", officeWork.getGUID()),  getSimpleParser(requestBody), new HashMap<>());
+        apiresponse = todoManager.api().put(String.format("project/%s", officeWork.getGUID()),  getSimpleParser(requestBody), new HttpHeadersBlock());
         Assertions.assertEquals(200, apiresponse.getStatusCode());
         Assertions.assertEquals("My Office Work", officeWork.getFieldValue("title").asString());
 
@@ -283,7 +284,7 @@ public class VerbPostEntityInstanceApiNonHttpTest {
         requestBody = new HashMap<String, String>();
         requestBody.put("description", "A new TODO Item"); // 400 because it should be "title"
 
-        apiresponse = todoManager.api().post(String.format("todo"),  getSimpleParser(requestBody), new HashMap<>());
+        apiresponse = todoManager.api().post(String.format("todo"),  getSimpleParser(requestBody), new HttpHeadersBlock());
         Assertions.assertEquals(400, apiresponse.getStatusCode());
         Assertions.assertTrue(apiresponse.getErrorMessages().size() > 0);
         Assertions.assertTrue(apiresponse.hasABody());
@@ -293,7 +294,7 @@ public class VerbPostEntityInstanceApiNonHttpTest {
         requestBody.put("title", "A new TODO Item");
         requestBody.put("doneStatus", "FALSEY");
 
-        apiresponse = todoManager.api().post(String.format("todo"), getSimpleParser(requestBody), new HashMap<>());
+        apiresponse = todoManager.api().post(String.format("todo"), getSimpleParser(requestBody), new HttpHeadersBlock());
         Assertions.assertEquals(400, apiresponse.getStatusCode());
         Assertions.assertTrue(apiresponse.getErrorMessages().size() > 0);
         Assertions.assertTrue(apiresponse.hasABody());
@@ -306,7 +307,7 @@ public class VerbPostEntityInstanceApiNonHttpTest {
         EntityInstance paperwork = todo.createManagedInstance().
                 setValue("title", "Todo for amending");
 
-        apiresponse = todoManager.api().post(String.format("todo/%s", paperwork.getGUID()), getSimpleParser(requestBody), new HashMap<>());
+        apiresponse = todoManager.api().post(String.format("todo/%s", paperwork.getGUID()), getSimpleParser(requestBody), new HttpHeadersBlock());
         Assertions.assertEquals(400, apiresponse.getStatusCode());
         Assertions.assertTrue(apiresponse.getErrorMessages().size() > 0);
         Assertions.assertTrue(apiresponse.hasABody());

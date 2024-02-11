@@ -1,5 +1,6 @@
 package uk.co.compendiumdev.thingifier.api.response;
 
+import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.api.ApiUrls;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
@@ -23,14 +24,14 @@ public final class ApiResponse {
     private boolean isErrorResponse;
     private Collection<String> errorMessages;
 
-    private Map<String, String> headers;
+    private HttpHeadersBlock headers;
     private EntityDefinition typeOfResults;
     private String body;
 
 
     public ApiResponse(final int aStatusCode) {
         this.statusCode = aStatusCode;
-        headers = new HashMap<>();
+        headers = new HttpHeadersBlock();
         thingsToReturn = new ArrayList();
         isCollection = false;
         isErrorResponse = false;
@@ -97,7 +98,7 @@ public final class ApiResponse {
         return setHeader("Location", location);
     }
 
-    public Map<String, String> getHeaders() {
+    public HttpHeadersBlock getHeaders() {
         return headers;
     }
 

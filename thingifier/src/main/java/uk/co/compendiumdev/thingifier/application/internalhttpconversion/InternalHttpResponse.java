@@ -1,5 +1,7 @@
 package uk.co.compendiumdev.thingifier.application.internalhttpconversion;
 
+import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -13,11 +15,12 @@ public class InternalHttpResponse {
     private int status;
     private String contentType;
     private String body;
-    private Map<String, String> headers;
+
+    private HttpHeadersBlock headers;
 
     public InternalHttpResponse(){
 
-        headers = new HashMap<>();
+        headers = new HttpHeadersBlock();
     }
 
     public InternalHttpResponse setStatus(final int status) {
@@ -36,7 +39,7 @@ public class InternalHttpResponse {
     }
 
     public InternalHttpResponse setHeader(final String headerName, final String header) {
-        headers.put(headerName.toUpperCase(), header);
+        headers.put(headerName, header);
         return this;
     }
 
@@ -52,7 +55,7 @@ public class InternalHttpResponse {
         return contentType;
     }
 
-    public Map<String, String> getHeaders() {
+    public HttpHeadersBlock getHeaders() {
         return headers;
     }
 
@@ -61,6 +64,6 @@ public class InternalHttpResponse {
     }
 
     public String getHeader(final String headerName) {
-        return headers.get(headerName.toUpperCase());
+        return headers.get(headerName);
     }
 }

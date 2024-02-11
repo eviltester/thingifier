@@ -1,6 +1,7 @@
 package uk.co.compendiumdev.thingifier.api.restapihandlers;
 
 import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.query.FilterBy;
@@ -17,7 +18,7 @@ public class RestApiGetHandler {
         this.thingifier = aThingifier;
     }
 
-    public ApiResponse handle(final String url, final QueryFilterParams queryParams, final Map<String, String> requestHeaders) {
+    public ApiResponse handle(final String url, final QueryFilterParams queryParams, final HttpHeadersBlock requestHeaders) {
 
         // if there are params, and we are not allowed to filter, and we enforce that
         if(queryParams.size()>0 &&

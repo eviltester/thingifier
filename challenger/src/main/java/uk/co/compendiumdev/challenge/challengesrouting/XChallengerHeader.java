@@ -45,7 +45,7 @@ public class XChallengerHeader {
             return;
         }
 
-        if(response.getHeader("X-CHALLENGER") != null){
+        if(response.getHeaders().headerExists("X-CHALLENGER")){
             return;
         }
 

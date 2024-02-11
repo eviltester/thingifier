@@ -5,8 +5,8 @@ import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.api.http.ContentTypeHeaderParser;
-import uk.co.compendiumdev.thingifier.api.http.AcceptHeaderParser;
+import uk.co.compendiumdev.thingifier.api.http.headers.headerparser.ContentTypeHeaderParser;
+import uk.co.compendiumdev.thingifier.api.http.headers.headerparser.AcceptHeaderParser;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiResponse;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
@@ -142,7 +142,7 @@ public class ChallengerApiResponseHook implements HttpApiResponseHook {
                 response.getStatusCode()==201){
 
             try {
-                // TODO: create a wrapper or something so I don't have to concern myself with case in headers
+
                 String location = response.getHeaders().get("Location");
                 String locationParts[] = location.split("/");
 

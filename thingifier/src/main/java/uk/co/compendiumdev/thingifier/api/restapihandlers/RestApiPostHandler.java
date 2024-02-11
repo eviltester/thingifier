@@ -1,5 +1,6 @@
 package uk.co.compendiumdev.thingifier.api.restapihandlers;
 
+import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
@@ -20,7 +21,7 @@ public class RestApiPostHandler {
         thingifier = aThingifier;
     }
 
-    public ApiResponse handle(final String url, final BodyParser args, final Map<String, String> requestHeaders) {
+    public ApiResponse handle(final String url, final BodyParser args, final HttpHeadersBlock requestHeaders) {
         // we want to
 
         String instanceDatabaseName = SessionHeaderParser.getDatabaseNameFromHeaderValue(requestHeaders);

@@ -1,6 +1,8 @@
 package uk.co.compendiumdev.thingifier.api.http;
 
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
+import uk.co.compendiumdev.thingifier.api.http.headers.headervalidator.AcceptHeaderValidator;
+import uk.co.compendiumdev.thingifier.api.http.headers.headervalidator.ContentTypeHeaderValidator;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 

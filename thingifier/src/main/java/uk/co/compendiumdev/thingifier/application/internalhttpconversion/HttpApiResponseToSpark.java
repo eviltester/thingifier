@@ -21,7 +21,7 @@ public class HttpApiResponseToSpark {
             response.type(httpResponse.getType());
         }
 
-        final Set<String> keys = httpResponse.getHeaders().keySet();
+        final Set<String> keys = httpResponse.getHeaders().asMap().keySet();
         for (String headerKey : keys) {
             response.header(headerKey, httpResponse.getHeaders().get(headerKey));
         }

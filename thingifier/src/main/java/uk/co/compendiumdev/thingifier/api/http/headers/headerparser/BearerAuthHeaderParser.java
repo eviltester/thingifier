@@ -1,4 +1,4 @@
-package uk.co.compendiumdev.thingifier.api.http;
+package uk.co.compendiumdev.thingifier.api.http.headers.headerparser;
 
 import java.util.ArrayList;
 import java.util.List;

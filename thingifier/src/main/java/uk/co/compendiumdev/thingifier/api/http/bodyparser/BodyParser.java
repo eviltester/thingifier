@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.xml.XMLParserAbstraction;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.xml.XMLParserUsingOrgJson;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
-import uk.co.compendiumdev.thingifier.api.http.ContentTypeHeaderParser;
+import uk.co.compendiumdev.thingifier.api.http.headers.headerparser.ContentTypeHeaderParser;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;

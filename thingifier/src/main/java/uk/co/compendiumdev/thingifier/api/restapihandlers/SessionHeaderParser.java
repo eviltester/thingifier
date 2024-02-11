@@ -1,5 +1,6 @@
 package uk.co.compendiumdev.thingifier.api.restapihandlers;
 
+import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 
 import java.util.Map;
@@ -8,10 +9,10 @@ import static uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi.HTTP_SES
 
 public class SessionHeaderParser {
 
-    public static String getDatabaseNameFromHeaderValue(final Map<String, String> requestHeaders){
-        String sessionHeaderValue = requestHeaders.get(HTTP_SESSION_HEADER_NAME.toLowerCase());
+    public static String getDatabaseNameFromHeaderValue(final HttpHeadersBlock requestHeaders){
+        String sessionHeaderValue = requestHeaders.get(HTTP_SESSION_HEADER_NAME);
         String instanceDatabaseName = EntityRelModel.DEFAULT_DATABASE_NAME;
-        if(sessionHeaderValue!=null){
+        if(!sessionHeaderValue.isEmpty()){
             instanceDatabaseName = sessionHeaderValue;
         }
 

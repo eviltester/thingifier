@@ -1,11 +1,10 @@
 package uk.co.compendiumdev.challenge.challengesrouting;
 
-import uk.co.compendiumdev.thingifier.api.http.AcceptHeaderParser;
+import uk.co.compendiumdev.thingifier.api.http.headers.headerparser.AcceptHeaderParser;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.application.routehandlers.HttpApiRequestHandler;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
 public class MirrorHttpApiRequestHandler implements HttpApiRequestHandler {
@@ -69,7 +68,7 @@ public class MirrorHttpApiRequestHandler implements HttpApiRequestHandler {
         output.append("\n");
         output.append("=======");
         output.append("\n");
-        for(String header : myRequest.getHeaders().keySet()){
+        for(String header : myRequest.getHeaders().asMap().keySet()){
             output.append(String.format("%s: %s",header, myRequest.getHeader(header)));
             output.append("\n");
         }

@@ -1,6 +1,8 @@
 package uk.co.compendiumdev.challenger.http.httpclient;
 
 
+import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
+
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Base64;
@@ -99,7 +101,7 @@ public class HttpMessageSender {
         return sender.send( getUrl(url), verb, headers, "");
     }
 
-    public HttpResponseDetails send(String url, String verb, Map<String, String> myheaders, String body) {
+    public HttpResponseDetails send(String url, String verb, Map<String,String> myheaders, String body) {
         headers.clear();
         headers.putAll(myheaders);
         return sender.send( getUrl(url), verb, headers, body);

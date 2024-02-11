@@ -322,8 +322,7 @@ public class ChallengerInternalHttpResponseHookTest {
                         .addHeader("X-CHALLENGER", challenger.getXChallenger())
                         .setBody("{\"note\":\"bob\"");
 
-        InternalHttpResponse response =
-                new InternalHttpResponse().setStatus(401);
+        InternalHttpResponse response = new InternalHttpResponse().setStatus(401);
 
         hook.run(request,response);
 
