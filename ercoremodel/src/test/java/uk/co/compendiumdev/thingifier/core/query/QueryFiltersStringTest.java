@@ -123,4 +123,75 @@ public class QueryFiltersStringTest {
     }
 
 
+    @Test
+    public void canFilterAndSortStringUsingWildcardAsc() {
+
+        QueryFilterParams params = new QueryFilterParams();
+        params.put("string", "*=*e");
+        params.put("sortBy", "+string");
+
+        SimpleQuery queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
+                performQuery(params);
+
+        Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
+        List<EntityInstance> instances = queryResults.getListEntityInstances();
+        Assertions.assertEquals(2, instances.size(), "expected 2 true values");
+
+        Assertions.assertEquals("one", instances.get(0).getFieldValue("string").asString());
+        Assertions.assertEquals("three", instances.get(1).getFieldValue("string").asString());
+    }
+
+    @Test
+    public void canFilterAndSortStringUsingWildcardAscForT() {
+
+        QueryFilterParams params = new QueryFilterParams();
+        params.put("string", "*=t*");
+        params.put("sortBy", "+string");
+
+        SimpleQuery queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
+                performQuery(params);
+
+        Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
+        List<EntityInstance> instances = queryResults.getListEntityInstances();
+        Assertions.assertEquals(2, instances.size(), "expected 2 true values");
+
+        Assertions.assertEquals("three", instances.get(0).getFieldValue("string").asString());
+        Assertions.assertEquals("two", instances.get(1).getFieldValue("string").asString());
+    }
+
+    @Test
+    public void canFilterAndSortStringUsingWildcardAscForTBit() {
+
+        QueryFilterParams params = new QueryFilterParams();
+        params.put("string", "*=t?*");
+        params.put("sortBy", "+string");
+
+        SimpleQuery queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
+                performQuery(params);
+
+        Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
+        List<EntityInstance> instances = queryResults.getListEntityInstances();
+        Assertions.assertEquals(2, instances.size(), "expected 2 true values");
+
+        Assertions.assertEquals("three", instances.get(0).getFieldValue("string").asString());
+        Assertions.assertEquals("two", instances.get(1).getFieldValue("string").asString());
+    }
+
+    @Test
+    public void canFilterAndSortStringUsingWildcardAscForTBitO() {
+
+        QueryFilterParams params = new QueryFilterParams();
+        params.put("string", "*=t?o");
+        params.put("sortBy", "+string");
+
+        SimpleQuery queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
+                performQuery(params);
+
+        Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
+        List<EntityInstance> instances = queryResults.getListEntityInstances();
+        Assertions.assertEquals(1, instances.size(), "expected 2 true values");
+
+        Assertions.assertEquals("two", instances.get(0).getFieldValue("string").asString());
+    }
+
 }

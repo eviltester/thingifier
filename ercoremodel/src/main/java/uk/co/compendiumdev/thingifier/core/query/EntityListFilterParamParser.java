@@ -42,6 +42,9 @@ public class EntityListFilterParamParser {
                 // create a comparison value
                 final ComparableFieldValue filterConditionValue = new ComparableFieldValue(defn.getField(fieldName), FieldValue.is(fieldName, filterByCondition.fieldValue));
 
+                Pattern pattern = null;
+                Matcher matcher = null;
+
                 switch (filterByCondition.filterOperation){
                     case "=":
                         if(!(actualValue.compareTo(filterConditionValue)==0)){
@@ -75,8 +78,19 @@ public class EntityListFilterParamParser {
                         }
                         break;
                     case "~=": //regex match
-                        Pattern pattern = Pattern.compile(filterByCondition.fieldValue);
-                        Matcher matcher = pattern.matcher(actualValue.getValue().asString());
+                        pattern = Pattern.compile(filterByCondition.fieldValue);
+                        matcher = pattern.matcher(actualValue.getValue().asString());
+                        if(matcher.matches()){
+                            return true;
+                        }else{
+                            return false;
+                        }
+                    case "*=": //wildcard match so * matches any multiple and ? matches one
+                        String actualFilter = filterByCondition.fieldValue;
+                        actualFilter = filterByCondition.fieldValue.replace("*", ".*");
+                        actualFilter = actualFilter.replace("?", ".");
+                        pattern = Pattern.compile(actualFilter);
+                        matcher = pattern.matcher(actualValue.getValue().asString());
                         if(matcher.matches()){
                             return true;
                         }else{
