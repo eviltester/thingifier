@@ -59,21 +59,16 @@ public class UrlParamParser {
     }
 
     private String getFieldNameFrom(String param) {
-        // fieldnames are all chars
-        StringBuilder fieldName = new StringBuilder();
 
-        // yeah it's horrible but start with this and refactor
-        for (char ch: param.toCharArray()) {
-            // this needs to match the valid values for creating field names and should probably use the same validation
-            // it could even match the field values on entities and match against those direct?
-            // This will probably break for complicated settings at the moment
-            if("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".contains(String.valueOf(ch))){
-                fieldName.append(ch);
-            }else{
-                break;
+        // for each FilterBy operator, try to find it in the string
+        // if present, split the string there and the fieldname is to the
+        // left of the operator
+        for(String anOperator : FilterBy.operators){
+            if(param.contains(anOperator)){
+                return param.substring(0, param.indexOf(anOperator));
             }
         }
 
-        return fieldName.toString();
+        return param;
     }
 }

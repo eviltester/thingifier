@@ -39,9 +39,7 @@ public class RestApiGetHandler {
         }
 
         // TODO: we should support pagination through query params
-        // TODO: we should be able to sort using query params
         // TODO: api config should also support defining sorting for specific end points
-        // e.g. ?sort_by=+id   or ?sort_by=-status  etc.
         List<EntityInstance> queryItems = queryResults.getListEntityInstances();
 
 

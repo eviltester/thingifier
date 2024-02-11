@@ -81,4 +81,26 @@ public class FilterableParamsTest {
         QueryFilterParams values = parser.parse(aString);
         Assertions.assertEquals(0, values.size());
     }
+
+    @Test
+    public void processPartialFilterWithoutOperator(){
+        UrlParamParser parser = new UrlParamParser();
+        QueryFilterParams values = parser.parse("fieldname4");
+        Assertions.assertEquals(1, values.size());
+
+        Assertions.assertEquals("fieldname4", values.get(0).fieldName);
+        Assertions.assertEquals("=", values.get(0).filterOperation, "expected = by default");
+        Assertions.assertEquals("", values.get(0).fieldValue);
+    }
+
+    @Test
+    public void processPartialFilterWithoutValue(){
+        UrlParamParser parser = new UrlParamParser();
+        QueryFilterParams values = parser.parse("fieldname>=");
+        Assertions.assertEquals(1, values.size());
+
+        Assertions.assertEquals("fieldname", values.get(0).fieldName);
+        Assertions.assertEquals(">=", values.get(0).filterOperation);
+        Assertions.assertEquals("", values.get(0).fieldValue);
+    }
 }
