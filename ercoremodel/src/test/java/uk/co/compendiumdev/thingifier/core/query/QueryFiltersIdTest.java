@@ -20,11 +20,13 @@ public class QueryFiltersIdTest {
     public void setupCollectionTestData(){
         erModel = new EntityRelModel();
         erModel.createEntityDefinition("thing", "things")
+                .addFields(Field.is("id", FieldType.ID))
                 .addFields( Field.is("fakeid", FieldType.INTEGER)
                 );
 
         EntityInstanceCollection thing = erModel.getInstanceData().getInstanceCollectionForEntityNamed("thing");
 
+        // fakeid is a proxy for the actual id which always starts at 1 and auto increments
         thing.createManagedInstance().setValue("fakeid", "1");
         thing.createManagedInstance().setValue("fakeid", "2");
         thing.createManagedInstance().setValue("fakeid", "3");
@@ -36,7 +38,7 @@ public class QueryFiltersIdTest {
     public void canFilterAndSortIdAsc() {
 
         QueryFilterParams params = new QueryFilterParams();
-        params.put("fakeid", ">=3");
+        params.put("id", ">=3");
         params.put("sortBy", "+id");
 
         SimpleQuery queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
@@ -53,8 +55,8 @@ public class QueryFiltersIdTest {
     public void canFilterAndSortIdDesc() {
 
         QueryFilterParams params = new QueryFilterParams();
-        params.put("fakeid", "<3");
-        params.put("sortBy", "+id");
+        params.put("id", "<3");
+        params.put("sortBy", "-id");
 
         SimpleQuery queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
                 performQuery(params);
@@ -65,4 +67,5 @@ public class QueryFiltersIdTest {
         Assertions.assertEquals(2, instances.get(0).getFieldValue("fakeid").asInteger());
         Assertions.assertEquals(1, instances.get(1).getFieldValue("fakeid").asInteger());
     }
+
 }
