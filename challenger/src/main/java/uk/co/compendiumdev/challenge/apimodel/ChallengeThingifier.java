@@ -53,12 +53,20 @@ public class ChallengeThingifier {
     }
 
     public void populateThingifierFromStatus(ChallengerAuthData challenger){
+
+        ChallengerAuthData challengerToUse = challenger;
+
+        if(challenger == null){
+            // create one just to show no progress
+            challengerToUse = new ChallengerAuthData();
+        }
+
         for (ChallengeDefinitionData challenge : challengeDefinitions.getChallenges()) {
             final EntityInstance instance =
                     challengeThingifier.getThingInstancesNamed(challengeDefn.getName())
                         .findInstanceByGUIDorID(challenge.id);
             instance.setValue("status",
-                                        challenger.statusOfChallenge(
+                                        challengerToUse.statusOfChallenge(
                                                 challengeDefinitions.
                                                         getChallenge(challenge.name)
                                 ).toString()

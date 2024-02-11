@@ -63,7 +63,7 @@ public class ChallengerInternalHTTPRequestHook  implements InternalHttpRequestHo
     }
 
     private void updateAuthTokenFrom(final String header) {
-        if(header==null)
+        if(header==null || header.isEmpty())
             return;
 
         ChallengerAuthData data = challengers.getChallenger(header);

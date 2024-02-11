@@ -4,7 +4,7 @@ Build the full project
 
 Getting build errors?
 
-What does `mvn -version` tell you about the Java verison being used?
+What does `mvn -version` tell you about the Java version being used?
 
 Switch to the right java version:
 
