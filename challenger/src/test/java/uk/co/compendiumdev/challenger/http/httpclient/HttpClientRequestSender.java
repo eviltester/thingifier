@@ -1,5 +1,9 @@
 package uk.co.compendiumdev.challenger.http.httpclient;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import uk.co.compendiumdev.challenger.http.completechallenges.ChallengeCompleteTest;
+
 import java.net.*;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -11,6 +15,8 @@ import java.util.Map;
 /**
  */
 public class HttpClientRequestSender implements CanSendHttpRequests {
+
+    static Logger logger = LoggerFactory.getLogger(HttpClientRequestSender.class);
 
     private final HttpClient client;
     // https://stackoverflow.com/questions/1432961/how-do-i-make-httpurlconnection-use-a-proxy
@@ -57,10 +63,10 @@ public class HttpClientRequestSender implements CanSendHttpRequests {
             // SET HEADERS
             for(Map.Entry<String, String> header : headers.entrySet()){
                 request.header(header.getKey(), header.getValue());
-                System.out.println("Header - " + header.getKey() + " : " +  headers.get(header.getValue()) );
+                logger.info("Header - " + header.getKey() + " : " +  headers.get(header.getValue()) );
             }
 
-            System.out.println("\nSending '" + verb +"' request to URL : " + url);
+            logger.info("\nSending '" + verb +"' request to URL : " + url);
 
             final HttpRequest actualRequest = request.build();
 
@@ -68,19 +74,19 @@ public class HttpClientRequestSender implements CanSendHttpRequests {
             for(Map.Entry<String, List<String>> actualHeader :
                     actualRequest.headers().map().entrySet()){
                 lastRequest.addHeader(actualHeader.getKey(), actualHeader.getValue().get(0));
-                System.out.println(String.format("Request Header - %s:%s", actualHeader.getKey(), actualHeader.getValue().get(0)));
+                logger.info(String.format("Request Header - %s:%s", actualHeader.getKey(), actualHeader.getValue().get(0)));
             }
 
             final HttpResponse<String> actualResponse = client.send(actualRequest, HttpResponse.BodyHandlers.ofString());
 
             response.statusCode = actualResponse.statusCode();
 
-            System.out.println("Response Code : " + response.statusCode);
+            logger.info("Response Code : " + response.statusCode);
 
             response.body = actualResponse.body();
 
             //print result
-            System.out.println("Response Body: " + response.body);
+            logger.info("Response Body: " + response.body);
 
 
             // add the headers
@@ -88,7 +94,7 @@ public class HttpClientRequestSender implements CanSendHttpRequests {
             for(Map.Entry<String, List<String>> header : actualResponse.headers().map().entrySet()){
                 String headerValue =  header.getValue().get(0);
                 responseHeaders.put(header.getKey(),headerValue);
-                System.out.println("Header: " + header.getKey() + " - " + headerValue);
+                logger.info("Header: " + header.getKey() + " - " + headerValue);
             }
             response.setHeaders(responseHeaders);
 

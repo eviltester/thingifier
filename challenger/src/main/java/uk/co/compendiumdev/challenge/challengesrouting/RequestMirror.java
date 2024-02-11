@@ -40,9 +40,6 @@ public class RequestMirror {
                         new MirrorHttpApiRequestHandler(this.entityDefn)
                 ).validateRequestSyntax(false).handle();
 
-        // TODO handle mirror text header here
-        System.out.println("handle text header here");
-
         final AcceptHeaderParser parser = new AcceptHeaderParser(request.headers("accept"));
 
         // handle text separately as the main api does not 'do' text

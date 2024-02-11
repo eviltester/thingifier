@@ -57,6 +57,24 @@
             <version>2.3.1</version>
             <scope>test</scope>
         </dependency>
+
+
+        <!-- logging
+
+        https://betterstack.com/community/guides/logging/how-to-start-logging-with-java/#2-mask-the-logging-framework-with-slf4j
+        https://www.slf4j.org/manual.html
+        -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>2.0.10</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-jdk14</artifactId>
+            <version>2.0.10</version>
+        </dependency>
+
     </dependencies>
 
     <build>

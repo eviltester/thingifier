@@ -1,6 +1,8 @@
 package uk.co.compendiumdev.challenge.persistence;
 
 import com.google.gson.Gson;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
 
 import java.io.*;
@@ -8,14 +10,15 @@ import java.nio.file.Files;
 
 public class ChallengerFileStorage implements PersistenceMechanism {
 
+    Logger logger = LoggerFactory.getLogger(ChallengerFileStorage.class);
+
     @Override
     public PersistenceResponse saveChallengerStatus(final ChallengerAuthData data) {
 
         File file = new File(System.getProperty("User.dir") , getFileNameFor(data.getXChallenger()));
 
         if(!file.exists()){
-            String message = "Creating new challenger status file: " + file.getAbsolutePath();
-            System.out.println(message);
+            logger.warn("Creating new challenger status file: {}", file.getAbsolutePath());
         }
 
         try(FileOutputStream out = new FileOutputStream(file)) {
@@ -24,8 +27,7 @@ public class ChallengerFileStorage implements PersistenceMechanism {
             return new PersistenceResponse().
                     withSuccess(true);
         } catch (IOException e) {
-            e.printStackTrace();
-            System.out.println("Error writing to file: " + file.getAbsolutePath());
+            logger.error("Error writing to file: {}", file.getAbsolutePath(), e);
             return new PersistenceResponse().
                     withSuccess(false).
                     withErrorMessage(e.getMessage());
@@ -45,7 +47,7 @@ public class ChallengerFileStorage implements PersistenceMechanism {
             if(guid.startsWith("rest-api-challenges-single-player")){
                 message = message + "\nChallenger status file will be created when a challenge is completed.";
             }
-            System.out.println(message);
+            logger.warn(message);
             return new PersistenceResponse().
                     withSuccess(false).
                     withErrorMessage(message);
@@ -59,8 +61,7 @@ public class ChallengerFileStorage implements PersistenceMechanism {
                     withChallengerAuthData(
                             new Gson().fromJson(dataString, ChallengerAuthData.class));
         } catch (IOException e) {
-            e.getMessage();
-            System.out.println("Error Reading Challenge Status From file: " + file.getAbsolutePath());
+            logger.error("Error Reading Challenge Status From file: {}", file.getAbsolutePath(), e);
             return new PersistenceResponse().
                     withSuccess(false).
                     withErrorMessage(e.getMessage());

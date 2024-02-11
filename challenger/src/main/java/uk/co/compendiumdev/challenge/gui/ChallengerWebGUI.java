@@ -1,5 +1,7 @@
 package uk.co.compendiumdev.challenge.gui;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.co.compendiumdev.challenge.CHALLENGE;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
@@ -18,6 +20,8 @@ import static spark.Spark.get;
 import static spark.Spark.notFound;
 
 public class ChallengerWebGUI {
+
+    Logger logger = LoggerFactory.getLogger(ChallengerWebGUI.class);
     private final DefaultGUIHTML guiManagement;
     private final boolean guiStayAlive;
 
@@ -116,7 +120,7 @@ public class ChallengerWebGUI {
             try {
                 xChallenger = request.splat()[0];
             } catch (Exception e) {
-                System.out.println("No challenger id to render");
+                logger.warn("No challenger id to render");
             }
 
 
@@ -195,7 +199,7 @@ public class ChallengerWebGUI {
             try {
                 urltoshow = request.splat()[0];
             } catch (Exception e) {
-                System.out.println("No url to pretend to be on 404");
+               logger.error("No url to pretend to be on 404", e);
             }
 
             StringBuilder html = new StringBuilder();

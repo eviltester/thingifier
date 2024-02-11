@@ -1,10 +1,14 @@
 package uk.co.compendiumdev.challenge.challenges;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.co.compendiumdev.challenge.CHALLENGE;
 
 import java.util.*;
 
 public class ChallengeDefinitions {
+
+    Logger logger = LoggerFactory.getLogger(ChallengeDefinitions.class);
 
     private final List<ChallengeSection> sections;
     Map<CHALLENGE, ChallengeDefinitionData> challengeData;
@@ -567,7 +571,7 @@ public class ChallengeDefinitions {
 
         Set challengeNames = new HashSet();
         for(ChallengeDefinitionData challenge : orderedChallenges){
-            System.out.println("Challenge: " + challenge.name);
+            logger.info("Setup Challenge: " + challenge.name);
             challengeNames.add(challenge.name);
         }
         int sectionChallengesCount = 0;

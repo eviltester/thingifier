@@ -1,5 +1,7 @@
 package uk.co.compendiumdev.challenge.challengehooks;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.co.compendiumdev.challenge.CHALLENGE;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
@@ -17,6 +19,8 @@ import java.util.Collection;
 
 
 public class ChallengerApiResponseHook implements HttpApiResponseHook {
+
+    Logger logger = LoggerFactory.getLogger(ChallengerApiResponseHook.class);
 
     private final Challengers challengers;
     private final Thingifier thingifier;
@@ -56,7 +60,7 @@ public class ChallengerApiResponseHook implements HttpApiResponseHook {
 
         if(request.getVerb() == HttpApiRequest.VERB.GET &&
                 request.getPath().contentEquals("todos") &&
-                request.getQueryParams().size()==0 &&
+                request.getQueryParams().isEmpty() &&
                 acceptParser.hasAskedForXML() &&
                 response.getType().contentEquals("application/xml") &&
                 response.getStatusCode()==200
@@ -66,7 +70,7 @@ public class ChallengerApiResponseHook implements HttpApiResponseHook {
 
         if(request.getVerb() == HttpApiRequest.VERB.GET &&
                 request.getPath().contentEquals("todos") &&
-                request.getQueryParams().size()==0 &&
+                request.getQueryParams().isEmpty() &&
                 acceptParser.hasAskedForJSON() &&
                 response.getType().contentEquals("application/json") &&
                 response.getStatusCode()==200
@@ -76,7 +80,7 @@ public class ChallengerApiResponseHook implements HttpApiResponseHook {
 
         if(request.getVerb() == HttpApiRequest.VERB.GET &&
                 request.getPath().contentEquals("todos") &&
-                request.getQueryParams().size()==0 &&
+                request.getQueryParams().isEmpty() &&
                 acceptParser.missingAcceptHeader() &&
                 response.getType().contentEquals("application/json") &&
                 response.getStatusCode()==200
@@ -86,7 +90,7 @@ public class ChallengerApiResponseHook implements HttpApiResponseHook {
 
         if(request.getVerb() == HttpApiRequest.VERB.GET &&
                 request.getPath().contentEquals("todos") &&
-                request.getQueryParams().size()==0 &&
+                request.getQueryParams().isEmpty() &&
                 !acceptParser.isSupportedHeader() &&
                 response.getStatusCode()==406
         ){
@@ -95,7 +99,7 @@ public class ChallengerApiResponseHook implements HttpApiResponseHook {
 
         if(request.getVerb() == HttpApiRequest.VERB.GET &&
                 request.getPath().contentEquals("todos") &&
-                request.getQueryParams().size()==0 &&
+                request.getQueryParams().isEmpty() &&
                 acceptParser.hasAskedForANY() &&
                 response.getType().contentEquals("application/json") &&
                 response.getStatusCode()==200
@@ -105,7 +109,7 @@ public class ChallengerApiResponseHook implements HttpApiResponseHook {
 
         if(request.getVerb() == HttpApiRequest.VERB.GET &&
                 request.getPath().contentEquals("todos") &&
-                request.getQueryParams().size()==0 &&
+                request.getQueryParams().isEmpty() &&
                 acceptParser.hasAskedForXML() &&
                 acceptParser.hasAskedForJSON() &&
                 acceptParser.hasAPreferenceForXml() &&
@@ -144,7 +148,7 @@ public class ChallengerApiResponseHook implements HttpApiResponseHook {
             try {
 
                 String location = response.getHeaders().get("Location");
-                String locationParts[] = location.split("/");
+                String[] locationParts = location.split("/");
 
                 if(locationParts.length>1){
                     // to check it is an int
@@ -158,7 +162,7 @@ public class ChallengerApiResponseHook implements HttpApiResponseHook {
                     }
                 }
             }catch(Exception e){
-                System.out.println("Error checking post todos 201 for max length " + e.getMessage());
+               logger.warn("Error checking post todos 201 for max length ", e);
             }
 
         }
@@ -285,10 +289,11 @@ public class ChallengerApiResponseHook implements HttpApiResponseHook {
     }
 
     String collate(Collection<String> strings){
-        String collated = "";
+        StringBuilder collated = new StringBuilder();
         for(String string : strings){
-            collated = collated + " " + string;
+            collated.append(string);
+            collated.append(" ");
         }
-        return collated;
+        return collated.toString();
     }
 }

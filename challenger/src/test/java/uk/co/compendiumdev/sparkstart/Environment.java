@@ -1,11 +1,15 @@
 package uk.co.compendiumdev.sparkstart;
 
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import spark.Spark;
 import uk.co.compendiumdev.challenge.ChallengeMain;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
 
 public class Environment {
+
+    static Logger logger = LoggerFactory.getLogger(Port.class);
 
     // these unit tests only work in multi-player mode
     public static boolean SINGLE_PLAYER_MODE = false;
@@ -56,7 +60,7 @@ public class Environment {
             try {
                 Thread.sleep(500);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                logger.error("Interruption during running check ",e);
             }
             if(maxtries<=0){
                 return;

@@ -1,6 +1,8 @@
 package uk.co.compendiumdev.challenger.http.httpclient;
 
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
 
 import java.net.MalformedURLException;
@@ -11,6 +13,8 @@ import java.util.Map;
 
 public class HttpMessageSender {
 
+
+    static Logger logger = LoggerFactory.getLogger(HttpMessageSender.class);
 
     private CanSendHttpRequests sender;
     private URL baseUrl;
@@ -32,8 +36,7 @@ public class HttpMessageSender {
         try {
             this.baseUrl = new URL(baseUrl);
         }catch(MalformedURLException e){
-            e.printStackTrace();
-            System.out.println("*** BASE URL is wrong!! " + baseUrl);
+            logger.error("*** BASE URL is wrong!! {}", baseUrl, e);
         }
 
         headers = new HashMap<>();
@@ -120,8 +123,7 @@ public class HttpMessageSender {
             thisUrl = new URL(this.baseUrl, url);
             return thisUrl;
         }catch(MalformedURLException e){
-            e.printStackTrace();
-            System.out.println("What url are you trying to build? " + this.baseUrl.toString() + url);
+            logger.error("What url are you trying to build? {}", this.baseUrl.toString() + url, e);
         }
 
         return null;

@@ -1,8 +1,11 @@
 package uk.co.compendiumdev.challenge.challengers;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.co.compendiumdev.challenge.CHALLENGE;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.ChallengerState;
+import uk.co.compendiumdev.challenge.challenges.ChallengeDefinitions;
 import uk.co.compendiumdev.challenge.persistence.PersistenceLayer;
 import uk.co.compendiumdev.challenge.persistence.PersistenceResponse;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
@@ -14,6 +17,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Challengers {
+
+    Logger logger = LoggerFactory.getLogger(Challengers.class);
 
     private final EntityRelModel erModel;
     private boolean singlePlayerMode;
@@ -81,10 +86,10 @@ public class Challengers {
         final long cutOffTime = System.currentTimeMillis();
         for(ChallengerAuthData data : authData.values()){
             if(data.expiresAt() < cutOffTime ){
-                System.out.printf("PURGING AUTH: %s%n", data.getXChallenger());
+                logger.warn("PURGING AUTH: {}", data.getXChallenger());
                 deleteMe.add(data.getXChallenger());
             }else{
-                System.out.printf("PURGE: %s expires in %d%n", data.getXChallenger(), cutOffTime - data.expiresAt());
+                logger.info("PURGE: {} expires in {}", data.getXChallenger(), cutOffTime - data.expiresAt());
             }
         }
 
@@ -92,12 +97,12 @@ public class Challengers {
             delete(deleteKey);
             if(erModel!=null){
                 if(erModel.getDatabaseNames().contains(deleteKey)){
-                    System.out.printf("DELETING DATABASE: %s%n", deleteKey);
+                    logger.warn("DELETING DATABASE: {}", deleteKey);
                     erModel.deleteInstanceDatabase(deleteKey);
                 }
             }
         }
-        System.out.printf("CURRENT Challenger count: %d%n",authData.values().size());
+        logger.info("CURRENT Challenger count: {}",authData.values().size());
     }
 
     public ChallengerAuthData createNewChallenger() {

@@ -1,10 +1,13 @@
 package uk.co.compendiumdev.challenger.http.completechallenges;
 
 import org.junit.jupiter.api.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.co.compendiumdev.challenge.CHALLENGE;
 import uk.co.compendiumdev.challenge.ChallengeMain;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
+import uk.co.compendiumdev.challenge.persistence.ChallengerFileStorage;
 import uk.co.compendiumdev.challenger.http.httpclient.HttpResponseDetails;
 import uk.co.compendiumdev.challenger.http.httpclient.HttpMessageSender;
 import uk.co.compendiumdev.sparkstart.Environment;
@@ -15,6 +18,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public abstract class ChallengeCompleteTest{
+
+    static Logger logger = LoggerFactory.getLogger(ChallengeCompleteTest.class);
 
     public static boolean isEnvironmentSet = false;
     public static int challengesOffset = 0;
@@ -84,14 +89,11 @@ public abstract class ChallengeCompleteTest{
             }
             if(!challenger.statusOfChallenge(challenge)){
                 remainingChallengeCount++;
-                System.out.println(challenge.toString());
+                logger.info(challenge.toString());
             }
         }
 
-        System.out.print(
-            String.format(
-                "%d challenges left to complete",
-                remainingChallengeCount));
+        logger.error("{} challenges left to complete", remainingChallengeCount);
 
         if(remainingChallengeCount-challengesOffset>0){
             Assertions.fail(String.format(

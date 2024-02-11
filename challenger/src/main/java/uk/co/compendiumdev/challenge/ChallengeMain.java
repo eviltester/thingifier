@@ -1,5 +1,7 @@
 package uk.co.compendiumdev.challenge;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.co.compendiumdev.challenge.apimodel.ChallengeApiModel;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
 import uk.co.compendiumdev.thingifier.Thingifier;
@@ -11,6 +13,9 @@ public class ChallengeMain {
     static ChallengeRouteHandler challenger;
 
     public static void main(String[] args) {
+
+        Logger logger = LoggerFactory.getLogger(ChallengeMain.class);
+        logger.info("Hello World");
 
         MainImplementation app = new MainImplementation();
         Thingifier thingifier = new ChallengeApiModel().get();
@@ -27,27 +32,27 @@ public class ChallengeMain {
 
         for (String arg : args) {
             if (arg.toLowerCase().startsWith("-multiplayer")) {
-                System.out.println("Running in multiplayer mode");
+                logger.info("Running in multiplayer mode");
                 challenger.setToMultiPlayerMode();
             }
 
             if (arg.toLowerCase().startsWith("-cloudstorage")) {
-                System.out.println("Setting persistence mechanism to cloud");
+                logger.info("Setting persistence mechanism to cloud");
                 challenger.setToCloudPersistenceMode();
             }
 
             if(arg.toLowerCase().startsWith("-guikeepalive")){
-                System.out.println("Setting GUI to keep session alive through XHR");
+                logger.info("Setting GUI to keep session alive through XHR");
                 challenger.setGuiToKeepSessionAlive();
             }
 
             if (arg.toLowerCase().startsWith("-memory")) {
-                System.out.println("Setting persistence mechanism to no persistence");
+                logger.info("Setting persistence mechanism to no persistence");
                 challenger.setToNoPersistenceMode();
             }
 
             if (arg.toLowerCase().startsWith("-enableadminapi")) {
-                System.out.println("Enabling Admin Api");
+                logger.info("Enabling Admin Api");
                 challenger.enableAdminApi();
             }
         }
@@ -65,7 +70,7 @@ public class ChallengeMain {
 
 
         if(challenger.isSinglePlayerMode()){
-            System.out.println("Running in Single User Mode");
+            logger.info("Running in Single User Mode");
             challenger.getThingifier().ensureCreatedAndPopulatedInstanceDatabaseNamed(Challengers.SINGLE_PLAYER_GUID);
         }
 

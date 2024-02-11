@@ -8,12 +8,16 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import com.google.gson.Gson;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
+import uk.co.compendiumdev.challenge.gui.ChallengerWebGUI;
 
 import java.io.*;
 
 public class AwsS3Storage implements PersistenceMechanism{
 
+    Logger logger = LoggerFactory.getLogger(AwsS3Storage.class);
     static AmazonS3 s3Client;
 
     // to work we need environment variables for
@@ -42,8 +46,8 @@ public class AwsS3Storage implements PersistenceMechanism{
             s3Client.putObject(bucketName, data.getXChallenger(), dataString);
             return new PersistenceResponse().withSuccess(true);
         } catch (Exception e) {
-            e.printStackTrace();
-            System.out.println("Error storing data to bucket for guid: " + data.getXChallenger());
+
+            logger.error("Error storing data to bucket for guid: {}", data.getXChallenger(), e);
             return new PersistenceResponse().withSuccess(false).withErrorMessage(e.getMessage());
         }
     }
@@ -72,8 +76,7 @@ public class AwsS3Storage implements PersistenceMechanism{
             return new PersistenceResponse().withSuccess(true).withChallengerAuthData(
                     new Gson().fromJson(dataString, ChallengerAuthData.class));
         } catch (Exception e) {
-            e.getStackTrace();
-            System.out.println("Error Reading Challenge Status From S3: " + guid);
+            logger.error("Error Reading Challenge Status From S3: {}", guid, e);
             return new PersistenceResponse().
                     withSuccess(false).
                     withErrorMessage(e.getMessage());
