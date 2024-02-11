@@ -10,7 +10,8 @@ public class CompleteAllChallengesSingleUserTest extends ChallengeCompleteTest{
     @Override
     public int getNumberOfChallengesToFail(){
         // POST to retrieve session only works in multi-user
-        return 1;
+        // GET to retrieve session only works in multi-user
+        return 2;
     }
 
 }

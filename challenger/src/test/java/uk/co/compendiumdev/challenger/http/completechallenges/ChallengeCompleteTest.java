@@ -940,32 +940,7 @@ public abstract class ChallengeCompleteTest{
 
     }
 
-    @Test
-    public void restoreChallengeWithGET() {
 
-        // ensure challenger status file exists
-        ChallengeMain.getChallenger().getChallengers().persistChallengerState(challenger);
-        // but is not in memory
-        ChallengeMain.getChallenger().getChallengers().delete(challenger.getXChallenger());
-
-        // remember x-challenger guid
-        String guid = challenger.getXChallenger();
-
-        //Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
-
-        Map<String, String> headers = new HashMap<>();
-        //headers.putAll(x_challenger_header);
-        headers.put("Content-Type", "application/json");
-
-        final HttpResponseDetails response =
-                http.send("/challenger/" + guid,
-                        "GET", headers,
-                        "");
-
-        Assertions.assertEquals(204, response.statusCode);
-        challenger = ChallengeMain.getChallenger().getChallengers().getChallenger(guid);
-        Assertions.assertTrue(challenger.statusOfChallenge(CHALLENGE.GET_RESTORE_EXISTING_CHALLENGER));
-    }
 
 
 }
