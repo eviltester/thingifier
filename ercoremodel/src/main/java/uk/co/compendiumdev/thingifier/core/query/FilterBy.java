@@ -16,7 +16,8 @@ public class FilterBy {
                 ">", // < e.g. ?id=>3 id is > than 3
                 "=", // < e.g. ?id==3 id equals 3
                 "!", // < e.g. ?id=!3 id not equals 3
-                "!=" // < e.g. ?id=!=3 id not equals 3
+                "!=", // < e.g. ?id=!=3 id not equals 3
+                "~=" // regex comparison match
         };  // by default comparison filter will be equals e.g. ?id=3
 
         String operatorToSet = "=";

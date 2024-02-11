@@ -7,6 +7,8 @@ import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class EntityListFilterParamParser {
 
@@ -72,6 +74,14 @@ public class EntityListFilterParamParser {
                             return false;
                         }
                         break;
+                    case "~=": //regex match
+                        Pattern pattern = Pattern.compile(filterByCondition.fieldValue);
+                        Matcher matcher = pattern.matcher(actualValue.getValue().asString());
+                        if(matcher.matches()){
+                            return true;
+                        }else{
+                            return false;
+                        }
                     default:
                         System.out.println(String.format("Unhandled filterby condition %s%s%s",
                                             fieldName, filterByCondition.filterOperation, value

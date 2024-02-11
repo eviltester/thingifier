@@ -4,8 +4,6 @@ import uk.co.compendiumdev.thingifier.core.query.FilterBy;
 import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
 
 import java.net.URLDecoder;
-import java.util.ArrayList;
-import java.util.List;
 
 public class UrlParamParser {
     public String urlDecode(String possiblyUrlEncodedString) {

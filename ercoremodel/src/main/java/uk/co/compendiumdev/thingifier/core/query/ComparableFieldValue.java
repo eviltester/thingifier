@@ -57,7 +57,7 @@ public class ComparableFieldValue {
         return 0;
     }
 
-    private FieldValue getValue() {
+    public FieldValue getValue() {
         return fieldValue;
     }
 }

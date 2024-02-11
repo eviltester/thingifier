@@ -214,4 +214,21 @@ public class QueryFiltersIntegerTest {
     }
 
 
+    @Test
+    public void canRegexFilterInteger(){
+        QueryFilterParams params = new QueryFilterParams();
+        params.put("int", "~=[1,2]");
+        params.put("sortby", "+int");
+
+        SimpleQuery queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
+                performQuery(params);
+
+        Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
+        List<EntityInstance> instances = queryResults.getListEntityInstances();
+        Assertions.assertEquals(2, instances.size(), "expected 3 values");
+        Assertions.assertEquals(1, instances.get(0).getFieldValue("int").asInteger());
+        Assertions.assertEquals(2, instances.get(1).getFieldValue("int").asInteger());
+    }
+
+
 }

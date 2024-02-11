@@ -37,15 +37,15 @@ public class EntityListSortParamParser {
                 switch (sortByValue.charAt(0)){
                     case '-':
                         aSortBy.order=1;
-                        aSortBy.fieldName=sortByValue.substring(1);
+                        aSortBy.fieldName=sortByValue.substring(1).trim();
                         break;
                     case '+':
                         aSortBy.order=-1;
-                        aSortBy.fieldName=sortByValue.substring(1);
+                        aSortBy.fieldName=sortByValue.substring(1).trim();
                         break;
                     default:
                         aSortBy.order=-1;
-                        aSortBy.fieldName=sortByValue;
+                        aSortBy.fieldName=sortByValue.trim();
                         break;
                 }
                 sortbys.add(aSortBy);
