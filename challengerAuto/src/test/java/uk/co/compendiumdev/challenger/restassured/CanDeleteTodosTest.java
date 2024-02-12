@@ -45,33 +45,4 @@ public class CanDeleteTodosTest extends RestAssuredBaseTest {
                 statusCode(404);
     }
 
-    @Test
-    void canDeleteAllTodoItems(){
-
-        TodosApi api = new TodosApi();
-
-        List<Todo> todos = api.getTodos();
-
-        for(Todo todo : todos) {
-
-            RestAssured.
-                given().
-                    header("X-CHALLENGER", xChallenger).
-                    accept("application/json").
-                    delete(apiPath("/todos/" + todo.id)).
-                then().
-                    statusCode(200).
-                    contentType(ContentType.JSON);
-        }
-
-        ChallengesStatus statuses = new ChallengesStatus();
-        statuses.get();
-
-        Assertions.assertTrue(statuses.getChallengeNamed("DELETE /todos/{id} (200) all").status);
-
-        // check all deleted
-        List<Todo> notodos = api.getTodos();
-        Assertions.assertEquals(0, notodos.size());
-    }
-
 }

@@ -72,4 +72,18 @@ public class TodosApi {
 
         return todos.todos.get(0);
     }
+
+    public void deleteTodo(Integer id) {
+
+        String todosEndPoint = Environment.getEnv("/todos");
+
+        RestAssured.
+            given().
+                header("X-CHALLENGER", xChallenger).
+                accept("application/json").
+                contentType("application/json").
+                delete(todosEndPoint + "/" + id).
+            then().
+                statusCode(200);
+    }
 }

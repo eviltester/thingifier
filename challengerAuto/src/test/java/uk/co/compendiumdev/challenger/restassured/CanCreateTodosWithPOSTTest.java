@@ -77,7 +77,6 @@ public class CanCreateTodosWithPOSTTest extends RestAssuredBaseTest {
         createMeJson.getAsJsonObject().
                 addProperty("doneStatus", "truthy");
 
-
         RestAssured.
             given().
                 header("X-CHALLENGER", xChallenger).
@@ -103,14 +102,12 @@ public class CanCreateTodosWithPOSTTest extends RestAssuredBaseTest {
         createMe.title = "*3*5*7*9*12*15*18*21*24*27*30*33*36*39*42*45*48*51*";
         createMe.description = "my description " + System.currentTimeMillis();
 
-        final JsonElement createMeJson = new Gson().toJsonTree(createMe);
-
         RestAssured.
                 given().
                 header("X-CHALLENGER", xChallenger).
                 accept("application/json").
                 contentType("application/json").
-                body(createMeJson.toString()).
+                body(createMe).
                 post(apiPath( "/todos")).
                 then().
                 statusCode(400).
@@ -199,14 +196,12 @@ public class CanCreateTodosWithPOSTTest extends RestAssuredBaseTest {
                 "117*121*125*129*133*137*141*145*149*153*157*" +
                 "161*165*169*173*177*181*185*189*193*197*201*";
 
-        final JsonElement createMeJson = new Gson().toJsonTree(createMe);
-
         RestAssured.
                 given().
                 header("X-CHALLENGER", xChallenger).
                 accept("application/json").
                 contentType("application/json").
-                body(createMeJson.toString()).
+                body(createMe).
                 post(apiPath( "/todos")).
                 then().
                 statusCode(400).
@@ -256,14 +251,12 @@ public class CanCreateTodosWithPOSTTest extends RestAssuredBaseTest {
                 "104*108*112*116*120*124*128*132*136*140*144*148*" +
                 "152*156*160*164*168*172*176*180*184*188*192*196*200*";
 
-        String payload = new Gson().toJson(todo);
-
         Response response = RestAssured.
                 given().
                 header("X-CHALLENGER", xChallenger).
                 accept("application/json").
                 contentType("application/json").
-                body(payload.getBytes()).
+                body(todo).
                 post(apiPath("/todos")).
                 then().
                 statusCode(201).
@@ -433,62 +426,4 @@ public class CanCreateTodosWithPOSTTest extends RestAssuredBaseTest {
 
     }
 
-    @Test
-    void canCreateAllTodosAndMaxOutTheLimit(){
-
-        Todo createMe = new Todo();
-        createMe.title = "my title";
-        createMe.description = "my description";
-
-        int todoNumber=0;
-        Response response=null;
-
-        List<Integer> idsToDelete = new ArrayList<>();
-
-        // could get todos then count them and add only the expected number
-        // this would also allow us to delete some if there were already the max
-
-        do{
-            createMe.title = "my title " + todoNumber;
-            response = RestAssured.
-                    given().
-                    header("X-CHALLENGER", xChallenger).
-                    accept("application/json").
-                    contentType("application/json").
-                    body(createMe).
-                    post(apiPath("/todos")).then().
-                    extract().response();
-
-            if(response.statusCode()==201) {
-                Todo createdTodo = response.as(Todo.class);
-                idsToDelete.add(createdTodo.id);
-            }
-
-            if(response.statusCode()!=201 && response.statusCode()!=400){
-                Assertions.fail("Unexpected status code received during add all todos " + response.statusCode());
-            }
-
-        }while(response.statusCode()!=400);
-
-        ErrorMessages messages = response.as(ErrorMessages.class);
-
-        Assertions.assertTrue(messages.errorMessages.contains("ERROR: Cannot add instance, maximum limit of 20 reached"));
-
-        ChallengesStatus statuses = new ChallengesStatus();
-        statuses.get();
-        Assertions.assertTrue(statuses.getChallengeNamed("POST /todos (201) all").status);
-
-        // now delete those todos we created
-        idsToDelete.forEach( (id) -> {
-                RestAssured.
-                        given().
-                        header("X-CHALLENGER", xChallenger).
-                        accept("application/json").
-                        contentType("application/json").
-                        delete(apiPath("/todos/" + id)).
-                        then().
-                        statusCode(200);
-        });
-
-    }
 }
