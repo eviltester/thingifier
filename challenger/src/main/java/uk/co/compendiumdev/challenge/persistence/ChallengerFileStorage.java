@@ -15,7 +15,10 @@ public class ChallengerFileStorage implements PersistenceMechanism {
     @Override
     public PersistenceResponse saveChallengerStatus(final ChallengerAuthData data) {
 
-        File file = new File(System.getProperty("User.dir") , getFileNameFor(data.getXChallenger()));
+        File folder = new File(System.getProperty("User.dir"), "challengersessions");
+        folder.mkdirs();
+
+        File file = new File(folder , getFileNameFor(data.getXChallenger()));
 
         if(!file.exists()){
             logger.warn("Creating new challenger status file: {}", file.getAbsolutePath());

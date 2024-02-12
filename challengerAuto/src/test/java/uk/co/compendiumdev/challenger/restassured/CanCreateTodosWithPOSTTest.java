@@ -60,7 +60,7 @@ public class CanCreateTodosWithPOSTTest extends RestAssuredBaseTest {
     }
 
     @Test
-    void can400CreateATodoWithInvalidDoneStatusPost(){
+    void can400NotCreateATodoWithInvalidDoneStatusPost(){
 
         Todo createMe = new Todo();
         createMe.title = "my name " + System.currentTimeMillis();
@@ -93,6 +93,62 @@ public class CanCreateTodosWithPOSTTest extends RestAssuredBaseTest {
     }
 
     @Test
+    void can400NotCreateATodoWithTitleTooLong(){
+
+        Todo createMe = new Todo();
+        // max length on title is 50
+        createMe.title = "*3*5*7*9*12*15*18*21*24*27*30*33*36*39*42*45*48*51*";
+        createMe.description = "my description " + System.currentTimeMillis();
+
+        final JsonElement createMeJson = new Gson().toJsonTree(createMe);
+
+        RestAssured.
+                given().
+                header("X-CHALLENGER", xChallenger).
+                accept("application/json").
+                contentType("application/json").
+                body(createMeJson.toString()).
+                post(apiPath( "/todos")).
+                then().
+                statusCode(400).
+                contentType(ContentType.JSON);
+
+        ChallengesStatus statuses = new ChallengesStatus();
+        statuses.get();
+        Assertions.assertTrue(statuses.getChallengeNamed("POST /todos (400) title too long").status);
+
+    }
+
+    @Test
+    void can400NotCreateATodoWithDescriptionTooLing(){
+
+        Todo createMe = new Todo();
+        createMe.title = "just right";
+        // max length on title is 200
+        createMe.description = "*3*5*7*10*13*16*19*22*25*28*31*34*37*40*43*46*49*" +
+                "52*55*58*61*64*67*70*73*76*79*82*85*88*91*94*97*101*105*109*113*" +
+                "117*121*125*129*133*137*141*145*149*153*157*" +
+                "161*165*169*173*177*181*185*189*193*197*201*";
+
+        final JsonElement createMeJson = new Gson().toJsonTree(createMe);
+
+        RestAssured.
+                given().
+                header("X-CHALLENGER", xChallenger).
+                accept("application/json").
+                contentType("application/json").
+                body(createMeJson.toString()).
+                post(apiPath( "/todos")).
+                then().
+                statusCode(400).
+                contentType(ContentType.JSON);
+
+        ChallengesStatus statuses = new ChallengesStatus();
+        statuses.get();
+        Assertions.assertTrue(statuses.getChallengeNamed("POST /todos (400) description too long").status);
+    }
+
+    @Test
     void can415CreateATodoWithInvalidContentType(){
 
         Todo todo = new Todo();
@@ -119,6 +175,45 @@ public class CanCreateTodosWithPOSTTest extends RestAssuredBaseTest {
 
     }
 
+    @Test
+    void canCreateATodoWithMaxTitleAndDescriptionLengths(){
+
+        Todo todo = new Todo();
+        todo.doneStatus = true;
+        todo.title = "2*4*6*8*11*14*17*20*23*26*29*32*35*38*41*44*47*50*";
+        todo.description =
+                "*3*5*7*9*12*15*18*21*24*27*30*33*36*39*42*45*48*51*" +
+                "54*57*60*63*66*69*72*75*78*81*84*87*90*93*96*100*" +
+                "104*108*112*116*120*124*128*132*136*140*144*148*" +
+                "152*156*160*164*168*172*176*180*184*188*192*196*200*";
+
+        String payload = new Gson().toJson(todo);
+
+        Response response = RestAssured.
+                given().
+                header("X-CHALLENGER", xChallenger).
+                accept("application/json").
+                contentType("application/json").
+                body(payload.getBytes()).
+                post(apiPath("/todos")).
+                then().
+                statusCode(201).
+                contentType(ContentType.JSON).
+                and().extract().response();
+
+        Todo createdTodo = response.body().as(Todo.class);
+
+        Assertions.assertEquals(todo.title, createdTodo.title);
+        Assertions.assertEquals(todo.description, createdTodo.description);
+
+        Assertions.assertEquals(50, createdTodo.title.length());
+        Assertions.assertEquals(200, createdTodo.description.length());
+
+        ChallengesStatus statuses = new ChallengesStatus();
+        statuses.get();
+        Assertions.assertTrue(statuses.getChallengeNamed("POST /todos (201) max out content").status);
+
+    }
     @Test
     void canCreateATodoWithXMLPost(){
 

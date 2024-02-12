@@ -28,7 +28,8 @@ public class RestAssuredBaseTest {
 
             // because we are unit tests we are running in single player mode so delete the single player data
             try {
-                final File dataFile = new File(System.getProperty("User.dir"), "rest-api-challenges-single-player.data.txt");
+                final File folder = new File(System.getProperty("User.dir"), "challengersessions");
+                final File dataFile = new File(folder, "rest-api-challenges-single-player.data.txt");
                 if(dataFile.exists()){
                     dataFile.delete();
                 }
