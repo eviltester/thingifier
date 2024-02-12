@@ -15,7 +15,6 @@ public class ChallengeMain {
     public static void main(String[] args) {
 
         Logger logger = LoggerFactory.getLogger(ChallengeMain.class);
-        logger.info("Hello World");
 
         MainImplementation app = new MainImplementation();
         Thingifier thingifier = new ChallengeApiModel().get();

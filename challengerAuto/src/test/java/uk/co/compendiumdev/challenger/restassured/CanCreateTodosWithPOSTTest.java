@@ -7,11 +7,14 @@ import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import uk.co.compendiumdev.challenger.payloads.ErrorMessages;
 import uk.co.compendiumdev.challenger.payloads.Todo;
 import uk.co.compendiumdev.challenger.restassured.api.ChallengesStatus;
 import uk.co.compendiumdev.challenger.restassured.api.RestAssuredBaseTest;
 import uk.co.compendiumdev.challenger.restassured.api.TodosApi;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -117,6 +120,72 @@ public class CanCreateTodosWithPOSTTest extends RestAssuredBaseTest {
         statuses.get();
         Assertions.assertTrue(statuses.getChallengeNamed("POST /todos (400) title too long").status);
 
+    }
+
+    @Test
+    void can400NotCreateATodoWithAnExtraField(){
+
+        Todo createMe = new Todo();
+        // max length on title is 50
+        createMe.title = "my title";
+        createMe.description = "my description " + System.currentTimeMillis();
+
+        final JsonElement createMeJson = new Gson().toJsonTree(createMe);
+        createMeJson.getAsJsonObject().
+                addProperty("extrafield", "cannot add");
+
+        RestAssured.
+                given().
+                header("X-CHALLENGER", xChallenger).
+                accept("application/json").
+                contentType("application/json").
+                body(createMeJson.toString()).
+                post(apiPath( "/todos")).
+                then().
+                statusCode(400).
+                contentType(ContentType.JSON);
+
+        ChallengesStatus statuses = new ChallengesStatus();
+        statuses.get();
+        Assertions.assertTrue(statuses.getChallengeNamed("POST /todos (400) extra").status);
+
+    }
+
+    @Test
+    void can400NotCreateATodoBecausePayloadIsTooLarge(){
+
+        Todo createMe = new Todo();
+        createMe.title = "my title";
+        createMe.description = "my description " + System.currentTimeMillis();
+
+        // add an extra field which makes payload too large
+        final JsonElement createMeJson = new Gson().toJsonTree(createMe);
+        createMeJson.getAsJsonObject().
+                addProperty("blowoutpayload", stringOfLength(5000));
+
+        RestAssured.
+                given().
+                header("X-CHALLENGER", xChallenger).
+                accept("application/json").
+                contentType("application/json").
+                body(createMeJson.toString()).
+                post(apiPath( "/todos")).
+                then().
+                statusCode(413).
+                contentType(ContentType.JSON);
+
+        ChallengesStatus statuses = new ChallengesStatus();
+        statuses.get();
+        Assertions.assertTrue(statuses.getChallengeNamed("POST /todos (413) content too long").status);
+
+    }
+
+    private String stringOfLength(int length) {
+        StringBuilder str = new StringBuilder();
+        for (int currLen = 0; currLen < length; currLen++) {
+            str.append('a');
+        }
+        return str.toString();
     }
 
     @Test
@@ -361,6 +430,65 @@ public class CanCreateTodosWithPOSTTest extends RestAssuredBaseTest {
         Assertions.assertEquals(createMe.title, todo.title);
         Assertions.assertEquals(createMe.description, todo.description);
         Assertions.assertEquals(createMe.doneStatus, todo.doneStatus);
+
+    }
+
+    @Test
+    void canCreateAllTodosAndMaxOutTheLimit(){
+
+        Todo createMe = new Todo();
+        createMe.title = "my title";
+        createMe.description = "my description";
+
+        int todoNumber=0;
+        Response response=null;
+
+        List<Integer> idsToDelete = new ArrayList<>();
+
+        // could get todos then count them and add only the expected number
+        // this would also allow us to delete some if there were already the max
+
+        do{
+            createMe.title = "my title " + todoNumber;
+            response = RestAssured.
+                    given().
+                    header("X-CHALLENGER", xChallenger).
+                    accept("application/json").
+                    contentType("application/json").
+                    body(createMe).
+                    post(apiPath("/todos")).then().
+                    extract().response();
+
+            if(response.statusCode()==201) {
+                Todo createdTodo = response.as(Todo.class);
+                idsToDelete.add(createdTodo.id);
+            }
+
+            if(response.statusCode()!=201 && response.statusCode()!=400){
+                Assertions.fail("Unexpected status code received during add all todos " + response.statusCode());
+            }
+
+        }while(response.statusCode()!=400);
+
+        ErrorMessages messages = response.as(ErrorMessages.class);
+
+        Assertions.assertTrue(messages.errorMessages.contains("ERROR: Cannot add instance, maximum limit of 20 reached"));
+
+        ChallengesStatus statuses = new ChallengesStatus();
+        statuses.get();
+        Assertions.assertTrue(statuses.getChallengeNamed("POST /todos (201) all").status);
+
+        // now delete those todos we created
+        idsToDelete.forEach( (id) -> {
+                RestAssured.
+                        given().
+                        header("X-CHALLENGER", xChallenger).
+                        accept("application/json").
+                        contentType("application/json").
+                        delete(apiPath("/todos/" + id)).
+                        then().
+                        statusCode(200);
+        });
 
     }
 }
