@@ -19,7 +19,8 @@ public class ChallengerNotLoadedTest{
         // 2ce954c6-caa1-4299-85af-205a9d9f7867.data
         String notLoadedChallengerGUID = "2ce954c6-caa1-4299-85af-205a9d9f7867";
         final File resourceFile = new File(System.getProperty("user.dir") , "/src/test/resources/" + notLoadedChallengerGUID + ".data.txt");
-        final File dataFile = new File(System.getProperty("user.dir") , notLoadedChallengerGUID + ".data.txt");
+        final File folder = new File(System.getProperty("user.dir"), "challengersessions");
+        final File dataFile = new File(folder , notLoadedChallengerGUID + ".data.txt");
 
         if(!resourceFile.exists()){
             Assertions.fail("Could not find data file " + notLoadedChallengerGUID);
