@@ -43,7 +43,8 @@ public class ChallengerFileStorage implements PersistenceMechanism {
 
     @Override
     public PersistenceResponse loadChallengerStatus(final String guid) {
-        File file = new File(System.getProperty("User.dir") , getFileNameFor(guid));
+        File folder = new File(System.getProperty("User.dir"), "challengersessions");
+        File file = new File(folder , getFileNameFor(guid));
 
         if(!file.exists()){
             String message = "Could not find challenger status file: " + file.getAbsolutePath();
