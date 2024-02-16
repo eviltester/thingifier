@@ -35,6 +35,12 @@ public class ChallengeMain {
                 challenger.setToMultiPlayerMode();
             }
 
+            // because I keep typing multiuser instead of multiplayer!
+            if (arg.toLowerCase().startsWith("-multiuser")) {
+                logger.info("Running in multiplayer mode");
+                challenger.setToMultiPlayerMode();
+            }
+
             if (arg.toLowerCase().startsWith("-cloudstorage")) {
                 logger.info("Setting persistence mechanism to cloud");
                 challenger.setToCloudPersistenceMode();
@@ -53,6 +59,12 @@ public class ChallengeMain {
             if (arg.toLowerCase().startsWith("-enableadminapi")) {
                 logger.info("Enabling Admin Api");
                 challenger.enableAdminApi();
+            }
+
+            if(arg.toLowerCase().startsWith("-unlimitedtodos")){
+                // remove the limit on number of todos
+                logger.info("Enabling Unlimited TODO Instances");
+                thingifier.getDefinitionNamed("todo").setMaxInstanceLimit();
             }
         }
 

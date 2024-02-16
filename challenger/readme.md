@@ -24,6 +24,14 @@ e.g.
 
 This could be useful for team workshops and learning sessions.
 
+## Practise Testing
+
+If you just want to practice testing and use it as an API for a todos application then you probably want to remove the limit on the number of todos.
+
+Do this by starting with the command line parameter:
+
+`-unlimitedtodos`
+
 ## More information
 
 More information can be found at [eviltester.com/apichallenges](https://eviltester.com/apichallenges)

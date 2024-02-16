@@ -12,14 +12,15 @@ import java.util.*;
 
 public class EntityDefinition {
     private int maxInstanceCount; // use -ve for no limit
-    private String name;
-    private String plural;
+    private final String name;
+    private final String plural;
 
-    private DefinedFields fields;
-    private DefinedRelationships definedRelationships;
+    private final DefinedFields fields;
+    private final DefinedRelationships definedRelationships;
 
+    private final static int NO_INSTANCE_LIMIT = -1;
     public EntityDefinition(String name, String plural) {
-        this(name,plural,-1);
+        this(name,plural,EntityDefinition.NO_INSTANCE_LIMIT);
     }
 
     public EntityDefinition(String name, String plural, int maxInstanceCount) {
@@ -37,12 +38,8 @@ public class EntityDefinition {
     }
 
     public String toString() {
-        StringBuilder output = new StringBuilder();
 
-        output.append("\t" + name + "\n");
-        output.append(fields.toString());
-
-        return output.toString();
+        return "\t" + name + "\n" + fields.toString();
     }
 
 
@@ -132,5 +129,9 @@ public class EntityDefinition {
 
     public boolean hasMaxInstanceLimit() {
         return maxInstanceCount>=0;
+    }
+
+    public void setMaxInstanceLimit() {
+        maxInstanceCount = EntityDefinition.NO_INSTANCE_LIMIT;
     }
 }
