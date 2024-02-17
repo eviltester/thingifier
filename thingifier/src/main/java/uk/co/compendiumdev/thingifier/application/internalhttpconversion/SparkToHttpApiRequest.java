@@ -3,9 +3,8 @@ package uk.co.compendiumdev.thingifier.application.internalhttpconversion;
 import spark.Request;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import javax.servlet.http.HttpServletRequest;
+import java.util.*;
 
 public class SparkToHttpApiRequest {
 
@@ -20,10 +19,28 @@ public class SparkToHttpApiRequest {
                     setVerb(request.requestMethod()).
                     setUrl(request.url()).
                     setIP(request.ip()).
-                        //TODO: this is a standard parser and splits on = it does not parse as we need for sorting, filtering etc. e.g. id>=17 becomes id> 17 not id >=17
-                    setUrlParams(request.params());
+                        //this is a standard parser and splits on = it does not parse as we need for sorting, filtering etc. e.g. id>=17 becomes id> 17 not id >=17
+                    setUrlParams(request.params()).
+                    // the default Spark headers is a map so filters out duplicates, allow working with the raw list when necessary
+                    setRawHeaders(getRawHeadersList(request.raw())
+                );
 
         return apiRequest;
+    }
+
+    private static List<StringPair> getRawHeadersList(HttpServletRequest raw){
+
+        ArrayList<StringPair> headersList = new ArrayList<StringPair>();
+
+        for (Enumeration<String> headerNames = raw.getHeaderNames(); headerNames.hasMoreElements();){
+            String headerName = headerNames.nextElement();
+            for (Enumeration<String> headerValues = raw.getHeaders(headerName); headerValues.hasMoreElements();){
+                String headerValue = headerValues.nextElement();
+                headersList.add(new StringPair(headerName, headerValue));
+            }
+        }
+
+        return headersList;
     }
 
     private static Map<String, String> rawQueryParamsAsMap(final Request request) {

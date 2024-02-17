@@ -17,6 +17,8 @@ public class MirrorRoutes {
 
         // /mirror should be the GUI
         String endpoint ="/mirror/request";
+        String rawEndPoint ="/mirror/raw";
+
         RequestMirror requestMirror = new RequestMirror();
 
         // redirect a GET to "/fromPath" to "/toPath"
@@ -25,6 +27,8 @@ public class MirrorRoutes {
         List<String>verbEndpoints = new ArrayList<>();
         verbEndpoints.add(endpoint);
         verbEndpoints.add(endpoint+"/*");
+        verbEndpoints.add(rawEndPoint);
+        verbEndpoints.add(rawEndPoint+"/*");
 
         AdhocDocumentedSparkRouteConfig routeDefn = new AdhocDocumentedSparkRouteConfig(apiDefn);
 
@@ -44,13 +48,23 @@ public class MirrorRoutes {
             return requestMirror.mirrorRequest(request, result);
         };
 
+        Route rawTextMirroredRoute = (request, result) -> {
+            return requestMirror.mirrorRequestAsText(request, result);
+        };
+
         RoutingVerb[] verbs200status = {RoutingVerb.GET, RoutingVerb.POST, RoutingVerb.PUT,
                                         RoutingVerb.DELETE, RoutingVerb.PATCH, RoutingVerb.TRACE};
 
         for (String anEndpoint : verbEndpoints) {
             for(RoutingVerb routing : verbs200status) {
-                routeDefn.add(anEndpoint, routing, 200,
-                        "Mirror a " + routing.name().toUpperCase() + " Request", mirroredRoute);
+                if(anEndpoint.startsWith(endpoint)) {
+                    routeDefn.add(anEndpoint, routing, 200,
+                            "Mirror a " + routing.name().toUpperCase() + " Request", mirroredRoute);
+                }
+                if(anEndpoint.startsWith(rawEndPoint)) {
+                    routeDefn.add(anEndpoint, routing, 200,
+                            "Raw Text Mirror of a " + routing.name().toUpperCase() + " Request", rawTextMirroredRoute);
+                }
             }
         }
 

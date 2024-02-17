@@ -72,7 +72,10 @@ public class ChallengerInternalHTTPResponseHook implements InternalHttpResponseH
 
 
         if (challenger == null) {
-            if (!request.getPath().contentEquals("challenger")) {
+            if (!request.getPath().contentEquals("challenger") &&
+                    !request.getPath().contains("mirror/r") // exclude mirror endpoints from adding a challenger
+            ) {
+
                 if (!response.getHeaders().headerExists("X-CHALLENGER")) {
                     XChallengerHeader.setResultHeaderBasedOnChallenger(response, challenger);
                 }
@@ -86,7 +89,11 @@ public class ChallengerInternalHTTPResponseHook implements InternalHttpResponseH
 
         if (challenger != null) {
             if (!response.getHeaders().headerExists("X-CHALLENGER")) {
-                XChallengerHeader.setResultHeaderBasedOnChallenger(response, challenger);
+                if(!request.getPath().contains("mirror/r")){
+                    // exclude mirror endpoints from adding a challenger
+                    XChallengerHeader.setResultHeaderBasedOnChallenger(response, challenger);
+                }
+
             }
         }
 

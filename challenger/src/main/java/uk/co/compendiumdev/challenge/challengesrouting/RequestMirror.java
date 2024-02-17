@@ -50,4 +50,30 @@ public class RequestMirror {
         return returnValue;
     }
 
+    public String mirrorRequestAsText(final Request request, final Response result) {
+
+        // The raw unfiltered request as text
+
+        final Thingifier mirrorThingifier = new Thingifier();
+        mirrorThingifier.apiConfig().setResponsesToShowGuids(false);
+        mirrorThingifier.apiConfig().setResponsesToShowIdsIfAvailable(false);
+
+        // reject large requests
+        SparkMessageLengthValidator lengthValidator = new SparkMessageLengthValidator();
+
+        if(lengthValidator.rejectRequestTooLong(request, result)){
+            return lengthValidator.messageTooLongErrorResponse(
+                    mirrorThingifier.apiConfig(), request, result);
+        }
+
+        String returnValue =  new SparkApiRequestResponseHandler(request, result, mirrorThingifier).
+                usingHandler(
+                        new MirrorHttpApiTextRequestHandler()
+                ).validateRequestSyntax(false).handle();
+
+        result.header("Content-Type", "text/plain");
+
+        return returnValue;
+    }
+
 }

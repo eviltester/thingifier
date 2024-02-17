@@ -49,6 +49,29 @@ public class MirrorRoutesTest {
         args.add(Arguments.of(200, "delete", "/mirror/request/bob"));
         args.add(Arguments.of(200, "patch", "/mirror/request/bob"));
         args.add(Arguments.of(200, "trace", "/mirror/request/bob"));
+        // raw routes
+        args.add(Arguments.of(200, "get", "/mirror/raw"));
+        // 200 same as get
+        args.add(Arguments.of(200, "head", "/mirror/raw"));
+        args.add(Arguments.of(204, "options", "/mirror/raw"));
+        // post
+        args.add(Arguments.of(200, "post", "/mirror/raw"));
+        args.add(Arguments.of(200, "put", "/mirror/raw"));
+        args.add(Arguments.of(200, "delete", "/mirror/raw"));
+        args.add(Arguments.of(200, "patch", "/mirror/raw"));
+        args.add(Arguments.of(200, "trace", "/mirror/raw"));
+
+        args.add(Arguments.of(200, "get", "/mirror/raw/bob"));
+        // 200 same as get
+        args.add(Arguments.of(200, "head", "/mirror/raw/bob"));
+        args.add(Arguments.of(204, "options", "/mirror/raw/bob"));
+        // post
+        args.add(Arguments.of(200, "post", "/mirror/raw/bob"));
+        args.add(Arguments.of(200, "put", "/mirror/raw/bob"));
+        args.add(Arguments.of(200, "delete", "/mirror/raw/bob"));
+        args.add(Arguments.of(200, "patch", "/mirror/raw/bob"));
+        args.add(Arguments.of(200, "trace", "/mirror/raw/bob"));
+
 
         return args.stream();
     }
@@ -96,6 +119,19 @@ public class MirrorRoutesTest {
         http.setHeader("Accept", "text/plain");
 
         final HttpResponseDetails response = http.send("/mirror/request", "get");
+
+        Assertions.assertEquals(200, response.statusCode);
+        Assertions.assertEquals("text/plain", response.getHeader("Content-Type"));
+        Assertions.assertTrue(response.body.startsWith("GET "));
+    }
+
+    @Test
+    void rawIsAlwaysATextResponse() {
+
+        http.clearHeaders();
+        http.setHeader("Accept", "application/json");
+
+        final HttpResponseDetails response = http.send("/mirror/raw", "get");
 
         Assertions.assertEquals(200, response.statusCode);
         Assertions.assertEquals("text/plain", response.getHeader("Content-Type"));

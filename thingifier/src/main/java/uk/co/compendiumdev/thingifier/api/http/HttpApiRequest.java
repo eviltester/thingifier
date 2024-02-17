@@ -1,6 +1,7 @@
 package uk.co.compendiumdev.thingifier.api.http;
 
 import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
+import uk.co.compendiumdev.thingifier.application.internalhttpconversion.StringPair;
 import uk.co.compendiumdev.thingifier.core.query.FilterBy;
 import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
 import uk.co.compendiumdev.thingifier.core.query.fromurl.UrlParamParser;
@@ -20,6 +21,21 @@ public final class HttpApiRequest {
     private QueryFilterParams filterableQueryParams; // contains all the query param values in a form we can use for sorting and filtering e.g. ?id>=1&id<=4
     private String ip="";
     private Map<String, String>  urlParams;
+
+    // a storage for the raw headers, which might include duplicates
+    private ArrayList<StringPair> headersList;
+
+    public enum VERB{ GET, HEAD, POST, PUT, DELETE, PATCH, OPTIONS, CONNECT, TRACE}
+
+    public HttpApiRequest(final String pathInfo) {
+        path = justThePath(pathInfo);
+        headers = new HttpHeadersBlock();
+        queryParams = new HashMap<>();
+        filterableQueryParams = new QueryFilterParams();
+        headersList = new ArrayList<>();
+        body = "";
+        verb = VERB.GET;
+    }
 
     public HttpApiRequest setVerb(final String requestMethod) {
         verb = VERB.valueOf(requestMethod.toUpperCase());
@@ -67,16 +83,16 @@ public final class HttpApiRequest {
         return filterableQueryParams;
     }
 
-    public enum VERB{ GET, HEAD, POST, PUT, DELETE, PATCH, OPTIONS, CONNECT, TRACE}
-
-    public HttpApiRequest(final String pathInfo) {
-        this.path = justThePath(pathInfo);
-        this.headers = new HttpHeadersBlock();
-        queryParams = new HashMap<>();
-        filterableQueryParams = new QueryFilterParams();
-        body = "";
-        verb = VERB.GET;
+    public HttpApiRequest setRawHeaders(List<StringPair> rawHeadersList) {
+        headersList = new ArrayList<StringPair>(rawHeadersList);
+        return this;
     }
+
+    public List<StringPair> getHeadersList() {
+        return new ArrayList<>(headersList);
+    }
+
+
 
     private String justThePath(final String path) {
         if (path.startsWith("/")) {

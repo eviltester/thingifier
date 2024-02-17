@@ -38,7 +38,6 @@ public class EntityDefinition {
     }
 
     public String toString() {
-
         return "\t" + name + "\n" + fields.toString();
     }
 
