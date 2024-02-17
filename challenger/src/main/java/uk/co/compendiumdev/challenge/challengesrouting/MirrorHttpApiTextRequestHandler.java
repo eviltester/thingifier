@@ -7,6 +7,8 @@ import uk.co.compendiumdev.thingifier.application.internalhttpconversion.StringP
 import uk.co.compendiumdev.thingifier.application.routehandlers.HttpApiRequestHandler;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import uk.co.compendiumdev.thingifier.core.query.FilterBy;
+import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
 
 public class MirrorHttpApiTextRequestHandler implements HttpApiRequestHandler {
 
@@ -22,19 +24,29 @@ public class MirrorHttpApiTextRequestHandler implements HttpApiRequestHandler {
         return response;
     }
 
-    private String getRequestDetails(final HttpApiRequest myRequest) {
+    public String getRequestDetails(final HttpApiRequest myRequest) {
         StringBuilder output = new StringBuilder();
 
         output.append(String.format("%s %s",myRequest.getVerb(), myRequest.getUrl()));
         output.append("\n");
 
         output.append("\n");
-        output.append("Query Params");
+        output.append("Parsed Query Params");
         output.append("\n");
         output.append("============");
         output.append("\n");
         for(String queryParam : myRequest.getQueryParamNames()){
             output.append(String.format("%s: %s",queryParam, myRequest.rawQueryParamsValue(queryParam)));
+            output.append("\n");
+        }
+
+        output.append("\n");
+        output.append("Raw Query Params");
+        output.append("\n");
+        output.append("============");
+        output.append("\n");
+        for(FilterBy queryParam : myRequest.getFilterableQueryParams().toList()){
+            output.append(String.format("%s %s %s",queryParam.fieldName, queryParam.filterOperation, queryParam.fieldValue));
             output.append("\n");
         }
 
