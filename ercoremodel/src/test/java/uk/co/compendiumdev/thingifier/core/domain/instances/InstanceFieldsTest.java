@@ -3,9 +3,10 @@ package uk.co.compendiumdev.thingifier.core.domain.instances;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.DefinedFields;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.NamedValue;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 
 import java.util.ArrayList;
@@ -296,19 +297,19 @@ class InstanceFieldsTest {
         instance.addIdsToInstance();
         instance.putValue("guid", UUID.randomUUID().toString());
 
-        List<FieldValue> values = new ArrayList<>();
-        values.add(FieldValue.is("id", "4567"));
+        List<NamedValue> values = new ArrayList<>();
+        values.add(new NamedValue("id",  "4567"));
         List<String> errors = instance.findAnyGuidOrIdDifferences(values);
         Assertions.assertEquals(1, errors.size());
         Assertions.assertTrue(errors.get(0).contains(" id "), errors.get(0));
 
         values = new ArrayList<>();
-        values.add(FieldValue.is("guid", "4567"));
+        values.add(new NamedValue("guid", "4567"));
         errors = instance.findAnyGuidOrIdDifferences(values);
         Assertions.assertEquals(1, errors.size());
         Assertions.assertTrue(errors.get(0).contains(" guid "), errors.get(0));
 
-        values.add(FieldValue.is("id", "999999"));
+        values.add(new NamedValue("id",  "999999"));
         errors = instance.findAnyGuidOrIdDifferences(values);
         Assertions.assertEquals(2, errors.size());
         Assertions.assertTrue(errors.get(1).contains(" 999999"), errors.get(1));
@@ -328,10 +329,31 @@ class InstanceFieldsTest {
         instance.putValue("guid", aGUID);
         instance.putValue("id", "2344");
 
-        List<FieldValue> values = new ArrayList<>();
-        values.add(FieldValue.is("id", "2344"));
-        values.add(FieldValue.is("guid", aGUID));
+        List<NamedValue> values = new ArrayList<>();
+        values.add(new NamedValue("id", "2344"));
+        values.add(new NamedValue("guid", aGUID));
         List<String> errors = instance.findAnyGuidOrIdDifferences(values);
         Assertions.assertEquals(0, errors.size());
+    }
+
+    @Test
+    public void canClearFields() {
+
+        EntityDefinition entity = new EntityDefinition("entity", "entities");
+        entity.addFields(
+                Field.is("Title", FieldType.STRING),
+                Field.is("falsey", FieldType.BOOLEAN));
+
+        final EntityInstance session = new EntityInstance(entity);
+
+        session.setValue("Title", "set Title");
+        session.setValue("falsey", "true");
+
+        session.clearAllFields();
+
+        Assertions.assertEquals("",
+                session.getFieldValue("Title").asString());
+        Assertions.assertEquals("false",
+                session.getFieldValue("falsey").asString());
     }
 }

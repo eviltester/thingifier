@@ -1,12 +1,12 @@
 package uk.co.compendiumdev.thingifier.api.restapihandlers;
 
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.NamedValue;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
 import java.util.ArrayList;
@@ -83,7 +83,7 @@ public class ThingCreation {
 
 
         // any next id counts should be set higher than the ids mentioned in here
-        List<FieldValue> fieldValues = FieldValues.
+        List<NamedValue> fieldValues = FieldValues.
                             fromListMapEntryStringString(
                                     bodyargs.getFlattenedStringMap());
 
@@ -107,12 +107,12 @@ public class ThingCreation {
 
         try {
             // if any guids or ids then throw an error if they are not the same
-            List<FieldValue> fieldValues = FieldValues.
+            List<NamedValue> fieldValues = FieldValues.
                     fromListMapEntryStringString(
                             new BodyArgsProcessor(thingifier, bodyargs).
                                     removeRelationshipsFrom(instance, database));
 
-            instance.setFieldValuesFrom(fieldValues);
+            new EntityInstanceBulkUpdater(instance).setFieldValuesFrom(fieldValues);
         } catch (Exception e) {
             return ApiResponse.error(400, e.getMessage());
         }
@@ -141,12 +141,12 @@ public class ThingCreation {
             List<String> ignoreFields = instance.getEntity().
                                 getFieldNamesOfType(FieldType.GUID);
 
-            List<FieldValue> fieldValues = FieldValues.
+            List<NamedValue> fieldValues = FieldValues.
                     fromListMapEntryStringString(
                             new BodyArgsProcessor(thingifier, bodyargs).
                                     removeRelationshipsFrom(instance, database));
 
-            instance.overrideFieldValuesFromArgsIgnoring(fieldValues, ignoreFields);
+            new EntityInstanceBulkUpdater(instance).overrideFieldValuesFromArgsIgnoring(fieldValues, ignoreFields);
         } catch (Exception e) {
             return ApiResponse.error(400, e.getMessage());
         }

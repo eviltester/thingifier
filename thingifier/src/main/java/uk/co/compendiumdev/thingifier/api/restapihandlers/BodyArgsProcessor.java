@@ -75,9 +75,8 @@ public class BodyArgsProcessor {
                                 for(RelationshipVectorDefinition relate : relationshipsAre){
                                     final EntityDefinition typeOfThing = relate.getTo();
                                     instanceToRelateTo =  thingifier.getThingInstancesNamed(typeOfThing.getName(), database).
-                                                            findInstanceByField(
-                                                            FieldValue.is(relationshipFieldName,
-                                                                complexKeyValue.getValue()));
+                                            findInstanceByFieldNameAndValue(relationshipFieldName,
+                                                                complexKeyValue.getValue());
                                     if(instanceToRelateTo!=null){
                                         break;
                                     }

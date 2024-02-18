@@ -1,17 +1,19 @@
-package uk.co.compendiumdev.thingifier.core.domain.instances;
+package uk.co.compendiumdev.thingifier.api.non_http;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import uk.co.compendiumdev.thingifier.api.restapihandlers.EntityInstanceBulkUpdater;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.NamedValue;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class ThingInstanceFieldAccessByListTest {
+public class BulkUpdateEntityInstanceTest {
 
     private EntityDefinition entityTestSession;
 
@@ -32,10 +34,10 @@ public class ThingInstanceFieldAccessByListTest {
 
         final EntityInstance session = new EntityInstance(entityTestSession);
 
-        List<FieldValue> someFields = new ArrayList<>();
-        someFields.add(FieldValue.is("Title", "my title"));
-        someFields.add(FieldValue.is("falsey", "true"));
-        session.setFieldValuesFrom(someFields);
+        List<NamedValue> someFields = new ArrayList<>();
+        someFields.add(new NamedValue("Title",  "my title"));
+        someFields.add(new NamedValue("falsey",  "true"));
+        new EntityInstanceBulkUpdater(session).setFieldValuesFrom(someFields);
 
         Assertions.assertEquals("my title",
                 session.getFieldValue("Title").asString());
@@ -50,10 +52,10 @@ public class ThingInstanceFieldAccessByListTest {
         session.addGUIDtoInstance();
         session.addIdsToInstance();
 
-        List<FieldValue> someFields = new ArrayList<>();
-        someFields.add(FieldValue.is("anid", "12"));
+        List<NamedValue> someFields = new ArrayList<>();
+        someFields.add(new NamedValue("anid",  "12"));
         final RuntimeException e = Assertions.assertThrows(RuntimeException.class,
-                () -> session.setFieldValuesFrom(someFields));
+                () ->  new EntityInstanceBulkUpdater(session).setFieldValuesFrom(someFields));
 
         Assertions.assertEquals("Can not amend anid from 1 to 12",
                 e.getMessage());
@@ -64,14 +66,14 @@ public class ThingInstanceFieldAccessByListTest {
 
         final EntityInstance session = new EntityInstance(entityTestSession);
 
-        List<FieldValue> someFields = new ArrayList<>();
-        someFields.add(FieldValue.is("anid", "12"));
-        someFields.add(FieldValue.is("Title", "set Title"));
+        List<NamedValue> someFields = new ArrayList<>();
+        someFields.add(new NamedValue("anid",  "12"));
+        someFields.add(new NamedValue("Title", "set Title"));
 
         List<String> ignoring = new ArrayList<>();
         ignoring.add("anid");
 
-        session.setFieldValuesFromArgsIgnoring(someFields, ignoring);
+        new EntityInstanceBulkUpdater(session).setFieldValuesFromArgsIgnoring(someFields, ignoring);
 
         Assertions.assertEquals("set Title",
                 session.getFieldValue("Title").asString());
@@ -82,15 +84,15 @@ public class ThingInstanceFieldAccessByListTest {
 
         final EntityInstance session = new EntityInstance(entityTestSession);
 
-        List<FieldValue> someFields = new ArrayList<>();
-        someFields.add(FieldValue.is("anid", "12"));
-        someFields.add(FieldValue.is("Title", "set Title"));
-        someFields.add(FieldValue.is("falsey", "true"));
+        List<NamedValue> someFields = new ArrayList<>();
+        someFields.add(new NamedValue("anid",  "12"));
+        someFields.add(new NamedValue("Title", "set Title"));
+        someFields.add(new NamedValue("falsey",  "true"));
 
         List<String> ignoring = new ArrayList<>();
         ignoring.add("falsey");
 
-        session.overrideFieldValuesFromArgsIgnoring(someFields, ignoring);
+        new EntityInstanceBulkUpdater(session).overrideFieldValuesFromArgsIgnoring(someFields, ignoring);
 
         Assertions.assertEquals("set Title",
                 session.getFieldValue("Title").asString());
@@ -100,19 +102,4 @@ public class ThingInstanceFieldAccessByListTest {
                 session.getFieldValue("falsey").asString());
     }
 
-    @Test
-    public void canClearFields() {
-
-        final EntityInstance session = new EntityInstance(entityTestSession);
-
-        session.setValue("Title", "set Title");
-        session.setValue("falsey", "true");
-
-        session.clearAllFields();
-
-        Assertions.assertEquals("",
-                session.getFieldValue("Title").asString());
-        Assertions.assertEquals("false",
-                session.getFieldValue("falsey").asString());
-    }
 }

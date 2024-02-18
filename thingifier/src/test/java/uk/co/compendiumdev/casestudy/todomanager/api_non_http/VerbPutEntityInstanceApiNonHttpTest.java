@@ -193,7 +193,7 @@ public class VerbPutEntityInstanceApiNonHttpTest {
         Assertions.assertEquals(currentProjects + 1, project.countInstances());
 
 
-        EntityInstance newProject = project.findInstanceByField(FieldValue.is("guid", guid));
+        EntityInstance newProject = project.findInstanceByFieldNameAndValue("guid", guid);
 
         Assertions.assertEquals(title, newProject.getFieldValue("title").asString());
         Assertions.assertEquals(guid, newProject.getFieldValue("guid").asString());
@@ -233,7 +233,7 @@ public class VerbPutEntityInstanceApiNonHttpTest {
         Assertions.assertEquals(201, apiresponse.getStatusCode());
 
 
-        EntityInstance newProject = project.findInstanceByField(FieldValue.is("guid", guid));
+        EntityInstance newProject = project.findInstanceByFieldNameAndValue("guid", guid);
         Assertions.assertEquals("12", newProject.getFieldValue("id").asString());
 
         Assertions.assertEquals("13", anIdField.getNextIdValue());

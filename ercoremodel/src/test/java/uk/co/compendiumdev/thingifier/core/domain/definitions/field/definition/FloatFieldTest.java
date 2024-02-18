@@ -45,15 +45,15 @@ class FloatFieldTest {
                 withMinimumValue(5.5F);
 
         Assertions.assertFalse(field.withinAllowedFloatRange(
-                FieldValue.is("float", "11.0")
+                FieldValue.is(field, "11.0")
                         .asFloat()));
 
         Assertions.assertFalse(field.withinAllowedFloatRange(
-                FieldValue.is("float", "5.4").
+                FieldValue.is(field, "5.4").
                         asFloat()));
 
         Assertions.assertFalse(field.validate(
-                FieldValue.is("float", "5.4")).isValid());
+                FieldValue.is(field, "5.4")).isValid());
     }
 
     @Test
@@ -63,7 +63,7 @@ class FloatFieldTest {
 
         Assertions.assertFalse(
                 field.validate(
-                    FieldValue.is("float", "bob")).
+                    FieldValue.is(field, "bob")).
                         isValid());
     }
 
@@ -93,11 +93,11 @@ class FloatFieldTest {
 
         Assertions.assertEquals("1.0",
                 field.getActualValueToAdd(
-                        FieldValue.is("integer", "1.0")));
+                        FieldValue.is(field, "1.0")));
 
         Assertions.assertEquals("1.0",
                 field.getActualValueToAdd(
-                        FieldValue.is("integer", "1")));
+                        FieldValue.is(field, "1")));
 
     }
 

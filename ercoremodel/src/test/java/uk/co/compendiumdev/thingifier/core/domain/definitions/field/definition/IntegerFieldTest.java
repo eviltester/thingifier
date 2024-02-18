@@ -59,17 +59,17 @@ class IntegerFieldTest {
 
         Assertions.assertFalse(
                     field.withinAllowedIntegerRange(
-                            FieldValue.is("integer", "11").
+                            FieldValue.is(field, "11").
                                     asInteger()));
 
         Assertions.assertFalse(
                 field.withinAllowedIntegerRange(
-                        FieldValue.is("integer", "4").
+                        FieldValue.is(field, "4").
                                 asInteger()));
 
         Assertions.assertFalse(
                 field.validate(
-                        FieldValue.is("integer", "4")).
+                        FieldValue.is(field, "4")).
                         isValid());
     }
 
@@ -100,27 +100,27 @@ class IntegerFieldTest {
 
         Assertions.assertTrue(
                 field.validate(
-                        FieldValue.is("integer", "1")).
+                        FieldValue.is(field, "1")).
                         isValid());
 
         Assertions.assertTrue(
                 field.validate(
-                        FieldValue.is("integer", "01")).
+                        FieldValue.is(field, "01")).
                         isValid());
 
         Assertions.assertTrue(
                 field.validate(
-                        FieldValue.is("integer", "-1")).
+                        FieldValue.is(field, "-1")).
                         isValid());
 
         Assertions.assertFalse(
                 field.validate(
-                        FieldValue.is("integer", "bob")).
+                        FieldValue.is(field, "bob")).
                         isValid());
 
         Assertions.assertFalse(
                 field.validate(
-                        FieldValue.is("integer", "")).
+                        FieldValue.is(field, "")).
                         isValid());
     }
 
@@ -130,11 +130,11 @@ class IntegerFieldTest {
 
         Assertions.assertEquals("1",
                 field.getActualValueToAdd(
-                FieldValue.is("integer", "1.0")));
+                FieldValue.is(field, "1.0")));
 
         Assertions.assertEquals("1",
                 field.getActualValueToAdd(
-                        FieldValue.is("integer", "1")));
+                        FieldValue.is(field, "1")));
 
     }
 }

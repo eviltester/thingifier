@@ -156,8 +156,7 @@ public class BodyRelationshipValidator {
             things = thingifier.getInstancesForSingularOrPluralNamedEntity(relationshipToPart, database);
 
             if(things!=null) {
-                thingToRelateTo = things.findInstanceByField(
-                                        FieldValue.is(relationshipFieldPart, uniqueId));
+                thingToRelateTo = things.findInstanceByFieldNameAndValue(relationshipFieldPart, uniqueId);
             }
         }
 

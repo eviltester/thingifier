@@ -3,6 +3,7 @@ package uk.co.compendiumdev.thingifier.api.non_http;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
@@ -12,6 +13,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.F
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.InstanceFields;
 
 
 public class NestedObjectsApiTest {
@@ -87,6 +89,11 @@ public class NestedObjectsApiTest {
         Assertions.assertEquals(1,thing.countInstances());
 
         for(EntityInstance bob : thing.getInstances()){
+            FieldValue fv = bob.getFieldValue("person");
+            InstanceFields obj = fv.asObject();
+            FieldValue fn = obj.getFieldValue("firstname");
+            String str = fn.asString();
+            
             Assertions.assertEquals("bob", bob.getFieldValue("person").asObject().
                     getFieldValue("firstname").asString());
         }

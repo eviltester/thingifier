@@ -61,8 +61,7 @@ public class RelationshipCreation {
                 if(!matchingFieldNames.contains(fieldName+ " ")){
                     matchingFieldNames = matchingFieldNames + fieldName +" ";
                 }
-                relatedItem = thingTo.findInstanceByField(
-                            FieldValue.is(fieldName, args.get(fieldName)));
+                relatedItem = thingTo.findInstanceByFieldNameAndValue(fieldName, args.get(fieldName));
                 if(relatedItem!=null){
                     // found something
                     break;

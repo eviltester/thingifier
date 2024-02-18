@@ -14,6 +14,8 @@ final public class EntityInstanceCollection {
     private final EntityDefinition definition;
     private Map<String, EntityInstance> instances = new ConcurrentHashMap<>();
 
+    // TODO: id's should be auto incremented at an instance collection level, not on the field definitions
+
     public EntityInstanceCollection(EntityDefinition thingDefinition) {
         this.definition = thingDefinition;
     }
@@ -73,12 +75,16 @@ final public class EntityInstanceCollection {
     }
 
 
-    public EntityInstance findInstanceByField(FieldValue fieldValue) {
+    public EntityInstance findInstanceByFieldNameAndValue(String fieldName, String fieldValue) {
+
+        if(fieldName==null) return null;
+        if(fieldValue==null) return null;
 
         for (EntityInstance thing : instances.values()) {
-            if (thing.getFieldValue(fieldValue.getName())
-                    .asString().contentEquals(fieldValue.asString())) {
-                return thing;
+            if(thing.hasFieldNamed(fieldName)) {
+                if (thing.getFieldValue(fieldName).asString().contentEquals(fieldValue)) {
+                    return thing;
+                }
             }
         }
 
@@ -162,10 +168,9 @@ final public class EntityInstanceCollection {
         if(instance==null){
             final List<Field> idFields = definition.getFieldsOfType(FieldType.ID);
             if(!idFields.isEmpty()) {
-                instance = findInstanceByField(
-                        FieldValue.is(
+                instance = findInstanceByFieldNameAndValue(
                                 (idFields.get(0)).getName(),
-                                instanceGuid));
+                                instanceGuid);
             }
         }
         return instance;

@@ -23,8 +23,7 @@ public class RelationshipCreator {
                 instance.getRelationships().connect(
                         relationship.relationshipName,
                             thingifier.getInstancesForSingularOrPluralNamedEntity(relationship.toType, database).
-                                        findInstanceByField(
-                                                FieldValue.is(relationship.guidName, relationship.guidValue)));
+                                    findInstanceByFieldNameAndValue(relationship.guidName, relationship.guidValue));
             }
 
             return ApiResponse.created(instance, thingifier.apiConfig());

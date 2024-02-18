@@ -1,5 +1,6 @@
 package uk.co.compendiumdev.thingifier.core.domain.instances;
 
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.NamedValue;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
@@ -24,7 +25,10 @@ public class EntityInstance {
     public EntityInstance addGUIDtoInstance(){
         // todo: this adds a field called 'guid' but there may be other GUID fields,
         // allow GUIDs to be defined as being 'auto' in which case we will auto generate them
-        instanceFields.addValue(FieldValue.is("guid", UUID.randomUUID().toString()));
+        if(entityDefinition.hasFieldNameDefined("guid")){
+            instanceFields.addValue(entityDefinition.getField("guid").valueFor( UUID.randomUUID().toString()));
+        }
+
         return this;
     }
 
@@ -149,50 +153,9 @@ public class EntityInstance {
     }
 
 
-    /**
-     *
-     * Suspect these should not be in core and should be in the API handling
-     *
-     * We can have a setFieldValuesFrom and an overrideFieldValuesFrom
-     * - but not the 'ignoring' lists
-     *
-     */
 
-    public EntityInstance setFieldValuesFrom(List<FieldValue> fieldValues) {
 
-        final List<String> anyErrors = instanceFields.findAnyGuidOrIdDifferences(fieldValues);
-        if(anyErrors.size()>0){
-            throw new RuntimeException(anyErrors.get(0));
-        }
-
-        setFieldValuesFromArgsIgnoring(fieldValues, entityDefinition.getFieldNamesOfType(FieldType.ID, FieldType.GUID));
-
-        return this;
+    public boolean hasFieldNamed(String fieldName) {
+        return entityDefinition.hasFieldNameDefined(fieldName);
     }
-
-    public void setFieldValuesFromArgsIgnoring(List<FieldValue> fieldValues,
-                                               final List<String> ignoreFields) {
-
-        for (FieldValue entry : fieldValues) {
-
-            // Handle attempt to amend a protected field
-            if (!ignoreFields.contains(entry.getName())) {
-                // set the value because it is not protected
-                setValue(entry.getName(), entry.asString());
-            }
-        }
-    }
-
-    public void overrideFieldValuesFromArgsIgnoring(final List<FieldValue> fieldValues,
-                                                    final List<String> ignoreFields) {
-        for (FieldValue entry : fieldValues) {
-
-            // Handle attempt to amend a protected field
-            if (!ignoreFields.contains(entry.getName())) {
-                // set the value because it is not protected
-                overrideValue(entry.getName(), entry.asString());
-            }
-        }
-    }
-
 }

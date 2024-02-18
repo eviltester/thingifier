@@ -95,7 +95,7 @@ public class RelationshipApiNonHttpTest {
         Assertions.assertTrue(apiresponse.isCollection());
         Assertions.assertFalse(apiresponse.isErrorResponse());
 
-        EntityInstance foundInstance = todo.findInstanceByField(FieldValue.is("guid", paperwork.getGUID()));
+        EntityInstance foundInstance = todo.findInstanceByFieldNameAndValue("guid", paperwork.getGUID());
         Assertions.assertNotNull(
                 foundInstance,
                 "Task should exist, only the relationship should be deleted");
@@ -134,7 +134,7 @@ public class RelationshipApiNonHttpTest {
 
         Assertions.assertEquals(numberOfTasks - 1, myNewProject.getRelationships().getConnectedItems("tasks").size());
         Assertions.assertNotNull(
-                todo.findInstanceByField(FieldValue.is("guid", paperwork.getGUID())),
+                todo.findInstanceByFieldNameAndValue("guid", paperwork.getGUID()),
                 "Task should exist, only the relationship should be deleted");
 
         Assertions.assertTrue(apiresponse.getErrorMessages().size()==0);
@@ -176,7 +176,7 @@ public class RelationshipApiNonHttpTest {
 
         Assertions.assertEquals(numberOfTasks - 1, myNewProject.getRelationships().getConnectedItems("tasks").size());
         Assertions.assertNull(
-                todo.findInstanceByField(FieldValue.is("guid", paperwork.getGUID())),
+                todo.findInstanceByFieldNameAndValue("guid", paperwork.getGUID()),
                 "Task should not exist");
         Assertions.assertEquals(0, todo.countInstances());
         Assertions.assertEquals(1, project.countInstances());

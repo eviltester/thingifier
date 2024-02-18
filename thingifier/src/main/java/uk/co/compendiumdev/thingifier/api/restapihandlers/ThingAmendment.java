@@ -1,11 +1,11 @@
 package uk.co.compendiumdev.thingifier.api.restapihandlers;
 
 import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.NamedValue;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
 import java.util.List;
@@ -42,11 +42,12 @@ public class ThingAmendment {
                 cloned.clearAllFields();
 
             }
-            List<FieldValue> fieldValues = FieldValues.
+            List<NamedValue> fieldValues = FieldValues.
                                         fromListMapEntryStringString(
                                                 new BodyArgsProcessor(thingifier, bodyargs).
                                                         removeRelationshipsFrom(instance, database));
-            cloned.setFieldValuesFrom(fieldValues);
+
+            new EntityInstanceBulkUpdater(cloned).setFieldValuesFrom(fieldValues);
 
         } catch (Exception e) {
             return ApiResponse.error(400, e.getMessage());
@@ -66,11 +67,12 @@ public class ThingAmendment {
                 // todo: this returns a list of 'items' to be removed based on relationship
                 instance.getRelationships().removeAllRelationships();
             }
-            List<FieldValue> fieldValues = FieldValues.
+            List<NamedValue> fieldValues = FieldValues.
                     fromListMapEntryStringString(
                             new BodyArgsProcessor(thingifier, bodyargs).
                                     removeRelationshipsFrom(instance, database));
-            instance.setFieldValuesFrom(fieldValues);
+
+            new EntityInstanceBulkUpdater(instance).setFieldValuesFrom(fieldValues);
 
             // todo: should we check that this was actually a success?
             final ApiResponse relresponse = new RelationshipCreator(thingifier).createRelationships(bodyargs, instance, database);

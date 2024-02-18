@@ -81,25 +81,25 @@ class EnumFieldTest {
 
         Assertions.assertTrue(
                 field.validate(
-                        FieldValue.is("enum", "bob"))
+                        FieldValue.is(field, "bob"))
                         .isValid()
         );
 
         Assertions.assertTrue(
                 field.validate(
-                        FieldValue.is("enum", "connie"))
+                        FieldValue.is(field, "connie"))
                         .isValid()
         );
 
         Assertions.assertTrue(
                 field.validate(
-                        FieldValue.is("enum", "eris"))
+                        FieldValue.is(field, "eris"))
                         .isValid()
         );
 
         Assertions.assertFalse(
                 field.validate(
-                        FieldValue.is("enum", "dobbs"))
+                        FieldValue.is(field, "dobbs"))
                         .isValid()
         );
 

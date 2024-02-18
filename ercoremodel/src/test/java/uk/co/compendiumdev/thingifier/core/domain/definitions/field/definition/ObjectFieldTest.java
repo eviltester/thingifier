@@ -42,7 +42,7 @@ class ObjectFieldTest {
                 getObjectDefinition().
                 getField("surname").makeMandatory();
 
-        final FieldValue value = FieldValue.is("person",
+        final FieldValue value = FieldValue.is(field,
                 new InstanceFields(field.getObjectDefinition()));
 
         final ValidationReport validation = field.validate(value);
@@ -59,7 +59,7 @@ class ObjectFieldTest {
                 getField("surname").makeMandatory().
                 withValidation(VRule.notEmpty());
 
-        final FieldValue value = FieldValue.is("person",
+        final FieldValue value = FieldValue.is(field,
                 new InstanceFields(field.getObjectDefinition()));
         value.asObject().setValue("firstname", "Eris");
 
@@ -77,7 +77,7 @@ class ObjectFieldTest {
                 getField("surname").makeMandatory().
                 withValidation(VRule.notEmpty());
 
-        final FieldValue value = FieldValue.is("person",
+        final FieldValue value = FieldValue.is(field,
                 new InstanceFields(field.getObjectDefinition()));
         value.asObject().setValue("firstname", "Eris");
 
@@ -93,7 +93,7 @@ class ObjectFieldTest {
     @Test
     void canCloneAnObjectField(){
 
-        final FieldValue value = FieldValue.is("person",
+        final FieldValue value = FieldValue.is(field,
                 new InstanceFields(field.getObjectDefinition()));
         value.asObject().setValue("firstname", "Connie");
         value.asObject().setValue("surname", "");

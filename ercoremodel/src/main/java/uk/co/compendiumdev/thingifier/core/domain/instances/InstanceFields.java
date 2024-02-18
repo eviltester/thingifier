@@ -1,5 +1,6 @@
 package uk.co.compendiumdev.thingifier.core.domain.instances;
 
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.NamedValue;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.DefinedFields;
@@ -23,12 +24,13 @@ public class InstanceFields {
         this.objectDefinition = objectDefinition;
     }
 
+    // TODO: this should be using a set of ID Counters, not the field definition - id counts should not be on field definition
     public InstanceFields addIdsToInstance() {
         List<Field>idfields = objectDefinition.getFieldsOfType(FieldType.ID);
         for(Field aField : idfields){
             if(aField.getType()==FieldType.ID){
                 if(!values.containsKey(aField.getName().toLowerCase())) {
-                    addValue(FieldValue.is(aField.getName(), aField.getNextIdValue()));
+                    addValue(FieldValue.is(aField, aField.getNextIdValue()));
                 }
             }
         }
@@ -68,7 +70,7 @@ public class InstanceFields {
                 // return the field type default value
                 String defaultVal = objectDefinition.getField(fieldName).getType().getDefault();
                 if (defaultVal != null) {
-                    return FieldValue.is(fieldName, defaultVal);
+                    return FieldValue.is(field, defaultVal);
                 }
             }
         }
@@ -113,11 +115,13 @@ public class InstanceFields {
         return objectDefinition;
     }
 
+    // fieldname can be a path e.g. object.fieldOnObject
     public InstanceFields putValue(final String fieldName, final String value) {
         setFieldNameAsPath(fieldName, value, false);
         return this;
     }
 
+    // fieldname can be a path e.g. object.fieldOnObject
     public InstanceFields setValue(final String fieldName, final String value) {
         setFieldNameAsPath(fieldName, value, true);
         return this;
@@ -127,7 +131,7 @@ public class InstanceFields {
 
         final ValidationReport validationReport = field.validate(value);
         if (validationReport.isValid()) {
-            addValue(FieldValue.is(value.getName(),
+            addValue(FieldValue.is(field,
                     field.getActualValueToAdd(value)));
 
         } else {
@@ -169,9 +173,9 @@ public class InstanceFields {
         if(fieldNames.size()==1){
             // set the primitive value
             if(shouldValidateValue) {
-                setFieldValue(field, FieldValue.is(fieldName, value));
+                setFieldValue(field, FieldValue.is(field, value));
             }else{
-                addValue(FieldValue.is(fieldName, value));
+                addValue(FieldValue.is(field, value));
             }
             return;
         }else{
@@ -199,7 +203,7 @@ public class InstanceFields {
         if(objectDefinition.hasFieldNameDefined(fieldName)){
             Field field = objectDefinition.getField(fieldName);
             if(field.getType()==FieldType.OBJECT){
-                final FieldValue objectValue = FieldValue.is(fieldName,
+                final FieldValue objectValue = FieldValue.is(field,
                         new InstanceFields(field.getObjectDefinition()).
                                 addIdsToInstance());
                 addValue(objectValue);
@@ -244,28 +248,28 @@ public class InstanceFields {
      * @param args
      * @return a List of error messages about the GUIDs and IDs mentioned
      */
-    public List<String> findAnyGuidOrIdDifferences(final  List<FieldValue> args) {
+    public List<String> findAnyGuidOrIdDifferences(final  List<NamedValue> args) {
 
         List<String> errorMessages = new ArrayList<>();
 
         List<Field> idOrGuidFields = objectDefinition.getFieldsOfType(
                                         FieldType.GUID, FieldType.ID);
 
-        for (FieldValue entry : args) {
+        for (NamedValue entry : args) {
 
             // Handle attempt to amend a protected field
-            Field field = objectDefinition.getField(entry.getName());
+            Field field = objectDefinition.getField(entry.name);
             if (idOrGuidFields.contains(field)) {
                 // if editing it then throw error, ignore if same value
-                String existingValue = getFieldValue(entry.getName()).asString();
+                String existingValue = getFieldValue(entry.name).asString();
                 if (existingValue != null && existingValue.trim().length() > 0) {
                     // if value is different then it is an attempt to amend it
-                    if (!existingValue.equalsIgnoreCase(entry.asString())) {
+                    if (!existingValue.equalsIgnoreCase(entry.value)) {
                         errorMessages.add(
                                 String.format("Can not amend %s from %s to %s",
-                                        entry.getName(),
+                                        entry.name,
                                         existingValue,
-                                        entry.asString()));
+                                        entry.value));
                     }
                 }
             }

@@ -40,7 +40,9 @@ public class EntityListFilterParamParser {
                 // get the actual value
                 final ComparableFieldValue actualValue = new ComparableFieldValue(defn.getField(fieldName), instance.getFieldValue(fieldName));
                 // create a comparison value
-                final ComparableFieldValue filterConditionValue = new ComparableFieldValue(defn.getField(fieldName), FieldValue.is(fieldName, filterByCondition.fieldValue));
+                final ComparableFieldValue filterConditionValue = new ComparableFieldValue(
+                                                                            defn.getField(fieldName),
+                                                                            defn.getField(fieldName).valueFor(filterByCondition.fieldValue));
 
                 Pattern pattern = null;
                 Matcher matcher = null;

@@ -1,12 +1,20 @@
-package uk.co.compendiumdev.thingifier.application.internalhttpconversion;
+package uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance;
 
-public class StringPair {
+public class NamedValue {
 
-    public final String key;
+    public final String name;
     public final String value;
 
-    public StringPair(String key, String value){
-        this.key = key;
+    public NamedValue(String name, String value){
+        this.name = name;
         this.value = value;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String asString() {
+        return value;
     }
 }

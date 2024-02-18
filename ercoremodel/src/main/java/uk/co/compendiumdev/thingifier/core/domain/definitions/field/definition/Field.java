@@ -66,6 +66,7 @@ public final class Field {
         return name;
     }
 
+    // TODO: these nextIDValuea nd NextIDAbove should be on a FieldCounter not on a Field because we have multiple instance collections
     public String getNextIdValue() {
         int id = nextId;
         nextId++;
@@ -95,9 +96,9 @@ public final class Field {
         // todo: handle defaults of object and array
         if(defaultValue==null && !allowedNullable){
             // get the definition default
-            return FieldValue.is(name, type.getDefault());
+            return FieldValue.is(this, type.getDefault());
         }
-        return FieldValue.is(name, defaultValue);
+        return FieldValue.is(this, defaultValue);
     }
 
     public boolean hasDefaultValue() {
@@ -118,6 +119,7 @@ public final class Field {
         return this;
     }
 
+    // TODO: when all field values use field, then this should move to the value and out of the field
     public ValidationReport validate(FieldValue value) {
         boolean NOT_ALLOWED_TO_SET_IDs = false;
         return validate(value, NOT_ALLOWED_TO_SET_IDs);
@@ -352,7 +354,7 @@ public final class Field {
             if(fieldExamples.isEmpty()){
                 buildExamples.add(
                     getAsTruncatedString(
-                        FieldValue.is(getName(), new RandomString().get(20))
+                        valueFor(new RandomString().get(20))
                     )
                 );
             }
@@ -458,4 +460,7 @@ public final class Field {
         }
     }
 
+    public FieldValue valueFor(String value) {
+        return FieldValue.is(this, value);
+    }
 }

@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 
@@ -36,7 +35,7 @@ public class ThingTest {
         Assertions.assertEquals(2, person.countInstances());
         Assertions.assertEquals("Bob", bob.getFieldValue("name").asString());
         Assertions.assertEquals("56", bob.getFieldValue("age").asString());
-        Assertions.assertEquals("1000", person.findInstanceByField(FieldValue.is("name", "Eris")).getFieldValue("age").asString());
+        Assertions.assertEquals("1000", person.findInstanceByFieldNameAndValue("name", "Eris").getFieldValue("age").asString());
 
     }
 

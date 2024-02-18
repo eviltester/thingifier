@@ -1,5 +1,6 @@
 package uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance;
 
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.instances.InstanceFields;
 
 public final class FieldValue {
@@ -8,12 +9,22 @@ public final class FieldValue {
     // this would allow field values to compare against each other and simplify other code
     private final String fieldName; // should this be name or should it be a Field reference?
     private final String valueOfField;
+    private final Field forField; // the related field
     private InstanceFields objectValue;
     // todo: list of strings for an array
     // todo: list of InstanceFields for an array of objects
 
+    @Deprecated
     private FieldValue(String fieldName, String fieldValue) {
+        this.forField = null;
         this.fieldName = fieldName;
+        this.valueOfField = fieldValue;
+        this.objectValue = null;
+    }
+
+    public FieldValue(Field forField, String fieldValue) {
+        this.forField = forField;
+        this.fieldName = forField.getName();
         this.valueOfField = fieldValue;
         this.objectValue = null;
     }
@@ -31,12 +42,13 @@ public final class FieldValue {
         return string;
     }
 
-    public static FieldValue is(String fieldName, String fieldValue) {
-        return new FieldValue(fieldName, fieldValue);
+    // TODO: currently moving to field for all field values
+    public static FieldValue is(Field forField, String fieldValue) {
+        return new FieldValue(forField, fieldValue);
     }
 
-    public static FieldValue is(String fieldName, InstanceFields objectValue) {
-        final FieldValue value = new FieldValue(fieldName, "");
+    public static FieldValue is(Field forField, InstanceFields objectValue) {
+        final FieldValue value = new FieldValue(forField, "");
         value.setValue(objectValue);
         return value;
     }
@@ -53,11 +65,13 @@ public final class FieldValue {
 
     public FieldValue cloned() {
         if(objectValue!=null){
-            return FieldValue.is(fieldName, objectValue.cloned());
+            return FieldValue.is(forField, objectValue.cloned());
         }else{
-            return FieldValue.is(fieldName, valueOfField);
+            return FieldValue.is(forField, valueOfField);
         }
     }
+
+
 
     public String asString() {
         return valueOfField;

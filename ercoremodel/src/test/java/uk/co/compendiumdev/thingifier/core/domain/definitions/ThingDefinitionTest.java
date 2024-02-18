@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.NamedValue;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVectorDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.InstanceFields;
@@ -163,9 +163,9 @@ class ThingDefinitionTest {
         eDefn.addFields(Field.is("anId", FieldType.ID));
         eDefn.addFields(Field.is("anotherId", FieldType.ID));
 
-        List<FieldValue> nextIds = new ArrayList<>();
-        nextIds.add(FieldValue.is("anId", "46"));
-        nextIds.add(FieldValue.is("anotherId", "71"));
+        List<NamedValue> nextIds = new ArrayList<>();
+        nextIds.add(new NamedValue("anId", "46"));
+        nextIds.add(new NamedValue("anotherId", "71"));
 
         eDefn.setNextIdsToAccomodate(nextIds);
         Assertions.assertEquals("47",

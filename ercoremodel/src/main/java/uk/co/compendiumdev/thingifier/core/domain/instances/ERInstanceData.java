@@ -4,8 +4,6 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.ERSchema;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,7 +45,7 @@ public class ERInstanceData {
             final List<String> guidFields = anInstanceCollection.definition().getFieldNamesOfType(FieldType.GUID);
             for(String fieldName : guidFields){
                 EntityInstance instance = anInstanceCollection.
-                        findInstanceByField(FieldValue.is(fieldName, thingGUID));
+                        findInstanceByFieldNameAndValue(fieldName, thingGUID);
                 if (instance != null) {
                     return instance;
                 }

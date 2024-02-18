@@ -2,24 +2,32 @@ package uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 
 class FieldValueTest {
 
     @Test
     void canCreateAndAccessName(){
-        final FieldValue value = FieldValue.is("generic", "value");
+        final Field field = Field.is("generic", FieldType.STRING);
+
+        final FieldValue value = FieldValue.is(field, "value");
         Assertions.assertEquals("generic", value.getName());
     }
     @Test
     void canCreateAndGetValue(){
-        final FieldValue value = FieldValue.is("generic", "value");
+
+        final Field field = Field.is("generic", FieldType.STRING);
+        final FieldValue value = FieldValue.is(field, "value");
         Assertions.assertEquals("value", value.asString());
     }
 
     @Test
     void canSetGetFloatValue(){
 
-        final FieldValue value = FieldValue.is("afloat", "4.3");
+        final Field field = Field.is("generic", FieldType.STRING);
+
+        final FieldValue value = FieldValue.is(field, "4.3");
         Assertions.assertEquals("4.3", value.asString());
         Assertions.assertEquals(4.3F, value.asFloat());
     }
@@ -27,7 +35,9 @@ class FieldValueTest {
     @Test
     void canCloneSimpleValue(){
 
-        final FieldValue value = FieldValue.is("simple", "value");
+        final Field field = Field.is("simple", FieldType.STRING);
+
+        final FieldValue value = FieldValue.is(field, "value");
         final FieldValue clonedValue = value.cloned();
 
         Assertions.assertEquals(clonedValue.getName(), value.getName());
@@ -38,7 +48,9 @@ class FieldValueTest {
     @Test
     void floatValueShouldBeSetAsValid_NoConversionPerformed(){
 
-        final FieldValue value = FieldValue.is("afloat", "");
+        final Field field = Field.is("aFloat", FieldType.STRING);
+
+        final FieldValue value = FieldValue.is(field, "");
 
         Assertions.assertThrows(NumberFormatException.class,
                 ()-> {value.asFloat();});

@@ -161,7 +161,7 @@ public class RestApiDocumentationGenerator {
                     output.append("<ul>");
                     for (ValidationRule validation : theField.validationRules()) {
                         //use the validation error message in the documentation
-                        output.append("<li>" + validation.getErrorMessage(FieldValue.is("","")) + "</li>\n");
+                        output.append("<li>" + validation.getErrorMessage(theField.valueFor("")) + "</li>\n");
                     }
 
                     output.append(String.format("<li>Mandatory?: %b</li>", theField.isMandatory()));

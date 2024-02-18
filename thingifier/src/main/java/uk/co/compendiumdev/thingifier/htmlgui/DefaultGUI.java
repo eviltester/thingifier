@@ -222,7 +222,7 @@ public class DefaultGUI {
                 }
 
                 try {
-                    instance = thing.findInstanceByField(FieldValue.is(keyName, keyValue));
+                    instance = thing.findInstanceByFieldNameAndValue(keyName, keyValue);
                 }catch(Exception e){
                     htmlErrorMessage = htmlErrorMessage + "<p>Instances not found in database, have you made any API calls?</p>";
                 }

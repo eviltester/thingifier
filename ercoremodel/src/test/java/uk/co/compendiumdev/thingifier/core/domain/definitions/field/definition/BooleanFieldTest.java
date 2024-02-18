@@ -32,22 +32,22 @@ class BooleanFieldTest {
 
         Assertions.assertTrue(
                 field.validate(
-                        FieldValue.is("boolean","false")).
+                        FieldValue.is(field,"false")).
                         isValid());
 
         Assertions.assertTrue(
                 field.validate(
-                        FieldValue.is("boolean","true")).
+                        FieldValue.is(field,"true")).
                         isValid());
 
         Assertions.assertTrue(
                 field.validate(
-                        FieldValue.is("boolean","TRUE")).
+                        FieldValue.is(field,"TRUE")).
                         isValid());
 
         Assertions.assertFalse(
                 field.validate(
-                        FieldValue.is("boolean","bob")).
+                        FieldValue.is(field,"bob")).
                         isValid());
     }
 
@@ -75,15 +75,15 @@ class BooleanFieldTest {
 
         Assertions.assertEquals("true",
                 field.getActualValueToAdd(
-                        FieldValue.is("boolean", "true")));
+                        FieldValue.is(field, "true")));
 
         Assertions.assertEquals("true",
                 field.getActualValueToAdd(
-                        FieldValue.is("boolean", "True")));
+                        FieldValue.is(field, "True")));
 
         Assertions.assertEquals("false",
                 field.getActualValueToAdd(
-                        FieldValue.is("boolean", "FALSE")));
+                        FieldValue.is( field, "FALSE")));
 
     }
 }

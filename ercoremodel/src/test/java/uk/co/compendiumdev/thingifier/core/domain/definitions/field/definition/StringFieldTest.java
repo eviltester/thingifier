@@ -38,7 +38,7 @@ class StringFieldTest {
         final String example = field.getRandomExampleValue();
         System.out.println(example);
         Assertions.assertNotNull(example);
-        Assertions.assertTrue(example.trim().length()>0);
+        Assertions.assertFalse(example.trim().isEmpty());
         Assertions.assertTrue(example.length()<=20);
     }
 
@@ -52,10 +52,11 @@ class StringFieldTest {
 
         final ValidationReport report =
                 field.validate(
-                        FieldValue.is("field", "12345678901"));
+                        FieldValue.is(field, "12345678901"));
 
         Assertions.assertFalse(report.isValid());
-        report.getCombinedErrorMessages().contains("Maximum allowable length exceeded");
+        Assertions.assertTrue(report.getCombinedErrorMessages().contains("Maximum allowable length exceeded"),
+                "expected error message - Maximum allowable length exceeded but was " + report.getCombinedErrorMessages());
     }
 
     @Test
@@ -68,10 +69,11 @@ class StringFieldTest {
 
         final ValidationReport report =
                 field.validate(
-                        FieldValue.is("field", "ISSUE: reporting a bug - this is a bug"));
+                        FieldValue.is(field, "ISSUE: reporting a bug - this is a bug"));
 
         Assertions.assertFalse(report.isValid());
-        report.getCombinedErrorMessages().contains("not match");
+        Assertions.assertTrue(report.getCombinedErrorMessages().contains("not match"),
+                "expected error message - not match but was " + report.getCombinedErrorMessages());
     }
 
     @Test
@@ -87,7 +89,7 @@ class StringFieldTest {
 
         final ValidationReport report =
                 field.validate(
-                        FieldValue.is("field", "Bug: short"));
+                        FieldValue.is(field, "Bug: short"));
 
         Assertions.assertTrue(report.isValid(), report.getCombinedErrorMessages());
     }
@@ -110,12 +112,10 @@ class StringFieldTest {
 
         Assertions.assertEquals("1234",
                 field.getActualValueToAdd(
-                    FieldValue.is("field", "12345")));
+                    FieldValue.is(field, "12345")));
 
         Assertions.assertEquals("123",
                 field.getActualValueToAdd(
-                        FieldValue.is("field", "123")));
+                        FieldValue.is(field, "123")));
     }
-
-
 }

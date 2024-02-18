@@ -28,7 +28,7 @@ class FieldObjectValueTest {
     void canCreateObjectField() {
 
         final FieldValue person =
-                            FieldValue.is("person",
+                            FieldValue.is(field,
                                     new InstanceFields(
                                             field.getObjectDefinition()));
 
@@ -46,7 +46,7 @@ class FieldObjectValueTest {
     void canCloneObjectField() {
 
         final FieldValue person =
-                FieldValue.is("person",
+                FieldValue.is(field,
                         new InstanceFields(
                                 field.getObjectDefinition()));
 

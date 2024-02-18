@@ -43,7 +43,7 @@ class IdFieldTest {
         final Field field = Field.is("id", FieldType.ID);
 
         final ValidationReport report = field.validate(
-                                            FieldValue.is("id", "1"));
+                                            FieldValue.is(field, "1"));
         Assertions.assertFalse(report.isValid());
     }
 
@@ -53,7 +53,7 @@ class IdFieldTest {
         final Field field = Field.is("id", FieldType.ID);
 
         final ValidationReport report =
-                field.validate(FieldValue.is("id", "1"),
+                field.validate(FieldValue.is(field, "1"),
                         true);
         Assertions.assertTrue(report.isValid());
     }

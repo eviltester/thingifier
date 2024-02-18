@@ -55,9 +55,10 @@ public class BodyCreationValidator {
 
                 if (existingValue != null && existingValue.trim().length() > 0) {
                     // not unique if we can find something by that field value
-                    final EntityInstance foundInstance = thing.findInstanceByField(
-                            FieldValue.is(entry.getKey(),
-                                    entry.getValue()));
+                    final EntityInstance foundInstance = thing.findInstanceByFieldNameAndValue(
+                                    entry.getKey(),
+                                    entry.getValue()
+                    );
 
                     if (foundInstance!=null) {
                         report.setValid(false);
