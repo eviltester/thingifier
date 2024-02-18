@@ -127,8 +127,8 @@ public class ChallengerApiResponseHook implements HttpApiResponseHook {
                 response.getStatusCode()==200){
             // only pass if there are done and not done todos
             final EntityInstanceCollection thing = thingifier.getThingInstancesNamed("todo", challenger.getXChallenger());
-            final EntityInstance aDoneThing = thing.findInstanceByField(FieldValue.is("doneStatus", "true"));
-            final EntityInstance aNotDoneThing = thing.findInstanceByField(FieldValue.is("doneStatus", "false"));
+            final EntityInstance aDoneThing = thing.findInstanceByFieldValue(FieldValue.is("doneStatus", "true"));
+            final EntityInstance aNotDoneThing = thing.findInstanceByFieldValue(FieldValue.is("doneStatus", "false"));
             if(aDoneThing!=null && aNotDoneThing!=null) {
                 challengers.pass(challenger,CHALLENGE.GET_TODOS_FILTERED);
             }
