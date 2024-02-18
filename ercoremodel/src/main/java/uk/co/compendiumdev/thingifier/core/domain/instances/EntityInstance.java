@@ -1,6 +1,5 @@
 package uk.co.compendiumdev.thingifier.core.domain.instances;
 
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.NamedValue;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
@@ -128,7 +127,7 @@ public class EntityInstance {
 
         ignoreFields.addAll(getEntity().
                                 getFieldNamesOfType(
-                                    FieldType.ID,
+                                    FieldType.AUTO_INCREMENT,
                                     FieldType.GUID));
 
         instanceFields.deleteAllFieldValuesExcept(ignoreFields);

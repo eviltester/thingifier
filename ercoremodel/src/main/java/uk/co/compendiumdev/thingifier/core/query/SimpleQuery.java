@@ -11,7 +11,6 @@ import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import static uk.co.compendiumdev.thingifier.core.query.SimpleQuery.LastMatchValue.*;
 
@@ -166,7 +165,7 @@ final public class SimpleQuery {
 
                 // found based on ID ?
                 final List<Field> idFields = instance.getEntity().
-                        getFieldsOfType(FieldType.ID);
+                        getFieldsOfType(FieldType.AUTO_INCREMENT);
                 if(!idFields.isEmpty()){
                     final String idValue = instance.getFieldValue(
                             idFields.get(0).getName()).asString();

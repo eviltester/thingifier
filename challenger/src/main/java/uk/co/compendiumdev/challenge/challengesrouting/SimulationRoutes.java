@@ -39,7 +39,7 @@ public class SimulationRoutes {
         this.entityDefn = this.simulation.defineThing("entity", "entities");
 
         this.entityDefn.addFields(
-                Field.is("id", FieldType.ID),
+                Field.is("id", FieldType.AUTO_INCREMENT),
                 Field.is("name", FieldType.STRING).
                         makeMandatory().
                         withValidation(new MaximumLengthValidationRule(50)).

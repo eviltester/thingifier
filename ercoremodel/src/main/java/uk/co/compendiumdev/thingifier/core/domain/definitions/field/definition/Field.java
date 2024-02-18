@@ -139,7 +139,7 @@ public final class Field {
         }
 
         if(!allowedToSetIds) {
-            if (type == FieldType.ID) {
+            if (type == FieldType.AUTO_INCREMENT) {
                 report.setValid(false);
                 report.addErrorMessage(String.format("%s : field is an ID, you can't set it", this.getName()));
                 return report;
@@ -329,7 +329,7 @@ public final class Field {
             buildExamples.add(String.valueOf(rndInt));
         }
 
-        if(type==FieldType.ID){
+        if(type==FieldType.AUTO_INCREMENT){
             int rndInt = ThreadLocalRandom.current().
                     nextInt(1, 100);
             buildExamples.add(String.valueOf(rndInt));
@@ -446,7 +446,7 @@ public final class Field {
                     return value.asString();
                 }
             case INTEGER:
-            case ID:
+            case AUTO_INCREMENT:
                 Double dVal = Double.parseDouble(value.asString());
                 return String.valueOf(dVal.intValue());
             case GUID:

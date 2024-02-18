@@ -216,7 +216,7 @@ public class BodyParser {
                     report.addErrorMessage(errorMessage);
                 }
             }
-            if(field.getType()== FieldType.INTEGER || field.getType()==FieldType.ID){
+            if(field.getType()== FieldType.INTEGER || field.getType()==FieldType.AUTO_INCREMENT){
                 if (!(theValue instanceof Double )) {
                     report.setValid(false);
                     report.addErrorMessage(errorMessage);

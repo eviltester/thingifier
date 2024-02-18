@@ -12,7 +12,6 @@ import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.query.SimpleQuery;
 
 import java.util.List;
-import java.util.Map;
 
 public class RestApiPostHandler {
     private final Thingifier thingifier;
@@ -41,7 +40,7 @@ public class RestApiPostHandler {
             }
 
             EntityInstance returnedInstance = response.getReturnedInstance();
-            final List<String> protectedFieldNames = returnedInstance.getEntity().getFieldNamesOfType(FieldType.ID, FieldType.GUID);
+            final List<String> protectedFieldNames = returnedInstance.getEntity().getFieldNamesOfType(FieldType.AUTO_INCREMENT, FieldType.GUID);
             ValidationReport validity = returnedInstance.validateFieldValues(protectedFieldNames, false);
             validity.combine(returnedInstance.validateRelationships());
 

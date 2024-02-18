@@ -28,7 +28,7 @@ public class ApiUrls {
         // and this should be reflected in the REST API Urls
         if (apiConfig.willUrlsShowIdsIfAvailable()){
             final List<Field> idFields = thingInstance.getEntity().
-                                            getFieldsOfType(FieldType.ID);
+                                            getFieldsOfType(FieldType.AUTO_INCREMENT);
             if(!idFields.isEmpty()){
                 uniqueID = thingInstance.getFieldValue(
                                 idFields.get(0).getName()).asString();

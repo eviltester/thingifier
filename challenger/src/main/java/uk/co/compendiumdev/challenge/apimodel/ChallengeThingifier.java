@@ -5,7 +5,6 @@ import uk.co.compendiumdev.challenge.challenges.ChallengeDefinitionData;
 import uk.co.compendiumdev.challenge.challenges.ChallengeDefinitions;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
@@ -32,7 +31,7 @@ public class ChallengeThingifier {
                                     "challenge", "challenges");
 
         this.challengeDefn.addFields(
-                Field.is("id", FieldType.ID),
+                Field.is("id", FieldType.AUTO_INCREMENT),
                 Field.is("name", FieldType.STRING).withDefaultValue(""),
                 Field.is("description", FieldType.STRING).withDefaultValue(""),
                 Field.is("status", FieldType.BOOLEAN).withDefaultValue("false")

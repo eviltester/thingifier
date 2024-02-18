@@ -1,6 +1,5 @@
 package uk.co.compendiumdev.thingifier.api.routings;
 
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.api.response.ResponseHeader;
@@ -30,7 +29,7 @@ public class ApiRoutingDefinitionGenerator {
         this.config = thingifier.apiConfig();
 
         uniqueReferenceText = new HashMap<>();
-        uniqueReferenceText.put(FieldType.ID, ":id");
+        uniqueReferenceText.put(FieldType.AUTO_INCREMENT, ":id");
         uniqueReferenceText.put(FieldType.GUID, ":guid");
     }
 
@@ -210,7 +209,7 @@ public class ApiRoutingDefinitionGenerator {
     }
 
     private Field getUniqueIdField(final EntityDefinition thingDefn) {
-        final List<Field> idFields = thingDefn.getFieldsOfType(FieldType.ID);
+        final List<Field> idFields = thingDefn.getFieldsOfType(FieldType.AUTO_INCREMENT);
         if(config.willUrlsShowIdsIfAvailable() && !idFields.isEmpty()){
             return idFields.get(0);
         }else{

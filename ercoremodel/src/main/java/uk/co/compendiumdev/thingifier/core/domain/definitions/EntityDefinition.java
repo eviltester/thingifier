@@ -115,7 +115,7 @@ public class EntityDefinition {
         // todo: still have to handle nested objects - currently assume these are not ids, but they might be
         for(NamedValue fieldNameValue : fieldValues){
             final Field field = fields.getField(fieldNameValue.getName());
-            if(field!=null && field.getType()== FieldType.ID) {
+            if(field!=null && field.getType()== FieldType.AUTO_INCREMENT) {
                 field.ensureNextIdAbove(fieldNameValue.asString());
             }
         }

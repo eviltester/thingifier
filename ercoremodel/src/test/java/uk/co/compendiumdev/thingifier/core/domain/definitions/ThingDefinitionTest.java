@@ -71,14 +71,14 @@ class ThingDefinitionTest {
         eDefn.addFields(Field.is("Title", FieldType.STRING),
                 Field.is("Description", FieldType.STRING));
 
-        final Field anIdField = Field.is("anId", FieldType.ID);
-        final Field anotherIdField = Field.is("anotherID", FieldType.ID);
+        final Field anIdField = Field.is("anId", FieldType.AUTO_INCREMENT);
+        final Field anotherIdField = Field.is("anotherID", FieldType.AUTO_INCREMENT);
         eDefn.addFields(anIdField, anotherIdField);
 
         final List<String> stringFieldNames = eDefn.getFieldNamesOfType(FieldType.STRING);
         Assertions.assertEquals(2, stringFieldNames.size());
 
-        final List<Field> fields = eDefn.getFieldsOfType(FieldType.ID);
+        final List<Field> fields = eDefn.getFieldsOfType(FieldType.AUTO_INCREMENT);
 
         Assertions.assertEquals(2, fields.size());
         Assertions.assertTrue(fields.contains(anIdField));
@@ -144,14 +144,13 @@ class ThingDefinitionTest {
         EntityDefinition eDefn;
         eDefn = new EntityDefinition("Requirement", "Requirements");
 
-        eDefn.addFields(Field.is("anId", FieldType.ID));
+        eDefn.addFields(Field.is("anId", FieldType.AUTO_INCREMENT));
 
         final InstanceFields instance1 = eDefn.instantiateFields();
 
         // all this does is associate the instances with the definitions
-        // the values are null
 
-        Assertions.assertNull(instance1.getFieldValue("anId"));
+        Assertions.assertEquals(1, instance1.getFieldValue("anId").asInteger());
     }
 
 
@@ -160,8 +159,8 @@ class ThingDefinitionTest {
         EntityDefinition eDefn;
         eDefn = new EntityDefinition("Requirement", "Requirements");
 
-        eDefn.addFields(Field.is("anId", FieldType.ID));
-        eDefn.addFields(Field.is("anotherId", FieldType.ID));
+        eDefn.addFields(Field.is("anId", FieldType.AUTO_INCREMENT));
+        eDefn.addFields(Field.is("anotherId", FieldType.AUTO_INCREMENT));
 
         List<NamedValue> nextIds = new ArrayList<>();
         nextIds.add(new NamedValue("anId", "46"));

@@ -7,20 +7,20 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.Fie
 
 import java.util.List;
 
-class IdFieldTest {
+class AutoIncrementIdFieldTest {
 
     @Test
-    void defaultValueForAnIdIsNull(){
+    void defaultValueForAnAutoIncrementIdIsOne(){
 
-        final Field field = Field.is("id", FieldType.ID);
+        final Field field = Field.is("id", FieldType.AUTO_INCREMENT);
 
-        Assertions.assertNull(field.getDefaultValue().asString());
+        Assertions.assertEquals(1, field.getDefaultValue().asInteger());
     }
 
     @Test
     void idFieldNextValueStartsAt_1(){
 
-        final Field field = Field.is("id", FieldType.ID);
+        final Field field = Field.is("id", FieldType.AUTO_INCREMENT);
 
         String value = field.getNextIdValue();
         Assertions.assertEquals("1", value);
@@ -29,7 +29,7 @@ class IdFieldTest {
     @Test
     void idAdjustedInFieldWhenHighValueEnsured(){
 
-        final Field field = Field.is("id", FieldType.ID);
+        final Field field = Field.is("id", FieldType.AUTO_INCREMENT);
 
         field.ensureNextIdAbove("10");
 
@@ -40,7 +40,7 @@ class IdFieldTest {
     @Test
     void normalValidateAgainstTypeForIdDoesNotAllowSetting(){
 
-        final Field field = Field.is("id", FieldType.ID);
+        final Field field = Field.is("id", FieldType.AUTO_INCREMENT);
 
         final ValidationReport report = field.validate(
                                             FieldValue.is(field, "1"));
@@ -50,7 +50,7 @@ class IdFieldTest {
     @Test
     void canValidateForIdAllowingSetting(){
         // e.g. for cloning, and for setting objects
-        final Field field = Field.is("id", FieldType.ID);
+        final Field field = Field.is("id", FieldType.AUTO_INCREMENT);
 
         final ValidationReport report =
                 field.validate(FieldValue.is(field, "1"),
@@ -61,7 +61,7 @@ class IdFieldTest {
     @Test
     void examplesIDIsOneExample() {
 
-        final Field field = Field.is("id", FieldType.ID);
+        final Field field = Field.is("id", FieldType.AUTO_INCREMENT);
 
         final List<String> examples = field.getExamples();
 
@@ -71,7 +71,7 @@ class IdFieldTest {
     @Test
     void exampleIDIsAnIntegerBetween_1_and_100(){
 
-        final Field field = Field.is("id", FieldType.ID);
+        final Field field = Field.is("id", FieldType.AUTO_INCREMENT);
 
         for(int x=0; x<100; x++){
 

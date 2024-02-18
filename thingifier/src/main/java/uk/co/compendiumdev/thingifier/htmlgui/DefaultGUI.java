@@ -9,7 +9,6 @@ import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVectorDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
@@ -213,7 +212,7 @@ public class DefaultGUI {
                 for (String queryParam : request.queryParams()) {
                     Field field = thing.definition().getField(queryParam);
                     if (field != null) {
-                        if (field.getType() == FieldType.GUID || field.getType() == FieldType.ID) {
+                        if (field.getType() == FieldType.GUID || field.getType() == FieldType.AUTO_INCREMENT) {
                             keyName = field.getName();
                             keyValue = request.queryParams(queryParam);
                             break;
@@ -431,7 +430,7 @@ public class DefaultGUI {
         for(String field : definition.getFieldNames()) {
             if (!field.equals("guid")) {
                 Field theField = definition.getField(field);
-                if(theField.getType()== FieldType.ID){
+                if(theField.getType()== FieldType.AUTO_INCREMENT){
                     // make ids clickable
                     String renderAs = String.format("<a href='/gui/instance?entity=%1$s&%2$s=%3$s%4$s'>%3$s</a>",
                             definition.getName(),
@@ -448,7 +447,7 @@ public class DefaultGUI {
         // show any normal fields
         for(String field : definition.getFieldNames()) {
             Field theField = definition.getField(field);
-            if(theField.getType()!= FieldType.ID && theField.getType()!=FieldType.GUID){
+            if(theField.getType()!= FieldType.AUTO_INCREMENT && theField.getType()!=FieldType.GUID){
                 html.append(String.format("<td>%s</td>", htmlsanitise(instance.getFieldValue(field).asString())));
             }
         }
@@ -470,14 +469,14 @@ public class DefaultGUI {
         // then any ids
         for(String field : definition.getFieldNames()) {
             Field theField = definition.getField(field);
-            if (theField.getType()==FieldType.ID) {
+            if (theField.getType()==FieldType.AUTO_INCREMENT) {
                 html.append(String.format("<th>%s</th>", field));
             }
         }
         // then the normal fields
         for(String field : definition.getFieldNames()) {
             Field theField = definition.getField(field);
-            if (theField.getType()!=FieldType.ID && theField.getType()!=FieldType.GUID) {
+            if (theField.getType()!=FieldType.AUTO_INCREMENT && theField.getType()!=FieldType.GUID) {
                 html.append(String.format("<th>%s</th>", field));
             }
         }

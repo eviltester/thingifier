@@ -14,15 +14,6 @@ public class EntityInstanceBulkUpdater {
         this.instance = instance;
     }
 
-    /**
-     *
-     * Suspect these should not be in core and should be in the API handling
-     *
-     * We can have a setFieldValuesFrom and an overrideFieldValuesFrom
-     * - but not the 'ignoring' lists
-     *
-     */
-
     public void setFieldValuesFrom(List<NamedValue> fieldValues) {
 
         final List<String> anyErrors = instance.getFields().findAnyGuidOrIdDifferences(fieldValues);
@@ -30,7 +21,7 @@ public class EntityInstanceBulkUpdater {
             throw new RuntimeException(anyErrors.get(0));
         }
 
-        setFieldValuesFromArgsIgnoring(fieldValues, instance.getEntity().getFieldNamesOfType(FieldType.ID, FieldType.GUID));
+        setFieldValuesFromArgsIgnoring(fieldValues, instance.getEntity().getFieldNamesOfType(FieldType.AUTO_INCREMENT, FieldType.GUID));
     }
 
     public void setFieldValuesFromArgsIgnoring(List<NamedValue> fieldValues,

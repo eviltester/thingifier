@@ -12,7 +12,7 @@ public class ThingInstanceIdFieldTest {
     public void byDefaultAnIDFieldIsOneWhenInstantiated(){
 
         EntityDefinition entity = new EntityDefinition("thing", "things");
-        entity.addFields(Field.is("id", FieldType.ID));
+        entity.addFields(Field.is("id", FieldType.AUTO_INCREMENT));
 
         EntityInstance instance = new EntityInstance(entity);
         instance.addIdsToInstance();
@@ -27,7 +27,7 @@ public class ThingInstanceIdFieldTest {
     public void idsShouldAutoIncrementWhenInstancesCreated(){
 
         EntityDefinition entity = new EntityDefinition("thing", "things");
-        entity.addFields(Field.is("id", FieldType.ID));
+        entity.addFields(Field.is("id", FieldType.AUTO_INCREMENT));
 
         EntityInstance instance = new EntityInstance(entity);
         instance.addIdsToInstance();
@@ -42,7 +42,7 @@ public class ThingInstanceIdFieldTest {
     public void notAllowedToAmendIdOfInstance(){
 
         EntityDefinition entity = new EntityDefinition("thing", "things");
-        entity.addFields(Field.is("id", FieldType.ID));
+        entity.addFields(Field.is("id", FieldType.AUTO_INCREMENT));
 
         EntityInstance instance = new EntityInstance(entity);
         instance.addIdsToInstance();

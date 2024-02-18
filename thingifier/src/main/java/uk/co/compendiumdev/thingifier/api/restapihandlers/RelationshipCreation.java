@@ -4,7 +4,6 @@ import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollec
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
@@ -56,7 +55,7 @@ public class RelationshipCreation {
         for(String fieldName : args.keySet()){
             final Field field = thingTo.definition().getField(fieldName);
             // in theory this is any 'key' unique field
-            if(field.getType()== FieldType.GUID || field.getType() == FieldType.ID){
+            if(field.getType()== FieldType.GUID || field.getType() == FieldType.AUTO_INCREMENT){
                 amExpectingARelatedItem=true;
                 if(!matchingFieldNames.contains(fieldName+ " ")){
                     matchingFieldNames = matchingFieldNames + fieldName +" ";

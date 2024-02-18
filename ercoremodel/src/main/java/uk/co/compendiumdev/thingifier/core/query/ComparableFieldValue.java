@@ -25,7 +25,7 @@ public class ComparableFieldValue {
 
     public int compareTo(final ComparableFieldValue otherValue) {
 
-        if( fieldDefn.getType() == FieldType.ID ||
+        if( fieldDefn.getType() == FieldType.AUTO_INCREMENT ||
                 fieldDefn.getType() == FieldType.INTEGER ){
             int field1Value = fieldValue.asInteger();
             int field2Value = otherValue.getValue().asInteger();

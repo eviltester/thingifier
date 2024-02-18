@@ -13,7 +13,6 @@ import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
 import java.util.*;
@@ -212,7 +211,7 @@ public class VerbPutEntityInstanceApiNonHttpTest {
         ApiResponse apiresponse;
 
         project = todoManager.getThingInstancesNamed("project");
-        final Field anIdField = Field.is("id", FieldType.ID);
+        final Field anIdField = Field.is("id", FieldType.AUTO_INCREMENT);
         project.definition().addField(anIdField);
 
         // PUT
@@ -247,7 +246,7 @@ public class VerbPutEntityInstanceApiNonHttpTest {
         ApiResponse apiresponse;
 
         project = todoManager.getThingInstancesNamed("project");
-        final Field anIdField = Field.is("id", FieldType.ID);
+        final Field anIdField = Field.is("id", FieldType.AUTO_INCREMENT);
         project.definition().addField(anIdField);
 
         final EntityInstance instance = project.createManagedInstance();

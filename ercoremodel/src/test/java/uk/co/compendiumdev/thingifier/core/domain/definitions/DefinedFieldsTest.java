@@ -88,7 +88,7 @@ class DefinedFieldsTest {
         multipleFields.addField(Field.is("string1", FieldType.STRING));
         multipleFields.addField(Field.is("bob", FieldType.GUID));
         multipleFields.addField(Field.is("string2", FieldType.STRING));
-        multipleFields.addField(Field.is("dobbs", FieldType.ID));
+        multipleFields.addField(Field.is("dobbs", FieldType.AUTO_INCREMENT));
         multipleFields.addField(Field.is("string3", FieldType.STRING));
     }
 
@@ -127,7 +127,7 @@ class DefinedFieldsTest {
 
         final List<Field> others = multipleFields.getFieldsOfType(
                                                 FieldType.GUID,
-                                                FieldType.ID);
+                                                FieldType.AUTO_INCREMENT);
 
         List<String> othersNames = new ArrayList<>();
         for(Field field : others){
@@ -142,7 +142,7 @@ class DefinedFieldsTest {
 
         final List<Field> others = multipleFields.getFieldsOfType(
                 FieldType.GUID,
-                FieldType.ID,
+                FieldType.AUTO_INCREMENT,
                 FieldType.FLOAT,
                 FieldType.INTEGER);
 

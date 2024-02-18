@@ -2,7 +2,6 @@ package uk.co.compendiumdev.thingifier.htmlgui;
 
 import com.google.gson.GsonBuilder;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.xml.GenericXMLPrettyPrinter;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.api.routings.ApiRoutingDefinition;
@@ -10,7 +9,6 @@ import uk.co.compendiumdev.thingifier.api.routings.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingVerb;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVectorDefinition;
@@ -347,7 +345,7 @@ public class RestApiDocumentationGenerator {
         // todo: ignore strings unless none added, in which case add the strings
         for(String fieldName : filterableEntity.getFieldNames()){
             Field field = filterableEntity.getField(fieldName);
-            if(field.getType() != FieldType.ID && field.getType()!= FieldType.GUID){
+            if(field.getType() != FieldType.AUTO_INCREMENT && field.getType()!= FieldType.GUID){
                 // we can filter on guid and id, but don't use those as examples
                 if(exampleFields.size()==0 || random.nextBoolean()){
                     // make sure at least one

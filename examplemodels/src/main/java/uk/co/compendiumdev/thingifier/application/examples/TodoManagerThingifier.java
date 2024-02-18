@@ -1,7 +1,6 @@
 package uk.co.compendiumdev.thingifier.application.examples;
 
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfigProfile;
@@ -52,7 +51,7 @@ public class TodoManagerThingifier {
 
         // todo: show fields in the order we add them, not the hashmap key order
         todo
-                .addFields(Field.is("id", FieldType.ID),
+                .addFields(Field.is("id", FieldType.AUTO_INCREMENT),
                         Field.is("title", STRING).
                                 makeMandatory().
                                 withValidation(
@@ -66,7 +65,7 @@ public class TodoManagerThingifier {
 
         project
                 .addFields(
-                        Field.is("id", FieldType.ID),
+                        Field.is("id", FieldType.AUTO_INCREMENT),
                         Field.is("title", STRING),
                         Field.is("completed", FieldType.BOOLEAN).
                                 withDefaultValue("false"),
@@ -79,7 +78,7 @@ public class TodoManagerThingifier {
 
         category
                 .addFields(
-                        Field.is("id", FieldType.ID),
+                        Field.is("id", FieldType.AUTO_INCREMENT),
                         Field.is("title", STRING).
                                 makeMandatory().
                                 withValidation(VRule.notEmpty()),

@@ -1,7 +1,6 @@
 package uk.co.compendiumdev.casestudy.todomanager;
 
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.Cardinality;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
@@ -116,7 +115,7 @@ could implement a Thingifier URL query matcher to return instances based on quer
                                 makeMandatory().
                                 withValidation(
                                         VRule.notEmpty()),
-                        Field.is("id", ID),
+                        Field.is("id", AUTO_INCREMENT),
                         Field.is("description",STRING),
                         Field.is("doneStatus",FieldType.BOOLEAN).
                                 withDefaultValue("false")

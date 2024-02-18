@@ -246,7 +246,7 @@ public class AuthRoutes {
                 if (!response.isErrorResponse()) {
 
                     EntityInstance returnedInstance = response.getReturnedInstance();
-                    final List<String> protectedFieldNames = returnedInstance.getEntity().getFieldNamesOfType(FieldType.ID, FieldType.GUID);
+                    final List<String> protectedFieldNames = returnedInstance.getEntity().getFieldNamesOfType(FieldType.AUTO_INCREMENT, FieldType.GUID);
                     ValidationReport validity = returnedInstance.validateFieldValues(protectedFieldNames, false);
                     validity.combine(returnedInstance.validateRelationships());
 

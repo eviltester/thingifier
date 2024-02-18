@@ -2,7 +2,6 @@ package uk.co.compendiumdev.thingifier.api.non_http;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import uk.co.compendiumdev.thingifier.api.ThingifierRestAPIHandler;
 import uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi;
 import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
@@ -13,10 +12,6 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.F
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 import static uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType.STRING;
 
@@ -29,7 +24,7 @@ public class IdBasedInstanceNonHttpTest {
         EntityDefinition thing = thingifier.defineThing("thing", "things");
         thing
                 .addFields(Field.is("title", STRING),
-                        Field.is("id", FieldType.ID)
+                        Field.is("id", FieldType.AUTO_INCREMENT)
                 )
         ;
 

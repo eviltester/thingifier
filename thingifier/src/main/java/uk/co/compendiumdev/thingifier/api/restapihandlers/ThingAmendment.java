@@ -53,7 +53,7 @@ public class ThingAmendment {
             return ApiResponse.error(400, e.getMessage());
         }
 
-        final List<String> protectedFieldNames = cloned.getEntity().getFieldNamesOfType(FieldType.ID, FieldType.GUID);
+        final List<String> protectedFieldNames = cloned.getEntity().getFieldNamesOfType(FieldType.AUTO_INCREMENT, FieldType.GUID);
         ValidationReport validation = cloned.validateFieldValues(protectedFieldNames, false);
 
         // validate the relationships as well

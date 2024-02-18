@@ -20,7 +20,7 @@ public class QueryFiltersIdTest {
     public void setupCollectionTestData(){
         erModel = new EntityRelModel();
         erModel.createEntityDefinition("thing", "things")
-                .addFields(Field.is("id", FieldType.ID))
+                .addFields(Field.is("id", FieldType.AUTO_INCREMENT))
                 .addFields( Field.is("fakeid", FieldType.INTEGER)
                 );
 

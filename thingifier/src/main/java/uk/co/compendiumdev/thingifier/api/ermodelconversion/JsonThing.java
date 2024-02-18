@@ -86,7 +86,7 @@ public class JsonThing {
                         case FLOAT:
                             jsonobj.addProperty(fieldName, Float.valueOf(fieldValue));
                             break;
-                        case ID:
+                        case AUTO_INCREMENT:
                             jsonobj.addProperty(fieldName, Integer.valueOf(fieldValue));
                             break;
                         case OBJECT:
@@ -193,7 +193,7 @@ public class JsonThing {
 
                         try {
                             if (useIdsInRelationshipRenderingIfAvailable) {
-                                final List<Field> idFields = item.getEntity().getFieldsOfType(FieldType.ID);
+                                final List<Field> idFields = item.getEntity().getFieldsOfType(FieldType.AUTO_INCREMENT);
                                 if (!idFields.isEmpty()) {
                                     fieldNameAsUniqueId = idFields.get(0).getName();
                                     valueOfUniqueId = item.getFieldValue(fieldNameAsUniqueId).asString();

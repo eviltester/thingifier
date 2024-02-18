@@ -2,7 +2,6 @@ package uk.co.compendiumdev.thingifier.core.domain.instances;
 
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 
 import java.util.*;
@@ -166,7 +165,7 @@ final public class EntityInstanceCollection {
     public EntityInstance findInstanceByGUIDorID(final String instanceGuid) {
         EntityInstance instance = findInstanceByGUID(instanceGuid);
         if(instance==null){
-            final List<Field> idFields = definition.getFieldsOfType(FieldType.ID);
+            final List<Field> idFields = definition.getFieldsOfType(FieldType.AUTO_INCREMENT);
             if(!idFields.isEmpty()) {
                 instance = findInstanceByFieldNameAndValue(
                                 (idFields.get(0)).getName(),

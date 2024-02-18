@@ -86,22 +86,21 @@ class InstanceFieldsTest {
     }
 
     @Test
-    void byDefaultIdFieldsAreNotInstantiated() {
+    void byDefaultAutoIncrementIdFieldsAreSetToOne() {
 
         DefinedFields fieldsDefn = new DefinedFields();
-        fieldsDefn.addField(Field.is("id", FieldType.ID));
+        fieldsDefn.addField(Field.is("id", FieldType.AUTO_INCREMENT));
 
         InstanceFields instance = new InstanceFields(fieldsDefn);
 
-        // todo: create a NULL field Value
-        Assertions.assertNull(instance.getFieldValue("id"));
+        Assertions.assertEquals(1, instance.getFieldValue("id").asInteger());
     }
 
     @Test
     void weCanInstantiateTheIdsAfterCreation() {
 
         DefinedFields fieldsDefn = new DefinedFields();
-        fieldsDefn.addField(Field.is("id", FieldType.ID));
+        fieldsDefn.addField(Field.is("id", FieldType.AUTO_INCREMENT));
 
         InstanceFields instance = new InstanceFields(fieldsDefn);
 
@@ -290,7 +289,7 @@ class InstanceFieldsTest {
 
         DefinedFields fieldsDefn = new DefinedFields();
         fieldsDefn.addFields(
-                Field.is("id", FieldType.ID),
+                Field.is("id", FieldType.AUTO_INCREMENT),
                 Field.is("guid", FieldType.GUID));
 
         InstanceFields instance = new InstanceFields(fieldsDefn);
@@ -320,7 +319,7 @@ class InstanceFieldsTest {
 
         DefinedFields fieldsDefn = new DefinedFields();
         fieldsDefn.addFields(
-                Field.is("id", FieldType.ID),
+                Field.is("id", FieldType.AUTO_INCREMENT),
                 Field.is("guid", FieldType.GUID));
 
         InstanceFields instance = new InstanceFields(fieldsDefn);

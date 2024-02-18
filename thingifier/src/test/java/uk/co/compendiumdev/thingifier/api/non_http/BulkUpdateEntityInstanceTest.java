@@ -26,7 +26,7 @@ public class BulkUpdateEntityInstanceTest {
         entityTestSession.addFields(Field.is("CompletedStatus", FieldType.STRING).withDefaultValue("Not Completed"));
         entityTestSession.addFields(Field.is("review", FieldType.BOOLEAN).withDefaultValue("TRUE"));
         entityTestSession.addFields(Field.is("falsey", FieldType.BOOLEAN));
-        entityTestSession.addFields(Field.is("anid", FieldType.ID));
+        entityTestSession.addFields(Field.is("anid", FieldType.AUTO_INCREMENT));
     }
 
     @Test

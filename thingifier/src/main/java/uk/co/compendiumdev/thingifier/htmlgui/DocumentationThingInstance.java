@@ -19,7 +19,7 @@ public class DocumentationThingInstance{
     }
 
     public EntityInstance withoutIDsOrGUIDs(){
-        for(String name : definition.getFieldNamesOfType(FieldType.ID, FieldType.GUID)){
+        for(String name : definition.getFieldNamesOfType(FieldType.AUTO_INCREMENT, FieldType.GUID)){
             overrideValue(name, null);
         }
         return instance;

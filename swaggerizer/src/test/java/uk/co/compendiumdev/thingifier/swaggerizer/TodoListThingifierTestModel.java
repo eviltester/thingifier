@@ -1,7 +1,6 @@
 package uk.co.compendiumdev.thingifier.swaggerizer;
 
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfigProfile;
@@ -33,7 +32,7 @@ public class TodoListThingifierTestModel {
 
         todo
                 .addFields(
-                        Field.is("id",FieldType.ID),
+                        Field.is("id",FieldType.AUTO_INCREMENT),
                         Field.is("title", STRING).
                                 makeMandatory().
                                 withValidation(

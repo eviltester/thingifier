@@ -5,7 +5,6 @@ import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVectorDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
@@ -75,7 +74,7 @@ public class BodyRelationshipValidator {
         }
 
         // can we relate via that field?
-        List<String> linkingFields = thingDefinition.getFieldNamesOfType(FieldType.ID, FieldType.GUID);
+        List<String> linkingFields = thingDefinition.getFieldNamesOfType(FieldType.AUTO_INCREMENT, FieldType.GUID);
         if(!linkingFields.contains(fieldToMatchForGuid)){
             report.addErrorMessage(String.format(
                     "Do not support relationship references using %s", fieldToMatchForGuid));
