@@ -183,8 +183,6 @@ public class RestApiDocumentationGenerator {
                     exampleThing.overrideValue(theField.getName(), exampleValue);
 
                     output.append(String.format("<tr><td colspan='3' class='examplevalue'>Example: \"%s\"</td></tr>", exampleValue));
-
-
                 }
 
 

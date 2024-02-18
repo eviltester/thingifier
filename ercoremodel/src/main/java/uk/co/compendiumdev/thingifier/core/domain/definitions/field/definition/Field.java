@@ -316,6 +316,11 @@ public final class Field {
 
     public List<String> getExamples() {
 
+        // field might have examples in definition, if it does, use them
+        if(!fieldExamples.isEmpty()){
+            return new ArrayList<>(fieldExamples);
+        }
+
         Set<String> buildExamples = new HashSet<>();
 
         if (type == FieldType.BOOLEAN) {
@@ -342,11 +347,6 @@ public final class Field {
         if(type==FieldType.FLOAT){
             final float rndFloat = minimumFloatValue + ThreadLocalRandom.current().nextFloat() * (maximumFloatValue - minimumFloatValue);
             buildExamples.add(String.valueOf(rndFloat));
-        }
-
-        // field might have examples in definition
-        if(!fieldExamples.isEmpty()){
-            buildExamples.addAll(fieldExamples);
         }
 
         // TODO: try to use regex in matching rules to generate
