@@ -74,7 +74,7 @@ public class BodyRelationshipValidator {
         }
 
         // can we relate via that field?
-        List<String> linkingFields = thingDefinition.getFieldNamesOfType(FieldType.AUTO_INCREMENT, FieldType.GUID);
+        List<String> linkingFields = thingDefinition.getFieldNamesOfType(FieldType.AUTO_INCREMENT, FieldType.AUTO_GUID);
         if(!linkingFields.contains(fieldToMatchForGuid)){
             report.addErrorMessage(String.format(
                     "Do not support relationship references using %s", fieldToMatchForGuid));

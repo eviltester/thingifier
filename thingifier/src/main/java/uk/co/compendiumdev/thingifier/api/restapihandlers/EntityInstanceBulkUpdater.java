@@ -21,7 +21,7 @@ public class EntityInstanceBulkUpdater {
             throw new RuntimeException(anyErrors.get(0));
         }
 
-        setFieldValuesFromArgsIgnoring(fieldValues, instance.getEntity().getFieldNamesOfType(FieldType.AUTO_INCREMENT, FieldType.GUID));
+        setFieldValuesFromArgsIgnoring(fieldValues, instance.getEntity().getFieldNamesOfType(FieldType.AUTO_INCREMENT, FieldType.AUTO_GUID));
     }
 
     public void setFieldValuesFromArgsIgnoring(List<NamedValue> fieldValues,

@@ -36,6 +36,7 @@ public final class Field {
     private DefinedFields objectDefinition;
 
 
+    @Deprecated // this should not exist on a definition, it is an instance responsibility
     private int nextId; // only used for id fields
     private int truncatedStringLength;
 
@@ -67,6 +68,7 @@ public final class Field {
     }
 
     // TODO: these nextIDValuea nd NextIDAbove should be on a FieldCounter not on a Field because we have multiple instance collections
+    @Deprecated // this should not be on a field definition
     public String getNextIdValue() {
         int id = nextId;
         nextId++;
@@ -74,6 +76,7 @@ public final class Field {
     }
 
     // an external way to set the next id
+    @Deprecated // this should not be on a field definition
     public void ensureNextIdAbove(final String value) {
         try{
             final int desiredId = Integer.parseInt(value);
@@ -340,7 +343,7 @@ public final class Field {
             buildExamples.add(String.valueOf(rndInt));
         }
 
-        if(type==FieldType.GUID){
+        if(type==FieldType.AUTO_GUID){
             buildExamples.add(UUID.randomUUID().toString());
         }
 
@@ -449,7 +452,7 @@ public final class Field {
             case AUTO_INCREMENT:
                 Double dVal = Double.parseDouble(value.asString());
                 return String.valueOf(dVal.intValue());
-            case GUID:
+            case AUTO_GUID:
             case OBJECT:
             case ENUM:
             case DATE:

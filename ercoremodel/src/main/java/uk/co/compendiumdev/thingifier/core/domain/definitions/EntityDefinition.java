@@ -34,7 +34,8 @@ public class EntityDefinition {
 
         // todo: support overriding this name to allow model to use guid as a user managed field
         // e.g. model.internalUniqueIDFieldName("bob")
-        addField(Field.is("guid", FieldType.GUID));
+        // add a unique guid so we always have some way of identifying an instance
+        addField(Field.is("guid", FieldType.AUTO_GUID));
     }
 
     public String toString() {

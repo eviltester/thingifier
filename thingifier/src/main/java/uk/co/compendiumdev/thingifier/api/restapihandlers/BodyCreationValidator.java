@@ -29,7 +29,7 @@ public class BodyCreationValidator {
         // on creation, we should not have any protected fields in the body i.e. id or guid
 
         List<String> notAllowedToCreateWithList =
-                thingDefinition.getFieldNamesOfType(FieldType.AUTO_INCREMENT, FieldType.GUID);
+                thingDefinition.getFieldNamesOfType(FieldType.AUTO_INCREMENT, FieldType.AUTO_GUID);
         final Map<String, Object> bodyFields = bodyargs.getMap();
         for(String fieldName : notAllowedToCreateWithList){
             if(bodyFields.containsKey(fieldName)){

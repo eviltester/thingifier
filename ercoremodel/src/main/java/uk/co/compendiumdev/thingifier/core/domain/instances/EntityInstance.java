@@ -1,5 +1,6 @@
 package uk.co.compendiumdev.thingifier.core.domain.instances;
 
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
@@ -22,15 +23,17 @@ public class EntityInstance {
     }
 
     public EntityInstance addGUIDtoInstance(){
-        // todo: this adds a field called 'guid' but there may be other GUID fields,
         // allow GUIDs to be defined as being 'auto' in which case we will auto generate them
-        if(entityDefinition.hasFieldNameDefined("guid")){
-            instanceFields.addValue(entityDefinition.getField("guid").valueFor( UUID.randomUUID().toString()));
+        // a "guid" field is added to an entity definition by default, but we could add more
+        List<Field> autoGuids = entityDefinition.getFieldsOfType(FieldType.AUTO_GUID);
+        for(Field autoGuid : autoGuids){
+            instanceFields.addValue(entityDefinition.getField(autoGuid.getName()).valueFor( UUID.randomUUID().toString()));
         }
 
         return this;
     }
 
+    @Deprecated // this would need to be passed a list of ID Counters because it needs to be controlled at a database level, not a definition level
     public EntityInstance addIdsToInstance() {
         instanceFields.addIdsToInstance();
         return this;
@@ -128,7 +131,7 @@ public class EntityInstance {
         ignoreFields.addAll(getEntity().
                                 getFieldNamesOfType(
                                     FieldType.AUTO_INCREMENT,
-                                    FieldType.GUID));
+                                    FieldType.AUTO_GUID));
 
         instanceFields.deleteAllFieldValuesExcept(ignoreFields);
     }

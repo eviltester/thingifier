@@ -10,7 +10,7 @@ class GuidFieldTest {
     @Test
     void canValidateExampleGuid(){
 
-        Field field = Field.is("guid", FieldType.GUID);
+        Field field = Field.is("guid", FieldType.AUTO_GUID);
 
         try {
             UUID.fromString(field.getRandomExampleValue());

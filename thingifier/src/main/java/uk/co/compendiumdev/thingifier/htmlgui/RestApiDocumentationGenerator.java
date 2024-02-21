@@ -343,7 +343,7 @@ public class RestApiDocumentationGenerator {
         // todo: ignore strings unless none added, in which case add the strings
         for(String fieldName : filterableEntity.getFieldNames()){
             Field field = filterableEntity.getField(fieldName);
-            if(field.getType() != FieldType.AUTO_INCREMENT && field.getType()!= FieldType.GUID){
+            if(field.getType() != FieldType.AUTO_INCREMENT && field.getType()!= FieldType.AUTO_GUID){
                 // we can filter on guid and id, but don't use those as examples
                 if(exampleFields.size()==0 || random.nextBoolean()){
                     // make sure at least one

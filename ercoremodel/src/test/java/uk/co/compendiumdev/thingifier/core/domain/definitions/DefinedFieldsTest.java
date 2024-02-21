@@ -86,7 +86,7 @@ class DefinedFieldsTest {
     public void multipleFieldsDefined(){
         multipleFields = new DefinedFields();
         multipleFields.addField(Field.is("string1", FieldType.STRING));
-        multipleFields.addField(Field.is("bob", FieldType.GUID));
+        multipleFields.addField(Field.is("bob", FieldType.AUTO_GUID));
         multipleFields.addField(Field.is("string2", FieldType.STRING));
         multipleFields.addField(Field.is("dobbs", FieldType.AUTO_INCREMENT));
         multipleFields.addField(Field.is("string3", FieldType.STRING));
@@ -126,7 +126,7 @@ class DefinedFieldsTest {
     void canGetMultipleFieldTypes(){
 
         final List<Field> others = multipleFields.getFieldsOfType(
-                                                FieldType.GUID,
+                                                FieldType.AUTO_GUID,
                                                 FieldType.AUTO_INCREMENT);
 
         List<String> othersNames = new ArrayList<>();
@@ -141,7 +141,7 @@ class DefinedFieldsTest {
     void noFieldsReturnsNoAdditionalResults(){
 
         final List<Field> others = multipleFields.getFieldsOfType(
-                FieldType.GUID,
+                FieldType.AUTO_GUID,
                 FieldType.AUTO_INCREMENT,
                 FieldType.FLOAT,
                 FieldType.INTEGER);

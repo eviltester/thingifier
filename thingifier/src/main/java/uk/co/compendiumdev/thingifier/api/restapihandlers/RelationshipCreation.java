@@ -55,7 +55,7 @@ public class RelationshipCreation {
         for(String fieldName : args.keySet()){
             final Field field = thingTo.definition().getField(fieldName);
             // in theory this is any 'key' unique field
-            if(field.getType()== FieldType.GUID || field.getType() == FieldType.AUTO_INCREMENT){
+            if(field.getType()== FieldType.AUTO_GUID || field.getType() == FieldType.AUTO_INCREMENT){
                 amExpectingARelatedItem=true;
                 if(!matchingFieldNames.contains(fieldName+ " ")){
                     matchingFieldNames = matchingFieldNames + fieldName +" ";

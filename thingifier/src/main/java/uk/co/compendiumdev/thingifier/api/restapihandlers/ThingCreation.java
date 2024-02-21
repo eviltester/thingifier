@@ -53,7 +53,7 @@ public class ThingCreation {
 
         validated = new BodyCreationValidator(thingifier).
                 areFieldsUnique(bodyargs, thing,
-                        thing.definition().getFieldNamesOfType(FieldType.AUTO_INCREMENT, FieldType.GUID));
+                        thing.definition().getFieldNamesOfType(FieldType.AUTO_INCREMENT, FieldType.AUTO_GUID));
         if(!validated.isValid()){
             return ApiResponse.error(409,"Cannot Create with duplicate values: "+
                     validated.getCombinedErrorMessages());
@@ -119,7 +119,7 @@ public class ThingCreation {
 
 
         final List<String> protectedFieldNames = instance.getEntity().
-                                getFieldNamesOfType(FieldType.AUTO_INCREMENT, FieldType.GUID);
+                                getFieldNamesOfType(FieldType.AUTO_INCREMENT, FieldType.AUTO_GUID);
 
         ValidationReport validation = instance.validateFieldValues(protectedFieldNames, false);
 
@@ -139,7 +139,7 @@ public class ThingCreation {
         try {
             // set all the fields and values, except guids
             List<String> ignoreFields = instance.getEntity().
-                                getFieldNamesOfType(FieldType.GUID);
+                                getFieldNamesOfType(FieldType.AUTO_GUID);
 
             List<NamedValue> fieldValues = FieldValues.
                     fromListMapEntryStringString(

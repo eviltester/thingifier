@@ -212,7 +212,7 @@ public class DefaultGUI {
                 for (String queryParam : request.queryParams()) {
                     Field field = thing.definition().getField(queryParam);
                     if (field != null) {
-                        if (field.getType() == FieldType.GUID || field.getType() == FieldType.AUTO_INCREMENT) {
+                        if (field.getType() == FieldType.AUTO_GUID || field.getType() == FieldType.AUTO_INCREMENT) {
                             keyName = field.getName();
                             keyValue = request.queryParams(queryParam);
                             break;
@@ -373,7 +373,7 @@ public class DefaultGUI {
         html.append("<thead><tr>");
         for(String fieldName : definition.getFieldNames()) {
             Field field = definition.getField(fieldName);
-            if(field.getType()==FieldType.GUID){
+            if(field.getType()==FieldType.AUTO_GUID){
                 if(apiConfig.willResponsesShowGuids()) {
                     html.append(String.format("<th>%s</th>",field.getName()));
                 }
@@ -385,7 +385,7 @@ public class DefaultGUI {
         html.append("<tbody><tr>");
         for(String fieldName : definition.getFieldNames()) {
             Field field = definition.getField(fieldName);
-            if(field.getType()==FieldType.GUID){
+            if(field.getType()==FieldType.AUTO_GUID){
                 if(apiConfig.willResponsesShowGuids()) {
                     html.append(String.format("<td>%s</td>", instance.getFieldValue(fieldName).asString()));
                 }
@@ -447,7 +447,7 @@ public class DefaultGUI {
         // show any normal fields
         for(String field : definition.getFieldNames()) {
             Field theField = definition.getField(field);
-            if(theField.getType()!= FieldType.AUTO_INCREMENT && theField.getType()!=FieldType.GUID){
+            if(theField.getType()!= FieldType.AUTO_INCREMENT && theField.getType()!=FieldType.AUTO_GUID){
                 html.append(String.format("<td>%s</td>", htmlsanitise(instance.getFieldValue(field).asString())));
             }
         }
@@ -476,7 +476,7 @@ public class DefaultGUI {
         // then the normal fields
         for(String field : definition.getFieldNames()) {
             Field theField = definition.getField(field);
-            if (theField.getType()!=FieldType.AUTO_INCREMENT && theField.getType()!=FieldType.GUID) {
+            if (theField.getType()!=FieldType.AUTO_INCREMENT && theField.getType()!=FieldType.AUTO_GUID) {
                 html.append(String.format("<th>%s</th>", field));
             }
         }

@@ -13,7 +13,7 @@ public enum FieldType {
     BOOLEAN("false"),
     ENUM(""), // remember to set example values
     //TODO: make this an AUTO_GUID field type then all findByIdOrGuid are actually findByFirstAutoIncrementOrAutoGuid
-    GUID(null);
+    AUTO_GUID(null);
     // TODO: then add a GUID type back in which validates against a GUID
 
     private final String defaultValue;

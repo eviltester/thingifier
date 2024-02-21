@@ -253,7 +253,7 @@ public class InstanceFields {
         List<String> errorMessages = new ArrayList<>();
 
         List<Field> idOrGuidFields = objectDefinition.getFieldsOfType(
-                                        FieldType.GUID, FieldType.AUTO_INCREMENT);
+                                        FieldType.AUTO_GUID, FieldType.AUTO_INCREMENT);
 
         for (NamedValue entry : args) {
 

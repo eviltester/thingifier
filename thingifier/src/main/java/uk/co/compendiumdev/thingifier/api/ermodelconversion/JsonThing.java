@@ -67,7 +67,7 @@ public class JsonThing {
         for (String fieldName : fields.getDefinition().getFieldNames()) {
             Field theField = fields.getDefinition().getField(fieldName);
             // if hiding guids then skip them
-            if(!apiConfig.willRenderGuidsInResponse() && theField.getType()== FieldType.GUID)
+            if(!apiConfig.willRenderGuidsInResponse() && theField.getType()== FieldType.AUTO_GUID)
                 continue;
 
             String fieldValue = "";

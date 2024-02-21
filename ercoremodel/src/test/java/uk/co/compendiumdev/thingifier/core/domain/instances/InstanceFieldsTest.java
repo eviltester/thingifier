@@ -290,7 +290,7 @@ class InstanceFieldsTest {
         DefinedFields fieldsDefn = new DefinedFields();
         fieldsDefn.addFields(
                 Field.is("id", FieldType.AUTO_INCREMENT),
-                Field.is("guid", FieldType.GUID));
+                Field.is("guid", FieldType.AUTO_GUID));
 
         InstanceFields instance = new InstanceFields(fieldsDefn);
         instance.addIdsToInstance();
@@ -320,7 +320,7 @@ class InstanceFieldsTest {
         DefinedFields fieldsDefn = new DefinedFields();
         fieldsDefn.addFields(
                 Field.is("id", FieldType.AUTO_INCREMENT),
-                Field.is("guid", FieldType.GUID));
+                Field.is("guid", FieldType.AUTO_GUID));
 
         InstanceFields instance = new InstanceFields(fieldsDefn);
         instance.addIdsToInstance();

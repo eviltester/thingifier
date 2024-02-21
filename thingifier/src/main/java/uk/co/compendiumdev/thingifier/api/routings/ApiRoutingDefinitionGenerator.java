@@ -30,7 +30,7 @@ public class ApiRoutingDefinitionGenerator {
 
         uniqueReferenceText = new HashMap<>();
         uniqueReferenceText.put(FieldType.AUTO_INCREMENT, ":id");
-        uniqueReferenceText.put(FieldType.GUID, ":guid");
+        uniqueReferenceText.put(FieldType.AUTO_GUID, ":guid");
     }
 
     // TODO: generate /_plural_ instead of /_entityName_ for top level routing (make this toggelable from command line (to inject buggyness) but make plural the default
@@ -213,7 +213,7 @@ public class ApiRoutingDefinitionGenerator {
         if(config.willUrlsShowIdsIfAvailable() && !idFields.isEmpty()){
             return idFields.get(0);
         }else{
-            final List<Field> guidFields = thingDefn.getFieldsOfType(FieldType.GUID);
+            final List<Field> guidFields = thingDefn.getFieldsOfType(FieldType.AUTO_GUID);
             if(!guidFields.isEmpty()) {
                 return guidFields.get(0);
             }else{
