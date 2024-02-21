@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.casestudy.todomanager.TodoManagerModel;
+import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
@@ -24,7 +25,7 @@ public class BasicTodoManagerTest {
     public void todoModelDefinitionCheck(){
 
 
-        EntityInstanceCollection todo = todoManager.getThingInstancesNamed("todo");
+        EntityInstanceCollection todo = todoManager.getThingInstancesNamed("todo", EntityRelModel.DEFAULT_DATABASE_NAME);
 
         Assertions.assertTrue(todo.definition().hasFieldNameDefined("title"));
         Assertions.assertTrue(todo.definition().hasFieldNameDefined("description"));
@@ -41,8 +42,8 @@ public class BasicTodoManagerTest {
     public void relationshipDefinitionCheck(){
 
 
-        EntityInstanceCollection todo = todoManager.getThingInstancesNamed("todo");
-        EntityInstanceCollection project = todoManager.getThingInstancesNamed("project");
+        EntityInstanceCollection todo = todoManager.getThingInstancesNamed("todo", EntityRelModel.DEFAULT_DATABASE_NAME);
+        EntityInstanceCollection project = todoManager.getThingInstancesNamed("project", EntityRelModel.DEFAULT_DATABASE_NAME);
 
         EntityInstance paperwork = todo.createManagedInstance().setValue("title", "scan paperwork");
         EntityInstance filework = todo.createManagedInstance().setValue("title", "file paperwork");
@@ -74,7 +75,7 @@ public class BasicTodoManagerTest {
     @Test
     public void createAndAmendSomeTodos(){
 
-        EntityInstanceCollection todos = todoManager.getThingInstancesNamed("todo");
+        EntityInstanceCollection todos = todoManager.getThingInstancesNamed("todo", EntityRelModel.DEFAULT_DATABASE_NAME);
 
         EntityInstance tidy = todos.createManagedInstance().
                 setValue("title", "Tidy up my room").
@@ -97,7 +98,7 @@ public class BasicTodoManagerTest {
     @Test
     public void createAndDeleteTodos(){
 
-        EntityInstanceCollection todos = todoManager.getThingInstancesNamed("todo");
+        EntityInstanceCollection todos = todoManager.getThingInstancesNamed("todo", EntityRelModel.DEFAULT_DATABASE_NAME);
 
         int originalTodosCount = todos.countInstances();
 
@@ -130,7 +131,7 @@ public class BasicTodoManagerTest {
     @Test
     public void createAmendAndDeleteATodoWithAGivenGUID(){
 
-        EntityInstanceCollection todos = todoManager.getThingInstancesNamed("todo");
+        EntityInstanceCollection todos = todoManager.getThingInstancesNamed("todo", EntityRelModel.DEFAULT_DATABASE_NAME);
 
         int originalTodosCount = todos.countInstances();
 

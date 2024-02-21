@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.casestudy.todomanager.TodoManagerModel;
+import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
@@ -32,14 +33,14 @@ public class OptionalityRelationshipTest {
     public void byDefaultRelationshipsAreOptional(){
 
 
-        EntityInstanceCollection projects = todoManager.getThingInstancesNamed("project");
+        EntityInstanceCollection projects = todoManager.getThingInstancesNamed("project", EntityRelModel.DEFAULT_DATABASE_NAME);
 
         EntityInstance aProject = projects.createManagedInstance().setValue("title", "myproject");
 
         Assertions.assertTrue(aProject.validate().isValid());
 
 
-        EntityInstanceCollection todos = todoManager.getThingInstancesNamed("todo");
+        EntityInstanceCollection todos = todoManager.getThingInstancesNamed("todo", EntityRelModel.DEFAULT_DATABASE_NAME);
 
         EntityInstance tidy = todos.createManagedInstance().
                 setValue("title", "Tidy up my room").
@@ -53,13 +54,13 @@ public class OptionalityRelationshipTest {
     @Test
     public void anEstimateWithoutATodoIsInvalid(){
 
-        EntityInstanceCollection todos = todoManager.getThingInstancesNamed("todo");
+        EntityInstanceCollection todos = todoManager.getThingInstancesNamed("todo", EntityRelModel.DEFAULT_DATABASE_NAME);
 
         EntityInstance tidy = todos.createManagedInstance().
                 setValue("title", "Tidy up my room").
                 setValue("description", "I need to tidy up my room because it is a mess");
 
-        EntityInstanceCollection estimates = todoManager.getThingInstancesNamed("estimate");
+        EntityInstanceCollection estimates = todoManager.getThingInstancesNamed("estimate", EntityRelModel.DEFAULT_DATABASE_NAME);
 
         EntityInstance tidyRoomEstimate = estimates.createManagedInstance().
                                         setValue("duration", "1");
@@ -72,13 +73,13 @@ public class OptionalityRelationshipTest {
     @Test
     public void anEstimateMustHaveATodoToBeValid(){
 
-        EntityInstanceCollection todos = todoManager.getThingInstancesNamed("todo");
+        EntityInstanceCollection todos = todoManager.getThingInstancesNamed("todo", EntityRelModel.DEFAULT_DATABASE_NAME);
 
         EntityInstance tidy = todos.createManagedInstance().
                 setValue("title", "Tidy up my room").
                 setValue("description", "I need to tidy up my room because it is a mess");
 
-        EntityInstanceCollection estimates = todoManager.getThingInstancesNamed("estimate");
+        EntityInstanceCollection estimates = todoManager.getThingInstancesNamed("estimate", EntityRelModel.DEFAULT_DATABASE_NAME);
 
         EntityInstance tidyRoomEstimate = estimates.createManagedInstance().
                 setValue("duration", "1");
@@ -99,14 +100,14 @@ public class OptionalityRelationshipTest {
     @Test
     public void deleteAlsoCoversMandatoryOptionalityRelationships(){
 
-        EntityInstanceCollection todos = todoManager.getThingInstancesNamed("todo");
+        EntityInstanceCollection todos = todoManager.getThingInstancesNamed("todo", EntityRelModel.DEFAULT_DATABASE_NAME);
 
         EntityInstance tidy = todos.createManagedInstance().
                 setValue("title", "Tidy up my room").
                 setValue("description", "I need to tidy up my room because it is a mess");
 
 
-        EntityInstanceCollection estimates = todoManager.getThingInstancesNamed("estimate");
+        EntityInstanceCollection estimates = todoManager.getThingInstancesNamed("estimate", EntityRelModel.DEFAULT_DATABASE_NAME);
 
         EntityInstance tidyRoomEstimate = estimates.createManagedInstance().
                 setValue("duration", "1");

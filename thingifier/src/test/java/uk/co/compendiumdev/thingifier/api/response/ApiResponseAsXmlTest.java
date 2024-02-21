@@ -4,6 +4,7 @@ import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.StaxDriver;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.Thingifier;
@@ -12,7 +13,6 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.F
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonThing;
 
-import javax.swing.text.html.parser.Entity;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -123,7 +123,7 @@ public class ApiResponseAsXmlTest {
         Thingifier thingifier = new Thingifier();
         EntityDefinition todo = thingifier.defineThing("todo", "todos");
         todo.addFields( Field.is("title", STRING));
-        EntityInstanceCollection todos = thingifier.getThingInstancesNamed("todo");
+        EntityInstanceCollection todos = thingifier.getThingInstancesNamed("todo", EntityRelModel.DEFAULT_DATABASE_NAME);
 
         EntityInstance aTodo = todos.createManagedInstance().setValue("title", "a todo");
 
@@ -150,7 +150,7 @@ public class ApiResponseAsXmlTest {
         Thingifier thingifier = new Thingifier();
         EntityDefinition todo = thingifier.defineThing("todo", "todos");
         todo.addFields( Field.is("title", STRING));
-        EntityInstanceCollection todos = thingifier.getThingInstancesNamed("todo");
+        EntityInstanceCollection todos = thingifier.getThingInstancesNamed("todo", EntityRelModel.DEFAULT_DATABASE_NAME);
 
         EntityInstance aTodo = todos.createManagedInstance().setValue("title", "a todo");
         EntityInstance anotherTodo = todos.createManagedInstance().setValue("title", "another todo");

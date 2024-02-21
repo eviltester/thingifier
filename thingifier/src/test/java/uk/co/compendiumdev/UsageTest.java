@@ -3,6 +3,7 @@ package uk.co.compendiumdev;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.Thingifier;
@@ -43,7 +44,7 @@ public class UsageTest {
                     addFields(Field.is("url", STRING),Field.is("name",STRING)
                     );
 
-        EntityInstanceCollection urls = things.getThingInstancesNamed("URL");
+        EntityInstanceCollection urls = things.getThingInstancesNamed("URL", EntityRelModel.DEFAULT_DATABASE_NAME);
 
         Assertions.assertTrue(urls.definition().hasFieldNameDefined("url"));
         Assertions.assertTrue(urls.definition().hasFieldNameDefined("name"));
@@ -56,7 +57,7 @@ public class UsageTest {
 
         user.addFields(Field.is("name", STRING));
 
-        EntityInstance alan = things.getThingInstancesNamed("USER").createManagedInstance().
+        EntityInstance alan = things.getThingInstancesNamed("USER", EntityRelModel.DEFAULT_DATABASE_NAME).createManagedInstance().
                 setValue("name","alan");
 
 

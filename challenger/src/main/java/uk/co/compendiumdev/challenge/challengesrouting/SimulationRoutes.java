@@ -8,6 +8,7 @@ import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.api.restapihandlers.RestApiGetHandler;
 import uk.co.compendiumdev.thingifier.application.routehandlers.HttpApiRequestHandler;
 import uk.co.compendiumdev.thingifier.application.routehandlers.SparkApiRequestResponseHandler;
+import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
@@ -49,7 +50,7 @@ public class SimulationRoutes {
                         withValidation(new MaximumLengthValidationRule(200))
         );
 
-        this.entityStorage = this.simulation.getThingInstancesNamed("entity");
+        this.entityStorage = this.simulation.getThingInstancesNamed("entity", EntityRelModel.DEFAULT_DATABASE_NAME);
 
         for(int id=1; id<=10; id++){
 

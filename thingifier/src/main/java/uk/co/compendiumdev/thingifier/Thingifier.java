@@ -12,7 +12,6 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.Relat
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.reporting.ThingReporter;
 
-import javax.xml.crypto.Data;
 import java.util.*;
 
 /* Thingifier
@@ -131,11 +130,6 @@ final public class Thingifier {
         return erm.getInstanceData(database).findEntityInstanceByGUID(thingGUID);
     }
 
-
-    @Deprecated
-    public EntityInstanceCollection getThingInstancesNamed(final String aName) {
-        return getThingInstancesNamed(aName, EntityRelModel.DEFAULT_DATABASE_NAME);
-    }
 
     public EntityInstanceCollection getThingInstancesNamed(final String aName, final String database) {
         return erm.getInstanceData(database).getInstanceCollectionForEntityNamed(aName);

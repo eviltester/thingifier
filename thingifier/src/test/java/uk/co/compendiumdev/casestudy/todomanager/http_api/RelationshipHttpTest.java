@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.casestudy.todomanager.TodoManagerModel;
+import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
@@ -28,9 +29,9 @@ public class RelationshipHttpTest {
 
         todoManager = TodoManagerModel.definedAsThingifier();
 
-        todo = todoManager.getThingInstancesNamed("todo");
-        project = todoManager.getThingInstancesNamed("project");
-        categories = todoManager.getThingInstancesNamed("category");
+        todo = todoManager.getThingInstancesNamed("todo", EntityRelModel.DEFAULT_DATABASE_NAME);
+        project = todoManager.getThingInstancesNamed("project", EntityRelModel.DEFAULT_DATABASE_NAME);
+        categories = todoManager.getThingInstancesNamed("category", EntityRelModel.DEFAULT_DATABASE_NAME);
 
 
     }
@@ -329,7 +330,7 @@ public class RelationshipHttpTest {
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).post(request);
         Assertions.assertEquals(400, response.getStatusCode());
 
-        Assertions.assertEquals(0, todoManager.getThingInstancesNamed("estimate").countInstances());
+        Assertions.assertEquals(0, todoManager.getThingInstancesNamed("estimate", EntityRelModel.DEFAULT_DATABASE_NAME).countInstances());
     }
 
     @Test
@@ -347,7 +348,7 @@ public class RelationshipHttpTest {
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).post(request);
         Assertions.assertEquals(201, response.getStatusCode());
 
-        Assertions.assertEquals(1, todoManager.getThingInstancesNamed("estimate").countInstances());
+        Assertions.assertEquals(1, todoManager.getThingInstancesNamed("estimate", EntityRelModel.DEFAULT_DATABASE_NAME).countInstances());
         Assertions.assertEquals(1, atodo.getRelationships().getConnectedItems("estimates").size());
 
     }
@@ -360,7 +361,7 @@ public class RelationshipHttpTest {
 
         final EntityInstance atodo = todo.createManagedInstance().setValue("title", "a TODO for estimating");
 
-        final EntityInstanceCollection estimates = todoManager.getThingInstancesNamed("estimate");
+        final EntityInstanceCollection estimates = todoManager.getThingInstancesNamed("estimate", EntityRelModel.DEFAULT_DATABASE_NAME);
         final EntityInstance anEstimate = estimates.createManagedInstance().setValue("duration", "7");
 
         anEstimate.getRelationships().connect("estimate", atodo);
@@ -388,7 +389,7 @@ public class RelationshipHttpTest {
 
         final EntityInstance atodo = todo.createManagedInstance().setValue("title", "a TODO for estimating");
 
-        final EntityInstanceCollection estimates = todoManager.getThingInstancesNamed("estimate");
+        final EntityInstanceCollection estimates = todoManager.getThingInstancesNamed("estimate", EntityRelModel.DEFAULT_DATABASE_NAME);
         final EntityInstance anEstimate = estimates.createManagedInstance().setValue("duration", "7").setValue("description", "an estimate");
 
         anEstimate.getRelationships().connect("estimate", atodo);

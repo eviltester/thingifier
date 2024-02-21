@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.casestudy.todomanager.TodoManagerModel;
 import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
+import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
@@ -13,7 +14,6 @@ import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponseAsJson;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponseAsXml;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonThing;
 import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
@@ -36,8 +36,8 @@ public class RelationshipApiNonHttpTest {
 
         todoManager = TodoManagerModel.definedAsThingifier();
         jsonThing = new JsonThing(todoManager.apiConfig().jsonOutput());
-        todo = todoManager.getThingInstancesNamed("todo");
-        project = todoManager.getThingInstancesNamed("project");
+        todo = todoManager.getThingInstancesNamed("todo", EntityRelModel.DEFAULT_DATABASE_NAME);
+        project = todoManager.getThingInstancesNamed("project", EntityRelModel.DEFAULT_DATABASE_NAME);
 
     }
 
@@ -589,7 +589,7 @@ public class RelationshipApiNonHttpTest {
         EntityInstance myTodo = todo.createManagedInstance().
                 setValue("title", "an estimated todo");
 
-        final EntityInstanceCollection estimates = todoManager.getThingInstancesNamed("estimate");
+        final EntityInstanceCollection estimates = todoManager.getThingInstancesNamed("estimate", EntityRelModel.DEFAULT_DATABASE_NAME);
         int numberOfEstimates = estimates.countInstances();
         Assertions.assertEquals(0, numberOfEstimates );
 
@@ -648,7 +648,7 @@ public class RelationshipApiNonHttpTest {
         EntityInstance myTodo = todo.createManagedInstance().
                 setValue("title", "an estimated todo");
 
-        final EntityInstanceCollection estimates = todoManager.getThingInstancesNamed("estimate");
+        final EntityInstanceCollection estimates = todoManager.getThingInstancesNamed("estimate", EntityRelModel.DEFAULT_DATABASE_NAME);
         int numberOfEstimates = estimates.countInstances();
         Assertions.assertEquals(0, numberOfEstimates );
 
@@ -680,7 +680,7 @@ public class RelationshipApiNonHttpTest {
                 0, myTodo.getRelationships().getConnectedItems("estimates").size());
 
         // there are no estimates at all
-        final EntityInstanceCollection estimates = todoManager.getThingInstancesNamed("estimate");
+        final EntityInstanceCollection estimates = todoManager.getThingInstancesNamed("estimate", EntityRelModel.DEFAULT_DATABASE_NAME);
         int numberOfEstimates = estimates.countInstances();
         Assertions.assertEquals(0, numberOfEstimates );
 

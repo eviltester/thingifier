@@ -3,6 +3,7 @@ package uk.co.compendiumdev.thingifier.api.non_http;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.Thingifier;
@@ -31,7 +32,7 @@ public class NestedObjectsApiTest {
         thingifier.apiConfig().setApiToEnforceAcceptHeaderForResponses(false);
 
         defn = thingifier.defineThing("thing", "things");
-        thing = thingifier.getThingInstancesNamed("thing");
+        thing = thingifier.getThingInstancesNamed("thing", EntityRelModel.DEFAULT_DATABASE_NAME);
 
         defn.addField(Field.is("person", FieldType.OBJECT)
                 .withField(

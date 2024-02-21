@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi;
 import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
+import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.Thingifier;
@@ -37,7 +38,7 @@ public class IdBasedInstanceNonHttpTest {
 
         Thingifier model = getThingifier();
 
-        final EntityInstanceCollection thing = model.getThingInstancesNamed("thing");
+        final EntityInstanceCollection thing = model.getThingInstancesNamed("thing", EntityRelModel.DEFAULT_DATABASE_NAME);
         final EntityInstance existingInstance = thing.createManagedInstance().setValue("title",
                 "My Title" + System.nanoTime());
 
@@ -52,7 +53,7 @@ public class IdBasedInstanceNonHttpTest {
 
         Thingifier model = getThingifier();
 
-        final EntityInstanceCollection thing = model.getThingInstancesNamed("thing");
+        final EntityInstanceCollection thing = model.getThingInstancesNamed("thing", EntityRelModel.DEFAULT_DATABASE_NAME);
         final EntityInstance existingInstance = thing.createManagedInstance().setValue("title",
                 "My Title" + System.nanoTime());
 
