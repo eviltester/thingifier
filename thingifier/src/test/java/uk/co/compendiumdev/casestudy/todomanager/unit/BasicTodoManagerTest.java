@@ -134,7 +134,7 @@ public class BasicTodoManagerTest {
 
         int originalTodosCount = todos.countInstances();
 
-        String guid="1234-12334-1234-1234";
+        String guid="6fd86e2d-7c52-4dea-85bb-34760ef66d9d";
 
         EntityInstance tidy = new EntityInstance(todos.definition());
         tidy.overrideValue("guid", guid);

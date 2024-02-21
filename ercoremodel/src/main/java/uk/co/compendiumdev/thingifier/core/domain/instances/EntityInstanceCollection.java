@@ -92,7 +92,15 @@ final public class EntityInstanceCollection {
 
     public EntityInstance findInstanceByGUID(String instanceFieldValue) {
 
+        // first - if it is not a GUID then dump it
+        try{
+            UUID.fromString(instanceFieldValue);
+        }catch (IllegalArgumentException e){
+            return null;
+        }
+
         if (instances.containsKey(instanceFieldValue)) {
+            // TODO: could double check that the instance field "guid" matches
             return instances.get(instanceFieldValue);
         }
 
@@ -162,6 +170,8 @@ final public class EntityInstanceCollection {
 
 
     // todo: not comfortable with this method, we should be using specific field names
+    // the API should know what fields to use as the primary reference for an entity instance
+    @Deprecated
     public EntityInstance findInstanceByGUIDorID(final String instanceGuid) {
         EntityInstance instance = findInstanceByGUID(instanceGuid);
         if(instance==null){

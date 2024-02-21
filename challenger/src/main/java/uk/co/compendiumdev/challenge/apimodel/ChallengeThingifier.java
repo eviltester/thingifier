@@ -4,6 +4,7 @@ import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.challenges.ChallengeDefinitionData;
 import uk.co.compendiumdev.challenge.challenges.ChallengeDefinitions;
 import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
@@ -43,8 +44,8 @@ public class ChallengeThingifier {
         // create all instances from the definitions, then when we want to
         // set all the status codes to the specific challenger status
         for (ChallengeDefinitionData challenge : challengeDefinitions.getChallenges()) {
-            challengeThingifier.getThingInstancesNamed(
-                    challengeDefn.getName()).createManagedInstance().
+            challengeThingifier.getThingInstancesNamed(challengeDefn.getName(), EntityRelModel.DEFAULT_DATABASE_NAME)
+                    .createManagedInstance().
                     overrideValue("id", challenge.id).
                     setValue("name", challenge.name).
                     setValue("description", challenge.description);
@@ -62,8 +63,8 @@ public class ChallengeThingifier {
 
         for (ChallengeDefinitionData challenge : challengeDefinitions.getChallenges()) {
             final EntityInstance instance =
-                    challengeThingifier.getThingInstancesNamed(challengeDefn.getName())
-                        .findInstanceByGUIDorID(challenge.id);
+                    challengeThingifier.getThingInstancesNamed(challengeDefn.getName(), EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .findInstanceByFieldNameAndValue("id", challenge.id);
             instance.setValue("status",
                                         challengerToUse.statusOfChallenge(
                                                 challengeDefinitions.
