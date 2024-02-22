@@ -39,7 +39,7 @@ public class EntityInstanceRelationships {
         // check if relationship is defined
         if (!entityDefinition.related().hasRelationship(relationshipName)) {
             throw new IllegalArgumentException(String.format("Unknown Relationship %s for %s : %s",
-                    relationshipName, entityDefinition.getName(), forThis.getGUID()));
+                    relationshipName, entityDefinition.getName(), forThis.getInternalId()));
         }
 
         // get the relationship vector between this thing and the passed in thing
@@ -73,7 +73,7 @@ public class EntityInstanceRelationships {
         String instanceIdentification = "";
 
         try{
-            instanceIdentification = forThis.getGUID();
+            instanceIdentification = forThis.getInternalId();
         }catch(Exception e){
             // ignore, no guid
         }
@@ -260,7 +260,7 @@ public class EntityInstanceRelationships {
                 for(String errorMessage : errorMessages){
                     report.setValid(false).addErrorMessage(
                             String.format("Error with EntityInstance relationship %s - %s",
-                            forThis.getGUID(), errorMessage)
+                            forThis.getInternalId(), errorMessage)
                     );
                 }
             }

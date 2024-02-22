@@ -70,7 +70,7 @@ public class ERInstanceData {
 
         // we may also have to delete things which are mandatorily related i.e. can't exist on their own
         final List<EntityInstance> otherInstancesToDelete =
-                anInstanceCollection.deleteInstance(anEntityInstance.getGUID());
+                anInstanceCollection.deleteInstance(anEntityInstance.getInternalId());
 
         // TODO: Warning recursion with no 'cut off' if any cyclical relationships then this might fail
         for(EntityInstance deleteMe : otherInstancesToDelete){

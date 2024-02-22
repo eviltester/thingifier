@@ -55,7 +55,7 @@ final public class EntityInstanceCollection {
             ));
         }
 
-        instances.put(instance.getGUID(), instance);
+        instances.put(instance.getInternalId(), instance);
         return this;
     }
 
@@ -90,7 +90,26 @@ final public class EntityInstanceCollection {
         return null;
     }
 
+    @Deprecated // should be by named field
     public EntityInstance findInstanceByGUID(String instanceFieldValue) {
+
+        // first - if it is not a GUID then dump it
+        try{
+            UUID.fromString(instanceFieldValue);
+        }catch (IllegalArgumentException e){
+            return null;
+        }
+
+        for(EntityInstance instance : instances.values()){
+            if(instance.getGUID().equals(instanceFieldValue)){
+                return instance;
+            }
+        }
+
+        return null;
+    }
+
+    public EntityInstance findInstanceByInternalID(String instanceFieldValue) {
 
         // first - if it is not a GUID then dump it
         try{
@@ -138,11 +157,11 @@ final public class EntityInstanceCollection {
 
         if (!instances.containsValue(anInstance)) {
             throw new IndexOutOfBoundsException(
-                    String.format("Could not find a %s with GUID %s",
-                            definition.getName(), anInstance.getGUID()));
+                    String.format("Could not find a %s with Internal GUID %s",
+                            definition.getName(), anInstance.getInternalId()));
         }
 
-        instances.remove(anInstance.getGUID());
+        instances.remove(anInstance.getInternalId());
 
         final List<EntityInstance> alsoDelete = anInstance.getRelationships().removeAllRelationships();
 
@@ -162,7 +181,7 @@ final public class EntityInstanceCollection {
     private List<String> getGuidList() {
         List<String> guids = new ArrayList<>();
         for(EntityInstance instance : instances.values()){
-            guids.add(instance.getGUID());
+            guids.add(instance.getInternalId());
         }
 
         return guids;

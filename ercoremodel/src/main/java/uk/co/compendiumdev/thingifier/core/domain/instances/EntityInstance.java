@@ -16,10 +16,14 @@ public class EntityInstance {
     private final EntityDefinition entityDefinition;
     private final InstanceFields instanceFields;
 
+    // used internally to reference the instance, is not exposed to the world
+    private final UUID internalId;
+
     public EntityInstance(EntityDefinition eDefn) {
         this.entityDefinition = eDefn;
         this.instanceFields = eDefn.instantiateFields();
         this.relationships = new EntityInstanceRelationships(this);
+        internalId = UUID.randomUUID();
     }
 
     public EntityInstance addGUIDtoInstance(){
@@ -44,6 +48,7 @@ public class EntityInstance {
         StringBuilder output = new StringBuilder();
 
         output.append("\t\t\t" + entityDefinition.getName() + "\n");
+        output.append("\t\t\tInternal Ref: " + getInternalId() + "\n");
         //output.append(instance.toString() + "\n");
         for (String fieldName : entityDefinition.getFieldNames()) {
             FieldValue fieldValue = getFieldValue(fieldName);
@@ -60,6 +65,13 @@ public class EntityInstance {
         return output.toString();
     }
 
+    public String getInternalId() {
+        return internalId.toString();
+    }
+
+    // TODO: entity must have a defined primary identifier to allow this to work and use
+    // the primary identifier here
+    @Deprecated
     public String getGUID() {
         return instanceFields.getFieldValue("guid").asString();
     }

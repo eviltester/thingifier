@@ -158,6 +158,8 @@ final public class SimpleQuery {
 
 
             // is it a GUID or ID?
+            // this should be based on the EntityDefinition Primary Identifier Field
+            // TODO: create a PrimaryIdentifierField to allow finding via simple query
             boolean found = false;
             for (EntityInstance instance : foundItems) {
 

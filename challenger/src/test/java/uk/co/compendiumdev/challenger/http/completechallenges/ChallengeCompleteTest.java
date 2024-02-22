@@ -495,7 +495,7 @@ public abstract class ChallengeCompleteTest{
         final EntityInstanceCollection todos = ChallengeMain.getChallenger().getThingifier().getThingInstancesNamed("todo", challenger.getXChallenger());
         if(todos.countInstances()>x){
             for(int delCount = todos.countInstances()-x; delCount > 0; delCount--) {
-                todos.deleteInstance(((EntityInstance) (todos.getInstances().toArray()[0])).getGUID());
+                todos.deleteInstance(((EntityInstance) (todos.getInstances().toArray()[0])).getInternalId());
             }
         }
     }

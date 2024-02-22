@@ -29,9 +29,9 @@ public class RelationshipVectorInstance {
         String format = String.format("%s FROM: %s %s TO: %s %s",
                 relationshipVector.getName(),
                 from.getEntity().getName(),
-                from.getGUID(),
+                from.getInternalId(),
                 to.getEntity().getName(),
-                to.getGUID()
+                to.getInternalId()
         );
 
         output.append(format + "\n");
