@@ -111,8 +111,8 @@ public class RelationshipCreation {
             }else {
                 if (relationshipToUse.getTo() != relatedItem.getEntity()) {
                     response = ApiResponse.error(400, String.format("Could not connect %s (%s) to %s (%s) via relationship %s because it is a %s instead of a %s",
-                            connectThis.getGUID(), connectThis.getEntity().getName(),
-                            relatedItem.getGUID(), relatedItem.getEntity().getName(),
+                            connectThis.getPrimaryKeyValue(), connectThis.getEntity().getName(),
+                            relatedItem.getPrimaryKeyValue(), relatedItem.getEntity().getName(),
                             relationshipToUse.getName(),
                             relatedItem.getEntity().getName(),
                             relationshipToUse.getTo().getName()
@@ -143,8 +143,8 @@ public class RelationshipCreation {
 
         } catch (Exception e) {
             return ApiResponse.error(400, String.format("Could not connect %s (%s) to %s (%s) via relationship %s",
-                    connectThis.getGUID(), connectThis.getEntity().getName(),
-                    relatedItem.getGUID(), relatedItem.getEntity().getName(),
+                    connectThis.getPrimaryKeyValue(), connectThis.getEntity().getName(),
+                    relatedItem.getPrimaryKeyValue(), relatedItem.getEntity().getName(),
                     relationshipToUse.getName()));
         }
 

@@ -134,7 +134,7 @@ public class XmlRequestResponseTest {
 
         Assertions.assertEquals(1, todo.countInstances());
 
-        HttpApiRequest request = new HttpApiRequest("todos/" + atodo.getGUID());
+        HttpApiRequest request = new HttpApiRequest("todos/" + atodo.getPrimaryKeyValue());
         request.getHeaders().putAll(HeadersSupport.acceptXml());
         request.getHeaders().putAll(HeadersSupport.containsXml());
 
@@ -211,7 +211,7 @@ public class XmlRequestResponseTest {
 
         Assertions.assertEquals(1, todo.countInstances());
 
-        HttpApiRequest request = new HttpApiRequest("todos/"+atodo.getGUID());
+        HttpApiRequest request = new HttpApiRequest("todos/"+atodo.getPrimaryKeyValue());
         request.getHeaders().putAll(HeadersSupport.acceptXml());
         request.getHeaders().putAll(HeadersSupport.containsXml());
 

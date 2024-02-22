@@ -30,9 +30,9 @@ public class ChallengeThingifier {
 
         this.challengeDefn = this.challengeThingifier.defineThing(
                                     "challenge", "challenges");
-
+        this.challengeDefn.addAsPrimaryKeyField(Field.is("id", FieldType.AUTO_INCREMENT));
         this.challengeDefn.addFields(
-                Field.is("id", FieldType.AUTO_INCREMENT),
+
                 Field.is("name", FieldType.STRING).withDefaultValue(""),
                 Field.is("description", FieldType.STRING).withDefaultValue(""),
                 Field.is("status", FieldType.BOOLEAN).withDefaultValue("false")

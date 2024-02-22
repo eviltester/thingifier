@@ -77,7 +77,7 @@ public class JsonRequestResponseTest {
 
         final EntityInstance aTodo = todo.createManagedInstance().setValue("title", "my title");
 
-        HttpApiRequest request = new HttpApiRequest("/todos/" + aTodo.getGUID());
+        HttpApiRequest request = new HttpApiRequest("/todos/" + aTodo.getPrimaryKeyValue());
         request.getHeaders().putAll(HeadersSupport.acceptJson());
 
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).get(request);
@@ -100,7 +100,7 @@ public class JsonRequestResponseTest {
 
         final EntityInstance aTodo = todo.createManagedInstance().setValue("title", "my title");
 
-        HttpApiRequest request = new HttpApiRequest("/todo/" + aTodo.getGUID());
+        HttpApiRequest request = new HttpApiRequest("/todo/" + aTodo.getPrimaryKeyValue());
         request.getHeaders().putAll(HeadersSupport.acceptJson());
 
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).get(request);
@@ -259,7 +259,7 @@ public class JsonRequestResponseTest {
 
         Assertions.assertEquals(1, todo.countInstances());
 
-        HttpApiRequest request = new HttpApiRequest("todos/" + atodo.getGUID());
+        HttpApiRequest request = new HttpApiRequest("todos/" + atodo.getPrimaryKeyValue());
         request.getHeaders().putAll(HeadersSupport.acceptJson());
         request.getHeaders().putAll(HeadersSupport.containsJson());
 
@@ -295,14 +295,14 @@ public class JsonRequestResponseTest {
 
         Assertions.assertEquals(1, todo.countInstances());
 
-        HttpApiRequest request = new HttpApiRequest("todos/" + atodo.getGUID());
+        HttpApiRequest request = new HttpApiRequest("todos/" + atodo.getPrimaryKeyValue());
         request.getHeaders().putAll(HeadersSupport.acceptJson());
         request.getHeaders().putAll(HeadersSupport.containsJson());
 
 
         // guid is optional here but have added it anyway
         //{"title":"title from json", "guid":"%s"}
-        request.setBody(String.format("{\"title\":\"title from json\", \"guid\":\"%s\"}", atodo.getGUID()));
+        request.setBody(String.format("{\"title\":\"title from json\", \"guid\":\"%s\"}", atodo.getPrimaryKeyValue()));
 
 
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).put(request);

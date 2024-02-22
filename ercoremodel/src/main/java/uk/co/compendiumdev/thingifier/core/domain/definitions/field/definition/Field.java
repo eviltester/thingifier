@@ -19,7 +19,6 @@ public final class Field {
     private final String name;
     private final FieldType type;
     private final Set<String> fieldExamples;
-
     private boolean fieldIsOptional;
 
     // default value for the field

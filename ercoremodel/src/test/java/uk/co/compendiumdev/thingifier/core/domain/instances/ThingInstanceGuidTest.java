@@ -15,7 +15,7 @@ public class ThingInstanceGuidTest {
     public void createEntity(){
 
         entityTestSession = new EntityDefinition("Test Session", "Test Sessions");
-
+        entityTestSession.addAsPrimaryKeyField(Field.is("guid", FieldType.AUTO_GUID));
         entityTestSession.addField(Field.is("Title", FieldType.STRING));
     }
 
@@ -26,13 +26,13 @@ public class ThingInstanceGuidTest {
         session = new EntityInstance(entityTestSession);
         session.addGUIDtoInstance();
 
-        Assertions.assertNotNull(session.getGUID());
+        Assertions.assertNotNull(session.getPrimaryKeyValue());
         Assertions.assertTrue(
-                session.getGUID().length()>8,
-                "Guid should be longish " + session.getGUID());
+                session.getPrimaryKeyValue().length()>8,
+                "Guid should be longish " + session.getPrimaryKeyValue());
         Assertions.assertTrue(
-                session.getGUID().contains("-"),
-                "Guids should contain -" + session.getGUID());
+                session.getPrimaryKeyValue().contains("-"),
+                "Guids should contain -" + session.getPrimaryKeyValue());
     }
 
     @Test
@@ -42,7 +42,7 @@ public class ThingInstanceGuidTest {
         session = new EntityInstance(entityTestSession);
         session.addGUIDtoInstance();
 
-        Assertions.assertEquals(session.getGUID(), session.getFieldValue("guid").asString());
+        Assertions.assertEquals(session.getPrimaryKeyValue(), session.getFieldValue("guid").asString());
 
     }
 }

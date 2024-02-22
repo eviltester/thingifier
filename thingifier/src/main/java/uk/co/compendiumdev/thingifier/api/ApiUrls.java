@@ -36,7 +36,7 @@ public class ApiUrls {
         }
 
         if(uniqueID==null){
-            uniqueID = thingInstance.getGUID();
+            uniqueID = thingInstance.getPrimaryKeyValue();
         }
 
         return entityPath + "/" + uniqueID;

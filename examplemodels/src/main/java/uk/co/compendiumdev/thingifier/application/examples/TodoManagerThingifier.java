@@ -49,7 +49,7 @@ public class TodoManagerThingifier {
         todoManager.setDocumentation("Todo Manager", para.toString());
 
         EntityDefinition todo = todoManager.defineThing("todo", "todos");
-
+        todo.addAsPrimaryKeyField(Field.is("guid", FieldType.AUTO_GUID));
         // todo: show fields in the order we add them, not the hashmap key order
         todo
                 .addFields(Field.is("id", FieldType.AUTO_INCREMENT),
@@ -63,7 +63,7 @@ public class TodoManagerThingifier {
                         );
 
         EntityDefinition project = todoManager.defineThing("project", "projects");
-
+        project.addAsPrimaryKeyField(Field.is("guid", FieldType.AUTO_GUID));
         project
                 .addFields(
                         Field.is("id", FieldType.AUTO_INCREMENT),
@@ -76,7 +76,7 @@ public class TodoManagerThingifier {
 
 
         EntityDefinition category = todoManager.defineThing("category", "categories");
-
+        category.addAsPrimaryKeyField(Field.is("guid", FieldType.AUTO_GUID));
         category
                 .addFields(
                         Field.is("id", FieldType.AUTO_INCREMENT),

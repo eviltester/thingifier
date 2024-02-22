@@ -15,6 +15,10 @@ public class EntityDefinition {
     private final String name;
     private final String plural;
 
+    // TODO: consider adding candidate keys e.g. guid or id
+    // TODO: consider adding composite keys e.g. name and id
+    private Field primaryKeyField;
+
     private final DefinedFields fields;
     private final DefinedRelationships definedRelationships;
 
@@ -32,10 +36,15 @@ public class EntityDefinition {
         fields = new DefinedFields();
         this.maxInstanceCount = maxInstanceCount;
 
-        // todo: support overriding this name to allow model to use guid as a user managed field
-        // e.g. model.internalUniqueIDFieldName("bob")
-        // add a unique guid so we always have some way of identifying an instance
-        addField(Field.is("guid", FieldType.AUTO_GUID));
+        // todo: add some validation to report against no primary key having been defined
+
+        this.primaryKeyField = null;
+    }
+
+    public EntityDefinition addAsPrimaryKeyField(Field aField){
+        fields.addField(aField);
+        primaryKeyField = aField;
+        return this;
     }
 
     public String toString() {
@@ -133,5 +142,13 @@ public class EntityDefinition {
 
     public void setMaxInstanceLimit() {
         maxInstanceCount = EntityDefinition.NO_INSTANCE_LIMIT;
+    }
+
+    public boolean hasPrimaryKeyField() {
+        return primaryKeyField!=null;
+    }
+
+    public Field getPrimaryKeyField() {
+        return primaryKeyField;
     }
 }

@@ -342,7 +342,7 @@ public class DefaultGUI {
         StringBuilder html = new StringBuilder();
         html.append("<ul>");
         if(apiConfig.willResponsesShowGuids()) {
-            html.append(String.format("<li>%s<ul><li>%s</li></ul></li>", "guid", instance.getGUID()));
+            html.append(String.format("<li>%s<ul><li>%s</li></ul></li>", "guid", instance.getPrimaryKeyValue()));
         }
         for(String field : definition.getFieldNames()) {
             if (!field.equals("guid")) {
@@ -423,7 +423,7 @@ public class DefaultGUI {
         // show keys first
         if(apiConfig.willResponsesShowGuids()) {
             html.append(String.format("<td><a href='/gui/instance?entity=%1$s&guid=%2$s%3$s'>%2$s</a></td>",
-                    definition.getName(), instance.getGUID(), databaseParam(database)));
+                    definition.getName(), instance.getPrimaryKeyValue(), databaseParam(database)));
         }
 
         // show any clickable id fields

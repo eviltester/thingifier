@@ -18,6 +18,7 @@ public class MultipleEntityInstancesDatabasesTest {
         EntityRelModel erm = new EntityRelModel();
         EntityDefinition thingDefn = erm.createEntityDefinition("thing", "things");
         thingDefn.addField(Field.is("Title", FieldType.STRING));
+        thingDefn.addAsPrimaryKeyField(Field.is("guid", FieldType.AUTO_GUID));
 
         EntityInstance thing1 = new EntityInstance(thingDefn);
         thing1.addGUIDtoInstance();
@@ -26,7 +27,7 @@ public class MultipleEntityInstancesDatabasesTest {
         EntityInstanceCollection thing = erm.getInstanceData().getInstanceCollectionForEntityNamed("thing");
         thing.addInstance(thing1);
 
-        final String thingGUID = thing1.getGUID();
+        final String thingGUID = thing1.getPrimaryKeyValue();
         EntityInstance foundThing = erm.getInstanceData().findEntityInstanceByGUID(thingGUID);
 
         Assertions.assertEquals("Thing 1", foundThing.getFieldValue("Title").asString());
@@ -39,6 +40,7 @@ public class MultipleEntityInstancesDatabasesTest {
         EntityRelModel erm = new EntityRelModel();
         EntityDefinition thingDefn = erm.createEntityDefinition("thing", "things");
         thingDefn.addField(Field.is("Title", FieldType.STRING));
+        thingDefn.addAsPrimaryKeyField(Field.is("guid", FieldType.AUTO_GUID));
 
         erm.createInstanceDatabase("other_things");
 
@@ -49,7 +51,7 @@ public class MultipleEntityInstancesDatabasesTest {
         EntityInstanceCollection thing = erm.getInstanceData("other_things").getInstanceCollectionForEntityNamed("thing");
         thing.addInstance(thing1);
 
-        String guid = thing1.getGUID();
+        String guid = thing1.getPrimaryKeyValue();
         EntityInstance foundThing = erm.getInstanceData("other_things").findEntityInstanceByGUID(guid);
 
         Assertions.assertEquals("Thing 1", foundThing.getFieldValue("Title").asString());
@@ -81,6 +83,7 @@ public class MultipleEntityInstancesDatabasesTest {
         EntityRelModel erm = new EntityRelModel();
         EntityDefinition thingDefn = erm.createEntityDefinition("thing", "things");
         thingDefn.addField(Field.is("Title", FieldType.STRING));
+        thingDefn.addAsPrimaryKeyField(Field.is("guid", FieldType.AUTO_GUID));
 
         erm.createInstanceDatabase("other_things");
 
@@ -91,7 +94,7 @@ public class MultipleEntityInstancesDatabasesTest {
         EntityInstanceCollection thing = erm.getInstanceData("other_things").getInstanceCollectionForEntityNamed("thing");
         thing.addInstance(thing1);
 
-        String guid = thing1.getGUID();
+        String guid = thing1.getPrimaryKeyValue();
         EntityInstance foundThing = erm.getInstanceData("other_things").findEntityInstanceByGUID(guid);
 
         Assertions.assertEquals("Thing 1", foundThing.getFieldValue("Title").asString());

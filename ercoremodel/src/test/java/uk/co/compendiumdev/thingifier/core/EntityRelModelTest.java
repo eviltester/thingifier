@@ -6,6 +6,8 @@ import uk.co.compendiumdev.thingifier.core.domain.datapopulator.DataPopulator;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.Cardinality;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.ERSchema;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.Optionality;
 import uk.co.compendiumdev.thingifier.core.domain.instances.ERInstanceData;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
@@ -74,15 +76,17 @@ public class EntityRelModelTest {
     public void canFindAThingInAModel() {
 
         EntityRelModel erm = new EntityRelModel();
-        erm.createEntityDefinition("thing", "things");
+        EntityDefinition defn = erm.createEntityDefinition("thing", "things");
+        defn.addAsPrimaryKeyField(Field.is("guid", FieldType.AUTO_GUID));
+
         EntityInstanceCollection thing = erm.getInstanceData().getInstanceCollectionForEntityNamed("thing");
 
         final EntityInstance instance = thing.createManagedInstance();
 
-        final String thingGUID1 = instance.getGUID();
+        final String thingGUID1 = instance.getPrimaryKeyValue();
         Assertions.assertNotNull(
                 erm.getInstanceData().findEntityInstanceByGUID(thingGUID1));
-        final String thingGUID = instance.getGUID();
+        final String thingGUID = instance.getPrimaryKeyValue();
         Assertions.assertEquals(instance,
                 erm.getInstanceData().findEntityInstanceByGUID(thingGUID));
     }
@@ -97,7 +101,7 @@ public class EntityRelModelTest {
         final EntityInstance instance = thing.createManagedInstance();
         erm.getInstanceData().deleteEntityInstance(instance);
 
-        final String thingGUID = instance.getGUID();
+        final String thingGUID = instance.getPrimaryKeyValue();
         Assertions.assertNull(
                 erm.getInstanceData().findEntityInstanceByGUID(thingGUID));
         final String entityName = instance.getEntity().getName();
@@ -207,7 +211,7 @@ public class EntityRelModelTest {
 
         erm.getInstanceData().deleteEntityInstance(mainThing);
 
-        final String thingGUID = mainThing.getGUID();
+        final String thingGUID = mainThing.getPrimaryKeyValue();
         Assertions.assertNull(
                 erm.getInstanceData().findEntityInstanceByGUID(thingGUID));
         Assertions.assertEquals(0,

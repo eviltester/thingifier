@@ -121,7 +121,7 @@ public final class ApiResponse {
                             getCreatedLocationHeader(thingInstance));
 
             if(apiConfig.willResponsesShowGuids()) {
-                response.setHeader(ApiResponse.GUID_HEADER, thingInstance.getGUID());
+                response.setHeader(ApiResponse.GUID_HEADER, thingInstance.getPrimaryKeyValue());
             }
             response.hasBody = true;
         }

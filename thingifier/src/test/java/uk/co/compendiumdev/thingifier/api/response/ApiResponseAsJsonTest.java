@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
@@ -121,7 +122,7 @@ public class ApiResponseAsJsonTest {
         System.out.println(json);
         Todo myTodo = new Gson().fromJson(json, Todo.class);
 
-        Assertions.assertEquals(aTodo.getGUID(), myTodo.guid);
+        Assertions.assertEquals(aTodo.getPrimaryKeyValue(), myTodo.guid);
         Assertions.assertEquals("a todo", myTodo.title);
 
     }
@@ -131,6 +132,7 @@ public class ApiResponseAsJsonTest {
 
         Thingifier thingifier = new Thingifier();
         EntityDefinition todo = thingifier.defineThing("todo", "todos");
+        todo.addAsPrimaryKeyField(Field.is("guid", FieldType.AUTO_GUID));
         todo.addFields( Field.is("title", STRING));
         EntityInstanceCollection todos = thingifier.getThingInstancesNamed("todo", EntityRelModel.DEFAULT_DATABASE_NAME);
 
@@ -151,12 +153,12 @@ public class ApiResponseAsJsonTest {
         int foundCount=0;
         for(int todoid = 0; todoid < 2; todoid++){
 
-            if (myTodo.todos[todoid].guid.equals(aTodo.getGUID())) {
-                Assertions.assertEquals(aTodo.getGUID(), myTodo.todos[todoid].guid);
+            if (myTodo.todos[todoid].guid.equals(aTodo.getPrimaryKeyValue())) {
+                Assertions.assertEquals(aTodo.getPrimaryKeyValue(), myTodo.todos[todoid].guid);
                 Assertions.assertEquals("a todo", myTodo.todos[todoid].title);
                 foundCount++;
             }else {
-                Assertions.assertEquals(anotherTodo.getGUID(), myTodo.todos[todoid].guid);
+                Assertions.assertEquals(anotherTodo.getPrimaryKeyValue(), myTodo.todos[todoid].guid);
                 Assertions.assertEquals("another todo", myTodo.todos[todoid].title);
                 foundCount++;
             }

@@ -106,7 +106,7 @@ public class BasicTodoManagerTest {
                 setValue("title","Delete this todo").
                 setValue("description", "I need to be deleted");
 
-        EntityInstance foundit = todos.findInstanceByGUID(tidy.getGUID());
+        EntityInstance foundit = todos.findInstanceByGUID(tidy.getPrimaryKeyValue());
 
         Assertions.assertEquals("Delete this todo", foundit.getFieldValue("title").asString());
 
@@ -114,7 +114,7 @@ public class BasicTodoManagerTest {
         Assertions.assertEquals(originalTodosCount, todos.countInstances());
 
 
-        foundit = todos.findInstanceByGUID(tidy.getGUID());
+        foundit = todos.findInstanceByGUID(tidy.getPrimaryKeyValue());
 
         Assertions.assertNull(foundit);
 

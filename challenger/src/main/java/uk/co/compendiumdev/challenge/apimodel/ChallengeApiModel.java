@@ -22,9 +22,8 @@ public class ChallengeApiModel {
 
         // can create a maximum of 20 todos in the challenge todos list
         EntityDefinition todo = todoList.defineThing("todo", "todos", 20);
-
+        todo.addAsPrimaryKeyField(Field.is("id", FieldType.AUTO_INCREMENT));
         todo.addFields(
-            Field.is("id", FieldType.AUTO_INCREMENT),
             Field.is("title", STRING).
                     makeMandatory().
                     withValidation(

@@ -176,7 +176,7 @@ final public class SimpleQuery {
                     }
                 }
 
-                if (instance.getGUID().contentEquals(term)) {
+                if (instance.getPrimaryKeyValue().contentEquals(term)) {
                     matchBasedOnIdOrGUID = true;
                 }
 

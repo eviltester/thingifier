@@ -26,6 +26,7 @@ public class ThingifierHttpApiRequestHandlingTest {
         Thingifier thingifier = new Thingifier();
         thingifier.apiConfig().setApiToEnforceAcceptHeaderForResponses(false);
         EntityDefinition defn = thingifier.getERmodel().createEntityDefinition("thing", "things");
+        defn.addAsPrimaryKeyField(Field.is("guid", FieldType.AUTO_GUID));
         defn.addField(Field.is("title", FieldType.STRING));
 
         return thingifier;
@@ -48,7 +49,7 @@ public class ThingifierHttpApiRequestHandlingTest {
         final EntityInstanceCollection thing = thingifier.getERmodel().getInstanceData("other_things").getInstanceCollectionForEntityNamed("thing");
         final EntityInstance existingInstance = thing.createManagedInstance().setValue("title", "My Title" + System.nanoTime());
 
-        final HttpApiResponse response2 = api.get(new HttpApiRequest("/things/" + existingInstance.getGUID()).setHeaders(headers));
+        final HttpApiResponse response2 = api.get(new HttpApiRequest("/things/" + existingInstance.getPrimaryKeyValue()).setHeaders(headers));
 
         Assertions.assertEquals(200, response.getStatusCode());
     }
@@ -147,7 +148,7 @@ public class ThingifierHttpApiRequestHandlingTest {
 
         Assertions.assertEquals(1, thingInstances.countInstances());
 
-        final HttpApiResponse actualDeleteResponse = api.delete(new HttpApiRequest("/things/" + anInstance.getGUID())
+        final HttpApiResponse actualDeleteResponse = api.delete(new HttpApiRequest("/things/" + anInstance.getPrimaryKeyValue())
                 .setHeaders(headers)
         );
 

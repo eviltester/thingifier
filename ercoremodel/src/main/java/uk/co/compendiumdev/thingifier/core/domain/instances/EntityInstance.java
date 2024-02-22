@@ -37,6 +37,7 @@ public class EntityInstance {
         return this;
     }
 
+    //TODO: create IDCounter which is stored at a database level and passed in
     @Deprecated // this would need to be passed a list of ID Counters because it needs to be controlled at a database level, not a definition level
     public EntityInstance addIdsToInstance() {
         instanceFields.addIdsToInstance();
@@ -69,11 +70,14 @@ public class EntityInstance {
         return internalId.toString();
     }
 
-    // TODO: entity must have a defined primary identifier to allow this to work and use
-    // the primary identifier here
-    @Deprecated
-    public String getGUID() {
-        return instanceFields.getFieldValue("guid").asString();
+
+    public String getPrimaryKeyValue() {
+        if(entityDefinition.hasPrimaryKeyField()){
+            return instanceFields.getFieldValue(entityDefinition.getPrimaryKeyField().getName()).asString();
+        }
+
+        // TODO: what should we do if a primary key has not been defined? return the first auto field? or null like this?
+        return null;
     }
 
     public List<String> getFieldNames() {

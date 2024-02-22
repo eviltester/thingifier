@@ -19,6 +19,7 @@ class ThingDefinitionTest {
     void entityDefinitionCreation() {
         EntityDefinition eDefn;
         eDefn = new EntityDefinition("Requirement", "Requirements");
+        eDefn.addAsPrimaryKeyField(Field.is("guid", FieldType.AUTO_GUID));
 
         Assertions.assertEquals("Requirement", eDefn.getName());
         Assertions.assertEquals("Requirements", eDefn.getPlural());
@@ -34,6 +35,7 @@ class ThingDefinitionTest {
         EntityDefinition eDefn;
         eDefn = new EntityDefinition("Requirement", "Requirements");
 
+        eDefn.addAsPrimaryKeyField(Field.is("guid", FieldType.AUTO_GUID));
         eDefn.addField(Field.is("Title", FieldType.STRING));
 
         Assertions.assertEquals(2, eDefn.getFieldNames().size());
@@ -53,6 +55,7 @@ class ThingDefinitionTest {
         EntityDefinition eDefn;
         eDefn = new EntityDefinition("Requirement", "Requirements");
 
+        eDefn.addAsPrimaryKeyField(Field.is("guid", FieldType.AUTO_GUID));
         eDefn.addFields(Field.is("Title", FieldType.STRING), Field.is("Description", FieldType.STRING));
 
         Assertions.assertEquals(3, eDefn.getFieldNames().size());
@@ -91,6 +94,7 @@ class ThingDefinitionTest {
     void fieldsOrderingIsTheOrderWhenDefined() {
 
         EntityDefinition defn = new EntityDefinition("thing", "things");
+        defn.addAsPrimaryKeyField(Field.is("guid", FieldType.AUTO_GUID));
 
         // add 19 fields
         for (int x = 1; x < 20; x++) {

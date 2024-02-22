@@ -23,6 +23,7 @@ public class IdBasedInstanceNonHttpTest {
         thingifier.setDocumentation("Model", "test model");
 
         EntityDefinition thing = thingifier.defineThing("thing", "things");
+        thing.addAsPrimaryKeyField(Field.is("guid", FieldType.AUTO_GUID));
         thing
                 .addFields(Field.is("title", STRING),
                         Field.is("id", FieldType.AUTO_INCREMENT)
@@ -43,7 +44,7 @@ public class IdBasedInstanceNonHttpTest {
                 "My Title" + System.nanoTime());
 
         // no session header so use default session
-        final ApiResponse apiResponse = model.api().get("/thing/" + existingInstance.getGUID(), new QueryFilterParams(), new HttpHeadersBlock());
+        final ApiResponse apiResponse = model.api().get("/thing/" + existingInstance.getPrimaryKeyValue(), new QueryFilterParams(), new HttpHeadersBlock());
         Assertions.assertEquals(200, apiResponse.getStatusCode());
         Assertions.assertEquals(existingInstance, apiResponse.getReturnedInstance());
     }
@@ -82,7 +83,7 @@ public class IdBasedInstanceNonHttpTest {
         final EntityInstanceCollection thing = model.getERmodel().getInstanceData("other_things").getInstanceCollectionForEntityNamed("thing");
         final EntityInstance existingInstance = thing.createManagedInstance().setValue("title", "My Title" + System.nanoTime());
 
-        final ApiResponse idApiResponse2 = model.api().get("/thing/" + existingInstance.getGUID(), new QueryFilterParams(), headers);
+        final ApiResponse idApiResponse2 = model.api().get("/thing/" + existingInstance.getPrimaryKeyValue(), new QueryFilterParams(), headers);
         Assertions.assertEquals(200, idApiResponse2.getStatusCode());
         Assertions.assertEquals(existingInstance, idApiResponse2.getReturnedInstance());
     }

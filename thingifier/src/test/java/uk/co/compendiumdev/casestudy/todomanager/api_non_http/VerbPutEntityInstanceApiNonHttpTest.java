@@ -72,11 +72,11 @@ public class VerbPutEntityInstanceApiNonHttpTest {
         EntityInstance officeWork = project.createManagedInstance().
                 setValue("title", "An Existing Project");
 
-        String officeWorkGuid = officeWork.getGUID();
+        String officeWorkGuid = officeWork.getPrimaryKeyValue();
         Assertions.assertNotNull(officeWorkGuid);
 
         // amend existing project with PUT - this should validate that all required fields are present
-        apiresponse = todoManager.api().put(String.format("project/%s", officeWork.getGUID()),  getSimpleParser(requestBody), new HttpHeadersBlock());
+        apiresponse = todoManager.api().put(String.format("project/%s", officeWork.getPrimaryKeyValue()),  getSimpleParser(requestBody), new HttpHeadersBlock());
         Assertions.assertEquals(200, apiresponse.getStatusCode());
         Assertions.assertEquals("My Office Work", officeWork.getFieldValue("title").asString());
 
@@ -86,7 +86,7 @@ public class VerbPutEntityInstanceApiNonHttpTest {
 
         Assertions.assertTrue(apiresponse.hasABody());
         Assertions.assertFalse(apiresponse.isCollection());
-        Assertions.assertEquals(officeWorkGuid, apiresponse.getReturnedInstance().getGUID());
+        Assertions.assertEquals(officeWorkGuid, apiresponse.getReturnedInstance().getPrimaryKeyValue());
 
     }
 
@@ -104,7 +104,7 @@ public class VerbPutEntityInstanceApiNonHttpTest {
                 setValue("title", "An Existing Project").
                 setValue("description", "my original description");
 
-        String officeWorkGuid = officeWork.getGUID();
+        String officeWorkGuid = officeWork.getPrimaryKeyValue();
         Assertions.assertNotNull(officeWorkGuid);
 
         // amend existing project with PUT - this should validate that all required fields are present
@@ -113,14 +113,14 @@ public class VerbPutEntityInstanceApiNonHttpTest {
         requestBody.put("title", "My Office Work");
         // note, I haven't added a description
 
-        apiresponse = todoManager.api().put(String.format("project/%s", officeWork.getGUID()),  getSimpleParser(requestBody), new HttpHeadersBlock());
+        apiresponse = todoManager.api().put(String.format("project/%s", officeWork.getPrimaryKeyValue()),  getSimpleParser(requestBody), new HttpHeadersBlock());
         Assertions.assertEquals(200, apiresponse.getStatusCode());
         Assertions.assertEquals("My Office Work", officeWork.getFieldValue("title").asString());
         Assertions.assertEquals("", officeWork.getFieldValue("description").asString());
 
         Assertions.assertTrue(apiresponse.hasABody());
         Assertions.assertFalse(apiresponse.isCollection());
-        Assertions.assertEquals(officeWorkGuid, apiresponse.getReturnedInstance().getGUID());
+        Assertions.assertEquals(officeWorkGuid, apiresponse.getReturnedInstance().getPrimaryKeyValue());
 
     }
 
@@ -139,7 +139,7 @@ public class VerbPutEntityInstanceApiNonHttpTest {
                 setValue("title", "An Existing Project").
                 setValue("description", "my original description");
 
-        String originalGUID = officeWork.getGUID();
+        String originalGUID = officeWork.getPrimaryKeyValue();
         Assertions.assertNotNull(originalGUID);
 
         // amend existing project with PUT - this should validate that all required fields are present
@@ -295,7 +295,7 @@ public class VerbPutEntityInstanceApiNonHttpTest {
         // will generate 400 because description should be title
         requestBody.put("description", "Amended TODO Item ");
         requestBody.put("doneStatus", "TRUE");
-        apiresponse = todoManager.api().put(String.format("todo/%s", paperwork.getGUID()), getSimpleParser(requestBody), new HttpHeadersBlock());
+        apiresponse = todoManager.api().put(String.format("todo/%s", paperwork.getPrimaryKeyValue()), getSimpleParser(requestBody), new HttpHeadersBlock());
         Assertions.assertEquals(400, apiresponse.getStatusCode());
         Assertions.assertTrue(apiresponse.getErrorMessages().size() > 0);
         Assertions.assertTrue(apiresponse.hasABody());
@@ -306,7 +306,7 @@ public class VerbPutEntityInstanceApiNonHttpTest {
         requestBody.put("title", "A new TODO Item");
         requestBody.put("description", "A new TODO Item");
         requestBody.put("doneStatus", "FALSEY");
-        apiresponse = todoManager.api().put(String.format("todo/%s", paperwork.getGUID()), getSimpleParser(requestBody), new HttpHeadersBlock());
+        apiresponse = todoManager.api().put(String.format("todo/%s", paperwork.getPrimaryKeyValue()), getSimpleParser(requestBody), new HttpHeadersBlock());
         Assertions.assertEquals(400, apiresponse.getStatusCode());
         Assertions.assertTrue(apiresponse.getErrorMessages().size() > 0);
         Assertions.assertTrue(apiresponse.hasABody());
@@ -345,7 +345,7 @@ public class VerbPutEntityInstanceApiNonHttpTest {
         // will generate 400 because description should be title
         requestBody.put("description", "Amended TODO Item ");
         requestBody.put("doneStatus", "TRUE");
-        apiresponse = todoManager.api().put(String.format("todo/%s", paperwork.getGUID()), getSimpleParser(requestBody), new HttpHeadersBlock());
+        apiresponse = todoManager.api().put(String.format("todo/%s", paperwork.getPrimaryKeyValue()), getSimpleParser(requestBody), new HttpHeadersBlock());
         Assertions.assertEquals(400, apiresponse.getStatusCode());
         Assertions.assertTrue(apiresponse.getErrorMessages().size() > 0);
         Assertions.assertTrue(apiresponse.hasABody());
@@ -356,7 +356,7 @@ public class VerbPutEntityInstanceApiNonHttpTest {
         requestBody.put("title", "A new TODO Item");
         requestBody.put("description", "A new TODO Item");
         requestBody.put("doneStatus", "FALSEY");
-        apiresponse = todoManager.api().put(String.format("todo/%s", paperwork.getGUID()), getSimpleParser(requestBody), new HttpHeadersBlock());
+        apiresponse = todoManager.api().put(String.format("todo/%s", paperwork.getPrimaryKeyValue()), getSimpleParser(requestBody), new HttpHeadersBlock());
         Assertions.assertEquals(400, apiresponse.getStatusCode());
         Assertions.assertTrue(apiresponse.getErrorMessages().size() > 0);
         Assertions.assertTrue(apiresponse.hasABody());

@@ -42,7 +42,7 @@ public class DeleteRequestTest {
 
         Assertions.assertEquals(1, todo.countInstances());
 
-        HttpApiRequest request = new HttpApiRequest("/todos/" + instance.getGUID());
+        HttpApiRequest request = new HttpApiRequest("/todos/" + instance.getPrimaryKeyValue());
 
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).delete(request);
         Assertions.assertEquals(200, response.getStatusCode());
@@ -60,7 +60,7 @@ public class DeleteRequestTest {
 
         Assertions.assertEquals(1, todo.countInstances());
 
-        HttpApiRequest request = new HttpApiRequest("/todos/" + instance.getGUID()+"bob");
+        HttpApiRequest request = new HttpApiRequest("/todos/" + instance.getPrimaryKeyValue()+"bob");
 
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).delete(request);
         Assertions.assertEquals(404, response.getStatusCode());

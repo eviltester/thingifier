@@ -63,7 +63,7 @@ public class VerbGetEntityInstanceApiNonHttpTest {
         todo.createManagedInstance().setValue("title", "My Title" + System.nanoTime());
 
 
-        ApiResponse apiResponse = todoManager.api().get("/todo/" + findThis.getGUID(), new QueryFilterParams(), new HttpHeadersBlock());
+        ApiResponse apiResponse = todoManager.api().get("/todo/" + findThis.getPrimaryKeyValue(), new QueryFilterParams(), new HttpHeadersBlock());
 
         Assertions.assertEquals(200, apiResponse.getStatusCode());
         Assertions.assertFalse(apiResponse.isCollection(),
@@ -100,8 +100,8 @@ public class VerbGetEntityInstanceApiNonHttpTest {
         Set<String> guidSet = new HashSet<>();
 
         for (EntityInstance item : apiResponse.getReturnedInstanceCollection()) {
-            guidSet.add(item.getGUID());
-            Assertions.assertNotNull(todo.findInstanceByGUID(item.getGUID()));
+            guidSet.add(item.getPrimaryKeyValue());
+            Assertions.assertNotNull(todo.findInstanceByGUID(item.getPrimaryKeyValue()));
         }
 
         Assertions.assertEquals(guidSet.size(), todo.countInstances());

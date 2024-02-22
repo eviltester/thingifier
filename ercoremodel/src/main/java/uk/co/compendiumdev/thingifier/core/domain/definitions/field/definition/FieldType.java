@@ -12,9 +12,10 @@ public enum FieldType {
     DATE(null), // todo
     BOOLEAN("false"),
     ENUM(""), // remember to set example values
-    //TODO: make this an AUTO_GUID field type then all findByIdOrGuid are actually findByFirstAutoIncrementOrAutoGuid
+
     AUTO_GUID(null);
-    // TODO: then add a GUID type back in which validates against a GUID
+
+    // TODO: add a GUID type back in which validates against a GUID, this field type is editable
 
     private final String defaultValue;
 

@@ -88,14 +88,14 @@ public class RelationshipApiNonHttpTest {
         int numberOfTasks = myNewProject.getRelationships().getConnectedItems("tasks").size();
         Assertions.assertEquals(1, numberOfTasks);
 
-        apiresponse = todoManager.api().get(String.format("project/%s/tasks", myNewProject.getGUID()), new QueryFilterParams(), new HttpHeadersBlock());
+        apiresponse = todoManager.api().get(String.format("project/%s/tasks", myNewProject.getPrimaryKeyValue()), new QueryFilterParams(), new HttpHeadersBlock());
 
         Assertions.assertEquals(200, apiresponse.getStatusCode());
         Assertions.assertTrue(apiresponse.hasABody());
         Assertions.assertTrue(apiresponse.isCollection());
         Assertions.assertFalse(apiresponse.isErrorResponse());
 
-        EntityInstance foundInstance = todo.findInstanceByFieldNameAndValue("guid", paperwork.getGUID());
+        EntityInstance foundInstance = todo.findInstanceByFieldNameAndValue("guid", paperwork.getPrimaryKeyValue());
         Assertions.assertNotNull(
                 foundInstance,
                 "Task should exist, only the relationship should be deleted");
@@ -128,13 +128,13 @@ public class RelationshipApiNonHttpTest {
         int numberOfTasks = myNewProject.getRelationships().getConnectedItems("tasks").size();
         Assertions.assertEquals(1, numberOfTasks);
 
-        apiresponse = todoManager.api().delete(String.format("project/%s/tasks/%s", myNewProject.getGUID(), paperwork.getGUID()), new HttpHeadersBlock());
+        apiresponse = todoManager.api().delete(String.format("project/%s/tasks/%s", myNewProject.getPrimaryKeyValue(), paperwork.getPrimaryKeyValue()), new HttpHeadersBlock());
 
         Assertions.assertEquals(200, apiresponse.getStatusCode());
 
         Assertions.assertEquals(numberOfTasks - 1, myNewProject.getRelationships().getConnectedItems("tasks").size());
         Assertions.assertNotNull(
-                todo.findInstanceByFieldNameAndValue("guid", paperwork.getGUID()),
+                todo.findInstanceByFieldNameAndValue("guid", paperwork.getPrimaryKeyValue()),
                 "Task should exist, only the relationship should be deleted");
 
         Assertions.assertTrue(apiresponse.getErrorMessages().size()==0);
@@ -167,7 +167,7 @@ public class RelationshipApiNonHttpTest {
         int numberOfTasks = myNewProject.getRelationships().getConnectedItems("tasks").size();
         Assertions.assertEquals(1, numberOfTasks);
 
-        apiresponse = todoManager.api().delete(String.format("todo/%s", paperwork.getGUID()), new HttpHeadersBlock());
+        apiresponse = todoManager.api().delete(String.format("todo/%s", paperwork.getPrimaryKeyValue()), new HttpHeadersBlock());
 
         Assertions.assertEquals(200, apiresponse.getStatusCode());
         Assertions.assertFalse(apiresponse.hasABody());
@@ -176,7 +176,7 @@ public class RelationshipApiNonHttpTest {
 
         Assertions.assertEquals(numberOfTasks - 1, myNewProject.getRelationships().getConnectedItems("tasks").size());
         Assertions.assertNull(
-                todo.findInstanceByFieldNameAndValue("guid", paperwork.getGUID()),
+                todo.findInstanceByFieldNameAndValue("guid", paperwork.getPrimaryKeyValue()),
                 "Task should not exist");
         Assertions.assertEquals(0, todo.countInstances());
         Assertions.assertEquals(1, project.countInstances());
@@ -213,10 +213,10 @@ public class RelationshipApiNonHttpTest {
         int numberOfTasks = myNewProject.getRelationships().getConnectedItems("tasks").size();
 
         requestBody = new HashMap<String, String>();
-        requestBody.put("guid", paperwork.getGUID());
+        requestBody.put("guid", paperwork.getPrimaryKeyValue());
 
         apiresponse = todoManager.api().post(String.format("project/%s/tasks",
-                                            myNewProject.getGUID()),
+                                            myNewProject.getPrimaryKeyValue()),
                                             getSimpleParser(requestBody), new HttpHeadersBlock());
 
         Assertions.assertEquals(201, apiresponse.getStatusCode());
@@ -229,7 +229,7 @@ public class RelationshipApiNonHttpTest {
         Assertions.assertEquals(1, projects.size());
         List<EntityInstance> listOfProjects = new ArrayList<EntityInstance>(projects);
 
-        Assertions.assertEquals(myNewProject.getGUID(), listOfProjects.get(0).getGUID());
+        Assertions.assertEquals(myNewProject.getPrimaryKeyValue(), listOfProjects.get(0).getPrimaryKeyValue());
 
         Assertions.assertTrue(apiresponse.getErrorMessages().size()==0);
         Assertions.assertEquals( "", new ApiResponseAsXml(apiresponse, jsonThing).getXml().trim(),"Should have no body");
@@ -259,11 +259,11 @@ public class RelationshipApiNonHttpTest {
         // Create a relationship with POST and just a GUID
         //myNewProject
         HashMap<String, String> requestBody = new HashMap<String, String>();
-        requestBody.put("guid", relTodo.getGUID());
+        requestBody.put("guid", relTodo.getPrimaryKeyValue());
 
         int numberOfTasks = myNewProject.getRelationships().getConnectedItems("tasks").size();
 
-        ApiResponse apiresponse = todoManager.api().post(String.format("project/%s/tasks", myNewProject.getGUID()), getSimpleParser(requestBody), new HttpHeadersBlock());
+        ApiResponse apiresponse = todoManager.api().post(String.format("project/%s/tasks", myNewProject.getPrimaryKeyValue()), getSimpleParser(requestBody), new HttpHeadersBlock());
 
         Assertions.assertEquals(201, apiresponse.getStatusCode());
 
@@ -296,13 +296,13 @@ public class RelationshipApiNonHttpTest {
         // Create a relationship with POST and just a GUID
         //myNewProject
         HashMap<String, String> requestBody = new HashMap<String, String>();
-        requestBody.put("guid", myNewProject.getGUID());
+        requestBody.put("guid", myNewProject.getPrimaryKeyValue());
 
         int numberOfProjects = relTodo.getRelationships().getConnectedItems("task-of").size();
         Assertions.assertEquals(0, numberOfProjects);
 
         // get current related projects through api
-        ApiResponse apiresponse = todoManager.api().get(String.format("todo/%s/task-of", relTodo.getGUID()), new QueryFilterParams(), new HttpHeadersBlock());
+        ApiResponse apiresponse = todoManager.api().get(String.format("todo/%s/task-of", relTodo.getPrimaryKeyValue()), new QueryFilterParams(), new HttpHeadersBlock());
 
         Assertions.assertEquals(200, apiresponse.getStatusCode());
         Assertions.assertEquals(0, apiresponse.getReturnedInstanceCollection().size());
@@ -318,7 +318,7 @@ public class RelationshipApiNonHttpTest {
 
 
 
-        apiresponse = todoManager.api().post(String.format("todo/%s/task-of", relTodo.getGUID()), getSimpleParser(requestBody), new HttpHeadersBlock());
+        apiresponse = todoManager.api().post(String.format("todo/%s/task-of", relTodo.getPrimaryKeyValue()), getSimpleParser(requestBody), new HttpHeadersBlock());
         Assertions.assertEquals(201, apiresponse.getStatusCode());
 
         Assertions.assertEquals(1, relTodo.getRelationships().getConnectedItems("task-of").size());
@@ -331,7 +331,7 @@ public class RelationshipApiNonHttpTest {
 
 
 
-        apiresponse = todoManager.api().get(String.format("todo/%s/task-of", relTodo.getGUID()), new QueryFilterParams(), new HttpHeadersBlock());
+        apiresponse = todoManager.api().get(String.format("todo/%s/task-of", relTodo.getPrimaryKeyValue()), new QueryFilterParams(), new HttpHeadersBlock());
         Assertions.assertEquals(200, apiresponse.getStatusCode());
 
         Assertions.assertEquals(1, apiresponse.getReturnedInstanceCollection().size());
@@ -339,8 +339,8 @@ public class RelationshipApiNonHttpTest {
         Assertions.assertTrue(apiresponse.hasABody());
 
         Assertions.assertEquals(
-                myNewProject.getGUID(),
-                apiresponse.getReturnedInstanceCollection().get(0).getGUID(),
+                myNewProject.getPrimaryKeyValue(),
+                apiresponse.getReturnedInstanceCollection().get(0).getPrimaryKeyValue(),
                 "Expected A project");
 
         System.out.println(todoManager);
@@ -366,13 +366,13 @@ public class RelationshipApiNonHttpTest {
         // Create a relationship with POST and just a GUID
         //myNewProject
         HashMap<String, String> requestBody = new HashMap<String, String>();
-        requestBody.put("guid", myNewProject.getGUID());
+        requestBody.put("guid", myNewProject.getPrimaryKeyValue());
 
         int numberOfProjects = relTodo.getRelationships().getConnectedItems("task-of").size();
         Assertions.assertEquals(0, numberOfProjects);
 
         // Create a relationship
-        ApiResponse apiresponse = todoManager.api().post(String.format("todo/%s/task-of", relTodo.getGUID()),getSimpleParser(requestBody), new HttpHeadersBlock());
+        ApiResponse apiresponse = todoManager.api().post(String.format("todo/%s/task-of", relTodo.getPrimaryKeyValue()),getSimpleParser(requestBody), new HttpHeadersBlock());
         Assertions.assertEquals(201, apiresponse.getStatusCode());
 
         Assertions.assertEquals(1, relTodo.getRelationships().getConnectedItems("task-of").size());
@@ -384,7 +384,7 @@ public class RelationshipApiNonHttpTest {
 
 
         // Delete the relationship
-        apiresponse = todoManager.api().delete(String.format("todo/%s/task-of/%s", relTodo.getGUID(), myNewProject.getGUID()), new HttpHeadersBlock());
+        apiresponse = todoManager.api().delete(String.format("todo/%s/task-of/%s", relTodo.getPrimaryKeyValue(), myNewProject.getPrimaryKeyValue()), new HttpHeadersBlock());
         Assertions.assertEquals(200, apiresponse.getStatusCode());
 
         // project should be related to nothing
@@ -424,13 +424,13 @@ public class RelationshipApiNonHttpTest {
         // Create a relationship with POST and just a GUID
         //myNewProject
         HashMap<String, String> requestBody = new HashMap<String, String>();
-        requestBody.put("guid", myNewProject.getGUID());
+        requestBody.put("guid", myNewProject.getPrimaryKeyValue());
 
         int numberOfProjects = relTodo.getRelationships().getConnectedItems("task-of").size();
         Assertions.assertEquals(0, numberOfProjects);
 
         // Create relationship
-        ApiResponse apiresponse = todoManager.api().post(String.format("todo/%s/task-of", relTodo.getGUID()), getSimpleParser(requestBody), new HttpHeadersBlock());
+        ApiResponse apiresponse = todoManager.api().post(String.format("todo/%s/task-of", relTodo.getPrimaryKeyValue()), getSimpleParser(requestBody), new HttpHeadersBlock());
         Assertions.assertEquals(201, apiresponse.getStatusCode());
 
         Assertions.assertEquals(1, relTodo.getRelationships().getConnectedItems("task-of").size());
@@ -441,7 +441,7 @@ public class RelationshipApiNonHttpTest {
 
 
         // Delete the relationship
-        apiresponse = todoManager.api().delete(String.format("todo/%s", relTodo.getGUID()), new HttpHeadersBlock());
+        apiresponse = todoManager.api().delete(String.format("todo/%s", relTodo.getPrimaryKeyValue()), new HttpHeadersBlock());
         Assertions.assertEquals(200, apiresponse.getStatusCode());
 
         Assertions.assertEquals(0, todo.getInstances().size(),"Should be no stored todos");
@@ -484,7 +484,7 @@ public class RelationshipApiNonHttpTest {
 
         int numberOfTasks = myNewProject.getRelationships().getConnectedItems("tasks").size();
 
-        ApiResponse apiresponse = todoManager.api().post(String.format("project/%s/tasks", myNewProject.getGUID()), getSimpleParser(requestBody), new HttpHeadersBlock());
+        ApiResponse apiresponse = todoManager.api().post(String.format("project/%s/tasks", myNewProject.getPrimaryKeyValue()), getSimpleParser(requestBody), new HttpHeadersBlock());
         Assertions.assertEquals(201, apiresponse.getStatusCode());
         String locationGuid = apiresponse.getHeaderValue(ApiResponse.GUID_HEADER);
         Assertions.assertTrue(apiresponse.getErrorMessages().size()==0);
@@ -517,7 +517,7 @@ public class RelationshipApiNonHttpTest {
         List<EntityInstance> itemList = new ArrayList<>(items);
 
         // item should be myNewProject
-        Assertions.assertEquals( myNewProject.getGUID(), itemList.get(0).getGUID(),"Expected to be connected to project");
+        Assertions.assertEquals( myNewProject.getPrimaryKeyValue(), itemList.get(0).getPrimaryKeyValue(),"Expected to be connected to project");
 
 
     }
@@ -544,7 +544,7 @@ public class RelationshipApiNonHttpTest {
         Assertions.assertEquals(0, numberOfProjects);
 
         // Create it
-        ApiResponse apiresponse = todoManager.api().post(String.format("todo/%s/task-of", relTodo.getGUID()), getSimpleParser(requestBody), new HttpHeadersBlock());
+        ApiResponse apiresponse = todoManager.api().post(String.format("todo/%s/task-of", relTodo.getPrimaryKeyValue()), getSimpleParser(requestBody), new HttpHeadersBlock());
         Assertions.assertEquals(201, apiresponse.getStatusCode());
         Assertions.assertTrue(apiresponse.getErrorMessages().size()==0);
         Assertions.assertEquals(1, relTodo.getRelationships().getConnectedItems("task-of").size());
@@ -604,7 +604,7 @@ public class RelationshipApiNonHttpTest {
         requestBody.put("description", expectedDescription);
         requestBody.put("duration", "3");
 
-        ApiResponse apiresponse = todoManager.api().post(String.format("todo/%s/estimates", myTodo.getGUID()), getSimpleParser(requestBody), new HttpHeadersBlock());
+        ApiResponse apiresponse = todoManager.api().post(String.format("todo/%s/estimates", myTodo.getPrimaryKeyValue()), getSimpleParser(requestBody), new HttpHeadersBlock());
         Assertions.assertEquals(201, apiresponse.getStatusCode());
         String locationGuid = apiresponse.getHeaderValue(ApiResponse.GUID_HEADER);
         Assertions.assertTrue(apiresponse.getErrorMessages().size()==0);
@@ -695,7 +695,7 @@ public class RelationshipApiNonHttpTest {
         // estimate: [{"guid", "..."}]
         List<HashMap> estimateTodoGuids = new ArrayList<>();
         final HashMap<String, String > todoGuid = new HashMap<>();
-        todoGuid.put("guid",myTodo.getGUID());
+        todoGuid.put("guid",myTodo.getPrimaryKeyValue());
         estimateTodoGuids.add(todoGuid);
         requestBody.put("estimate", estimateTodoGuids);
 

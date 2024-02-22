@@ -109,6 +109,7 @@ could implement a Thingifier URL query matcher to return instances based on quer
         todoManager.setDocumentation("Todo Manager", para.toString());
 
         EntityDefinition todo = todoManager.defineThing("todo", "todos");
+        todo.addAsPrimaryKeyField(Field.is("guid", FieldType.AUTO_GUID));
 
         todo
                 .addFields( Field.is("title", STRING).
@@ -124,7 +125,7 @@ could implement a Thingifier URL query matcher to return instances based on quer
 
 
         EntityDefinition project = todoManager.defineThing("project", "projects");
-
+        project.addAsPrimaryKeyField(Field.is("guid", FieldType.AUTO_GUID));
         project
                 .addFields(
                         Field.is("title", STRING),
@@ -136,7 +137,7 @@ could implement a Thingifier URL query matcher to return instances based on quer
 
 
         EntityDefinition category = todoManager.defineThing("category", "categories");
-
+        category.addAsPrimaryKeyField(Field.is("guid", FieldType.AUTO_GUID));
         category
                 .addFields(
                         Field.is("title", STRING).
@@ -157,6 +158,7 @@ could implement a Thingifier URL query matcher to return instances based on quer
         // e.g. create an estimate for a todo - the estimate must have a todo
 
         EntityDefinition estimate = todoManager.defineThing("estimate", "estimates");
+        estimate.addAsPrimaryKeyField(Field.is("guid", FieldType.AUTO_GUID));
         estimate
                 .addFields(
                         Field.is("duration", INTEGER).

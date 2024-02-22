@@ -32,6 +32,8 @@ public class NestedObjectsApiTest {
         thingifier.apiConfig().setApiToEnforceAcceptHeaderForResponses(false);
 
         defn = thingifier.defineThing("thing", "things");
+        defn.addAsPrimaryKeyField(Field.is("guid", FieldType.AUTO_GUID));
+
         thing = thingifier.getThingInstancesNamed("thing", EntityRelModel.DEFAULT_DATABASE_NAME);
 
         defn.addField(Field.is("person", FieldType.OBJECT)
@@ -59,7 +61,7 @@ public class NestedObjectsApiTest {
                 null, null);
 
 
-        final HttpApiRequest amendConnieRequest = new HttpApiRequest("/things/" + instance.getGUID());
+        final HttpApiRequest amendConnieRequest = new HttpApiRequest("/things/" + instance.getPrimaryKeyValue());
         amendConnieRequest.setVerb(HttpApiRequest.VERB.POST);
         //{"person" : {"firstname": "bob"}}
         amendConnieRequest.setBody("{\"person\" : {\"firstname\": \"bob\"}}");

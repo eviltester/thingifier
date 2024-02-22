@@ -17,6 +17,7 @@ public class ThingInstanceCreationTest {
 
         entityTestSession = new EntityDefinition("Test Session", "Test Sessions");
 
+        entityTestSession.addAsPrimaryKeyField(Field.is("guid", FieldType.AUTO_GUID));
         entityTestSession.addField(Field.is("Title", FieldType.STRING));
         entityTestSession.addFields(Field.is("CompletedStatus", FieldType.STRING).withDefaultValue("Not Completed"));
         entityTestSession.addFields(Field.is("review", FieldType.BOOLEAN).withDefaultValue("TRUE"));
@@ -47,15 +48,15 @@ public class ThingInstanceCreationTest {
         EntityInstance session = new EntityInstance(entityTestSession);
         session.addGUIDtoInstance();
 
-        Assertions.assertNotNull(session.getGUID());
+        Assertions.assertNotNull(session.getPrimaryKeyValue());
 
         EntityInstance session2 = new EntityInstance(entityTestSession);
         session2.addGUIDtoInstance();
 
-        Assertions.assertNotNull(session2.getGUID());
-        Assertions.assertTrue(session2.getGUID().length()>10);
+        Assertions.assertNotNull(session2.getPrimaryKeyValue());
+        Assertions.assertTrue(session2.getPrimaryKeyValue().length()>10);
 
-        Assertions.assertNotEquals(session.getGUID(), session2.getGUID());
+        Assertions.assertNotEquals(session.getPrimaryKeyValue(), session2.getPrimaryKeyValue());
     }
 
 
@@ -67,6 +68,6 @@ public class ThingInstanceCreationTest {
         instance.overrideValue("guid", "1234-1234-1324-1234");
         instance.addIdsToInstance();
 
-        Assertions.assertEquals("1234-1234-1324-1234", instance.getGUID());
+        Assertions.assertEquals("1234-1234-1324-1234", instance.getPrimaryKeyValue());
     }
 }

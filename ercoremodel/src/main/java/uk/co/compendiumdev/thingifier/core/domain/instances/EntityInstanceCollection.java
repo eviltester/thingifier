@@ -101,7 +101,7 @@ final public class EntityInstanceCollection {
         }
 
         for(EntityInstance instance : instances.values()){
-            if(instance.getGUID().equals(instanceFieldValue)){
+            if(instance.getPrimaryKeyValue().equals(instanceFieldValue)){
                 return instance;
             }
         }
