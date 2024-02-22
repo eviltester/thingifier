@@ -124,7 +124,7 @@ public class OptionalityRelationshipTest {
 
         // now delete the to do, and the estimate should also be deleted
 
-        todoManager.deleteThing(tidy);
+        todoManager.deleteThing(tidy, EntityRelModel.DEFAULT_DATABASE_NAME);
 
         // the thingifier.deleteThing should be used instead of the Thing.deleteInstance because
         // things only know about themselves and their instances, but the thingifier knows about

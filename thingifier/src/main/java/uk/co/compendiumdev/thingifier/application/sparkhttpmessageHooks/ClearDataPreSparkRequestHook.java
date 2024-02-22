@@ -3,6 +3,7 @@ package uk.co.compendiumdev.thingifier.application.sparkhttpmessageHooks;
 import spark.Request;
 import spark.Response;
 import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 
 public class ClearDataPreSparkRequestHook implements SparkRequestResponseHook {
     private long lastReset;
@@ -26,7 +27,7 @@ public class ClearDataPreSparkRequestHook implements SparkRequestResponseHook {
             thingifier.clearAllData();
             System.out.println("Cleared all data");
             System.out.println("Adding test data");
-            thingifier.generateData();
+            thingifier.generateData(EntityRelModel.DEFAULT_DATABASE_NAME);
             System.out.println("Added test data");
         }
     }

@@ -1,5 +1,6 @@
 package uk.co.compendiumdev.thingifier.swaggerizer;
 
+import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
@@ -45,7 +46,7 @@ public class TodoListThingifierTestModel {
 
         // TODO: have a data generator per profile
         todoList.setDataGenerator(new TodoAPITestDataPopulator());
-        todoList.generateData();
+        todoList.generateData(EntityRelModel.DEFAULT_DATABASE_NAME);
 
         // API Config Profiles
 

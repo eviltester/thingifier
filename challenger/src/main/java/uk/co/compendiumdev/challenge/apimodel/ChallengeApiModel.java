@@ -1,5 +1,6 @@
 package uk.co.compendiumdev.challenge.apimodel;
 
+import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
@@ -36,7 +37,7 @@ public class ChallengeApiModel {
 
 
         todoList.setDataGenerator(new TodoAPIDataPopulator());
-        todoList.generateData();
+        todoList.generateData(EntityRelModel.DEFAULT_DATABASE_NAME);
 
         todoList.apiConfig().setResponsesToShowGuids(false);
         todoList.apiConfig().statusCodes().setMaxRequestBodyLengthBytes(5000);

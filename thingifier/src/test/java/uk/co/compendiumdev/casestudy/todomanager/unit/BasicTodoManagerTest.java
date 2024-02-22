@@ -63,7 +63,7 @@ public class BasicTodoManagerTest {
         Assertions.assertTrue(relatedItems.contains(paperwork));
         Assertions.assertTrue(relatedItems.contains(filework));
 
-        todoManager.deleteThing(paperwork);
+        todoManager.deleteThing(paperwork, EntityRelModel.DEFAULT_DATABASE_NAME);
 
 
         relatedItems = officeWork.getRelationships().getConnectedItems("tasks");
@@ -110,7 +110,7 @@ public class BasicTodoManagerTest {
 
         Assertions.assertEquals("Delete this todo", foundit.getFieldValue("title").asString());
 
-        todoManager.deleteThing(foundit);
+        todoManager.deleteThing(foundit, EntityRelModel.DEFAULT_DATABASE_NAME);
         Assertions.assertEquals(originalTodosCount, todos.countInstances());
 
 
@@ -120,7 +120,7 @@ public class BasicTodoManagerTest {
 
 
         try{
-            todoManager.deleteThing(foundit);
+            todoManager.deleteThing(foundit, EntityRelModel.DEFAULT_DATABASE_NAME);
             Assertions.fail("Item already deleted, exception should have been thrown");
         }catch(Exception e){
 
@@ -149,7 +149,7 @@ public class BasicTodoManagerTest {
 
         Assertions.assertEquals("Delete this todo", foundit.getFieldValue("title").asString());
 
-        todoManager.deleteThing(foundit);
+        todoManager.deleteThing(foundit, EntityRelModel.DEFAULT_DATABASE_NAME);
 
         Assertions.assertEquals(originalTodosCount, todos.countInstances());
 
@@ -160,7 +160,7 @@ public class BasicTodoManagerTest {
 
 
         try{
-            todoManager.deleteThing(foundit);
+            todoManager.deleteThing(foundit, EntityRelModel.DEFAULT_DATABASE_NAME);
 
             Assertions.fail("Item already deleted, exception should have been thrown");
 

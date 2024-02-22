@@ -111,20 +111,11 @@ final public class Thingifier {
     }
 
     // Instances
-    @Deprecated
-    public List<EntityInstanceCollection> getThings() {
-        return getThings(EntityRelModel.DEFAULT_DATABASE_NAME);
-    }
 
     public List<EntityInstanceCollection> getThings(final String database) {
         return erm.getInstanceData(database).getAllInstanceCollections();
     }
 
-
-    @Deprecated
-    public EntityInstance findThingInstanceByGuid(final String thingGUID) {
-        return findThingInstanceByGuid(thingGUID, EntityRelModel.DEFAULT_DATABASE_NAME);
-    }
 
     public EntityInstance findThingInstanceByGuid(final String thingGUID, final String database) {
         return erm.getInstanceData(database).findEntityInstanceByGUID(thingGUID);
@@ -136,11 +127,6 @@ final public class Thingifier {
     }
 
 
-
-    @Deprecated // because this is accessing default database directly
-    public EntityInstanceCollection getInstancesForSingularOrPluralNamedEntity(final String term) {
-        return getInstancesForSingularOrPluralNamedEntity(term, EntityRelModel.DEFAULT_DATABASE_NAME);
-    }
 
     public EntityInstanceCollection getInstancesForSingularOrPluralNamedEntity(final String term, final String database) {
         final EntityDefinition defn = erm.getSchema().getDefinitionWithSingularOrPluralNamed(term);
@@ -167,23 +153,12 @@ final public class Thingifier {
         erm.getInstanceData(database).clearAllData();
     }
 
-    @Deprecated
-    public void deleteThing(final EntityInstance aThingInstance) {
-        deleteThing(aThingInstance, EntityRelModel.DEFAULT_DATABASE_NAME);
-    }
-
     public void deleteThing(final EntityInstance aThingInstance, final String database) {
         erm.getInstanceData(database).deleteEntityInstance(aThingInstance);
     }
 
 
-
     // data generation
-    @Deprecated // because it is for default database
-    public void generateData() {
-        generateData(EntityRelModel.DEFAULT_DATABASE_NAME);
-    }
-
     public void generateData(final String database) {
         if(dataPopulator!=null){
             dataPopulator.populate(erm.getSchema(), erm.getInstanceData(database));

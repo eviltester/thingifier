@@ -1,5 +1,6 @@
 package uk.co.compendiumdev.thingifier.application.examples;
 
+import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
@@ -95,7 +96,7 @@ public class TodoManagerThingifier {
         // Some hard coded test data for experimenting with
         // TODO: allow importing from a JSON to create data in bulk
         todoManager.setDataGenerator(new TodoManagerAPIDataPopulator());
-        todoManager.generateData();
+        todoManager.generateData(EntityRelModel.DEFAULT_DATABASE_NAME);
 
         // PROFILES
         // can have different -version params which configure the TodoManagerThingifier in different ways
