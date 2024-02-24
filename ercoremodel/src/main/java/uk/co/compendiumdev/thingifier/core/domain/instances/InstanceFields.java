@@ -273,14 +273,23 @@ public class InstanceFields {
             if (idOrGuidFields.contains(field)) {
                 // if editing it then throw error, ignore if same value
                 String existingValue = getFieldValue(entry.name).asString();
+                String entryValue = entry.value;
+                if(field.getType()== FieldType.AUTO_INCREMENT){
+                    // the potential value will be a Float, so amend it to an integer for comparison
+                    try{
+                        entryValue = String.valueOf((int)Float.parseFloat(entryValue));
+                    }catch(Exception e){
+
+                    }
+                }
                 if (existingValue != null && existingValue.trim().length() > 0) {
                     // if value is different then it is an attempt to amend it
-                    if (!existingValue.equalsIgnoreCase(entry.value)) {
+                    if (!existingValue.equalsIgnoreCase(entryValue)) {
                         errorMessages.add(
                                 String.format("Can not amend %s from %s to %s",
                                         entry.name,
                                         existingValue,
-                                        entry.value));
+                                        entryValue));
                     }
                 }
             }

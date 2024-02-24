@@ -178,8 +178,17 @@ public class BodyParser {
 
 
     public ValidationReport validateAgainstType(final EntityDefinition entity) {
+        return validateAgainstTypeIgnoring(entity, new ArrayList<>());
+    }
+
+
+    public ValidationReport validateAgainstTypeIgnoring(EntityDefinition entity, List<String> doNotValidateFields) {
         ValidationReport report = new ValidationReport();
         for(Map.Entry<String, Object>arg : args.entrySet()){
+
+            if(entity.hasAnyOfFieldNamesDefined(doNotValidateFields)){
+                continue;
+            }
 
             Field field = entity.getField(arg.getKey());
             if(field==null){
@@ -235,6 +244,4 @@ public class BodyParser {
         }
         return report;
     }
-
-
 }

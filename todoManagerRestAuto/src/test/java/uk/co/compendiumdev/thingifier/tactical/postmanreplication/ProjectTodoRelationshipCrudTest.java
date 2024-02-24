@@ -3,6 +3,7 @@ package uk.co.compendiumdev.thingifier.tactical.postmanreplication;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.path.json.JsonPath;
+import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
@@ -45,36 +46,38 @@ public class ProjectTodoRelationshipCrudTest {
     @Test
     public void canCreateAndAmendSequence(){
 
-        String specificProjectId = "1";
-        String specificTodoId = "1";
-
-        // CREATE Project WITH PUT
+        // CREATE Project WITH POST
 
         final HashMap<String, String> givenBody = new HashMap<String, String>();
         givenBody.put("title", "a specific project");
 
-        given().body(givenBody).
-                when().put("/projects/" + specificProjectId).
+        Response projectResponse = given().body(givenBody).
+                when().post("/projects").
                 then().
                 statusCode(201).
-                contentType(ContentType.JSON).
-                header("Location", "projects/" + specificProjectId).
-                header("X-Thing-Instance-Primary-Key", specificProjectId);
+                contentType(ContentType.JSON).and().extract().response();
 
-        // CREATE A Specific To do
+        String specificProjectId = projectResponse.getBody().jsonPath().get("id");
 
-        given().body(givenBody).
-                when().put("/todos/" + specificTodoId).
+
+        // CREATE A To do
+
+        final HashMap<String, String> givenTodoBody = new HashMap<String, String>();
+        givenTodoBody.put("title", "a specific todo");
+
+        Response todoResponse = given().body(givenTodoBody).
+                when().post("/todos").
                 then().
                 statusCode(201).
-                contentType(ContentType.JSON).
-                header("Location", "todos/" + specificTodoId).
-                header("X-Thing-Instance-Primary-Key", specificTodoId);
+                contentType(ContentType.JSON).and().extract().response();
 
-        // Create a specific project to to do relationship with POST
-        givenBody.put("id", specificTodoId);
+        String specificTodoId = todoResponse.getBody().jsonPath().get("id");
 
-        given().body(givenBody).
+        // Create a specific project to do relationship with POST
+        final HashMap<String, String> givenRefBody = new HashMap<String, String>();
+        givenRefBody.put("id", specificTodoId);
+
+        given().body(givenRefBody).
                 when().post("/projects/" + specificProjectId + "/tasks").
                 then().
                 statusCode(201).

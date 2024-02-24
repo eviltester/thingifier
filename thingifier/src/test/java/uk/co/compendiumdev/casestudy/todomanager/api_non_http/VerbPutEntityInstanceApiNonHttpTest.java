@@ -162,82 +162,82 @@ public class VerbPutEntityInstanceApiNonHttpTest {
     }
 
 
-    @Test
-    public void putCanCreateAnEntityInstanceWithAGivenGUID() {
-
-        Map requestBody;
-        ApiResponse apiresponse;
-
-
-        // PUT
-
-        requestBody = new HashMap<String, String>();
-        String title = "My Office Work " + System.currentTimeMillis();
-        requestBody.put("title", title);
-
-
-        int currentProjects = project.countInstances();
-        Assertions.assertEquals(0, currentProjects);
-
-        // create with a PUT and a given GUID
-        String guid = UUID.randomUUID().toString();
-
-
-        apiresponse = todoManager.api().put(String.format("project/%s", guid),  getSimpleParser(requestBody), new HttpHeadersBlock());
-        Assertions.assertEquals(201, apiresponse.getStatusCode());
-
-
-        Assertions.assertEquals(guid, apiresponse.getHeaderValue(ApiResponse.PRIMARY_KEY_HEADER));
-        Assertions.assertTrue(apiresponse.getHeaderValue("Location").endsWith(guid));
-
-        Assertions.assertEquals(currentProjects + 1, project.countInstances());
-
-
-        EntityInstance newProject = project.findInstanceByFieldNameAndValue("guid", guid);
-
-        Assertions.assertEquals(title, newProject.getFieldValue("title").asString());
-        Assertions.assertEquals(guid, newProject.getFieldValue("guid").asString());
-
-        Assertions.assertTrue(apiresponse.hasABody());
-        Assertions.assertFalse(apiresponse.isCollection());
-        Assertions.assertTrue(apiresponse.getErrorMessages().size() == 0);
-        Assertions.assertEquals(newProject, apiresponse.getReturnedInstance());
-    }
-
-
-    @Test
-    public void putCanCreateAnEntityInstanceWithAGivenGUIDAndIds() {
-
-        Map requestBody;
-        ApiResponse apiresponse;
-
-        project = todoManager.getThingInstancesNamed("project", EntityRelModel.DEFAULT_DATABASE_NAME);
-        final Field anIdField = Field.is("id", FieldType.AUTO_INCREMENT);
-        project.definition().addField(anIdField);
-
-        // PUT
-        requestBody = new HashMap<String, String>();
-        String title = "My Office Work " + System.currentTimeMillis();
-        requestBody.put("title", title);
-        requestBody.put("id", "12");
+//    @Test
+//    public void putCanCreateAnEntityInstanceWithAGivenGUID() {
+//
+//        Map requestBody;
+//        ApiResponse apiresponse;
+//
+//
+//        // PUT
+//
+//        requestBody = new HashMap<String, String>();
+//        String title = "My Office Work " + System.currentTimeMillis();
+//        requestBody.put("title", title);
+//
+//
+//        int currentProjects = project.countInstances();
+//        Assertions.assertEquals(0, currentProjects);
+//
+//        // create with a PUT and a given GUID
+//        String guid = UUID.randomUUID().toString();
+//
+//
+//        apiresponse = todoManager.api().put(String.format("project/%s", guid),  getSimpleParser(requestBody), new HttpHeadersBlock());
+//        Assertions.assertEquals(201, apiresponse.getStatusCode());
+//
+//
+//        Assertions.assertEquals(guid, apiresponse.getHeaderValue(ApiResponse.PRIMARY_KEY_HEADER));
+//        Assertions.assertTrue(apiresponse.getHeaderValue("Location").endsWith(guid));
+//
+//        Assertions.assertEquals(currentProjects + 1, project.countInstances());
+//
+//
+//        EntityInstance newProject = project.findInstanceByFieldNameAndValue("guid", guid);
+//
+//        Assertions.assertEquals(title, newProject.getFieldValue("title").asString());
+//        Assertions.assertEquals(guid, newProject.getFieldValue("guid").asString());
+//
+//        Assertions.assertTrue(apiresponse.hasABody());
+//        Assertions.assertFalse(apiresponse.isCollection());
+//        Assertions.assertTrue(apiresponse.getErrorMessages().size() == 0);
+//        Assertions.assertEquals(newProject, apiresponse.getReturnedInstance());
+//    }
 
 
-        int currentProjects = project.countInstances();
-        Assertions.assertEquals(0, currentProjects);
-
-        // create with a PUT and a given GUID
-        String guid = UUID.randomUUID().toString();
-
-
-        apiresponse = todoManager.api().put(String.format("project/%s", guid),  getSimpleParser(requestBody), new HttpHeadersBlock());
-        Assertions.assertEquals(201, apiresponse.getStatusCode());
-
-
-        EntityInstance newProject = project.findInstanceByFieldNameAndValue("guid", guid);
-        Assertions.assertEquals("12", newProject.getFieldValue("id").asString());
-
-        Assertions.assertEquals(13, project.getCounters().get("id").getCurrentValue());
-    }
+//    @Test
+//    public void putCanCreateAnEntityInstanceWithAGivenGUIDAndIds() {
+//
+//        Map requestBody;
+//        ApiResponse apiresponse;
+//
+//        project = todoManager.getThingInstancesNamed("project", EntityRelModel.DEFAULT_DATABASE_NAME);
+//        final Field anIdField = Field.is("id", FieldType.AUTO_INCREMENT);
+//        project.definition().addField(anIdField);
+//
+//        // PUT
+//        requestBody = new HashMap<String, String>();
+//        String title = "My Office Work " + System.currentTimeMillis();
+//        requestBody.put("title", title);
+//        requestBody.put("id", "12");
+//
+//
+//        int currentProjects = project.countInstances();
+//        Assertions.assertEquals(0, currentProjects);
+//
+//        // create with a PUT and a given GUID
+//        String guid = UUID.randomUUID().toString();
+//
+//
+//        apiresponse = todoManager.api().put(String.format("project/%s", guid),  getSimpleParser(requestBody), new HttpHeadersBlock());
+//        Assertions.assertEquals(201, apiresponse.getStatusCode());
+//
+//
+//        EntityInstance newProject = project.findInstanceByFieldNameAndValue("guid", guid);
+//        Assertions.assertEquals("12", newProject.getFieldValue("id").asString());
+//
+//        Assertions.assertEquals(13, project.getCounters().get("id").getCurrentValue());
+//    }
 
 
     @Test
@@ -265,7 +265,7 @@ public class VerbPutEntityInstanceApiNonHttpTest {
         String guid = UUID.randomUUID().toString();
 
         apiresponse = todoManager.api().put(String.format("project/%s", guid),  getSimpleParser(requestBody), new HttpHeadersBlock());
-        Assertions.assertEquals(409, apiresponse.getStatusCode());
+        Assertions.assertEquals(400, apiresponse.getStatusCode());
 
         Assertions.assertEquals(1, project.countInstances());
     }

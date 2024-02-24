@@ -136,4 +136,14 @@ public class EntityDefinition {
     public Field getPrimaryKeyField() {
         return primaryKeyField;
     }
+
+    public boolean hasAnyOfFieldNamesDefined(List<String> fieldNames) {
+        for(String aFieldName : fieldNames){
+            if(hasFieldNameDefined(aFieldName)){
+                return true;
+            }
+        }
+        return false;
+    }
+
 }

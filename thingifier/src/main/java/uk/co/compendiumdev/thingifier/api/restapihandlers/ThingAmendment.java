@@ -25,7 +25,8 @@ public class ThingAmendment {
         Map<String, String> args = bodyargs.getStringMap();
 
         if(thingifier.apiConfig().willApiEnforceDeclaredTypesInInput()) {
-            ValidationReport validatedTypes = bodyargs.validateAgainstType(instance.getEntity());
+            List<String> doNotValidateFields = instance.getEntity().getFieldNamesOfType(FieldType.AUTO_INCREMENT, FieldType.AUTO_GUID);
+            ValidationReport validatedTypes = bodyargs.validateAgainstTypeIgnoring(instance.getEntity(), doNotValidateFields);
             if(!validatedTypes.isValid()){
                 return ApiResponse.error(400, validatedTypes.getCombinedErrorMessages());
             }

@@ -24,6 +24,9 @@ public class XmlRequestResponseTest {
     EntityInstanceCollection project;
 
 
+    // todo: Too complicated any test that uses the TodoManagerModel in thingifier needs to be simplified
+    // todo: move this to a case study test
+
     @BeforeEach
     public void createDefinitions() {
 
@@ -165,7 +168,7 @@ public class XmlRequestResponseTest {
     @Test
     public void canPutAndCreateAnItemWithXmlAndReceiveJson(){
 
-        HttpApiRequest request = new HttpApiRequest("todos/"+UUID.randomUUID().toString());
+        HttpApiRequest request = new HttpApiRequest("todos");
         request.getHeaders().putAll(HeadersSupport.acceptJson());
         request.getHeaders().putAll(HeadersSupport.containsXml());
 
@@ -173,7 +176,7 @@ public class XmlRequestResponseTest {
 
         Assertions.assertEquals(0, todo.countInstances());
 
-        final HttpApiResponse response = new ThingifierHttpApi(todoManager).put(request);
+        final HttpApiResponse response = new ThingifierHttpApi(todoManager).post(request);
 
         System.out.println(response.getBody());
 

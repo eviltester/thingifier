@@ -24,6 +24,8 @@ public class JsonRequestResponseTest {
     EntityInstanceCollection project;
 
 
+    // todo: Too complicated any test that uses the TodoManagerModel in thingifier needs to be simplified
+    // todo: move this to a case study test
     @BeforeEach
     public void createDefinitions() {
 
@@ -209,9 +211,9 @@ public class JsonRequestResponseTest {
      */
 
     @Test
-    public void canPutAndCreateAnItemWithJsonAndReceiveXml() {
+    public void canPostAndCreateAnItemWithJsonAndReceiveXml() {
 
-        HttpApiRequest request = new HttpApiRequest("todos/" + UUID.randomUUID().toString());
+        HttpApiRequest request = new HttpApiRequest("todos");
         request.getHeaders().putAll(HeadersSupport.acceptXml());
         request.getHeaders().putAll(HeadersSupport.containsJson());
 
@@ -220,7 +222,7 @@ public class JsonRequestResponseTest {
 
         Assertions.assertEquals(0, todo.countInstances());
 
-        final HttpApiResponse response = new ThingifierHttpApi(todoManager).put(request);
+        final HttpApiResponse response = new ThingifierHttpApi(todoManager).post(request);
 
         System.out.println(response.getBody());
 

@@ -118,24 +118,20 @@ public class TodosCrudTest {
     @Test
     public void canCreateAndAmendSequence(){
 
-        String specificId = "100";
-
-        // CREATE WITH PUT
+        // CREATE WITH POST
 
         final HashMap<String, String> givenBody = new HashMap<String, String>();
         givenBody.put("title", "a specific todo Title for put");
 
         JsonPath body = given().body(givenBody).
-                when().put("/todos/" + specificId).
+                when().post("/todos").
                 then().
                 statusCode(201).
                 contentType(ContentType.JSON).
-                header("Location", "todos/" + specificId).
-                header("X-Thing-Instance-Primary-Key", specificId).
                 and().extract().body().jsonPath();
 
         Assertions.assertEquals("false", body.get("doneStatus"));
-        Assertions.assertEquals(specificId, body.get("id"));
+        String specificId = body.get("id");
         Assertions.assertEquals("", body.get("description"));
         Assertions.assertEquals("a specific todo Title for put", body.get("title"));
 
@@ -215,7 +211,7 @@ public class TodosCrudTest {
                 contentType(ContentType.JSON).
                 and().extract().response();
 
-        Assertions.assertEquals("Could not find an instance with todos/100",
+        Assertions.assertEquals("Could not find an instance with todos/" + specificId,
                 response.getBody().jsonPath().get("errorMessages[0]"));
     }
 

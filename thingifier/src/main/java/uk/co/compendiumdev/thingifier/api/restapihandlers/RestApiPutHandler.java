@@ -1,12 +1,17 @@
 package uk.co.compendiumdev.thingifier.api.restapihandlers;
 
 import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.NamedValue;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.api.restapihandlers.commonerrorresponse.NoSuchEntity;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+
+import java.util.List;
 
 public class RestApiPutHandler {
     final Thingifier thingifier;
@@ -50,7 +55,38 @@ public class RestApiPutHandler {
         EntityInstance instance = thing.findInstanceByPrimaryKey(instanceGuid);
 
         if (instance == null) {
-            // it does not exist, but we have a GUID - create it
+
+            // cannot create on put when AUTO fields are present
+            // if the primary key is an AUTO i.e. AUTO_GUID or AUTO_INCREMENT then we should not be able to create it
+            // in fact if there are any fields at all which are AUTO then we should not be able to create it with PUT
+
+            List<Field> forbiddenPutCreationFields = thing.definition().getFieldsOfType(FieldType.AUTO_INCREMENT, FieldType.AUTO_GUID);
+            if(forbiddenPutCreationFields.size()>0){
+
+                String names = "";
+                for(Field field : forbiddenPutCreationFields){
+                    if(!names.isEmpty()){
+                        names = names + ", ";
+                    }
+                    names = names + field.getName();
+                }
+                return ApiResponse.error(400, String.format("Cannot create %s with PUT due to Auto fields %s", thing.definition().getName(), names));
+            }
+
+
+            // it does not exist, but we have a primary key - create it
+            // any field in the body for the primary key must match the primarykey field
+            List<NamedValue> fieldValues = FieldValues.fromListMapEntryStringString(args.getFlattenedStringMap());
+            for( NamedValue namedValue : fieldValues){
+                if(namedValue.name.equals(thing.definition().getPrimaryKeyField().getName())){
+                    if(!namedValue.value.equals(instanceGuid)){
+                        // primary key does not match the value in the message
+                        return ApiResponse.error(400, String.format("Cannot create %s with PUT as key does not match body value %s != %s", thing.definition().getName(), instanceGuid, namedValue.value));
+                    }
+                }
+            }
+
+
             // if we were given an ID then this will fail because
             // ID will not match GUID formatting
             return new ThingCreation(thingifier).withPrimaryKey(instanceGuid, args, thing, instanceDatabaseName);
