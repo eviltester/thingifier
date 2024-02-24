@@ -139,7 +139,7 @@ public class BasicTodoManagerTest {
 
         EntityInstance tidy = new EntityInstance(todos.definition());
         tidy.overrideValue("guid", guid);
-        tidy.addAutoIncrementIdsToInstance();
+
         tidy.setValue("title", "Delete this todo").
         setValue("description", "I need to be deleted");
 

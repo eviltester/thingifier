@@ -29,8 +29,6 @@ public class ThingInstanceCreationTest {
 
         EntityInstance session;
         session = new EntityInstance(entityTestSession);
-        session.addAutoGUIDstoInstance();
-        session.addAutoIncrementIdsToInstance();
 
         Assertions.assertEquals(4+1, session.getFieldNames().size()); // +1 for guid
 
@@ -66,7 +64,6 @@ public class ThingInstanceCreationTest {
         // note potential bug this is risky if the GUID is later created
         EntityInstance instance = new EntityInstance(entityTestSession);
         instance.overrideValue("guid", "1234-1234-1324-1234");
-        instance.addAutoIncrementIdsToInstance();
 
         Assertions.assertEquals("1234-1234-1324-1234", instance.getPrimaryKeyValue());
     }

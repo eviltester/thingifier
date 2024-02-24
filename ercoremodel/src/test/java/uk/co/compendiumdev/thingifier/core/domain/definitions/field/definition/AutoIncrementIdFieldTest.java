@@ -17,25 +17,6 @@ class AutoIncrementIdFieldTest {
         Assertions.assertEquals(1, field.getDefaultValue().asInteger());
     }
 
-    @Test
-    void idFieldNextValueStartsAt_1(){
-
-        final Field field = Field.is("id", FieldType.AUTO_INCREMENT);
-
-        String value = field.getNextIdValue();
-        Assertions.assertEquals("1", value);
-    }
-
-    @Test
-    void idAdjustedInFieldWhenHighValueEnsured(){
-
-        final Field field = Field.is("id", FieldType.AUTO_INCREMENT);
-
-        field.ensureNextIdAbove("10");
-
-        Assertions.assertEquals("11", field.getNextIdValue());
-        Assertions.assertEquals("12", field.getNextIdValue());
-    }
 
     @Test
     void normalValidateAgainstTypeForIdDoesNotAllowSetting(){

@@ -2,6 +2,8 @@ package uk.co.compendiumdev.thingifier.core.domain.instances;
 
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.NamedValue;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -13,13 +15,34 @@ final public class EntityInstanceCollection {
     private Map<String, EntityInstance> instances = new ConcurrentHashMap<>();
 
     // TODO: id's should be auto incremented at an instance collection level, not on the field definitions
+    private Map<String, AutoIncrement> counters = new ConcurrentHashMap<>();
 
     public EntityInstanceCollection(EntityDefinition thingDefinition) {
         this.definition = thingDefinition;
+        ensureCountersInitialized();
+    }
+
+    private void ensureCountersInitialized() {
+        for(Field fieldDefn : definition.getFieldsOfType(FieldType.AUTO_GUID, FieldType.AUTO_INCREMENT)){
+            if(fieldDefn.getType()==FieldType.AUTO_INCREMENT){
+                createCounterFor(fieldDefn);
+            }
+        }
+    }
+
+    private AutoIncrement createCounterFor(Field fieldDefn) {
+        if(!counters.containsKey(fieldDefn.getName())){
+            AutoIncrement auto = new AutoIncrement(fieldDefn.getName(), fieldDefn.getDefaultValue().asInteger());
+            counters.put(fieldDefn.getName(), auto);
+            return auto;
+        }else{
+            return counters.get(fieldDefn.getName());
+        }
     }
 
     public EntityInstanceCollection(final EntityDefinition entity, final List<EntityInstance> instances) {
        this.definition=entity;
+       ensureCountersInitialized();
        addInstances(instances);
     }
 
@@ -54,6 +77,26 @@ final public class EntityInstanceCollection {
             ));
         }
 
+        // if there are any AUTO_GUIDs or AUTO-INCREMENTs not set in the instance, then set them now
+        for(Field fieldDefn : definition.getFieldsOfType(FieldType.AUTO_GUID, FieldType.AUTO_INCREMENT)){
+            if(!instance.hasInstantiatedFieldNamed(fieldDefn.getName())){
+                // set it here using the counter for the field
+                if(fieldDefn.getType()==FieldType.AUTO_GUID){
+                    instance.setValue(fieldDefn.getName(), UUID.randomUUID().toString());
+                }
+                if(fieldDefn.getType()==FieldType.AUTO_INCREMENT){
+                    AutoIncrement counter = counters.get(fieldDefn.getName());
+                    if(counter==null){
+                        counter = createCounterFor(fieldDefn);
+                    }
+                    instance.overrideValue(fieldDefn.getName(),String.valueOf(counter.getCurrentValue()));
+                    counter.update();
+                }
+            }
+        }
+
+        // todo: should we auto increment auto increments to above the value?
+
         if(definition.hasPrimaryKeyField()){
             // check value of primary key exists and is unique
             Field primaryField = definition.getPrimaryKeyField();
@@ -82,8 +125,6 @@ final public class EntityInstanceCollection {
     // TODO: this looks like it was added to support testing, consider removing and adding to a test helper
     public EntityInstance createManagedInstance() {
         EntityInstance instance = new EntityInstance(definition);
-        instance.addAutoGUIDstoInstance();
-        instance.addAutoIncrementIdsToInstance();
         addInstance(instance);
         return instance;
     }
@@ -187,5 +228,33 @@ final public class EntityInstanceCollection {
         }
 
         return null;
+    }
+
+    public Map<String, AutoIncrement> getCounters() {
+        ensureCountersInitialized();
+        return counters;
+    }
+
+    @Deprecated // todo: not sure this should exist - think it through, added for backwards compatibility when moving to AutoIncrement
+    public void setNextIdCountersToAccomodate(List<NamedValue> fieldValues) {
+    /*
+        given a list of field values,
+        if any of those match an id field
+        then set our 'next id' for that field to above
+        the value provided
+     */
+        ensureCountersInitialized();
+        // todo: still have to handle nested objects - currently assume these are not ids, but they might be
+        for(NamedValue fieldNameValue : fieldValues){
+            final Field field = definition.getField(fieldNameValue.getName());
+            if(field!=null && field.getType()== FieldType.AUTO_INCREMENT) {
+                AutoIncrement auto = counters.get(field.getName());
+                if(auto==null){
+                    auto = createCounterFor(field);
+                }
+                auto.incrementToNextAbove(Integer.parseInt(fieldNameValue.value));
+            }
+        }
+
     }
 }

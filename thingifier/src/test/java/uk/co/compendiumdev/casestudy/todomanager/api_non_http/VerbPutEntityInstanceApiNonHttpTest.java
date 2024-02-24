@@ -236,7 +236,7 @@ public class VerbPutEntityInstanceApiNonHttpTest {
         EntityInstance newProject = project.findInstanceByFieldNameAndValue("guid", guid);
         Assertions.assertEquals("12", newProject.getFieldValue("id").asString());
 
-        Assertions.assertEquals("13", anIdField.getNextIdValue());
+        Assertions.assertEquals(13, project.getCounters().get("id").getCurrentValue());
     }
 
 

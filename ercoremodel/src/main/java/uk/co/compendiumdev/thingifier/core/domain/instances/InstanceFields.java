@@ -19,18 +19,29 @@ public class InstanceFields {
 
     private final DefinedFields objectDefinition;
     private Map<String, FieldValue> values = new HashMap<String, FieldValue>();
+    private AutoIncrement defaultAuto;
 
     public InstanceFields(final DefinedFields objectDefinition) {
         this.objectDefinition = objectDefinition;
+        // todo: there should be no auto increment here
+        defaultAuto = new AutoIncrement("default", 1);
     }
 
     // TODO: this should be using a set of ID Counters, not the field definition - id counts should not be on field definition
+    @Deprecated
     public InstanceFields addAutoIncrementIdsToInstance() {
+        return addAutoIncrementIdsToInstance(defaultAuto);
+    }
+
+    @Deprecated
+    public InstanceFields addAutoIncrementIdsToInstance(AutoIncrement anAuto) {
+
         List<Field>idfields = objectDefinition.getFieldsOfType(FieldType.AUTO_INCREMENT);
         for(Field aField : idfields){
             if(aField.getType()==FieldType.AUTO_INCREMENT){
                 if(!values.containsKey(aField.getName().toLowerCase())) {
-                    addValue(FieldValue.is(aField, aField.getNextIdValue()));
+                    addValue(FieldValue.is(aField, String.valueOf(anAuto.getCurrentValue())));
+                    anAuto.update();
                 }
             }
         }
@@ -205,7 +216,7 @@ public class InstanceFields {
             if(field.getType()==FieldType.OBJECT){
                 final FieldValue objectValue = FieldValue.is(field,
                         new InstanceFields(field.getObjectDefinition()).
-                                addAutoIncrementIdsToInstance());
+                                addAutoIncrementIdsToInstance(defaultAuto));
                 addValue(objectValue);
                 return objectValue;
             }

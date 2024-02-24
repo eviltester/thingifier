@@ -36,7 +36,7 @@ public class ThingCreation {
         // todo: separate validation for creation of 'cannot' create with ID, or cannot create with GUID
         EntityInstance instance = new EntityInstance(thing.definition());
         instance.addAutoGUIDstoInstance();
-        instance.addAutoIncrementIdsToInstance();
+        instance.addAutoIncrementIdsToInstance(thing.getCounters());
         return addNewThingWithFields(bodyargs, instance, thing, database);
     }
 
@@ -59,7 +59,7 @@ public class ThingCreation {
         instance.overrideValue(thing.definition().getPrimaryKeyField().getName(), primaryKey);
 
         // TODO: should we really do this for a PUT when everything needs to exist, suspect this is a bug
-        instance.addAutoIncrementIdsToInstance();
+        instance.addAutoIncrementIdsToInstance(thing.getCounters());
 
         validated = new BodyRelationshipValidator(thingifier).validate(bodyargs, thing, database);
 
@@ -75,7 +75,8 @@ public class ThingCreation {
                             fromListMapEntryStringString(
                                     bodyargs.getFlattenedStringMap());
 
-        thing.definition().setNextIdsToAccomodate(fieldValues);
+
+        thing.setNextIdCountersToAccomodate(fieldValues);
 
         return insertNewThingWithFields(bodyargs, instance, thing, database);
     }

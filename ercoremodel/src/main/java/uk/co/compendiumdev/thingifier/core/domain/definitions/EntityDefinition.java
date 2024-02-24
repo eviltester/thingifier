@@ -115,22 +115,7 @@ public class EntityDefinition {
         return new InstanceFields(fields);
     }
 
-    /*
-        given a list of field values,
-        if any of those match an id field
-        then set our 'next id' for that field to above
-        the value provided
-     */
-    public void setNextIdsToAccomodate(final List<NamedValue> fieldValues) {
-        // todo: still have to handle nested objects - currently assume these are not ids, but they might be
-        for(NamedValue fieldNameValue : fieldValues){
-            final Field field = fields.getField(fieldNameValue.getName());
-            if(field!=null && field.getType()== FieldType.AUTO_INCREMENT) {
-                field.ensureNextIdAbove(fieldNameValue.asString());
-            }
-        }
 
-    }
 
     public int getMaxInstanceLimit() {
         return maxInstanceCount;

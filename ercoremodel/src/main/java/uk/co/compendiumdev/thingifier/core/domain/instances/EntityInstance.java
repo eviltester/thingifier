@@ -36,11 +36,16 @@ public class EntityInstance {
         return this;
     }
 
-    //TODO: create IDCounter which is stored at a database level and passed in
-    @Deprecated // this would need to be passed a list of ID Counters because it needs to be controlled at a database level, not a definition level
-    public EntityInstance addAutoIncrementIdsToInstance() {
-        instanceFields.addAutoIncrementIdsToInstance();
-        return this;
+
+    public void addAutoIncrementIdsToInstance(Map<String,AutoIncrement> autos) {
+
+        for(Field autoIncrementedField : entityDefinition.getFieldsOfType(FieldType.AUTO_INCREMENT)){
+            AutoIncrement auto = autos.get(autoIncrementedField.getName());
+            if(!instanceFields.hasAssignedValue(autoIncrementedField.getName())){
+                instanceFields.putValue(autoIncrementedField.getName(), String.valueOf(auto.getCurrentValue()));
+                auto.update();
+            }
+        }
     }
 
     public String toString() {
@@ -182,4 +187,6 @@ public class EntityInstance {
     public boolean hasFieldNamed(String fieldName) {
         return entityDefinition.hasFieldNameDefined(fieldName);
     }
+
+
 }

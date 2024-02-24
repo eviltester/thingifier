@@ -158,33 +158,5 @@ class ThingDefinitionTest {
     }
 
 
-    @Test
-    void canIncreaseNextIds() {
-        EntityDefinition eDefn;
-        eDefn = new EntityDefinition("Requirement", "Requirements");
-
-        eDefn.addFields(Field.is("anId", FieldType.AUTO_INCREMENT));
-        eDefn.addFields(Field.is("anotherId", FieldType.AUTO_INCREMENT));
-
-        List<NamedValue> nextIds = new ArrayList<>();
-        nextIds.add(new NamedValue("anId", "46"));
-        nextIds.add(new NamedValue("anotherId", "71"));
-
-        eDefn.setNextIdsToAccomodate(nextIds);
-        Assertions.assertEquals("47",
-                eDefn.getField("anId").getNextIdValue());
-        Assertions.assertEquals("72",
-                eDefn.getField("anotherId").getNextIdValue());
-
-        final InstanceFields instance1 = eDefn.instantiateFields();
-        instance1.addAutoIncrementIdsToInstance();
-
-        Assertions.assertEquals(48,
-                instance1.getFieldValue("anId").asInteger());
-        Assertions.assertEquals(73,
-                instance1.getFieldValue("anotherId").asInteger());
-
-
-    }
 
 }

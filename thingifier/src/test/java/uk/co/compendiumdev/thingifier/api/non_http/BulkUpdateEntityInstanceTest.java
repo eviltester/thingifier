@@ -8,10 +8,13 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.NamedValue;
+import uk.co.compendiumdev.thingifier.core.domain.instances.AutoIncrement;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class BulkUpdateEntityInstanceTest {
 
@@ -50,7 +53,9 @@ public class BulkUpdateEntityInstanceTest {
 
         final EntityInstance session = new EntityInstance(entityTestSession);
         session.addAutoGUIDstoInstance();
-        session.addAutoIncrementIdsToInstance();
+        Map<String, AutoIncrement> autos = new HashMap<>();
+        autos.put("anid", new AutoIncrement("anid", 1));
+        session.addAutoIncrementIdsToInstance(autos);
 
         List<NamedValue> someFields = new ArrayList<>();
         someFields.add(new NamedValue("anid",  "12"));

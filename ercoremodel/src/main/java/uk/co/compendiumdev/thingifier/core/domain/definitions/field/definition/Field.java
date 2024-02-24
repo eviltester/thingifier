@@ -34,9 +34,6 @@ public final class Field {
     private float minimumFloatValue;
     private DefinedFields objectDefinition;
 
-
-    @Deprecated // this should not exist on a definition, it is an instance responsibility
-    private int nextId; // only used for id fields
     private int truncatedStringLength;
 
     // todo: rather than all these fields, consider moving to more validation rules
@@ -60,7 +57,6 @@ public final class Field {
         maximumFloatValue = Float.MAX_VALUE;
         minimumFloatValue = Float.MIN_VALUE;
         allowedNullable=false;
-        nextId=1;
     }
 
     public static Field is(String name, FieldType type) {
@@ -71,26 +67,6 @@ public final class Field {
         return name;
     }
 
-    // TODO: these nextIDValuea nd NextIDAbove should be on a FieldCounter not on a Field because we have multiple instance collections
-    @Deprecated // this should not be on a field definition
-    public String getNextIdValue() {
-        int id = nextId;
-        nextId++;
-        return String.valueOf(id);
-    }
-
-    // an external way to set the next id
-    @Deprecated // this should not be on a field definition
-    public void ensureNextIdAbove(final String value) {
-        try{
-            final int desiredId = Integer.parseInt(value);
-            if(nextId<=desiredId){
-                nextId=desiredId+1;
-            }
-        }catch(Exception e){
-            // ignore conversion errors
-        }
-    }
 
     public Field withDefaultValue(String aDefaultValue) {
         this.defaultValue = aDefaultValue;
