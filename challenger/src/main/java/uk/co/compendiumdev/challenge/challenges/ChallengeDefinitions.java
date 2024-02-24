@@ -117,9 +117,9 @@ public class ChallengeDefinitions {
         aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "zKbytTelP84");
         challengeOrder++;
 
-        // CREATE
+        // CREATE POST
         ChallengeSection postCreateChallenges = new ChallengeSection("Creation Challenges with POST",
-                "A POST request can be used to create and update data, these challenges are to 'create' data. As a Hint, if you are not sure what the message body should be, try copying in the response from the assocated GET request, and amending it.");
+                "A POST request can be used to create and update data, these challenges are to 'create' data. As a Hint, if you are not sure what the message body should be, try copying in the response from the associated GET request, and amending it.");
         sections.add(postCreateChallenges);
 
         aChallenge = createChallenge(CHALLENGE.POST_TODOS, renderChallengeNumber(challengeOrder), "POST /todos (201)",
@@ -193,6 +193,19 @@ public class ChallengeDefinitions {
         // TODO: create solution for unrecognised field names
         challengeOrder++;
 
+
+        // CREATE wtih PUT
+        ChallengeSection putCreateChallenges = new ChallengeSection("Creation Challenges with PUT",
+                "A PUT request can often used to create and update data. The todo application we are using has automatically generated ids, so you cannot use PUT to create. As a Hint, if you are not sure what the message body should be, try copying in the response from the associated GET request, and amending it.");
+        sections.add(putCreateChallenges);
+
+        aChallenge = createChallenge(CHALLENGE.PUT_TODOS_400, renderChallengeNumber(challengeOrder), "PUT /todos/{id} (400)",
+                "Issue a PUT request to unsuccessfully create a todo");
+        putCreateChallenges.addChallenge(aChallenge);
+        // todo: create solution for PUT todos 400 challenge
+        //aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/post-todos-201");
+        //aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "T0LFHwavsNA");
+        challengeOrder++;
 
 
         // UPDATE

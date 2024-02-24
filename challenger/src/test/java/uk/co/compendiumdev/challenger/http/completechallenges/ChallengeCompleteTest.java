@@ -215,6 +215,24 @@ public abstract class ChallengeCompleteTest{
     }
 
     @Test
+    public void canPutTodos400FailCreatePass() {
+
+        Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
+
+        Map<String, String> headers = new HashMap<>();
+        headers.putAll(x_challenger_header);
+        headers.put("Content-Type", "application/json");
+
+        // try to create a todo but fail because the AUTO fields mean we can't control the id
+        final HttpResponseDetails response =
+                http.send("/todos/200", "PUT", headers,
+                        "{\"id\":200, \"title\":\"mytodo\",\"description\":\"a todo\",\"doneStatus\":false}");
+
+        Assertions.assertEquals(400, response.statusCode);
+        Assertions.assertTrue(challenger.statusOfChallenge(CHALLENGE.PUT_TODOS_400));
+    }
+
+    @Test
     public void canPostTodosFailValidationPass() {
 
         Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
