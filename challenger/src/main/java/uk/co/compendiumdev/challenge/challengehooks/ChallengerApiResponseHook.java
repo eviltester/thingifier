@@ -142,6 +142,16 @@ public class ChallengerApiResponseHook implements HttpApiResponseHook {
         }
 
         if(request.getVerb() == HttpApiRequest.VERB.POST &&
+                request.getPath().matches("todos/.*") &&
+                response.getStatusCode()==404){
+            for(String errorMessage : response.apiResponse().getErrorMessages()){
+                if(errorMessage.startsWith("No such todo entity instance with id ==")){
+                    challengers.pass(challenger, CHALLENGE.POST_TODOS_404);
+                }
+            }
+        }
+
+        if(request.getVerb() == HttpApiRequest.VERB.POST &&
                 request.getPath().matches("todos") &&
                 response.getStatusCode()==201){
 

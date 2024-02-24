@@ -221,6 +221,15 @@ public class ChallengeDefinitions {
         aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "feXdRpZ_tgs");
         challengeOrder++;
 
+        aChallenge = createChallenge(CHALLENGE.POST_TODOS_404, renderChallengeNumber(challengeOrder), "POST /todos/{id} (404)",
+                "Issue a POST request for a todo which does not exist. Expect to receive a 404 response.");
+        postUpdateChallenges.addChallenge(aChallenge);
+        aChallenge.addHint("Make sure you don't use {id} in the url, replace that with the id of a todo that does not exist e.g. /todos/100");
+        // todo add solution and hints for POST 404
+        //aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/post-todos-id-200");
+        //aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "feXdRpZ_tgs");
+        challengeOrder++;
+
         // DELETE
         ChallengeSection deleteChallenges = new ChallengeSection("DELETE Challenges",
                 "Use a DELETE request to delete an entity. Since this is an extreme request, normally you have to be logged in or authenticated, but we wanted to make life easier for you so we cover authentication later. Anyone can delete To Do items without authentication in this system.");

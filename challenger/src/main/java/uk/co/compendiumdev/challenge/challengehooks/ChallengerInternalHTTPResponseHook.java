@@ -111,7 +111,7 @@ public class ChallengerInternalHTTPResponseHook implements InternalHttpResponseH
             challengers.pass(challenger, CHALLENGE.OPTIONS_TODOS);
         }
 
-        if(request.getVerb() == PUT && request.getPath().startsWith("todos") && response.getStatusCode() == 400){
+        if(request.getVerb() == PUT && request.getPath().matches("todos/.*") && response.getStatusCode() == 400){
             if(response.getBody().contains("Cannot create todo with PUT due to Auto fields id")){
                 challengers.pass(challenger,CHALLENGE.PUT_TODOS_400);
             }
