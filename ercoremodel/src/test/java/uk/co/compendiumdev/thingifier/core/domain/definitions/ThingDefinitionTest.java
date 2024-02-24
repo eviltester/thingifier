@@ -177,7 +177,7 @@ class ThingDefinitionTest {
                 eDefn.getField("anotherId").getNextIdValue());
 
         final InstanceFields instance1 = eDefn.instantiateFields();
-        instance1.addIdsToInstance();
+        instance1.addAutoIncrementIdsToInstance();
 
         Assertions.assertEquals(48,
                 instance1.getFieldValue("anId").asInteger());

@@ -101,7 +101,7 @@ public class VerbGetEntityInstanceApiNonHttpTest {
 
         for (EntityInstance item : apiResponse.getReturnedInstanceCollection()) {
             guidSet.add(item.getPrimaryKeyValue());
-            Assertions.assertNotNull(todo.findInstanceByGUID(item.getPrimaryKeyValue()));
+            Assertions.assertNotNull(todo.findInstanceByPrimaryKey(item.getPrimaryKeyValue()));
         }
 
         Assertions.assertEquals(guidSet.size(), todo.countInstances());

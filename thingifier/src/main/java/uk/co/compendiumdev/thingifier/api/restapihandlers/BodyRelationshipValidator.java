@@ -87,7 +87,7 @@ public class BodyRelationshipValidator {
             final List<RelationshipVectorDefinition> relationshipsNamed = thingDefinition.related().getRelationships(relationShipName);
             for(RelationshipVectorDefinition vector : relationshipsNamed){
                 final EntityInstanceCollection thingToRelationship = thingifier.getThingInstancesNamed(vector.getTo().getName(), database);
-                thingToRelateTo = thingToRelationship.findInstanceByGUIDorID(guidValue);
+                thingToRelateTo = thingToRelationship.findInstanceByPrimaryKey(guidValue);
                 if(thingToRelateTo!=null){
                     break;
                 }
@@ -147,7 +147,7 @@ public class BodyRelationshipValidator {
                 getInstancesForSingularOrPluralNamedEntity(relationshipToPart, database);
 
         if(things!=null){
-            thingToRelateTo = things.findInstanceByGUID(uniqueId);
+            thingToRelateTo = things.findInstanceByPrimaryKey(uniqueId);
         }
 
         // haven't found it yet

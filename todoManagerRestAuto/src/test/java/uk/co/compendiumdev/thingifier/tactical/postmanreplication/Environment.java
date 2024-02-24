@@ -42,12 +42,9 @@ public class Environment {
             final Thingifier thingifier = new TodoManagerThingifier().get();
             thingifier.apiConfig().adminConfig().enableAdminDataClear();
             thingifier.apiConfig().adminConfig().enableAdminSearch();
-            thingifier.apiConfig().setResponsesToShowGuids(true);
-            thingifier.apiConfig().setUrlToShowIdsInUrlsIfAvailable(false);
             thingifier.apiConfig().setUrlToShowSingleInstancesAsPlural(true);
-            thingifier.apiConfig().setResponsesToShowIdsIfAvailable(false);
             thingifier.apiConfig().jsonOutput().setCompressRelationships(false);
-            thingifier.apiConfig().jsonOutput().setRelationshipsUseIdsIfAvailable(false);
+            thingifier.apiConfig().jsonOutput().setShowPrimaryKeyInResponse(true);
             thingifier.apiConfig().jsonOutput().setConvertFieldsToDefinedTypes(false);
 
             ThingifierApiDefn apiDefn = new ThingifierApiDefn().setThingifier(thingifier);
@@ -59,5 +56,27 @@ public class Environment {
 
         // TODO: incorporate browsermob proxy and allow configuration of all
         //  requests through a proxy file to output a HAR file of all requests for later review
+    }
+
+    public static void waitTillRunningStatus(final boolean running) {
+        // wait till running
+        int maxtries = 10;
+        while (Port.inUse("localhost", 4567) != running) {
+            maxtries--;
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                System.out.println("Interruption during running check " + e.getMessage());
+            }
+            if(maxtries<=0){
+                return;
+            }
+        }
+    }
+
+    public static void stop(){
+        Spark.stop();
+        Spark.awaitStop();
+        waitTillRunningStatus(false);
     }
 }

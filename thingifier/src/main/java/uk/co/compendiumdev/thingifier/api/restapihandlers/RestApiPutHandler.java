@@ -8,8 +8,6 @@ import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.api.restapihandlers.commonerrorresponse.NoSuchEntity;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
-import java.util.Map;
-
 public class RestApiPutHandler {
     final Thingifier thingifier;
 
@@ -49,13 +47,13 @@ public class RestApiPutHandler {
 
         String instanceGuid = urlParts[1];
 
-        EntityInstance instance = thing.findInstanceByGUIDorID(instanceGuid);
+        EntityInstance instance = thing.findInstanceByPrimaryKey(instanceGuid);
 
         if (instance == null) {
             // it does not exist, but we have a GUID - create it
             // if we were given an ID then this will fail because
             // ID will not match GUID formatting
-            return new ThingCreation(thingifier).withGuid(instanceGuid, args, thing, instanceDatabaseName);
+            return new ThingCreation(thingifier).withPrimaryKey(instanceGuid, args, thing, instanceDatabaseName);
         } else {
             // when amending existing thing with PUT it must be idempotent so
             // check that all fields are valid in the args

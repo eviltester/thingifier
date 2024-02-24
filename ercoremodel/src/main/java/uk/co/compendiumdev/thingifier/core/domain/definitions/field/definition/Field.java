@@ -46,7 +46,12 @@ public final class Field {
         this.name = name;
         this.type = type;
         validationRules = new ArrayList<>();
+
         fieldIsOptional = true;
+        if(type == FieldType.AUTO_INCREMENT || type == FieldType.AUTO_GUID){
+            fieldIsOptional = false;
+        }
+
         truncateStringIfTooLong=false;
         truncatedStringLength=-1;
         fieldExamples = new HashSet<>();

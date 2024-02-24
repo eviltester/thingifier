@@ -45,7 +45,7 @@ public class ThingifierApiConfig {
     private boolean willShowIdsInResponsesIfAvailable;
 
     // willShowGuidsInResponses e.g. if false then no GUIDs shown in responses at all
-    private boolean willShowGuidsInResponses;
+    private boolean willShowPrimaryKeyHeaderInResponses;
 
     private final AdminConfig adminConfig;
 
@@ -64,7 +64,7 @@ public class ThingifierApiConfig {
 
         // default to the most modern and 'up to date' config
         willShowSingleInstancesAsPlural=true;
-        willShowGuidsInResponses=true;  // custom headers
+        willShowPrimaryKeyHeaderInResponses =true;  // custom headers
         willShowIdsInResponsesIfAvailable = true; // relationship rendering
         willShowIdsInUrlsIfAvailable = true;  // location headers, api urls
         willEnforceDeclaredTypesInInput = true;
@@ -80,9 +80,8 @@ public class ThingifierApiConfig {
 
         // by default
         jsonOutputConfig = new JsonOutputConfig();
-        jsonOutputConfig.setShowGuidsInResponse(willShowGuidsInResponses);
+        jsonOutputConfig.setShowPrimaryKeyInResponse(willShowPrimaryKeyHeaderInResponses);
         jsonOutputConfig.setCompressRelationships(true);
-        jsonOutputConfig.setRelationshipsUseIdsIfAvailable(willShowIdsInResponsesIfAvailable);
 
         statusCodeConfig = new StatusCodeConfig();
 
@@ -91,7 +90,7 @@ public class ThingifierApiConfig {
 
     public void setFrom(final ThingifierApiConfig apiConfig) {
         willShowSingleInstancesAsPlural=apiConfig.willUrlShowInstancesAsPlural();
-        willShowGuidsInResponses=apiConfig.willResponsesShowGuids();
+        willShowPrimaryKeyHeaderInResponses =apiConfig.willResponsesShowPrimaryKeyHeader();
         willShowIdsInResponsesIfAvailable = apiConfig.willResponseShowIdsIfAvailable();
         willShowIdsInUrlsIfAvailable = apiConfig.willUrlsShowIdsIfAvailable();
         willEnforceDeclaredTypesInInput = apiConfig.willApiEnforceDeclaredTypesInInput();
@@ -114,27 +113,6 @@ public class ThingifierApiConfig {
         return jsonOutputConfig;
     }
 
-
-    public ThingifierApiConfig setResponsesToShowGuids(boolean allow){
-        willShowGuidsInResponses = allow;
-        if(!allow) {
-            jsonOutput().setRelationshipsUseIdsIfAvailable(true);
-            jsonOutput().setShowGuidsInResponse(false);
-        }
-        return this;
-    }
-
-    public ThingifierApiConfig setResponsesToShowIdsIfAvailable(boolean allow) {
-        willShowIdsInResponsesIfAvailable = allow;
-        jsonOutput().setRelationshipsUseIdsIfAvailable(allow);
-        return this;
-    }
-
-    public ThingifierApiConfig setUrlToShowIdsInUrlsIfAvailable(boolean allow) {
-        willShowIdsInUrlsIfAvailable = allow;
-        jsonOutput().setRelationshipsUseIdsIfAvailable(allow);
-        return this;
-    }
 
     public ThingifierApiConfig setUrlToShowSingleInstancesAsPlural(boolean yes){
         willShowSingleInstancesAsPlural = yes;
@@ -164,14 +142,20 @@ public class ThingifierApiConfig {
         willApiEnforceContentTypeHeaderForRequests=config;
         return this;
     }
+
+    public ThingifierApiConfig setApiToShowPrimaryKeyHeaderInResponse(boolean config) {
+        willShowPrimaryKeyHeaderInResponses=config;
+        return this;
+    }
+
     public boolean willUrlShowInstancesAsPlural() {
         return willShowSingleInstancesAsPlural;
     }
     public boolean willResponseShowIdsIfAvailable() {
         return willShowIdsInResponsesIfAvailable;
     }
-    public boolean willResponsesShowGuids() {
-        return willShowGuidsInResponses;
+    public boolean willResponsesShowPrimaryKeyHeader() {
+        return willShowPrimaryKeyHeaderInResponses;
     }
     public boolean willUrlsShowIdsIfAvailable() {
         return willShowIdsInUrlsIfAvailable;

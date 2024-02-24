@@ -1,6 +1,7 @@
 package uk.co.compendiumdev.thingifier.tactical.postmanreplication;
 
 import io.restassured.path.json.JsonPath;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -22,6 +23,11 @@ public class CanClearEnvironmentTest {
         final int newNumberOfTodos = clearedData.getList("todos").size();
 
         Assertions.assertEquals(0, newNumberOfTodos);
+    }
+
+    @AfterAll
+    public static void shutItDown(){
+        Environment.stop();
     }
 
 

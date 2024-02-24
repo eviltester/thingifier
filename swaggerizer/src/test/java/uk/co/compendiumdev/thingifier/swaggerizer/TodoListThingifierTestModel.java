@@ -54,48 +54,40 @@ public class TodoListThingifierTestModel {
                 "0",
                 "v0 prototype");
         ThingifierApiConfig v0 = profilev0.apiConfig();
-        v0.setUrlToShowIdsInUrlsIfAvailable(false);
-        v0.setResponsesToShowIdsIfAvailable(false);
         v0.setUrlToShowSingleInstancesAsPlural(false);
-        v0.setResponsesToShowGuids(true);
+        v0.setApiToShowPrimaryKeyHeaderInResponse(false);
         v0.jsonOutput().setConvertFieldsToDefinedTypes(false);
         v0.setApiToEnforceDeclaredTypesInInput(false);
 
         ThingifierApiConfigProfile profilev1 = todoList.apiConfigProfiles().create(
                                                 "1",
-                                            "v1 harder to use, based on guids");
+                                            "v1 single as plural");
 
         ThingifierApiConfig v1 = profilev1.apiConfig();
-        v1.setUrlToShowIdsInUrlsIfAvailable(false);
-        v1.setResponsesToShowIdsIfAvailable(false);
         v1.setUrlToShowSingleInstancesAsPlural(true);
-        v1.setResponsesToShowGuids(true);
+        v0.setApiToShowPrimaryKeyHeaderInResponse(false);
         v1.jsonOutput().setConvertFieldsToDefinedTypes(false);
         v1.setApiToEnforceDeclaredTypesInInput(false);
 
         ThingifierApiConfigProfile profilev2 = todoList.apiConfigProfiles().create(
                 "2",
-                "v2 still uses guids but prefers ids, improved output validation");
+                "v2 no id header, improved output validation");
 
         ThingifierApiConfig v2 = profilev2.apiConfig();
-        v2.setUrlToShowIdsInUrlsIfAvailable(true);
-        v2.setResponsesToShowIdsIfAvailable(true);
         v2.setUrlToShowSingleInstancesAsPlural(true);
-        v2.setResponsesToShowGuids(true);
+        v0.setApiToShowPrimaryKeyHeaderInResponse(false);
         v2.jsonOutput().setConvertFieldsToDefinedTypes(true);
         v2.setApiToEnforceDeclaredTypesInInput(false);
 
         ThingifierApiConfigProfile profilev3 = todoList.apiConfigProfiles().create(
                 "3",
-                "v3 use ids");
+                "v3 use ids in headers and validation");
 
         ThingifierApiConfig v3 = profilev3.apiConfig();
-        v3.setUrlToShowIdsInUrlsIfAvailable(true);
-        v3.setResponsesToShowIdsIfAvailable(true);
         v3.setUrlToShowSingleInstancesAsPlural(true);
-        v3.setResponsesToShowGuids(false);
+        v3.setApiToShowPrimaryKeyHeaderInResponse(true);
         v3.jsonOutput().setConvertFieldsToDefinedTypes(true);
-        v3.setApiToEnforceDeclaredTypesInInput(false);
+        v3.setApiToEnforceDeclaredTypesInInput(true);
         return todoList;
     }
 }

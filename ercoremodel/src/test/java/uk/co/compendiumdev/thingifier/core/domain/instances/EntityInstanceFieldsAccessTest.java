@@ -7,10 +7,11 @@ import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
 import java.util.Random;
 
-public class ThingInstanceFieldsAccessTest {
+public class EntityInstanceFieldsAccessTest {
 
     EntityDefinition entityTestSession;
 

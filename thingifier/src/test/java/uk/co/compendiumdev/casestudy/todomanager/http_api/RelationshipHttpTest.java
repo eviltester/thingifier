@@ -107,7 +107,7 @@ public class RelationshipHttpTest {
         Assertions.assertEquals(1, aproject.getRelationships().getConnectedItems("tasks").size());
         Assertions.assertEquals(1,todo.countInstances());
 
-        final EntityInstance inMemoryTodo = todo.findInstanceByGUID(response.getHeaders().get(ApiResponse.GUID_HEADER));
+        final EntityInstance inMemoryTodo = todo.findInstanceByPrimaryKey(response.getHeaders().get(ApiResponse.PRIMARY_KEY_HEADER));
         Assertions.assertTrue(response.getBody().contains(inMemoryTodo.getPrimaryKeyValue()),
                 response.getBody());
 
@@ -216,7 +216,7 @@ public class RelationshipHttpTest {
         Assertions.assertEquals(1, acategory.getRelationships().getConnectedItems("todos").size());
         Assertions.assertEquals(1,todo.countInstances());
 
-        final EntityInstance inMemoryTodo = todo.findInstanceByGUID(response.getHeaders().get(ApiResponse.GUID_HEADER));
+        final EntityInstance inMemoryTodo = todo.findInstanceByPrimaryKey(response.getHeaders().get(ApiResponse.PRIMARY_KEY_HEADER));
         Assertions.assertTrue(response.getBody().contains(inMemoryTodo.getPrimaryKeyValue()),
                 response.getBody());
 

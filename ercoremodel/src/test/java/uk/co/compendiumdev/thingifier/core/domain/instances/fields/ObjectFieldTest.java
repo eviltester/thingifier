@@ -1,15 +1,16 @@
-package uk.co.compendiumdev.thingifier.core.domain.instances;
+package uk.co.compendiumdev.thingifier.core.domain.instances.fields;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.validation.VRule;
 
-public class ThingInstanceObjectFieldTest {
+public class ObjectFieldTest {
 
     EntityDefinition defn;
     EntityInstance instance;

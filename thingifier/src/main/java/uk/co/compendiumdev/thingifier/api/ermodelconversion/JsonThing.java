@@ -66,9 +66,6 @@ public class JsonThing {
 
         for (String fieldName : fields.getDefinition().getFieldNames()) {
             Field theField = fields.getDefinition().getField(fieldName);
-            // if hiding guids then skip them
-            if(!apiConfig.willRenderGuidsInResponse() && theField.getType()== FieldType.AUTO_GUID)
-                continue;
 
             String fieldValue = "";
 
@@ -163,7 +160,6 @@ public class JsonThing {
 
         // config of output
         Boolean allowCompressedRelationships = apiConfig.willRenderRelationshipsAsCompressed();
-        Boolean useIdsInRelationshipRenderingIfAvailable = apiConfig.willRenderRelationshipsWithIdsIfAvailable(); // todo: allow configuring relationship rendering at an app or api level
 
         // "relationships" : [
         if(relationships.size()>0 && thingInstance.getRelationships().hasAnyRelationshipInstances()){
@@ -187,18 +183,11 @@ public class JsonThing {
                     for(EntityInstance item : relatedItems) {
                         final JsonObject itemGuidObject = new JsonObject();
 
-                        // todo: warning - we allow multiple guid fields - hardcoding name will not be future proof
-                        String fieldNameAsUniqueId = "guid";
+                        String fieldNameAsUniqueId = item.getEntity().getPrimaryKeyField().getName();
                         String valueOfUniqueId = item.getPrimaryKeyValue();
 
                         try {
-                            if (useIdsInRelationshipRenderingIfAvailable) {
-                                final List<Field> idFields = item.getEntity().getFieldsOfType(FieldType.AUTO_INCREMENT);
-                                if (!idFields.isEmpty()) {
-                                    fieldNameAsUniqueId = idFields.get(0).getName();
-                                    valueOfUniqueId = item.getFieldValue(fieldNameAsUniqueId).asString();
-                                }
-                            }
+                            // use primary key
                             itemGuidObject.addProperty(fieldNameAsUniqueId, valueOfUniqueId);
 
                             arrayOfGuids.add(itemGuidObject);

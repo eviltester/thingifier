@@ -26,9 +26,8 @@ public class EntityInstance {
         internalId = UUID.randomUUID();
     }
 
-    public EntityInstance addGUIDtoInstance(){
+    public EntityInstance addAutoGUIDstoInstance(){
         // allow GUIDs to be defined as being 'auto' in which case we will auto generate them
-        // a "guid" field is added to an entity definition by default, but we could add more
         List<Field> autoGuids = entityDefinition.getFieldsOfType(FieldType.AUTO_GUID);
         for(Field autoGuid : autoGuids){
             instanceFields.addValue(entityDefinition.getField(autoGuid.getName()).valueFor( UUID.randomUUID().toString()));
@@ -39,8 +38,8 @@ public class EntityInstance {
 
     //TODO: create IDCounter which is stored at a database level and passed in
     @Deprecated // this would need to be passed a list of ID Counters because it needs to be controlled at a database level, not a definition level
-    public EntityInstance addIdsToInstance() {
-        instanceFields.addIdsToInstance();
+    public EntityInstance addAutoIncrementIdsToInstance() {
+        instanceFields.addAutoIncrementIdsToInstance();
         return this;
     }
 
@@ -171,7 +170,14 @@ public class EntityInstance {
     }
 
 
+    public boolean hasInstantiatedFieldNamed(String fieldName) {
 
+        if(entityDefinition.hasFieldNameDefined(fieldName)) {
+            return instanceFields.hasAssignedValue(fieldName);
+        }
+
+        return false;
+    }
 
     public boolean hasFieldNamed(String fieldName) {
         return entityDefinition.hasFieldNameDefined(fieldName);

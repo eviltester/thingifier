@@ -25,7 +25,7 @@ public class InstanceFields {
     }
 
     // TODO: this should be using a set of ID Counters, not the field definition - id counts should not be on field definition
-    public InstanceFields addIdsToInstance() {
+    public InstanceFields addAutoIncrementIdsToInstance() {
         List<Field>idfields = objectDefinition.getFieldsOfType(FieldType.AUTO_INCREMENT);
         for(Field aField : idfields){
             if(aField.getType()==FieldType.AUTO_INCREMENT){
@@ -205,7 +205,7 @@ public class InstanceFields {
             if(field.getType()==FieldType.OBJECT){
                 final FieldValue objectValue = FieldValue.is(field,
                         new InstanceFields(field.getObjectDefinition()).
-                                addIdsToInstance());
+                                addAutoIncrementIdsToInstance());
                 addValue(objectValue);
                 return objectValue;
             }
@@ -277,4 +277,7 @@ public class InstanceFields {
         return errorMessages;
     }
 
+    public boolean hasAssignedValue(String fieldName) {
+        return values.containsKey(fieldName.toLowerCase());
+    }
 }

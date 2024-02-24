@@ -50,8 +50,8 @@ public class NestedObjectsApiTest {
     void canAmendConnie(){
 
         instance = new EntityInstance(defn);
-        instance.addGUIDtoInstance();
-        instance.addIdsToInstance();
+        instance.addAutoGUIDstoInstance();
+        instance.addAutoIncrementIdsToInstance();
         instance.setValue("person.firstname", "Connie");
         instance.setValue("person.surname", "Dobbs");
 

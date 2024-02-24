@@ -2,7 +2,6 @@ package uk.co.compendiumdev.thingifier.core.domain.instances;
 
 
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
@@ -20,15 +19,15 @@ public class ThingInstanceCardinalityCreationTest {
         entityDefn.addField(Field.is("Title", FieldType.STRING));
         EntityInstanceCollection instances = new EntityInstanceCollection(entityDefn, new ArrayList<>());
 
-        instances.addInstance(new EntityInstance(entityDefn).addIdsToInstance().
-                addGUIDtoInstance().setValue("Title", "test1"));
+        instances.addInstance(new EntityInstance(entityDefn).addAutoIncrementIdsToInstance().
+                addAutoGUIDstoInstance().setValue("Title", "test1"));
 
-        instances.addInstance(new EntityInstance(entityDefn).addIdsToInstance().
-                addGUIDtoInstance().setValue("Title", "test2"));
+        instances.addInstance(new EntityInstance(entityDefn).addAutoIncrementIdsToInstance().
+                addAutoGUIDstoInstance().setValue("Title", "test2"));
 
 
-        instances.addInstance(new EntityInstance(entityDefn).addIdsToInstance().
-                addGUIDtoInstance().setValue("Title", "test3"));
+        instances.addInstance(new EntityInstance(entityDefn).addAutoIncrementIdsToInstance().
+                addAutoGUIDstoInstance().setValue("Title", "test3"));
 
         Assertions.assertEquals(3, instances.countInstances());
     }
@@ -40,19 +39,19 @@ public class ThingInstanceCardinalityCreationTest {
         entityDefn.addField(Field.is("Title", FieldType.STRING));
         EntityInstanceCollection instances = new EntityInstanceCollection(entityDefn, new ArrayList<>());
 
-        instances.addInstance(new EntityInstance(entityDefn).addIdsToInstance().
-                addGUIDtoInstance().setValue("Title", "test1"));
+        instances.addInstance(new EntityInstance(entityDefn).addAutoIncrementIdsToInstance().
+                addAutoGUIDstoInstance().setValue("Title", "test1"));
 
-        instances.addInstance(new EntityInstance(entityDefn).addIdsToInstance().
-                addGUIDtoInstance().setValue("Title", "test2"));
+        instances.addInstance(new EntityInstance(entityDefn).addAutoIncrementIdsToInstance().
+                addAutoGUIDstoInstance().setValue("Title", "test2"));
 
 
-        instances.addInstance(new EntityInstance(entityDefn).addIdsToInstance().
-                addGUIDtoInstance().setValue("Title", "test3"));
+        instances.addInstance(new EntityInstance(entityDefn).addAutoIncrementIdsToInstance().
+                addAutoGUIDstoInstance().setValue("Title", "test3"));
 
         Exception exception = Assertions.assertThrows(RuntimeException.class, () -> {
-                    instances.addInstance(new EntityInstance(entityDefn).addIdsToInstance().
-                            addGUIDtoInstance().setValue("Title", "test4"));
+                    instances.addInstance(new EntityInstance(entityDefn).addAutoIncrementIdsToInstance().
+                            addAutoGUIDstoInstance().setValue("Title", "test4"));
                 });
 
         Assertions.assertEquals("ERROR: Cannot add instance, maximum limit of 3 reached", exception.getMessage());
@@ -66,12 +65,12 @@ public class ThingInstanceCardinalityCreationTest {
         entityDefn.addField(Field.is("Title", FieldType.STRING));
         EntityInstanceCollection instances = new EntityInstanceCollection(entityDefn, new ArrayList<>());
 
-        instances.addInstance(new EntityInstance(entityDefn).addIdsToInstance().
-                addGUIDtoInstance().setValue("Title", "test1"));
+        instances.addInstance(new EntityInstance(entityDefn).addAutoIncrementIdsToInstance().
+                addAutoGUIDstoInstance().setValue("Title", "test1"));
 
         Exception exception = Assertions.assertThrows(RuntimeException.class, () -> {
-            instances.addInstance(new EntityInstance(entityDefn).addIdsToInstance().
-                    addGUIDtoInstance().setValue("Title", "test2"));
+            instances.addInstance(new EntityInstance(entityDefn).addAutoIncrementIdsToInstance().
+                    addAutoGUIDstoInstance().setValue("Title", "test2"));
         });
 
         Assertions.assertEquals("ERROR: Cannot add instance, maximum limit of 1 reached", exception.getMessage());
@@ -85,17 +84,17 @@ public class ThingInstanceCardinalityCreationTest {
         entityDefn.addField(Field.is("Title", FieldType.STRING));
         EntityInstanceCollection instances = new EntityInstanceCollection(entityDefn, new ArrayList<>());
 
-        instances.addInstance(new EntityInstance(entityDefn).addIdsToInstance().
-                addGUIDtoInstance().setValue("Title", "test1"));
+        instances.addInstance(new EntityInstance(entityDefn).addAutoIncrementIdsToInstance().
+                addAutoGUIDstoInstance().setValue("Title", "test1"));
 
         List<EntityInstance> toAdd = new ArrayList<>();
 
-        toAdd.add(new EntityInstance(entityDefn).addIdsToInstance().
-                        addGUIDtoInstance().setValue("Title", "test2"));
-        toAdd.add(new EntityInstance(entityDefn).addIdsToInstance().
-                addGUIDtoInstance().setValue("Title", "test3"));
-        toAdd.add(new EntityInstance(entityDefn).addIdsToInstance().
-                addGUIDtoInstance().setValue("Title", "test4"));
+        toAdd.add(new EntityInstance(entityDefn).addAutoIncrementIdsToInstance().
+                addAutoGUIDstoInstance().setValue("Title", "test2"));
+        toAdd.add(new EntityInstance(entityDefn).addAutoIncrementIdsToInstance().
+                addAutoGUIDstoInstance().setValue("Title", "test3"));
+        toAdd.add(new EntityInstance(entityDefn).addAutoIncrementIdsToInstance().
+                addAutoGUIDstoInstance().setValue("Title", "test4"));
 
         Exception exception = Assertions.assertThrows(RuntimeException.class, () -> {
             instances.addInstances(toAdd);
@@ -114,12 +113,12 @@ public class ThingInstanceCardinalityCreationTest {
 
         List<EntityInstance> toAdd = new ArrayList<>();
 
-        toAdd.add(new EntityInstance(entityDefn).addIdsToInstance().
-                addGUIDtoInstance().setValue("Title", "test1"));
-        toAdd.add(new EntityInstance(entityDefn).addIdsToInstance().
-                addGUIDtoInstance().setValue("Title", "test2"));
-        toAdd.add(new EntityInstance(entityDefn).addIdsToInstance().
-                addGUIDtoInstance().setValue("Title", "test3"));
+        toAdd.add(new EntityInstance(entityDefn).addAutoIncrementIdsToInstance().
+                addAutoGUIDstoInstance().setValue("Title", "test1"));
+        toAdd.add(new EntityInstance(entityDefn).addAutoIncrementIdsToInstance().
+                addAutoGUIDstoInstance().setValue("Title", "test2"));
+        toAdd.add(new EntityInstance(entityDefn).addAutoIncrementIdsToInstance().
+                addAutoGUIDstoInstance().setValue("Title", "test3"));
 
         instances.addInstances(toAdd);
 
@@ -135,8 +134,8 @@ public class ThingInstanceCardinalityCreationTest {
         EntityInstanceCollection instances = new EntityInstanceCollection(entityDefn, new ArrayList<>());
 
         for( int instanceNum = 1; instanceNum <= 100; instanceNum++){
-            instances.addInstance(new EntityInstance(entityDefn).addIdsToInstance().
-                    addGUIDtoInstance().setValue("Title", "test" + instanceNum));
+            instances.addInstance(new EntityInstance(entityDefn).addAutoIncrementIdsToInstance().
+                    addAutoGUIDstoInstance().setValue("Title", "test" + instanceNum));
         }
 
         Assertions.assertEquals(100, instances.countInstances());
@@ -150,8 +149,8 @@ public class ThingInstanceCardinalityCreationTest {
         EntityInstanceCollection instances = new EntityInstanceCollection(entityDefn, new ArrayList<>());
 
         for( int instanceNum = 1; instanceNum <= 100; instanceNum++){
-            instances.addInstance(new EntityInstance(entityDefn).addIdsToInstance().
-                    addGUIDtoInstance().setValue("Title", "test" + instanceNum));
+            instances.addInstance(new EntityInstance(entityDefn).addAutoIncrementIdsToInstance().
+                    addAutoGUIDstoInstance().setValue("Title", "test" + instanceNum));
         }
 
         Assertions.assertEquals(100, instances.countInstances());

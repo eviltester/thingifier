@@ -486,7 +486,7 @@ public class RelationshipApiNonHttpTest {
 
         ApiResponse apiresponse = todoManager.api().post(String.format("project/%s/tasks", myNewProject.getPrimaryKeyValue()), getSimpleParser(requestBody), new HttpHeadersBlock());
         Assertions.assertEquals(201, apiresponse.getStatusCode());
-        String locationGuid = apiresponse.getHeaderValue(ApiResponse.GUID_HEADER);
+        String locationGuid = apiresponse.getHeaderValue(ApiResponse.PRIMARY_KEY_HEADER);
         Assertions.assertTrue(apiresponse.getErrorMessages().size()==0);
 
         Assertions.assertTrue(
@@ -506,7 +506,7 @@ public class RelationshipApiNonHttpTest {
 
 
         // check todo exists
-        EntityInstance myCreatedTodo = todo.findInstanceByGUID(locationGuid);
+        EntityInstance myCreatedTodo = todo.findInstanceByPrimaryKey(locationGuid);
         Assertions.assertEquals(expectedTitle, myCreatedTodo.getFieldValue("title").asString());
 
         // check todo is also related to the project since relationship is two way
@@ -554,7 +554,7 @@ public class RelationshipApiNonHttpTest {
         Assertions.assertNotEquals("Should have a body", "", new ApiResponseAsJson(apiresponse, jsonThing).getJson().trim());
         Assertions.assertFalse(apiresponse.isCollection());
 
-        EntityInstance myNewProject = project.findInstanceByGUID(apiresponse.getHeaderValue(ApiResponse.GUID_HEADER));
+        EntityInstance myNewProject = project.findInstanceByPrimaryKey(apiresponse.getHeaderValue(ApiResponse.PRIMARY_KEY_HEADER));
         Assertions.assertNotNull(myNewProject);
 
 
@@ -606,7 +606,7 @@ public class RelationshipApiNonHttpTest {
 
         ApiResponse apiresponse = todoManager.api().post(String.format("todo/%s/estimates", myTodo.getPrimaryKeyValue()), getSimpleParser(requestBody), new HttpHeadersBlock());
         Assertions.assertEquals(201, apiresponse.getStatusCode());
-        String locationGuid = apiresponse.getHeaderValue(ApiResponse.GUID_HEADER);
+        String locationGuid = apiresponse.getHeaderValue(ApiResponse.PRIMARY_KEY_HEADER);
         Assertions.assertTrue(apiresponse.getErrorMessages().size()==0);
 
         Assertions.assertTrue(
@@ -626,7 +626,7 @@ public class RelationshipApiNonHttpTest {
 
 
         // check estimate exists
-        EntityInstance myCreatedItem = estimates.findInstanceByGUID(locationGuid);
+        EntityInstance myCreatedItem = estimates.findInstanceByPrimaryKey(locationGuid);
         Assertions.assertEquals(expectedDescription, myCreatedItem.getFieldValue("description").asString());
         Assertions.assertEquals("3", myCreatedItem.getFieldValue("duration").asString());
 

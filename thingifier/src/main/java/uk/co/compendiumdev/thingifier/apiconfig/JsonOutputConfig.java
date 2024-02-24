@@ -4,47 +4,40 @@ public class JsonOutputConfig {
 
     // TODO: have a default Response Accept format e.g. JSON, or XML
     private boolean allowCompressedRelationships;
-    private Boolean jsonOutputRelationshipsUsesIdsIfAvailable;
-    private boolean showGuidsInResponse;
     private boolean convertFieldsToDefinedTypes;
+    private boolean showPrimaryKeyHeaderInResponse;
 
     public JsonOutputConfig(){
         allowCompressedRelationships=true;
-        jsonOutputRelationshipsUsesIdsIfAvailable=true;
-        showGuidsInResponse =true;
         convertFieldsToDefinedTypes =true;
+        showPrimaryKeyHeaderInResponse=true;
     }
 
     public void setFrom(final JsonOutputConfig jsonOutput) {
         allowCompressedRelationships = jsonOutput.willRenderRelationshipsAsCompressed();
-        jsonOutputRelationshipsUsesIdsIfAvailable = jsonOutput.willRenderRelationshipsWithIdsIfAvailable();
-        showGuidsInResponse = jsonOutput.willRenderGuidsInResponse();
         convertFieldsToDefinedTypes = jsonOutput.willRenderFieldsAsDefinedTypes();
+        showPrimaryKeyHeaderInResponse = jsonOutput.willShowPrimaryKeyHeaderInResponse();
+    }
+
+    private boolean willShowPrimaryKeyHeaderInResponse() {
+        return showPrimaryKeyHeaderInResponse;
     }
 
 
     public void setCompressRelationships(final boolean config) {
         allowCompressedRelationships=config;
     }
-    public void setRelationshipsUseIdsIfAvailable(final boolean config) {
-        jsonOutputRelationshipsUsesIdsIfAvailable=config;
-    }
     public void setConvertFieldsToDefinedTypes(final boolean config) {
         convertFieldsToDefinedTypes =config;
     }
-    public void setShowGuidsInResponse(boolean config){
-        showGuidsInResponse =config;
+    public void setShowPrimaryKeyInResponse(boolean config){
+        showPrimaryKeyHeaderInResponse =config;
     }
 
     public Boolean willRenderRelationshipsAsCompressed() {
         return allowCompressedRelationships;
     }
-    public Boolean willRenderRelationshipsWithIdsIfAvailable() {
-        return jsonOutputRelationshipsUsesIdsIfAvailable;
-    }
-    public boolean willRenderGuidsInResponse() {
-        return showGuidsInResponse;
-    }
+
     public boolean willRenderFieldsAsDefinedTypes() {
         return convertFieldsToDefinedTypes;
     }

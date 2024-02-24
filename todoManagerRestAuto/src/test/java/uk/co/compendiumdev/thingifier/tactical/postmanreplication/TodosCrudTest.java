@@ -4,6 +4,7 @@ import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -35,6 +36,11 @@ public class TodosCrudTest {
         final int newNumberOfTodos = clearedData.getList("todos").size();
 
         Assertions.assertEquals(0, newNumberOfTodos);
+    }
+
+    @AfterAll
+    public static void shutItDown(){
+        Environment.stop();
     }
 
     @Test
@@ -99,12 +105,12 @@ public class TodosCrudTest {
 
         Assertions.assertEquals(
                         response.header("Location"),
-                "todos/" + response.header("X-Thing-Instance-GUID"));
+                "todos/" + response.header("X-Thing-Instance-Primary-Key"));
 
         final JsonPath body = response.jsonPath();
 
         Assertions.assertEquals("false", body.get("doneStatus"));
-        Assertions.assertEquals(response.header("X-Thing-Instance-GUID"), body.get("guid"));
+        Assertions.assertEquals(response.header("X-Thing-Instance-Primary-Key"), body.get("id"));
         Assertions.assertEquals("", body.get("description"));
         Assertions.assertEquals("a specific todo Title", body.get("title"));
     }
@@ -112,7 +118,7 @@ public class TodosCrudTest {
     @Test
     public void canCreateAndAmendSequence(){
 
-        String specificGuid = "3e788069-1d22-4aa1-a03b-5689eab2f321";
+        String specificId = "100";
 
         // CREATE WITH PUT
 
@@ -120,16 +126,16 @@ public class TodosCrudTest {
         givenBody.put("title", "a specific todo Title for put");
 
         JsonPath body = given().body(givenBody).
-                when().put("/todos/" + specificGuid).
+                when().put("/todos/" + specificId).
                 then().
                 statusCode(201).
                 contentType(ContentType.JSON).
-                header("Location", "todos/" + specificGuid).
-                header("X-Thing-Instance-GUID", specificGuid).
+                header("Location", "todos/" + specificId).
+                header("X-Thing-Instance-Primary-Key", specificId).
                 and().extract().body().jsonPath();
 
         Assertions.assertEquals("false", body.get("doneStatus"));
-        Assertions.assertEquals(specificGuid, body.get("guid"));
+        Assertions.assertEquals(specificId, body.get("id"));
         Assertions.assertEquals("", body.get("description"));
         Assertions.assertEquals("a specific todo Title for put", body.get("title"));
 
@@ -138,7 +144,7 @@ public class TodosCrudTest {
         givenBody.put("title", "a put amended specific todo Title for put");
 
         Response response = given().body(givenBody).
-                when().put("/todos/" + specificGuid).
+                when().put("/todos/" + specificId).
                 then().
                 statusCode(200).
                 contentType(ContentType.JSON).
@@ -146,12 +152,12 @@ public class TodosCrudTest {
 
 
         Assertions.assertFalse(response.headers().hasHeaderWithName("Location"));
-        Assertions.assertFalse(response.headers().hasHeaderWithName("X-Thing-Instance-GUID"));
+        Assertions.assertFalse(response.headers().hasHeaderWithName("X-Thing-Instance-Primary-Key"));
 
         body = response.getBody().jsonPath();
 
         Assertions.assertEquals("false", body.get("doneStatus"));
-        Assertions.assertEquals(specificGuid, body.get("guid"));
+        Assertions.assertEquals(specificId, body.get("id"));
         Assertions.assertEquals("", body.get("description"));
         Assertions.assertEquals("a put amended specific todo Title for put", body.get("title"));
 
@@ -160,7 +166,7 @@ public class TodosCrudTest {
         givenBody.put("title", "a specific todo Title Amended");
 
         response = given().body(givenBody).
-                when().post("/todos/" + specificGuid).
+                when().post("/todos/" + specificId).
                 then().
                 statusCode(200).
                 contentType(ContentType.JSON).
@@ -168,48 +174,48 @@ public class TodosCrudTest {
 
 
         Assertions.assertFalse(response.headers().hasHeaderWithName("Location"));
-        Assertions.assertFalse(response.headers().hasHeaderWithName("X-Thing-Instance-GUID"));
+        Assertions.assertFalse(response.headers().hasHeaderWithName("X-Thing-Instance-Primary-Key"));
 
         body = response.getBody().jsonPath();
 
         Assertions.assertEquals("false", body.get("doneStatus"));
-        Assertions.assertEquals(specificGuid, body.get("guid"));
+        Assertions.assertEquals(specificId, body.get("id"));
         Assertions.assertEquals("", body.get("description"));
         Assertions.assertEquals("a specific todo Title Amended", body.get("title"));
 
         // GET the TO DO item
-        response = when().get("/todos/" + specificGuid).
+        response = when().get("/todos/" + specificId).
                 then().
                 statusCode(200).
                 contentType(ContentType.JSON).
                 and().extract().response();
 
         Assertions.assertFalse(response.headers().hasHeaderWithName("Location"));
-        Assertions.assertFalse(response.headers().hasHeaderWithName("X-Thing-Instance-GUID"));
+        Assertions.assertFalse(response.headers().hasHeaderWithName("X-Thing-Instance-Primary-Key"));
 
         body = response.getBody().jsonPath();
 
         Assertions.assertEquals("false", body.get("todos[0].doneStatus"));
-        Assertions.assertEquals(specificGuid, body.get("todos[0].guid"));
+        Assertions.assertEquals(specificId, body.get("todos[0].id"));
         Assertions.assertEquals("", body.get("todos[0].description"));
         Assertions.assertEquals("a specific todo Title Amended", body.get("todos[0].title"));
 
 
         // DELETE the TO DO item
-        response = when().delete("/todos/" + specificGuid).
+        response = when().delete("/todos/" + specificId).
                 then().
                 statusCode(200).
                 contentType(ContentType.JSON).
                 and().extract().response();
 
         // Cannot GET a deleted to do item
-        response = when().get("/todos/" + specificGuid).
+        response = when().get("/todos/" + specificId).
                 then().
                 statusCode(404).
                 contentType(ContentType.JSON).
                 and().extract().response();
 
-        Assertions.assertEquals("Could not find an instance with todos/3e788069-1d22-4aa1-a03b-5689eab2f321",
+        Assertions.assertEquals("Could not find an instance with todos/100",
                 response.getBody().jsonPath().get("errorMessages[0]"));
     }
 

@@ -49,8 +49,8 @@ public class BulkUpdateEntityInstanceTest {
     public void canNotSetSomeFieldsByList() {
 
         final EntityInstance session = new EntityInstance(entityTestSession);
-        session.addGUIDtoInstance();
-        session.addIdsToInstance();
+        session.addAutoGUIDstoInstance();
+        session.addAutoIncrementIdsToInstance();
 
         List<NamedValue> someFields = new ArrayList<>();
         someFields.add(new NamedValue("anid",  "12"));

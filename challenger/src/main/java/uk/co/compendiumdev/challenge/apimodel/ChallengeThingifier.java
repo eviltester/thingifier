@@ -24,7 +24,7 @@ public class ChallengeThingifier {
         // fake the data storage
         this.challengeThingifier = new Thingifier();
 
-        this.challengeThingifier.apiConfig().setResponsesToShowGuids(false);
+        this.challengeThingifier.apiConfig().setApiToShowPrimaryKeyHeaderInResponse(true);
         this.challengeThingifier.apiConfig().forParams().willEnforceFilteringThroughUrlParams();
         this.challengeThingifier.apiConfig().forParams().willAllowFilteringThroughUrlParams();
 

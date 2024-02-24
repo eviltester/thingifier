@@ -1,4 +1,4 @@
-package uk.co.compendiumdev.thingifier.core.domain.instances;
+package uk.co.compendiumdev.thingifier.core.domain.instances.fields;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -6,8 +6,9 @@ import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
-public class ThingInstanceGuidTest {
+public class AutoGuidTest {
 
     EntityDefinition entityTestSession;
 
@@ -24,7 +25,7 @@ public class ThingInstanceGuidTest {
 
         EntityInstance session;
         session = new EntityInstance(entityTestSession);
-        session.addGUIDtoInstance();
+        session.addAutoGUIDstoInstance();
 
         Assertions.assertNotNull(session.getPrimaryKeyValue());
         Assertions.assertTrue(
@@ -40,7 +41,7 @@ public class ThingInstanceGuidTest {
 
         EntityInstance session;
         session = new EntityInstance(entityTestSession);
-        session.addGUIDtoInstance();
+        session.addAutoGUIDstoInstance();
 
         Assertions.assertEquals(session.getPrimaryKeyValue(), session.getFieldValue("guid").asString());
 

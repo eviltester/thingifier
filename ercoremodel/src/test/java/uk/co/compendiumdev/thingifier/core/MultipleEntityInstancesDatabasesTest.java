@@ -21,7 +21,7 @@ public class MultipleEntityInstancesDatabasesTest {
         thingDefn.addAsPrimaryKeyField(Field.is("guid", FieldType.AUTO_GUID));
 
         EntityInstance thing1 = new EntityInstance(thingDefn);
-        thing1.addGUIDtoInstance();
+        thing1.addAutoGUIDstoInstance();
         thing1.setValue("Title", "Thing 1");
 
         EntityInstanceCollection thing = erm.getInstanceData().getInstanceCollectionForEntityNamed("thing");
@@ -45,7 +45,7 @@ public class MultipleEntityInstancesDatabasesTest {
         erm.createInstanceDatabase("other_things");
 
         EntityInstance thing1 = new EntityInstance(thingDefn);
-        thing1.addGUIDtoInstance();
+        thing1.addAutoGUIDstoInstance();
         thing1.setValue("Title", "Thing 1");
 
         EntityInstanceCollection thing = erm.getInstanceData("other_things").getInstanceCollectionForEntityNamed("thing");
@@ -88,7 +88,7 @@ public class MultipleEntityInstancesDatabasesTest {
         erm.createInstanceDatabase("other_things");
 
         EntityInstance thing1 = new EntityInstance(thingDefn);
-        thing1.addGUIDtoInstance();
+        thing1.addAutoGUIDstoInstance();
         thing1.setValue("Title", "Thing 1");
 
         EntityInstanceCollection thing = erm.getInstanceData("other_things").getInstanceCollectionForEntityNamed("thing");

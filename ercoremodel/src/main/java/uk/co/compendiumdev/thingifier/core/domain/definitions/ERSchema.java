@@ -44,6 +44,7 @@ public class ERSchema {
     }
 
     public boolean hasRelationshipNamed(final String relationshipName) {
+        if(relationshipName==null) return false;
         if (relationships.containsKey(relationshipName.toLowerCase())) {
             return true;
         }
@@ -68,14 +69,17 @@ public class ERSchema {
     }
 
     public boolean hasEntityNamed(final String aName) {
+        if(aName==null) return false;
         return entityDefinitions.containsKey(aName);
     }
 
     public boolean hasEntityWithPluralNamed(final String term) {
+        if(term==null) return false;
         return getEntityDefinitionWithPluralNamed(term)!=null;
     }
 
     public EntityDefinition getEntityDefinitionNamed(final String term) {
+        if(term==null) return null;
         if(entityDefinitions.containsKey(term)){
             return entityDefinitions.get(term);
         }
@@ -83,6 +87,7 @@ public class ERSchema {
     }
 
     public EntityDefinition getEntityDefinitionWithPluralNamed(final String term) {
+        if(term==null) return null;
         for(EntityDefinition defn : entityDefinitions.values()){
             if(defn.getPlural().equalsIgnoreCase(term)){
                 return defn;
@@ -92,6 +97,8 @@ public class ERSchema {
     }
 
     public EntityDefinition getDefinitionWithSingularOrPluralNamed(final String term) {
+        if(term==null) return null;
+
         final EntityDefinition defn = getEntityDefinitionNamed(term);
         if(defn!=null){
             return defn;

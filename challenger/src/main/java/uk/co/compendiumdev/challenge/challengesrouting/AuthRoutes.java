@@ -47,10 +47,6 @@ public class AuthRoutes {
 
         this.secretNoteStore = new Thingifier();
 
-        // todo, should really use the api config from existing thingifier
-        this.secretNoteStore.apiConfig().setResponsesToShowGuids(false);
-        this.secretNoteStore.apiConfig().setResponsesToShowIdsIfAvailable(false);
-
         this.secretNote = this.secretNoteStore.defineThing("secretnote", "secretnotes");
 
         this.secretNote.addFields(

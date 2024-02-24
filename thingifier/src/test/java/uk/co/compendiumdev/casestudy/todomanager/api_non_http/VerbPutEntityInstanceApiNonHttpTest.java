@@ -91,7 +91,7 @@ public class VerbPutEntityInstanceApiNonHttpTest {
     }
 
     @Test
-    public void putCanAmendExistingProjectByUSingDefaultFieldValues() {
+    public void putCanAmendExistingProjectByUsingDefaultFieldValues() {
 
         Map requestBody;
         ApiResponse apiresponse;
@@ -187,7 +187,7 @@ public class VerbPutEntityInstanceApiNonHttpTest {
         Assertions.assertEquals(201, apiresponse.getStatusCode());
 
 
-        Assertions.assertEquals(guid, apiresponse.getHeaderValue(ApiResponse.GUID_HEADER));
+        Assertions.assertEquals(guid, apiresponse.getHeaderValue(ApiResponse.PRIMARY_KEY_HEADER));
         Assertions.assertTrue(apiresponse.getHeaderValue("Location").endsWith(guid));
 
         Assertions.assertEquals(currentProjects + 1, project.countInstances());

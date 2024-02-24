@@ -35,12 +35,10 @@ public class SimulationRoutes {
         // fake the data storage
         this.simulation = new Thingifier();
 
-        this.simulation.apiConfig().setResponsesToShowGuids(false);
-
         this.entityDefn = this.simulation.defineThing("entity", "entities");
 
+        this.entityDefn.addAsPrimaryKeyField(Field.is("id", FieldType.AUTO_INCREMENT));
         this.entityDefn.addFields(
-                Field.is("id", FieldType.AUTO_INCREMENT),
                 Field.is("name", FieldType.STRING).
                         makeMandatory().
                         withValidation(new MaximumLengthValidationRule(50)).
@@ -133,7 +131,7 @@ public class SimulationRoutes {
 
             // process it because the request validated
             String id = anHttpApiRequest.getUrlParam(":id");
-            EntityInstance instance = this.entityStorage.findInstanceByGUIDorID(id);
+            EntityInstance instance = this.entityStorage.findInstanceByPrimaryKey(id);
             if (instance == null) {
                 response = ApiResponse.error404("Could not find Entity with ID " + id);
             } else {
@@ -179,7 +177,7 @@ public class SimulationRoutes {
             return new SparkApiRequestResponseHandler(request, result, simulation).
                     usingHandler((anHttpApiRequest) ->{
                         return ApiResponse.created(this.entityStorage.
-                                        findInstanceByGUIDorID("11"),
+                                        findInstanceByPrimaryKey("11"),
                                 this.simulation.apiConfig());
                     }).handle();
         });
@@ -191,7 +189,7 @@ public class SimulationRoutes {
             if (id.equals("11")) {
                 // we can create id 11
                 response = ApiResponse.created(
-                        this.entityStorage.findInstanceByGUIDorID("11"),
+                        this.entityStorage.findInstanceByPrimaryKey("11"),
                         this.simulation.apiConfig());
             } else {
                 if (id.equals("10")) {
@@ -200,7 +198,7 @@ public class SimulationRoutes {
                             overrideValue("id", "10").setValue("name", "eris");
                     response = ApiResponse.success().returnSingleInstance(fake);
                 } else {
-                    final EntityInstance instance = this.entityStorage.findInstanceByGUIDorID(id);
+                    final EntityInstance instance = this.entityStorage.findInstanceByPrimaryKey(id);
                     if (instance == null) {
                         if(anHttpApiRequest.getVerb()== HttpApiRequest.VERB.POST) {
                             response = ApiResponse.error404("Could not find Entity with ID " + id);
@@ -239,7 +237,7 @@ public class SimulationRoutes {
                             // we can delete id 9
                             response = new ApiResponse(204);
                         } else {
-                            final EntityInstance instance = this.entityStorage.findInstanceByGUIDorID(id);
+                            final EntityInstance instance = this.entityStorage.findInstanceByPrimaryKey(id);
                             if (instance == null) {
                                 response = ApiResponse.error404("Could not find Entity with ID " + id);
                             } else {

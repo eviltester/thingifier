@@ -116,9 +116,9 @@ public class XmlRequestResponseTest {
         Assertions.assertEquals(1, todo.countInstances());
 
         // header should give me the guid
-        String guid = response.getHeaders().get(ApiResponse.GUID_HEADER);
+        String guid = response.getHeaders().get(ApiResponse.PRIMARY_KEY_HEADER);
 
-        final EntityInstance aTodo = todo.findInstanceByGUID(guid);
+        final EntityInstance aTodo = todo.findInstanceByPrimaryKey(guid);
 
         Assertions.assertEquals("test title", aTodo.getFieldValue("title").asString());
 
@@ -183,9 +183,9 @@ public class XmlRequestResponseTest {
         Assertions.assertEquals(1, todo.countInstances());
 
         // header should give me the guid
-        String guid = response.getHeaders().get(ApiResponse.GUID_HEADER);
+        String guid = response.getHeaders().get(ApiResponse.PRIMARY_KEY_HEADER);
 
-        final EntityInstance aTodo = todo.findInstanceByGUID(guid);
+        final EntityInstance aTodo = todo.findInstanceByPrimaryKey(guid);
 
         Assertions.assertEquals("test title", aTodo.getFieldValue("title").asString());
 

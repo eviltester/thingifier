@@ -10,8 +10,9 @@ import java.util.*;
 
 
 public final class ApiResponse {
-    public static final String GUID_HEADER = "X-Thing-Instance-GUID";
-    public static final String ID_HEADER = "X-Thing-Instance-ID";
+
+    // TODO: instance GUID or instance-id should actually be the primary key
+    public static final String PRIMARY_KEY_HEADER = "X-Thing-Instance-Primary-Key";
 
     private final int statusCode;
     private boolean hasBody;
@@ -120,8 +121,8 @@ public final class ApiResponse {
                     new ApiUrls(apiConfig).
                             getCreatedLocationHeader(thingInstance));
 
-            if(apiConfig.willResponsesShowGuids()) {
-                response.setHeader(ApiResponse.GUID_HEADER, thingInstance.getPrimaryKeyValue());
+            if(apiConfig.willResponsesShowPrimaryKeyHeader()) {
+                response.setHeader(ApiResponse.PRIMARY_KEY_HEADER, thingInstance.getPrimaryKeyValue());
             }
             response.hasBody = true;
         }

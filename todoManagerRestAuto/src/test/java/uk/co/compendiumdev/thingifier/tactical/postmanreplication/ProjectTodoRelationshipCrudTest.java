@@ -4,6 +4,7 @@ import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -36,12 +37,16 @@ public class ProjectTodoRelationshipCrudTest {
         Assertions.assertEquals(0, newNumberOfTodos);
     }
 
+    @AfterAll
+    public static void shutItDown(){
+        Environment.stop();
+    }
 
     @Test
     public void canCreateAndAmendSequence(){
 
-        String specificProjectGuid = "4c656319-1e4c-4286-8c2c-dff2d6762f0d";
-        String specificTodoGuid = "09452402-32de-4403-8e4a-a27bc333448c";
+        String specificProjectId = "1";
+        String specificTodoId = "1";
 
         // CREATE Project WITH PUT
 
@@ -49,56 +54,56 @@ public class ProjectTodoRelationshipCrudTest {
         givenBody.put("title", "a specific project");
 
         given().body(givenBody).
-                when().put("/projects/" + specificProjectGuid).
+                when().put("/projects/" + specificProjectId).
                 then().
                 statusCode(201).
                 contentType(ContentType.JSON).
-                header("Location", "projects/" + specificProjectGuid).
-                header("X-Thing-Instance-GUID", specificProjectGuid);
+                header("Location", "projects/" + specificProjectId).
+                header("X-Thing-Instance-Primary-Key", specificProjectId);
 
         // CREATE A Specific To do
 
         given().body(givenBody).
-                when().put("/todos/" + specificTodoGuid).
+                when().put("/todos/" + specificTodoId).
                 then().
                 statusCode(201).
                 contentType(ContentType.JSON).
-                header("Location", "todos/" + specificTodoGuid).
-                header("X-Thing-Instance-GUID", specificTodoGuid);
+                header("Location", "todos/" + specificTodoId).
+                header("X-Thing-Instance-Primary-Key", specificTodoId);
 
         // Create a specific project to to do relationship with POST
-        givenBody.put("guid", specificTodoGuid);
+        givenBody.put("id", specificTodoId);
 
         given().body(givenBody).
-                when().post("/projects/" + specificProjectGuid + "/tasks").
+                when().post("/projects/" + specificProjectId + "/tasks").
                 then().
                 statusCode(201).
                 contentType(ContentType.JSON);
 
         // GET todos for a project
 
-        Response response = when().get("/projects/" + specificProjectGuid + "/tasks").
+        Response response = when().get("/projects/" + specificProjectId + "/tasks").
                 then().
                 statusCode(200).
                 contentType(ContentType.JSON).
                 and().extract().response();
 
         Assertions.assertEquals(1, response.getBody().jsonPath().getList("todos").size());
-        Assertions.assertEquals(specificTodoGuid, response.getBody().jsonPath().get("todos[0].guid"));
+        Assertions.assertEquals(specificTodoId, response.getBody().jsonPath().get("todos[0].id"));
         // if non-compressed relationship rendering is used then this path
-        Assertions.assertEquals(specificProjectGuid, response.getBody().jsonPath().get("todos[0].relationships[0].tasksof[0].projects[0].guid"));
+        Assertions.assertEquals(specificProjectId, response.getBody().jsonPath().get("todos[0].relationships[0].tasksof[0].projects[0].id"));
         //Assertions.assertEquals(specificProjectGuid, response.getBody().jsonPath().get("todos[0].task-of[0].guid"));
 
 
         // DELETE the Project Todos Relationship TO DO
-        when().delete("/projects/" + specificProjectGuid + "/tasks/" +specificTodoGuid).
+        when().delete("/projects/" + specificProjectId + "/tasks/" +specificTodoId).
                 then().
                 statusCode(200).
                 contentType(ContentType.JSON);
 
         // GET todos for a project
 
-        response = when().get("/projects/" + specificProjectGuid + "/tasks").
+        response = when().get("/projects/" + specificProjectId + "/tasks").
                 then().
                 statusCode(200).
                 contentType(ContentType.JSON).
@@ -107,7 +112,7 @@ public class ProjectTodoRelationshipCrudTest {
         Assertions.assertEquals(0, response.getBody().jsonPath().getList("todos").size());
 
         // GET project and check no relationships listed
-        response = when().get("/projects/" + specificProjectGuid).
+        response = when().get("/projects/" + specificProjectId).
                 then().
                 statusCode(200).
                 contentType(ContentType.JSON).
@@ -116,7 +121,7 @@ public class ProjectTodoRelationshipCrudTest {
         Assertions.assertNull(response.getBody().jsonPath().get("projects[0].relationships"));
 
         // DELETE the Project Todos Relationship TO DO again
-        when().delete("/projects/" + specificProjectGuid + "/tasks/" +specificTodoGuid).
+        when().delete("/projects/" + specificProjectId + "/tasks/" +specificTodoId).
                 then().
                 statusCode(404).
                 contentType(ContentType.JSON);

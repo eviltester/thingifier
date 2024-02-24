@@ -104,7 +104,7 @@ class InstanceFieldsTest {
 
         InstanceFields instance = new InstanceFields(fieldsDefn);
 
-        instance.addIdsToInstance();
+        instance.addAutoIncrementIdsToInstance();
 
         Assertions.assertNotNull(instance.getFieldValue("id"));
         Assertions.assertEquals("1", instance.getFieldValue("id").asString());
@@ -293,7 +293,7 @@ class InstanceFieldsTest {
                 Field.is("guid", FieldType.AUTO_GUID));
 
         InstanceFields instance = new InstanceFields(fieldsDefn);
-        instance.addIdsToInstance();
+        instance.addAutoIncrementIdsToInstance();
         instance.putValue("guid", UUID.randomUUID().toString());
 
         List<NamedValue> values = new ArrayList<>();
@@ -323,7 +323,7 @@ class InstanceFieldsTest {
                 Field.is("guid", FieldType.AUTO_GUID));
 
         InstanceFields instance = new InstanceFields(fieldsDefn);
-        instance.addIdsToInstance();
+        instance.addAutoIncrementIdsToInstance();
         String aGUID = UUID.randomUUID().toString();
         instance.putValue("guid", aGUID);
         instance.putValue("id", "2344");

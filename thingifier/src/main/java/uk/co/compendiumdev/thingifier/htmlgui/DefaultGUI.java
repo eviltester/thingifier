@@ -107,50 +107,53 @@ public class DefaultGUI {
 
             String htmlErrorMessage = "";
 
-            if(!thingifier.getERmodel().hasEntityNamed(entityName)){
-                htmlErrorMessage = htmlErrorMessage + "<p>Entity Named " + htmlsanitise(entityName) + " not found.</p>";
-            }
+            if(entityName!=null) {
 
-            if(!thingifier.getERmodel().getDatabaseNames().contains(database)){
-                htmlErrorMessage = htmlErrorMessage + "<p>Database Named " + htmlsanitise(database) + " not found. Have you made any API Calls?</p>";
-            }
-
-            EntityInstanceCollection thing=null;
-
-            if(htmlErrorMessage.equals("")){
-                try{
-                    thing = thingifier.getThingInstancesNamed(entityName, database);
-                }catch(Exception e){
-                    //htmlErrorMessage = htmlErrorMessage + "<p>Database Access Error: " + e.getMessage() + ".</p>";
+                if (!thingifier.getERmodel().hasEntityNamed(entityName)) {
+                    htmlErrorMessage = htmlErrorMessage + "<p>Entity Named " + htmlsanitise(entityName) + " not found.</p>";
                 }
 
-                if(thing == null){
-                    htmlErrorMessage = htmlErrorMessage + "<p>Entity instances not found in database, have you made any API calls?</p>";
+                if (!thingifier.getERmodel().getDatabaseNames().contains(database)) {
+                    htmlErrorMessage = htmlErrorMessage + "<p>Database Named " + htmlsanitise(database) + " not found. Have you made any API Calls?</p>";
                 }
-            }
 
-            if(htmlErrorMessage.equals("")) {
+                EntityInstanceCollection thing = null;
 
-                html.append(getExploringDatabaseHtml(database));
-
-                html.append(heading(1, entityName + " Instances"));
-
-                try{
-
-                    final EntityDefinition definition = thing.definition();
-
-                    html.append("<h2>" + definition.getPlural() + "</h2>");
-
-                    html.append(startHtmlTableFor(definition));
-
-                    for (EntityInstance instance : thing.getInstances()) {
-                        html.append(htmlTableRowFor(instance, database));
+                if (htmlErrorMessage.equals("")) {
+                    try {
+                        thing = thingifier.getThingInstancesNamed(entityName, database);
+                    } catch (Exception e) {
+                        //htmlErrorMessage = htmlErrorMessage + "<p>Database Access Error: " + e.getMessage() + ".</p>";
                     }
 
-                    html.append("</tbody>");
-                    html.append("</table>");
-                }catch(Exception e){
-                    htmlErrorMessage = htmlErrorMessage + "<p>Rendering Error: " + htmlsanitise(e.getMessage()) + "</p>";
+                    if (thing == null) {
+                        htmlErrorMessage = htmlErrorMessage + "<p>Entity instances not found in database, have you made any API calls?</p>";
+                    }
+                }
+
+                if (htmlErrorMessage.equals("")) {
+
+                    html.append(getExploringDatabaseHtml(database));
+
+                    html.append(heading(1, entityName + " Instances"));
+
+                    try {
+
+                        final EntityDefinition definition = thing.definition();
+
+                        html.append("<h2>" + definition.getPlural() + "</h2>");
+
+                        html.append(startHtmlTableFor(definition));
+
+                        for (EntityInstance instance : thing.getInstances()) {
+                            html.append(htmlTableRowFor(instance, database));
+                        }
+
+                        html.append("</tbody>");
+                        html.append("</table>");
+                    } catch (Exception e) {
+                        htmlErrorMessage = htmlErrorMessage + "<p>Rendering Error: " + htmlsanitise(e.getMessage()) + "</p>";
+                    }
                 }
             }
 
@@ -341,20 +344,17 @@ public class DefaultGUI {
         final EntityDefinition definition = instance.getEntity();
         StringBuilder html = new StringBuilder();
         html.append("<ul>");
-        if(apiConfig.willResponsesShowGuids()) {
-            html.append(String.format("<li>%s<ul><li>%s</li></ul></li>", "guid", instance.getPrimaryKeyValue()));
-        }
         for(String field : definition.getFieldNames()) {
-            if (!field.equals("guid")) {
                 html.append(String.format("<li>%s<ul><li>%s</li></ul></li>",
                         field, htmlsanitise(instance.getFieldValue(field).asString())));
-            }
         }
         html.append("</ul>");
         return html.toString();
     }
 
     private String htmlsanitise(final String value) {
+
+        if(value==null) return "null";
 
         // todo - add a appconfig to allow XSS vulnerabilities in the GUI
 
@@ -374,7 +374,7 @@ public class DefaultGUI {
         for(String fieldName : definition.getFieldNames()) {
             Field field = definition.getField(fieldName);
             if(field.getType()==FieldType.AUTO_GUID){
-                if(apiConfig.willResponsesShowGuids()) {
+                if(apiConfig.willResponsesShowPrimaryKeyHeader()) {
                     html.append(String.format("<th>%s</th>",field.getName()));
                 }
             }else{
@@ -386,7 +386,7 @@ public class DefaultGUI {
         for(String fieldName : definition.getFieldNames()) {
             Field field = definition.getField(fieldName);
             if(field.getType()==FieldType.AUTO_GUID){
-                if(apiConfig.willResponsesShowGuids()) {
+                if(apiConfig.willResponsesShowPrimaryKeyHeader()) {
                     html.append(String.format("<td>%s</td>", instance.getFieldValue(fieldName).asString()));
                 }
             }else{
@@ -421,16 +421,16 @@ public class DefaultGUI {
 
         html.append("<tr>");
         // show keys first
-        if(apiConfig.willResponsesShowGuids()) {
-            html.append(String.format("<td><a href='/gui/instance?entity=%1$s&guid=%2$s%3$s'>%2$s</a></td>",
-                    definition.getName(), instance.getPrimaryKeyValue(), databaseParam(database)));
+        if(definition.hasPrimaryKeyField()) {
+            html.append(String.format("<td><a href='/gui/instance?entity=%1$s&%2$s=%3$s%4$s'>%3$s</a></td>",
+                    definition.getName(), definition.getPrimaryKeyField().getName(), instance.getPrimaryKeyValue(), databaseParam(database)));
         }
 
         // show any clickable id fields
         for(String field : definition.getFieldNames()) {
-            if (!field.equals("guid")) {
-                Field theField = definition.getField(field);
-                if(theField.getType()== FieldType.AUTO_INCREMENT){
+            Field theField = definition.getField(field);
+            if(theField!= definition.getPrimaryKeyField()){
+                if(theField.getType()== FieldType.AUTO_INCREMENT || theField.getType()==FieldType.AUTO_GUID) {
                     // make ids clickable
                     String renderAs = String.format("<a href='/gui/instance?entity=%1$s&%2$s=%3$s%4$s'>%3$s</a>",
                             definition.getName(),
@@ -440,14 +440,13 @@ public class DefaultGUI {
                     );
                     html.append(String.format("<td>%s</td>", renderAs));
                 }
-
             }
         }
 
         // show any normal fields
         for(String field : definition.getFieldNames()) {
             Field theField = definition.getField(field);
-            if(theField.getType()!= FieldType.AUTO_INCREMENT && theField.getType()!=FieldType.AUTO_GUID){
+            if(theField!= definition.getPrimaryKeyField() && theField.getType()!= FieldType.AUTO_INCREMENT && theField.getType()!=FieldType.AUTO_GUID){
                 html.append(String.format("<td>%s</td>", htmlsanitise(instance.getFieldValue(field).asString())));
             }
         }
@@ -463,20 +462,22 @@ public class DefaultGUI {
         html.append("<thead>");
         html.append("<tr>");
         // guid first
-        if(apiConfig.willResponsesShowGuids()) {
-            html.append("<th>guid</th>");
+        if(definition.hasPrimaryKeyField()) {
+            html.append(String.format("<th>%s</th>", definition.getPrimaryKeyField().getName()));
         }
         // then any ids
         for(String field : definition.getFieldNames()) {
             Field theField = definition.getField(field);
-            if (theField.getType()==FieldType.AUTO_INCREMENT) {
-                html.append(String.format("<th>%s</th>", field));
+            if (theField!=definition.getPrimaryKeyField()){
+                if (theField.getType()==FieldType.AUTO_INCREMENT || theField.getType()==FieldType.AUTO_GUID){
+                    html.append(String.format("<th>%s</th>", field));
+                }
             }
         }
         // then the normal fields
         for(String field : definition.getFieldNames()) {
             Field theField = definition.getField(field);
-            if (theField.getType()!=FieldType.AUTO_INCREMENT && theField.getType()!=FieldType.AUTO_GUID) {
+            if (theField!=definition.getPrimaryKeyField() && theField.getType()!=FieldType.AUTO_INCREMENT && theField.getType()!=FieldType.AUTO_GUID) {
                 html.append(String.format("<th>%s</th>", field));
             }
         }

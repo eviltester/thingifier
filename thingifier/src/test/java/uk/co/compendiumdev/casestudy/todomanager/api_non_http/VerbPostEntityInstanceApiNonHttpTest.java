@@ -81,14 +81,14 @@ public class VerbPostEntityInstanceApiNonHttpTest {
 
         // Check header for GUID
         String headerLocation = apiresponse.getHeaderValue("Location");
-        String headerGUID = apiresponse.getHeaderValue(ApiResponse.GUID_HEADER);
+        String headerGUID = apiresponse.getHeaderValue(ApiResponse.PRIMARY_KEY_HEADER);
 
         Assertions.assertEquals(headerGUID, officeWorkGuid);
         Assertions.assertEquals("todos/" + officeWorkGuid, headerLocation);
 
         // check that it is created in the model
 
-        EntityInstance createdProject = todo.findInstanceByGUID(headerGUID);
+        EntityInstance createdProject = todo.findInstanceByPrimaryKey(headerGUID);
 
         Assertions.assertEquals(createdProject, createdInstance);
 
@@ -127,14 +127,14 @@ public class VerbPostEntityInstanceApiNonHttpTest {
 
         // Check header for GUID
         String headerLocation = apiresponse.getHeaderValue("Location");
-        String headerGUID = apiresponse.getHeaderValue(ApiResponse.GUID_HEADER);
+        String headerGUID = apiresponse.getHeaderValue(ApiResponse.PRIMARY_KEY_HEADER);
 
         Assertions.assertEquals(headerGUID, officeWorkGuid);
         Assertions.assertEquals("todos/" + officeWorkGuid, headerLocation);
 
         // check that it is created in the model
 
-        EntityInstance createdProject = todo.findInstanceByGUID(headerGUID);
+        EntityInstance createdProject = todo.findInstanceByPrimaryKey(headerGUID);
 
         Assertions.assertEquals(createdProject, createdInstance);
 

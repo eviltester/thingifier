@@ -24,20 +24,8 @@ public class ApiUrls {
             entityPath = thingInstance.getEntity().getName();
         }
 
-        // todo: entities should be able to specify specific fields as the 'id' regardless if it is an id or not
-        // and this should be reflected in the REST API Urls
-        if (apiConfig.willUrlsShowIdsIfAvailable()){
-            final List<Field> idFields = thingInstance.getEntity().
-                                            getFieldsOfType(FieldType.AUTO_INCREMENT);
-            if(!idFields.isEmpty()){
-                uniqueID = thingInstance.getFieldValue(
-                                idFields.get(0).getName()).asString();
-            }
-        }
-
-        if(uniqueID==null){
-            uniqueID = thingInstance.getPrimaryKeyValue();
-        }
+        // use the primary key as the id
+        uniqueID = thingInstance.getPrimaryKeyValue();
 
         return entityPath + "/" + uniqueID;
     }

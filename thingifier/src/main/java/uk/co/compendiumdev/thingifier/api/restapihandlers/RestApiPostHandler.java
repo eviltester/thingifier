@@ -71,16 +71,25 @@ public class RestApiPostHandler {
 
             }
 
-            String instanceGuid = urlParts[1];
+            String primaryKey = urlParts[1];
 
-            EntityInstance instance = instancesCollection.findInstanceByGUIDorID(instanceGuid);
+            if(instancesCollection.definition().hasPrimaryKeyField()){
+                EntityInstance instance = instancesCollection.findInstanceByPrimaryKey(primaryKey);
 
-            if (instance == null) {
-                // cannot amend something that does not exist
-                return ApiResponse.error404(String.format("No such %s entity instance with GUID or ID %s found", instancesCollection.definition().getName(), instanceGuid));
+                if (instance == null) {
+                    // cannot amend something that does not exist
+                    return ApiResponse.error404(String.format("No such %s entity instance with %s == %s found",
+                            instancesCollection.definition().getName(),
+                            instancesCollection.definition().getPrimaryKeyField().getName(),
+                            primaryKey)
+                    );
+                }
+
+                return amendAThingWithPost(args, instance, instanceDatabaseName);
+            }else{
+                return ApiResponse.error404(String.format("Entity %s does not have a primary key defined", instancesCollection.definition().getName()));
             }
 
-            return amendAThingWithPost(args, instance, instanceDatabaseName);
         }
 
 

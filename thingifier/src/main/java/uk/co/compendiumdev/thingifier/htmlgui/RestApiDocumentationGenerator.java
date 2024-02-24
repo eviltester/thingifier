@@ -146,9 +146,10 @@ public class RestApiDocumentationGenerator {
                 for (String aField : aThingDefinition.getFieldNames()) {
 
                     output.append("<tr>");
-                    if(!apiConfig.willResponsesShowGuids() && aField.contentEquals("guid")){
-                        continue;
-                    }
+                    // todo: add list of hidden fields in the api and avoid showing them here
+//                    if(apiConfig.hasHiddenFieldsForEntity(aThingDefinition.getName()) && apiConfig.isApiFieldHidden(aThingDefinition.getName(), aField)){
+//                        continue;
+//                    }
 
                     output.append(String.format("<td>%s</td>", aField));
 

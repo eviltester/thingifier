@@ -11,8 +11,6 @@ import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 
 public class ThingCreation {
 
@@ -37,16 +35,14 @@ public class ThingCreation {
 
         // todo: separate validation for creation of 'cannot' create with ID, or cannot create with GUID
         EntityInstance instance = new EntityInstance(thing.definition());
-        instance.addGUIDtoInstance();
-        instance.addIdsToInstance();
+        instance.addAutoGUIDstoInstance();
+        instance.addAutoIncrementIdsToInstance();
         return addNewThingWithFields(bodyargs, instance, thing, database);
     }
 
     // create with GUID and IDs is normally associated with PUT or 'insert'
-    public ApiResponse withGuid(final String instanceGuid, final BodyParser bodyargs,
-                                final EntityInstanceCollection thing, final String database) {
-
-        final Map<String, String> args = bodyargs.getStringMap();
+    public ApiResponse withPrimaryKey(final String primaryKey, final BodyParser bodyargs,
+                                      final EntityInstanceCollection thing, final String database) {
 
         EntityInstance instance;
         ValidationReport validated;
@@ -59,19 +55,11 @@ public class ThingCreation {
                     validated.getCombinedErrorMessages());
         }
 
-        String aGUID="";
-
-        try {
-             aGUID= UUID.fromString(instanceGuid).toString();
-        } catch (Exception e) {
-            // that is not a valid guid
-            System.out.println(e.getMessage());
-            return ApiResponse.error404(String.format("Invalid GUID for %s entity %s", instanceGuid, thing.definition().getName()));
-        }
-
         instance = new EntityInstance(thing.definition());
-        instance.overrideValue("guid", aGUID);
-        instance.addIdsToInstance();
+        instance.overrideValue(thing.definition().getPrimaryKeyField().getName(), primaryKey);
+
+        // TODO: should we really do this for a PUT when everything needs to exist, suspect this is a bug
+        instance.addAutoIncrementIdsToInstance();
 
         validated = new BodyRelationshipValidator(thingifier).validate(bodyargs, thing, database);
 

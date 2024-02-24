@@ -209,17 +209,19 @@ public class ApiRoutingDefinitionGenerator {
     }
 
     private Field getUniqueIdField(final EntityDefinition thingDefn) {
-        final List<Field> idFields = thingDefn.getFieldsOfType(FieldType.AUTO_INCREMENT);
-        if(config.willUrlsShowIdsIfAvailable() && !idFields.isEmpty()){
-            return idFields.get(0);
-        }else{
-            final List<Field> guidFields = thingDefn.getFieldsOfType(FieldType.AUTO_GUID);
-            if(!guidFields.isEmpty()) {
-                return guidFields.get(0);
-            }else{
-                return null;
-            }
-        }
+        return thingDefn.getPrimaryKeyField();
+
+//        final List<Field> idFields = thingDefn.getFieldsOfType(FieldType.AUTO_INCREMENT);
+//        if(config.willUrlsShowIdsIfAvailable() && !idFields.isEmpty()){
+//            return idFields.get(0);
+//        }else{
+//            final List<Field> guidFields = thingDefn.getFieldsOfType(FieldType.AUTO_GUID);
+//            if(!guidFields.isEmpty()) {
+//                return guidFields.get(0);
+//            }else{
+//                return null;
+//            }
+//        }
     }
 
     private void addRoutingsForRelationship(final ApiRoutingDefinition defn, final RelationshipVectorDefinition relationship) {
@@ -236,7 +238,6 @@ public class ApiRoutingDefinitionGenerator {
         String uniqueIdentifier="?";
         String uniqueIdFieldName="fieldName";
 
-        // todo: should mark a field as being used as identifiers for a thing
         Field uniqueIdField = getUniqueIdField(thingDefn);
         if(uniqueIdField!=null){
             uniqueIdentifier = uniqueReferenceText.get(uniqueIdField.getType());

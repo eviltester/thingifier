@@ -154,7 +154,7 @@ public class ChallengerApiResponseHook implements HttpApiResponseHook {
                     // to check it is an int
                     int todoId = Integer.parseInt(locationParts[1]);
                     final EntityInstanceCollection thing = thingifier.getThingInstancesNamed("todo", challenger.getXChallenger());
-                    EntityInstance aTodo = thing.findInstanceByGUIDorID(locationParts[1]);
+                    EntityInstance aTodo = thing.findInstanceByPrimaryKey(locationParts[1]);
                     if(aTodo.getFieldValue("title").asString().length() == 50 &&
                             aTodo.getFieldValue("description").asString().length() == 200
                     ){

@@ -19,8 +19,6 @@ public class RequestMirror {
     public String mirrorRequest(final Request request, final Response result) {
 
         final Thingifier mirrorThingifier = new Thingifier();
-        mirrorThingifier.apiConfig().setResponsesToShowGuids(false);
-        mirrorThingifier.apiConfig().setResponsesToShowIdsIfAvailable(false);
 
         entityDefn = mirrorThingifier.defineThing("messageDetails", "messagesDetails");
 
@@ -55,8 +53,6 @@ public class RequestMirror {
         // The raw unfiltered request as text
 
         final Thingifier mirrorThingifier = new Thingifier();
-        mirrorThingifier.apiConfig().setResponsesToShowGuids(false);
-        mirrorThingifier.apiConfig().setResponsesToShowIdsIfAvailable(false);
 
         // reject large requests
         SparkMessageLengthValidator lengthValidator = new SparkMessageLengthValidator();

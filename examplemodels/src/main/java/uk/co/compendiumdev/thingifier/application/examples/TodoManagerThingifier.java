@@ -49,10 +49,10 @@ public class TodoManagerThingifier {
         todoManager.setDocumentation("Todo Manager", para.toString());
 
         EntityDefinition todo = todoManager.defineThing("todo", "todos");
-        todo.addAsPrimaryKeyField(Field.is("guid", FieldType.AUTO_GUID));
+        todo.addAsPrimaryKeyField(Field.is("id", FieldType.AUTO_INCREMENT));
         // todo: show fields in the order we add them, not the hashmap key order
         todo
-                .addFields(Field.is("id", FieldType.AUTO_INCREMENT),
+                .addFields(
                         Field.is("title", STRING).
                                 makeMandatory().
                                 withValidation(
@@ -63,10 +63,9 @@ public class TodoManagerThingifier {
                         );
 
         EntityDefinition project = todoManager.defineThing("project", "projects");
-        project.addAsPrimaryKeyField(Field.is("guid", FieldType.AUTO_GUID));
+        project.addAsPrimaryKeyField(Field.is("id", FieldType.AUTO_INCREMENT));
         project
                 .addFields(
-                        Field.is("id", FieldType.AUTO_INCREMENT),
                         Field.is("title", STRING),
                         Field.is("completed", FieldType.BOOLEAN).
                                 withDefaultValue("false"),
@@ -76,10 +75,9 @@ public class TodoManagerThingifier {
 
 
         EntityDefinition category = todoManager.defineThing("category", "categories");
-        category.addAsPrimaryKeyField(Field.is("guid", FieldType.AUTO_GUID));
+        category.addAsPrimaryKeyField(Field.is("id", FieldType.AUTO_INCREMENT));
         category
                 .addFields(
-                        Field.is("id", FieldType.AUTO_INCREMENT),
                         Field.is("title", STRING).
                                 makeMandatory().
                                 withValidation(VRule.notEmpty()),
@@ -109,12 +107,9 @@ public class TodoManagerThingifier {
                 create("v0", "prototype");
         ThingifierApiConfig config0 = profile0.apiConfig();
 
-        config0.setUrlToShowIdsInUrlsIfAvailable(false);
-        config0.setResponsesToShowIdsIfAvailable(false);
+
         config0.setUrlToShowSingleInstancesAsPlural(false);
-        config0.setResponsesToShowGuids(true);
         config0.jsonOutput().setCompressRelationships(false);
-        config0.jsonOutput().setRelationshipsUseIdsIfAvailable(false);
         config0.jsonOutput().setConvertFieldsToDefinedTypes(false);
         config0.setApiToEnforceDeclaredTypesInInput(false);
 
@@ -122,36 +117,28 @@ public class TodoManagerThingifier {
                 create("v1", "non compressed relationships with guids");
         ThingifierApiConfig config = profile.apiConfig();
 
-        config.setUrlToShowIdsInUrlsIfAvailable(false);
-        config.setResponsesToShowIdsIfAvailable(false);
+
         config.setUrlToShowSingleInstancesAsPlural(true);
-        config.setResponsesToShowGuids(true);
+        config.setApiToShowPrimaryKeyHeaderInResponse(true);
         config.jsonOutput().setCompressRelationships(false);
-        config.jsonOutput().setRelationshipsUseIdsIfAvailable(false);
         config.jsonOutput().setConvertFieldsToDefinedTypes(false);
         config.setApiToEnforceDeclaredTypesInInput(false);
 
         ThingifierApiConfigProfile profile2 = todoManager.apiConfigProfiles().
                 create("v2", "compressed relationships with guids");
         ThingifierApiConfig config2 = profile2.apiConfig();
-        config2.setUrlToShowIdsInUrlsIfAvailable(false);
-        config2.setResponsesToShowIdsIfAvailable(false);
         config2.setUrlToShowSingleInstancesAsPlural(true);
-        config2.setResponsesToShowGuids(true);
+        config2.setApiToShowPrimaryKeyHeaderInResponse(true);
         config2.jsonOutput().setCompressRelationships(true);
-        config2.jsonOutput().setRelationshipsUseIdsIfAvailable(false);
         config2.jsonOutput().setConvertFieldsToDefinedTypes(false);
         config2.setApiToEnforceDeclaredTypesInInput(false);
 
         ThingifierApiConfigProfile profile3 = todoManager.apiConfigProfiles().
                 create("v3", "compressed relationships with ids");
         ThingifierApiConfig config3 = profile3.apiConfig();
-        config3.setUrlToShowIdsInUrlsIfAvailable(true);
-        config3.setResponsesToShowIdsIfAvailable(true);
         config3.setUrlToShowSingleInstancesAsPlural(true);
-        config3.setResponsesToShowGuids(false);
+        config3.setApiToShowPrimaryKeyHeaderInResponse(true);
         config3.jsonOutput().setCompressRelationships(true);
-        config3.jsonOutput().setRelationshipsUseIdsIfAvailable(true);
         config3.jsonOutput().setConvertFieldsToDefinedTypes(false);
         config3.setApiToEnforceDeclaredTypesInInput(true);
 

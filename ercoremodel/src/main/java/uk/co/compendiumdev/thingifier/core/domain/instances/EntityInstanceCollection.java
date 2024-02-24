@@ -1,7 +1,6 @@
 package uk.co.compendiumdev.thingifier.core.domain.instances;
 
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 
 import java.util.*;
@@ -55,6 +54,26 @@ final public class EntityInstanceCollection {
             ));
         }
 
+        if(definition.hasPrimaryKeyField()){
+            // check value of primary key exists and is unique
+            Field primaryField = definition.getPrimaryKeyField();
+            if(!instance.hasInstantiatedFieldNamed(primaryField.getName())){
+                throw new RuntimeException(String.format(
+                        "ERROR: Cannot add instance, primary key field %s not set",
+                        primaryField.getName()));
+            }
+
+            for(EntityInstance existingInstance : instances.values()){
+                if(existingInstance.getPrimaryKeyValue().equals(
+                        instance.getPrimaryKeyValue()
+                )){
+                    throw new RuntimeException(String.format(
+                            "ERROR: Cannot add instance, another instance with primary key value exists: %s",
+                            existingInstance.getPrimaryKeyValue()));
+                }
+            }
+        }
+
         instances.put(instance.getInternalId(), instance);
         return this;
     }
@@ -63,8 +82,8 @@ final public class EntityInstanceCollection {
     // TODO: this looks like it was added to support testing, consider removing and adding to a test helper
     public EntityInstance createManagedInstance() {
         EntityInstance instance = new EntityInstance(definition);
-        instance.addGUIDtoInstance();
-        instance.addIdsToInstance();
+        instance.addAutoGUIDstoInstance();
+        instance.addAutoIncrementIdsToInstance();
         addInstance(instance);
         return instance;
     }
@@ -90,24 +109,6 @@ final public class EntityInstanceCollection {
         return null;
     }
 
-    @Deprecated // should be by named field
-    public EntityInstance findInstanceByGUID(String instanceFieldValue) {
-
-        // first - if it is not a GUID then dump it
-        try{
-            UUID.fromString(instanceFieldValue);
-        }catch (IllegalArgumentException e){
-            return null;
-        }
-
-        for(EntityInstance instance : instances.values()){
-            if(instance.getPrimaryKeyValue().equals(instanceFieldValue)){
-                return instance;
-            }
-        }
-
-        return null;
-    }
 
     public EntityInstance findInstanceByInternalID(String instanceFieldValue) {
 
@@ -119,7 +120,6 @@ final public class EntityInstanceCollection {
         }
 
         if (instances.containsKey(instanceFieldValue)) {
-            // TODO: could double check that the instance field "guid" matches
             return instances.get(instanceFieldValue);
         }
 
@@ -178,31 +178,14 @@ final public class EntityInstanceCollection {
         return definition;
     }
 
-    private List<String> getGuidList() {
-        List<String> guids = new ArrayList<>();
+
+    public EntityInstance findInstanceByPrimaryKey(String primaryKeyValue) {
         for(EntityInstance instance : instances.values()){
-            guids.add(instance.getInternalId());
-        }
-
-        return guids;
-    }
-
-
-    // todo: not comfortable with this method, we should be using specific field names
-    // the API should know what fields to use as the primary reference for an entity instance
-    @Deprecated
-    public EntityInstance findInstanceByGUIDorID(final String instanceGuid) {
-        EntityInstance instance = findInstanceByGUID(instanceGuid);
-        if(instance==null){
-            final List<Field> idFields = definition.getFieldsOfType(FieldType.AUTO_INCREMENT);
-            if(!idFields.isEmpty()) {
-                instance = findInstanceByFieldNameAndValue(
-                                (idFields.get(0)).getName(),
-                                instanceGuid);
+            if(instance.getPrimaryKeyValue().equals(primaryKeyValue)){
+                return instance;
             }
         }
-        return instance;
+
+        return null;
     }
-
-
 }
