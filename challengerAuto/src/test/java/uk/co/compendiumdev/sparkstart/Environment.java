@@ -20,7 +20,7 @@ public class Environment {
 
         // return environment if want to run externally
 //        if(true)
-//            return "https://apichallenges.herokuapp.com";
+//            return "https://apichallenges.eviltester.com";
 
 //        if(true)
 //            return "http://localhost:4567";

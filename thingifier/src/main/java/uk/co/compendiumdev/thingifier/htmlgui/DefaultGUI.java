@@ -42,6 +42,8 @@ public class DefaultGUI {
 
     public DefaultGUI configureRoutes(){
 
+        String tryDefault = " [<a href='/gui/instances?entity=todo&database=__default'>explore default data</a>]";
+
         get("/gui", (request, response) -> {
             response.type("text/html");
             response.status(200);
@@ -114,7 +116,7 @@ public class DefaultGUI {
                 }
 
                 if (!thingifier.getERmodel().getDatabaseNames().contains(database)) {
-                    htmlErrorMessage = htmlErrorMessage + "<p>Database Named " + htmlsanitise(database) + " not found. Have you made any API Calls?</p>";
+                    htmlErrorMessage = htmlErrorMessage + "<p>Database Named " + htmlsanitise(database) + " not found. Have you made any API Calls?" + tryDefault + "</p>";
                 }
 
                 EntityInstanceCollection thing = null;
@@ -127,7 +129,7 @@ public class DefaultGUI {
                     }
 
                     if (thing == null) {
-                        htmlErrorMessage = htmlErrorMessage + "<p>Entity instances not found in database, have you made any API calls?</p>";
+                        htmlErrorMessage = htmlErrorMessage + "<p>Entity instances not found in database, have you made any API calls?" + tryDefault + "</p>";
                     }
                 }
 
@@ -186,7 +188,7 @@ public class DefaultGUI {
             }
 
             if(!thingifier.getERmodel().getDatabaseNames().contains(database)){
-                htmlErrorMessage = htmlErrorMessage + "<p>Database Named " + htmlsanitise(database) + " not found. Have you made any API Calls?</p>";
+                htmlErrorMessage = htmlErrorMessage + "<p>Database Named " + htmlsanitise(database) + " not found. Have you made any API Calls?" + tryDefault + "</p>";
             }
 
             html.append(templates.getPageStart(entityName + " Instance"));
@@ -202,7 +204,7 @@ public class DefaultGUI {
                 }
 
                 if(thing == null){
-                    htmlErrorMessage = htmlErrorMessage + "<p>Entity instances not found in database, have you made any API calls?</p>";
+                    htmlErrorMessage = htmlErrorMessage + "<p>Entity instances not found in database, have you made any API calls?" + tryDefault + "</p>";
                 }
             }
 
@@ -226,7 +228,7 @@ public class DefaultGUI {
                 try {
                     instance = thing.findInstanceByFieldNameAndValue(keyName, keyValue);
                 }catch(Exception e){
-                    htmlErrorMessage = htmlErrorMessage + "<p>Instances not found in database, have you made any API calls?</p>";
+                    htmlErrorMessage = htmlErrorMessage + "<p>Instances not found in database, have you made any API calls?" + tryDefault + "</p>";
                 }
 
                 if (instance == null) {
