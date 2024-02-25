@@ -52,10 +52,8 @@ public class CanPutTodosTest extends RestAssuredBaseTest {
     @Test
     void canAmendATodoWithPut(){
 
-        TodosApi api = new TodosApi();
-        List<Todo> todos = api.getTodos();
+        Todo amendMe = getAnExistingTodo();
 
-        Todo amendMe = todos.get(0);
         // amendMe.id = - cannot amend the id as it is auto assigned
         amendMe.title = "my name " + System.currentTimeMillis(); // title is mandatory and must be in the message
         amendMe.description = "my description " + System.currentTimeMillis(); // if not present default "" will be set
@@ -88,10 +86,7 @@ public class CanPutTodosTest extends RestAssuredBaseTest {
     @Test
     void canAmendATodoWithPutUsingDefaults(){
 
-        TodosApi api = new TodosApi();
-        List<Todo> todos = api.getTodos();
-
-        Todo amendMe = todos.get(0);
+        Todo amendMe = getAnExistingTodo();
 
         // amendMe.id = - cannot amend the id as it is auto assigned
         amendMe.title = "my name " + System.currentTimeMillis(); // title is mandatory and must be in the message
@@ -134,10 +129,7 @@ public class CanPutTodosTest extends RestAssuredBaseTest {
     @Test
     void canFailToAmendATodoDueToMissingTitle(){
 
-        TodosApi api = new TodosApi();
-        List<Todo> todos = api.getTodos();
-
-        Todo amendMe = todos.get(0);
+        Todo amendMe = getAnExistingTodo();
 
         // amendMe.id = - cannot amend the id as it is auto assigned
         // title is mandatory and must be in the message
@@ -169,10 +161,7 @@ public class CanPutTodosTest extends RestAssuredBaseTest {
     @Test
     void canFailToAmendATodoDueToAttemptToChangeId(){
 
-        TodosApi api = new TodosApi();
-        List<Todo> todos = api.getTodos();
-
-        Todo amendMe = todos.get(0);
+        Todo amendMe = getAnExistingTodo();
 
         int oldId = amendMe.id;
         int newId = oldId +1;
@@ -198,6 +187,19 @@ public class CanPutTodosTest extends RestAssuredBaseTest {
         ChallengesStatus statuses = new ChallengesStatus();
         statuses.get();
         Assertions.assertTrue(statuses.getChallengeNamed("PUT /todos/{id} no amend id (400)").status);
+    }
+
+    private Todo getAnExistingTodo() {
+        TodosApi api = new TodosApi();
+        List<Todo> todos = api.getTodos();
+
+        if(todos.size()==0){
+            return api.createTodo("my new todo",
+                    "my description",
+                    true);
+        }else{
+            return todos.get(0);
+        }
     }
 
 }
