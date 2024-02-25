@@ -14,6 +14,7 @@ import uk.co.compendiumdev.sparkstart.Environment;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -230,6 +231,105 @@ public abstract class ChallengeCompleteTest{
 
         Assertions.assertEquals(400, response.statusCode);
         Assertions.assertTrue(challenger.statusOfChallenge(CHALLENGE.PUT_TODOS_400));
+    }
+
+    @Test
+    public void canPutTodosFull200AmendPass() {
+
+        final EntityInstanceCollection todos = ChallengeMain.getChallenger().getThingifier().getThingInstancesNamed("todo", challenger.getXChallenger());
+
+        Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
+
+        Map<String, String> headers = new HashMap<>();
+        headers.putAll(x_challenger_header);
+        headers.put("Content-Type", "application/json");
+
+        EntityInstance aTodo = new ArrayList<>(todos.getInstances()).get(0);
+
+        // amend a todo successfully
+        final HttpResponseDetails response =
+                http.send("/todos/" + aTodo.getPrimaryKeyValue(),
+                        "PUT", headers,
+                        "{\"title\":\"my put todo\",\"description\":\"a put description\",\"doneStatus\":true}");
+        // complete payload to avoid defaults
+
+        Assertions.assertEquals(200, response.statusCode);
+        Assertions.assertTrue(challenger.statusOfChallenge(CHALLENGE.PUT_TODOS_FULL_200));
+
+
+    }
+
+    @Test
+    public void canPutTodosPartial200AmendPass() {
+
+        final EntityInstanceCollection todos = ChallengeMain.getChallenger().getThingifier().getThingInstancesNamed("todo", challenger.getXChallenger());
+
+        Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
+
+        Map<String, String> headers = new HashMap<>();
+        headers.putAll(x_challenger_header);
+        headers.put("Content-Type", "application/json");
+
+        EntityInstance aTodo = new ArrayList<>(todos.getInstances()).get(0);
+
+        // amend a todo successfully
+        final HttpResponseDetails response =
+                http.send("/todos/" + aTodo.getPrimaryKeyValue(),
+                        "PUT", headers,
+                        "{\"title\":\"my put todo\"}");
+        // only title is mandatory the rest would be set to defaults
+
+        Assertions.assertEquals(200, response.statusCode);
+        Assertions.assertTrue(challenger.statusOfChallenge(CHALLENGE.PUT_TODOS_PARTIAL_200));
+    }
+
+    @Test
+    public void canPutTodos200MissingTitleAmendPass() {
+
+        final EntityInstanceCollection todos = ChallengeMain.getChallenger().getThingifier().getThingInstancesNamed("todo", challenger.getXChallenger());
+
+        Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
+
+        Map<String, String> headers = new HashMap<>();
+        headers.putAll(x_challenger_header);
+        headers.put("Content-Type", "application/json");
+
+        EntityInstance aTodo = new ArrayList<>(todos.getInstances()).get(0);
+
+        // amend a todo unsuccessfully
+        final HttpResponseDetails response =
+                http.send("/todos/" + aTodo.getPrimaryKeyValue(),
+                        "PUT", headers,
+                        "{\"description\":\"my description\"}");
+        // title is mandatory so this will fail
+
+        Assertions.assertEquals(400, response.statusCode);
+        Assertions.assertTrue(challenger.statusOfChallenge(CHALLENGE.PUT_TODOS_MISSING_TITLE_400));
+    }
+
+    @Test
+    public void canNotPutTodos400ChangeIdAmendPass() {
+
+        final EntityInstanceCollection todos = ChallengeMain.getChallenger().getThingifier().getThingInstancesNamed("todo", challenger.getXChallenger());
+
+        Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
+
+        Map<String, String> headers = new HashMap<>();
+        headers.putAll(x_challenger_header);
+        headers.put("Content-Type", "application/json");
+
+        EntityInstance aTodo = new ArrayList<>(todos.getInstances()).get(0);
+
+        // amend a todo unsuccessfully
+        final HttpResponseDetails response =
+                http.send("/todos/" + aTodo.getPrimaryKeyValue(),
+                        "PUT", headers,
+                        String.format("{\"id\":%d, \"description\":\"my description\"}", Integer.parseInt(aTodo.getPrimaryKeyValue()+1))
+                );
+        // title is mandatory so this will fail
+
+        Assertions.assertEquals(400, response.statusCode);
+        Assertions.assertTrue(challenger.statusOfChallenge(CHALLENGE.PUT_TODOS_400_NO_AMEND_ID));
     }
 
     @Test

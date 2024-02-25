@@ -28,6 +28,8 @@ public class ChallengeDefinitions {
         return String.format("%02d", challengeOrder);
     }
 
+    // TODO: refactor this into private methods to make it easier to re-order and manage
+
     public ChallengeDefinitions(){
 
         challengeData = new HashMap<>();
@@ -50,6 +52,7 @@ public class ChallengeDefinitions {
                 "Issue a POST request on the `/challenger` end point, with no body, to create a new challenger session. Use the generated X-CHALLENGER header in future requests to track challenge completion."
         );
         aChallenge.addHint("In multi-user mode, you need to create an X-CHALLENGER Session first", "/gui/multiuser.html");
+        aChallenge.addSolutionLink("Send request using POST to /challenger endpoint. The response has an X-CHALLENGER header, add this header X-CHALLENGER and the GUID value to all future requests.","","");
         aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/post-challenger-201");
         aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "tNGuZMQgHxw");
         getStarted.addChallenge(aChallenge);
@@ -105,6 +108,9 @@ public class ChallengeDefinitions {
         aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "1S5kpd8-xfM");
         challengeOrder++;
 
+        getChallenges.addChallenge(getTodosFiltered200(challengeOrder));
+        challengeOrder++;
+
         // HEAD
         ChallengeSection headChallenges = new ChallengeSection("HEAD Challenges",
                 "A HEAD request, is like a GET request, but only returns the headers and status code.");
@@ -130,16 +136,7 @@ public class ChallengeDefinitions {
         challengeOrder++;
 
 
-        aChallenge = createChallenge(CHALLENGE.GET_TODOS_FILTERED, renderChallengeNumber(challengeOrder), "GET /todos (200) ?filter",
-                        "Issue a GET request on the `/todos` end point with a query filter to get only todos which are 'done'. There must exist both 'done' and 'not done' todos, to pass this challenge.");
-        postCreateChallenges.addChallenge(aChallenge);
-        aChallenge.addHint("A query filter is a URL parameter using the field name and a value");
-        aChallenge.addHint("A URL parameter is added to the end of a url with a ? e.g. /todos?id=1");
-        aChallenge.addHint("To filter on 'done' we use the 'doneStatus' field  ? e.g. ?doneStatus=true");
-        aChallenge.addHint("Make sure there are todos which are done, and not yet done");
-        aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/get-todos-200-filter");
-        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "G-sLuhyPMuw");
-        challengeOrder++;
+
 
         aChallenge = createChallenge(CHALLENGE.POST_TODOS_BAD_DONE_STATUS, renderChallengeNumber(challengeOrder), "POST /todos (400) doneStatus",
                 "Issue a POST request to create a todo but fail validation on the `doneStatus` field");
@@ -229,6 +226,52 @@ public class ChallengeDefinitions {
         //aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/post-todos-id-200");
         //aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "feXdRpZ_tgs");
         challengeOrder++;
+
+
+
+        // UPDATE wtih PUT
+        ChallengeSection putUpdateChallenges = new ChallengeSection("Update Challenges with PUT",
+                "A PUT request can be used to amend data. REST Put requests are idempotent, they provide the same result each time.");
+        sections.add(putUpdateChallenges);
+
+        aChallenge = createChallenge(CHALLENGE.PUT_TODOS_FULL_200, renderChallengeNumber(challengeOrder), "PUT /todos/{id} full (200)",
+                "Issue a PUT request to update an existing todo with a complete payload i.e. title, description and donestatus.");
+        putUpdateChallenges.addChallenge(aChallenge);
+        // todo: create solution for PUT todos full 200 challenge
+        //aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/post-todos-201");
+        //aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "T0LFHwavsNA");
+        challengeOrder++;
+
+        aChallenge = createChallenge(CHALLENGE.PUT_TODOS_PARTIAL_200, renderChallengeNumber(challengeOrder), "PUT /todos/{id} partial (200)",
+                "Issue a PUT request to update an existing todo with just mandatory items in payload i.e. title.");
+        putUpdateChallenges.addChallenge(aChallenge);
+        // todo: create solution for PUT todos partial 200 challenge
+        //aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/post-todos-201");
+        //aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "T0LFHwavsNA");
+        challengeOrder++;
+
+        aChallenge = createChallenge(CHALLENGE.PUT_TODOS_MISSING_TITLE_400, renderChallengeNumber(challengeOrder), "PUT /todos/{id} no title (400)",
+                "Issue a PUT request to fail to update an existing todo because title is missing in payload.");
+        putUpdateChallenges.addChallenge(aChallenge);
+        // todo: create solution for PUT todos partial 200 challenge
+        aChallenge.addHint("Title is required for Put requests because they are idempotent. You can amend using POST without a title, but not using a PUT.");
+        //aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/post-todos-201");
+        //aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "T0LFHwavsNA");
+        // TODO: add solution text to summarise solution
+        challengeOrder++;
+
+        aChallenge = createChallenge(CHALLENGE.PUT_TODOS_400_NO_AMEND_ID, renderChallengeNumber(challengeOrder), "PUT /todos/{id} no amend id (400)",
+                "Issue a PUT request to fail to update an existing todo because id different in payload.");
+        putUpdateChallenges.addChallenge(aChallenge);
+        // todo: create solution for PUT todos partial 200 challenge
+        aChallenge.addHint("ID is auto generated you can not amend it in the payload.");
+        aChallenge.addHint("If you have a different id in the payload from the url then this is viewed as an amendment and you can not amend an auto generated field.");
+        //aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/post-todos-201");
+        //aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "T0LFHwavsNA");
+        // TODO: add solution text to summarise solution
+        challengeOrder++;
+
+
 
         // DELETE
         ChallengeSection deleteChallenges = new ChallengeSection("DELETE Challenges",
@@ -610,6 +653,18 @@ public class ChallengeDefinitions {
                     "Number of names, does not match number of challenges" +
                             ", possible duplicate name");
         }
+    }
+
+    private ChallengeDefinitionData getTodosFiltered200(int challengeOrder) {
+        ChallengeDefinitionData aChallenge = createChallenge(CHALLENGE.GET_TODOS_FILTERED, renderChallengeNumber(challengeOrder), "GET /todos (200) ?filter",
+                "Issue a GET request on the `/todos` end point with a query filter to get only todos which are 'done'. There must exist both 'done' and 'not done' todos, to pass this challenge.");
+        aChallenge.addHint("A query filter is a URL parameter using the field name and a value");
+        aChallenge.addHint("A URL parameter is added to the end of a url with a ? e.g. /todos?id=1");
+        aChallenge.addHint("To filter on 'done' we use the 'doneStatus' field  ? e.g. ?doneStatus=true");
+        aChallenge.addHint("Make sure there are todos which are done, and not yet done");
+        aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/get-todos-200-filter");
+        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "G-sLuhyPMuw");
+        return aChallenge;
     }
 
     private ChallengeDefinitionData createChallenge(final CHALLENGE id,

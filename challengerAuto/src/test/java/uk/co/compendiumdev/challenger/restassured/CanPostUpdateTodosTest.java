@@ -1,7 +1,5 @@
 package uk.co.compendiumdev.challenger.restassured;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
@@ -15,7 +13,7 @@ import uk.co.compendiumdev.challenger.restassured.api.TodosApi;
 
 import java.util.List;
 
-public class CanUpdateTodosWithPOSTTest extends RestAssuredBaseTest {
+public class CanPostUpdateTodosTest extends RestAssuredBaseTest {
 
     @Test
     void canUpdateATodoWithPost(){

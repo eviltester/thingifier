@@ -117,6 +117,30 @@ public class ChallengerInternalHTTPResponseHook implements InternalHttpResponseH
             }
         }
 
+        if(request.getVerb() == PUT && request.getPath().matches("todos/.*") && response.getStatusCode() == 200) {
+            if (request.getBody().toLowerCase().contains("donestatus") && request.getBody().toLowerCase().contains("description")){
+                challengers.pass(challenger, CHALLENGE.PUT_TODOS_FULL_200);
+            }
+        }
+
+        if(request.getVerb() == PUT && request.getPath().matches("todos/.*") && response.getStatusCode() == 400) {
+            if (response.getBody().contains("title : field is mandatory")){
+                challengers.pass(challenger, CHALLENGE.PUT_TODOS_MISSING_TITLE_400);
+            }
+        }
+
+        if(request.getVerb() == PUT && request.getPath().matches("todos/.*") && response.getStatusCode() == 200){
+            if(!request.getBody().toLowerCase().contains("donestatus") && !request.getBody().toLowerCase().contains("description")) {
+                challengers.pass(challenger, CHALLENGE.PUT_TODOS_PARTIAL_200);
+            }
+        }
+
+        if(request.getVerb() == PUT && request.getPath().matches("todos/.*") && response.getStatusCode() == 400) {
+            if (response.getBody().contains("Can not amend id from")){
+                challengers.pass(challenger, CHALLENGE.PUT_TODOS_400_NO_AMEND_ID);
+            }
+        }
+
         if (request.getVerb() == POST &&
                 request.getPath().contentEquals("secret/token") &&
                 request.getHeaders().headerExists("Authorization") &&

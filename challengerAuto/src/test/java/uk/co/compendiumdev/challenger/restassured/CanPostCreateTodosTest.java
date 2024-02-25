@@ -7,18 +7,15 @@ import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import uk.co.compendiumdev.challenger.payloads.ErrorMessages;
 import uk.co.compendiumdev.challenger.payloads.Todo;
 import uk.co.compendiumdev.challenger.restassured.api.ChallengesStatus;
 import uk.co.compendiumdev.challenger.restassured.api.RestAssuredBaseTest;
 import uk.co.compendiumdev.challenger.restassured.api.TodosApi;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class CanCreateTodosWithPOSTTest extends RestAssuredBaseTest {
+public class CanPostCreateTodosTest extends RestAssuredBaseTest {
 
     @Test
     void canCreateATodoWithPost(){

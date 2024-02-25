@@ -411,9 +411,17 @@ public class ChallengerWebGUI {
 
         final Collection<ChallengeSection> sections = challengeDefinitions.getChallengeSections();
 
+        // add a toc
+        html.append("<p id='toc'><strong>Sections</strong></p>");
+        html.append("<ul>");
+        for(ChallengeSection section : sections){
+            html.append(String.format("<li><a href='#%s'>%s</a></li>", section.getTitle().replaceAll(" ", "").toLowerCase(), section.getTitle()));
+        }
+        html.append("</ul>");
+
         for(ChallengeSection section : sections){
 
-            html.append("<h2>" + section.getTitle() + "</h2>");
+            html.append(String.format("<h2 id='%s'>", section.getTitle().replaceAll(" ", "").toLowerCase()) + section.getTitle() + "</h2>");
             html.append("<p class='challengesectiondescription'>" + section.getDescription() + "</p>");
 
             List<ChallengeDefinitionData> sectionData = new ArrayList<>();
@@ -429,6 +437,7 @@ public class ChallengerWebGUI {
             }
 
             html.append(renderChallengeData(sectionData));
+            html.append("<p><a href='#toc'>Back to Section List</a></p>");
         }
 
         return html.toString();
