@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import uk.co.compendiumdev.challenge.CHALLENGE;
 import uk.co.compendiumdev.challenge.challenges.definitions.ChallengerChallenges;
 import uk.co.compendiumdev.challenge.challenges.definitions.GetChallenges;
+import uk.co.compendiumdev.challenge.challenges.definitions.HeadChallenges;
 import uk.co.compendiumdev.challenge.challenges.definitions.PostChallenges;
 
 import java.util.*;
@@ -51,12 +52,15 @@ public class ChallengeDefinitions {
         storeChallengeAs(CHALLENGE.CREATE_NEW_CHALLENGER, ChallengerChallenges.createChallenger201(challengeOrder++), getStarted);
 
 
+
+
         ChallengeSection firstChallenge = new ChallengeSection("First Real Challenge",
                 "For your first challenge, get the list of challenges. You'll be able to use this to see your progress in your API Client, as well as using the GUI.");
         sections.add(firstChallenge);
 
         // GET all challenges as a list
         storeChallengeAs(CHALLENGE.GET_CHALLENGES, GetChallenges.getChallenges200(challengeOrder++), firstChallenge);
+
 
 
         ChallengeSection getChallenges = new ChallengeSection("GET Challenges",
@@ -70,84 +74,33 @@ public class ChallengeDefinitions {
         storeChallengeAs(CHALLENGE.GET_TODOS_FILTERED, GetChallenges.getTodosFiltered200(challengeOrder++), getChallenges);
 
 
+
         // HEAD
         ChallengeSection headChallenges = new ChallengeSection("HEAD Challenges",
                 "A HEAD request, is like a GET request, but only returns the headers and status code.");
         sections.add(headChallenges);
 
-        aChallenge = createChallenge(CHALLENGE.GET_HEAD_TODOS, renderChallengeNumber(challengeOrder), "HEAD /todos (200)",
-                "Issue a HEAD request on the `/todos` end point");
-        headChallenges.addChallenge(aChallenge);
-        aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/head-todos-200");
-        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "zKbytTelP84");
-        challengeOrder++;
+        storeChallengeAs(CHALLENGE.GET_HEAD_TODOS, HeadChallenges.headTodos200(challengeOrder++), headChallenges);
+
+
+
 
         // CREATE POST
         ChallengeSection postCreateChallenges = new ChallengeSection("Creation Challenges with POST",
                 "A POST request can be used to create and update data, these challenges are to 'create' data. As a Hint, if you are not sure what the message body should be, try copying in the response from the associated GET request, and amending it.");
         sections.add(postCreateChallenges);
 
-        aChallenge = createChallenge(CHALLENGE.POST_TODOS, renderChallengeNumber(challengeOrder), "POST /todos (201)",
-                "Issue a POST request to successfully create a todo");
-        postCreateChallenges.addChallenge(aChallenge);
-        aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/post-todos-201");
-        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "T0LFHwavsNA");
-        challengeOrder++;
+        storeChallengeAs(CHALLENGE.POST_TODOS, PostChallenges.postTodos201(challengeOrder++), postCreateChallenges);
+        storeChallengeAs(CHALLENGE.POST_TODOS_BAD_DONE_STATUS, PostChallenges.postTodosBadDoneStatus400(challengeOrder++), postCreateChallenges);
+        storeChallengeAs(CHALLENGE.POST_TODOS_TOO_LONG_TITLE_LENGTH, PostChallenges.postTodosTitleTooLong400(challengeOrder++), postCreateChallenges);
+        storeChallengeAs(CHALLENGE.POST_TODOS_TOO_LONG_DESCRIPTION_LENGTH, PostChallenges.postTodosDescriptionTooLong400(challengeOrder++), postCreateChallenges);
+        storeChallengeAs(CHALLENGE.POST_MAX_OUT_TITILE_DESCRIPTION_LENGTH, PostChallenges.postTodosMaxTitleDescriptionTooLong400(challengeOrder++), postCreateChallenges);
+        storeChallengeAs(CHALLENGE.POST_TODOS_TOO_LONG_PAYLOAD_SIZE, PostChallenges.postTodosPayloadTooLong400(challengeOrder++), postCreateChallenges);
+        storeChallengeAs(CHALLENGE.POST_TODOS_INVALID_EXTRA_FIELD, PostChallenges.postTodosInvalidExtraField400(challengeOrder++), postCreateChallenges);
 
 
 
 
-        aChallenge = createChallenge(CHALLENGE.POST_TODOS_BAD_DONE_STATUS, renderChallengeNumber(challengeOrder), "POST /todos (400) doneStatus",
-                "Issue a POST request to create a todo but fail validation on the `doneStatus` field");
-        postCreateChallenges.addChallenge(aChallenge);
-        aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/post-todos-400");
-        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "tlye5bQ72g0");
-        challengeOrder++;
-
-        aChallenge = createChallenge(CHALLENGE.POST_TODOS_TOO_LONG_TITLE_LENGTH, renderChallengeNumber(challengeOrder), "POST /todos (400) title too long",
-                "Issue a POST request to create a todo but fail length validation on the `title` field because your title exceeds maximum allowable characters.");
-        postCreateChallenges.addChallenge(aChallenge);
-//        aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/post-todos-400");
-//        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "tlye5bQ72g0");
-        // TODO: create solution for failing title too long
-        challengeOrder++;
-
-
-        aChallenge = createChallenge(CHALLENGE.POST_TODOS_TOO_LONG_DESCRIPTION_LENGTH, renderChallengeNumber(challengeOrder), "POST /todos (400) description too long",
-                "Issue a POST request to create a todo but fail length validation on the `description` because your description exceeds maximum allowable characters.");
-        postCreateChallenges.addChallenge(aChallenge);
-//        aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/post-todos-400");
-//        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "tlye5bQ72g0");
-        // TODO: create solution for failing description too long
-        challengeOrder++;
-
-        aChallenge = createChallenge(CHALLENGE.POST_MAX_OUT_TITILE_DESCRIPTION_LENGTH, renderChallengeNumber(challengeOrder), "POST /todos (201) max out content",
-                "Issue a POST request to create a todo with maximum length title and description fields.");
-        postCreateChallenges.addChallenge(aChallenge);
-        aChallenge.addHint("Max lengths are listed in the API Documentation");
-        aChallenge.addHint("CounterStrings are very useful for testing with maximum field lengths");
-//        aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/post-todos-400");
-//        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "tlye5bQ72g0");
-        // TODO: create solution for max out title and description
-        challengeOrder++;
-
-        aChallenge = createChallenge(CHALLENGE.POST_TODOS_TOO_LONG_PAYLOAD_SIZE, renderChallengeNumber(challengeOrder), "POST /todos (413) content too long",
-                "Issue a POST request to create a todo but fail payload length validation on the `description` because your whole payload exceeds maximum allowable 5000 characters.");
-        postCreateChallenges.addChallenge(aChallenge);
-        aChallenge.addHint("Try using a long 5000 char string as the description or title text");
-//        aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/post-todos-400");
-//        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "tlye5bQ72g0");
-        // TODO: create solution for failing content too long
-        challengeOrder++;
-
-        aChallenge = createChallenge(CHALLENGE.POST_TODOS_INVALID_EXTRA_FIELD, renderChallengeNumber(challengeOrder), "POST /todos (400) extra",
-                "Issue a POST request to create a todo but fail validation because your payload contains an unrecognised field.");
-        postCreateChallenges.addChallenge(aChallenge);
-        aChallenge.addHint("Try to create a todo with a title, description and a priority");
-//        aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/post-todos-400");
-//        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "tlye5bQ72g0");
-        // TODO: create solution for unrecognised field names
-        challengeOrder++;
 
 
         // CREATE wtih PUT

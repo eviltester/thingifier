@@ -1,6 +1,5 @@
 package uk.co.compendiumdev.challenge.challenges.definitions;
 
-import uk.co.compendiumdev.challenge.CHALLENGE;
 import uk.co.compendiumdev.challenge.challenges.ChallengeDefinitionData;
 
 public class GetChallenges {
