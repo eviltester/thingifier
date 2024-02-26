@@ -3,6 +3,9 @@ package uk.co.compendiumdev.challenge.challenges;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.co.compendiumdev.challenge.CHALLENGE;
+import uk.co.compendiumdev.challenge.challenges.definitions.ChallengerChallenges;
+import uk.co.compendiumdev.challenge.challenges.definitions.GetChallenges;
+import uk.co.compendiumdev.challenge.challenges.definitions.PostChallenges;
 
 import java.util.*;
 
@@ -36,80 +39,36 @@ public class ChallengeDefinitions {
         orderedChallenges = new ArrayList<>();
         sections = new ArrayList<>();
 
+        int challengeOrder = 1;
+        ChallengeDefinitionData aChallenge;
 
 
         ChallengeSection getStarted = new ChallengeSection("Getting Started",
                 "If you want to track your challenge progress, in multi-user mode then you need to solve the challenges in this section to generate a unique ID that we can associate your progress with.");
-
         sections.add(getStarted);
 
-        int challengeOrder = 1;
-
         // create a challenger to persist challenge sessions
-        // CREATE_NEW_CHALLENGER
-        ChallengeDefinitionData aChallenge = createChallenge(CHALLENGE.CREATE_NEW_CHALLENGER,
-                renderChallengeNumber(challengeOrder), "POST /challenger (201)",
-                "Issue a POST request on the `/challenger` end point, with no body, to create a new challenger session. Use the generated X-CHALLENGER header in future requests to track challenge completion."
-        );
-        aChallenge.addHint("In multi-user mode, you need to create an X-CHALLENGER Session first", "/gui/multiuser.html");
-        aChallenge.addSolutionLink("Send request using POST to /challenger endpoint. The response has an X-CHALLENGER header, add this header X-CHALLENGER and the GUID value to all future requests.","","");
-        aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/post-challenger-201");
-        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "tNGuZMQgHxw");
-        getStarted.addChallenge(aChallenge);
-        challengeOrder++;
+        storeChallengeAs(CHALLENGE.CREATE_NEW_CHALLENGER, ChallengerChallenges.createChallenger201(challengeOrder++), getStarted);
 
 
         ChallengeSection firstChallenge = new ChallengeSection("First Real Challenge",
                 "For your first challenge, get the list of challenges. You'll be able to use this to see your progress in your API Client, as well as using the GUI.");
-
         sections.add(firstChallenge);
 
-        // READ
-        aChallenge = createChallenge(CHALLENGE.GET_CHALLENGES, renderChallengeNumber(challengeOrder), "GET /challenges (200)",
-                "Issue a GET request on the `/challenges` end point");
-        firstChallenge.addChallenge(aChallenge);
-        aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/get-challenges-200/");
-        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "DrAjk2NaPRo");
-        challengeOrder++;
+        // GET all challenges as a list
+        storeChallengeAs(CHALLENGE.GET_CHALLENGES, GetChallenges.getChallenges200(challengeOrder++), firstChallenge);
+
 
         ChallengeSection getChallenges = new ChallengeSection("GET Challenges",
                 "To retrieve, or read information from an API we issue GET requests. This section has a bunch of GET request challenges to try out.");
         sections.add(getChallenges);
 
-        aChallenge = createChallenge(CHALLENGE.GET_TODOS, renderChallengeNumber(challengeOrder), "GET /todos (200)",
-                "Issue a GET request on the `/todos` end point");
-        getChallenges.addChallenge(aChallenge);
-        aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/get-todos-200");
-        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "OpisB0UZq0c");
-        challengeOrder++;
+        storeChallengeAs(CHALLENGE.GET_TODOS, GetChallenges.getTodos200(challengeOrder++), getChallenges);
+        storeChallengeAs(CHALLENGE.GET_TODOS_NOT_PLURAL_404, GetChallenges.getTodos404(challengeOrder++), getChallenges);
+        storeChallengeAs(CHALLENGE.GET_TODO, GetChallenges.getTodo200(challengeOrder++), getChallenges);
+        storeChallengeAs(CHALLENGE.GET_TODO_404, GetChallenges.getTodo404(challengeOrder++), getChallenges);
+        storeChallengeAs(CHALLENGE.GET_TODOS_FILTERED, GetChallenges.getTodosFiltered200(challengeOrder++), getChallenges);
 
-        aChallenge = createChallenge(CHALLENGE.GET_TODOS_NOT_PLURAL_404, renderChallengeNumber(challengeOrder), "GET /todo (404) not plural",
-                "Issue a GET request on the `/todo` end point should 404 because nouns should be plural");
-        getChallenges.addChallenge(aChallenge);
-        aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/get-todo-404");
-        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "gAJzqgcN9dc");
-        challengeOrder++;
-
-        aChallenge = createChallenge(CHALLENGE.GET_TODO, renderChallengeNumber(challengeOrder), "GET /todos/{id} (200)",
-                "Issue a GET request on the `/todos/{id}` end point to return a specific todo");
-        getChallenges.addChallenge(aChallenge);
-        aChallenge.addHint("Make sure you don't use {id} in the url, replace that with the id of a todo e.g. /todos/1");
-        aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/get-todos-id-200");
-        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "JDbbSY3U_rY");
-        challengeOrder++;
-
-        aChallenge = createChallenge(CHALLENGE.GET_TODO_404, renderChallengeNumber(challengeOrder), "GET /todos/{id} (404)",
-                "Issue a GET request on the `/todos/{id}` end point for a todo that does not exist");
-        getChallenges.addChallenge(aChallenge);
-        aChallenge.addHint("Make sure you don't use {id} in the url, replace that with the id of a todo e.g. /todos/1");
-        aChallenge.addHint("Make sure the id is an integer e.g. /todos/1");
-        aChallenge.addHint("Make sure you are using the /todos end point e.g. /todos/1");
-        aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/get-todos-id-404");
-        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "1S5kpd8-xfM");
-        challengeOrder++;
-
-        getChallenges.addChallenge(getTodosFiltered200(challengeOrder));
-        challengeOrder++;
 
         // HEAD
         ChallengeSection headChallenges = new ChallengeSection("HEAD Challenges",
@@ -626,11 +585,7 @@ public class ChallengeDefinitions {
         aChallenge.addHint("You have to delete all the todo items in the system to complete this challenge");
         challengeOrder++;
 
-        aChallenge =
-                createChallenge(CHALLENGE.POST_ALL_TODOS, renderChallengeNumber(challengeOrder),"POST /todos (201) all",
-                        "Issue as many POST requests as it takes to add the maximum number of TODOS allowed for a user. The maximum number should be listed in the documentation.");
-        miscChallenges.addChallenge(aChallenge);
-        // TODO: create solution and video for Post all
+        storeChallengeAs(CHALLENGE.POST_ALL_TODOS, PostChallenges.postAllTodos201(challengeOrder), miscChallenges);
         challengeOrder++;
 
 
@@ -655,16 +610,16 @@ public class ChallengeDefinitions {
         }
     }
 
-    private ChallengeDefinitionData getTodosFiltered200(int challengeOrder) {
-        ChallengeDefinitionData aChallenge = createChallenge(CHALLENGE.GET_TODOS_FILTERED, renderChallengeNumber(challengeOrder), "GET /todos (200) ?filter",
-                "Issue a GET request on the `/todos` end point with a query filter to get only todos which are 'done'. There must exist both 'done' and 'not done' todos, to pass this challenge.");
-        aChallenge.addHint("A query filter is a URL parameter using the field name and a value");
-        aChallenge.addHint("A URL parameter is added to the end of a url with a ? e.g. /todos?id=1");
-        aChallenge.addHint("To filter on 'done' we use the 'doneStatus' field  ? e.g. ?doneStatus=true");
-        aChallenge.addHint("Make sure there are todos which are done, and not yet done");
-        aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/get-todos-200-filter");
-        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "G-sLuhyPMuw");
-        return aChallenge;
+    private ChallengeDefinitionData storeChallengeAs(
+            final CHALLENGE id,
+            final ChallengeDefinitionData challenge,
+            ChallengeSection section) {
+
+        challengeData.put(id, challenge);
+        orderedChallenges.add(challenge);
+        section.addChallenge(challenge);
+
+        return challenge;
     }
 
     private ChallengeDefinitionData createChallenge(final CHALLENGE id,
