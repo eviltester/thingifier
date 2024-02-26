@@ -68,6 +68,10 @@ public class DefaultGUIHTML {
         html.append("<meta http-equiv='content-language' content='en-us'>");
         html.append("<title>" + title + "</title>");
         html.append(" <link rel='stylesheet' href='/css/default.css'>");
+        String injectFromEnv = System.getenv("HTML_HEAD_INJECT");
+        if(injectFromEnv!=null){
+            html.append(injectFromEnv);
+        }
         html.append("</head><body>");
         html.append("<div class='content'>");
         return html.toString();
