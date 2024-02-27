@@ -86,4 +86,64 @@ public class CanCheckHeartbeatStatusCodesTest extends RestAssuredBaseTest {
 
     }
 
+
+    // repeat above tests with the X-HTTP-Method-Override header and POST
+    @Test
+    void useOverrideHeaderToNotDeleteHeartbeat(){
+
+        // heartbeat returns 204 when running
+        RestAssured.
+                given().
+                header("X-HTTP-Method-Override", "DELETE").
+                header("X-CHALLENGER", xChallenger).
+                post(apiPath( "/heartbeat")).
+                then().
+                statusCode(405);
+
+        ChallengesStatus statuses = new ChallengesStatus();
+        statuses.get();
+        Assertions.assertTrue(statuses.getChallengeNamed("POST /heartbeat as DELETE (405)").status);
+
+    }
+
+    @Test
+    void useOverrideHeaderToNotPatchHeartbeat500(){
+
+        RestAssured.
+                given().
+                header("X-HTTP-Method-Override", "PATCH").
+                header("X-CHALLENGER", xChallenger).
+                request(
+                        Method.POST,
+                        apiPath("/heartbeat")).
+                then().
+                statusCode(500);
+
+
+        ChallengesStatus statuses = new ChallengesStatus();
+        statuses.get();
+        Assertions.assertTrue(statuses.getChallengeNamed("POST /heartbeat as PATCH (500)").status);
+
+    }
+
+    @Test
+    void useOverrideHeaderToNotTraceHeartbeat501(){
+
+        RestAssured.
+                given().
+                header("X-HTTP-Method-Override", "TRACE").
+                header("X-CHALLENGER", xChallenger).
+                request(
+                        Method.POST,
+                        apiPath("/heartbeat")).
+                then().
+                statusCode(501);
+
+
+        ChallengesStatus statuses = new ChallengesStatus();
+        statuses.get();
+        Assertions.assertTrue(statuses.getChallengeNamed("POST /heartbeat as Trace (501)").status);
+
+    }
+
 }

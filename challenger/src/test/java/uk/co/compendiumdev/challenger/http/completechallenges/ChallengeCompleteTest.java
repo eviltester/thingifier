@@ -1030,6 +1030,63 @@ public abstract class ChallengeCompleteTest{
     }
 
     @Test
+    public void canUseMethodOverrideHeaderToPatch500() {
+
+        Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
+
+        Map<String, String> headers = new HashMap<>();
+        headers.putAll(x_challenger_header);
+        headers.put("X-HTTP-Method-Override", "PATCH");
+        headers.put("Content-Type","application/json");
+
+        //{"note":"bob"}
+        final HttpResponseDetails response =
+                http.send("/heartbeat", "POST", headers, "");
+
+        Assertions.assertEquals(500, response.statusCode);
+        Assertions.assertTrue(challenger.
+                statusOfChallenge(CHALLENGE.OVERRIDE_PATCH_HEARTBEAT_500));
+    }
+
+    @Test
+    public void canUseMethodOverrideHeaderToDelete405() {
+
+        Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
+
+        Map<String, String> headers = new HashMap<>();
+        headers.putAll(x_challenger_header);
+        headers.put("X-HTTP-Method-Override", "DELETE");
+        headers.put("Content-Type","application/json");
+
+        //{"note":"bob"}
+        final HttpResponseDetails response =
+                http.send("/heartbeat", "POST", headers, "");
+
+        Assertions.assertEquals(405, response.statusCode);
+        Assertions.assertTrue(challenger.
+                statusOfChallenge(CHALLENGE.OVERRIDE_DELETE_HEARTBEAT_405));
+    }
+
+    @Test
+    public void canUseMethodOverrideHeaderToTrace501() {
+
+        Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
+
+        Map<String, String> headers = new HashMap<>();
+        headers.putAll(x_challenger_header);
+        headers.put("X-HTTP-Method-Override", "TRACE");
+        headers.put("Content-Type","application/json");
+
+        //{"note":"bob"}
+        final HttpResponseDetails response =
+                http.send("/heartbeat", "POST", headers, "");
+
+        Assertions.assertEquals(501, response.statusCode);
+        Assertions.assertTrue(challenger.
+                statusOfChallenge(CHALLENGE.OVERRIDE_TRACE_HEARTBEAT_501));
+    }
+
+    @Test
     public void canCreateANewChallenger() {
 
         Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());

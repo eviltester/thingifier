@@ -197,6 +197,13 @@ public class ChallengeDefinitions {
         storeChallengeAs(CHALLENGE.TRACE_HEARTBEAT_501, StatusCodeChallenges.notImplemented501UsingTrace(challengeOrder++), miscStatusCodes);
         storeChallengeAs(CHALLENGE.GET_HEARTBEAT_204, StatusCodeChallenges.noContent204UsingGet(challengeOrder++), miscStatusCodes);
 
+        ChallengeSection methodOverrideChallenges = new ChallengeSection("HTTP Method Override Challenges",
+                "Some HTTP Clients can not send all verbs e.g. PATCH, DELETE, PUT. Use an X-HTTP-Method-Override header to simulate these with a POST request");
+        sections.add(methodOverrideChallenges);
+
+        storeChallengeAs(CHALLENGE.OVERRIDE_DELETE_HEARTBEAT_405, StatusCodeChallenges.overridePostToDeleteFor405(challengeOrder++), methodOverrideChallenges);
+        storeChallengeAs(CHALLENGE.OVERRIDE_PATCH_HEARTBEAT_500, StatusCodeChallenges.overridePostToPatchFor500(challengeOrder++), methodOverrideChallenges);
+        storeChallengeAs(CHALLENGE.OVERRIDE_TRACE_HEARTBEAT_501, StatusCodeChallenges.overridePostToTraceFor501(challengeOrder++), methodOverrideChallenges);
 
 
 
