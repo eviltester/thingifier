@@ -3,10 +3,7 @@ package uk.co.compendiumdev.challenge.challenges;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.co.compendiumdev.challenge.CHALLENGE;
-import uk.co.compendiumdev.challenge.challenges.definitions.ChallengerChallenges;
-import uk.co.compendiumdev.challenge.challenges.definitions.GetChallenges;
-import uk.co.compendiumdev.challenge.challenges.definitions.HeadChallenges;
-import uk.co.compendiumdev.challenge.challenges.definitions.PostChallenges;
+import uk.co.compendiumdev.challenge.challenges.definitions.*;
 
 import java.util.*;
 
@@ -108,13 +105,9 @@ public class ChallengeDefinitions {
                 "A PUT request can often used to create and update data. The todo application we are using has automatically generated ids, so you cannot use PUT to create. As a Hint, if you are not sure what the message body should be, try copying in the response from the associated GET request, and amending it.");
         sections.add(putCreateChallenges);
 
-        aChallenge = createChallenge(CHALLENGE.PUT_TODOS_400, renderChallengeNumber(challengeOrder), "PUT /todos/{id} (400)",
-                "Issue a PUT request to unsuccessfully create a todo");
-        putCreateChallenges.addChallenge(aChallenge);
-        // todo: create solution for PUT todos 400 challenge
-        //aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/post-todos-201");
-        //aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "T0LFHwavsNA");
-        challengeOrder++;
+        storeChallengeAs(CHALLENGE.PUT_TODOS_400, PutChallenges.putTodosId400(challengeOrder++), putCreateChallenges);
+
+
 
 
         // UPDATE
@@ -122,22 +115,9 @@ public class ChallengeDefinitions {
                 "Use a POST request to amend something that already exists. These are 'partial' content updates so you usually don't need to have all details of the entity in the request, e.g. you could just update a title, or a description, or a status");
         sections.add(postUpdateChallenges);
 
-        aChallenge = createChallenge(CHALLENGE.POST_UPDATE_TODO, renderChallengeNumber(challengeOrder), "POST /todos/{id} (200)",
-                "Issue a POST request to successfully update a todo");
-        postUpdateChallenges.addChallenge(aChallenge);
-        aChallenge.addHint("Make sure you don't use {id} in the url, replace that with the id of a todo e.g. /todos/1");
-        aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/post-todos-id-200");
-        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "feXdRpZ_tgs");
-        challengeOrder++;
+        storeChallengeAs(CHALLENGE.POST_UPDATE_TODO, PostChallenges.postTodosId200(challengeOrder++), postUpdateChallenges);
+        storeChallengeAs(CHALLENGE.POST_TODOS_404, PostChallenges.postTodosId404(challengeOrder++), postUpdateChallenges);
 
-        aChallenge = createChallenge(CHALLENGE.POST_TODOS_404, renderChallengeNumber(challengeOrder), "POST /todos/{id} (404)",
-                "Issue a POST request for a todo which does not exist. Expect to receive a 404 response.");
-        postUpdateChallenges.addChallenge(aChallenge);
-        aChallenge.addHint("Make sure you don't use {id} in the url, replace that with the id of a todo that does not exist e.g. /todos/100");
-        // todo add solution and hints for POST 404
-        //aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/post-todos-id-200");
-        //aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "feXdRpZ_tgs");
-        challengeOrder++;
 
 
 
