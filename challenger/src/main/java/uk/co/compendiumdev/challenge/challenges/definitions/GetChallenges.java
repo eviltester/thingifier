@@ -151,4 +151,16 @@ public class GetChallenges {
         return aChallenge;
     }
 
+    public static ChallengeDefinitionData getTodosUnavailableAccept406(int challengeOrder) {
+        ChallengeDefinitionData aChallenge = new ChallengeDefinitionData(
+                ChallengeRenderer.renderChallengeNumber(challengeOrder),
+                "GET /todos (406)",
+                "Issue a GET request on the `/todos` end point with an `Accept` header `application/gzip` to receive 406 'NOT ACCEPTABLE' status code");
+
+        aChallenge.addSolutionLink("Read Solution", "HREF","https://www.eviltester.com/apichallenges/howto/19-get-todos-invalid-accept-406/");
+        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "QzfbegkY1ok");
+        return aChallenge;
+    }
+
+
 }

@@ -6,18 +6,6 @@ import uk.co.compendiumdev.challenge.challenges.ChallengeDefinitionData;
 public class PostChallenges {
 
 
-    /*
-        CHALLENGER
-     */
-    // TODO: create solution and video for Post all
-    public static ChallengeDefinitionData postAllTodos201(int challengeOrder) {
-        ChallengeDefinitionData aChallenge = new ChallengeDefinitionData(
-                ChallengeRenderer.renderChallengeNumber(challengeOrder),
-                "POST /todos (201) all",
-                "Issue as many POST requests as it takes to add the maximum number of TODOS allowed for a user. The maximum number should be listed in the documentation."
-        );
-        return aChallenge;
-    }
 
     /*
         CREATE TODOS
@@ -136,6 +124,76 @@ public class PostChallenges {
         // todo add solution and hints for POST 404
         //aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/post-todos-id-200");
         //aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "feXdRpZ_tgs");       return aChallenge;
+        return aChallenge;
+    }
+
+    /*
+        CONTENT TYPE
+     */
+
+    // POST control content type, and Accepting only XML ie. Accept header of `application/xml`
+    //      control content type to create with - XML
+    public static ChallengeDefinitionData postCreateTodoWithXMLAcceptXML(int challengeOrder) {
+        ChallengeDefinitionData aChallenge = new ChallengeDefinitionData(
+                ChallengeRenderer.renderChallengeNumber(challengeOrder),
+                "POST /todos XML",
+                "Issue a POST request on the `/todos` end point to create a todo using Content-Type `application/xml`, and Accepting only XML ie. Accept header of `application/xml`");
+
+        aChallenge.addSolutionLink("Read Solution", "HREF","https://www.eviltester.com/apichallenges/howto/20-post-todos-xml/");
+        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "2-KBYHwb7MM");
+        return aChallenge;
+    }
+
+    //      control content type to create with - JSON
+    public static ChallengeDefinitionData postCreateTodoWithJsonAcceptJson(int challengeOrder) {
+        ChallengeDefinitionData aChallenge = new ChallengeDefinitionData(
+                ChallengeRenderer.renderChallengeNumber(challengeOrder),
+                "POST /todos JSON",
+                "Issue a POST request on the `/todos` end point to create a todo using Content-Type `application/json`, and Accepting only JSON ie. Accept header of `application/json`");
+
+        aChallenge.addSolutionLink("Read Solution", "HREF","https://www.eviltester.com/apichallenges/howto/21-post-todos-json/");
+        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "VS9qIhgp51Q");
+        return aChallenge;
+    }
+
+    //      content type not supported 415 e.g. form encoded
+    public static ChallengeDefinitionData postCreateUnsupportedContentType415(int challengeOrder) {
+        ChallengeDefinitionData aChallenge = new ChallengeDefinitionData(
+                ChallengeRenderer.renderChallengeNumber(challengeOrder),
+                "POST /todos (415)",
+                "Issue a POST request on the `/todos` end point with an unsupported content type to generate a 415 status code");
+
+        aChallenge.addSolutionLink("Read Solution", "HREF","https://www.eviltester.com/apichallenges/howto/22-post-todos-unsupported-415/");
+        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "L8H-vkbXyr0");
+        return aChallenge;
+    }
+
+
+    /*
+        MIXED CONTENT AND ACCEPT TYPES
+     */
+
+    //      content type XML - accept type JSON
+    public static ChallengeDefinitionData postTodosXmlToJson201(int challengeOrder) {
+        ChallengeDefinitionData aChallenge = new ChallengeDefinitionData(
+                ChallengeRenderer.renderChallengeNumber(challengeOrder),
+                "POST /todos XML to JSON",
+                "Issue a POST request on the `/todos` end point to create a todo using Content-Type `application/xml` but Accept `application/json`");
+
+        aChallenge.addSolutionLink("Read Solution", "HREF","https://www.eviltester.com/apichallenges/howto/23-post-xml-accept-json/");
+        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "kfe7VtaV7u0");
+        return aChallenge;
+    }
+
+    //      content type JSON - accept type XML
+    public static ChallengeDefinitionData postTodosJsonToXml201(int challengeOrder) {
+        ChallengeDefinitionData aChallenge = new ChallengeDefinitionData(
+                ChallengeRenderer.renderChallengeNumber(challengeOrder),
+                "POST /todos JSON to XML",
+                "Issue a POST request on the `/todos` end point to create a todo using Content-Type `application/json` but Accept `application/xml`");
+
+        aChallenge.addSolutionLink("Read Solution", "HREF","https://www.eviltester.com/apichallenges/howto/24-post-json-accept-xml/");
+        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "uw1Jq8t1em4");
         return aChallenge;
     }
 

@@ -17,4 +17,32 @@ public class ChallengerChallenges {
         return aChallenge;
     }
 
+    // challenge to GET /challenger/{guid} and restore a challenger session
+    public static ChallengeDefinitionData getRestoreExistingChallenger200(int challengeOrder) {
+        ChallengeDefinitionData aChallenge = new ChallengeDefinitionData(
+                ChallengeRenderer.renderChallengeNumber(challengeOrder),
+                "GET /challenger/guid (200)",
+                "Issue a GET request on the `/challenger` end point, with an existing challenger GUID to restore that challenger's progress into memory."
+        );
+        aChallenge.addHint("In multi-user mode, you need to create an X-CHALLENGER Session first and let it go idle so it is removed in the 10 minute purge", "/gui/multiuser.html");
+        //aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/post-challenger-201");
+        //aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "tNGuZMQgHxw");
+        return aChallenge;
+    }
+
+    // challenge to POST /challenger with X-CHALLENGER header of existing challenger to restore a challenger
+
+    public static ChallengeDefinitionData postRestoreExistingChallenger200(int challengeOrder) {
+        ChallengeDefinitionData aChallenge = new ChallengeDefinitionData(
+                ChallengeRenderer.renderChallengeNumber(challengeOrder),
+                "POST /challenger (existing X-CHALLENGER)",
+                "Issue a POST request on the `/challenger` end point, with an existing challenger GUID as the X-CHALLENGER header to restore that challenger's progress into memory."
+        );
+        aChallenge.addHint("In multi-user mode, you need to create an X-CHALLENGER Session first and let it go idle so it is removed in the 10 minute purge", "/gui/multiuser.html");
+        //aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/post-challenger-201");
+        //aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "tNGuZMQgHxw");
+
+        return aChallenge;
+    }
+
 }
