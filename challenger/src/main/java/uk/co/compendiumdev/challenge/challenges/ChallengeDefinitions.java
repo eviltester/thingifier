@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import uk.co.compendiumdev.challenge.CHALLENGE;
 import uk.co.compendiumdev.challenge.challenges.definitions.*;
 
+import javax.swing.text.html.Option;
 import java.util.*;
 
 public class ChallengeDefinitions {
@@ -126,42 +127,15 @@ public class ChallengeDefinitions {
                 "A PUT request can be used to amend data. REST Put requests are idempotent, they provide the same result each time.");
         sections.add(putUpdateChallenges);
 
-        aChallenge = createChallenge(CHALLENGE.PUT_TODOS_FULL_200, renderChallengeNumber(challengeOrder), "PUT /todos/{id} full (200)",
-                "Issue a PUT request to update an existing todo with a complete payload i.e. title, description and donestatus.");
-        putUpdateChallenges.addChallenge(aChallenge);
-        // todo: create solution for PUT todos full 200 challenge
-        //aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/post-todos-201");
-        //aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "T0LFHwavsNA");
-        challengeOrder++;
+        storeChallengeAs(CHALLENGE.PUT_TODOS_FULL_200, PutChallenges.putTodosIdFull200(challengeOrder++), putUpdateChallenges);
+        storeChallengeAs(CHALLENGE.PUT_TODOS_PARTIAL_200, PutChallenges.putTodosIdPartial200(challengeOrder++), putUpdateChallenges);
+        storeChallengeAs(CHALLENGE.PUT_TODOS_MISSING_TITLE_400, PutChallenges.putTodosIdNoTitle400(challengeOrder++), putUpdateChallenges);
+        storeChallengeAs(CHALLENGE.PUT_TODOS_400_NO_AMEND_ID, PutChallenges.putTodosIdNonMatchedIdsAmend400(challengeOrder++), putUpdateChallenges);
 
-        aChallenge = createChallenge(CHALLENGE.PUT_TODOS_PARTIAL_200, renderChallengeNumber(challengeOrder), "PUT /todos/{id} partial (200)",
-                "Issue a PUT request to update an existing todo with just mandatory items in payload i.e. title.");
-        putUpdateChallenges.addChallenge(aChallenge);
-        // todo: create solution for PUT todos partial 200 challenge
-        //aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/post-todos-201");
-        //aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "T0LFHwavsNA");
-        challengeOrder++;
 
-        aChallenge = createChallenge(CHALLENGE.PUT_TODOS_MISSING_TITLE_400, renderChallengeNumber(challengeOrder), "PUT /todos/{id} no title (400)",
-                "Issue a PUT request to fail to update an existing todo because title is missing in payload.");
-        putUpdateChallenges.addChallenge(aChallenge);
-        // todo: create solution for PUT todos partial 200 challenge
-        aChallenge.addHint("Title is required for Put requests because they are idempotent. You can amend using POST without a title, but not using a PUT.");
-        //aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/post-todos-201");
-        //aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "T0LFHwavsNA");
-        // TODO: add solution text to summarise solution
-        challengeOrder++;
 
-        aChallenge = createChallenge(CHALLENGE.PUT_TODOS_400_NO_AMEND_ID, renderChallengeNumber(challengeOrder), "PUT /todos/{id} no amend id (400)",
-                "Issue a PUT request to fail to update an existing todo because id different in payload.");
-        putUpdateChallenges.addChallenge(aChallenge);
-        // todo: create solution for PUT todos partial 200 challenge
-        aChallenge.addHint("ID is auto generated you can not amend it in the payload.");
-        aChallenge.addHint("If you have a different id in the payload from the url then this is viewed as an amendment and you can not amend an auto generated field.");
-        //aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/post-todos-201");
-        //aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "T0LFHwavsNA");
-        // TODO: add solution text to summarise solution
-        challengeOrder++;
+
+
 
 
 
@@ -170,29 +144,19 @@ public class ChallengeDefinitions {
                 "Use a DELETE request to delete an entity. Since this is an extreme request, normally you have to be logged in or authenticated, but we wanted to make life easier for you so we cover authentication later. Anyone can delete To Do items without authentication in this system.");
         sections.add(deleteChallenges);
 
-        aChallenge =
-            createChallenge(CHALLENGE.DELETE_A_TODO, renderChallengeNumber(challengeOrder), "DELETE /todos/{id} (200)",
-                "Issue a DELETE request to successfully delete a todo");
-        deleteChallenges.addChallenge(aChallenge);
-        aChallenge.addHint("Make sure you don't use {id} in the url, replace that with the id of a todo e.g. /todos/1");
-        aChallenge.addHint("Make sure a todo with the id exists prior to issuing the request");
-        aChallenge.addHint("Check it was deleted by issuing a GET or HEAD on the /todos/{id}");
-        aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/delete-todos-id-200");
-        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "6MXTkaXn9qU");
-        challengeOrder++;
+        storeChallengeAs(CHALLENGE.DELETE_A_TODO, DeleteChallenges.deleteTodosId200(challengeOrder++), deleteChallenges);
+
+
+
 
         // OPTIONS
         ChallengeSection optionsChallenges = new ChallengeSection("OPTIONS Challenges",
                 "Use an OPTIONS verb and check the `Allow` header, this will show you what verbs are allowed to be used on an endpoint. When you test APIs it is worth checking to see if all the verbs listed are allowed or not.");
         sections.add(optionsChallenges);
 
-        aChallenge =
-            createChallenge(CHALLENGE.OPTIONS_TODOS, renderChallengeNumber(challengeOrder), "OPTIONS /todos (200)",
-                "Issue an OPTIONS request on the `/todos` end point. You might want to manually check the 'Allow' header in the response is as expected.");
-        optionsChallenges.addChallenge(aChallenge);
-        aChallenge.addSolutionLink("Read Solution", "HREF","https://www.eviltester.com/apichallenges/howto/options-todos-200/");
-        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "Ld5h1TSnXWA");
-        challengeOrder++;
+        storeChallengeAs(CHALLENGE.OPTIONS_TODOS, OptionsChallenges.optionsTodos200(challengeOrder++), optionsChallenges);
+
+
 
         // GET accept type
         //      specify accept type - XML
@@ -206,45 +170,16 @@ public class ChallengeDefinitions {
                 "The `Accept` header, tells the server what format you want the response to be in. By changing the `Accept` header you can specify JSON or XML.");
         sections.add(acceptChallenges);
 
-        aChallenge =
-            createChallenge(CHALLENGE.GET_ACCEPT_XML, renderChallengeNumber(challengeOrder), "GET /todos (200) XML",
-                "Issue a GET request on the `/todos` end point with an `Accept` header of `application/xml` to receive results in XML format");
-        acceptChallenges.addChallenge(aChallenge);
-        aChallenge.addSolutionLink("Read Solution", "HREF","https://www.eviltester.com/apichallenges/howto/get-todos-xml-200/");
-        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "cLeEuZm2VG8");
-        challengeOrder++;
+        storeChallengeAs(CHALLENGE.GET_ACCEPT_XML, GetChallenges.getTodosAcceptXML200(challengeOrder++), acceptChallenges);
+        storeChallengeAs(CHALLENGE.GET_ACCEPT_JSON, GetChallenges.getTodosAcceptJson200(challengeOrder++), acceptChallenges);
+        storeChallengeAs(CHALLENGE.GET_ACCEPT_ANY_DEFAULT_JSON, GetChallenges.getTodosAcceptAny200(challengeOrder++), acceptChallenges);
+        storeChallengeAs(CHALLENGE.GET_ACCEPT_XML_PREFERRED, GetChallenges.getTodosPreferAcceptXML200(challengeOrder++), acceptChallenges);
+        storeChallengeAs(CHALLENGE.GET_JSON_BY_DEFAULT_NO_ACCEPT, GetChallenges.getTodosNoAccept200(challengeOrder++), acceptChallenges);
 
-        aChallenge =
-            createChallenge(CHALLENGE.GET_ACCEPT_JSON, renderChallengeNumber(challengeOrder), "GET /todos (200) JSON",
-                "Issue a GET request on the `/todos` end point with an `Accept` header of `application/json` to receive results in JSON format");
-        acceptChallenges.addChallenge(aChallenge);
-        aChallenge.addSolutionLink("Read Solution", "HREF","https://www.eviltester.com/apichallenges/howto/get-todos-json-200/");
-        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "79JTHiby2Qw");
-        challengeOrder++;
 
-        aChallenge =
-            createChallenge(CHALLENGE.GET_ACCEPT_ANY_DEFAULT_JSON, renderChallengeNumber(challengeOrder), "GET /todos (200) ANY",
-                "Issue a GET request on the `/todos` end point with an `Accept` header of `*/*` to receive results in default JSON format");
-        acceptChallenges.addChallenge(aChallenge);
-        aChallenge.addSolutionLink("Read Solution", "HREF","https://www.eviltester.com/apichallenges/howto/get-todos-any-200/");
-        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "O4DhJ8Ohkk8");
-        challengeOrder++;
 
-        aChallenge =
-            createChallenge(CHALLENGE.GET_ACCEPT_XML_PREFERRED, renderChallengeNumber(challengeOrder), "GET /todos (200) XML pref",
-                "Issue a GET request on the `/todos` end point with an `Accept` header of `application/xml, application/json` to receive results in the preferred XML format");
-        acceptChallenges.addChallenge(aChallenge);
-        aChallenge.addSolutionLink("Read Solution", "HREF","https://www.eviltester.com/apichallenges/howto/get-todos-xml-preference-200/");
-        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "sLChuy9pc9U");
-        challengeOrder++;
 
-        aChallenge =
-            createChallenge(CHALLENGE.GET_JSON_BY_DEFAULT_NO_ACCEPT, renderChallengeNumber(challengeOrder), "GET /todos (200) no accept",
-                "Issue a GET request on the `/todos` end point with no `Accept` header present in the message to receive results in default JSON format");
-        acceptChallenges.addChallenge(aChallenge);
-        aChallenge.addSolutionLink("Read Solution", "HREF","https://www.eviltester.com/apichallenges/howto/get-todos-no-accept-200/");
-        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "CSVP2PcvOdg");
-        challengeOrder++;
+
 
         aChallenge =
             createChallenge(CHALLENGE.GET_UNSUPPORTED_ACCEPT_406, renderChallengeNumber(challengeOrder), "GET /todos (406)",

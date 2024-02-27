@@ -82,4 +82,73 @@ public class GetChallenges {
         aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "G-sLuhyPMuw");
         return aChallenge;
     }
+
+
+    /*
+        ACCEPT HEADERS
+     */
+    // GET accept type
+    //      specify accept type - XML
+    //      specify accept type - JSON
+    //      specify accept type - */* (ANY) to get default
+    //      specify multiple accept type with a preference for XML - should receive XML
+    //      none specified - get default
+    //      cannot supply accepted type 406
+
+
+    public static ChallengeDefinitionData getTodosAcceptXML200(int challengeOrder) {
+        ChallengeDefinitionData aChallenge = new ChallengeDefinitionData(
+                ChallengeRenderer.renderChallengeNumber(challengeOrder),
+                "GET /todos (200) XML",
+                "Issue a GET request on the `/todos` end point with an `Accept` header of `application/xml` to receive results in XML format");
+
+        aChallenge.addSolutionLink("Read Solution", "HREF","https://www.eviltester.com/apichallenges/howto/get-todos-xml-200/");
+        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "cLeEuZm2VG8");
+        return aChallenge;
+    }
+
+    public static ChallengeDefinitionData getTodosAcceptJson200(int challengeOrder) {
+        ChallengeDefinitionData aChallenge = new ChallengeDefinitionData(
+                ChallengeRenderer.renderChallengeNumber(challengeOrder),
+                "GET /todos (200) JSON",
+                "Issue a GET request on the `/todos` end point with an `Accept` header of `application/json` to receive results in JSON format");
+
+        aChallenge.addSolutionLink("Read Solution", "HREF","https://www.eviltester.com/apichallenges/howto/get-todos-json-200/");
+        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "79JTHiby2Qw");
+        return aChallenge;
+    }
+
+    public static ChallengeDefinitionData getTodosAcceptAny200(int challengeOrder) {
+        ChallengeDefinitionData aChallenge = new ChallengeDefinitionData(
+                ChallengeRenderer.renderChallengeNumber(challengeOrder),
+                "GET /todos (200) ANY",
+                "Issue a GET request on the `/todos` end point with an `Accept` header of `*/*` to receive results in default JSON format");
+
+        aChallenge.addSolutionLink("Read Solution", "HREF","https://www.eviltester.com/apichallenges/howto/get-todos-any-200/");
+        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "O4DhJ8Ohkk8");
+        return aChallenge;
+    }
+
+    public static ChallengeDefinitionData getTodosPreferAcceptXML200(int challengeOrder) {
+        ChallengeDefinitionData aChallenge = new ChallengeDefinitionData(
+                ChallengeRenderer.renderChallengeNumber(challengeOrder),
+                "GET /todos (200) XML pref",
+                "Issue a GET request on the `/todos` end point with an `Accept` header of `application/xml, application/json` to receive results in the preferred XML format");
+
+        aChallenge.addSolutionLink("Read Solution", "HREF","https://www.eviltester.com/apichallenges/howto/get-todos-xml-preference-200/");
+        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "sLChuy9pc9U");
+        return aChallenge;
+    }
+
+    public static ChallengeDefinitionData getTodosNoAccept200(int challengeOrder) {
+        ChallengeDefinitionData aChallenge = new ChallengeDefinitionData(
+                ChallengeRenderer.renderChallengeNumber(challengeOrder),
+                "GET /todos (200) no accept",
+                "Issue a GET request on the `/todos` end point with no `Accept` header present in the message to receive results in default JSON format");
+
+        aChallenge.addSolutionLink("Read Solution", "HREF","https://www.eviltester.com/apichallenges/howto/get-todos-no-accept-200/");
+        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "CSVP2PcvOdg");
+        return aChallenge;
+    }
+
 }
