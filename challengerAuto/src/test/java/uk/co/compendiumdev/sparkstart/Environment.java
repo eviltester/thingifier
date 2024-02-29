@@ -19,8 +19,8 @@ public class Environment {
     public static String getBaseUri() {
 
         // return environment if want to run externally
-//        if(true)
-//            return "https://apichallenges.eviltester.com";
+        if(true)
+            return "https://apichallenges.eviltester.com";
 
 //        if(true)
 //            return "http://localhost:4567";

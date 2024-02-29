@@ -58,6 +58,10 @@ public class EntityRelModel {
         return databases.get(DEFAULT_DATABASE_NAME);
     }
 
+    public ERInstanceData getInstanceDataAsJson(){
+        return databases.get(DEFAULT_DATABASE_NAME);
+    }
+
     public ERInstanceData getInstanceData(String databaseKey) {
         return databases.get(databaseKey);
     }

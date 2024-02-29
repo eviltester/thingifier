@@ -2,10 +2,12 @@ package uk.co.compendiumdev.thingifier.core.domain.instances;
 
 import uk.co.compendiumdev.thingifier.core.domain.definitions.ERSchema;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ERInstanceData {
@@ -13,6 +15,58 @@ public class ERInstanceData {
 
     public ERInstanceData() {
         instanceCollections = new ConcurrentHashMap<>();
+    }
+
+    public String quoted(String aString){
+        return "\"" + aString.replaceAll("\"", "\\\"") + "\"";
+    }
+
+    public String asJson(){
+
+        StringBuilder dataArray = new StringBuilder();
+        dataArray.append("{");
+
+
+        // for each entity
+        String separator = "";
+        for( EntityInstanceCollection entry : instanceCollections.values()){
+            EntityDefinition defn = entry.definition();
+
+            dataArray.append( separator +  quoted(defn.getPlural()) + " : [");
+
+            String instanceSeparator = "";
+            for(EntityInstance instance : entry.getInstances()){
+                dataArray.append( instanceSeparator + "{");
+
+                String fieldSeparator = "";
+                for(String fieldName : defn.getFieldNames()){
+                    Field aField = defn.getField(fieldName);
+                    if(instance.hasInstantiatedFieldNamed(fieldName)){
+                        dataArray.append(fieldSeparator);
+                        // TODO: quote only if string
+                        dataArray.append(quoted(aField.getName()) + ": " + quoted(instance.getFieldValue(fieldName).asString()));
+                    }else {
+                        if (aField.isMandatory()) {
+                            dataArray.append(fieldSeparator);
+                            // TODO: quote only if string
+                            dataArray.append(quoted(aField.getName()) + ": " + quoted(aField.getDefaultValue().asString()));
+                        }
+                    }
+
+                    fieldSeparator = ", ";
+                }
+
+                dataArray.append("}");
+                instanceSeparator = ", ";
+            }
+
+
+            dataArray.append("]");
+            separator=", ";
+        }
+
+        dataArray.append("}");
+        return dataArray.toString();
     }
 
     public ERInstanceData(final List<EntityInstance> instances) {

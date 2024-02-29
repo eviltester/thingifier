@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 import uk.co.compendiumdev.challenge.CHALLENGE;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.ChallengerState;
-import uk.co.compendiumdev.challenge.challenges.ChallengeDefinitions;
 import uk.co.compendiumdev.challenge.persistence.PersistenceLayer;
 import uk.co.compendiumdev.challenge.persistence.PersistenceResponse;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
@@ -74,6 +73,10 @@ public class Challengers {
         }
 
         return challenger;
+    }
+
+    public EntityRelModel getErModel(){
+        return this.erModel;
     }
 
     public void purgeOldAuthData() {

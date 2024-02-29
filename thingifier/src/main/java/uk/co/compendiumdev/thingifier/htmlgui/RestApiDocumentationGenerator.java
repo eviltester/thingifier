@@ -54,7 +54,7 @@ public class RestApiDocumentationGenerator {
 
         StringBuilder output = new StringBuilder();
 
-        output.append(defaultGui.getPageStart("API Documentation"));
+        output.append(defaultGui.getPageStart("API Documentation", ""));
         output.append(defaultGui.getMenuAsHTML());
 
 

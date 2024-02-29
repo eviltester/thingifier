@@ -1,5 +1,6 @@
 package uk.co.compendiumdev.challenge.gui;
 
+import com.google.gson.Gson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.co.compendiumdev.challenge.CHALLENGE;
@@ -9,7 +10,6 @@ import uk.co.compendiumdev.challenge.challenges.*;
 import uk.co.compendiumdev.challenge.persistence.PersistenceLayer;
 import uk.co.compendiumdev.challenge.persistence.PersistenceResponse;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ERInstanceData;
 import uk.co.compendiumdev.thingifier.htmlgui.DefaultGUIHTML;
 
 import java.util.ArrayList;
@@ -68,7 +68,7 @@ public class ChallengerWebGUI {
             result.status(200);
 
             StringBuilder html = new StringBuilder();
-            html.append(guiManagement.getPageStart("Challenges"));
+            html.append(guiManagement.getPageStart("Challenges", "<script src='/js/challengerui.js'></script>"));
             html.append(guiManagement.getMenuAsHTML());
 
             // todo explain challenges - single user mode
@@ -79,7 +79,11 @@ public class ChallengerWebGUI {
             if (single_player_mode) {
                 html.append(playerChallengesIntro());
                 //reportOn = new ChallengesPayload(challengeDefinitions, challengers.SINGLE_PLAYER).getAsChallenges();
-                html.append(renderChallengeData(challengeDefinitions, challengers.SINGLE_PLAYER));
+                String json = "{}";
+                if(challengers.getErModel().getDatabaseNames().contains(EntityRelModel.DEFAULT_DATABASE_NAME)){
+                    json = challengers.getErModel().getInstanceData(EntityRelModel.DEFAULT_DATABASE_NAME).asJson();
+                }
+                html.append(renderChallengeData(challengeDefinitions, challengers.SINGLE_PLAYER, json));
                 html.append(injectCookieFunctions());
                 html.append(storeThingifierDatabaseNameCookie(challengers.SINGLE_PLAYER.getXChallenger()));
             } else {
@@ -90,7 +94,7 @@ public class ChallengerWebGUI {
                 html.append(inputAChallengeGuidScript());
 
                 //reportOn = new ChallengesPayload(challengeDefinitions, challengers.DEFAULT_PLAYER_DATA).getAsChallenges();
-                html.append(renderChallengeData(challengeDefinitions, challengers.DEFAULT_PLAYER_DATA));
+                html.append(renderChallengeData(challengeDefinitions, challengers.DEFAULT_PLAYER_DATA, "{}"));
             }
 
             //html.append(renderChallengeData(reportOn));
@@ -107,7 +111,7 @@ public class ChallengerWebGUI {
             result.status(200);
 
             StringBuilder html = new StringBuilder();
-            html.append(guiManagement.getPageStart("Challenges"));
+            html.append(guiManagement.getPageStart("Challenges", "<script src='/js/challengerui.js'></script>"));
             html.append(guiManagement.getMenuAsHTML());
 
             html.append(playerChallengesIntro());
@@ -153,7 +157,7 @@ public class ChallengerWebGUI {
                 html.append(showPreviousGuids());
                 html.append(inputAChallengeGuidScript());
                 //reportOn = new ChallengesPayload(challengeDefinitions, challengers.DEFAULT_PLAYER_DATA).getAsChallenges();
-                html.append(renderChallengeData(challengeDefinitions, challengers.DEFAULT_PLAYER_DATA));
+                html.append(renderChallengeData(challengeDefinitions, challengers.DEFAULT_PLAYER_DATA, "{}"));
             } else {
                 html.append(injectCookieFunctions());
 
@@ -166,7 +170,11 @@ public class ChallengerWebGUI {
                 html.append(storeThingifierDatabaseNameCookie(xChallenger));
                 html.append(storeCurrentGuidInLocalStorage(xChallenger));
                 //reportOn = new ChallengesPayload(challengeDefinitions, challenger).getAsChallenges();
-                html.append(renderChallengeData(challengeDefinitions, challenger));
+                String json = "{}";
+                if(challengers.getErModel().getDatabaseNames().contains(xChallenger)){
+                    json = challengers.getErModel().getInstanceData(xChallenger).asJson();
+                }
+                html.append(renderChallengeData(challengeDefinitions, challenger, json));
                 html.append(refreshScriptFor(challenger.getXChallenger()));
             }
 
@@ -182,7 +190,7 @@ public class ChallengerWebGUI {
             result.type("text/html");
 
             StringBuilder html = new StringBuilder();
-            html.append(guiManagement.getPageStart("404 Not Found"));
+            html.append(guiManagement.getPageStart("404 Not Found",""));
             html.append(guiManagement.getMenuAsHTML());
             html.append("<h1>Page Not Found</h1>");
             html.append(guiManagement.getPageFooter());
@@ -203,7 +211,7 @@ public class ChallengerWebGUI {
             }
 
             StringBuilder html = new StringBuilder();
-            html.append(guiManagement.getPageStart("404 Not Found"));
+            html.append(guiManagement.getPageStart("404 Not Found", ""));
             html.append(guiManagement.getMenuAsHTML());
             html.append("<h1>Page Not Found</h1>");
             html.append("<script>window.history.pushState({id:\"404sim\"},\"\",\"/" + urltoshow + "\");</script>");
@@ -219,30 +227,7 @@ public class ChallengerWebGUI {
     }
 
     private String injectCookieFunctions(){
-        return "<script>" +
-                "function setCookie(cname,cvalue,exdays) {\n" +
-                "  const d = new Date();\n" +
-                "  d.setTime(d.getTime() + (exdays*24*60*60*1000));\n" +
-                "  let expires = 'expires=' + d.toUTCString();\n" +
-                "  document.cookie = cname + '=' + cvalue + ';' + expires + ';path=/';\n" +
-                "}\n" +
-                "\n" +
-                "function getCookie(cname) {\n" +
-                "  let name = cname + '=';\n" +
-                "  let decodedCookie = decodeURIComponent(document.cookie);\n" +
-                "  let ca = decodedCookie.split(';');\n" +
-                "  for(let i = 0; i < ca.length; i++) {\n" +
-                "    let c = ca[i];\n" +
-                "    while (c.charAt(0) == ' ') {\n" +
-                "      c = c.substring(1);\n" +
-                "    }\n" +
-                "    if (c.indexOf(name) == 0) {\n" +
-                "      return c.substring(name.length, c.length);\n" +
-                "    }\n" +
-                "  }\n" +
-                "  return '';\n" +
-                "}" +
-                "</script>";
+        return "";
     }
     private String storeThingifierDatabaseNameCookie(String xChallenger) {
         return "<script>" +
@@ -261,39 +246,11 @@ public class ChallengerWebGUI {
     }
 
     private String inputAChallengeGuidScript() {
-        return "<script>" +
-                "function inputChallengeGuid(){" +
-                "let guid = prompt('Input a Challenger GUID to use');" +
-                "if(guid){location.href=`/gui/challenges/`+encodeURIComponent(guid);};" +
-                "}" +
-                "</script>"+
-                "<p><button onclick=inputChallengeGuid()>Input a Challenger GUID to use</button></p>";
+        return "<p><button onclick=inputChallengeGuid()>Input a Challenger GUID to use</button></p>";
     }
 
     private String showPreviousGuids() {
-        return "<script>" +
-                "function forgetGuid(aguid){\n" +
-                "    var guids = localStorage.getItem('challenges-guids');\n" +
-                "    guids = guids.replace(`|${aguid}|`, '');\n" +
-                "    localStorage.setItem(\"challenges-guids\", guids);\n" +
-                "    document.getElementById('p'+aguid).remove();\n" +
-                "    if(getCookie('X-THINGIFIER-DATABASE-NAME')== aguid){" +
-                "    setCookie('X-THINGIFIER-DATABASE-NAME','',0);}\n" +
-                "}"+
-                "var guids = localStorage.getItem('challenges-guids') || '';" +
-                "var guidsArray = guids.match(/\\|([^|]*)\\|/g);" +
-                "currGuid = getCookie('X-THINGIFIER-DATABASE-NAME');" +
-                "if(currGuid && !guidsArray){guidsArray=[];}" +
-                "if(currGuid && guidsArray && currGuid!='' && !guidsArray.includes(`|${currGuid}|`)){guidsArray.push(`|${currGuid}|`)}" +
-                "if(guidsArray!=null && guidsArray.length>0){document.writeln('<p><strong>Previously Used</strong></p>')}" +
-                "for(guidItem in guidsArray){" +
-                "var myguid = guidsArray[guidItem].replace(/\\|/g,'');" +
-                "document.writeln(\"<p id='p\" + myguid + \"'>\");" +
-                "document.writeln(\"<a href='/gui/challenges/\"+myguid+\"'>\"+myguid+\"</a>\");" +
-                "document.writeln(\"&nbsp;<button onclick=forgetGuid('\"+myguid+\"')>forget</button>\");" +
-                "document.writeln(\"</p>\");" +
-                "}" +
-                "</script>";
+        return "<script>displayLocalGuids()</script>";// +
     }
 
     private String getChallengesFooter() {
@@ -406,8 +363,14 @@ public class ChallengerWebGUI {
         return html.toString();
     }
 
-    private String renderChallengeData(final ChallengeDefinitions challengeDefinitions, final ChallengerAuthData challenger) {
+    private String renderChallengeData(final ChallengeDefinitions challengeDefinitions, final ChallengerAuthData challenger, String json) {
         StringBuilder html = new StringBuilder();
+
+        // add the challenge data as JSON
+        final String dataString = new Gson().toJson(challenger);
+        html.append("<script>const challengerData=" + dataString + ";</script>");
+        // add the current todos as JSON
+        html.append("<script>const databaseData=" + json + ";</script>");
 
         final Collection<ChallengeSection> sections = challengeDefinitions.getChallengeSections();
 

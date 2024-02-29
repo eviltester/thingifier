@@ -62,7 +62,7 @@ public class DefaultGUIHTML {
         }
     }
 
-    public String getPageStart(final String title){
+    public String getPageStart(final String title, final String headInject){
         StringBuilder html = new StringBuilder();
         html.append("<html><head>");
         html.append("<meta http-equiv='content-language' content='en-us'>");
@@ -71,6 +71,9 @@ public class DefaultGUIHTML {
         String injectFromEnv = System.getenv("HTML_HEAD_INJECT");
         if(injectFromEnv!=null){
             html.append(injectFromEnv);
+        }
+        if(headInject!=null) {
+            html.append(headInject);
         }
         html.append("</head><body>");
         html.append("<div class='content'>");
