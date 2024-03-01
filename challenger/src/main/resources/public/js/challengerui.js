@@ -61,3 +61,15 @@ function displayLocalGuids(){
 
     // get challenger progress and save to local storage
     // get challenger todos and save to local storage
+
+function saveChallengerProgressToLocalStorage(aChallenger){
+    if(aChallenger && aChallenger.xChallenger){
+        localStorage.setItem(aChallenger.xChallenger + ".progress", JSON.stringify(aChallenger));
+    }
+}
+
+function saveChallengerTodosToLocalStorage(data, aChallenger){
+    if(data && aChallenger && aChallenger.xChallenger){
+        localStorage.setItem(aChallenger.xChallenger + ".data", JSON.stringify(data));
+    }
+}

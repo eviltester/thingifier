@@ -99,4 +99,25 @@ public final class FieldValue {
     public int asInteger() {
         return Integer.valueOf(valueOfField);
     }
+
+    public String asJsonValue() {
+        switch(forField.getType()) {
+            case BOOLEAN:
+            case FLOAT:
+            case AUTO_INCREMENT:
+            case INTEGER:
+                return valueOfField;
+            case AUTO_GUID:
+            case DATE:
+            case ENUM:
+            case STRING:
+                return quoted(valueOfField);
+            default:
+                return quoted(valueOfField);
+        }
+    }
+
+    private String quoted(String aString){
+        return "\"" + aString.replaceAll("\"", "\\\"") + "\"";
+    }
 }

@@ -43,13 +43,11 @@ public class ERInstanceData {
                     Field aField = defn.getField(fieldName);
                     if(instance.hasInstantiatedFieldNamed(fieldName)){
                         dataArray.append(fieldSeparator);
-                        // TODO: quote only if string
-                        dataArray.append(quoted(aField.getName()) + ": " + quoted(instance.getFieldValue(fieldName).asString()));
+                        dataArray.append(quoted(aField.getName()) + ": " + instance.getFieldValue(fieldName).asJsonValue());
                     }else {
                         if (aField.isMandatory()) {
                             dataArray.append(fieldSeparator);
-                            // TODO: quote only if string
-                            dataArray.append(quoted(aField.getName()) + ": " + quoted(aField.getDefaultValue().asString()));
+                            dataArray.append(quoted(aField.getName()) + ": " + quoted(aField.getDefaultValue().asJsonValue()));
                         }
                     }
 
