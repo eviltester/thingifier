@@ -83,18 +83,20 @@ public class ChallengerWebGUI {
                 if(challengers.getErModel().getDatabaseNames().contains(EntityRelModel.DEFAULT_DATABASE_NAME)){
                     json = challengers.getErModel().getInstanceData(EntityRelModel.DEFAULT_DATABASE_NAME).asJson();
                 }
-                html.append(renderChallengeData(challengeDefinitions, challengers.SINGLE_PLAYER, json));
+                html.append(outputChallengeDataAsJS(challengers.SINGLE_PLAYER, json));
+                html.append(renderChallengeData(challengeDefinitions, challengers.SINGLE_PLAYER));
                 html.append(injectCookieFunctions());
                 html.append(storeThingifierDatabaseNameCookie(challengers.SINGLE_PLAYER.getXChallenger()));
             } else {
                 html.append("<div style='clear:both'><p><strong>Unknown Challenger ID</strong></p></div>");
+                html.append(outputChallengeDataAsJS(challengers.SINGLE_PLAYER, "{}"));
                 html.append(multiUserShortHelp());
                 html.append(injectCookieFunctions());
                 html.append(showPreviousGuids());
                 html.append(inputAChallengeGuidScript());
 
                 //reportOn = new ChallengesPayload(challengeDefinitions, challengers.DEFAULT_PLAYER_DATA).getAsChallenges();
-                html.append(renderChallengeData(challengeDefinitions, challengers.DEFAULT_PLAYER_DATA, "{}"));
+                html.append(renderChallengeData(challengeDefinitions, challengers.DEFAULT_PLAYER_DATA));
             }
 
             //html.append(renderChallengeData(reportOn));
@@ -156,25 +158,34 @@ public class ChallengerWebGUI {
                 html.append(injectCookieFunctions());
                 html.append(showPreviousGuids());
                 html.append(inputAChallengeGuidScript());
-                //reportOn = new ChallengesPayload(challengeDefinitions, challengers.DEFAULT_PLAYER_DATA).getAsChallenges();
-                html.append(renderChallengeData(challengeDefinitions, challengers.DEFAULT_PLAYER_DATA, "{}"));
+                html.append(outputChallengeDataAsJS(challengers.DEFAULT_PLAYER_DATA, "{}"));
+                html.append(renderChallengeData(challengeDefinitions, challengers.DEFAULT_PLAYER_DATA));
             } else {
                 html.append(injectCookieFunctions());
 
-                if (!single_player_mode) {
-                    html.append(String.format("<p><strong>Progress For Challenger ID %s</strong></p>", xChallenger));
-                    html.append(showPreviousGuids());
-                    html.append(inputAChallengeGuidScript());
-                }
-
-                html.append(storeThingifierDatabaseNameCookie(xChallenger));
-                html.append(storeCurrentGuidInLocalStorage(xChallenger));
-                //reportOn = new ChallengesPayload(challengeDefinitions, challenger).getAsChallenges();
                 String json = "{}";
                 if(challengers.getErModel().getDatabaseNames().contains(xChallenger)){
                     json = challengers.getErModel().getInstanceData(xChallenger).asJson();
                 }
-                html.append(renderChallengeData(challengeDefinitions, challenger, json));
+                html.append(outputChallengeDataAsJS(challenger, json));
+
+                if (!single_player_mode) {
+                    html.append(storeThingifierDatabaseNameCookie(xChallenger));
+                    html.append(storeCurrentGuidInLocalStorage(xChallenger));
+
+                    html.append(String.format("<p><strong>Progress For Challenger ID %s</strong></p>", xChallenger));
+                    html.append(showCurrentStatus());
+
+                    html.append(showPreviousGuids());
+                    html.append(inputAChallengeGuidScript());
+                }else {
+                    html.append(storeThingifierDatabaseNameCookie(xChallenger));
+                    html.append(storeCurrentGuidInLocalStorage(xChallenger));
+                    html.append(showCurrentStatus());
+                }
+
+                html.append(renderChallengeData(challengeDefinitions, challenger));
+
                 html.append(refreshScriptFor(challenger.getXChallenger()));
             }
 
@@ -220,6 +231,10 @@ public class ChallengerWebGUI {
             return html.toString();
         });
 
+    }
+
+    private String showCurrentStatus() {
+        return "<script>showCurrentStatus()</script>";
     }
 
     private String santitizeChallengerGuid(String xChallenger) {
@@ -363,14 +378,24 @@ public class ChallengerWebGUI {
         return html.toString();
     }
 
-    private String renderChallengeData(final ChallengeDefinitions challengeDefinitions, final ChallengerAuthData challenger, String json) {
+    private String outputChallengeDataAsJS(final ChallengerAuthData challenger, String json){
+
         StringBuilder html = new StringBuilder();
 
         // add the challenge data as JSON
         final String dataString = new Gson().toJson(challenger);
-        html.append("<script>const challengerData=" + dataString + ";</script>");
+        html.append("<script>document.challengerData=" + dataString + ";</script>");
         // add the current todos as JSON
-        html.append("<script>const databaseData=" + json + ";</script>");
+        html.append("<script>document.databaseData=" + json + ";</script>");
+
+        return html.toString();
+
+    }
+
+    private String renderChallengeData(final ChallengeDefinitions challengeDefinitions, final ChallengerAuthData challenger) {
+        StringBuilder html = new StringBuilder();
+
+
 
         final Collection<ChallengeSection> sections = challengeDefinitions.getChallengeSections();
 
