@@ -14,7 +14,7 @@ final public class EntityInstanceCollection {
     private final EntityDefinition definition;
     private Map<String, EntityInstance> instances = new ConcurrentHashMap<>();
 
-    // TODO: id's should be auto incremented at an instance collection level, not on the field definitions
+    // id's should be auto incremented at an instance collection level, not on the field definitions
     private Map<String, AutoIncrement> counters = new ConcurrentHashMap<>();
 
     public EntityInstanceCollection(EntityDefinition thingDefinition) {
@@ -77,6 +77,8 @@ final public class EntityInstanceCollection {
             ));
         }
 
+        List<String> autoIncrementFieldsSet = new ArrayList<>();
+
         // if there are any AUTO_GUIDs or AUTO-INCREMENTs not set in the instance, then set them now
         for(Field fieldDefn : definition.getFieldsOfType(FieldType.AUTO_GUID, FieldType.AUTO_INCREMENT)){
             if(!instance.hasInstantiatedFieldNamed(fieldDefn.getName())){
@@ -92,10 +94,12 @@ final public class EntityInstanceCollection {
                     instance.overrideValue(fieldDefn.getName(),String.valueOf(counter.getCurrentValue()));
                     counter.update();
                 }
+            }else{
+                if(fieldDefn.getType()==FieldType.AUTO_INCREMENT) {
+                    autoIncrementFieldsSet.add(fieldDefn.getName());
+                }
             }
         }
-
-        // todo: should we auto increment auto increments to above the value?
 
         if(definition.hasPrimaryKeyField()){
             // check value of primary key exists and is unique
@@ -118,6 +122,16 @@ final public class EntityInstanceCollection {
         }
 
         instances.put(instance.getInternalId(), instance);
+
+        for(String autoIncrementFieldSet : autoIncrementFieldsSet){
+            // auto increment auto increments to above the value
+            // should only do this if we actually add the item
+            AutoIncrement counter = counters.get(autoIncrementFieldSet);
+            if(counter.getCurrentValue() < instance.getFieldValue(autoIncrementFieldSet).asInteger()) {
+                counter.incrementToNextAbove(instance.getFieldValue(autoIncrementFieldSet).asInteger());
+            }
+        }
+
         return this;
     }
 

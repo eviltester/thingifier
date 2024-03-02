@@ -135,10 +135,20 @@ public class ERInstanceData {
     // through them all?
     public void clearAllData() {
         // clear all instance data
-        for (EntityInstanceCollection instanceCollection : instanceCollections.values()) {
-            for(EntityInstance instance : instanceCollection.getInstances()) {
-                deleteEntityInstance(instance);
-            }
+        for (String instanceName : instanceCollections.keySet()) {
+            clearInstanceDataFor(instanceName);
+        }
+    }
+
+    public void clearInstanceDataFor(String instanceName) {
+        EntityInstanceCollection instanceCollection = instanceCollections.get(instanceName);
+
+        if(instanceCollection==null){
+            return;
+        }
+
+        for(EntityInstance instance : instanceCollection.getInstances()) {
+            deleteEntityInstance(instance);
         }
     }
 

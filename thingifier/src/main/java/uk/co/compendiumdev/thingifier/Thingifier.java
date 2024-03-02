@@ -5,6 +5,7 @@ import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfigProfile;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfigProfiles;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
+import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonPopulator;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.core.domain.datapopulator.DataPopulator;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.*;
@@ -251,5 +252,15 @@ final public class Thingifier {
                         );
             }
         }
+    }
+
+    public void ensureCreatedAndPopulatedInstanceDatabaseFromJson(String databaseName, String jsonDatabaseContents) {
+        getERmodel().createInstanceDatabaseIfNotExisting(databaseName);
+
+        new JsonPopulator(jsonDatabaseContents).populate(
+                getERmodel().getSchema(),
+                getERmodel().getInstanceData(databaseName)
+        );
+
     }
 }

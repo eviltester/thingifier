@@ -154,7 +154,7 @@ public class ChallengerTrackingRoutesTest {
 
         args.add(Arguments.of(405, "head", "/challenger"));
         args.add(Arguments.of(405, "options", "/challenger"));
-        args.add(Arguments.of(405, "put", "/challenger"));
+        args.add(Arguments.of(400, "put", "/challenger"));
         args.add(Arguments.of(405, "post", "/challenger"));
         args.add(Arguments.of(405, "delete", "/challenger"));
         args.add(Arguments.of(405, "patch", "/challenger"));

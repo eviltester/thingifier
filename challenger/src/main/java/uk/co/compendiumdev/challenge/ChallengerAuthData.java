@@ -6,7 +6,7 @@ import java.util.UUID;
 
 public class ChallengerAuthData {
 
-    private final String xAuthToken;
+    private String xAuthToken;
     private final long extratime;
     private String xChallenger;
     private long lastAccessed;
@@ -95,6 +95,32 @@ public class ChallengerAuthData {
 
     public void setState(ChallengerState challengerState) {
         this.state = challengerState;
+    }
+
+    public ChallengerAuthData fromData(ChallengerAuthData data){
+        // set from data but do not fully trust data
+        setNote(data.secretNote);
+
+        try {
+            setXChallengerGUID(UUID.fromString(data.getXChallenger()).toString());
+        }catch(Exception e){
+            // could not convert to GUID so use the existing
+        }
+
+        try {
+            xAuthToken = UUID.fromString(data.getXAuthToken()).toString();;
+        }catch(Exception e){
+            // could not convert to GUID so use the existing
+        }
+
+        state = data.getState();
+
+        resetChallengesStatus();
+        for(CHALLENGE challenge : CHALLENGE.values()){
+            challengeStatus.put(challenge, data.statusOfChallenge(challenge));
+        }
+
+        return this;
     }
 
     public ChallengerState getState() {

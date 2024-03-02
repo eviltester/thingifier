@@ -48,6 +48,15 @@ public class Challengers {
         return singlePlayerMode;
     }
 
+    public boolean inMemory(final String challengerGuid){
+        if(challengerGuid == null || challengerGuid.trim().length()==0) {
+            return false;
+        }
+
+        ChallengerAuthData challenger = authData.get(challengerGuid);
+        return challenger != null;
+    }
+
     public ChallengerAuthData getChallenger(final String challengerGuid) {
         if(singlePlayerMode){
             return SINGLE_PLAYER;

@@ -1,17 +1,20 @@
 package uk.co.compendiumdev.challenge.challengesrouting;
 
+import com.google.gson.Gson;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
 import uk.co.compendiumdev.challenge.persistence.PersistenceLayer;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.ThingifierApiDefn;
+import uk.co.compendiumdev.thingifier.api.response.ApiResponseAsJson;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingStatus;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingVerb;
 import uk.co.compendiumdev.thingifier.spark.SimpleRouteConfig;
 
-import static spark.Spark.get;
-import static spark.Spark.post;
+import java.util.UUID;
+
+import static spark.Spark.*;
 
 public class ChallengerTrackingRoutes {
 
@@ -43,9 +46,110 @@ public class ChallengerTrackingRoutes {
             return "";
         });
 
+
+        // endpoint to restore a saved challenger status from UI
+        put("/challenger/:id", (request, result) -> {
+            String xChallengerGuid =null;
+            ChallengerAuthData challenger=null;
+
+            // for which challenger?
+            xChallengerGuid = request.params("id");
+
+            if(xChallengerGuid==null){
+                result.status(400);
+                return ApiResponseAsJson.getErrorMessageJson("Invalid Challenger GUID");
+            }
+
+            try{
+                UUID.fromString(xChallengerGuid);
+            }catch(Exception e){
+                result.status(400);
+                return ApiResponseAsJson.getErrorMessageJson("Invalid Challenger GUID " + e.getMessage());
+            }
+
+            // try and parse payload, fail if nonsense
+            try {
+                challenger = new Gson().fromJson(request.body(), ChallengerAuthData.class);
+            }catch (Exception e){
+                result.status(400);
+                return ApiResponseAsJson.getErrorMessageJson(e.getMessage());
+            }
+
+            if(challenger==null){
+                result.status(400);
+                return ApiResponseAsJson.getErrorMessageJson("Invalid Payload");
+            }
+
+            // check payload against id
+            if(!challenger.getXChallenger().equals(xChallengerGuid)){
+                result.status(400);
+                return ApiResponseAsJson.getErrorMessageJson("URL GUID does not match payload X-CHALLENGER");
+            }
+
+            // does id exist in memory, if so just replace state data
+            if(challengers.inMemory(xChallengerGuid)){
+                ChallengerAuthData existingChallenger = challengers.getChallenger(xChallengerGuid);
+                existingChallenger.fromData(challenger);
+                result.status(200);
+                result.header("X-CHALLENGER", xChallengerGuid);
+                return "";
+            }
+
+            // need to create a new challenger in memory with this state
+
+            challengers.put(new ChallengerAuthData().fromData(challenger));
+            result.status(201);
+            result.header("X-CHALLENGER", xChallengerGuid);
+            return "";
+        });
+
+        // endpoint to restore a saved challenger status from UI
+        put("/challenger/todos/:id", (request, result) -> {
+
+            String xChallengerGuid = request.params("id");
+
+            // challenger uuid must exist and be valid
+            if(xChallengerGuid==null){
+                result.status(400);
+                return ApiResponseAsJson.getErrorMessageJson("Invalid Challenger GUID");
+            }
+
+            try{
+                UUID.fromString(xChallengerGuid);
+            }catch(Exception e){
+                result.status(400);
+                return ApiResponseAsJson.getErrorMessageJson("Invalid Challenger GUID " + e.getMessage());
+            }
+
+            if(!challengers.inMemory(xChallengerGuid)){
+                result.status(404);
+                return ApiResponseAsJson.getErrorMessageJson("Unknown Challenger GUID - have you created or loaded the challenger state");
+            }
+
+            // thingifier should allow loading database from json extract
+            try {
+                thingifier.ensureCreatedAndPopulatedInstanceDatabaseFromJson(xChallengerGuid.trim(), request.body());
+            }catch (Exception e){
+                result.status(400);
+                return ApiResponseAsJson.getErrorMessageJson(e.getMessage());
+            }
+
+
+            if(challengers.getErModel().getDatabaseNames().contains(xChallengerGuid)){
+                result.status(201);
+                result.header("content-type", "application/json");
+                return challengers.getErModel().getInstanceData(xChallengerGuid).asJson();
+            }else{
+                result.status(500);
+                return ApiResponseAsJson.getErrorMessageJson("Unknown error, database not found");
+            }
+
+
+        });
+
         SimpleRouteConfig.
                 routeStatusWhenNot(
-                        405, "/challenger/*", "get");
+                        405, "/challenger/*", "get", "put");
 
         // create a challenger
         post("/challenger", (request, result) -> {
