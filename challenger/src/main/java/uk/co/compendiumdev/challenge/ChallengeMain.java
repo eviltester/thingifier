@@ -16,6 +16,8 @@ public class ChallengeMain {
 
         Logger logger = LoggerFactory.getLogger(ChallengeMain.class);
 
+        logger.info("Starting Challenger");
+
         MainImplementation app = new MainImplementation();
         Thingifier thingifier = new ChallengeApiModel().get();
         app.registerModel("challengeapi", thingifier);
@@ -28,6 +30,7 @@ public class ChallengeMain {
 
         // setup routes required for challenges
         challenger = new ChallengeRouteHandler(thingifier, app.getApiDefn());
+
 
         for (String arg : args) {
             if (arg.toLowerCase().startsWith("-multiplayer")) {
@@ -77,7 +80,6 @@ public class ChallengeMain {
 
         app.setupDefaultGui();
         challenger.setupGui(app.getGuiManagement());
-
 
 
         if(challenger.isSinglePlayerMode()){

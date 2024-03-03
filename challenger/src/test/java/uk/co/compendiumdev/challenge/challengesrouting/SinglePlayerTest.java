@@ -37,6 +37,7 @@ public class SinglePlayerTest {
     @Test
     void canSimulateCreateChallenger() throws InterruptedException {
 
+        System.out.println("When running test am i in single player mode? - " + ChallengeMain.getChallenger().isSinglePlayerMode());
         final HttpResponseDetails response = http.post("/challenger", "");
 
         Assertions.assertEquals(singlePlayerGuid,
