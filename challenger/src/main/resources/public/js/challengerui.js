@@ -155,7 +155,7 @@ function restoreTodosInSystem(xchallengeruuid){
     data = localStorage.getItem(`${xchallengeruuid}.data`);
     if(data==null) return;
 
-    fetch(`/challenger/todos/${xchallengeruuid}`, {
+    fetch(`/challenger/database/${xchallengeruuid}`, {
       method: "PUT",
       body: data,
       headers: {

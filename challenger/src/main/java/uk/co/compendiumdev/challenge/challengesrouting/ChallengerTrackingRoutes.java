@@ -10,6 +10,7 @@ import uk.co.compendiumdev.thingifier.api.response.ApiResponseAsJson;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingStatus;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingVerb;
+import uk.co.compendiumdev.thingifier.core.domain.instances.ERInstanceData;
 import uk.co.compendiumdev.thingifier.spark.SimpleRouteConfig;
 
 import java.util.UUID;
@@ -23,6 +24,47 @@ public class ChallengerTrackingRoutes {
                           final ThingifierApiDefn apiDefn,
                           final PersistenceLayer persistenceLayer,
                           final Thingifier thingifier){
+
+        // add a GET challenger/database/:id in the proper database format
+        get("/challenger/database/:id", (request, result) -> {
+            String xChallengerGuid =null;
+            ChallengerAuthData challenger=null;
+
+            // for which challenger?
+            xChallengerGuid = request.params("id");
+
+            if(xChallengerGuid==null){
+                result.status(400);
+                return ApiResponseAsJson.getErrorMessageJson("Invalid Challenger GUID");
+            }
+
+            try{
+                UUID.fromString(xChallengerGuid);
+            }catch(Exception e){
+                result.status(400);
+                return ApiResponseAsJson.getErrorMessageJson("Invalid Challenger GUID " + e.getMessage());
+            }
+
+            challenger = challengers.getChallenger(xChallengerGuid);
+            XChallengerHeader.setResultHeaderBasedOnChallenger(result,challenger);
+
+            if(challenger!=null){
+                challenger.touch();
+                result.header("content-type", "application/json");
+
+                ERInstanceData instanceData = challengers.getErModel().getInstanceData(xChallengerGuid);
+                if(instanceData==null){
+                    result.status(404);
+                    return ApiResponseAsJson.getErrorMessageJson("Challenger database not instantiated " + xChallengerGuid);
+                }
+
+                result.status(200);
+                return challengers.getErModel().getInstanceData(xChallengerGuid).asJson();
+            }else{
+                result.status(404);
+                return ApiResponseAsJson.getErrorMessageJson("Challenger not found " + xChallengerGuid);
+            }
+        });
 
         // refresh challenger to avoid purging
         get("/challenger/*", (request, result) -> {
@@ -75,6 +117,8 @@ public class ChallengerTrackingRoutes {
                 return ApiResponseAsJson.getErrorMessageJson(e.getMessage());
             }
 
+            XChallengerHeader.setResultHeaderBasedOnChallenger(result,challenger);
+
             if(challenger==null){
                 result.status(400);
                 return ApiResponseAsJson.getErrorMessageJson("Invalid Payload");
@@ -91,7 +135,7 @@ public class ChallengerTrackingRoutes {
                 ChallengerAuthData existingChallenger = challengers.getChallenger(xChallengerGuid);
                 existingChallenger.fromData(challenger);
                 result.status(200);
-                result.header("X-CHALLENGER", xChallengerGuid);
+                XChallengerHeader.setResultHeaderBasedOnChallenger(result,challenger);
                 return "";
             }
 
@@ -103,8 +147,9 @@ public class ChallengerTrackingRoutes {
             return "";
         });
 
-        // endpoint to restore a saved challenger status from UI
-        put("/challenger/todos/:id", (request, result) -> {
+
+        // endpoint to restore a saved challenger database from UI
+        put("/challenger/database/:id", (request, result) -> {
 
             String xChallengerGuid = request.params("id");
 
@@ -126,7 +171,7 @@ public class ChallengerTrackingRoutes {
                 return ApiResponseAsJson.getErrorMessageJson("Unknown Challenger GUID - have you created or loaded the challenger state");
             }
 
-            // thingifier should allow loading database from json extract
+            // thingifier allows loading database from json extract
             try {
                 thingifier.ensureCreatedAndPopulatedInstanceDatabaseFromJson(xChallengerGuid.trim(), request.body());
             }catch (Exception e){
@@ -138,14 +183,28 @@ public class ChallengerTrackingRoutes {
             if(challengers.getErModel().getDatabaseNames().contains(xChallengerGuid)){
                 result.status(201);
                 result.header("content-type", "application/json");
+                result.header("X-CHALLENGER", xChallengerGuid);
                 return challengers.getErModel().getInstanceData(xChallengerGuid).asJson();
             }else{
                 result.status(500);
                 return ApiResponseAsJson.getErrorMessageJson("Unknown error, database not found");
             }
-
-
         });
+
+
+
+        // TODO: add an auto save to local storage option for state and todos - off by default
+
+        // TODO: adjust the take a break challenges based on the app configuration
+
+        // TODO: have separate save and load to s3 switches to allow 'loading' but not saving.
+
+        // TODO: have a 'save to disk' option for the todos, when we can export the database format.
+
+        // TODO: add option for some ip based limits on number of challenges associated with an IP
+
+        // TODO: add a protected admin page with an environment variable protection as password
+
 
         SimpleRouteConfig.
                 routeStatusWhenNot(
