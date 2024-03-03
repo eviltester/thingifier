@@ -45,6 +45,10 @@ public class ChallengerInternalHTTPResponseHook implements InternalHttpResponseH
             if (challenger != null && challenger.getState()== ChallengerState.NEW) {
                 challengers.pass(challenger, CHALLENGE.CREATE_NEW_CHALLENGER);
             }
+            if(challenger.getXChallenger().equals(Challengers.SINGLE_PLAYER_GUID)){
+                // single player pass is simulated
+                challengers.pass(challenger, CHALLENGE.CREATE_NEW_CHALLENGER);
+            }
         }
 
         if (request.getVerb() == GET &&
