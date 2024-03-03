@@ -1,7 +1,5 @@
 package uk.co.compendiumdev.challenge.persistence;
 
-import com.amazonaws.ClientConfiguration;
-import com.amazonaws.ClientConfigurationFactory;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
@@ -11,11 +9,10 @@ import com.google.gson.Gson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
-import uk.co.compendiumdev.challenge.gui.ChallengerWebGUI;
 
 import java.io.*;
 
-public class AwsS3Storage implements PersistenceMechanism{
+public class AwsS3Storage implements ChallengerPersistenceMechanism {
 
     Logger logger = LoggerFactory.getLogger(AwsS3Storage.class);
     static AmazonS3 s3Client;
@@ -24,12 +21,24 @@ public class AwsS3Storage implements PersistenceMechanism{
     // AWSBUCKET
     // AWS_ACCESS_KEY_ID
     // AWS_SECRET_ACCESS_KEY
+    // AWS_ALLOW_SAVE
+    // AWS_ALLOW_LOAD
 
     // https://docs.aws.amazon.com/AmazonS3/latest/dev/RetrievingObjectUsingJava.html
     // https://docs.aws.amazon.com/AmazonS3/latest/dev/UploadObjSingleOpJava.html
 
+
+    // TODO: have separate save and load to s3 switches to allow 'loading' but not saving.
+
     @Override
     public PersistenceResponse saveChallengerStatus(final ChallengerAuthData data) {
+
+        // by default will not save to aws - need to add environmnet variable
+        String allow_save = System.getenv("AWS_ALLOW_SAVE");
+        if(allow_save==null || !allow_save.toLowerCase().trim().equals("true")){
+            return new PersistenceResponse().withSuccess(false);
+        }
+
 
         if(data==null){
             return new PersistenceResponse().withSuccess(false).withErrorMessage("no data provided");
@@ -65,6 +74,12 @@ public class AwsS3Storage implements PersistenceMechanism{
 
     @Override
     public PersistenceResponse loadChallengerStatus(final String guid) {
+
+        // by default will not save from aws - need to add environmnet variable
+        String allow_load = System.getenv("AWS_ALLOW_LOAD");
+        if(allow_load==null || !allow_load.toLowerCase().trim().equals("true")){
+            return new PersistenceResponse().withSuccess(false);
+        }
 
         String bucketName = System.getenv("AWSBUCKET");
 

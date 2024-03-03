@@ -58,7 +58,7 @@ public class ChallengeThingifier {
 
         if(challenger == null){
             // create one just to show no progress
-            challengerToUse = new ChallengerAuthData();
+            challengerToUse = new ChallengerAuthData(challengeDefinitions.getDefinedChallenges());
         }
 
         for (ChallengeDefinitionData challenge : challengeDefinitions.getChallenges()) {

@@ -78,9 +78,16 @@ function showCurrentStatus(){
             var leftCount = totalCount - doneCount;
             document.writeln(`<p>${totalCount} Challenges: ${doneCount} complete, ${leftCount} remain.`);
 
-            document.writeln(`<button onclick="saveChallengerProgressToLocalStorage(challengerData);this.innerText='saved';this.setAttribute('disabled',true)">Save Progress to LocalStorage</button>`);
+            // TODO: add an auto save to local storage option for state and todos - off by default
+
+            // only enable save button if not in localStorage or is different from local storage
+            if(localStorage.getItem(`${xChallengerGuid}.progress`)!==JSON.stringify(challengerData)){
+                document.writeln(`<button onclick="saveChallengerProgressToLocalStorage(challengerData);this.innerText='saved progress';this.setAttribute('disabled',true)">Save Progress to LocalStorage</button>`);
+            }else{
+                document.writeln(`<button disabled>saved progress</button>`);
+            }
             if(localStorage.getItem(`${xChallengerGuid}.progress`)){
-                document.writeln(`<button onclick="restoreChallengerProgressInSystem(challengerData)">Restore Locally Saved Progress</button>`);
+                document.writeln(`<button onclick="restoreChallengerProgressInSystem('${xChallengerGuid}');this.innerText='restored';this.setAttribute('disabled',true)">Restore Locally Saved Progress</button>`);
             }
             document.writeln(`</p>`);
 
@@ -90,14 +97,20 @@ function showCurrentStatus(){
             document.writeln(`<p>${databaseData.todos.length} todos in database.</p>`);
             document.writeln(`<p>`);
             document.writeln(`<a href='/gui/instances?entity=todo'>View Todos</a> `)
-            document.writeln(`<button onclick="saveChallengerTodosToLocalStorage(databaseData,challengerData);this.innerText='saved';this.setAttribute('disabled',true)">Save Todos Data to LocalStorage</button>`);
+            // only enable save button if not in localStorage or is different from local storage
+            document.databaseData.todos.sort((a,b)=>a.id-b.id);
+            if(localStorage.getItem(`${xChallengerGuid}.data`)!==JSON.stringify(document.databaseData)){
+                document.writeln(`<button onclick="saveChallengerTodosToLocalStorage(databaseData,challengerData);this.innerText='saved todos';this.setAttribute('disabled',true)">Save Todos Data to LocalStorage</button>`);
+            }else{
+                document.writeln(`<button disabled>saved todos</button>`);
+            }
             if(localStorage.getItem(`${xChallengerGuid}.data`)){
-                document.writeln(`<button onclick="restoreTodosInSystem('${xChallengerGuid}')">Restore Locally Saved Data</button>`);
+                document.writeln(`<button onclick="restoreTodosInSystem('${xChallengerGuid}');this.innerText='restored';this.setAttribute('disabled',true)">Restore Locally Saved Todos Data</button>`);
             }
             document.writeln(`</p>`);
         }else{
             if(localStorage.getItem(`${xChallengerGuid}.data`)){
-                document.writeln(`<button onclick="restoreTodosInSystem('${xChallengerGuid}')">Restore Locally Saved Data</button>`);
+                document.writeln(`<button onclick="restoreTodosInSystem('${xChallengerGuid}')">Restore Locally Saved Todos Data</button>`);
             }
         }
     }else{
@@ -110,7 +123,7 @@ function showCurrentStatus(){
         }
 
         if(localStorage.getItem(`${possibleUuid}.data`)){
-            document.writeln(`<button onclick="restoreTodosInSystem('${possibleUuid}')">Restore Locally Saved Data</button>`);
+            document.writeln(`<button onclick="restoreTodosInSystem('${possibleUuid}')">Restore Locally Saved Todos Data</button>`);
         }
 
     }
@@ -129,6 +142,7 @@ function saveChallengerProgressToLocalStorage(aChallenger){
 
 function saveChallengerTodosToLocalStorage(data, aChallenger){
     if(data && aChallenger && aChallenger.xChallenger){
+        data.todos.sort((a,b)=>a.id-b.id);
         localStorage.setItem(aChallenger.xChallenger + ".data", JSON.stringify(data));
     }
 }

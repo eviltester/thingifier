@@ -383,7 +383,7 @@ public class ChallengerWebGUI {
         StringBuilder html = new StringBuilder();
 
         // add the challenge data as JSON
-        final String dataString = new Gson().toJson(challenger);
+        final String dataString = challenger.asJson();
         html.append("<script>document.challengerData=" + dataString + ";</script>");
         // add the current todos as JSON
         html.append("<script>document.databaseData=" + json + ";</script>");

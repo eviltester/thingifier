@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.co.compendiumdev.challenge.CHALLENGE;
 import uk.co.compendiumdev.challenge.challenges.definitions.*;
+import uk.co.compendiumdev.challenge.persistence.PersistenceLayer;
 
 import javax.swing.text.html.Option;
 import java.util.*;
@@ -20,6 +21,10 @@ public class ChallengeDefinitions {
         return orderedChallenges;
     }
 
+    public Collection<CHALLENGE> getDefinedChallenges() {
+        return challengeData.keySet();
+    }
+
     public Collection<ChallengeSection> getChallengeSections() {
         return sections;
     }
@@ -32,7 +37,7 @@ public class ChallengeDefinitions {
 
     // TODO: refactor this into private methods to make it easier to re-order and manage
 
-    public ChallengeDefinitions(){
+    public ChallengeDefinitions(PersistenceLayer persistenceLayer){
 
         challengeData = new HashMap<>();
         orderedChallenges = new ArrayList<>();
@@ -167,12 +172,26 @@ public class ChallengeDefinitions {
 
 
 
+        // TODO: adjust the take a break challenges based on the app configuration
         ChallengeSection restoreChallenger = new ChallengeSection("Fancy a Break? Restore your session",
-                "Your challenge progress is saved, and as long as you remember you challenger ID you can restore it. Leaving a challenger idle for 10 minutes and coming back will restore the progress in memory.");
+                "Your challenge progress can be saved, and as long as you remember you challenger ID you can restore it. Leaving a challenger idle in the system for more than 10 minutes will remove hte challenger from memory. Challenger status and the todos database can be saved to, and restored from, the browser localStorage.");
         sections.add(restoreChallenger);
 
-        storeChallengeAs(CHALLENGE.GET_RESTORE_EXISTING_CHALLENGER, ChallengerChallenges.getRestoreExistingChallenger200(challengeOrder++), restoreChallenger);
-        storeChallengeAs(CHALLENGE.POST_RESTORE_EXISTING_CHALLENGER, ChallengerChallenges.postRestoreExistingChallenger200(challengeOrder++), restoreChallenger);
+        // if persistence layer is set to cloud or file then the following apply
+        if(persistenceLayer.willAutoSaveLoadChallengerStatusToPersistenceLayer()) {
+            storeChallengeAs(CHALLENGE.GET_RESTORE_EXISTING_CHALLENGER, ChallengerChallenges.getRestoreExistingChallenger200(challengeOrder++), restoreChallenger);
+            storeChallengeAs(CHALLENGE.POST_RESTORE_EXISTING_CHALLENGER, ChallengerChallenges.postRestoreExistingChallenger200(challengeOrder++), restoreChallenger);
+        }
+
+        // GET the restorable version of challenger progress via api
+        storeChallengeAs(CHALLENGE.GET_RESTORABLE_CHALLENGER_PROGRESS_STATUS, ChallengerChallenges.getRestorableExistingChallengerProgress200(challengeOrder++), restoreChallenger);
+        // PUT to restore challenger progress via api
+        storeChallengeAs(CHALLENGE.PUT_RESTORABLE_CHALLENGER_PROGRESS_STATUS, ChallengerChallenges.putRestoreChallengerProgress200(challengeOrder++), restoreChallenger);
+        storeChallengeAs(CHALLENGE.PUT_NEW_RESTORED_CHALLENGER_PROGRESS_STATUS, ChallengerChallenges.putRestoreChallengerProgress201(challengeOrder++), restoreChallenger);
+
+        // GET the restorable version of todos database via api
+        // PUT to restore version of todos via api
+
 
 
 

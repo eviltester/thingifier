@@ -1,5 +1,10 @@
 package uk.co.compendiumdev.challenge;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import uk.co.compendiumdev.challenge.challenges.ChallengeDefinitions;
+
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -16,20 +21,21 @@ public class ChallengerAuthData {
 
     private ChallengerState state;
 
-    public ChallengerAuthData(){
+    public ChallengerAuthData(Collection<CHALLENGE> definedChallenges){
         this.xChallenger = UUID.randomUUID().toString();
         this.xAuthToken = UUID.randomUUID().toString();
         this.expiresin = 600000; // 10 * 60 * 1000; // 10 minutes
         this.extratime = 30000; // 30 * 1000 - extra time on each request
         touch();
         this.secretNote = "";
-        resetChallengesStatus();
+        resetChallengesStatus(definedChallenges);
         this.state = ChallengerState.NEW;
     }
 
-    private void resetChallengesStatus() {
+    private void resetChallengesStatus(Collection<CHALLENGE> definedChallenges) {
         challengeStatus = new HashMap<>();
-        for(CHALLENGE challenge : CHALLENGE.values()){
+        // this should only be challenges defined
+        for(CHALLENGE challenge : definedChallenges){
             challengeStatus.put(challenge, false);
         }
     }
@@ -97,7 +103,7 @@ public class ChallengerAuthData {
         this.state = challengerState;
     }
 
-    public ChallengerAuthData fromData(ChallengerAuthData data){
+    public ChallengerAuthData fromData(ChallengerAuthData data, Collection<CHALLENGE> definedChallenges){
         // set from data but do not fully trust data
         setNote(data.secretNote);
 
@@ -115,8 +121,10 @@ public class ChallengerAuthData {
 
         state = data.getState();
 
-        resetChallengesStatus();
-        for(CHALLENGE challenge : CHALLENGE.values()){
+        resetChallengesStatus(definedChallenges);
+        // this should not be all challenges, only those which have been defined
+
+        for(CHALLENGE challenge : definedChallenges){
             challengeStatus.put(challenge, data.statusOfChallenge(challenge));
         }
 
@@ -125,5 +133,15 @@ public class ChallengerAuthData {
 
     public ChallengerState getState() {
         return this.state;
+    }
+
+    public String asJson() {
+        // does not return everything as we don't restore everything
+        JsonElement tree = new Gson().toJsonTree(this);
+        tree.getAsJsonObject().remove("extratime");
+        tree.getAsJsonObject().remove("lastAccessed");
+        tree.getAsJsonObject().remove("expiresin");
+        tree.getAsJsonObject().remove("state");
+        return tree.toString();
     }
 }

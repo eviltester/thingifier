@@ -8,7 +8,7 @@ import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import java.io.*;
 import java.nio.file.Files;
 
-public class ChallengerFileStorage implements PersistenceMechanism {
+public class ChallengerFileStorage implements ChallengerPersistenceMechanism {
 
     Logger logger = LoggerFactory.getLogger(ChallengerFileStorage.class);
 

@@ -10,9 +10,7 @@ import uk.co.compendiumdev.challenge.persistence.PersistenceResponse;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Challengers {
@@ -24,18 +22,27 @@ public class Challengers {
     Map<String, ChallengerAuthData> authData;
     public ChallengerAuthData SINGLE_PLAYER;
     public static final String SINGLE_PLAYER_GUID="rest-api-challenges-single-player";
-    public final ChallengerAuthData DEFAULT_PLAYER_DATA = new ChallengerAuthData();
+    public ChallengerAuthData DEFAULT_PLAYER_DATA;
     PersistenceLayer persistenceLayer;
     private ThingifierApiConfig apiConfig;
+    private Collection<CHALLENGE> definedChallenges;
 
     public Challengers(EntityRelModel erModel){
         authData = new ConcurrentHashMap<>();
-        SINGLE_PLAYER = new ChallengerAuthData();
+        // use all challenges until told otherwise
+        this.definedChallenges = Arrays.asList(CHALLENGE.values());
+        SINGLE_PLAYER = new ChallengerAuthData(this.definedChallenges);
         SINGLE_PLAYER.setXChallengerGUID(SINGLE_PLAYER_GUID);
+        DEFAULT_PLAYER_DATA = new ChallengerAuthData(this.definedChallenges);
         this.singlePlayerMode=true;
         this.erModel = erModel;
     }
 
+    public void configureForChallenges(Collection<CHALLENGE> definedChallenges){
+        this.definedChallenges = definedChallenges;
+        SINGLE_PLAYER = new ChallengerAuthData(definedChallenges);
+        DEFAULT_PLAYER_DATA = new ChallengerAuthData(definedChallenges);
+    }
     public void setMultiPlayerMode(){
         singlePlayerMode=false;
     }
@@ -53,7 +60,12 @@ public class Challengers {
             return false;
         }
 
-        ChallengerAuthData challenger = authData.get(challengerGuid);
+        ChallengerAuthData challenger;
+        if(singlePlayerMode && SINGLE_PLAYER.getXChallenger().equals(challengerGuid)){
+            challenger = SINGLE_PLAYER;
+        }else{
+            challenger = authData.get(challengerGuid);
+        }
         return challenger != null;
     }
 
@@ -118,7 +130,7 @@ public class Challengers {
     }
 
     public ChallengerAuthData createNewChallenger() {
-        ChallengerAuthData newChallenger = new ChallengerAuthData();
+        ChallengerAuthData newChallenger = new ChallengerAuthData(definedChallenges);
         newChallenger.setState(ChallengerState.NEW);
         put(newChallenger);
         return newChallenger;

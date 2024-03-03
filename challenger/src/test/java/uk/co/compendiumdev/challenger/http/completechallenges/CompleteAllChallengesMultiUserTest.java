@@ -73,7 +73,7 @@ public class CompleteAllChallengesMultiUserTest extends ChallengeCompleteTest{
                         "GET", headers,
                         "");
 
-        Assertions.assertEquals(204, response.statusCode);
+        Assertions.assertEquals(200, response.statusCode);
         challenger = ChallengeMain.getChallenger().getChallengers().getChallenger(guid);
         Assertions.assertTrue(challenger.statusOfChallenge(CHALLENGE.GET_RESTORE_EXISTING_CHALLENGER));
     }

@@ -37,7 +37,7 @@ public class ChallengerTrackingRoutesTest {
         final HttpResponseDetails response =
                 http.send("/challenger/" + challenger.getXChallenger(), "get");
 
-        Assertions.assertEquals(204, response.statusCode);
+        Assertions.assertEquals(200, response.statusCode);
         Assertions.assertEquals(challenger.getXChallenger(),
                 response.getHeader("X-CHALLENGER"));
     }
@@ -51,7 +51,7 @@ public class ChallengerTrackingRoutesTest {
         final HttpResponseDetails response =
                 http.send("/challenger/" + challenger.getXChallenger(), "get");
 
-        Assertions.assertEquals(204, response.statusCode);
+        Assertions.assertEquals(200, response.statusCode); // now returns the status details
         Assertions.assertEquals(challenger.getXChallenger(),
                 response.getHeader("X-CHALLENGER"));
     }

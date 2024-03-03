@@ -74,6 +74,11 @@ public class ChallengerInternalHTTPRequestHook  implements InternalHttpRequestHo
             challengers.pass(challenger,CHALLENGE.OVERRIDE_TRACE_HEARTBEAT_501);
         }
 
+        if(method == HttpApiRequest.VERB.GET &&
+                path.equals("challenger/" + challenger.getXChallenger())){
+            challengers.pass(challenger,CHALLENGE.GET_RESTORABLE_CHALLENGER_PROGRESS_STATUS);
+        }
+
         return null;
     }
 

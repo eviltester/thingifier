@@ -3,12 +3,12 @@ package uk.co.compendiumdev.challenge.challengers;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
-import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.ERSchema;
 import uk.co.compendiumdev.thingifier.core.domain.instances.ERInstanceData;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 
 public class ChallengersTest {
 
@@ -23,6 +23,7 @@ public class ChallengersTest {
         Challengers challengers = new Challengers(erModel);
 
         challengers.setMultiPlayerMode();
+        challengers.configureForChallenges(new ArrayList<>());
         ChallengerAuthData challenger = challengers.createNewChallenger();
         String guid = challenger.getXChallenger();
         erModel.createInstanceDatabaseIfNotExisting(guid);

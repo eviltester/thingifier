@@ -3,6 +3,7 @@ package uk.co.compendiumdev.challenge.challengesrouting;
 import com.google.gson.Gson;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
+import uk.co.compendiumdev.challenge.challenges.ChallengeDefinitions;
 import uk.co.compendiumdev.challenge.persistence.PersistenceLayer;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.ThingifierApiDefn;
@@ -23,7 +24,8 @@ public class ChallengerTrackingRoutes {
                           final boolean single_player_mode,
                           final ThingifierApiDefn apiDefn,
                           final PersistenceLayer persistenceLayer,
-                          final Thingifier thingifier){
+                          final Thingifier thingifier,
+                          ChallengeDefinitions challengeDefinitions){
 
         // add a GET challenger/database/:id in the proper database format
         get("/challenger/database/:id", (request, result) -> {
@@ -77,7 +79,10 @@ public class ChallengerTrackingRoutes {
                 challenger = challengers.getChallenger(xChallengerGuid);
                 if(challenger!=null){
                     challenger.touch();
-                    result.status(204);
+                    result.status(200);
+                    result.header("content-type", "application/json");
+                    XChallengerHeader.setResultHeaderBasedOnChallenger(result,challenger);
+                    return challenger.asJson();
                 }else{
                     result.status(404);
                 }
@@ -102,11 +107,13 @@ public class ChallengerTrackingRoutes {
                 return ApiResponseAsJson.getErrorMessageJson("Invalid Challenger GUID");
             }
 
-            try{
-                UUID.fromString(xChallengerGuid);
-            }catch(Exception e){
-                result.status(400);
-                return ApiResponseAsJson.getErrorMessageJson("Invalid Challenger GUID " + e.getMessage());
+            if(!single_player_mode) {
+                try {
+                    UUID.fromString(xChallengerGuid);
+                } catch (Exception e) {
+                    result.status(400);
+                    return ApiResponseAsJson.getErrorMessageJson("Invalid Challenger GUID " + e.getMessage());
+                }
             }
 
             // try and parse payload, fail if nonsense
@@ -133,15 +140,17 @@ public class ChallengerTrackingRoutes {
             // does id exist in memory, if so just replace state data
             if(challengers.inMemory(xChallengerGuid)){
                 ChallengerAuthData existingChallenger = challengers.getChallenger(xChallengerGuid);
-                existingChallenger.fromData(challenger);
+                existingChallenger.fromData(challenger, challengeDefinitions.getDefinedChallenges());
                 result.status(200);
+                result.header("content-type", "application/json");
                 XChallengerHeader.setResultHeaderBasedOnChallenger(result,challenger);
-                return "";
+                return existingChallenger.asJson();
             }
 
             // need to create a new challenger in memory with this state
 
-            challengers.put(new ChallengerAuthData().fromData(challenger));
+            ChallengerAuthData newChallenger = new ChallengerAuthData(challengeDefinitions.getDefinedChallenges()).fromData(challenger, challengeDefinitions.getDefinedChallenges());
+            challengers.put(newChallenger);
             result.status(201);
             result.header("X-CHALLENGER", xChallengerGuid);
             return "";
@@ -191,15 +200,6 @@ public class ChallengerTrackingRoutes {
             }
         });
 
-
-
-        // TODO: add an auto save to local storage option for state and todos - off by default
-
-        // TODO: adjust the take a break challenges based on the app configuration
-
-        // TODO: have separate save and load to s3 switches to allow 'loading' but not saving.
-
-        // TODO: have a 'save to disk' option for the todos, when we can export the database format.
 
         // TODO: add option for some ip based limits on number of challenges associated with an IP
 

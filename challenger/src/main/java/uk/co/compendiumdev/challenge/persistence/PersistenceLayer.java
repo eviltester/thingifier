@@ -8,9 +8,11 @@ public class PersistenceLayer {
 
     private StorageType storeOn;
 
+    // TODO: have a database persistence layer e.g. 'save to disk' option for the todos
+
     // todo: add all active storage mechanisms in a list and store on all - switch it off by removing from list
-    PersistenceMechanism file = new ChallengerFileStorage();
-    static PersistenceMechanism aws;
+    ChallengerPersistenceMechanism file = new ChallengerFileStorage();
+    static ChallengerPersistenceMechanism aws;
 
     public void setToCloud() {
         storeOn = PersistenceLayer.StorageType.CLOUD;
@@ -71,5 +73,16 @@ public class PersistenceLayer {
             }
             return aws.loadChallengerStatus(guid);
         }
+    }
+
+    public boolean willAutoSaveLoadChallengerStatusToPersistenceLayer(){
+        if(storeOn==StorageType.LOCAL){
+            return true;
+        }
+        if(storeOn==StorageType.CLOUD){
+            return true;
+        }
+
+        return false;
     }
 }

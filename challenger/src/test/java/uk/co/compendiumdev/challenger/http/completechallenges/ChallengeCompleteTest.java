@@ -7,7 +7,6 @@ import uk.co.compendiumdev.challenge.CHALLENGE;
 import uk.co.compendiumdev.challenge.ChallengeMain;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
-import uk.co.compendiumdev.challenge.persistence.ChallengerFileStorage;
 import uk.co.compendiumdev.challenger.http.httpclient.HttpResponseDetails;
 import uk.co.compendiumdev.challenger.http.httpclient.HttpMessageSender;
 import uk.co.compendiumdev.sparkstart.Environment;
@@ -17,6 +16,7 @@ import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 public abstract class ChallengeCompleteTest{
 
@@ -90,7 +90,7 @@ public abstract class ChallengeCompleteTest{
             }
             if(!challenger.statusOfChallenge(challenge)){
                 remainingChallengeCount++;
-                logger.info(challenge.toString());
+                logger.warn("Still to complete challenge " + challenge.toString());
             }
         }
 
@@ -1135,7 +1135,56 @@ public abstract class ChallengeCompleteTest{
 
     }
 
+    @Test
+    public void canGetChallengerToRestorePass() {
 
+        Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
+
+        final HttpResponseDetails response =
+                http.send("/challenger/" + challenger.getXChallenger(), "GET", x_challenger_header, "");
+
+        Assertions.assertEquals(200, response.statusCode);
+        Assertions.assertTrue(challenger.statusOfChallenge(CHALLENGE.GET_RESTORABLE_CHALLENGER_PROGRESS_STATUS));
+
+    }
+
+    @Test
+    public void canRestoreAnExistingChallengerPass() {
+
+        Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
+
+        final HttpResponseDetails response =
+                http.send("/challenger/" + challenger.getXChallenger(), "GET", x_challenger_header, "");
+
+        final HttpResponseDetails restoreResponse =
+                http.send("/challenger/" + challenger.getXChallenger(), "PUT", x_challenger_header, response.body);
+
+        Assertions.assertEquals(200, restoreResponse.statusCode);
+        Assertions.assertTrue(challenger.statusOfChallenge(CHALLENGE.PUT_RESTORABLE_CHALLENGER_PROGRESS_STATUS));
+    }
+
+    @Test
+    public void canRestoreAnNonExistingChallengerPass() {
+
+        Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
+
+        final HttpResponseDetails response =
+                http.send("/challenger/" + challenger.getXChallenger(), "GET", x_challenger_header, "");
+
+        String newGuid = UUID.randomUUID().toString();
+        String jsonData = response.body.replaceAll(challenger.getXChallenger(), newGuid);
+
+        Map<String, String> new_x_challenger_header = getXChallengerHeader(newGuid);
+        final HttpResponseDetails restoreResponse =
+                http.send("/challenger/" + newGuid, "PUT", new_x_challenger_header, jsonData);
+
+        Assertions.assertEquals(201, restoreResponse.statusCode);
+        newChallenger = challengers.getChallenger(newGuid);
+        Assertions.assertTrue(newChallenger.statusOfChallenge(CHALLENGE.PUT_NEW_RESTORED_CHALLENGER_PROGRESS_STATUS));
+
+        // allow count to pass by changing state of normally used challenger
+        challenger.pass(CHALLENGE.PUT_NEW_RESTORED_CHALLENGER_PROGRESS_STATUS);
+    }
 
 
 }

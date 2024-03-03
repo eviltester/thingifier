@@ -5,9 +5,13 @@ import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.challenge.CHALLENGE;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
+import uk.co.compendiumdev.challenge.challenges.ChallengeDefinitions;
+import uk.co.compendiumdev.challenge.persistence.PersistenceLayer;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Collection;
 
 public class ChallengerInternalHttpRequestHookTest {
 
@@ -34,6 +38,8 @@ public class ChallengerInternalHttpRequestHookTest {
     public void inMultUserModeAddingAnXChallengerHeaderWillTouchTheChallenger() throws NoSuchFieldException, IllegalAccessException {
 
         Challengers challengers = new Challengers(null);
+        Collection<CHALLENGE> challenges = new ChallengeDefinitions(new PersistenceLayer(PersistenceLayer.StorageType.NONE)).getDefinedChallenges();
+        challengers.configureForChallenges(challenges);
         final ChallengerAuthData challenger = challengers.createNewChallenger();
 
         // risk that this test is intermittent if it all happens in the same millisecond
@@ -118,7 +124,10 @@ public class ChallengerInternalHttpRequestHookTest {
     public void canGetHeartbeatInMultiPlayer(){
 
         Challengers challengers = new Challengers(null);
+        Collection<CHALLENGE> challenges = new ChallengeDefinitions(new PersistenceLayer(PersistenceLayer.StorageType.NONE)).getDefinedChallenges();
         challengers.setMultiPlayerMode();
+        challengers.configureForChallenges(challenges);
+
         final ChallengerAuthData challenger =
                 challengers.createNewChallenger();
 
@@ -141,7 +150,10 @@ public class ChallengerInternalHttpRequestHookTest {
     public void canTraceHeartbeatInMultiPlayer(){
 
         Challengers challengers = new Challengers(null);
+        Collection<CHALLENGE> challenges = new ChallengeDefinitions(new PersistenceLayer(PersistenceLayer.StorageType.NONE)).getDefinedChallenges();
         challengers.setMultiPlayerMode();
+        challengers.configureForChallenges(challenges);
+
         final ChallengerAuthData challenger =
                 challengers.createNewChallenger();
 
@@ -169,6 +181,10 @@ public class ChallengerInternalHttpRequestHookTest {
 
         Challengers challengers = new Challengers(null);
         challengers.setMultiPlayerMode();
+
+        Collection<CHALLENGE> challenges = new ChallengeDefinitions(new PersistenceLayer(PersistenceLayer.StorageType.NONE)).getDefinedChallenges();
+        challengers.configureForChallenges(challenges);
+
         final ChallengerAuthData challenger =
                 challengers.createNewChallenger();
 
@@ -196,6 +212,9 @@ public class ChallengerInternalHttpRequestHookTest {
 
         Challengers challengers = new Challengers(null);
         challengers.setMultiPlayerMode();
+        Collection<CHALLENGE> challenges = new ChallengeDefinitions(new PersistenceLayer(PersistenceLayer.StorageType.NONE)).getDefinedChallenges();
+        challengers.configureForChallenges(challenges);
+
         final ChallengerAuthData challenger =
                 challengers.createNewChallenger();
 

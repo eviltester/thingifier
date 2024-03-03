@@ -35,13 +35,16 @@ public class ChallengeRouteHandler {
         apiDefn.addServer("http://localhost:4567", "local execution");
         apiDefn.setVersion("1.0.0");
 
-        challengeDefinitions = new ChallengeDefinitions();
+        single_player_mode = true;
+        persistenceLayer = new PersistenceLayer(PersistenceLayer.StorageType.LOCAL);
+        challengeDefinitions = new ChallengeDefinitions(persistenceLayer);
         this.thingifier = thingifier;
         challengers = new Challengers(thingifier.getERmodel());
         challengers.setApiConfig(thingifier.apiConfig());
-        single_player_mode = true;
-        persistenceLayer = new PersistenceLayer(PersistenceLayer.StorageType.LOCAL);
+
+
         challengers.setPersistenceLayer(persistenceLayer);
+        challengers.configureForChallenges(challengeDefinitions.getDefinedChallenges());
         persistenceLayer.tryToLoadChallenger(challengers, challengers.SINGLE_PLAYER_GUID);
     }
 
@@ -61,15 +64,19 @@ public class ChallengeRouteHandler {
 
     public void setToCloudPersistenceMode(){
         persistenceLayer.setToCloud();
+        challengeDefinitions = new ChallengeDefinitions(persistenceLayer);
+        challengers.configureForChallenges(challengeDefinitions.getDefinedChallenges());
     }
 
     public void setToNoPersistenceMode() {
         persistenceLayer.switchOffPersistence();
+        challengeDefinitions = new ChallengeDefinitions(persistenceLayer);
+        challengers.configureForChallenges(challengeDefinitions.getDefinedChallenges());
     }
 
     public ChallengeRouteHandler configureRoutes() {
 
-        new ChallengerTrackingRoutes().configure(challengers, single_player_mode, apiDefn, persistenceLayer, thingifier);
+        new ChallengerTrackingRoutes().configure(challengers, single_player_mode, apiDefn, persistenceLayer, thingifier, challengeDefinitions);
         new ChallengesRoutes().configure(challengers, single_player_mode, apiDefn, challengeDefinitions);
         new HeartBeatRoutes().configure(apiDefn);
         new AuthRoutes().configure(challengers, apiDefn);

@@ -49,7 +49,7 @@ public class ChallengerInternalHTTPResponseHook implements InternalHttpResponseH
 
         if (request.getVerb() == GET &&
                 request.getPath().startsWith("challenger/") &&
-                response.getStatusCode() == 204) {
+                response.getStatusCode() == 200) {
 
             String challengerId = response.getHeader("X-Challenger");
             challenger = challengers.getChallenger(challengerId);
@@ -67,6 +67,28 @@ public class ChallengerInternalHTTPResponseHook implements InternalHttpResponseH
             challenger = challengers.getChallenger(challengerId);
             if (challenger != null && givenChallengerId.equals(challengerId) && challenger.getState()== ChallengerState.LOADED_FROM_PERSISTENCE) {
                 challengers.pass(challenger, CHALLENGE.POST_RESTORE_EXISTING_CHALLENGER);
+            }
+        }
+
+        if (request.getVerb() == PUT &&
+                request.getPath().startsWith("challenger/") &&
+                (response.getStatusCode() == 200)) {
+
+            String challengerId = response.getHeader("X-Challenger");
+            challenger = challengers.getChallenger(challengerId);
+            if (challenger != null) {
+                challengers.pass(challenger, CHALLENGE.PUT_RESTORABLE_CHALLENGER_PROGRESS_STATUS);
+            }
+        }
+
+        if (request.getVerb() == PUT &&
+                request.getPath().startsWith("challenger/") &&
+                (response.getStatusCode() == 201)) {
+
+            String challengerId = response.getHeader("X-Challenger");
+            challenger = challengers.getChallenger(challengerId);
+            if (challenger != null) {
+                challengers.pass(challenger, CHALLENGE.PUT_NEW_RESTORED_CHALLENGER_PROGRESS_STATUS);
             }
         }
 
