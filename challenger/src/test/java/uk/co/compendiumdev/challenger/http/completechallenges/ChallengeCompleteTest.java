@@ -1089,8 +1089,6 @@ public abstract class ChallengeCompleteTest{
     @Test
     public void canCreateANewChallenger() {
 
-        System.out.println("creating challenger post " + challenger.getXChallenger());
-
         // no headers means create a new challenger
         Map<String, String> headers = new HashMap<>();
 
@@ -1102,12 +1100,9 @@ public abstract class ChallengeCompleteTest{
 
         final String challengerCode = response.getHeader("x-challenger");
 
-        System.out.println("checking challenger after post " + challengerCode);
-
         // add to the new challenger to allow counting
         newChallenger = ChallengeMain.getChallenger().
                     getChallengers().getChallenger(challengerCode);
-        System.out.println(String.format("received challenger %s after post for %s in singleuser=%b",newChallenger.getXChallenger(), challengerCode, ChallengeMain.getChallenger().isSinglePlayerMode()));
 
         Assertions.assertTrue(newChallenger.
                 statusOfChallenge(CHALLENGE.CREATE_NEW_CHALLENGER));
