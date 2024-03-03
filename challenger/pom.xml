@@ -75,6 +75,13 @@ https://www.slf4j.org/manual.html
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.0.0-M4</version>
+                <configuration>
+                    <properties>
+                        <configurationParameters>
+                            junit.jupiter.execution.parallel.enabled = false
+                        </configurationParameters>
+                    </properties>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
