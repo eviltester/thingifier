@@ -92,7 +92,10 @@ public class ChallengerAuthData {
     }
 
     public void pass(final CHALLENGE id) {
-        challengeStatus.put(id, true);
+        // only update challenge if configured for it
+        if(challengeStatus.containsKey(id)){
+            challengeStatus.put(id, true);
+        }
     }
 
     public void setXChallengerGUID(final String guid) {

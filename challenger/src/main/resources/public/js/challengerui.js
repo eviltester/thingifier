@@ -49,14 +49,16 @@ function displayLocalGuids(){
         guidsArray.push(`|${currGuid}|`)
     }
     if(guidsArray!=null && guidsArray.length>0){
-        document.writeln('<p><strong>Previously Used</strong></p>')
-    }
-    for(guidItem in guidsArray){
-        var myguid = guidsArray[guidItem].replace(/\|/g,'');
-        document.writeln("<p id='p" + myguid + "'>");
-        document.writeln("<a href='/gui/challenges/"+myguid+"'>"+myguid+"</a>");
-        document.writeln("&nbsp;<button onclick=forgetGuid('"+myguid+"')>forget</button>");
-        document.writeln("</p>");
+        document.writeln('<details><summary>Previously Used</summary>')
+
+        for(guidItem in guidsArray){
+            var myguid = guidsArray[guidItem].replace(/\|/g,'');
+            document.writeln("<p id='p" + myguid + "'>");
+            document.writeln("<a href='/gui/challenges/"+myguid+"'>"+myguid+"</a>");
+            document.writeln("&nbsp;<button onclick=forgetGuid('"+myguid+"')>forget</button>");
+            document.writeln("</p>");
+        }
+        document.writeln('</details>');
     }
 }
 
@@ -118,12 +120,16 @@ function showCurrentStatus(){
         var parts = location.pathname.split("/");
         var possibleUuid = parts[parts.length-1];
 
-        if(localStorage.getItem(`${possibleUuid}.progress`)){
-            document.writeln(`<button onclick="restoreChallengerProgressInSystem('${possibleUuid}')">Restore Locally Saved Progress</button>`);
-        }
+        if(localStorage.getItem(`${possibleUuid}.progress`) || localStorage.getItem(`${possibleUuid}.data`)){
 
-        if(localStorage.getItem(`${possibleUuid}.data`)){
-            document.writeln(`<button onclick="restoreTodosInSystem('${possibleUuid}')">Restore Locally Saved Todos Data</button>`);
+            document.writeln(`<p><strong>Restore Data for ${possibleUuid}</strong></p>`);
+            if(localStorage.getItem(`${possibleUuid}.progress`)){
+                document.writeln(`<button onclick="restoreChallengerProgressInSystem('${possibleUuid}')">Restore Locally Saved Progress</button>`);
+            }
+
+            if(localStorage.getItem(`${possibleUuid}.data`)){
+                document.writeln(`<button onclick="restoreTodosInSystem('${possibleUuid}')">Restore Locally Saved Todos Data</button>`);
+            }
         }
 
     }
