@@ -5,20 +5,18 @@ import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.challenge.CHALLENGE;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
-import uk.co.compendiumdev.challenge.challenges.ChallengeDefinitions;
-import uk.co.compendiumdev.challenge.persistence.PersistenceLayer;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Arrays;
+
 
 public class ChallengerInternalHttpRequestHookTest {
 
     @Test
     public void inMultUserModeWeNeedAnXChallengerHeaderToTrackChallenges(){
 
-        Challengers challengers = new Challengers(null);
+        Challengers challengers = new Challengers(null, Arrays.asList(CHALLENGE.values()));
         challengers.setMultiPlayerMode();
 
         final ChallengerInternalHTTPRequestHook hook = new ChallengerInternalHTTPRequestHook(challengers);
@@ -37,9 +35,7 @@ public class ChallengerInternalHttpRequestHookTest {
     @Test
     public void inMultUserModeAddingAnXChallengerHeaderWillTouchTheChallenger() throws NoSuchFieldException, IllegalAccessException {
 
-        Challengers challengers = new Challengers(null);
-        Collection<CHALLENGE> challenges = new ChallengeDefinitions(new PersistenceLayer(PersistenceLayer.StorageType.NONE)).getDefinedChallenges();
-        challengers.configureForChallenges(challenges);
+        Challengers challengers = new Challengers(null, Arrays.asList(CHALLENGE.values()));
         final ChallengerAuthData challenger = challengers.createNewChallenger();
 
         // risk that this test is intermittent if it all happens in the same millisecond
@@ -80,7 +76,7 @@ public class ChallengerInternalHttpRequestHookTest {
     @Test
     public void inMultUserModeWeNeedAnXChallengerHeaderThatExistsToTrackChallenges(){
 
-        Challengers challengers = new Challengers(null);
+        Challengers challengers = new Challengers(null, Arrays.asList(CHALLENGE.values()));
         challengers.setMultiPlayerMode();
 
         final ChallengerInternalHTTPRequestHook hook = new ChallengerInternalHTTPRequestHook(challengers);
@@ -103,7 +99,7 @@ public class ChallengerInternalHttpRequestHookTest {
     @Test
     public void inSinglePlayerModeNoHeaderMeansUseDefaultChallenger(){
 
-        Challengers challengers = new Challengers(null);
+        Challengers challengers = new Challengers(null, Arrays.asList(CHALLENGE.values()));
 
         final ChallengerInternalHTTPRequestHook hook = new ChallengerInternalHTTPRequestHook(challengers);
 
@@ -123,10 +119,8 @@ public class ChallengerInternalHttpRequestHookTest {
     @Test
     public void canGetHeartbeatInMultiPlayer(){
 
-        Challengers challengers = new Challengers(null);
-        Collection<CHALLENGE> challenges = new ChallengeDefinitions(new PersistenceLayer(PersistenceLayer.StorageType.NONE)).getDefinedChallenges();
+        Challengers challengers = new Challengers(null, Arrays.asList(CHALLENGE.values()));
         challengers.setMultiPlayerMode();
-        challengers.configureForChallenges(challenges);
 
         final ChallengerAuthData challenger =
                 challengers.createNewChallenger();
@@ -149,10 +143,8 @@ public class ChallengerInternalHttpRequestHookTest {
     @Test
     public void canTraceHeartbeatInMultiPlayer(){
 
-        Challengers challengers = new Challengers(null);
-        Collection<CHALLENGE> challenges = new ChallengeDefinitions(new PersistenceLayer(PersistenceLayer.StorageType.NONE)).getDefinedChallenges();
+        Challengers challengers = new Challengers(null , Arrays.asList(CHALLENGE.values()));
         challengers.setMultiPlayerMode();
-        challengers.configureForChallenges(challenges);
 
         final ChallengerAuthData challenger =
                 challengers.createNewChallenger();
@@ -179,11 +171,8 @@ public class ChallengerInternalHttpRequestHookTest {
     @Test
     public void canDeleteHeartbeatInMultiPlayer(){
 
-        Challengers challengers = new Challengers(null);
+        Challengers challengers = new Challengers(null, Arrays.asList(CHALLENGE.values()));
         challengers.setMultiPlayerMode();
-
-        Collection<CHALLENGE> challenges = new ChallengeDefinitions(new PersistenceLayer(PersistenceLayer.StorageType.NONE)).getDefinedChallenges();
-        challengers.configureForChallenges(challenges);
 
         final ChallengerAuthData challenger =
                 challengers.createNewChallenger();
@@ -210,10 +199,8 @@ public class ChallengerInternalHttpRequestHookTest {
     @Test
     public void canPatchHeartbeatInMultiPlayer(){
 
-        Challengers challengers = new Challengers(null);
+        Challengers challengers = new Challengers(null, Arrays.asList(CHALLENGE.values()));
         challengers.setMultiPlayerMode();
-        Collection<CHALLENGE> challenges = new ChallengeDefinitions(new PersistenceLayer(PersistenceLayer.StorageType.NONE)).getDefinedChallenges();
-        challengers.configureForChallenges(challenges);
 
         final ChallengerAuthData challenger =
                 challengers.createNewChallenger();

@@ -4,10 +4,12 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.challenge.CHALLENGE;
 import uk.co.compendiumdev.challenge.ChallengeMain;
+import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenger.http.httpclient.HttpResponseDetails;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 public class CompleteAllChallengesMultiUserTest extends ChallengeCompleteTest{
 
@@ -78,4 +80,26 @@ public class CompleteAllChallengesMultiUserTest extends ChallengeCompleteTest{
         Assertions.assertTrue(challenger.statusOfChallenge(CHALLENGE.GET_RESTORE_EXISTING_CHALLENGER));
     }
 
+    @Test
+    public void canRestoreAnNonExistingChallengerPass() {
+
+        Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
+
+        final HttpResponseDetails response =
+                http.send("/challenger/" + challenger.getXChallenger(), "GET", x_challenger_header, "");
+
+        String newGuid = UUID.randomUUID().toString();
+        String jsonData = response.body.replaceAll(challenger.getXChallenger(), newGuid);
+
+        Map<String, String> new_x_challenger_header = getXChallengerHeader(newGuid);
+        final HttpResponseDetails restoreResponse =
+                http.send("/challenger/" + newGuid, "PUT", new_x_challenger_header, jsonData);
+
+        Assertions.assertEquals(201, restoreResponse.statusCode);
+        ChallengerAuthData newChallenger = challengers.getChallenger(newGuid);
+        Assertions.assertTrue(newChallenger.statusOfChallenge(CHALLENGE.PUT_NEW_RESTORED_CHALLENGER_PROGRESS_STATUS));
+
+        // allow count to pass by changing state of normally used challenger
+        challenger.pass(CHALLENGE.PUT_NEW_RESTORED_CHALLENGER_PROGRESS_STATUS);
+    }
 }

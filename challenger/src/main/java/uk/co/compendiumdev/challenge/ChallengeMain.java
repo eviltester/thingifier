@@ -28,40 +28,39 @@ public class ChallengeMain {
         app.configurePortAndDefaultRoutes();
         app.setupBuiltInConfigurableRoutes();
 
-        // setup routes required for challenges
-        challenger = new ChallengeRouteHandler(thingifier, app.getApiDefn());
-
+        // create a default configuration class which we pass into the ChallengeRouteHandler and configure via args
+        ChallengerConfig config = new ChallengerConfig();
 
         for (String arg : args) {
             if (arg.toLowerCase().startsWith("-multiplayer")) {
                 logger.info("Running in multiplayer mode");
-                challenger.setToMultiPlayerMode();
+                config.setToMultiPlayerMode();
             }
 
             // because I keep typing multiuser instead of multiplayer!
             if (arg.toLowerCase().startsWith("-multiuser")) {
                 logger.info("Running in multiplayer mode");
-                challenger.setToMultiPlayerMode();
+                config.setToMultiPlayerMode();
             }
 
             if (arg.toLowerCase().startsWith("-cloudstorage")) {
                 logger.info("Setting persistence mechanism to cloud");
-                challenger.setToCloudPersistenceMode();
+                config.setToCloudPersistenceMode();
             }
 
             if(arg.toLowerCase().startsWith("-guikeepalive")){
                 logger.info("Setting GUI to keep session alive through XHR");
-                challenger.setGuiToKeepSessionAlive();
+                config.setGuiToKeepSessionAlive();
             }
 
             if (arg.toLowerCase().startsWith("-memory")) {
                 logger.info("Setting persistence mechanism to no persistence");
-                challenger.setToNoPersistenceMode();
+                config.setToNoPersistenceMode();
             }
 
             if (arg.toLowerCase().startsWith("-enableadminapi")) {
                 logger.info("Enabling Admin Api");
-                challenger.enableAdminApi();
+                config.enableAdminApi();
             }
 
             if(arg.toLowerCase().startsWith("-unlimitedtodos")){
@@ -71,6 +70,8 @@ public class ChallengeMain {
             }
         }
 
+        // setup routes required for challenges
+        challenger = new ChallengeRouteHandler(thingifier, app.getApiDefn(), config);
         challenger.configureRoutes();
 
         app.chooseThingifier();

@@ -27,10 +27,9 @@ public class Challengers {
     private ThingifierApiConfig apiConfig;
     private Collection<CHALLENGE> definedChallenges;
 
-    public Challengers(EntityRelModel erModel){
+    public Challengers(EntityRelModel erModel, Collection<CHALLENGE> definedChallenges){
         authData = new ConcurrentHashMap<>();
-        // use all challenges until told otherwise
-        this.definedChallenges = Arrays.asList(CHALLENGE.values());
+        this.definedChallenges = definedChallenges;
         SINGLE_PLAYER = new ChallengerAuthData(this.definedChallenges);
         SINGLE_PLAYER.setXChallengerGUID(SINGLE_PLAYER_GUID);
         DEFAULT_PLAYER_DATA = new ChallengerAuthData(this.definedChallenges);
@@ -38,12 +37,6 @@ public class Challengers {
         this.erModel = erModel;
     }
 
-    public void configureForChallenges(Collection<CHALLENGE> definedChallenges){
-        this.definedChallenges = definedChallenges;
-        SINGLE_PLAYER = new ChallengerAuthData(definedChallenges);
-        SINGLE_PLAYER.setXChallengerGUID(SINGLE_PLAYER_GUID);
-        DEFAULT_PLAYER_DATA = new ChallengerAuthData(definedChallenges);
-    }
     public void setMultiPlayerMode(){
         singlePlayerMode=false;
     }
@@ -62,7 +55,7 @@ public class Challengers {
         }
 
         ChallengerAuthData challenger;
-        if(singlePlayerMode && SINGLE_PLAYER.getXChallenger().equals(challengerGuid)){
+        if(singlePlayerMode){
             challenger = SINGLE_PLAYER;
         }else{
             challenger = authData.get(challengerGuid);
@@ -80,6 +73,10 @@ public class Challengers {
         }
 
         ChallengerAuthData challenger = authData.get(challengerGuid);
+
+//        if(challengerGuid.equals(SINGLE_PLAYER_GUID)){
+//            return SINGLE_PLAYER;
+//        }
 
         if(challenger==null){
             // we don't have challenger in memory, are they available in persistent store?

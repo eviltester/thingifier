@@ -8,11 +8,8 @@ import uk.co.compendiumdev.challenge.gui.ChallengerWebGUI;
 import uk.co.compendiumdev.challenge.persistence.PersistenceLayer;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.ThingifierApiDefn;
-import uk.co.compendiumdev.thingifier.api.routings.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.application.ThingifierRestServer;
 import uk.co.compendiumdev.thingifier.htmlgui.DefaultGUIHTML;
-
-import java.util.*;
 
 
 public class ChallengeRouteHandler {
@@ -26,7 +23,7 @@ public class ChallengeRouteHandler {
     private boolean guiStayAlive=false; // when set gui makes a call every 5 mins to keep session alive,
                                         // not needed when storing data
 
-    public ChallengeRouteHandler(Thingifier thingifier, ThingifierApiDefn apiDefn){
+    public ChallengeRouteHandler(Thingifier thingifier, ThingifierApiDefn apiDefn, ChallengerConfig config){
 
         this.apiDefn = apiDefn;
         apiDefn.setThingifier(thingifier);
@@ -35,43 +32,31 @@ public class ChallengeRouteHandler {
         apiDefn.addServer("http://localhost:4567", "local execution");
         apiDefn.setVersion("1.0.0");
 
-        single_player_mode = true;
-        persistenceLayer = new PersistenceLayer(PersistenceLayer.StorageType.LOCAL);
+        single_player_mode = config.single_player_mode;
+        persistenceLayer = config.persistenceLayer;
+        guiStayAlive=config.guiStayAlive;
+
         challengeDefinitions = new ChallengeDefinitions(persistenceLayer);
         this.thingifier = thingifier;
-        challengers = new Challengers(thingifier.getERmodel());
+        challengers = new Challengers(thingifier.getERmodel(), challengeDefinitions.getDefinedChallenges());
+        challengers.setPersistenceLayer(persistenceLayer);
+        if(!single_player_mode){
+            challengers.setMultiPlayerMode();
+        }
+
+        persistenceLayer.tryToLoadChallenger(challengers, challengers.SINGLE_PLAYER_GUID);
+
         challengers.setApiConfig(thingifier.apiConfig());
 
+        if(config.isAdminApiEnabled){
+            enableAdminApi();
+        }
 
-        challengers.setPersistenceLayer(persistenceLayer);
-        challengers.configureForChallenges(challengeDefinitions.getDefinedChallenges());
-        persistenceLayer.tryToLoadChallenger(challengers, challengers.SINGLE_PLAYER_GUID);
-    }
 
-    public void setGuiToKeepSessionAlive(){
-        guiStayAlive=true;
-    }
-
-    public void setToMultiPlayerMode(){
-        single_player_mode = false;
-        challengers.setMultiPlayerMode();
     }
 
     public boolean isSinglePlayerMode(){
         return single_player_mode;
-    }
-
-
-    public void setToCloudPersistenceMode(){
-        persistenceLayer.setToCloud();
-        challengeDefinitions = new ChallengeDefinitions(persistenceLayer);
-        challengers.configureForChallenges(challengeDefinitions.getDefinedChallenges());
-    }
-
-    public void setToNoPersistenceMode() {
-        persistenceLayer.switchOffPersistence();
-        challengeDefinitions = new ChallengeDefinitions(persistenceLayer);
-        challengers.configureForChallenges(challengeDefinitions.getDefinedChallenges());
     }
 
     public ChallengeRouteHandler configureRoutes() {
@@ -107,7 +92,7 @@ public class ChallengeRouteHandler {
         return thingifier;
     }
 
-    public void enableAdminApi() {
+    private void enableAdminApi() {
         thingifier.apiConfig().adminConfig().enableAdminSearch();
         thingifier.apiConfig().adminConfig().enableAdminDataClear();
     }

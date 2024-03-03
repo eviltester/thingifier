@@ -1165,28 +1165,7 @@ public abstract class ChallengeCompleteTest{
         Assertions.assertTrue(challenger.statusOfChallenge(CHALLENGE.PUT_RESTORABLE_CHALLENGER_PROGRESS_STATUS));
     }
 
-    @Test
-    public void canRestoreAnNonExistingChallengerPass() {
 
-        Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
-
-        final HttpResponseDetails response =
-                http.send("/challenger/" + challenger.getXChallenger(), "GET", x_challenger_header, "");
-
-        String newGuid = UUID.randomUUID().toString();
-        String jsonData = response.body.replaceAll(challenger.getXChallenger(), newGuid);
-
-        Map<String, String> new_x_challenger_header = getXChallengerHeader(newGuid);
-        final HttpResponseDetails restoreResponse =
-                http.send("/challenger/" + newGuid, "PUT", new_x_challenger_header, jsonData);
-
-        Assertions.assertEquals(201, restoreResponse.statusCode);
-        newChallenger = challengers.getChallenger(newGuid);
-        Assertions.assertTrue(newChallenger.statusOfChallenge(CHALLENGE.PUT_NEW_RESTORED_CHALLENGER_PROGRESS_STATUS));
-
-        // allow count to pass by changing state of normally used challenger
-        challenger.pass(CHALLENGE.PUT_NEW_RESTORED_CHALLENGER_PROGRESS_STATUS);
-    }
 
 
 }

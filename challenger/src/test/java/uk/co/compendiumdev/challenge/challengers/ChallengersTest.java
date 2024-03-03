@@ -2,13 +2,14 @@ package uk.co.compendiumdev.challenge.challengers;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import uk.co.compendiumdev.challenge.CHALLENGE;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.ERSchema;
 import uk.co.compendiumdev.thingifier.core.domain.instances.ERInstanceData;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
+import java.util.Arrays;
 
 public class ChallengersTest {
 
@@ -20,10 +21,10 @@ public class ChallengersTest {
 
         int originalNumberOfDatabases = erModel.getDatabaseNames().size();
 
-        Challengers challengers = new Challengers(erModel);
+        Challengers challengers = new Challengers(erModel, Arrays.asList(CHALLENGE.values()));
 
         challengers.setMultiPlayerMode();
-        challengers.configureForChallenges(new ArrayList<>());
+
         ChallengerAuthData challenger = challengers.createNewChallenger();
         String guid = challenger.getXChallenger();
         erModel.createInstanceDatabaseIfNotExisting(guid);
