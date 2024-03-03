@@ -22,11 +22,10 @@ public class SinglePlayerTest {
 
         Environment.stop();
         Environment.SINGLE_PLAYER_MODE=true;
-        Environment.getBaseUri();
 
         singlePlayerGuid = Challengers.SINGLE_PLAYER_GUID;
 
-        http = new HttpMessageSender(Environment.getBaseUri());
+        http = new HttpMessageSender(Environment.getBaseUri(true));
     }
 
     @AfterAll
