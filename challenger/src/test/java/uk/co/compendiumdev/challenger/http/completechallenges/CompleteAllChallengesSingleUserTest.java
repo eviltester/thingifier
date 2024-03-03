@@ -2,7 +2,6 @@ package uk.co.compendiumdev.challenger.http.completechallenges;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import uk.co.compendiumdev.challenge.ChallengeMain;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
 import uk.co.compendiumdev.challenger.http.httpclient.HttpResponseDetails;
 

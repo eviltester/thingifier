@@ -1090,6 +1090,7 @@ public abstract class ChallengeCompleteTest{
     public void canCreateANewChallenger() {
 
         Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
+        System.out.println("creating challenger post " + challenger.getXChallenger());
 
         Map<String, String> headers = new HashMap<>();
 
@@ -1101,6 +1102,7 @@ public abstract class ChallengeCompleteTest{
 
         final String challengerCode = response.getHeader("x-challenger");
 
+        System.out.println("checking challenger after post " + challengerCode);
         newChallenger = ChallengeMain.getChallenger().
                     getChallengers().getChallenger(challengerCode);
 
