@@ -13,8 +13,6 @@ import uk.co.compendiumdev.challenger.restassured.api.ChallengesStatus;
 import uk.co.compendiumdev.challenger.restassured.api.RestAssuredBaseTest;
 import uk.co.compendiumdev.challenger.restassured.api.TodosApi;
 
-import java.util.List;
-
 public class CanPutTodosTest extends RestAssuredBaseTest {
 
     @Test
@@ -52,7 +50,7 @@ public class CanPutTodosTest extends RestAssuredBaseTest {
     @Test
     void canAmendATodoWithPut(){
 
-        Todo amendMe = getAnExistingTodo();
+        Todo amendMe = new TodosApi().getOrCreateAnyExistingTodo();
 
         // amendMe.id = - cannot amend the id as it is auto assigned
         amendMe.title = "my name " + System.currentTimeMillis(); // title is mandatory and must be in the message
@@ -86,7 +84,7 @@ public class CanPutTodosTest extends RestAssuredBaseTest {
     @Test
     void canAmendATodoWithPutUsingDefaults(){
 
-        Todo amendMe = getAnExistingTodo();
+        Todo amendMe = new TodosApi().getOrCreateAnyExistingTodo();
 
         // amendMe.id = - cannot amend the id as it is auto assigned
         amendMe.title = "my name " + System.currentTimeMillis(); // title is mandatory and must be in the message
@@ -129,7 +127,7 @@ public class CanPutTodosTest extends RestAssuredBaseTest {
     @Test
     void canFailToAmendATodoDueToMissingTitle(){
 
-        Todo amendMe = getAnExistingTodo();
+        Todo amendMe = new TodosApi().getOrCreateAnyExistingTodo();
 
         // amendMe.id = - cannot amend the id as it is auto assigned
         // title is mandatory and must be in the message
@@ -161,7 +159,7 @@ public class CanPutTodosTest extends RestAssuredBaseTest {
     @Test
     void canFailToAmendATodoDueToAttemptToChangeId(){
 
-        Todo amendMe = getAnExistingTodo();
+        Todo amendMe = new TodosApi().getOrCreateAnyExistingTodo();
 
         int oldId = amendMe.id;
         int newId = oldId +1;
@@ -189,17 +187,5 @@ public class CanPutTodosTest extends RestAssuredBaseTest {
         Assertions.assertTrue(statuses.getChallengeNamed("PUT /todos/{id} no amend id (400)").status);
     }
 
-    private Todo getAnExistingTodo() {
-        TodosApi api = new TodosApi();
-        List<Todo> todos = api.getTodos();
-
-        if(todos.size()==0){
-            return api.createTodo("my new todo",
-                    "my description",
-                    true);
-        }else{
-            return todos.get(0);
-        }
-    }
 
 }

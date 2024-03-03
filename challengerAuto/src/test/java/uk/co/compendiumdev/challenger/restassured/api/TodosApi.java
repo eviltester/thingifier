@@ -86,4 +86,16 @@ public class TodosApi {
             then().
                 statusCode(200);
     }
+
+    public Todo getOrCreateAnyExistingTodo() {
+        List<Todo> todos = this.getTodos();
+
+        if(todos.size()==0){
+            return this.createTodo("my new todo",
+                    "my description",
+                    true);
+        }else{
+            return todos.get(0);
+        }
+    }
 }

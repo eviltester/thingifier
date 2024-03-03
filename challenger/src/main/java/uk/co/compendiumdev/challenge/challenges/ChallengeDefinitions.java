@@ -172,7 +172,7 @@ public class ChallengeDefinitions {
 
 
 
-        // TODO: adjust the take a break challenges based on the app configuration
+        // adjust the take a break challenges based on the app configuration
         ChallengeSection restoreChallenger = new ChallengeSection("Fancy a Break? Restore your session",
                 "Your challenge progress can be saved, and as long as you remember you challenger ID you can restore it. Leaving a challenger idle in the system for more than 10 minutes will remove hte challenger from memory. Challenger status and the todos database can be saved to, and restored from, the browser localStorage.");
         sections.add(restoreChallenger);
@@ -187,9 +187,11 @@ public class ChallengeDefinitions {
         storeChallengeAs(CHALLENGE.GET_RESTORABLE_CHALLENGER_PROGRESS_STATUS, ChallengerChallenges.getRestorableExistingChallengerProgress200(challengeOrder++), restoreChallenger);
         // PUT to restore challenger progress via api
         storeChallengeAs(CHALLENGE.PUT_RESTORABLE_CHALLENGER_PROGRESS_STATUS, ChallengerChallenges.putRestoreChallengerProgress200(challengeOrder++), restoreChallenger);
+
+        // TODO: the create with PUT is only valid in multi-user mode, pass in the mode and exclude this challenge
         storeChallengeAs(CHALLENGE.PUT_NEW_RESTORED_CHALLENGER_PROGRESS_STATUS, ChallengerChallenges.putRestoreChallengerProgress201(challengeOrder++), restoreChallenger);
 
-        // TODO: GET the restorable version of todos database via api
+        // TODO: GET the restoreable version of todos database via api
         // TODO: PUT to restore version of todos via api
 
 

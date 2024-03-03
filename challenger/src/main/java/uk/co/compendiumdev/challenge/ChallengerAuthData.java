@@ -2,7 +2,7 @@ package uk.co.compendiumdev.challenge;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
-import uk.co.compendiumdev.challenge.challenges.ChallengeDefinitions;
+import uk.co.compendiumdev.challenge.challengers.Challengers;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -110,10 +110,13 @@ public class ChallengerAuthData {
         // set from data but do not fully trust data
         setNote(data.secretNote);
 
-        try {
-            setXChallengerGUID(UUID.fromString(data.getXChallenger()).toString());
-        }catch(Exception e){
-            // could not convert to GUID so use the existing
+        // only allow setting the uuid if we are not in single player mode
+        if(!xChallenger.equals(Challengers.SINGLE_PLAYER_GUID)) {
+            try {
+                setXChallengerGUID(UUID.fromString(data.getXChallenger()).toString());
+            } catch (Exception e) {
+                // could not convert to GUID so use the existing
+            }
         }
 
         try {

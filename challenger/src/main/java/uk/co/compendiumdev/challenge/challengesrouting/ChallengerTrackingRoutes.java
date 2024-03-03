@@ -152,6 +152,7 @@ public class ChallengerTrackingRoutes {
             ChallengerAuthData newChallenger = new ChallengerAuthData(challengeDefinitions.getDefinedChallenges()).fromData(challenger, challengeDefinitions.getDefinedChallenges());
             challengers.put(newChallenger);
             result.status(201);
+            result.header("content-type", "application/json");
             result.header("X-CHALLENGER", xChallengerGuid);
             return "";
         });

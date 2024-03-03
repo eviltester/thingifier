@@ -19,11 +19,11 @@ public class Environment {
     public static String getBaseUri() {
 
         // return environment if want to run externally
-        if(true)
-            return "https://apichallenges.eviltester.com";
-
 //        if(true)
-//            return "http://localhost:4567";
+//            return "https://apichallenges.eviltester.com";
+
+        if(true)
+            return "http://localhost:4567";
 
         // if not running then start the spark
         if(Port.inUse("localhost", 4567)) {

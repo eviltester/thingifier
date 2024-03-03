@@ -22,9 +22,16 @@ public class ChallengesStatus {
 
     public List<Challenge> get(){
 
+        getFor(xChallenger);
+
+        return challengeStatuses.challenges;
+    }
+
+    public List<Challenge> getFor(String aChallenger){
+
         challengeStatuses = RestAssured.
                 given().
-                header("X-CHALLENGER", xChallenger).
+                header("X-CHALLENGER", aChallenger).
                 accept("application/json").
                 get(Environment.getEnv("/challenges")).
                 then().
