@@ -46,7 +46,7 @@ public class PersistenceLayer {
     public PersistenceResponse saveChallengerStatus(ChallengerAuthData data){
 
         if(storeOn==StorageType.NONE){
-            return new PersistenceResponse().withSuccess(true);
+            return new PersistenceResponse().withSuccess(false).withErrorMessage("No Persistence Configured - store in memory only.");
         }
 
         if(storeOn== StorageType.LOCAL){
@@ -62,7 +62,7 @@ public class PersistenceLayer {
     public PersistenceResponse loadChallengerStatus(String guid){
 
         if(storeOn==StorageType.NONE){
-            return new PersistenceResponse().withSuccess(true);
+            return new PersistenceResponse().withSuccess(false).withErrorMessage("No Persistence Configured - store in memory only.");
         }
 
         if(storeOn== StorageType.LOCAL){

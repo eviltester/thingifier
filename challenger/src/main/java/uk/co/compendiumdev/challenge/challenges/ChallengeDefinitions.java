@@ -189,8 +189,8 @@ public class ChallengeDefinitions {
         storeChallengeAs(CHALLENGE.PUT_RESTORABLE_CHALLENGER_PROGRESS_STATUS, ChallengerChallenges.putRestoreChallengerProgress200(challengeOrder++), restoreChallenger);
         storeChallengeAs(CHALLENGE.PUT_NEW_RESTORED_CHALLENGER_PROGRESS_STATUS, ChallengerChallenges.putRestoreChallengerProgress201(challengeOrder++), restoreChallenger);
 
-        // GET the restorable version of todos database via api
-        // PUT to restore version of todos via api
+        // TODO: GET the restorable version of todos database via api
+        // TODO: PUT to restore version of todos via api
 
 
 

@@ -12,6 +12,8 @@ import uk.co.compendiumdev.challenge.persistence.PersistenceResponse;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.htmlgui.DefaultGUIHTML;
 
+import java.net.URLEncoder;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -154,6 +156,7 @@ public class ChallengerWebGUI {
                 }
                 html.append(String.format("<p><strong>Unknown Challenger ID %s</strong></p>",
                         persistenceReason));
+                html.append(showCurrentStatus());
                 html.append(multiUserShortHelp());
                 html.append(injectCookieFunctions());
                 html.append(showPreviousGuids());
