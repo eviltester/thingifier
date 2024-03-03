@@ -41,6 +41,7 @@ public class Challengers {
     public void configureForChallenges(Collection<CHALLENGE> definedChallenges){
         this.definedChallenges = definedChallenges;
         SINGLE_PLAYER = new ChallengerAuthData(definedChallenges);
+        SINGLE_PLAYER.setXChallengerGUID(SINGLE_PLAYER_GUID);
         DEFAULT_PLAYER_DATA = new ChallengerAuthData(definedChallenges);
     }
     public void setMultiPlayerMode(){
