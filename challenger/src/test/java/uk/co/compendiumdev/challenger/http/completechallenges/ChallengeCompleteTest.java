@@ -1,5 +1,6 @@
 package uk.co.compendiumdev.challenger.http.completechallenges;
 
+import com.google.gson.Gson;
 import org.junit.jupiter.api.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,6 +10,8 @@ import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
 import uk.co.compendiumdev.challenger.http.httpclient.HttpResponseDetails;
 import uk.co.compendiumdev.challenger.http.httpclient.HttpMessageSender;
+import uk.co.compendiumdev.challenger.payloads.Todo;
+import uk.co.compendiumdev.challenger.payloads.Todos;
 import uk.co.compendiumdev.sparkstart.Environment;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
@@ -16,7 +19,7 @@ import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
+
 
 public abstract class ChallengeCompleteTest{
 
@@ -1162,6 +1165,60 @@ public abstract class ChallengeCompleteTest{
 
         Assertions.assertEquals(200, restoreResponse.statusCode);
         Assertions.assertTrue(challenger.statusOfChallenge(CHALLENGE.PUT_RESTORABLE_CHALLENGER_PROGRESS_STATUS));
+    }
+
+    @Test
+    public void canGetTodosDatabaseToRestorePass() {
+
+        Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
+
+        if(!challenger.getXChallenger().equals("rest-api-challenges-single-player")) {
+            ChallengeMain.getChallenger().getThingifier().ensureCreatedAndPopulatedInstanceDatabaseNamed(challenger.getXChallenger());
+        }
+
+        final HttpResponseDetails response =
+                http.send("/challenger/database/" + challenger.getXChallenger(), "GET", x_challenger_header, "");
+
+
+        Assertions.assertEquals(200, response.statusCode);
+        Assertions.assertTrue(challenger.statusOfChallenge(CHALLENGE.GET_RESTORABLE_TODOS));
+
+        Todos todos = new Gson().fromJson(response.body, Todos.class);
+
+    }
+
+
+    @Test
+    public void canRestoreTodosDatabaseToPass() {
+
+        Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
+
+        if(!challenger.getXChallenger().equals("rest-api-challenges-single-player")) {
+            ChallengeMain.getChallenger().getThingifier().ensureCreatedAndPopulatedInstanceDatabaseNamed(challenger.getXChallenger());
+        }
+
+//        final HttpResponseDetails response =
+//                http.send("/challenger/database/" + challenger.getXChallenger(), "GET", x_challenger_header, "");
+
+        Todos newTodos = new Todos();
+        Todo aTodo = new Todo();
+        aTodo.title = "amended for put";
+        aTodo.id = 1;
+        aTodo.description="describe me";
+        newTodos.todos = new ArrayList<>();
+        newTodos.todos.add(aTodo);
+
+        final HttpResponseDetails putresponse =
+                http.send("/challenger/database/" + challenger.getXChallenger(), "PUT", x_challenger_header,  new Gson().toJson(newTodos));
+
+        Assertions.assertEquals(204, putresponse.statusCode);
+        Assertions.assertTrue(challenger.statusOfChallenge(CHALLENGE.PUT_RESTORABLE_TODOS));
+
+        final HttpResponseDetails getAgainResponse =
+                http.send("/challenger/database/" + challenger.getXChallenger(), "GET", x_challenger_header, "");
+
+        Todos todosAfterAmend = new Gson().fromJson(getAgainResponse.body, Todos.class);
+        Assertions.assertEquals(newTodos.todos.get(0).title, todosAfterAmend.todos.get(0).title);
     }
 
 

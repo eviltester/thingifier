@@ -16,7 +16,8 @@ public class CompleteAllChallengesSingleUserTest extends ChallengeCompleteTest{
     public int getNumberOfChallengesToFail(){
         // POST to retrieve session only works in multi-user
         // GET to retrieve session only works in multi-user
-        return 2;
+        // PUT new restored challenger progress only works in multi-user
+        return 3;
     }
 
     @Test

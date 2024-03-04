@@ -37,6 +37,10 @@ public class Challengers {
         this.erModel = erModel;
     }
 
+    public Collection<CHALLENGE> getDefinedChallenges() {
+        return definedChallenges;
+    }
+
     public void setMultiPlayerMode(){
         singlePlayerMode=false;
     }

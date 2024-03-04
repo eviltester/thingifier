@@ -40,11 +40,13 @@ public class ChallengerTrackingRoutes {
                 return ApiResponseAsJson.getErrorMessageJson("Invalid Challenger GUID");
             }
 
-            try{
-                UUID.fromString(xChallengerGuid);
-            }catch(Exception e){
-                result.status(400);
-                return ApiResponseAsJson.getErrorMessageJson("Invalid Challenger GUID " + e.getMessage());
+            if(!single_player_mode) {
+                try {
+                    UUID.fromString(xChallengerGuid);
+                } catch (Exception e) {
+                    result.status(400);
+                    return ApiResponseAsJson.getErrorMessageJson("Invalid Challenger GUID " + e.getMessage());
+                }
             }
 
             challenger = challengers.getChallenger(xChallengerGuid);
@@ -169,11 +171,13 @@ public class ChallengerTrackingRoutes {
                 return ApiResponseAsJson.getErrorMessageJson("Invalid Challenger GUID");
             }
 
-            try{
-                UUID.fromString(xChallengerGuid);
-            }catch(Exception e){
-                result.status(400);
-                return ApiResponseAsJson.getErrorMessageJson("Invalid Challenger GUID " + e.getMessage());
+            if(!single_player_mode) {
+                try {
+                    UUID.fromString(xChallengerGuid);
+                } catch (Exception e) {
+                    result.status(400);
+                    return ApiResponseAsJson.getErrorMessageJson("Invalid Challenger GUID " + e.getMessage());
+                }
             }
 
             if(!challengers.inMemory(xChallengerGuid)){
@@ -191,10 +195,10 @@ public class ChallengerTrackingRoutes {
 
 
             if(challengers.getErModel().getDatabaseNames().contains(xChallengerGuid)){
-                result.status(201);
+                result.status(204);
                 result.header("content-type", "application/json");
                 result.header("X-CHALLENGER", xChallengerGuid);
-                return challengers.getErModel().getInstanceData(xChallengerGuid).asJson();
+                return "";
             }else{
                 result.status(500);
                 return ApiResponseAsJson.getErrorMessageJson("Unknown error, database not found");

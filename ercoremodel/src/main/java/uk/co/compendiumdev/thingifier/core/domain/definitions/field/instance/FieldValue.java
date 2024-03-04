@@ -118,6 +118,6 @@ public final class FieldValue {
     }
 
     private String quoted(String aString){
-        return "\"" + aString.replaceAll("\"", "\\\"") + "\"";
+        return "\"" + aString.replaceAll("\"", "\\\\\"") + "\"";
     }
 }

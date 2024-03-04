@@ -96,6 +96,28 @@ public class ChallengerInternalHTTPResponseHook implements InternalHttpResponseH
             }
         }
 
+        if (request.getVerb() == GET &&
+                request.getPath().startsWith("challenger/database/") &&
+                (response.getStatusCode() == 200)) {
+
+            String challengerId = response.getHeader("X-Challenger");
+            challenger = challengers.getChallenger(challengerId);
+            if (challenger != null) {
+                challengers.pass(challenger, CHALLENGE.GET_RESTORABLE_TODOS);
+            }
+        }
+
+        if (request.getVerb() == PUT &&
+                request.getPath().startsWith("challenger/database/") &&
+                (response.getStatusCode() == 204)) {
+
+            String challengerId = response.getHeader("X-Challenger");
+            challenger = challengers.getChallenger(challengerId);
+            if (challenger != null) {
+                challengers.pass(challenger, CHALLENGE.PUT_RESTORABLE_TODOS);
+            }
+        }
+
 
         if (challenger == null) {
             if (!request.getPath().contentEquals("challenger") &&

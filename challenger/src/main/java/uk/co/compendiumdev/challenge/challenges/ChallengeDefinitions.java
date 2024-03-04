@@ -191,8 +191,11 @@ public class ChallengeDefinitions {
         // TODO: the create with PUT is only valid in multi-user mode, pass in the mode and exclude this challenge
         storeChallengeAs(CHALLENGE.PUT_NEW_RESTORED_CHALLENGER_PROGRESS_STATUS, ChallengerChallenges.putRestoreChallengerProgress201(challengeOrder++), restoreChallenger);
 
-        // TODO: GET the restoreable version of todos database via api
+        // GET the restorable version of todos database via api
+        storeChallengeAs(CHALLENGE.GET_RESTORABLE_TODOS, ChallengerChallenges.getRestorableTodos200(challengeOrder++), restoreChallenger);
+
         // TODO: PUT to restore version of todos via api
+        storeChallengeAs(CHALLENGE.PUT_RESTORABLE_TODOS, ChallengerChallenges.putRestorableTodos204(challengeOrder++), restoreChallenger);
 
 
 

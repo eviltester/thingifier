@@ -47,7 +47,7 @@ public class ERInstanceData {
                     }else {
                         if (aField.isMandatory()) {
                             dataArray.append(fieldSeparator);
-                            dataArray.append(quoted(aField.getName()) + ": " + quoted(aField.getDefaultValue().asJsonValue()));
+                            dataArray.append(quoted(aField.getName()) + ": " + aField.getDefaultValue().asJsonValue());
                         }
                     }
 

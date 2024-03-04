@@ -28,7 +28,8 @@ public class PersistenceLayer {
         final PersistenceResponse response = loadChallengerStatus(xChallengerGuid);
 
         if(response.isSuccess()){
-            ChallengerAuthData challenger = response.getAuthData();
+            ChallengerAuthData challenger = challengers.createNewChallenger();
+            challenger.fromData(response.getAuthData(), challengers.getDefinedChallenges());
             challenger.touch();
             challenger.setState(ChallengerState.LOADED_FROM_PERSISTENCE);// refresh last accessed date
             challengers.put(challenger);

@@ -94,4 +94,32 @@ public class ChallengerChallenges {
 
         return aChallenge;
     }
+
+    public static ChallengeDefinitionData getRestorableTodos200(int challengeOrder) {
+        ChallengeDefinitionData aChallenge = new ChallengeDefinitionData(
+                ChallengeRenderer.renderChallengeNumber(challengeOrder),
+                "GET /challenger/database/guid (200)",
+                "Issue a GET request on the `/challenger/database/{guid}` end point, to retrieve the current todos database for the user. You can use this to restore state later."
+        );
+        aChallenge.addHint("Remember to add the X-CHALLENGER header to track your progress", "");
+        //aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/post-challenger-201");
+        //aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "tNGuZMQgHxw");
+
+        return aChallenge;
+    }
+
+    public static ChallengeDefinitionData putRestorableTodos204(int challengeOrder) {
+        ChallengeDefinitionData aChallenge = new ChallengeDefinitionData(
+                ChallengeRenderer.renderChallengeNumber(challengeOrder),
+                "PUT /challenger/database/guid (Update)",
+                "Issue a PUT request on the `/challenger/database/{guid}` end point, with a payload to restore the Todos database in memory."
+        );
+        aChallenge.addHint("Use the Todos database payload returned from the earlier GET request", "");
+        aChallenge.addHint("Remember to add the X-CHALLENGER header to track your progress", "");
+        aChallenge.addSolutionLink("Using the payload from the earlier 'GET /challenger/database/guid' request, use PUT to reset the challenger todos data", "", "");
+        //aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/post-challenger-201");
+        //aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "tNGuZMQgHxw");
+
+        return aChallenge;
+    }
 }
