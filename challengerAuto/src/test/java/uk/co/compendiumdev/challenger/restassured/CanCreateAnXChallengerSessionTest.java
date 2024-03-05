@@ -1,7 +1,9 @@
 package uk.co.compendiumdev.challenger.restassured;
 
+import com.google.gson.Gson;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
+import io.restassured.response.Response;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.challenger.payloads.Challenger;
@@ -33,20 +35,22 @@ public class CanCreateAnXChallengerSessionTest extends RestAssuredBaseTest {
         Assertions.assertNotNull(xChallenger);
         Assertions.assertTrue(xChallenger.length()>5);
 
-        Challenger challengerResponse = RestAssured.
+        Response cResponse = RestAssured.
                 given().
                 header("X-CHALLENGER", xChallenger).
                 accept("application/json").
                 get(apiPath("/challenger/" + xChallenger)).
                 then().
                 statusCode(200).
-                contentType(ContentType.JSON).and().extract().response().as(Challenger.class);
+                contentType(ContentType.JSON).and().extract().response();
+
+        Challenger challengerResponse = new Gson().fromJson(cResponse.body().asString(), Challenger.class);
 
         Assertions.assertTrue(challengerResponse.challengeStatus.CREATE_NEW_CHALLENGER);
 
         challengerResponse.challengeStatus.CREATE_NEW_CHALLENGER=false;
 
-        Challenger newChallengerResponse = RestAssured.
+        Response nResponse = RestAssured.
                 given().
                 header("X-CHALLENGER", xChallenger).
                 accept("application/json").
@@ -54,7 +58,9 @@ public class CanCreateAnXChallengerSessionTest extends RestAssuredBaseTest {
                 put(apiPath("/challenger/" + xChallenger)).
                 then().
                 statusCode(200). // updated existing
-                contentType(ContentType.JSON).and().extract().response().as(Challenger.class);
+                contentType(ContentType.JSON).and().extract().response();
+
+        Challenger newChallengerResponse = new Gson().fromJson(nResponse.body().asString(), Challenger.class);
 
         Assertions.assertFalse(newChallengerResponse.challengeStatus.CREATE_NEW_CHALLENGER);
 
@@ -70,14 +76,17 @@ public class CanCreateAnXChallengerSessionTest extends RestAssuredBaseTest {
         Assertions.assertNotNull(xChallenger);
         Assertions.assertTrue(xChallenger.length()>5);
 
-        Challenger challengerResponse = RestAssured.
+        Response aresponse = RestAssured.
                 given().
                 header("X-CHALLENGER", xChallenger).
                 accept("application/json").
                 get(apiPath("/challenger/" + xChallenger)).
                 then().
                 statusCode(200).
-                contentType(ContentType.JSON).and().extract().response().as(Challenger.class);
+                contentType(ContentType.JSON).and().extract().response();
+
+        // use Gson to handle case of missing challenges from single user mode
+        Challenger challengerResponse = new Gson().fromJson(aresponse.body().asString(), Challenger.class);
 
         String aNewGuid = UUID.randomUUID().toString();
 

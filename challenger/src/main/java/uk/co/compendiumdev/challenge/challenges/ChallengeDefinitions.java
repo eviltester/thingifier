@@ -3,6 +3,7 @@ package uk.co.compendiumdev.challenge.challenges;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.co.compendiumdev.challenge.CHALLENGE;
+import uk.co.compendiumdev.challenge.ChallengerConfig;
 import uk.co.compendiumdev.challenge.challenges.definitions.*;
 import uk.co.compendiumdev.challenge.persistence.PersistenceLayer;
 
@@ -37,7 +38,7 @@ public class ChallengeDefinitions {
 
     // TODO: refactor this into private methods to make it easier to re-order and manage
 
-    public ChallengeDefinitions(PersistenceLayer persistenceLayer){
+    public ChallengeDefinitions(ChallengerConfig config){
 
         challengeData = new HashMap<>();
         orderedChallenges = new ArrayList<>();
@@ -178,7 +179,7 @@ public class ChallengeDefinitions {
         sections.add(restoreChallenger);
 
         // if persistence layer is set to cloud or file then the following apply
-        if(persistenceLayer.willAutoSaveLoadChallengerStatusToPersistenceLayer()) {
+        if(config.persistenceLayer.willAutoSaveLoadChallengerStatusToPersistenceLayer() && !config.single_player_mode) {
             storeChallengeAs(CHALLENGE.GET_RESTORE_EXISTING_CHALLENGER, ChallengerChallenges.getRestoreExistingChallenger200(challengeOrder++), restoreChallenger);
             storeChallengeAs(CHALLENGE.POST_RESTORE_EXISTING_CHALLENGER, ChallengerChallenges.postRestoreExistingChallenger200(challengeOrder++), restoreChallenger);
         }
@@ -188,13 +189,15 @@ public class ChallengeDefinitions {
         // PUT to restore challenger progress via api
         storeChallengeAs(CHALLENGE.PUT_RESTORABLE_CHALLENGER_PROGRESS_STATUS, ChallengerChallenges.putRestoreChallengerProgress200(challengeOrder++), restoreChallenger);
 
-        // TODO: the create with PUT is only valid in multi-user mode, pass in the mode and exclude this challenge
-        storeChallengeAs(CHALLENGE.PUT_NEW_RESTORED_CHALLENGER_PROGRESS_STATUS, ChallengerChallenges.putRestoreChallengerProgress201(challengeOrder++), restoreChallenger);
+        // the create with PUT is only valid in multi-user mode, pass in the mode and exclude this challenge
+        if(!config.single_player_mode) {
+            storeChallengeAs(CHALLENGE.PUT_NEW_RESTORED_CHALLENGER_PROGRESS_STATUS, ChallengerChallenges.putRestoreChallengerProgress201(challengeOrder++), restoreChallenger);
+        }
 
         // GET the restorable version of todos database via api
         storeChallengeAs(CHALLENGE.GET_RESTORABLE_TODOS, ChallengerChallenges.getRestorableTodos200(challengeOrder++), restoreChallenger);
 
-        // TODO: PUT to restore version of todos via api
+        // PUT to restore version of todos via api
         storeChallengeAs(CHALLENGE.PUT_RESTORABLE_TODOS, ChallengerChallenges.putRestorableTodos204(challengeOrder++), restoreChallenger);
 
 

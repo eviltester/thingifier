@@ -84,7 +84,8 @@ public abstract class ChallengeCompleteTest{
 
         int remainingChallengeCount = 0;
 
-        for(CHALLENGE challenge : CHALLENGE.values()){
+        // only compare with defined challenges, not all challenges
+        for(CHALLENGE challenge : ChallengeMain.getChallenger().getChallengers().getDefinedChallenges()){
             if(newChallenger!=null &&
                     challenge==CHALLENGE.CREATE_NEW_CHALLENGER){
                 if(newChallenger.statusOfChallenge(challenge)){

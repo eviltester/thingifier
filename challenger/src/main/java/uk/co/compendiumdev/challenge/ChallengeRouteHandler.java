@@ -36,7 +36,7 @@ public class ChallengeRouteHandler {
         persistenceLayer = config.persistenceLayer;
         guiStayAlive=config.guiStayAlive;
 
-        challengeDefinitions = new ChallengeDefinitions(persistenceLayer);
+        challengeDefinitions = new ChallengeDefinitions(config);
         this.thingifier = thingifier;
         challengers = new Challengers(thingifier.getERmodel(), challengeDefinitions.getDefinedChallenges());
         challengers.setPersistenceLayer(persistenceLayer);

@@ -9,6 +9,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import uk.co.compendiumdev.challenge.CHALLENGE;
 import uk.co.compendiumdev.challenge.ChallengeMain;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
+import uk.co.compendiumdev.challenge.ChallengerConfig;
 import uk.co.compendiumdev.challenge.challenges.ChallengeDefinitions;
 import uk.co.compendiumdev.challenge.persistence.PersistenceLayer;
 import uk.co.compendiumdev.challenger.http.httpclient.HttpMessageSender;
@@ -30,7 +31,9 @@ public class ChallengesRoutesTest {
         // this uses the Environment to startup the spark app to
         // issue http tests and test the routing in spark
         http = new HttpMessageSender(Environment.getBaseUri());
-        Collection<CHALLENGE> challenges = new ChallengeDefinitions(new PersistenceLayer(PersistenceLayer.StorageType.NONE)).getDefinedChallenges();
+        ChallengerConfig config = new ChallengerConfig();
+        config.setToNoPersistenceMode();
+        Collection<CHALLENGE> challenges = new ChallengeDefinitions(config).getDefinedChallenges();
         challenger = ChallengeMain.getChallenger().getChallengers().createNewChallenger();
     }
 

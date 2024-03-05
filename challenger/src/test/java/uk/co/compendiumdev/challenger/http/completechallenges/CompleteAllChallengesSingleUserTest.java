@@ -14,10 +14,10 @@ public class CompleteAllChallengesSingleUserTest extends ChallengeCompleteTest{
 
     @Override
     public int getNumberOfChallengesToFail(){
-        // POST to retrieve session only works in multi-user
-        // GET to retrieve session only works in multi-user
-        // PUT new restored challenger progress only works in multi-user
-        return 3;
+        // POST to retrieve session only works in multi-user - but is excluded in challenges
+        // GET to retrieve session only works in multi-user - but is excluded in challenges
+        // PUT new restored challenger progress only works in multi-user - but is excluded in challenges
+        return 0;
     }
 
     @Test
