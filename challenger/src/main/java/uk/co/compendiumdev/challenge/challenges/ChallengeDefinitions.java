@@ -36,8 +36,6 @@ public class ChallengeDefinitions {
         return String.format("%02d", challengeOrder);
     }
 
-    // TODO: refactor this into private methods to make it easier to re-order and manage
-
     public ChallengeDefinitions(ChallengerConfig config){
 
         challengeData = new HashMap<>();

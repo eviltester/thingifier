@@ -37,7 +37,7 @@ public class CanWinTheMiscellaneousChallengesTest  extends RestAssuredBaseTest {
             todosToCreate--;
         };
 
-        // create a todo to throw it over the edge
+        // create a to do to throw it over the edge
         Todo createMe = new Todo();
         createMe.title = "my title";
         createMe.description = "my description";

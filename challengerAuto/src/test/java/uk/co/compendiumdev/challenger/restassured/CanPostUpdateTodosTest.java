@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.challenger.payloads.ErrorMessages;
 import uk.co.compendiumdev.challenger.payloads.Todo;
+import uk.co.compendiumdev.challenger.payloads.Todos;
 import uk.co.compendiumdev.challenger.restassured.api.ChallengesStatus;
 import uk.co.compendiumdev.challenger.restassured.api.RestAssuredBaseTest;
 import uk.co.compendiumdev.challenger.restassured.api.TodosApi;
@@ -52,7 +53,24 @@ public class CanPostUpdateTodosTest extends RestAssuredBaseTest {
         Assertions.assertEquals(updatedDetails.description, updatedTodo.description);
         Assertions.assertEquals(updatedDetails.doneStatus, updatedTodo.doneStatus);
 
-        // TODO: issue a get request on the todo, just to double check it update
+        // issue a get request on the to do, just to double check it updated
+        final Todos getTodo = RestAssured.
+                given().
+                header("X-CHALLENGER", xChallenger).
+                accept("application/json").
+                contentType("application/json").
+                body(updatedDetails).
+                get(apiPath("/todos/" + todo.id)).
+                then().
+                statusCode(200).
+                contentType(ContentType.JSON).
+                extract().response().as(Todos.class);
+
+        Assertions.assertEquals(updatedDetails.id, getTodo.todos.get(0).id);
+        Assertions.assertEquals(updatedDetails.title, getTodo.todos.get(0).title);
+        Assertions.assertEquals(updatedDetails.description, getTodo.todos.get(0).description);
+        Assertions.assertEquals(updatedDetails.doneStatus, getTodo.todos.get(0).doneStatus);
+
     }
 
     @Test

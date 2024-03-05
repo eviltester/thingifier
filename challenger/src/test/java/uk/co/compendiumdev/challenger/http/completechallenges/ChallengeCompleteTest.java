@@ -210,7 +210,6 @@ public abstract class ChallengeCompleteTest{
         headers.putAll(x_challenger_header);
         headers.put("Content-Type", "application/json");
 
-        //{"title":"mytodo","description":"a todo","doneStatus":false}
         final HttpResponseDetails response =
                 http.send("/todos", "POST", headers,
                         "{\"title\":\"mytodo\",\"description\":\"a todo\",\"doneStatus\":false}");
@@ -228,7 +227,7 @@ public abstract class ChallengeCompleteTest{
         headers.putAll(x_challenger_header);
         headers.put("Content-Type", "application/json");
 
-        // try to create a todo but fail because the AUTO fields mean we can't control the id
+        // try to create a to do but fail because the AUTO fields mean we can't control the id
         final HttpResponseDetails response =
                 http.send("/todos/200", "PUT", headers,
                         "{\"id\":200, \"title\":\"mytodo\",\"description\":\"a todo\",\"doneStatus\":false}");
@@ -250,7 +249,7 @@ public abstract class ChallengeCompleteTest{
 
         EntityInstance aTodo = new ArrayList<>(todos.getInstances()).get(0);
 
-        // amend a todo successfully
+        // amend a to do successfully
         final HttpResponseDetails response =
                 http.send("/todos/" + aTodo.getPrimaryKeyValue(),
                         "PUT", headers,
@@ -276,7 +275,7 @@ public abstract class ChallengeCompleteTest{
 
         EntityInstance aTodo = new ArrayList<>(todos.getInstances()).get(0);
 
-        // amend a todo successfully
+        // amend a to do successfully
         final HttpResponseDetails response =
                 http.send("/todos/" + aTodo.getPrimaryKeyValue(),
                         "PUT", headers,
@@ -300,7 +299,7 @@ public abstract class ChallengeCompleteTest{
 
         EntityInstance aTodo = new ArrayList<>(todos.getInstances()).get(0);
 
-        // amend a todo unsuccessfully
+        // amend a to do unsuccessfully
         final HttpResponseDetails response =
                 http.send("/todos/" + aTodo.getPrimaryKeyValue(),
                         "PUT", headers,
@@ -324,7 +323,7 @@ public abstract class ChallengeCompleteTest{
 
         EntityInstance aTodo = new ArrayList<>(todos.getInstances()).get(0);
 
-        // amend a todo unsuccessfully
+        // amend a to do unsuccessfully
         final HttpResponseDetails response =
                 http.send("/todos/" + aTodo.getPrimaryKeyValue(),
                         "PUT", headers,
@@ -345,7 +344,7 @@ public abstract class ChallengeCompleteTest{
         headers.putAll(x_challenger_header);
         headers.put("Content-Type", "application/json");
 
-        // try to create a todo but fail because the AUTO fields mean we can't control the id
+        // try to create a to do item but fail because the AUTO fields mean we can't control the id
         final HttpResponseDetails response =
                 http.send("/todos/2004567", "POST", headers,
                         "{\"id\":2004567, \"title\":\"mytodo\",\"description\":\"a todo\",\"doneStatus\":false}");
@@ -363,7 +362,6 @@ public abstract class ChallengeCompleteTest{
         headers.putAll(x_challenger_header);
         headers.put("Content-Type", "application/json");
 
-        //{"title":"mytodo","description":"a todo","doneStatus":"bob"}
         final HttpResponseDetails response =
                 http.send("/todos", "POST", headers,
                         "{\"title\":\"mytodo\",\"description\":\"a todo\",\"doneStatus\":\"bob\"}");
@@ -382,7 +380,6 @@ public abstract class ChallengeCompleteTest{
         headers.put("Content-Type", "application/json");
 
         // TODO: should send back multiple error messages to allow all validations to fail in one request e.g. todo status fails validation before title
-        //{"title":"mytodo","description":"a todo","doneStatus":"bob"}
         final HttpResponseDetails response =
                 http.send("/todos", "POST", headers,
                         "{\"title\":\"*3*5*7*9*12*15*18*21*24*27*30*33*36*39*42*45*48*51*\",\"description\":\"a todo\"}");
@@ -406,7 +403,6 @@ public abstract class ChallengeCompleteTest{
                 "125*129*133*137*141*145*149*153*157*161*165*169*173*177*181*185*189*193*197*201*";
 
         // TODO: should send back multiple error messages to allow all validations to fail in one request e.g. todo status fails validation before title
-        //{"title":"mytodo","description":"a todo","doneStatus":"bob"}
         final HttpResponseDetails response =
                 http.send("/todos", "POST", headers,
                         "{\"title\":\"*3*5*7*9*12*15*18*21*24*27*30*33*36*39*42*45*48*50\",\"description\":\"" + twoHundredAndOneChars + "\"}");
@@ -426,7 +422,6 @@ public abstract class ChallengeCompleteTest{
         headers.put("Content-Type", "application/json");
 
         // TODO: should send back multiple error messages to allow all validations to fail in one request e.g. todo status fails validation before title
-        //{"title":"mytodo","description":"a todo","doneStatus":"bob"}
         final HttpResponseDetails response =
                 http.send("/todos", "POST", headers,
                         "{\"title\":\"" + stringOfLength(50) + "\",\"description\":\"" + stringOfLength(200) + "\"}");
@@ -446,7 +441,6 @@ public abstract class ChallengeCompleteTest{
         String fiveThousandChars = stringOfLength(5000);
 
         // TODO: should send back multiple error messages to allow all validations to fail in one request e.g. todo status fails validation before title
-        //{"title":"mytodo","description":"a todo","doneStatus":"bob"}
         final HttpResponseDetails response =
                 http.send("/todos", "POST", headers,
                         "{\"title\":\"title\",\"description\":\"" + fiveThousandChars + "\"}");
@@ -468,7 +462,6 @@ public abstract class ChallengeCompleteTest{
         String fiveThousandChars = stringOfLength(5000);
 
         // TODO: should send back multiple error messages to allow all validations to fail in one request e.g. todo status fails validation before title
-        //{"title":"mytodo","description":"a todo","doneStatus":"bob"}
         final HttpResponseDetails response =
                 http.send("/todos", "POST", headers,
                         "{\"title\":\"title\",\"description\":\"description\", \"priority\": \"urgent\"}");
@@ -520,7 +513,6 @@ public abstract class ChallengeCompleteTest{
         headers.put("Content-Type", "application/json");
         headers.put("Accept", "application/xml");
 
-        //{"title":"mytodo","description":"a todo","doneStatus":false}
         final HttpResponseDetails response =
                 http.send("/todos", "POST", headers,
                         "{\"title\":\"mytodo\",\"description\":\"a todo\",\"doneStatus\":false}");
@@ -539,7 +531,6 @@ public abstract class ChallengeCompleteTest{
         headers.put("Content-Type", "application/json");
         headers.put("Accept", "application/json");
 
-        //{"title":"mytodo","description":"a todo","doneStatus":false}
         final HttpResponseDetails response =
                 http.send("/todos", "POST", headers,
                         "{\"title\":\"mytodo\",\"description\":\"a todo\",\"doneStatus\":false}");
@@ -558,7 +549,6 @@ public abstract class ChallengeCompleteTest{
         headers.put("Content-Type", "application/xml");
         headers.put("Accept", "application/json");
 
-        //<todo><title>mytodo</title><description>a todo</description><doneStatus>false</doneStatus></todo>
         final HttpResponseDetails response =
                 http.send("/todos", "POST", headers,
                         "<todo><title>mytodo</title><description>a todo</description><doneStatus>false</doneStatus></todo>");
@@ -578,7 +568,6 @@ public abstract class ChallengeCompleteTest{
         headers.put("Content-Type", "application/xml");
         headers.put("Accept", "application/xml");
 
-        //<todo><title>mytodo</title><description>a todo</description><doneStatus>false</doneStatus></todo>
         final HttpResponseDetails response =
                 http.send("/todos", "POST", headers,
                         "<todo><title>mytodo</title><description>a todo</description><doneStatus>false</doneStatus></todo>");
@@ -596,7 +585,6 @@ public abstract class ChallengeCompleteTest{
         headers.putAll(x_challenger_header);
         headers.put("Content-type", "application/x-www-form-urlencoded");
 
-        //<todo><title>mytodo</title><description>a todo</description><doneStatus>false</doneStatus></todo>
         final HttpResponseDetails response =
                 http.send("/todos", "POST", headers,
                         "<todo><title>mytodo</title><description>a todo</description><doneStatus>false</doneStatus></todo>");
@@ -619,7 +607,6 @@ public abstract class ChallengeCompleteTest{
         int maxTodos = 20;
         // will create 21 which will max out
         for(int todoCount=0; todoCount<=maxTodos; todoCount++){
-            //{"title":"mytodo","description":"a todo","doneStatus":false}
              response =
                     http.send("/todos", "POST", headers,
                             "{\"title\":\"mytodo\",\"description\":\"a todo\",\"doneStatus\":false}");
