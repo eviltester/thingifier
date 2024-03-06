@@ -59,6 +59,8 @@ public class AuthRoutes {
         this.httpApi = new ThingifierHttpApi(this.secretNoteStore);
         this.jsonThing = new JsonThing(this.secretNoteStore.apiConfig().jsonOutput());
 
+        // TODO: add OPTIONS for the routes - see the AdhocDocumentedSparkRouteConfig in ChallengesRoutes
+
         // TODO: this all feels too tightly coupled to SparkJava we should have our own routing internally that spark delegates too
 
         // POST /secret/token with basic auth to get a secret/token to use as X-AUTH-TOKEN header

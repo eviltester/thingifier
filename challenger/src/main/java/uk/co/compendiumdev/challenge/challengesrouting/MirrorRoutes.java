@@ -4,6 +4,7 @@ import spark.Route;
 import uk.co.compendiumdev.thingifier.api.ThingifierApiDefn;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingVerb;
 import uk.co.compendiumdev.thingifier.application.AdhocDocumentedSparkRouteConfig;
+import uk.co.compendiumdev.thingifier.spark.SimpleRouteConfig;
 
 
 import java.util.ArrayList;
@@ -33,15 +34,21 @@ public class MirrorRoutes {
         AdhocDocumentedSparkRouteConfig routeDefn = new AdhocDocumentedSparkRouteConfig(apiDefn);
 
         for (String anEndpoint : verbEndpoints) {
-            routeDefn.
-                add(anEndpoint, RoutingVerb.OPTIONS, 204,
-                        "Options for mirror endpoint",
-                    (request, result) -> {
-                        result.status(204);
-                        result.header("Allow", "GET, POST, PUT, DELETE, PATCH, HEAD, OPTIONS, TRACE");
-                        return "";
-                    }
-            );
+            Route routeHandler = (request, result) -> {
+                result.status(204);
+                result.header("Allow", "GET, POST, PUT, DELETE, PATCH, HEAD, OPTIONS, TRACE");
+                return "";
+            };
+            if(anEndpoint.endsWith("/*")){
+                // add to routing but not to the api documentation
+                SimpleRouteConfig.addHandler(anEndpoint, "options", routeHandler);
+            }else {
+                routeDefn.
+                        add(anEndpoint, RoutingVerb.OPTIONS, 204,
+                                "Options for mirror endpoint",
+                                routeHandler
+                        );
+            }
         }
 
         Route mirroredRoute = (request, result) -> {
@@ -57,26 +64,37 @@ public class MirrorRoutes {
 
         for (String anEndpoint : verbEndpoints) {
             for(RoutingVerb routing : verbs200status) {
-                if(anEndpoint.startsWith(endpoint)) {
-                    routeDefn.add(anEndpoint, routing, 200,
-                            "Mirror a " + routing.name().toUpperCase() + " Request", mirroredRoute);
-                }
-                if(anEndpoint.startsWith(rawEndPoint)) {
-                    routeDefn.add(anEndpoint, routing, 200,
-                            "Raw Text Mirror of a " + routing.name().toUpperCase() + " Request", rawTextMirroredRoute);
+                if(anEndpoint.endsWith("/*")){
+                    // add to routing but not to the api documentation
+                    SimpleRouteConfig.addHandler(anEndpoint, routing.name(), mirroredRoute);
+                }else {
+                    if (anEndpoint.startsWith(endpoint)) {
+                        routeDefn.add(anEndpoint, routing, 200,
+                                "Mirror a " + routing.name().toUpperCase() + " Request", mirroredRoute);
+                    }
+                    if (anEndpoint.startsWith(rawEndPoint)) {
+                        routeDefn.add(anEndpoint, routing, 200,
+                                "Raw Text Mirror of a " + routing.name().toUpperCase() + " Request", rawTextMirroredRoute);
+                    }
                 }
             }
         }
 
         for (String anEndpoint : verbEndpoints) {
-            routeDefn.
-                add(anEndpoint, RoutingVerb.HEAD, 204,
-                        "Headers for mirror endpoint",
-                        (request, result) -> {
-                            String body = requestMirror.mirrorRequest(request, result);
-                            return "";
-                        }
-                );
+            Route routeHAndler = (request, result) -> {
+                String body = requestMirror.mirrorRequest(request, result);
+                return "";
+            };
+            if(anEndpoint.endsWith("/*")){
+                // add to routing but not to the api documentation
+                SimpleRouteConfig.addHandler(anEndpoint, "head", routeHAndler);
+            }else {
+                routeDefn.
+                        add(anEndpoint, RoutingVerb.HEAD, 204,
+                                "Headers for mirror endpoint",
+                                routeHAndler
+                        );
+            }
         }
 
    }

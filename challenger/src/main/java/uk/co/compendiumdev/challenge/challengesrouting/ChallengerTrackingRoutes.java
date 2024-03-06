@@ -27,6 +27,8 @@ public class ChallengerTrackingRoutes {
                           final Thingifier thingifier,
                           ChallengeDefinitions challengeDefinitions){
 
+        // TODO: add OPTIONS for the routes - see the AdhocDocumentedSparkRouteConfig in ChallengesRoutes
+
         // add a GET challenger/database/:id in the proper database format
         get("/challenger/database/:id", (request, result) -> {
             String xChallengerGuid =null;
@@ -70,13 +72,22 @@ public class ChallengerTrackingRoutes {
             }
         });
 
+        // Document the endpoint
+        apiDefn.addRouteToDocumentation(
+                new RoutingDefinition(
+                        RoutingVerb.GET,
+                        "/challenger/database/:guid",
+                        RoutingStatus.returnedFromCall(),
+                        null).addDocumentation("Get the todo data for the supplied X-CHALLENGER guid to allow later restoration of the todos.")
+                        .addPossibleStatuses(200,400,404));
+
         // refresh challenger to avoid purging
-        get("/challenger/*", (request, result) -> {
+        get("/challenger/:id", (request, result) -> {
             String xChallengerGuid =null;
             ChallengerAuthData challenger=null;
-            if(request.splat().length>0) {
-                xChallengerGuid = request.splat()[0];
-            }
+
+            xChallengerGuid = request.params("id");
+
             if(xChallengerGuid != null && xChallengerGuid.trim()!=""){
                 challenger = challengers.getChallenger(xChallengerGuid);
                 if(challenger!=null){
@@ -95,6 +106,14 @@ public class ChallengerTrackingRoutes {
             return "";
         });
 
+        // Document the endpoint
+        apiDefn.addRouteToDocumentation(
+                new RoutingDefinition(
+                        RoutingVerb.GET,
+                        "/challenger/:guid",
+                        RoutingStatus.returnedFromCall(),
+                        null).addDocumentation("Get a challenger in Json format to allow continued tracking of challenges.")
+                        .addPossibleStatuses(200,404));
 
         // endpoint to restore a saved challenger status from UI
         put("/challenger/:id", (request, result) -> {
@@ -159,6 +178,15 @@ public class ChallengerTrackingRoutes {
             return "";
         });
 
+        // Document the endpoint
+        apiDefn.addRouteToDocumentation(
+                new RoutingDefinition(
+                        RoutingVerb.PUT,
+                        "/challenger/:guid",
+                        RoutingStatus.returnedFromCall(),
+                        null).addDocumentation("Restore a saved challenger matching the supplied X-CHALLENGER guid to allow continued tracking of challenges.")
+                        .addPossibleStatuses(200,201,400));
+
 
         // endpoint to restore a saved challenger database from UI
         put("/challenger/database/:id", (request, result) -> {
@@ -205,6 +233,14 @@ public class ChallengerTrackingRoutes {
             }
         });
 
+        // Document the endpoint
+        apiDefn.addRouteToDocumentation(
+                new RoutingDefinition(
+                        RoutingVerb.PUT,
+                        "/challenger/database/:guid",
+                        RoutingStatus.returnedFromCall(),
+                        null).addDocumentation("Restore a saved set of todos for a challenger matching the supplied X-CHALLENGER guid.")
+                        .addPossibleStatuses(204,400));
 
         // TODO: add option for some ip based limits on number of challenges associated with an IP
 
@@ -252,31 +288,18 @@ public class ChallengerTrackingRoutes {
             return "";
         });
 
+        apiDefn.addRouteToDocumentation(
+                new RoutingDefinition(
+                        RoutingVerb.POST,
+                        "/challenger",
+                        RoutingStatus.returnedFromCall(),
+                        null).
+                        addDocumentation("Create an X-CHALLENGER guid to allow tracking challenges, use the X-CHALLENGER header in all requests to track challenge completion for multi-user tracking.").
+                        addPossibleStatuses(200,400,404));
+
         SimpleRouteConfig.
                 routeStatusWhenNot(
                         405, "/challenger", "post");
-
-        String explanation = "";
-        if(single_player_mode) {
-            explanation =  " Not necessary in single user mode.";
-        }
-
-        apiDefn.addRouteToDocumentation(
-            new RoutingDefinition(
-                RoutingVerb.POST,
-                "/challenger",
-                RoutingStatus.returnedFromCall(),
-                null).
-                addDocumentation("Create an X-CHALLENGER guid to allow tracking challenges, use the X-CHALLENGER header in all requests to track challenge completion for multi-user tracking." + explanation).
-                    addPossibleStatuses(200,400,404));
-
-        apiDefn.addRouteToDocumentation(
-            new RoutingDefinition(
-                RoutingVerb.GET,
-                "/challenger/:guid",
-                RoutingStatus.returnedFromCall(),
-                null).addDocumentation("Restore a saved challenger matching the supplied X-CHALLENGER guid to allow continued tracking of challenges." + explanation)
-                    .addPossibleStatuses(204,404));
 
     }
 }

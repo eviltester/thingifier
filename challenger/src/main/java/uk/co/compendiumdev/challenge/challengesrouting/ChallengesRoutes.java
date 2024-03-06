@@ -25,6 +25,7 @@ public class ChallengesRoutes {
                           final ThingifierApiDefn apiDefn,
                           final ChallengeDefinitions challengeDefinitions){
 
+
         get("/challenges", (request, result) -> {
 
             ChallengerAuthData challenger = challengers.getChallenger(request.headers("X-CHALLENGER"));
