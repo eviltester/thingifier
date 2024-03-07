@@ -88,8 +88,10 @@ public class Challengers {
                 final PersistenceResponse response =
                         persistenceLayer.tryToLoadChallenger(this, challengerGuid.trim());
                 if(response.isSuccess()){
-                    challenger = authData.get(challengerGuid);
-                    challenger.setState(ChallengerState.LOADED_FROM_PERSISTENCE);
+                    if(authData.containsKey(challengerGuid)) {
+                        challenger = authData.get(challengerGuid);
+                        challenger.setState(ChallengerState.LOADED_FROM_PERSISTENCE);
+                    }
                 }
                 // todo: surface persistence errors i.e. response.getErrorMessage()
             }

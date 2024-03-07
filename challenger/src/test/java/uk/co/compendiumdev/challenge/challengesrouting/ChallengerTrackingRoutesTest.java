@@ -136,7 +136,7 @@ public class ChallengerTrackingRoutesTest {
         return args.stream();
     }
 
-    @ParameterizedTest(name = "simple status routing expected {0} for {1} {2}")
+    @ParameterizedTest(name = "simple status routing expected {0} for {1} {2} with challenger as header")
     @MethodSource("simpleRoutingStatus")
     void simpleRoutingTestChallengerRouting(int statusCode, String verb, String url){
 

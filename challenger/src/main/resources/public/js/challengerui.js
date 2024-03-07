@@ -1,8 +1,11 @@
 function setCookie(cname,cvalue,exdays) {
-  const d = new Date();
-  d.setTime(d.getTime() + (exdays*24*60*60*1000));
-  let expires = 'expires=' + d.toUTCString();
-  document.cookie = cname + '=' + cvalue + ';' + expires + ';path=/';
+  let expires="";
+  if(exdays!=undefined){ // use undefined to create a session cookie
+      const d = new Date();
+      d.setTime(d.getTime() + (exdays*24*60*60*1000));
+      expires = 'expires=' + d.toUTCString() + ";";
+  }
+  document.cookie = cname + '=' + cvalue + ';' + expires + 'path=/';
 }
 
 function getCookie(cname) {
@@ -62,16 +65,56 @@ function displayLocalGuids(){
     }
 }
 
+function setCookieSaveLocally(){
+    setCookie("auto-save-x-challenger-locally","true");
+    const challengerData = document.challengerData;
+    if(challengerData && challengerData.xChallenger){
+        currentChallengerGuid = challengerData.xChallenger;
+        setCookie("last-auto-saved-x-challenger", currentChallengerGuid);
+    }
+}
+
+function deleteCookieSaveLocally(){
+    setCookie("auto-save-x-challenger-locally","")
+}
+
 function showCurrentStatus(){
     const challengerData = document.challengerData;
     const databaseData = document.databaseData;
 
     document.writeln("<div>");
 
-    document.writeln(`<p><button onclick=location.reload()>Refresh Status</button></p>`);
+    document.writeln(`<p><button onclick=location.reload()>Refresh Status</button>`);
+
+    // issue if immediately autosave then it will wipe out any saved
+    // use a session cookie to force setting for everyone
+    // and have a last-auto-saved-guid and only switch on auto save if current guid matches last autosaved
+    var lastAutoSavedGuid = getCookie("last-auto-saved-x-challenger")
+    var currentChallengerGuid = "";
+    var canAutoSaveChallenger = false;
+    if(challengerData && challengerData.xChallenger){
+        currentChallengerGuid = challengerData.xChallenger;
+        if(currentChallengerGuid!="" && currentChallengerGuid===lastAutoSavedGuid){
+            canAutoSaveChallenger=true;
+        }
+    }
+
+    var autoSave = false;
+    if(getCookie("auto-save-x-challenger-locally")!='' && canAutoSaveChallenger){
+        autoSave=true;
+    }
+
+    var autoSaveOn = autoSave ? "checked" : ""
+    var autoSaveOnChange = autoSave ? "'deleteCookieSaveLocally();location.reload();'" : "'setCookieSaveLocally();location.reload()'"
+    var autoSaveLocallyHtml = ` <input type='checkbox' id='auto-save-locally-check' name='auto-save-locally-check' value='auto-save-locally-check' ${autoSaveOn} onchange=${autoSaveOnChange}><label for='auto-save-locally-check'> Auto Save Todos and Progress Locally on refresh</label>`
+    document.writeln(autoSaveLocallyHtml);
+
+    document.writeln("</p>");
+
 
     if(challengerData && challengerData.xChallenger){
         var xChallengerGuid = challengerData.xChallenger;
+
 
         if(challengerData.challengeStatus){
             var status = challengerData.challengeStatus;
@@ -84,7 +127,11 @@ function showCurrentStatus(){
 
             // only enable save button if not in localStorage or is different from local storage
             if(localStorage.getItem(`${xChallengerGuid}.progress`)!==JSON.stringify(challengerData)){
-                document.writeln(`<button onclick="saveChallengerProgressToLocalStorage(challengerData);this.innerText='saved progress';this.setAttribute('disabled',true)">Save Progress to LocalStorage</button>`);
+                if(!autoSaveOn){
+                    document.writeln(`<button onclick="saveChallengerProgressToLocalStorage(challengerData);this.innerText='saved progress';this.setAttribute('disabled',true)">Save Progress to LocalStorage</button>`);
+                }else{
+                    saveChallengerProgressToLocalStorage(challengerData);
+                }
             }else{
                 document.writeln(`<button disabled>saved progress</button>`);
             }
@@ -92,17 +139,22 @@ function showCurrentStatus(){
                 document.writeln(`<button onclick="restoreChallengerProgressInSystem('${xChallengerGuid}');this.innerText='restored';this.setAttribute('disabled',true)">Restore Locally Saved Progress</button>`);
             }
             document.writeln(`</p>`);
-
         }
+
         if(databaseData && databaseData.todos){
 
             document.writeln(`<p>${databaseData.todos.length} todos in database.</p>`);
             document.writeln(`<p>`);
             document.writeln(`<a href='/gui/instances?entity=todo'>View Todos</a> `)
+
             // only enable save button if not in localStorage or is different from local storage
             document.databaseData.todos.sort((a,b)=>a.id-b.id);
             if(localStorage.getItem(`${xChallengerGuid}.data`)!==JSON.stringify(document.databaseData)){
-                document.writeln(`<button onclick="saveChallengerTodosToLocalStorage(databaseData,challengerData);this.innerText='saved todos';this.setAttribute('disabled',true)">Save Todos Data to LocalStorage</button>`);
+                if(!autoSaveOn){
+                    document.writeln(`<button onclick="saveChallengerTodosToLocalStorage(databaseData,challengerData);this.innerText='saved todos';this.setAttribute('disabled',true)">Save Todos Data to LocalStorage</button>`);
+                }else{
+                    saveChallengerTodosToLocalStorage(databaseData,challengerData);
+                }
             }else{
                 document.writeln(`<button disabled>saved todos</button>`);
             }
@@ -165,7 +217,7 @@ function restoreChallengerProgressInSystem(xchallengeruuid){
         "Content-type": "application/json",
       },
     })
-    .then((json) => console.log(json));
+    .then((response) => console.log(response));
 
 }
 
@@ -181,7 +233,6 @@ function restoreTodosInSystem(xchallengeruuid){
         "Content-type": "application/json",
       },
     })
-    .then((response) => response.json())
-    .then((json) => console.log(json));
+    .then((response) => console.log(response));
 
 }
