@@ -123,9 +123,7 @@ function showCurrentStatus(){
             var leftCount = totalCount - doneCount;
             document.writeln(`<p>${totalCount} Challenges: ${doneCount} complete, ${leftCount} remain.`);
 
-            // TODO: add an auto save to local storage option for state and todos - off by default
-
-            // only enable save button if not in localStorage or is different from local storage
+            // only allow save if not in localStorage or is different from local storage
             if(localStorage.getItem(`${xChallengerGuid}.progress`)!==JSON.stringify(challengerData)){
                 if(!autoSaveOn){
                     document.writeln(`<button onclick="saveChallengerProgressToLocalStorage(challengerData);this.innerText='saved progress';this.setAttribute('disabled',true)">Save Progress to LocalStorage</button>`);
@@ -146,7 +144,7 @@ function showCurrentStatus(){
             document.writeln(`<p>${databaseData.todos.length} todos in database. `);
             document.writeln(`<a href='/gui/instances?entity=todo'>View Todos</a> `)
 
-            // only enable save button if not in localStorage or is different from local storage
+            // only allow save button if not in localStorage or is different from local storage
             document.databaseData.todos.sort((a,b)=>a.id-b.id);
             if(localStorage.getItem(`${xChallengerGuid}.data`)!==JSON.stringify(document.databaseData)){
                 if(!autoSaveOn){
