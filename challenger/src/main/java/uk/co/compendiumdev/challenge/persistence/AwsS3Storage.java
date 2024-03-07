@@ -28,7 +28,7 @@ public class AwsS3Storage implements ChallengerPersistenceMechanism {
     // https://docs.aws.amazon.com/AmazonS3/latest/dev/UploadObjSingleOpJava.html
 
 
-    // TODO: have separate save and load to s3 switches to allow 'loading' but not saving.
+    // TODO: have a constructor to allow switching on and off load/saving through constructor - do not code the env variables in here.
 
     @Override
     public PersistenceResponse saveChallengerStatus(final ChallengerAuthData data) {
@@ -44,6 +44,7 @@ public class AwsS3Storage implements ChallengerPersistenceMechanism {
             return new PersistenceResponse().withSuccess(false).withErrorMessage("no data provided");
         }
 
+        // TODO: make this a config class which we pass in via the constructor
         String bucketName = System.getenv("AWSBUCKET");
 
         try{
@@ -75,7 +76,7 @@ public class AwsS3Storage implements ChallengerPersistenceMechanism {
     @Override
     public PersistenceResponse loadChallengerStatus(final String guid) {
 
-        // by default will not save from aws - need to add environmnet variable
+        // by default will not save from aws - need to add environment variable
         String allow_load = System.getenv("AWS_ALLOW_LOAD");
         if(allow_load==null || !allow_load.toLowerCase().trim().equals("true")){
             return new PersistenceResponse().withSuccess(false);

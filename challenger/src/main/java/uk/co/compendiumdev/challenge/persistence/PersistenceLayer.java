@@ -9,6 +9,8 @@ public class PersistenceLayer {
     private StorageType storeOn;
 
     // TODO: have a database persistence layer e.g. 'save to disk' option for the todos
+    // TODO: single player mode should have this switched on by default
+    // TODO: allow configuring what is on and what is off for any storage type
 
     // todo: add all active storage mechanisms in a list and store on all - switch it off by removing from list
     ChallengerPersistenceMechanism file = new ChallengerFileStorage();

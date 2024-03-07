@@ -291,9 +291,6 @@ public class ChallengerApiResponseHook implements HttpApiResponseHook {
             challengers.pass(challenger,CHALLENGE.DELETE_ALL_TODOS);
         }
 
-
-        // TODO: challenge - complete all challenges in the minimum number of requests
-
         // do not interfere with api and return null
         return null;
     }

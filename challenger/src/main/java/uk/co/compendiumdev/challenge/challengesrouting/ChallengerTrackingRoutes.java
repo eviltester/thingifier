@@ -29,8 +29,6 @@ public class ChallengerTrackingRoutes {
                           final Thingifier thingifier,
                           ChallengeDefinitions challengeDefinitions){
 
-        // TODO: add OPTIONS for the routes - see the AdhocDocumentedSparkRouteConfig in ChallengesRoutes
-
 
 
 

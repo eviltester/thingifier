@@ -33,8 +33,8 @@ public class AuthRoutesTest {
         List<Arguments> args = new ArrayList<>();
 
         // get
-        args.add(Arguments.of(405, "head", "/secret/note"));
-        args.add(Arguments.of(405, "options", "/secret/note"));
+        args.add(Arguments.of(401, "head", "/secret/note"));
+        args.add(Arguments.of(204, "options", "/secret/note"));
         // post
         args.add(Arguments.of(405, "put", "/secret/note"));
         args.add(Arguments.of(405, "delete", "/secret/note"));
@@ -43,7 +43,7 @@ public class AuthRoutesTest {
 
         args.add(Arguments.of(405, "get", "/secret/token"));
         args.add(Arguments.of(405, "head", "/secret/token"));
-        args.add(Arguments.of(405, "options", "/secret/token"));
+        args.add(Arguments.of(204, "options", "/secret/token"));
         // post
         args.add(Arguments.of(405, "put", "/secret/token"));
         args.add(Arguments.of(405, "delete", "/secret/token"));
@@ -68,7 +68,7 @@ public class AuthRoutesTest {
 
         args.add(Arguments.of(405, "get", "/secret/token"));
         args.add(Arguments.of(405, "head", "/secret/token"));
-        args.add(Arguments.of(405, "options", "/secret/token"));
+        args.add(Arguments.of(204, "options", "/secret/token"));
         // post
         args.add(Arguments.of(405, "put", "/secret/token"));
         args.add(Arguments.of(405, "delete", "/secret/token"));

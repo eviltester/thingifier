@@ -1,5 +1,6 @@
 package uk.co.compendiumdev.challenge.challengesrouting;
 
+import spark.Route;
 import uk.co.compendiumdev.thingifier.api.http.headers.headerparser.AcceptHeaderParser;
 import uk.co.compendiumdev.thingifier.api.http.headers.headerparser.BasicAuthHeaderParser;
 import uk.co.compendiumdev.thingifier.api.http.headers.headerparser.BearerAuthHeaderParser;
@@ -30,8 +31,7 @@ import uk.co.compendiumdev.thingifier.spark.SimpleRouteConfig;
 import java.util.Arrays;
 import java.util.List;
 
-import static spark.Spark.get;
-import static spark.Spark.post;
+import static spark.Spark.*;
 
 // TODO: This should be using a Thingifier to do the work of XML JSON etc... like the simulation
 public class AuthRoutes {
@@ -59,7 +59,14 @@ public class AuthRoutes {
         this.httpApi = new ThingifierHttpApi(this.secretNoteStore);
         this.jsonThing = new JsonThing(this.secretNoteStore.apiConfig().jsonOutput());
 
-        // TODO: add OPTIONS for the routes - see the AdhocDocumentedSparkRouteConfig in ChallengesRoutes
+
+        SimpleRouteConfig.addHandler("/secret/token", "options", (request, result) ->{
+            result.status(204);
+            // disallow POST, DELETE, PATCH, TRACE
+            result.header("Allow", "POST, OPTIONS");
+            return "";
+        });
+
 
         // TODO: this all feels too tightly coupled to SparkJava we should have our own routing internally that spark delegates too
 
@@ -91,7 +98,7 @@ public class AuthRoutes {
         });
 
         SimpleRouteConfig.routeStatusWhenNot(
-                405, "/secret/token", "post");
+                405, "/secret/token", "post", "options");
 
         apiDefn.addRouteToDocumentation(
                 new RoutingDefinition(
@@ -101,6 +108,15 @@ public class AuthRoutes {
                 null).addDocumentation("POST /secret/token with basic auth to get a secret/token to use as X-AUTH-TOKEN header, to allow access to the /secret/note end points.").
                     addPossibleStatuses(201,401));
 
+
+
+
+
+
+
+
+
+
         // todo: GET /secret/token returns the secret token or 401 if not authenticated
 
 
@@ -109,8 +125,15 @@ public class AuthRoutes {
         // auth token which does not match the session will receive a 401
         // header X-AUTH-TOKEN: token given - if token not found (then) 401
 
-        get("/secret/note", (request, result) -> {
+        SimpleRouteConfig.addHandler("/secret/note", "options", (request, result) ->{
+            result.status(204);
+            // disallow POST, DELETE, PATCH, TRACE
+            result.header("Allow", "GET, HEAD, POST, OPTIONS");
+            return "";
+        });
 
+
+        Route getSecretNote = (request, result) -> {
             String authToken = request.headers("X-AUTH-TOKEN");
             final String authorization = request.headers("Authorization");
 
@@ -159,7 +182,15 @@ public class AuthRoutes {
             return HttpApiResponseToSpark.convert(httpApiResponse, result);
 
             //return resultBasedOnAcceptHeader(result, request.headers("ACCEPT"), challenger.getNote());
+        };
 
+        get("/secret/note", (request, result) -> {
+            return getSecretNote.handle(request,result);
+        });
+
+        head("/secret/note", (request, result) -> {
+            getSecretNote.handle(request,result);
+            return "";
         });
 
         apiDefn.addRouteToDocumentation(
@@ -270,7 +301,7 @@ public class AuthRoutes {
         });
 
         SimpleRouteConfig.routeStatusWhenNot(
-                405, "/secret/note", "get", "post");
+                405, "/secret/note", "get", "post", "head", "options");
 
         apiDefn.addRouteToDocumentation(
                 new RoutingDefinition(
