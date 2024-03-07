@@ -52,7 +52,7 @@ function displayLocalGuids(){
         guidsArray.push(`|${currGuid}|`)
     }
     if(guidsArray!=null && guidsArray.length>0){
-        document.writeln('<details><summary>Previously Used</summary>')
+        document.writeln('<details><summary>Previously Used Challenger GUIDs</summary>')
 
         for(guidItem in guidsArray){
             var myguid = guidsArray[guidItem].replace(/\|/g,'');
@@ -143,8 +143,7 @@ function showCurrentStatus(){
 
         if(databaseData && databaseData.todos){
 
-            document.writeln(`<p>${databaseData.todos.length} todos in database.</p>`);
-            document.writeln(`<p>`);
+            document.writeln(`<p>${databaseData.todos.length} todos in database. `);
             document.writeln(`<a href='/gui/instances?entity=todo'>View Todos</a> `)
 
             // only enable save button if not in localStorage or is different from local storage
