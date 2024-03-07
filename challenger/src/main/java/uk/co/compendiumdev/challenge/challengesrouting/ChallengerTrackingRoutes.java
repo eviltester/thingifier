@@ -1,6 +1,8 @@
 package uk.co.compendiumdev.challenge.challengesrouting;
 
 import com.google.gson.Gson;
+import spark.Filter;
+import spark.Route;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
 import uk.co.compendiumdev.challenge.challenges.ChallengeDefinitions;
@@ -29,60 +31,11 @@ public class ChallengerTrackingRoutes {
 
         // TODO: add OPTIONS for the routes - see the AdhocDocumentedSparkRouteConfig in ChallengesRoutes
 
-        // add a GET challenger/database/:id in the proper database format
-        get("/challenger/database/:id", (request, result) -> {
-            String xChallengerGuid =null;
-            ChallengerAuthData challenger=null;
 
-            // for which challenger?
-            xChallengerGuid = request.params("id");
 
-            if(xChallengerGuid==null){
-                result.status(400);
-                return ApiResponseAsJson.getErrorMessageJson("Invalid Challenger GUID");
-            }
 
-            if(!single_player_mode) {
-                try {
-                    UUID.fromString(xChallengerGuid);
-                } catch (Exception e) {
-                    result.status(400);
-                    return ApiResponseAsJson.getErrorMessageJson("Invalid Challenger GUID " + e.getMessage());
-                }
-            }
 
-            challenger = challengers.getChallenger(xChallengerGuid);
-            XChallengerHeader.setResultHeaderBasedOnChallenger(result,challenger);
-
-            if(challenger!=null){
-                challenger.touch();
-                result.header("content-type", "application/json");
-
-                ERInstanceData instanceData = challengers.getErModel().getInstanceData(xChallengerGuid);
-                if(instanceData==null){
-                    result.status(404);
-                    return ApiResponseAsJson.getErrorMessageJson("Challenger database not instantiated " + xChallengerGuid);
-                }
-
-                result.status(200);
-                return challengers.getErModel().getInstanceData(xChallengerGuid).asJson();
-            }else{
-                result.status(404);
-                return ApiResponseAsJson.getErrorMessageJson("Challenger not found " + xChallengerGuid);
-            }
-        });
-
-        // Document the endpoint
-        apiDefn.addRouteToDocumentation(
-                new RoutingDefinition(
-                        RoutingVerb.GET,
-                        "/challenger/database/:guid",
-                        RoutingStatus.returnedFromCall(),
-                        null).addDocumentation("Get the todo data for the supplied X-CHALLENGER guid to allow later restoration of the todos.")
-                        .addPossibleStatuses(200,400,404));
-
-        // refresh challenger to avoid purging
-        get("/challenger/:id", (request, result) -> {
+        Route getChallengerId = (request, result) -> {
             String xChallengerGuid =null;
             ChallengerAuthData challenger=null;
 
@@ -103,6 +56,25 @@ public class ChallengerTrackingRoutes {
                 result.status(404);
             }
             XChallengerHeader.setResultHeaderBasedOnChallenger(result,challenger);
+            return "";
+        };
+
+        SimpleRouteConfig.addHandler("/challenger/:id", "options", (request, result) ->{
+            result.status(204);
+            // disallow POST, DELETE, PATCH, TRACE
+            result.header("Allow", "GET, PUT, HEAD, OPTIONS");
+            return "";
+        });
+
+        SimpleRouteConfig.routeStatusWhenNot(405, "/challenger/:id", "get", "put", "head", "options");
+
+        // refresh challenger to avoid purging
+        get("/challenger/:id", (request, result) -> {
+            return getChallengerId.handle(request, result);
+        });
+
+        head("/challenger/:id", (request, result) -> {
+            getChallengerId.handle(request, result);
             return "";
         });
 
@@ -188,6 +160,144 @@ public class ChallengerTrackingRoutes {
                         .addPossibleStatuses(200,201,400));
 
 
+        /*
+            / challenger
+
+         */
+
+        SimpleRouteConfig.addHandler("/challenger", "options", (request, result) ->{
+            result.status(204);
+            // disallow POST, DELETE, PATCH, TRACE
+            result.header("Allow", "POST, OPTIONS");
+            return "";
+        });
+
+        // create a challenger
+        post("/challenger", (request, result) -> {
+
+            if(single_player_mode){
+                XChallengerHeader.setResultHeaderBasedOnChallenger(result, challengers.SINGLE_PLAYER.getXChallenger());
+                result.raw().setHeader("Location", "/gui/challenges");
+                result.status(201);
+                return "";
+            }
+
+            String xChallengerGuid = request.headers("X-CHALLENGER");
+            if(xChallengerGuid == null || xChallengerGuid.trim()==""){
+                // create a new
+                final ChallengerAuthData challenger = challengers.createNewChallenger();
+                // create the database for the user
+                thingifier.ensureCreatedAndPopulatedInstanceDatabaseNamed(challenger.getXChallenger());
+                XChallengerHeader.setResultHeaderBasedOnChallenger(result, challenger);
+                result.raw().setHeader("Location", "/gui/challenges/" + challenger.getXChallenger());
+                result.status(201);
+            }else {
+                ChallengerAuthData challenger = challengers.getChallenger(xChallengerGuid);
+                if(challenger==null){
+                    // if X-CHALLENGER header exists, and is not a known UUID,
+                    // return 404, challenger ID not valid
+                    result.status(404);
+                }else{
+                    // create the database for the user
+                    thingifier.ensureCreatedAndPopulatedInstanceDatabaseNamed(challenger.getXChallenger());
+                    // if X-CHALLENGER header exists, and has a valid UUID, and UUID exists, then return 200
+                    result.raw().setHeader("Location", "/gui/challenges/" + challenger.getXChallenger());
+                    result.status(200);
+                }
+                XChallengerHeader.setResultHeaderBasedOnChallenger(result, challenger);
+            }
+            return "";
+        });
+
+        apiDefn.addRouteToDocumentation(
+                new RoutingDefinition(
+                        RoutingVerb.POST,
+                        "/challenger",
+                        RoutingStatus.returnedFromCall(),
+                        null).
+                        addDocumentation("Create a challenger using the X-CHALLENGER guid header.").
+                        addPossibleStatuses(200,400,405));
+
+        SimpleRouteConfig.
+                routeStatusWhenNot(
+                        405, "/challenger", "post", "options");
+
+        /*
+            The todos restore endpoint
+         */
+
+        // Document the endpoint
+        apiDefn.addRouteToDocumentation(
+                new RoutingDefinition(
+                        RoutingVerb.GET,
+                        "/challenger/database/:guid",
+                        RoutingStatus.returnedFromCall(),
+                        null).addDocumentation("Get the todo data for the supplied X-CHALLENGER guid to allow later restoration of the todos.")
+                        .addPossibleStatuses(200,400,404));
+
+        Route getChallengerDatabaseId = (request, result) -> {
+            String xChallengerGuid =null;
+            ChallengerAuthData challenger=null;
+
+            // for which challenger?
+            xChallengerGuid = request.params("id");
+
+            if(xChallengerGuid==null){
+                result.status(400);
+                return ApiResponseAsJson.getErrorMessageJson("Invalid Challenger GUID");
+            }
+
+            if(!single_player_mode) {
+                try {
+                    UUID.fromString(xChallengerGuid);
+                } catch (Exception e) {
+                    result.status(400);
+                    return ApiResponseAsJson.getErrorMessageJson("Invalid Challenger GUID " + e.getMessage());
+                }
+            }
+
+            challenger = challengers.getChallenger(xChallengerGuid);
+            XChallengerHeader.setResultHeaderBasedOnChallenger(result,challenger);
+
+            if(challenger!=null){
+                challenger.touch();
+                result.header("content-type", "application/json");
+
+                ERInstanceData instanceData = challengers.getErModel().getInstanceData(xChallengerGuid);
+                if(instanceData==null){
+                    result.status(404);
+                    return ApiResponseAsJson.getErrorMessageJson("Challenger database not instantiated " + xChallengerGuid);
+                }
+
+                result.status(200);
+                return challengers.getErModel().getInstanceData(xChallengerGuid).asJson();
+            }else{
+                result.status(404);
+                return ApiResponseAsJson.getErrorMessageJson("Challenger not found " + xChallengerGuid);
+            }
+        };
+
+        SimpleRouteConfig.addHandler("/challenger/database/:id", "options", (request, result) ->{
+            result.status(204);
+            // disallow POST, DELETE, PATCH, TRACE
+            result.header("Allow", "GET, PUT, HEAD, OPTIONS");
+            return "";
+        });
+
+        SimpleRouteConfig.routeStatusWhenNot(405, "/challenger/database/:id", "get", "put", "head", "options");
+
+        // add a GET challenger/database/:id in the proper database format
+
+        get("/challenger/database/:id", (request, result) -> {
+            return getChallengerDatabaseId.handle(request, result);
+        });
+
+        head("/challenger/database/:id", (request, result) -> {
+            getChallengerDatabaseId.handle(request, result);
+            return "";
+        });
+
+
         // endpoint to restore a saved challenger database from UI
         put("/challenger/database/:id", (request, result) -> {
 
@@ -247,59 +357,7 @@ public class ChallengerTrackingRoutes {
         // TODO: add a protected admin page with an environment variable protection as password
 
 
-        SimpleRouteConfig.
-                routeStatusWhenNot(
-                        405, "/challenger/*", "get", "put");
 
-        // create a challenger
-        post("/challenger", (request, result) -> {
-
-            if(single_player_mode){
-                XChallengerHeader.setResultHeaderBasedOnChallenger(result, challengers.SINGLE_PLAYER.getXChallenger());
-                result.raw().setHeader("Location", "/gui/challenges");
-                result.status(201);
-                return "";
-            }
-
-            String xChallengerGuid = request.headers("X-CHALLENGER");
-            if(xChallengerGuid == null || xChallengerGuid.trim()==""){
-                // create a new
-                final ChallengerAuthData challenger = challengers.createNewChallenger();
-                // create the database for the user
-                thingifier.ensureCreatedAndPopulatedInstanceDatabaseNamed(challenger.getXChallenger());
-                XChallengerHeader.setResultHeaderBasedOnChallenger(result, challenger);
-                result.raw().setHeader("Location", "/gui/challenges/" + challenger.getXChallenger());
-                result.status(201);
-            }else {
-                ChallengerAuthData challenger = challengers.getChallenger(xChallengerGuid);
-                if(challenger==null){
-                    // if X-CHALLENGER header exists, and is not a known UUID,
-                    // return 404, challenger ID not valid
-                    result.status(404);
-                }else{
-                    // create the database for the user
-                    thingifier.ensureCreatedAndPopulatedInstanceDatabaseNamed(challenger.getXChallenger());
-                    // if X-CHALLENGER header exists, and has a valid UUID, and UUID exists, then return 200
-                    result.raw().setHeader("Location", "/gui/challenges/" + challenger.getXChallenger());
-                    result.status(200);
-                }
-                XChallengerHeader.setResultHeaderBasedOnChallenger(result, challenger);
-            }
-            return "";
-        });
-
-        apiDefn.addRouteToDocumentation(
-                new RoutingDefinition(
-                        RoutingVerb.POST,
-                        "/challenger",
-                        RoutingStatus.returnedFromCall(),
-                        null).
-                        addDocumentation("Create an X-CHALLENGER guid to allow tracking challenges, use the X-CHALLENGER header in all requests to track challenge completion for multi-user tracking.").
-                        addPossibleStatuses(200,400,404));
-
-        SimpleRouteConfig.
-                routeStatusWhenNot(
-                        405, "/challenger", "post");
 
     }
 }

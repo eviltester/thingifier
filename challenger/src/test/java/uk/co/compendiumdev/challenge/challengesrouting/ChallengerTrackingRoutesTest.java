@@ -128,7 +128,7 @@ public class ChallengerTrackingRoutesTest {
         List<Arguments> args = new ArrayList<>();
 
         args.add(Arguments.of(405, "head", "/challenger"));
-        args.add(Arguments.of(405, "options", "/challenger"));
+        args.add(Arguments.of(204, "options", "/challenger"));
         args.add(Arguments.of(405, "put", "/challenger"));
         args.add(Arguments.of(405, "delete", "/challenger"));
         args.add(Arguments.of(405, "patch", "/challenger"));
@@ -152,9 +152,9 @@ public class ChallengerTrackingRoutesTest {
     static Stream simpleRoutingStatusSpecific(){
         List<Arguments> args = new ArrayList<>();
 
-        args.add(Arguments.of(405, "head", "/challenger"));
-        args.add(Arguments.of(405, "options", "/challenger"));
-        args.add(Arguments.of(400, "put", "/challenger"));
+        args.add(Arguments.of(200, "head", "/challenger"));
+        args.add(Arguments.of(204, "options", "/challenger"));
+        args.add(Arguments.of(400, "put", "/challenger")); // because we don't pass in the details
         args.add(Arguments.of(405, "post", "/challenger"));
         args.add(Arguments.of(405, "delete", "/challenger"));
         args.add(Arguments.of(405, "patch", "/challenger"));
@@ -162,7 +162,7 @@ public class ChallengerTrackingRoutesTest {
         return args.stream();
     }
 
-    @ParameterizedTest(name = "simple status routing expected for specific challenger {0} for {1} {2}")
+    @ParameterizedTest(name = "simple status routing expected for specific challenger {0} for {1} {2}/id")
     @MethodSource("simpleRoutingStatusSpecific")
     void simpleRoutingTestSpecificChallengerRouting(int statusCode, String verb, String url){
 
