@@ -131,6 +131,9 @@ public class Challengers {
             }
         }
         logger.info("CURRENT Challenger count: {}",authData.values().size());
+        if(erModel!=null){
+            logger.info("CURRENT database count: {}",erModel.getDatabaseNames().size());
+        }
     }
 
     public ChallengerAuthData createNewChallenger() {
