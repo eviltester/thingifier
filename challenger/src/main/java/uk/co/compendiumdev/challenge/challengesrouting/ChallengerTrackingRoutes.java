@@ -33,7 +33,8 @@ public class ChallengerTrackingRoutes {
                           ChallengeDefinitions challengeDefinitions){
 
 
-        ChallengerIpAddressTracker ipAddressTracker = new ChallengerIpAddressTracker(MAX_CHALLENGERS_PER_IP);
+        // todo: control max challengers and ip address limiting dynamically through admin interface and via environment variables
+        ChallengerIpAddressTracker ipAddressTracker = new ChallengerIpAddressTracker(MAX_CHALLENGERS_PER_IP, false);
 
 
 

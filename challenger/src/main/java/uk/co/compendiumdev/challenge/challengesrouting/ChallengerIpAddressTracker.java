@@ -10,10 +10,14 @@ import java.util.concurrent.ConcurrentSkipListSet;
 public class ChallengerIpAddressTracker {
     private final int maxChallengers;
     private final Map<String, ConcurrentSkipListSet<String>> ipaddresses;
+    private final boolean addressLimitingOn;
 
-    public ChallengerIpAddressTracker(int maxChallengersPerIp) {
+    // todo: add a banned ip address list
+    // todo: add a no-limit ip address list
+    public ChallengerIpAddressTracker(int maxChallengersPerIp, boolean addressLimitingOn) {
         maxChallengers = maxChallengersPerIp;
         ipaddresses = new ConcurrentHashMap<>();
+        this.addressLimitingOn=addressLimitingOn;
     }
 
     public void purgeEmptyIpAddresses(Set<String> existingChallengerGuids) {
@@ -42,6 +46,8 @@ public class ChallengerIpAddressTracker {
 
     public boolean hasLimitBeenReachedFor(String ip) {
 
+        if(!addressLimitingOn) return false;
+
         if(countFor(ip)<maxChallengers){
             return false;
         }
@@ -50,6 +56,10 @@ public class ChallengerIpAddressTracker {
     }
 
     public boolean trackAgainstThisIp(String ip, String xChallengerGuid) {
+
+        if(!addressLimitingOn){
+            return false;
+        }
 
         if(hasLimitBeenReachedFor(ip)){
             return false;

@@ -1,9 +1,6 @@
 package uk.co.compendiumdev.challenge.challengesrouting;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -185,6 +182,8 @@ public class ChallengerTrackingRoutesTest {
     }
 
 
+    // todo: allow configuration of the ip address limiting to enable this test
+    @Disabled("ip address limiting it not enabled")
     @Test
     void canOnlyCreateACertainNumberOfChallengersPerIp(){
         http.clearHeaders();
