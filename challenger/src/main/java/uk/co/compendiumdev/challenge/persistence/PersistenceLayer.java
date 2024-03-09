@@ -4,7 +4,6 @@ import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.ChallengerState;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
 import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonPopulator;
-import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.instances.ERInstanceData;
 
 public class PersistenceLayer {
@@ -29,8 +28,7 @@ public class PersistenceLayer {
         final PersistenceResponse response = loadChallengerStatus(xChallengerGuid);
 
         if(response.isSuccess()){
-            ChallengerAuthData challenger = challengers.createNewChallenger();
-            challenger.fromData(response.getAuthData(), challengers.getDefinedChallenges());
+            ChallengerAuthData challenger = new ChallengerAuthData(challengers.getDefinedChallenges()).fromData(response.getAuthData(), challengers.getDefinedChallenges());
             if(xChallengerGuid.equals(Challengers.SINGLE_PLAYER_GUID)){
                 challenger.setXChallengerGUID(xChallengerGuid);
             }
