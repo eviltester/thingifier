@@ -121,12 +121,12 @@ function showCurrentStatus(){
             var doneCount = Object.values(challengerData.challengeStatus).filter(x=>x).length;
             var totalCount = Object.values(challengerData.challengeStatus).length;
             var leftCount = totalCount - doneCount;
-            document.writeln(`<p>${totalCount} Challenges: ${doneCount} complete, ${leftCount} remain.`);
+            document.writeln(`<p>${totalCount} Challenges: ${doneCount} complete, ${leftCount} remain. <br>`);
 
             // only allow save if not in localStorage or is different from local storage
             if(localStorage.getItem(`${xChallengerGuid}.progress`)!==JSON.stringify(challengerData)){
                 if(!autoSaveOn){
-                    document.writeln(`<button onclick="saveChallengerProgressToLocalStorage(challengerData);this.innerText='saved progress';this.setAttribute('disabled',true)">Save Progress to LocalStorage</button>`);
+                    document.writeln(`<button onclick="saveChallengerProgressToLocalStorage(challengerData);this.innerText='saved progress';this.setAttribute('disabled',true)">Save Your Progress to LocalStorage</button>`);
                 }else{
                     saveChallengerProgressToLocalStorage(challengerData);
                 }
@@ -142,13 +142,13 @@ function showCurrentStatus(){
         if(databaseData && databaseData.todos){
 
             document.writeln(`<p>${databaseData.todos.length} todos in database. `);
-            document.writeln(`<a href='/gui/instances?entity=todo'>View Todos</a> `)
+            document.writeln(`<a href='/gui/instances?entity=todo'>View Todos</a> <br>`)
 
             // only allow save button if not in localStorage or is different from local storage
             document.databaseData.todos.sort((a,b)=>a.id-b.id);
             if(localStorage.getItem(`${xChallengerGuid}.data`)!==JSON.stringify(document.databaseData)){
                 if(!autoSaveOn){
-                    document.writeln(`<button onclick="saveChallengerTodosToLocalStorage(databaseData,challengerData);this.innerText='saved todos';this.setAttribute('disabled',true)">Save Todos Data to LocalStorage</button>`);
+                    document.writeln(`<button onclick="saveChallengerTodosToLocalStorage(databaseData,challengerData);this.innerText='saved todos';this.setAttribute('disabled',true)">Save Your Todos Data to LocalStorage</button>`);
                 }else{
                     saveChallengerTodosToLocalStorage(databaseData,challengerData);
                 }

@@ -155,9 +155,11 @@ public class ChallengerWebGUI {
                 if (persistence != null) {
                     persistenceReason = persistence.getErrorMessage();
                 }
+                html.append("<div class='standoutblock'>");
                 html.append(String.format("<p><strong>Unknown Challenger ID %s</strong></p>",
                         persistenceReason));
                 html.append(showCurrentStatus());
+                html.append("</div>");
                 html.append(
                     multiUserShortHelp(
                         persistenceLayer.willAutoSaveChallengerStatusToPersistenceLayer(),
@@ -182,15 +184,18 @@ public class ChallengerWebGUI {
                     html.append(storeThingifierDatabaseNameCookie(xChallenger));
                     html.append(storeCurrentGuidInLocalStorage(xChallenger));
 
+                    html.append("<div class='standoutblock'>");
                     html.append(String.format("<p><strong>Progress For Challenger ID %s</strong></p>", xChallenger));
                     html.append(showCurrentStatus());
-
                     html.append(showPreviousGuids());
                     html.append(inputAChallengeGuidScript());
+                    html.append("</div>");
                 }else {
                     html.append(storeThingifierDatabaseNameCookie(xChallenger));
                     html.append(storeCurrentGuidInLocalStorage(xChallenger));
+                    html.append("<div class='standoutblock'>");
                     html.append(showCurrentStatus());
+                    html.append("</div>");
                 }
 
                 html.append(renderChallengeData(challengeDefinitions, challenger));
@@ -288,7 +293,8 @@ public class ChallengerWebGUI {
         final StringBuilder html = new StringBuilder();
         html.append("<div style='clear:both'>");
         html.append("<p>Use the Descriptions of the challenges below to explore the API and solve the challenges." +
-                    " Remember to use the API documentation to see the format of POST requests.</p>");
+                    " Remember to use the API documentation to see the format of POST requests." +
+                    "</p>");
         html.append("</div>");
         return html.toString();
     }

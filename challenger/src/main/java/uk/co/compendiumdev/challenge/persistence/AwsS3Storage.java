@@ -58,7 +58,7 @@ public class AwsS3Storage implements ChallengerPersistenceMechanism {
         } catch (Exception e) {
 
             logger.error("Error storing data to bucket for guid: {}", data.getXChallenger(), e);
-            return new PersistenceResponse().withSuccess(false).withErrorMessage(e.getMessage());
+            return new PersistenceResponse().withSuccess(false).withErrorMessage("Error storing data to S3");
         }
     }
 
@@ -95,7 +95,7 @@ public class AwsS3Storage implements ChallengerPersistenceMechanism {
             logger.error("Error Reading Challenge Status From S3: {}", guid, e);
             return new PersistenceResponse().
                     withSuccess(false).
-                    withErrorMessage(e.getMessage());
+                    withErrorMessage("Error Reading Challenges Status from S3");
         }
     }
 

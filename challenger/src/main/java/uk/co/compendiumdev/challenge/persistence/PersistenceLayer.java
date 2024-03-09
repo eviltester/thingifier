@@ -18,14 +18,6 @@ public class PersistenceLayer {
     boolean allowSaveToS3 = false;
     boolean allowLoadFromS3 = false;
 
-    public void setToCloud() {
-        storeOn = PersistenceLayer.StorageType.CLOUD;
-    }
-
-    public void switchOffPersistence() {
-        storeOn=StorageType.NONE;
-    }
-
     public PersistenceResponse tryToLoadChallenger(final Challengers challengers,
                                                   final String xChallengerGuid) {
 

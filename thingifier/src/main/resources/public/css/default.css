@@ -120,3 +120,8 @@ pre.json{
     font-family: sans-serif;
     font-size: 1.0rem;
 }
+
+.standoutblock{
+    background: aliceblue;
+    padding: 1em;
+}

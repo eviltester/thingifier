@@ -14,7 +14,7 @@ public class ChallengerConfig {
     }
 
     public void setToCloudPersistenceMode() {
-        persistenceLayer.setToCloud();
+        persistenceLayer = new PersistenceLayer(PersistenceLayer.StorageType.CLOUD);
     }
 
     public void setGuiToKeepSessionAlive() {
@@ -22,7 +22,7 @@ public class ChallengerConfig {
     }
 
     public void setToNoPersistenceMode() {
-        persistenceLayer.switchOffPersistence();
+        persistenceLayer = new PersistenceLayer(PersistenceLayer.StorageType.NONE);
     }
 
     public void enableAdminApi() {
