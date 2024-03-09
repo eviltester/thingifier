@@ -1,5 +1,6 @@
 package uk.co.compendiumdev.challenge.challengesrouting;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -8,12 +9,12 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import uk.co.compendiumdev.challenge.ChallengeMain;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
+import uk.co.compendiumdev.challenge.challengers.Challengers;
 import uk.co.compendiumdev.challenger.http.httpclient.HttpMessageSender;
 import uk.co.compendiumdev.challenger.http.httpclient.HttpResponseDetails;
 import uk.co.compendiumdev.sparkstart.Environment;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Stream;
 
 public class ChallengerTrackingRoutesTest {
@@ -23,11 +24,19 @@ public class ChallengerTrackingRoutesTest {
 
     @BeforeAll
     static void createHttp(){
+        Environment.stop();
+
         // this uses the Environment to startup the spark app to
         // issue http tests and test the routing in spark
-        http = new HttpMessageSender(Environment.getBaseUri());
+        // test this in multi user mode
+        http = new HttpMessageSender(Environment.getBaseUri(false));
         //challenger = Environment.getNewChallenger();
         challenger = ChallengeMain.getChallenger().getChallengers().createNewChallenger();
+    }
+
+    @AfterAll
+    static void tearDownEnv(){
+        Environment.stop();
     }
 
     @Test
@@ -124,7 +133,7 @@ public class ChallengerTrackingRoutesTest {
 
     }
 
-    static Stream simpleRoutingStatus(){
+    static Stream<Arguments> simpleRoutingStatus(){
         List<Arguments> args = new ArrayList<>();
 
         args.add(Arguments.of(405, "head", "/challenger"));
@@ -149,7 +158,7 @@ public class ChallengerTrackingRoutesTest {
         Assertions.assertEquals(statusCode, response.statusCode);
     }
 
-    static Stream simpleRoutingStatusSpecific(){
+    static Stream<Arguments> simpleRoutingStatusSpecific(){
         List<Arguments> args = new ArrayList<>();
 
         args.add(Arguments.of(200, "head", "/challenger"));
@@ -173,5 +182,38 @@ public class ChallengerTrackingRoutesTest {
                 http.send(url + "/" + challenger.getXChallenger(), verb);
 
         Assertions.assertEquals(statusCode, response.statusCode);
+    }
+
+
+    @Test
+    void canOnlyCreateACertainNumberOfChallengersPerIp(){
+        http.clearHeaders();
+
+        // invalidate any existing challengers by making them out of date
+        Challengers challengers = ChallengeMain.getChallenger().getChallengers();
+        Set<String> challengersGuids = challengers.getChallengerGuids();
+        for(String aGuid : challengersGuids){
+            ChallengerAuthData challenger = challengers.getChallenger(aGuid);
+            challenger.setAsExpired();
+        }
+
+        ChallengerAuthData challengerToResend = ChallengeMain.getChallenger().getChallengers().createNewChallenger();
+        challengerToResend.touch();
+
+
+        int challengersToCreate = 110; // 9 of these will be rejected
+        HttpResponseDetails response=null;
+
+        Map<String,String> headers = new HashMap<>();
+        headers.put("Content-type", "application/json");
+
+        while(challengersToCreate>0) {
+            challengerToResend.setXChallengerGUID(UUID.randomUUID().toString());
+            response = http.send("/challenger/" + challengerToResend.getXChallenger(), "put",  headers, challengerToResend.asJson());
+            challengersToCreate--;
+        }
+
+        Assertions.assertEquals(429, response.statusCode);
+        Assertions.assertEquals(101, ChallengeMain.getChallenger().getChallengers().getChallengerGuids().size());
     }
 }

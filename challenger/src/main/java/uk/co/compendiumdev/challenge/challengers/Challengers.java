@@ -25,7 +25,7 @@ public class Challengers {
     public ChallengerAuthData DEFAULT_PLAYER_DATA;
     PersistenceLayer persistenceLayer;
     private ThingifierApiConfig apiConfig;
-    private Collection<CHALLENGE> definedChallenges;
+    private final Collection<CHALLENGE> definedChallenges;
 
     public Challengers(EntityRelModel erModel, Collection<CHALLENGE> definedChallenges){
         authData = new ConcurrentHashMap<>();
@@ -54,7 +54,7 @@ public class Challengers {
     }
 
     public boolean inMemory(final String challengerGuid){
-        if(challengerGuid == null || challengerGuid.trim().length()==0) {
+        if(challengerGuid == null || challengerGuid.trim().isEmpty()) {
             return false;
         }
 
@@ -72,7 +72,7 @@ public class Challengers {
             return SINGLE_PLAYER;
         }
 
-        if(challengerGuid == null || challengerGuid.trim().length()==0) {
+        if(challengerGuid == null || challengerGuid.trim().isEmpty()) {
             return null;
         }
 
@@ -110,7 +110,7 @@ public class Challengers {
             return;
         }
 
-        List<String> deleteMe = new ArrayList();
+        List<String> deleteMe = new ArrayList<>();
         final long cutOffTime = System.currentTimeMillis();
         for(ChallengerAuthData data : authData.values()){
             if(data.expiresAt() < cutOffTime ){
@@ -175,5 +175,9 @@ public class Challengers {
 
     public void delete(String xChallenger) {
         authData.remove(xChallenger);
+    }
+
+    public Set<String> getChallengerGuids() {
+        return authData.keySet();
     }
 }

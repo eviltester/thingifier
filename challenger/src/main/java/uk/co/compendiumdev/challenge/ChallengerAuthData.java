@@ -120,7 +120,7 @@ public class ChallengerAuthData {
         }
 
         try {
-            xAuthToken = UUID.fromString(data.getXAuthToken()).toString();;
+            xAuthToken = UUID.fromString(data.getXAuthToken()).toString();
         }catch(Exception e){
             // could not convert to GUID so use the existing
         }
@@ -149,5 +149,9 @@ public class ChallengerAuthData {
         tree.getAsJsonObject().remove("expiresin");
         tree.getAsJsonObject().remove("state");
         return tree.toString();
+    }
+
+    public void setAsExpired() {
+        lastAccessed =  lastAccessed - expiresin - expiresin;
     }
 }

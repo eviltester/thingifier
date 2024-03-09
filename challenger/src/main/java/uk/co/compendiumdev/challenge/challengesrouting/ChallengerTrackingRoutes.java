@@ -1,7 +1,6 @@
 package uk.co.compendiumdev.challenge.challengesrouting;
 
 import com.google.gson.Gson;
-import spark.Filter;
 import spark.Route;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
@@ -10,17 +9,21 @@ import uk.co.compendiumdev.challenge.persistence.PersistenceLayer;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.ThingifierApiDefn;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponseAsJson;
+import uk.co.compendiumdev.thingifier.api.response.ApiResponseError;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingStatus;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingVerb;
 import uk.co.compendiumdev.thingifier.core.domain.instances.ERInstanceData;
 import uk.co.compendiumdev.thingifier.spark.SimpleRouteConfig;
 
-import java.util.UUID;
+import java.util.*;
 
 import static spark.Spark.*;
 
 public class ChallengerTrackingRoutes {
+
+    final int MAX_CHALLENGERS_PER_IP=100;
+
 
     public void configure(final Challengers challengers,
                           final boolean single_player_mode,
@@ -30,16 +33,16 @@ public class ChallengerTrackingRoutes {
                           ChallengeDefinitions challengeDefinitions){
 
 
+        ChallengerIpAddressTracker ipAddressTracker = new ChallengerIpAddressTracker(MAX_CHALLENGERS_PER_IP);
 
 
 
         Route getChallengerId = (request, result) -> {
-            String xChallengerGuid =null;
+
             ChallengerAuthData challenger=null;
+            String xChallengerGuid = request.params("id");
 
-            xChallengerGuid = request.params("id");
-
-            if(xChallengerGuid != null && xChallengerGuid.trim()!=""){
+            if(xChallengerGuid != null && !xChallengerGuid.trim().isEmpty()){
                 challenger = challengers.getChallenger(xChallengerGuid);
                 if(challenger!=null){
                     challenger.touch();
@@ -87,11 +90,10 @@ public class ChallengerTrackingRoutes {
 
         // endpoint to restore a saved challenger status from UI
         put("/challenger/:id", (request, result) -> {
-            String xChallengerGuid =null;
-            ChallengerAuthData challenger=null;
+            ChallengerAuthData challenger;
 
             // for which challenger?
-            xChallengerGuid = request.params("id");
+            String xChallengerGuid = request.params("id");
 
             if(xChallengerGuid==null){
                 result.status(400);
@@ -139,9 +141,23 @@ public class ChallengerTrackingRoutes {
             }
 
             // need to create a new challenger in memory with this state
+            // but first... have a limit on the number of challengers an IP address can create
+            challengers.purgeOldAuthData();
+            ipAddressTracker.purgeEmptyIpAddresses(challengers.getChallengerGuids());
+            if(ipAddressTracker.hasLimitBeenReachedFor(request.ip())){
+                result.status(429);
+                result.header("content-type", "application/json");
+                result.header("X-CHALLENGER", xChallengerGuid);
+                return ApiResponseError.asAppropriate(request.headers("accept"), "Attempted to create too many challengers, wait and try again later.");
+            }
 
             ChallengerAuthData newChallenger = new ChallengerAuthData(challengeDefinitions.getDefinedChallenges()).fromData(challenger, challengeDefinitions.getDefinedChallenges());
             challengers.put(newChallenger);
+
+            // track challenger against IP
+            ipAddressTracker.trackAgainstThisIp(request.ip(), xChallengerGuid);
+
+
             result.status(201);
             result.header("content-type", "application/json");
             result.header("X-CHALLENGER", xChallengerGuid);
@@ -181,7 +197,7 @@ public class ChallengerTrackingRoutes {
             }
 
             String xChallengerGuid = request.headers("X-CHALLENGER");
-            if(xChallengerGuid == null || xChallengerGuid.trim()==""){
+            if(xChallengerGuid == null || xChallengerGuid.trim().isEmpty()){
                 // create a new
                 final ChallengerAuthData challenger = challengers.createNewChallenger();
                 // create the database for the user
@@ -234,11 +250,10 @@ public class ChallengerTrackingRoutes {
                         .addPossibleStatuses(200,400,404));
 
         Route getChallengerDatabaseId = (request, result) -> {
-            String xChallengerGuid =null;
-            ChallengerAuthData challenger=null;
+            ChallengerAuthData challenger;
 
             // for which challenger?
-            xChallengerGuid = request.params("id");
+            String xChallengerGuid = request.params("id");
 
             if(xChallengerGuid==null){
                 result.status(400);
@@ -350,12 +365,9 @@ public class ChallengerTrackingRoutes {
                         null).addDocumentation("Restore a saved set of todos for a challenger matching the supplied X-CHALLENGER guid.")
                         .addPossibleStatuses(204,400));
 
-        // TODO: add option for some ip based limits on number of challenges associated with an IP
 
         // TODO: add a protected admin page with an environment variable protection as password
-
-
-
-
     }
+
+
 }
