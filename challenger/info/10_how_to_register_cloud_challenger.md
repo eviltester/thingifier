@@ -18,7 +18,7 @@ In my API testing tool. I will issue a POST request to `https://apichallenges.he
 POST https://apichallenges.herokuapp.com/challenger
 ~~~~~~~~
 
-And if I receive a `201` response then that means that I have created a challenger session and my data will be stored on the cloud.
+And if I receive a `201` response then that means that I have created a challenger session.
 
 - _View response_
 
@@ -31,7 +31,9 @@ Transfer-Encoding: chunked
 Server: Jetty(9.4.12.v20180830)
 ~~~~~~~~
 
-The data will be deleted periodically to keep the storage manageable. Probably every few weeks or so.
+The data will be deleted from memory periodically.
+
+Progress can be stored in the browser local storage, or use the API to save and restore progress at your convenience.
 
 ## Use the `X-CHALLENGER` header
 
@@ -65,6 +67,8 @@ When I do this, my GUID will also be stored in local storage.
 
 This makes it easier for me to remember and restore my session.
 
+The challenger progress and todo data can also be saved in local storage and loaded back into the system later using the UI or the API.
+
 ## Summary
 
 Basically to track my challenges in multi-user mode.
@@ -72,10 +76,11 @@ Basically to track my challenges in multi-user mode.
 - `POST /challenger`
 - use the `X-CHALLENGER` header in all requests
 - _visit https://apichallenges.herokuapp.com/gui/challenges/{guid}_
+- save/restore the challenger progress and data in local storage from the GUI buttons
 
 You don't have to do any of this if you run the application locally in single user mode. But we want to try and make it easy for as many people as possible to experiment without installing anything locally.
 
-The sessions on the cloud will be deleted periodically, so if you session can't be found, then just start as a new challenger.
+The sessions on the cloud will be deleted from memory when not used for 10 minutes.
 
 ---
 
@@ -85,7 +90,7 @@ The sessions on the cloud will be deleted periodically, so if you session can't 
 
 [youtu.be/XBsM9f9xrhI](https://youtu.be/XBsM9f9xrhI)
 
-The API Challenges application for helping you train and practice in Testing REST APIs requires creating a session for tracking challenges in multi user mode.
+The API Challenges application for helping you train and practice in Testing REST APIs requires creating a session for tracking challenges in multi-user mode.
 
 - `POST /challenger`
 - use the `X-CHALLENGER` header in all requests

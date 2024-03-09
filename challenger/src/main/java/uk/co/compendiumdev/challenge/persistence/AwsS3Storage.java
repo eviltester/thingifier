@@ -14,42 +14,42 @@ import java.io.*;
 
 public class AwsS3Storage implements ChallengerPersistenceMechanism {
 
+    private final boolean allowSave;
+    private final boolean allowLoad;
+    private final String bucketName;
+
     Logger logger = LoggerFactory.getLogger(AwsS3Storage.class);
     static AmazonS3 s3Client;
 
     // to work we need environment variables for
-    // AWSBUCKET
     // AWS_ACCESS_KEY_ID
     // AWS_SECRET_ACCESS_KEY
-    // AWS_ALLOW_SAVE
-    // AWS_ALLOW_LOAD
 
     // https://docs.aws.amazon.com/AmazonS3/latest/dev/RetrievingObjectUsingJava.html
     // https://docs.aws.amazon.com/AmazonS3/latest/dev/UploadObjSingleOpJava.html
 
 
-    // TODO: have a constructor to allow switching on and off load/saving through constructor - do not code the env variables in here.
+    public AwsS3Storage(boolean allowSave, boolean allowLoad, String awsBucket){
+        this.allowSave = allowSave;
+        this.allowLoad = allowLoad;
+        this.bucketName = awsBucket;
+    }
 
     @Override
     public PersistenceResponse saveChallengerStatus(final ChallengerAuthData data) {
 
-        // by default will not save to aws - need to add environmnet variable
-        String allow_save = System.getenv("AWS_ALLOW_SAVE");
-        if(allow_save==null || !allow_save.toLowerCase().trim().equals("true")){
-            return new PersistenceResponse().withSuccess(false);
+        // by default will not save to aws - need to add environment variable
+        if(!allowSave){
+            return new PersistenceResponse().withSuccess(false).withErrorMessage("AWS Configuration does not allow saving challenger status");
         }
-
 
         if(data==null){
             return new PersistenceResponse().withSuccess(false).withErrorMessage("no data provided");
         }
 
-        // TODO: make this a config class which we pass in via the constructor
-        String bucketName = System.getenv("AWSBUCKET");
 
         try{
             ensureClientExists();
-
 
             final String dataString = new Gson().toJson(data);
             // Upload a text string as a new object.
@@ -67,6 +67,9 @@ public class AwsS3Storage implements ChallengerPersistenceMechanism {
             return;
         }
 
+        // requires environment variables for
+        // AWS_ACCESS_KEY_ID
+        // AWS_SECRET_ACCESS_KEY
         s3Client = AmazonS3ClientBuilder.standard()
                 .withRegion(Regions.US_EAST_2)
                 .build();
@@ -77,12 +80,9 @@ public class AwsS3Storage implements ChallengerPersistenceMechanism {
     public PersistenceResponse loadChallengerStatus(final String guid) {
 
         // by default will not save from aws - need to add environment variable
-        String allow_load = System.getenv("AWS_ALLOW_LOAD");
-        if(allow_load==null || !allow_load.toLowerCase().trim().equals("true")){
-            return new PersistenceResponse().withSuccess(false);
+        if(!allowLoad){
+            return new PersistenceResponse().withSuccess(false).withErrorMessage("AWS Configuration does not allow loading challenger status");
         }
-
-        String bucketName = System.getenv("AWSBUCKET");
 
         try {
             ensureClientExists();
