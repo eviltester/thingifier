@@ -141,6 +141,7 @@ public class Challengers {
     }
 
     public void put(final ChallengerAuthData challenger) {
+        // todo: this should really check for single player mode and not just trust the GUID
         if(challenger.getXChallenger().contentEquals(SINGLE_PLAYER_GUID)){
             SINGLE_PLAYER = challenger; // we just loaded the single player session
         }else {
@@ -150,14 +151,18 @@ public class Challengers {
 
     public void persistChallengerState(final ChallengerAuthData challenger){
         if (persistenceLayer != null) {
-            persistenceLayer.saveChallengerStatus(challenger);
+           String databaseName = challenger.getXChallenger();
+            persistenceLayer.saveChallengerStatus(challenger, erModel.getInstanceData(databaseName));
         }
     }
 
     public void pass(final ChallengerAuthData challenger, final CHALLENGE challengeId) {
         if(challenger!=null) {
-            challenger.pass(challengeId);
-            persistChallengerState(challenger);
+            // todo: possibly only update challenge status if not already set
+            //if(!challenger.statusOfChallenge(challengeId)) {
+                challenger.pass(challengeId);
+                persistChallengerState(challenger);
+            //}
         }
     }
 

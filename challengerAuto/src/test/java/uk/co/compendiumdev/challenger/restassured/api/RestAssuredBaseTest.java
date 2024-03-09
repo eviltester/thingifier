@@ -24,7 +24,7 @@ public class RestAssuredBaseTest {
 
         //RestAssured.proxy("localhost",8888);
 
-        if(xChallenger==""){
+        if(xChallenger.isEmpty()){
 
             // because we are unit tests we are running in single player mode so delete the single player data
             try {

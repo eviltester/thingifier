@@ -3,6 +3,9 @@ package uk.co.compendiumdev.challenge.persistence;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.ChallengerState;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
+import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonPopulator;
+import uk.co.compendiumdev.thingifier.core.EntityRelModel;
+import uk.co.compendiumdev.thingifier.core.domain.instances.ERInstanceData;
 
 public class PersistenceLayer {
 
@@ -14,6 +17,8 @@ public class PersistenceLayer {
     // todo: add all active storage mechanisms in a list and store on all - switch it off by removing from list
 
     ChallengerPersistenceMechanism file = new ChallengerFileStorage();
+    DatabaseContentPersistenceMechanism dbfile = (DatabaseContentPersistenceMechanism)file;
+
     static ChallengerPersistenceMechanism aws;
     boolean allowSaveToS3 = false;
     boolean allowLoadFromS3 = false;
@@ -26,9 +31,23 @@ public class PersistenceLayer {
         if(response.isSuccess()){
             ChallengerAuthData challenger = challengers.createNewChallenger();
             challenger.fromData(response.getAuthData(), challengers.getDefinedChallenges());
+            if(xChallengerGuid.equals(Challengers.SINGLE_PLAYER_GUID)){
+                challenger.setXChallengerGUID(xChallengerGuid);
+            }
             challenger.touch();
             challenger.setState(ChallengerState.LOADED_FROM_PERSISTENCE);// refresh last accessed date
             challengers.put(challenger);
+
+            // did we also load the data?
+            if(!response.getDatabaseContents().isEmpty()){
+                String databaseName = challenger.getXChallenger();
+                challengers.getErModel().createInstanceDatabaseIfNotExisting(databaseName);
+
+                new JsonPopulator(response.getDatabaseContents()).populate(
+                        challengers.getErModel().getSchema(),
+                        challengers.getErModel().getInstanceData(databaseName)
+                );
+            }
         }
 
         return response;
@@ -56,10 +75,16 @@ public class PersistenceLayer {
         }
     }
 
-    public PersistenceResponse saveChallengerStatus(ChallengerAuthData data){
+    public PersistenceResponse saveChallengerStatus(ChallengerAuthData data, ERInstanceData instanceData){
 
         if(storeOn== StorageType.LOCAL){
-            return file.saveChallengerStatus(data);
+            PersistenceResponse fileStoreChallenger = file.saveChallengerStatus(data);
+            PersistenceResponse fileStoreDatabase = dbfile.saveDatabaseContent(data.getXChallenger(), instanceData);
+            return new PersistenceResponse().
+                    withSuccess(fileStoreChallenger.isSuccess() && fileStoreDatabase.isSuccess()).
+                    withErrorMessage(fileStoreChallenger.getErrorMessage() + fileStoreDatabase.getErrorMessage()).
+                    withDatabaseContents(fileStoreDatabase.getDatabaseContents()).
+                    withChallengerAuthData(fileStoreChallenger.getAuthData());
         }
 
         if(storeOn==StorageType.CLOUD && aws!=null){
@@ -74,7 +99,13 @@ public class PersistenceLayer {
     public PersistenceResponse loadChallengerStatus(String guid){
 
         if(storeOn== StorageType.LOCAL){
-            return file.loadChallengerStatus(guid);
+            PersistenceResponse fileStoreChallenger = file.loadChallengerStatus(guid);
+            PersistenceResponse fileStoreDatabase = dbfile.loadDatabaseContent(guid);
+            return new PersistenceResponse().
+                    withSuccess(fileStoreChallenger.isSuccess()). // only track challenger success && fileStoreDatabase.isSuccess()).
+                    withErrorMessage(fileStoreChallenger.getErrorMessage() + fileStoreDatabase.getErrorMessage()).
+                    withDatabaseContents(fileStoreDatabase.getDatabaseContents()).
+                    withChallengerAuthData(fileStoreChallenger.getAuthData());
         }
 
         if(storeOn==StorageType.CLOUD && aws!=null){

@@ -32,13 +32,8 @@ public class ChallengeMain {
         ChallengerConfig config = new ChallengerConfig();
 
         for (String arg : args) {
-            if (arg.toLowerCase().startsWith("-multiplayer")) {
-                logger.info("Running in multiplayer mode");
-                config.setToMultiPlayerMode();
-            }
-
-            // because I keep typing multiuser instead of multiplayer!
-            if (arg.toLowerCase().startsWith("-multiuser")) {
+            if (arg.toLowerCase().startsWith("-multiplayer") ||
+                arg.toLowerCase().startsWith("-multiuser")) {
                 logger.info("Running in multiplayer mode");
                 config.setToMultiPlayerMode();
             }
@@ -53,7 +48,9 @@ public class ChallengeMain {
                 config.setGuiToKeepSessionAlive();
             }
 
-            if (arg.toLowerCase().startsWith("-memory")) {
+            if (arg.toLowerCase().startsWith("-memory") ||
+                arg.toLowerCase().startsWith("-nostorage")
+            ) {
                 logger.info("Setting persistence mechanism to no persistence");
                 config.setToNoPersistenceMode();
             }

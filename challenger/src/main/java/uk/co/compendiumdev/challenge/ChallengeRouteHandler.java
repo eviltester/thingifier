@@ -44,7 +44,10 @@ public class ChallengeRouteHandler {
             challengers.setMultiPlayerMode();
         }
 
-        persistenceLayer.tryToLoadChallenger(challengers, challengers.SINGLE_PLAYER_GUID);
+        if(single_player_mode) {
+            // auto load any single player challenger details in single player mode
+            persistenceLayer.tryToLoadChallenger(challengers, challengers.SINGLE_PLAYER_GUID);
+        }
 
         challengers.setApiConfig(thingifier.apiConfig());
 

@@ -7,6 +7,9 @@ import spark.Spark;
 import uk.co.compendiumdev.challenge.ChallengeMain;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Environment {
 
     static Logger logger = LoggerFactory.getLogger(Port.class);
@@ -23,6 +26,10 @@ public class Environment {
     }
 
     public static String getBaseUri(boolean isSinglePlayerMode) {
+        return Environment.getBaseUri(isSinglePlayerMode, false);
+    }
+
+    public static String getBaseUri(boolean isSinglePlayerMode, boolean writeFiles) {
 
         // return environment if want to run externally
 //        if(true)
@@ -35,16 +42,20 @@ public class Environment {
             logger.info("App not running starting with single player mode == " + isSinglePlayerMode);
             //start it up
             Spark.port(4567);
-            String[] args;
+            List<String> args = new ArrayList<>();
 
             if (isSinglePlayerMode) {
-                args = "".split(",");
+                // setup an single player mode args here
             } else {
-                args = "-multiplayer".split(",");
+                // setup an multi player mode args here
+                args.add("-multiplayer");
             }
 
+            if(!writeFiles){
+               args.add("-nostorage");
+            }
 
-            ChallengeMain.main(args);
+            ChallengeMain.main(args.toArray(new String[0]));
             waitTillRunningStatus(true);
 
             logger.info("App running started with single player mode == " + ChallengeMain.getChallenger().isSinglePlayerMode());

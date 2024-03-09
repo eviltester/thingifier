@@ -22,6 +22,8 @@ public class MultiUserDefectsTest {
     @Test
     public void challengerNotLoadedWhenSkipCallToGetChallengers() throws IOException {
 
+        Environment.stop();
+
         //have challenger data predefined but not in memory
         // 2ce954c6-caa1-4299-85af-205a9d9f7867.data
         String notLoadedChallengerGUID = "2ce954c6-caa1-4299-85af-205a9d9f7867";
@@ -40,12 +42,14 @@ public class MultiUserDefectsTest {
 
         Files.copy(resourceFile.toPath(), dataFile.toPath());
 
-        final HttpMessageSender http = new HttpMessageSender(Environment.getBaseUri(false));
+        final HttpMessageSender http = new HttpMessageSender(Environment.getBaseUri(false, true));
         http.setHeader("X-CHALLENGER", notLoadedChallengerGUID);
         http.setHeader("Authorization", "basic YWRtaW46cGFzc3dvcmQ="); // admin:password
 
         final HttpResponseDetails response = http.send("/secret/token", "POST");
         Assertions.assertEquals(201, response.statusCode);
+
+        Environment.stop();
     }
 
     @Test

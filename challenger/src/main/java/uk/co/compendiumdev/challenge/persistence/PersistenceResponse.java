@@ -7,11 +7,13 @@ public class PersistenceResponse {
     private ChallengerAuthData authData;
     private boolean success;
     private String errorMessage;
+    private String databaseContents;
 
     public PersistenceResponse(){
         this.errorMessage="";
         this.success=true;
         this.authData=null;
+        this.databaseContents="";
     }
     public PersistenceResponse withSuccess(final boolean successStatus) {
         this.success=successStatus;
@@ -38,5 +40,14 @@ public class PersistenceResponse {
 
     public String getErrorMessage() {
         return this.errorMessage;
+    }
+
+    public PersistenceResponse withDatabaseContents(String jsonString) {
+        this.databaseContents = jsonString;
+        return this;
+    }
+
+    public String getDatabaseContents() {
+        return this.databaseContents;
     }
 }

@@ -57,7 +57,7 @@ public abstract class ChallengeCompleteTest{
         challengesOffset = getNumberOfChallengesToFail();
 
         if(!isEnvironmentSet){
-            Environment.getBaseUri(getIsSinglePlayerMode());
+            Environment.getBaseUri(getIsSinglePlayerMode(), true);
             isEnvironmentSet=true;
         }
 
@@ -74,7 +74,7 @@ public abstract class ChallengeCompleteTest{
         }
 
         if(http==null){
-            http = new HttpMessageSender(Environment.getBaseUri(getIsSinglePlayerMode()));
+            http = new HttpMessageSender(Environment.getBaseUri(getIsSinglePlayerMode(), true));
         }
     }
 
