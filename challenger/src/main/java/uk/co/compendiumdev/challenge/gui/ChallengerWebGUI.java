@@ -186,6 +186,8 @@ public class ChallengerWebGUI {
 
                     html.append("<div class='standoutblock'>");
                     html.append(String.format("<p><strong>Progress For Challenger ID %s</strong></p>", xChallenger));
+                    // keep challenge session alive when refresh
+                    challenger.touch();
                     html.append(showCurrentStatus());
                     html.append(showPreviousGuids());
                     html.append(inputAChallengeGuidScript());
