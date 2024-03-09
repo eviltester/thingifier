@@ -94,13 +94,26 @@ public class PersistenceLayer {
         //}
     }
 
-    public boolean willAutoSaveLoadChallengerStatusToPersistenceLayer(){
+    public boolean willAutoSaveChallengerStatusToPersistenceLayer() {
 
-        if(storeOn==StorageType.LOCAL){
+        if (storeOn == StorageType.LOCAL) {
             return true;
         }
 
-        if(storeOn==StorageType.CLOUD && allowSaveToS3){
+        if (storeOn == StorageType.CLOUD && allowSaveToS3) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public boolean willAutoLoadChallengerStatusFromPersistenceLayer() {
+
+        if (storeOn == StorageType.LOCAL) {
+            return true;
+        }
+
+        if (storeOn == StorageType.CLOUD && allowLoadFromS3) {
             return true;
         }
 

@@ -5,9 +5,7 @@ import org.slf4j.LoggerFactory;
 import uk.co.compendiumdev.challenge.CHALLENGE;
 import uk.co.compendiumdev.challenge.ChallengerConfig;
 import uk.co.compendiumdev.challenge.challenges.definitions.*;
-import uk.co.compendiumdev.challenge.persistence.PersistenceLayer;
 
-import javax.swing.text.html.Option;
 import java.util.*;
 
 public class ChallengeDefinitions {
@@ -177,7 +175,7 @@ public class ChallengeDefinitions {
         sections.add(restoreChallenger);
 
         // if persistence layer is set to cloud or file then the following apply
-        if(config.persistenceLayer.willAutoSaveLoadChallengerStatusToPersistenceLayer() && !config.single_player_mode) {
+        if(config.persistenceLayer.willAutoSaveChallengerStatusToPersistenceLayer() && !config.single_player_mode) {
             storeChallengeAs(CHALLENGE.GET_RESTORE_EXISTING_CHALLENGER, ChallengerChallenges.getRestoreExistingChallenger200(challengeOrder++), restoreChallenger);
             storeChallengeAs(CHALLENGE.POST_RESTORE_EXISTING_CHALLENGER, ChallengerChallenges.postRestoreExistingChallenger200(challengeOrder++), restoreChallenger);
         }
