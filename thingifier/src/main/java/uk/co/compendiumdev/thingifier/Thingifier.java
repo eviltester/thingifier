@@ -168,6 +168,7 @@ final public class Thingifier {
 
     public void setDataGenerator(DataPopulator dataPopulator) {
         this.dataPopulator = dataPopulator;
+        erm.setDataGenerator(dataPopulator);
     }
 
 
@@ -240,6 +241,8 @@ final public class Thingifier {
         return dataPopulator;
     }
 
+    // TODO: this is used in too many places, suggesting something went wrong with coding
+    // decision: when we create a challenger we always create and populate a database, no need to do it any other time - check that this is enforced and cut down on this usage
     public void ensureCreatedAndPopulatedInstanceDatabaseNamed(String databaseName) {
         if(getERmodel().createInstanceDatabaseIfNotExisting(databaseName)){
             // if we created it then populate it

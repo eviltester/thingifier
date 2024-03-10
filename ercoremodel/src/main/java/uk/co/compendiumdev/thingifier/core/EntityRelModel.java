@@ -1,5 +1,6 @@
 package uk.co.compendiumdev.thingifier.core;
 
+import uk.co.compendiumdev.thingifier.core.domain.datapopulator.DataPopulator;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.Cardinality;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.ERSchema;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
@@ -23,11 +24,13 @@ public class EntityRelModel {
     // e.g. key from a 'session', or 'custom' or 'default'
     private final Map<String, ERInstanceData> databases;
     private final ERSchema schema; // all the definitions
+    private DataPopulator dataPopulator;
 
     public EntityRelModel(){
         schema = new ERSchema();
         databases = new HashMap<String,ERInstanceData>();
         databases.put(DEFAULT_DATABASE_NAME, new ERInstanceData());
+        dataPopulator = null;
     }
 
     public EntityRelModel(final ERSchema schema, final ERInstanceData erInstanceData) {
@@ -144,5 +147,24 @@ public class EntityRelModel {
         return true;
     }
 
+    public boolean populateDatabase(String databaseKey){
+        if(!databases.containsKey(databaseKey)){
+            return false;
+        }
 
+        if(dataPopulator==null){
+            return false;
+        }
+
+        dataPopulator.populate(
+                getSchema(),
+                getInstanceData(databaseKey)
+        );
+
+        return true;
+    }
+
+    public void setDataGenerator(DataPopulator dataPopulator) {
+        this.dataPopulator = dataPopulator;
+    }
 }

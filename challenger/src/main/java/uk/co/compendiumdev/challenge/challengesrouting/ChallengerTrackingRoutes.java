@@ -34,6 +34,7 @@ public class ChallengerTrackingRoutes {
 
 
         // todo: control max challengers and ip address limiting dynamically through admin interface and via environment variables
+        // until then, leave this off by passing in false
         ChallengerIpAddressTracker ipAddressTracker = new ChallengerIpAddressTracker(MAX_CHALLENGERS_PER_IP, false);
 
 
@@ -47,6 +48,7 @@ public class ChallengerTrackingRoutes {
                 challenger = challengers.getChallenger(xChallengerGuid);
                 if(challenger!=null){
                     challenger.touch();
+                    thingifier.ensureCreatedAndPopulatedInstanceDatabaseNamed(challenger.getXChallenger());
                     result.status(200);
                     result.header("content-type", "application/json");
                     XChallengerHeader.setResultHeaderBasedOnChallenger(result,challenger);
@@ -152,8 +154,11 @@ public class ChallengerTrackingRoutes {
                 return ApiResponseError.asAppropriate(request.headers("accept"), "Attempted to create too many challengers, wait and try again later.");
             }
 
+
+            // create a challenger from the JSON and instantiate the database
             ChallengerAuthData newChallenger = new ChallengerAuthData(challengeDefinitions.getDefinedChallenges()).fromData(challenger, challengeDefinitions.getDefinedChallenges());
             challengers.put(newChallenger);
+            thingifier.ensureCreatedAndPopulatedInstanceDatabaseNamed(challenger.getXChallenger());
 
             // track challenger against IP
             ipAddressTracker.trackAgainstThisIp(request.ip(), xChallengerGuid);
@@ -199,7 +204,7 @@ public class ChallengerTrackingRoutes {
 
             String xChallengerGuid = request.headers("X-CHALLENGER");
             if(xChallengerGuid == null || xChallengerGuid.trim().isEmpty()){
-                // create a new
+                // create a new challenger with a database
                 final ChallengerAuthData challenger = challengers.createNewChallenger();
                 // create the database for the user
                 thingifier.ensureCreatedAndPopulatedInstanceDatabaseNamed(challenger.getXChallenger());
@@ -213,6 +218,7 @@ public class ChallengerTrackingRoutes {
                     // return 404, challenger ID not valid
                     result.status(404);
                 }else{
+                    // challenger already exists, ensure the database does
                     // create the database for the user
                     thingifier.ensureCreatedAndPopulatedInstanceDatabaseNamed(challenger.getXChallenger());
                     // if X-CHALLENGER header exists, and has a valid UUID, and UUID exists, then return 200

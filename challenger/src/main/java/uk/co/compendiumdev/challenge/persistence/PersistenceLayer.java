@@ -36,15 +36,18 @@ public class PersistenceLayer {
             challenger.setState(ChallengerState.LOADED_FROM_PERSISTENCE);// refresh last accessed date
             challengers.put(challenger);
 
-            // did we also load the data?
-            if(!response.getDatabaseContents().isEmpty()){
-                String databaseName = challenger.getXChallenger();
-                challengers.getErModel().createInstanceDatabaseIfNotExisting(databaseName);
+            String databaseName = challenger.getXChallenger();
+            challengers.getErModel().createInstanceDatabaseIfNotExisting(databaseName);
 
+            // did we also load the data? if so, populate the database from it
+            if(!response.getDatabaseContents().isEmpty()){
                 new JsonPopulator(response.getDatabaseContents()).populate(
                         challengers.getErModel().getSchema(),
                         challengers.getErModel().getInstanceData(databaseName)
                 );
+            }else{
+                // set the database to default values
+                challengers.getErModel().populateDatabase(databaseName);
             }
         }
 
