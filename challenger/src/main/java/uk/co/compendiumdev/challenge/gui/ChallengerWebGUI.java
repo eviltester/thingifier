@@ -296,6 +296,7 @@ public class ChallengerWebGUI {
         html.append("<div style='clear:both'>");
         html.append("<p>Use the Descriptions of the challenges below to explore the API and solve the challenges." +
                     " Remember to use the API documentation to see the format of POST requests." +
+                    " Progress, and the TODOs database state can be saved to, and restored from LocalStorage in the browser, or managed via the API." +
                     "</p>");
         html.append("</div>");
         return html.toString();
