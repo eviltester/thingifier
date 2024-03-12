@@ -1,0 +1,143 @@
+# apichallenges HttpYac Examples
+
+A literate approach to API Testing. It is tempting to view as 
+
+Since API Challenges can be run locally or online we can use different URL host domains to access it.
+
+
+- https://apichallenges.eviltester.com
+- http://localhost:4567
+
+
+I'll be testing against the cloud based version.
+
+/*
+
+Text in the .http file can be commented out like this to avoid interfering with the HTTP requests.
+
+But adding the ### to separate requests and documentation seems to work well enough.
+
+*/
+
+
+###
+
+@host=https://apichallenges.eviltester.com
+
+###
+
+GET /todos
+
+###
+
+## Create a Session
+
+We can create a session in the challenges by issuing a `POST` request.
+
+
+To see the console.info:
+
+- Help > Show All Commands (Ctrl + Shift + P)
+- Output: Show output channels...
+- httpyac - console
+
+
+Click the HttpYac icon on the left extensions bar to see history, variables etc.
+
+Or enable via:
+
+- Help > Show All Commands
+- View: show httpyac
+
+This will show the history, all variables, etc.
+
+A very useful feature is to click a request then use the command "HttpYac - Generate Code" by default this will generate a cURL command in a new editor window.
+
+NOTE: when you click on an item in the history tree it is automatically copied to the clipboard. e.g. useful for finding a header value.
+
+NOTE: if you double click an item from the history then the whole request/response loaded into an editor tab.
+
+
+###
+
+POST /challenger
+
+{{
+    exports.xChallenger=response.headers['x-challenger']
+}}
+
+
+###
+
+## TODOs
+
+To get the list of todos from the environment we can issue a `GET` request on the `/todos` endpoint.
+
+###
+# GET all todos
+GET /todos
+x-challenger: {{xChallenger}}
+
+?? status == 200
+
+{{
+    firstTodoId=response.parsedBody.todos[0].id
+    missingTodo = (response.parsedBody.todos.reduce(
+        function(prev, current) {
+            return (prev && prev.id > current.id)
+                     ? prev : current
+        }).id) + 1
+}}
+
+# GET the first todo from the response
+
+GET /todos/{{firstTodoId}}
+x-challenger: {{xChallenger}}
+
+?? status == 200
+
+# GET a todo that does not exist from the Get all todos response
+
+GET /todos/{{missingTodo}}
+x-challenger: {{xChallenger}}
+
+?? status == 404
+
+
+###
+# A `HEAD` request will return the headers that would be sent back from a `GET` request.
+
+HEAD /todos
+x-challenger: {{xChallenger}}
+
+?? status == 200
+
+GET /challenges
+x-challenger: {{xChallenger}}
+
+?? status == 200
+
+GET /todo
+x-challenger: {{xChallenger}}
+
+?? status == 404
+
+
+###
+# Save a session
+# 
+
+GET /challenger/{{xChallenger}}
+x-challenger: {{xChallenger}}
+
+?? status == 200
+
+>>! ./savedChallenger.json
+
+
+GET /challenger/database/{{xChallenger}}
+x-challenger: {{xChallenger}}
+
+?? status == 200
+
+>>! ./todosDatabase.json

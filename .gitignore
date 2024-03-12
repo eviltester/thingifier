@@ -13,3 +13,5 @@ buildNumber.properties
 *.data.txt
 /.idea/
 **/challengersessions/
+/docs/httpyac/savedChallenger.json
+/docs/httpyac/todosDatabase.json
