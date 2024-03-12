@@ -1,4 +1,4 @@
-# apichallenges HttpYac Examples
+Apichallenges HttpYac Examples
 
 A literate approach to API Testing. It is tempting to view as 
 
@@ -24,7 +24,7 @@ But adding the ### to separate requests and documentation seems to work well eno
 
 @host=https://apichallenges.eviltester.com
 
-###
+### @Description Example call to GET https://apichallenges.eviltester.com/todos because it uses the @host
 
 GET /todos
 
@@ -34,12 +34,13 @@ GET /todos
 
 We can create a session in the challenges by issuing a `POST` request.
 
-
 To see the console.info:
 
 - Help > Show All Commands (Ctrl + Shift + P)
 - Output: Show output channels...
 - httpyac - console
+
+This will easily show the state of any assertions e.g. `?? status == 200`
 
 
 Click the HttpYac icon on the left extensions bar to see history, variables etc.
@@ -58,8 +59,7 @@ NOTE: when you click on an item in the history tree it is automatically copied t
 NOTE: if you double click an item from the history then the whole request/response loaded into an editor tab.
 
 
-###
-
+### @Description Create a Challenger session with POST to reuse
 POST /challenger
 
 {{
@@ -74,7 +74,8 @@ POST /challenger
 To get the list of todos from the environment we can issue a `GET` request on the `/todos` endpoint.
 
 ###
-# GET all todos
+# @name get_all_todos
+# @Description GET all todos
 GET /todos
 x-challenger: {{xChallenger}}
 
@@ -87,16 +88,18 @@ x-challenger: {{xChallenger}}
             return (prev && prev.id > current.id)
                      ? prev : current
         }).id) + 1
+     allTodoIds = response.parsedBody.todos.map(todo => todo.id)
 }}
 
-# GET the first todo from the response
+###
+# @Description GET the first todo from the response
 
 GET /todos/{{firstTodoId}}
 x-challenger: {{xChallenger}}
 
 ?? status == 200
 
-# GET a todo that does not exist from the Get all todos response
+# @Description GET a todo that does not exist from the Get all todos response
 
 GET /todos/{{missingTodo}}
 x-challenger: {{xChallenger}}
@@ -105,7 +108,7 @@ x-challenger: {{xChallenger}}
 
 
 ###
-# A `HEAD` request will return the headers that would be sent back from a `GET` request.
+# @Description A `HEAD` request will return the headers that would be sent back from a `GET` request.
 
 HEAD /todos
 x-challenger: {{xChallenger}}
@@ -124,7 +127,7 @@ x-challenger: {{xChallenger}}
 
 
 ###
-# Save a session
+# @Description Save a session
 # 
 
 GET /challenger/{{xChallenger}}
@@ -141,3 +144,13 @@ x-challenger: {{xChallenger}}
 ?? status == 200
 
 >>! ./todosDatabase.json
+
+
+###
+# @Description Delete all todos
+# @forceref get_all_todos 
+# @loop for id of allTodoIds
+
+DELETE /todos/{{id}}
+x-challenger: {{xChallenger}}
+
