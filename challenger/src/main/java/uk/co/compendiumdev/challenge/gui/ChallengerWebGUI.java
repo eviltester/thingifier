@@ -241,7 +241,9 @@ public class ChallengerWebGUI {
         });
 
         after((request, response)->{
-            // if the internal hook thinks it might be a 404 then check for generic content
+
+            // TODO: this is currently a hacked in solution for experimenting, pull it out into classes and create state enum
+
             if(response.status()==404 && request.headers("accept").contains("html")){
                 logger.info("Double check that this is a 404");
                 // all html content that is parsed will be in content folder in resources so we don't need to add that in the url
@@ -257,6 +259,31 @@ public class ChallengerWebGUI {
                 if(inputStream==null) {
                     pageNotFoundHtmlResponse(response, "");
                 }else{
+
+
+                    String[] breadcrumbs = contentPath.split("/");
+                    StringBuilder bcHeader = new StringBuilder();
+                    bcHeader.append("\n");
+                    String bcPath ="";
+                    if(breadcrumbs.length>0){
+                        bcHeader.append("> ");
+                    }
+                    for(String bc : breadcrumbs){
+                        bcPath = bcPath + bc;
+                        if(!bc.isEmpty()) {
+                            if(contentPath.endsWith(bc)){
+                                bcHeader.append( bc );
+                            }else {
+                                bcHeader.append(String.format(" [%s](%s) > ", bc, bcPath));
+                            }
+                        }
+                        bcPath = bcPath + "/";
+                    }
+                    bcHeader.append("\n");
+
+
+
+
                     // parse this html and output
                     Parser parser = Parser.builder().build();
 
@@ -264,25 +291,47 @@ public class ChallengerWebGUI {
                     String line="";
 
                     List<String> mdheaders = new ArrayList<>();
+
                     StringBuilder mdcontent = new StringBuilder();
 
+                    mdcontent.append(bcHeader);
+
+                    String state = "EXPECTING_HEADER";
+
                     Boolean readingHeaders=false;
-                    Boolean readingContent = false;
+
                     while ((line = reader.readLine()) != null)   {
-                        if(line.equals("+++") && !readingHeaders){
-                            readingHeaders=true;
-                        }else{
-                            if(line.equals("+++") && readingHeaders){
-                                readingContent=true;
-                            }else{
-                                if(readingHeaders){
-                                    mdheaders.add(line);
-                                }
-                                if(readingContent){
-                                    mdcontent.append(line + "\n");
-                                }
-                            }
+
+                        if(line.equals("---") && state.equals("EXPECTING_HEADER")){
+                            state="READING_HEADER"; // start of headers
+                            continue;
                         }
+
+                        if(line.equals("---") && state.equals("READING_HEADER")){
+                            state="READING_CONTENT"; // end of headers
+                            continue;
+                        }
+
+                        if(line.contains(" = ") && state.equals("READING_HEADER")){
+                            mdheaders.add(line);
+                            continue;
+                        }
+
+                        if(state.equals("READING_HEADER") && line.trim().isEmpty()){
+                            // ignore empty lines in the header
+                            continue;
+                        }
+
+                        if(state.equals("READING_HEADER") && !line.trim().isEmpty()){
+                            // probably shouldn't be reading headers we found a non-empty line
+                            state="READING_CONTENT";
+                        }
+
+                        // process any macros
+                        line = processMacrosInContentLine(line);
+
+                        mdcontent.append(line + "\n");
+
                         // Print the content on the console
                         System.out.println (line);
                     }
@@ -316,6 +365,25 @@ public class ChallengerWebGUI {
             }
         });
 
+    }
+
+    private String processMacrosInContentLine(String line) {
+
+        if(!line.contains("{{<"))
+            return line;
+
+
+        String youTubeHtmlBlock = """
+<div class="video-container">
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/$1" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+</div>
+<div><p class="center-text"><a href="https://www.youtube.com/watch?v=$1" target="_blank">Watch on YouTube</a></p></div>
+
+        """;
+
+        line = line.replaceAll("\\{\\{<youtube-embed key=\"([a-zA-Z0-9_-]+)\">}}", youTubeHtmlBlock);
+
+        return line;
     }
 
     private InputStream getResourceAsStream(String fileName) {

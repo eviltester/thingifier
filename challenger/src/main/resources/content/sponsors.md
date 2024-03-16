@@ -1,6 +1,6 @@
-+++
+---
 title = Sponsors of API Challenges
-+++
+---
 
 # Support and Sponsorship
 
