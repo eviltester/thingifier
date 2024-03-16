@@ -88,7 +88,8 @@ x-challenger: {{xChallenger}}
             return (prev && prev.id > current.id)
                      ? prev : current
         }).id) + 1
-     allTodoIds = response.parsedBody.todos.map(todo => todo.id)
+    allTodosId= []
+    allTodoIds = response.parsedBody.todos.map(todo => todo.id)
 }}
 
 ###
@@ -147,6 +148,7 @@ x-challenger: {{xChallenger}}
 
 
 ###
+# @proxy http://127.0.0.1:8080
 # @Description Delete all todos
 # @forceref get_all_todos 
 # @loop for id of allTodoIds
@@ -154,3 +156,4 @@ x-challenger: {{xChallenger}}
 DELETE /todos/{{id}}
 x-challenger: {{xChallenger}}
 
+/* have not managed to get proxy working or forceref */

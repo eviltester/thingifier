@@ -1,7 +1,11 @@
 package uk.co.compendiumdev.challenge.gui;
 
+import org.commonmark.node.Node;
+import org.commonmark.parser.Parser;
+import org.commonmark.renderer.html.HtmlRenderer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import spark.Response;
 import uk.co.compendiumdev.challenge.CHALLENGE;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
@@ -11,10 +15,13 @@ import uk.co.compendiumdev.challenge.persistence.PersistenceResponse;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.htmlgui.DefaultGUIHTML;
 
+import java.io.*;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import static spark.Spark.after;
 import static spark.Spark.get;
 
 public class ChallengerWebGUI {
@@ -213,16 +220,8 @@ public class ChallengerWebGUI {
         });
 
         get("/gui/404", (request, result) -> {
-            result.status(404);
-            result.type("text/html");
-
-            StringBuilder html = new StringBuilder();
-            html.append(guiManagement.getPageStart("404 Not Found",""));
-            html.append(guiManagement.getMenuAsHTML());
-            html.append("<h1>Page Not Found</h1>");
-            html.append(guiManagement.getPageFooter());
-            html.append(guiManagement.getPageEnd());
-            return html.toString();
+            pageNotFoundHtmlResponse(result, "");
+            return "";
         });
 
         get("/gui/404/*", (request, result) -> {
@@ -237,16 +236,107 @@ public class ChallengerWebGUI {
                logger.error("No url to pretend to be on 404", e);
             }
 
-            StringBuilder html = new StringBuilder();
-            html.append(guiManagement.getPageStart("404 Not Found", ""));
-            html.append(guiManagement.getMenuAsHTML());
-            html.append("<h1>Page Not Found</h1>");
-            html.append("<script>window.history.pushState({id:\"404sim\"},\"\",\"/" + urltoshow + "\");</script>");
-            html.append(guiManagement.getPageFooter());
-            html.append(guiManagement.getPageEnd());
-            return html.toString();
+            pageNotFoundHtmlResponse(result,"<script>window.history.pushState({id:\"404sim\"},\"\",\"/" + urltoshow + "\");</script>");
+            return "";
         });
 
+        after((request, response)->{
+            // if the internal hook thinks it might be a 404 then check for generic content
+            if(response.status()==404 && request.headers("accept").contains("html")){
+                logger.info("Double check that this is a 404");
+                // all html content that is parsed will be in content folder in resources so we don't need to add that in the url
+                String contentFolder = "content";
+                ClassLoader classLoader = getClass().getClassLoader();
+                InputStream inputStream = classLoader.getResourceAsStream(contentFolder + request.pathInfo() + ".md");
+                if(inputStream==null) {
+                    pageNotFoundHtmlResponse(response, "");
+                }else{
+                    // parse this html and output
+                    Parser parser = Parser.builder().build();
+
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+                    String line="";
+
+                    List<String> mdheaders = new ArrayList<>();
+                    StringBuilder mdcontent = new StringBuilder();
+
+                    Boolean readingHeaders=false;
+                    Boolean readingContent = false;
+                    while ((line = reader.readLine()) != null)   {
+                        if(line.equals("+++") && !readingHeaders){
+                            readingHeaders=true;
+                        }else{
+                            if(line.equals("+++") && readingHeaders){
+                                readingContent=true;
+                            }else{
+                                if(readingHeaders){
+                                    mdheaders.add(line);
+                                }
+                                if(readingContent){
+                                    mdcontent.append(line + "\n");
+                                }
+                            }
+                        }
+                        // Print the content on the console
+                        System.out.println (line);
+                    }
+
+                    String markdownFromResource = mdcontent.toString();
+                    Node document = parser.parse(markdownFromResource);
+
+                    HtmlRenderer renderer = HtmlRenderer.builder().build();
+
+                    String pageTitle = "Page " + URLEncoder.encode(request.pathInfo(),
+                            java.nio.charset.StandardCharsets.UTF_8.toString());
+
+                    for(String aHeader : mdheaders){
+                        if(aHeader.startsWith("title = ")){
+                            pageTitle = aHeader.replace("title = " , "");
+                        }
+                    }
+
+                    StringBuilder html = new StringBuilder();
+                    html.append(guiManagement.getPageStart(pageTitle,""));
+                    html.append(guiManagement.getMenuAsHTML());
+                    html.append(renderer.render(document));
+                    html.append(guiManagement.getPageFooter());
+                    html.append(guiManagement.getPageEnd());
+
+                    response.body(html.toString());
+                    response.type("text/html");
+                    response.status(200);
+                }
+
+            }
+        });
+
+    }
+
+    private InputStream getResourceAsStream(String fileName) {
+
+        ClassLoader classLoader = getClass().getClassLoader();
+        InputStream inputStream = classLoader.getResourceAsStream(fileName);
+
+        // the stream holding the file content
+        if (inputStream == null) {
+            throw new IllegalArgumentException("file not found! " + fileName);
+        } else {
+            return inputStream;
+        }
+
+    }
+    private void pageNotFoundHtmlResponse(Response response, String bodyStringAppend) {
+        response.status(404);
+        response.type("text/html");
+        StringBuilder html = new StringBuilder();
+        html.append(guiManagement.getPageStart("404 Not Found",""));
+        html.append(guiManagement.getMenuAsHTML());
+        html.append("<h1>Page Not Found</h1>");
+        html.append(bodyStringAppend);
+        html.append(guiManagement.getPageFooter());
+        html.append(guiManagement.getPageEnd());
+        response.type("text/html");
+        response.body(html.toString());
     }
 
     private String showCurrentStatus() {

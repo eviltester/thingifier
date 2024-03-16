@@ -18,18 +18,24 @@
             <artifactId>thingifier</artifactId>
             <version>${thingifier.version}</version>
         </dependency>
+
         <!-- https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk -->
         <!-- experimental cloud storage of challenger sessions -->
         <!-- todo: split into two apps, one aws enabled, one with local persistance only -->
         <!-- 180 meg!
-
         -->
-
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-s3</artifactId>
             <version>1.11.825</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.commonmark</groupId>
+            <artifactId>commonmark</artifactId>
+            <version>0.21.0</version>
+        </dependency>
+
 
         <dependency>
             <groupId>org.junit.jupiter</groupId>
