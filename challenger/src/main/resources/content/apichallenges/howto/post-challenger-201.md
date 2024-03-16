@@ -1,5 +1,5 @@
 ---
-title = API Challenges Solution For - POST Challenger (201)
+title: API Challenges Solution For - POST Challenger (201)
 ---
 
 # POST Challenger 201 Solution

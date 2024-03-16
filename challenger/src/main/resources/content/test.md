@@ -1,5 +1,5 @@
 ---
-title = 123
+title: 123
 ---
 
 # Test

@@ -1,5 +1,5 @@
 ---
-title = API Challenges Documentation
+title: API Challenges Documentation
 ---
 
 # API Challenges

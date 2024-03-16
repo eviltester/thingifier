@@ -1,5 +1,5 @@
 ---
-title = API Challenges Solution Index
+title: API Challenges Solution Index
 ---
 
 # API Challenge Solutions

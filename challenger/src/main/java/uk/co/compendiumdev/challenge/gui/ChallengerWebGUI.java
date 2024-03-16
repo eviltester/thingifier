@@ -312,7 +312,7 @@ public class ChallengerWebGUI {
                             continue;
                         }
 
-                        if(line.contains(" = ") && state.equals("READING_HEADER")){
+                        if(line.contains(": ") && state.equals("READING_HEADER")){
                             mdheaders.add(line);
                             continue;
                         }
@@ -345,8 +345,8 @@ public class ChallengerWebGUI {
                             java.nio.charset.StandardCharsets.UTF_8.toString());
 
                     for(String aHeader : mdheaders){
-                        if(aHeader.startsWith("title = ")){
-                            pageTitle = aHeader.replace("title = " , "");
+                        if(aHeader.startsWith("title: ")){
+                            pageTitle = aHeader.replace("title: " , "");
                         }
                     }
 

@@ -1,5 +1,5 @@
 ---
-title = Learning Utilities and Resources
+title: Learning Utilities and Resources
 ---
 
 # Learning

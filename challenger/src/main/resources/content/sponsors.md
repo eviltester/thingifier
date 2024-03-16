@@ -1,5 +1,5 @@
 ---
-title = Sponsors of API Challenges
+title: Sponsors of API Challenges
 ---
 
 # Support and Sponsorship

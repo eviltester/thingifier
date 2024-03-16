@@ -1,5 +1,5 @@
 ---
-title = API Challenges Solution For - GET Challenges (200)
+title: API Challenges Solution For - GET Challenges (200)
 ---
 
 How to complete the challenge `GET /challenges 200`.

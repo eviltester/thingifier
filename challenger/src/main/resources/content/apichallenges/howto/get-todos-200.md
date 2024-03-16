@@ -1,5 +1,5 @@
 ---
-title = API Challenges Solution For - GET Todos (200)
+title: API Challenges Solution For - GET Todos (200)
 ---
 
 How to complete the challenge `GET /todos 200`.
