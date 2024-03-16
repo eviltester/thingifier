@@ -247,7 +247,13 @@ public class ChallengerWebGUI {
                 // all html content that is parsed will be in content folder in resources so we don't need to add that in the url
                 String contentFolder = "content";
                 ClassLoader classLoader = getClass().getClassLoader();
-                InputStream inputStream = classLoader.getResourceAsStream(contentFolder + request.pathInfo() + ".md");
+
+                String contentPath = request.pathInfo();
+                if(contentPath.endsWith(".html")){
+                    contentPath = contentPath.replace(".html", "");
+                }
+
+                InputStream inputStream = classLoader.getResourceAsStream(contentFolder + contentPath + ".md");
                 if(inputStream==null) {
                     pageNotFoundHtmlResponse(response, "");
                 }else{
