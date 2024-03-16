@@ -15,3 +15,6 @@ title: API Challenges Solution Index
 ## Get Challenges
 
 - [GET /todos (200)](/apichallenges/howto/get-todos-200)
+- [GET /todo (404)](/apichallenges/howto/get-todo-404)
+- [GET /todo id (200)](/apichallenges/howto/get-todos-id-200)
+- [GET /todos id (404)](/apichallenges/howto/get-todos-id-404)
