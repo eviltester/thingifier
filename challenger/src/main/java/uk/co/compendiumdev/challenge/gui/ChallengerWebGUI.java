@@ -244,7 +244,7 @@ public class ChallengerWebGUI {
 
             // TODO: this is currently a hacked in solution for experimenting, pull it out into classes and create state enum
 
-            if(response.status()==404 && request.headers("accept").contains("html")){
+            if(response.status()==404 && request.headers("accept")!=null && request.headers("accept").contains("html")){
                 logger.info("Double check that this is a 404");
                 // all html content that is parsed will be in content folder in resources so we don't need to add that in the url
                 String contentFolder = "content";

@@ -48,17 +48,11 @@ public class UiPagesAreReachableTest {
     }
 
     @Test
-    void simulated404Redirection(){
-
-        // we currently don't have 404 because of the way the app is constructed
-        // instead we should trap a 404 response and return a 307 redirecting to
-        // 404 page with the original url appended to allow javascript to render
-        // as if it was a 404 page
+    void receive404onMissingPage(){
 
         final HttpResponseDetails response = http.send("/bob", "get");
 
-        Assertions.assertEquals(307, response.statusCode);
-        Assertions.assertEquals("/gui/404/bob", response.getHeader("Location"));
+        Assertions.assertEquals(404, response.statusCode);
     }
 
     @Test
