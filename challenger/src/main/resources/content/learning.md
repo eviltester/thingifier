@@ -8,7 +8,7 @@ title: Learning Utilities and Resources
 
 The Mirror mode is a good way to test out your tooling and see the details of your requests without using a proxy.
 
-[Access the Mirror Mode Here](/mirror.html)
+[Learn About the Mirror Mode Here](/practice-modes/mirror)
 
 ## Simulation Mode
 
@@ -20,7 +20,7 @@ The simulator is stateless and does not track your usage, making it deterministi
 
 The simulator is a good place to get started because it will respond nicely... unless you mess up the request syntax.
 
-[Access the Simulator Here](/simulation.html)
+[Learn About the Simulator Here](/practice-modes/simulation)
 
 ## Automating and Testing a REST API Book
 
@@ -30,9 +30,14 @@ Buying the book helps support this web site and application.
 
 ## Challenge Tutorials
 
-All of the Challenges have solution tutorials that are available on the [EvilTester.com](https://eviltester.com) blog.
+The Challenges have solution tutorials. 
 
-[Read the API Challenges Posts](https://www.eviltester.com/categories/api-challenges/)
+These are available:
+
+- bundled into the app [API Challenge Solutions](/apichallenges/solutions)
+- and on the [EvilTester.com](https://www.eviltester.com/categories/api-challenges/) blog.
+
+[Read the API Challenge Solutions](/apichallenges/solutions)
 
 ## Open Source Workshops
 

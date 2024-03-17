@@ -16,8 +16,10 @@ import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.htmlgui.DefaultGUIHTML;
 
 import java.io.*;
+import java.lang.reflect.Array;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -43,7 +45,8 @@ public class ChallengerWebGUI {
         guiManagement.appendMenuItem("Challenges", "/gui/challenges");
         guiManagement.removeMenuItem("Home");
         guiManagement.prefixMenuItem("Home", "/");
-        guiManagement.appendMenuItem("Learning", "/learning.html");
+        guiManagement.appendMenuItem("API documentation","/docs");
+        guiManagement.appendMenuItem("Learning", "/learning");
 
         guiManagement.setHomePageContent("    <h2 id=\"challenges\">Challenges</h2>\n" +
                 "    <p>The challenges can be completed by issuing API requests to the API.</p>\n" +
@@ -261,28 +264,42 @@ public class ChallengerWebGUI {
                 }else{
 
 
-                    String[] breadcrumbs = contentPath.split("/");
+                    String[] breadcrumbs = Arrays.stream(
+                                                contentPath.split("/")).
+                                                filter(item -> item != null && !"".equals(item)
+                                                ).toArray(String[]::new);
+
                     StringBuilder bcHeader = new StringBuilder();
                     bcHeader.append("\n");
                     String bcPath ="";
+                    int linksInBreadcrumb=0;
                     if(breadcrumbs.length>0){
                         bcHeader.append("> ");
-                    }
-                    for(String bc : breadcrumbs){
-                        bcPath = bcPath + bc;
-                        if(!bc.isEmpty()) {
-                            if(contentPath.endsWith(bc)){
-                                bcHeader.append( bc );
-                            }else {
-                                // if there is an index file then show the breadcrumb
-                                if(getResourceAsStream(contentFolder + bcPath + ".md")!=null) {
-                                    bcHeader.append(String.format(" [%s](%s) > ", bc, bcPath));
+
+                        for(String bc : breadcrumbs){
+                            bcPath = bcPath + bc;
+                            if(!bc.isEmpty()) {
+                                if(contentPath.endsWith(bc)){
+                                    bcHeader.append( bc );
+                                }else {
+                                    // if there is an index file then show the breadcrumb
+                                    if(getResourceAsStream(contentFolder + "/" + bcPath + ".md")!=null) {
+                                        linksInBreadcrumb++;
+                                        bcHeader.append(String.format(" [%s](%s) > ", bc, "/" + bcPath));
+                                    }
                                 }
                             }
+                            bcPath = bcPath + "/";
                         }
-                        bcPath = bcPath + "/";
+                        bcHeader.append("\n");
                     }
-                    bcHeader.append("\n");
+
+                    if(linksInBreadcrumb==0){
+                        // do not output the breadcrumb
+                        bcHeader = new StringBuilder();
+                    }
+
+
 
 
 
@@ -356,6 +373,7 @@ public class ChallengerWebGUI {
                     StringBuilder html = new StringBuilder();
                     html.append(guiManagement.getPageStart(pageTitle,""));
                     html.append(guiManagement.getMenuAsHTML());
+                    html.append(dropDownMenuAsSummary());
                     html.append(renderer.render(document));
                     html.append(guiManagement.getPageFooter());
                     html.append(guiManagement.getPageEnd());
@@ -368,6 +386,22 @@ public class ChallengerWebGUI {
             }
         });
 
+    }
+
+    private String dropDownMenuAsSummary(){
+        return
+                """
+                <details>
+                  <summary>Learn About...</summary>
+                  <ol>
+                     <li><a href="/learning">How to Learn APIs</a></li>
+                     <li><a href="/practice-modes/mirror">Mirror Mode</a></li>
+                     <li><a href="/practice-modes/simulation">Simulation Mode</a></li>
+                     <li><a href="/apichallenges/solutions">Challenge Solutions</a></li>
+                     <li><a href="/sponsors">Our Sponsors</a></li>
+                  </ol>
+                </details>
+                """;
     }
 
     private String processMacrosInContentLine(String line) {
@@ -542,9 +576,13 @@ public class ChallengerWebGUI {
                 for(ChallengeHint hint : challenge.hints){
                     hintHtml = hintHtml + "<li>" + hint.hintText;
                     if(hint.hintLink!=null && hint.hintLink.length()>0){
+                        String target="target='_blank'";
+                        if(!hint.hintLink.startsWith("http")){
+                            target="";
+                        }
                         hintHtml = hintHtml +
-                                String.format(" <a href='%s' target='_blank'>Learn More</a>",
-                                        hint.hintLink);
+                                String.format(" <a href='%s' %s>Learn More</a>",
+                                        hint.hintLink, target);
                     }
                     hintHtml = hintHtml + "</li>";
                 }

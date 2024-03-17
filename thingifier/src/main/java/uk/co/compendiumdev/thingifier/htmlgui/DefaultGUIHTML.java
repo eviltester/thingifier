@@ -18,6 +18,12 @@ public class DefaultGUIHTML {
     }
 
     public void appendMenuItem(final String title, final String url) {
+        for(GuiMenuItem item : menuItems){
+            if(item.menuTitle.equals(title) || item.url.equals(url)){
+                // avoid adding duplicates
+                return;
+            }
+        }
         menuItems.add(new GuiMenuItem(title, url));
     }
 

@@ -29,6 +29,11 @@ public class ChallengeSolutionLink {
         if(linkData.isEmpty()){
             return linkText;
         }
-        return String.format("<a href='%s' target='_blank'>%s</a>",linkData, linkText);
+
+        String target="target='_blank'";
+        if(!linkData.startsWith("http")){
+            target="";
+        }
+        return String.format("<a href='%s' %s>%s</a>",linkData, target, linkText);
     }
 }

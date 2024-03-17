@@ -100,10 +100,10 @@ public class UiPagesAreReachableTest {
         args.add(Arguments.of(200, "Challenges", "/gui/challenges/unkownchallenger"));
 
         // Additional Pages
-        args.add(Arguments.of(200, "Learning Utilities and Resources", "/learning.html"));
+        args.add(Arguments.of(200, "Learning Utilities and Resources", "/learning"));
         args.add(Arguments.of(200, "API Documentation", "/docs"));
-        args.add(Arguments.of(200, "HTTP Request Mirror", "/mirror.html"));
-        args.add(Arguments.of(200, "Simulation Mode", "/simulation.html"));
+        args.add(Arguments.of(200, "API Challenges Mirror Mode", "/practice-modes/mirror"));
+        args.add(Arguments.of(200, "API Challenges Simulation Mode", "/practice-modes/simulation"));
         return args.stream();
     }
 

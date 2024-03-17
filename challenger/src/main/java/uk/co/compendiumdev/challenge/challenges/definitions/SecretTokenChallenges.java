@@ -12,7 +12,7 @@ public class SecretTokenChallenges {
                 "Issue a POST request on the `/secret/token` end point and receive 401 when Basic auth username/password is not admin/password");
 
         aChallenge.addHint("Remember to add your X-CHALLENGER guid header");
-        aChallenge.addSolutionLink("Read Solution", "HREF","https://www.eviltester.com/apichallenges/howto/29-authentication-post-secret-token/");
+        aChallenge.addSolutionLink("Read Solution", "HREF","/apichallenges/solutions/authentication/post-secret-401");
         aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "RSQGADU3SLA");
         return aChallenge;
     }
@@ -25,7 +25,7 @@ public class SecretTokenChallenges {
                 "Issue a POST request on the `/secret/token` end point and receive 201 when Basic auth username/password is admin/password");
 
         aChallenge.addHint("Remember to add your X-CHALLENGER guid header");
-        aChallenge.addSolutionLink("Read Solution", "HREF","https://www.eviltester.com/apichallenges/howto/30-authentication-post-secret-token-201/");
+        aChallenge.addSolutionLink("Read Solution", "HREF","/apichallenges/solutions/authentication/post-secret-201");
         aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "J2GQiuEfHkI");
         return aChallenge;
     }
@@ -39,7 +39,7 @@ public class SecretTokenChallenges {
                 "Issue a GET request on the `/secret/note` end point and receive 403 when X-AUTH-TOKEN does not match a valid token");
 
         aChallenge.addHint("Remember to add your X-CHALLENGER guid header");
-        aChallenge.addSolutionLink("Read Solution", "HREF","https://www.eviltester.com/apichallenges/howto/31-secret-note-forbidden-403/");
+        aChallenge.addSolutionLink("Read Solution", "HREF","/apichallenges/solutions/authorization/get-secret-note-403");
         aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "77mnUQezdas");
         return aChallenge;
     }
@@ -52,7 +52,7 @@ public class SecretTokenChallenges {
                 "Issue a GET request on the `/secret/note` end point and receive 401 when no X-AUTH-TOKEN header present");
 
         aChallenge.addHint("Remember to add your X-CHALLENGER guid header");
-        aChallenge.addSolutionLink("Read Solution", "HREF","https://www.eviltester.com/apichallenges/howto/32-secret-note-401-unauthorized/");
+        aChallenge.addSolutionLink("Read Solution", "HREF","/apichallenges/solutions/authorization/get-secret-note-401");
         aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "__uZlQZ48io");
         return aChallenge;
     }
@@ -65,7 +65,7 @@ public class SecretTokenChallenges {
                 "Issue a GET request on the `/secret/note` end point receive 200 when valid X-AUTH-TOKEN used - response body should contain the note");
 
         aChallenge.addHint("Remember to add your X-CHALLENGER guid header");
-        aChallenge.addSolutionLink("Read Solution", "HREF","https://www.eviltester.com/apichallenges/howto/33-authorized-get-secret-note-200/");
+        aChallenge.addSolutionLink("Read Solution", "HREF","/apichallenges/solutions/authorization/get-secret-note-200");
         aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "2uRpzr2OmEY");
         return aChallenge;
     }
@@ -78,7 +78,7 @@ public class SecretTokenChallenges {
                 "Issue a POST request on the `/secret/note` end point with a note payload e.g. {\"note\":\"my note\"} and receive 200 when valid X-AUTH-TOKEN used. Note is maximum length 100 chars and will be truncated when stored.");
 
         aChallenge.addHint("Remember to add your X-CHALLENGER guid header");
-        aChallenge.addSolutionLink("Read Solution", "HREF","https://www.eviltester.com/apichallenges/howto/34-post-amend-secret-note-200/");
+        aChallenge.addSolutionLink("Read Solution", "HREF","/apichallenges/solutions/authorization/post-secret-note-200");
         aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "A9T9yjzEOEE");
         return aChallenge;
     }
@@ -91,7 +91,7 @@ public class SecretTokenChallenges {
                 "Issue a POST request on the `/secret/note` end point with a note payload {\"note\":\"my note\"} and receive 401 when no X-AUTH-TOKEN present");
 
         aChallenge.addHint("Remember to add your X-CHALLENGER guid header");
-        aChallenge.addSolutionLink("Read Solution", "HREF","https://www.eviltester.com/apichallenges/howto/35-36-post-unauthorised-401-403/");
+        aChallenge.addSolutionLink("Read Solution", "HREF","/apichallenges/solutions/authorization/post-secret-note-401-403");
         aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "76U5TEvLzLI");
         return aChallenge;
     }
@@ -104,7 +104,7 @@ public class SecretTokenChallenges {
                 "Issue a POST request on the `/secret/note` end point with a note payload {\"note\":\"my note\"} and receive 403 when X-AUTH-TOKEN does not match a valid token");
 
         aChallenge.addHint("Remember to add your X-CHALLENGER guid header");
-        aChallenge.addSolutionLink("Read Solution", "HREF","https://www.eviltester.com/apichallenges/howto/35-36-post-unauthorised-401-403/");
+        aChallenge.addSolutionLink("Read Solution", "HREF","/apichallenges/solutions/authorization/post-secret-note-401-403");
         aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "76U5TEvLzLI");
         return aChallenge;
     }
@@ -117,7 +117,7 @@ public class SecretTokenChallenges {
                 "Issue a GET request on the `/secret/note` end point receive 200 when using the X-AUTH-TOKEN value as an Authorization Bearer token - response body should contain the note");
 
         aChallenge.addHint("Remember to add your X-CHALLENGER guid header");
-        aChallenge.addSolutionLink("Read Solution", "HREF","https://www.eviltester.com/apichallenges/howto/37-38-bearer-token-access/");
+        aChallenge.addSolutionLink("Read Solution", "HREF","/apichallenges/solutions/authorization/get-post-secret-note-bearer");
         aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "8GsMTZxEItw");
         return aChallenge;
     }
@@ -130,7 +130,7 @@ public class SecretTokenChallenges {
                 "Issue a POST request on the `/secret/note` end point with a note payload e.g. {\"note\":\"my note\"} and receive 200 when valid X-AUTH-TOKEN value used as an Authorization Bearer token. Status code 200 received. Note is maximum length 100 chars and will be truncated when stored.");
 
         aChallenge.addHint("Remember to add your X-CHALLENGER guid header");
-        aChallenge.addSolutionLink("Read Solution", "HREF","https://www.eviltester.com/apichallenges/howto/37-38-bearer-token-access/");
+        aChallenge.addSolutionLink("Read Solution", "HREF","/apichallenges/solutions/authorization/get-post-secret-note-bearer");
         aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "8GsMTZxEItw");
         return aChallenge;
     }

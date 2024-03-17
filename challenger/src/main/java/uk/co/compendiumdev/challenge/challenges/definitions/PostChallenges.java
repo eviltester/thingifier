@@ -16,7 +16,7 @@ public class PostChallenges {
                 "POST /todos (201)",
                 "Issue a POST request to successfully create a todo");
 
-        aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/post-todos-201");
+        aChallenge.addSolutionLink("Read Solution", "HREF", "/apichallenges/solutions/post-create/post-todos-201");
         aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "T0LFHwavsNA");
         return aChallenge;
     }
@@ -40,7 +40,7 @@ public class PostChallenges {
                 "POST /todos (400) doneStatus",
                 "Issue a POST request to create a todo but fail validation on the `doneStatus` field");
 
-        aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/post-todos-400");
+        aChallenge.addSolutionLink("Read Solution", "HREF", "/apichallenges/solutions/post-create/post-todos-400");
         aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "tlye5bQ72g0");
         return aChallenge;
     }
@@ -109,7 +109,7 @@ public class PostChallenges {
                 "Issue a POST request to successfully update a todo");
 
         aChallenge.addHint("Make sure you don't use {id} in the url, replace that with the id of a todo e.g. /todos/1");
-        aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/post-todos-id-200");
+        aChallenge.addSolutionLink("Read Solution", "HREF", "/apichallenges/solutions/post-update/post-todos-id-200");
         aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "feXdRpZ_tgs");
         return aChallenge;
     }
@@ -139,7 +139,7 @@ public class PostChallenges {
                 "POST /todos XML",
                 "Issue a POST request on the `/todos` end point to create a todo using Content-Type `application/xml`, and Accepting only XML ie. Accept header of `application/xml`");
 
-        aChallenge.addSolutionLink("Read Solution", "HREF","https://www.eviltester.com/apichallenges/howto/20-post-todos-xml/");
+        aChallenge.addSolutionLink("Read Solution", "HREF","/apichallenges/solutions/content-type-header/post-todos-xml");
         aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "2-KBYHwb7MM");
         return aChallenge;
     }
@@ -151,7 +151,7 @@ public class PostChallenges {
                 "POST /todos JSON",
                 "Issue a POST request on the `/todos` end point to create a todo using Content-Type `application/json`, and Accepting only JSON ie. Accept header of `application/json`");
 
-        aChallenge.addSolutionLink("Read Solution", "HREF","https://www.eviltester.com/apichallenges/howto/21-post-todos-json/");
+        aChallenge.addSolutionLink("Read Solution", "HREF","/apichallenges/solutions/content-type-header/post-todos-json");
         aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "VS9qIhgp51Q");
         return aChallenge;
     }
@@ -163,7 +163,7 @@ public class PostChallenges {
                 "POST /todos (415)",
                 "Issue a POST request on the `/todos` end point with an unsupported content type to generate a 415 status code");
 
-        aChallenge.addSolutionLink("Read Solution", "HREF","https://www.eviltester.com/apichallenges/howto/22-post-todos-unsupported-415/");
+        aChallenge.addSolutionLink("Read Solution", "HREF","/apichallenges/solutions/content-type-header/post-todos-415");
         aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "L8H-vkbXyr0");
         return aChallenge;
     }
@@ -180,7 +180,7 @@ public class PostChallenges {
                 "POST /todos XML to JSON",
                 "Issue a POST request on the `/todos` end point to create a todo using Content-Type `application/xml` but Accept `application/json`");
 
-        aChallenge.addSolutionLink("Read Solution", "HREF","https://www.eviltester.com/apichallenges/howto/23-post-xml-accept-json/");
+        aChallenge.addSolutionLink("Read Solution", "HREF","/apichallenges/solutions/mix-accept-content/post-xml-accept-json");
         aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "kfe7VtaV7u0");
         return aChallenge;
     }
@@ -192,7 +192,7 @@ public class PostChallenges {
                 "POST /todos JSON to XML",
                 "Issue a POST request on the `/todos` end point to create a todo using Content-Type `application/json` but Accept `application/xml`");
 
-        aChallenge.addSolutionLink("Read Solution", "HREF","https://www.eviltester.com/apichallenges/howto/24-post-json-accept-xml/");
+        aChallenge.addSolutionLink("Read Solution", "HREF","/apichallenges/solutions/mix-accept-content/post-json-accept-xml");
         aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "uw1Jq8t1em4");
         return aChallenge;
     }

@@ -10,7 +10,7 @@ public class HeadChallenges {
                 "HEAD /todos (200)",
                 "Issue a HEAD request on the `/todos` end point");
 
-        aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/head-todos-200");
+        aChallenge.addSolutionLink("Read Solution", "HREF", "/apichallenges/solutions/head/head-todos-200");
         aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "zKbytTelP84");        return aChallenge;
     }
 

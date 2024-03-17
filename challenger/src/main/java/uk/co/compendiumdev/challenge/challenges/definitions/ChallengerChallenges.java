@@ -12,7 +12,7 @@ public class ChallengerChallenges {
         );
         aChallenge.addHint("In multi-user mode, you need to create an X-CHALLENGER Session first", "/gui/multiuser.html");
         aChallenge.addSolutionLink("Send request using POST to /challenger endpoint. The response has an X-CHALLENGER header, add this header X-CHALLENGER and the GUID value to all future requests.","","");
-        aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/post-challenger-201");
+        aChallenge.addSolutionLink("Read Solution", "HREF", "/apichallenges/solutions/create-session/post-challenger-201");
         aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "tNGuZMQgHxw");
         return aChallenge;
     }
@@ -28,7 +28,7 @@ public class ChallengerChallenges {
         aChallenge.addHint("Remember to add the X-CHALLENGER header to track your progress", "");
         aChallenge.addHint("Add the guid in the URL as the last part of the path", "");
         aChallenge.addSolutionLink("GET /challenger/{guid} for a challenger previously saved in the persistence store", "", "");
-        //aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/post-challenger-201");
+        //aChallenge.addSolutionLink("Read Solution", "HREF", "/apichallenges/solutions/post-create/post-challenger-201");
         //aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "tNGuZMQgHxw");
         return aChallenge;
     }

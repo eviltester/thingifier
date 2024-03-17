@@ -13,7 +13,7 @@ public class DeleteChallenges {
         aChallenge.addHint("Make sure you don't use {id} in the url, replace that with the id of a todo e.g. /todos/1");
         aChallenge.addHint("Make sure a todo with the id exists prior to issuing the request");
         aChallenge.addHint("Check it was deleted by issuing a GET or HEAD on the /todos/{id}");
-        aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/delete-todos-id-200");
+        aChallenge.addSolutionLink("Read Solution", "HREF", "/apichallenges/solutions/delete/delete-todos-id-200");
         aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "6MXTkaXn9qU");
 
         return aChallenge;

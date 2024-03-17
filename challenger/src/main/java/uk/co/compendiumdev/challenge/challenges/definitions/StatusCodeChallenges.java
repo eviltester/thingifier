@@ -12,7 +12,7 @@ public class StatusCodeChallenges {
                 "DELETE /heartbeat (405)",
                 "Issue a DELETE request on the `/heartbeat` end point and receive 405 (Method Not Allowed)");
 
-        aChallenge.addSolutionLink("Read Solution", "HREF","https://www.eviltester.com/apichallenges/howto/25-26-27-28-status-codes-405-500-501-204/");
+        aChallenge.addSolutionLink("Read Solution", "HREF","/apichallenges/solutions/status-codes/status-codes-405-500-501-204");
         aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "SGfKVFdylVI");
         return aChallenge;
     }
@@ -24,7 +24,7 @@ public class StatusCodeChallenges {
                 "PATCH /heartbeat (500)",
                 "Issue a PATCH request on the `/heartbeat` end point and receive 500 (internal server error)");
 
-        aChallenge.addSolutionLink("Read Solution", "HREF","https://www.eviltester.com/apichallenges/howto/25-26-27-28-status-codes-405-500-501-204/");
+        aChallenge.addSolutionLink("Read Solution", "HREF","/apichallenges/solutions/status-codes/status-codes-405-500-501-204");
         aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "SGfKVFdylVI");
         return aChallenge;
     }
@@ -36,7 +36,7 @@ public class StatusCodeChallenges {
                 "TRACE /heartbeat (501)",
                 "Issue a TRACE request on the `/heartbeat` end point and receive 501 (Not Implemented)");
 
-        aChallenge.addSolutionLink("Read Solution", "HREF","https://www.eviltester.com/apichallenges/howto/25-26-27-28-status-codes-405-500-501-204/");
+        aChallenge.addSolutionLink("Read Solution", "HREF","/apichallenges/solutions/status-codes/status-codes-405-500-501-204");
         aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "SGfKVFdylVI");
         return aChallenge;
     }
@@ -48,7 +48,7 @@ public class StatusCodeChallenges {
                 "GET /heartbeat (204)",
                 "Issue a GET request on the `/heartbeat` end point and receive 204 when server is running");
 
-        aChallenge.addSolutionLink("Read Solution", "HREF","https://www.eviltester.com/apichallenges/howto/25-26-27-28-status-codes-405-500-501-204/");
+        aChallenge.addSolutionLink("Read Solution", "HREF","/apichallenges/solutions/status-codes/status-codes-405-500-501-204");
         aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "SGfKVFdylVI");
         return aChallenge;
     }
