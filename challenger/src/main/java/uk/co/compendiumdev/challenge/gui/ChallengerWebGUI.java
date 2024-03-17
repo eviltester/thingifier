@@ -274,7 +274,10 @@ public class ChallengerWebGUI {
                             if(contentPath.endsWith(bc)){
                                 bcHeader.append( bc );
                             }else {
-                                bcHeader.append(String.format(" [%s](%s) > ", bc, bcPath));
+                                // if there is an index file then show the breadcrumb
+                                if(getResourceAsStream(contentFolder + bcPath + ".md")!=null) {
+                                    bcHeader.append(String.format(" [%s](%s) > ", bc, bcPath));
+                                }
                             }
                         }
                         bcPath = bcPath + "/";
@@ -393,12 +396,13 @@ public class ChallengerWebGUI {
 
         // the stream holding the file content
         if (inputStream == null) {
-            throw new IllegalArgumentException("file not found! " + fileName);
+            logger.error("content file not found: " + fileName);
+            return null;
         } else {
             return inputStream;
         }
-
     }
+
     private void pageNotFoundHtmlResponse(Response response, String bodyStringAppend) {
         response.status(404);
         response.type("text/html");
