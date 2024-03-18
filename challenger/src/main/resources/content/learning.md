@@ -4,6 +4,14 @@ title: Learning Utilities and Resources
 
 # Learning
 
+## Tutorial And Reference Content
+
+Read through the Tutorial and Reference content to understand the basics of:
+
+- [Web Applications](/tutorials/web-basics)
+- [HTTP Basics](/tutorials/http-basics)
+- [HTTP Verbs and Methods](/tutorials/http-verbs)
+
 ## Mirror Mode
 
 The Mirror mode is a good way to test out your tooling and see the details of your requests without using a proxy.

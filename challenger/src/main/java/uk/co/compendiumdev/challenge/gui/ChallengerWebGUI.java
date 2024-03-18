@@ -1,5 +1,7 @@
 package uk.co.compendiumdev.challenge.gui;
 
+import org.commonmark.Extension;
+import org.commonmark.ext.gfm.tables.TablesExtension;
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
@@ -303,9 +305,9 @@ public class ChallengerWebGUI {
 
 
 
-
+                    List<Extension> extensions = Arrays.asList(TablesExtension.create());
                     // parse this html and output
-                    Parser parser = Parser.builder().build();
+                    Parser parser = Parser.builder().extensions(extensions).build();
 
                     BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
                     String line="";
@@ -317,8 +319,6 @@ public class ChallengerWebGUI {
                     mdcontent.append(bcHeader);
 
                     String state = "EXPECTING_HEADER";
-
-                    Boolean readingHeaders=false;
 
                     while ((line = reader.readLine()) != null)   {
 
@@ -353,13 +353,13 @@ public class ChallengerWebGUI {
                         mdcontent.append(line + "\n");
 
                         // Print the content on the console
-                        System.out.println (line);
+                        //System.out.println (line);
                     }
 
                     String markdownFromResource = mdcontent.toString();
                     Node document = parser.parse(markdownFromResource);
 
-                    HtmlRenderer renderer = HtmlRenderer.builder().build();
+                    HtmlRenderer renderer = HtmlRenderer.builder().extensions(extensions).build();
 
                     String pageTitle = "Page " + URLEncoder.encode(request.pathInfo(),
                             java.nio.charset.StandardCharsets.UTF_8.toString());
@@ -373,8 +373,16 @@ public class ChallengerWebGUI {
                     StringBuilder html = new StringBuilder();
                     html.append(guiManagement.getPageStart(pageTitle,""));
                     html.append(guiManagement.getMenuAsHTML());
+                    html.append("<style> .doc-columns{ display: grid; grid-template-columns: 20% 70%; grid-auto-flow: column; } </style>");
+                    html.append("<style> .left-column{ font-size: smaller; } </style>");
+                    html.append("<section class='doc-columns'>");
+                    html.append("<div class='left-column'>");
                     html.append(dropDownMenuAsSummary());
+                    html.append("</div>");
+                    html.append("<div class='right-column'>");
                     html.append(renderer.render(document));
+                    html.append("</div>");
+                    html.append("</section>");
                     html.append(guiManagement.getPageFooter());
                     html.append(guiManagement.getPageEnd());
 
@@ -391,16 +399,20 @@ public class ChallengerWebGUI {
     private String dropDownMenuAsSummary(){
         return
                 """
-                <details>
-                  <summary>Learn About...</summary>
-                  <ol>
+                  <ul>
+                    <li><a href="/apichallenges/solutions">Challenge Solutions</a></li>
                      <li><a href="/learning">How to Learn APIs</a></li>
+                     <li>Reference:
+                        <ul>
+                            <li><a href="/tutorials/web-basics">Web Applications</a></li>
+                            <li><a href="/tutorials/http-basics">HTTP Basics</a></li>
+                            <li><a href="/tutorials/http-verbs">HTTP Verbs</a></li>
+                        </ul>
+                     </li>
                      <li><a href="/practice-modes/mirror">Mirror Mode</a></li>
                      <li><a href="/practice-modes/simulation">Simulation Mode</a></li>
-                     <li><a href="/apichallenges/solutions">Challenge Solutions</a></li>
                      <li><a href="/sponsors">Our Sponsors</a></li>
-                  </ol>
-                </details>
+                  </ul>
                 """;
     }
 
@@ -427,6 +439,7 @@ public class ChallengerWebGUI {
 
         ClassLoader classLoader = getClass().getClassLoader();
         InputStream inputStream = classLoader.getResourceAsStream(fileName);
+
 
         // the stream holding the file content
         if (inputStream == null) {
