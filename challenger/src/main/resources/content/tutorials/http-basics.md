@@ -283,3 +283,57 @@ https://en.wikipedia.org/wiki/Query_string
 - Read the standards for the verbs and the status codes.
 - Projects often argue about interpretations.
 - Some of the standards are exact enough that it is possible to say "I observed X" it does not match the standard - include links and quotes to the standards.
+
+
+## HTTP Headers
+
+- Headers are `Key: value` pair attributes in the request
+- Headers are not counted as the payload
+- Headers help configure the response from the server and tell the server how to process this request
+- e.g. a `GET` request with an `accept: application/xml` header is asking the server to respond with the information in XML format
+
+
+### User-Agent Header
+
+- Often not sent when accessing an API
+- Marks request as coming from a browser
+
+~~~~~~~~
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)
+AppleWebKit/537.36 (KHTML, like Gecko)
+Chrome/60.0.3112.90 Safari/537.36
+~~~~~~~~
+
+---
+
+### Accept Header
+
+- Defines the payload types that the receiver will accept
+- If this was an API call it would likely return XML
+
+~~~~~~~~
+Accept: text/html,application/xhtml+xml,application/xml;
+q=0.9,image/webp,image/apng,*/*;q=0.8
+~~~~~~~~
+
+Common values:
+
+- `text/html`
+- `application/json`
+- `application/xml`
+
+---
+
+### Basic Auth Header
+
+- An application might use Basic Auth Authentication to control access to the API
+- `Authorization` Header
+
+e.g. `Authorization: Basic dXNlcjpwYXNzd29yZA==`
+
+`dXNlcjpwYXNzd29yZA==` is base64 encoded "user:password"
+
+see [base64decode.org](https://www.base64decode.org)
+
+- cURL you need to add the header
+- Postman & Insomnia use the Authorization and Auth tabs

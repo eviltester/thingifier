@@ -377,7 +377,7 @@ public class ChallengerWebGUI {
                     html.append("<style> .left-column{ font-size: smaller; } </style>");
                     html.append("<section class='doc-columns'>");
                     html.append("<div class='left-column'>");
-                    html.append(dropDownMenuAsSummary());
+                    html.append(renderer.render(parser.parse(dropDownMenuAsMarkdown())));
                     html.append("</div>");
                     html.append("<div class='right-column'>");
                     html.append(renderer.render(document));
@@ -413,6 +413,29 @@ public class ChallengerWebGUI {
                      <li><a href="/practice-modes/simulation">Simulation Mode</a></li>
                      <li><a href="/sponsors">Our Sponsors</a></li>
                   </ul>
+                """;
+    }
+
+    private String dropDownMenuAsMarkdown(){
+        return
+                """
+- [Challenge Solutions](/apichallenges/solutions)
+- [How to learn APIs](/learning)
+- Reference:
+   - [Web Applications](/tutorials/web-basics)
+   - [HTTP Basics](/tutorials/http-basics)
+   - [HTTP Verbs](/tutorials/http-verbs)
+   - [REST API Basics](/tutorials/rest-api-basics)
+   - [Testing APIs](/tutorials/testing-apis)
+   - [Summary](/tutorials/summary)
+- Practice Modes
+   - [Mirror Mode](/practice-modes/mirror)
+   - [Simulation Mode](/practice-modes/simulation)
+- Tools
+   - [Proxies](/tools/proxies)
+- Practice Sites
+   - [Swapi](/example-sites/swapi)
+- [Sponsors](/sponsors)
                 """;
     }
 

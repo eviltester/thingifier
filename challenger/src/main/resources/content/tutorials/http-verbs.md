@@ -58,8 +58,6 @@ accept: application/xml
 - usually used to create or amend data
 - browser will usually send a POST request when submitting a form
 
-Demo
-
 ---
 
 ### HTTP POST Verb Send Example
@@ -251,7 +249,7 @@ Server: Jetty(9.4.4.v20170414)
 
 ## HTTP OPTIONS Verb
 
-- [OPTIONS](https://tools.ietf.org/html/rfc7231#section-4.3.7) - verbs available on this url
+- [OPTIONS](https://tools.ietf.org/html/rfc7231#section-4.3.7) - shows the verbs available on this url
 - returns an `Allow` header describing the allowed HTTP Verbs
 
 ---

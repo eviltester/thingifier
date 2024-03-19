@@ -2,7 +2,7 @@
 title: Learning Utilities and Resources
 ---
 
-# Learning
+# Learning API Testing
 
 ## Tutorial And Reference Content
 
@@ -11,6 +11,19 @@ Read through the Tutorial and Reference content to understand the basics of:
 - [Web Applications](/tutorials/web-basics)
 - [HTTP Basics](/tutorials/http-basics)
 - [HTTP Verbs and Methods](/tutorials/http-verbs)
+- [REST API Basics](/tutorials/rest-api-basics)
+- [Testing APIs](/tutorials/testing-apis)
+- [Summary](/tutorials/summary)
+
+## Experiment with the API Challenges
+
+- [Read the API Challenges Documentation](/docs)
+- [Try the Challenges](/gui/challenges)
+- [Read the Solutions if you get stuck](/apichallenges/solutions)
+
+## Experiment with Other APIs
+
+- [Swapi](/example-sites/swapi)
 
 ## Mirror Mode
 
