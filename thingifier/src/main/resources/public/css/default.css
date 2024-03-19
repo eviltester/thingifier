@@ -49,6 +49,8 @@ h2{
 }
 .rootmenu{
     clear: both;
+    background-color: #dddddd;
+    text-align: center;
 }
 
 .footer{
