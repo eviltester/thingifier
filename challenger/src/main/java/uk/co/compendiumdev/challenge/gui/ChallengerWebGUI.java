@@ -373,8 +373,14 @@ public class ChallengerWebGUI {
                     StringBuilder html = new StringBuilder();
                     html.append(guiManagement.getPageStart(pageTitle,""));
                     html.append(guiManagement.getMenuAsHTML());
-                    html.append("<style> .doc-columns{ display: grid; grid-template-columns: 20% 70%; grid-auto-flow: column; } </style>");
-                    html.append("<style> .left-column{ font-size: smaller; } </style>");
+                    html.append("""
+                            <style>
+                            @media (min-width: 1000px) {
+                            .doc-columns{ display: grid; grid-template-columns: 20% 70%; grid-auto-flow: column; }
+                            .left-column{ font-size: smaller; }
+                            }
+                            </style>
+                            """);
                     html.append("<section class='doc-columns'>");
                     html.append("<div class='left-column'>");
                     html.append(renderer.render(parser.parse(dropDownMenuAsMarkdown())));
