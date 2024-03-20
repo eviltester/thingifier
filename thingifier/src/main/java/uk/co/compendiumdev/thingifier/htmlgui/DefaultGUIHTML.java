@@ -9,12 +9,15 @@ public class DefaultGUIHTML {
 
     private String homePageContent;
     private String customFooter;
+    private String customHeadContent;
+
     List<GuiMenuItem> menuItems;
 
     public DefaultGUIHTML(){
         menuItems = new ArrayList<>();
         this.homePageContent = "";
         this.customFooter = "";
+        this.customHeadContent = "";
     }
 
     public void appendMenuItem(final String title, final String url) {
@@ -25,6 +28,10 @@ public class DefaultGUIHTML {
             }
         }
         menuItems.add(new GuiMenuItem(title, url));
+    }
+
+    public void appendToCustomHeadContent(final String someContent){
+        customHeadContent = customHeadContent + "\n" + someContent;
     }
 
     public void prefixMenuItem(final String title, final String url) {
@@ -81,6 +88,7 @@ public class DefaultGUIHTML {
         if(headInject!=null) {
             html.append(headInject);
         }
+        html.append(customHeadContent);
         html.append("</head><body>");
         html.append("<div class='content'>");
         return html.toString();
