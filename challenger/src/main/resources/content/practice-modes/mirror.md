@@ -125,7 +125,7 @@ Only `options` and `head` respond differently... because `options` and `head` sh
 Useful for getting started and getting used to your tooling.
 
 
-## Why is this Mirror Mode Usefyl?
+## Why is this Mirror Mode Useful?
 
 The mirror mode is another way of seeing the 'true' request received.
 

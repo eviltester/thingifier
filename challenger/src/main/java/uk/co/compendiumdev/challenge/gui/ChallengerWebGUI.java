@@ -319,6 +319,7 @@ public class ChallengerWebGUI {
                     mdcontent.append(bcHeader);
 
                     String state = "EXPECTING_HEADER";
+                    Boolean addedToc = false;
 
                     while ((line = reader.readLine()) != null)   {
 
@@ -352,6 +353,12 @@ public class ChallengerWebGUI {
 
                         mdcontent.append(line + "\n");
 
+                        // inject table of contents
+                        if(line.startsWith("# ") && !addedToc){
+                            addedToc=true;
+                            mdcontent.append("\n<div id='toc'></div>\n");
+                        }
+
                         // Print the content on the console
                         //System.out.println (line);
                     }
@@ -371,7 +378,11 @@ public class ChallengerWebGUI {
                     }
 
                     StringBuilder html = new StringBuilder();
-                    html.append(guiManagement.getPageStart(pageTitle,""));
+                    html.append(guiManagement.getPageStart(pageTitle,
+                            """
+                    <script src='/js/toc.js'></script>
+                    <script src='/js/externalize-links.js'></script>
+                    """));
                     html.append(guiManagement.getMenuAsHTML());
                     html.append("""
                             <style>
