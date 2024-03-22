@@ -37,11 +37,11 @@ How to complete the challenge `GET /todos (200) ? filter` to create a todo item 
     },
 ```
 - we want to use the `doneStatus` attribute as a URL parameter
-- if you don't see any todos in the list with a `"doneStatus": true` then you will need to issue a `POST` request to create or amend a todo item. e.g. [POST todos 201](/apichallenges/howto/post-todos-201)
+- if you don't see any todos in the list with a `"doneStatus": true` then you will need to issue a `POST` request to create or amend a todo item. e.g. [challenge post secret 201](/apichallenges/solutions/authentication/post-secret-201)
 - Issue a `GET` request with a URL parameter `/todos?doneStatus=true`
 - The response status code should be `200` because the request is accepted
 - If you get a different response code, check the URL or headers of the message because you made have made a typo.
-- If you don't see any todos returned then you may need to create one e.g. [POST todos 201](/apichallenges/howto/post-todos-201)
+- If you don't see any todos returned then you may need to create one e.g. [challenge post secret 201](/apichallenges/solutions/authentication/post-secret-201)
 
 ## Example Request
 

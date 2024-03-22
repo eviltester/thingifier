@@ -307,7 +307,7 @@
       <priority>0.5</priority>
    </url>
    <url>
-      <loc>https://apichallenges.eviltester.com/apichallenges/howto/30-authentication-post-secret-token-201</loc>
+      <loc>https://apichallenges.eviltester.com/apichallenges/solutions/authentication/post-secret-201</loc>
       <lastmod>2024-03-22</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.5</priority>
@@ -319,7 +319,7 @@
       <priority>0.5</priority>
    </url>
    <url>
-      <loc>https://apichallenges.eviltester.com/apichallenges/howto/post-todos-201</loc>
+      <loc>https://apichallenges.eviltester.com/apichallenges/solutions/post-create/post-todos-201</loc>
       <lastmod>2024-03-22</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.5</priority>
