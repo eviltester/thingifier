@@ -1,0 +1,5 @@
+User-agent: *
+Disallow: /gui/entities
+Disallow: /gui/entities/*
+Disallow: /gui/instances
+Disallow: /gui/instances/*
