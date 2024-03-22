@@ -20,7 +20,7 @@ How to complete the challenge `HEAD /todos (200)`.
     - if running locally that would be
         - `http://localhost:4567/todos`
     - if running in the cloud that would be
-        - `https://apichallenges.herokuapp.com/todos`
+        - `https://apichallenges.eviltester.com/todos`
 - The request should have an `X-CHALLENGER` header to track challenge completion
 - The response status code should be `200` because the end point exists
 - Compare the response with the response from `GET /todos`
@@ -29,7 +29,7 @@ How to complete the challenge `HEAD /todos (200)`.
 
 ~~~~~~~~
 > HEAD /todos HTTP/1.1
-> Host: apichallenges.herokuapp.com
+> Host: apichallenges.eviltester.com
 > User-Agent: rest-client
 > X-CHALLENGER: x-challenger-guid
 > Accept: */*

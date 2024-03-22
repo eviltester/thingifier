@@ -10,12 +10,12 @@ And to do that...
 
 We need to make an API call to the `/challenger` uri.
 
-In my API testing tool. I will issue a POST request to `https://apichallenges.herokuapp.com/challenger`
+In my API testing tool. I will issue a POST request to `https://apichallenges.eviltester.com/challenger`
 
 - _Issue POST Request_
 
 ~~~~~~~~
-POST https://apichallenges.herokuapp.com/challenger
+POST https://apichallenges.eviltester.com/challenger
 ~~~~~~~~
 
 And if I receive a `201` response then that means that I have created a challenger session.
@@ -48,20 +48,20 @@ And I will add the `X-CHALLENGER` header with the session I was just allocated.
 - _Issue GET /challenges with `X-CHALLENGER` header_
 
 ~~~~~~~~~
-GET https://apichallenges.herokuapp.com/challenges
+GET https://apichallenges.eviltester.com/challenges
 ~~~~~~~~~
 
 ## See Status in the GUI
 
 I can see all the challenges in the GUI.
 
-- _visit https://apichallenges.herokuapp.com/gui/challenges_
+- _visit https://apichallenges.eviltester.com/gui/challenges_
 
 And if don't have a session then the GUI will tell me.
 
 I can visit the challenges status for my session.
 
-- _visit https://apichallenges.herokuapp.com/gui/challenges/{guid}_
+- _visit https://apichallenges.eviltester.com/gui/challenges/{guid}_
 
 When I do this, my GUID will also be stored in local storage.
 
@@ -75,7 +75,7 @@ Basically to track my challenges in multi-user mode.
 
 - `POST /challenger`
 - use the `X-CHALLENGER` header in all requests
-- _visit https://apichallenges.herokuapp.com/gui/challenges/{guid}_
+- _visit https://apichallenges.eviltester.com/gui/challenges/{guid}_
 - save/restore the challenger progress and data in local storage from the GUI buttons
 
 You don't have to do any of this if you run the application locally in single user mode. But we want to try and make it easy for as many people as possible to experiment without installing anything locally.
@@ -94,7 +94,7 @@ The API Challenges application for helping you train and practice in Testing RES
 
 - `POST /challenger`
 - use the `X-CHALLENGER` header in all requests
-- visit https://apichallenges.herokuapp.com/gui/challenges/{guid}
+- visit https://apichallenges.eviltester.com/gui/challenges/{guid}
 
 More information on the API Challenges can be found at:
 

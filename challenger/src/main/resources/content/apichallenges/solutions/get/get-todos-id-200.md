@@ -20,7 +20,7 @@ How to complete the challenge `GET /todos/id 200`.
     - if running locally that would be
         - `http://localhost:4567/todos/{id}`
     - if running in the cloud that would be
-        - `https://apichallenges.herokuapp.com/todos/{id}`
+        - `https://apichallenges.eviltester.com/todos/{id}`
 - The request should have an `X-CHALLENGER` header
 - The response status code should be `200`
 
@@ -28,7 +28,7 @@ How to complete the challenge `GET /todos/id 200`.
 
 ~~~~~~~~
 > GET /todos/79 HTTP/1.1
-> Host: apichallenges.herokuapp.com
+> Host: apichallenges.eviltester.com
 > User-Agent: rest-client
 > X-CHALLENGER: x-challenger-guid
 > Accept: */*

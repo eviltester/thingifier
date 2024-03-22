@@ -25,7 +25,7 @@ How to complete the challenge `GET /todos ANY (200)` to successfully GET all the
     - if running locally that endpoint would be
         - `http://localhost:4567/todos`
     - if running in the cloud that endpoint would be
-        - `https://apichallenges.herokuapp.com/todos`
+        - `https://apichallenges.eviltester.com/todos`
 - The request should have an `Accept` header specifying ANY format by using a value of `*/*`, our application defaults to JSON
 - The request should have an `X-CHALLENGER` header to track challenge completion
 - The response status code should be `200` when all the details are valid.
@@ -37,7 +37,7 @@ How to complete the challenge `GET /todos ANY (200)` to successfully GET all the
 
 ~~~~~~~~
 > GET /todos HTTP/1.1
-> Host: apichallenges.herokuapp.com
+> Host: apichallenges.eviltester.com
 > User-Agent: insomnia/2021.2.2
 > X-CHALLENGER: x-challenger-guid
 > Accept: */*

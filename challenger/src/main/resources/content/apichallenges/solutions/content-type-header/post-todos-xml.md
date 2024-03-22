@@ -29,13 +29,13 @@ For this challenge we issue a request with an accept header specifying XML and w
 ## Basic Instructions
 
 - First issue a `GET` request on "/todos" with an `accept` header of `application/xml` to see the format of a todo in XML format
-    - or read the documentation at [apichallenges.herokuapp.com/docs](https://apichallenges.herokuapp.com/docs)
+    - or read the documentation at [apichallenges.eviltester.com/docs](https://apichallenges.eviltester.com/docs)
     - copy a todo from the response to edit as payload for the `POST` message
 - Issue a `POST` request to end point "/todos"
     - if running locally that endpoint would be
         - `http://localhost:4567/todos`
     - if running in the cloud that endpoint would be
-        - `https://apichallenges.herokuapp.com/todos`
+        - `https://apichallenges.eviltester.com/todos`
 - The request should have an `Accept` header with the value `application/xml`
 - The request should have an `Content-Type` header with the value `application/xml`
 - Use the `todo` that you copied from the `GET` request, remembering to remove the `id` because when we create a todo, it will be issued with an `id` automatically
@@ -67,7 +67,7 @@ We only need to use the minimum details, but could add a description if we wante
 
 ~~~~~~~~
 > POST /todos HTTP/1.1
-> Host: apichallenges.herokuapp.com
+> Host: apichallenges.eviltester.com
 > User-Agent: rest-client
 > X-CHALLENGER: x-challenger-guid
 > Content-Type: application/xml

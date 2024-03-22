@@ -24,7 +24,7 @@ How to complete the challenge `OPTIONS /todos (200)` to successfully identify th
     - if running locally that endpoint would be
         - `http://localhost:4567/todos`
     - if running in the cloud that endpoint would be
-        - `https://apichallenges.herokuapp.com/todos`
+        - `https://apichallenges.eviltester.com/todos`
 - The request should have an `X-CHALLENGER` header to track challenge completion
 - The response status code should be `200` when all the details are valid.
 - Check the `allow` header in the response has valid values
@@ -39,7 +39,7 @@ As a set of follow on exercises:
 
 ~~~~~~~~
 > OPTIONS /todos HTTP/1.1
-> Host: apichallenges.herokuapp.com
+> Host: apichallenges.eviltester.com
 > User-Agent: insomnia/2020.3.3
 > X-CHALLENGER: x-challenger-guid
 > Accept: */*

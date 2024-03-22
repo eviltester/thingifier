@@ -19,7 +19,7 @@ How to complete the challenge `GET /todo 404`.
     - if running locally that would be
         - `http://localhost:4567/todo`
     - if running in the cloud that would be
-        - `https://apichallenges.herokuapp.com/todo`
+        - `https://apichallenges.eviltester.com/todo`
 - The request should have an `X-CHALLENGER` header
 - The response status code should be `404`
 
@@ -27,7 +27,7 @@ How to complete the challenge `GET /todo 404`.
 
 ~~~~~~~~
 > GET /todo HTTP/1.1
-> Host: apichallenges.herokuapp.com
+> Host: apichallenges.eviltester.com
 > User-Agent: rest-client
 > X-CHALLENGER: x-challenger-guid
 > Accept: */*

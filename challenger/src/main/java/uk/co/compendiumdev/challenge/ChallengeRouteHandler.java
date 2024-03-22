@@ -28,7 +28,7 @@ public class ChallengeRouteHandler {
         this.apiDefn = apiDefn;
         apiDefn.setThingifier(thingifier);
 
-        apiDefn.addServer("https://apichallenges.herokuapp.com", "heroku hosted version");
+        apiDefn.addServer("https://apichallenges.eviltester.com", "heroku hosted version");
         apiDefn.addServer("http://localhost:4567", "local execution");
         apiDefn.setVersion("1.0.0");
 

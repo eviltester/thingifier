@@ -25,7 +25,7 @@ When we issue a request with no accept header, we should receive the default fro
     - if running locally that endpoint would be
         - `http://localhost:4567/todos`
     - if running in the cloud that endpoint would be
-        - `https://apichallenges.herokuapp.com/todos`
+        - `https://apichallenges.eviltester.com/todos`
 - The request should not have an `Accept` header at all
 - The request should have an `X-CHALLENGER` header to track challenge completion
 - The response status code should be `200` when all the details are valid.
@@ -45,7 +45,7 @@ In Insomnia, right click on the [Send] button and Generate Client Code for cURL.
 
 ~~~~~~~~
 curl --request GET \
-  --url https://apichallenges.herokuapp.com/todos \
+  --url https://apichallenges.eviltester.com/todos \
   --header 'X-CHALLENGER: x-challenger-guid'
   --header 'Accept:'
   -v
@@ -61,7 +61,7 @@ Hints:
 
 ~~~~~~~~
 > GET /todos HTTP/1.1
-> Host: apichallenges.herokuapp.com
+> Host: apichallenges.eviltester.com
 > User-Agent: curl/7.64.1
 > X-CHALLENGER: x-challenger-guid
 ~~~~~~~~

@@ -26,7 +26,7 @@ For this challenge we issue a request with a `content-type` which is unsupported
     - if running locally that endpoint would be
         - `http://localhost:4567/todos`
     - if running in the cloud that endpoint would be
-        - `https://apichallenges.herokuapp.com/todos`
+        - `https://apichallenges.eviltester.com/todos`
 - The request should have an `Content-Type` header with an unsupported value e.g `bob`
 - add a valid payload, but it won't match the content type so doesn't matter, but adding a valid payload makes sure that the system is not ignoring the content type specified.
 - The request should have an `X-CHALLENGER` header to track challenge completion
@@ -42,7 +42,7 @@ Extras:
 
 ~~~~~~~~
 > POST /todos HTTP/1.1
-> Host: apichallenges.herokuapp.com
+> Host: apichallenges.eviltester.com
 > User-Agent: rest-client
 > X-CHALLENGER: x-challenger-guid
 > Content-Type: bob

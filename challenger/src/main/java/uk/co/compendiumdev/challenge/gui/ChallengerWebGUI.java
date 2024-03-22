@@ -572,7 +572,7 @@ public class ChallengerWebGUI {
             html.append("To restore a previously saved session progress from the server, issue an API request with the X-CHALLENGER header (note this will restore the completion state of challenges, but not the data you were using).<p>");
         }
         html.append("<p>Session state and current todo list can be stored to local storage, and later restored using the GUI buttons or via API.</p>");
-        html.append("<p>You can find more information about this on the <a href='multiuser.html'>Multi User Help Page</a><p>");
+        html.append("<p>You can find more information about this on the <a href='multiuser'>Multi User Help Page</a><p>");
         html.append("</div>");
         return html.toString();
     }

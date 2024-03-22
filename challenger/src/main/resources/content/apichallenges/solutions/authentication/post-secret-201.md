@@ -28,7 +28,7 @@ Most of the challenges simply require the correct payload, and an X-Challenger h
     - if running locally that endpoint would be
         - `http://localhost:4567/secret/token`
     - if running in the cloud that endpoint would be
-        - `https://apichallenges.herokuapp.com/secret/token`
+        - `https://apichallenges.eviltester.com/secret/token`
 - The verb should be a `POST`
 - Add a Basic Auth header by selecting "Basic" from the "Auth" tab and entering a username and password of admin/password i.e. use username "admin", password "password"
 - There should be no payload in the message
@@ -40,7 +40,7 @@ Most of the challenges simply require the correct payload, and an X-Challenger h
 
 ~~~~~~~~
 > POST /secret/token HTTP/1.1
-> Host: apichallenges.herokuapp.com
+> Host: apichallenges.eviltester.com
 > User-Agent: rest-client
 > X-CHALLENGER: x-challenger-guid
 > Authorization: Basic YWRtaW46cGFzc3dvcmQ=

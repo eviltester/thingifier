@@ -24,7 +24,7 @@ How to complete the challenge `GET /todos (200) ? filter` to create a todo item 
     - if running locally that would be
         - `http://localhost:4567/todos`
     - if running in the cloud that would be
-        - `https://apichallenges.herokuapp.com/todos`
+        - `https://apichallenges.eviltester.com/todos`
 - The request should have an `X-CHALLENGER` header to track challenge completion
 - Look at the returned format for todos
 
@@ -47,7 +47,7 @@ How to complete the challenge `GET /todos (200) ? filter` to create a todo item 
 
 ~~~~~~~~
 > GET /todos?doneStatus=true HTTP/1.1
-> Host: apichallenges.herokuapp.com
+> Host: apichallenges.eviltester.com
 > User-Agent: rest-client
 > X-CHALLENGER: x-challenger-guid
 > Accept: application/json

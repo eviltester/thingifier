@@ -25,7 +25,7 @@ How to complete the challenge `POST /todos/id (200)` to successfully update a to
     - if running locally that would be
         - `http://localhost:4567/todos/id`
     - if running in the cloud that would be
-        - `https://apichallenges.herokuapp.com/todos/id`
+        - `https://apichallenges.eviltester.com/todos/id`
 - The request should have an `X-CHALLENGER` header to track challenge completion
 - The `content-type` in the message should be `application/json` because we are sending a JSON payload
 - The Payload should have a partial set of todo details. e.g.
@@ -54,7 +54,7 @@ NOTE: if you haven't read the documentation and don't know what format to use th
 
 ~~~~~~~~
 > POST /todos/49 HTTP/1.1
-> Host: apichallenges.herokuapp.com
+> Host: apichallenges.eviltester.com
 > User-Agent: rest-client
 > X-CHALLENGER: x-challenger-guid
 > Content-Type: application/json

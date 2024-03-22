@@ -26,7 +26,7 @@ We can mix different accept and content-types so we can send payloads in one for
     - if running locally that endpoint would be
         - `http://localhost:4567/todos`
     - if running in the cloud that endpoint would be
-        - `https://apichallenges.herokuapp.com/todos`
+        - `https://apichallenges.eviltester.com/todos`
 - The request should have an `Content-Type` header of `application/json`
 - add a valid payload in JSON format to create a todo item e.g.
 
@@ -53,7 +53,7 @@ Extras:
 
 ~~~~~~~~
 > POST /todos HTTP/1.1
-> Host: apichallenges.herokuapp.com
+> Host: apichallenges.eviltester.com
 > User-Agent: rest-client
 > X-CHALLENGER: x-challenger-guid
 > Content-Type: application/json

@@ -40,7 +40,7 @@ curl --request POST \
     - if running locally that would be
         - 'http://localhost:4567/challenger' 
     - if running in the cloud that would be
-        - 'https://apichallenges.herokuapp.com/challenger' 
+        - 'https://apichallenges.eviltester.com/challenger' 
 - The response will have an `X-CHALLENGER` header
 - Use this in any future requests to track your progress
 - The `LOCATION` header has a url to access your challenge status through the GUI

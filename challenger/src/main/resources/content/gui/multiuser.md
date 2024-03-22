@@ -51,7 +51,7 @@ If you visit that url for this application then you should see the challenges fo
 e.g.
 
 ~~~~~~~~
-https://apichallenges.herokuapp.com/gui/challenges/9a32ef9f-0ebd-4b30-b975-314460bfd1d1
+https://apichallenges.eviltester.com/gui/challenges/9a32ef9f-0ebd-4b30-b975-314460bfd1d1
 ~~~~~~~~
 
 Then you should see the status of your challenges.
@@ -60,25 +60,25 @@ Then you should see the status of your challenges.
 
 ### How to Play Summary
 
-In multi user mode i.e. when using the `apichallenges.herokuapp.com` installation, you will need to create an `X-CHALLENGER` session. This session will be stored on the cloud so you can revisit it and continue your challenges later.
+In multi user mode i.e. when using the `apichallenges.eviltester.com` installation, you will need to create an `X-CHALLENGER` session. This session will be stored on the cloud so you can revisit it and continue your challenges later.
 
 _Old sessions will be deleted after a few days/weeks/months (really depends on how many people use the system)._
 
 To start a session:
 
-- issue a `POST` request to `https://apichallenges.herokuapp.com/`
+- issue a `POST` request to `https://apichallenges.eviltester.com/`
 - the response status code will be `201` if successful.
 - The response will contain an `X-CHALLENGER` header with a unique session value
 - Add this header to every request you make on the API, and challenge completion status will be stored against this session.
 
 To view the status of your session:
 
-- issue a `GET` request to `https://apichallenges.herokuapp.com/challenges`
+- issue a `GET` request to `https://apichallenges.eviltester.com/challenges`
 - the response will contain all the challenges and the status of the challenges for your session
 
 To view the status of your session in the GUI:
 
-- visit `https://apichallenges.herokuapp.com/gui/challenges/[unique-session-value]`
+- visit `https://apichallenges.eviltester.com/gui/challenges/[unique-session-value]`
 - where `[unique-session-value]` is the guid that you were issued as the `X-CHALLENGER` header
 
 
@@ -94,7 +94,7 @@ You can restore a session's progress, by using the same `X-CHALLENGER` header an
 
 If you view the challenges page:
 
-- [https://apichallenges.herokuapp.com/gui/challenges](https://apichallenges.herokuapp.com/gui/challenges)
+- [https://apichallenges.eviltester.com/gui/challenges](https://apichallenges.eviltester.com/gui/challenges)
 
 Then your challenger guid should have been stored in the browser local storage, to make it easier for you to find and restart your session.
 

@@ -22,7 +22,7 @@ How to complete the challenge `POST /todos (201)` to create a todo item in the a
     - if running locally that would be
         - `http://localhost:4567/todos`
     - if running in the cloud that would be
-        - `https://apichallenges.herokuapp.com/todos`
+        - `https://apichallenges.eviltester.com/todos`
 - The request should have an `X-CHALLENGER` header to track challenge completion
 - Use the format for the todo which you see in the `GET` response
 - Do not include an 'id' in the request because that is added automatically by the system
@@ -33,7 +33,7 @@ How to complete the challenge `POST /todos (201)` to create a todo item in the a
 
 ~~~~~~~~
 > POST /todos HTTP/1.1
-> Host: apichallenges.herokuapp.com
+> Host: apichallenges.eviltester.com
 > User-Agent: rest-client
 > X-CHALLENGER: x-challenger-guid
 > Content-Type: application/json

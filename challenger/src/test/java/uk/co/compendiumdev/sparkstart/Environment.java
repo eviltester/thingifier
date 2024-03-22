@@ -33,7 +33,7 @@ public class Environment {
 
         // return environment if want to run externally
 //        if(true)
-//            return "https://apichallenges.herokuapp.com";
+//            return "https://apichallenges.eviltester.com";
 
         logger.info("Checking app running");
         // if not running then start the spark

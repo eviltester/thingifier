@@ -27,7 +27,7 @@ How to complete the challenge `DELETE /todos/id (200)` to successfully delete a 
     - if running locally that endpoint would be
         - `http://localhost:4567/todos/id`
     - if running in the cloud that endpoint would be
-        - `https://apichallenges.herokuapp.com/todos/id`
+        - `https://apichallenges.eviltester.com/todos/id`
 - The request should have an `X-CHALLENGER` header to track challenge completion
 - The response status code should be `200` when all the details are valid and the todo exists.
 - To double check that the todo item was deleted, then you could issue a `GET` request on the todo directly and receive a `404` or issue a `GET` request on `/todos` and check it is not in the list of todos.
@@ -36,7 +36,7 @@ How to complete the challenge `DELETE /todos/id (200)` to successfully delete a 
 
 ~~~~~~~~
 > DELETE /todos/62 HTTP/1.1
-> Host: apichallenges.herokuapp.com
+> Host: apichallenges.eviltester.com
 > User-Agent: rest-client
 > X-CHALLENGER: x-challenger-guid
 > Accept: */*
