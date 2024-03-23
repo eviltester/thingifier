@@ -25,6 +25,7 @@ Deploy the challenger app full jar
     - https://dashboard.heroku.com/apps/apichallenges/activity
 - view the logs to watch release progress
     - https://dashboard.heroku.com/apps/apichallenges/logs
-- `heroku deploy:jar challenger/target/apichallenges.jar --app apichallenges`
+- cd challenger
+- `heroku deploy:jar target/apichallenges.jar --app apichallenges`
 - change ChallengerAuto to point to apichallenges.eviltester.com and run the tests
 - roll back on any issues
