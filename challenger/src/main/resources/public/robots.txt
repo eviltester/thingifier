@@ -3,3 +3,5 @@ Disallow: /gui/entities
 Disallow: /gui/entities/*
 Disallow: /gui/instances
 Disallow: /gui/instances/*
+Disallow: /gui/instance/*
+Disallow: /gui/challenges/*

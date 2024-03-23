@@ -12,12 +12,14 @@ public class DefaultGUIHTML {
     private String customHeadContent;
 
     List<GuiMenuItem> menuItems;
+    private String canonicalHostHttpUrl;
 
     public DefaultGUIHTML(){
         menuItems = new ArrayList<>();
         this.homePageContent = "";
         this.customFooter = "";
         this.customHeadContent = "";
+        this.canonicalHostHttpUrl = "";
     }
 
     public void appendMenuItem(final String title, final String url) {
@@ -65,6 +67,10 @@ public class DefaultGUIHTML {
         }
     }
 
+    public void setCanonicalHost(String url) {
+        canonicalHostHttpUrl = url;
+    }
+
     private class GuiMenuItem {
         public String menuTitle;
         public String url;
@@ -75,7 +81,7 @@ public class DefaultGUIHTML {
         }
     }
 
-    public String getPageStart(final String title, final String headInject){
+    public String getPageStart(final String title, final String headInject, final String canonical){
         StringBuilder html = new StringBuilder();
         html.append("<html><head>");
         html.append("<meta http-equiv='content-language' content='en-us'>");
@@ -87,6 +93,21 @@ public class DefaultGUIHTML {
         }
         if(headInject!=null) {
             html.append(headInject);
+        }
+        if(canonical!=null && !canonical.equals("")){
+            String useCanoncial = canonical;
+
+            if(canonicalHostHttpUrl!=null && !canonicalHostHttpUrl.equals("")){
+                if(canonical.startsWith("https:") || canonical.startsWith("http:")){
+                    // use the passed in canonical
+                }else{
+                    useCanoncial = canonicalHostHttpUrl + canonical;
+                }
+            }
+
+            if(useCanoncial!= null && !useCanoncial.equals("")){
+                html.append(" <link rel='canonical' href='%s'>".formatted(useCanoncial));
+            }
         }
         html.append(customHeadContent);
         html.append("</head><body>");

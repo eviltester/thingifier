@@ -50,11 +50,11 @@ public class RestApiDocumentationGenerator {
 
     public String getApiDocumentation(final ApiRoutingDefinition routingDefinitions,
                                       final List<RoutingDefinition> additionalRoutes,
-                                      final String urlPath) {
+                                      final String urlPath, String canonicalUrl) {
 
         StringBuilder output = new StringBuilder();
 
-        output.append(defaultGui.getPageStart("API Documentation", ""));
+        output.append(defaultGui.getPageStart("API Documentation", "", canonicalUrl));
         output.append(defaultGui.getMenuAsHTML());
 
 

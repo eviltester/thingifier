@@ -78,7 +78,10 @@ public class ChallengerWebGUI {
             result.status(200);
 
             StringBuilder html = new StringBuilder();
-            html.append(guiManagement.getPageStart("Challenges", "<script src='/js/challengerui.js'></script>"));
+            html.append(guiManagement.getPageStart(
+                    "Challenges",
+                "<script src='/js/challengerui.js'></script>",
+                "/gui/challenges"));
             html.append(guiManagement.getMenuAsHTML());
 
             // todo explain challenges - single user mode
@@ -128,7 +131,11 @@ public class ChallengerWebGUI {
             result.status(200);
 
             StringBuilder html = new StringBuilder();
-            html.append(guiManagement.getPageStart("Challenges", "<script src='/js/challengerui.js'></script>"));
+            html.append(guiManagement.getPageStart(
+                        "Challenges",
+                    "<script src='/js/challengerui.js'></script>",
+                    "/gui/challenges")
+            );
             html.append(guiManagement.getMenuAsHTML());
 
             html.append(playerChallengesIntro());
@@ -382,7 +389,8 @@ public class ChallengerWebGUI {
                             """
                     <script src='/js/toc.js'></script>
                     <script src='/js/externalize-links.js'></script>
-                    """));
+                    """, "https://apichallenges.eviltester.com"+contentPath));
+
                     html.append(guiManagement.getMenuAsHTML());
                     html.append("""
                             <style>
@@ -494,7 +502,7 @@ public class ChallengerWebGUI {
         response.status(404);
         response.type("text/html");
         StringBuilder html = new StringBuilder();
-        html.append(guiManagement.getPageStart("404 Not Found",""));
+        html.append(guiManagement.getPageStart("404 Not Found","", ""));
         html.append(guiManagement.getMenuAsHTML());
         html.append("<h1>Page Not Found</h1>");
         html.append(bodyStringAppend);

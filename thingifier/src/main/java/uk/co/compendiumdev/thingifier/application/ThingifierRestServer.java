@@ -141,7 +141,7 @@ public class ThingifierRestServer {
             response.type("text/html");
             response.status(200);
             return new RestApiDocumentationGenerator(thingifier, guiManagement).
-                    getApiDocumentation(routingDefinitions, apiDefn.getAdditionalRoutes(), this.urlPath);
+                    getApiDocumentation(routingDefinitions, apiDefn.getAdditionalRoutes(), this.urlPath, "/docs");
         });
 
         guiManagement.appendMenuItem("API documentation","/docs");

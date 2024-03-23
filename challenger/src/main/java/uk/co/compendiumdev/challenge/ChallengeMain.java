@@ -77,7 +77,7 @@ public class ChallengeMain {
         app.configureThingifierWithProfile();
 
         app.setupDefaultGui();
-
+        app.getGuiManagement().setCanonicalHost("https://apichallenges.eviltester.com");
         app.getGuiManagement().appendToCustomHeadContent(
 """
         <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png">
