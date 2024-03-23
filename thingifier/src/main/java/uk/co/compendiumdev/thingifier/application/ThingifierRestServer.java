@@ -135,7 +135,7 @@ public class ThingifierRestServer {
         ApiRoutingDefinition routingDefinitions = new ApiRoutingDefinitionGenerator(thingifier).generate();
 
 
-        // TODO: config to enable docs and configure the URL
+        // TODO: config to enable docs and configure the URL and add a meta tag for description and additional headers
         // / - default for documentation
         get("/docs", (request, response) -> {
             response.type("text/html");

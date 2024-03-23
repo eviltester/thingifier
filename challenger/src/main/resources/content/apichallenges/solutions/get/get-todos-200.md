@@ -1,5 +1,6 @@
 ---
 title: API Challenges Solution For - GET Todos (200)
+description: How to solve the API challenge and GET all the Todos
 ---
 
 How to complete the challenge `GET /todos 200`.
