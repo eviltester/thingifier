@@ -19,14 +19,15 @@ import uk.co.compendiumdev.thingifier.htmlgui.DefaultGUIHTML;
 
 import java.io.*;
 import java.lang.reflect.Array;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import static spark.Spark.after;
-import static spark.Spark.get;
+import static spark.Spark.*;
 
 public class ChallengerWebGUI {
 
@@ -72,6 +73,25 @@ public class ChallengerWebGUI {
 //            return "";
 //        });
 
+        // could redirect to eviltester.com if the canonical doesn't change the search indexing from heroku to eviltester
+//        before((request, response) -> {
+//
+//                    if (request.requestMethod().equals("GET")) {
+//                        if (request.url().startsWith("http://apichallenges.herokuapp.com") ||
+//                                request.url().startsWith("https://apichallenges.herokuapp.com")
+//                        ) {
+//                            // and it is a browser request
+//                            if (request.headers("accept").contains("text/html")) {
+//                                // then redirect
+//                                response.header("location", "https://apichallenges.eviltester.com" + request.uri());
+//                                halt(301);
+//                            }
+//                        } else {
+//                            System.out.println("nothing to see here");
+//                        }
+//                    }
+//                }
+//        );
 
         // single user / default session
         get("/gui/challenges", (request, result) -> {
