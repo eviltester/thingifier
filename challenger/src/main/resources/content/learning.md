@@ -16,6 +16,11 @@ Read through the Tutorial and Reference content to understand the basics of:
 - [Testing APIs](/tutorials/testing-apis)
 - [Summary](/tutorials/summary)
 
+## Download Some Tools
+
+- [HTTP/REST Clients](/tools/clients)
+- [HTTP Proxies](/tools/proxies)
+
 ## Experiment with the API Challenges
 
 - [Read the API Challenges Documentation](/docs)

@@ -488,6 +488,7 @@ public class ChallengerWebGUI {
    - [Mirror Mode](/practice-modes/mirror)
    - [Simulation Mode](/practice-modes/simulation)
 - Tools
+   - [REST/HTTP Clients](/tools/clients)
    - [Proxies](/tools/proxies)
 - Practice Sites
    - [Swapi](/example-sites/swapi)
