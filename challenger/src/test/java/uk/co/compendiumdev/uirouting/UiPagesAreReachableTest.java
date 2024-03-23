@@ -89,15 +89,15 @@ public class UiPagesAreReachableTest {
         List<Arguments> args = new ArrayList<>();
 
         // home page
-        args.add(Arguments.of(200, "The API Challenges", ""));
-        args.add(Arguments.of(200, "The API Challenges", "/"));
+        args.add(Arguments.of(200, "The API Challenges - API Tutorials and API Testing Practice Exercises", ""));
+        args.add(Arguments.of(200, "The API Challenges - API Tutorials and API Testing Practice Exercises", "/"));
         // entities
         args.add(Arguments.of(200, "Entities Menu", "/gui/entities"));
         args.add(Arguments.of(200, "todo Instances", "gui/instances?entity=todo"));
 
         // Challenges
-        args.add(Arguments.of(200, "Challenges", "/gui/challenges"));
-        args.add(Arguments.of(200, "Challenges", "/gui/challenges/unkownchallenger"));
+        args.add(Arguments.of(200, "API Challenges - Improve your API Skills", "/gui/challenges"));
+        args.add(Arguments.of(200, "API Challenges - Improve your API Skills", "/gui/challenges/unkownchallenger"));
 
         // Additional Pages
         args.add(Arguments.of(200, "Learning Utilities and Resources", "/learning"));

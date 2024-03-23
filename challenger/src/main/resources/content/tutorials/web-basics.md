@@ -1,6 +1,6 @@
 ---
 title: Web Basics - Tutorial
-description: Web application overview and basic HTTP tutorial.
+description: Overview of how Web applications work and an introductory HTTP tutorial.
 ---
 
 # Web Basics and HTTP Basics

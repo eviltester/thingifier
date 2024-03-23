@@ -1,6 +1,6 @@
 ---
 title: Testing APIs - Tutorial
-description: Basic Testing REST API tutorial how to think when thinking about testing an API.
+description: Basic Testing REST API tutorial and how to think when thinking about testing an API.
 ---
 
 # Testing a REST API

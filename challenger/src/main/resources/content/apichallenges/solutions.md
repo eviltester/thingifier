@@ -1,5 +1,6 @@
 ---
 title: API Challenges Solution Index
+description: A list of all the solutions for the API Challenges. Try them yourself, but if you get stuck, we have instructions and solution videos.
 ---
 
 # API Challenge Solutions

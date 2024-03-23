@@ -1,5 +1,6 @@
 ---
 title: Sponsors of API Challenges
+description: Sponsor the API challenges and support the ongoing development and hosting for this free practice and tutorial site.
 ---
 
 # Support and Sponsorship

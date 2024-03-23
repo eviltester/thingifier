@@ -1,6 +1,6 @@
 ---
 title: REST API - Tutorial
-description: Basic REST API tutorial what they do and how to they work.
+description: Basic REST API tutorial to learn what is a REST API and how they work.
 ---
 
 # REST API BASICS
@@ -18,6 +18,15 @@ description: Basic REST API tutorial what they do and how to they work.
 - REST API
     - the HTTP Verbs mean something specific e.g. should not Delete with a POST request
     - URI are 'nouns' and describe entities
+
+A REST API is an API that conforms to the REST standards.
+
+Many HTTP API's describe themselves as REST APIs but are inconsistent in how they interpret the standard.
+
+When working with APIs, having an understanding of the REST API standards can provide you with a base level of expectation of how the API might work.
+
+Often, REST API is simply used to mean HTTP API.
+
 
 ---
 

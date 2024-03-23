@@ -1,5 +1,6 @@
 ---
 title: API Challenges Simulation Mode
+description: A simulated API tutorial - follow the guided instructions and learn how to use your API Tool without any side-effects or risk.
 ---
 
 # Simulation Mode

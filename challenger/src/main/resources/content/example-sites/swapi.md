@@ -1,6 +1,6 @@
 ---
 title: Swapi - Star Wars API - Example Site
-description: An overview of the Star Wars API and how to use it to learn about APIs.
+description: An overview of the Star Wars API application, explaining how to use it to learn about APIs and practice with API tooling.
 ---
 
 In addition to our [API Challenges](/gui/challenges) you should practice on as many sites as possible. Try [Swapi](https://swapi.dev).

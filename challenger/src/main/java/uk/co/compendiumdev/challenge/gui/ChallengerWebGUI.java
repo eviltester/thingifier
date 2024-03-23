@@ -39,6 +39,14 @@ public class ChallengerWebGUI {
         this.guiStayAlive = guiStayAlive;
     }
 
+    String getChallengesPageHtmlHeader(){
+        return guiManagement.getPageStart(
+                "API Challenges - Improve your API Skills",
+                "<script src='/js/challengerui.js'></script>" +
+                "<meta name='description' content='A free online set of gamified REST API Challenges to practice and improve your API Testing Skills'",
+                "/gui/challenges");
+    }
+
     public void setup(final Challengers challengers, 
                       final ChallengeDefinitions challengeDefinitions, 
                       final PersistenceLayer persistenceLayer, 
@@ -64,6 +72,7 @@ public class ChallengerWebGUI {
 //            return "";
 //        });
 
+
         // single user / default session
         get("/gui/challenges", (request, result) -> {
 
@@ -78,10 +87,7 @@ public class ChallengerWebGUI {
             result.status(200);
 
             StringBuilder html = new StringBuilder();
-            html.append(guiManagement.getPageStart(
-                    "Challenges",
-                "<script src='/js/challengerui.js'></script>",
-                "/gui/challenges"));
+            html.append(getChallengesPageHtmlHeader());
             html.append(guiManagement.getMenuAsHTML());
 
             // todo explain challenges - single user mode
@@ -131,11 +137,7 @@ public class ChallengerWebGUI {
             result.status(200);
 
             StringBuilder html = new StringBuilder();
-            html.append(guiManagement.getPageStart(
-                        "Challenges",
-                    "<script src='/js/challengerui.js'></script>",
-                    "/gui/challenges")
-            );
+            html.append(getChallengesPageHtmlHeader());
             html.append(guiManagement.getMenuAsHTML());
 
             html.append(playerChallengesIntro());
@@ -377,11 +379,20 @@ public class ChallengerWebGUI {
 
                     String pageTitle = "Page " + URLEncoder.encode(request.pathInfo(),
                             java.nio.charset.StandardCharsets.UTF_8.toString());
+                    String pageDescription = "";
 
                     for(String aHeader : mdheaders){
                         if(aHeader.startsWith("title: ")){
                             pageTitle = aHeader.replace("title: " , "");
                         }
+                        if(aHeader.startsWith("description: ")){
+                            pageDescription = aHeader.replace("description: " , "");
+                        }
+                    }
+
+                    String headerInject = "";
+                    if(!pageDescription.isEmpty()){
+                        headerInject = headerInject + "<meta name='description' content ='" + pageDescription + "'>";
                     }
 
                     StringBuilder html = new StringBuilder();
@@ -389,7 +400,7 @@ public class ChallengerWebGUI {
                             """
                     <script src='/js/toc.js'></script>
                     <script src='/js/externalize-links.js'></script>
-                    """, "https://apichallenges.eviltester.com"+contentPath));
+                    """+headerInject, "https://apichallenges.eviltester.com"+contentPath));
 
                     html.append(guiManagement.getMenuAsHTML());
                     html.append("""
