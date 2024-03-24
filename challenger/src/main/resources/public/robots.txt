@@ -5,3 +5,15 @@ Disallow: /gui/instances
 Disallow: /gui/instances/*
 Disallow: /gui/instance/*
 Disallow: /gui/challenges/*
+Disallow: /mirror/raw
+Disallow: /mirror/request
+Disallow: /mirror/raw/*
+Disallow: /mirror/request/*
+Disallow: /sim/*
+Disallow: /todos/*
+Disallow: /todos
+Disallow: /challenges
+Disallow: /challenger
+Disallow: /challenger/*
+Disallow: /secret/*
+Disallow: /heartbeat
