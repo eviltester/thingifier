@@ -114,6 +114,20 @@ Additionally they often have a lot of data so can support Query parameters for f
 
 These are full APIs online, which means you don't have to install anything and can persist data on the server so `PUT, POST, PATCH, DELETE` are usually supported. These APIs usually have the additional step of creating an authentication key or registering a session but the instructions will usually walk you through this.
 
+<!--
+---
+
+## Toolshop API
+
+[Toolshop API](https://api.practicesoftwaretesting.com/api/documentation)
+
+- The Toolshop API allows POST
+https://api.practicesoftwaretesting.com/api/documentation#/User/get-current-customer-info
+part of https://practicesoftwaretesting.com/#/
+- Couldn't get auth working to allow DELETE though
+
+-->
+
 ---
 
 #### API Challenges
