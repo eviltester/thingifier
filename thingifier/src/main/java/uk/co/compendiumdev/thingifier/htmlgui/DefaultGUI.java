@@ -81,7 +81,9 @@ public class DefaultGUI {
             //response.cookie("X-THINGIFIER-DATABASE-NAME", database);
 
             StringBuilder html = new StringBuilder();
-            html.append(templates.getPageStart("Entities Menu", "", "/gui/entities"));
+            html.append(templates.getPageStart("Entities Menu",
+                    "<meta name='robots' content='noindex'>",
+                    "/gui/entities"));
 
             html.append(templates.getMenuAsHTML());
             html.append(getInstancesRootMenuHtml(database));
@@ -100,7 +102,9 @@ public class DefaultGUI {
 
             String entityName = request.queryParams("entity");
 
-            html.append(templates.getPageStart(entityName + " Instances", "", "/gui/instances"));
+            html.append(templates.getPageStart(
+                    entityName + " Instances",
+                    "<meta name='robots' content='noindex'>", "/gui/instances"));
 
             html.append(templates.getMenuAsHTML());
             html.append(getInstancesRootMenuHtml(database));
@@ -191,7 +195,9 @@ public class DefaultGUI {
                 htmlErrorMessage = htmlErrorMessage + "<p>Database Named " + htmlsanitise(database) + " not found. Have you made any API Calls?" + tryDefault + "</p>";
             }
 
-            html.append(templates.getPageStart(entityName + " Instance", "", "/gui/instances"));
+            html.append(templates.getPageStart(entityName + " Instance",
+                    "<meta name='robots' content='noindex'>",
+                    "/gui/instances"));
             html.append(templates.getMenuAsHTML());
 
             EntityInstanceCollection thing = null;

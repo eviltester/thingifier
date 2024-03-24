@@ -1,9 +1,10 @@
 User-agent: *
-Disallow: /gui/entities
-Disallow: /gui/entities/*
-Disallow: /gui/instances
-Disallow: /gui/instances/*
-Disallow: /gui/instance/*
+# use no index meta data instead
+# Disallow: /gui/entities
+# Disallow: /gui/entities/*
+# Disallow: /gui/instances
+# Disallow: /gui/instances/*
+# Disallow: /gui/instance/*
 Disallow: /gui/challenges/*
 Disallow: /mirror/raw
 Disallow: /mirror/request
