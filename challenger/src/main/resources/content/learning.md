@@ -29,15 +29,19 @@ Read through the Tutorial and Reference content to understand the basics of:
 
 ## Experiment with Other APIs
 
-- [Swapi](/example-sites/swapi)
+We have an extensive list of [Practice Sites](/practice-sites), which includes tips on how to use them.
 
-## Mirror Mode
+We are in the process of creating longer tutorial guides with exercises for each of the listed sites.
+
+- [Swapi](/practice-sites/swapi)
+
+## Experiment with our HTTP Request Mirror Mode
 
 The Mirror mode is a good way to test out your tooling and see the details of your requests without using a proxy.
 
 [Learn About the Mirror Mode Here](/practice-modes/mirror)
 
-## Simulation Mode
+## Experiment with our API Simulation Mode
 
 The API has a simulation mode, it uses hard coded data in responses, but tries to mimic some conditions.
 

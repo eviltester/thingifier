@@ -67,7 +67,13 @@
       <priority>0.5</priority>
    </url>
    <url>
-      <loc>https://apichallenges.eviltester.com/example-sites/swapi</loc>
+      <loc>https://apichallenges.eviltester.com/practice-sites</loc>
+      <lastmod>2024-03-24</lastmod>
+      <changefreq>weekly</changefreq>
+      <priority>0.5</priority>
+   </url>
+   <url>
+      <loc>https://apichallenges.eviltester.com/practice-sites/swapi</loc>
       <lastmod>2024-03-22</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.5</priority>

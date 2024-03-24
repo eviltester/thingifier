@@ -55,6 +55,10 @@ GUI Clients which I have not yet used:
 
 ### Online Clients
 
+Online clients are useful to get started quickly. One issue with Online clients is that they may experience [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS) issues with some requests (e.g. `OPTIONS` is particularly problematic)
+
+But they are very useful to experiment with an API quickly.
+
 - [Hoppscotch](https://hoppscotch.io)
   - A well implemented browser based client. Import Postman and Swagger (Open API) collections.
 - [RestTestTest](https://resttesttest.com/)

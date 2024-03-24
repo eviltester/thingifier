@@ -490,8 +490,8 @@ public class ChallengerWebGUI {
 - Tools
    - [REST/HTTP Clients](/tools/clients)
    - [Proxies](/tools/proxies)
-- Practice Sites
-   - [Swapi](/example-sites/swapi)
+- [Practice Sites](/practice-sites)
+   - [Swapi](/practice-sites/swapi)
 - [Sponsors](/sponsors)
                 """;
     }
