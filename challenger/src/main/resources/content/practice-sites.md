@@ -235,6 +235,9 @@ I've listed a few applications here initially and will expand the instructions t
 
 TODO: evaluate
 
+https://api.practicesoftwaretesting.com/api/documentation#/User/get-current-customer-info
+part of https://practicesoftwaretesting.com/#/
+
 ## Play an API Based Game
 
 - spacetraders API
