@@ -76,7 +76,7 @@ public class ThingifierApiConfig {
         willApiEnforceContentTypeHeaderForRequests = true;
         acceptXmlContent = true;
         acceptJsonContent = true;
-        robotsCanIndexApiResponses=false;
+        robotsCanIndexApiResponses=true;
 
         paramsConfig = new ParamConfig();
 
@@ -100,7 +100,7 @@ public class ThingifierApiConfig {
         robotsCanIndexApiResponses = apiConfig.willAllowRobotsToIndexResponses();
         willApiAllowXmlResponses = apiConfig.willApiAllowXmlForResponses();
         willApiAllowJsonResponses = apiConfig.willApiAllowJsonForResponses();
-        willApiEnforceAcceptHeaderForResponses = willApiEnforceAcceptHeaderForResponses();
+        willApiEnforceAcceptHeaderForResponses = apiConfig.willApiEnforceAcceptHeaderForResponses();
 
         paramsConfig.setFrom(apiConfig.forParams());
         statusCodeConfig.setFrom(apiConfig.statusCodes());

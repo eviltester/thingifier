@@ -43,7 +43,7 @@ There are many API simulators so we have only listed a few of the best here.
 
 #### JSON Placeholder
 
-[{JSON} Placeholder]https://jsonplaceholder.typicode.com/
+[{JSON} Placeholder](https://jsonplaceholder.typicode.com/)
   
 - An API For `GET` requests.
 - Acts as a simulator for Update and Delete requests
@@ -116,7 +116,7 @@ These are full APIs online, which means you don't have to install anything and c
 
 ---
 
-## Toolshop API
+#### Toolshop API
 
 [Toolshop API](https://api.practicesoftwaretesting.com/api/documentation)
 
@@ -218,7 +218,7 @@ I found Reqres a little hard to understand from the documentation. It seems as t
 - [reqres](https://reqres.in)
     - Supports `JSON` only
   - Has hard coded data.
-  - Provides a Swagger [API interface and docmentation](https://reqres.in/api-docs/) this can be useful to get started but doesn't cover the generic endpoints so you'll need to use a REST Client for that.
+  - Provides a Swagger [API interface and documentation](https://reqres.in/api-docs/) this can be useful to get started but doesn't cover the generic endpoints so you'll need to use a REST Client for that.
   - There is also a hard coded set of 12 'things' which will respond to any endpoint e.g. `GET https://reqres/in/api/books/1` will return the hardcoded 'thing' with ID 1 (it won't be a 'book' but the API responds as though the `/api/books/` end point exists)
   - Simulates `DELETE, PUT, POST, PATCH` operations.
 

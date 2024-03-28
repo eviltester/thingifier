@@ -65,9 +65,9 @@ final public class HttpApiResponse {
         apiResponseHeaders.putAll(originalApiResponseHeaders);
         apiResponseHeaders.put("Content-Type", type);
 
-        // todo: put this behind a config
+
         if(apiConfig.willPreventRobotsFromIndexingResponse()) {
-            apiResponseHeaders.put("X-Robots-Tag", "noindex");
+            apiResponseHeaders.put("x-robots-tag", "noindex");
         }
 
     }

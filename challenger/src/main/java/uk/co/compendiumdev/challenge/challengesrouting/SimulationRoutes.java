@@ -90,7 +90,7 @@ public class SimulationRoutes {
 
         options(endpoint + "/*", (request, result) -> {
             result.status(204);
-            result.header("X-Robots-Tag", "noindex");
+            result.header("x-robots-tag", "noindex");
             result.header("Allow", "GET, POST, PUT, DELETE, PATCH, HEAD, OPTIONS, TRACE");
             return "";
         });

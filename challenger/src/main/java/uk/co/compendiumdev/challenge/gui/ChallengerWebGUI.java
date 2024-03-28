@@ -444,6 +444,10 @@ public class ChallengerWebGUI {
 
                     response.body(html.toString());
                     response.type("text/html");
+                    if(response.raw().containsHeader("x-robots-tag")){
+                        // we want it indexed because it is content
+                        response.raw().setHeader("x-robots-tag", "all");
+                    }
                     response.status(200);
                 }
 
