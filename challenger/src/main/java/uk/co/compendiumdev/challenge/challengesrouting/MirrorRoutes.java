@@ -23,7 +23,7 @@ public class MirrorRoutes {
         RequestMirror requestMirror = new RequestMirror();
 
         // redirect a GET to "/fromPath" to "/toPath"
-        redirect.get("/mirror", "/mirror.html");
+        redirect.get("/mirror", "/practice-modes/mirror");
 
         List<String>verbEndpoints = new ArrayList<>();
         verbEndpoints.add(endpoint);

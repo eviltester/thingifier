@@ -61,6 +61,7 @@ public class SimpleRouteConfig {
                     preferred="application/json"; // hard coded default
                 }
                 result.header("Content-Type", preferred);
+                result.header("X-Robots-Tag", "noindex");
                 result.status(statuscode);
                 return "";
             };

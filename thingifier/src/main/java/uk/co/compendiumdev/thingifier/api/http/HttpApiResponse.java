@@ -8,9 +8,6 @@ import uk.co.compendiumdev.thingifier.api.response.ApiResponseAsXml;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonThing;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * Given an internal ApiResponse create an HTTP abstraction response
  * The requestHeaders are used to configure the content type using the Accept header
@@ -67,6 +64,11 @@ final public class HttpApiResponse {
 
         apiResponseHeaders.putAll(originalApiResponseHeaders);
         apiResponseHeaders.put("Content-Type", type);
+
+        // todo: put this behind a config
+        if(apiConfig.willPreventRobotsFromIndexingResponse()) {
+            apiResponseHeaders.put("X-Robots-Tag", "noindex");
+        }
 
     }
 

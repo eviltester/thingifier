@@ -114,25 +114,27 @@ Additionally they often have a lot of data so can support Query parameters for f
 
 These are full APIs online, which means you don't have to install anything and can persist data on the server so `PUT, POST, PATCH, DELETE` are usually supported. These APIs usually have the additional step of creating an authentication key or registering a session but the instructions will usually walk you through this.
 
-<!--
 ---
 
 ## Toolshop API
 
 [Toolshop API](https://api.practicesoftwaretesting.com/api/documentation)
 
-- The Toolshop API allows POST
-https://api.practicesoftwaretesting.com/api/documentation#/User/get-current-customer-info
-part of https://practicesoftwaretesting.com/#/
-- Couldn't get auth working to allow DELETE though
-
--->
+- Toolshop API has a [UI](https://practicesoftwaretesting.com/#) and an API backend. This allows you to experiment with the UI, open the network tab and see the relevant API requests, or use the API and double-check the results on screen in the UI.
+- The Open AI Swagger file is one of the most complete that I've seen, and is a great example of the capabilities of the format.
+- The Toolshop API allows GET,POST, PUT methods without authentication.
+- Some endpoints require that you master the authentication process which requires logging in as a user, then using the returned token as an HTTP Bearer Token.
+- The DELETE endpoints seemed to require logging in as an admin user.
+- The admin user also receives 'more' data in the responses, so its worth experimenting with the different users.
+- The Database is shared, so don't add any private information (e.g. your name and email) if you create a new user.
+- The error messages returned from the server in the message are useful aids to helping you craft a valid payload.
+- There are bugs to be found, particularly if you explore data validation, so you can try and hunt out 500 errors as testing exercise.
 
 ---
 
 #### API Challenges
 
-[API Challenges](/challenges)
+[API Challenges](/gui/challenges)
 
 - Our API Challenges is a fully functional TODOs management application.
 - Create a session by issuing a `POST` request to `https://apichallenges.eviltester.com/challenger`, you will see an `X-CHALLENGER` header in the response and if you add that header into all your requests you will be able to update data and view your solved challengs progress in the UI.

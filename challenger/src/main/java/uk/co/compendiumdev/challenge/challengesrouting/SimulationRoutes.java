@@ -74,7 +74,7 @@ public class SimulationRoutes {
         String endpoint = "/sim/entities";
 
         // redirect a GET to "/fromPath" to "/toPath" for GUI
-        redirect.get("/sim", "/simulation.html");
+        redirect.get("/sim", "/practice-modes/simulation");
 
         options(endpoint, (request, result) -> {
             result.status(204);
@@ -90,6 +90,7 @@ public class SimulationRoutes {
 
         options(endpoint + "/*", (request, result) -> {
             result.status(204);
+            result.header("X-Robots-Tag", "noindex");
             result.header("Allow", "GET, POST, PUT, DELETE, PATCH, HEAD, OPTIONS, TRACE");
             return "";
         });

@@ -67,6 +67,8 @@ public class ChallengeMain {
             }
         }
 
+        thingifier.apiConfig().setApiToAllowRobotsIndexingResponses(false);
+
         // setup routes required for challenges
         challenger = new ChallengeRouteHandler(thingifier, app.getApiDefn(), config);
         challenger.configureRoutes();

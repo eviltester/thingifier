@@ -58,6 +58,7 @@ public class ThingifierApiConfig {
     // willUseIdsInUrlsIfAvailable - instead of GUIDs use Ids
     private boolean willShowIdsInUrlsIfAvailable;
     private final StatusCodeConfig statusCodeConfig;
+    private boolean robotsCanIndexApiResponses;
 
     public ThingifierApiConfig(){
 
@@ -75,6 +76,7 @@ public class ThingifierApiConfig {
         willApiEnforceContentTypeHeaderForRequests = true;
         acceptXmlContent = true;
         acceptJsonContent = true;
+        robotsCanIndexApiResponses=false;
 
         paramsConfig = new ParamConfig();
 
@@ -95,6 +97,7 @@ public class ThingifierApiConfig {
         willShowIdsInUrlsIfAvailable = apiConfig.willUrlsShowIdsIfAvailable();
         willEnforceDeclaredTypesInInput = apiConfig.willApiEnforceDeclaredTypesInInput();
 
+        robotsCanIndexApiResponses = apiConfig.willAllowRobotsToIndexResponses();
         willApiAllowXmlResponses = apiConfig.willApiAllowXmlForResponses();
         willApiAllowJsonResponses = apiConfig.willApiAllowJsonForResponses();
         willApiEnforceAcceptHeaderForResponses = willApiEnforceAcceptHeaderForResponses();
@@ -205,5 +208,18 @@ public class ThingifierApiConfig {
     public ThingifierApiConfig setApiToAllowJsonForContentType(boolean allow) {
         acceptJsonContent = allow;
         return this;
+    }
+
+    public ThingifierApiConfig setApiToAllowRobotsIndexingResponses(boolean allow) {
+        robotsCanIndexApiResponses = allow;
+        return this;
+    }
+
+    public boolean willPreventRobotsFromIndexingResponse() {
+        return !robotsCanIndexApiResponses;
+    }
+
+    public boolean willAllowRobotsToIndexResponses() {
+        return robotsCanIndexApiResponses;
     }
 }
