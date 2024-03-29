@@ -1,5 +1,8 @@
 package uk.co.compendiumdev.challenge.gui;
 
+import io.github.classgraph.ClassGraph;
+import io.github.classgraph.Resource;
+import io.github.classgraph.ScanResult;
 import org.commonmark.Extension;
 import org.commonmark.ext.gfm.tables.TablesExtension;
 import org.commonmark.node.Node;
@@ -7,6 +10,7 @@ import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import spark.Request;
 import spark.Response;
 import uk.co.compendiumdev.challenge.CHALLENGE;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
@@ -18,14 +22,8 @@ import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.htmlgui.DefaultGUIHTML;
 
 import java.io.*;
-import java.lang.reflect.Array;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 import static spark.Spark.*;
 
@@ -92,6 +90,23 @@ public class ChallengerWebGUI {
 //                    }
 //                }
 //        );
+
+
+        // scan resources and create GET for each markdown file
+        List<String> pathsToFileContent = new ArrayList<>();
+        try (ScanResult scanResult = new ClassGraph().acceptPaths("content/").scan()) {
+            scanResult.getResourcesWithExtension("md").forEach( (Resource res) -> {
+                        pathsToFileContent.add(res.getPath().replaceFirst("content/","/").replace(".md",""));
+                    });
+        }
+
+        for(String pathToMarkdownFile : pathsToFileContent){
+            get(pathToMarkdownFile, ((request, response) -> {
+                setResponseForResourceMarkdownFile(request, response);
+                return "";
+            }));
+        }
+
 
         // single user / default session
         get("/gui/challenges", (request, result) -> {
@@ -276,154 +291,176 @@ public class ChallengerWebGUI {
 
         after((request, response)->{
 
-            // TODO: this is currently a hacked in solution for experimenting, pull it out into classes and create state enum
+
+            // Since we already scanned for static content we can just htmlise a 404 if necessary
 
             if(response.status()==404 && request.headers("accept")!=null && request.headers("accept").contains("html")){
-                logger.info("Double check that this is a 404");
-                // all html content that is parsed will be in content folder in resources so we don't need to add that in the url
-                String contentFolder = "content";
-                ClassLoader classLoader = getClass().getClassLoader();
 
-                String contentPath = request.pathInfo();
-                if(contentPath.endsWith(".html")){
-                    contentPath = contentPath.replace(".html", "");
-                }
+                logger.info("An HTML 404");
+                pageNotFoundHtmlResponse(response, "");
+                // setResponseForResourceMarkdownFile(request,response);
+            }
+        });
 
-                InputStream inputStream = classLoader.getResourceAsStream(contentFolder + contentPath + ".md");
-                if(inputStream==null) {
-                    pageNotFoundHtmlResponse(response, "");
-                }else{
+    }
+
+    // TODO: this is currently a hacked in solution for experimenting, pull it out into classes and create state enum
+    private void setResponseForResourceMarkdownFile(Request request, Response response) {
+
+        // all html content that is parsed will be in content folder in resources so we don't need to add that in the url
+        String contentFolder = "content";
+        ClassLoader classLoader = getClass().getClassLoader();
+
+        String contentPath = request.pathInfo();
+        if(contentPath.endsWith(".html")){
+            contentPath = contentPath.replace(".html", "");
+        }
+
+        InputStream inputStream = classLoader.getResourceAsStream(contentFolder + contentPath + ".md");
+        if(inputStream==null) {
+            pageNotFoundHtmlResponse(response, "");
+        }else{
 
 
-                    String[] breadcrumbs = Arrays.stream(
-                                                contentPath.split("/")).
-                                                filter(item -> item != null && !"".equals(item)
-                                                ).toArray(String[]::new);
+            String[] breadcrumbs = Arrays.stream(
+                            contentPath.split("/")).
+                    filter(item -> item != null && !"".equals(item)
+                    ).toArray(String[]::new);
 
-                    StringBuilder bcHeader = new StringBuilder();
-                    bcHeader.append("\n");
-                    String bcPath ="";
-                    int linksInBreadcrumb=0;
-                    if(breadcrumbs.length>0){
-                        bcHeader.append("> ");
+            StringBuilder bcHeader = new StringBuilder();
+            bcHeader.append("\n");
+            String bcPath ="";
+            int linksInBreadcrumb=0;
+            if(breadcrumbs.length>0){
+                bcHeader.append("> ");
 
-                        for(String bc : breadcrumbs){
-                            bcPath = bcPath + bc;
-                            if(!bc.isEmpty()) {
-                                if(contentPath.endsWith(bc)){
-                                    bcHeader.append( bc );
-                                }else {
-                                    // if there is an index file then show the breadcrumb
-                                    if(getResourceAsStream(contentFolder + "/" + bcPath + ".md")!=null) {
-                                        linksInBreadcrumb++;
-                                        bcHeader.append(String.format(" [%s](%s) > ", bc, "/" + bcPath));
-                                    }
-                                }
+                for(String bc : breadcrumbs){
+                    bcPath = bcPath + bc;
+                    if(!bc.isEmpty()) {
+                        if(contentPath.endsWith(bc)){
+                            bcHeader.append( bc );
+                        }else {
+                            // if there is an index file then show the breadcrumb
+                            if(getResourceAsStream(contentFolder + "/" + bcPath + ".md")!=null) {
+                                linksInBreadcrumb++;
+                                bcHeader.append(String.format(" [%s](%s) > ", bc, "/" + bcPath));
                             }
-                            bcPath = bcPath + "/";
-                        }
-                        bcHeader.append("\n");
-                    }
-
-                    if(linksInBreadcrumb==0){
-                        // do not output the breadcrumb
-                        bcHeader = new StringBuilder();
-                    }
-
-
-
-
-
-                    List<Extension> extensions = Arrays.asList(TablesExtension.create());
-                    // parse this html and output
-                    Parser parser = Parser.builder().extensions(extensions).build();
-
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-                    String line="";
-
-                    List<String> mdheaders = new ArrayList<>();
-
-                    StringBuilder mdcontent = new StringBuilder();
-
-                    mdcontent.append(bcHeader);
-
-                    String state = "EXPECTING_HEADER";
-                    Boolean addedToc = false;
-
-                    while ((line = reader.readLine()) != null)   {
-
-                        if(line.equals("---") && state.equals("EXPECTING_HEADER")){
-                            state="READING_HEADER"; // start of headers
-                            continue;
-                        }
-
-                        if(line.equals("---") && state.equals("READING_HEADER")){
-                            state="READING_CONTENT"; // end of headers
-                            continue;
-                        }
-
-                        if(line.contains(": ") && state.equals("READING_HEADER")){
-                            mdheaders.add(line);
-                            continue;
-                        }
-
-                        if(state.equals("READING_HEADER") && line.trim().isEmpty()){
-                            // ignore empty lines in the header
-                            continue;
-                        }
-
-                        if(state.equals("READING_HEADER") && !line.trim().isEmpty()){
-                            // probably shouldn't be reading headers we found a non-empty line
-                            state="READING_CONTENT";
-                        }
-
-                        // process any macros
-                        line = processMacrosInContentLine(line);
-
-                        mdcontent.append(line + "\n");
-
-                        // inject table of contents
-                        if(line.startsWith("# ") && !addedToc){
-                            addedToc=true;
-                            mdcontent.append("\n<div id='toc'></div>\n");
-                        }
-
-                        // Print the content on the console
-                        //System.out.println (line);
-                    }
-
-                    String markdownFromResource = mdcontent.toString();
-                    Node document = parser.parse(markdownFromResource);
-
-                    HtmlRenderer renderer = HtmlRenderer.builder().extensions(extensions).build();
-
-                    String pageTitle = "Page " + URLEncoder.encode(request.pathInfo(),
-                            java.nio.charset.StandardCharsets.UTF_8.toString());
-                    String pageDescription = "";
-
-                    for(String aHeader : mdheaders){
-                        if(aHeader.startsWith("title: ")){
-                            pageTitle = aHeader.replace("title: " , "");
-                        }
-                        if(aHeader.startsWith("description: ")){
-                            pageDescription = aHeader.replace("description: " , "");
                         }
                     }
+                    bcPath = bcPath + "/";
+                }
+                bcHeader.append("\n");
+            }
 
-                    String headerInject = "";
-                    if(!pageDescription.isEmpty()){
-                        headerInject = headerInject + "<meta name='description' content ='" + pageDescription + "'>";
+            if(linksInBreadcrumb==0){
+                // do not output the breadcrumb
+                bcHeader = new StringBuilder();
+            }
+
+
+
+
+
+            List<Extension> extensions = Arrays.asList(TablesExtension.create());
+            // parse this html and output
+            Parser parser = Parser.builder().extensions(extensions).build();
+
+            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+            String line="";
+
+            List<String> mdheaders = new ArrayList<>();
+
+            StringBuilder mdcontent = new StringBuilder();
+
+            mdcontent.append(bcHeader);
+
+            String state = "EXPECTING_HEADER";
+            Boolean addedToc = false;
+
+            try {
+                while ((line = reader.readLine()) != null) {
+
+                    if (line.equals("---") && state.equals("EXPECTING_HEADER")) {
+                        state = "READING_HEADER"; // start of headers
+                        continue;
                     }
 
-                    StringBuilder html = new StringBuilder();
-                    html.append(guiManagement.getPageStart(pageTitle,
-                            """
-                    <script src='/js/toc.js'></script>
-                    <script src='/js/externalize-links.js'></script>
-                    """+headerInject, "https://apichallenges.eviltester.com"+contentPath));
+                    if (line.equals("---") && state.equals("READING_HEADER")) {
+                        state = "READING_CONTENT"; // end of headers
+                        continue;
+                    }
 
-                    html.append(guiManagement.getMenuAsHTML());
-                    html.append("""
+                    if (line.contains(": ") && state.equals("READING_HEADER")) {
+                        mdheaders.add(line);
+                        continue;
+                    }
+
+                    if (state.equals("READING_HEADER") && line.trim().isEmpty()) {
+                        // ignore empty lines in the header
+                        continue;
+                    }
+
+                    if (state.equals("READING_HEADER") && !line.trim().isEmpty()) {
+                        // probably shouldn't be reading headers we found a non-empty line
+                        state = "READING_CONTENT";
+                    }
+
+                    // process any macros
+                    line = processMacrosInContentLine(line);
+
+                    mdcontent.append(line + "\n");
+
+                    // inject table of contents
+                    if (line.startsWith("# ") && !addedToc) {
+                        addedToc = true;
+                        mdcontent.append("\n<div id='toc'></div>\n");
+                    }
+
+                    // Print the content on the console
+                    //System.out.println (line);
+                }
+            }catch(Exception e){
+                logger.error("Markdown parsing error", e);
+            }
+
+            String markdownFromResource = mdcontent.toString();
+            Node document = parser.parse(markdownFromResource);
+
+            HtmlRenderer renderer = HtmlRenderer.builder().extensions(extensions).build();
+
+
+            String pageTitle = "Page ";
+            try{
+                pageTitle = pageTitle + URLEncoder.encode(request.pathInfo(),
+                        java.nio.charset.StandardCharsets.UTF_8.toString());
+            }catch(Exception e){
+                logger.error("Error parsing path info", e);
+            }
+            String pageDescription = "";
+
+            for(String aHeader : mdheaders){
+                if(aHeader.startsWith("title: ")){
+                    pageTitle = aHeader.replace("title: " , "");
+                }
+                if(aHeader.startsWith("description: ")){
+                    pageDescription = aHeader.replace("description: " , "");
+                }
+            }
+
+            String headerInject = "";
+            if(!pageDescription.isEmpty()){
+                headerInject = headerInject + "<meta name='description' content ='" + pageDescription + "'>";
+            }
+
+            StringBuilder html = new StringBuilder();
+            html.append(guiManagement.getPageStart(pageTitle,
+                    """
+            <script src='/js/toc.js'></script>
+            <script src='/js/externalize-links.js'></script>
+            """+headerInject, "https://apichallenges.eviltester.com"+contentPath));
+
+            html.append(guiManagement.getMenuAsHTML());
+            html.append("""
                             <style>
                             @media (min-width: 1000px) {
                             .doc-columns{ display: grid; grid-template-columns: 20% 70%; grid-auto-flow: column; }
@@ -431,29 +468,27 @@ public class ChallengerWebGUI {
                             }
                             </style>
                             """);
-                    html.append("<section class='doc-columns'>");
-                    html.append("<div class='left-column'>");
-                    html.append(renderer.render(parser.parse(dropDownMenuAsMarkdown())));
-                    html.append("</div>");
-                    html.append("<div class='right-column'>");
-                    html.append(renderer.render(document));
-                    html.append("</div>");
-                    html.append("</section>");
-                    html.append(guiManagement.getPageFooter());
-                    html.append(guiManagement.getPageEnd());
+            html.append("<section class='doc-columns'>");
+            html.append("<div class='left-column'>");
+            html.append(renderer.render(parser.parse(dropDownMenuAsMarkdown())));
+            html.append("</div>");
+            html.append("<div class='right-column'>");
+            html.append(renderer.render(document));
+            html.append("</div>");
+            html.append("</section>");
+            html.append(guiManagement.getPageFooter());
+            html.append(guiManagement.getPageEnd());
 
-                    response.body(html.toString());
-                    response.type("text/html");
-                    if(response.raw().containsHeader("x-robots-tag")){
-                        // we want it indexed because it is content
-                        response.raw().setHeader("x-robots-tag", "all");
-                    }
-                    response.status(200);
-                }
-
+            response.body(html.toString());
+            response.type("text/html");
+            if(response.raw().containsHeader("x-robots-tag")){
+                // we want it indexed because it is content
+                response.raw().setHeader("x-robots-tag", "all");
             }
-        });
+            response.status(200);
+        }
 
+        return ;
     }
 
     private String dropDownMenuAsSummary(){
