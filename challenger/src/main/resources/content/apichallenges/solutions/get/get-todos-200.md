@@ -3,8 +3,9 @@ title: API Challenges Solution For - GET Todos (200)
 description: How to solve the API challenge and GET all the Todos
 ---
 
-How to complete the challenge `GET /todos 200`.
+# How to complete the challenge `GET /todos 200`.
 
+How to solve the API challenge and issue a GET request to return all the Todos in default JSON format.
 
 ## GET /todos (200)
 
@@ -70,6 +71,6 @@ How to complete the challenge `GET /todos 200`.
 
 ## Overview Video
 
-{{<youtube-embed key="OpisB0UZq0c">}}
+{{<youtube-embed key="OpisB0UZq0c" title="Solution video for GET all TODOs">}}
 
 [Patreon ad free version](https://www.patreon.com/posts/41107610)

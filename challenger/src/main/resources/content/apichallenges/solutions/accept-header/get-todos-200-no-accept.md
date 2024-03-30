@@ -4,7 +4,9 @@ title: API Challenges Solution For - GET todos No Accept Header 200
 description: How to solve API challenge GET todos No Accept 200 to GET the todos with no accept header present.
 ---
 
-How to complete the challenge `GET /todos No Accept (200)` to successfully GET all the todos in JSON format but ensure we do not pass in an accept header.
+# How to complete the challenge `GET /todos No Accept (200)`
+
+Accept headers are optional. Most API clients will add one by default. But we do not need to pass in an `Acdept` header to successfully GET all the todos in JSON format. This challenge allows us to test this, to complete it we must ensure that we do not pass in an accept header.
 
 ## GET /todos No Accept (200)
 
@@ -89,7 +91,7 @@ Example Response body:
 
 ## Overview Video
 
-{{<youtube-embed key="CSVP2PcvOdg">}}
+{{<youtube-embed key="CSVP2PcvOdg" title="Solution to Get all Todos in defaulted format">}}
 
 [Patreon ad free version](https://www.patreon.com/posts/51831718)
 

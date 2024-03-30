@@ -4,7 +4,9 @@ title: API Challenges Solution For - OPTIONS todos 200
 description: How to solve API challenge 13 OPTIONS todos 200 to identify the allowed verbs for an API End Point.
 ---
 
-How to complete the challenge `OPTIONS /todos (200)` to successfully identify the allowed verbs for an API End Point.
+# How to complete the challenge `OPTIONS /todos (200)`
+
+We can use `OPTIONS` request to identify the allowed verbs for an API End Point. This is useful to compare these with the Swagger/Open API documentation and also to check if the unlisted verbs are actually disallowed by the API.
 
 ## OPTIONS /todos (200)
 
@@ -62,7 +64,7 @@ As a set of follow on exercises:
 
 ## Overview Video
 
-{{<youtube-embed key="Ld5h1TSnXWA">}}
+{{<youtube-embed key="Ld5h1TSnXWA" title="Solution to see Supported HTTP Verbs using OPTIONS for an endpoint">}}
 
 [Patreon ad free version](https://www.patreon.com/posts/50387322)
 

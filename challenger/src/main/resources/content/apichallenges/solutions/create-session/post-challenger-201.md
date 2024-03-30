@@ -49,7 +49,7 @@ Server: Jetty(9.4.z-SNAPSHOT)
 
 ## Overview Video
 
-{{<youtube-embed key="tNGuZMQgHxw">}}
+{{<youtube-embed key="tNGuZMQgHxw" title="Solution to create challenge session">}}
 
 [Patreon ad free version](https://www.patreon.com/posts/39882254)
 

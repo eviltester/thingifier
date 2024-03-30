@@ -11,7 +11,7 @@ You don't need to do any of this if you download the application and run it in s
 
 ## Video Explanation
 
-{{<youtube-embed key="XBsM9f9xrhI">}}
+{{<youtube-embed key="XBsM9f9xrhI" title="how to use multi-user mode">}}
 
 
 ## Create a Challenger Session

@@ -87,6 +87,7 @@ public class ChallengeMain {
         <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png">
         <link rel="manifest" href="/favicon/site.webmanifest">
         <link rel="stylesheet" href="/css/toc.css">
+        <link rel="stylesheet" href="/css/content.css">
             """
         );
 

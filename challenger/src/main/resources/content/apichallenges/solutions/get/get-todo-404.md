@@ -3,7 +3,9 @@ title: API Challenges Solution For -  GET todo 404
 description: How to solve challenge GET todo 404.
 ---
 
-How to complete the challenge `GET /todo 404`.
+# How to complete the challenge `GET /todo 404`.
+
+How to solve challenge GET todo 404 by issuing a GET request on a non-existent endpoint and receive a 404 status code response.
 
 ## GET /todo (404)
 
@@ -49,7 +51,7 @@ How to complete the challenge `GET /todo 404`.
 
 ## Overview Video
 
-{{<youtube-embed key="gAJzqgcN9dc">}}
+{{<youtube-embed key="gAJzqgcN9dc" title="Solution to GET non-existent todo challenge">}}
 
 [Patreon ad free version](https://www.patreon.com/posts/41107933)
 

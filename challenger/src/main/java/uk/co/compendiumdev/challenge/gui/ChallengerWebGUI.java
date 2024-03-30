@@ -42,7 +42,7 @@ public class ChallengerWebGUI {
         return guiManagement.getPageStart(
                 "API Challenges - Improve your API Skills",
                 "<script src='/js/challengerui.js'></script>" +
-                "<meta name='description' content='A free online set of gamified REST API Challenges to practice and improve your API Testing Skills'",
+                "<meta name='description' content='A free online set of gamified REST API Challenges to practice and improve your API Testing Skills'>",
                 "/gui/challenges");
     }
 
@@ -124,6 +124,8 @@ public class ChallengerWebGUI {
             StringBuilder html = new StringBuilder();
             html.append(getChallengesPageHtmlHeader());
             html.append(guiManagement.getMenuAsHTML());
+            html.append("<h1>API Challenges Progress</h1>");
+            html.append(guiManagement.getStartOfMainContentMarker());
 
             // todo explain challenges - single user mode
 
@@ -160,6 +162,7 @@ public class ChallengerWebGUI {
 
             //html.append(renderChallengeData(reportOn));
 
+            html.append(guiManagement.getEndOfMainContentMarker());
             html.append(guiManagement.getPageFooter());
             html.append(guiManagement.getPageEnd());
             return html.toString();
@@ -174,7 +177,8 @@ public class ChallengerWebGUI {
             StringBuilder html = new StringBuilder();
             html.append(getChallengesPageHtmlHeader());
             html.append(guiManagement.getMenuAsHTML());
-
+            html.append("<h1>API Challenges Progress</h1>");
+            html.append(guiManagement.getStartOfMainContentMarker());
             html.append(playerChallengesIntro());
 
 
@@ -263,6 +267,7 @@ public class ChallengerWebGUI {
 
             //html.append(renderChallengeData(reportOn));
 
+            html.append(guiManagement.getEndOfMainContentMarker());
             html.append(guiManagement.getPageFooter());
             html.append(guiManagement.getPageEnd());
             return html.toString();
@@ -460,20 +465,14 @@ public class ChallengerWebGUI {
             """+headerInject, "https://apichallenges.eviltester.com"+contentPath));
 
             html.append(guiManagement.getMenuAsHTML());
-            html.append("""
-                            <style>
-                            @media (min-width: 1000px) {
-                            .doc-columns{ display: grid; grid-template-columns: 20% 70%; grid-auto-flow: column; }
-                            .left-column{ font-size: smaller; }
-                            }
-                            </style>
-                            """);
             html.append("<section class='doc-columns'>");
             html.append("<div class='left-column'>");
             html.append(renderer.render(parser.parse(dropDownMenuAsMarkdown())));
             html.append("</div>");
             html.append("<div class='right-column'>");
+            html.append(guiManagement.getStartOfMainContentMarker());
             html.append(renderer.render(document));
+            html.append(guiManagement.getEndOfMainContentMarker());
             html.append("</div>");
             html.append("</section>");
             html.append(guiManagement.getPageFooter());
@@ -543,13 +542,13 @@ public class ChallengerWebGUI {
 
         String youTubeHtmlBlock = """
 <div class="video-container">
-    <iframe width="560" height="315" src="https://www.youtube.com/embed/$1" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+    <iframe class='youtube-video' title='Watch Video - $2' loading='lazy' src="https://www.youtube.com/embed/$1" allow="autoplay; encrypted-media" allowfullscreen></iframe>
 </div>
-<div><p class="center-text"><a href="https://www.youtube.com/watch?v=$1" target="_blank">Watch on YouTube</a></p></div>
+<div><p class="center-text"><a href="https://www.youtube.com/watch?v=$1" target="_blank">Watch on YouTube - $2</a></p></div>
 
         """;
 
-        line = line.replaceAll("\\{\\{<youtube-embed key=\"([a-zA-Z0-9_-]+)\">}}", youTubeHtmlBlock);
+        line = line.replaceAll("\\{\\{<youtube-embed key=\"([a-zA-Z0-9_-]+)\" title=\"(.+)\">}}", youTubeHtmlBlock);
 
         return line;
     }
@@ -575,8 +574,10 @@ public class ChallengerWebGUI {
         StringBuilder html = new StringBuilder();
         html.append(guiManagement.getPageStart("404 Not Found","", ""));
         html.append(guiManagement.getMenuAsHTML());
+        html.append(guiManagement.getStartOfMainContentMarker());
         html.append("<h1>Page Not Found</h1>");
         html.append(bodyStringAppend);
+        html.append(guiManagement.getEndOfMainContentMarker());
         html.append(guiManagement.getPageFooter());
         html.append(guiManagement.getPageEnd());
         response.type("text/html");
@@ -651,7 +652,7 @@ public class ChallengerWebGUI {
             html.append("To restore a previously saved session progress from the server, issue an API request with the X-CHALLENGER header (note this will restore the completion state of challenges, but not the data you were using).<p>");
         }
         html.append("<p>Session state and current todo list can be stored to local storage, and later restored using the GUI buttons or via API.</p>");
-        html.append("<p>You can find more information about this on the <a href='multiuser'>Multi User Help Page</a><p>");
+        html.append("<p>You can find more information about this on the <a href='/gui/multiuser'>Multi User Help Page</a><p>");
         html.append("</div>");
         return html.toString();
     }
@@ -681,8 +682,6 @@ public class ChallengerWebGUI {
         html.append("<table>");
         html.append("<thead>");
         html.append("<tr>");
-
-        html.append("<style>.statustrue{background:palegreen}</style>");
         html.append("<th>ID</th>");
         html.append("<th>Challenge</th>");
         html.append("<th>Done</th>");
@@ -765,7 +764,7 @@ public class ChallengerWebGUI {
         final Collection<ChallengeSection> sections = challengeDefinitions.getChallengeSections();
 
         // add a toc
-        html.append("<p id='toc'><strong>Sections</strong></p>");
+        html.append("<h2 id='toc'>Challenge Sections</h2>");
         html.append("<ul>");
         for(ChallengeSection section : sections){
             html.append(String.format("<li><a href='#%s'>%s</a></li>", section.getTitle().replaceAll(" ", "").toLowerCase(), section.getTitle()));

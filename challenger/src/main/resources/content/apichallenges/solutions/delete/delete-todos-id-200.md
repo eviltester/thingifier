@@ -57,7 +57,7 @@ How to complete the challenge `DELETE /todos/id (200)` to successfully delete a 
 
 ## Overview Video
 
-{{<youtube-embed key="6MXTkaXn9qU">}}
+{{<youtube-embed key="6MXTkaXn9qU" title="Solution to DELETE todo challenge">}}
 
 [Patreon ad free version](https://www.patreon.com/posts/49931699)
 

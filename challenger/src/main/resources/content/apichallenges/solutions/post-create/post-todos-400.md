@@ -4,6 +4,8 @@ title: API Challenges Solution For - POST todos 400
 description: How to solve API challenge POST todos 400 to amend the request details such that they fail validation.
 ---
 
+# How to complete the challenge `POST /todos (400)`
+
 How to complete the challenge `POST /todos (400)` to fail to create a todo item in the application due to not passing validation.
 
 ## POST /todos (400)
@@ -86,7 +88,7 @@ Returned body:
 
 ## Overview Video
 
-{{<youtube-embed key="tlye5bQ72g0">}}
+{{<youtube-embed key="tlye5bQ72g0" title="Solution to failing to create a Todo item using POST">}}
 
 [Patreon ad free version](https://www.patreon.com/posts/46603655)
 

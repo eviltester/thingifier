@@ -4,7 +4,9 @@ title: API Challenges Solution For - GET todos 200 filter
 description: How to solve API challenge GET todos 200 filter to use URL parameters to filter the results.
 ---
 
-How to complete the challenge `GET /todos (200) ? filter` to create a todo item in the application.
+# How to complete the challenge `GET /todos (200) ? filter`
+
+How to issue a GET request on a top level entity endpoint and use a query filter to receive a subset of data.
 
 ## GET /todos (200) ? filter
 
@@ -84,7 +86,7 @@ Returned body:
 
 ## Overview Video
 
-{{<youtube-embed key="G-sLuhyPMuw">}}
+{{<youtube-embed key="G-sLuhyPMuw" title="Solution to Get todos with query filter challenge">}}
 
 [Patreon ad free version](https://www.patreon.com/posts/46603286)
 

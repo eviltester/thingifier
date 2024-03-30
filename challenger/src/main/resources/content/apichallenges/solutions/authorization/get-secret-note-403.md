@@ -4,7 +4,9 @@ title: API Challenges Solution For - forbidden secret note 403
 description: How to solve API challenge 31 - forbidden to access secret note 403
 ---
 
-How to complete the unauthorized secret note challenge, which returns a status code of 403 Forbidden.
+# How to complete the unauthorized secret note challenge
+
+When we are not authorized to access information we should receive a status code of 403 Forbidden.
 
 ## 	Authorization Challenge
 
@@ -68,7 +70,7 @@ The `X-CHALLENGER` header authenticates you to access a specific set of secret n
 
 ## Overview Video
 
-{{<youtube-embed key="77mnUQezdas">}}
+{{<youtube-embed key="77mnUQezdas" title="Solution to Get Forbidden challenge">}}
 
 [Patreon ad free version](https://www.patreon.com/posts/54065276)
 

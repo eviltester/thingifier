@@ -32,7 +32,7 @@ Exercises: in browser - GET, viewing traffic, Ajax requests
 
 - [BurpSuite](https://portswigger.net/burp)
     - Free edition more than good enough for API Testing
-- [Owasp ZAP](https://www.owasp.org/index.php/OWASP_Zed_Attack_Proxy_Project)
+- [Owasp ZAP](https://www.zaproxy.org/)
     - Open Source
 - [Fiddler](http://www.telerik.com/fiddler)
     - Windows (Beta: Linux, Mac)

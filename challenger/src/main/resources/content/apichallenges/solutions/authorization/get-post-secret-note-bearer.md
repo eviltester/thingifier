@@ -1,10 +1,12 @@
 ---
 date:  2021-07-25T09:30:00Z
 title: API Challenges Solution For - Use Bearer Tokens
-description: How to solve API challenge 37 and 38 - Use bearer token as authorization mechanism
+description: How to solve API challenge - Use bearer token as authorization mechanism
 ---
 
-How to complete the Bearer Token challenges to GET and POST the secret note.
+# How to complete the Bearer Token challenges
+
+Another authentication mechanism is the Bearer Token. Each API Challenger has a secret note bearer token that can be used to authenticate and GET or POST the secret note.
 
 ## 	Bearer Token Secret Note Challenges
 
@@ -134,7 +136,7 @@ Sample response body:
 
 ## Overview Video
 
-{{<youtube-embed key="8GsMTZxEItw">}}
+{{<youtube-embed key="8GsMTZxEItw" title="Solution to Bearer Token Challenge">}}
 
 [Patreon ad free version](https://www.patreon.com/posts/54091910)
 

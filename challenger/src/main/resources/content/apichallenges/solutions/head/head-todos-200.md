@@ -4,7 +4,9 @@ title: API Challenges Solution For - HEAD todos 200
 description: How to solve API challenge HEAD todos 200
 ---
 
-How to complete the challenge `HEAD /todos (200)`.
+# How to complete the challenge `HEAD /todos (200)`
+
+How to issue a HEAD request and see the results of a GET request without the body of the response, this can be useful for checking the existence of an item when automating.
 
 ## HEAD /todos (200)
 
@@ -49,7 +51,7 @@ How to complete the challenge `HEAD /todos (200)`.
 
 ## Overview Video
 
-{{<youtube-embed key="zKbytTelP84">}}
+{{<youtube-embed key="zKbytTelP84" title="Solution to HEAD specific Todo endpoint">}}
 
 [Patreon ad free version](https://www.patreon.com/posts/41230531)
 

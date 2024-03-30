@@ -51,9 +51,11 @@ public class DefaultGUI {
             html.append(templates.getPageStart("GUI", "", "/gui"));
             html.append(templates.getMenuAsHTML());
 
+            html.append(templates.getStartOfMainContentMarker());
             // allow an app level configuration html here
             html.append(templates.getHomePageContent());
 
+            html.append(templates.getEndOfMainContentMarker());
             html.append(templates.getPageFooter());
             html.append(templates.getPageEnd());
             return html.toString();
@@ -86,8 +88,11 @@ public class DefaultGUI {
                     "/gui/entities"));
 
             html.append(templates.getMenuAsHTML());
+            html.append("<h1>Entities Explorer</h1>");
+            html.append(templates.getStartOfMainContentMarker());
             html.append(getInstancesRootMenuHtml(database));
             //html.append(heading(2, "Choose from the Entities Menu Above"));
+            html.append(templates.getEndOfMainContentMarker());
             html.append(templates.getPageFooter());
             html.append(templates.getPageEnd());
             return html.toString();
@@ -107,6 +112,7 @@ public class DefaultGUI {
                     "<meta name='robots' content='noindex'>", "/gui/instances"));
 
             html.append(templates.getMenuAsHTML());
+            html.append(templates.getStartOfMainContentMarker());
             html.append(getInstancesRootMenuHtml(database));
 
 
@@ -116,10 +122,12 @@ public class DefaultGUI {
             if(entityName!=null) {
 
                 if (!thingifier.getERmodel().hasEntityNamed(entityName)) {
+                    html.append("<h1>Entity Instances Explorer</h1>");
                     htmlErrorMessage = htmlErrorMessage + "<p>Entity Named " + htmlsanitise(entityName) + " not found.</p>";
                 }
 
                 if (!thingifier.getERmodel().getDatabaseNames().contains(database)) {
+                    html.append("<h1>Entity Instances Explorer</h1>");
                     htmlErrorMessage = htmlErrorMessage + "<p>Database Named " + htmlsanitise(database) + " not found. Have you made any API Calls?" + tryDefault + "</p>";
                 }
 
@@ -165,6 +173,7 @@ public class DefaultGUI {
 
             html.append(htmlErrorMessage);
 
+            html.append(templates.getEndOfMainContentMarker());
             html.append(templates.getPageFooter());
             html.append(templates.getPageEnd());
             return html.toString();
@@ -198,7 +207,10 @@ public class DefaultGUI {
             html.append(templates.getPageStart(entityName + " Instance",
                     "<meta name='robots' content='noindex'>",
                     "/gui/instances"));
+
+
             html.append(templates.getMenuAsHTML());
+            html.append(templates.getStartOfMainContentMarker());
 
             EntityInstanceCollection thing = null;
 
@@ -317,6 +329,7 @@ public class DefaultGUI {
 
             html.append(htmlErrorMessage);
 
+            html.append(templates.getEndOfMainContentMarker());
             html.append(templates.getPageFooter());
             html.append(templates.getPageEnd());
             return html.toString();
@@ -377,7 +390,8 @@ public class DefaultGUI {
         final EntityDefinition definition = instance.getEntity();
 
         StringBuilder html = new StringBuilder();
-        html.append("<table>");
+        html.append("<p id='instancetabledescription'>All the fields and values for the %s instance are shown in the table below.<p>".formatted(instance.getEntity().getName()));
+        html.append("<table  aria-label='%s Instance Details' aria-describedby='instancetabledescription'>".formatted(instance.getEntity().getName().toUpperCase()));
         html.append("<thead><tr>");
         for(String fieldName : definition.getFieldNames()) {
             Field field = definition.getField(fieldName);
@@ -466,7 +480,9 @@ public class DefaultGUI {
     private String startHtmlTableFor(final EntityDefinition definition) {
         StringBuilder html = new StringBuilder();
 
-        html.append("<table>");
+
+        html.append("<p id='%1$sentitytabledescription'>All instances for the %1$s entity are shown in the table below.<p>".formatted(definition.getPlural()));
+        html.append("<table  aria-label='%1$s Instance Details' aria-describedby='%1$sentitytabledescription'>".formatted(definition.getPlural()));
         html.append("<thead>");
         html.append("<tr>");
         // guid first

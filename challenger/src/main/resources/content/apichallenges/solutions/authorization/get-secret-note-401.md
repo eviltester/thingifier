@@ -4,6 +4,9 @@ title: API Challenges Solution For - unauthorized secret note 401
 description: How to solve API challenge 32 - unauthorized to access secret note 403
 ---
 
+
+# Hot to solve the Unauthorized challenge
+
 This post and video shows how to complete the unauthorized secret note challenge, which returns a status code of 401 Unauthorized.
 
 ## 	Authorization Challenge
@@ -65,7 +68,7 @@ The `X-CHALLENGER` header authenticates you to access a specific set of secret n
 
 ## Overview Video
 
-{{<youtube-embed key="__uZlQZ48io">}}
+{{<youtube-embed key="__uZlQZ48io" title="Solution to Unauthorized Get challenge">}}
 
 [Patreon ad free version](https://www.patreon.com/posts/54089275)
 

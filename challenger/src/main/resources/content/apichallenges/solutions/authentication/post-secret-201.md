@@ -4,7 +4,9 @@ title: API Challenges Solution For - authentication passed 201
 description: How to solve API challenge 30 - authenticate with username and password for basic auth.
 ---
 
-How to complete the basic auth authentication using username and password challenge number 30, which returns a status code of 201.
+# How to complete the basic auth authentication challenge
+
+One way of authenticating a user is through Basic Auth which requires a username and password in the Auth header.
 
 ## 	Authentication Challenge
 
@@ -63,7 +65,9 @@ Most of the challenges simply require the correct payload, and an X-Challenger h
 < Via: 1.1 vegur
 ~~~~~~~~
 
-**Note that the `Authorization` header does not send the username and password in plain text, it uses Base64 to obscure the details.**
+## Basic Auth uses Base64 Encoding
+
+The `Authorization` header does not send the username and password in plain text, it uses Base64 to obscure the details.
 
 You could see that "admin:password" converts to the Base64 string `YWRtaW46cGFzc3dvcmQ=` by using a Base64 decoder/encoder like https://www.base64decode.org/
 
@@ -82,7 +86,7 @@ The command to encode a string as base64 is `btoa`
 
 ## Overview Video
 
-{{<youtube-embed key="J2GQiuEfHkI">}}
+{{<youtube-embed key="J2GQiuEfHkI" title="Solution to Basic Auth update challenge">}}
 
 [Patreon ad free version](https://www.patreon.com/posts/54058810)
 

@@ -7,7 +7,7 @@ description: A simulated API tutorial - follow the guided instructions and learn
 
 The API has a simulation mode, it uses hard coded data in responses, but tries to mimic some conditions.
 
-{{<youtube-embed key="jlbLr2Ddo6s">}}
+{{<youtube-embed key="jlbLr2Ddo6s" title="How to use simulation mode">}}
 
 
 [Patreon ad free video](https://www.patreon.com/posts/54383023)
@@ -102,13 +102,13 @@ DELETE https://<span class="currenthost">CURRENTHOST</span>/sim/entities/id (204
 
 ## Simulation Mode Walkthrough - Insomnia
 
-{{<youtube-embed key="CG3G5lpxE0Y">}}
+{{<youtube-embed key="CG3G5lpxE0Y" title="How to use Insomnia with simulation mode as example api">}}
 
 [Patreon ad free video](https://www.patreon.com/posts/54383155)
 
 ## Simulation Mode Walkthrough - Postman
 
-{{<youtube-embed key="CF3gVz9zc2s">}}
+{{<youtube-embed key="CF3gVz9zc2s" title="How to use Postman with simulation mode as example api">}}
 
 [Patreon ad free video](https://www.patreon.com/posts/54383110)
 

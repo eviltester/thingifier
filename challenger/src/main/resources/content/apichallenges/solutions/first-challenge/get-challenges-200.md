@@ -3,7 +3,9 @@ title: API Challenges Solution For - GET Challenges (200)
 description: How to use a GET request with an x-challenger header to get the progress status of all the API Challenges
 ---
 
-How to complete the challenge `GET /challenges 200`.
+# How to complete the challenge `GET /challenges 200`.
+
+How to use a GET request with an x-challenger header to get the progress status of all the API Challenges.
 
 ## GET /challenges (200)
 
@@ -68,7 +70,7 @@ How to complete the challenge `GET /challenges 200`.
 
 ## Overview Video
 
-{{<youtube-embed key="DrAjk2NaPRo">}}
+{{<youtube-embed key="DrAjk2NaPRo" title="Solution to Get Challenges progress">}}
 
 [Patreon ad free version](https://www.patreon.com/posts/41106708)
 

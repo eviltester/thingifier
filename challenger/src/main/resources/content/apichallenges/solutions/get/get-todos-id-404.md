@@ -4,7 +4,9 @@ title: API Challenges Solution For - GET todos id 404
 description: How to solve challenge GET todos id 404.
 ---
 
-How to complete the challenge `GET /todos/id 404`.
+# How to complete the challenge `GET /todos/id 404`.
+
+How to receive a 404 status code response by trying to GET a todo item by id for a non-existent todo item.
 
 ## GET /todos/id (404)
 
@@ -60,7 +62,7 @@ How to complete the challenge `GET /todos/id 404`.
 
 ## Overview Video
 
-{{<youtube-embed key="1S5kpd8-xfM">}}
+{{<youtube-embed key="1S5kpd8-xfM" title="Solution to Get Missing Todo 404">}}
 
 [Patreon ad free version](https://www.patreon.com/posts/41109076)
 

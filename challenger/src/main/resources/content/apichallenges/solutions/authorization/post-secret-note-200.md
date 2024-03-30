@@ -4,7 +4,10 @@ title: API Challenges Solution For - POST amend secret note 200
 description: How to solve API challenge 34 - amend the secret note with a POST request and receive 200 status code
 ---
 
-How to complete the POST secret note challenge, which returns a status code of 200 and amends the secret note.
+# How to complete the POST secret note challenge
+
+When we are authenticated and authorized we can amend secured user information.
+In the API Challenges we do this by POST request to the user's secrete note endpoint which returns a status code of 200 and amends the secret note.
 
 ## 	POST Amend Secret Note Challenge
 
@@ -91,7 +94,7 @@ Example body of the response:
 
 ## Overview Video
 
-{{<youtube-embed key="A9T9yjzEOEE">}}
+{{<youtube-embed key="A9T9yjzEOEE" title="Solution to POST authorization challenge using header">}}
 
 [Patreon ad free version](https://www.patreon.com/posts/54090441)
 

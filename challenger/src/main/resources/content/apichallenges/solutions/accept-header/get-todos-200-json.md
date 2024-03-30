@@ -80,7 +80,7 @@ Example Response body:
 
 ## Overview Video
 
-{{<youtube-embed key="79JTHiby2Qw">}}
+{{<youtube-embed key="79JTHiby2Qw" title="Solution to GET todos in JSON format">}}
 
 [Patreon ad free version](https://www.patreon.com/posts/51045284)
 

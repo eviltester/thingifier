@@ -3,7 +3,9 @@ title: API Challenges Solution For - GET todos id 200
 description: How to solve challenge GET todos id 200.
 ---
 
-How to complete the challenge `GET /todos/id 200`.
+# How to complete the challenge `GET /todos/id 200`.
+
+How to issue a GET request for an existing todo item using the id of the item and receive a 200 status code and see the todo item as JSON in the response body.
 
 ## GET /todos/id (200)
 
@@ -65,7 +67,7 @@ How to complete the challenge `GET /todos/id 200`.
 
 ## Overview Video
 
-{{<youtube-embed key="JDbbSY3U_rY">}}
+{{<youtube-embed key="JDbbSY3U_rY" title="Solution to Get Specific Todo by ID">}}
 
 [Patreon ad free version](https://www.patreon.com/posts/41108384)
 

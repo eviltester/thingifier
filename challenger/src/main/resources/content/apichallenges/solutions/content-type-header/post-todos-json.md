@@ -4,7 +4,9 @@ title: API Challenges Solution For - POST todos create todo with JSON
 description: How to solve API challenge POST todos JSON. Creating a todo with JSON format.
 ---
 
-How to complete the challenge `POST /todos JSON` to send a POST request to create a todo item with body and response in JSON format.
+# How to complete the challenge `POST /todos JSON`
+
+To fully specify a request and response format we should control the `content-type` and `accept` headers. In this challenge we do this to send a POST request to create a todo item with body and response in JSON format.
 
 ## 	POST /todos JSON
 
@@ -109,7 +111,7 @@ Example Response body:
 
 ## Overview Video
 
-{{<youtube-embed key="VS9qIhgp51Q">}}
+{{<youtube-embed key="VS9qIhgp51Q" title="Solution to JSON content-type challenge">}}
 
 [Patreon ad free version](https://www.patreon.com/posts/53795265)
 

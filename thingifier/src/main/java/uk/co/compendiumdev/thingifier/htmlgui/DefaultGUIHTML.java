@@ -83,8 +83,8 @@ public class DefaultGUIHTML {
 
     public String getPageStart(final String title, final String headInject, final String canonical){
         StringBuilder html = new StringBuilder();
-        html.append("<html><head>");
-        html.append("<meta http-equiv='content-language' content='en-us'>");
+        html.append("<!DOCTYPE html><html lang='en'><head>");
+        html.append("<meta charset='UTF-8'>");
         html.append("<title>" + title + "</title>");
         html.append(" <link rel='stylesheet' href='/css/default.css'>");
         String injectFromEnv = System.getenv("HTML_HEAD_INJECT");
@@ -117,6 +117,7 @@ public class DefaultGUIHTML {
 
     public String getMenuAsHTML() {
         StringBuilder html = new StringBuilder();
+        html.append("<div class='accessibilityskiplink'><a href='#maincontentstartshere'>Skip to main content</a></div>");
         html.append("<div class='rootmenu menu'>");
         html.append("<ul>");
         for(GuiMenuItem menu : menuItems){
@@ -129,6 +130,16 @@ public class DefaultGUIHTML {
         return html.toString();
     }
 
+    public String getStartOfMainContentMarker(){
+        return "<main id='maincontentstartshere'>";
+    }
+
+    public String getEndOfMainContentMarker(){
+        return "</main>";
+        // end the main tag that we are assuming was already added
+        // - potential for user created invalid HTML
+    }
+
     public String getPageFooter(){
 
         if(customFooter.length()>0){
@@ -137,6 +148,9 @@ public class DefaultGUIHTML {
 
         StringBuilder html = new StringBuilder();
         html.append("<p>&nbsp;</p><hr/>");
+
+
+
         html.append("<div class='footer'>");
         html.append(paragraph(
                 String.format(

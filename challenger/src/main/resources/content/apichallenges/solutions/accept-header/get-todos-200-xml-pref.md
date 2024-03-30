@@ -4,7 +4,7 @@ title: API Challenges Solution For - GET todos XML as Preference 200
 description: How to solve API challenge GET todos XML 200 to accept the todos in XML format as preferred format.
 ---
 
-## Use Accept Headers to GET XML Content as a preference
+# Use Accept Headers to GET XML Content as a preference
 
 How to complete the challenge `GET /todos XML (200)` to successfully GET all the todos in XML format as first preference.
 
@@ -83,7 +83,7 @@ Example Response body:
 
 ## Overview Video
 
-{{<youtube-embed key="sLChuy9pc9U">}}
+{{<youtube-embed key="sLChuy9pc9U" title="Solution to Get all Todos in XML as preferred format">}}
 
 [Patreon ad free version](https://www.patreon.com/posts/51831256)
 

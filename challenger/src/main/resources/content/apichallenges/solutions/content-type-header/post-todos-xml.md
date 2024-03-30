@@ -4,7 +4,9 @@ title: API Challenges Solution For - POST todos create todo with XML
 description: How to solve API challenge POST todos XML. Creating a todo with XML format.
 ---
 
-How to complete the challenge `POST /todos XML` to send a POST request to create a todo item with body and response in XML format.
+# How to complete the challenge `POST /todos XML`
+
+The `content-type` should match the data in the request. In this case we will send a POST request to create a todo item with body and response in XML format.
 
 ## 	POST /todos XML
 
@@ -109,7 +111,7 @@ Example Response body:
 
 ## Overview Video
 
-{{<youtube-embed key="2-KBYHwb7MM">}}
+{{<youtube-embed key="2-KBYHwb7MM" title="Solution to XML content-type challenge">}}
 
 [Patreon ad free version](https://www.patreon.com/posts/53794821)
 

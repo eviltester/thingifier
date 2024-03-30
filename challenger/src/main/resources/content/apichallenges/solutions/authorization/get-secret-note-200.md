@@ -4,7 +4,10 @@ title: API Challenges Solution For - GET authorized secret note 200
 description: How to solve API challenge 33 - authorized to access secret note 200
 ---
 
-How to complete the GET Authorized secret note challenge, which returns a status code of 200 and the secret note.
+# How to complete the GET Authorized secret note challenge
+
+To access the secret note we need to be Authenticated and Authorized, only then can we GET protected information.
+The API Challenge returns a status code of 200 and the secret note when we are authorized to do so.
 
 ## 	Authorization Challenge
 
@@ -73,7 +76,7 @@ Example body of the response:
 
 ## Overview Video
 
-{{<youtube-embed key="2uRpzr2OmEY">}}
+{{<youtube-embed key="2uRpzr2OmEY" title="Solution to Get authorization challenge using header">}}
 
 [Patreon ad free version](https://www.patreon.com/posts/54089625)
 

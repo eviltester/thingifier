@@ -4,7 +4,12 @@ title: API Challenges Solution For - POST todos (415)
 description: How to solve API challenge POST todos 415. Failing to creating a todo due to unsupported content format.
 ---
 
-How to complete the challenge `POST /todos (415)` to send a POST request to try and create a todo item but with unsupported content type.
+# How to complete the challenge `POST /todos (415)`
+
+Most APIs will report an error when the `content-type` is specified as a format that they do not support.
+Some APIs will parse the input using their default processing which can often result in a 500 error.
+The API Challenges checks the `content-type` and if it is unsupported returns a 415 status code,
+to see this we send a POST request to try and create a todo item but with unsupported content type.
 
 ## 	POST /todos (415)
 
@@ -82,7 +87,7 @@ Example Response body:
 
 ## Overview Video
 
-{{<youtube-embed key="L8H-vkbXyr0">}}
+{{<youtube-embed key="L8H-vkbXyr0" title="Solution to unsupported content type challenge">}}
 
 [Patreon ad free version](https://www.patreon.com/posts/53795763)
 

@@ -4,7 +4,10 @@ title: API Challenges Solution For - authentication failed 401
 description: How to solve API challenge 29 - authentication failed with username and password.
 ---
 
-How to complete the authentication failed with username and password challenge number 29, which returns a status code of 401.
+# How to complete the authentication failed challenge
+
+How to complete the authentication failed with username and password challenge by adding a Basic Auth header with
+the wrong details. In response the API returns a status code of 401.
 
 ## 	Authentication Challenge
 
@@ -86,7 +89,7 @@ The command to encode a string as base64 is `btoa`
 
 ## Overview Video
 
-{{<youtube-embed key="RSQGADU3SLA">}}
+{{<youtube-embed key="RSQGADU3SLA" title="Solution to failed basic auth challenge">}}
 
 [Patreon ad free version](https://www.patreon.com/posts/54057993)
 

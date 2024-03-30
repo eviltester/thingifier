@@ -4,7 +4,9 @@ title: API Challenges Solution For - GET todos xml 200
 description: How to solve API challenge GET todos xml 200 to accept the todos in xml format.
 ---
 
-How to complete the challenge `GET /todos XML (200)` to successfully GET all the todos in XML format.
+# How to complete the challenge `GET /todos XML (200)`
+
+When we issue a GET request we can use the `Accept` header to request a specific format of result from the API. In this case we will ask for XML to successfully GET all the todos in XML format.
 
 ## GET /todos XML (200)
 
@@ -77,7 +79,7 @@ Example Response body:
 
 ## Overview Video
 
-{{<youtube-embed key="cLeEuZm2VG8">}}
+{{<youtube-embed key="cLeEuZm2VG8" title="Solution to Get all Todos in XML format">}}
 
 [Patreon ad free version](https://www.patreon.com/posts/50348257)
 

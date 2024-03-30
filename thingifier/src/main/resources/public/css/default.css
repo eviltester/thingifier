@@ -127,3 +127,22 @@ pre.json{
     background: aliceblue;
     padding: 1em;
 }
+
+/* skip navigation accessibility */
+
+.accessibilityskiplink a
+{
+    position:absolute;
+    left:-10000px;
+    top:auto;
+    width:1px;
+    height:1px;
+    overflow:hidden;
+}
+
+.accessibilityskiplink a:focus
+{
+    position:static;
+    width:auto;
+    height:auto;
+}

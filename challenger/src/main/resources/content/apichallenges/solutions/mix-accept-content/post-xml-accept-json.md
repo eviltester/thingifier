@@ -4,7 +4,10 @@ title: API Challenges Solution For - POST XML accept JSON
 description: How to solve API challenge POST /todos XML to JSON. Creating a todo with XML and receiving response in JSON.
 ---
 
-How to complete the challenge `POST /todos XML to JSON` to send a POST request to create a todo item using XML but receive JSON response.
+# How to complete the challenge `POST /todos XML to JSON`
+
+When an API supports multiple formats in request and response we might be able to mix and match.
+In this challenge we send a POST request to create a todo item using XML but receive JSON response.
 
 ## 	POST /todos XML to JSON
 
@@ -93,7 +96,7 @@ Example Response body:
 
 ## Overview Video
 
-{{<youtube-embed key="kfe7VtaV7u0">}}
+{{<youtube-embed key="kfe7VtaV7u0" title="Solution to POST Todo in XML with response in JSON">}}
 
 [Patreon ad free version](https://www.patreon.com/posts/53796838)
 

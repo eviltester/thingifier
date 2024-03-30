@@ -4,7 +4,9 @@ title: API Challenges Solution For - POST todos/id 200
 description: How to solve API challenge POST todos/id 200 to update a todo in the application.
 ---
 
-How to complete the challenge `POST /todos/id (200)` to successfully update a todo item in the application.
+# How to complete the challenge `POST /todos/id (200)`
+
+How to use a POST request to successfully update a todo item in the application.
 
 ## POST /todos/id (200)
 
@@ -93,7 +95,7 @@ Returned body:
 
 ## Overview Video
 
-{{<youtube-embed key="feXdRpZ_tgs">}}
+{{<youtube-embed key="feXdRpZ_tgs" title="Solution to amend a todo item using POST">}}
 
 [Patreon ad free version with transcript](https://www.patreon.com/posts/48448220)
 

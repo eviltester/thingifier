@@ -56,6 +56,7 @@ public class RestApiDocumentationGenerator {
 
         output.append(defaultGui.getPageStart("API Documentation", "", canonicalUrl));
         output.append(defaultGui.getMenuAsHTML());
+        output.append(defaultGui.getStartOfMainContentMarker());
 
 
         if(urlPath!=null){
@@ -125,9 +126,7 @@ public class RestApiDocumentationGenerator {
                 output.append(heading(4, aThingDefinition.getName()));
 
                 output.append("Fields:\n");
-                output.append("<ul>\n");
 
-                // todo: generate an example Thing
                 final DocumentationThingInstance exampleThing = new DocumentationThingInstance(aThingDefinition);
 
                 output.append("<table>\n");
@@ -157,6 +156,7 @@ public class RestApiDocumentationGenerator {
                     output.append(String.format("<td>%s</td>", theField.getType()));
 
                     output.append("<td>");
+
                     output.append("<ul>");
                     for (ValidationRule validation : theField.validationRules()) {
                         //use the validation error message in the documentation
@@ -278,7 +278,7 @@ public class RestApiDocumentationGenerator {
             if (!currentEndPoint.equalsIgnoreCase(routingDefn.url())) {
                 // new endpoint
                 output.append(heading(4, "endpoint", "/" + routingDefn.url()));
-                output.append(paragraph("e.g. <span class='endpoint'>" + url(routingDefn.url()) + "</span"));
+                output.append(paragraph("e.g. <span class='endpoint'>" + url(routingDefn.url()) + "</span>"));
 
                 if(routingDefn.isFilterable() &&
                         thingifier.apiConfig().forParams().willAllowFilteringThroughUrlParams()){
@@ -287,7 +287,7 @@ public class RestApiDocumentationGenerator {
                     output.append(paragraph("This endpoint can be filtered with fields as URL Query Parameters."));
                     String exampleFilter = getExampleFilter(routingDefn.getFilterableEntity());
                     if(exampleFilter!=null && exampleFilter.length()>0){
-                        output.append(paragraph("e.g. <span class='endpoint'>" + url(routingDefn.url()) + exampleFilter + "</span"));
+                        output.append(paragraph("e.g. <span class='endpoint'>" + url(routingDefn.url()) + exampleFilter + "</span>"));
                     }
                 }
 
@@ -304,7 +304,7 @@ public class RestApiDocumentationGenerator {
         }
 
         output.append(heading(4, "/docs"));
-        output.append(paragraph("e.g. <span class='endpoint'>" + url("/docs") + "</span"));
+        output.append(paragraph("e.g. <span class='endpoint'>" + url("/docs") + "</span>"));
         output.append(String.format("<ul>%n<li class='endpoint'>%n<strong>%s /%s</strong><ul><li class='normal'>%s</li></ul></li>%n</ul>",
                 "GET", url("/docs"), "Show this documentation as HTML."));
 
@@ -314,7 +314,7 @@ public class RestApiDocumentationGenerator {
                 if (!processedAdditionalRoutes.contains(route.url())){
                     output.append(heading(4, "/" + route.url()));
                     processedAdditionalRoutes.add(route.url());
-                    output.append(paragraph("e.g. <span class='endpoint'>" + url(route.url()) + "</span"));
+                    output.append(paragraph("e.g. <span class='endpoint'>" + url(route.url()) + "</span>"));
 
                     // handle all verbs for this route
                     for (RoutingDefinition subroute : additionalRoutes) {
@@ -330,6 +330,7 @@ public class RestApiDocumentationGenerator {
 
         output.append(paragraph(href("[download swagger file]","/docs/swagger")));
 
+        output.append(defaultGui.getEndOfMainContentMarker());
         output.append(defaultGui.getPageFooter());
         output.append(defaultGui.getPageEnd());
         return output.toString();

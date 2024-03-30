@@ -4,7 +4,9 @@ title: API Challenges Solution For - GET todos Invalid Accept Header 406
 description: How to solve API challenge GET todos Invalid Accept 406 to GET the todos with an unsupported accept header present which generates a 406 error response.
 ---
 
-How to complete the challenge `GET /todos (406)` to send a GET request for all todos but passing in an 'accept' format that the system does not support.
+# How to complete the challenge `GET /todos (406)`
+
+Some APIs will report an error when asked for a return format that they do not support. Other APIs will respond with a default. The API Challenges will respond with a `406` status code. We can test for this by sending a GET request for all todos but pass in an 'accept' format that the system does not support.
 
 ## 	GET /todos (406)
 
@@ -70,7 +72,7 @@ Example Response body:
 
 ## Overview Video
 
-{{<youtube-embed key="QzfbegkY1ok">}}
+{{<youtube-embed key="QzfbegkY1ok" title="Solution to Get all Todos in usupported format">}}
 
 [Patreon ad free version](https://www.patreon.com/posts/53793842)
 

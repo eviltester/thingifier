@@ -4,7 +4,9 @@ title: API Challenges Solution For - POST todos 201
 description: How to solve API challenge POST todos 201 to create a todo item in the application.
 ---
 
-How to complete the challenge `POST /todos (201)` to create a todo item in the application.
+# How to complete the challenge `POST /todos (201)`
+
+How to use a POST request to create a todo item in the application and receive a 201 status response code.
 
 ## POST /todos (201)
 
@@ -64,7 +66,7 @@ How to complete the challenge `POST /todos (201)` to create a todo item in the a
 
 ## Overview Video
 
-{{<youtube-embed key="T0LFHwavsNA">}}
+{{<youtube-embed key="T0LFHwavsNA" title="Solution to create a Todo item using POST">}}
 
 [Patreon ad free version](https://www.patreon.com/posts/41230767)
 
