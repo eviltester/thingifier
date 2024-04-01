@@ -47,6 +47,7 @@ public class DefaultGUI {
 
         String tryDefault = " [<a href='/gui/instances?entity=todo&database=__default'>explore default data</a>]";
 
+        // TODO: separate the HTML rendering from the HTTP routing with a class e.g. DefaultEntitesExplorerHTML
         get("/gui", (request, response) -> {
             response.type("text/html");
             response.status(200);
