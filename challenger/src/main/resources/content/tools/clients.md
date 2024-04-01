@@ -83,9 +83,9 @@ curl https://apichallenges.eviltester.com/todos -H "accept: application/xml"
 
 [cURL](https://curl.se) Can be complicated but useful for emergencies, scripting, bug reporting.
 
-_Hint: can use Postman or Insomnia to generate cURL code but different continuation characters on different operating systems: `^` Windows and `\` on Mac/Linux also `"` and `'` differences._
+> **HINT**: you can use Postman or Insomnia to generate cURL code but different continuation characters on different operating systems: `^` Windows and `\` on Mac/Linux also `"` and `'` differences.
 
-> NOTE: By default Windows Powershell has a `curl` command but it is not really curl. It is an alias around `Invoke-WebRequest` and does not have all cURL features or use all the command line parameters. e.g. all the cURL examples listed above would fail. But if you change `curl` to `curl.exe` you can start using the non-alias Windows preinstalled `cURL` tool.
+> **NOTE**: By default Windows Powershell has a `curl` command but it is not really curl. It is an alias around `Invoke-WebRequest` and does not have all cURL features or use all the command line parameters. e.g. all the cURL examples listed above would fail. But if you change `curl` to `curl.exe` you can start using the non-alias Windows preinstalled `cURL` tool.
 
 ## Why test interactively and not just automate?
 

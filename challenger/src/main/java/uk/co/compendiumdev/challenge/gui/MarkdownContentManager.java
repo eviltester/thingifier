@@ -7,8 +7,6 @@ import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import spark.Request;
-import spark.Response;
 import uk.co.compendiumdev.thingifier.htmlgui.DefaultGUIHTML;
 
 import java.io.BufferedReader;
@@ -32,13 +30,14 @@ public class MarkdownContentManager {
 
 
     // TODO: this is currently a hacked in solution for experimenting, pull it out into classes and create state enum
-    public String getResourceMarkdownFileAsHtml(String contentPath) {
-
-        // all html content that is parsed will be in content folder in resources so we don't need to add that in the url
-        String contentFolder = "content";
+    public String getResourceMarkdownFileAsHtml(String contentFolder, String contentPath) {
 
         if(contentPath.endsWith(".html")){
             contentPath = contentPath.replace(".html", "");
+        }
+
+        if(contentPath.endsWith(".md")){
+            contentPath = contentPath.replace(".md", "");
         }
 
         String contentToFind = contentFolder + contentPath + ".md";
@@ -52,13 +51,13 @@ public class MarkdownContentManager {
 
     }
 
-    private String getHtmlVersionOfMarkdownContent(String contentFolder, String contentPath) {
+    public String getHtmlVersionOfMarkdownContent(String contentFolder, String contentPath) {
 
         InputStream inputStream = getResourceAsStream(contentFolder + contentPath + ".md");
 
         String[] breadcrumbs = Arrays.stream(
                         contentPath.split("/")).
-                filter(item -> item != null && !"".equals(item)
+                filter(item -> item != null && !item.isEmpty()
                 ).toArray(String[]::new);
 
         StringBuilder bcHeader = new StringBuilder();
@@ -92,7 +91,8 @@ public class MarkdownContentManager {
         }
 
 
-
+        String headerInject = "";
+        String youtubeHeaderInject = "";
 
 
         List<Extension> extensions = Arrays.asList(TablesExtension.create());
@@ -142,20 +142,31 @@ public class MarkdownContentManager {
                 // process any macros
                 line = processMacrosInContentLine(line);
 
-                mdcontent.append(line + "\n");
-
-                // inject table of contents
-                if (line.startsWith("# ") && !addedToc) {
-                    addedToc = true;
-                    mdcontent.append("\n<div id='toc'></div>\n");
+                if(line.contains("youtube.com/watch")){
+                    if(youtubeHeaderInject.isEmpty()){
+                        // only import the facade if we are rendering youtube
+                        youtubeHeaderInject = "<script type=\"module\" src=\"https://cdn.jsdelivr.net/npm/@justinribeiro/lite-youtube@1.5.0/lite-youtube.js\"></script>";
+                    }
                 }
 
-                // Print the content on the console
-                //System.out.println (line);
+                mdcontent.append(line + "\n");
+
+                // todo: better header parsing, and parse headers separate from the main body
+                if(!mdheaders.contains("template: index")) {
+                    // inject table of contents
+                    if (line.startsWith("# ") && !addedToc) {
+                        addedToc = true;
+                        mdcontent.append("\n<div id='toc'></div>\n");
+                    }
+                }
+
             }
         }catch(Exception e){
             logger.error("Markdown parsing error", e);
         }
+
+
+        headerInject = headerInject + youtubeHeaderInject;
 
         String markdownFromResource = mdcontent.toString();
         Node document = parser.parse(markdownFromResource);
@@ -165,6 +176,7 @@ public class MarkdownContentManager {
 
         String pageTitle = "Content Page";
         String pageDescription = "";
+        String canonicalUrl = "https://apichallenges.eviltester.com"+contentPath;
 
         for(String aHeader : mdheaders){
             if(aHeader.startsWith("title: ")){
@@ -173,9 +185,12 @@ public class MarkdownContentManager {
             if(aHeader.startsWith("description: ")){
                 pageDescription = aHeader.replace("description: " , "");
             }
+            if(aHeader.startsWith("canonical: ")){
+                canonicalUrl = aHeader.replace("canonical: " , "");
+            }
         }
 
-        String headerInject = "";
+
         if(!pageDescription.isEmpty()){
             headerInject = headerInject + "<meta name='description' content ='" + pageDescription + "'>";
         }
@@ -185,19 +200,24 @@ public class MarkdownContentManager {
                 """
         <script src='/js/toc.js'></script>
         <script src='/js/externalize-links.js'></script>
-        """+headerInject, "https://apichallenges.eviltester.com"+contentPath));
+        """+headerInject, canonicalUrl));
 
         html.append(guiManagement.getMenuAsHTML());
-        html.append("<section class='doc-columns'>");
-        html.append("<div class='left-column'>");
-        html.append(renderer.render(parser.parse(dropDownMenuAsMarkdown())));
-        html.append("</div>");
-        html.append("<div class='right-column'>");
+        // todo: create proper templates
+        if(!mdheaders.contains("template: index")) {
+            html.append("<section class='doc-columns'>");
+            html.append("<div class='left-column'>");
+            html.append(renderer.render(parser.parse(dropDownMenuAsMarkdown())));
+            html.append("</div>");
+            html.append("<div class='right-column'>");
+        }
         html.append(guiManagement.getStartOfMainContentMarker());
         html.append(renderer.render(document));
         html.append(guiManagement.getEndOfMainContentMarker());
-        html.append("</div>");
-        html.append("</section>");
+        if(!mdheaders.contains("template: index")) {
+            html.append("</div>");
+            html.append("</section>");
+        }
         html.append(guiManagement.getPageFooter());
         html.append(guiManagement.getPageEnd());
 
@@ -236,15 +256,22 @@ public class MarkdownContentManager {
             return line;
 
 
-        String youTubeHtmlBlock = """
-<div class="video-container">
-    <iframe class='youtube-video' title='Watch Video - $2' loading='lazy' src="https://www.youtube.com/embed/$1" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-</div>
-<div><p class="center-text"><a href="https://www.youtube.com/watch?v=$1" target="_blank">Watch on YouTube - $2</a></p></div>
+//        String youTubeHtmlBlock = """
+//<div class="video-container">
+//    <iframe class='youtube-video' title='Watch Video - $2' loading='lazy' src="https://www.youtube.com/embed/$1" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+//</div>
+//<div><p class="center-text"><a href="https://www.youtube.com/watch?v=$1" target="_blank">Watch on YouTube - $2</a></p></div>
+//        """;
 
+        // use YoutubeFacade https://github.com/justinribeiro/lite-youtube
+        String youTubeHtmlBlock = """
+<lite-youtube videoid="$1">
+  <a class="lite-youtube-fallback" href="https://www.youtube.com/watch?v=$1">Watch on YouTube: "$2"</a>
+</lite-youtube>
         """;
 
-        line = line.replaceAll("\\{\\{<youtube-embed key=\"([a-zA-Z0-9_-]+)\" title=\"(.+)\">}}", youTubeHtmlBlock);
+        String youtubeMacroRegex = "\\{\\{<youtube-embed key=\"([a-zA-Z0-9_-]+)\" title=\"(.+)\">}}";
+        line = line.replaceAll(youtubeMacroRegex, youTubeHtmlBlock);
 
         return line;
     }

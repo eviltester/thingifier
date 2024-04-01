@@ -61,9 +61,9 @@ Then you should see the status of your challenges.
 
 ### How to Play Summary
 
-In multi user mode i.e. when using the `apichallenges.eviltester.com` installation, you will need to create an `X-CHALLENGER` session. This session will be stored on the cloud so you can revisit it and continue your challenges later.
+In multi user mode i.e. when using the `apichallenges.eviltester.com` installation, you will need to create an `X-CHALLENGER` session.
 
-_Old sessions will be deleted after a few days/weeks/months (really depends on how many people use the system)._
+Sessions can be stored in localstorage in the browser, or on your local machine (using the API) so you can revisit it and continue your challenges later.
 
 To start a session:
 
@@ -95,7 +95,7 @@ You can restore a session's progress, by using the same `X-CHALLENGER` header an
 
 If you view the challenges page:
 
-- [https://apichallenges.eviltester.com/gui/challenges](https://apichallenges.eviltester.com/gui/challenges)
+- [apichallenges.eviltester.com/gui/challenges](https://apichallenges.eviltester.com/gui/challenges)
 
 Then your challenger guid should have been stored in the browser local storage, to make it easier for you to find and restart your session.
 

@@ -11,7 +11,6 @@ import uk.co.compendiumdev.challenge.persistence.PersistenceResponse;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.htmlgui.DefaultGUIHTML;
 
-import java.io.*;
 import java.util.*;
 
 import static spark.Spark.*;
@@ -56,11 +55,7 @@ public class ChallengerWebGUI {
 
         guiManagement.setFooter(getChallengesFooter());
 
-        // use the index.html to allow easier creation of docs and landing page
-//        get("/", (request, result) -> {
-//            result.redirect("/gui");
-//            return "";
-//        });
+
 
         // could redirect to eviltester.com if the canonical doesn't change the search indexing from heroku to eviltester
 //        before((request, response) -> {
@@ -92,7 +87,7 @@ public class ChallengerWebGUI {
             String endPointForMarkdownFile = pathToMarkdownFile.replaceFirst("content/","/").replace(".md","");
             get(endPointForMarkdownFile, ((request, response) -> {
                 try {
-                    String responseBody = contentManager.getResourceMarkdownFileAsHtml(request.pathInfo());
+                    String responseBody = contentManager.getResourceMarkdownFileAsHtml("content", request.pathInfo());
                     response.body(responseBody);
                     response.type("text/html");
                     if(response.raw().containsHeader("x-robots-tag")){
@@ -111,7 +106,18 @@ public class ChallengerWebGUI {
         // TODO: using the ResourceContentScanner, we could build the sitemap.xml automatically
 
 
-
+        // use the site/index.md to allow easier creation of landing page, rather than public/index.hmlt
+        get("/", (request, response) -> {
+            String responseBody = contentManager.getHtmlVersionOfMarkdownContent("site", "/index");
+            response.body(responseBody);
+            response.type("text/html");
+            if(response.raw().containsHeader("x-robots-tag")){
+                // we want it indexed because it is content
+                response.raw().setHeader("x-robots-tag", "all");
+            }
+            response.status(200);
+            return "";
+        });
 
         // single user / default session
         get("/gui/challenges", (request, result) -> {

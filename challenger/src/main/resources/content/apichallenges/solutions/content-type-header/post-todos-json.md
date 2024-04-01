@@ -58,7 +58,7 @@ We only need to use the minimum details, but could add a description if we wante
 - Check the `content-type` header in the response has `application/json` matching the requested accept format
 
 
-**Extras:**
+## Additional Exercises
 
 - you might want to experiment with removing fields like 'description', what happens if you miss out fields?
 - check the `Location` header has the endpoint we can use to retrieve the todo, issue a `GET` on that endpoint to retrieve the details of the todo

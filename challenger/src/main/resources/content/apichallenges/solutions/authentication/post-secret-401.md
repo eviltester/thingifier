@@ -65,7 +65,7 @@ Most of the challenges simply require the correct payload, and an X-Challenger h
 < Via: 1.1 vegur
 ~~~~~~~~
 
-**Note that the `Authorization` header does not send the username and password in plain text, it uses Base64 to obscure the details.**
+The `Authorization` header does not send the username and password in plain text, it uses Base64 to obscure the details.
 
 You could see what username and password I used by typing the Base64 string `YWRtaW46cGFzc3dvcmRk` into a Base64 decoder like https://www.base64decode.org/
 
@@ -77,12 +77,12 @@ atob('YWRtaW46cGFzc3dvcmRk')
 
 The command to encode a string as base64 is `btoa`
 
-**Note also that although we add an "Authorization" header, really we are trying to "authenticate" with a set of user details.**
+Although we add an "Authorization" header, really we are trying to "authenticate" with a set of user details.
 
 - Authorization is "do you have the right permissions"
 - Authentication is "are you who you say you are"
 
-## Extras
+## Additional Exercises
 
 - try creating a base64 Authorization header by hand, without using the "Auth" tab in Insomnia
 

@@ -13,6 +13,8 @@ Their support helps:
 - support ongoing development
 - support creation of associated free training material
 
+If you are a company or corporation that would like to sponsor the project then contact [Alan Richardson](https://linkedin.com/in/eviltester) for more details.
+
 ## Current Platinum sponsor
 
 [![](https://www.eviltester.com/siteimages/evil_laugh_cleaned_transparent_h300.png)](https://eviltester.com)
