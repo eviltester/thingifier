@@ -232,7 +232,7 @@ public class RestApiDocumentationGenerator {
             }
         }
 
-        if (relationships != null) {
+        if (relationships != null && !relationships.isEmpty()) {
             output.append(heading(3, "Relationships"));
             output.append("<ul>\n");
 

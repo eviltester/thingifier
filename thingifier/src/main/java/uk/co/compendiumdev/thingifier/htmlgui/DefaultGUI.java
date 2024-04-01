@@ -24,6 +24,8 @@ public class DefaultGUI {
     // TODO: templates or tidier way to create the default GUI pages with styling
     // todo: support filters in the GUI Urls
 
+
+
     private final Thingifier thingifier;
     private final JsonThing jsonThing;
     private final DefaultGUIHTML templates;
@@ -40,6 +42,7 @@ public class DefaultGUI {
         this.XMLPrettyPrinter = new GenericXMLPrettyPrinter();
     }
 
+    // TODO: we should support a top level path e.g. apichallenges, simpleapi which goes before /gui because we should support multiple GUI views with multiple thingifiers
     public DefaultGUI configureRoutes(){
 
         String tryDefault = " [<a href='/gui/instances?entity=todo&database=__default'>explore default data</a>]";
@@ -62,6 +65,7 @@ public class DefaultGUI {
         });
 
 
+        // TODO: move out the append menu item from the routes into a different class
         templates.appendMenuItem("Home", "/gui");
 
         // This is not an API call - don't show it in API documentation
@@ -342,6 +346,8 @@ public class DefaultGUI {
         return String.format("<p>Exploring Entities in %s session database.</p>",htmlsanitise(database));
     }
 
+    // TODO: multiple thingifiers would require different cookie names - give Thingifier a name and include in cookie
+    // e.g. X-APICHALLENGES-THINGIFIER-DATABASE-NAME, X-SIMPLEAPI-THINGIFIER-DATABASE-NAME
     private String getDatabaseNameFromRequest(Request request) {
 
         String xdatabasename = "";
