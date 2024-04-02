@@ -11,6 +11,7 @@ import uk.co.compendiumdev.challenge.persistence.PersistenceResponse;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.htmlgui.DefaultGUIHTML;
 
+import java.time.LocalDate;
 import java.util.*;
 
 import static spark.Spark.*;
@@ -104,8 +105,22 @@ public class ChallengerWebGUI {
         }
 
         // TODO: using the ResourceContentScanner, we could build the sitemap.xml automatically
+        SiteMapXml siteMap = new SiteMapXml();
+        Map<String, LocalDate> contentUrls = contentScanner.scanForUrlsWithDates("content/", "md");
+        for(String pathToMarkdownFile : contentUrls.keySet()){
+            siteMap.addUrl("https://apichallenges.eviltester.com/"+pathToMarkdownFile,contentUrls.get(pathToMarkdownFile).toString());
+        }
+        siteMap.addUrl("https://apichallenges.eviltester.com", LocalDate.now().toString());
+        siteMap.addUrl("https://apichallenges.eviltester.com/docs", LocalDate.now().toString());
+        siteMap.addUrl("https://apichallenges.eviltester.com/gui/challenges", LocalDate.now().toString());
 
+        get("/sitemap.xml",(request, response) -> {
+            response.type("application/xml");
+            response.status(200);
+            return siteMap.asSitemapXml();
+        });
 
+        
         // use the site/index.md to allow easier creation of landing page, rather than public/index.hmlt
         get("/", (request, response) -> {
             String responseBody = contentManager.getHtmlVersionOfMarkdownContent("site", "/index");
