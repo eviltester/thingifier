@@ -4,8 +4,8 @@ import uk.co.compendiumdev.thingifier.api.ThingifierApiDefn;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingVerb;
 import uk.co.compendiumdev.thingifier.application.AdhocDocumentedSparkRouteConfig;
 import uk.co.compendiumdev.thingifier.spark.SimpleRouteConfig;
+import java.util.List;
 
-import static spark.Spark.options;
 
 public class HeartBeatRoutes {
 
@@ -35,10 +35,10 @@ public class HeartBeatRoutes {
                 );
 
         // undocumented handlers
-        new SimpleRouteConfig(endpoint).
-                status(405,  "post", "delete", "put").
-                status(500,  "patch").
-                status(501, "trace");
+        SimpleRouteConfig simpleRouteConfig = new SimpleRouteConfig(endpoint);
+        simpleRouteConfig.status(405, List.of("post", "delete", "put"));
+        simpleRouteConfig.status(500, List.of("patch"));
+        simpleRouteConfig.status(501, List.of("trace"));
 
     }
 }

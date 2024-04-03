@@ -21,6 +21,9 @@ import java.util.Map;
     common main implementation details,
     but still flexible enough to have custom
     processing per api Instance
+
+    This is a bit too tied down to the concept of one app, one thingifier at a time though.
+    We should be able to have multiple thingifiers at different endpoints e.g. /api1/, /api2/ etc.
  */
 public class MainImplementation {
 

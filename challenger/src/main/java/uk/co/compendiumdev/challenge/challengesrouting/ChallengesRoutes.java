@@ -87,9 +87,7 @@ public class ChallengesRoutes {
                             return "";
                         }));
 
-        SimpleRouteConfig.routeStatusWhenNot(
-                405, "/challenges",
-                "get", "head", "options");
+        SimpleRouteConfig.routeStatusWhenNot(405, "/challenges", List.of("get", "head", "options"));
 
     }
 

@@ -17,7 +17,6 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.validation.Maximum
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonThing;
 import uk.co.compendiumdev.thingifier.spark.SimpleRouteConfig;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -82,11 +81,9 @@ public class SimulationRoutes {
             return "";
         });
 
-        new SimpleRouteConfig(endpoint).
-                status(501, "patch", "trace");
+        new SimpleRouteConfig(endpoint).status(501, List.of("patch", "trace"));
 
-        new SimpleRouteConfig(endpoint + "/*").
-                status(501, "patch", "trace");
+        new SimpleRouteConfig(endpoint + "/*").status(501, List.of("patch", "trace"));
 
         options(endpoint + "/*", (request, result) -> {
             result.status(204);

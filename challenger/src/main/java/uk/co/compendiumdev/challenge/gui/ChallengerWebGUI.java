@@ -104,7 +104,7 @@ public class ChallengerWebGUI {
             }));
         }
 
-        // TODO: using the ResourceContentScanner, we could build the sitemap.xml automatically
+        // using the ResourceContentScanner, we can build the sitemap.xml automatically
         SiteMapXml siteMap = new SiteMapXml();
         Map<String, LocalDate> contentUrls = contentScanner.scanForUrlsWithDates("content/", "md");
         for(String pathToMarkdownFile : contentUrls.keySet()){

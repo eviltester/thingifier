@@ -22,21 +22,26 @@ public class SimpleRouteConfig {
         this.endpoint = endpoint;
     }
 
-    public SimpleRouteConfig handledRouteStatus(
-                                final String verb,
-                                Route routeHandler) {
+    public SimpleRouteConfig handledRouteStatus(final String verb, Route routeHandler) {
 
-        SimpleRouteConfig.addHandler(endpoint, verb, routeHandler);
+        addHandler(endpoint, verb, routeHandler);
         return this;
     }
 
-    public SimpleRouteConfig status(final int statusCode, final String...verbs) {
-        SimpleRouteConfig.routeStatus(statusCode, endpoint, verbs);
+    @Deprecated // should pass in the allow response indexing
+    public SimpleRouteConfig status(final int statusCode, final List<String> verbs) {
+        return status(statusCode, true, verbs);
+    }
+
+    public SimpleRouteConfig status(final int statusCode, boolean allowResponseIndexing, final List<String> verbs) {
+
+        routeStatus(statusCode, endpoint, allowResponseIndexing, verbs);
         return this;
     }
 
-    public SimpleRouteConfig statusWhenNot(final int statusCode, final String...excludedVerbs) {
-        SimpleRouteConfig.routeStatusWhenNot(statusCode, endpoint, excludedVerbs);
+    public SimpleRouteConfig statusWhenNot(final int statusCode, final List<String> excludedVerbs) {
+
+        routeStatusWhenNot(statusCode, endpoint, excludedVerbs);
         return this;
     }
 
@@ -48,7 +53,7 @@ public class SimpleRouteConfig {
      * @param verbs
      * @return
      */
-    public static void routeStatus(final int statuscode, final String endpoint, final String... verbs) {
+    public static void routeStatus(final int statuscode, final String endpoint, boolean allowResponseIndexing, final List<String> verbs) {
 
         for(String verb : verbs){
             String matchVerb = verb.trim().toLowerCase();
@@ -61,7 +66,9 @@ public class SimpleRouteConfig {
                     preferred="application/json"; // hard coded default
                 }
                 result.header("Content-Type", preferred);
-                result.header("x-robots-tag", "noindex");
+                if(!allowResponseIndexing) {
+                    result.header("x-robots-tag", "noindex");
+                }
                 result.status(statuscode);
                 return "";
             };
@@ -69,7 +76,6 @@ public class SimpleRouteConfig {
             addHandler(endpoint, matchVerb, route);
         }
     }
-
     public static void addHandler(final String endpoint, final String matchVerb, final Route route) {
         switch (matchVerb.toLowerCase()){
             case "get":
@@ -108,19 +114,17 @@ public class SimpleRouteConfig {
      * @param excludedVerbs
      */
     public static void routeStatusWhenNot(final int statuscode, final String endpoint,
-                                     final String... excludedVerbs) {
+                                          final List<String> excludedVerbs) {
 
         String[] verbs = {"get", "options", "head", "put",
-                        "post", "patch", "trace", "delete"};
-
-        List<String> excluded = Arrays.asList(excludedVerbs);
+                "post", "patch", "trace", "delete"};
 
         for(String verb : verbs){
-            if(!excluded.contains(verb)){
-                routeStatus(statuscode, endpoint, verb);
+            if(!excludedVerbs.contains(verb)){
+
+                routeStatus(statuscode, endpoint, true, Arrays.asList(verb));
             }
         }
     }
-
 
 }

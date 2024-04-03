@@ -70,7 +70,7 @@ public class ChallengerTrackingRoutes {
             return "";
         });
 
-        SimpleRouteConfig.routeStatusWhenNot(405, "/challenger/:id", "get", "put", "head", "options");
+        SimpleRouteConfig.routeStatusWhenNot(405, "/challenger/:id", List.of("get", "put", "head", "options"));
 
         // refresh challenger to avoid purging
         get("/challenger/:id", (request, result) -> {
@@ -239,9 +239,7 @@ public class ChallengerTrackingRoutes {
                         addDocumentation("Create a challenger using the X-CHALLENGER guid header.").
                         addPossibleStatuses(200,400,405));
 
-        SimpleRouteConfig.
-                routeStatusWhenNot(
-                        405, "/challenger", "post", "options");
+        SimpleRouteConfig.routeStatusWhenNot(405, "/challenger", List.of("post", "options"));
 
         /*
             The todos restore endpoint
@@ -304,7 +302,7 @@ public class ChallengerTrackingRoutes {
             return "";
         });
 
-        SimpleRouteConfig.routeStatusWhenNot(405, "/challenger/database/:id", "get", "put", "head", "options");
+        SimpleRouteConfig.routeStatusWhenNot(405, "/challenger/database/:id", List.of("get", "put", "head", "options"));
 
         // add a GET challenger/database/:id in the proper database format
 

@@ -7,6 +7,14 @@ import uk.co.compendiumdev.thingifier.api.routings.RoutingStatus;
 import uk.co.compendiumdev.thingifier.api.routings.RoutingVerb;
 import uk.co.compendiumdev.thingifier.spark.SimpleRouteConfig;
 
+import java.util.Arrays;
+
+/*
+    The API documentation is auto generated.
+
+    This class allows us to add adhoc Urls into the documentation which are implemented via a handler or specific status
+
+ */
 public class AdhocDocumentedSparkRouteConfig {
     private final ThingifierApiDefn apiDefn;
 
@@ -36,7 +44,7 @@ public class AdhocDocumentedSparkRouteConfig {
             final String endpoint, final RoutingVerb verb,
             final int statusCode, final String documentation) {
 
-        SimpleRouteConfig.routeStatus(statusCode, endpoint, verb.name());
+        SimpleRouteConfig.routeStatus(statusCode, endpoint, true, Arrays.asList(verb.name()));
 
         apiDefn.addRouteToDocumentation(
                 new RoutingDefinition(

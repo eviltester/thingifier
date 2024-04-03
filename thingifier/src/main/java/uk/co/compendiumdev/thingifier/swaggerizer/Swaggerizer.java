@@ -132,6 +132,7 @@ public class Swaggerizer {
         return api;
     }
 
+    // TODO: the output from swaggerizer json could be cached
     public String asJson(){
         if(api==null){
             swagger();

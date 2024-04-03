@@ -19,7 +19,6 @@ import uk.co.compendiumdev.thingifier.htmlgui.DefaultGUIHTML;
 import uk.co.compendiumdev.thingifier.htmlgui.RestApiDocumentationGenerator;
 import uk.co.compendiumdev.thingifier.spark.SimpleRouteConfig;
 import uk.co.compendiumdev.thingifier.swaggerizer.Swaggerizer;
-
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -42,6 +41,7 @@ public class ThingifierRestServer {
 
     // todo : we should be able to configure the API routing for authorisation and support logging
 
+    // TODO: split this into ThingifierApiHttpServer and ThingifierGuiHttpServer
 
     public ThingifierRestServer(final String path,
                                 final Thingifier thingifier,
@@ -162,9 +162,10 @@ public class ThingifierRestServer {
             response.header("Content-Type", "application/octet-stream");
             response.header("Content-Disposition",
                     String.format("attachment; filename=\"%sswagger.json\"",nameprefix));
+
+            // TODO: the swaggerizer could be stored at a class level and allow caching to be used for the output
             return new Swaggerizer(apiDefn).asJson();
         });
-
 
 
         for (RoutingDefinition defn : routingDefinitions.definitions()) {
@@ -274,11 +275,12 @@ public class ThingifierRestServer {
             });
         }
 
+        // TODO: this is too permissive since it creates an HTTP end point that would also cover GUI
+        // it should only be "*" if the api config root is missing
         // TODO : allow this to be overwritten by config
         // nothing else is supported
-        SimpleRouteConfig.routeStatus(404, "*",
-                                        "head","get", "options",
-                                        "put", "post", "patch", "delete");
+
+        SimpleRouteConfig.routeStatus(404, "*", true, List.of("head", "get", "options", "put", "post", "patch", "delete"));
 
         exception(RuntimeException.class, (e, request, response) -> {
             response.status(400);

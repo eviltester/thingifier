@@ -97,8 +97,7 @@ public class AuthRoutes {
             return "";
         });
 
-        SimpleRouteConfig.routeStatusWhenNot(
-                405, "/secret/token", "post", "options");
+        SimpleRouteConfig.routeStatusWhenNot(405, "/secret/token", List.of("post", "options"));
 
         apiDefn.addRouteToDocumentation(
                 new RoutingDefinition(
@@ -270,7 +269,7 @@ public class AuthRoutes {
 
                 ApiResponse response=null;
                 response = new ThingCreation(this.secretNoteStore).with(
-                        new BodyParser(myRequest, Arrays.asList("secretnote")),
+                        new BodyParser(myRequest, List.of("secretnote")),
                         this.secretNoteStore.getThingInstancesNamed("secretnote", EntityRelModel.DEFAULT_DATABASE_NAME), EntityRelModel.DEFAULT_DATABASE_NAME);
                 if (!response.isErrorResponse()) {
 
@@ -300,8 +299,7 @@ public class AuthRoutes {
 
         });
 
-        SimpleRouteConfig.routeStatusWhenNot(
-                405, "/secret/note", "get", "post", "head", "options");
+        SimpleRouteConfig.routeStatusWhenNot(405, "/secret/note", List.of("get", "post", "head", "options"));
 
         apiDefn.addRouteToDocumentation(
                 new RoutingDefinition(
