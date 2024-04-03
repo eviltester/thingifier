@@ -141,7 +141,7 @@ public class MainImplementation {
                 String[] details = arg.split("=");
                 if (details != null && details.length > 1) {
                     String argModelName = details[1].trim();
-                    if(thingifierModels.keySet().contains(argModelName)){
+                    if(thingifierModels.containsKey(argModelName)){
                         modelName = argModelName;
                         System.out.println("Will use model named " + modelName);
                     }else{
@@ -166,7 +166,7 @@ public class MainImplementation {
                 if (details != null && details.length > 1) {
                     String minutes = details[1].trim();
                     try{
-                        clearDownMinutes = Integer.valueOf(minutes);
+                        clearDownMinutes = Integer.parseInt(minutes);
                     }catch(Exception e){
                         System.out.println("Invalid minutes " + minutes + " " +e.getMessage());
                     }
@@ -336,7 +336,7 @@ public class MainImplementation {
             }
         }
 
-        if(desiredVersionName!=null && desiredVersionName.length()>0) {
+        if(desiredVersionName!=null && !desiredVersionName.isEmpty()) {
             profileToUse = profiles.getProfile(desiredVersionName);
             if (profileToUse == null) {
                 System.out.println("Invalid version name provided: " + desiredVersionName);

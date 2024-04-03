@@ -51,7 +51,6 @@ public class SimpleRouteConfig {
      *  @param statuscode
      * @param endpoint
      * @param verbs
-     * @return
      */
     public static void routeStatus(final int statuscode, final String endpoint, boolean allowResponseIndexing, final List<String> verbs) {
 
@@ -62,7 +61,7 @@ public class SimpleRouteConfig {
             Route route = (Request request, Response result) -> {
                 final AcceptHeaderParser acceptParser = new AcceptHeaderParser(request.headers("Accept"));
                 String preferred = new AcceptHeaderParser(request.headers("Accept")).getPreferredType();
-                if(preferred == null || preferred.trim().length()==0 || acceptParser.willAcceptAnything()){
+                if(preferred == null || preferred.trim().isEmpty() || acceptParser.willAcceptAnything()){
                     preferred="application/json"; // hard coded default
                 }
                 result.header("Content-Type", preferred);
@@ -121,8 +120,7 @@ public class SimpleRouteConfig {
 
         for(String verb : verbs){
             if(!excludedVerbs.contains(verb)){
-
-                routeStatus(statuscode, endpoint, true, Arrays.asList(verb));
+                routeStatus(statuscode, endpoint, true, List.of(verb));
             }
         }
     }

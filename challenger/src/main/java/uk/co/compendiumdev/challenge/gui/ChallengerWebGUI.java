@@ -48,10 +48,12 @@ public class ChallengerWebGUI {
         guiManagement.appendMenuItem("API documentation","/docs");
         guiManagement.appendMenuItem("Learning", "/learning");
 
-        guiManagement.setHomePageContent("    <h2 id=\"challenges\">Challenges</h2>\n" +
-                "    <p>The challenges can be completed by issuing API requests to the API.</p>\n" +
-                "    <p>e.g. <code>GET http://localhost:4567/todos</code> would complete the challenge to &quot;GET the list of todos&quot;</p>\n" +
-                "    <p>You can also <code>GET http://localhost:4567/challenges</code> to get the list of challenges and their status as an API call. </p>\n"
+        guiManagement.setHomePageContent("""
+                    <h2 id="challenges">Challenges</h2>
+                    <p>The challenges can be completed by issuing API requests to the API.</p>
+                    <p>e.g. <code>GET http://localhost:4567/todos</code> would complete the challenge to &quot;GET the list of todos&quot;</p>
+                    <p>You can also <code>GET http://localhost:4567/challenges</code> to get the list of challenges and their status as an API call. </p>
+                """
         );
 
         guiManagement.setFooter(getChallengesFooter());
@@ -371,10 +373,12 @@ public class ChallengerWebGUI {
     }
 
     private String getChallengesFooter() {
-        return "<p>&nbsp;</p><hr/><div class='footer'><p>Copyright Compendium Developments Ltd 2020 </p>\n" +
-                "<ul class='footerlinks'><li><a href='https://eviltester.com/apichallenges'>API Challenges Info</a></li>\n" +
-                "<li><a href='https://eviltester.com'>EvilTester.com</a></li>\n" +
-                "</ul></div>";
+        return """
+                <p>&nbsp;</p><hr/><div class='footer'><p>Copyright Compendium Developments Ltd 2020 </p>
+                <ul class='footerlinks'><li><a href='https://eviltester.com/apichallenges'>API Challenges Info</a></li>
+                <li><a href='https://eviltester.com'>EvilTester.com</a></li>
+                </ul></div>
+                """;
     }
 
     private String playerChallengesIntro() {
@@ -457,7 +461,7 @@ public class ChallengerWebGUI {
                 String hintHtml = "";
                 for(ChallengeHint hint : challenge.hints){
                     hintHtml = hintHtml + "<li>" + hint.hintText;
-                    if(hint.hintLink!=null && hint.hintLink.length()>0){
+                    if(hint.hintLink!=null && !hint.hintLink.isEmpty()){
                         String target="target='_blank'";
                         if(!hint.hintLink.startsWith("http")){
                             target="";
