@@ -2,8 +2,8 @@ package uk.co.compendiumdev.thingifier.application;
 
 import spark.Spark;
 import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.api.ThingifierApiDefn;
-import uk.co.compendiumdev.thingifier.api.routings.RoutingDefinition;
+import uk.co.compendiumdev.thingifier.api.docgen.ThingifierApiDocumentationDefn;
+import uk.co.compendiumdev.thingifier.api.docgen.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfigProfile;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfigProfiles;
 import uk.co.compendiumdev.thingifier.application.sparkhttpmessageHooks.ClearDataPreSparkRequestHook;
@@ -31,7 +31,7 @@ public class MainImplementation {
     private Map<String,Thingifier> thingifierModels;
     private String defaultModelName;
     private String staticFilePath;
-    private ThingifierApiDefn apiDefn;
+    private ThingifierApiDocumentationDefn apiDefn;
     private Thingifier thingifier;
     private ThingifierApiConfigProfile profileToUse;
     ThingifierRestServer restServer;
@@ -60,7 +60,7 @@ public class MainImplementation {
             proxyport = getHerokuAssignedPort();
         }
 
-        apiDefn =  new ThingifierApiDefn();
+        apiDefn =  new ThingifierApiDocumentationDefn();
         thingifierModels = new HashMap<>();
         defaultModelName="";
 
@@ -373,7 +373,7 @@ public class MainImplementation {
         return guiManagement;
     }
 
-    public ThingifierApiDefn getApiDefn() {
+    public ThingifierApiDocumentationDefn getApiDefn() {
         return apiDefn;
     }
 }

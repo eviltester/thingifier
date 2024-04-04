@@ -148,6 +148,9 @@ Very often we are not aware of this level of amendment when testing and may not 
 
 The Mirror mode makes it clear that there are multiple systems involved in issuing a request and they can all pose a risk to the system or our testing. e.g. some REST Clients will not send duplicate headers: some will combine headers, some will pick the first (or last) header.
 
+## Swagger OpenAPI File
+
+You can download a simple Swagger [OpenAPI File for mirror mode](/practice-modes/mirror/swagger).
 
 <!--
 

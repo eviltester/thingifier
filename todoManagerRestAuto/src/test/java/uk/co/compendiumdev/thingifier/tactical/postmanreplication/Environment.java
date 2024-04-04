@@ -5,15 +5,11 @@ import io.restassured.filter.log.RequestLoggingFilter;
 import io.restassured.filter.log.ResponseLoggingFilter;
 import spark.Spark;
 import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.api.ThingifierApiDefn;
-import uk.co.compendiumdev.thingifier.api.routings.RoutingDefinition;
+import uk.co.compendiumdev.thingifier.api.docgen.ThingifierApiDocumentationDefn;
 import uk.co.compendiumdev.thingifier.application.ThingifierRestServer;
 import uk.co.compendiumdev.thingifier.application.examples.TodoManagerThingifier;
 import uk.co.compendiumdev.thingifier.htmlgui.DefaultGUIHTML;
 import uk.co.compendiumdev.sparkstart.Port;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class Environment {
 
@@ -47,7 +43,7 @@ public class Environment {
             thingifier.apiConfig().jsonOutput().setShowPrimaryKeyInResponse(true);
             thingifier.apiConfig().jsonOutput().setConvertFieldsToDefinedTypes(false);
 
-            ThingifierApiDefn apiDefn = new ThingifierApiDefn().setThingifier(thingifier);
+            ThingifierApiDocumentationDefn apiDefn = new ThingifierApiDocumentationDefn().setThingifier(thingifier);
             new ThingifierRestServer("", thingifier, apiDefn, new DefaultGUIHTML());
             return "http://localhost:4567";
         }

@@ -2,13 +2,13 @@ package uk.co.compendiumdev.thingifier.application;
 
 import spark.Request;
 import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.api.ThingifierApiDefn;
+import uk.co.compendiumdev.thingifier.api.docgen.ThingifierApiDocumentationDefn;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiResponse;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponseError;
-import uk.co.compendiumdev.thingifier.api.routings.ApiRoutingDefinition;
-import uk.co.compendiumdev.thingifier.api.routings.ApiRoutingDefinitionGenerator;
-import uk.co.compendiumdev.thingifier.api.routings.RoutingDefinition;
+import uk.co.compendiumdev.thingifier.api.docgen.ApiRoutingDefinition;
+import uk.co.compendiumdev.thingifier.api.docgen.ApiRoutingDefinitionDocGenerator;
+import uk.co.compendiumdev.thingifier.api.docgen.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.application.httpapimessagehooks.HttpApiRequestHook;
 import uk.co.compendiumdev.thingifier.application.httpapimessagehooks.HttpApiResponseHook;
 import uk.co.compendiumdev.thingifier.application.internalhttpconversion.*;
@@ -29,7 +29,7 @@ import static spark.Spark.*;
 public class ThingifierRestServer {
 
 
-    private final ThingifierApiDefn apiDefn;
+    private final ThingifierApiDocumentationDefn apiDefn;
     private String urlPath;
     private List<SparkRequestResponseHook> preSparkHttpRequestHooks;
     private List<SparkRequestResponseHook> postSparkHttpResponseHooks;
@@ -45,7 +45,7 @@ public class ThingifierRestServer {
 
     public ThingifierRestServer(final String path,
                                 final Thingifier thingifier,
-                                ThingifierApiDefn apiDefn,
+                                ThingifierApiDocumentationDefn apiDefn,
                                 DefaultGUIHTML guiManagement) {
 
         this.apiDefn = apiDefn;
@@ -132,7 +132,7 @@ public class ThingifierRestServer {
 
 
         // configure it based on a thingifier
-        ApiRoutingDefinition routingDefinitions = new ApiRoutingDefinitionGenerator(thingifier).generate();
+        ApiRoutingDefinition routingDefinitions = new ApiRoutingDefinitionDocGenerator(thingifier).generate(apiDefn.getPathPrefix());
 
 
         // TODO: config to enable docs and configure the URL and add a meta tag for description and additional headers

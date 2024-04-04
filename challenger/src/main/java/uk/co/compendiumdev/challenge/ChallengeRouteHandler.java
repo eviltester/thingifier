@@ -7,7 +7,7 @@ import uk.co.compendiumdev.challenge.challengesrouting.*;
 import uk.co.compendiumdev.challenge.gui.ChallengerWebGUI;
 import uk.co.compendiumdev.challenge.persistence.PersistenceLayer;
 import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.api.ThingifierApiDefn;
+import uk.co.compendiumdev.thingifier.api.docgen.ThingifierApiDocumentationDefn;
 import uk.co.compendiumdev.thingifier.application.ThingifierRestServer;
 import uk.co.compendiumdev.thingifier.htmlgui.DefaultGUIHTML;
 
@@ -15,7 +15,10 @@ import uk.co.compendiumdev.thingifier.htmlgui.DefaultGUIHTML;
 public class ChallengeRouteHandler {
     private final Thingifier thingifier;
     //List<RoutingDefinition> routes;
-    ThingifierApiDefn apiDefn;
+
+    ThingifierApiDocumentationDefn apiChallengesDocumentationDefn;
+    ThingifierApiDocumentationDefn mirrorModeDocumentationDefn;
+
     ChallengeDefinitions challengeDefinitions;
     Challengers challengers;
     private boolean single_player_mode;
@@ -23,10 +26,14 @@ public class ChallengeRouteHandler {
     private boolean guiStayAlive=false; // when set gui makes a call every 5 mins to keep session alive,
                                         // not needed when storing data
 
-    public ChallengeRouteHandler(Thingifier thingifier, ThingifierApiDefn apiDefn, ChallengerConfig config){
+    public ChallengeRouteHandler(Thingifier thingifier, ThingifierApiDocumentationDefn apiDefn, ChallengerConfig config){
 
-        this.apiDefn = apiDefn;
+        this.apiChallengesDocumentationDefn = apiDefn;
         apiDefn.setThingifier(thingifier);
+
+        this.mirrorModeDocumentationDefn = new ThingifierApiDocumentationDefn();
+        mirrorModeDocumentationDefn.setTitle("Mirror Mode");
+        mirrorModeDocumentationDefn.setDescription("Mirror HTTP Requests");
 
         apiDefn.addServer("https://apichallenges.eviltester.com", "heroku hosted version");
         apiDefn.addServer("http://localhost:4567", "local execution");
@@ -64,12 +71,16 @@ public class ChallengeRouteHandler {
 
     public ChallengeRouteHandler configureRoutes() {
 
-        new ChallengerTrackingRoutes().configure(challengers, single_player_mode, apiDefn, persistenceLayer, thingifier, challengeDefinitions);
-        new ChallengesRoutes().configure(challengers, single_player_mode, apiDefn, challengeDefinitions);
-        new HeartBeatRoutes().configure(apiDefn);
-        new AuthRoutes().configure(challengers, apiDefn);
-        new MirrorRoutes().configure(apiDefn);
-        new SimulationRoutes().configure(apiDefn);
+        new ChallengerTrackingRoutes().configure(challengers, single_player_mode, apiChallengesDocumentationDefn, persistenceLayer, thingifier, challengeDefinitions);
+        new ChallengesRoutes().configure(challengers, single_player_mode, apiChallengesDocumentationDefn, challengeDefinitions);
+        new HeartBeatRoutes().configure(apiChallengesDocumentationDefn);
+        new AuthRoutes().configure(challengers, apiChallengesDocumentationDefn);
+
+        // Mirror routes should not show up in the apichallenges apiDefn
+        new MirrorRoutes().configure(mirrorModeDocumentationDefn);
+
+        // Simulation routes should not show
+        new SimulationRoutes().configure();
 
         return this;
     }

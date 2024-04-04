@@ -2,10 +2,10 @@ package uk.co.compendiumdev.thingifier.swaggerizer;
 
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.api.ThingifierApiDefn;
-import uk.co.compendiumdev.thingifier.api.routings.RoutingDefinition;
-import uk.co.compendiumdev.thingifier.api.routings.RoutingStatus;
-import uk.co.compendiumdev.thingifier.api.routings.RoutingVerb;
+import uk.co.compendiumdev.thingifier.api.docgen.ThingifierApiDocumentationDefn;
+import uk.co.compendiumdev.thingifier.api.docgen.RoutingDefinition;
+import uk.co.compendiumdev.thingifier.api.docgen.RoutingStatus;
+import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
 
 public class SwaggerizerTest {
 
@@ -13,7 +13,7 @@ public class SwaggerizerTest {
     public void canCreateSwagger(){
         Thingifier t = new TodoListThingifierTestModel().get();
 
-        ThingifierApiDefn apiDefn = new ThingifierApiDefn();
+        ThingifierApiDocumentationDefn apiDefn = new ThingifierApiDocumentationDefn();
         apiDefn.setThingifier(t);
 
         apiDefn.addRouteToDocumentation(new RoutingDefinition(

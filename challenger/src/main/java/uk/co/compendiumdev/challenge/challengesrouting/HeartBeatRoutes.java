@@ -1,20 +1,20 @@
 package uk.co.compendiumdev.challenge.challengesrouting;
 
-import uk.co.compendiumdev.thingifier.api.ThingifierApiDefn;
-import uk.co.compendiumdev.thingifier.api.routings.RoutingVerb;
-import uk.co.compendiumdev.thingifier.application.AdhocDocumentedSparkRouteConfig;
+import uk.co.compendiumdev.thingifier.api.docgen.ThingifierApiDocumentationDefn;
+import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
+import uk.co.compendiumdev.thingifier.application.AdhocDocumentedSparkRouteConfigurer;
 import uk.co.compendiumdev.thingifier.spark.SimpleRouteConfig;
 import java.util.List;
 
 
 public class HeartBeatRoutes {
 
-    public void configure(final ThingifierApiDefn apiDefn) {
+    public void configure(final ThingifierApiDocumentationDefn apiDefn) {
 
         String endpoint ="/heartbeat";
 
-        final AdhocDocumentedSparkRouteConfig sparkRouteConfig =
-                new AdhocDocumentedSparkRouteConfig(apiDefn);
+        final AdhocDocumentedSparkRouteConfigurer sparkRouteConfig =
+                new AdhocDocumentedSparkRouteConfigurer(apiDefn);
 
         sparkRouteConfig.add(endpoint,
                             RoutingVerb.GET, 204,

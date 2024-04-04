@@ -1,7 +1,7 @@
 package uk.co.compendiumdev.challenge.challengesrouting;
 
 import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.api.ThingifierApiDefn;
+import uk.co.compendiumdev.thingifier.api.docgen.ThingifierApiDocumentationDefn;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
@@ -17,6 +17,8 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.validation.Maximum
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonThing;
 import uk.co.compendiumdev.thingifier.spark.SimpleRouteConfig;
+import uk.co.compendiumdev.thingifier.swaggerizer.Swaggerizer;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,10 +32,13 @@ public class SimulationRoutes {
     public EntityDefinition entityDefn;
     private EntityInstanceCollection entityStorage;
 
+    private ThingifierApiDocumentationDefn apiDocDefn;
+
     public void setUpData(){
         // fake the data storage
         this.simulation = new Thingifier();
 
+        simulation.setDocumentation("Simulation Mode", "A simulated API, each request generates a new set of data but responses are processed by an API handler.");
         this.entityDefn = this.simulation.defineThing("entity", "entities");
 
         this.entityDefn.addAsPrimaryKeyField(Field.is("id", FieldType.AUTO_INCREMENT));
@@ -63,9 +68,14 @@ public class SimulationRoutes {
         // this gives us access to the common http processing functions
         this.httpApi = new ThingifierHttpApi(this.simulation);
         this.jsonThing = new JsonThing(this.simulation.apiConfig().jsonOutput());
+
+        apiDocDefn = new ThingifierApiDocumentationDefn();
+        apiDocDefn.setThingifier(simulation);
+        apiDocDefn.setPathPrefix("/sim"); // where can the API endpoints be found
+
     }
 
-    public void configure(final ThingifierApiDefn apiDefn) {
+    public void configure() {
 
         setUpData();
 
@@ -244,6 +254,18 @@ public class SimulationRoutes {
                         }
                         return response;
                     }).handle();
+        });
+
+
+        get("/practice-modes/simulation/swagger",(request, response)->{
+            response.status(200);
+            response.header("content-type", "application/json");
+            response.header("x-robots-tag", "noindex");
+            response.header("Content-Type", "application/octet-stream");
+            response.header("Content-Disposition",
+                    "attachment; filename=\"simulationmodeswagger.json\"");
+            return new Swaggerizer(apiDocDefn).asJson();
+
         });
     }
 }

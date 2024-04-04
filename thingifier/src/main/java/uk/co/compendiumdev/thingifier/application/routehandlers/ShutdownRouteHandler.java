@@ -1,8 +1,8 @@
 package uk.co.compendiumdev.thingifier.application.routehandlers;
 
-import uk.co.compendiumdev.thingifier.api.routings.RoutingDefinition;
-import uk.co.compendiumdev.thingifier.api.routings.RoutingStatus;
-import uk.co.compendiumdev.thingifier.api.routings.RoutingVerb;
+import uk.co.compendiumdev.thingifier.api.docgen.RoutingDefinition;
+import uk.co.compendiumdev.thingifier.api.docgen.RoutingStatus;
+import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
 
 import java.util.ArrayList;
 import java.util.List;

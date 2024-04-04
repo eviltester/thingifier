@@ -7,12 +7,12 @@ import uk.co.compendiumdev.challenge.challengers.Challengers;
 import uk.co.compendiumdev.challenge.challenges.ChallengeDefinitions;
 import uk.co.compendiumdev.challenge.persistence.PersistenceLayer;
 import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.api.ThingifierApiDefn;
+import uk.co.compendiumdev.thingifier.api.docgen.ThingifierApiDocumentationDefn;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponseAsJson;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponseError;
-import uk.co.compendiumdev.thingifier.api.routings.RoutingDefinition;
-import uk.co.compendiumdev.thingifier.api.routings.RoutingStatus;
-import uk.co.compendiumdev.thingifier.api.routings.RoutingVerb;
+import uk.co.compendiumdev.thingifier.api.docgen.RoutingDefinition;
+import uk.co.compendiumdev.thingifier.api.docgen.RoutingStatus;
+import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
 import uk.co.compendiumdev.thingifier.core.domain.instances.ERInstanceData;
 import uk.co.compendiumdev.thingifier.spark.SimpleRouteConfig;
 
@@ -27,7 +27,7 @@ public class ChallengerTrackingRoutes {
 
     public void configure(final Challengers challengers,
                           final boolean single_player_mode,
-                          final ThingifierApiDefn apiDefn,
+                          final ThingifierApiDocumentationDefn apiDefn,
                           final PersistenceLayer persistenceLayer,
                           final Thingifier thingifier,
                           ChallengeDefinitions challengeDefinitions){

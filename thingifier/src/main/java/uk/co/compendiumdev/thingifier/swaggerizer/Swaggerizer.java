@@ -10,21 +10,21 @@ import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.responses.ApiResponses;
 import io.swagger.v3.oas.models.servers.Server;
 import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.api.ThingifierApiDefn;
-import uk.co.compendiumdev.thingifier.api.routings.ApiRoutingDefinition;
-import uk.co.compendiumdev.thingifier.api.routings.ApiRoutingDefinitionGenerator;
-import uk.co.compendiumdev.thingifier.api.routings.RoutingDefinition;
-import uk.co.compendiumdev.thingifier.api.routings.RoutingStatus;
+import uk.co.compendiumdev.thingifier.api.docgen.ThingifierApiDocumentationDefn;
+import uk.co.compendiumdev.thingifier.api.docgen.ApiRoutingDefinition;
+import uk.co.compendiumdev.thingifier.api.docgen.ApiRoutingDefinitionDocGenerator;
+import uk.co.compendiumdev.thingifier.api.docgen.RoutingDefinition;
+import uk.co.compendiumdev.thingifier.api.docgen.RoutingStatus;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class Swaggerizer {
 
-    private final ThingifierApiDefn apiDefn;
+    private final ThingifierApiDocumentationDefn apiDefn;
     OpenAPI api;
 
-    public Swaggerizer(ThingifierApiDefn apiDefn){
+    public Swaggerizer(ThingifierApiDocumentationDefn apiDefn){
         this.apiDefn = apiDefn;
     }
 
@@ -35,11 +35,22 @@ public class Swaggerizer {
         final Thingifier thingifier = apiDefn.getThingifier();
 
         final Info info = new Info();
-        info.setTitle(thingifier.getTitle());
-        info.setDescription(thingifier.getInitialParagraph());
+
+        String titleToUse = thingifier.getTitle();
+        if(titleToUse.isEmpty()){
+            titleToUse = apiDefn.getTitle();
+        }
+
+        String descriptionToUse = thingifier.getInitialParagraph();
+        if(descriptionToUse.isEmpty()){
+            descriptionToUse = apiDefn.getDescription();
+        }
+
+        info.setTitle(titleToUse);
+        info.setDescription(descriptionToUse);
         info.setVersion(apiDefn.getVersion());
 
-        for(ThingifierApiDefn.ApiServer server : apiDefn.getServers()){
+        for(ThingifierApiDocumentationDefn.ApiServer server : apiDefn.getServers()){
             api.addServersItem(
                     new Server().description(server.description).
                                 url(server.url));
@@ -47,8 +58,7 @@ public class Swaggerizer {
 
         api.setInfo(info);
 
-        ApiRoutingDefinition routingDefinitions = new ApiRoutingDefinitionGenerator(thingifier).generate();
-
+        ApiRoutingDefinition routingDefinitions = new ApiRoutingDefinitionDocGenerator(thingifier).generate(apiDefn.getPathPrefix());
         List<RoutingDefinition> routes = new ArrayList<>(routingDefinitions.definitions());
         routes.addAll(apiDefn.getAdditionalRoutes());
 

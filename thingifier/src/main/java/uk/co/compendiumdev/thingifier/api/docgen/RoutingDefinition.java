@@ -1,4 +1,4 @@
-package uk.co.compendiumdev.thingifier.api.routings;
+package uk.co.compendiumdev.thingifier.api.docgen;
 
 import uk.co.compendiumdev.thingifier.api.response.ResponseHeader;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;

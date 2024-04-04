@@ -4,9 +4,9 @@ import com.google.gson.GsonBuilder;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.xml.GenericXMLPrettyPrinter;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
-import uk.co.compendiumdev.thingifier.api.routings.ApiRoutingDefinition;
-import uk.co.compendiumdev.thingifier.api.routings.RoutingDefinition;
-import uk.co.compendiumdev.thingifier.api.routings.RoutingVerb;
+import uk.co.compendiumdev.thingifier.api.docgen.ApiRoutingDefinition;
+import uk.co.compendiumdev.thingifier.api.docgen.RoutingDefinition;
+import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipDefinition;
@@ -72,7 +72,7 @@ public class RestApiDocumentationGenerator {
             output.append(paragraph(thingifier.getInitialParagraph()));
             output.append(String.format("%n"));
 
-            // TODO: the following should be configurable by api config
+            // TODO: the following should be configurable by api docs config
             // e.g. if XML is not supported then do not show info about XML
             output.append(paragraph("Will accept json by default."));
             output.append(paragraph("<i>Content-Type: application/json</i>"));
@@ -303,10 +303,12 @@ public class RestApiDocumentationGenerator {
             }
         }
 
-        output.append(heading(4, "/docs"));
-        output.append(paragraph("e.g. <span class='endpoint'>" + url("/docs") + "</span>"));
-        output.append(String.format("<ul>%n<li class='endpoint'>%n<strong>%s /%s</strong><ul><li class='normal'>%s</li></ul></li>%n</ul>",
-                "GET", url("/docs"), "Show this documentation as HTML."));
+        // TODO: consider if we want to add an 'optional' HTML injest as a param into this method
+        // Not sure why we hard-coded docs (which is html) into the API documentation
+//        output.append(heading(4, "/docs"));
+//        output.append(paragraph("e.g. <span class='endpoint'>" + url("/docs") + "</span>"));
+//        output.append(String.format("<ul>%n<li class='endpoint'>%n<strong>%s /%s</strong><ul><li class='normal'>%s</li></ul></li>%n</ul>",
+//                "GET", url("/docs"), "Show this documentation as HTML."));
 
         List<String> processedAdditionalRoutes = new ArrayList<>();
         if(additionalRoutes!=null) {
@@ -328,6 +330,7 @@ public class RestApiDocumentationGenerator {
             }
         }
 
+        // TODO: we need to support multiple APIs so this approach to linking to the swagger file is not correct
         output.append(paragraph(href("[download swagger file]","/docs/swagger")));
 
         output.append(defaultGui.getEndOfMainContentMarker());

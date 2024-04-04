@@ -1,10 +1,10 @@
 package uk.co.compendiumdev.thingifier.application;
 
 import spark.Route;
-import uk.co.compendiumdev.thingifier.api.ThingifierApiDefn;
-import uk.co.compendiumdev.thingifier.api.routings.RoutingDefinition;
-import uk.co.compendiumdev.thingifier.api.routings.RoutingStatus;
-import uk.co.compendiumdev.thingifier.api.routings.RoutingVerb;
+import uk.co.compendiumdev.thingifier.api.docgen.ThingifierApiDocumentationDefn;
+import uk.co.compendiumdev.thingifier.api.docgen.RoutingDefinition;
+import uk.co.compendiumdev.thingifier.api.docgen.RoutingStatus;
+import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
 import uk.co.compendiumdev.thingifier.spark.SimpleRouteConfig;
 
 import java.util.Arrays;
@@ -15,14 +15,14 @@ import java.util.Arrays;
     This class allows us to add adhoc Urls into the documentation which are implemented via a handler or specific status
 
  */
-public class AdhocDocumentedSparkRouteConfig {
-    private final ThingifierApiDefn apiDefn;
+public class AdhocDocumentedSparkRouteConfigurer {
+    private final ThingifierApiDocumentationDefn apiDefn;
 
-    public AdhocDocumentedSparkRouteConfig(final ThingifierApiDefn apiDefn) {
+    public AdhocDocumentedSparkRouteConfigurer(final ThingifierApiDocumentationDefn apiDefn) {
         this.apiDefn = apiDefn;
     }
 
-    public AdhocDocumentedSparkRouteConfig add(
+    public AdhocDocumentedSparkRouteConfigurer add(
             final String endpoint, final RoutingVerb verb,
             final int statusCode, final String documentation,
             Route routeHandler) {
@@ -40,7 +40,7 @@ public class AdhocDocumentedSparkRouteConfig {
         return this;
     }
 
-    public AdhocDocumentedSparkRouteConfig add(
+    public AdhocDocumentedSparkRouteConfigurer add(
             final String endpoint, final RoutingVerb verb,
             final int statusCode, final String documentation) {
 

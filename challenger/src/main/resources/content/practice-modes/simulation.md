@@ -99,6 +99,9 @@ DELETE https://<span class="currenthost">CURRENTHOST</span>/sim/entities/id (204
         );
     </script>
 
+## Swagger OpenAPI File
+
+You can download a simple Swagger [OpenAPI File for simulation mode](/practice-modes/simulation/swagger).
 
 ## Simulation Mode Walkthrough - Insomnia
 

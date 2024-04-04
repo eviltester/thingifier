@@ -1,4 +1,4 @@
-package uk.co.compendiumdev.thingifier.api.routings;
+package uk.co.compendiumdev.thingifier.api.docgen;
 
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
@@ -9,12 +9,9 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.F
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVectorDefinition;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-// TODO: this is automatically generating documentation, rename this to ApiDocumentationGenerator
-// TODO: in fact,  think the routings package is actually the 'documentation' package
-public class ApiRoutingDefinitionGenerator {
+public class ApiRoutingDefinitionDocGenerator {
 
 
     private final Thingifier thingifier;
@@ -24,7 +21,7 @@ public class ApiRoutingDefinitionGenerator {
     private final String uniqueID = ":id";
     private final Map<FieldType, String> uniqueReferenceText;
 
-    public ApiRoutingDefinitionGenerator(final Thingifier thingifier) {
+    public ApiRoutingDefinitionDocGenerator(final Thingifier thingifier) {
         this.thingifier = thingifier;
         this.config = thingifier.apiConfig();
 
@@ -59,10 +56,13 @@ public class ApiRoutingDefinitionGenerator {
 
 
     // TODO: have the ability to override these from config and define from config rather than code
-    public ApiRoutingDefinition generate() {
+    public ApiRoutingDefinition generate(String apiPathPrefix) {
         ApiRoutingDefinition defn = new ApiRoutingDefinition();
 
-
+        String endPointPrefix = "";
+        if(apiPathPrefix!=null && !apiPathPrefix.isEmpty()){
+            endPointPrefix = apiPathPrefix + "/";
+        }
 
 
         for (EntityDefinition entityDefn : thingifier.getERmodel().getEntityDefinitions()) {
@@ -89,9 +89,9 @@ public class ApiRoutingDefinitionGenerator {
 
             String pluralUrl;
             if(config.willUrlShowInstancesAsPlural()) {
-                pluralUrl = entityDefn.getPlural().toLowerCase();
+                pluralUrl = endPointPrefix + entityDefn.getPlural().toLowerCase();
             }else {
-                pluralUrl = entityDefn.getName().toLowerCase();
+                pluralUrl = endPointPrefix + entityDefn.getName().toLowerCase();
             }
 
             // we should be able to get things e.g. GET project

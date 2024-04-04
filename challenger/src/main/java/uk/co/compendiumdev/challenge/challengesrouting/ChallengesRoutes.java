@@ -4,12 +4,12 @@ import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.apimodel.ChallengeThingifier;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
 import uk.co.compendiumdev.challenge.challenges.ChallengeDefinitions;
-import uk.co.compendiumdev.thingifier.api.ThingifierApiDefn;
+import uk.co.compendiumdev.thingifier.api.docgen.ThingifierApiDocumentationDefn;
 import uk.co.compendiumdev.thingifier.api.restapihandlers.RestApiGetHandler;
-import uk.co.compendiumdev.thingifier.api.routings.RoutingDefinition;
-import uk.co.compendiumdev.thingifier.api.routings.RoutingStatus;
-import uk.co.compendiumdev.thingifier.api.routings.RoutingVerb;
-import uk.co.compendiumdev.thingifier.application.AdhocDocumentedSparkRouteConfig;
+import uk.co.compendiumdev.thingifier.api.docgen.RoutingDefinition;
+import uk.co.compendiumdev.thingifier.api.docgen.RoutingStatus;
+import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
+import uk.co.compendiumdev.thingifier.application.AdhocDocumentedSparkRouteConfigurer;
 import uk.co.compendiumdev.thingifier.application.routehandlers.SparkApiRequestResponseHandler;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.query.FilterBy;
@@ -22,7 +22,7 @@ import static spark.Spark.*;
 public class ChallengesRoutes {
 
     public void configure(final Challengers challengers, final boolean single_player_mode,
-                          final ThingifierApiDefn apiDefn,
+                          final ThingifierApiDocumentationDefn apiDefn,
                           final ChallengeDefinitions challengeDefinitions){
 
 
@@ -72,7 +72,7 @@ public class ChallengesRoutes {
                         addPossibleStatuses(200));
 
         // TODO: because these hardcode contentType and ignore Accept there should be a light weight wrapper available
-        new AdhocDocumentedSparkRouteConfig(apiDefn).
+        new AdhocDocumentedSparkRouteConfigurer(apiDefn).
                 add("/challenges", RoutingVerb.HEAD, 200, "Headers for list of challenges endpoint",
                         (request, result) ->{
                             result.status(200);

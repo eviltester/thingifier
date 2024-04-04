@@ -1,10 +1,11 @@
 package uk.co.compendiumdev.challenge.challengesrouting;
 
 import spark.Route;
-import uk.co.compendiumdev.thingifier.api.ThingifierApiDefn;
-import uk.co.compendiumdev.thingifier.api.routings.RoutingVerb;
-import uk.co.compendiumdev.thingifier.application.AdhocDocumentedSparkRouteConfig;
+import uk.co.compendiumdev.thingifier.api.docgen.ThingifierApiDocumentationDefn;
+import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
+import uk.co.compendiumdev.thingifier.application.AdhocDocumentedSparkRouteConfigurer;
 import uk.co.compendiumdev.thingifier.spark.SimpleRouteConfig;
+import uk.co.compendiumdev.thingifier.swaggerizer.Swaggerizer;
 
 
 import java.util.ArrayList;
@@ -14,7 +15,7 @@ import static spark.Spark.*;
 
 public class MirrorRoutes {
 
-    public void configure(final ThingifierApiDefn apiDefn) {
+    public void configure(final ThingifierApiDocumentationDefn apiDefn) {
 
         // /mirror should be the GUI
         String endpoint ="/mirror/request";
@@ -31,7 +32,7 @@ public class MirrorRoutes {
         verbEndpoints.add(rawEndPoint);
         verbEndpoints.add(rawEndPoint+"/*");
 
-        AdhocDocumentedSparkRouteConfig routeDefn = new AdhocDocumentedSparkRouteConfig(apiDefn);
+        AdhocDocumentedSparkRouteConfigurer routeCreatorAndDocumentor = new AdhocDocumentedSparkRouteConfigurer(apiDefn);
 
         for (String anEndpoint : verbEndpoints) {
             Route routeHandler = (request, result) -> {
@@ -43,7 +44,7 @@ public class MirrorRoutes {
                 // add to routing but not to the api documentation
                 SimpleRouteConfig.addHandler(anEndpoint, "options", routeHandler);
             }else {
-                routeDefn.
+                routeCreatorAndDocumentor.
                         add(anEndpoint, RoutingVerb.OPTIONS, 204,
                                 "Options for mirror endpoint",
                                 routeHandler
@@ -69,11 +70,11 @@ public class MirrorRoutes {
                     SimpleRouteConfig.addHandler(anEndpoint, routing.name(), mirroredRoute);
                 }else {
                     if (anEndpoint.startsWith(endpoint)) {
-                        routeDefn.add(anEndpoint, routing, 200,
+                        routeCreatorAndDocumentor.add(anEndpoint, routing, 200,
                                 "Mirror a " + routing.name().toUpperCase() + " Request", mirroredRoute);
                     }
                     if (anEndpoint.startsWith(rawEndPoint)) {
-                        routeDefn.add(anEndpoint, routing, 200,
+                        routeCreatorAndDocumentor.add(anEndpoint, routing, 200,
                                 "Raw Text Mirror of a " + routing.name().toUpperCase() + " Request", rawTextMirroredRoute);
                     }
                 }
@@ -89,13 +90,23 @@ public class MirrorRoutes {
                 // add to routing but not to the api documentation
                 SimpleRouteConfig.addHandler(anEndpoint, "head", routeHAndler);
             }else {
-                routeDefn.
+                routeCreatorAndDocumentor.
                         add(anEndpoint, RoutingVerb.HEAD, 204,
                                 "Headers for mirror endpoint",
                                 routeHAndler
                         );
             }
         }
+
+        get("/practice-modes/mirror/swagger", (request, response) ->{
+            response.status(200);
+            response.header("content-type", "application/json");
+            response.header("x-robots-tag", "noindex");
+            response.header("Content-Type", "application/octet-stream");
+            response.header("Content-Disposition",
+                    "attachment; filename=\"mirrormodeswagger.json\"");
+            return new Swaggerizer(apiDefn).asJson();
+        });
 
    }
 }
