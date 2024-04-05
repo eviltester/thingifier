@@ -20,6 +20,8 @@ public class CanGetFilteredTodosTest extends RestAssuredBaseTest {
         api.createTodo("not done", "this todo is not done", false);
         final Todo doneTodo = api.createTodo("done", "this todo is done", true);
 
+        System.out.println("Looking to find todo " + doneTodo.id);
+
         Todos todosList = RestAssured.
                 given().
                 header("X-CHALLENGER", xChallenger).
@@ -39,7 +41,8 @@ public class CanGetFilteredTodosTest extends RestAssuredBaseTest {
         boolean foundOurTodo = false;
         boolean foundAllTrue = true;
         for (Todo todo : todosList.todos) {
-            if (todo.id == doneTodo.id) {
+            System.out.println("scanning Todos - " + todo.id);
+            if (todo.id.equals(doneTodo.id)) {
                 foundOurTodo = true;
             }
             foundAllTrue = foundAllTrue && todo.doneStatus;
