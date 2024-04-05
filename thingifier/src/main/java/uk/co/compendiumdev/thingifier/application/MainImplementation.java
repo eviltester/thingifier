@@ -10,7 +10,7 @@ import uk.co.compendiumdev.thingifier.application.sparkhttpmessageHooks.ClearDat
 import uk.co.compendiumdev.thingifier.application.sparkhttpmessageHooks.LogTheSparkRequestHook;
 import uk.co.compendiumdev.thingifier.application.sparkhttpmessageHooks.LogTheResponseHook;
 import uk.co.compendiumdev.thingifier.application.routehandlers.ShutdownRouteHandler;
-import uk.co.compendiumdev.thingifier.htmlgui.DefaultGUI;
+import uk.co.compendiumdev.thingifier.htmlgui.DefaultGuiRoutings;
 import uk.co.compendiumdev.thingifier.htmlgui.DefaultGUIHTML;
 
 import java.util.HashMap;
@@ -279,8 +279,8 @@ public class MainImplementation {
 
     public void setupDefaultGui() {
 
-            new DefaultGUI(thingifier, guiManagement).
-                configureRoutes();
+            new DefaultGuiRoutings(thingifier, guiManagement).
+                configureRoutes("/gui");
     }
 
     public ThingifierRestServer startRestServer() {

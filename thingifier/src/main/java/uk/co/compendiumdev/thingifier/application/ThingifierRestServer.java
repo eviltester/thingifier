@@ -68,7 +68,7 @@ public class ThingifierRestServer {
 
         this.urlPath = null;
         // can set path, but if not set, pick up from requests
-        if(path!=null && path.length()>0) {
+        if(path!=null && !path.isEmpty()) {
             this.urlPath = path;
         }
 
@@ -144,7 +144,7 @@ public class ThingifierRestServer {
                     getApiDocumentation(routingDefinitions, apiDefn.getAdditionalRoutes(), this.urlPath, "/docs");
         });
 
-        guiManagement.appendMenuItem("API documentation","/docs");
+        //guiManagement.appendMenuItem("API documentation","/docs");
 
         // TODO: api config to enable swagger and configure the URL
         // TODO: move into swagger package

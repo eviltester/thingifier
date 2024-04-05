@@ -42,11 +42,14 @@ public class ChallengerWebGUI {
                       final PersistenceLayer persistenceLayer, 
                       final boolean single_player_mode) {
 
+        guiManagement.appendMenuItem("Home", "/");
+        guiManagement.appendMenuItem("Entities Explorer", "/gui/entities");
         guiManagement.appendMenuItem("Challenges", "/gui/challenges");
-        guiManagement.removeMenuItem("Home");
-        guiManagement.prefixMenuItem("Home", "/");
         guiManagement.appendMenuItem("API documentation","/docs");
         guiManagement.appendMenuItem("Learning", "/learning");
+
+        // Add the Default GUI Endpoiints for entity exploration
+
 
         guiManagement.setHomePageContent("""
                     <h2 id="challenges">Challenges</h2>
