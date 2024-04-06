@@ -6,8 +6,9 @@ import io.restassured.filter.log.ResponseLoggingFilter;
 import spark.Spark;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.docgen.ThingifierApiDocumentationDefn;
-import uk.co.compendiumdev.thingifier.application.ThingifierRestServer;
+import uk.co.compendiumdev.thingifier.application.httprouting.ThingifierHttpApiRoutings;
 import uk.co.compendiumdev.thingifier.application.examples.TodoManagerThingifier;
+import uk.co.compendiumdev.thingifier.application.httprouting.ThingifierAutoDocGenRouting;
 import uk.co.compendiumdev.thingifier.htmlgui.htmlgen.DefaultGUIHTML;
 import uk.co.compendiumdev.sparkstart.Port;
 
@@ -44,7 +45,8 @@ public class Environment {
             thingifier.apiConfig().jsonOutput().setConvertFieldsToDefinedTypes(false);
 
             ThingifierApiDocumentationDefn apiDefn = new ThingifierApiDocumentationDefn().setThingifier(thingifier);
-            new ThingifierRestServer("", thingifier, apiDefn, new DefaultGUIHTML());
+            new ThingifierAutoDocGenRouting(thingifier, apiDefn, new DefaultGUIHTML());
+            new ThingifierHttpApiRoutings(thingifier, apiDefn);
             return "http://localhost:4567";
         }
 

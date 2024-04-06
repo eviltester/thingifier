@@ -6,7 +6,7 @@ import uk.co.compendiumdev.challenge.apimodel.ChallengeApiModel;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.application.MainImplementation;
-import uk.co.compendiumdev.thingifier.application.ThingifierRestServer;
+import uk.co.compendiumdev.thingifier.application.httprouting.ThingifierHttpApiRoutings;
 
 public class ChallengeMain {
 
@@ -99,7 +99,7 @@ public class ChallengeMain {
             challenger.getThingifier().ensureCreatedAndPopulatedInstanceDatabaseNamed(Challengers.SINGLE_PLAYER_GUID);
         }
 
-        final ThingifierRestServer restServer = app.startRestServer();
+        final ThingifierHttpApiRoutings restServer = app.startRestServer();
 
         app.addBuiltInArgConfiguredHooks();
 

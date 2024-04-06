@@ -3,8 +3,7 @@ package uk.co.compendiumdev.thingifier.application;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.application.examples.TodoListThingifier;
 import uk.co.compendiumdev.thingifier.application.examples.TodoManagerThingifier;
-
-import static spark.Spark.get;
+import uk.co.compendiumdev.thingifier.application.httprouting.ThingifierHttpApiRoutings;
 
 
 /*
@@ -131,7 +130,7 @@ public class Main {
 
 
         // returning the restServer supports adding more 'hooks'
-        ThingifierRestServer restServer = app.startRestServer();
+        ThingifierHttpApiRoutings restServer = app.startRestServer();
 
         app.addBuiltInArgConfiguredHooks();
 

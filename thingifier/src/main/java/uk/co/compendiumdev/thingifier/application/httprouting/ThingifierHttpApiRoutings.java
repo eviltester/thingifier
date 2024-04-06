@@ -1,11 +1,9 @@
-package uk.co.compendiumdev.thingifier.application;
+package uk.co.compendiumdev.thingifier.application.httprouting;
 
-import spark.Request;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.docgen.ThingifierApiDocumentationDefn;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiResponse;
-import uk.co.compendiumdev.thingifier.api.response.ApiResponseError;
 import uk.co.compendiumdev.thingifier.api.docgen.ApiRoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.docgen.ApiRoutingDefinitionDocGenerator;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingDefinition;
@@ -15,20 +13,18 @@ import uk.co.compendiumdev.thingifier.application.internalhttpconversion.*;
 import uk.co.compendiumdev.thingifier.application.sparkhttpmessageHooks.InternalHttpRequestHook;
 import uk.co.compendiumdev.thingifier.application.sparkhttpmessageHooks.InternalHttpResponseHook;
 import uk.co.compendiumdev.thingifier.application.sparkhttpmessageHooks.SparkRequestResponseHook;
-import uk.co.compendiumdev.thingifier.htmlgui.htmlgen.DefaultGUIHTML;
 import uk.co.compendiumdev.thingifier.spark.SimpleSparkRouteCreator;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
 import static spark.Spark.*;
 
-public class ThingifierRestServer {
+public class ThingifierHttpApiRoutings {
 
 
     private final ThingifierApiDocumentationDefn apiDefn;
-    private String urlPath;
+
+//    private String urlPath;
     private List<SparkRequestResponseHook> preSparkHttpRequestHooks;
     private List<SparkRequestResponseHook> postSparkHttpResponseHooks;
     private List<InternalHttpRequestHook> preInternalHttpRequestHooks;
@@ -39,12 +35,8 @@ public class ThingifierRestServer {
 
     // todo : we should be able to configure the API routing for authorisation and support logging
 
-    // TODO: split this into ThingifierApiHttpServer and ThingifierGuiHttpServer
-
-    public ThingifierRestServer(final String path,
-                                final Thingifier thingifier,
-                                ThingifierApiDocumentationDefn apiDefn,
-                                DefaultGUIHTML guiManagement) {
+    public ThingifierHttpApiRoutings(final Thingifier thingifier,
+                                     ThingifierApiDocumentationDefn apiDefn) {
 
         this.apiDefn = apiDefn;
 
@@ -64,23 +56,18 @@ public class ThingifierRestServer {
                                                 thingifier,
                                                 httpApiRequestHooks, httpApiResponseHooks);
 
-        this.urlPath = null;
-        // can set path, but if not set, pick up from requests
-        if(path!=null && !path.isEmpty()) {
-            this.urlPath = path;
-        }
-
         before((request, response) -> {
 
-            if(this.urlPath==null){
-                // capture the protocol and authority to use as rendered urls
-                try{
-                    final URL requestUrl = new URL(request.url());
-                    this.urlPath = requestUrl.getProtocol() + "://" + requestUrl.getAuthority();
-                }catch(MalformedURLException e){
-                    System.out.println(request.url() + " " + e.getMessage());
-                }
-            }
+            // TODO: this would be more appropriate in a before in the HTTP GUI or docs routings
+//            if(this.urlPath==null){
+//                // capture the protocol and authority to use as rendered urls
+//                try{
+//                    final URL requestUrl = new URL(request.url());
+//                    this.urlPath = requestUrl.getProtocol() + "://" + requestUrl.getAuthority();
+//                }catch(MalformedURLException e){
+//                    System.out.println(request.url() + " " + e.getMessage());
+//                }
+//            }
 
             // Run any hooks at the Spark Request and Response level
             if(preSparkHttpRequestHooks !=null){
@@ -131,8 +118,6 @@ public class ThingifierRestServer {
 
         // configure it based on a thingifier
         ApiRoutingDefinition routingDefinitions = new ApiRoutingDefinitionDocGenerator(thingifier).generate(apiDefn.getPathPrefix());
-
-
 
 
         for (RoutingDefinition defn : routingDefinitions.definitions()) {
@@ -242,31 +227,11 @@ public class ThingifierRestServer {
             });
         }
 
-        // TODO: this is too permissive since it creates an HTTP end point that would also cover GUI
-        // it should only be "*" if the api config root is missing
-        // TODO : allow this to be overwritten by config
-        // nothing else is supported
-
-        SimpleSparkRouteCreator.routeStatus(404, "*", true, List.of("head", "get", "options", "put", "post", "patch", "delete"));
-
-        exception(RuntimeException.class, (e, request, response) -> {
-            response.status(400);
-            response.body(getExceptionErrorResponse(e, request));
-        });
-
-        exception(Exception.class, (e, request, response) -> {
-            response.status(500);
-            response.body(getExceptionErrorResponse(e, request));
-        });
-
-    }
-
-    private String getExceptionErrorResponse(final Exception e, final Request request) {
-        if(e.getMessage()==null) {
-            return ApiResponseError.asAppropriate(request.headers("Accept"), e.toString());
-        }else{
-            return ApiResponseError.asAppropriate(request.headers("Accept"), e.getMessage());
+        // create an API end point level 404 handler
+        if(apiDefn.getPathPrefix()!=null && !apiDefn.getPathPrefix().isEmpty()) {
+            SimpleSparkRouteCreator.routeStatus(404, apiDefn.getPathPrefix() + "/*", true, List.of("head", "get", "options", "put", "post", "patch", "delete"));
         }
+
     }
 
     public void registerPreRequestHook(final SparkRequestResponseHook hook) {

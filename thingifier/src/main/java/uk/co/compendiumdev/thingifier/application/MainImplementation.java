@@ -6,7 +6,9 @@ import uk.co.compendiumdev.thingifier.api.docgen.ThingifierApiDocumentationDefn;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfigProfile;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfigProfiles;
+import uk.co.compendiumdev.thingifier.application.httprouting.SparkHttpGenericExceptionRoutings;
 import uk.co.compendiumdev.thingifier.application.httprouting.ThingifierAutoDocGenRouting;
+import uk.co.compendiumdev.thingifier.application.httprouting.ThingifierHttpApiRoutings;
 import uk.co.compendiumdev.thingifier.application.sparkhttpmessageHooks.ClearDataPreSparkRequestHook;
 import uk.co.compendiumdev.thingifier.application.sparkhttpmessageHooks.LogTheSparkRequestHook;
 import uk.co.compendiumdev.thingifier.application.sparkhttpmessageHooks.LogTheResponseHook;
@@ -35,7 +37,7 @@ public class MainImplementation {
     private ThingifierApiDocumentationDefn apiDefn;
     private Thingifier thingifier;
     private ThingifierApiConfigProfile profileToUse;
-    ThingifierRestServer restServer;
+    ThingifierHttpApiRoutings restServer;
     private String[] args;
     // prevent shutdown verb as configurable through arguments e.g. -noshutdown
     boolean allowShutdown;
@@ -51,6 +53,7 @@ public class MainImplementation {
 
     DefaultGUIHTML guiManagement;
     private ThingifierAutoDocGenRouting docsServerRouting;
+    private SparkHttpGenericExceptionRoutings exceptionRoutings;
 
     public MainImplementation(){
 
@@ -285,7 +288,7 @@ public class MainImplementation {
                 configureRoutes("/gui");
     }
 
-    public ThingifierRestServer startRestServer() {
+    public ThingifierHttpApiRoutings startRestServer() {
 
         if(thingifier==null){
             throw new RuntimeException("No Thingifier Model Setup");
@@ -299,13 +302,14 @@ public class MainImplementation {
                 apiDefn,
                 guiManagement);
 
-        // TODO: issue with this is that it sets up the 404s so no routings created after this will work
-        restServer = new ThingifierRestServer( "",
+
+        restServer = new ThingifierHttpApiRoutings(
                                     thingifier,
-                                    apiDefn,
-                                    guiManagement);
+                                    apiDefn);
 
 
+        // sets up the wide * based generic 404s so no routings created after this will work
+        exceptionRoutings = new SparkHttpGenericExceptionRoutings();
 
         System.out.println("Running on " + Spark.port());
         System.out.println(" e.g. http://localhost:" + Spark.port());

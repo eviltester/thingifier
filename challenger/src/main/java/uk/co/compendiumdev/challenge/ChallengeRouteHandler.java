@@ -8,7 +8,7 @@ import uk.co.compendiumdev.challenge.gui.ChallengerWebGUI;
 import uk.co.compendiumdev.challenge.persistence.PersistenceLayer;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.docgen.ThingifierApiDocumentationDefn;
-import uk.co.compendiumdev.thingifier.application.ThingifierRestServer;
+import uk.co.compendiumdev.thingifier.application.httprouting.ThingifierHttpApiRoutings;
 import uk.co.compendiumdev.thingifier.htmlgui.htmlgen.DefaultGUIHTML;
 
 
@@ -85,7 +85,7 @@ public class ChallengeRouteHandler {
         return this;
     }
 
-    public void addHooks(final ThingifierRestServer restServer) {
+    public void addHooks(final ThingifierHttpApiRoutings restServer) {
 
         restServer.registerInternalHttpResponseHook(new ChallengerInternalHTTPResponseHook(challengers));
         restServer.registerInternalHttpRequestHook(new ChallengerInternalHTTPRequestHook(challengers));
