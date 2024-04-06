@@ -1,4 +1,4 @@
-package uk.co.compendiumdev.challenge.challengesrouting;
+package uk.co.compendiumdev.challenge.practicemodes.mirror;
 
 import spark.Route;
 import uk.co.compendiumdev.thingifier.api.docgen.ThingifierApiDocumentationDefn;

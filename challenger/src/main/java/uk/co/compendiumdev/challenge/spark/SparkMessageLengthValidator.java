@@ -1,4 +1,4 @@
-package uk.co.compendiumdev.challenge.challengesrouting;
+package uk.co.compendiumdev.challenge.spark;
 
 import spark.Request;
 import spark.Response;
@@ -16,7 +16,7 @@ public class SparkMessageLengthValidator {
 
     private final int maxLength;
 
-    SparkMessageLengthValidator(){
+    public SparkMessageLengthValidator(){
         this(DEFAULT_MAX_LENGTH);
     }
 

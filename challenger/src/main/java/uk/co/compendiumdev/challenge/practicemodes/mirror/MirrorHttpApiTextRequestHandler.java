@@ -1,14 +1,10 @@
-package uk.co.compendiumdev.challenge.challengesrouting;
+package uk.co.compendiumdev.challenge.practicemodes.mirror;
 
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
-import uk.co.compendiumdev.thingifier.api.http.headers.headerparser.AcceptHeaderParser;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.application.internalhttpconversion.StringPair;
 import uk.co.compendiumdev.thingifier.application.routehandlers.HttpApiRequestHandler;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.query.FilterBy;
-import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
 
 public class MirrorHttpApiTextRequestHandler implements HttpApiRequestHandler {
 
@@ -16,7 +12,7 @@ public class MirrorHttpApiTextRequestHandler implements HttpApiRequestHandler {
         // convert request into a string for message body- getRequestDetails
         String requestDetails = getRequestDetails(myRequest);
 
-        ApiResponse response=null;
+        ApiResponse response;
 
         response = ApiResponse.success().setHeader("Content-Type", "text/plain");
         response.setBody(requestDetails);

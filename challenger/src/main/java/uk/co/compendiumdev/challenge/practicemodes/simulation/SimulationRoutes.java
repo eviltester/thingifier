@@ -1,4 +1,4 @@
-package uk.co.compendiumdev.challenge.challengesrouting;
+package uk.co.compendiumdev.challenge.practicemodes.simulation;
 
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.docgen.ThingifierApiDocumentationDefn;
