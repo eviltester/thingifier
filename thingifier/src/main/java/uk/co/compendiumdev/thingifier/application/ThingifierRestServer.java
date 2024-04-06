@@ -16,9 +16,7 @@ import uk.co.compendiumdev.thingifier.application.sparkhttpmessageHooks.Internal
 import uk.co.compendiumdev.thingifier.application.sparkhttpmessageHooks.InternalHttpResponseHook;
 import uk.co.compendiumdev.thingifier.application.sparkhttpmessageHooks.SparkRequestResponseHook;
 import uk.co.compendiumdev.thingifier.htmlgui.htmlgen.DefaultGUIHTML;
-import uk.co.compendiumdev.thingifier.htmlgui.htmlgen.RestApiDocumentationGenerator;
 import uk.co.compendiumdev.thingifier.spark.SimpleSparkRouteCreator;
-import uk.co.compendiumdev.thingifier.swaggerizer.Swaggerizer;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -135,37 +133,6 @@ public class ThingifierRestServer {
         ApiRoutingDefinition routingDefinitions = new ApiRoutingDefinitionDocGenerator(thingifier).generate(apiDefn.getPathPrefix());
 
 
-        // TODO: config to enable docs and configure the URL and add a meta tag for description and additional headers
-        // / - default for documentation
-        get("/docs", (request, response) -> {
-            response.type("text/html");
-            response.status(200);
-            return new RestApiDocumentationGenerator(thingifier, guiManagement).
-                    getApiDocumentation(routingDefinitions, apiDefn.getAdditionalRoutes(), this.urlPath, "/docs");
-        });
-
-        //guiManagement.appendMenuItem("API documentation","/docs");
-
-        // TODO: api config to enable swagger and configure the URL
-        // TODO: move into swagger package
-        // now that we have an api definition we should be able to generate swagger
-        get("/docs/swagger", (request, response) -> {
-            response.type("text/html");
-            response.status(200);
-            String nameprefix = "";
-            try {
-                nameprefix = apiDefn.getThingifier().getTitle().replace(" ", "-") + "-";
-            }catch (Exception e){
-                // invalid apidefn setup
-                System.out.println("Possibly incomplete swagger generation, api not defined from model");
-            }
-            response.header("Content-Type", "application/octet-stream");
-            response.header("Content-Disposition",
-                    String.format("attachment; filename=\"%sswagger.json\"",nameprefix));
-
-            // TODO: the swaggerizer could be stored at a class level and allow caching to be used for the output
-            return new Swaggerizer(apiDefn).asJson();
-        });
 
 
         for (RoutingDefinition defn : routingDefinitions.definitions()) {

@@ -6,6 +6,7 @@ import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.api.restapihandlers.RestApiGetHandler;
+import uk.co.compendiumdev.thingifier.application.httprouting.ThingifierAutoDocGenRouting;
 import uk.co.compendiumdev.thingifier.application.routehandlers.HttpApiRequestHandler;
 import uk.co.compendiumdev.thingifier.application.routehandlers.SparkApiRequestResponseHandler;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
@@ -16,6 +17,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.F
 import uk.co.compendiumdev.thingifier.core.domain.definitions.validation.MaximumLengthValidationRule;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonThing;
+import uk.co.compendiumdev.thingifier.htmlgui.htmlgen.DefaultGUIHTML;
 import uk.co.compendiumdev.thingifier.spark.SimpleSparkRouteCreator;
 import uk.co.compendiumdev.thingifier.swaggerizer.Swaggerizer;
 
@@ -33,6 +35,7 @@ public class SimulationRoutes {
     private EntityInstanceCollection entityStorage;
 
     private ThingifierApiDocumentationDefn apiDocDefn;
+    private ThingifierAutoDocGenRouting simulatorDocsRouting;
 
     public void setUpData(){
         // fake the data storage
@@ -72,7 +75,11 @@ public class SimulationRoutes {
         apiDocDefn = new ThingifierApiDocumentationDefn();
         apiDocDefn.setThingifier(simulation);
         apiDocDefn.setPathPrefix("/sim"); // where can the API endpoints be found
-
+        simulatorDocsRouting = new ThingifierAutoDocGenRouting(
+                                            simulation,
+                                            apiDocDefn,
+                                            new DefaultGUIHTML()
+        );
     }
 
     public void configure() {
@@ -80,22 +87,22 @@ public class SimulationRoutes {
         setUpData();
 
         // /sim should be the GUI
-        String endpoint = "/sim/entities";
+        String apiEndpoint = "/sim/entities";
 
         // redirect a GET to "/fromPath" to "/toPath" for GUI
         redirect.get("/sim", "/practice-modes/simulation");
 
-        options(endpoint, (request, result) -> {
+        options(apiEndpoint, (request, result) -> {
             result.status(204);
             result.header("Allow", "GET, POST, PUT, DELETE, PATCH, HEAD, OPTIONS, TRACE");
             return "";
         });
 
-        new SimpleSparkRouteCreator(endpoint).status(501, List.of("patch", "trace"));
+        new SimpleSparkRouteCreator(apiEndpoint).status(501, List.of("patch", "trace"));
 
-        new SimpleSparkRouteCreator(endpoint + "/*").status(501, List.of("patch", "trace"));
+        new SimpleSparkRouteCreator(apiEndpoint + "/*").status(501, List.of("patch", "trace"));
 
-        options(endpoint + "/*", (request, result) -> {
+        options(apiEndpoint + "/*", (request, result) -> {
             result.status(204);
             result.header("x-robots-tag", "noindex");
             result.header("Allow", "GET, POST, PUT, DELETE, PATCH, HEAD, OPTIONS, TRACE");
@@ -121,12 +128,12 @@ public class SimulationRoutes {
 
         };
 
-        get(endpoint, (request, result) -> {
+        get(apiEndpoint, (request, result) -> {
             return new SparkApiRequestResponseHandler(request, result, simulation).
                     usingHandler(getEntitiesHandler).handle();
         });
 
-        head(endpoint, (request, result) -> {
+        head(apiEndpoint, (request, result) -> {
 
             new SparkApiRequestResponseHandler(request, result, simulation).
                     usingHandler(getEntitiesHandler).handle();
@@ -163,14 +170,14 @@ public class SimulationRoutes {
         };
 
         // get a specific entity
-        get(endpoint + "/:id", (request, result) -> {
+        get(apiEndpoint + "/:id", (request, result) -> {
 
             return new SparkApiRequestResponseHandler(request, result, simulation).
                     usingHandler(getEntityHandler)
                     .handle();
         });
 
-        head(endpoint + "/:id", (request, result) -> {
+        head(apiEndpoint + "/:id", (request, result) -> {
 
             new SparkApiRequestResponseHandler(request, result, simulation).
                     usingHandler(getEntityHandler)
@@ -180,7 +187,7 @@ public class SimulationRoutes {
         });
 
         // post create new - will create as 11 {"name":"bob"}
-        post(endpoint, (request, result) -> {
+        post(apiEndpoint, (request, result) -> {
 
             return new SparkApiRequestResponseHandler(request, result, simulation).
                     usingHandler((anHttpApiRequest) ->{
@@ -223,19 +230,19 @@ public class SimulationRoutes {
 
         // post amend 10
         // post create - 11
-        post(endpoint + "/:id", (request, result) -> {
+        post(apiEndpoint + "/:id", (request, result) -> {
             return new SparkApiRequestResponseHandler(request, result, simulation).
                     usingHandler(putAndPostEntityHandler).handle();
         });
 
         // put specific id will create (11),
         //  and can amend with put (10)
-        put(endpoint + "/:id", (request, result) -> {
+        put(apiEndpoint + "/:id", (request, result) -> {
             return new SparkApiRequestResponseHandler(request, result, simulation).
                     usingHandler(putAndPostEntityHandler).handle();
         });
 
-        delete(endpoint + "/:id", (request, result) -> {
+        delete(apiEndpoint + "/:id", (request, result) -> {
 
             return new SparkApiRequestResponseHandler(request, result, simulation).
                     usingHandler((anHttpApiRequest) ->{

@@ -331,7 +331,7 @@ public class RestApiDocumentationGenerator {
         }
 
         // TODO: we need to support multiple APIs so this approach to linking to the swagger file is not correct
-        output.append(paragraph(href("[download swagger file]","/docs/swagger")));
+        output.append(paragraph(href("[download swagger file]",prependPath + "/docs/swagger")));
 
         output.append(defaultGui.getEndOfMainContentMarker());
         output.append(defaultGui.getPageFooter());
@@ -386,7 +386,7 @@ public class RestApiDocumentationGenerator {
         }
         // todo: option to make clickable?
 
-        return prependPath + midPath + postUrl;
+        return  midPath + postUrl;
     }
 
     private String heading(final int level, final String theclass, final String text) {

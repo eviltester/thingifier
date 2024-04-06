@@ -6,6 +6,7 @@ import uk.co.compendiumdev.thingifier.api.docgen.ThingifierApiDocumentationDefn;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfigProfile;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfigProfiles;
+import uk.co.compendiumdev.thingifier.application.httprouting.ThingifierAutoDocGenRouting;
 import uk.co.compendiumdev.thingifier.application.sparkhttpmessageHooks.ClearDataPreSparkRequestHook;
 import uk.co.compendiumdev.thingifier.application.sparkhttpmessageHooks.LogTheSparkRequestHook;
 import uk.co.compendiumdev.thingifier.application.sparkhttpmessageHooks.LogTheResponseHook;
@@ -49,6 +50,7 @@ public class MainImplementation {
     String desiredVersionName;
 
     DefaultGUIHTML guiManagement;
+    private ThingifierAutoDocGenRouting docsServerRouting;
 
     public MainImplementation(){
 
@@ -291,10 +293,19 @@ public class MainImplementation {
 
         apiDefn.setThingifier(thingifier);
 
+        // start the docs and swagger endpoints
+        docsServerRouting = new ThingifierAutoDocGenRouting(
+                thingifier,
+                apiDefn,
+                guiManagement);
+
+        // TODO: issue with this is that it sets up the 404s so no routings created after this will work
         restServer = new ThingifierRestServer( "",
                                     thingifier,
                                     apiDefn,
                                     guiManagement);
+
+
 
         System.out.println("Running on " + Spark.port());
         System.out.println(" e.g. http://localhost:" + Spark.port());
