@@ -61,6 +61,11 @@ public class ThingAmendment {
         ValidationReport relationshipsValidation = new BodyRelationshipValidator(thingifier).validate(bodyargs, cloned.getEntity(), database);
         validation.combine(relationshipsValidation);
 
+        ValidationReport uniquenessCheck = thingifier.getERmodel().getInstanceData(database).
+                                        getInstanceCollectionForEntityNamed(instance.getEntity().getName()).
+                                        checkFieldsForUniqueNess(cloned, true);
+        validation.combine(uniquenessCheck);
+
         if (validation.isValid()) {
             if(clearFieldsBeforeSettingFromArgs){
                 instance.clearAllFields();

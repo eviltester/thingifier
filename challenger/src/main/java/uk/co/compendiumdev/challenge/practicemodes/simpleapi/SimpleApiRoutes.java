@@ -51,6 +51,7 @@ public class SimpleApiRoutes {
                         makeMandatory().
                         withValidation(new MatchesRegexValidationRule("[0-9]{3}[-]?[0-9]{1}[-]?[0-9]{2}[-]?[0-9]{6}[-]?[0-9]{1}")).
                         withValidation(new MaximumLengthValidationRule(17)).
+                        setMustBeUnique(true).
                         withExample("123-4-56-789012-3"),
                 Field.is("price",FieldType.FLOAT).
                         makeMandatory().
@@ -72,7 +73,7 @@ public class SimpleApiRoutes {
         // TODO: should probably have a support multiple databases config somewhere
         simplethings.getERmodel().populateDatabase(EntityRelModel.DEFAULT_DATABASE_NAME);
 
-        // TODO: add a hook to add more instances if the database runs low e.g. < 5
+        // TODO: add a uniqueness check on the isbn and not allow adding or amending if duplicate
 
     }
 
@@ -92,6 +93,7 @@ public class SimpleApiRoutes {
                 gui);
 
         simpleApiHttpRouting = new ThingifierHttpApiRoutings(simplethings, apiDocDefn);
+        simpleApiHttpRouting.registerHttpApiRequestHook(new AddMoreItemsIfNecessary(simplethings.getERmodel()));
 
     }
 }

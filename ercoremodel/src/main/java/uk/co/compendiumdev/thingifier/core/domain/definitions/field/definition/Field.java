@@ -35,6 +35,8 @@ public final class Field {
     private float minimumFloatValue;
     private DefinedFields objectDefinition;
 
+    private boolean mustBeUnique;
+
     private int truncatedStringLength;
 
     // todo: rather than all these fields, consider moving to more validation rules
@@ -57,6 +59,7 @@ public final class Field {
         minimumIntegerValue = Integer.MIN_VALUE;
         maximumFloatValue = Float.MAX_VALUE;
         minimumFloatValue = Float.MIN_VALUE;
+        mustBeUnique = false;
         allowedNullable=false;
     }
 
@@ -87,6 +90,15 @@ public final class Field {
 
     public boolean hasDefaultValue() {
         return defaultValue != null;
+    }
+
+    public Field setMustBeUnique(boolean uniqueness) {
+        this.mustBeUnique = uniqueness;
+        return this;
+    }
+
+    public boolean mustBeUnique(){
+        return this.mustBeUnique;
     }
 
     public FieldType getType() {

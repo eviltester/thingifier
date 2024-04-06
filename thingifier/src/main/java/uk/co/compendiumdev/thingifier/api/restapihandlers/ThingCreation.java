@@ -146,6 +146,13 @@ public class ThingCreation {
     }
 
     private ApiResponse addValidatedInstance(BodyParser bodyargs, EntityInstance instance, EntityInstanceCollection thing, String database, ValidationReport validation) {
+
+        // check for uniqueness prior to adding
+        ValidationReport uniquenessCheck = thingifier.getERmodel().getInstanceData(database).
+                getInstanceCollectionForEntityNamed(instance.getEntity().getName()).
+                checkFieldsForUniqueNess(instance, false);
+        validation.combine(uniquenessCheck);
+
         if (validation.isValid()) {
             try {
                 thing.addInstance(instance);

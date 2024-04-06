@@ -3,7 +3,9 @@ package uk.co.compendiumdev.thingifier.core.domain.instances;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.NamedValue;
+import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -270,5 +272,37 @@ final public class EntityInstanceCollection {
             }
         }
 
+    }
+
+    public ValidationReport checkFieldsForUniqueNess(EntityInstance instance, boolean isAmendment) {
+
+        ValidationReport report = new ValidationReport();
+
+        for(String fieldName : instance.getEntity().getFieldNames()){
+            Field field = instance.getEntity().getField(fieldName);
+            if(field.mustBeUnique()){
+                String valueThatMustBeUnique = instance.getFieldValue(fieldName).asString();
+                // check all instances to see if it is
+                for(EntityInstance instanceToCheck : instances.values()){
+                    FieldValue existingValue = instanceToCheck.getFieldValue(fieldName);
+                    if(valueThatMustBeUnique.equals(existingValue.asString())){
+                        // it is not
+                        boolean dupeFound=true;
+                        if(isAmendment){
+                            if(instanceToCheck.getPrimaryKeyValue().equals(instanceToCheck.getPrimaryKeyValue())){
+                                // same item so ignore this one
+                                dupeFound=false;
+                            }
+                        }
+                        if(dupeFound) {
+                            report.setValid(false);
+                            report.addErrorMessage("Field %s Value is not unique".formatted(fieldName));
+                        }
+                    }
+                }
+            }
+        }
+
+        return report;
     }
 }
