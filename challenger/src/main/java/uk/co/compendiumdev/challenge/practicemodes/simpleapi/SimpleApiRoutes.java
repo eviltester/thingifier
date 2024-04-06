@@ -72,6 +72,8 @@ public class SimpleApiRoutes {
         // TODO: should probably have a support multiple databases config somewhere
         simplethings.getERmodel().populateDatabase(EntityRelModel.DEFAULT_DATABASE_NAME);
 
+        // TODO: add a hook to add more instances if the database runs low e.g. < 5
+
     }
 
     public void configure() {
