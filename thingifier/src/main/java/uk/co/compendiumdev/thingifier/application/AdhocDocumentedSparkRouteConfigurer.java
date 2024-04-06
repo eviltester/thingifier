@@ -5,9 +5,10 @@ import uk.co.compendiumdev.thingifier.api.docgen.ThingifierApiDocumentationDefn;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingStatus;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
-import uk.co.compendiumdev.thingifier.spark.SimpleRouteConfig;
+import uk.co.compendiumdev.thingifier.spark.SimpleSparkRouteCreator;
 
 import java.util.Arrays;
+import java.util.List;
 
 /*
     The API documentation is auto generated.
@@ -27,7 +28,7 @@ public class AdhocDocumentedSparkRouteConfigurer {
             final int statusCode, final String documentation,
             Route routeHandler) {
 
-        SimpleRouteConfig.addHandler(endpoint, verb.name(), routeHandler);
+        SimpleSparkRouteCreator.addHandler(endpoint, verb.name(), routeHandler);
 
         apiDefn.addRouteToDocumentation(
                 new RoutingDefinition(
@@ -44,7 +45,7 @@ public class AdhocDocumentedSparkRouteConfigurer {
             final String endpoint, final RoutingVerb verb,
             final int statusCode, final String documentation) {
 
-        SimpleRouteConfig.routeStatus(statusCode, endpoint, true, Arrays.asList(verb.name()));
+        SimpleSparkRouteCreator.routeStatus(statusCode, endpoint, true, List.of(verb.name()));
 
         apiDefn.addRouteToDocumentation(
                 new RoutingDefinition(

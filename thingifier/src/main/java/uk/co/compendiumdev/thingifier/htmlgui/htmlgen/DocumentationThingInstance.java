@@ -1,4 +1,4 @@
-package uk.co.compendiumdev.thingifier.htmlgui;
+package uk.co.compendiumdev.thingifier.htmlgui.htmlgen;
 
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;

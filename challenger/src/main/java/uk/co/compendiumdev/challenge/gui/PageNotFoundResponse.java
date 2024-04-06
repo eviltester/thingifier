@@ -1,7 +1,7 @@
 package uk.co.compendiumdev.challenge.gui;
 
 import spark.Response;
-import uk.co.compendiumdev.thingifier.htmlgui.DefaultGUIHTML;
+import uk.co.compendiumdev.thingifier.htmlgui.htmlgen.DefaultGUIHTML;
 
 public class PageNotFoundResponse {
     private final DefaultGUIHTML guiManagement;

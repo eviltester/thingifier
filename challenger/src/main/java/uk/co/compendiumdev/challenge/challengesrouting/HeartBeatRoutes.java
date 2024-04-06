@@ -3,7 +3,7 @@ package uk.co.compendiumdev.challenge.challengesrouting;
 import uk.co.compendiumdev.thingifier.api.docgen.ThingifierApiDocumentationDefn;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
 import uk.co.compendiumdev.thingifier.application.AdhocDocumentedSparkRouteConfigurer;
-import uk.co.compendiumdev.thingifier.spark.SimpleRouteConfig;
+import uk.co.compendiumdev.thingifier.spark.SimpleSparkRouteCreator;
 import java.util.List;
 
 
@@ -35,10 +35,10 @@ public class HeartBeatRoutes {
                 );
 
         // undocumented handlers
-        SimpleRouteConfig simpleRouteConfig = new SimpleRouteConfig(endpoint);
-        simpleRouteConfig.status(405, List.of("post", "delete", "put"));
-        simpleRouteConfig.status(500, List.of("patch"));
-        simpleRouteConfig.status(501, List.of("trace"));
+        SimpleSparkRouteCreator simpleSparkRouteCreator = new SimpleSparkRouteCreator(endpoint);
+        simpleSparkRouteCreator.status(405, List.of("post", "delete", "put"));
+        simpleSparkRouteCreator.status(500, List.of("patch"));
+        simpleSparkRouteCreator.status(501, List.of("trace"));
 
     }
 }

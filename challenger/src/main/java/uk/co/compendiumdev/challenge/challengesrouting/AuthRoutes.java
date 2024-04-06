@@ -26,7 +26,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.validation.Maximum
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonThing;
-import uk.co.compendiumdev.thingifier.spark.SimpleRouteConfig;
+import uk.co.compendiumdev.thingifier.spark.SimpleSparkRouteCreator;
 
 import java.util.List;
 
@@ -59,7 +59,7 @@ public class AuthRoutes {
         this.jsonThing = new JsonThing(this.secretNoteStore.apiConfig().jsonOutput());
 
 
-        SimpleRouteConfig.addHandler("/secret/token", "options", (request, result) ->{
+        SimpleSparkRouteCreator.addHandler("/secret/token", "options", (request, result) ->{
             result.status(204);
             // disallow POST, DELETE, PATCH, TRACE
             result.header("Allow", "POST, OPTIONS");
@@ -96,7 +96,7 @@ public class AuthRoutes {
             return "";
         });
 
-        SimpleRouteConfig.routeStatusWhenNot(405, "/secret/token", List.of("post", "options"));
+        SimpleSparkRouteCreator.routeStatusWhenNot(405, "/secret/token", List.of("post", "options"));
 
         apiDefn.addRouteToDocumentation(
                 new RoutingDefinition(
@@ -123,7 +123,7 @@ public class AuthRoutes {
         // auth token which does not match the session will receive a 401
         // header X-AUTH-TOKEN: token given - if token not found (then) 401
 
-        SimpleRouteConfig.addHandler("/secret/note", "options", (request, result) ->{
+        SimpleSparkRouteCreator.addHandler("/secret/note", "options", (request, result) ->{
             result.status(204);
             // disallow POST, DELETE, PATCH, TRACE
             result.header("Allow", "GET, HEAD, POST, OPTIONS");
@@ -146,14 +146,14 @@ public class AuthRoutes {
             }
 
             // authorization bearer token will take precedence over X-AUTH-HEADER
-            if(authorization!=null && authorization.length()!=0){
+            if(authorization!=null && !authorization.isEmpty()){
                 final BearerAuthHeaderParser bearerToken = new BearerAuthHeaderParser(authorization);
                 if(bearerToken.isBearerToken() && bearerToken.isValid()){
                     authToken = bearerToken.getToken();
                 }
             }
 
-            if(authToken==null || authToken.length()==0){
+            if(authToken==null || authToken.isEmpty()){
                 result.status(401);
                 return "";
             }
@@ -237,14 +237,14 @@ public class AuthRoutes {
             }
 
             // authorization bearer token will take precedence over X-AUTH-HEADER
-            if(authorization!=null && authorization.length()!=0){
+            if(authorization!=null && !authorization.isEmpty()){
                 final BearerAuthHeaderParser bearerToken = new BearerAuthHeaderParser(authorization);
                 if(bearerToken.isBearerToken() && bearerToken.isValid()){
                     authToken = bearerToken.getToken();
                 }
             }
 
-            if(authToken==null || authToken.length()==0){
+            if(authToken==null || authToken.isEmpty()){
                 result.status(401);
                 return "";
             }
@@ -298,7 +298,7 @@ public class AuthRoutes {
 
         });
 
-        SimpleRouteConfig.routeStatusWhenNot(405, "/secret/note", List.of("get", "post", "head", "options"));
+        SimpleSparkRouteCreator.routeStatusWhenNot(405, "/secret/note", List.of("get", "post", "head", "options"));
 
         apiDefn.addRouteToDocumentation(
                 new RoutingDefinition(

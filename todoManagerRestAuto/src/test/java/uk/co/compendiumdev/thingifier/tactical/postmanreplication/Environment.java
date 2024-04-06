@@ -8,7 +8,7 @@ import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.docgen.ThingifierApiDocumentationDefn;
 import uk.co.compendiumdev.thingifier.application.ThingifierRestServer;
 import uk.co.compendiumdev.thingifier.application.examples.TodoManagerThingifier;
-import uk.co.compendiumdev.thingifier.htmlgui.DefaultGUIHTML;
+import uk.co.compendiumdev.thingifier.htmlgui.htmlgen.DefaultGUIHTML;
 import uk.co.compendiumdev.sparkstart.Port;
 
 public class Environment {

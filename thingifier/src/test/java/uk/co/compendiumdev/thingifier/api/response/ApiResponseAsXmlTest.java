@@ -22,7 +22,7 @@ import static uk.co.compendiumdev.thingifier.core.domain.definitions.field.defin
 
 public class ApiResponseAsXmlTest {
 
-    private JsonThing defaultJsonThing = new JsonThing(new ThingifierApiConfig().jsonOutput());
+    private JsonThing defaultJsonThing = new JsonThing(new ThingifierApiConfig("").jsonOutput());
 
     @Test
     public void response404HasSingleErrorMessage(){

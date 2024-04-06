@@ -9,7 +9,7 @@ import uk.co.compendiumdev.challenge.challenges.*;
 import uk.co.compendiumdev.challenge.persistence.PersistenceLayer;
 import uk.co.compendiumdev.challenge.persistence.PersistenceResponse;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
-import uk.co.compendiumdev.thingifier.htmlgui.DefaultGUIHTML;
+import uk.co.compendiumdev.thingifier.htmlgui.htmlgen.DefaultGUIHTML;
 
 import java.time.LocalDate;
 import java.util.*;

@@ -1,11 +1,7 @@
 package uk.co.compendiumdev.thingifier.api;
 
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-
-import java.util.List;
 
 public class ApiUrls {
     private final ThingifierApiConfig apiConfig;
@@ -15,7 +11,6 @@ public class ApiUrls {
     }
 
     public String getCreatedLocationHeader(final EntityInstance thingInstance) {
-        String uniqueID=null;
         String entityPath;
 
         if (apiConfig.willUrlShowInstancesAsPlural()) {
@@ -25,8 +20,8 @@ public class ApiUrls {
         }
 
         // use the primary key as the id
-        uniqueID = thingInstance.getPrimaryKeyValue();
+        String uniqueID = thingInstance.getPrimaryKeyValue();
 
-        return entityPath + "/" + uniqueID;
+        return apiConfig.getApiEndPointPrefix() + entityPath + "/" + uniqueID;
     }
 }

@@ -14,7 +14,7 @@ import uk.co.compendiumdev.thingifier.api.docgen.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingStatus;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
 import uk.co.compendiumdev.thingifier.core.domain.instances.ERInstanceData;
-import uk.co.compendiumdev.thingifier.spark.SimpleRouteConfig;
+import uk.co.compendiumdev.thingifier.spark.SimpleSparkRouteCreator;
 
 import java.util.*;
 
@@ -63,14 +63,14 @@ public class ChallengerTrackingRoutes {
             return "";
         };
 
-        SimpleRouteConfig.addHandler("/challenger/:id", "options", (request, result) ->{
+        SimpleSparkRouteCreator.addHandler("/challenger/:id", "options", (request, result) ->{
             result.status(204);
             // disallow POST, DELETE, PATCH, TRACE
             result.header("Allow", "GET, PUT, HEAD, OPTIONS");
             return "";
         });
 
-        SimpleRouteConfig.routeStatusWhenNot(405, "/challenger/:id", List.of("get", "put", "head", "options"));
+        SimpleSparkRouteCreator.routeStatusWhenNot(405, "/challenger/:id", List.of("get", "put", "head", "options"));
 
         // refresh challenger to avoid purging
         get("/challenger/:id", (request, result) -> {
@@ -185,7 +185,7 @@ public class ChallengerTrackingRoutes {
 
          */
 
-        SimpleRouteConfig.addHandler("/challenger", "options", (request, result) ->{
+        SimpleSparkRouteCreator.addHandler("/challenger", "options", (request, result) ->{
             result.status(204);
             // disallow POST, DELETE, PATCH, TRACE
             result.header("Allow", "POST, OPTIONS");
@@ -239,7 +239,7 @@ public class ChallengerTrackingRoutes {
                         addDocumentation("Create a challenger using the X-CHALLENGER guid header.").
                         addPossibleStatuses(200,400,405));
 
-        SimpleRouteConfig.routeStatusWhenNot(405, "/challenger", List.of("post", "options"));
+        SimpleSparkRouteCreator.routeStatusWhenNot(405, "/challenger", List.of("post", "options"));
 
         /*
             The todos restore endpoint
@@ -295,14 +295,14 @@ public class ChallengerTrackingRoutes {
             }
         };
 
-        SimpleRouteConfig.addHandler("/challenger/database/:id", "options", (request, result) ->{
+        SimpleSparkRouteCreator.addHandler("/challenger/database/:id", "options", (request, result) ->{
             result.status(204);
             // disallow POST, DELETE, PATCH, TRACE
             result.header("Allow", "GET, PUT, HEAD, OPTIONS");
             return "";
         });
 
-        SimpleRouteConfig.routeStatusWhenNot(405, "/challenger/database/:id", List.of("get", "put", "head", "options"));
+        SimpleSparkRouteCreator.routeStatusWhenNot(405, "/challenger/database/:id", List.of("get", "put", "head", "options"));
 
         // add a GET challenger/database/:id in the proper database format
 

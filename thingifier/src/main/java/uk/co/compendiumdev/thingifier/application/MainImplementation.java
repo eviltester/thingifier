@@ -10,8 +10,8 @@ import uk.co.compendiumdev.thingifier.application.sparkhttpmessageHooks.ClearDat
 import uk.co.compendiumdev.thingifier.application.sparkhttpmessageHooks.LogTheSparkRequestHook;
 import uk.co.compendiumdev.thingifier.application.sparkhttpmessageHooks.LogTheResponseHook;
 import uk.co.compendiumdev.thingifier.application.routehandlers.ShutdownRouteHandler;
-import uk.co.compendiumdev.thingifier.htmlgui.DefaultGuiRoutings;
-import uk.co.compendiumdev.thingifier.htmlgui.DefaultGUIHTML;
+import uk.co.compendiumdev.thingifier.htmlgui.routing.DefaultGuiRoutings;
+import uk.co.compendiumdev.thingifier.htmlgui.htmlgen.DefaultGUIHTML;
 
 import java.util.HashMap;
 import java.util.List;
@@ -95,7 +95,7 @@ public class MainImplementation {
 
     public void registerModel(final String modelName, final Thingifier thingifier) {
         thingifierModels.put(modelName, thingifier);
-        if(defaultModelName.length()==0){
+        if(defaultModelName.isEmpty()){
             // set this as the default
             defaultModelName = modelName;
         }

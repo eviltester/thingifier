@@ -21,6 +21,16 @@ public class ThingifierApiConfigProfiles {
         return profile;
     }
 
+    public ThingifierApiConfigProfile create(final String profileName,
+                                             final String profileDescription,
+                                             final String apiEndPointPrefix) {
+
+        final ThingifierApiConfigProfile profile = new ThingifierApiConfigProfile(
+                profileName, profileDescription, apiEndPointPrefix);
+        profiles.add(profile);
+        return profile;
+    }
+
     public List<ThingifierApiConfigProfile> getProfiles() {
         List<ThingifierApiConfigProfile> profilesCopy = new ArrayList<>();
         profilesCopy.addAll(profiles);
@@ -32,7 +42,7 @@ public class ThingifierApiConfigProfiles {
         ThingifierApiConfigProfile profile=null;
 
         if(defaultProfile==null){
-            if(profiles.size()>0) {
+            if(!profiles.isEmpty()) {
                 profile = profiles.get(profiles.size() - 1);
             }
         }else{

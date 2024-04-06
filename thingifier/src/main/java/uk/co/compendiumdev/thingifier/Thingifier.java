@@ -35,7 +35,7 @@ final public class Thingifier {
         erm = new EntityRelModel();
         title = "";
         initialParagraph = "";
-        apiConfig = new ThingifierApiConfig();
+        apiConfig = new ThingifierApiConfig("");
         apiConfigProfiles = new ThingifierApiConfigProfiles();
     }
 

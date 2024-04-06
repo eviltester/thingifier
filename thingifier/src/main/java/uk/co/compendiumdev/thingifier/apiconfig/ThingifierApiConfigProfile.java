@@ -13,7 +13,16 @@ public class ThingifierApiConfigProfile {
 
         this.profileName = profileName;
         this.profileDescription = profileDescription;
-        apiConfig = new ThingifierApiConfig();
+        apiConfig = new ThingifierApiConfig("");
+    }
+
+    public ThingifierApiConfigProfile(final String profileName,
+                                      final String profileDescription,
+                                      final String apiEndPointPrefix) {
+
+        this.profileName = profileName;
+        this.profileDescription = profileDescription;
+        apiConfig = new ThingifierApiConfig(apiEndPointPrefix);
     }
 
     public ThingifierApiConfig apiConfig() {

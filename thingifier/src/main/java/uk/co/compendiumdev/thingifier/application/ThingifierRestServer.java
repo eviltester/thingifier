@@ -15,9 +15,9 @@ import uk.co.compendiumdev.thingifier.application.internalhttpconversion.*;
 import uk.co.compendiumdev.thingifier.application.sparkhttpmessageHooks.InternalHttpRequestHook;
 import uk.co.compendiumdev.thingifier.application.sparkhttpmessageHooks.InternalHttpResponseHook;
 import uk.co.compendiumdev.thingifier.application.sparkhttpmessageHooks.SparkRequestResponseHook;
-import uk.co.compendiumdev.thingifier.htmlgui.DefaultGUIHTML;
-import uk.co.compendiumdev.thingifier.htmlgui.RestApiDocumentationGenerator;
-import uk.co.compendiumdev.thingifier.spark.SimpleRouteConfig;
+import uk.co.compendiumdev.thingifier.htmlgui.htmlgen.DefaultGUIHTML;
+import uk.co.compendiumdev.thingifier.htmlgui.htmlgen.RestApiDocumentationGenerator;
+import uk.co.compendiumdev.thingifier.spark.SimpleSparkRouteCreator;
 import uk.co.compendiumdev.thingifier.swaggerizer.Swaggerizer;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -280,7 +280,7 @@ public class ThingifierRestServer {
         // TODO : allow this to be overwritten by config
         // nothing else is supported
 
-        SimpleRouteConfig.routeStatus(404, "*", true, List.of("head", "get", "options", "put", "post", "patch", "delete"));
+        SimpleSparkRouteCreator.routeStatus(404, "*", true, List.of("head", "get", "options", "put", "post", "patch", "delete"));
 
         exception(RuntimeException.class, (e, request, response) -> {
             response.status(400);

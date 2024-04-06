@@ -4,7 +4,7 @@ import spark.Route;
 import uk.co.compendiumdev.thingifier.api.docgen.ThingifierApiDocumentationDefn;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
 import uk.co.compendiumdev.thingifier.application.AdhocDocumentedSparkRouteConfigurer;
-import uk.co.compendiumdev.thingifier.spark.SimpleRouteConfig;
+import uk.co.compendiumdev.thingifier.spark.SimpleSparkRouteCreator;
 import uk.co.compendiumdev.thingifier.swaggerizer.Swaggerizer;
 
 
@@ -42,7 +42,7 @@ public class MirrorRoutes {
             };
             if(anEndpoint.endsWith("/*")){
                 // add to routing but not to the api documentation
-                SimpleRouteConfig.addHandler(anEndpoint, "options", routeHandler);
+                SimpleSparkRouteCreator.addHandler(anEndpoint, "options", routeHandler);
             }else {
                 routeCreatorAndDocumentor.
                         add(anEndpoint, RoutingVerb.OPTIONS, 204,
@@ -67,7 +67,7 @@ public class MirrorRoutes {
             for(RoutingVerb routing : verbs200status) {
                 if(anEndpoint.endsWith("/*")){
                     // add to routing but not to the api documentation
-                    SimpleRouteConfig.addHandler(anEndpoint, routing.name(), mirroredRoute);
+                    SimpleSparkRouteCreator.addHandler(anEndpoint, routing.name(), mirroredRoute);
                 }else {
                     if (anEndpoint.startsWith(endpoint)) {
                         routeCreatorAndDocumentor.add(anEndpoint, routing, 200,
@@ -88,7 +88,7 @@ public class MirrorRoutes {
             };
             if(anEndpoint.endsWith("/*")){
                 // add to routing but not to the api documentation
-                SimpleRouteConfig.addHandler(anEndpoint, "head", routeHAndler);
+                SimpleSparkRouteCreator.addHandler(anEndpoint, "head", routeHAndler);
             }else {
                 routeCreatorAndDocumentor.
                         add(anEndpoint, RoutingVerb.HEAD, 204,

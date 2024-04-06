@@ -1,8 +1,10 @@
-package uk.co.compendiumdev.thingifier.htmlgui;
+package uk.co.compendiumdev.thingifier.htmlgui.routing;
 
 import spark.Request;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.htmlgui.htmlgen.DefaultGUIHTML;
+import uk.co.compendiumdev.thingifier.htmlgui.htmlgen.DefaultGuiHtmlPages;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -93,6 +95,7 @@ public class DefaultGuiRoutings {
     }
 
 
+    // TODO: this is where we would 'inject' or handle the authentication process - could be injected with a Thingifier specific handler
     // TODO: multiple thingifiers would require different cookie names - give Thingifier a name and include in cookie
     // e.g. X-APICHALLENGES-THINGIFIER-DATABASE-NAME, X-SIMPLEAPI-THINGIFIER-DATABASE-NAME
     private String getDatabaseNameFromRequest(Request request) {

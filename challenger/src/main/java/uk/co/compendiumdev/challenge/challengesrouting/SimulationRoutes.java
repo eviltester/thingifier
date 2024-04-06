@@ -16,7 +16,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.F
 import uk.co.compendiumdev.thingifier.core.domain.definitions.validation.MaximumLengthValidationRule;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonThing;
-import uk.co.compendiumdev.thingifier.spark.SimpleRouteConfig;
+import uk.co.compendiumdev.thingifier.spark.SimpleSparkRouteCreator;
 import uk.co.compendiumdev.thingifier.swaggerizer.Swaggerizer;
 
 import java.util.ArrayList;
@@ -91,9 +91,9 @@ public class SimulationRoutes {
             return "";
         });
 
-        new SimpleRouteConfig(endpoint).status(501, List.of("patch", "trace"));
+        new SimpleSparkRouteCreator(endpoint).status(501, List.of("patch", "trace"));
 
-        new SimpleRouteConfig(endpoint + "/*").status(501, List.of("patch", "trace"));
+        new SimpleSparkRouteCreator(endpoint + "/*").status(501, List.of("patch", "trace"));
 
         options(endpoint + "/*", (request, result) -> {
             result.status(204);

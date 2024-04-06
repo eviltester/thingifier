@@ -1,4 +1,4 @@
-package uk.co.compendiumdev.thingifier.htmlgui;
+package uk.co.compendiumdev.thingifier.htmlgui.htmlgen;
 
 public class HtmlUtils {
     public static String sanitise(String value) {

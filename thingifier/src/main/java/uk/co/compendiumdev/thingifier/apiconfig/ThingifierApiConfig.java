@@ -3,6 +3,9 @@ package uk.co.compendiumdev.thingifier.apiconfig;
 public class ThingifierApiConfig {
 
 
+    // the api endpoint url prefix e.g. /api for /api/todos or /apichallenges/api for /apichallenges/api/todos etc.
+    private String apiEndpointPrefix;
+
     // Params
     // todo: willAllowFilteringThroughUrlParams  true/false (default: true)
     // todo: willEnforceFilteringThroughUrlParams true/false ie. 404 error if params when not supported (default: true)
@@ -60,8 +63,16 @@ public class ThingifierApiConfig {
     private final StatusCodeConfig statusCodeConfig;
     private boolean robotsCanIndexApiResponses;
 
-    public ThingifierApiConfig(){
+    public ThingifierApiConfig(String endPointPrefix){
 
+        String prefixToUse = "";
+        if(endPointPrefix!=null && !endPointPrefix.isEmpty()){
+            if(!endPointPrefix.startsWith("/")){
+                prefixToUse = "/";
+            }
+            prefixToUse = prefixToUse + endPointPrefix;
+        }
+        apiEndpointPrefix = prefixToUse;
 
         // default to the most modern and 'up to date' config
         willShowSingleInstancesAsPlural=true;
@@ -91,6 +102,7 @@ public class ThingifierApiConfig {
     }
 
     public void setFrom(final ThingifierApiConfig apiConfig) {
+        apiEndpointPrefix = apiConfig.apiEndpointPrefix;
         willShowSingleInstancesAsPlural=apiConfig.willUrlShowInstancesAsPlural();
         willShowPrimaryKeyHeaderInResponses =apiConfig.willResponsesShowPrimaryKeyHeader();
         willShowIdsInResponsesIfAvailable = apiConfig.willResponseShowIdsIfAvailable();
@@ -221,5 +233,9 @@ public class ThingifierApiConfig {
 
     public boolean willAllowRobotsToIndexResponses() {
         return robotsCanIndexApiResponses;
+    }
+
+    public String getApiEndPointPrefix() {
+        return apiEndpointPrefix;
     }
 }

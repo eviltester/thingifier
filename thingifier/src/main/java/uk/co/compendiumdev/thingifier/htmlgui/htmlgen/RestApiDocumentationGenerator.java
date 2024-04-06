@@ -1,4 +1,4 @@
-package uk.co.compendiumdev.thingifier.htmlgui;
+package uk.co.compendiumdev.thingifier.htmlgui.htmlgen;
 
 import com.google.gson.GsonBuilder;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.xml.GenericXMLPrettyPrinter;
@@ -286,7 +286,7 @@ public class RestApiDocumentationGenerator {
                     // we are allowed to filter url
                     output.append(paragraph("This endpoint can be filtered with fields as URL Query Parameters."));
                     String exampleFilter = getExampleFilter(routingDefn.getFilterableEntity());
-                    if(exampleFilter!=null && exampleFilter.length()>0){
+                    if(exampleFilter!=null && !exampleFilter.isEmpty()){
                         output.append(paragraph("e.g. <span class='endpoint'>" + url(routingDefn.url()) + exampleFilter + "</span>"));
                     }
                 }
@@ -350,7 +350,7 @@ public class RestApiDocumentationGenerator {
             Field field = filterableEntity.getField(fieldName);
             if(field.getType() != FieldType.AUTO_INCREMENT && field.getType()!= FieldType.AUTO_GUID){
                 // we can filter on guid and id, but don't use those as examples
-                if(exampleFields.size()==0 || random.nextBoolean()){
+                if(exampleFields.isEmpty() || random.nextBoolean()){
                     // make sure at least one
                     indexes.add(exampleFields.size());
                     exampleFields.add(field);

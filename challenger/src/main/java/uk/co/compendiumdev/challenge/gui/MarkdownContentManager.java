@@ -7,7 +7,7 @@ import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.co.compendiumdev.thingifier.htmlgui.DefaultGUIHTML;
+import uk.co.compendiumdev.thingifier.htmlgui.htmlgen.DefaultGUIHTML;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -95,7 +95,7 @@ public class MarkdownContentManager {
         String youtubeHeaderInject = "";
 
 
-        List<Extension> extensions = Arrays.asList(TablesExtension.create());
+        List<Extension> extensions = List.of(TablesExtension.create());
         // parse this html and output
         Parser parser = Parser.builder().extensions(extensions).build();
 
@@ -109,7 +109,7 @@ public class MarkdownContentManager {
         mdcontent.append(bcHeader);
 
         String state = "EXPECTING_HEADER";
-        Boolean addedToc = false;
+        boolean addedToc = false;
 
         try {
             while ((line = reader.readLine()) != null) {

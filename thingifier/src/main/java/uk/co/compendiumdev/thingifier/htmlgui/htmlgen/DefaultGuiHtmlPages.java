@@ -1,4 +1,4 @@
-package uk.co.compendiumdev.thingifier.htmlgui;
+package uk.co.compendiumdev.thingifier.htmlgui.htmlgen;
 
 import com.google.gson.GsonBuilder;
 import uk.co.compendiumdev.thingifier.Thingifier;

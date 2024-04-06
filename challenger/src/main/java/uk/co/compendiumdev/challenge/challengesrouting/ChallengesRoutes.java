@@ -14,7 +14,7 @@ import uk.co.compendiumdev.thingifier.application.routehandlers.SparkApiRequestR
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.query.FilterBy;
 import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
-import uk.co.compendiumdev.thingifier.spark.SimpleRouteConfig;
+import uk.co.compendiumdev.thingifier.spark.SimpleSparkRouteCreator;
 import java.util.List;
 
 import static spark.Spark.*;
@@ -87,7 +87,7 @@ public class ChallengesRoutes {
                             return "";
                         }));
 
-        SimpleRouteConfig.routeStatusWhenNot(405, "/challenges", List.of("get", "head", "options"));
+        SimpleSparkRouteCreator.routeStatusWhenNot(405, "/challenges", List.of("get", "head", "options"));
 
     }
 
