@@ -3,6 +3,7 @@ package uk.co.compendiumdev.thingifier.api.http;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
+import uk.co.compendiumdev.thingifier.api.restapihandlers.SessionHeaderParser;
 import uk.co.compendiumdev.thingifier.application.httpapimessagehooks.HttpApiRequestHook;
 import uk.co.compendiumdev.thingifier.application.httpapimessagehooks.HttpApiResponseHook;
 import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonThing;
@@ -56,6 +57,17 @@ final public class ThingifierHttpApi {
 
 
     private HttpApiResponse handleRequest(final HttpApiRequest request, HttpVerb verb){
+
+        // if the request.url has the 'prefix' then remove the prefix and process the request
+        //if(request.getPath())
+
+        String prefix = thingifier.apiConfig().getApiEndPointPrefix();
+        if(prefix!= null && !prefix.isEmpty()){
+            if(prefix.startsWith("/")){
+                prefix = prefix.substring(1);
+            }
+            request.removePrefixFromPath(prefix);
+        }
 
         // any pre-request override processing
         HttpApiResponse httpResponse = runTheHttpApiRequestHooksOn(request);
@@ -117,7 +129,8 @@ final public class ThingifierHttpApi {
         ApiResponse apiResponse=null;
 
         // if there is a session id and we have not created the erm yet, then do that now
-         createDatabaseBasedOnSessionHeaderUIfNecessary(request.getHeader(HTTP_SESSION_HEADER_NAME));
+        String databaseToUse = SessionHeaderParser.getDatabaseNameFromHeaderValue(request.getHeaders());
+        createDatabaseBasedOnSessionHeaderUIfNecessary(databaseToUse);
 
         switch (verb){
             case GET:
@@ -174,8 +187,9 @@ final public class ThingifierHttpApi {
 
         HttpApiResponse httpResponse = runTheHttpApiRequestHooksOn(request);
 
-        // if there is a session id and we have not created the erm yet, then do that now
-        createDatabaseBasedOnSessionHeaderUIfNecessary(request.getHeader(HTTP_SESSION_HEADER_NAME));
+        // if there is a session id and we have not created the erm yet, then do that
+        String databaseToUse = SessionHeaderParser.getDatabaseNameFromHeaderValue(request.getHeaders());
+        createDatabaseBasedOnSessionHeaderUIfNecessary(databaseToUse);
 
         if(httpResponse==null) {
             ApiResponse apiResponse = thingifier.api().get(query, request.getFilterableQueryParams(), request.getHeaders());

@@ -6,6 +6,7 @@ import uk.co.compendiumdev.thingifier.core.domain.randomdata.RandomString;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.validation.ValidationRule;
 
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -189,7 +190,7 @@ public final class Field {
 
     private void validateEnumValue(final FieldValue value, final ValidationReport report) {
         if (!getExamples().contains(value.asString())) {
-            reportThisValueDoesNotMatchType(report, value.asString());
+            reportThisValueDoesNotMatchType(report, value.asString(), getExamples());
         }
     }
 
@@ -214,14 +215,23 @@ public final class Field {
                                       final ValidationReport report) {
         try {
 
-            int intVal = value.asInteger();
+            // integers can come in from JSON as doubles
+            BigDecimal intFloatValue = new BigDecimal(value.asString());
+
+            BigDecimal fractionalPart = intFloatValue.abs().subtract(new BigDecimal(intFloatValue.abs().toBigInteger()));
+
+            if(!(fractionalPart.equals(new BigDecimal("0")) || fractionalPart.equals(new BigDecimal("0.0")))){
+                throw new NumberFormatException();
+            }
+
+            int intVal = intFloatValue.intValue();
 
             if (!withinAllowedIntegerRange(intVal)) {
                 report.setValid(false);
                 report.addErrorMessage(
                         String.format(
-                                "%s : %s is not within range for type %s (%d to %d)",
-                                this.getName(), value.asString(),
+                                "%s : %d is not within range for type %s (%d to %d)",
+                                this.getName(), intVal,
                                 type, minimumIntegerValue, maximumIntegerValue));
             }
         } catch (NumberFormatException e) {
@@ -232,11 +242,24 @@ public final class Field {
 
     private void reportThisValueDoesNotMatchType(final ValidationReport report,
                                                  final String valueString) {
+        reportThisValueDoesNotMatchType(report, valueString, List.of());
+    }
+
+    private void reportThisValueDoesNotMatchType(final ValidationReport report,
+                                                 final String valueString,
+                                                 final List<String> validValues) {
+
+        String reportValids = "";
+
+        if(validValues!=null && !validValues.isEmpty()){
+            reportValids = " - valid values are [%s]".formatted(String.join(",",validValues));
+        }
+
         report.setValid(false);
         report.addErrorMessage(
                 String.format(
-                        "%s : %s does not match type %s",
-                        name,  valueString, type));
+                        "%s : %s does not match type %s%s",
+                        name,  valueString, type, reportValids));
     }
 
     private void validateBooleanValue(final FieldValue value,

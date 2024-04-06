@@ -93,7 +93,11 @@ public class ThingifierApiDocumentationDefn {
     }
 
     public void setPathPrefix(String prefix) {
-        pathPrefix = prefix;
+        String slash = "";
+        if(prefix!=null && !prefix.startsWith("/")){
+            slash = "/";
+        }
+        pathPrefix = slash + prefix;
     }
 
     public String getPathPrefix() {

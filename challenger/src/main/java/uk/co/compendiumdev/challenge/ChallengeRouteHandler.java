@@ -7,6 +7,7 @@ import uk.co.compendiumdev.challenge.challengesrouting.*;
 import uk.co.compendiumdev.challenge.gui.ChallengerWebGUI;
 import uk.co.compendiumdev.challenge.persistence.PersistenceLayer;
 import uk.co.compendiumdev.challenge.practicemodes.mirror.MirrorRoutes;
+import uk.co.compendiumdev.challenge.practicemodes.simpleapi.SimpleApiRoutes;
 import uk.co.compendiumdev.challenge.practicemodes.simulation.SimulationRoutes;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.docgen.ThingifierApiDocumentationDefn;
@@ -83,6 +84,8 @@ public class ChallengeRouteHandler {
 
         // Simulation routes should not show
         new SimulationRoutes().configure();
+
+        new SimpleApiRoutes().configure();
 
         return this;
     }

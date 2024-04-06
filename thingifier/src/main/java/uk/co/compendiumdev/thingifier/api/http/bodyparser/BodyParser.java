@@ -79,6 +79,9 @@ public class BodyParser {
         if(theValue instanceof Boolean){
             stringsInMap.add(new AbstractMap.SimpleEntry<String,String>(prefixkey, String.valueOf(theValue)));
         }
+        if(theValue instanceof Integer){
+            stringsInMap.add(new AbstractMap.SimpleEntry<String,String>(prefixkey, String.valueOf(theValue)));
+        }
         // todo: what else can come in?
         String separator = "";
         if(prefixkey!=null && prefixkey.length() > 0 && !prefixkey.endsWith(".")){

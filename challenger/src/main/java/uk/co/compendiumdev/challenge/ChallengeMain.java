@@ -63,7 +63,7 @@ public class ChallengeMain {
             if(arg.toLowerCase().startsWith("-unlimitedtodos")){
                 // remove the limit on number of todos
                 logger.info("Enabling Unlimited TODO Instances");
-                thingifier.getDefinitionNamed("todo").setMaxInstanceLimit();
+                thingifier.getDefinitionNamed("todo").setNoMaxInstanceLimit();
             }
         }
 

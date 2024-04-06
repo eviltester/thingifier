@@ -25,6 +25,12 @@ public final class HttpApiRequest {
     // a storage for the raw headers, which might include duplicates
     private ArrayList<StringPair> headersList;
 
+    public void removePrefixFromPath(String prefix) {
+        if(path.startsWith(prefix)){
+            path = justThePath(path.replaceFirst(prefix,""));
+        }
+    }
+
     public enum VERB{ GET, HEAD, POST, PUT, DELETE, PATCH, OPTIONS, CONNECT, TRACE}
 
     public HttpApiRequest(final String pathInfo) {

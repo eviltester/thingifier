@@ -41,5 +41,21 @@ public class IntegerFieldTest {
         });
     }
 
+    @Test
+    public void canSetIntegerField(){
+
+        EntityDefinition stringFieldEntity = new EntityDefinition("Test Session", "Test Sessions");
+        stringFieldEntity.addFields(Field.is("integer", FieldType.INTEGER).
+                withMaximumValue(100).
+                withMinimumValue(50)
+        );
+
+        EntityInstance instance = new EntityInstance(stringFieldEntity);
+
+        instance.setValue("integer", "75");
+
+        Assertions.assertEquals(instance.getFieldValue("integer").asString(),"75");
+    }
+
 
 }

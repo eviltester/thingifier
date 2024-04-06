@@ -2,7 +2,6 @@ package uk.co.compendiumdev.thingifier.core.domain.definitions;
 
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.NamedValue;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVectorDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.InstanceFields;
 
@@ -125,7 +124,7 @@ public class EntityDefinition {
         return maxInstanceCount>=0;
     }
 
-    public void setMaxInstanceLimit() {
+    public void setNoMaxInstanceLimit() {
         maxInstanceCount = EntityDefinition.NO_INSTANCE_LIMIT;
     }
 
