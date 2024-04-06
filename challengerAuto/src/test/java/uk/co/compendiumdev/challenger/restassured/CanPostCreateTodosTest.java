@@ -50,7 +50,7 @@ public class CanPostCreateTodosTest extends RestAssuredBaseTest {
 
         // GET on Location header should return the to do location but just check the format
         Assertions.assertEquals(
-                "todos/" + createdTodo.id,
+                "/todos/" + createdTodo.id,
                     response.header("Location"));
 
         ChallengesStatus statuses = new ChallengesStatus();
@@ -175,11 +175,7 @@ public class CanPostCreateTodosTest extends RestAssuredBaseTest {
     }
 
     private String stringOfLength(int length) {
-        StringBuilder str = new StringBuilder();
-        for (int currLen = 0; currLen < length; currLen++) {
-            str.append('a');
-        }
-        return str.toString();
+        return "a".repeat(Math.max(0, length));
     }
 
     @Test
@@ -306,7 +302,7 @@ public class CanPostCreateTodosTest extends RestAssuredBaseTest {
 
         // GET on Location header to return the to do and check values
         String locationHeader = response.getHeader("Location");
-        String pattern = "todos/(.*)";
+        String pattern = "/todos/(.*)";
         Pattern getId = Pattern.compile(pattern);
         Matcher matcher = getId.matcher(locationHeader);
         matcher.find();
@@ -348,7 +344,7 @@ public class CanPostCreateTodosTest extends RestAssuredBaseTest {
 
         // GET on Location header to return the to do and check values
         String locationHeader = response.getHeader("Location");
-        String pattern = "todos/(.*)";
+        String pattern = "/todos/(.*)";
         Pattern getId = Pattern.compile(pattern);
         Matcher matcher = getId.matcher(locationHeader);
         matcher.find();

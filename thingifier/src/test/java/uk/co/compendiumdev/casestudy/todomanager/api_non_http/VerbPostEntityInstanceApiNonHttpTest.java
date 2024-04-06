@@ -54,7 +54,7 @@ public class VerbPostEntityInstanceApiNonHttpTest {
     public void postCanCreateAnEntityWhichPassesValidationWithAllFields() {
 
         // POST project
-        Map requestBody = new HashMap<String, String>();
+        Map<String,String> requestBody = new HashMap<>();
         String title = "My Office Work" + System.currentTimeMillis();
         String description = "MyDescription " + System.currentTimeMillis();
         String doneStatus = "true";
@@ -84,7 +84,7 @@ public class VerbPostEntityInstanceApiNonHttpTest {
         String headerGUID = apiresponse.getHeaderValue(ApiResponse.PRIMARY_KEY_HEADER);
 
         Assertions.assertEquals(headerGUID, officeWorkGuid);
-        Assertions.assertEquals("todos/" + officeWorkGuid, headerLocation);
+        Assertions.assertEquals("/todos/" + officeWorkGuid, headerLocation);
 
         // check that it is created in the model
 
@@ -94,7 +94,7 @@ public class VerbPostEntityInstanceApiNonHttpTest {
 
     }
 
-    private BodyParser getSimpleParser(final Map requestBody) {
+    private BodyParser getSimpleParser(final Map<String,String> requestBody) {
 
             final HttpApiRequest arequest = new HttpApiRequest("/path").setBody(new Gson().toJson(requestBody));
             return new BodyParser(arequest, todoManager.getThingNames());
@@ -104,7 +104,7 @@ public class VerbPostEntityInstanceApiNonHttpTest {
     public void postCanCreateAnEntityWhichPassesValidationWithMinimumFields() {
 
         // POST project
-        Map requestBody = new HashMap<String, String>();
+        Map<String, String> requestBody = new HashMap<>();
         String title = "My Office Work" + System.currentTimeMillis();
 
         requestBody.put("title", title);
@@ -130,7 +130,7 @@ public class VerbPostEntityInstanceApiNonHttpTest {
         String headerGUID = apiresponse.getHeaderValue(ApiResponse.PRIMARY_KEY_HEADER);
 
         Assertions.assertEquals(headerGUID, officeWorkGuid);
-        Assertions.assertEquals("todos/" + officeWorkGuid, headerLocation);
+        Assertions.assertEquals("/todos/" + officeWorkGuid, headerLocation);
 
         // check that it is created in the model
 
@@ -149,7 +149,7 @@ public class VerbPostEntityInstanceApiNonHttpTest {
 
 
         // POST project
-        Map requestBody = new HashMap<String, String>();
+        Map<String, String> requestBody = new HashMap<>();
         String title = "My New Title" + System.currentTimeMillis();
         String description = "My Description " + System.currentTimeMillis();
 
@@ -181,7 +181,7 @@ public class VerbPostEntityInstanceApiNonHttpTest {
 
         int currentProjects = project.countInstances();
 
-        Map requestBody = new HashMap<String, String>();
+        Map<String, String> requestBody = new HashMap<>();
         requestBody.put("title", "My Office Work");
 
         String guid = UUID.randomUUID().toString();
@@ -199,7 +199,7 @@ public class VerbPostEntityInstanceApiNonHttpTest {
     @Test
     public void postFailCannotAmendEntityInstanceWhenValidationErrorsAPI() {
 
-        Map requestBody;
+        Map<String, String> requestBody;
         ApiResponse apiresponse;
 
         String originalTitle = "Todo for amending " + System.currentTimeMillis();
@@ -210,13 +210,13 @@ public class VerbPostEntityInstanceApiNonHttpTest {
 
 
         // Mandatory field validation
-        requestBody = new HashMap<String, String>();
+        requestBody = new HashMap<>();
         requestBody.put("title", "");
         requestBody.put("description", "Amend Failed new TODO Item");
         apiresponse = todoManager.api().post(String.format("todo/%s", amendTodo.getPrimaryKeyValue()),  getSimpleParser(requestBody), new HttpHeadersBlock());
 
         Assertions.assertEquals(400, apiresponse.getStatusCode());
-        Assertions.assertTrue(apiresponse.getErrorMessages().size() > 0);
+        Assertions.assertFalse(apiresponse.getErrorMessages().isEmpty());
         Assertions.assertTrue(apiresponse.hasABody());
 
 
@@ -224,7 +224,7 @@ public class VerbPostEntityInstanceApiNonHttpTest {
         Assertions.assertEquals(originalDescription, amendTodo.getFieldValue("description").asString());
 
 
-        requestBody = new HashMap<String, String>();
+        requestBody = new HashMap<>();
         requestBody.put("title", "A new TODO Item");
         requestBody.put("description", "A new TODO Item");
         requestBody.put("doneStatus", "FALSEY");
@@ -244,13 +244,13 @@ public class VerbPostEntityInstanceApiNonHttpTest {
     @Test
     public void putCanAmendExistingProject() {
 
-        Map requestBody;
+        Map<String, String> requestBody;
         ApiResponse apiresponse;
 
 
         // PUT
 
-        requestBody = new HashMap<String, String>();
+        requestBody = new HashMap<>();
         requestBody.put("title", "My Office Work");
 
         EntityInstance officeWork = project.createManagedInstance().
@@ -278,30 +278,30 @@ public class VerbPostEntityInstanceApiNonHttpTest {
     @Test
     public void postFailCannotCreateEntityInstanceWhenValidationErrorsAPI() {
 
-        Map requestBody;
+        Map<String, String> requestBody;
         ApiResponse apiresponse;
 
         // Mandatory field validation on POST create - must have a title
-        requestBody = new HashMap<String, String>();
+        requestBody = new HashMap<>();
         requestBody.put("description", "A new TODO Item"); // 400 because it should be "title"
 
         apiresponse = todoManager.api().post(String.format("todo"),  getSimpleParser(requestBody), new HttpHeadersBlock());
         Assertions.assertEquals(400, apiresponse.getStatusCode());
-        Assertions.assertTrue(apiresponse.getErrorMessages().size() > 0);
+        Assertions.assertFalse(apiresponse.getErrorMessages().isEmpty());
         Assertions.assertTrue(apiresponse.hasABody());
 
         // Field validation on boolean for Create with POST
-        requestBody = new HashMap<String, String>();
+        requestBody = new HashMap<>();
         requestBody.put("title", "A new TODO Item");
         requestBody.put("doneStatus", "FALSEY");
 
         apiresponse = todoManager.api().post(String.format("todo"), getSimpleParser(requestBody), new HttpHeadersBlock());
         Assertions.assertEquals(400, apiresponse.getStatusCode());
-        Assertions.assertTrue(apiresponse.getErrorMessages().size() > 0);
+        Assertions.assertFalse(apiresponse.getErrorMessages().isEmpty());
         Assertions.assertTrue(apiresponse.hasABody());
 
         // Field validation on boolean for Amend with POST
-        requestBody = new HashMap<String, String>();
+        requestBody = new HashMap<>();
         requestBody.put("title", "A new TODO Item");
         requestBody.put("doneStatus", "FALSEY");
 
@@ -310,7 +310,7 @@ public class VerbPostEntityInstanceApiNonHttpTest {
 
         apiresponse = todoManager.api().post(String.format("todo/%s", paperwork.getPrimaryKeyValue()), getSimpleParser(requestBody), new HttpHeadersBlock());
         Assertions.assertEquals(400, apiresponse.getStatusCode());
-        Assertions.assertTrue(apiresponse.getErrorMessages().size() > 0);
+        Assertions.assertFalse(apiresponse.getErrorMessages().isEmpty());
         Assertions.assertTrue(apiresponse.hasABody());
 
     }

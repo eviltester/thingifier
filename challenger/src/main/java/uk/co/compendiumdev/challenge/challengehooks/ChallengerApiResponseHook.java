@@ -13,7 +13,6 @@ import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiResponse;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.application.httpapimessagehooks.HttpApiResponseHook;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import java.util.Collection;
 
@@ -162,9 +161,9 @@ public class ChallengerApiResponseHook implements HttpApiResponseHook {
 
                 if(locationParts.length>1){
                     // to check it is an int
-                    int todoId = Integer.parseInt(locationParts[1]);
+                    int todoId = Integer.parseInt(locationParts[2]);
                     final EntityInstanceCollection thing = thingifier.getThingInstancesNamed("todo", challenger.getXChallenger());
-                    EntityInstance aTodo = thing.findInstanceByPrimaryKey(locationParts[1]);
+                    EntityInstance aTodo = thing.findInstanceByPrimaryKey(locationParts[2]);
                     if(aTodo.getFieldValue("title").asString().length() == 50 &&
                             aTodo.getFieldValue("description").asString().length() == 200
                     ){

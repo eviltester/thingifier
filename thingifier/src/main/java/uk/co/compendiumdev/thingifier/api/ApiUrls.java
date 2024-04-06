@@ -22,6 +22,6 @@ public class ApiUrls {
         // use the primary key as the id
         String uniqueID = thingInstance.getPrimaryKeyValue();
 
-        return apiConfig.getApiEndPointPrefix() + entityPath + "/" + uniqueID;
+        return apiConfig.getApiEndPointPrefix() + "/" + entityPath + "/" + uniqueID;
     }
 }

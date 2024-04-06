@@ -143,7 +143,7 @@ public class SmulationRoutesTest {
 
         Assertions.assertEquals(201, response.statusCode);
         Assertions.assertEquals("application/json",response.getHeader("Content-Type"));
-        Assertions.assertEquals("entities/11", response.getHeader("Location"));
+        Assertions.assertEquals("/entities/11", response.getHeader("Location"));
         String entity11 = "{\"id\":11,\"name\":\"bob\",\"description\":\"\"}";
         Assertions.assertEquals(entity11, response.body);
 
@@ -162,7 +162,7 @@ public class SmulationRoutesTest {
 
         Assertions.assertEquals(201, response.statusCode);
         Assertions.assertEquals("application/json",response.getHeader("Content-Type"));
-        Assertions.assertEquals("entities/11", response.getHeader("Location"));
+        Assertions.assertEquals("/entities/11", response.getHeader("Location"));
         String entity11 = "{\"id\":11,\"name\":\"bob\",\"description\":\"\"}";
         Assertions.assertEquals(entity11, response.body);
 
@@ -181,7 +181,7 @@ public class SmulationRoutesTest {
 
         Assertions.assertEquals(201, response.statusCode);
         Assertions.assertEquals("application/json",response.getHeader("Content-Type"));
-        Assertions.assertEquals("entities/11", response.getHeader("Location"));
+        Assertions.assertEquals("/entities/11", response.getHeader("Location"));
         String entity11 = "{\"id\":11,\"name\":\"bob\",\"description\":\"\"}";
         Assertions.assertEquals(entity11, response.body);
 

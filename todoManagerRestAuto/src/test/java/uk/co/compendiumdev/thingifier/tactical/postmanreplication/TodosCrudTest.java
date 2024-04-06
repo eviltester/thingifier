@@ -8,10 +8,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-
 import java.util.HashMap;
-import java.util.List;
-
 import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.when;
 
@@ -47,7 +44,7 @@ public class TodosCrudTest {
     public void cannotCreateWithInvalidTodoBlankTitlePosts(){
 
         //{"title": "a specific to do Title"}
-        final HashMap<String, String> givenBody = new HashMap<String, String>();
+        final HashMap<String, String> givenBody = new HashMap<>();
         givenBody.put("title", "");
 
         final JsonPath body = given().body(givenBody).
@@ -94,7 +91,7 @@ public class TodosCrudTest {
     @Test
     public void canCreateWithPost(){
 
-        final HashMap<String, String> givenBody = new HashMap<String, String>();
+        final HashMap<String, String> givenBody = new HashMap<>();
         givenBody.put("title", "a specific todo Title");
 
         final Response response = given().body(givenBody).
@@ -105,7 +102,7 @@ public class TodosCrudTest {
 
         Assertions.assertEquals(
                         response.header("Location"),
-                "todos/" + response.header("X-Thing-Instance-Primary-Key"));
+                "/todos/" + response.header("X-Thing-Instance-Primary-Key"));
 
         final JsonPath body = response.jsonPath();
 
@@ -120,7 +117,7 @@ public class TodosCrudTest {
 
         // CREATE WITH POST
 
-        final HashMap<String, String> givenBody = new HashMap<String, String>();
+        final HashMap<String, String> givenBody = new HashMap<>();
         givenBody.put("title", "a specific todo Title for put");
 
         JsonPath body = given().body(givenBody).
