@@ -12,18 +12,10 @@ import static spark.Spark.get;
 
 public class ThingifierAutoDocGenRouting {
 
-    private String urlPath;
-
     public ThingifierAutoDocGenRouting(final Thingifier thingifier,
                                        ThingifierApiDocumentationDefn apiDefn,
                                        DefaultGUIHTML guiManagement) {
 
-
-        // TODO: this should come from the API config
-        this.urlPath = "";
-        if(apiDefn!=null && !apiDefn.getPathPrefix().isEmpty()) {
-            this.urlPath = apiDefn.getPathPrefix();
-        }
 
         // configure it based on a thingifier
         ApiRoutingDefinition routingDefinitions = new ApiRoutingDefinitionDocGenerator(thingifier).generate(apiDefn.getPathPrefix());
@@ -37,7 +29,7 @@ public class ThingifierAutoDocGenRouting {
                     getApiDocumentation(
                             routingDefinitions,
                             apiDefn.getAdditionalRoutes(),
-                            this.urlPath,
+                            apiDefn.getPathPrefix(),
                             "%s/docs".formatted(apiDefn.getPathPrefix()));
         });
 

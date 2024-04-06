@@ -85,7 +85,7 @@ public class UiPagesAreReachableTest {
         Assertions.assertTrue(response.body.contains("<h1>Page Not Found</h1>"));
     }
 
-    static Stream simplePageRoutingStatus(){
+    static Stream<Arguments> simplePageRoutingStatus(){
         List<Arguments> args = new ArrayList<>();
 
         // home page
