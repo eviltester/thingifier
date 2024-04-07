@@ -1,4 +1,4 @@
-package uk.co.compendiumdev.challenge.challengesrouting;
+package uk.co.compendiumdev.practicemodes;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
-public class SmulationRoutesTest {
+public class SmulationModeTest {
     private static HttpMessageSender http;
 
 

@@ -125,9 +125,10 @@ public class ApiRoutingDefinitionDocGenerator {
                     addPossibleStatus(RoutingStatus.returnValue(
                             400, String.format("Error when creating a %s", entityDefn.getName())));
 
+            // TODO: allow 200 for options
             defn.addRouting(
                     String.format("show all Options for endpoint of %s", pluralUrl),
-                    RoutingVerb.OPTIONS, pluralUrl, RoutingStatus.returnValue(200, "the endpoint verb options"),
+                    RoutingVerb.OPTIONS, pluralUrl, RoutingStatus.returnValue(204, "the endpoint verb options"),
                     new ResponseHeader("Allow", "OPTIONS, GET, HEAD, POST"));
 
             // the following are not handled so return 405
@@ -137,6 +138,8 @@ public class ApiRoutingDefinitionDocGenerator {
                     RoutingVerb.PATCH, pluralUrl, RoutingStatus.returnValue(405));
             defn.addRouting("method not allowed",
                     RoutingVerb.PUT, pluralUrl, RoutingStatus.returnValue(405));
+            defn.addRouting("method not allowed",
+                    RoutingVerb.TRACE, pluralUrl, RoutingStatus.returnValue(405));
 
             String aUrlWGuid = pluralUrl + "/" + uniqueIdentifier;
             // we should be able to get specific things based on the GUID e.g. GET project/GUID
@@ -190,14 +193,16 @@ public class ApiRoutingDefinitionDocGenerator {
                     addPossibleStatus(RoutingStatus.returnValue(
                             200, String.format("Deleted a specific %s", entityDefn.getName()))).
                     addPossibleStatus(RoutingStatus.returnValue(
-                            404, String.format("Could not find a specific %s", entityDefn.getName())));;
+                            404, String.format("Could not find a specific %s", entityDefn.getName())));
 
+            // TODO: API Config to allow 200 to be returned instead of 204
             defn.addRouting(
                     String.format("show all Options for endpoint of %s", aUrlWGuid),
-                    RoutingVerb.OPTIONS, aUrlWGuid, RoutingStatus.returnValue(200),
+                    RoutingVerb.OPTIONS, aUrlWGuid, RoutingStatus.returnValue(204),
                     new ResponseHeader("Allow", "OPTIONS, GET, HEAD, POST, PUT, DELETE"));
 
             defn.addRouting("method not allowed", RoutingVerb.PATCH, aUrlWGuid, RoutingStatus.returnValue(405));
+            defn.addRouting("method not allowed", RoutingVerb.TRACE, aUrlWGuid, RoutingStatus.returnValue(405));
 
 
             for (RelationshipVectorDefinition rel : entityDefn.related().getRelationships()) {

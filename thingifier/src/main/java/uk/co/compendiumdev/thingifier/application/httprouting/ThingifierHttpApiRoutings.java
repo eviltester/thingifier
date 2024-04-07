@@ -205,6 +205,14 @@ public class ThingifierHttpApiRoutings {
                         });
                     }
                     break;
+                case TRACE:
+                    if (!defn.status().isReturnedFromCall()) {
+                        trace(defn.url(), (request, response) -> {
+                            response.status(defn.status().value());
+                            return "";
+                        });
+                    }
+                    break;
             }
         }
 

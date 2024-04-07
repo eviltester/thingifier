@@ -13,6 +13,9 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.validation.Matches
 import uk.co.compendiumdev.thingifier.core.domain.definitions.validation.MaximumLengthValidationRule;
 import uk.co.compendiumdev.thingifier.htmlgui.htmlgen.DefaultGUIHTML;
 import uk.co.compendiumdev.thingifier.htmlgui.routing.DefaultGuiRoutings;
+import uk.co.compendiumdev.thingifier.spark.SimpleSparkRouteCreator;
+
+import java.util.List;
 
 /*
     The simple API is a no-auth API where anyone can amend, create, delete items.
@@ -93,5 +96,6 @@ public class SimpleApiRoutes {
         simpleApiHttpRouting = new ThingifierHttpApiRoutings(simplethings, apiDocDefn);
         simpleApiHttpRouting.registerHttpApiRequestHook(new AddMoreItemsIfNecessary(simplethings.getERmodel()));
 
+        new SimpleSparkRouteCreator("/simpleap/items").status(501, List.of("patch", "trace"));
     }
 }

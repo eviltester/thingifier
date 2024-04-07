@@ -158,7 +158,7 @@ public class ChallengerInternalHttpResponseHookTest {
                         .addHeader("X-CHALLENGER", challenger.getXChallenger());
 
         InternalHttpResponse response =
-                new InternalHttpResponse().setStatus(200);
+                new InternalHttpResponse().setStatus(204);
 
         hook.run(request,response);
 

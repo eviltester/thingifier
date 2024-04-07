@@ -46,9 +46,12 @@ public class SparkApiRequestResponseHandler {
 
         ApiResponse apiResponse = null;
 
-        // handle input validation - mirror does not validate
-        HttpApiResponse httpApiResponse = httpApi.validateRequestSyntax(myRequest,
-                                                ThingifierHttpApi.HttpVerb.GET);
+        // handle input validation - e.g. mirror/raw should not validate request
+        HttpApiResponse httpApiResponse = null;
+        if(validate) {
+            httpApiResponse = httpApi.validateRequestSyntax(myRequest,
+                    ThingifierHttpApi.HttpVerb.GET);
+        }
 
         if(httpApiResponse == null) {
             apiResponse = handler.handle(myRequest);

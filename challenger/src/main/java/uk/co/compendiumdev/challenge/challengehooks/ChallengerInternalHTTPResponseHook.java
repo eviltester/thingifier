@@ -176,7 +176,7 @@ public class ChallengerInternalHTTPResponseHook implements InternalHttpResponseH
 
         if (request.getVerb() == OPTIONS &&
                 request.getPath().contentEquals("todos") &&
-                response.getStatusCode() == 200) {
+                response.getStatusCode() == 204) {
             challengers.pass(challenger, CHALLENGE.OPTIONS_TODOS);
         }
 

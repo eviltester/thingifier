@@ -24,7 +24,7 @@ public class CanOptionsTodosTest extends RestAssuredBaseTest {
                     accept("application/json").
                 options(apiPath( "/todos")).
                 then().
-                    statusCode(200).
+                    statusCode(204).
                 and().extract().response();
 
         // pass challenge

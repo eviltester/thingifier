@@ -13,11 +13,16 @@ import java.util.List;
 
 import static spark.Spark.*;
 
+/*
+    Create a set of custom end points that do not use a thingifier, but
+    take advantage of the documentation generation functionality provided
+    by the thingifier
+ */
 public class MirrorRoutes {
 
     public void configure(final ThingifierApiDocumentationDefn apiDefn) {
 
-        // /mirror should be the GUI
+        // /mirror should be the GUI with api below it
         String endpoint ="/mirror/request";
         String rawEndPoint ="/mirror/raw";
 
