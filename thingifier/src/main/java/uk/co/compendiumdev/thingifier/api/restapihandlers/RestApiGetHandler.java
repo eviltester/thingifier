@@ -58,6 +58,7 @@ public class RestApiGetHandler {
                         returnInstanceCollection(
                                 queryResults.getListEntityInstances());
             } else {
+                // TODO: everything is returned as a collection from the query, the call should decide if it wants a single instance
                 return ApiResponse.success().returnSingleInstance(queryResults.getLastInstance());
             }
         } else {

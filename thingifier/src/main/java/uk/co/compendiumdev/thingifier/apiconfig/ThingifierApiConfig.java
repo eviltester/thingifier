@@ -55,6 +55,8 @@ public class ThingifierApiConfig {
 
     // Requests
     // willEnforceDeclaredTypesInInput e.g. only accept if boolean is given as `true` indead of "true"
+    // if not set to enforce then it will 'convert' as best it can prior to input
+    // e.g. 91.2 would be a valid integer of value 91
     private boolean willEnforceDeclaredTypesInInput;
 
     // URLs
