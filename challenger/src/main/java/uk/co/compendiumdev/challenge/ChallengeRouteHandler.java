@@ -92,8 +92,13 @@ public class ChallengeRouteHandler {
 
     public void addHooks(final ThingifierHttpApiRoutings restServer) {
 
+        // TODO: this is wrong - rethink this - we need SparkLevel, InternalHttp level (pre-post
+        // these hooks are registered at a spark before and after level so run on every request,
+        // regardless of thingifier used - this is wrong
         restServer.registerInternalHttpResponseHook(new ChallengerInternalHTTPResponseHook(challengers));
         restServer.registerInternalHttpRequestHook(new ChallengerInternalHTTPRequestHook(challengers));
+
+        // add hooks at the API bridge pre and post level so they only work in the specific thingifier
         restServer.registerHttpApiRequestHook(new ChallengerApiRequestHook(challengers));
         restServer.registerHttpApiResponseHook(new ChallengerApiResponseHook(challengers, thingifier));
     }

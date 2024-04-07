@@ -73,8 +73,6 @@ public class SimpleApiRoutes {
         // TODO: should probably have a support multiple databases config somewhere
         simplethings.getERmodel().populateDatabase(EntityRelModel.DEFAULT_DATABASE_NAME);
 
-        // TODO: add a uniqueness check on the isbn and not allow adding or amending if duplicate
-
     }
 
     public void configure() {

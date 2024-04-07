@@ -244,11 +244,19 @@ public class ThingifierHttpApiRoutings {
         postSparkHttpResponseHooks.add(hook);
     }
 
+    /*
+        HttpApiRequestHooks are run in the API Bridge routing, prior to being
+        processed by the API handlers - these will be unique to each thingifier.
+     */
     public void registerHttpApiRequestHook(final HttpApiRequestHook hook) {
         // pre-request hooks run pre-every-api-request
         httpApiRequestHooks.add(hook);
     }
 
+    /*
+    HttpApiResponseHooks are run in the API Bridge routing, after being
+    processed by the API handlers - these will be unique to each thingifier.
+    */
     public void registerHttpApiResponseHook(final HttpApiResponseHook hook) {
         // pre-request hooks run pre-every-api-request
         httpApiResponseHooks.add(hook);
