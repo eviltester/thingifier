@@ -297,6 +297,8 @@ final public class EntityInstanceCollection {
                         if(dupeFound) {
                             report.setValid(false);
                             report.addErrorMessage("Field %s Value is not unique".formatted(fieldName));
+                            // we only need to find one to end the check
+                            return report;
                         }
                     }
                 }

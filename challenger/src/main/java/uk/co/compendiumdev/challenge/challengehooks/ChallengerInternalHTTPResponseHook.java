@@ -10,6 +10,8 @@ import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.application.internalhttpconversion.InternalHttpResponse;
 import uk.co.compendiumdev.thingifier.application.sparkhttpmessageHooks.InternalHttpResponseHook;
 
+import java.util.List;
+
 import static uk.co.compendiumdev.thingifier.api.http.HttpApiRequest.VERB.*;
 
 
@@ -25,14 +27,33 @@ public class ChallengerInternalHTTPResponseHook implements InternalHttpResponseH
     @Override
     public void run(final HttpApiRequest request, final InternalHttpResponse response) {
 
-        ChallengerAuthData challenger = challengers.getChallenger(request.getHeader("X-CHALLENGER"));
-
+        // TODO: do we actually need this? And if so, why is this not at a spark level for all requests?
         // allow cross origin requests
         response.setHeader("Access-Control-Allow-Origin", "*");
         response.setHeader("Access-Control-Allow-Headers", "*");
         if (request.getVerb() == OPTIONS && request.getHeaders().headerExists("Access-Control-Allow-Methods")) {
             response.setHeader("Access-Control-Allow-Methods", request.getHeader("Access-Control-Allow-Methods"));
         }
+
+        // TODO: fix hooks so that they only run on a specific thingifier basis.
+        // Until fixed so hooks only run on specific thingifiers, restrict this to Challenges API end points
+        List<String> validEndpointPrefixesToRunAgainst = List.of("challenger", "todo", "todos", "challenges", "heartbeat","secret");
+        String[] pathSegments = request.getPath().split("/");
+        if(!validEndpointPrefixesToRunAgainst.contains(pathSegments[0])){
+            return;
+        }
+//        boolean validEndpoint=false;
+//        for(String checkPrefix : validEndpointPrefixesToRunAgainst){
+//            if(request.getPath().startsWith(checkPrefix)){
+//                validEndpoint=true;
+//                break;
+//            }
+//        }
+//        if(!validEndpoint){
+//            return;
+//        }
+
+        ChallengerAuthData challenger = challengers.getChallenger(request.getHeader("X-CHALLENGER"));
 
         // we can complete a challenge while the user is null - creating the user
         if (request.getVerb() == POST &&

@@ -49,6 +49,12 @@ public class ChallengerApiRequestHook implements HttpApiRequestHook {
             return null;
         }
 
+        // extend the life of the challenger
+        challenger.touch();
+
+        // trim the list of challengers
+        challengers.purgeOldAuthData();
+
         // add challenger guid as session id to request
         request.addHeader(HTTP_SESSION_HEADER_NAME, challenger.getXChallenger());
 

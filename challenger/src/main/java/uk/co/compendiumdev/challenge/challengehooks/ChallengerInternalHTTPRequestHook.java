@@ -6,10 +6,15 @@ import uk.co.compendiumdev.challenge.challengers.Challengers;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiResponse;
 import uk.co.compendiumdev.thingifier.application.sparkhttpmessageHooks.InternalHttpRequestHook;
-import uk.co.compendiumdev.thingifier.core.EntityRelModel;
+
+import java.util.List;
 
 import static uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi.HTTP_SESSION_HEADER_NAME;
 
+/*
+    This is an Internal HTTP Request because it covers functionality for endpoints that do not
+    go through the normal API process i.e. heartbeat, challenges, challenger
+ */
 public class ChallengerInternalHTTPRequestHook  implements InternalHttpRequestHook {
     private final Challengers challengers;
 
@@ -19,14 +24,23 @@ public class ChallengerInternalHTTPRequestHook  implements InternalHttpRequestHo
 
     @Override
     public HttpApiResponse run(final HttpApiRequest request) {
-        updateAuthTokenFrom(request.getHeader("X-CHALLENGER"));
-        challengers.purgeOldAuthData();
+
+        // TODO: fix hooks so that they only run on a specific thingifier basis.
+        // Until fixed so hooks only run on specific thingifiers, restrict this to Challenges API end points
+        List<String> validEndpointPrefixesToRunAgainst = List.of("challenger", "todo", "todos", "challenges", "heartbeat","secret");
+        String[] pathSegments = request.getPath().split("/");
+        if(!validEndpointPrefixesToRunAgainst.contains(pathSegments[0])){
+            return null;
+        }
 
         ChallengerAuthData challenger = challengers.getChallenger(request.getHeader("X-CHALLENGER"));
         if(challenger==null){
             // cannot track challenges
             return null;
         }
+
+        challenger.touch();
+        challengers.purgeOldAuthData();
 
         // add challenger guid as session id to request
         request.addHeader(HTTP_SESSION_HEADER_NAME, challenger.getXChallenger());
@@ -82,13 +96,4 @@ public class ChallengerInternalHTTPRequestHook  implements InternalHttpRequestHo
         return null;
     }
 
-    private void updateAuthTokenFrom(final String header) {
-        if(header==null || header.isEmpty())
-            return;
-
-        ChallengerAuthData data = challengers.getChallenger(header);
-        if(data!=null){
-            data.touch();
-        }
-    }
 }

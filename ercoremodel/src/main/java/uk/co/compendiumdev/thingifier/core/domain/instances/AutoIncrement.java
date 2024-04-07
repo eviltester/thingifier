@@ -21,6 +21,8 @@ public class AutoIncrement {
     }
 
     public int getCurrentValue(){
+        //TODO: have a list of free items, used prior to the nextInt
+        // e.g. on DELETE, or if we do not create an item, or if we skip items during an increment on PUT
         return nextInt;
     }
 
