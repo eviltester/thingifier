@@ -14,6 +14,17 @@ import java.util.List;
 
 import static uk.co.compendiumdev.thingifier.core.query.SimpleQuery.LastMatchValue.*;
 
+/*
+Note this is not the same as a GET e.g.
+- /item will always mark the query as not a collection
+- /items will always mark the query as a collection
+
+This is a simple query to then build more complex or specific query
+processing on top.
+
+Use the isResultACollection, wasIntentToMatchACollection, lastMatchWasInstance
+in the calling method.
+ */
 final public class SimpleQuery {
 
     private final ERInstanceData database;
@@ -23,17 +34,17 @@ final public class SimpleQuery {
 
     private boolean isCollection = false;
     private boolean pluralMatch = false;
+    private boolean wasIntentToMatchInstance = false;
 
 
-
-    enum LastMatchValue {NOTHING, CURRENT_THING, CURRENT_INSTANCE, CURRENT_ITEMS, CURRENT_RELATIONSHIP};
+    enum LastMatchValue {NOTHING, CURRENT_THING, CURRENT_INSTANCE, CURRENT_ITEMS, CURRENT_RELATIONSHIP}
 
     LastMatchValue lastMatch = NOTHING;
 
     // populated during search
     EntityInstanceCollection currentCollection = null;
     EntityInstance currentInstance = null;
-    List<EntityInstance> foundItems = new ArrayList<EntityInstance>();
+    List<EntityInstance> foundItems = new ArrayList<>();
     RelationshipVectorDefinition lastRelationshipFound = null;
     List<RelationshipVectorDefinition> lastRelationshipsFound = null;
     EntityInstanceCollection parentCollection = null;
@@ -82,11 +93,11 @@ final public class SimpleQuery {
                 foundItemsHistoryList.add(lastRelationshipFound);
 
 
-                if (foundItems != null && foundItems.size() > 0) {
+                if (foundItems != null && !foundItems.isEmpty()) {
                     resultContainsDefinition = foundItems.get(0).getRelationships().getTypeOfConnectableItems(term);
                 }
 
-                List<EntityInstance> newitems = new ArrayList<EntityInstance>();
+                List<EntityInstance> newitems = new ArrayList<>();
                 if (foundItems != null) {
                     for (EntityInstance instance : foundItems) {
                         newitems.addAll(instance.getRelationships().getConnectedItems(term));
@@ -107,7 +118,7 @@ final public class SimpleQuery {
 
             // if matches an entity type
             if (schema.hasEntityNamed(term) || schema.hasEntityWithPluralNamed(term)) {
-                if (currentCollection == null && foundItems.size() == 0) {
+                if (currentCollection == null && foundItems.isEmpty()) {
                     // first thing - find it
                     currentCollection = database.getInstanceCollectionForEntityNamed(term);
                     pluralMatch = false;
@@ -127,17 +138,17 @@ final public class SimpleQuery {
                     parentCollection = currentCollection;
                     currentInstance = null;
                     lastMatch = CURRENT_THING;
-                    foundItems = new ArrayList<EntityInstance>(currentCollection.getInstances());
+                    foundItems = new ArrayList<>(currentCollection.getInstances());
 
                 } else {
                     // related to another type of thing
                     foundItemsHistoryList.add(database.getInstanceCollectionForEntityNamed(term));
 
-                    if (foundItems != null && foundItems.size() > 0) {
+                    if (foundItems != null && !foundItems.isEmpty()) {
                         resultContainsDefinition = foundItems.get(0).getRelationships().getTypeOfConnectableItems(term);
                     }
 
-                    List<EntityInstance> newitems = new ArrayList<EntityInstance>();
+                    List<EntityInstance> newitems = new ArrayList<>();
                     if (foundItems != null) {
                         for (EntityInstance instance : foundItems) {
                             List<EntityInstance> matchedInstances = instance.getRelationships().getConnectedItemsOfType(term);
@@ -188,13 +199,14 @@ final public class SimpleQuery {
                         parentCollection = currentCollection;
                     }
 
-                    // if we had a plural term then return this as a collection
+                    // because we matched based on primary key
+                    wasIntentToMatchInstance = true;
                     isCollection = pluralMatch;
 
                     currentCollection = null;
 
                     currentInstance = instance;
-                    foundItems = new ArrayList<EntityInstance>();
+                    foundItems = new ArrayList<>();
                     foundItems.add(instance);
                     lastMatch = CURRENT_INSTANCE;
                     found = true;
@@ -214,6 +226,11 @@ final public class SimpleQuery {
         }
 
         return this;
+    }
+
+    // i.e. did the query end with an identifier which was a primary key
+    public boolean wasQueryIntendedToMatchAnInstance(){
+        return wasIntentToMatchInstance;
     }
 
     public boolean isResultACollection() {
@@ -243,7 +260,7 @@ final public class SimpleQuery {
     }
 
     public List<EntityInstance> getListEntityInstances() {
-        List<EntityInstance> returnThis = new ArrayList<EntityInstance>();
+        List<EntityInstance> returnThis = new ArrayList<>();
 
         if (lastMatch == CURRENT_THING) {
             // if not allow filtering then...

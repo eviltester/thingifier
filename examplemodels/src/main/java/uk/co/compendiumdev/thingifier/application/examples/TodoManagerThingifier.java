@@ -95,6 +95,7 @@ public class TodoManagerThingifier {
         // TODO: allow importing from a JSON to create data in bulk
         todoManager.setDataGenerator(new TodoManagerAPIDataPopulator());
         todoManager.generateData(EntityRelModel.DEFAULT_DATABASE_NAME);
+        todoManager.apiConfig().setReturnSingleGetItemsAsCollection(true);
 
         // PROFILES
         // can have different -version params which configure the TodoManagerThingifier in different ways
@@ -112,6 +113,7 @@ public class TodoManagerThingifier {
         config0.jsonOutput().setCompressRelationships(false);
         config0.jsonOutput().setConvertFieldsToDefinedTypes(false);
         config0.setApiToEnforceDeclaredTypesInInput(false);
+        config0.setReturnSingleGetItemsAsCollection(true);
 
         ThingifierApiConfigProfile profile = todoManager.apiConfigProfiles().
                 create("v1", "non compressed relationships with guids");
@@ -123,6 +125,7 @@ public class TodoManagerThingifier {
         config.jsonOutput().setCompressRelationships(false);
         config.jsonOutput().setConvertFieldsToDefinedTypes(false);
         config.setApiToEnforceDeclaredTypesInInput(false);
+        config.setReturnSingleGetItemsAsCollection(true);
 
         ThingifierApiConfigProfile profile2 = todoManager.apiConfigProfiles().
                 create("v2", "compressed relationships with guids");
@@ -132,6 +135,7 @@ public class TodoManagerThingifier {
         config2.jsonOutput().setCompressRelationships(true);
         config2.jsonOutput().setConvertFieldsToDefinedTypes(false);
         config2.setApiToEnforceDeclaredTypesInInput(false);
+        config2.setReturnSingleGetItemsAsCollection(true);
 
         ThingifierApiConfigProfile profile3 = todoManager.apiConfigProfiles().
                 create("v3", "compressed relationships with ids");
@@ -141,6 +145,7 @@ public class TodoManagerThingifier {
         config3.jsonOutput().setCompressRelationships(true);
         config3.jsonOutput().setConvertFieldsToDefinedTypes(false);
         config3.setApiToEnforceDeclaredTypesInInput(true);
+        config3.setReturnSingleGetItemsAsCollection(true);
 
         return todoManager;
     }

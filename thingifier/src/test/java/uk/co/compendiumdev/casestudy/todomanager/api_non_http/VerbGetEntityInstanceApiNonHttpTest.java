@@ -52,6 +52,8 @@ public class VerbGetEntityInstanceApiNonHttpTest {
     @Test
     public void getCanReturnASingleEntityInstance() {
 
+        todoManager.apiConfig().setReturnSingleGetItemsAsCollection(false);
+
         // add some data
         todo.createManagedInstance().setValue("title", "My Title" + System.nanoTime());
         todo.createManagedInstance().setValue("title", "My Title" + System.nanoTime());
@@ -79,7 +81,40 @@ public class VerbGetEntityInstanceApiNonHttpTest {
     }
 
     @Test
+    public void getCanReturnASingleEntityInstanceAsACollection() {
+
+        todoManager.apiConfig().setReturnSingleGetItemsAsCollection(true);
+
+        // add some data
+        todo.createManagedInstance().setValue("title", "My Title" + System.nanoTime());
+        todo.createManagedInstance().setValue("title", "My Title" + System.nanoTime());
+
+
+        EntityInstance findThis = todo.createManagedInstance().
+                setValue("title", "My Title" + System.nanoTime());
+
+        todo.createManagedInstance().setValue("title", "My Title" + System.nanoTime());
+
+
+        ApiResponse apiResponse = todoManager.api().get("/todo/" + findThis.getPrimaryKeyValue(), new QueryFilterParams(), new HttpHeadersBlock());
+
+        Assertions.assertEquals(200, apiResponse.getStatusCode());
+        Assertions.assertTrue(apiResponse.isCollection(), "Should be a configured to return a collection");
+        Assertions.assertTrue(apiResponse.hasABody());
+
+        EntityInstance instance = apiResponse.getReturnedInstanceCollection().get(0);
+        Assertions.assertEquals(findThis.getFieldValue("title").asString(), instance.getFieldValue("title").asString());
+        Assertions.assertEquals(findThis.getFieldValue("guid").asString(), instance.getFieldValue("guid").asString());
+
+        Assertions.assertEquals(findThis, instance);
+        Assertions.assertEquals(0, apiResponse.getErrorMessages().size());
+
+    }
+
+    @Test
     public void getCanReturnMultipleEntityInstances() {
+
+        todoManager.apiConfig().setReturnSingleGetItemsAsCollection(false);
 
         // add some data
         todo.createManagedInstance().setValue("title", "My Title" + System.nanoTime());
@@ -111,6 +146,40 @@ public class VerbGetEntityInstanceApiNonHttpTest {
 
     }
 
+    @Test
+    public void getCanReturnMultipleEntityInstancesFromEndpoint() {
+
+        todoManager.apiConfig().setReturnSingleGetItemsAsCollection(true);
+
+        // add some data
+        todo.createManagedInstance().setValue("title", "My Title" + System.nanoTime());
+        todo.createManagedInstance().setValue("title", "My Title" + System.nanoTime());
+        todo.createManagedInstance().setValue("title", "My Title" + System.nanoTime());
+        todo.createManagedInstance().setValue("title", "My Title" + System.nanoTime());
+
+
+        ApiResponse apiResponse = todoManager.api().get("/todo", new QueryFilterParams(), new HttpHeadersBlock());
+
+        Assertions.assertEquals(200, apiResponse.getStatusCode());
+        Assertions.assertTrue(apiResponse.isCollection(),
+                "Should be a collection");
+        Assertions.assertTrue(apiResponse.hasABody());
+
+        Assertions.assertEquals(todo.countInstances(), apiResponse.getReturnedInstanceCollection().size());
+
+        Set<String> guidSet = new HashSet<>();
+
+        for (EntityInstance item : apiResponse.getReturnedInstanceCollection()) {
+            guidSet.add(item.getPrimaryKeyValue());
+            Assertions.assertNotNull(todo.findInstanceByPrimaryKey(item.getPrimaryKeyValue()));
+        }
+
+        Assertions.assertEquals(guidSet.size(), todo.countInstances());
+        Assertions.assertEquals(guidSet.size(), apiResponse.getReturnedInstanceCollection().size());
+
+        Assertions.assertEquals(0, apiResponse.getErrorMessages().size());
+
+    }
 
 
 }

@@ -4,12 +4,10 @@ import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-import uk.co.compendiumdev.thingifier.core.query.FilterBy;
 import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
 import uk.co.compendiumdev.thingifier.core.query.SimpleQuery;
 
 import java.util.List;
-import java.util.Map;
 
 public class RestApiGetHandler {
     private final Thingifier thingifier;
@@ -46,21 +44,35 @@ public class RestApiGetHandler {
 
         // return a 404 if it doesn't match anything
         if (queryResults.lastMatchWasNothing() ||
-                (queryResults.lastMatchWasInstance() && queryItems.size() == 0)) {
+                (queryResults.lastMatchWasInstance() && queryItems.isEmpty())) {
             // if query list was empty then return a 404
             return ApiResponse.error404(String.format("Could not find an instance with %s", url));
         }
 
         if (queryResults.lastMatchWasInstance()) {
-            if (queryResults.isResultACollection()) {
+
+            boolean asCollection = false;
+//            if(queryResults.wasQueryIntendedToMatchAnInstance() && !thingifier.apiConfig().willReturnSingleGetItemsAsCollection()){
+//                asCollection = false;
+//            }
+
+            if(queryResults.wasQueryIntendedToMatchAnInstance() && thingifier.apiConfig().willReturnSingleGetItemsAsCollection()){
+                asCollection = true;
+            }
+
+            if (queryResults.isResultACollection() && !queryResults.wasQueryIntendedToMatchAnInstance()) {
+                asCollection = true;
+            }
+
+            if(asCollection){
                 // if we asked for /projects then we should always return a collection
                 return ApiResponse.success().
                         returnInstanceCollection(
                                 queryResults.getListEntityInstances());
-            } else {
-                // TODO: everything is returned as a collection from the query, the call should decide if it wants a single instance
+            }else {
                 return ApiResponse.success().returnSingleInstance(queryResults.getLastInstance());
             }
+
         } else {
 
             return ApiResponse.success().

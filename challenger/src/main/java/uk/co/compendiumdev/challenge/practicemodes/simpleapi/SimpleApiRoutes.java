@@ -72,6 +72,8 @@ public class SimpleApiRoutes {
         simplethings.apiConfig().setFrom(new ThingifierApiConfig("/simpleapi"));
         // do  not convert floats to int
         simplethings.apiConfig().setApiToEnforceDeclaredTypesInInput(false);
+        // single items should be single items
+        simplethings.apiConfig().setReturnSingleGetItemsAsCollection(false);
 
         // TODO: should probably have a support multiple databases config somewhere
         simplethings.getERmodel().populateDatabase(EntityRelModel.DEFAULT_DATABASE_NAME);

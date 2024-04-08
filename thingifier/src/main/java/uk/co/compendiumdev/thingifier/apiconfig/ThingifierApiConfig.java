@@ -65,6 +65,10 @@ public class ThingifierApiConfig {
     private final StatusCodeConfig statusCodeConfig;
     private boolean robotsCanIndexApiResponses;
 
+    // allow the API to be configured to return single items as
+    // collections
+    private boolean returnSingleGetItemsAsCollection;
+
     public ThingifierApiConfig(String endPointPrefix){
 
         String prefixToUse = "";
@@ -83,6 +87,7 @@ public class ThingifierApiConfig {
         willShowIdsInUrlsIfAvailable = true;  // location headers, api urls
         willEnforceDeclaredTypesInInput = true;
 
+
         willApiAllowXmlResponses = true;
         willApiAllowJsonResponses = true;
         willApiEnforceAcceptHeaderForResponses = true; // 406 if not supported header
@@ -90,6 +95,9 @@ public class ThingifierApiConfig {
         acceptXmlContent = true;
         acceptJsonContent = true;
         robotsCanIndexApiResponses=true;
+
+        // by default single items are not returned as a collection
+        returnSingleGetItemsAsCollection = false;
 
         paramsConfig = new ParamConfig();
 
@@ -116,6 +124,7 @@ public class ThingifierApiConfig {
         willApiAllowJsonResponses = apiConfig.willApiAllowJsonForResponses();
         willApiEnforceAcceptHeaderForResponses = apiConfig.willApiEnforceAcceptHeaderForResponses();
 
+        returnSingleGetItemsAsCollection = apiConfig.willReturnSingleGetItemsAsCollection();
         paramsConfig.setFrom(apiConfig.forParams());
         statusCodeConfig.setFrom(apiConfig.statusCodes());
         jsonOutputConfig.setFrom(apiConfig.jsonOutput());
@@ -239,5 +248,13 @@ public class ThingifierApiConfig {
 
     public String getApiEndPointPrefix() {
         return apiEndpointPrefix;
+    }
+
+    public ThingifierApiConfig setReturnSingleGetItemsAsCollection(boolean allow){
+        returnSingleGetItemsAsCollection = allow;
+        return this;
+    }
+    public boolean willReturnSingleGetItemsAsCollection() {
+        return returnSingleGetItemsAsCollection;
     }
 }

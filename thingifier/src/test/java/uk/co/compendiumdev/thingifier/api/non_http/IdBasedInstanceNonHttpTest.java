@@ -30,6 +30,8 @@ public class IdBasedInstanceNonHttpTest {
                 )
         ;
 
+        thingifier.apiConfig().setReturnSingleGetItemsAsCollection(false);
+
         return thingifier;
     }
 

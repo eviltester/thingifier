@@ -14,8 +14,6 @@ import uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
-import java.util.UUID;
-
 public class JsonRequestResponseTest {
 
     private Thingifier todoManager;
@@ -76,7 +74,7 @@ public class JsonRequestResponseTest {
     @Test
     public void canGetJsonItemAsACollection() {
 
-
+        todoManager.apiConfig().setReturnSingleGetItemsAsCollection(true);
         final EntityInstance aTodo = todo.createManagedInstance().setValue("title", "my title");
 
         HttpApiRequest request = new HttpApiRequest("/todos/" + aTodo.getPrimaryKeyValue());
@@ -93,29 +91,6 @@ public class JsonRequestResponseTest {
         Assertions.assertNotNull(todos.todos[0].guid);
 
     }
-
-    // this will only happen if routings allow it, normally we will route through plurals so it won't happen via http
-    // except on an admin query interface routing
-    @Test
-    public void canGetJsonItemAsAnInstance() {
-
-
-        final EntityInstance aTodo = todo.createManagedInstance().setValue("title", "my title");
-
-        HttpApiRequest request = new HttpApiRequest("/todo/" + aTodo.getPrimaryKeyValue());
-        request.getHeaders().putAll(HeadersSupport.acceptJson());
-
-        final HttpApiResponse response = new ThingifierHttpApi(todoManager).get(request);
-        Assertions.assertEquals(200, response.getStatusCode());
-        System.out.println(response.getBody());
-
-        final Todo todo = new Gson().fromJson(response.getBody(), Todo.class);
-
-        Assertions.assertEquals("my title", todo.title);
-        Assertions.assertNotNull(todo.guid);
-
-    }
-
 
     @Test
     public void canGetMultipleJsonItems() {

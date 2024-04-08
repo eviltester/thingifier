@@ -28,6 +28,7 @@ public class ChallengeThingifier {
         this.challengeThingifier.apiConfig().forParams().willEnforceFilteringThroughUrlParams();
         this.challengeThingifier.apiConfig().forParams().willAllowFilteringThroughUrlParams();
         this.challengeThingifier.apiConfig().setApiToAllowRobotsIndexingResponses(false);
+        this.challengeThingifier.apiConfig().setReturnSingleGetItemsAsCollection(true);
 
         this.challengeDefn = this.challengeThingifier.defineThing(
                                     "challenge", "challenges");

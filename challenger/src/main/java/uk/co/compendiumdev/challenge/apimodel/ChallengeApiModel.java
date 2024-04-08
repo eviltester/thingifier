@@ -43,6 +43,7 @@ public class ChallengeApiModel {
 
         todoList.apiConfig().setApiToShowPrimaryKeyHeaderInResponse(false);
         todoList.apiConfig().statusCodes().setMaxRequestBodyLengthBytes(5000);
+        todoList.apiConfig().setReturnSingleGetItemsAsCollection(true);
 
         return todoList;
     }

@@ -33,7 +33,7 @@ public class SimpleApiModeTest {
         http = new HttpMessageSender(Environment.getBaseUri());
     }
 
-    static Stream simpleRoutingStatus(){
+    static Stream<Arguments> simpleRoutingStatus(){
         List<Arguments> args = new ArrayList<>();
 
 
@@ -150,7 +150,7 @@ public class SimpleApiModeTest {
     public void canGetItemsAsJson() {
 
         Items items = apiGetItems();
-        Assertions.assertTrue(items.items.size()>0);
+        Assertions.assertTrue(!items.items.isEmpty());
     }
 
     @Test
@@ -277,8 +277,8 @@ public class SimpleApiModeTest {
         Assertions.assertEquals(200, response.statusCode);
         Assertions.assertEquals("application/json", response.getHeader("content-type"));
 
-        // TODO: we need the thingifier to be configurable to send a single item back on a GET /things/:id
-        return new Gson().fromJson(response.body, Items.class).items.get(0);
+        // thingifier is configurable and can send a single item back on a GET /things/:id
+        return new Gson().fromJson(response.body, Item.class);
     }
 
     private HttpResponseDetails apiCreateItemResponse(Item itemToCreate) {
@@ -320,8 +320,7 @@ public class SimpleApiModeTest {
         Assertions.assertEquals(200, response.statusCode);
         Assertions.assertEquals("application/json", response.getHeader("content-type"));
 
-        Items items = new Gson().fromJson(response.body, Items.class);
-        return items;
+        return new Gson().fromJson(response.body, Items.class);
     }
 
     class Item{
