@@ -12,7 +12,8 @@ public class ContentTypeHeaderParser {
     }
 
     public boolean isXML() {
-        return header.contains("application/xml");
+        // text/xml in standard https://datatracker.ietf.org/doc/html/rfc3023
+        return header.contains("application/xml") || header.contains("text/xml");
     }
 
     public boolean isJSON() {
@@ -20,7 +21,7 @@ public class ContentTypeHeaderParser {
     }
 
     public boolean isMissing() {
-        return (header.length()==0);
+        return (header.isEmpty());
     }
 
     public boolean isText() {

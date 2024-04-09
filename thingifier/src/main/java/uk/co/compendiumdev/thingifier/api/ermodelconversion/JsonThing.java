@@ -30,9 +30,28 @@ public class JsonThing {
      * @return
      */
     public String asJsonTypedArrayWithContentsUntyped(final List<EntityInstance> things, String typeName) {
+        return asJsonObjectTypedArrayWithContentsUntyped(things, typeName).toString();
+    }
+
+    /*
+    This is suitable for passing through GsonBuilderPretty Printing e.g. to get
+
+    {
+  "todos": [
+        {
+          "id": 40,
+          "title": "A title",
+          "doneStatus": false,
+          "description": "my description"
+        }
+      ]
+    }
+
+     */
+    public JsonObject asJsonObjectTypedArrayWithContentsUntyped(final List<EntityInstance> things, String typeName) {
         final JsonObject arrayObj = new JsonObject();
         arrayObj.add(typeName, asJsonArray(things));
-        return arrayObj.toString();
+        return arrayObj;
     }
 
     /**

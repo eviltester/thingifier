@@ -102,6 +102,7 @@ public class ThingifierHttpApiRequestHandlingTest {
 
         final Map<String,String> headers = new HashMap<>();
         headers.put(ThingifierHttpApi.HTTP_SESSION_HEADER_NAME, "other_things");
+        headers.put("content-type", "application/json");
 
         final HttpApiResponse response = api.post(new HttpApiRequest("/things")
                                             .setHeaders(headers)

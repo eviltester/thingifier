@@ -47,7 +47,7 @@ public class TodosCrudTest {
         final HashMap<String, String> givenBody = new HashMap<>();
         givenBody.put("title", "");
 
-        final JsonPath body = given().body(givenBody).
+        final JsonPath body = given().body(givenBody).contentType("application/json").
                 when().post("/todos").
                 then().
                 statusCode(400).
@@ -62,7 +62,7 @@ public class TodosCrudTest {
     public void cannotCreateWithInvalidTodoBlankBodyPosts(){
 
 
-        final JsonPath body = given().body("{}").
+        final JsonPath body = given().body("{}").contentType("application/json").
                 when().post("/todos").
                 then().
                 statusCode(400).
@@ -77,7 +77,7 @@ public class TodosCrudTest {
     public void cannotCreateWithInvalidTodoNoBodyPosts(){
 
 
-        final JsonPath body = given().body("").
+        final JsonPath body = given().body("").contentType("application/json").
                 when().post("/todos").
                 then().
                 statusCode(400).
@@ -94,7 +94,7 @@ public class TodosCrudTest {
         final HashMap<String, String> givenBody = new HashMap<>();
         givenBody.put("title", "a specific todo Title");
 
-        final Response response = given().body(givenBody).
+        final Response response = given().body(givenBody).contentType("application/json").
                 when().post("/todos").
                 then().
                 statusCode(201).
@@ -120,7 +120,7 @@ public class TodosCrudTest {
         final HashMap<String, String> givenBody = new HashMap<>();
         givenBody.put("title", "a specific todo Title for put");
 
-        JsonPath body = given().body(givenBody).
+        JsonPath body = given().body(givenBody).contentType("application/json").
                 when().post("/todos").
                 then().
                 statusCode(201).
@@ -136,7 +136,7 @@ public class TodosCrudTest {
         // AMEND with PUT
         givenBody.put("title", "a put amended specific todo Title for put");
 
-        Response response = given().body(givenBody).
+        Response response = given().body(givenBody).contentType("application/json").
                 when().put("/todos/" + specificId).
                 then().
                 statusCode(200).
@@ -158,7 +158,7 @@ public class TodosCrudTest {
         // AMEND with POST
         givenBody.put("title", "a specific todo Title Amended");
 
-        response = given().body(givenBody).
+        response = given().body(givenBody).contentType("application/json").
                 when().post("/todos/" + specificId).
                 then().
                 statusCode(200).
@@ -195,7 +195,7 @@ public class TodosCrudTest {
 
 
         // DELETE the TO DO item
-        response = when().delete("/todos/" + specificId).
+        when().delete("/todos/" + specificId).
                 then().
                 statusCode(200).
                 contentType(ContentType.JSON).

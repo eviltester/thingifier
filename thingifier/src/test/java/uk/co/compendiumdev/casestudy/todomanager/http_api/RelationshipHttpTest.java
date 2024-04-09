@@ -47,6 +47,7 @@ public class RelationshipHttpTest {
 
         HttpApiRequest request = new HttpApiRequest("projects/" + aproject.getPrimaryKeyValue() + "/tasks");
         request.getHeaders().putAll(HeadersSupport.acceptJson());
+        request.getHeaders().putAll(HeadersSupport.containsJson());
 
         //{"guid":"%s"}
         String body = String.format("{\"guid\":\"%s\"}", atodo.getPrimaryKeyValue());
@@ -70,6 +71,7 @@ public class RelationshipHttpTest {
 
         HttpApiRequest request = new HttpApiRequest("projects/" + aproject.getPrimaryKeyValue() + "/tasks");
         request.getHeaders().putAll(HeadersSupport.acceptJson());
+        request.getHeaders().putAll(HeadersSupport.containsJson());
 
         //{"guid":"%s"}
         String body = String.format("{\"id\":\"%s\"}", atodo.getFieldValue("id").asString());
@@ -95,6 +97,7 @@ public class RelationshipHttpTest {
 
         HttpApiRequest request = new HttpApiRequest("projects/" + aproject.getPrimaryKeyValue() + "/tasks");
         request.getHeaders().putAll(HeadersSupport.acceptJson());
+        request.getHeaders().putAll(HeadersSupport.containsJson());
 
         //{"title":"My New To do"}
         String body = "{\"title\":\"My New To do\"}";
@@ -125,6 +128,7 @@ public class RelationshipHttpTest {
 
         HttpApiRequest request = new HttpApiRequest("projects/" + aproject.getPrimaryKeyValue() + "/tasks");
         request.getHeaders().putAll(HeadersSupport.acceptJson());
+        request.getHeaders().putAll(HeadersSupport.containsJson());
 
         //{"guid":"%s"}
         String body = String.format("{\"guid\":\"%s\"}", acategory.getPrimaryKeyValue());
@@ -154,6 +158,7 @@ public class RelationshipHttpTest {
 
         HttpApiRequest request = new HttpApiRequest("projects/" + aproject.getPrimaryKeyValue() + "/tasks");
         request.getHeaders().putAll(HeadersSupport.acceptJson());
+        request.getHeaders().putAll(HeadersSupport.containsJson());
 
         //{"guid":"%s"}
         String body = String.format("{\"guid\":\"%s\"}", atodo.getPrimaryKeyValue() + "bob");
@@ -182,6 +187,7 @@ public class RelationshipHttpTest {
 
         HttpApiRequest request = new HttpApiRequest("categories/" + acategory.getPrimaryKeyValue() + "/todos");
         request.getHeaders().putAll(HeadersSupport.acceptJson());
+        request.getHeaders().putAll(HeadersSupport.containsJson());
 
         //{"guid":"%s"}
         String body = String.format("{\"guid\":\"%s\"}", atodo.getPrimaryKeyValue());
@@ -204,6 +210,8 @@ public class RelationshipHttpTest {
 
         HttpApiRequest request = new HttpApiRequest("categories/" + acategory.getPrimaryKeyValue() + "/todos");
         request.getHeaders().putAll(HeadersSupport.acceptJson());
+        request.getHeaders().putAll(HeadersSupport.containsJson());
+
 
         //{"title":"My New To do"}
         String body = "{\"title\":\"My New To do\"}";
@@ -341,6 +349,7 @@ public class RelationshipHttpTest {
 
         HttpApiRequest request = new HttpApiRequest("todos/" + atodo.getPrimaryKeyValue() + "/estimates" );
         request.getHeaders().putAll(HeadersSupport.acceptJson());
+        request.getHeaders().putAll(HeadersSupport.containsJson());
 
         String body = "{\"duration\":\"3\"}";
         request.setBody(body);

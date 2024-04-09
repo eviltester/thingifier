@@ -49,12 +49,12 @@ public class CreateALotOfTodosTest {
 
         // CREATE todos WITH POST
 
-        final HashMap<String, String> givenBody = new HashMap<String, String>();
+        final HashMap<String, String> givenBody = new HashMap<>();
 
         for(int i=0; i<100; i++){
             givenBody.put("title", "a title " + i);
 
-            given().body(givenBody).
+            given().body(givenBody).contentType("application/json").
                     when().post("/todos").
                     then().
                     statusCode(201).

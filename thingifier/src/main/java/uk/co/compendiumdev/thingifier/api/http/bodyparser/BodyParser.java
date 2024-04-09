@@ -38,7 +38,7 @@ public class BodyParser {
     private Map<String, String> stringMap(final Map<String, Object> args) {
         // todo: configuration to reject if wrong types for field definitions
         // default should be to handle and convert
-        Map<String, String> stringsInMap = new HashMap();
+        Map<String, String> stringsInMap = new HashMap<>();
         for (String key : args.keySet()) {
             Object theValue = args.get(key);
 
@@ -61,8 +61,7 @@ public class BodyParser {
     // we can't use a hashmap, so we are using a list of map entries
     // the map entries could be a custom Key Value Pair implementation if we wanted
     public List<Map.Entry<String,String>> getFlattenedStringMap() {
-        List<Map.Entry<String,String>> stringsInMap = flattenToStringMap("", getMap());
-        return stringsInMap;
+        return flattenToStringMap("", getMap());
     }
 
 
@@ -71,20 +70,20 @@ public class BodyParser {
         // default should be to handle and convert
         List<Map.Entry<String,String>> stringsInMap = new ArrayList<>();
         if (theValue instanceof String ) {
-            stringsInMap.add(new AbstractMap.SimpleEntry<String,String>(prefixkey, (String)theValue));
+            stringsInMap.add(new AbstractMap.SimpleEntry<>(prefixkey, (String)theValue));
         }
         if(theValue instanceof Double){
-            stringsInMap.add(new AbstractMap.SimpleEntry<String,String>(prefixkey, String.valueOf(theValue)));
+            stringsInMap.add(new AbstractMap.SimpleEntry<>(prefixkey, String.valueOf(theValue)));
         }
         if(theValue instanceof Boolean){
-            stringsInMap.add(new AbstractMap.SimpleEntry<String,String>(prefixkey, String.valueOf(theValue)));
+            stringsInMap.add(new AbstractMap.SimpleEntry<>(prefixkey, String.valueOf(theValue)));
         }
         if(theValue instanceof Integer){
-            stringsInMap.add(new AbstractMap.SimpleEntry<String,String>(prefixkey, String.valueOf(theValue)));
+            stringsInMap.add(new AbstractMap.SimpleEntry<>(prefixkey, String.valueOf(theValue)));
         }
         // todo: what else can come in?
         String separator = "";
-        if(prefixkey!=null && prefixkey.length() > 0 && !prefixkey.endsWith(".")){
+        if(prefixkey!=null && !prefixkey.isEmpty() && !prefixkey.endsWith(".")){
             separator = ".";
         }
         if(theValue instanceof Map){
@@ -105,7 +104,7 @@ public class BodyParser {
     }
 
     public List<String> getObjectNames(){
-        List<String> objectOrCollectionNames = new ArrayList();
+        List<String> objectOrCollectionNames = new ArrayList<>();
         for (String key : args.keySet()) {
             if (!(args.get(key) instanceof String || args.get(key) instanceof Double)) {
                 objectOrCollectionNames.add(key);
@@ -128,19 +127,24 @@ public class BodyParser {
         final ContentTypeHeaderParser contentTypeParser = new ContentTypeHeaderParser(request.getHeader("content-type"));
         if (contentTypeParser.isXML()) {
             String validateResultsErrorReport = this.xmlParser.validateXML();
-            if(validateResultsErrorReport.length()!=0){
-                return validateResultsErrorReport;
+            if(!validateResultsErrorReport.isEmpty()){
+                return "Invalid XML Payload: " + validateResultsErrorReport;
             }
+            return "";
         }
 
         if(contentTypeParser.isJSON()){
             try{
                 new Gson().fromJson(request.getBody(), Map.class);
+                return "";
             }catch(Exception e){
-                return e.getMessage();
+                // Gson does not give a sensible parse error so use a generic description
+                return "Invalid Json Payload: please check the syntax of the request body";
             }
         }
-        return "";
+
+
+        return "Unknown content Type: API cannot parse %s".formatted(request.getContentTypeHeader());
     }
 
     /**

@@ -197,8 +197,14 @@ public class RestApiDocumentationGenerator {
                     output.append("<p>Example JSON Output from API calls</p>\n");
                     output.append("<pre class='json'>\n");
                     output.append("<code class='json'>\n");
-                    output.append(new GsonBuilder().setPrettyPrinting()
-                            .create().toJson(jsonThing.asJsonObject(exampleThing.getInstance())));
+                    if(thingifier.apiConfig().willReturnSingleGetItemsAsCollection()){
+                        output.append(new GsonBuilder().setPrettyPrinting()
+                                .create().toJson(jsonThing.asJsonObjectTypedArrayWithContentsUntyped(
+                                        List.of(exampleThing.getInstance()),aThingDefinition.getPlural())));
+                    }else {
+                        output.append(new GsonBuilder().setPrettyPrinting()
+                                .create().toJson(jsonThing.asJsonObject(exampleThing.getInstance())));
+                    }
                     output.append("</code>\n");
                     output.append("</pre>\n");
                 }
@@ -207,7 +213,15 @@ public class RestApiDocumentationGenerator {
                     output.append("<p>Example XML Output from API calls</p>\n");
                     output.append("<pre class='xml'>\n");
                     output.append("<code class='xml'>\n");
-                    output.append(this.XMLPrettyPrinter.prettyPrintHtml(xmlThing.getSingleObjectXml(exampleThing.getInstance())));
+                    if(thingifier.apiConfig().willReturnSingleGetItemsAsCollection()) {
+                        output.append(this.XMLPrettyPrinter.prettyPrintHtml(
+                                xmlThing.getCollectionOfThings(
+                                        List.of(exampleThing.getInstance()),
+                                        aThingDefinition)));
+                    }else{
+                        output.append(this.XMLPrettyPrinter.prettyPrintHtml(
+                                xmlThing.getSingleObjectXml(exampleThing.getInstance())));
+                    }
                     output.append("</code>\n");
                     output.append("</pre>\n");
                 }

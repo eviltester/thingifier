@@ -16,6 +16,8 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.domain.instances.InstanceFields;
 
+import java.util.Map;
+
 
 public class NestedObjectsApiTest {
 
@@ -61,6 +63,7 @@ public class NestedObjectsApiTest {
 
         final HttpApiRequest amendConnieRequest = new HttpApiRequest("/things/" + instance.getPrimaryKeyValue());
         amendConnieRequest.setVerb(HttpApiRequest.VERB.POST);
+        amendConnieRequest.setHeaders(Map.of("content-type", "application/json"));
         //{"person" : {"firstname": "bob"}}
         amendConnieRequest.setBody("{\"person\" : {\"firstname\": \"bob\"}}");
 
@@ -80,6 +83,7 @@ public class NestedObjectsApiTest {
         Assertions.assertEquals(0,thing.countInstances());
 
         final HttpApiRequest createBobRequest = new HttpApiRequest("/things");
+        createBobRequest.setHeaders(Map.of("content-type", "application/json"));
         createBobRequest.setVerb(HttpApiRequest.VERB.POST);
         //{"person" : {"firstname": "bob", "surname" : "dobbs"}}
         createBobRequest.setBody("{\"person\" : {\"firstname\": \"bob\", \"surname\" : \"dobbs\"}}");
@@ -114,6 +118,7 @@ public class NestedObjectsApiTest {
 
         final HttpApiRequest failToCreateBobRequest = new HttpApiRequest("/things");
         failToCreateBobRequest.setVerb(HttpApiRequest.VERB.POST);
+        failToCreateBobRequest.setHeaders(Map.of("content-type", "application/json"));
         //{"person" : {"firstname": "bob"}}
         failToCreateBobRequest.setBody("{\"person\" : {\"firstname\": \"bob\"}}");
 

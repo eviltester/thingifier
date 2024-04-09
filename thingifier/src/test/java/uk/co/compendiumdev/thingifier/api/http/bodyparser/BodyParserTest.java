@@ -25,7 +25,69 @@ public class BodyParserTest {
         Assertions.assertEquals("5", map.get("duration"));
     }
 
+    @Test
+    public void simpleJsonParseErrorMessage(){
 
+        HttpApiRequest request = new HttpApiRequest("/estimates");
+        request.setHeaders(Map.of("content-type", "application/json"));
+        request.setBody("{'duration':'5'");
+
+        List<String> names = new ArrayList<>();
+
+        names.add("estimate");
+
+        final String validated = new BodyParser(request, names).validBodyBasedOnContentType();
+
+        Assertions.assertEquals("Invalid Json Payload: please check the syntax of the request body",validated);
+    }
+
+    @Test
+    public void simpleXmlParseErrorMessage(){
+
+        HttpApiRequest request = new HttpApiRequest("/estimates");
+        request.setHeaders(Map.of("content-type", "application/xml"));
+        request.setBody("<estimate><duration>5</duration>");
+
+        List<String> names = new ArrayList<>();
+
+        names.add("estimate");
+
+        final String validated = new BodyParser(request, names).validBodyBasedOnContentType();
+
+        Assertions.assertEquals("Invalid XML Payload: Unclosed tag estimate at 32 [character 33 line 1]",validated);
+    }
+
+    @Test
+    public void simpleTextXmlParseErrorMessage(){
+
+        HttpApiRequest request = new HttpApiRequest("/estimates");
+        request.setHeaders(Map.of("content-type", "text/xml"));
+        request.setBody("<estimate><duration>5</duration>");
+
+        List<String> names = new ArrayList<>();
+
+        names.add("estimate");
+
+        final String validated = new BodyParser(request, names).validBodyBasedOnContentType();
+
+        Assertions.assertEquals("Invalid XML Payload: Unclosed tag estimate at 32 [character 33 line 1]",validated);
+    }
+
+    @Test
+    public void simpleUnknownContentParseErrorMessage(){
+
+        HttpApiRequest request = new HttpApiRequest("/estimates");
+        request.setHeaders(Map.of("content-type", "application/csv"));
+        request.setBody("duration,5");
+
+        List<String> names = new ArrayList<>();
+
+        names.add("estimate");
+
+        final String validated = new BodyParser(request, names).validBodyBasedOnContentType();
+
+        Assertions.assertEquals("Unknown content Type: API cannot parse application/csv",validated);
+    }
 
     @Test
     public void embeddedObjectParseIgnoredOnStringMap(){

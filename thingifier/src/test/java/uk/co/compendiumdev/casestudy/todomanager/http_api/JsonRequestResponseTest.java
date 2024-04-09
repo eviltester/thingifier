@@ -14,6 +14,8 @@ import uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
+import java.util.Map;
+
 public class JsonRequestResponseTest {
 
     private Thingifier todoManager;
@@ -189,6 +191,7 @@ public class JsonRequestResponseTest {
     public void canPostAndCreateAnItemWithJsonAndReceiveXml() {
 
         HttpApiRequest request = new HttpApiRequest("todos");
+        request.setHeaders(Map.of("content-type", "application/json"));
         request.getHeaders().putAll(HeadersSupport.acceptXml());
         request.getHeaders().putAll(HeadersSupport.containsJson());
 

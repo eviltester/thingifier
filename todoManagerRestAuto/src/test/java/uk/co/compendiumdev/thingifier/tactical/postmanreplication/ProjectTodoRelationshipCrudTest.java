@@ -3,7 +3,6 @@ package uk.co.compendiumdev.thingifier.tactical.postmanreplication;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.path.json.JsonPath;
-import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
@@ -48,10 +47,10 @@ public class ProjectTodoRelationshipCrudTest {
 
         // CREATE Project WITH POST
 
-        final HashMap<String, String> givenBody = new HashMap<String, String>();
+        final HashMap<String, String> givenBody = new HashMap<>();
         givenBody.put("title", "a specific project");
 
-        Response projectResponse = given().body(givenBody).
+        Response projectResponse = given().body(givenBody).contentType("application/json").
                 when().post("/projects").
                 then().
                 statusCode(201).
@@ -62,10 +61,10 @@ public class ProjectTodoRelationshipCrudTest {
 
         // CREATE A To do
 
-        final HashMap<String, String> givenTodoBody = new HashMap<String, String>();
+        final HashMap<String, String> givenTodoBody = new HashMap<>();
         givenTodoBody.put("title", "a specific todo");
 
-        Response todoResponse = given().body(givenTodoBody).
+        Response todoResponse = given().body(givenTodoBody).contentType("application/json").
                 when().post("/todos").
                 then().
                 statusCode(201).
@@ -74,10 +73,10 @@ public class ProjectTodoRelationshipCrudTest {
         String specificTodoId = todoResponse.getBody().jsonPath().get("id");
 
         // Create a specific project to do relationship with POST
-        final HashMap<String, String> givenRefBody = new HashMap<String, String>();
+        final HashMap<String, String> givenRefBody = new HashMap<>();
         givenRefBody.put("id", specificTodoId);
 
-        given().body(givenRefBody).
+        given().body(givenRefBody).contentType("application/json").
                 when().post("/projects/" + specificProjectId + "/tasks").
                 then().
                 statusCode(201).
