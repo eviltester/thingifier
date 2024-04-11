@@ -63,12 +63,12 @@ public class PersistenceLayer {
 
             String allow_save = System.getenv("AWS_ALLOW_SAVE");
             if(allow_save!=null && allow_save.toLowerCase().trim().equals("true")){
-                allowSaveToS3=true;
+                allowSaveToS3=false;
             }
 
             String allow_load = System.getenv("AWS_ALLOW_LOAD");
             if(allow_load!=null && allow_load.toLowerCase().trim().equals("true")){
-                allowLoadFromS3=true;
+                allowLoadFromS3=false;
             }
 
             String bucketName = System.getenv("AWSBUCKET");

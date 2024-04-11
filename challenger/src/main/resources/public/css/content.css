@@ -48,3 +48,59 @@
 .lite-youtube-fallback:focus {
 	outline: 2px solid red;
 }
+
+/*
+    CSS Menu
+ */
+
+.css-menu {
+	width:100%;
+	overflow:hidden;
+}
+
+.sub-menu {
+    position: relative;
+    margin-bottom: 40px;
+    background:#e4e5eb;
+}
+
+.sub-menu a {
+    display: block;
+    color: #000000;
+    text-decoration: none;
+    padding:10px;
+}
+
+.sub-menu a:hover {
+    background-color: #d7d6d5;
+}
+
+.sub-menu li:hover a {
+    color: #000000;
+    background: #efefef;
+}
+
+.sub-menu li { display: inline-block; }
+
+
+.sub-menu li ul { display: none; }
+
+.sub-menu li:hover ul {
+    display: block;
+    position: absolute;
+    left: 0;
+    width: 100%;
+    background: #efefef;
+}
+
+.sub-menu li ul li:hover a { color: #000; }
+
+/* minimal screensize based responsiveness */
+@media (max-width: 1000px) {
+    .sub-menu li { display: grid; }
+    .sub-menu li ul {display: grid;}
+    .sub-menu li:hover ul {
+        display: grid;
+        position: relative;
+    }
+}

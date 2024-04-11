@@ -36,6 +36,11 @@ public class SimulationRoutes {
 
     private ThingifierApiDocumentationDefn apiDocDefn;
     private ThingifierAutoDocGenRouting simulatorDocsRouting;
+    private DefaultGUIHTML guiTemplates;
+
+    public SimulationRoutes(DefaultGUIHTML guiTemplates){
+        this.guiTemplates=guiTemplates;
+    }
 
     public void setUpData(){
         // fake the data storage
@@ -78,7 +83,7 @@ public class SimulationRoutes {
         simulatorDocsRouting = new ThingifierAutoDocGenRouting(
                                             simulation,
                                             apiDocDefn,
-                                            new DefaultGUIHTML()
+                                            guiTemplates
         );
     }
 

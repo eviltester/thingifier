@@ -100,6 +100,10 @@ public class DefaultGuiRoutings {
     // e.g. X-APICHALLENGES-THINGIFIER-DATABASE-NAME, X-SIMPLEAPI-THINGIFIER-DATABASE-NAME
     private String getDatabaseNameFromRequest(Request request) {
 
+        if(!thingifier.apiConfig().supportsMultipleDatabases()){
+            return EntityRelModel.DEFAULT_DATABASE_NAME;
+        }
+
         String xdatabasename = "";
 
         if(request.cookie("X-THINGIFIER-DATABASE-NAME")!=null){

@@ -6,6 +6,7 @@ import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonThing;
 import uk.co.compendiumdev.thingifier.api.ermodelconversion.XmlThing;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.xml.GenericXMLPrettyPrinter;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
+import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
@@ -36,7 +37,10 @@ public class DefaultGuiHtmlPages {
         this.jsonThing = new JsonThing(apiConfig.jsonOutput());
         this.xmlThing = new XmlThing(jsonThing);
         this.urlPathPrefix = urlPathPrefix;
-        this.tryDefault = " [<a href='%s/instances?entity=todo&database=__default'>explore default data</a>]".formatted(urlPathPrefix);
+        String firstEntity = ((EntityDefinition)this.thingifier.getERmodel().getEntityDefinitions().toArray()[0]).getName();
+        String database = EntityRelModel.DEFAULT_DATABASE_NAME;
+        this.tryDefault = " [<a href='%s/instances?entity=%s&database=%s'>explore default data</a>]".
+                formatted(urlPathPrefix, firstEntity, database);
     }
 
     public String getHomePageHtml(final String title, final String headInject, final String canonical) {

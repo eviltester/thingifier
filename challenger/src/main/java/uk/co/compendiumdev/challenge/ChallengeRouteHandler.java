@@ -27,7 +27,8 @@ public class ChallengeRouteHandler {
     private boolean single_player_mode;
     PersistenceLayer persistenceLayer;
     private boolean guiStayAlive=false; // when set gui makes a call every 5 mins to keep session alive,
-                                        // not needed when storing data
+    private DefaultGUIHTML guiTemplates;
+    // not needed when storing data
 
     public ChallengeRouteHandler(Thingifier thingifier, ThingifierApiDocumentationDefn apiDefn, ChallengerConfig config){
 
@@ -65,6 +66,8 @@ public class ChallengeRouteHandler {
             enableAdminApi();
         }
 
+        this.guiTemplates = new DefaultGUIHTML();
+
 
     }
 
@@ -83,9 +86,9 @@ public class ChallengeRouteHandler {
         new MirrorRoutes().configure(mirrorModeDocumentationDefn);
 
         // Simulation routes should not show
-        new SimulationRoutes().configure();
+        new SimulationRoutes(guiTemplates).configure();
 
-        new SimpleApiRoutes().configure();
+        new SimpleApiRoutes(guiTemplates).configure();
 
         return this;
     }
@@ -104,6 +107,7 @@ public class ChallengeRouteHandler {
     }
 
     public void setupGui(DefaultGUIHTML guiManagement) {
+        this.guiTemplates = guiManagement;
         new ChallengerWebGUI(guiManagement, guiStayAlive).setup(challengers, challengeDefinitions,
                                                 persistenceLayer, single_player_mode);
     }

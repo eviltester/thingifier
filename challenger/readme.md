@@ -46,6 +46,12 @@ You can also `GET http://localhost:4567/challenges` to get the list of challenge
 
 ## Version Tracking
 
+20240411
+
+- removed the S3 integration, so this is a breaking change for some people
+- added the simple api in its own api path
+- ui to surface all modes and sub info
+
 v1.1 - 20240128
 
 - in multiuser mode now all the user sessions are independent with a limit of 100 todos

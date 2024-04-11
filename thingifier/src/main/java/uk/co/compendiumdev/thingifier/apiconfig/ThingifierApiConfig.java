@@ -68,6 +68,7 @@ public class ThingifierApiConfig {
     // allow the API to be configured to return single items as
     // collections
     private boolean returnSingleGetItemsAsCollection;
+    private boolean supportsMultipleDatabases;
 
     public ThingifierApiConfig(String endPointPrefix){
 
@@ -87,6 +88,7 @@ public class ThingifierApiConfig {
         willShowIdsInUrlsIfAvailable = true;  // location headers, api urls
         willEnforceDeclaredTypesInInput = true;
 
+        supportsMultipleDatabases=false; // single database by default
 
         willApiAllowXmlResponses = true;
         willApiAllowJsonResponses = true;
@@ -123,6 +125,8 @@ public class ThingifierApiConfig {
         willApiAllowXmlResponses = apiConfig.willApiAllowXmlForResponses();
         willApiAllowJsonResponses = apiConfig.willApiAllowJsonForResponses();
         willApiEnforceAcceptHeaderForResponses = apiConfig.willApiEnforceAcceptHeaderForResponses();
+
+        supportsMultipleDatabases = apiConfig.supportsMultipleDatabases();
 
         returnSingleGetItemsAsCollection = apiConfig.willReturnSingleGetItemsAsCollection();
         paramsConfig.setFrom(apiConfig.forParams());
@@ -256,5 +260,14 @@ public class ThingifierApiConfig {
     }
     public boolean willReturnSingleGetItemsAsCollection() {
         return returnSingleGetItemsAsCollection;
+    }
+
+    public boolean supportsMultipleDatabases() {
+        return supportsMultipleDatabases;
+    }
+
+    public ThingifierApiConfig setSupportsMultipleDatabases(boolean allow){
+        supportsMultipleDatabases = allow;
+        return this;
     }
 }

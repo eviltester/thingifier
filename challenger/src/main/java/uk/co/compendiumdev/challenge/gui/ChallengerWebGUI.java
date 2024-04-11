@@ -48,6 +48,52 @@ public class ChallengerWebGUI {
         guiManagement.appendMenuItem("API documentation","/docs");
         guiManagement.appendMenuItem("Learning", "/learning");
 
+
+        String actualMenu = """
+                <div class="container cssmenu">
+                <nav aria-label="Site menu">
+                    <div class="css-menu">
+                        <ul class="sub-menu">
+                            <li class="rootdropdownmenuitem"><a class="brand-link" href="/">Home</a></li>
+
+                            <li class="rootdropdownmenuitem"><a href="/simpleapi/docs">Simple API</a>
+                                <ul class="dropdownmenu">
+                                    <li class="dropdownmenuitem"><a href="/simpleapi/gui/entities">Simple API Data Explorer</a></li>
+                                </ul>
+                            </li>
+                        
+                            <li class="rootdropdownmenuitem"><a href="/gui/challenges">API Challenges</a>
+                                <ul class="dropdownmenu">
+                                    <li class="dropdownmenuitem"><a href="/docs">Challenges API Docs</a></li>
+                                    <li class="dropdownmenuitem"><a href="/gui/entities">Challenges Data Explorer</a></li>
+                                </ul>
+                            </li>
+                        
+                            <li class="rootdropdownmenuitem"><a href="/learning">Learning Zone</a>
+                            </li>
+                        
+                            <li class="rootdropdownmenuitem"><a href="/practice-modes/simulation">Simulator</a>
+                                <ul class="dropdownmenu">
+                                    <li class="dropdownmenuitem"><a href="/sim/docs">Sim API Docs</a></li>
+                                    <li class="dropdownmenuitem"><a href="/practice-modes/simulation/swagger">Sim Open API File</a></li>
+                                    <li class="dropdownmenuitem"><a href="/practice-modes/simulation">About API Simulator</a></li>
+                                </ul>
+                            </li>
+                        
+                            <li class="rootdropdownmenuitem"><a href="/practice-modes/mirror">Mirror</a>
+                                <ul class="dropdownmenu">
+                                    <li class="dropdownmenuitem"><a href="/practice-modes/mirror/swagger">Mirror Open API File</a></li>
+                                    <li class="dropdownmenuitem"><a href="/practice-modes/mirror">About HTTP Mirror</a></li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </nav>
+                </div>
+        """.stripIndent();
+
+        guiManagement.setActualMenuHtml(actualMenu);
+
         // Add the Default GUI Endpoiints for entity exploration
 
 

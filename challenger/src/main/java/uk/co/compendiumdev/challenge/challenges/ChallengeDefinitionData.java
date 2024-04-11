@@ -1,11 +1,7 @@
 package uk.co.compendiumdev.challenge.challenges;
 
-import org.joda.time.Chronology;
-
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class ChallengeDefinitionData {
 

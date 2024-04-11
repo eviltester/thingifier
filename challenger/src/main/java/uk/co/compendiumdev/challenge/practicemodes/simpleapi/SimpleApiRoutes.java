@@ -25,6 +25,7 @@ import java.util.List;
  */
 public class SimpleApiRoutes {
 
+    private final DefaultGUIHTML guiTemplates;
     public Thingifier simplethings;
     public EntityDefinition entityDefn;
     private ThingifierApiDocumentationDefn apiDocDefn;
@@ -32,7 +33,7 @@ public class SimpleApiRoutes {
     private ThingifierHttpApiRoutings simpleApiHttpRouting;
     private DefaultGuiRoutings simpleApiGuiRouting;
 
-    public SimpleApiRoutes(){
+    public SimpleApiRoutes(DefaultGUIHTML guiTemplates){
         // fake the data storage
         this.simplethings = new Thingifier();
 
@@ -78,11 +79,13 @@ public class SimpleApiRoutes {
         // TODO: should probably have a support multiple databases config somewhere
         simplethings.getERmodel().populateDatabase(EntityRelModel.DEFAULT_DATABASE_NAME);
 
+        this.guiTemplates = guiTemplates;
+
     }
 
     public void configure() {
 
-        DefaultGUIHTML gui = new DefaultGUIHTML();
+        DefaultGUIHTML gui = guiTemplates;
 
         simpleApiGuiRouting = new DefaultGuiRoutings(simplethings, gui).
                 configureRoutes("/simpleapi/gui");

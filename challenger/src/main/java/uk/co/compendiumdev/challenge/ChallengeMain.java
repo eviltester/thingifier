@@ -68,10 +68,11 @@ public class ChallengeMain {
         }
 
         thingifier.apiConfig().setApiToAllowRobotsIndexingResponses(false);
+        thingifier.apiConfig().setSupportsMultipleDatabases(true);
 
         // setup routes required for challenges
         challenger = new ChallengeRouteHandler(thingifier, app.getApiDefn(), config);
-        challenger.configureRoutes();
+
 
         app.chooseThingifier();
         // can set profile by adding more configs, or just
@@ -92,7 +93,7 @@ public class ChallengeMain {
         );
 
         challenger.setupGui(app.getGuiManagement());
-
+        challenger.configureRoutes();
 
         if(challenger.isSinglePlayerMode()){
             logger.info("Running in Single User Mode");

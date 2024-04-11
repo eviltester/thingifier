@@ -124,7 +124,7 @@ public class UiPagesAreReachableTest {
 
     private void assertContainsHeaderAndFooter(HttpResponseDetails response) {
 
-        if(!response.body.contains("<div class='rootmenu menu'>")){
+        if(!response.body.contains("<div class=\"css-menu\">")){
             Assertions.fail("Page did not contain header menu");
         }
         if(!response.body.contains("<div class='footer'>")){

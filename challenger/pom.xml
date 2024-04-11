@@ -24,11 +24,13 @@
         <!-- todo: split into two apps, one aws enabled, one with local persistance only -->
         <!-- 180 meg!
         -->
+        <!--
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-s3</artifactId>
             <version>1.11.825</version>
         </dependency>
+        -->
 
         <dependency>
             <groupId>io.github.classgraph</groupId>

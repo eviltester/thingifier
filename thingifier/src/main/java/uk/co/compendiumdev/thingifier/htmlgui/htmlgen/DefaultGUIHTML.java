@@ -7,6 +7,7 @@ import java.util.List;
 
 public class DefaultGUIHTML {
 
+    private String customActualMenu;
     private String homePageContent;
     private String customFooter;
     private String customHeadContent;
@@ -20,6 +21,7 @@ public class DefaultGUIHTML {
         this.customFooter = "";
         this.customHeadContent = "";
         this.canonicalHostHttpUrl = "";
+        this.customActualMenu = "";
     }
 
     public void appendMenuItem(final String title, final String url) {
@@ -118,6 +120,20 @@ public class DefaultGUIHTML {
     public String getMenuAsHTML() {
         StringBuilder html = new StringBuilder();
         html.append("<div class='accessibilityskiplink'><a href='#maincontentstartshere'>Skip to main content</a></div>");
+        html.append(getActualMenuHtml());
+        return html.toString();
+    }
+
+    public DefaultGUIHTML setActualMenuHtml(String actual){
+        customActualMenu = actual;
+        return this;
+    }
+
+    public String getActualMenuHtml(){
+        if(!customActualMenu.isEmpty()){
+            return customActualMenu;
+        }
+        StringBuilder html = new StringBuilder();
         html.append("<div class='rootmenu menu'>");
         html.append("<ul>");
         for(GuiMenuItem menu : menuItems){
@@ -142,7 +158,7 @@ public class DefaultGUIHTML {
 
     public String getPageFooter(){
 
-        if(customFooter.length()>0){
+        if(!customFooter.isEmpty()){
             return customFooter;
         }
 
