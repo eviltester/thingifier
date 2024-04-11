@@ -60,7 +60,7 @@
 
 .sub-menu {
     position: relative;
-    margin-bottom: 40px;
+    margin-bottom: 2em;
     background:#e4e5eb;
 }
 
@@ -68,7 +68,7 @@
     display: block;
     color: #000000;
     text-decoration: none;
-    padding:10px;
+    padding: 0.5em;
 }
 
 .sub-menu a:hover {
