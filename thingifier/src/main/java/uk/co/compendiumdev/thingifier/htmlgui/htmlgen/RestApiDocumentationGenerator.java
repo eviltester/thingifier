@@ -72,54 +72,77 @@ public class RestApiDocumentationGenerator {
             output.append(paragraph(thingifier.getInitialParagraph()));
             output.append(String.format("%n"));
 
-            // TODO: the following should be configurable by api docs config
-            // e.g. if XML is not supported then do not show info about XML
-            output.append(paragraph("Will accept json by default."));
-            output.append(paragraph("<i>Content-Type: application/json</i>"));
-            output.append(paragraph("Set Content-Type header to application/xml if you want to send in XML."));
-            output.append(paragraph("<i>Content-Type: application/xml</i>"));
+            // the following is fully configurable by api docs config
+            if(!thingifier.apidocsconfig().headerSectionOverride().isEmpty()){
 
-            if(thingifier.apiConfig().willApiAllowXmlForResponses() &&
-                    thingifier.apiConfig().willApiAllowJsonForResponses() ) {
-                output.append(paragraph("You can control the returned data format by setting the Accept header"));
+                output.append(thingifier.apidocsconfig().headerSectionOverride());
+
+            }else{
+                // e.g. if XML is not supported then do not show info about XML
+                if (thingifier.apiConfig().willAllowJsonAsDefaultContentType()) {
+                    output.append(paragraph("Will accept json by default."));
+                } else {
+                    output.append(paragraph("Use the <i>Content-Type</i> header to define the payload content e.g."));
+                }
+                output.append(paragraph("<i>Content-Type: application/json</i>"));
+                output.append(paragraph("Set Content-Type header to application/xml if you want to send in XML."));
+                output.append(paragraph("<i>Content-Type: application/xml</i>"));
+
+                if (thingifier.apiConfig().willApiAllowXmlForResponses() &&
+                        thingifier.apiConfig().willApiAllowJsonForResponses()) {
+                    output.append(paragraph("You can control the returned data format by setting the Accept header"));
+                }
+
+                if (thingifier.apiConfig().willApiAllowXmlForResponses() &&
+                        !thingifier.apiConfig().willApiAllowJsonForResponses()) {
+                    output.append(paragraph("Returned data format will be XML by default."));
+                }
+
+                if (thingifier.apiConfig().willApiAllowXmlForResponses()) {
+                    output.append(paragraph("You can request XML response by setting the Accept header."));
+                    output.append(paragraph("i.e. for XML use"));
+                    output.append(paragraph("<i>Accept: application/xml</i><br/><br/>\n"));
+                }
+
+                if (!thingifier.apiConfig().willApiAllowXmlForResponses() &&
+                        thingifier.apiConfig().willApiAllowJsonForResponses()) {
+                    output.append(paragraph("You receive JSON by default as the response"));
+                }
+
+                if (thingifier.apiConfig().willApiAllowJsonForResponses()) {
+                    output.append(paragraph("You can request JSON response by setting the Accept header."));
+                    output.append(paragraph("i.e. for JSON use"));
+                    output.append(paragraph("<i>Accept: application/json</i><br/><br/>\n"));
+                }
+
+                if (thingifier.apiConfig().forParams().willAllowFilteringThroughUrlParams()) {
+
+                    Collection<EntityDefinition> defns = thingifier.getERmodel().getEntityDefinitions();
+                    if(!defns.isEmpty()) {
+                        output.append(paragraph("Some requests can be filtered by adding query params of fieldname=value. Where only matching items will be returned."));
+
+                        // TODO: generate the filter example string from the entity definitions
+                        //defns.toArray()
+                        output.append(paragraph("e.g. <i>/thing?size=2&status=true</i><br/><br/>\n"));
+                    }
+                }
+
+                if (!thingifier.apidocsconfig().headerSectionAppend().isEmpty()) {
+                    output.append(paragraph("All data lives in memory and is not persisted so the application is cleared everytime you start it. It does have some test data in here when you start"));
+                } else {
+                    output.append(thingifier.apidocsconfig().headerSectionAppend());
+                }
             }
 
-            if(thingifier.apiConfig().willApiAllowXmlForResponses() &&
-                    !thingifier.apiConfig().willApiAllowJsonForResponses() ) {
-                output.append(paragraph("Returned data format will be XML by default."));
-            }
-
-            if(thingifier.apiConfig().willApiAllowXmlForResponses()) {
-                output.append(paragraph("You can request XML response by setting the Accept header."));
-                output.append(paragraph("i.e. for XML use"));
-                output.append(paragraph("<i>Accept: application/xml</i><br/><br/>\n"));
-            }
-
-            if(!thingifier.apiConfig().willApiAllowXmlForResponses() &&
-                    thingifier.apiConfig().willApiAllowJsonForResponses() ) {
-                output.append(paragraph("You receive JSON by default as the response"));
-            }
-
-            if(thingifier.apiConfig().willApiAllowJsonForResponses()) {
-                output.append(paragraph("You can request JSON response by setting the Accept header."));
-                output.append(paragraph("i.e. for JSON use"));
-                output.append(paragraph("<i>Accept: application/json</i><br/><br/>\n"));
-            }
-
-            if(thingifier.apiConfig().forParams().willAllowFilteringThroughUrlParams()){
-                output.append(paragraph("Some requests can be filtered by adding query params of fieldname=value. Where only matching items will be returned."));
-                output.append(paragraph("e.g. <i>/items?size=2&status=true</i><br/><br/>\n"));
-            }
-
-            output.append(paragraph("All data lives in memory and is not persisted so the application is cleared everytime you start it. It does have some test data in here when you start"));
             output.append("</div>");
         }
 
-        output.append(heading(2, "Model"));
+
 
         Collection<EntityDefinition> definitions = thingifier.getERmodel().getEntityDefinitions();
 
         if (definitions != null && !definitions.isEmpty()) {
+            output.append(heading(2, "Model"));
             output.append(heading(3, "Things"));
             for (EntityDefinition aThingDefinition : definitions) {
 
@@ -281,7 +304,11 @@ public class RestApiDocumentationGenerator {
         // output the API documentation
         output.append(heading(2, "API"));
 
-        output.append(paragraph("The API takes body with objects using the field definitions and examples shown in the model."));
+        if(thingifier.apidocsconfig().apiIntroductionParaOverride().isEmpty()) {
+            output.append(paragraph("The API takes body with objects using the field definitions and examples shown in the model."));
+        }else{
+            output.append(thingifier.apidocsconfig().apiIntroductionParaOverride());
+        }
 
         output.append(heading(3, "End Points"));
 

@@ -1,9 +1,12 @@
 package uk.co.compendiumdev.challenge.practicemodes.mirror;
 
 import spark.Route;
+import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.docgen.ThingifierApiDocumentationDefn;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
 import uk.co.compendiumdev.thingifier.application.AdhocDocumentedSparkRouteConfigurer;
+import uk.co.compendiumdev.thingifier.application.httprouting.ThingifierAutoDocGenRouting;
+import uk.co.compendiumdev.thingifier.htmlgui.htmlgen.DefaultGUIHTML;
 import uk.co.compendiumdev.thingifier.spark.SimpleSparkRouteCreator;
 import uk.co.compendiumdev.thingifier.swaggerizer.Swaggerizer;
 
@@ -20,7 +23,7 @@ import static spark.Spark.*;
  */
 public class MirrorRoutes {
 
-    public void configure(final ThingifierApiDocumentationDefn apiDefn) {
+    public void configure(final ThingifierApiDocumentationDefn apiDefn, DefaultGUIHTML guiTemplates) {
 
         // /mirror should be the GUI with api below it
         String endpoint ="/mirror/request";
@@ -86,6 +89,9 @@ public class MirrorRoutes {
             }
         }
 
+        /*
+            Handle HEAD verb - special handling to only return headers
+         */
         for (String anEndpoint : verbEndpoints) {
             Route routeHAndler = (request, result) -> {
                 String body = requestMirror.mirrorRequest(request, result);
@@ -103,15 +109,40 @@ public class MirrorRoutes {
             }
         }
 
-        get("/practice-modes/mirror/swagger", (request, response) ->{
-            response.status(200);
-            response.header("content-type", "application/json");
-            response.header("x-robots-tag", "noindex");
-            response.header("Content-Type", "application/octet-stream");
-            response.header("Content-Disposition",
-                    "attachment; filename=\"mirrormodeswagger.json\"");
-            return new Swaggerizer(apiDefn).asJson();
-        });
+        Thingifier dummy = new Thingifier();
+        dummy.setDocumentation("HTTP Mirror Mode", "The HTTP Mirror mode shows you the request that you sent in. The raw mode shows the exact request, the request mode shows it 'interpreted' by a basic API.");
+        //dummy.apiConfig().setValidatesContentType(false);
+        dummy.apiConfig().setDefaultContentTypeAsJson(false);
+        dummy.apidocsconfig().setHeaderSectionOverride("""
+                <p>
+                    Raw mode will always return the response as plain text.
+                    HEAD and OPTIONS will respond like normal HEAD and OPTIONS.
+                    You can not use the accept header to control the response format.
+                </p>
+                <p>
+                    Request mode will try to honour the accept headers and return the response as JSON or XML.
+                </p>
+                <p>
+                    Nothing is stored on the server. The request is only used to generate a response which is passed back to you.
+                </p>
+                <p>
+                    Validation is performed on the length of the request and if the request is too large then it will be rejectec.
+                </p>
+                """);
+        dummy.apidocsconfig().setApiIntroductionParaOverride("""
+                <p>
+                    For any of the endpoints listed, you can also add any number of parameters to the URL e.g. /mirror/raw/this/and/that?key=value
+                </p>
+                """);
 
+        ThingifierApiDocumentationDefn apiDocDefn = routeCreatorAndDocumentor.getApiDocDefn();
+        apiDocDefn.setThingifier(dummy);
+        apiDocDefn.setPathPrefix("/mirror"); // where can the API endpoints be found
+
+        ThingifierAutoDocGenRouting mirrorDocsRouting = new ThingifierAutoDocGenRouting(
+                apiDocDefn.getThingifier(),
+                apiDocDefn,
+                guiTemplates
+        );
    }
 }

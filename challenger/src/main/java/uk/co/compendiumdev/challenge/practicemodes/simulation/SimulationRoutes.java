@@ -85,6 +85,7 @@ public class SimulationRoutes {
                                             apiDocDefn,
                                             guiTemplates
         );
+
     }
 
     public void configure() {
@@ -114,7 +115,7 @@ public class SimulationRoutes {
             return "";
         });
 
-        HttpApiRequestHandler getEntitiesHandler = (HttpApiRequest anHttpApiRequest) ->{
+        HttpApiRequestHandler getEntitiesHandler = (HttpApiRequest anHttpApiRequest) -> {
             // remove id 11 because that is a POST so not available in the list
             List<Integer> idsToRemove = new ArrayList<>();
             idsToRemove.add(11);
@@ -145,9 +146,9 @@ public class SimulationRoutes {
             return "";
         });
 
-        HttpApiRequestHandler getEntityHandler = (HttpApiRequest anHttpApiRequest) ->{
+        HttpApiRequestHandler getEntityHandler = (HttpApiRequest anHttpApiRequest) -> {
 
-            ApiResponse response=null;
+            ApiResponse response = null;
 
             // process it because the request validated
             String id = anHttpApiRequest.getUrlParam(":id");
@@ -195,7 +196,7 @@ public class SimulationRoutes {
         post(apiEndpoint, (request, result) -> {
 
             return new SparkApiRequestResponseHandler(request, result, simulation).
-                    usingHandler((anHttpApiRequest) ->{
+                    usingHandler((anHttpApiRequest) -> {
                         return ApiResponse.created(this.entityStorage.
                                         findInstanceByPrimaryKey("11"),
                                 this.simulation.apiConfig());
@@ -220,9 +221,9 @@ public class SimulationRoutes {
                 } else {
                     final EntityInstance instance = this.entityStorage.findInstanceByPrimaryKey(id);
                     if (instance == null) {
-                        if(anHttpApiRequest.getVerb()== HttpApiRequest.VERB.POST) {
+                        if (anHttpApiRequest.getVerb() == HttpApiRequest.VERB.POST) {
                             response = ApiResponse.error404("Could not find Entity with ID " + id);
-                        }else{ // must be a PUT
+                        } else { // must be a PUT
                             response = ApiResponse.error(403, "Not authorised to create that entity");
                         }
                     } else {
@@ -250,7 +251,7 @@ public class SimulationRoutes {
         delete(apiEndpoint + "/:id", (request, result) -> {
 
             return new SparkApiRequestResponseHandler(request, result, simulation).
-                    usingHandler((anHttpApiRequest) ->{
+                    usingHandler((anHttpApiRequest) -> {
                         ApiResponse response = null;
                         String id = anHttpApiRequest.getUrlParam(":id");
                         if (id.equals("9")) {
@@ -266,18 +267,6 @@ public class SimulationRoutes {
                         }
                         return response;
                     }).handle();
-        });
-
-
-        get("/practice-modes/simulation/swagger",(request, response)->{
-            response.status(200);
-            response.header("content-type", "application/json");
-            response.header("x-robots-tag", "noindex");
-            response.header("Content-Type", "application/octet-stream");
-            response.header("Content-Disposition",
-                    "attachment; filename=\"simulationmodeswagger.json\"");
-            return new Swaggerizer(apiDocDefn).asJson();
-
         });
     }
 }

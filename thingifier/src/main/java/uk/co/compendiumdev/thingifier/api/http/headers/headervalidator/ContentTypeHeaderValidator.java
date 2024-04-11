@@ -19,9 +19,7 @@ public class ContentTypeHeaderValidator {
 
         final ContentTypeHeaderParser accept = new ContentTypeHeaderParser(header);
 
-        if(accept.isMissing() || accept.isText()){
-            // todo: have a config for enforce presence of content-type header, when false then derive content type from content when parsing message
-            // todo: have a config for treatContentTypeTextAsMissingContentType - which is what this code current does
+        if(accept.isMissing() || accept.isText() && apiConfig.willAllowJsonAsDefaultContentType()){
             // assume that we can derive content type from the actual content
             return null;
         }

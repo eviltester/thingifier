@@ -1,6 +1,7 @@
 package uk.co.compendiumdev.thingifier;
 
 import uk.co.compendiumdev.thingifier.api.ThingifierRestAPIHandler;
+import uk.co.compendiumdev.thingifier.apiconfig.ApiDocsConfig;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfigProfile;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfigProfiles;
@@ -25,6 +26,7 @@ import java.util.*;
 final public class Thingifier {
 
     private final EntityRelModel erm;
+    private ApiDocsConfig apiDocsConfig;
     private DataPopulator dataPopulator;
     private String title;
     private String initialParagraph;
@@ -37,19 +39,23 @@ final public class Thingifier {
         initialParagraph = "";
         apiConfig = new ThingifierApiConfig("");
         apiConfigProfiles = new ThingifierApiConfigProfiles();
+        apiDocsConfig = new ApiDocsConfig();
     }
 
     public Thingifier(final EntityRelModel erm,
                       final ThingifierApiConfig apiConfig,
                       final ThingifierApiConfigProfiles apiConfigProfiles,
                       final String title,
-                      final String initialParagraph) {
+                      final String initialParagraph,
+                      final ApiDocsConfig apiDocsConfig
+                      ) {
 
         this.erm = erm;
         this.title = title;
         this.initialParagraph = initialParagraph;
         this.apiConfig = apiConfig;
         this.apiConfigProfiles = apiConfigProfiles;
+        this.apiDocsConfig = apiDocsConfig;
     }
 
     /*
@@ -234,7 +240,9 @@ final public class Thingifier {
                                                     this.apiConfig(),
                                                     this.apiConfigProfiles(),
                                                     this.title,
-                                                    this.initialParagraph);
+                                                    this.initialParagraph,
+                                                    this.apiDocsConfig
+                );
     }
 
     public DataPopulator getDefaultDataPopulator() {
@@ -265,5 +273,9 @@ final public class Thingifier {
                 getERmodel().getInstanceData(databaseName)
         );
 
+    }
+
+    public ApiDocsConfig apidocsconfig() {
+        return apiDocsConfig;
     }
 }

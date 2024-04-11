@@ -83,7 +83,7 @@ public class ChallengeRouteHandler {
         new AuthRoutes().configure(challengers, apiChallengesDocumentationDefn);
 
         // Mirror routes should not show up in the apichallenges apiDefn
-        new MirrorRoutes().configure(mirrorModeDocumentationDefn);
+        new MirrorRoutes().configure(mirrorModeDocumentationDefn, guiTemplates);
 
         // Simulation routes should not show
         new SimulationRoutes(guiTemplates).configure();

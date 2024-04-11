@@ -150,7 +150,7 @@ The Mirror mode makes it clear that there are multiple systems involved in issui
 
 ## Swagger OpenAPI File
 
-You can download a simple Swagger [OpenAPI File for mirror mode](/practice-modes/mirror/swagger).
+You can download a simple Swagger [OpenAPI File for mirror mode](/mirror/docs/swagger).
 
 <!--
 

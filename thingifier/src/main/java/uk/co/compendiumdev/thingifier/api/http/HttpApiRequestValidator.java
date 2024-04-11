@@ -49,8 +49,11 @@ public class HttpApiRequestValidator {
                 // validate the content syntax format against content type
                 if (apiResponse == null) {
                     BodyParser parser = new BodyParser(request, new ArrayList<>());
-                    String parsingError = parser.validBodyBasedOnContentType();
-                    if (parsingError.length() != 0) {
+                    String parsingError = "";
+                    if(!apiConfig.willAllowJsonAsDefaultContentType()) {
+                        parsingError = parser.validBodyBasedOnContentType();
+                    }
+                    if (!parsingError.isEmpty()) {
                         apiResponse = ApiResponse.error(400, parsingError);
                     }
                 }

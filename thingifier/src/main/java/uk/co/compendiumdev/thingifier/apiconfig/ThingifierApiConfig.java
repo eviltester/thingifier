@@ -70,6 +70,9 @@ public class ThingifierApiConfig {
     private boolean returnSingleGetItemsAsCollection;
     private boolean supportsMultipleDatabases;
 
+    // when no content type, assume it is JSON - otherwise reject as unknown
+    private boolean defaultContentTypeAssumedToBeJson;
+
     public ThingifierApiConfig(String endPointPrefix){
 
         String prefixToUse = "";
@@ -89,6 +92,8 @@ public class ThingifierApiConfig {
         willEnforceDeclaredTypesInInput = true;
 
         supportsMultipleDatabases=false; // single database by default
+
+        defaultContentTypeAssumedToBeJson=false;
 
         willApiAllowXmlResponses = true;
         willApiAllowJsonResponses = true;
@@ -269,5 +274,14 @@ public class ThingifierApiConfig {
     public ThingifierApiConfig setSupportsMultipleDatabases(boolean allow){
         supportsMultipleDatabases = allow;
         return this;
+    }
+
+    public ThingifierApiConfig setDefaultContentTypeAsJson(boolean allow) {
+        defaultContentTypeAssumedToBeJson=allow;
+        return this;
+    }
+
+    public boolean willAllowJsonAsDefaultContentType() {
+        return defaultContentTypeAssumedToBeJson;
     }
 }

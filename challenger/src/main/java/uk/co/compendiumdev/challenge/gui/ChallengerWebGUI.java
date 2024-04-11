@@ -58,32 +58,39 @@ public class ChallengerWebGUI {
 
                             <li class="rootdropdownmenuitem"><a href="/simpleapi/docs">Simple API</a>
                                 <ul class="dropdownmenu">
+                                    <!-- TODO: About Simple API -->
+                                    <li class="rootdrorootdropdownmenuitempdownmenuitem"><a href="/simpleapi/docs">Simple API Docs</a>
                                     <li class="dropdownmenuitem"><a href="/simpleapi/gui/entities">Simple API Data Explorer</a></li>
                                 </ul>
                             </li>
                         
                             <li class="rootdropdownmenuitem"><a href="/gui/challenges">API Challenges</a>
                                 <ul class="dropdownmenu">
+                                    <!-- TODO: About API Challenges -->
                                     <li class="dropdownmenuitem"><a href="/docs">Challenges API Docs</a></li>
                                     <li class="dropdownmenuitem"><a href="/gui/entities">Challenges Data Explorer</a></li>
                                 </ul>
                             </li>
                         
                             <li class="rootdropdownmenuitem"><a href="/learning">Learning Zone</a>
+                                <!-- TODO include a sample of learning information -->
                             </li>
                         
                             <li class="rootdropdownmenuitem"><a href="/practice-modes/simulation">Simulator</a>
                                 <ul class="dropdownmenu">
-                                    <li class="dropdownmenuitem"><a href="/sim/docs">Sim API Docs</a></li>
-                                    <li class="dropdownmenuitem"><a href="/practice-modes/simulation/swagger">Sim Open API File</a></li>
                                     <li class="dropdownmenuitem"><a href="/practice-modes/simulation">About API Simulator</a></li>
+                                    <li class="dropdownmenuitem"><a href="/sim/docs">Sim API Docs</a></li>
+                                    <li class="dropdownmenuitem"><a href="/sim/docs/swagger">Sim Open API File</a></li>
+                                    
                                 </ul>
                             </li>
                         
                             <li class="rootdropdownmenuitem"><a href="/practice-modes/mirror">Mirror</a>
                                 <ul class="dropdownmenu">
-                                    <li class="dropdownmenuitem"><a href="/practice-modes/mirror/swagger">Mirror Open API File</a></li>
                                     <li class="dropdownmenuitem"><a href="/practice-modes/mirror">About HTTP Mirror</a></li>
+                                    <li class="dropdownmenuitem"><a href="/mirror/docs">Mirror API Docs</a></li>
+                                    <li class="dropdownmenuitem"><a href="/mirror/docs/swagger">Mirror Open API File</a></li>
+                                    
                                 </ul>
                             </li>
                         </ul>

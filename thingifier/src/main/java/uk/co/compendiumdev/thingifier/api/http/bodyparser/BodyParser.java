@@ -143,7 +143,6 @@ public class BodyParser {
             }
         }
 
-
         return "Unknown content Type: API cannot parse %s".formatted(request.getContentTypeHeader());
     }
 

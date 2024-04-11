@@ -57,4 +57,8 @@ public class AdhocDocumentedSparkRouteConfigurer {
 
         return this;
     }
+
+    public ThingifierApiDocumentationDefn getApiDocDefn() {
+        return apiDefn;
+    }
 }
