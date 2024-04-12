@@ -75,7 +75,12 @@
     background-color: #d7d6d5;
 }
 
-.sub-menu li:hover a {
+/* remember to adjust both hover and dropped */
+.sub-menu li:hover a{
+    color: #000000;
+    background: #efefef;
+}
+.sub-menu li.dropped a {
     color: #000000;
     background: #efefef;
 }
@@ -85,12 +90,22 @@
 
 .sub-menu li ul { display: none; }
 
-.sub-menu li:hover ul {
-    display: block;
-    position: absolute;
-    left: 0;
-    width: 100%;
-    background: #efefef;
+/* remember to adjust both hover and dropped */
+@media (min-width: 1000px) {
+    .sub-menu li:hover ul {
+        display: block;
+        position: absolute;
+        left: 0;
+        width: 100%;
+        background: #efefef;
+    }
+    .sub-menu li.dropped ul {
+        display: block;
+        position: absolute;
+        left: 0;
+        width: 100%;
+        background: #efefef;
+    }
 }
 
 .sub-menu li ul li:hover a { color: #000; }

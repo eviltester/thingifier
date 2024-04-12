@@ -50,46 +50,77 @@ public class ChallengerWebGUI {
 
 
         String actualMenu = """
+                <script>
+                    function setMenuNavBasedOnUrl(){
+                        const pathToCheck = window.location.pathname;
+                        urlMapping = [
+                            ['/simpleapi/', 'simple-api-root-menu'],
+                            ['/gui/', 'api-challenges-root-menu'],
+                            ['/docs', 'api-challenges-root-menu'],
+                            ['/sim/docs', 'sim-api-root-menu'],
+                            ['/practice-modes/simulation', 'sim-api-root-menu'],
+                            ['/mirror/', 'mirror-api-root-menu'],
+                            ['/practice-modes/mirror', 'mirror-api-root-menu']
+                        ];
+                        foundMapping = false;
+                        for(const mapping of urlMapping){
+                            if(pathToCheck.startsWith(mapping[0])){
+                                document.getElementById(mapping[1]).classList.add('dropped');
+                                foundMapping=true;
+                                break;
+                            }
+                        }
+                        if(!foundMapping && pathToCheck=='/'){
+                            document.getElementById('home-root-menu').classList.add('dropped');
+                            foundMappint=true;
+                        }
+                        if(!foundMapping){
+                            // assume it is a learning page
+                            document.getElementById('learning-root-menu').classList.add('dropped');
+                        }
+                    }
+                    document.addEventListener("DOMContentLoaded", setMenuNavBasedOnUrl);
+                </script>
                 <div class="container cssmenu">
                 <nav aria-label="Site menu">
                     <div class="css-menu">
                         <ul class="sub-menu">
-                            <li class="rootdropdownmenuitem"><a class="brand-link" href="/">Home</a></li>
+                            <li id='home-root-menu'><a class="brand-link" href="/">Home</a></li>
 
-                            <li class="rootdropdownmenuitem"><a href="/simpleapi/docs">Simple API</a>
-                                <ul class="dropdownmenu">
+                            <li id='simple-api-root-menu'><a href="/simpleapi/docs">Simple API</a>
+                                <ul>
                                     <!-- TODO: About Simple API -->
-                                    <li class="rootdrorootdropdownmenuitempdownmenuitem"><a href="/simpleapi/docs">Simple API Docs</a>
-                                    <li class="dropdownmenuitem"><a href="/simpleapi/gui/entities">Simple API Data Explorer</a></li>
+                                    <li><a href="/simpleapi/docs">Simple API Docs</a>
+                                    <li><a href="/simpleapi/gui/entities">Simple API Data Explorer</a></li>
                                 </ul>
                             </li>
                         
-                            <li class="rootdropdownmenuitem"><a href="/gui/challenges">API Challenges</a>
-                                <ul class="dropdownmenu">
+                            <li id='api-challenges-root-menu'><a href="/gui/challenges">API Challenges</a>
+                                <ul>
                                     <!-- TODO: About API Challenges -->
-                                    <li class="dropdownmenuitem"><a href="/docs">Challenges API Docs</a></li>
-                                    <li class="dropdownmenuitem"><a href="/gui/entities">Challenges Data Explorer</a></li>
+                                    <li><a href="/docs">Challenges API Docs</a></li>
+                                    <li><a href="/gui/entities">Challenges Data Explorer</a></li>
                                 </ul>
                             </li>
                         
-                            <li class="rootdropdownmenuitem"><a href="/learning">Learning Zone</a>
+                            <li id='learning-root-menu'><a href="/learning">Learning Zone</a>
                                 <!-- TODO include a sample of learning information -->
                             </li>
                         
-                            <li class="rootdropdownmenuitem"><a href="/practice-modes/simulation">Simulator</a>
-                                <ul class="dropdownmenu">
-                                    <li class="dropdownmenuitem"><a href="/practice-modes/simulation">About API Simulator</a></li>
-                                    <li class="dropdownmenuitem"><a href="/sim/docs">Sim API Docs</a></li>
-                                    <li class="dropdownmenuitem"><a href="/sim/docs/swagger">Sim Open API File</a></li>
+                            <li id='sim-api-root-menu'><a href="/practice-modes/simulation">Simulator</a>
+                                <ul>
+                                    <li><a href="/practice-modes/simulation">About API Simulator</a></li>
+                                    <li><a href="/sim/docs">Sim API Docs</a></li>
+                                    <li><a href="/sim/docs/swagger">Sim Open API File</a></li>
                                     
                                 </ul>
                             </li>
                         
-                            <li class="rootdropdownmenuitem"><a href="/practice-modes/mirror">Mirror</a>
-                                <ul class="dropdownmenu">
-                                    <li class="dropdownmenuitem"><a href="/practice-modes/mirror">About HTTP Mirror</a></li>
-                                    <li class="dropdownmenuitem"><a href="/mirror/docs">Mirror API Docs</a></li>
-                                    <li class="dropdownmenuitem"><a href="/mirror/docs/swagger">Mirror Open API File</a></li>
+                            <li id='mirror-api-root-menu'><a href="/practice-modes/mirror">Mirror</a>
+                                <ul>
+                                    <li><a href="/practice-modes/mirror">About HTTP Mirror</a></li>
+                                    <li><a href="/mirror/docs">Mirror API Docs</a></li>
+                                    <li><a href="/mirror/docs/swagger">Mirror Open API File</a></li>
                                     
                                 </ul>
                             </li>
