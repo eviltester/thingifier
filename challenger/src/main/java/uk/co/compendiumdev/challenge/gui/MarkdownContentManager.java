@@ -13,6 +13,7 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.*;
+import java.util.stream.Collectors;
 
 // TODO: consider adding caching for generated markdown pages
 
@@ -21,11 +22,13 @@ public class MarkdownContentManager {
     private final DefaultGUIHTML guiManagement;
     Logger logger = LoggerFactory.getLogger(MarkdownContentManager.class);
     private final Set<String> markdownContentPaths;
+    private String sideMenuText;
 
     public MarkdownContentManager(final List<String> pathsToFileContent, final DefaultGUIHTML defaultGui) {
         markdownContentPaths = new HashSet<>();
         markdownContentPaths.addAll(pathsToFileContent);
         this.guiManagement = defaultGui;
+        sideMenuText="";
     }
 
 
@@ -224,28 +227,13 @@ public class MarkdownContentManager {
         return html.toString();
     }
 
+    // TODO: move this into a markdown file so it can be cached and amended easily
     private String dropDownMenuAsMarkdown(){
-        return
-                """
-- [Challenge Solutions](/apichallenges/solutions)
-- [How to learn APIs](/learning)
-- Reference:
-   - [Web Applications](/tutorials/web-basics)
-   - [HTTP Basics](/tutorials/http-basics)
-   - [HTTP Verbs](/tutorials/http-verbs)
-   - [REST API Basics](/tutorials/rest-api-basics)
-   - [Testing APIs](/tutorials/testing-apis)
-   - [Summary](/tutorials/summary)
-- Practice Modes
-   - [Mirror Mode](/practice-modes/mirror)
-   - [Simulation Mode](/practice-modes/simulation)
-- Tools
-   - [REST/HTTP Clients](/tools/clients)
-   - [Proxies](/tools/proxies)
-- [Practice Sites](/practice-sites)
-   - [Swapi](/practice-sites/swapi)
-- [Sponsors](/sponsors)
-                """;
+        if(sideMenuText.isEmpty()){
+            sideMenuText = getResourceAsString("partials/content-index.md");
+        }
+
+        return sideMenuText;
     }
 
     // TODO: improve the macro parsing
@@ -274,6 +262,11 @@ public class MarkdownContentManager {
         line = line.replaceAll(youtubeMacroRegex, youTubeHtmlBlock);
 
         return line;
+    }
+
+    private String getResourceAsString(String fileName){
+        return new BufferedReader(new InputStreamReader(getResourceAsStream(fileName)))
+                .lines().collect(Collectors.joining("\n"));
     }
 
     private InputStream getResourceAsStream(String fileName) {

@@ -1,0 +1,20 @@
+- [Challenge Solutions](/apichallenges/solutions)
+- [How to learn APIs](/learning)
+- Reference:
+    - [Web Applications](/tutorials/web-basics)
+    - [HTTP Basics](/tutorials/http-basics)
+    - [HTTP Verbs](/tutorials/http-verbs)
+    - [REST API Basics](/tutorials/rest-api-basics)
+    - [Testing APIs](/tutorials/testing-apis)
+    - [Summary](/tutorials/summary)
+- Practice Modes
+    - [Simple API](/practice-modes/simpleapi)
+    - [API Challenges](/apichallenges)
+    - [Mirror Mode](/practice-modes/mirror)
+    - [Simulation Mode](/practice-modes/simulation)
+- Tools
+    - [REST/HTTP Clients](/tools/clients)
+    - [Proxies](/tools/proxies)
+- [Practice Sites](/practice-sites)
+    - [Swapi](/practice-sites/swapi)
+- [Sponsors](/sponsors)

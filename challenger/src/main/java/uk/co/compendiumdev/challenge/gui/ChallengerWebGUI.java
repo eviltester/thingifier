@@ -55,8 +55,10 @@ public class ChallengerWebGUI {
                         const pathToCheck = window.location.pathname;
                         urlMapping = [
                             ['/simpleapi/', 'simple-api-root-menu'],
+                            ['/practice-modes/simpleapi', 'simple-api-root-menu'],
                             ['/gui/', 'api-challenges-root-menu'],
                             ['/docs', 'api-challenges-root-menu'],
+                            ['/apichallenges', 'api-challenges-root-menu'],
                             ['/sim/docs', 'sim-api-root-menu'],
                             ['/practice-modes/simulation', 'sim-api-root-menu'],
                             ['/mirror/', 'mirror-api-root-menu'],
@@ -72,7 +74,7 @@ public class ChallengerWebGUI {
                         }
                         if(!foundMapping && pathToCheck=='/'){
                             document.getElementById('home-root-menu').classList.add('dropped');
-                            foundMappint=true;
+                            foundMapping=true;
                         }
                         if(!foundMapping){
                             // assume it is a learning page
@@ -87,31 +89,35 @@ public class ChallengerWebGUI {
                         <ul class="sub-menu">
                             <li id='home-root-menu'><a class="brand-link" href="/">Home</a></li>
 
-                            <li id='simple-api-root-menu'><a href="/simpleapi/docs">Simple API</a>
+                            <li id='learning-root-menu'><a href="/learning">Learning Zone</a>
+                                <!-- TODO include a sample of learning information -->
+                            </li>
+                            
+                            <li id='simple-api-root-menu'><a href="/practice-modes/simpleapi">Simple API</a>
                                 <ul>
-                                    <!-- TODO: About Simple API -->
-                                    <li><a href="/simpleapi/docs">Simple API Docs</a>
-                                    <li><a href="/simpleapi/gui/entities">Simple API Data Explorer</a></li>
+                                    <li><a href="/practice-modes/simpleapi">About Simple API</a>
+                                    <li><a href="/simpleapi/docs">API Docs</a>
+                                    <li><a href="/simpleapi/gui/entities">Data Explorer</a></li>
+                                    <li><a href="/simpleapi/docs/swagger">Open API File</a>
                                 </ul>
                             </li>
                         
                             <li id='api-challenges-root-menu'><a href="/gui/challenges">API Challenges</a>
                                 <ul>
-                                    <!-- TODO: About API Challenges -->
-                                    <li><a href="/docs">Challenges API Docs</a></li>
-                                    <li><a href="/gui/entities">Challenges Data Explorer</a></li>
+                                    <li><a href="/apichallenges">About API Challenges</a></li>
+                                    <li><a href="/docs">API Docs</a></li>
+                                    <li><a href="/gui/challenges">Progress</a></li>
+                                    <li><a href="/gui/entities">Data Explorer</a></li>
+                                    <li><a href="/apichallenges/solutions">Solutions</a></li>
+                                    <li><a href="/docs/swagger">Open API File</a>
                                 </ul>
                             </li>
-                        
-                            <li id='learning-root-menu'><a href="/learning">Learning Zone</a>
-                                <!-- TODO include a sample of learning information -->
-                            </li>
-                        
+                       
                             <li id='sim-api-root-menu'><a href="/practice-modes/simulation">Simulator</a>
                                 <ul>
                                     <li><a href="/practice-modes/simulation">About API Simulator</a></li>
-                                    <li><a href="/sim/docs">Sim API Docs</a></li>
-                                    <li><a href="/sim/docs/swagger">Sim Open API File</a></li>
+                                    <li><a href="/sim/docs">API Docs</a></li>
+                                    <li><a href="/sim/docs/swagger">Open API File</a></li>
                                     
                                 </ul>
                             </li>
@@ -120,7 +126,7 @@ public class ChallengerWebGUI {
                                 <ul>
                                     <li><a href="/practice-modes/mirror">About HTTP Mirror</a></li>
                                     <li><a href="/mirror/docs">Mirror API Docs</a></li>
-                                    <li><a href="/mirror/docs/swagger">Mirror Open API File</a></li>
+                                    <li><a href="/mirror/docs/swagger">Open API File</a></li>
                                     
                                 </ul>
                             </li>

@@ -1,13 +1,13 @@
 ---
-title: API Challenges Solutions Documentation
-description: A brief overview of the API challenges and how to use the solutions
+title: About The API Challenges
+description: A brief overview of the API challenges and how to use them as a self-guided learning path for API Testing
 ---
 
 # API Challenges
 
-You can find solutions to all of the challenges [here](apichallenges/solutions):
+You can find solutions to all of the challenges [here](/apichallenges/solutions):
 
-- [Solutions for the API Challenges](apichallenges/solutions)
+- [Solutions for the API Challenges](/apichallenges/solutions)
 
 The actual challenges page is available from the site menu:
 

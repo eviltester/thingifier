@@ -80,6 +80,23 @@ public class SimulationRoutes {
         apiDocDefn = new ThingifierApiDocumentationDefn();
         apiDocDefn.setThingifier(simulation);
         apiDocDefn.setPathPrefix("/sim"); // where can the API endpoints be found
+
+
+        simulation.apidocsconfig().setHeaderSectionOverride("""
+                <p>A simulated API, where each request is run against a new generated set of data but
+                 responses are processed by an API handler.
+                 </p>
+                 <p>
+                 No data is stored on the server.
+                 </p>
+                 <p>
+                 The simulator is designed to be used by following along with the instructions
+                 otherwise sequential requests will not make sense e.g. if you DELETE an item
+                 and then GET it, then it will be returned because the simulator expects you to
+                 DELETE a specific item.
+                 </p>
+                """.stripIndent());
+
         simulatorDocsRouting = new ThingifierAutoDocGenRouting(
                                             simulation,
                                             apiDocDefn,
