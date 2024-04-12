@@ -66,7 +66,7 @@ public class DefaultGuiHtmlPages {
                 "%s/entities".formatted(urlPathPrefix)));
 
         html.append(templates.getMenuAsHTML());
-        html.append("<h1>Entities Explorer</h1>");
+        html.append("<h1>%s Entities Explorer</h1>".formatted(thingifier.getTitle()));
         html.append(templates.getStartOfMainContentMarker());
         html.append(getInstancesRootMenuHtml(database));
         //html.append(heading(2, "Choose from the Entities Menu Above"));
