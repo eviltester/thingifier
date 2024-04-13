@@ -6,6 +6,7 @@ import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.api.restapihandlers.RestApiGetHandler;
+import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.application.httprouting.ThingifierAutoDocGenRouting;
 import uk.co.compendiumdev.thingifier.application.routehandlers.HttpApiRequestHandler;
 import uk.co.compendiumdev.thingifier.application.routehandlers.SparkApiRequestResponseHandler;
@@ -81,6 +82,8 @@ public class SimulationRoutes {
         apiDocDefn.setThingifier(simulation);
         apiDocDefn.setPathPrefix("/sim"); // where can the API endpoints be found
 
+        ThingifierApiConfig customApiconfig = new ThingifierApiConfig("/sim");
+        simulation.apiConfig().setFrom(customApiconfig);
 
         simulation.apidocsconfig().setHeaderSectionOverride("""
                 <p>A simulated API, where each request is run against a new generated set of data but
@@ -117,18 +120,19 @@ public class SimulationRoutes {
 
         options(apiEndpoint, (request, result) -> {
             result.status(204);
-            result.header("Allow", "GET, POST, PUT, DELETE, PATCH, HEAD, OPTIONS, TRACE");
+            result.header("Allow", "GET, POST, PUT, HEAD, OPTIONS");
             return "";
         });
 
         new SimpleSparkRouteCreator(apiEndpoint).status(501, List.of("patch", "trace"));
+        new SimpleSparkRouteCreator(apiEndpoint).status(405, List.of("delete"));
 
         new SimpleSparkRouteCreator(apiEndpoint + "/*").status(501, List.of("patch", "trace"));
 
         options(apiEndpoint + "/*", (request, result) -> {
             result.status(204);
             result.header("x-robots-tag", "noindex");
-            result.header("Allow", "GET, POST, PUT, DELETE, PATCH, HEAD, OPTIONS, TRACE");
+            result.header("Allow", "GET, POST, PUT, DELETE, HEAD, OPTIONS");
             return "";
         });
 

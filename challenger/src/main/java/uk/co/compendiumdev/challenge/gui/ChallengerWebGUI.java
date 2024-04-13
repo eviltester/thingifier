@@ -114,7 +114,7 @@ public class ChallengerWebGUI {
                                 </ul>
                             </li>
                        
-                            <li id='sim-api-root-menu'><a href="/practice-modes/simulation">Simulator</a>
+                            <li id='sim-api-root-menu'><a href="/practice-modes/simulation">API Simulator</a>
                                 <ul>
                                     <li><a href="/practice-modes/simulation">About API Simulator</a></li>
                                     <li><a href="/sim/docs">API Docs</a></li>
@@ -123,7 +123,7 @@ public class ChallengerWebGUI {
                                 </ul>
                             </li>
                         
-                            <li id='mirror-api-root-menu'><a href="/practice-modes/mirror">Mirror</a>
+                            <li id='mirror-api-root-menu'><a href="/practice-modes/mirror">HTTP Mirror</a>
                                 <ul>
                                     <li><a href="/practice-modes/mirror">About HTTP Mirror</a></li>
                                     <li><a href="/mirror/docs">Mirror API Docs</a></li>

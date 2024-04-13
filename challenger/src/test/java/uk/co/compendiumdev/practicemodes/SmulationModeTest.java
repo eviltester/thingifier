@@ -41,6 +41,11 @@ public class SmulationModeTest {
         args.add(Arguments.of(501, "patch", "/sim/entities/1"));
         args.add(Arguments.of(501, "trace", "/sim/entities/1"));
 
+        args.add(Arguments.of(405, "delete", "/sim/entities"));
+        args.add(Arguments.of(404, "delete", "/sim/entities/56"));
+        args.add(Arguments.of(403, "post", "/sim/entities/8"));
+        args.add(Arguments.of(403, "put", "/sim/entities/7"));
+
         return args.stream();
     }
 
@@ -143,7 +148,7 @@ public class SmulationModeTest {
 
         Assertions.assertEquals(201, response.statusCode);
         Assertions.assertEquals("application/json",response.getHeader("Content-Type"));
-        Assertions.assertEquals("/entities/11", response.getHeader("Location"));
+        Assertions.assertEquals("/sim/entities/11", response.getHeader("Location"));
         String entity11 = "{\"id\":11,\"name\":\"bob\",\"description\":\"\"}";
         Assertions.assertEquals(entity11, response.body);
 
@@ -162,7 +167,7 @@ public class SmulationModeTest {
 
         Assertions.assertEquals(201, response.statusCode);
         Assertions.assertEquals("application/json",response.getHeader("Content-Type"));
-        Assertions.assertEquals("/entities/11", response.getHeader("Location"));
+        Assertions.assertEquals("/sim/entities/11", response.getHeader("Location"));
         String entity11 = "{\"id\":11,\"name\":\"bob\",\"description\":\"\"}";
         Assertions.assertEquals(entity11, response.body);
 
@@ -181,7 +186,7 @@ public class SmulationModeTest {
 
         Assertions.assertEquals(201, response.statusCode);
         Assertions.assertEquals("application/json",response.getHeader("Content-Type"));
-        Assertions.assertEquals("/entities/11", response.getHeader("Location"));
+        Assertions.assertEquals("/sim/entities/11", response.getHeader("Location"));
         String entity11 = "{\"id\":11,\"name\":\"bob\",\"description\":\"\"}";
         Assertions.assertEquals(entity11, response.body);
 
@@ -321,6 +326,28 @@ public class SmulationModeTest {
 
         response = http.delete("/sim/entities/8");
         Assertions.assertEquals(403, response.statusCode);
+    }
+
+    @Test
+    void optionsAtTopLevel() {
+
+        http.clearHeaders();
+        http.setHeader("Accept", "application/json");
+
+        HttpResponseDetails response = http.options("/sim/entities");
+        Assertions.assertEquals(204, response.statusCode);
+        Assertions.assertEquals("GET, POST, PUT, HEAD, OPTIONS", response.getHeader("allow").toUpperCase());
+    }
+
+    @Test
+    void optionsAtEntityLevel() {
+
+        http.clearHeaders();
+        http.setHeader("Accept", "application/json");
+
+        HttpResponseDetails response = http.options("/sim/entities/1");
+        Assertions.assertEquals(204, response.statusCode);
+        Assertions.assertEquals("GET, POST, PUT, DELETE, HEAD, OPTIONS", response.getHeader("allow").toUpperCase());
     }
 
 }

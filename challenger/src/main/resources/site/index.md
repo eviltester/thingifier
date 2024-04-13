@@ -9,72 +9,82 @@ canonical: https://apichallenges.eviltester.com
 
 ## A learning environment to experiment, explore, and play with API Testing and Tooling
 
-Welcome to The API Challenges.
+Welcome to The API Challenges, a site dedicated to helping you learn API Testing.
+With all the tutorials, practice APIs and information you need to practice and improve your API Testing skills.
 
 We provide:
 
-- A functioning API for you to practice API Testing
-- A set of challenges to guide you in learning API Testing
+- A simple functioning API for you to practice API Testing
+- A learning experience based on a full API, with a set of challenges to help you learn API Testing
 - A multi-user playground to experiment within
 - API documentation to read and learn from
-- A gamified learning experience, with challenge status persisted between sessions
+- An API Simulator to practice your tooling
+- An HTTP Mirror API tool to 'see' the full details of your API Tool requests.
 
-## Video Welcome
+## How To Learn API Testing
 
-{{<youtube-embed key="7HN9f5JLt0g" title="API Challenges Overview Video">}}
+- Start by Reading through our Learning Zone content
+   - [What is an API?](/tutorials/rest-api-basics)
+   - [How to Learn API Testing?](/learning)
+- Download an API Client
+   - [Recommended API Clients](/tools/clients)
+- Use the API Simulator
+   - [follow our step by step guide](/practice-modes/simulation)
+- Experiment with a Real API
+   - our [Simple API](/practice-modes/simpleapi) does not require any authentication and supports all HTTP Requests
+- Work through the API Challenges
+   - [solve each of the API Challenges](/gui/challenges) to gain practical experience of Testing APIs
+- Experiment with other APIs
+   - we maintain a list of [Recommended Practice API Sites](/practice-sites) 
 
-[Learn how to Test APIs with our online tutorials and guides](/learning)
+## The API Simulator
 
-## About the Application
+If you want a follow along guide to learn basic API interaction then you can use our API Simulator.
 
-This is a functional API for managing A public To-Do list.
+It is a real API so you can experiment with different content types, but no data is saved to the server and all responses use pre-defined data for the simulated scenario.
 
-The API has [documentation available](/docs).
+This is the safest and easiest way to start learning API interaction before moving on to a live API.
 
-A set of [Challenges](/gui/challenges) are available to guide you through the exploration and learning of the API. To complete each challenge you will have to explore a different aspect of API testing.
+Start working through the [API Simulator Scenarios](/practice-modes/simulation).
 
-You can also view the data in the application without using the API. Using the [Entities Explorer](/gui/entities) view.
+## The Simple API
+
+When reviewing all the practice APIs available we noticed a lack of APIs that allow you to experiment with all HTTP verbs without authentication and with no risk of releasing private information.
+
+Our Simple API has a domain model that does not allow any unwanted data exposure. Additionally there is a limit on the number of records that can be created, and test data is automatically added when there are a low number of records in the system.
+
+Use our [Simple API](/practice-modes/simpleapi) to experiment with all basic HTTP Verbs for creation, updating and retrieval.
+
+## The API Challenges Application
+
+The API Challenges is a simple and fully functional API for managing a To-Do list.
+
+You need to authenticate to create a session in the system. This will create a unique API repository with basic test data.
+As you interact with the API there are a variety of challenges to complete e.g. Get all TODOs, Delete a Todo, etc.
+
+Each challenge is designed to teach you some aspect of how APIs work, and how to test them.
+
+[Get started with the API Challenges](/apichallenges)
 
 ## Tooling
 
-We recommend that you use an [API GUI](/tools/clients) to interact with the API e.g.
+We recommend that you use an [API GUI Client](/tools/clients) to interact with the API.
 
-- [Bruno](https://www.usebruno.com/)
-- [Hoppscotch](https://hoppscotch.io/)
-- [Thunderclient](https://www.thunderclient.com/)
-- [Paw (Mac only)](https://paw.cloud/)
-- [Insomnia Core](https://insomnia.rest/)
-- [Postman](https://www.postman.com/)
+API Clients make it easy to send requests to the API and view the responses.
 
-Learn more about [HTTP/REST Clients](/tools/clients) and [HTTP Proxies](/tools/proxies)
+Most API Clients will also import Open API format files which document the API.
+By importing an Open API file into your client you will see all the requests that
+you can use on the API and make it easy to get started.
 
-## Application
+All the APIs on our site have Open API files that you can import into your favourite tool.
 
-This application has been deployed to a cloud instance. It is also available to download and run locally.
+If you don't know what API Client to use then you can find a list of recommended clients in our Learning Zone.
 
-When run in a cloud environment:
+Learn more about:
 
-- the data clears itself every 10 minutes
-- other people might be using it so you can't rely on data existing between requests
-- you need to create an `X-CHALLENGER` session to track your progress on the challenges ([more info](/gui/multiuser))
+- [HTTP/REST Clients](/tools/clients) 
+- [HTTP Proxies](/tools/proxies)
 
-In single user mode, you can use the API without needing any extra headers or configuration.
-
-Full download details are available from [eviltester.com/apichallenges](https://eviltester.com/apichallenges)
-
-## How to Play in Multi-user Mode
-
-More information on how to play the challenges in multi-user mode i.e. `apichallenges.eviltester.com` can be found [on the multi-user instructions page](/gui/multiuser):
-
-- [multi-user instructions page](/gui/multiuser)
-
-## Challenges
-
-The [Challenges](/gui/challenges) can be completed by issuing HTTP API requests.
-
-e.g. `GET {{<ORIGIN_URL>}}/todos` would complete the challenge to "GET the list of todos"
-
-You can also `GET {{<ORIGIN_URL>}}/challenges` to get the list of challenges and their status as an API call.
 
 ## Books
 
@@ -83,8 +93,6 @@ Recommended books for learning about API Testing are:
 - [Automating and Testing a REST API](https://compendiumdev.co.uk/page.php?title=tracksrestapibook)
 
 ## More Information
-
-[eviltester.com/apichallenges](https://eviltester.com/apichallenges)
 
 - created by [Alan Richardson](https://www.linkedin.com/in/eviltester/)
 - [@EvilTester](https://twitter.com/eviltester)
@@ -98,3 +106,11 @@ This application is sponsored by [EvilTester.com](https://eviltester.com) - a bl
 For a full list of corporate sponsors and how you can sponsor and support this application check out our [sponsorship page](/sponsors)
 
 Individuals can support this project through [Patreon](https://patreon.com/eviltester), or Github Sponsors
+
+## Video Welcome
+
+The welcome video shows an older version of the application, we've added a lot more challenges since this video was created.
+
+{{<youtube-embed key="7HN9f5JLt0g" title="API Challenges Overview Video">}}
+
+[Learn how to Test APIs with our online tutorials and guides](/learning)
