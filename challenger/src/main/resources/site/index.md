@@ -37,6 +37,12 @@ We provide:
 - Experiment with other APIs
    - we maintain a list of [Recommended Practice API Sites](/practice-sites) 
 
+## Video Welcome
+
+{{<youtube-embed key="rxEwPMM_Qyc" title="API Challenges Overview Video">}}
+
+[Learn how to Test APIs with our online tutorials and guides](/learning)
+
 ## The API Simulator
 
 If you want a follow along guide to learn basic API interaction then you can use our API Simulator.
@@ -107,10 +113,3 @@ For a full list of corporate sponsors and how you can sponsor and support this a
 
 Individuals can support this project through [Patreon](https://patreon.com/eviltester), or Github Sponsors
 
-## Video Welcome
-
-The welcome video shows an older version of the application, we've added a lot more challenges since this video was created.
-
-{{<youtube-embed key="7HN9f5JLt0g" title="API Challenges Overview Video">}}
-
-[Learn how to Test APIs with our online tutorials and guides](/learning)
