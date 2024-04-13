@@ -72,12 +72,9 @@ More information on how to play the challenges in multi-user mode i.e. `apichall
 
 The [Challenges](/gui/challenges) can be completed by issuing HTTP API requests.
 
-e.g. `GET https://apichallenges.eviltester.com/todos` would complete the challenge to "GET the list of todos"
+e.g. `GET {{<ORIGIN_URL>}}/todos` would complete the challenge to "GET the list of todos"
 
-You can also `GET https://apichallenges.eviltester.com/challenges` to get the list of challenges and their status as an API call.
-
-Note: you would use the url for the server that the application is running on. e.g. if running locally then the URL would be `http://localhost:4567/todos`
-
+You can also `GET {{<ORIGIN_URL>}}/challenges` to get the list of challenges and their status as an API call.
 
 ## Books
 

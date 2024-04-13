@@ -17,10 +17,7 @@ How to complete the challenge `POST /challenger 201`.
 ## Basic Instructions
 
 - Issue a POST request to end point "/challenger"
-    - if running locally that would be
-        - `http://localhost:4567/challenger`
-    - if running in the cloud that would be
-        - `https://apichallenges.eviltester.com/challenger`
+   - `{{<ORIGIN_URL>}}/challenger`
 - The response will have an `X-CHALLENGER` header
 - Use this in any future requests to track your progress
 - The `LOCATION` header has a url to access your challenge status through the GUI

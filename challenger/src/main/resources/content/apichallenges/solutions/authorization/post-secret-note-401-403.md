@@ -39,7 +39,7 @@ Following on from challenge 35 were we successfully amended a post. Now we try t
 
 ```
 > POST /secret/note HTTP/1.1
-> Host: apichallenges.eviltester.com
+> Host: {{<HOST_URL>}}
 > User-Agent: insomnia/2021.2.2
 > X-CHALLENGER: x-challenger-guid
 > Content-Type: application/json
@@ -77,7 +77,7 @@ Following on from challenge 35 were we successfully amended a post. Now we try t
 
 ```
 > POST /secret/note HTTP/1.1
-> Host: apichallenges.eviltester.com
+> Host: {{<HOST_URL>}}
 > User-Agent: insomnia/2021.2.2
 > X-CHALLENGER: x-challenger-guid
 > X-AUTH-TOKEN: bob

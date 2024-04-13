@@ -22,7 +22,7 @@ description: Basic HTTP tutorial and overview of key HTTP terminology and status
 Command:
 
 ~~~~~~~~
-curl http://apichallenges.eviltester.com/heartbeat ^
+curl {{<ORIGIN_URL>}}/heartbeat ^
 -H "accept: application/xml" ^
 --proxy 127.0.0.1:8888
 ~~~~~~~~
@@ -30,9 +30,9 @@ curl http://apichallenges.eviltester.com/heartbeat ^
 Sends a GET Request:
 
 ~~~~~~~~
-GET https://apichallenges.eviltester.com/heartbeat HTTP/1.1
+GET {{<ORIGIN_URL>}}/heartbeat HTTP/1.1
 User-Agent: curl/7.39.0
-Host: apichallenges.eviltester.com
+Host: {{<HOST_URL>}}
 Connection: Keep-Alive
 accept: application/xml
 ~~~~~~~~
@@ -241,7 +241,7 @@ A URL is a URI
 
 ~~~~~~~~
 GET /lists/{guid}?without=title,description
-GET http://localhost:4567/lists/f13?without=title,description
+GET {{<ORIGIN_URL>}}/lists/f13?without=title,description
 ~~~~~~~~
 
 Query String:

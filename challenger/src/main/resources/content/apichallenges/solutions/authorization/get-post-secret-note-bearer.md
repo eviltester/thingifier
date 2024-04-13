@@ -31,9 +31,7 @@ This challenge is almost a duplicate of the request used in challenge 33
 
 - Create a new request for the `/secret/note` end point
     - if running locally that endpoint would be
-        - `http://localhost:4567/secret/note`
-    - if running in the cloud that endpoint would be
-        - `https://apichallenges.eviltester.com/secret/note`
+        - `{{<ORIGIN_URL>}}/secret/note`
 - The verb should be a `GET`
 - Ensure there is no custom header with the name `X-AUTH-TOKEN`
 - Ensure there is an Auth Bearer header and the value is the same as received in the `/secret/token` response `X-AUTH-TOKEN`
@@ -44,7 +42,7 @@ This challenge is almost a duplicate of the request used in challenge 33
 
 ```
 > GET /secret/note HTTP/1.1
-> Host: apichallenges.eviltester.com
+> Host: {{<HOST_URL>}}
 > User-Agent: insomnia/2021.2.2
 > X-CHALLENGER: x-challenger-guid
 > Authorization: Bearer x-auth-token-value
@@ -81,9 +79,7 @@ This is almost a duplicate of challenge 34.
 
 - Create a new request for the `/secret/note` end point
     - if running locally that endpoint would be
-        - `http://localhost:4567/secret/note`
-    - if running in the cloud that endpoint would be
-        - `https://apichallenges.eviltester.com/secret/note`
+        - `{{<ORIGIN_URL>}}/secret/note`
 - The verb should be a `POST`
 - Ensure there is no custom header with the name `X-AUTH-TOKEN`
 - Add Bearer Token Auth where the token value is the same as received in the `/secret/token` response for the `X-AUTH-TOKEN`
@@ -98,7 +94,7 @@ This is almost a duplicate of challenge 34.
 
 ```
 > POST /secret/note HTTP/1.1
-> Host: apichallenges.eviltester.com
+> Host: {{<HOST_URL>}}
 > User-Agent: insomnia/2021.2.2
 > X-CHALLENGER: x-challenger-guid
 > Content-Type: application/json

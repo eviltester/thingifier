@@ -19,10 +19,7 @@ How to issue a GET request for an existing todo item using the id of the item an
 ## Basic Instructions
 
 - Issue a GET request to end point "/todos/{id}"
-    - if running locally that would be
-        - `http://localhost:4567/todos/{id}`
-    - if running in the cloud that would be
-        - `https://apichallenges.eviltester.com/todos/{id}`
+    - `{{<ORIGIN_URL>}}/todos/{id}`
 - The request should have an `X-CHALLENGER` header
 - The response status code should be `200`
 
@@ -30,7 +27,7 @@ How to issue a GET request for an existing todo item using the id of the item an
 
 ~~~~~~~~
 > GET /todos/79 HTTP/1.1
-> Host: apichallenges.eviltester.com
+> Host: {{<HOST_URL>}}
 > User-Agent: rest-client
 > X-CHALLENGER: x-challenger-guid
 > Accept: */*

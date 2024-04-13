@@ -52,7 +52,7 @@ If you visit that url for this application then you should see the challenges fo
 e.g.
 
 ~~~~~~~~
-https://apichallenges.eviltester.com/gui/challenges/9a32ef9f-0ebd-4b30-b975-314460bfd1d1
+{{<ORIGIN_URL>}}/gui/challenges/9a32ef9f-0ebd-4b30-b975-314460bfd1d1
 ~~~~~~~~
 
 Then you should see the status of your challenges.
@@ -67,19 +67,19 @@ Sessions can be stored in localstorage in the browser, or on your local machine 
 
 To start a session:
 
-- issue a `POST` request to `https://apichallenges.eviltester.com/`
+- issue a `POST` request to `{{<ORIGIN_URL>}}/challenges`
 - the response status code will be `201` if successful.
 - The response will contain an `X-CHALLENGER` header with a unique session value
 - Add this header to every request you make on the API, and challenge completion status will be stored against this session.
 
 To view the status of your session:
 
-- issue a `GET` request to `https://apichallenges.eviltester.com/challenges`
+- issue a `GET` request to `{{<ORIGIN_URL>}}/challenges`
 - the response will contain all the challenges and the status of the challenges for your session
 
 To view the status of your session in the GUI:
 
-- visit `https://apichallenges.eviltester.com/gui/challenges/[unique-session-value]`
+- visit `{{<ORIGIN_URL>}}/gui/challenges/[unique-session-value]`
 - where `[unique-session-value]` is the guid that you were issued as the `X-CHALLENGER` header
 
 
@@ -95,7 +95,7 @@ You can restore a session's progress, by using the same `X-CHALLENGER` header an
 
 If you view the challenges page:
 
-- [apichallenges.eviltester.com/gui/challenges](https://apichallenges.eviltester.com/gui/challenges)
+- [{{<ORIGIN_URL>}}/gui/challenges](/gui/challenges)
 
 Then your challenger guid should have been stored in the browser local storage, to make it easier for you to find and restart your session.
 

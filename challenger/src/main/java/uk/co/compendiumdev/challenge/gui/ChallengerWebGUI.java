@@ -2,6 +2,7 @@ package uk.co.compendiumdev.challenge.gui;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import spark.Request;
 import uk.co.compendiumdev.challenge.CHALLENGE;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
@@ -183,7 +184,9 @@ public class ChallengerWebGUI {
             String endPointForMarkdownFile = pathToMarkdownFile.replaceFirst("content/","/").replace(".md","");
             get(endPointForMarkdownFile, ((request, response) -> {
                 try {
-                    String responseBody = contentManager.getResourceMarkdownFileAsHtml("content", request.pathInfo());
+                    String responseBody = contentManager.getResourceMarkdownFileAsHtml(
+                                        "content", request.pathInfo(),
+                                                    getMarkdownParamsFromRequest(request));
                     response.body(responseBody);
                     response.type("text/html");
                     if(response.raw().containsHeader("x-robots-tag")){
@@ -218,7 +221,7 @@ public class ChallengerWebGUI {
         
         // use the site/index.md to allow easier creation of landing page, rather than public/index.hmlt
         get("/", (request, response) -> {
-            String responseBody = contentManager.getHtmlVersionOfMarkdownContent("site", "/index");
+            String responseBody = contentManager.getHtmlVersionOfMarkdownContent("site", "/index", getMarkdownParamsFromRequest(request));
             response.body(responseBody);
             response.type("text/html");
             if(response.raw().containsHeader("x-robots-tag")){
@@ -428,7 +431,13 @@ public class ChallengerWebGUI {
 
     }
 
-
+    private Map<String, String> getMarkdownParamsFromRequest(Request request){
+        String originUrl = request.scheme() + "://" + request.host();
+        Map<String, String> params = new HashMap<>();
+        params.put("ORIGIN_URL", originUrl);
+        params.put("HOST_URL", request.host());
+        return params;
+    }
 
     private String showCurrentStatus() {
         return "<script>showCurrentStatus()</script>";

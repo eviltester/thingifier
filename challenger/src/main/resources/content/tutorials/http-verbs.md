@@ -24,13 +24,13 @@ description: Basic HTTP Verbs and Methods tutorial what they do and how to use t
 ### HTTP GET Verb Example
 
 ~~~~~~~~
-curl http://localhost:4567/heartbeat ^
+curl {{<ORIGIN_URL>}}/heartbeat ^
 -H "accept: application/xml" ^
 --proxy 127.0.0.1:8888
 ~~~~~~~~
 
 ~~~~~~~~
-GET http://localhost:4567/heartbeat HTTP/1.1
+GET {{<ORIGIN_URL>}}/heartbeat HTTP/1.1
 User-Agent: curl/7.39.0
 Host: localhost:4567
 Connection: Keep-Alive
@@ -63,7 +63,7 @@ accept: application/xml
 ### HTTP POST Verb Send Example
 
 ~~~~~~~~
-curl -X POST http://localhost:4567/lists ^
+curl -X POST {{<ORIGIN_URL>}}/lists ^
 -H "accept: application/xml" ^
 -H content-type:application/json ^
 -H "Authorization: Basic dXNlcjpwYXNzd29yZA==" ^
@@ -76,7 +76,7 @@ curl -X POST http://localhost:4567/lists ^
 ### HTTP POST Verb Request Example
 
 ~~~~~~~~
-POST http://localhost:4567/lists HTTP/1.1
+POST {{<ORIGIN_URL>}}/lists HTTP/1.1
 User-Agent: curl/7.39.0
 Host: localhost:4567
 Connection: Keep-Alive
@@ -140,7 +140,7 @@ Demo
 ### HTTP PUT Send Example
 
 ~~~~~~~~
-curl -X PUT http://localhost:4567/lists ^
+curl -X PUT {{<ORIGIN_URL>}}/lists ^
 -H "Authorization: Basic dXNlcjpwYXNzd29yZA==" ^
 --proxy 127.0.0.1:8888 ^
 -d @createlistwithput.txt
@@ -161,7 +161,7 @@ where `createlistwithput.txt` file contains
 ### HTTP PUT Request Example
 
 ~~~~~~~~
-PUT http://localhost:4567/lists HTTP/1.1
+PUT {{<ORIGIN_URL>}}/lists HTTP/1.1
 User-Agent: curl/7.39.0
 Host: localhost:4567
 Accept: */*
@@ -202,7 +202,7 @@ Demo
 ### HTTP DELETE Send Example
 
 ~~~~~~~~
-curl -X DELETE http://localhost:4567/lists/{guid} ^
+curl -X DELETE {{<ORIGIN_URL>}}/lists/{guid} ^
 -H "Authorization: Basic YWRtaW46cGFzc3dvcmQ=" ^
 --proxy 127.0.0.1:8888
 ~~~~~~~~
@@ -212,7 +212,7 @@ curl -X DELETE http://localhost:4567/lists/{guid} ^
 ### HTTP DELETE Request Example
 
 ~~~~~~~~
-DELETE http://localhost:4567/lists/{guid} HTTP/1.1
+DELETE {{<ORIGIN_URL>}}/lists/{guid} HTTP/1.1
 User-Agent: curl/7.39.0
 Host: localhost:4567
 Accept: */*
@@ -257,7 +257,7 @@ Server: Jetty(9.4.4.v20170414)
 ### HTTP OPTIONS Send Example
 
 ~~~~~~~~
-curl -X OPTIONS http://localhost:4567/lists ^
+curl -X OPTIONS {{<ORIGIN_URL>}}/lists ^
 --proxy 127.0.0.1:8888
 ~~~~~~~~
 
@@ -268,7 +268,7 @@ Demo
 ### HTTP OPTIONS Request Example
 
 ~~~~~~~~
-OPTIONS http://localhost:4567/lists HTTP/1.1
+OPTIONS {{<ORIGIN_URL>}}/lists HTTP/1.1
 User-Agent: curl/7.39.0
 Host: localhost:4567
 Accept: */*

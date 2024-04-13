@@ -33,9 +33,7 @@ The `X-CHALLENGER` header authenticates you to access a specific set of secret n
 
 - Create a new request for the `/secret/note` end point
     - if running locally that endpoint would be
-        - `http://localhost:4567/secret/note`
-    - if running in the cloud that endpoint would be
-        - `https://apichallenges.eviltester.com/secret/note`
+        - `{{<ORIGIN_URL>}}/secret/note`
 - The verb should be a `GET`
 - Ensure there is a custom header with the name `X-AUTH-TOKEN` and the value is the same as received in the `/secret/token` response
 - The request should have an `X-CHALLENGER` header to track challenge completion
@@ -45,7 +43,7 @@ The `X-CHALLENGER` header authenticates you to access a specific set of secret n
 
 ~~~~~~~~
 > GET /secret/note HTTP/1.1
-> Host: apichallenges.eviltester.com
+> Host: {{<HOST_URL>}}
 > User-Agent: insomnia/2021.2.2
 > X-CHALLENGER: x-challenger-guid
 > X-AUTH-TOKEN: x-auth-token-value

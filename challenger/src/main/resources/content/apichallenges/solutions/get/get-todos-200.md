@@ -19,10 +19,7 @@ How to solve the API challenge and issue a GET request to return all the Todos i
 ## Basic Instructions
 
 - Issue a GET request to end point "/todos"
-    - if running locally that would be
-        - `http://localhost:4567/todos`
-    - if running in the cloud that would be
-        - `https://apichallenges.eviltester.com/todos`
+    - `{{<ORIGIN_URL>}}/todos`
 - The request should have an `X-CHALLENGER` header
 - The response body shows all the todos.
 
@@ -30,7 +27,7 @@ How to solve the API challenge and issue a GET request to return all the Todos i
 
 ~~~~~~~~
 > GET /todos HTTP/1.1
-> Host: apichallenges.eviltester.com
+> Host: {{<HOST_URL>}}
 > User-Agent: rest-client
 > X-CHALLENGER: x-challenger-guid
 > Accept: */*

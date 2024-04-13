@@ -19,10 +19,7 @@ How to issue a HEAD request and see the results of a GET request without the bod
 ## Basic Instructions
 
 - Issue a HEAD request to end point "/todos"
-    - if running locally that would be
-        - `http://localhost:4567/todos`
-    - if running in the cloud that would be
-        - `https://apichallenges.eviltester.com/todos`
+    - `{{<ORIGIN_URL>}}/todos`
 - The request should have an `X-CHALLENGER` header to track challenge completion
 - The response status code should be `200` because the end point exists
 - Compare the response with the response from `GET /todos`
@@ -31,7 +28,7 @@ How to issue a HEAD request and see the results of a GET request without the bod
 
 ~~~~~~~~
 > HEAD /todos HTTP/1.1
-> Host: apichallenges.eviltester.com
+> Host: {{<HOST_URL>}}
 > User-Agent: rest-client
 > X-CHALLENGER: x-challenger-guid
 > Accept: */*

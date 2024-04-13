@@ -23,10 +23,7 @@ How to issue a GET request on a top level entity endpoint and use a query filter
 ## Basic Instructions
 
 - Issue a `GET` request to end point "/todos"
-    - if running locally that would be
-        - `http://localhost:4567/todos`
-    - if running in the cloud that would be
-        - `https://apichallenges.eviltester.com/todos`
+    - `{{<ORIGIN_URL>}}/todos`
 - The request should have an `X-CHALLENGER` header to track challenge completion
 - Look at the returned format for todos
 
@@ -49,7 +46,7 @@ How to issue a GET request on a top level entity endpoint and use a query filter
 
 ~~~~~~~~
 > GET /todos?doneStatus=true HTTP/1.1
-> Host: apichallenges.eviltester.com
+> Host: {{<HOST_URL>}}
 > User-Agent: rest-client
 > X-CHALLENGER: x-challenger-guid
 > Accept: application/json

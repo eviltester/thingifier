@@ -19,10 +19,7 @@ How to complete the challenge `POST /todos (400)` to fail to create a todo item 
 ## Basic Instructions
 
 - Issue a `POST` request to end point "/todos"
-    - if running locally that would be
-        - `http://localhost:4567/todos`
-    - if running in the cloud that would be
-        - `https://apichallenges.eviltester.com/todos`
+    - `{{<ORIGIN_URL>}}/todos`
 - The request should have an `X-CHALLENGER` header to track challenge completion
 - The `content-type` in the message should be `application/json` because we are sending a JSON payload
 - The Payload should have an error in the `doneStatus`. A valid `doneStatus` is `true` or `false` so if we send in a String like `"bob"` it should fail validation.
@@ -50,7 +47,7 @@ How to complete the challenge `POST /todos (400)` to fail to create a todo item 
 
 ~~~~~~~~
 > POST /todos HTTP/1.1
-> Host: apichallenges.eviltester.com
+> Host: {{<HOST_URL>}}
 > User-Agent: rest-client
 > X-CHALLENGER: x-challenger-guid
 > Content-Type: application/json

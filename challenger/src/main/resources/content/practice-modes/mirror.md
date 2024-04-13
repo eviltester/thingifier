@@ -26,12 +26,21 @@ The `mirror/raw` end point will always send the request back as raw text format.
 
 This endpoint can be very useful for seeing what your HTTP Rest Client is sending to the server. You can spot any additional http headers that the client has added and see if the HTTP Client has combined any headers, or dropped any headers.
 
+## Accessing The Mirror Mode
+
+To access the mirror mode on the public cloud make requests to:
+
+- {{<ORIGIN_URL>}}/mirror/request
+- {{<ORIGIN_URL>}}/mirror/raw
+
+
+
 ## Request EndPoint
 
-e.g.
+e.g. to use the request endpoint:
 
 ```
-GET https://apichallenges.eviltester.com/mirror/request
+GET {{<ORIGIN_URL>}}/mirror/request
 ```
 
 Will return 200... everything (almost) returns a 200.
@@ -61,16 +70,19 @@ access-control-allow-headers: *
 Server: Jetty(9.4.12.v20180830)
 Content-Length: 320
 
-{"details":"GET http://apichallenges.eviltester.com/mirror/request\n\nQuery Params\n==..."}
+{
+"details":"GET {{<ORIGIN_URL>}}/mirror/request
+\n\nQuery Params\n==..."
+}
 ```
 
 
 ## Raw EndPoint
 
-e.g.
+e.g. to use on the public cloud version of apichallenges:
 
 ```
-GET https://apichallenges.eviltester.com/mirror/raw
+GET {{<ORIGIN_URL>}}/mirror/raw
 ```
 
 ```
@@ -94,7 +106,7 @@ access-control-allow-headers: *
 Server: Jetty(9.4.12.v20180830)
 Content-Length: 276
 
-GET https://apichallenges.eviltester.com/mirror/raw
+GET {{<ORIGIN_URL>}}/mirror/raw
 
 Query Params
 ============
@@ -107,7 +119,7 @@ Raw Headers
 =======
 Accept: application/json
 Content-Length: 2
-Host: localhost:4567
+Host: {{<HOST_URL>}}
 
 Processed Headers
 =======
@@ -151,15 +163,3 @@ The Mirror mode makes it clear that there are multiple systems involved in issui
 ## Swagger OpenAPI File
 
 You can download a simple Swagger [OpenAPI File for mirror mode](/mirror/docs/swagger).
-
-<!--
-
-    <script>
-        let spans =document.querySelectorAll(".currenthost");
-        spans.forEach(element =>{
-            element.innerHTML = document.location.host;
-            }
-        );
-    </script>
-
--->

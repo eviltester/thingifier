@@ -16,10 +16,7 @@ How to use a GET request with an x-challenger header to get the progress status 
 ## Basic Instructions
 
 - Issue a GET request to end point "/challenges"
-    - if running locally that would be
-        - `http://localhost:4567/challenges`
-    - if running in the cloud that would be
-        - `https://apichallenges.eviltester.com/challenges`
+    - `{{<ORIGIN_URL>}}/challenges`
 - The request should have an `X-CHALLENGER` header
 - The response body shows the status of all the challenges.
 
@@ -27,7 +24,7 @@ How to use a GET request with an x-challenger header to get the progress status 
 
 ~~~~~~~~
 > GET /challenges HTTP/1.1
-> Host: apichallenges.eviltester.com
+> Host: {{<HOST_URL>}}
 > User-Agent: rest-client
 > X-CHALLENGER: x-challenger-guid
 > Accept: */*

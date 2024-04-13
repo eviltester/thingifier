@@ -21,10 +21,7 @@ How to use a POST request to create a todo item in the application and receive a
 ## Basic Instructions
 
 - Issue a POST request to end point "/todos"
-    - if running locally that would be
-        - `http://localhost:4567/todos`
-    - if running in the cloud that would be
-        - `https://apichallenges.eviltester.com/todos`
+    - `{{<ORIGIN_URL>}}/todos`
 - The request should have an `X-CHALLENGER` header to track challenge completion
 - Use the format for the todo which you see in the `GET` response
 - Do not include an 'id' in the request because that is added automatically by the system
@@ -35,7 +32,7 @@ How to use a POST request to create a todo item in the application and receive a
 
 ~~~~~~~~
 > POST /todos HTTP/1.1
-> Host: apichallenges.eviltester.com
+> Host: {{<HOST_URL>}}
 > User-Agent: rest-client
 > X-CHALLENGER: x-challenger-guid
 > Content-Type: application/json

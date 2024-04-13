@@ -19,10 +19,7 @@ How to receive a 404 status code response by trying to GET a todo item by id for
 ## Basic Instructions
 
 - Issue a GET request to end point "/todos/{id}"
-    - if running locally that would be
-        - `http://localhost:4567/todos/{id}`
-    - if running in the cloud that would be
-        - `https://apichallenges.eviltester.com/todos/{id}`
+    - `{{<ORIGIN_URL>}}/todos/{id}`
 - The request should have an `X-CHALLENGER` header
 - The response status code should be `404` because `{id}` does not exist
 - an error message should be shown in the response body
@@ -31,7 +28,7 @@ How to receive a 404 status code response by trying to GET a todo item by id for
 
 ~~~~~~~~
 > GET /todos/20 HTTP/1.1
-> Host: apichallenges.eviltester.com
+> Host: {{<HOST_URL>}}
 > User-Agent: rest-client
 > X-CHALLENGER: x-challenger-guid
 > Accept: */*

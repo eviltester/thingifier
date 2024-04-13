@@ -33,7 +33,7 @@ public class MarkdownContentManager {
 
 
     // TODO: this is currently a hacked in solution for experimenting, pull it out into classes and create state enum
-    public String getResourceMarkdownFileAsHtml(String contentFolder, String contentPath) {
+    public String getResourceMarkdownFileAsHtml(String contentFolder, String contentPath, Map<String,String> params) {
 
         if(contentPath.endsWith(".html")){
             contentPath = contentPath.replace(".html", "");
@@ -50,11 +50,11 @@ public class MarkdownContentManager {
             throw new IllegalArgumentException("Resource not found %s.md".formatted(contentPath));
         }
 
-        return getHtmlVersionOfMarkdownContent(contentFolder, contentPath);
+        return getHtmlVersionOfMarkdownContent(contentFolder, contentPath, params);
 
     }
 
-    public String getHtmlVersionOfMarkdownContent(String contentFolder, String contentPath) {
+    public String getHtmlVersionOfMarkdownContent(String contentFolder, String contentPath, Map<String,String> params) {
 
         InputStream inputStream = getResourceAsStream(contentFolder + contentPath + ".md");
 
@@ -143,7 +143,7 @@ public class MarkdownContentManager {
                 }
 
                 // process any macros
-                line = processMacrosInContentLine(line);
+                line = processMacrosInContentLine(line, params);
 
                 if(line.contains("youtube.com/watch")){
                     if(youtubeHeaderInject.isEmpty()){
@@ -238,7 +238,7 @@ public class MarkdownContentManager {
 
     // TODO: improve the macro parsing
     // TODO: add a variables macro so we can set variables like schemeHost (http://localhost:4567) and replace variables in the docs - should add a 'default.varname': parsing in the markdown, would allow showing the 'proper url' regardless of environment hosting
-    private String processMacrosInContentLine(String line) {
+    private String processMacrosInContentLine(String line, Map<String, String> params) {
 
         if(!line.contains("{{<"))
             return line;
@@ -261,6 +261,10 @@ public class MarkdownContentManager {
         String youtubeMacroRegex = "\\{\\{<youtube-embed key=\"([a-zA-Z0-9_-]+)\" title=\"(.+)\">}}";
         line = line.replaceAll(youtubeMacroRegex, youTubeHtmlBlock);
 
+        for(String paramReplace : params.keySet()){
+            String macroRegex = "\\{\\{<%s>}}".formatted(paramReplace);
+            line = line.replaceAll(macroRegex, params.get(paramReplace));
+        }
         return line;
     }
 

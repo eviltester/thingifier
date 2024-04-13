@@ -24,9 +24,7 @@ When we issue a request with an accept header, we are asking for a specific cont
 
 - Issue a `GET` request to end point "/todos"
     - if running locally that endpoint would be
-        - `http://localhost:4567/todos`
-    - if running in the cloud that endpoint would be
-        - `https://apichallenges.eviltester.com/todos`
+        - `{{<ORIGIN_URL>}}/todos`
 - The request should have an `Accept` header with the value `application/gzip`
 - The request should have an `X-CHALLENGER` header to track challenge completion
 - The response status code should be `406` when all the details are valid.
@@ -40,7 +38,7 @@ Some systems may simply ignore the 'accept' header and return the response in th
 
 ~~~~~~~~
 > GET /todos HTTP/1.1
-> Host: apichallenges.eviltester.com
+> Host: {{<HOST_URL>}}
 > User-Agent: insomnia/2021.2.2
 > Accept: application/gzip
 > X-CHALLENGER: x-challenger-guid

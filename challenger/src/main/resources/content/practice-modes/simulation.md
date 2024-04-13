@@ -33,21 +33,21 @@ This simulator is designed to make starting with API testing as simple as possib
 
 Try the verbs and payloads listed below as a way of making sure your tooling is setup and you understand the absolute basics about API usage and Testing.
 
-GET https://<span class="currenthost">CURRENTHOST</span>/sim/entities (200)
+GET <span class="currenthost">CURRENTHOST</span>/sim/entities (200)
 
 *   Entities 1-10
 *   Get all the entities in the simulator
 
-GET https://<span class="currenthost">CURRENTHOST</span>/sim/entities/1 (200)
+GET <span class="currenthost">CURRENTHOST</span>/sim/entities/1 (200)
 
 *   Return entity number 1... try any of the entities listed
 *   Entities 1-8 are suitable for getting, 9 and 10 are for deletes and amendments so you may not get the response you are expecting
 
-GET https://<span class="currenthost">CURRENTHOST</span>/sim/entities/404 (404)
+GET <span class="currenthost">CURRENTHOST</span>/sim/entities/404 (404)
 
 *   Entity does not exist, receive a 404 response
 
-POST https://<span class="currenthost">CURRENTHOST</span>/sim/entities (201)
+POST <span class="currenthost">CURRENTHOST</span>/sim/entities (201)
 
 *   Create an entity...note we assume you are creating with the payload below, because that is what we return. Creates an entity that is not listed in the /entities list, but it will be returned by GET to keep consistent with the location header.
 *   Will create Entity with ID 11
@@ -55,7 +55,7 @@ POST https://<span class="currenthost">CURRENTHOST</span>/sim/entities (201)
 
     {"name": "bob"}
 
-POST https://<span class="currenthost">CURRENTHOST</span>/sim/entities/10 (200)
+POST <span class="currenthost">CURRENTHOST</span>/sim/entities/10 (200)
 
 *   Amend an entity...note we assume you are amending to the payload below, because that is what we return. Creates an entity that is not listed in the /entities list, but it will be returned by GET to keep consistent with the location header.
 *   Will amend Entity with ID 10, once you amend you can GET this item and check it has amended
@@ -63,7 +63,7 @@ POST https://<span class="currenthost">CURRENTHOST</span>/sim/entities/10 (200)
 
     {"name": "eris"}
 
-PUT https://<span class="currenthost">CURRENTHOST</span>/sim/entities/id (200)
+PUT <span class="currenthost">CURRENTHOST</span>/sim/entities/id (200)
 
 *   Amend an entity...note we assume you are amending to the payload below, because that is what we return. Creates an entity that is not listed in the /entities list, but it will be returned by GET to keep consistent with the location header.
 *   Can amend Entity with ID 10, once you amend you can GET this item and check it has amended
@@ -75,7 +75,7 @@ PUT https://<span class="currenthost">CURRENTHOST</span>/sim/entities/id (200)
 
     {"name": "bob"}
 
-DELETE https://<span class="currenthost">CURRENTHOST</span>/sim/entities/id (204)
+DELETE <span class="currenthost">CURRENTHOST</span>/sim/entities/id (204)
 
 *   the only entity you can delete is id 9
 *   if you GET id 9 then you will find it 404's
@@ -94,7 +94,7 @@ DELETE https://<span class="currenthost">CURRENTHOST</span>/sim/entities/id (204
     <script>
         let spans =document.querySelectorAll(".currenthost");
         spans.forEach(element =>{
-            element.innerHTML = document.location.host;
+            element.innerHTML = window.location.origin;
             }
         );
     </script>

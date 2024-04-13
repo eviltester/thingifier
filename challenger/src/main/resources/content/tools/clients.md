@@ -76,9 +76,9 @@ VS Code:
 ## cURL Overview
 
 ~~~~~~~~
-curl  https://apichallenges.eviltester.com/heartbeat -i
-curl -X GET https://apichallenges.eviltester.com/todos
-curl https://apichallenges.eviltester.com/todos -H "accept: application/xml"
+curl  {{<ORIGIN_URL>}}/heartbeat -i
+curl -X GET {{<ORIGIN_URL>}}/todos
+curl {{<ORIGIN_URL>}}/todos -H "accept: application/xml"
 ~~~~~~~~
 
 [cURL](https://curl.se) Can be complicated but useful for emergencies, scripting, bug reporting.

@@ -25,9 +25,7 @@ It is possible to ask for multiple types in the Accept header, expressing a pref
 
 - Issue a `GET` request to end point "/todos"
     - if running locally that endpoint would be
-        - `http://localhost:4567/todos`
-    - if running in the cloud that endpoint would be
-        - `https://apichallenges.eviltester.com/todos`
+        - `{{<ORIGIN_URL>}}/todos`
 - The request should have an `Accept` header specifying XML format by using a value of `application/xml,application/json`
 - The request should have an `X-CHALLENGER` header to track challenge completion
 - The response status code should be `200` when all the details are valid.
@@ -41,7 +39,7 @@ The chained Accept header `application/xml,application/json` asks for XML as fir
 
 ~~~~~~~~
 > GET /todos HTTP/1.1
-> Host: apichallenges.eviltester.com
+> Host: {{<HOST_URL>}}
 > User-Agent: rest-client
 > X-CHALLENGER: x-challenger-guid
 > Accept: application/xml,application/json
