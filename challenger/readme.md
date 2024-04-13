@@ -24,7 +24,7 @@ e.g.
 
 This could be useful for team workshops and learning sessions.
 
-## Practise Testing
+## Practice Testing
 
 If you just want to practice testing and use it as an API for a todos application then you probably want to remove the limit on the number of todos.
 
