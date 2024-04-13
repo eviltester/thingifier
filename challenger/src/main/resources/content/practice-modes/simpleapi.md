@@ -3,9 +3,13 @@ title: API Challenges Simple API
 description: The Simple API is a multi-user REST API that you can use to practice testing without any authentication.
 ---
 
-The API Challenges Simple API is an easy-to-use API where you can GET, DELETE, PUT and POST without any authentication.
+
 
 # Simple API
+
+The API Challenges Simple API is an easy-to-use API where you can GET, DELETE, PUT and POST without any authentication.
+
+## About Simple API
 
 To help you get started with API testing and practice using your tools, we have created the Simple API.
 

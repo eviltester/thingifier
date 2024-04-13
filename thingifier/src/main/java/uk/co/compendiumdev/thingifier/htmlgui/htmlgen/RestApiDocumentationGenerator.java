@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 public class RestApiDocumentationGenerator {
     private final Thingifier thingifier;
@@ -183,18 +184,23 @@ public class RestApiDocumentationGenerator {
                     output.append("<ul>");
                     for (ValidationRule validation : theField.validationRules()) {
                         //use the validation error message in the documentation
-                        output.append("<li>" + validation.getErrorMessage(theField.valueFor("")) + "</li>\n");
+                        output.append("<li>" + validation.getExplanation() + "</li>\n");
                     }
 
                     output.append(String.format("<li>Mandatory?: %b</li>", theField.isMandatory()));
 
+                    if(theField.getType()== FieldType.ENUM){
+                        String allowedValues = theField.getExamples().stream().collect(Collectors.joining(", "));
+                        output.append(String.format("<li>Allowed Values: %s </li>", allowedValues));
+                    }
+
                     if(theField.getType()== FieldType.INTEGER){
-                        output.append(String.format("<li>Values Between: \"%d\" to \"%d\" </li>",
+                        output.append(String.format("<li>Allowed Values Between: \"%d\" to \"%d\" </li>",
                                 theField.getMinimumIntegerValue(), theField.getMaximumIntegerValue()));
                     }
 
                     if(theField.getType()== FieldType.FLOAT){
-                        output.append(String.format("<li>Values Between: \"%f\" to \"%f\" </li>",
+                        output.append(String.format("<li>Allowed Values Between: \"%f\" to \"%f\" </li>",
                                 theField.getMinimumFloatValue(), theField.getMaximumFloatValue()));
                     }
 

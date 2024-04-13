@@ -31,4 +31,9 @@ public class MaximumLengthValidationRule implements ValidationRule {
                 "Maximum allowable length exceeded for %s - maximum allowed is %d",
                 value.getName(), maxLength);
     }
+
+    @Override
+    public String getExplanation() {
+        return "Maximum length allowed is %d".formatted(maxLength);
+    }
 }

@@ -19,4 +19,9 @@ public class NotEmptyValidationRule implements ValidationRule {
     public String getErrorMessage(final FieldValue value) {
         return String.format("%s : can not be empty", value.getName());
     }
+
+    @Override
+    public String getExplanation() {
+        return "Value can not be empty";
+    }
 }
