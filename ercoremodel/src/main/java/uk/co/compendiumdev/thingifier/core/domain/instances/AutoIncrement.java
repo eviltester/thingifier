@@ -20,21 +20,24 @@ public class AutoIncrement {
         return name;
     }
 
+    @Deprecated // we probably want to use getNextValueAndUpdate
     public int getCurrentValue(){
         //TODO: have a list of free items, used prior to the nextInt
         // e.g. on DELETE, or if we do not create an item, or if we skip items during an increment on PUT
         return nextInt;
     }
 
-    public void update(){
+    private synchronized void  update(){
         nextInt = nextInt + incrementBy;
     }
 
-    public void setNextValue(int integer) {
-
+    public synchronized int getNextValueAndUpdate(){
+        int curr = getCurrentValue();
+        update();
+        return curr;
     }
 
-    public void incrementToNextAbove(Integer integer) {
+    public synchronized void incrementToNextAbove(Integer integer) {
         nextInt = integer;
         update();
     }

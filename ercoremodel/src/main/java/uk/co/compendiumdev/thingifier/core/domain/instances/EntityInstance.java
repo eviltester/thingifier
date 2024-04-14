@@ -42,8 +42,8 @@ public class EntityInstance {
         for(Field autoIncrementedField : entityDefinition.getFieldsOfType(FieldType.AUTO_INCREMENT)){
             AutoIncrement auto = autos.get(autoIncrementedField.getName());
             if(!instanceFields.hasAssignedValue(autoIncrementedField.getName())){
-                instanceFields.putValue(autoIncrementedField.getName(), String.valueOf(auto.getCurrentValue()));
-                auto.update();
+                instanceFields.putValue(autoIncrementedField.getName(),
+                        String.valueOf(auto.getNextValueAndUpdate()));
             }
         }
     }

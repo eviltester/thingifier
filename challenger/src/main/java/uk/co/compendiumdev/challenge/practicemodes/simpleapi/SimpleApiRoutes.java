@@ -100,6 +100,8 @@ public class SimpleApiRoutes {
 
         simpleApiHttpRouting = new ThingifierHttpApiRoutings(simplethings, apiDocDefn);
         simpleApiHttpRouting.registerHttpApiRequestHook(new AddMoreItemsIfNecessary(simplethings.getERmodel()));
+        simpleApiHttpRouting.registerHttpApiRequestHook(new ResetAutoIncrementWhenTooHigh(simplethings.getERmodel()));
+
 
         new SimpleSparkRouteCreator("/simpleap/items").status(501, List.of("patch", "trace"));
     }

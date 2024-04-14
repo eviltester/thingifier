@@ -40,8 +40,9 @@ public class InstanceFields {
         for(Field aField : idfields){
             if(aField.getType()==FieldType.AUTO_INCREMENT){
                 if(!values.containsKey(aField.getName().toLowerCase())) {
-                    addValue(FieldValue.is(aField, String.valueOf(anAuto.getCurrentValue())));
-                    anAuto.update();
+                    addValue(
+                        FieldValue.is(aField,
+                            String.valueOf(anAuto.getNextValueAndUpdate())));
                 }
             }
         }

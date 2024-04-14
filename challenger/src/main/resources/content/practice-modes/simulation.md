@@ -310,7 +310,7 @@ If you want to explore the tool more then you could try the experiments below, o
 
 ## Swagger OpenAPI File
 
-You can download a simple Swagger [OpenAPI File for simulation mode](/practice-modes/simulation/swagger).
+You can download a simple Swagger [OpenAPI File for simulation mode](/sim/docs/swaggercd ..).
 
 ## Simulation Mode Walkthrough - Insomnia
 

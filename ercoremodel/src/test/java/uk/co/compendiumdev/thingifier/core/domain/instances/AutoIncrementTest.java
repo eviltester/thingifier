@@ -19,19 +19,18 @@ public class AutoIncrementTest {
     @Test
     public void canUpdateAutoIncrement(){
         AutoIncrement auto = new AutoIncrement("afield", 1);
-
-        auto.update();
-        Assertions.assertEquals(2, auto.getCurrentValue());
+        Assertions.assertEquals(1, auto.getNextValueAndUpdate());
+        Assertions.assertEquals(2, auto.getNextValueAndUpdate());
     }
 
     @Test
     public void canUpdateAutoIncrementMultipleTimes(){
         AutoIncrement auto = new AutoIncrement("afield", 1);
 
-        auto.update();
-        auto.update();
-        auto.update();
-        Assertions.assertEquals(4, auto.getCurrentValue());
+        Assertions.assertEquals(1, auto.getNextValueAndUpdate());
+        Assertions.assertEquals(2, auto.getNextValueAndUpdate());
+        Assertions.assertEquals(3, auto.getNextValueAndUpdate());
+        Assertions.assertEquals(4, auto.getNextValueAndUpdate());
     }
 
     @Test
@@ -39,18 +38,18 @@ public class AutoIncrementTest {
         AutoIncrement auto = new AutoIncrement("afield", 1);
         auto.by(10);
 
-        auto.update();
-        Assertions.assertEquals(11, auto.getCurrentValue());
+        Assertions.assertEquals(1, auto.getNextValueAndUpdate());
+        Assertions.assertEquals(11, auto.getNextValueAndUpdate());
     }
 
     @Test
     public void canUpdateAutoIncrementInMultipleJumps(){
         AutoIncrement auto = new AutoIncrement("afield", 1);
-        auto.by(10);
+        auto.by(5);
 
-        auto.update();
-        auto.update();
-        auto.update();
-        Assertions.assertEquals(31, auto.getCurrentValue());
+        Assertions.assertEquals(1, auto.getNextValueAndUpdate());
+        Assertions.assertEquals(6, auto.getNextValueAndUpdate());
+        Assertions.assertEquals(11, auto.getNextValueAndUpdate());
+        Assertions.assertEquals(16, auto.getNextValueAndUpdate());
     }
 }

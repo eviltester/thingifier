@@ -93,8 +93,8 @@ final public class EntityInstanceCollection {
                     if(counter==null){
                         counter = createCounterFor(fieldDefn);
                     }
-                    instance.overrideValue(fieldDefn.getName(),String.valueOf(counter.getCurrentValue()));
-                    counter.update();
+                    instance.overrideValue(fieldDefn.getName(),
+                            String.valueOf(counter.getNextValueAndUpdate()));
                 }
             }else{
                 if(fieldDefn.getType()==FieldType.AUTO_INCREMENT) {
@@ -200,7 +200,7 @@ final public class EntityInstanceCollection {
 
         if (!instances.containsKey(guid)) {
             throw new IndexOutOfBoundsException(
-                    String.format("Could not find a %s with GUID %s",
+                    String.format("unable to delete, could not find a %s with GUID %s",
                             definition.getName(), guid));
         }
 
@@ -214,8 +214,10 @@ final public class EntityInstanceCollection {
 
         if (!instances.containsValue(anInstance)) {
             throw new IndexOutOfBoundsException(
-                    String.format("Could not find a %s with Internal GUID %s",
-                            definition.getName(), anInstance.getInternalId()));
+                    String.format("Unable to delete, could not find a %s with %s of %s",
+                            definition.getName(),
+                            definition.getPrimaryKeyField().getName(),
+                            anInstance.getPrimaryKeyValue()));
         }
 
         instances.remove(anInstance.getInternalId());
