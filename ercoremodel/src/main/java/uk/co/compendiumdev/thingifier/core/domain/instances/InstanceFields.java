@@ -18,8 +18,8 @@ import java.util.*;
 public class InstanceFields {
 
     private final DefinedFields objectDefinition;
-    private Map<String, FieldValue> values = new HashMap<String, FieldValue>();
-    private AutoIncrement defaultAuto;
+    private final Map<String, FieldValue> values = new HashMap<>();
+    private final AutoIncrement defaultAuto;
 
     public InstanceFields(final DefinedFields objectDefinition) {
         this.objectDefinition = objectDefinition;
@@ -77,12 +77,12 @@ public class InstanceFields {
         if (assignedValue == null) {
             // does definition have a default value?
             if (objectDefinition.getField(fieldName).hasDefaultValue()) {
-                return objectDefinition.getField(fieldName).getDefaultValue();
+                assignedValue = objectDefinition.getField(fieldName).getDefaultValue();
             } else {
                 // return the field type default value
                 String defaultVal = objectDefinition.getField(fieldName).getType().getDefault();
                 if (defaultVal != null) {
-                    return FieldValue.is(field, defaultVal);
+                    assignedValue =  FieldValue.is(field, defaultVal);
                 }
             }
         }
@@ -102,10 +102,10 @@ public class InstanceFields {
     }
 
 
-    public void deleteAllFieldValuesExcept(List fieldNamesToIgnore) {
+    public void deleteAllFieldValuesExcept(List<String> fieldNamesToIgnore) {
 
         Set<String> ignorekeys = new HashSet<>(fieldNamesToIgnore);
-        Set<String> keys = new HashSet(values.keySet());
+        Set<String> keys = new HashSet<>(values.keySet());
 
         for (String key : keys) {
             if (!ignorekeys.contains(key)) {
@@ -163,8 +163,7 @@ public class InstanceFields {
         // processing a complex set of fields
 
         final String[] fields = fieldName.split("\\.");
-        final List<String> fieldNames = new ArrayList();
-        fieldNames.addAll(Arrays.asList(fields));
+        final List<String> fieldNames = new ArrayList<>(Arrays.asList(fields));
 
         // start recursive call to work through list
         setFieldValue(fieldNames, value, shouldValidateValue);
@@ -189,7 +188,6 @@ public class InstanceFields {
             }else{
                 addValue(FieldValue.is(field, value));
             }
-            return;
         }else{
 
             if(field.getType()!= FieldType.OBJECT){
@@ -257,7 +255,7 @@ public class InstanceFields {
      * look at all the GUIDs and IDs referenced
      * if they have different values to current then
      * report the differences as errormessages
-     * @param args
+     *
      * @return a List of error messages about the GUIDs and IDs mentioned
      */
     public List<String> findAnyGuidOrIdDifferences(final  List<NamedValue> args) {
@@ -283,7 +281,7 @@ public class InstanceFields {
 
                     }
                 }
-                if (existingValue != null && existingValue.trim().length() > 0) {
+                if (existingValue != null && !existingValue.trim().isEmpty()) {
                     // if value is different then it is an attempt to amend it
                     if (!existingValue.equalsIgnoreCase(entryValue)) {
                         errorMessages.add(

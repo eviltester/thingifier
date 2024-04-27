@@ -14,10 +14,10 @@ import java.util.concurrent.ConcurrentHashMap;
 final public class EntityInstanceCollection {
 
     private final EntityDefinition definition;
-    private Map<String, EntityInstance> instances = new ConcurrentHashMap<>();
+    private final Map<String, EntityInstance> instances = new ConcurrentHashMap<>();
 
     // id's should be auto incremented at an instance collection level, not on the field definitions
-    private Map<String, AutoIncrement> counters = new ConcurrentHashMap<>();
+    private final Map<String, AutoIncrement> counters = new ConcurrentHashMap<>();
 
     public EntityInstanceCollection(EntityDefinition thingDefinition) {
         this.definition = thingDefinition;
@@ -192,9 +192,6 @@ final public class EntityInstanceCollection {
     /**
      * This deletes the instance but does not delete any mandatorily related items, these need to be handled by
      * another class using the returned list of alsoDelete, otherwise the model will be invalid
-     *
-     * @param guid
-     * @return
      */
     public List<EntityInstance> deleteInstance(String guid) {
 
@@ -283,15 +280,15 @@ final public class EntityInstanceCollection {
         for(String fieldName : instance.getEntity().getFieldNames()){
             Field field = instance.getEntity().getField(fieldName);
             if(field.mustBeUnique()){
-                String valueThatMustBeUnique = instance.getFieldValue(fieldName).asString();
+                String valueThatMustBeUnique = instance.getFieldValue(fieldName).asUniqueComparisonString();
                 // check all instances to see if it is
                 for(EntityInstance instanceToCheck : instances.values()){
                     FieldValue existingValue = instanceToCheck.getFieldValue(fieldName);
-                    if(valueThatMustBeUnique.equals(existingValue.asString())){
+                    if(valueThatMustBeUnique.equals(existingValue.asUniqueComparisonString())){
                         // it is not
                         boolean dupeFound=true;
                         if(isAmendment){
-                            if(instanceToCheck.getPrimaryKeyValue().equals(instanceToCheck.getPrimaryKeyValue())){
+                            if(instanceToCheck.getPrimaryKeyValue().equals(instance.getPrimaryKeyValue())){
                                 // same item so ignore this one
                                 dupeFound=false;
                             }

@@ -9,6 +9,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.validation.Validat
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.Function;
 
 // todo: beginning to think that we should have an XField for each field type
 // e.g. IdField, StringField, etc. - possibly with an interface or abstract
@@ -24,12 +25,12 @@ public final class Field {
 
     // default value for the field
     private String defaultValue;
-    private List<ValidationRule> validationRules;
+    private final List<ValidationRule> validationRules;
     private boolean truncateStringIfTooLong;
 
     private int maximumIntegerValue;
     private int minimumIntegerValue;
-    private boolean allowedNullable;
+    private final boolean allowedNullable;
     // todo: use BigDecimal for the internal float representations
     private float maximumFloatValue;
     private float minimumFloatValue;
@@ -38,6 +39,7 @@ public final class Field {
     private boolean mustBeUnique;
 
     private int truncatedStringLength;
+    private Function<String, String> transformToMakeUnique;
 
     // todo: rather than all these fields, consider moving to more validation rules
     // to help keep the class to a more manageable size or create a FieldValidator class
@@ -61,6 +63,8 @@ public final class Field {
         minimumFloatValue = Float.MIN_VALUE;
         mustBeUnique = false;
         allowedNullable=false;
+
+        transformToMakeUnique = (s) -> s;
     }
 
     public static Field is(String name, FieldType type) {
@@ -191,10 +195,9 @@ public final class Field {
     }
 
     private void validateObjectValue(final FieldValue value, final ValidationReport report) {
-        FieldValue object = value;
-        if(object!= null && object.asObject()!=null){
+        if(value!= null && value.asObject()!=null){
             final ValidationReport objectValidity =
-                    object.asObject().
+                    value.asObject().
                             validateFields(new ArrayList<>(), true);
             report.combine(objectValidity);
         }
@@ -277,7 +280,7 @@ public final class Field {
     private void validateBooleanValue(final FieldValue value,
                                       final ValidationReport report) {
         try{
-            boolean bool = value.asBoolean();
+            value.asBoolean();
         }catch(IllegalArgumentException e){
             report.setValid(false);
             report.addErrorMessage(
@@ -480,5 +483,19 @@ public final class Field {
 
     public FieldValue valueFor(String value) {
         return FieldValue.is(this, value);
+    }
+
+    public Field setUniqueAfterTransform(Function<String, String> transform) {
+        setMustBeUnique(true);
+        transformToMakeUnique = transform;
+        return this;
+    }
+
+    public String uniqueAfterTransform(String string) {
+        try {
+            return transformToMakeUnique.apply(string);
+        }catch (Exception e){
+            return "ERROR: " + string + " " + e.getMessage();
+        }
     }
 }

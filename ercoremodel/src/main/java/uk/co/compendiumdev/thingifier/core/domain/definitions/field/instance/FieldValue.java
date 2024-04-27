@@ -10,23 +10,22 @@ public final class FieldValue {
     private final String fieldName; // should this be name or should it be a Field reference?
     private final String valueOfField;
     private final Field forField; // the related field
+    private final String valueForUniqueComparison;
     private InstanceFields objectValue;
     // todo: list of strings for an array
     // todo: list of InstanceFields for an array of objects
-
-    @Deprecated
-    private FieldValue(String fieldName, String fieldValue) {
-        this.forField = null;
-        this.fieldName = fieldName;
-        this.valueOfField = fieldValue;
-        this.objectValue = null;
-    }
 
     public FieldValue(Field forField, String fieldValue) {
         this.forField = forField;
         this.fieldName = forField.getName();
         this.valueOfField = fieldValue;
         this.objectValue = null;
+
+        if(forField.mustBeUnique()){
+            this.valueForUniqueComparison = forField.uniqueAfterTransform(fieldValue);
+        }else {
+            this.valueForUniqueComparison = fieldValue;
+        }
     }
 
     @Override
@@ -35,7 +34,7 @@ public final class FieldValue {
                 "fieldName='" + fieldName + "'" +
                 ", fieldValue='" + valueOfField + "'";
         if(objectValue!=null){
-            string = string + ",{ " + objectValue.toString() + " }";
+            string = string + ",{ " + objectValue + " }";
         }
         string = string + "}";
 
@@ -82,7 +81,7 @@ public final class FieldValue {
     }
 
     public float asFloat() {
-        return Float.valueOf(valueOfField);
+        return Float.parseFloat(valueOfField);
     }
 
     public boolean asBoolean() {
@@ -97,7 +96,7 @@ public final class FieldValue {
     }
 
     public int asInteger() {
-        return Integer.valueOf(valueOfField);
+        return Integer.parseInt(valueOfField);
     }
 
     public String asJsonValue() {
@@ -119,5 +118,9 @@ public final class FieldValue {
 
     private String quoted(String aString){
         return "\"" + aString.replaceAll("\"", "\\\\\"") + "\"";
+    }
+
+    public String asUniqueComparisonString() {
+        return valueForUniqueComparison;
     }
 }

@@ -56,6 +56,7 @@ public class SimpleApiRoutes {
                         withValidation(new MatchesRegexValidationRule("[0-9]{3}[-]?[0-9]{1}[-]?[0-9]{2}[-]?[0-9]{6}[-]?[0-9]{1}")).
                         withValidation(new MaximumLengthValidationRule(17)).
                         setMustBeUnique(true).
+                        setUniqueAfterTransform((s) -> s.replace("-","")).
                         withExample("123-4-56-789012-3"),
                 Field.is("price",FieldType.FLOAT).
                         makeMandatory().

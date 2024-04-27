@@ -29,9 +29,9 @@ public class EntityInstanceCollectionTest {
 
         EntityInstance instance1 = new EntityInstance(entityDefn);
 
-        Exception exception = Assertions.assertThrows(RuntimeException.class, () -> {
-            collection.addInstance(instance1);
-        });
+        Exception exception = Assertions.assertThrows(RuntimeException.class,
+                () -> collection.addInstance(instance1)
+        );
 
         Assertions.assertTrue(exception.getMessage().contains("Cannot add instance, primary key field pk not set"));
     }
@@ -49,9 +49,9 @@ public class EntityInstanceCollectionTest {
         EntityInstance instance2 = new EntityInstance(entityDefn);
         instance2.setValue("pk", instance1.getPrimaryKeyValue());
 
-        Exception exception = Assertions.assertThrows(RuntimeException.class, () -> {
-            collection.addInstance(instance2);
-        });
+        Exception exception = Assertions.assertThrows(RuntimeException.class,
+                () -> collection.addInstance(instance2)
+        );
 
         Assertions.assertTrue(exception.getMessage().contains("another instance with primary key value exists"));
     }
@@ -113,5 +113,6 @@ public class EntityInstanceCollectionTest {
         Assertions.assertEquals(instance2.getFieldValue("guid").asString(), UUID.fromString(instance2.getFieldValue("guid").asString()).toString());
         Assertions.assertNotEquals(instance1.getFieldValue("id").asString(), instance2.getFieldValue("id").asString());
         Assertions.assertEquals(1, instance1.getFieldValue("id").asInteger());
-        Assertions.assertEquals(2, instance2.getFieldValue("id").asInteger());    }
+        Assertions.assertEquals(2, instance2.getFieldValue("id").asInteger());
+    }
 }

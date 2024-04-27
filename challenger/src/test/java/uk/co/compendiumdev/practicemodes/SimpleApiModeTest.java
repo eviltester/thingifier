@@ -7,14 +7,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import uk.co.compendiumdev.challenger.http.httpclient.HttpMessageSender;
 import uk.co.compendiumdev.challenger.http.httpclient.HttpResponseDetails;
 import uk.co.compendiumdev.sparkstart.Environment;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Stream;
 
 /*
@@ -117,6 +115,132 @@ public class SimpleApiModeTest {
         Assertions.assertEquals("book", item.type);
     }
 
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "",
+            "-"
+    })
+    public void canNotPostCreateItemsWithDuplicateISBN(String dupeSynonymReplace) {
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Content-Type", "application/json");
+        headers.put("Accept", "application/json");
+
+        Random random = new Random();
+        String aRandomIsbn = randomIsbn(random);
+
+        // full valid payload
+        final HttpResponseDetails response =
+                http.send("/simpleapi/items", "POST", headers,
+                        """
+                            {
+                            "price":2.00,
+                            "numberinstock":2,
+                            "isbn13": "%s",
+                            "type":book
+                        }
+                        """.formatted(aRandomIsbn).stripIndent());
+
+        final HttpResponseDetails duplicateIsbnResponse =
+                http.send("/simpleapi/items", "POST", headers,
+                        """
+                            {
+                            "price":2.00,
+                            "numberinstock":2,
+                            "isbn13": "%s",
+                            "type":book
+                        }
+                        """.formatted(aRandomIsbn.replace("-",dupeSynonymReplace)).stripIndent());
+
+        Assertions.assertEquals(201, response.statusCode);
+        Assertions.assertEquals("application/json", response.getHeader("content-type"));
+
+        Assertions.assertEquals(400, duplicateIsbnResponse.statusCode);
+        Assertions.assertTrue(duplicateIsbnResponse.body.contains("Field isbn13 Value is not unique"), "did not expect " + duplicateIsbnResponse.body);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"POST", "PUT"})
+    public void canNotAmendItemsToHaveDuplicateISBN(String verbPostPut) {
+
+        Random random = new Random();
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Content-Type", "application/json");
+        headers.put("Accept", "application/json");
+
+        Item anItem = new Item();
+        anItem.type="book";
+        anItem.price=2.00F;
+        anItem.isbn13 = randomIsbn(random);
+
+        Item anItemToAmend = new Item();
+        anItemToAmend.type="book";
+        anItemToAmend.price=3.00F;
+        anItemToAmend.isbn13 = randomIsbn(random);
+
+        apiCreateItem(anItem);
+        Item itemToAmend = apiCreateItem(anItemToAmend);
+
+        final HttpResponseDetails amendResponse =
+                http.send("/simpleapi/items/"+itemToAmend.id, verbPostPut, headers,
+                        """
+                            {
+                            "price":2.00,
+                            "numberinstock":2,
+                            "isbn13": "%s",
+                            "type":book
+                        }
+                        """.formatted(anItem.isbn13).stripIndent());
+
+
+        Assertions.assertEquals(400, amendResponse.statusCode, "should not be able to amend item to " + amendResponse.body);
+        Assertions.assertTrue(amendResponse.body.contains("Field isbn13 Value is not unique"), "did not expect " + amendResponse.body);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "",
+            "-"
+    })
+    public void canNotAmendItemsToHaveDuplicateISBNBasedOnUniqueComparison(String dupeSynonymReplace) {
+
+        Random random = new Random();
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Content-Type", "application/json");
+        headers.put("Accept", "application/json");
+
+        Item anItem = new Item();
+        anItem.type="book";
+        anItem.price=2.00F;
+        anItem.isbn13 = randomIsbn(random);
+
+        Item anItemToAmend = new Item();
+        anItemToAmend.type="book";
+        anItemToAmend.price=3.00F;
+        anItemToAmend.isbn13 = randomIsbn(random);
+
+        apiCreateItem(anItem);
+        Item itemToAmend = apiCreateItem(anItemToAmend);
+
+        final HttpResponseDetails amendResponse =
+                http.send("/simpleapi/items/"+itemToAmend.id, "POST", headers,
+                        """
+                            {
+                            "price":2.00,
+                            "numberinstock":2,
+                            "isbn13": "%s",
+                            "type":book
+                        }
+                        """.formatted(anItem.isbn13.replace("-",dupeSynonymReplace)).stripIndent());
+
+
+        Assertions.assertEquals(400, amendResponse.statusCode, "should not be able to amend item to " + amendResponse.body);
+        Assertions.assertTrue(amendResponse.body.contains("Field isbn13 Value is not unique"), "did not expect " + amendResponse.body);
+    }
+
     @Test
     public void cannotPostItemWithId() {
 
@@ -150,7 +274,7 @@ public class SimpleApiModeTest {
     public void canGetItemsAsJson() {
 
         Items items = apiGetItems();
-        Assertions.assertTrue(!items.items.isEmpty());
+        Assertions.assertFalse(items.items.isEmpty());
     }
 
     @Test
@@ -323,7 +447,7 @@ public class SimpleApiModeTest {
         return new Gson().fromJson(response.body, Items.class);
     }
 
-    class Item{
+    static class Item{
 
         Integer id;
         Float price;
@@ -332,11 +456,22 @@ public class SimpleApiModeTest {
         String type;
     }
 
-    class Items{
+    static class Items{
         List<Item> items;
     }
 
-    class ErrorMessagesResponse{
+    static class ErrorMessagesResponse{
         List<String> errorMessages;
+    }
+
+    private String randomIsbn(Random random){
+
+        String isbn13 = "xxx-x-xx-xxxxxx-x";
+
+        while(isbn13.contains("x")){
+            isbn13 = isbn13.replaceFirst("x", String.valueOf(random.nextInt(9)));
+        }
+
+        return isbn13;
     }
 }
