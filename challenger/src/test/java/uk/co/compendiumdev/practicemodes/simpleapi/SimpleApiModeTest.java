@@ -1,4 +1,4 @@
-package uk.co.compendiumdev.practicemodes;
+package uk.co.compendiumdev.practicemodes.simpleapi;
 
 import com.google.gson.Gson;
 import org.junit.jupiter.api.Assertions;
