@@ -171,7 +171,7 @@ public class ChallengeDefinitions {
 
         // adjust the take a break challenges based on the app configuration
         ChallengeSection restoreChallenger = new ChallengeSection("Fancy a Break? Restore your session",
-                "Your challenge progress can be saved, and as long as you remember you challenger ID you can restore it. Leaving a challenger idle in the system for more than 10 minutes will remove hte challenger from memory. Challenger status and the todos database can be saved to, and restored from, the browser localStorage.");
+                "Your challenge progress can be saved, and as long as you remember you challenger ID you can restore it. Leaving a challenger idle in the system for more than 10 minutes will remove the challenger from memory. Challenger status and the todos database can be saved to, and restored from, the browser localStorage.");
         sections.add(restoreChallenger);
 
         // if persistence layer is set to cloud or file then the following apply

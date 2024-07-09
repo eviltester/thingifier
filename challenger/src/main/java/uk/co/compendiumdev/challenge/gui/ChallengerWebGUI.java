@@ -99,7 +99,7 @@ public class ChallengerWebGUI {
                                     <li><a href="/practice-modes/simpleapi">About Simple API</a>
                                     <li><a href="/simpleapi/docs">API Docs</a>
                                     <li><a href="/simpleapi/gui/entities">Data Explorer</a></li>
-                                    <li><a href="/simpleapi/docs/swagger">Open API File</a>
+                                    <li><a href="/simpleapi/docs/swagger">[Download Open API File]</a>
                                 </ul>
                             </li>
                         
@@ -110,7 +110,7 @@ public class ChallengerWebGUI {
                                     <li><a href="/gui/challenges">Progress</a></li>
                                     <li><a href="/gui/entities">Data Explorer</a></li>
                                     <li><a href="/apichallenges/solutions">Solutions</a></li>
-                                    <li><a href="/docs/swagger">Open API File</a>
+                                    <li><a href="/docs/swagger">[Download Open API File]</a>
                                 </ul>
                             </li>
                        
@@ -118,7 +118,7 @@ public class ChallengerWebGUI {
                                 <ul>
                                     <li><a href="/practice-modes/simulation">About API Simulator</a></li>
                                     <li><a href="/sim/docs">API Docs</a></li>
-                                    <li><a href="/sim/docs/swagger">Open API File</a></li>
+                                    <li><a href="/sim/docs/swagger">[Download Open API File]</a></li>
                                     
                                 </ul>
                             </li>
@@ -127,7 +127,7 @@ public class ChallengerWebGUI {
                                 <ul>
                                     <li><a href="/practice-modes/mirror">About HTTP Mirror</a></li>
                                     <li><a href="/mirror/docs">Mirror API Docs</a></li>
-                                    <li><a href="/mirror/docs/swagger">Open API File</a></li>
+                                    <li><a href="/mirror/docs/swagger">[Download Open API File]</a></li>
                                     
                                 </ul>
                             </li>
