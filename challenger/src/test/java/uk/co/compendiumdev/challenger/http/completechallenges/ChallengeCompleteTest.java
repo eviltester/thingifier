@@ -194,7 +194,8 @@ public abstract class ChallengeCompleteTest{
         final HttpResponseDetails response =
                 http.send("/todos", "OPTIONS", x_challenger_header, "");
 
-        Assertions.assertEquals(204, response.statusCode);
+        // initial challenge had options as 200, so we have a hack to keep that
+        Assertions.assertEquals(200, response.statusCode);
         Assertions.assertTrue(challenger.statusOfChallenge(CHALLENGE.OPTIONS_TODOS));
     }
 

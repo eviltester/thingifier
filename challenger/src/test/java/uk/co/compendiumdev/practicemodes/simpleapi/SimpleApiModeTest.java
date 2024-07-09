@@ -10,6 +10,10 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import uk.co.compendiumdev.challenger.http.httpclient.HttpMessageSender;
 import uk.co.compendiumdev.challenger.http.httpclient.HttpResponseDetails;
+import uk.co.compendiumdev.practicemodes.simpleapi.testabstractions.ErrorMessagesResponse;
+import uk.co.compendiumdev.practicemodes.simpleapi.testabstractions.Item;
+import uk.co.compendiumdev.practicemodes.simpleapi.testabstractions.Items;
+import uk.co.compendiumdev.practicemodes.simpleapi.testabstractions.SimpleAPIApi;
 import uk.co.compendiumdev.sparkstart.Environment;
 
 import java.util.*;
@@ -22,6 +26,7 @@ import java.util.stream.Stream;
 public class SimpleApiModeTest {
 
     private static HttpMessageSender http;
+    private static SimpleAPIApi api;
 
 
     @BeforeAll
@@ -29,6 +34,7 @@ public class SimpleApiModeTest {
         // this uses the Environment to startup the spark app to
         // issue http tests and test the routing in spark
         http = new HttpMessageSender(Environment.getBaseUri());
+        api = new SimpleAPIApi(http);
     }
 
     static Stream<Arguments> simpleRoutingStatus(){
@@ -128,7 +134,7 @@ public class SimpleApiModeTest {
         headers.put("Accept", "application/json");
 
         Random random = new Random();
-        String aRandomIsbn = randomIsbn(random);
+        String aRandomIsbn = Item.randomIsbn(random);
 
         // full valid payload
         final HttpResponseDetails response =
@@ -173,15 +179,15 @@ public class SimpleApiModeTest {
         Item anItem = new Item();
         anItem.type="book";
         anItem.price=2.00F;
-        anItem.isbn13 = randomIsbn(random);
+        anItem.isbn13 = Item.randomIsbn(random);
 
         Item anItemToAmend = new Item();
         anItemToAmend.type="book";
         anItemToAmend.price=3.00F;
-        anItemToAmend.isbn13 = randomIsbn(random);
+        anItemToAmend.isbn13 = Item.randomIsbn(random);
 
-        apiCreateItem(anItem);
-        Item itemToAmend = apiCreateItem(anItemToAmend);
+        api.apiCreateItem(anItem);
+        Item itemToAmend = api.apiCreateItem(anItemToAmend);
 
         final HttpResponseDetails amendResponse =
                 http.send("/simpleapi/items/"+itemToAmend.id, verbPostPut, headers,
@@ -215,15 +221,15 @@ public class SimpleApiModeTest {
         Item anItem = new Item();
         anItem.type="book";
         anItem.price=2.00F;
-        anItem.isbn13 = randomIsbn(random);
+        anItem.isbn13 = Item.randomIsbn(random);
 
         Item anItemToAmend = new Item();
         anItemToAmend.type="book";
         anItemToAmend.price=3.00F;
-        anItemToAmend.isbn13 = randomIsbn(random);
+        anItemToAmend.isbn13 = Item.randomIsbn(random);
 
-        apiCreateItem(anItem);
-        Item itemToAmend = apiCreateItem(anItemToAmend);
+        api.apiCreateItem(anItem);
+        Item itemToAmend = api.apiCreateItem(anItemToAmend);
 
         final HttpResponseDetails amendResponse =
                 http.send("/simpleapi/items/"+itemToAmend.id, "POST", headers,
@@ -273,7 +279,7 @@ public class SimpleApiModeTest {
     @Test
     public void canGetItemsAsJson() {
 
-        Items items = apiGetItems();
+        Items items = api.apiGetItems();
         Assertions.assertFalse(items.items.isEmpty());
     }
 
@@ -285,9 +291,9 @@ public class SimpleApiModeTest {
         itemToCreate.price=1.23f;
         itemToCreate.type="book";
 
-        Item createdItem = apiCreateItem(itemToCreate);
+        Item createdItem = api.apiCreateItem(itemToCreate);
 
-        Item retrievedItem = apiGetItem(createdItem.id);
+        Item retrievedItem = api.apiGetItem(createdItem.id);
 
         Assertions.assertEquals(createdItem.id, retrievedItem.id);
         Assertions.assertEquals(itemToCreate.isbn13, retrievedItem.isbn13);
@@ -303,19 +309,19 @@ public class SimpleApiModeTest {
         itemToCreate.price=1.23f;
         itemToCreate.type="book";
 
-        Item createdItem = apiCreateItem(itemToCreate);
+        Item createdItem = api.apiCreateItem(itemToCreate);
 
-        HttpResponseDetails response = apiDeleteItem(createdItem.id);
+        HttpResponseDetails response = api.apiDeleteItem(createdItem.id);
 
         Assertions.assertEquals(200, response.statusCode);
-        Assertions.assertEquals(404, apiGetItemResponse(createdItem.id).statusCode);
+        Assertions.assertEquals(404, api.apiGetItemResponse(createdItem.id).statusCode);
     }
 
 
     @Test
     public void canOnlyCreateAMaxOf100Items(){
 
-        Items items = apiGetItems();
+        Items items = api.apiGetItems();
 
         int numberToCreate = 100- items.items.size();
 
@@ -326,11 +332,11 @@ public class SimpleApiModeTest {
 
         for(int itemx=0; itemx<numberToCreate; itemx++){
             itemToCreate.isbn13= String.format("%03d", itemx) + "1234567890";
-            apiCreateItem(itemToCreate);
+            api.apiCreateItem(itemToCreate);
         }
 
         itemToCreate.isbn13= "101" + "1234567890";
-        HttpResponseDetails finalResponse = apiCreateItemResponse(itemToCreate);
+        HttpResponseDetails finalResponse = api.apiCreateItemResponse(itemToCreate);
         Assertions.assertEquals(400, finalResponse.statusCode);
 
         ErrorMessagesResponse errorMessage = new Gson().fromJson(finalResponse.body, ErrorMessagesResponse.class);
@@ -340,14 +346,14 @@ public class SimpleApiModeTest {
     @Test
     public void canNeverDeleteItemsToEmpty(){
 
-        Items items = apiGetItems();
+        Items items = api.apiGetItems();
 
         for(Item item : items.items){
-            apiDeleteItem(item.id);
+            api.apiDeleteItem(item.id);
         }
 
         // and yet there are some left
-        Items moreItems = apiGetItems();
+        Items moreItems = api.apiGetItems();
 
         // the data populator creates 8 items
         Assertions.assertEquals(8, moreItems.items.size());
@@ -356,122 +362,30 @@ public class SimpleApiModeTest {
     @Test
     public void dataRepopulationHappensWhen3Left(){
 
-        Items items = apiGetItems();
+        Items items = api.apiGetItems();
 
         int itemsLeft = items.items.size();
 
         for(Item item : items.items){
-            apiDeleteItem(item.id);
+            api.apiDeleteItem(item.id);
             itemsLeft--;
             if(itemsLeft==5) break;
         }
 
         // population kicks in when less than 5
-        Items itemsPrePopulation = apiGetItems();
+        Items itemsPrePopulation = api.apiGetItems();
         Assertions.assertEquals(5, itemsPrePopulation.items.size());
 
         // delete one more for repopulation
-        apiDeleteItem(itemsPrePopulation.items.get(0).id);
+        api.apiDeleteItem(itemsPrePopulation.items.get(0).id);
 
         // repopulation should kick in
         // so check there are some left
-        Items moreItems = apiGetItems();
+        Items moreItems = api.apiGetItems();
 
         // the data populator creates 8 items
         Assertions.assertEquals(4+8, moreItems.items.size());
     }
 
 
-
-
-/*
-    All the api abstraction classes to support the simple HTTP Tests
- */
-
-    private HttpResponseDetails apiGetItemResponse(Integer id) {
-        Map<String, String> headers = new HashMap<>();
-        headers.put("Accept", "application/json");
-
-        return http.send("/simpleapi/items/" + id, "GET", headers, "");
-    }
-
-    private Item apiGetItem(Integer id) {
-        final HttpResponseDetails response = apiGetItemResponse(id);
-
-        Assertions.assertEquals(200, response.statusCode);
-        Assertions.assertEquals("application/json", response.getHeader("content-type"));
-
-        // thingifier is configurable and can send a single item back on a GET /things/:id
-        return new Gson().fromJson(response.body, Item.class);
-    }
-
-    private HttpResponseDetails apiCreateItemResponse(Item itemToCreate) {
-        Map<String, String> headers = new HashMap<>();
-        headers.put("Content-Type", "application/json");
-        headers.put("Accept", "application/json");
-
-        return http.send("/simpleapi/items", "POST", headers,
-                        new Gson().toJson(itemToCreate));
-    }
-
-    private Item apiCreateItem(Item itemToCreate) {
-
-        final HttpResponseDetails response = apiCreateItemResponse(itemToCreate);
-
-        Assertions.assertEquals(201, response.statusCode);
-        Assertions.assertEquals("application/json", response.getHeader("content-type"));
-
-        return new Gson().fromJson(response.body, Item.class);
-    }
-
-    private HttpResponseDetails apiDeleteItem(Integer id) {
-        Map<String, String> headers = new HashMap<>();
-        headers.put("Content-Type", "application/json");
-        headers.put("Accept", "application/json");
-
-        return http.send("/simpleapi/items/" + id, "DELETE", headers, "");
-    }
-
-    private Items apiGetItems(){
-        Map<String, String> headers = new HashMap<>();
-        headers.put("Accept", "application/json");
-
-        final HttpResponseDetails response =
-                http.send("/simpleapi/items", "GET", headers,
-                        """
-                        """.stripIndent());
-
-        Assertions.assertEquals(200, response.statusCode);
-        Assertions.assertEquals("application/json", response.getHeader("content-type"));
-
-        return new Gson().fromJson(response.body, Items.class);
-    }
-
-    static class Item{
-
-        Integer id;
-        Float price;
-        Integer numberinstock;
-        String isbn13;
-        String type;
-    }
-
-    static class Items{
-        List<Item> items;
-    }
-
-    static class ErrorMessagesResponse{
-        List<String> errorMessages;
-    }
-
-    private String randomIsbn(Random random){
-
-        String isbn13 = "xxx-x-xx-xxxxxx-x";
-
-        while(isbn13.contains("x")){
-            isbn13 = isbn13.replaceFirst("x", String.valueOf(random.nextInt(9)));
-        }
-
-        return isbn13;
-    }
 }

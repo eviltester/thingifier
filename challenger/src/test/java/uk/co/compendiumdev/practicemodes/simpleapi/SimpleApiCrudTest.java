@@ -1,5 +1,17 @@
 package uk.co.compendiumdev.practicemodes.simpleapi;
 
+import com.google.gson.Gson;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import uk.co.compendiumdev.challenger.http.httpclient.HttpMessageSender;
+import uk.co.compendiumdev.challenger.http.httpclient.HttpResponseDetails;
+import uk.co.compendiumdev.practicemodes.simpleapi.testabstractions.Item;
+import uk.co.compendiumdev.practicemodes.simpleapi.testabstractions.SimpleAPIApi;
+import uk.co.compendiumdev.sparkstart.Environment;
+
+import java.util.Random;
+
 public class SimpleApiCrudTest {
 
     /*
@@ -77,4 +89,43 @@ public class SimpleApiCrudTest {
             - (not-created yet, previously deleted)
 
      */
+
+
+    private static HttpMessageSender http;
+    private static SimpleAPIApi api;
+    private static Random random;
+
+
+    @BeforeAll
+    static void createHttp(){
+        // this uses the Environment to startup the spark app to
+        // issue http tests and test the routing in spark
+        http = new HttpMessageSender(Environment.getBaseUri());
+        api = new SimpleAPIApi(http);
+        random = new Random();
+    }
+
+    @Test
+    public void createAnItemAndLeaveItUntouched(){
+
+        Item create = new Item();
+        create.isbn13 = Item.randomIsbn(random);
+        create.type = "dvd";
+        create.price = 01.99F;
+        
+        HttpResponseDetails response = api.apiCreateItemResponse(create);
+
+        System.out.println(response.body);
+        Assertions.assertEquals(201, response.statusCode);
+        Assertions.assertTrue(response.getHeader("location").startsWith("/simpleapi/items/"));
+
+        Item created = new Gson().fromJson(response.body, Item.class);
+
+        Assertions.assertEquals(create.type, created.type);
+        Assertions.assertEquals(create.isbn13, created.isbn13);
+        Assertions.assertEquals(create.price, created.price);
+        Assertions.assertEquals(0, created.numberinstock);
+
+
+    }
 }

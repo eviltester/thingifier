@@ -24,7 +24,10 @@ public class CanOptionsTodosTest extends RestAssuredBaseTest {
                     accept("application/json").
                 options(apiPath( "/todos")).
                 then().
-                    statusCode(204).
+                // this should really be 204, but to keep the challenge docs etc.
+                // backwards compatible there is a hack in the hook to return
+                // 200 for this option request
+                    statusCode(200).
                 and().extract().response();
 
         // pass challenge

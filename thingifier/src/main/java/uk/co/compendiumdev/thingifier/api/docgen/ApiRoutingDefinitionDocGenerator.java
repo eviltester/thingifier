@@ -125,7 +125,7 @@ public class ApiRoutingDefinitionDocGenerator {
                     addPossibleStatus(RoutingStatus.returnValue(
                             400, String.format("Error when creating a %s", entityDefn.getName())));
 
-            // TODO: allow 200 for options
+            // TODO: allow configurable 200 for options
             defn.addRouting(
                     String.format("show all Options for endpoint of %s", pluralUrl),
                     RoutingVerb.OPTIONS, pluralUrl, RoutingStatus.returnValue(204, "the endpoint verb options"),
