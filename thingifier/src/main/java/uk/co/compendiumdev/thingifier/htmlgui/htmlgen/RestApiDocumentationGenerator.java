@@ -342,7 +342,11 @@ public class RestApiDocumentationGenerator {
             }
             if (routingDefn.status().isReturnedFromCall() || routingDefn.status().value() != 405) {
                 // ignore options
-                if (routingDefn.verb() != RoutingVerb.OPTIONS) {
+                boolean show = true;
+                if(thingifier.apidocsconfig().ignoreOptionsVerb() && routingDefn.verb() == RoutingVerb.OPTIONS){
+                    show = false;
+                }
+                if (show) {
                     output.append(String.format("<ul>%n<li class='endpoint'>%n<strong>%s /%s</strong><ul><li class='normal'>%s</li></ul></li>%n</ul>",
                             routingDefn.verb(), routingDefn.url(), routingDefn.getDocumentation()));
 
