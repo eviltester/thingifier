@@ -55,6 +55,12 @@ public class C036PutCreateNewChallengerSessionTest extends RestAssuredBaseTest {
                 contentType(ContentType.JSON);
 
 
+        /*
+            This challenge can only be tracked in multi-user mode
+            if it is the first challenge to be completed
+            because it would be tracked against the 'new'
+            Challenger, and not the current challenger.
+         */
         ChallengesStatus statuses = new ChallengesStatus();
         statuses.getFor(aNewGuid);
         if(!singleUserMode) {
