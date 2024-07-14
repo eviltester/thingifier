@@ -167,7 +167,7 @@ public class ChallengerApiResponseHook implements HttpApiResponseHook {
                     if(aTodo.getFieldValue("title").asString().length() == 50 &&
                             aTodo.getFieldValue("description").asString().length() == 200
                     ){
-                        challengers.pass(challenger, CHALLENGE.POST_MAX_OUT_TITILE_DESCRIPTION_LENGTH);
+                        challengers.pass(challenger, CHALLENGE.POST_MAX_OUT_TITLE_DESCRIPTION_LENGTH);
                     }
                 }
             }catch(Exception e){

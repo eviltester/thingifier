@@ -89,7 +89,7 @@ public class ChallengeDefinitions {
         storeChallengeAs(CHALLENGE.POST_TODOS_BAD_DONE_STATUS, PostChallenges.postTodosBadDoneStatus400(challengeOrder++), postCreateChallenges);
         storeChallengeAs(CHALLENGE.POST_TODOS_TOO_LONG_TITLE_LENGTH, PostChallenges.postTodosTitleTooLong400(challengeOrder++), postCreateChallenges);
         storeChallengeAs(CHALLENGE.POST_TODOS_TOO_LONG_DESCRIPTION_LENGTH, PostChallenges.postTodosDescriptionTooLong400(challengeOrder++), postCreateChallenges);
-        storeChallengeAs(CHALLENGE.POST_MAX_OUT_TITILE_DESCRIPTION_LENGTH, PostChallenges.postTodosMaxTitleDescriptionTooLong400(challengeOrder++), postCreateChallenges);
+        storeChallengeAs(CHALLENGE.POST_MAX_OUT_TITLE_DESCRIPTION_LENGTH, PostChallenges.postTodosMaxTitleDescriptionTooLong400(challengeOrder++), postCreateChallenges);
         storeChallengeAs(CHALLENGE.POST_TODOS_TOO_LONG_PAYLOAD_SIZE, PostChallenges.postTodosPayloadTooLong400(challengeOrder++), postCreateChallenges);
         storeChallengeAs(CHALLENGE.POST_TODOS_INVALID_EXTRA_FIELD, PostChallenges.postTodosInvalidExtraField400(challengeOrder++), postCreateChallenges);
 

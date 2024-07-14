@@ -428,7 +428,7 @@ public abstract class ChallengeCompleteTest{
                         "{\"title\":\"" + stringOfLength(50) + "\",\"description\":\"" + stringOfLength(200) + "\"}");
 
         Assertions.assertEquals(201, response.statusCode);
-        Assertions.assertTrue(challenger.statusOfChallenge(CHALLENGE.POST_MAX_OUT_TITILE_DESCRIPTION_LENGTH));
+        Assertions.assertTrue(challenger.statusOfChallenge(CHALLENGE.POST_MAX_OUT_TITLE_DESCRIPTION_LENGTH));
     }
     @Test
     public void canPostTodosFailPayloadLenValidationPass() {

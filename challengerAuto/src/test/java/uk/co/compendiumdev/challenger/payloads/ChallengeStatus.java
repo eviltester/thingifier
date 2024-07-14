@@ -21,6 +21,7 @@ public class ChallengeStatus {
     public Boolean OVERRIDE_DELETE_HEARTBEAT_405;
     public Boolean POST_SECRET_NOTE_BEARER_200;
     public Boolean GET_RESTORE_EXISTING_CHALLENGER;
+    public Boolean GET_RESTORABLE_TODOS;
     public Boolean GET_ACCEPT_XML;
     public Boolean POST_RESTORE_EXISTING_CHALLENGER;
     public Boolean POST_TODOS_TOO_LONG_PAYLOAD_SIZE;
@@ -58,6 +59,6 @@ public class ChallengeStatus {
     public Boolean POST_SECRET_NOTE_403;
     public Boolean CREATE_SECRET_TOKEN_401;
     public Boolean GET_SECRET_NOTE_401;
-    public Boolean POST_MAX_OUT_TITILE_DESCRIPTION_LENGTH;
+    public Boolean POST_MAX_OUT_TITLE_DESCRIPTION_LENGTH;
     public Boolean PUT_TODOS_FULL_200;
 }
