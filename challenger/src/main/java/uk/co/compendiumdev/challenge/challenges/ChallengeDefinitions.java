@@ -82,7 +82,7 @@ public class ChallengeDefinitions {
 
         // CREATE with POST
         ChallengeSection postCreateChallenges = new ChallengeSection("Creation Challenges with POST",
-                "A POST request can be used to create and update data, these challenges are to 'create' data. As a Hint, if you are not sure what the message body should be, try copying in the response from the associated GET request, and amending it.");
+                "A POST request can be used to create and update data, these challenges are to 'create' data.");
         sections.add(postCreateChallenges);
 
         storeChallengeAs(CHALLENGE.POST_TODOS, PostChallenges.postTodos201(challengeOrder++), postCreateChallenges);
@@ -97,7 +97,7 @@ public class ChallengeDefinitions {
 
         // CREATE with PUT
         ChallengeSection putCreateChallenges = new ChallengeSection("Creation Challenges with PUT",
-                "A PUT request can often used to create and update data. The todo application we are using has automatically generated ids, so you cannot use PUT to create. As a Hint, if you are not sure what the message body should be, try copying in the response from the associated GET request, and amending it.");
+                "A PUT request can often used to create and update data. The todo application we are using has automatically generated ids, so you cannot use PUT to create.");
         sections.add(putCreateChallenges);
 
         storeChallengeAs(CHALLENGE.PUT_TODOS_400, PutChallenges.putTodosId400(challengeOrder++), putCreateChallenges);

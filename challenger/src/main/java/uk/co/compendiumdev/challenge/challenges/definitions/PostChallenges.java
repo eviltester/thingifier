@@ -1,6 +1,5 @@
 package uk.co.compendiumdev.challenge.challenges.definitions;
 
-import uk.co.compendiumdev.challenge.CHALLENGE;
 import uk.co.compendiumdev.challenge.challenges.ChallengeDefinitionData;
 
 public class PostChallenges {
@@ -15,6 +14,11 @@ public class PostChallenges {
                 ChallengeRenderer.renderChallengeNumber(challengeOrder),
                 "POST /todos (201)",
                 "Issue a POST request to successfully create a todo");
+
+        aChallenge.addHint("Add a JSON payload in the request", "");
+        aChallenge.addHint("If you don't know the format of the payload, use the response from a GET /todos/{id} request and amend it", "");
+        aChallenge.addHint("You must add an X-CHALLENGER header for a valid session", "");
+
 
         aChallenge.addSolutionLink("Read Solution", "HREF", "/apichallenges/solutions/post-create/post-todos-201");
         aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "T0LFHwavsNA");
@@ -39,6 +43,8 @@ public class PostChallenges {
                 ChallengeRenderer.renderChallengeNumber(challengeOrder),
                 "POST /todos (400) doneStatus",
                 "Issue a POST request to create a todo but fail validation on the `doneStatus` field");
+
+        aChallenge.addHint("doneStatus should be boolean, an invalid status would be a String or a number e.g. \"invalid\"");
 
         aChallenge.addSolutionLink("Read Solution", "HREF", "/apichallenges/solutions/post-create/post-todos-400");
         aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "tlye5bQ72g0");

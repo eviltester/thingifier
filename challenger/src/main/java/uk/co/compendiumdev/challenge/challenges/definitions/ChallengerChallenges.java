@@ -10,7 +10,7 @@ public class ChallengerChallenges {
                 "POST /challenger (201)",
                 "Issue a POST request on the `/challenger` end point, with no body, to create a new challenger session. Use the generated X-CHALLENGER header in future requests to track challenge completion."
         );
-        aChallenge.addHint("In multi-user mode, you need to create an X-CHALLENGER Session first", "/gui/multiuser");
+        aChallenge.addHint("In multi-user mode, you need to create an X-CHALLENGER Session in order to complete any challenges or make PUT, POST, DELETE requests", "/gui/multiuser");
         aChallenge.addSolutionLink("Send request using POST to /challenger endpoint. The response has an X-CHALLENGER header, add this header X-CHALLENGER and the GUID value to all future requests.","","");
         aChallenge.addSolutionLink("Read Solution", "HREF", "/apichallenges/solutions/create-session/post-challenger-201");
         aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "tNGuZMQgHxw");

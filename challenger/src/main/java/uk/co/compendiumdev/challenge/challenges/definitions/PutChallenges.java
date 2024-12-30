@@ -10,6 +10,11 @@ public class PutChallenges {
                 "PUT /todos/{id} (400)",
                 "Issue a PUT request to unsuccessfully create a todo");
 
+        aChallenge.addHint("Add a JSON payload in the request", "");
+        aChallenge.addHint("If you don't know the format of the payload, use the response from a GET /todos/{id} request and amend it", "");
+        aChallenge.addHint("Do not include an 'id' in the payload", "");
+        aChallenge.addHint("You must add an X-CHALLENGER header for a valid session", "");
+
         // todo: create solution for PUT todos 400 challenge
         //aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/post-todos-201");
         //aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "T0LFHwavsNA");
@@ -25,6 +30,10 @@ public class PutChallenges {
                 ChallengeRenderer.renderChallengeNumber(challengeOrder),
                 "PUT /todos/{id} full (200)",
                 "Issue a PUT request to update an existing todo with a complete payload i.e. title, description and donestatus.");
+
+        aChallenge.addHint("Add a JSON payload in the request", "");
+        aChallenge.addHint("If you don't know the format of the payload, use the response from a GET /todos/{id} request and amend it", "");
+        aChallenge.addHint("Do not include an 'id' in the payload", "");
 
         // todo: create solution for PUT todos full 200 challenge
         //aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/post-todos-201");

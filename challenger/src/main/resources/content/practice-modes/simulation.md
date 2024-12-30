@@ -250,7 +250,7 @@ To find out what Verbs, or Methods, we are allowed to use, issue an `OPTIONS` re
 OPTIONS {{<ORIGIN_URL>}}/sim/entities
 ```
 
-By looking at the `Accept` header in the response we can see that we are allowed to `GET, POST, PUT, HEAD, OPTIONS`
+By looking at the `Allow` header in the response we can see that we are allowed to `GET, POST, PUT, HEAD, OPTIONS`
 
 If we tried to `DELETE` or `PATCH` then we should receive an appropriate status code of `405`
 
