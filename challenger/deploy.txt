@@ -21,6 +21,7 @@ NOTE: if you can't deploy then check the Heroku Stack. Heroku prevents deploymen
 
 Deploy the challenger app full jar
 
+- `heroku login`
 - have the deployment page open in case we need to rollback
     - https://dashboard.heroku.com/apps/apichallenges/activity
 - view the logs to watch release progress

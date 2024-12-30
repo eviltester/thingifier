@@ -1,6 +1,7 @@
 package uk.co.compendiumdev.simulator;
 
 import io.restassured.RestAssured;
+import io.restassured.http.Header;
 import io.restassured.http.Headers;
 import io.restassured.http.Method;
 import org.junit.jupiter.api.Assertions;
@@ -12,6 +13,7 @@ import uk.co.compendiumdev.simulator.payloads.Entities;
 import uk.co.compendiumdev.simulator.payloads.EntityPayload;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class SimulatorHttpTest extends RestAssuredBaseTest {
@@ -312,8 +314,18 @@ public class SimulatorHttpTest extends RestAssuredBaseTest {
                 statusCode(200).extract().headers();
 
 
-        Assertions.assertEquals(headHeaders.asList(), getHeaders.asList());
+        // remove the heroku headers
+        Assertions.assertEquals(headHeaders.size(), getHeaders.size());
 
+        List<String> headersToSkipComparison = Arrays.asList("Report-To", "Reporting-Endpoints", "Connection");
+        for (Header headHeader : headHeaders) {
+            if (!headersToSkipComparison.contains(headHeader.getName())) {
+                Assertions.assertEquals(
+                    headHeaders.getValue(headHeader.getName()),
+                    getHeaders.getValue(headHeader.getName())
+                );
+            }
+        }
     }
 }
 
