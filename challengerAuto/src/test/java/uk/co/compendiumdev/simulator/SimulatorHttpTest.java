@@ -304,7 +304,6 @@ public class SimulatorHttpTest extends RestAssuredBaseTest {
                 then().
                 statusCode(200).extract().headers();
 
-
         Headers getHeaders = RestAssured.
                 given().
                 request(
@@ -313,10 +312,9 @@ public class SimulatorHttpTest extends RestAssuredBaseTest {
                 then().
                 statusCode(200).extract().headers();
 
-
-        // remove the heroku headers
         Assertions.assertEquals(headHeaders.size(), getHeaders.size());
 
+        // remove the heroku headers
         List<String> headersToSkipComparison = Arrays.asList("Report-To", "Reporting-Endpoints", "Connection");
         for (Header headHeader : headHeaders) {
             if (!headersToSkipComparison.contains(headHeader.getName())) {
