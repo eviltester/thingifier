@@ -42,7 +42,7 @@ public class IdBasedInstanceNonHttpTest {
         Thingifier model = getThingifier();
 
         final EntityInstanceCollection thing = model.getThingInstancesNamed("thing", EntityRelModel.DEFAULT_DATABASE_NAME);
-        final EntityInstance existingInstance = thing.createManagedInstance().setValue("title",
+        final EntityInstance existingInstance = thing.addInstance(new EntityInstance(thing.definition())).setValue("title",
                 "My Title" + System.nanoTime());
 
         // no session header so use default session
@@ -57,7 +57,7 @@ public class IdBasedInstanceNonHttpTest {
         Thingifier model = getThingifier();
 
         final EntityInstanceCollection thing = model.getThingInstancesNamed("thing", EntityRelModel.DEFAULT_DATABASE_NAME);
-        final EntityInstance existingInstance = thing.createManagedInstance().setValue("title",
+        final EntityInstance existingInstance = thing.addInstance(new EntityInstance(thing.definition())).setValue("title",
                 "My Title" + System.nanoTime());
 
         // no session header so use default session
@@ -83,7 +83,7 @@ public class IdBasedInstanceNonHttpTest {
 
         // add instance to custom session
         final EntityInstanceCollection thing = model.getERmodel().getInstanceData("other_things").getInstanceCollectionForEntityNamed("thing");
-        final EntityInstance existingInstance = thing.createManagedInstance().setValue("title", "My Title" + System.nanoTime());
+        final EntityInstance existingInstance = thing.addInstance(new EntityInstance(thing.definition())).setValue("title", "My Title" + System.nanoTime());
 
         final ApiResponse idApiResponse2 = model.api().get("/thing/" + existingInstance.getPrimaryKeyValue(), new QueryFilterParams(), headers);
         Assertions.assertEquals(200, idApiResponse2.getStatusCode());
@@ -106,7 +106,7 @@ public class IdBasedInstanceNonHttpTest {
 
         // add instance to custom session
         final EntityInstanceCollection thing = model.getERmodel().getInstanceData("other_things").getInstanceCollectionForEntityNamed("thing");
-        final EntityInstance existingInstance = thing.createManagedInstance().setValue("title", "My Title" + System.nanoTime());
+        final EntityInstance existingInstance = thing.addInstance(new EntityInstance(thing.definition())).setValue("title", "My Title" + System.nanoTime());
 
         final ApiResponse idApiResponse2 = model.api().get("/thing/" + existingInstance.getFieldValue("id").asString(), new QueryFilterParams(), headers);
         Assertions.assertEquals(200, idApiResponse2.getStatusCode());

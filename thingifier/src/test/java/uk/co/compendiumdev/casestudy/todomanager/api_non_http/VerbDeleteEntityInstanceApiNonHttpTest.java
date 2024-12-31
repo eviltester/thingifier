@@ -52,7 +52,7 @@ public class VerbDeleteEntityInstanceApiNonHttpTest {
     public void deleteAnEntityInstanceAPI() {
         ApiResponse apiresponse;
 
-        EntityInstance officeWork = project.createManagedInstance().
+        EntityInstance officeWork = project.addInstance(new EntityInstance(project.definition())).
                 setValue("title", "An Existing Project");
 
         Assertions.assertEquals(1, project.countInstances());

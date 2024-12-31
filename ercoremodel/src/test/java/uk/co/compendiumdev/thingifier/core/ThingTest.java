@@ -24,12 +24,12 @@ public class ThingTest {
         person.definition().
                 addFields(Field.is("name", STRING), Field.is("age", INTEGER));
 
-        EntityInstance bob = person.createManagedInstance().
+        EntityInstance bob = person.addInstance(new EntityInstance(person.definition())).
                 setValue("name","Bob");
 
         bob.setValue("age", "56");
 
-        EntityInstance eris = person.createManagedInstance().
+        EntityInstance eris = person.addInstance(new EntityInstance(person.definition())).
                 setValue("name","Eris").setValue("age", "1000");
 
         Assertions.assertEquals(2, person.countInstances());
@@ -52,12 +52,12 @@ public class ThingTest {
         Assertions.assertTrue(url.definition().hasFieldNameDefined("visited"));
 
 
-        url.createManagedInstance().
+        url.addInstance(new EntityInstance(url.definition())).
            setValue("name","EvilTester.com").
             setValue("url", "http://eviltester.com");
 
 
-        url.createManagedInstance().
+        url.addInstance(new EntityInstance(url.definition())).
             setValue("name","JavaForTesters.com").
             setValue("url", "http://javaForTesters.com");
 

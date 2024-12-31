@@ -56,7 +56,7 @@ public class JsonRequestResponseTest {
     public void canGetJsonItems() {
 
 
-        todo.createManagedInstance().setValue("title", "my title");
+        todo.addInstance(new EntityInstance(todo.definition())).setValue("title", "my title");
 
         HttpApiRequest request = new HttpApiRequest("/todos");
         request.getHeaders().putAll(HeadersSupport.acceptJson());
@@ -77,7 +77,7 @@ public class JsonRequestResponseTest {
     public void canGetJsonItemAsACollection() {
 
         todoManager.apiConfig().setReturnSingleGetItemsAsCollection(true);
-        final EntityInstance aTodo = todo.createManagedInstance().setValue("title", "my title");
+        final EntityInstance aTodo = todo.addInstance(new EntityInstance(todo.definition())).setValue("title", "my title");
 
         HttpApiRequest request = new HttpApiRequest("/todos/" + aTodo.getPrimaryKeyValue());
         request.getHeaders().putAll(HeadersSupport.acceptJson());
@@ -98,8 +98,8 @@ public class JsonRequestResponseTest {
     public void canGetMultipleJsonItems() {
 
 
-        todo.createManagedInstance().setValue("title", "my title");
-        todo.createManagedInstance().setValue("title", "my other title");
+        todo.addInstance(new EntityInstance(todo.definition())).setValue("title", "my title");
+        todo.addInstance(new EntityInstance(todo.definition())).setValue("title", "my other title");
 
         HttpApiRequest request = new HttpApiRequest("todos");
         request.getHeaders().putAll(HeadersSupport.acceptJson());
@@ -120,8 +120,8 @@ public class JsonRequestResponseTest {
     public void cannotGetFromMissingEndpoint() {
 
 
-        todo.createManagedInstance().setValue("title", "my title");
-        todo.createManagedInstance().setValue("title", "my other title");
+        todo.addInstance(new EntityInstance(todo.definition())).setValue("title", "my title");
+        todo.addInstance(new EntityInstance(todo.definition())).setValue("title", "my other title");
 
         HttpApiRequest request = new HttpApiRequest("todos" + System.nanoTime());
         request.getHeaders().putAll(HeadersSupport.acceptJson());
@@ -235,7 +235,7 @@ public class JsonRequestResponseTest {
     @Test
     public void canPostToAmendAnItemWithJson() {
 
-        final EntityInstance atodo = todo.createManagedInstance().setValue("title", "my title");
+        final EntityInstance atodo = todo.addInstance(new EntityInstance(todo.definition())).setValue("title", "my title");
 
         Assertions.assertEquals(1, todo.countInstances());
 
@@ -271,7 +271,7 @@ public class JsonRequestResponseTest {
     @Test
     public void canPutToAmendAnItemWithJson() {
 
-        final EntityInstance atodo = todo.createManagedInstance().setValue("title", "my title");
+        final EntityInstance atodo = todo.addInstance(new EntityInstance(todo.definition())).setValue("title", "my title");
 
         Assertions.assertEquals(1, todo.countInstances());
 

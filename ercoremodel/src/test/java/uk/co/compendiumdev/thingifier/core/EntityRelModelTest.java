@@ -81,7 +81,7 @@ public class EntityRelModelTest {
 
         EntityInstanceCollection thing = erm.getInstanceData().getInstanceCollectionForEntityNamed("thing");
 
-        final EntityInstance instance = thing.createManagedInstance();
+        final EntityInstance instance = thing.addInstance(new EntityInstance(thing.definition()));
 
         final String thingGUID1 = instance.getPrimaryKeyValue();
         Assertions.assertNotNull(
@@ -98,7 +98,7 @@ public class EntityRelModelTest {
         erm.createEntityDefinition("thing", "things");
         EntityInstanceCollection thing = erm.getInstanceData().getInstanceCollectionForEntityNamed("thing");
 
-        final EntityInstance instance = thing.createManagedInstance();
+        final EntityInstance instance = thing.addInstance(new EntityInstance(thing.definition()));
         erm.getInstanceData().deleteEntityInstance(instance);
 
         final String thingGUID = instance.getPrimaryKeyValue();
@@ -118,11 +118,11 @@ public class EntityRelModelTest {
         erm.createEntityDefinition("thing2", "thing2");
         EntityInstanceCollection thing2 = erm.getInstanceData().getInstanceCollectionForEntityNamed("thing2");
 
-        thing.createManagedInstance();
-        thing.createManagedInstance();
-        thing2.createManagedInstance();
-        thing2.createManagedInstance();
-        thing2.createManagedInstance();
+        thing.addInstance(new EntityInstance(thing.definition()));
+        thing.addInstance(new EntityInstance(thing.definition()));
+        thing2.addInstance(new EntityInstance(thing2.definition()));
+        thing2.addInstance(new EntityInstance(thing2.definition()));
+        thing2.addInstance(new EntityInstance(thing2.definition()));
 
         Assertions.assertEquals(2, erm.getInstanceData().getAllInstanceCollections().size());
         Assertions.assertEquals(2,
@@ -195,13 +195,13 @@ public class EntityRelModelTest {
             getReversedRelationship().
             setOptionality(Optionality.MANDATORY_RELATIONSHIP);
 
-        final EntityInstance mainThing = thing.createManagedInstance();
+        final EntityInstance mainThing = thing.addInstance(new EntityInstance(thing.definition()));
         mainThing.getRelationships().connect("things",
-                dependent.createManagedInstance());
+                dependent.addInstance(new EntityInstance(dependent.definition())));
         mainThing.getRelationships().connect("things",
-                dependent.createManagedInstance());
+                dependent.addInstance(new EntityInstance(dependent.definition())));
         mainThing.getRelationships().connect("things",
-                dependent.createManagedInstance());
+                dependent.addInstance(new EntityInstance(dependent.definition())));
 
         Assertions.assertEquals(2, erm.getInstanceData().getAllInstanceCollections().size());
         Assertions.assertEquals(3, mainThing.getRelationships().

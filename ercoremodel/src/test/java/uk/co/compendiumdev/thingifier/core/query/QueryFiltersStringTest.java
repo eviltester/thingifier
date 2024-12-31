@@ -25,10 +25,10 @@ public class QueryFiltersStringTest {
 
         EntityInstanceCollection thing = erModel.getInstanceData().getInstanceCollectionForEntityNamed("thing");
 
-        thing.createManagedInstance().setValue("string", "one");
-        thing.createManagedInstance().setValue("string", "two");
-        thing.createManagedInstance().setValue("string", "three");
-        thing.createManagedInstance().setValue("string", "four");
+        thing.addInstance(new EntityInstance(thing.definition())).setValue("string", "one");
+        thing.addInstance(new EntityInstance(thing.definition())).setValue("string", "two");
+        thing.addInstance(new EntityInstance(thing.definition())).setValue("string", "three");
+        thing.addInstance(new EntityInstance(thing.definition())).setValue("string", "four");
 
     }
 

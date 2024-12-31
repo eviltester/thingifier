@@ -47,7 +47,7 @@ public class ThingifierHttpApiRequestHandlingTest {
 
         // add a thing
         final EntityInstanceCollection thing = thingifier.getERmodel().getInstanceData("other_things").getInstanceCollectionForEntityNamed("thing");
-        final EntityInstance existingInstance = thing.createManagedInstance().setValue("title", "My Title" + System.nanoTime());
+        final EntityInstance existingInstance = thing.addInstance(new EntityInstance(thing.definition())).setValue("title", "My Title" + System.nanoTime());
 
         final HttpApiResponse response2 = api.get(new HttpApiRequest("/things/" + existingInstance.getPrimaryKeyValue()).setHeaders(headers));
 
@@ -67,7 +67,7 @@ public class ThingifierHttpApiRequestHandlingTest {
                 EntityInstanceCollection things = database.getInstanceCollectionForEntityNamed("thing");
 
                 for(String thingTitle : titles){
-                    things.createManagedInstance().setValue("title", thingTitle);
+                    things.addInstance(new EntityInstance(things.definition())).setValue("title", thingTitle);
                 }
             }
         };
@@ -145,7 +145,7 @@ public class ThingifierHttpApiRequestHandlingTest {
                 getInstanceData("other_things").
                 getInstanceCollectionForEntityNamed("thing");
 
-        EntityInstance anInstance = thingInstances.createManagedInstance();
+        EntityInstance anInstance = thingInstances.addInstance(new EntityInstance(thingInstances.definition()));
 
         Assertions.assertEquals(1, thingInstances.countInstances());
 

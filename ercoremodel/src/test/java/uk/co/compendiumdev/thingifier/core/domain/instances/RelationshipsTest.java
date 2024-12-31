@@ -31,8 +31,8 @@ class RelationshipsTest {
 
         defn = RelationshipDefinition.create(vector);
 
-        fromInstance = thingfrom.createManagedInstance();
-        toInstance = thingto.createManagedInstance();
+        fromInstance = thingfrom.addInstance(new EntityInstance(thingfrom.definition()));
+        toInstance = thingto.addInstance(new EntityInstance(thingto.definition()));
     }
 
     @Test
@@ -97,7 +97,7 @@ class RelationshipsTest {
 
         final EntityInstanceRelationships relationships = new EntityInstanceRelationships(fromInstance);
 
-        final EntityInstance instance = thingfrom.createManagedInstance();
+        final EntityInstance instance = thingfrom.addInstance(new EntityInstance(thingfrom.definition()));
 
         final IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class,
                 () -> relationships.connect(

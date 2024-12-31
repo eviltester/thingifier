@@ -39,7 +39,7 @@ public class ModelsTest {
         final EntityInstanceCollection todos = todoManager.getThingInstancesNamed("todo", EntityRelModel.DEFAULT_DATABASE_NAME);
 
         for(int todoCount=0; todoCount < 100; todoCount++){
-            todos.createManagedInstance().
+            todos.addInstance(new EntityInstance(todos.definition())).
                     setValue("title", "title " + System.nanoTime());
         }
 
@@ -56,14 +56,14 @@ public class ModelsTest {
         final EntityInstanceCollection todos = todoManager.getThingInstancesNamed("todo", EntityRelModel.DEFAULT_DATABASE_NAME);
 
         for(int todoCount=0; todoCount < 100; todoCount++){
-            todos.createManagedInstance().
+            todos.addInstance(new EntityInstance(todos.definition())).
                     setValue("title", "title " + System.nanoTime());
         }
 
         final EntityInstanceCollection projects = todoManager.getThingInstancesNamed("project", EntityRelModel.DEFAULT_DATABASE_NAME);
 
         for(int todoCount=0; todoCount < 50; todoCount++){
-            projects.createManagedInstance().
+            projects.addInstance(new EntityInstance(projects.definition())).
                     setValue("title", "title " + System.nanoTime());
         }
 

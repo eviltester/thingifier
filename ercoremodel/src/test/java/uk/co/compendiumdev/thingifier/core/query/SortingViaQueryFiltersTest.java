@@ -9,9 +9,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.F
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class SortingViaQueryFiltersTest {
 
@@ -35,13 +33,13 @@ public class SortingViaQueryFiltersTest {
     @Test
     public void canSortIntViaAQuery(){
 
-        final EntityInstance thing1 = thing.createManagedInstance();
+        final EntityInstance thing1 = thing.addInstance(new EntityInstance(thing.definition()));
         thing1.setValue("int", "1");
 
-        final EntityInstance thing2 = thing.createManagedInstance();
+        final EntityInstance thing2 = thing.addInstance(new EntityInstance(thing.definition()));
         thing2.setValue("int", "2");
 
-        final EntityInstance thing3 = thing.createManagedInstance();
+        final EntityInstance thing3 = thing.addInstance(new EntityInstance(thing.definition()));
         thing3.setValue("int", "3");
 
         QueryFilterParams params = new QueryFilterParams();
@@ -93,10 +91,10 @@ public class SortingViaQueryFiltersTest {
 
         EntityInstanceCollection thing = aThingifier.getInstanceData().getInstanceCollectionForEntityNamed("thing");
 
-        final EntityInstance trueThing = thing.createManagedInstance();
+        final EntityInstance trueThing = thing.addInstance(new EntityInstance(thing.definition()));
         trueThing.setValue("truefalse", "true");
 
-        final EntityInstance falseThing = thing.createManagedInstance();
+        final EntityInstance falseThing = thing.addInstance(new EntityInstance(thing.definition()));
         falseThing.setValue("truefalse", "false");
 
         QueryFilterParams params = new QueryFilterParams();

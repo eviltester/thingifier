@@ -3,7 +3,6 @@ package uk.co.compendiumdev.thingifier.core.query;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
@@ -11,9 +10,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.F
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class QueryFiltersFloatTest {
 
@@ -29,10 +26,10 @@ public class QueryFiltersFloatTest {
 
         EntityInstanceCollection thing = erModel.getInstanceData().getInstanceCollectionForEntityNamed("thing");
 
-        thing.createManagedInstance().setValue("float", "4.4");
-        thing.createManagedInstance().setValue("float", "1.1");
-        thing.createManagedInstance().setValue("float", "3.3");
-        thing.createManagedInstance().setValue("float", "2.2");
+        thing.addInstance(new EntityInstance(thing.definition())).setValue("float", "4.4");
+        thing.addInstance(new EntityInstance(thing.definition())).setValue("float", "1.1");
+        thing.addInstance(new EntityInstance(thing.definition())).setValue("float", "3.3");
+        thing.addInstance(new EntityInstance(thing.definition())).setValue("float", "2.2");
 
     }
 

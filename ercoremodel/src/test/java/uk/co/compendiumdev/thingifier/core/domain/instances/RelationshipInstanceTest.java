@@ -19,8 +19,8 @@ class RelationshipInstanceTest {
         );
         RelationshipDefinition defn = RelationshipDefinition.create(vector);
 
-        final EntityInstance fromInstance = thingfrom.createManagedInstance();
-        final EntityInstance toInstance = thingfrom.createManagedInstance();
+        final EntityInstance fromInstance = thingfrom.addInstance(new EntityInstance(thingfrom.definition()));
+        final EntityInstance toInstance = thingfrom.addInstance(new EntityInstance(thingfrom.definition()));
         RelationshipVectorInstance rel = new RelationshipVectorInstance(
                                     vector, fromInstance, toInstance);
 
@@ -32,7 +32,7 @@ class RelationshipInstanceTest {
 
         Assertions.assertTrue(rel.involves(fromInstance));
         Assertions.assertTrue(rel.involves(toInstance));
-        Assertions.assertFalse(rel.involves(thingfrom.createManagedInstance()));
+        Assertions.assertFalse(rel.involves(thingfrom.addInstance(new EntityInstance(thingfrom.definition()))));
 
         Assertions.assertEquals(toInstance, rel.getOtherThingInstance(fromInstance));
         Assertions.assertEquals(fromInstance, rel.getOtherThingInstance(toInstance));

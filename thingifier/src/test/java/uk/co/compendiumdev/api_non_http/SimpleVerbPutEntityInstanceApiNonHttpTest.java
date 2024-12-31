@@ -2,7 +2,6 @@ package uk.co.compendiumdev.api_non_http;
 
 import com.google.gson.Gson;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
@@ -68,7 +67,7 @@ public class SimpleVerbPutEntityInstanceApiNonHttpTest {
         requestBody = new HashMap<String, String>();
         requestBody.put("title", "My Office Work");
 
-        EntityInstance officeWork = instances.createManagedInstance().
+        EntityInstance officeWork = instances.addInstance(new EntityInstance(instances.definition())).
                 setValue("title", "An Existing instances");
 
         String officeWorkGuid = officeWork.getPrimaryKeyValue();
@@ -99,7 +98,7 @@ public class SimpleVerbPutEntityInstanceApiNonHttpTest {
         EntityInstanceCollection instances = thingifier.getThingInstancesNamed("entity", EntityRelModel.DEFAULT_DATABASE_NAME);
 
         // create something to amend with PUT
-        EntityInstance officeWork = instances.createManagedInstance().
+        EntityInstance officeWork = instances.addInstance(new EntityInstance(instances.definition())).
                 setValue("title", "An Existing instances").
                 setValue("description", "Existing Description");
 
@@ -128,7 +127,7 @@ public class SimpleVerbPutEntityInstanceApiNonHttpTest {
         EntityInstanceCollection instances = thingifier.getThingInstancesNamed("entity", EntityRelModel.DEFAULT_DATABASE_NAME);
 
         // create something to amend with PUT
-        EntityInstance officeWork = instances.createManagedInstance().
+        EntityInstance officeWork = instances.addInstance(new EntityInstance(instances.definition())).
                 setValue("description", "An Existing instance title");
 
         String officeWorkGuid = officeWork.getPrimaryKeyValue();
@@ -159,7 +158,7 @@ public class SimpleVerbPutEntityInstanceApiNonHttpTest {
         // PUT
 
 
-        EntityInstance officeWork = instances.createManagedInstance().
+        EntityInstance officeWork = instances.addInstance(new EntityInstance(instances.definition())).
                 setValue("title", "An Existing instances").
                 setValue("description", "my original description");
 
@@ -244,7 +243,7 @@ public class SimpleVerbPutEntityInstanceApiNonHttpTest {
         // PUT
 
 
-        EntityInstance officeWork = myInstances.createManagedInstance().
+        EntityInstance officeWork = myInstances.addInstance(new EntityInstance(myInstances.definition())).
                 setValue("title", "An Existing instance");
 
         String originalID = officeWork.getPrimaryKeyValue();

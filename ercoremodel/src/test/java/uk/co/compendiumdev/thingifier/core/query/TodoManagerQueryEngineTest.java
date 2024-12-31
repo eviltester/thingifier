@@ -56,15 +56,15 @@ public class TodoManagerQueryEngineTest {
         final EntityInstanceCollection categories = todoManager.getInstanceData().getInstanceCollectionForEntityNamed("category");
         projects = todoManager.getInstanceData().getInstanceCollectionForEntityNamed("project");
 
-        paperwork = todos.createManagedInstance().setValue("title", "scan paperwork");
+        paperwork = todos.addInstance(new EntityInstance(todos.definition())).setValue("title", "scan paperwork");
 
         //System.out.println(new Gson().toJson(JsonThing.asJsonObject(paperwork)));
 
-        filework = todos.createManagedInstance().setValue("title", "file paperwork");
+        filework = todos.addInstance(new EntityInstance(todos.definition())).setValue("title", "file paperwork");
 
-        officeCategory = categories.createManagedInstance().setValue("title", "Office");
+        officeCategory = categories.addInstance(new EntityInstance(categories.definition())).setValue("title", "Office");
 
-        EntityInstance homeCategory = categories.createManagedInstance().setValue("title", "Home");
+        EntityInstance homeCategory = categories.addInstance(new EntityInstance(categories.definition())).setValue("title", "Home");
 
 
         paperwork.getRelationships().connect("categories", officeCategory);
@@ -193,7 +193,7 @@ public class TodoManagerQueryEngineTest {
         List<EntityInstance> queryResults;
 
         //
-        EntityInstance officeWork = projects.createManagedInstance().setValue("title", "Office Work");
+        EntityInstance officeWork = projects.addInstance(new EntityInstance(projects.definition())).setValue("title", "Office Work");
 
         officeWork.getRelationships().connect("tasks", paperwork);
         officeWork.getRelationships().connect("tasks", filework);

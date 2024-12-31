@@ -45,10 +45,10 @@ public class BasicTodoManagerTest {
         EntityInstanceCollection todo = todoManager.getThingInstancesNamed("todo", EntityRelModel.DEFAULT_DATABASE_NAME);
         EntityInstanceCollection project = todoManager.getThingInstancesNamed("project", EntityRelModel.DEFAULT_DATABASE_NAME);
 
-        EntityInstance paperwork = todo.createManagedInstance().setValue("title", "scan paperwork");
-        EntityInstance filework = todo.createManagedInstance().setValue("title", "file paperwork");
+        EntityInstance paperwork = todo.addInstance(new EntityInstance(todo.definition())).setValue("title", "scan paperwork");
+        EntityInstance filework = todo.addInstance(new EntityInstance(todo.definition())).setValue("title", "file paperwork");
 
-        EntityInstance officeWork = project.createManagedInstance().setValue("title", "Office Work");
+        EntityInstance officeWork = project.addInstance(new EntityInstance(project.definition())).setValue("title", "Office Work");
 
         officeWork.getRelationships().connect("tasks", paperwork);
         officeWork.getRelationships().connect("tasks", filework);
@@ -77,11 +77,11 @@ public class BasicTodoManagerTest {
 
         EntityInstanceCollection todos = todoManager.getThingInstancesNamed("todo", EntityRelModel.DEFAULT_DATABASE_NAME);
 
-        EntityInstance tidy = todos.createManagedInstance().
+        EntityInstance tidy = todos.addInstance(new EntityInstance(todos.definition())).
                 setValue("title", "Tidy up my room").
                 setValue("description", "I need to tidy up my room because it is a mess");
 
-        EntityInstance paperwork = todos.createManagedInstance().
+        EntityInstance paperwork = todos.addInstance(new EntityInstance(todos.definition())).
                 setValue("title","Do Paperwork").
                 setValue("description", "Scan everything in, upload to document management system and file paperwork");
 
@@ -102,7 +102,7 @@ public class BasicTodoManagerTest {
 
         int originalTodosCount = todos.countInstances();
 
-        EntityInstance tidy = todos.createManagedInstance().
+        EntityInstance tidy = todos.addInstance(new EntityInstance(todos.definition())).
                 setValue("title","Delete this todo").
                 setValue("description", "I need to be deleted");
 

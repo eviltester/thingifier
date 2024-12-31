@@ -109,7 +109,7 @@ public class ApiResponseAsJsonTest {
         todo.addFields( Field.is("title", STRING));
         EntityInstanceCollection todos = thingifier.getThingInstancesNamed("todo", EntityRelModel.DEFAULT_DATABASE_NAME);
 
-        EntityInstance aTodo = todos.createManagedInstance().setValue("title", "a todo");
+        EntityInstance aTodo = todos.addInstance(new EntityInstance(todos.definition())).setValue("title", "a todo");
 
         ApiResponse response = ApiResponse.success().returnSingleInstance(aTodo);
 
@@ -136,8 +136,8 @@ public class ApiResponseAsJsonTest {
         todo.addFields( Field.is("title", STRING));
         EntityInstanceCollection todos = thingifier.getThingInstancesNamed("todo", EntityRelModel.DEFAULT_DATABASE_NAME);
 
-        EntityInstance aTodo = todos.createManagedInstance().setValue("title", "a todo");
-        EntityInstance anotherTodo = todos.createManagedInstance().setValue("title", "another todo");
+        EntityInstance aTodo = todos.addInstance(new EntityInstance(todos.definition())).setValue("title", "a todo");
+        EntityInstance anotherTodo = todos.addInstance(new EntityInstance(todos.definition())).setValue("title", "another todo");
 
         ApiResponse response = ApiResponse.success().returnInstanceCollection(new ArrayList(todos.getInstances()));
 

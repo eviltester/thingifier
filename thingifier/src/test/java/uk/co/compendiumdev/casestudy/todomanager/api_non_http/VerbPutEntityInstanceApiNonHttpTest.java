@@ -69,7 +69,7 @@ public class VerbPutEntityInstanceApiNonHttpTest {
         requestBody = new HashMap<String, String>();
         requestBody.put("title", "My Office Work");
 
-        EntityInstance officeWork = project.createManagedInstance().
+        EntityInstance officeWork = project.addInstance(new EntityInstance(project.definition())).
                 setValue("title", "An Existing Project");
 
         String officeWorkGuid = officeWork.getPrimaryKeyValue();
@@ -100,7 +100,7 @@ public class VerbPutEntityInstanceApiNonHttpTest {
         // PUT
 
 
-        EntityInstance officeWork = project.createManagedInstance().
+        EntityInstance officeWork = project.addInstance(new EntityInstance(project.definition())).
                 setValue("title", "An Existing Project").
                 setValue("description", "my original description");
 
@@ -135,7 +135,7 @@ public class VerbPutEntityInstanceApiNonHttpTest {
         // PUT
 
 
-        EntityInstance officeWork = project.createManagedInstance().
+        EntityInstance officeWork = project.addInstance(new EntityInstance(project.definition())).
                 setValue("title", "An Existing Project").
                 setValue("description", "my original description");
 
@@ -250,7 +250,7 @@ public class VerbPutEntityInstanceApiNonHttpTest {
         final Field anIdField = Field.is("id", FieldType.AUTO_INCREMENT);
         project.definition().addField(anIdField);
 
-        final EntityInstance instance = project.createManagedInstance();
+        final EntityInstance instance = project.addInstance(new EntityInstance(project.definition()));
 
         // Want to PUT
         requestBody = new HashMap<String, String>();
@@ -288,7 +288,7 @@ public class VerbPutEntityInstanceApiNonHttpTest {
         Assertions.assertTrue(apiresponse.hasABody());
 
 
-        EntityInstance paperwork = todo.createManagedInstance().setValue("title", "Todo for amending");
+        EntityInstance paperwork = todo.addInstance(new EntityInstance(todo.definition())).setValue("title", "Todo for amending");
 
         // Mandatory field validation PUT amend
         requestBody = new HashMap<String, String>();
@@ -338,7 +338,7 @@ public class VerbPutEntityInstanceApiNonHttpTest {
         ApiResponse apiresponse;
 
 
-        EntityInstance paperwork = todo.createManagedInstance().setValue("title", "Todo for amending");
+        EntityInstance paperwork = todo.addInstance(new EntityInstance(todo.definition())).setValue("title", "Todo for amending");
 
         // Mandatory field validation PUT amend
         requestBody = new HashMap<String, String>();

@@ -49,7 +49,7 @@ public class UsageTest {
         Assertions.assertTrue(urls.definition().hasFieldNameDefined("url"));
         Assertions.assertTrue(urls.definition().hasFieldNameDefined("name"));
 
-        urls.createManagedInstance().
+        urls.addInstance(new EntityInstance(urls.definition())).
                 setValue("name","EvilTester.com").
                 setValue("url","http://eviltester.com");
 
@@ -57,7 +57,8 @@ public class UsageTest {
 
         user.addFields(Field.is("name", STRING));
 
-        EntityInstance alan = things.getThingInstancesNamed("USER", EntityRelModel.DEFAULT_DATABASE_NAME).createManagedInstance().
+        EntityInstanceCollection entityInstanceCollection = things.getThingInstancesNamed("USER", EntityRelModel.DEFAULT_DATABASE_NAME);
+        EntityInstance alan = entityInstanceCollection.addInstance(new EntityInstance(entityInstanceCollection.definition())).
                 setValue("name","alan");
 
 

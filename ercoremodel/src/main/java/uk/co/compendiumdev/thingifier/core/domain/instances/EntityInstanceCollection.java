@@ -137,12 +137,6 @@ final public class EntityInstanceCollection {
         return instance;
     }
 
-    /* create and add */
-    // TODO: this looks like it was added to support testing, consider removing and adding to a test helper
-    public EntityInstance createManagedInstance() {
-        return addInstance( new EntityInstance(definition));
-    }
-
     public int countInstances() {
         return instances.size();
     }

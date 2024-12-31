@@ -3,7 +3,6 @@ package uk.co.compendiumdev.thingifier.core.query;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
@@ -11,9 +10,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.F
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class QueryFiltersBooleanTest {
 
@@ -35,10 +32,10 @@ public class QueryFiltersBooleanTest {
 
         EntityInstanceCollection thing = erModel.getInstanceData().getInstanceCollectionForEntityNamed("thing");
 
-        thing.createManagedInstance().setValue("truefalse", "true");
-        thing.createManagedInstance().setValue("truefalse", "true");
-        thing.createManagedInstance().setValue("truefalse", "true");
-        thing.createManagedInstance().setValue("truefalse", "false");
+        thing.addInstance( new EntityInstance(thing.definition())).setValue("truefalse", "true");
+        thing.addInstance( new EntityInstance(thing.definition())).setValue("truefalse", "true");
+        thing.addInstance( new EntityInstance(thing.definition())).setValue("truefalse", "true");
+        thing.addInstance(new EntityInstance(thing.definition())).setValue("truefalse", "false");
 
     }
 

@@ -487,7 +487,7 @@ public abstract class ChallengeCompleteTest{
         ensureAtMostXTodoAvailable(10);
 
         final EntityInstanceCollection todos = ChallengeMain.getChallenger().getThingifier().getThingInstancesNamed("todo", challenger.getXChallenger());
-        final EntityInstance todo = todos.createManagedInstance();
+        final EntityInstance todo = todos.addInstance( new EntityInstance(todos.definition()));
 
         Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
 
@@ -634,7 +634,7 @@ public abstract class ChallengeCompleteTest{
         ensureAtMostXTodoAvailable(10);
 
         final EntityInstanceCollection todos = ChallengeMain.getChallenger().getThingifier().getThingInstancesNamed("todo", challenger.getXChallenger());
-        final EntityInstance todo = todos.createManagedInstance();
+        final EntityInstance todo = todos.addInstance( new EntityInstance(todos.definition()));
 
         Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
 
@@ -653,7 +653,7 @@ public abstract class ChallengeCompleteTest{
     public void canGetSpecificTodoPass() {
 
         final EntityInstanceCollection todos = ChallengeMain.getChallenger().getThingifier().getThingInstancesNamed("todo", challenger.getXChallenger());
-        final EntityInstance todo = todos.createManagedInstance();
+        final EntityInstance todo = todos.addInstance(new EntityInstance(todos.definition()));
 
         Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
 
@@ -769,8 +769,8 @@ public abstract class ChallengeCompleteTest{
 
         final EntityInstanceCollection todos = ChallengeMain.getChallenger().getThingifier().getThingInstancesNamed("todo", challenger.getXChallenger());
 
-        todos.createManagedInstance().setValue("doneStatus", "true");
-        todos.createManagedInstance().setValue("doneStatus", "false");
+        todos.addInstance(new EntityInstance(todos.definition())).setValue("doneStatus", "true");
+        todos.addInstance(new EntityInstance(todos.definition())).setValue("doneStatus", "false");
 
         final HttpResponseDetails response =
                 http.send("/todos?doneStatus=true", "GET", x_challenger_header, "");
@@ -1121,10 +1121,10 @@ public abstract class ChallengeCompleteTest{
 
         // add some todos in case this is not the last test
 
-        todos.createManagedInstance();
-        todos.createManagedInstance();
-        todos.createManagedInstance();
-        todos.createManagedInstance();
+        todos.addInstance(new EntityInstance(todos.definition()));
+        todos.addInstance(new EntityInstance(todos.definition()));
+        todos.addInstance(new EntityInstance(todos.definition()));
+        todos.addInstance(new EntityInstance(todos.definition()));
 
     }
 

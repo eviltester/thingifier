@@ -55,14 +55,14 @@ public class VerbGetEntityInstanceApiNonHttpTest {
         todoManager.apiConfig().setReturnSingleGetItemsAsCollection(false);
 
         // add some data
-        todo.createManagedInstance().setValue("title", "My Title" + System.nanoTime());
-        todo.createManagedInstance().setValue("title", "My Title" + System.nanoTime());
+        todo.addInstance(new EntityInstance(todo.definition())).setValue("title", "My Title" + System.nanoTime());
+        todo.addInstance(new EntityInstance(todo.definition())).setValue("title", "My Title" + System.nanoTime());
 
 
-        EntityInstance findThis = todo.createManagedInstance().
+        EntityInstance findThis = todo.addInstance(new EntityInstance(todo.definition())).
                 setValue("title", "My Title" + System.nanoTime());
 
-        todo.createManagedInstance().setValue("title", "My Title" + System.nanoTime());
+        todo.addInstance(new EntityInstance(todo.definition())).setValue("title", "My Title" + System.nanoTime());
 
 
         ApiResponse apiResponse = todoManager.api().get("/todo/" + findThis.getPrimaryKeyValue(), new QueryFilterParams(), new HttpHeadersBlock());
@@ -86,14 +86,14 @@ public class VerbGetEntityInstanceApiNonHttpTest {
         todoManager.apiConfig().setReturnSingleGetItemsAsCollection(true);
 
         // add some data
-        todo.createManagedInstance().setValue("title", "My Title" + System.nanoTime());
-        todo.createManagedInstance().setValue("title", "My Title" + System.nanoTime());
+        todo.addInstance(new EntityInstance(todo.definition())).setValue("title", "My Title" + System.nanoTime());
+        todo.addInstance(new EntityInstance(todo.definition())).setValue("title", "My Title" + System.nanoTime());
 
 
-        EntityInstance findThis = todo.createManagedInstance().
+        EntityInstance findThis = todo.addInstance(new EntityInstance(todo.definition())).
                 setValue("title", "My Title" + System.nanoTime());
 
-        todo.createManagedInstance().setValue("title", "My Title" + System.nanoTime());
+        todo.addInstance(new EntityInstance(todo.definition())).setValue("title", "My Title" + System.nanoTime());
 
 
         ApiResponse apiResponse = todoManager.api().get("/todo/" + findThis.getPrimaryKeyValue(), new QueryFilterParams(), new HttpHeadersBlock());
@@ -117,10 +117,10 @@ public class VerbGetEntityInstanceApiNonHttpTest {
         todoManager.apiConfig().setReturnSingleGetItemsAsCollection(false);
 
         // add some data
-        todo.createManagedInstance().setValue("title", "My Title" + System.nanoTime());
-        todo.createManagedInstance().setValue("title", "My Title" + System.nanoTime());
-        todo.createManagedInstance().setValue("title", "My Title" + System.nanoTime());
-        todo.createManagedInstance().setValue("title", "My Title" + System.nanoTime());
+        todo.addInstance(new EntityInstance(todo.definition())).setValue("title", "My Title" + System.nanoTime());
+        todo.addInstance(new EntityInstance(todo.definition())).setValue("title", "My Title" + System.nanoTime());
+        todo.addInstance(new EntityInstance(todo.definition())).setValue("title", "My Title" + System.nanoTime());
+        todo.addInstance(new EntityInstance(todo.definition())).setValue("title", "My Title" + System.nanoTime());
 
 
         ApiResponse apiResponse = todoManager.api().get("/todo", new QueryFilterParams(), new HttpHeadersBlock());
@@ -152,10 +152,10 @@ public class VerbGetEntityInstanceApiNonHttpTest {
         todoManager.apiConfig().setReturnSingleGetItemsAsCollection(true);
 
         // add some data
-        todo.createManagedInstance().setValue("title", "My Title" + System.nanoTime());
-        todo.createManagedInstance().setValue("title", "My Title" + System.nanoTime());
-        todo.createManagedInstance().setValue("title", "My Title" + System.nanoTime());
-        todo.createManagedInstance().setValue("title", "My Title" + System.nanoTime());
+        todo.addInstance(new EntityInstance(todo.definition())).setValue("title", "My Title" + System.nanoTime());
+        todo.addInstance(new EntityInstance(todo.definition())).setValue("title", "My Title" + System.nanoTime());
+        todo.addInstance(new EntityInstance(todo.definition())).setValue("title", "My Title" + System.nanoTime());
+        todo.addInstance(new EntityInstance(todo.definition())).setValue("title", "My Title" + System.nanoTime());
 
 
         ApiResponse apiResponse = todoManager.api().get("/todo", new QueryFilterParams(), new HttpHeadersBlock());

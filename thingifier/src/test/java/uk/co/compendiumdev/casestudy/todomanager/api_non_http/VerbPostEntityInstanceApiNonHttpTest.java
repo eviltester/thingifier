@@ -144,7 +144,7 @@ public class VerbPostEntityInstanceApiNonHttpTest {
     @Test
     public void postCanAmendAnExistingEntity() {
 
-        EntityInstance relTodo = todo.createManagedInstance().
+        EntityInstance relTodo = todo.addInstance(new EntityInstance(todo.definition())).
                 setValue("title", "Todo for amending");
 
 
@@ -205,7 +205,7 @@ public class VerbPostEntityInstanceApiNonHttpTest {
         String originalTitle = "Todo for amending " + System.currentTimeMillis();
         String originalDescription = "my description " + System.currentTimeMillis();
 
-        EntityInstance amendTodo = todo.createManagedInstance().
+        EntityInstance amendTodo = todo.addInstance(new EntityInstance(todo.definition())).
                 setValue("title", originalTitle).setValue("description", originalDescription);
 
 
@@ -253,7 +253,7 @@ public class VerbPostEntityInstanceApiNonHttpTest {
         requestBody = new HashMap<>();
         requestBody.put("title", "My Office Work");
 
-        EntityInstance officeWork = project.createManagedInstance().
+        EntityInstance officeWork = project.addInstance(new EntityInstance(project.definition())).
                 setValue("title", "An Existing Project");
 
         String officeWorkGuid = officeWork.getPrimaryKeyValue();
@@ -305,7 +305,7 @@ public class VerbPostEntityInstanceApiNonHttpTest {
         requestBody.put("title", "A new TODO Item");
         requestBody.put("doneStatus", "FALSEY");
 
-        EntityInstance paperwork = todo.createManagedInstance().
+        EntityInstance paperwork = todo.addInstance(new EntityInstance(todo.definition())).
                 setValue("title", "Todo for amending");
 
         apiresponse = todoManager.api().post(String.format("todo/%s", paperwork.getPrimaryKeyValue()), getSimpleParser(requestBody), new HttpHeadersBlock());

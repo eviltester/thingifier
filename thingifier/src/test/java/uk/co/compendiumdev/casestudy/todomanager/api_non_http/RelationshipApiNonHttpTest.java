@@ -77,10 +77,10 @@ public class RelationshipApiNonHttpTest {
         ApiResponse apiresponse;
 
 
-        EntityInstance paperwork = todo.createManagedInstance().
+        EntityInstance paperwork = todo.addInstance(new EntityInstance(todo.definition())).
                 setValue("title", "Todo for relating");
 
-        EntityInstance myNewProject = project.createManagedInstance().
+        EntityInstance myNewProject = project.addInstance(new EntityInstance(project.definition())).
                 setValue("title", "My New Project " + System.currentTimeMillis());
 
         myNewProject.getRelationships().connect("tasks", paperwork);
@@ -114,11 +114,11 @@ public class RelationshipApiNonHttpTest {
         ApiResponse apiresponse;
 
 
-        EntityInstance paperwork = todo.createManagedInstance().
+        EntityInstance paperwork = todo.addInstance(new EntityInstance(todo.definition())).
                 setValue("title", "Todo for amending");
 
 
-        EntityInstance myNewProject = project.createManagedInstance().
+        EntityInstance myNewProject = project.addInstance(new EntityInstance(project.definition())).
                 setValue("title", "My New Project " + System.currentTimeMillis());
 
         myNewProject.getRelationships().connect("tasks", paperwork);
@@ -153,10 +153,10 @@ public class RelationshipApiNonHttpTest {
         ApiResponse apiresponse;
 
 
-        EntityInstance paperwork = todo.createManagedInstance().
+        EntityInstance paperwork = todo.addInstance(new EntityInstance(todo.definition())).
                 setValue("title", "Todo for amending");
 
-        EntityInstance myNewProject = project.createManagedInstance().
+        EntityInstance myNewProject = project.addInstance(new EntityInstance(project.definition())).
                 setValue("title", "My New Project " + System.currentTimeMillis());
 
 
@@ -195,10 +195,10 @@ public class RelationshipApiNonHttpTest {
         ApiResponse apiresponse;
 
 
-        EntityInstance paperwork = todo.createManagedInstance().
+        EntityInstance paperwork = todo.addInstance(new EntityInstance(todo.definition())).
                 setValue("title", "Todo for amending");
 
-        EntityInstance myNewProject = project.createManagedInstance().
+        EntityInstance myNewProject = project.addInstance(new EntityInstance(project.definition())).
                 setValue("title", "My New Project " + System.currentTimeMillis());
 
 
@@ -244,10 +244,10 @@ public class RelationshipApiNonHttpTest {
     public void postCanCreateARelationshipUsingAPI() {
 
 
-        EntityInstance myNewProject = project.createManagedInstance().
+        EntityInstance myNewProject = project.addInstance(new EntityInstance(project.definition())).
                 setValue("title", "Project For Relationships");
 
-        EntityInstance relTodo = todo.createManagedInstance().
+        EntityInstance relTodo = todo.addInstance(new EntityInstance(todo.definition())).
                 setValue("title", "Todo for relationship testing");
 
 
@@ -281,11 +281,11 @@ public class RelationshipApiNonHttpTest {
     public void postCanCreateARelationshipUsingReversalRelationshipAPI() {
 
 
-        EntityInstance myNewProject = project.createManagedInstance().
+        EntityInstance myNewProject = project.addInstance(new EntityInstance(project.definition())).
                 setValue("title", "Project For Relationships " + System.currentTimeMillis());
 
 
-        EntityInstance relTodo = todo.createManagedInstance().
+        EntityInstance relTodo = todo.addInstance(new EntityInstance(todo.definition())).
                 setValue("title", "Todo for relationship testing " + System.currentTimeMillis());
 
         // Create a relationship with POST
@@ -352,10 +352,10 @@ public class RelationshipApiNonHttpTest {
     public void deleteARelationshipUsingReversalRelationshipAPI() {
 
 
-        EntityInstance myNewProject = project.createManagedInstance().
+        EntityInstance myNewProject = project.addInstance(new EntityInstance(project.definition())).
                 setValue("title", "Project For Relationships " + System.currentTimeMillis());
 
-        EntityInstance relTodo = todo.createManagedInstance().
+        EntityInstance relTodo = todo.addInstance(new EntityInstance(todo.definition())).
                 setValue("title", "Todo for relationship testing " + System.currentTimeMillis());
 
         // Create a relationship with POST
@@ -410,10 +410,10 @@ public class RelationshipApiNonHttpTest {
     public void deleteAThingInAReversalRelationship() {
 
 
-        EntityInstance myNewProject = project.createManagedInstance().
+        EntityInstance myNewProject = project.addInstance(new EntityInstance(project.definition())).
                 setValue("title", "Project For Relationships " + System.currentTimeMillis());
 
-        EntityInstance relTodo = todo.createManagedInstance().
+        EntityInstance relTodo = todo.addInstance(new EntityInstance(todo.definition())).
                 setValue("title", "Todo for relationship testing " + System.currentTimeMillis());
 
         // Create a relationship with POST
@@ -470,7 +470,7 @@ public class RelationshipApiNonHttpTest {
     public void postCanCreateARelationshipAndTodoAtSameTimeUsingAPI() {
 
 
-        EntityInstance myNewProject = project.createManagedInstance().
+        EntityInstance myNewProject = project.addInstance(new EntityInstance(project.definition())).
                 setValue("title", "Project For Relationships");
 
 
@@ -527,7 +527,7 @@ public class RelationshipApiNonHttpTest {
 
         // Create a thing and relate through a reverse relationship e.g. POST todo/GUID/task-of
 
-        EntityInstance relTodo = todo.createManagedInstance().
+        EntityInstance relTodo = todo.addInstance(new EntityInstance(todo.definition())).
                 setValue("title", "Todo for relationship testing " + System.currentTimeMillis());
 
 
@@ -585,8 +585,7 @@ public class RelationshipApiNonHttpTest {
     public void postCanCreateAMandatoryRelationshipFromEstimateAndTodoAtSameTimeUsingAPI() {
 
 
-
-        EntityInstance myTodo = todo.createManagedInstance().
+        EntityInstance myTodo = todo.addInstance(new EntityInstance(todo.definition())).
                 setValue("title", "an estimated todo");
 
         final EntityInstanceCollection estimates = todoManager.getThingInstancesNamed("estimate", EntityRelModel.DEFAULT_DATABASE_NAME);
@@ -645,7 +644,7 @@ public class RelationshipApiNonHttpTest {
     @Test
     public void postCanNotCreateEstimateWithoutAMandatoryRelationshipUsingAPI() {
 
-        EntityInstance myTodo = todo.createManagedInstance().
+        EntityInstance myTodo = todo.addInstance(new EntityInstance(todo.definition())).
                 setValue("title", "an estimated todo");
 
         final EntityInstanceCollection estimates = todoManager.getThingInstancesNamed("estimate", EntityRelModel.DEFAULT_DATABASE_NAME);
@@ -671,7 +670,7 @@ public class RelationshipApiNonHttpTest {
     @Test
     public void postCanCreateEstimateAMandatoryRelationshipUsingAPI() {
 
-        EntityInstance myTodo = todo.createManagedInstance().
+        EntityInstance myTodo = todo.addInstance(new EntityInstance(todo.definition())).
                 setValue("title",
                                     "an estimated todo");
 

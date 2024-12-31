@@ -13,8 +13,6 @@ import uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
-import java.util.UUID;
-
 
 public class XmlRequestResponseTest {
 
@@ -58,7 +56,7 @@ public class XmlRequestResponseTest {
     public void canGetXmlItemsWhenAskedForXml(){
 
 
-        todo.createManagedInstance().setValue("title", "my title");
+        todo.addInstance(new EntityInstance(todo.definition())).setValue("title", "my title");
 
         HttpApiRequest request = new HttpApiRequest("todos");
         request.getHeaders().putAll(HeadersSupport.acceptXml());
@@ -74,7 +72,7 @@ public class XmlRequestResponseTest {
     public void canGetXmlErrorMessagesWhenAskedForXml(){
 
 
-        todo.createManagedInstance().setValue("title", "my title");
+        todo.addInstance(new EntityInstance(todo.definition())).setValue("title", "my title");
 
         HttpApiRequest request = new HttpApiRequest("todosyoohoo");
         request.getHeaders().putAll(HeadersSupport.acceptXml());
@@ -133,7 +131,7 @@ public class XmlRequestResponseTest {
     @Test
     public void canPostAndAmendAnItemWithXml(){
 
-        final EntityInstance atodo = todo.createManagedInstance().setValue("title", "my title");
+        final EntityInstance atodo = todo.addInstance(new EntityInstance(todo.definition())).setValue("title", "my title");
 
         Assertions.assertEquals(1, todo.countInstances());
 
@@ -210,7 +208,7 @@ public class XmlRequestResponseTest {
     @Test
     public void canPutToAmendAnItemWithJson(){
 
-        final EntityInstance atodo = todo.createManagedInstance().setValue("title", "my title");
+        final EntityInstance atodo = todo.addInstance(new EntityInstance(todo.definition())).setValue("title", "my title");
 
         Assertions.assertEquals(1, todo.countInstances());
 

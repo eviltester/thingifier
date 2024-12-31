@@ -1,8 +1,8 @@
 package uk.co.compendiumdev.thingifier.swaggerizer;
 
-import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.ERSchema;
 import uk.co.compendiumdev.thingifier.core.domain.instances.ERInstanceData;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.core.domain.datapopulator.DataPopulator;
 
@@ -24,7 +24,7 @@ public class TodoAPITestDataPopulator implements DataPopulator {
         EntityInstanceCollection todo = database.getInstanceCollectionForEntityNamed("todo");
 
         for(String todoItem : todos){
-            todo.createManagedInstance().
+            todo.addInstance(new EntityInstance(todo.definition())).
                                     setValue("title", todoItem);
         }
     }

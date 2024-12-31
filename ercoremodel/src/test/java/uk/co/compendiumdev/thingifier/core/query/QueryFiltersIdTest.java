@@ -27,10 +27,10 @@ public class QueryFiltersIdTest {
         EntityInstanceCollection thing = erModel.getInstanceData().getInstanceCollectionForEntityNamed("thing");
 
         // fakeid is a proxy for the actual id which always starts at 1 and auto increments
-        thing.createManagedInstance().setValue("fakeid", "1");
-        thing.createManagedInstance().setValue("fakeid", "2");
-        thing.createManagedInstance().setValue("fakeid", "3");
-        thing.createManagedInstance().setValue("fakeid", "4");
+        thing.addInstance(new EntityInstance(thing.definition())).setValue("fakeid", "1");
+        thing.addInstance(new EntityInstance(thing.definition())).setValue("fakeid", "2");
+        thing.addInstance(new EntityInstance(thing.definition())).setValue("fakeid", "3");
+        thing.addInstance(new EntityInstance(thing.definition())).setValue("fakeid", "4");
 
     }
 
