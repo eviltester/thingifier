@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ERInstanceData {
+
+    // The persistence mechanism EntityName, InstanceCollection
     private final ConcurrentHashMap<String, EntityInstanceCollection> instanceCollections;
 
     public ERInstanceData() {

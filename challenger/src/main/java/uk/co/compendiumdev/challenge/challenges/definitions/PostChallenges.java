@@ -31,7 +31,10 @@ public class PostChallenges {
                 "POST /todos (400) title too long",
                 "Issue a POST request to create a todo but fail length validation on the `title` field because your title exceeds maximum allowable characters.");
 
-//        aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/post-todos-400");
+        aChallenge.addHint("The API Documentation shows the maximum allowed length of the title field", "");
+
+        aChallenge.addSolutionLink("Send a POST request to /todos with a title longer than 50 characters", "", "");
+        aChallenge.addSolutionLink("Read Solution", "HREF", "/apichallenges/solutions/post-create/post-todos-400-title-too-long");
 //        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "tlye5bQ72g0");
         // TODO: create solution for failing title too long
 
@@ -46,6 +49,7 @@ public class PostChallenges {
 
         aChallenge.addHint("doneStatus should be boolean, an invalid status would be a String or a number e.g. \"invalid\"");
 
+        aChallenge.addSolutionLink("Send a POST request to /todos with a non-boolean `doneStatus` e.g. {\"title\":\"a title\",\"doneStatus\":\"invalid\"}", "", "");
         aChallenge.addSolutionLink("Read Solution", "HREF", "/apichallenges/solutions/post-create/post-todos-400");
         aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "tlye5bQ72g0");
         return aChallenge;
@@ -57,9 +61,13 @@ public class PostChallenges {
                 "POST /todos (400) description too long",
                 "Issue a POST request to create a todo but fail length validation on the `description` because your description exceeds maximum allowable characters.");
 
-//        aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/post-todos-400");
+        aChallenge.addHint("The API Documentation shows the maximum allowed length of the description field", "");
+
+        aChallenge.addSolutionLink("Send a POST request to /todos with a description longer than 200 characters", "", "");
+        aChallenge.addSolutionLink("Read Solution", "HREF", "/apichallenges/solutions/post-create/post-todos-400-description-too-long");
+
 //        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "tlye5bQ72g0");
-        // TODO: create solution for failing description too long
+        // TODO: create video solution for failing description too long
         return aChallenge;
     }
 
@@ -70,10 +78,14 @@ public class PostChallenges {
                 "Issue a POST request to create a todo with maximum length title and description fields.");
 
         aChallenge.addHint("Max lengths are listed in the API Documentation");
-        aChallenge.addHint("CounterStrings are very useful for testing with maximum field lengths");
-//        aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/post-todos-400");
+        aChallenge.addHint("CounterStrings are very useful for testing with maximum field lengths","https://eviltester.github.io/TestingApp/apps/counterstrings/counterstrings.html");
+        aChallenge.addHint("Both title and description should be the correct maximum lengths");
+
+        aChallenge.addSolutionLink("Send a POST request to /todos with a description of 200 characters and a title with 50 characters", "", "");
+        aChallenge.addSolutionLink("Read Solution", "HREF", "/apichallenges/solutions/post-create/post-todos-201-max-content");
+
 //        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "tlye5bQ72g0");
-        // TODO: create solution for max out title and description
+        // TODO: create video solution for max out title and description
         return aChallenge;
     }
 
@@ -84,9 +96,13 @@ public class PostChallenges {
                 "Issue a POST request to create a todo but fail payload length validation on the `description` because your whole payload exceeds maximum allowable 5000 characters.");
 
         aChallenge.addHint("Try using a long 5000 char string as the description or title text");
-//        aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/post-todos-400");
+        aChallenge.addHint("CounterStrings are very useful for testing with maximum field lengths","https://eviltester.github.io/TestingApp/apps/counterstrings/counterstrings.html");
+
+        aChallenge.addSolutionLink("Send a POST request to /todos with a description of 5000 characters in length", "", "");
+        aChallenge.addSolutionLink("Read Solution", "HREF", "/apichallenges/solutions/post-create/post-todos-413-content-too-long");
+
 //        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "tlye5bQ72g0");
-        // TODO: create solution for failing content too long
+        // TODO: create video solution for failing content too long
         return aChallenge;
     }
 

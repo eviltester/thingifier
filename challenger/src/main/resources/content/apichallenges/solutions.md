@@ -29,10 +29,10 @@ description: A list of all the solutions for the API Challenges. Try them yourse
 
 - [POST /todos id (201)](/apichallenges/solutions/post-create/post-todos-201)
 - [POST /todos (400) doneStatus](/apichallenges/solutions/post-create/post-todos-400)
-- POST /todos (400) title too long
-- POST /todos (400) description too long
-- POST /todos (201) max out content
-- POST /todos (413) content too long
+- [POST /todos (400) title too long](/apichallenges/solutions/post-create/post-todos-400-title-too-long)
+- [POST /todos (400) description too long](/apichallenges/solutions/post-create/post-todos-400-description-too-long)
+- [POST /todos (201) max out content](/apichallenges/solutions/post-create/post-todos-201-max-content)
+- [POST /todos (413) content too long](/apichallenges/solutions/post-create/post-todos-413-content-too-long)
 - POST /todos (400) extra
 
 ## Creation Challenges with PUT

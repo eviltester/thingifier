@@ -11,6 +11,11 @@ import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import java.util.List;
 import java.util.Map;
 
+// TODO - there should be a generic API handlers package that does create, read, update, delete
+// which I think this is, and they should not use http status codes
+// also cloning instances feels like the wrong way to amend, we should create 'amend/patch' requests
+// would also handle relationship
+
 public class ThingAmendment {
 
     private final Thingifier thingifier;
