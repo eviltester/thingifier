@@ -45,13 +45,13 @@ public class SimulationRoutes {
 
     public void setUpData(){
         // fake the data storage
-        this.simulation = new Thingifier();
+        simulation = new Thingifier();
 
         simulation.setDocumentation("Simulation Mode", "A simulated API, each request generates a new set of data but responses are processed by an API handler.");
-        this.entityDefn = this.simulation.defineThing("entity", "entities");
+        entityDefn = simulation.defineThing("entity", "entities");
 
-        this.entityDefn.addAsPrimaryKeyField(Field.is("id", FieldType.AUTO_INCREMENT));
-        this.entityDefn.addFields(
+        entityDefn.addAsPrimaryKeyField(Field.is("id", FieldType.AUTO_INCREMENT));
+        entityDefn.addFields(
                 Field.is("name", FieldType.STRING).
                         makeMandatory().
                         withValidation(new MaximumLengthValidationRule(50)).
@@ -61,22 +61,22 @@ public class SimulationRoutes {
                         withValidation(new MaximumLengthValidationRule(200))
         );
 
-        this.entityStorage = this.simulation.getThingInstancesNamed("entity", EntityRelModel.DEFAULT_DATABASE_NAME);
+        entityStorage = simulation.getThingInstancesNamed("entity", EntityRelModel.DEFAULT_DATABASE_NAME);
 
         for(int id=1; id<=10; id++){
 
-            this.entityStorage.createManagedInstance().
-                        //setValue("id", String.valueOf(id)).
-                        setValue("name", "entity number " +id);
+            createManagedInstance(entityStorage).
+                //setValue("id", String.valueOf(id)).
+                setValue("name", "entity number " +id);
         }
 
-        this.entityStorage.createManagedInstance().
-                //setValue("id", String.valueOf(id)).
-                        setValue("name", "bob");
+        createManagedInstance(entityStorage).
+            //setValue("id", String.valueOf(id)).
+            setValue("name", "bob");
 
         // this gives us access to the common http processing functions
-        this.httpApi = new ThingifierHttpApi(this.simulation);
-        this.jsonThing = new JsonThing(this.simulation.apiConfig().jsonOutput());
+        httpApi = new ThingifierHttpApi(simulation);
+        jsonThing = new JsonThing(simulation.apiConfig().jsonOutput());
 
         apiDocDefn = new ThingifierApiDocumentationDefn();
         apiDocDefn.setThingifier(simulation);
@@ -106,6 +106,12 @@ public class SimulationRoutes {
                                             guiTemplates
         );
 
+    }
+
+    private EntityInstance createManagedInstance(EntityInstanceCollection entityStorage) {
+        EntityInstance instance = new EntityInstance(entityStorage.definition());
+        entityStorage.addInstance(instance);
+        return instance;
     }
 
     public void configure() {
@@ -143,14 +149,14 @@ public class SimulationRoutes {
 
             // process it because the request validated
             List<EntityInstance> instances = new ArrayList();
-            for (EntityInstance possible : this.entityStorage.getInstances()) {
+            for (EntityInstance possible : entityStorage.getInstances()) {
                 if (!idsToRemove.contains(
                         possible.getFieldValue("id").asInteger())) {
                     instances.add(possible);
                 }
             }
 
-            Thingifier cloned = this.simulation.cloneWithDifferentData(instances);
+            Thingifier cloned = simulation.cloneWithDifferentData(instances);
             return new RestApiGetHandler(cloned).handle("entities", anHttpApiRequest.getFilterableQueryParams(), anHttpApiRequest.getHeaders());
 
         };
@@ -173,7 +179,7 @@ public class SimulationRoutes {
 
             // process it because the request validated
             String id = anHttpApiRequest.getUrlParam(":id");
-            EntityInstance instance = this.entityStorage.findInstanceByPrimaryKey(id);
+            EntityInstance instance = entityStorage.findInstanceByPrimaryKey(id);
             if (instance == null) {
                 response = ApiResponse.error404("Could not find Entity with ID " + id);
             } else {
@@ -218,9 +224,9 @@ public class SimulationRoutes {
 
             return new SparkApiRequestResponseHandler(request, result, simulation).
                     usingHandler((anHttpApiRequest) -> {
-                        return ApiResponse.created(this.entityStorage.
+                        return ApiResponse.created(entityStorage.
                                         findInstanceByPrimaryKey("11"),
-                                this.simulation.apiConfig());
+                                simulation.apiConfig());
                     }).handle();
         });
 
@@ -231,8 +237,8 @@ public class SimulationRoutes {
             if (id.equals("11")) {
                 // we can create id 11
                 response = ApiResponse.created(
-                        this.entityStorage.findInstanceByPrimaryKey("11"),
-                        this.simulation.apiConfig());
+                        entityStorage.findInstanceByPrimaryKey("11"),
+                        simulation.apiConfig());
             } else {
                 if (id.equals("10")) {
                     // 10 is the entity we amend to name:eris
@@ -240,7 +246,7 @@ public class SimulationRoutes {
                             overrideValue("id", "10").setValue("name", "eris");
                     response = ApiResponse.success().returnSingleInstance(fake);
                 } else {
-                    final EntityInstance instance = this.entityStorage.findInstanceByPrimaryKey(id);
+                    final EntityInstance instance = entityStorage.findInstanceByPrimaryKey(id);
                     if (instance == null) {
                         if (anHttpApiRequest.getVerb() == HttpApiRequest.VERB.POST) {
                             response = ApiResponse.error404("Could not find Entity with ID " + id);
@@ -279,7 +285,7 @@ public class SimulationRoutes {
                             // we can delete id 9
                             response = new ApiResponse(204);
                         } else {
-                            final EntityInstance instance = this.entityStorage.findInstanceByPrimaryKey(id);
+                            final EntityInstance instance = entityStorage.findInstanceByPrimaryKey(id);
                             if (instance == null) {
                                 response = ApiResponse.error404("Could not find Entity with ID " + id);
                             } else {

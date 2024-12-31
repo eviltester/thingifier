@@ -64,7 +64,7 @@ final public class EntityInstanceCollection {
         return this;
     }
 
-    public EntityInstanceCollection addInstance(EntityInstance instance) {
+    public EntityInstance addInstance(EntityInstance instance) {
 
         if(instance.getEntity()!=definition){
             throw new RuntimeException(String.format(
@@ -134,15 +134,13 @@ final public class EntityInstanceCollection {
             }
         }
 
-        return this;
+        return instance;
     }
 
     /* create and add */
     // TODO: this looks like it was added to support testing, consider removing and adding to a test helper
     public EntityInstance createManagedInstance() {
-        EntityInstance instance = new EntityInstance(definition);
-        addInstance(instance);
-        return instance;
+        return addInstance( new EntityInstance(definition));
     }
 
     public int countInstances() {

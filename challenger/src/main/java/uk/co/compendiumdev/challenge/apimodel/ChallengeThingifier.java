@@ -9,6 +9,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 
 public class ChallengeThingifier {
 
@@ -46,12 +47,18 @@ public class ChallengeThingifier {
         // create all instances from the definitions, then when we want to
         // set all the status codes to the specific challenger status
         for (ChallengeDefinitionData challenge : challengeDefinitions.getChallenges()) {
-            challengeThingifier.getThingInstancesNamed(challengeDefn.getName(), EntityRelModel.DEFAULT_DATABASE_NAME)
-                    .createManagedInstance().
+            EntityInstanceCollection instances = challengeThingifier.getThingInstancesNamed(challengeDefn.getName(), EntityRelModel.DEFAULT_DATABASE_NAME);
+            createManagedInstance(instances).
                     overrideValue("id", challenge.id).
                     setValue("name", challenge.name).
                     setValue("description", challenge.description);
         }
+    }
+
+    private EntityInstance createManagedInstance(EntityInstanceCollection entityStorage) {
+        EntityInstance instance = new EntityInstance(entityStorage.definition());
+        entityStorage.addInstance(instance);
+        return instance;
     }
 
     public void populateThingifierFromStatus(ChallengerAuthData challenger){
