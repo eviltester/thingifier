@@ -33,7 +33,7 @@ description: A list of all the solutions for the API Challenges. Try them yourse
 - [POST /todos (400) description too long](/apichallenges/solutions/post-create/post-todos-400-description-too-long)
 - [POST /todos (201) max out content](/apichallenges/solutions/post-create/post-todos-201-max-content)
 - [POST /todos (413) content too long](/apichallenges/solutions/post-create/post-todos-413-content-too-long)
-- POST /todos (400) extra
+- [POST /todos (400) extra](/apichallenges/solutions/post-create/post-todos-400-extra-field)
 
 ## Creation Challenges with PUT
 

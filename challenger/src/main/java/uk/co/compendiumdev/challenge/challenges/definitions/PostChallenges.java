@@ -113,9 +113,12 @@ public class PostChallenges {
                 "Issue a POST request to create a todo but fail validation because your payload contains an unrecognised field.");
 
         aChallenge.addHint("Try to create a todo with a title, description and a priority");
-//        aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/post-todos-400");
+
+        aChallenge.addSolutionLink("Send a POST request to /todos with a priority field e.g. {\"title\":\"a title\",\"priority\":\"extra\"}", "", "");
+        aChallenge.addSolutionLink("Read Solution", "HREF", "/apichallenges/solutions/post-create/post-todos-400-extra-field");
+
 //        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "tlye5bQ72g0");
-        // TODO: create solution for unrecognised field names
+        // TODO: create video solution for unrecognised field names
         return aChallenge;
     }
 
