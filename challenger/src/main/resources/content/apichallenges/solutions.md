@@ -78,7 +78,6 @@ description: A list of all the solutions for the API Challenges. Try them yourse
 
 - GET /challenger/guid (existing X-CHALLENGER)
 - PUT /challenger/guid RESTORE
-- PUT /challenger/guid CREATE
 - GET /challenger/database/guid (200)
 - PUT /challenger/database/guid (Update)
 
@@ -98,9 +97,9 @@ description: A list of all the solutions for the API Challenges. Try them yourse
 ## HTTP Method Override Challenges
 
 - [Solve the /heartbeat Method Override Challenges](/apichallenges/solutions/method-overrides/all-method-overrides)
-- POST /heartbeat as DELETE (405)
-- POST /heartbeat as PATCH (500)
-- POST /heartbeat as Trace (501)
+  - POST /heartbeat as DELETE (405)
+  - POST /heartbeat as PATCH (500)
+  - POST /heartbeat as Trace (501)
 
 ## Authentication Challenges
 
@@ -122,5 +121,5 @@ description: A list of all the solutions for the API Challenges. Try them yourse
 
 ## Miscellaneous Challenges
 
-- DELETE /todos/{id} (200) all
-- POST /todos (201) all
+- [DELETE /todos/{id} (200) all](/apichallenges/solutions/miscellaneous/create-maximum-number-todos)
+- [POST /todos (201) all](/apichallenges/solutions/miscellaneous/delete-all-todos)

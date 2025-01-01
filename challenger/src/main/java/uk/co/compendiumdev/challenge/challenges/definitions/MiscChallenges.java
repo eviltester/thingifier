@@ -11,6 +11,9 @@ public class MiscChallenges {
                 "POST /todos (201) all",
                 "Issue as many POST requests as it takes to add the maximum number of TODOS allowed for a user. The maximum number should be listed in the documentation."
         );
+
+        aChallenge.addSolutionLink("Read Solution", "HREF", "/apichallenges/solutions/miscellaneous/create-maximum-number-todos");
+
         return aChallenge;
     }
 
@@ -23,6 +26,8 @@ public class MiscChallenges {
         aChallenge.addHint("After deleting the last todo, there will be no todos left in the application");
         aChallenge.addHint("Make sure you don't use {id} in the url, replace that with the id of a todo e.g. /todos/1");
         aChallenge.addHint("You have to delete all the todo items in the system to complete this challenge");
+
+        aChallenge.addSolutionLink("Read Solution", "HREF", "/apichallenges/solutions/miscellaneous/delete-all-todos");
 
         return aChallenge;
     }
