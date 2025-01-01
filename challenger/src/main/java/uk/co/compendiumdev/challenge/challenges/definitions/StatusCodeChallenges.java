@@ -64,8 +64,9 @@ public class StatusCodeChallenges {
                 "Issue a POST request on the `/heartbeat` end point and receive 500 when you override the Method Verb to a PATCH");
 
         aChallenge.addHint("Use a normal POST Request, but add an X-HTTP-Method-Override header");
+
         aChallenge.addSolutionLink("Add a header 'X-HTTP-Method-Override: PATCH' to a POST /heartbeat request", "","");
-        //aChallenge.addSolutionLink("Read Solution", "HREF","https://www.eviltester.com/apichallenges/howto/25-26-27-28-status-codes-405-500-501-204/");
+        aChallenge.addSolutionLink("Read Solution", "HREF","/apichallenges/solutions/method-override/all-method-overrides");
         //aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "SGfKVFdylVI");
         return aChallenge;
     }
@@ -77,8 +78,9 @@ public class StatusCodeChallenges {
                 "Issue a POST request on the `/heartbeat` end point and receive 405 when you override the Method Verb to a DELETE");
 
         aChallenge.addHint("Use a normal POST Request, but add an X-HTTP-Method-Override header");
+
         aChallenge.addSolutionLink("Add a header 'X-HTTP-Method-Override: DELETE' to a POST /heartbeat request", "","");
-        //aChallenge.addSolutionLink("Read Solution", "HREF","https://www.eviltester.com/apichallenges/howto/25-26-27-28-status-codes-405-500-501-204/");
+        aChallenge.addSolutionLink("Read Solution", "HREF","/apichallenges/solutions/method-override/all-method-overrides");
         //aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "SGfKVFdylVI");
         return aChallenge;
     }
@@ -90,9 +92,10 @@ public class StatusCodeChallenges {
                 "POST /heartbeat as Trace (501)",
                 "Issue a POST request on the `/heartbeat` end point and receive 501 (Not Implemented) when you override the Method Verb to a TRACE");
         aChallenge.addHint("Use a normal POST Request, but add an X-HTTP-Method-Override header");
-        aChallenge.addSolutionLink("Add a header 'X-HTTP-Method-Override: TRACE' to a POST /heartbeat request", "","");
 
-//        aChallenge.addSolutionLink("Read Solution", "HREF","https://www.eviltester.com/apichallenges/howto/25-26-27-28-status-codes-405-500-501-204/");
+        aChallenge.addSolutionLink("Add a header 'X-HTTP-Method-Override: TRACE' to a POST /heartbeat request", "","");
+        aChallenge.addSolutionLink("Read Solution", "HREF","/apichallenges/solutions/method-override/all-method-overrides");
+
 //        aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "SGfKVFdylVI");
         return aChallenge;
     }
