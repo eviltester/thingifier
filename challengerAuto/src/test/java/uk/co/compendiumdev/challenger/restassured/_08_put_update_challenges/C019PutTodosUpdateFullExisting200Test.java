@@ -18,7 +18,7 @@ public class C019PutTodosUpdateFullExisting200Test extends RestAssuredBaseTest {
 
         Todo amendMe = new TodosApi().getOrCreateAnyExistingTodo();
 
-        // amendMe.id = - cannot amend the id as it is auto assigned
+        // amendMe.id = - cannot amend the id as it is auto assigned, send in the existing id
         amendMe.title = "my name " + System.currentTimeMillis(); // title is mandatory and must be in the message
         amendMe.description = "my description " + System.currentTimeMillis(); // if not present default "" will be set
         amendMe.doneStatus = true; // if not present then default false will be set
@@ -46,4 +46,5 @@ public class C019PutTodosUpdateFullExisting200Test extends RestAssuredBaseTest {
         statuses.get();
         Assertions.assertTrue(statuses.getChallengeNamed("PUT /todos/{id} full (200)").status);
     }
+
 }

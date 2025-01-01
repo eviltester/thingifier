@@ -146,8 +146,11 @@ public class PostChallenges {
                 "Issue a POST request for a todo which does not exist. Expect to receive a 404 response.");
 
         aChallenge.addHint("Make sure you don't use {id} in the url, replace that with the id of a todo that does not exist e.g. /todos/100");
-        // todo add solution and hints for POST 404
-        //aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/post-todos-id-200");
+
+        aChallenge.addSolutionLink("Send a POST request to /todos/{id} with a valid update payload where {id} does not exist", "", "");
+        aChallenge.addSolutionLink("Read Solution", "HREF", "/apichallenges/solutions/post-update/post-todos-id-404");
+
+        // todo add video solution and hints for POST 404
         //aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "feXdRpZ_tgs");       return aChallenge;
         return aChallenge;
     }

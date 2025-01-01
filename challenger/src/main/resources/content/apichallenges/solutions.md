@@ -37,19 +37,19 @@ description: A list of all the solutions for the API Challenges. Try them yourse
 
 ## Creation Challenges with PUT
 
-- PUT /todos/{id} (400)
+- [PUT /todos/{id} (400)](/apichallenges/solutions/put-create/put-todos-400-create)
 
 ## Update Challenges with POST
 
 - [POST /todos id (200)](/apichallenges/solutions/post-update/post-todos-id-200)
-- POST /todos/{id} (404)
+- [POST /todos/{id} (404)](/apichallenges/solutions/post-update/post-todos-id-404)
 
 ## Update Challenges with PUT
 
-- PUT /todos/{id} full (200)
-- PUT /todos/{id} partial (200)
-- PUT /todos/{id} no title (400)
-- PUT /todos/{id} no amend id (400)
+- [PUT /todos/{id} full (200)](/apichallenges/solutions/put-update/put-todos-id-200-update-full)
+- [PUT /todos/{id} partial (200)](/apichallenges/solutions/put-update/put-todos-id-200-update-partial)
+- [PUT /todos/{id} no title (400)](/apichallenges/solutions/put-update/put-todos-id-400-no-title)
+- [PUT /todos/{id} no amend id (400)](/apichallenges/solutions/put-update/put-todos-id-400-no-amend-id)
 
 ## DELETE Challenges
 
