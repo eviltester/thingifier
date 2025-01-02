@@ -308,6 +308,14 @@ If you want to explore the tool more then you could try the experiments below, o
 *   any other `/sim/*` endpoints should respond with a 404
 
 
+## Automating Examples
+
+The Simulator is a very simple set of endpoints to automate because it doesn't matter what order the tests run and the results are idempotent so they will always be the same.
+
+I have created an example set of very simple Java `@Test` methods using RestAssured which automate the Simulator.
+
+[Simulator Automated Execution Coverage](https://github.com/eviltester/thingifier/blob/master/challengerAuto/src/test/java/uk/co/compendiumdev/simulator/SimulatorHttpTest.java)
+
 ## Swagger OpenAPI File
 
 You can download a simple Swagger [OpenAPI File for simulation mode](/sim/docs/swaggercd ..).
