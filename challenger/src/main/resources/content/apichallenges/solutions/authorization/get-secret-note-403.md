@@ -2,6 +2,7 @@
 date:  2021-07-24T08:30:00Z
 title: API Challenges Solution For - forbidden secret note 403
 description: How to solve API challenge 31 - forbidden to access secret note 403
+showads: true
 ---
 
 # How to complete the unauthorized secret note challenge

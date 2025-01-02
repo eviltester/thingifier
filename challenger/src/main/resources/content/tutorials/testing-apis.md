@@ -1,6 +1,7 @@
 ---
 title: Testing APIs - Tutorial
 description: Basic Testing REST API tutorial and how to think when thinking about testing an API.
+showads: true
 ---
 
 # Testing a REST API

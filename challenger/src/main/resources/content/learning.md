@@ -1,6 +1,7 @@
 ---
 title: Learning Utilities and Resources
-description: A list of HTTP REST API learning tutorials and recommended books and practice sites for API Testing. 
+description: A list of HTTP REST API learning tutorials and recommended books and practice sites for API Testing.
+showads: true
 ---
 
 # Learning API Testing

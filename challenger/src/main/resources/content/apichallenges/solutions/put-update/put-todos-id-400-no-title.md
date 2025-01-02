@@ -2,6 +2,7 @@
 date:  2025-01-01T12:53:00Z
 title: API Challenges Solution For - PUT todos/id 400 no title
 description: How to solve API challenge PUT todos/id 400 to fail validation due to no title in the payload.
+showads: true
 ---
 
 # How to complete the challenge `PUT /todos/id (400) no title`

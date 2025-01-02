@@ -168,6 +168,11 @@ public class MarkdownContentManager {
             logger.error("Markdown parsing error", e);
         }
 
+        if(mdheaders.contains("showads: true")) {
+            headerInject = headerInject +
+                    "<script async src=\"https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7132305589272099\"" +
+                    " crossorigin=\"anonymous\"></script>";
+        }
 
         headerInject = headerInject + youtubeHeaderInject;
 

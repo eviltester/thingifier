@@ -2,6 +2,7 @@
 date:  2021-07-25T08:30:00Z
 title: API Challenges Solution For - unauthorized secret note 401
 description: How to solve API challenge 32 - unauthorized to access secret note 403
+showads: true
 ---
 
 

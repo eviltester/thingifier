@@ -2,6 +2,7 @@
 date:  2021-07-25T09:30:00Z
 title: API Challenges Solution For - Use Bearer Tokens
 description: How to solve API challenge - Use bearer token as authorization mechanism
+showads: true
 ---
 
 # How to complete the Bearer Token challenges

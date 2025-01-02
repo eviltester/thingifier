@@ -2,6 +2,7 @@
 date:  2025-01-01T15:26:00Z
 title: API Challenges Solution For - Delete /todos/id (200) all
 description: How to solve API challenges to Delete all the todos
+showads: true
 ---
 
 # How to complete the Delete All Todos Challenge

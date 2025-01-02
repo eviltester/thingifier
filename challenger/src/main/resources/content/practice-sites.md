@@ -1,6 +1,7 @@
 ---
 title: API Testing Practice Sites
 description: A list of the best API Practice sites and applications to improve your Testing and Automating.
+showads: true
 ---
 
 # API Practice Sites

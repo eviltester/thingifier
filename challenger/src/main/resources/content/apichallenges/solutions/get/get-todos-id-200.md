@@ -1,6 +1,7 @@
 ---
 title: API Challenges Solution For - GET todos id 200
 description: How to solve challenge GET todos id 200.
+showads: true
 ---
 
 # How to complete the challenge `GET /todos/id 200`.

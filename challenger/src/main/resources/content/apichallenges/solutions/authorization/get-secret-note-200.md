@@ -2,6 +2,7 @@
 date:  2021-07-25T08:45:00Z
 title: API Challenges Solution For - GET authorized secret note 200
 description: How to solve API challenge 33 - authorized to access secret note 200
+showads: true
 ---
 
 # How to complete the GET Authorized secret note challenge

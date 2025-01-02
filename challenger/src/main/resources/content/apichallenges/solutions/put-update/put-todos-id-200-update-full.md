@@ -2,6 +2,7 @@
 date:  2025-01-01T12:53:00Z
 title: API Challenges Solution For - PUT todos/id 200 full update
 description: How to solve API challenge PUT todos/id 200 to update a todo in the application with a full payload.
+showads: true
 ---
 
 # How to complete the challenge `PUT /todos/id (200) full update`

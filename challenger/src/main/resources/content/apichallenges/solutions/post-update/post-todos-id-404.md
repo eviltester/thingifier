@@ -2,6 +2,7 @@
 date:  2024-01-01T11:26:00Z
 title: API Challenges Solution For - POST todos/id 404
 description: How to solve API challenge POST todos/id 404 to try to update a todo which does not exist.
+showads: true
 ---
 
 # How to complete the challenge `POST /todos/id (404)`

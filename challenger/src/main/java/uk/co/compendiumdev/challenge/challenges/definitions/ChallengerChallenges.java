@@ -27,8 +27,10 @@ public class ChallengerChallenges {
         aChallenge.addHint("In multi-user mode, you need to create an X-CHALLENGER Session first and let it go idle so it is removed in the 10 minute purge", "/gui/multiuser");
         aChallenge.addHint("Remember to add the X-CHALLENGER header to track your progress", "");
         aChallenge.addHint("Add the guid in the URL as the last part of the path", "");
+
         aChallenge.addSolutionLink("GET /challenger/{guid} for a challenger previously saved in the persistence store", "", "");
-        //aChallenge.addSolutionLink("Read Solution", "HREF", "/apichallenges/solutions/post-create/post-challenger-201");
+        aChallenge.addSolutionLink("Read Solution", "HREF", "/apichallenges/solutions/manage-session/save-restore-session");
+
         //aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "tNGuZMQgHxw");
         return aChallenge;
     }
@@ -42,8 +44,10 @@ public class ChallengerChallenges {
                 "Issue a POST request on the `/challenger` end point, with an existing challenger GUID as the X-CHALLENGER header to restore that challenger's progress into memory."
         );
         aChallenge.addHint("In multi-user mode, you need to create an X-CHALLENGER Session first and let it go idle so it is removed in the 10 minute purge", "/gui/multiuser");
+
         aChallenge.addSolutionLink("POST /challenger with the challenger GUID in the X-CHALLENGER header for a challenger previously saved in the persistence store", "", "");
-        //aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/post-challenger-201");
+        aChallenge.addSolutionLink("Read Solution", "HREF", "/apichallenges/solutions/manage-session/save-restore-session");
+
         //aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "tNGuZMQgHxw");
 
         return aChallenge;
@@ -57,7 +61,8 @@ public class ChallengerChallenges {
         );
         aChallenge.addHint("A challenger must have been created already for this to work", "");
         aChallenge.addHint("Remember to add the X-CHALLENGER header to track your progress", "");
-        //aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/post-challenger-201");
+
+        aChallenge.addSolutionLink("Read Solution", "HREF", "/apichallenges/solutions/manage-session/save-restore-session");
         //aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "tNGuZMQgHxw");
 
         return aChallenge;
@@ -72,8 +77,10 @@ public class ChallengerChallenges {
         aChallenge.addHint("Use the challenger payload returned from the earlier GET request", "");
         aChallenge.addHint("Remember to add the X-CHALLENGER header to track your progress", "");
         aChallenge.addHint("The challenger should already exist in memory and this will restore status to an earlier point", "");
+
         aChallenge.addSolutionLink("Using the payload from the earlier 'GET /challenger/guid' request, use PUT to reset the challenger progress", "", "");
-        //aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/post-challenger-201");
+        aChallenge.addSolutionLink("Read Solution", "HREF", "/apichallenges/solutions/manage-session/save-restore-session");
+
         //aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "tNGuZMQgHxw");
 
         return aChallenge;
@@ -88,8 +95,10 @@ public class ChallengerChallenges {
         aChallenge.addHint("Use the challenger payload returned from the earlier GET request", "");
         aChallenge.addHint("Remember to add the X-CHALLENGER header to track your progress", "");
         aChallenge.addHint("This will create the Challenger in memory because it should not already exist", "");
+
         aChallenge.addSolutionLink("Using the payload from the earlier 'GET /challenger/guid' request, use PUT to reset the challenger progress", "", "");
-        //aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/post-challenger-201");
+        aChallenge.addSolutionLink("Read Solution", "HREF", "/apichallenges/solutions/manage-session/save-restore-session");
+
         //aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "tNGuZMQgHxw");
 
         return aChallenge;
@@ -102,7 +111,8 @@ public class ChallengerChallenges {
                 "Issue a GET request on the `/challenger/database/{guid}` end point, to retrieve the current todos database for the user. You can use this to restore state later."
         );
         aChallenge.addHint("Remember to add the X-CHALLENGER header to track your progress", "");
-        //aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/post-challenger-201");
+
+        aChallenge.addSolutionLink("Read Solution", "HREF", "/apichallenges/solutions/manage-session/save-restore-session");
         //aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "tNGuZMQgHxw");
 
         return aChallenge;
@@ -116,8 +126,10 @@ public class ChallengerChallenges {
         );
         aChallenge.addHint("Use the Todos database payload returned from the earlier GET request", "");
         aChallenge.addHint("Remember to add the X-CHALLENGER header to track your progress", "");
+
         aChallenge.addSolutionLink("Using the payload from the earlier 'GET /challenger/database/guid' request, use PUT to reset the challenger todos data", "", "");
-        //aChallenge.addSolutionLink("Read Solution", "HREF", "https://www.eviltester.com/apichallenges/howto/post-challenger-201");
+        aChallenge.addSolutionLink("Read Solution", "HREF", "/apichallenges/solutions/manage-session/save-restore-session");
+
         //aChallenge.addSolutionLink("Watch Insomnia Solution", "YOUTUBE", "tNGuZMQgHxw");
 
         return aChallenge;

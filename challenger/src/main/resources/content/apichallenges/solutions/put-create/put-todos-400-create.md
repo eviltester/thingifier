@@ -2,6 +2,7 @@
 date:  2025-01-01T11:05:00Z
 title: API Challenges Solution For - PUT todos/id 400
 description: How to solve API challenge PUT todos/id 400 invalid to create with PUT.
+showads: true
 ---
 
 # How to complete the challenge `PUT /todos/{id} (400)`

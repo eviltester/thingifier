@@ -2,6 +2,7 @@
 date:  2021-07-25T09:00:00Z
 title: API Challenges Solution For - POST amend secret note 200
 description: How to solve API challenge 34 - amend the secret note with a POST request and receive 200 status code
+showads: true
 ---
 
 # How to complete the POST secret note challenge

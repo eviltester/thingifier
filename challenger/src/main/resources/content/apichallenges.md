@@ -1,6 +1,7 @@
 ---
 title: About The API Challenges
 description: A brief overview of the API challenges and how to use them as a self-guided learning path for API Testing
+showads: true
 ---
 
 # API Challenges

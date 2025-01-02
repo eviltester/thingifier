@@ -1,6 +1,7 @@
 ---
 title: API Challenges Solution Index
 description: A list of all the solutions for the API Challenges. Try them yourself, but if you get stuck, we have instructions and solution videos.
+showads: true
 ---
 
 # API Challenge Solutions
@@ -76,10 +77,11 @@ description: A list of all the solutions for the API Challenges. Try them yourse
 
 ## Fancy a Break? Restore your session
 
-- GET /challenger/guid (existing X-CHALLENGER)
-- PUT /challenger/guid RESTORE
-- GET /challenger/database/guid (200)
-- PUT /challenger/database/guid (Update)
+- [Solve the Save and Restore Session Challenges](/apichallenges/solutions/manage-session/save-restore-session)
+   - GET /challenger/guid (existing X-CHALLENGER)
+   - PUT /challenger/guid RESTORE
+   - GET /challenger/database/guid (200)
+   - PUT /challenger/database/guid (Update)
 
 ## Mix Accept and Content-Type Challenges
 

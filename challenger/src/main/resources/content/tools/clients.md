@@ -1,6 +1,7 @@
 ---
 title: HTTP Rest Clients - Introduction
 description: An overview of the most popular, and mostly free, HTTP and REST Clients.
+showads: true
 ---
 
 # REST HTTP Client Tools Are Essential

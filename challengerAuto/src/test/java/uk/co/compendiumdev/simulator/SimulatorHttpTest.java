@@ -314,13 +314,14 @@ public class SimulatorHttpTest extends RestAssuredBaseTest {
 
         Assertions.assertEquals(headHeaders.size(), getHeaders.size());
 
-        // remove the heroku headers
-        List<String> headersToSkipComparison = Arrays.asList("Report-To", "Reporting-Endpoints", "Connection");
+        // remove the variable headers that are server based rather than app based
+        List<String> headersToSkipComparison = Arrays.asList("Report-To", "Reporting-Endpoints", "Connection", "Date");
         for (Header headHeader : headHeaders) {
             if (!headersToSkipComparison.contains(headHeader.getName())) {
                 Assertions.assertEquals(
                     headHeaders.getValue(headHeader.getName()),
-                    getHeaders.getValue(headHeader.getName())
+                    getHeaders.getValue(headHeader.getName()),
+            "failed comparing " + headHeader.getName()
                 );
             }
         }

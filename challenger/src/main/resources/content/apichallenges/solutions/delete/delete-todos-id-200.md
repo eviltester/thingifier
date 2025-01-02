@@ -2,6 +2,7 @@
 date:  2021-04-12T09:30:00Z
 title: API Challenges Solution For - DELETE todos/id 200
 description: How to solve API challenge DELETE todos/id 200 to delete a todo in the application.
+showads: true
 ---
 
 # Delete a todo item in the application

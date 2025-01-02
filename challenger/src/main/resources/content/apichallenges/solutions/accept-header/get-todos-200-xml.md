@@ -2,6 +2,7 @@
 date:  2021-04-23T09:30:00Z
 title: API Challenges Solution For - GET todos xml 200
 description: How to solve API challenge GET todos xml 200 to accept the todos in xml format.
+showads: true
 ---
 
 # How to complete the challenge `GET /todos XML (200)`

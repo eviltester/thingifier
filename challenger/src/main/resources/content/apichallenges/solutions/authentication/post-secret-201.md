@@ -2,6 +2,7 @@
 date:  2021-07-24T08:30:00Z
 title: API Challenges Solution For - authentication passed 201
 description: How to solve API challenge 30 - authenticate with username and password for basic auth.
+showads: true
 ---
 
 # How to complete the basic auth authentication challenge

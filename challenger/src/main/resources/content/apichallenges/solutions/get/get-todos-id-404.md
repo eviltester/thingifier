@@ -2,6 +2,7 @@
 date:  2020-12-15T09:00:00Z
 title: API Challenges Solution For - GET todos id 404
 description: How to solve challenge GET todos id 404.
+showads: true
 ---
 
 # How to complete the challenge `GET /todos/id 404`.

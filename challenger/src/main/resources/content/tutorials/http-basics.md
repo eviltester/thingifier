@@ -1,6 +1,7 @@
 ---
 title: HTTP Basics - Tutorial
 description: Basic HTTP tutorial and overview of key HTTP terminology and status codes.
+showads: true
 ---
 
 # Introduction to HTTP Requests AND Responses

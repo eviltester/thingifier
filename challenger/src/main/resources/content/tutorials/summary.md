@@ -1,6 +1,7 @@
 ---
 title: Summary - Tutorial
 description: Basic Summary of REST API tutorial content.
+showads: true
 ---
 
 # Summary Overview

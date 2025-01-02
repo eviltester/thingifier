@@ -2,6 +2,7 @@
 date:  2025-01-01T15:26:00Z
 title: API Challenges Solution For - POST /todos (201) all
 description: How to solve API challenges to Create maximum number of todos
+showads: true
 ---
 
 # How to complete the Create Maximum Number of Todos

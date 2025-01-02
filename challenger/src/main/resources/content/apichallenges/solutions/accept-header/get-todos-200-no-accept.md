@@ -2,6 +2,7 @@
 date:  2021-05-29T10:32:00Z
 title: API Challenges Solution For - GET todos No Accept Header 200
 description: How to solve API challenge GET todos No Accept 200 to GET the todos with no accept header present.
+showads: true
 ---
 
 # How to complete the challenge `GET /todos No Accept (200)`

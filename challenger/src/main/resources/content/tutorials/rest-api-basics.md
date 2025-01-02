@@ -1,6 +1,7 @@
 ---
 title: REST API - Tutorial
 description: Basic REST API tutorial to learn what is a REST API and how they work.
+showads: true
 ---
 
 # REST API BASICS

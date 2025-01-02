@@ -2,6 +2,7 @@
 date:  2021-01-24T09:00:00Z
 title: API Challenges Solution For - HEAD todos 200
 description: How to solve API challenge HEAD todos 200
+showads: true
 ---
 
 # How to complete the challenge `HEAD /todos (200)`

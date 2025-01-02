@@ -2,6 +2,7 @@
 date:  2021-05-09T09:30:00Z
 title: API Challenges Solution For - GET todos json 200
 description: How to solve API challenge GET todos json 200 to accept the todos in json format.
+showads: true
 ---
 
 # GET all the todos in JSON format

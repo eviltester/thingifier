@@ -2,6 +2,7 @@
 date:  2021-05-29T09:30:00Z
 title: API Challenges Solution For - GET todos any 200
 description: How to solve API challenge GET todos any 200 to accept the todos in default format.
+showads: true
 ---
 
 # GET all the todos in default format
