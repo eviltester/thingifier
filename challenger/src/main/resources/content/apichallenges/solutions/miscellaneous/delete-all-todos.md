@@ -128,7 +128,9 @@ I can double check that I have deleted them by looking at the API Challenges pro
 Or just call the `GET /todos` and see an empty array
 
 ```
-> curl --request GET   --url https://apichallenges.eviltester.com/todos   --header 'X-CHALLENGER: 07466215-9bab-4bf4-9b7d-34b7ac765915'
+> curl --request GET \
+  --url https://apichallenges.eviltester.com/todos \
+  --header 'X-CHALLENGER: 07466215-9bab-4bf4-9b7d-34b7ac765915'
 
 {"todos":[]}
 ```
