@@ -1,17 +1,21 @@
 package uk.co.compendiumdev.thingifier.api.docgen;
 
 import uk.co.compendiumdev.thingifier.api.response.ResponseHeader;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 
 final public class ApiRoutingDefinition {
 
     private List<RoutingDefinition> routings;
+    private HashMap<String, EntityDefinition> objectSchemas;
 
     public ApiRoutingDefinition() {
-        this.routings = new ArrayList<>();
+        routings = new ArrayList<>();
+        objectSchemas = new HashMap<String,EntityDefinition>();
     }
 
     public Collection<RoutingDefinition> definitions() {
@@ -28,5 +32,19 @@ final public class ApiRoutingDefinition {
         RoutingDefinition defn = new RoutingDefinition(verb, url, routingStatus, header).addDocumentation(documentation);
         routings.add(defn);
         return defn;
+    }
+
+    public void addObjectSchema(EntityDefinition entityDefn) {
+        // TODO this should be an object schema rather than entityDefinition
+        // because we don't want it to be editable
+        objectSchemas.put(entityDefn.getName(),entityDefn);
+    }
+
+    public boolean hasObjectSchemaNamed(String aName){
+        return objectSchemas.containsKey(aName);
+    }
+
+    public Collection<EntityDefinition> getObjectSchemas() {
+        return objectSchemas.values();
     }
 }

@@ -1,11 +1,9 @@
 package uk.co.compendiumdev.thingifier.swaggerizer;
 
-import com.google.gson.GsonBuilder;
-import io.swagger.v3.oas.models.OpenAPI;
-import io.swagger.v3.oas.models.Operation;
-import io.swagger.v3.oas.models.PathItem;
-import io.swagger.v3.oas.models.Paths;
+import io.swagger.v3.core.util.Json31;
+import io.swagger.v3.oas.models.*;
 import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.media.*;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.responses.ApiResponses;
 import io.swagger.v3.oas.models.servers.Server;
@@ -15,6 +13,8 @@ import uk.co.compendiumdev.thingifier.api.docgen.ApiRoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.docgen.ApiRoutingDefinitionDocGenerator;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingStatus;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -64,6 +64,26 @@ public class Swaggerizer {
 
         List<String> processedAdditionalRoutes = new ArrayList<>();
 
+        Components components = new Components();
+        for(EntityDefinition objectSchemaDefinition : routingDefinitions.getObjectSchemas()){
+
+            ObjectSchema object = new ObjectSchema();
+            object.setDescription(objectSchemaDefinition.getName());
+            object.setTitle(objectSchemaDefinition.getName());
+
+            //object.name(objectSchemaDefinition.getName());
+            for(String propertyName : objectSchemaDefinition.getFieldNames()){
+                Field propertyDefinition = objectSchemaDefinition.getField(propertyName);
+                Schema<String> propertyItem = new Schema<String>();
+                propertyItem.setExample(propertyDefinition.getExamples().get(0));
+                object.addProperties(propertyName, propertyItem);
+            }
+
+            components.addSchemas(objectSchemaDefinition.getName(), object);
+        }
+
+        api.components(components);
+
         if(routes!=null) {
 
             api.setPaths(new Paths());
@@ -98,10 +118,25 @@ public class Swaggerizer {
                                 final ApiResponses responses = new ApiResponses();
                                 final List<RoutingStatus> possibleStatusResponses = subroute.getPossibleStatusReponses();
                                 for(RoutingStatus possibleStatus : possibleStatusResponses){
+
+                                    ApiResponse response = new ApiResponse().description(
+                                            possibleStatus.description()
+                                    );
+                                    if(route.hasReturnPayloadFor(possibleStatus.value())){
+                                        if(routingDefinitions.hasObjectSchemaNamed(route.getReturnPayloadFor(possibleStatus.value()))){
+                                            String ref = "#/components/schemas/" + route.getReturnPayloadFor(possibleStatus.value());
+
+                                            Schema<String> object = new Schema<>();
+                                            MediaType schema = new MediaType();
+                                            schema.setSchema(object);
+                                            object.set$ref(ref);
+                                            response.setContent(
+                                                    new Content().addMediaType("application/json", schema));
+                                        }
+                                    }
                                     responses.addApiResponse(
-                                            String.valueOf(possibleStatus.value()),
-                                            new ApiResponse().description(
-                                                    possibleStatus.description())
+                                        String.valueOf(possibleStatus.value()),
+                                        response
                                     );
                                 }
                                 if(possibleStatusResponses.size()>0){
@@ -147,7 +182,6 @@ public class Swaggerizer {
         if(api==null){
             swagger();
         }
-        return new GsonBuilder().setPrettyPrinting().
-                create().toJson(api);
+        return Json31.pretty(api);
     }
 }

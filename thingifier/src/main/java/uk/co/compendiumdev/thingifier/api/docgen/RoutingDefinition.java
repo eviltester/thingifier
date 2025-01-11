@@ -4,6 +4,7 @@ import uk.co.compendiumdev.thingifier.api.response.ResponseHeader;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class RoutingDefinition {
@@ -15,6 +16,7 @@ public class RoutingDefinition {
     private boolean isFilterable;
     private EntityDefinition filterableEntityDefn;
     private List<RoutingStatus> possibleStatusResponses;
+    private HashMap<Integer,String> returnPayload;
 
     public RoutingDefinition(RoutingVerb verb, String url, RoutingStatus routingStatus, ResponseHeader header) {
         this.verb = verb;
@@ -25,9 +27,12 @@ public class RoutingDefinition {
         }
         this.routingStatus = routingStatus;
         this.header = header;
-        this.isFilterable=false;
+
+        // defaults
+        isFilterable=false;
         filterableEntityDefn=null;
-        this.possibleStatusResponses= new ArrayList<>();
+        possibleStatusResponses= new ArrayList<>();
+        returnPayload=new HashMap<Integer, String>();
     }
 
     private List<RoutingStatus> getDefaultPossibleStatusResponses() {
@@ -78,9 +83,10 @@ public class RoutingDefinition {
         return isFilterable;
     }
 
-    public void setAsFilterableFrom(final EntityDefinition definition) {
+    public RoutingDefinition setAsFilterableFrom(final EntityDefinition definition) {
         isFilterable=true;
         filterableEntityDefn = definition;
+        return this;
     }
 
     public EntityDefinition getFilterableEntity() {
@@ -105,5 +111,18 @@ public class RoutingDefinition {
             addPossibleStatus(RoutingStatus.returnValue(statusCode));
         }
         return this;
+    }
+
+    public RoutingDefinition returnPayload(final Integer statusCode, String objectSchemaName) {
+        returnPayload.put(statusCode, objectSchemaName);
+        return this;
+    }
+
+    public boolean hasReturnPayloadFor(final Integer statusCode) {
+        return returnPayload.containsKey(statusCode);
+    }
+
+    public String getReturnPayloadFor(final Integer statusCode) {
+        return returnPayload.get(statusCode);
     }
 }

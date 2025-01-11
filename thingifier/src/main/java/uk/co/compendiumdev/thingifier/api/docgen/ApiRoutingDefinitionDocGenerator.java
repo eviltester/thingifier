@@ -67,6 +67,8 @@ public class ApiRoutingDefinitionDocGenerator {
 
         for (EntityDefinition entityDefn : thingifier.getERmodel().getEntityDefinitions()) {
 
+            defn.addObjectSchema(entityDefn);
+
             String uniqueIdentifier="?";
             String uniqueIdFieldName="fieldName";
 
@@ -97,10 +99,11 @@ public class ApiRoutingDefinitionDocGenerator {
             // we should be able to get things e.g. GET project
             defn.addRouting(
                     String.format("return all the instances of %s", entityDefn.getName()),
-                    RoutingVerb.GET, pluralUrl, RoutingStatus.returnedFromCall()).
-                    addPossibleStatus(RoutingStatus.returnValue(
-                                200, String.format("All the %s", entityDefn.getPlural()))).
-                    setAsFilterableFrom(entityDefn);
+                    RoutingVerb.GET, pluralUrl, RoutingStatus.returnedFromCall()
+                ).addPossibleStatus(RoutingStatus.returnValue(
+                                200, String.format("All the %s", entityDefn.getPlural()))
+                ).setAsFilterableFrom(entityDefn)
+                .returnPayload(200, entityDefn.getName());
 
             defn.addRouting(String.format("headers for all the instances of %s", entityDefn.getName()),
                     RoutingVerb.HEAD, pluralUrl, RoutingStatus.returnedFromCall()).
