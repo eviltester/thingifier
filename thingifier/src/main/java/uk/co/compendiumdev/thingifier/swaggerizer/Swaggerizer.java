@@ -4,6 +4,8 @@ import io.swagger.v3.core.util.Json31;
 import io.swagger.v3.oas.models.*;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.media.*;
+import io.swagger.v3.oas.models.parameters.Parameter;
+import io.swagger.v3.oas.models.parameters.RequestBody;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.responses.ApiResponses;
 import io.swagger.v3.oas.models.servers.Server;
@@ -15,6 +17,7 @@ import uk.co.compendiumdev.thingifier.api.docgen.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingStatus;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -69,6 +72,9 @@ public class Swaggerizer {
 
             ObjectSchema object = asObjectSchema(objectSchemaDefinition);
             components.addSchemas(objectSchemaDefinition.getName(), object);
+
+            ObjectSchema createObject = asCreateObjectSchema(objectSchemaDefinition);
+            components.addSchemas("create_" + objectSchemaDefinition.getName(), createObject);
 
             ArraySchema arrayObject = asArrayObjectSchema(objectSchemaDefinition);
             components.addSchemas(objectSchemaDefinition.getPlural(), arrayObject);
@@ -132,10 +138,94 @@ public class Swaggerizer {
                                             );
                                         }
                                     }
+
                                     responses.addApiResponse(
                                         String.valueOf(possibleStatus.value()),
                                         response
                                     );
+
+
+                                    if(subroute.hasRequestPayload()){
+
+                                        RequestBody requestBody = new RequestBody();
+                                        requestBody.setRequired(true);
+
+                                        // assume that all payloads are already setup as components
+                                        String ref = "#/components/schemas/" + subroute.getRequestPayload();
+
+                                        Schema<String> object = new Schema<>();
+                                        MediaType schema = new MediaType();
+                                        schema.setSchema(object);
+                                        object.set$ref(ref);
+
+                                        requestBody.setContent(
+                                                new Content().
+                                                        addMediaType("application/json", schema).
+                                                        addMediaType("application/xml", schema)
+                                        );
+
+                                        operation.setRequestBody(requestBody);
+                                    }
+
+                                    if(subroute.hasRequestUrlParams()){
+
+                                        List<Parameter> urlParameters = new ArrayList<>();
+
+                                        // TODO: create a Field to Swaggerizer param method/class
+                                        List<Field> paramFields = subroute.getRequestUrlParams();
+                                        for(Field aField : paramFields){
+                                            Parameter param = new Parameter();
+                                            param.
+                                                in("path").
+                                                name(aField.getName()).
+                                                required(true).
+                                                example(aField.getRandomExampleValue());
+
+                                            Schema<String> schema = new Schema<>();
+
+                                            switch (aField.getType()){
+                                                case AUTO_INCREMENT:
+                                                case INTEGER:
+                                                    schema.addType("integer");
+                                                    break;
+
+                                                case FLOAT:
+                                                    schema.addType("number");
+                                                    break;
+                                                case BOOLEAN:
+                                                    schema.addType("boolean");
+                                                    break;
+                                                case AUTO_GUID:
+                                                case STRING:
+                                                case DATE:
+                                                case ENUM: // TODO: properly do Enums
+                                                    schema.addType("string");
+                                                    break;
+                                                default:
+                                                    schema.addType("string");
+                                            }
+
+                                            param.setSchema(schema);
+                                            urlParameters.add(param);
+                                        }
+
+                                        for(Parameter param : urlParameters){
+                                            Boolean exists = false;
+                                            if(path.getParameters()!=null){
+                                                for(Parameter existingParam : path.getParameters()){
+                                                    if(existingParam.getName().equals(param.getName())){
+                                                        exists = true;
+                                                    }
+                                                }
+                                            }
+                                            if(!exists) {
+                                                path.addParametersItem(param);
+                                            }
+                                        }
+                                        //operation.setParameters(urlParameters);
+                                    }
+
+
                                 }
                                 if(possibleStatusResponses.size()>0){
                                     operation.setResponses(responses);
@@ -197,15 +287,31 @@ public class Swaggerizer {
     }
 
     private static ObjectSchema asObjectSchema(EntityDefinition objectSchemaDefinition) {
+        return asObjectSchema(objectSchemaDefinition, false);
+    }
+
+    private static ObjectSchema asCreateObjectSchema(EntityDefinition objectSchemaDefinition) {
+        return asObjectSchema(objectSchemaDefinition, true);
+    }
+
+    // no auto fields in create
+    private static ObjectSchema asObjectSchema(EntityDefinition objectSchemaDefinition, Boolean skipAutos) {
         ObjectSchema object = new ObjectSchema();
         object.setDescription(objectSchemaDefinition.getName());
         object.setTitle(objectSchemaDefinition.getName());
 
         for(String propertyName : objectSchemaDefinition.getFieldNames()){
             Field propertyDefinition = objectSchemaDefinition.getField(propertyName);
-            Schema<String> propertyItem = new Schema<String>();
-            propertyItem.setExample(propertyDefinition.getExamples().get(0));
-            object.addProperties(propertyName, propertyItem);
+            if(skipAutos &&
+                (   propertyDefinition.getType()== FieldType.AUTO_GUID ||
+                    propertyDefinition.getType()== FieldType.AUTO_INCREMENT
+                )
+            ){
+            }else {
+                Schema<String> propertyItem = new Schema<String>();
+                propertyItem.setExample(propertyDefinition.getExamples().get(0));
+                object.addProperties(propertyName, propertyItem);
+            }
         }
 
         XML xml = new XML();

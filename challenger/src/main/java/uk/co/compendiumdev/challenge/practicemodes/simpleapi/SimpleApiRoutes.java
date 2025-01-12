@@ -92,6 +92,9 @@ public class SimpleApiRoutes {
                 configureRoutes("/simpleapi/gui");
 
         apiDocDefn = new ThingifierApiDocumentationDefn();
+        apiDocDefn.addServer("https://apichallenges.eviltester.com", "cloud hosted version");
+        apiDocDefn.addServer("http://localhost:4567", "local execution");
+        apiDocDefn.setVersion("1.0.0");
         apiDocDefn.setThingifier(simplethings);
         apiDocDefn.setPathPrefix("/simpleapi"); // where can the API endpoints be found
         simpleApiDocsRouting = new ThingifierAutoDocGenRouting(

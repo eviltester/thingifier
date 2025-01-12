@@ -2,6 +2,7 @@ package uk.co.compendiumdev.thingifier.api.docgen;
 
 import uk.co.compendiumdev.thingifier.api.response.ResponseHeader;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,6 +18,8 @@ public class RoutingDefinition {
     private EntityDefinition filterableEntityDefn;
     private List<RoutingStatus> possibleStatusResponses;
     private HashMap<Integer,String> returnPayload;
+    private String requestPayload;
+    private List<Field> requestUrlParams;
 
     public RoutingDefinition(RoutingVerb verb, String url, RoutingStatus routingStatus, ResponseHeader header) {
         this.verb = verb;
@@ -32,7 +35,9 @@ public class RoutingDefinition {
         isFilterable=false;
         filterableEntityDefn=null;
         possibleStatusResponses= new ArrayList<>();
+        requestUrlParams = new ArrayList<>();
         returnPayload=new HashMap<Integer, String>();
+        requestPayload=null;
     }
 
     private List<RoutingStatus> getDefaultPossibleStatusResponses() {
@@ -125,4 +130,31 @@ public class RoutingDefinition {
     public String getReturnPayloadFor(final Integer statusCode) {
         return returnPayload.get(statusCode);
     }
+
+    public RoutingDefinition requestPayload(String payloadName) {
+        requestPayload = payloadName;
+        return this;
+    }
+
+    public Boolean hasRequestPayload(){
+        return requestPayload!=null;
+    }
+
+    public String getRequestPayload(){
+        return requestPayload;
+    }
+
+    public RoutingDefinition addRequestUrlParam(Field aField) {
+        requestUrlParams.add(aField);
+        return this;
+    }
+
+    public Boolean hasRequestUrlParams(){
+        return !requestUrlParams.isEmpty();
+    }
+
+    public List<Field> getRequestUrlParams(){
+        return new ArrayList<>(requestUrlParams);
+    }
+
 }

@@ -38,6 +38,9 @@ public class ChallengeRouteHandler {
         this.mirrorModeDocumentationDefn = new ThingifierApiDocumentationDefn();
         mirrorModeDocumentationDefn.setTitle("Mirror Mode");
         mirrorModeDocumentationDefn.setDescription("Mirror HTTP Requests");
+        mirrorModeDocumentationDefn.addServer("https://apichallenges.eviltester.com", "heroku hosted version");
+        mirrorModeDocumentationDefn.addServer("http://localhost:4567", "local execution");
+        mirrorModeDocumentationDefn.setVersion("1.0.0");
 
         apiDefn.addServer("https://apichallenges.eviltester.com", "heroku hosted version");
         apiDefn.addServer("http://localhost:4567", "local execution");

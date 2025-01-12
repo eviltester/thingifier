@@ -39,6 +39,10 @@ final public class ApiRoutingDefinition {
         // because we don't want it to be editable
         // as single entity
         objectSchemas.put(entityDefn.getName(),entityDefn);
+
+        // used for top level POST requests so there are no auto ids in the payload
+        objectSchemas.put("create_" + entityDefn.getName(),entityDefn);
+
         // and as plural for array responses
         objectSchemas.put(entityDefn.getPlural(),entityDefn);
     }

@@ -9,6 +9,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.F
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVectorDefinition;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class ApiRoutingDefinitionDocGenerator {
@@ -72,6 +73,7 @@ public class ApiRoutingDefinitionDocGenerator {
 
             String uniqueIdentifier="?";
             String uniqueIdFieldName="fieldName";
+            String uniqueUrlIdentifier = "{?}";
 
             // a thing can have many id fields, so should choose one to be in the url
             // e.g. set a field as 'usedForIndividualRouting'
@@ -79,7 +81,11 @@ public class ApiRoutingDefinitionDocGenerator {
             if(uniqueIdField!=null){
                 uniqueIdentifier = uniqueReferenceText.get(uniqueIdField.getType());
                 uniqueIdFieldName = uniqueIdField.getName();
+                uniqueUrlIdentifier = "{" + uniqueIdFieldName + "}";
             }
+
+
+
 //            final List<Field> idFields = entityDefn.getFieldsOfType(FieldType.ID);
 //            if(config.willUrlsShowIdsIfAvailable() && !idFields.isEmpty()){
 //                uniqueIdentifier=uniqueID;
@@ -129,6 +135,7 @@ public class ApiRoutingDefinitionDocGenerator {
                             201, String.format("Created a %s",entityDefn.getName())
                         )
                     ).returnPayload(201, entityDefn.getName()).
+                    requestPayload("create_" + entityDefn.getName()).
                     addPossibleStatus(RoutingStatus.returnValue(
                             400, String.format("Error when creating a %s", entityDefn.getName())));
 
@@ -148,12 +155,13 @@ public class ApiRoutingDefinitionDocGenerator {
             defn.addRouting("method not allowed",
                     RoutingVerb.TRACE, pluralUrl, RoutingStatus.returnValue(405));
 
-            String aUrlWGuid = pluralUrl + "/" + uniqueIdentifier;
+            String aUrlWGuid = pluralUrl + "/" + uniqueUrlIdentifier;
             // we should be able to get specific things based on the GUID e.g. GET project/GUID
             defn.addRouting(
                     String.format("return a specific instances of %s using a %s",
                             entityDefn.getName(),uniqueIdFieldName),
                     RoutingVerb.GET, aUrlWGuid, RoutingStatus.returnedFromCall()).
+                    addRequestUrlParam(entityDefn.getField(uniqueIdFieldName)).
                     addPossibleStatus(RoutingStatus.returnValue(
                             200, String.format("A specific %s", entityDefn.getName()))).
                     returnPayload(200, entityDefn.getName()).
@@ -163,6 +171,7 @@ public class ApiRoutingDefinitionDocGenerator {
             defn.addRouting(String.format("headers for a specific instances of %s using a %s",
                                     entityDefn.getName(),uniqueIdFieldName),
                     RoutingVerb.HEAD, aUrlWGuid, RoutingStatus.returnedFromCall()).
+                    addRequestUrlParam(entityDefn.getField(uniqueIdFieldName)).
                     addPossibleStatus(RoutingStatus.returnValue(
                             200, String.format("Headers for a specific %s", entityDefn.getName()))).
                     addPossibleStatus(RoutingStatus.returnValue(
@@ -173,9 +182,11 @@ public class ApiRoutingDefinitionDocGenerator {
                     String.format("amend a specific instances of %s using a %s with a body containing the fields to amend",
                             entityDefn.getName(), uniqueIdFieldName),
                     RoutingVerb.POST, aUrlWGuid, RoutingStatus.returnedFromCall()).
+                    addRequestUrlParam(entityDefn.getField(uniqueIdFieldName)).
                     addPossibleStatus(RoutingStatus.returnValue(
                             200, String.format("Amended the specific %s", entityDefn.getName()))).
                     returnPayload(200, entityDefn.getName()).
+                    requestPayload(entityDefn.getName()).
                     addPossibleStatus(RoutingStatus.returnValue(
                             404, String.format("Could not find a specific %s",entityDefn.getName())));;
 
@@ -189,9 +200,11 @@ public class ApiRoutingDefinitionDocGenerator {
                     String.format("amend a specific instances of %1$s using a %2$s with a body containing the fields to amend",
                             entityDefn.getName(),uniqueIdFieldName )+ifGUIDamendment,
                     RoutingVerb.PUT, aUrlWGuid, RoutingStatus.returnedFromCall()).
+                    addRequestUrlParam(entityDefn.getField(uniqueIdFieldName)).
                     addPossibleStatus(RoutingStatus.returnValue(
                             200, String.format("Replaced the specific %s details", entityDefn.getName()))).
                     returnPayload(200, entityDefn.getName()).
+                    requestPayload(entityDefn.getName()).
                     addPossibleStatus(RoutingStatus.returnValue(
                             404, String.format("Could not find a specific %s", entityDefn.getName())));;
 
@@ -200,6 +213,7 @@ public class ApiRoutingDefinitionDocGenerator {
                     String.format("delete a specific instances of %s using a %s",
                             entityDefn.getName(), uniqueIdFieldName),
                     RoutingVerb.DELETE, aUrlWGuid, RoutingStatus.returnedFromCall()).
+                    addRequestUrlParam(entityDefn.getField(uniqueIdFieldName)).
                     addPossibleStatus(RoutingStatus.returnValue(
                             200, String.format("Deleted a specific %s", entityDefn.getName()))).
                     addPossibleStatus(RoutingStatus.returnValue(
@@ -209,10 +223,11 @@ public class ApiRoutingDefinitionDocGenerator {
             defn.addRouting(
                     String.format("show all Options for endpoint of %s", aUrlWGuid),
                     RoutingVerb.OPTIONS, aUrlWGuid, RoutingStatus.returnValue(204),
-                    new ResponseHeader("Allow", "OPTIONS, GET, HEAD, POST, PUT, DELETE"));
+                    new ResponseHeader("Allow", "OPTIONS, GET, HEAD, POST, PUT, DELETE"))
+                    .addRequestUrlParam(entityDefn.getField(uniqueIdFieldName));
 
-            defn.addRouting("method not allowed", RoutingVerb.PATCH, aUrlWGuid, RoutingStatus.returnValue(405));
-            defn.addRouting("method not allowed", RoutingVerb.TRACE, aUrlWGuid, RoutingStatus.returnValue(405));
+            defn.addRouting("method not allowed", RoutingVerb.PATCH, aUrlWGuid, RoutingStatus.returnValue(405)).addRequestUrlParam(entityDefn.getField(uniqueIdFieldName));
+            defn.addRouting("method not allowed", RoutingVerb.TRACE, aUrlWGuid, RoutingStatus.returnValue(405)).addRequestUrlParam(entityDefn.getField(uniqueIdFieldName));
 
 
             for (RelationshipVectorDefinition rel : entityDefn.related().getRelationships()) {
@@ -224,19 +239,23 @@ public class ApiRoutingDefinitionDocGenerator {
     }
 
     private Field getUniqueIdField(final EntityDefinition thingDefn) {
-        return thingDefn.getPrimaryKeyField();
+        Field aField = thingDefn.getPrimaryKeyField();
 
-//        final List<Field> idFields = thingDefn.getFieldsOfType(FieldType.AUTO_INCREMENT);
-//        if(config.willUrlsShowIdsIfAvailable() && !idFields.isEmpty()){
-//            return idFields.get(0);
-//        }else{
-//            final List<Field> guidFields = thingDefn.getFieldsOfType(FieldType.AUTO_GUID);
-//            if(!guidFields.isEmpty()) {
-//                return guidFields.get(0);
-//            }else{
-//                return null;
-//            }
-//        }
+        if(aField==null) {
+            final List<Field> idFields = thingDefn.getFieldsOfType(FieldType.AUTO_INCREMENT);
+            if (config.willUrlsShowIdsIfAvailable() && !idFields.isEmpty()) {
+                aField = idFields.get(0);
+            } else {
+                final List<Field> guidFields = thingDefn.getFieldsOfType(FieldType.AUTO_GUID);
+                if (!guidFields.isEmpty()) {
+                    aField = guidFields.get(0);
+                } else {
+                    aField = null;
+                }
+            }
+        }
+
+        return aField;
     }
 
     private void addRoutingsForRelationship(final ApiRoutingDefinition defn, final RelationshipVectorDefinition relationship) {
@@ -258,6 +277,8 @@ public class ApiRoutingDefinitionDocGenerator {
             uniqueIdentifier = uniqueReferenceText.get(uniqueIdField.getType());
             uniqueIdFieldName = uniqueIdField.getName();
         }
+
+        String uniqueUrlParam = "{" + uniqueIdentifier + "}";
 
 //        final List<Field> idFields = thingDefn.getFieldsOfType(FieldType.ID);
 //        if(config.willUrlsShowIdsIfAvailable() && !idFields.isEmpty()){

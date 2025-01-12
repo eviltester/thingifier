@@ -79,6 +79,9 @@ public class SimulationRoutes {
         jsonThing = new JsonThing(simulation.apiConfig().jsonOutput());
 
         apiDocDefn = new ThingifierApiDocumentationDefn();
+        apiDocDefn.addServer("https://apichallenges.eviltester.com", "cloud hosted version");
+        apiDocDefn.addServer("http://localhost:4567", "local execution");
+        apiDocDefn.setVersion("1.0.0");
         apiDocDefn.setThingifier(simulation);
         apiDocDefn.setPathPrefix("/sim"); // where can the API endpoints be found
 
