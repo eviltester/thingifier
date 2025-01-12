@@ -67,19 +67,12 @@ public class Swaggerizer {
         Components components = new Components();
         for(EntityDefinition objectSchemaDefinition : routingDefinitions.getObjectSchemas()){
 
-            ObjectSchema object = new ObjectSchema();
-            object.setDescription(objectSchemaDefinition.getName());
-            object.setTitle(objectSchemaDefinition.getName());
-
-            //object.name(objectSchemaDefinition.getName());
-            for(String propertyName : objectSchemaDefinition.getFieldNames()){
-                Field propertyDefinition = objectSchemaDefinition.getField(propertyName);
-                Schema<String> propertyItem = new Schema<String>();
-                propertyItem.setExample(propertyDefinition.getExamples().get(0));
-                object.addProperties(propertyName, propertyItem);
-            }
-
+            ObjectSchema object = asObjectSchema(objectSchemaDefinition);
             components.addSchemas(objectSchemaDefinition.getName(), object);
+
+            ArraySchema arrayObject = asArrayObjectSchema(objectSchemaDefinition);
+            components.addSchemas(objectSchemaDefinition.getPlural(), arrayObject);
+
         }
 
         api.components(components);
@@ -122,16 +115,21 @@ public class Swaggerizer {
                                     ApiResponse response = new ApiResponse().description(
                                             possibleStatus.description()
                                     );
-                                    if(route.hasReturnPayloadFor(possibleStatus.value())){
-                                        if(routingDefinitions.hasObjectSchemaNamed(route.getReturnPayloadFor(possibleStatus.value()))){
-                                            String ref = "#/components/schemas/" + route.getReturnPayloadFor(possibleStatus.value());
+                                    if(subroute.hasReturnPayloadFor(possibleStatus.value())){
+                                        // assume that all payloads are setup as components
+                                        if(routingDefinitions.hasObjectSchemaNamed(subroute.getReturnPayloadFor(possibleStatus.value()))){
+                                            String ref = "#/components/schemas/" + subroute.getReturnPayloadFor(possibleStatus.value());
 
                                             Schema<String> object = new Schema<>();
                                             MediaType schema = new MediaType();
                                             schema.setSchema(object);
                                             object.set$ref(ref);
+
                                             response.setContent(
-                                                    new Content().addMediaType("application/json", schema));
+                                                new Content().
+                                                addMediaType("application/json", schema).
+                                                addMediaType("application/xml", schema)
+                                            );
                                         }
                                     }
                                     responses.addApiResponse(
@@ -175,6 +173,47 @@ public class Swaggerizer {
 
 
         return api;
+    }
+
+    private ArraySchema asArrayObjectSchema(EntityDefinition objectSchemaDefinition) {
+
+        ArraySchema arrayObject = new ArraySchema();
+        arrayObject.setDescription(objectSchemaDefinition.getPlural());
+        arrayObject.setTitle(objectSchemaDefinition.getPlural());
+        //arrayObject.setItems(asObjectSchema(objectSchemaDefinition));
+
+        String ref = "#/components/schemas/" + objectSchemaDefinition.getName();
+
+        Schema<String> objectRef = new Schema<>();
+        objectRef.set$ref(ref);
+
+        arrayObject.setItems(objectRef);
+
+        XML xml = new XML();
+        xml.setWrapped(true);
+        arrayObject.setXml(xml);
+
+        return arrayObject;
+    }
+
+    private static ObjectSchema asObjectSchema(EntityDefinition objectSchemaDefinition) {
+        ObjectSchema object = new ObjectSchema();
+        object.setDescription(objectSchemaDefinition.getName());
+        object.setTitle(objectSchemaDefinition.getName());
+
+        for(String propertyName : objectSchemaDefinition.getFieldNames()){
+            Field propertyDefinition = objectSchemaDefinition.getField(propertyName);
+            Schema<String> propertyItem = new Schema<String>();
+            propertyItem.setExample(propertyDefinition.getExamples().get(0));
+            object.addProperties(propertyName, propertyItem);
+        }
+
+        XML xml = new XML();
+        xml.setWrapped(true);
+        xml.setName(objectSchemaDefinition.getName());
+
+        object.setXml(xml);
+        return object;
     }
 
     // TODO: the output from swaggerizer json could be cached

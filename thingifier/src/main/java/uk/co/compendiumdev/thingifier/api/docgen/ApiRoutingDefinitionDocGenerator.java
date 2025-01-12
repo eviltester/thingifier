@@ -67,6 +67,7 @@ public class ApiRoutingDefinitionDocGenerator {
 
         for (EntityDefinition entityDefn : thingifier.getERmodel().getEntityDefinitions()) {
 
+            // add for the single entity
             defn.addObjectSchema(entityDefn);
 
             String uniqueIdentifier="?";
@@ -103,7 +104,7 @@ public class ApiRoutingDefinitionDocGenerator {
                 ).addPossibleStatus(RoutingStatus.returnValue(
                                 200, String.format("All the %s", entityDefn.getPlural()))
                 ).setAsFilterableFrom(entityDefn)
-                .returnPayload(200, entityDefn.getName());
+                .returnPayload(200, entityDefn.getPlural());
 
             defn.addRouting(String.format("headers for all the instances of %s", entityDefn.getName()),
                     RoutingVerb.HEAD, pluralUrl, RoutingStatus.returnedFromCall()).
@@ -123,8 +124,11 @@ public class ApiRoutingDefinitionDocGenerator {
                     String.format("we should be able to create %s without a %s using the field values in the body of the message. " + maxLimitInformation,
                             entityDefn.getName(), uniqueIdFieldName.toUpperCase()),
                     RoutingVerb.POST, pluralUrl, RoutingStatus.returnedFromCall()).
-                    addPossibleStatus(RoutingStatus.returnValue(
-                            201, String.format("Created a %s",entityDefn.getName()))).
+                    addPossibleStatus(
+                        RoutingStatus.returnValue(
+                            201, String.format("Created a %s",entityDefn.getName())
+                        )
+                    ).returnPayload(201, entityDefn.getName()).
                     addPossibleStatus(RoutingStatus.returnValue(
                             400, String.format("Error when creating a %s", entityDefn.getName())));
 
@@ -152,6 +156,7 @@ public class ApiRoutingDefinitionDocGenerator {
                     RoutingVerb.GET, aUrlWGuid, RoutingStatus.returnedFromCall()).
                     addPossibleStatus(RoutingStatus.returnValue(
                             200, String.format("A specific %s", entityDefn.getName()))).
+                    returnPayload(200, entityDefn.getName()).
                     addPossibleStatus(RoutingStatus.returnValue(
                             404, String.format("Could not find a specific %s", entityDefn.getName())));
 
@@ -170,6 +175,7 @@ public class ApiRoutingDefinitionDocGenerator {
                     RoutingVerb.POST, aUrlWGuid, RoutingStatus.returnedFromCall()).
                     addPossibleStatus(RoutingStatus.returnValue(
                             200, String.format("Amended the specific %s", entityDefn.getName()))).
+                    returnPayload(200, entityDefn.getName()).
                     addPossibleStatus(RoutingStatus.returnValue(
                             404, String.format("Could not find a specific %s",entityDefn.getName())));;
 
@@ -185,6 +191,7 @@ public class ApiRoutingDefinitionDocGenerator {
                     RoutingVerb.PUT, aUrlWGuid, RoutingStatus.returnedFromCall()).
                     addPossibleStatus(RoutingStatus.returnValue(
                             200, String.format("Replaced the specific %s details", entityDefn.getName()))).
+                    returnPayload(200, entityDefn.getName()).
                     addPossibleStatus(RoutingStatus.returnValue(
                             404, String.format("Could not find a specific %s", entityDefn.getName())));;
 

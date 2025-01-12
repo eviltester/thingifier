@@ -37,7 +37,10 @@ final public class ApiRoutingDefinition {
     public void addObjectSchema(EntityDefinition entityDefn) {
         // TODO this should be an object schema rather than entityDefinition
         // because we don't want it to be editable
+        // as single entity
         objectSchemas.put(entityDefn.getName(),entityDefn);
+        // and as plural for array responses
+        objectSchemas.put(entityDefn.getPlural(),entityDefn);
     }
 
     public boolean hasObjectSchemaNamed(String aName){
