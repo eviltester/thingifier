@@ -237,7 +237,9 @@ public class ChallengerTrackingRoutes {
                         RoutingStatus.returnedFromCall(),
                         null).
                         addDocumentation("Create a challenger using the X-CHALLENGER guid header.").
-                        addPossibleStatuses(200,400,405));
+                        addPossibleStatuses(200,400,405).
+                        addCustomHeader("X-CHALLENGER","guid")
+                );
 
         SimpleSparkRouteCreator.routeStatusWhenNot(405, "/challenger", List.of("post", "options"));
 

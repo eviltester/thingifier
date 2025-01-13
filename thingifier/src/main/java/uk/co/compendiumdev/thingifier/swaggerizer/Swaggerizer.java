@@ -117,25 +117,31 @@ public class Swaggerizer {
 
                             final Operation operation = new Operation();
                             operation.setDescription(subroute.getDocumentation());
+
+                            List<Parameter> operationParameters = new ArrayList<>();
+
+
                             // TODO: need to build up examples and status in the automated route generation
                             if(!subroute.status().isReturnedFromCall()){
+
                                 operation.setResponses(
                                         new ApiResponses().addApiResponse(
                                                 String.valueOf(subroute.status().value()),
                                                 new ApiResponse().description(
                                                         subroute.status().description())
                                         ));
-                            }else{
+
+                            }else {
                                 final ApiResponses responses = new ApiResponses();
-                                final List<RoutingStatus> possibleStatusResponses = subroute.getPossibleStatusReponses();
-                                for(RoutingStatus possibleStatus : possibleStatusResponses){
+                                List<RoutingStatus> possibleStatusResponses = subroute.getPossibleStatusReponses();
+                                for (RoutingStatus possibleStatus : possibleStatusResponses) {
 
                                     ApiResponse response = new ApiResponse().description(
                                             possibleStatus.description()
                                     );
-                                    if(subroute.hasReturnPayloadFor(possibleStatus.value())){
+                                    if (subroute.hasReturnPayloadFor(possibleStatus.value())) {
                                         // assume that all payloads are setup as components
-                                        if(routingDefinitions.hasObjectSchemaNamed(subroute.getReturnPayloadFor(possibleStatus.value()))){
+                                        if (routingDefinitions.hasObjectSchemaNamed(subroute.getReturnPayloadFor(possibleStatus.value()))) {
                                             String ref = "#/components/schemas/" + subroute.getReturnPayloadFor(possibleStatus.value());
 
                                             Schema<String> object = new Schema<>();
@@ -144,105 +150,115 @@ public class Swaggerizer {
                                             object.set$ref(ref);
 
                                             response.setContent(
-                                                new Content().
-                                                addMediaType("application/json", schema).
-                                                addMediaType("application/xml", schema)
+                                                    new Content().
+                                                            addMediaType("application/json", schema).
+                                                            addMediaType("application/xml", schema)
                                             );
                                         }
                                     }
 
                                     responses.addApiResponse(
-                                        String.valueOf(possibleStatus.value()),
-                                        response
+                                            String.valueOf(possibleStatus.value()),
+                                            response
                                     );
 
 
-                                    if(subroute.hasRequestPayload()){
-
-                                        RequestBody requestBody = new RequestBody();
-                                        requestBody.setRequired(true);
-
-                                        // assume that all payloads are already setup as components
-                                        String ref = "#/components/schemas/" + subroute.getRequestPayload();
-
-                                        Schema<String> object = new Schema<>();
-                                        MediaType schema = new MediaType();
-                                        schema.setSchema(object);
-                                        object.set$ref(ref);
-
-                                        requestBody.setContent(
-                                                new Content().
-                                                        addMediaType("application/json", schema).
-                                                        addMediaType("application/xml", schema)
-                                        );
-
-                                        operation.setRequestBody(requestBody);
-                                    }
-
-                                    if(subroute.hasRequestUrlParams()){
-
-                                        List<Parameter> urlParameters = new ArrayList<>();
-
-                                        // TODO: create a Field to Swaggerizer param method/class
-                                        List<Field> paramFields = subroute.getRequestUrlParams();
-                                        for(Field aField : paramFields){
-                                            Parameter param = new Parameter();
-                                            param.
-                                                in("path").
-                                                name(aField.getName()).
-                                                required(true).
-                                                example(aField.getRandomExampleValue());
-
-                                            Schema<String> schema = new Schema<>();
-
-                                            switch (aField.getType()){
-                                                case AUTO_INCREMENT:
-                                                case INTEGER:
-                                                    schema.addType("integer");
-                                                    break;
-
-                                                case FLOAT:
-                                                    schema.addType("number");
-                                                    break;
-                                                case BOOLEAN:
-                                                    schema.addType("boolean");
-                                                    break;
-                                                case AUTO_GUID:
-                                                case STRING:
-                                                case DATE:
-                                                case ENUM: // TODO: properly do Enums
-                                                    schema.addType("string");
-                                                    break;
-                                                default:
-                                                    schema.addType("string");
-                                            }
-
-                                            param.setSchema(schema);
-                                            urlParameters.add(param);
-                                        }
-
-                                        for(Parameter param : urlParameters){
-                                            Boolean exists = false;
-                                            if(path.getParameters()!=null){
-                                                for(Parameter existingParam : path.getParameters()){
-                                                    if(existingParam.getName().equals(param.getName())){
-                                                        exists = true;
-                                                    }
-                                                }
-                                            }
-                                            if(!exists) {
-                                                path.addParametersItem(param);
-                                            }
-                                        }
-                                        //operation.setParameters(urlParameters);
-                                    }
-
-
                                 }
-                                if(possibleStatusResponses.size()>0){
+
+                                if(!possibleStatusResponses.isEmpty()){
                                     operation.setResponses(responses);
                                 }
                             }
+
+                            if(subroute.hasRequestPayload()){
+
+                                RequestBody requestBody = new RequestBody();
+                                requestBody.setRequired(true);
+
+                                // assume that all payloads are already setup as components
+                                String ref = "#/components/schemas/" + subroute.getRequestPayload();
+
+                                Schema<String> object = new Schema<>();
+                                MediaType schema = new MediaType();
+                                schema.setSchema(object);
+                                object.set$ref(ref);
+
+                                requestBody.setContent(
+                                        new Content().
+                                                addMediaType("application/json", schema).
+                                                addMediaType("application/xml", schema)
+                                );
+
+                                operation.setRequestBody(requestBody);
+                            }
+
+                            if(subroute.hasRequestUrlParams()) {
+
+                                List<Parameter> urlParameters = new ArrayList<>();
+
+                                // TODO: create a Field to Swaggerizer param method/class
+                                List<Field> paramFields = subroute.getRequestUrlParams();
+                                for (Field aField : paramFields) {
+                                    Parameter param = new Parameter();
+                                    param.
+                                            in("path").
+                                            name(aField.getName()).
+                                            required(true).
+                                            example(aField.getRandomExampleValue());
+
+                                    Schema<String> schema = new Schema<>();
+
+                                    switch (aField.getType()) {
+                                        case AUTO_INCREMENT:
+                                        case INTEGER:
+                                            schema.addType("integer");
+                                            break;
+
+                                        case FLOAT:
+                                            schema.addType("number");
+                                            break;
+                                        case BOOLEAN:
+                                            schema.addType("boolean");
+                                            break;
+                                        case AUTO_GUID:
+                                        case STRING:
+                                        case DATE:
+                                        case ENUM: // TODO: properly do Enums
+                                            schema.addType("string");
+                                            break;
+                                        default:
+                                            schema.addType("string");
+                                    }
+
+                                    param.setSchema(schema);
+                                    urlParameters.add(param);
+                                }
+
+                                for(Parameter param : urlParameters){
+                                    Boolean exists = false;
+                                    if(path.getParameters()!=null){
+                                        for(Parameter existingParam : path.getParameters()){
+                                            if(existingParam.getName().equals(param.getName())){
+                                                exists = true;
+                                            }
+                                        }
+                                    }
+                                    if(!exists) {
+                                        path.addParametersItem(param);
+                                    }
+                                }
+                            }
+
+
+                            addRouteCustomHeaders(subroute, operationParameters);
+
+
+
+
+                            if(!operationParameters.isEmpty()){
+                                operation.setParameters(operationParameters);
+                            }
+
 
                             switch(subroute.verb()){
                                 case GET:
@@ -275,6 +291,34 @@ public class Swaggerizer {
 
 
         return api;
+    }
+
+    private void addRouteCustomHeaders(RoutingDefinition subroute, List<Parameter> operationParameters) {
+        if(subroute.hasCustomHeaders()){
+            for(String headerName : subroute.getCustomHeaderNames()){
+                String headerType = subroute.getCustomHeaderType(headerName);
+                if(headerType != null){
+
+                    Parameter param = new Parameter();
+                    param.
+                        in("header").
+                        name(headerName).
+                        required(true);
+
+                    Schema<String> schema = new Schema<>();
+
+                    switch (headerType){
+                        case "guid":
+                            break;
+                        default:
+                            schema.addType(headerType);
+                    }
+
+                    param.setSchema(schema);
+                    operationParameters.add(param);
+                }
+            }
+        }
     }
 
     private ArraySchema asArrayObjectSchema(EntityDefinition objectSchemaDefinition) {

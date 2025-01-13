@@ -104,6 +104,7 @@ public class ThingifierApiDocumentationDefn {
         return pathPrefix;
     }
 
+
     public class ApiServer{
         public final String url;
         public final String description;

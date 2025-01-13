@@ -1,10 +1,12 @@
 package uk.co.compendiumdev.thingifier.api.docgen;
 
+import uk.co.compendiumdev.thingifier.api.ThingifierRestAPIHandler;
 import uk.co.compendiumdev.thingifier.api.response.ResponseHeader;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
@@ -20,6 +22,7 @@ public class RoutingDefinition {
     private HashMap<Integer,String> returnPayload;
     private String requestPayload;
     private List<Field> requestUrlParams;
+    private HashMap<String,String> customHeaders;
 
     public RoutingDefinition(RoutingVerb verb, String url, RoutingStatus routingStatus, ResponseHeader header) {
         this.verb = verb;
@@ -36,8 +39,9 @@ public class RoutingDefinition {
         filterableEntityDefn=null;
         possibleStatusResponses= new ArrayList<>();
         requestUrlParams = new ArrayList<>();
-        returnPayload=new HashMap<Integer, String>();
+        returnPayload=new HashMap<>();
         requestPayload=null;
+        customHeaders = new HashMap<>();
     }
 
     private List<RoutingStatus> getDefaultPossibleStatusResponses() {
@@ -157,4 +161,20 @@ public class RoutingDefinition {
         return new ArrayList<>(requestUrlParams);
     }
 
+    public RoutingDefinition addCustomHeader(String headerName, String headerType) {
+        customHeaders.put(headerName,headerType);
+        return this;
+    }
+
+    public boolean hasCustomHeaders() {
+        return !customHeaders.keySet().isEmpty();
+    }
+
+    public Collection<String> getCustomHeaderNames() {
+        return customHeaders.keySet();
+    }
+
+    public String getCustomHeaderType(String headerName) {
+        return customHeaders.get(headerName);
+    }
 }
