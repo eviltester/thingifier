@@ -31,6 +31,18 @@ public class Swaggerizer {
         this.apiDefn = apiDefn;
     }
 
+    // TODO: create a swagger configuration to allow configuring
+    // field validation on or off - type, min/max etc.
+    // examples on or off
+    // include all verbs for all urls, regardless of the API definition (by default it would only output the verbs in the definition)
+    // exclude verbs with status 405 (do not add not implemented into swagger)
+    // e.g. for Development and Use of API we would want validation on, examples on, only include verbs in definition, exclude verbs with status 405
+    // e.g. for testing we would want validation off, examples on, include all verbs
+
+    // TODO: need the field definitions to have descriptions so these can be shown in Swagger
+
+    // TODO: need the api definition to have custom headers for certain API defined end points
+
     public OpenAPI swagger(){
 
         api = new OpenAPI();
