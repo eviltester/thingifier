@@ -31,6 +31,8 @@ public class ChallengerInternalHTTPResponseHook implements InternalHttpResponseH
         // allow cross origin requests
         response.setHeader("Access-Control-Allow-Origin", "*");
         response.setHeader("Access-Control-Allow-Headers", "*");
+        // this is necessary for swagger UI to show headers in the UI
+        response.setHeader("Access-Control-Expose-Headers", "*");
         if (request.getVerb() == OPTIONS && request.getHeaders().headerExists("Access-Control-Allow-Methods")) {
             response.setHeader("Access-Control-Allow-Methods", request.getHeader("Access-Control-Allow-Methods"));
         }
