@@ -177,4 +177,8 @@ public class RoutingDefinition {
     public String getCustomHeaderType(String headerName) {
         return customHeaders.get(headerName);
     }
+
+    public boolean hasCustomHeaderNamed(String headerName) {
+        return customHeaders.containsKey(headerName);
+    }
 }

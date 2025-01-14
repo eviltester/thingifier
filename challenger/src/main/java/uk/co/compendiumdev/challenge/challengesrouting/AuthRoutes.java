@@ -98,6 +98,7 @@ public class AuthRoutes {
 
         SimpleSparkRouteCreator.routeStatusWhenNot(405, "/secret/token", List.of("post", "options"));
 
+        // TODO: configure for basic auth in documentation
         apiDefn.addRouteToDocumentation(
                 new RoutingDefinition(
                 RoutingVerb.POST,
@@ -198,7 +199,9 @@ public class AuthRoutes {
                 RoutingStatus.returnedFromCall(),
                 null).addDocumentation(
                         "GET /secret/note with X-AUTH-TOKEN to return the secret note for the user.").
-                        addPossibleStatuses(200,401,403));
+                        addPossibleStatuses(200,401,403).
+                        addCustomHeader("X-AUTH-TOKEN","string")
+        );
 
 
         post("/secret/note", (request, result) -> {
@@ -306,7 +309,9 @@ public class AuthRoutes {
                 "/secret/note",
                 RoutingStatus.returnedFromCall(),
                 null).addDocumentation("POST /secret/note with X-AUTH-TOKEN, and a payload of `{'note':'contents of note'}` to amend the contents of the secret note.").
-                addPossibleStatuses(200,400,401,403));
+                addPossibleStatuses(200,400,401,403).
+                addCustomHeader("X-AUTH-TOKEN","string")
+        );
     }
 
 

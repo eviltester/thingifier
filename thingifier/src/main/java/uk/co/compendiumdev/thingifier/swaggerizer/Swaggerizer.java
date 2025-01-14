@@ -75,6 +75,10 @@ public class Swaggerizer {
 
         ApiRoutingDefinition routingDefinitions = new ApiRoutingDefinitionDocGenerator(thingifier).generate(apiDefn.getPathPrefix());
         List<RoutingDefinition> routes = new ArrayList<>(routingDefinitions.definitions());
+        // TODO: this should probably be done in the generate
+        for(RoutingDefinition route : routes){
+            apiDefn.addAnyGlobalHeaders(route);
+        }
         routes.addAll(apiDefn.getAdditionalRoutes());
 
         List<String> processedAdditionalRoutes = new ArrayList<>();

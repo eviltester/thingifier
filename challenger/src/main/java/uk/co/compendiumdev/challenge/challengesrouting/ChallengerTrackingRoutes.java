@@ -7,12 +7,9 @@ import uk.co.compendiumdev.challenge.challengers.Challengers;
 import uk.co.compendiumdev.challenge.challenges.ChallengeDefinitions;
 import uk.co.compendiumdev.challenge.persistence.PersistenceLayer;
 import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.api.docgen.ThingifierApiDocumentationDefn;
+import uk.co.compendiumdev.thingifier.api.docgen.*;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponseAsJson;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponseError;
-import uk.co.compendiumdev.thingifier.api.docgen.RoutingDefinition;
-import uk.co.compendiumdev.thingifier.api.docgen.RoutingStatus;
-import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
 import uk.co.compendiumdev.thingifier.core.domain.instances.ERInstanceData;
 import uk.co.compendiumdev.thingifier.spark.SimpleSparkRouteCreator;
 
@@ -81,6 +78,14 @@ public class ChallengerTrackingRoutes {
             getChallengerId.handle(request, result);
             return "";
         });
+
+        if(!single_player_mode) {
+            // make sure the X-CHALLENGER header shows up in the swagger when in multi-user mode
+            apiDefn.addCustomHeaderWhenRouteNotMatches(
+                    new RoutingDefinition(RoutingVerb.POST,"/challenger", null, null),
+                    new HeaderDefinition("X-CHALLENGER", "guid")
+            );
+        }
 
         // Document the endpoint
         apiDefn.addRouteToDocumentation(
@@ -237,8 +242,7 @@ public class ChallengerTrackingRoutes {
                         RoutingStatus.returnedFromCall(),
                         null).
                         addDocumentation("Create a challenger using the X-CHALLENGER guid header.").
-                        addPossibleStatuses(200,400,405).
-                        addCustomHeader("X-CHALLENGER","guid")
+                        addPossibleStatuses(200,400,405)
                 );
 
         SimpleSparkRouteCreator.routeStatusWhenNot(405, "/challenger", List.of("post", "options"));
