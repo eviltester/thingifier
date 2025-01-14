@@ -1,6 +1,8 @@
 package uk.co.compendiumdev.thingifier.swaggerizer;
 
 import io.swagger.v3.core.util.Json31;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.*;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.media.*;
@@ -20,6 +22,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.F
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class Swaggerizer {
@@ -194,6 +197,17 @@ public class Swaggerizer {
                                 );
 
                                 operation.setRequestBody(requestBody);
+                            }
+
+                            if(subroute.isSecuredByBasicAuth()){
+                                if(components.getSecuritySchemes() == null  || !components.getSecuritySchemes().containsKey("basicAuth")){
+                                    components.addSecuritySchemes(
+                                            "basicAuth",
+                                            new SecurityScheme().type(SecurityScheme.Type.HTTP).scheme("basic"));
+                                }
+                                operation.addSecurityItem(
+                                        new SecurityRequirement().addList("basicAuth")
+                                );
                             }
 
                             if(subroute.hasRequestUrlParams()) {

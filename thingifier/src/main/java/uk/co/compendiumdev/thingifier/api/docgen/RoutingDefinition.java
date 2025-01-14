@@ -1,6 +1,5 @@
 package uk.co.compendiumdev.thingifier.api.docgen;
 
-import uk.co.compendiumdev.thingifier.api.ThingifierRestAPIHandler;
 import uk.co.compendiumdev.thingifier.api.response.ResponseHeader;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
@@ -23,6 +22,7 @@ public class RoutingDefinition {
     private String requestPayload;
     private List<Field> requestUrlParams;
     private HashMap<String,String> customHeaders;
+    private boolean usesBasicAuth = false;
 
     public RoutingDefinition(RoutingVerb verb, String url, RoutingStatus routingStatus, ResponseHeader header) {
         this.verb = verb;
@@ -180,5 +180,14 @@ public class RoutingDefinition {
 
     public boolean hasCustomHeaderNamed(String headerName) {
         return customHeaders.containsKey(headerName);
+    }
+
+    public RoutingDefinition secureWithBasicAuth() {
+        usesBasicAuth = true;
+        return this;
+    }
+
+    public boolean isSecuredByBasicAuth(){
+        return usesBasicAuth;
     }
 }

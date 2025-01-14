@@ -137,7 +137,7 @@ public class ThingifierApiDocumentationDefn {
 
     private RoutingDefinition addCustomHeadersForRouteNotMatches(RoutingDefinition aRoute) {
         for(HeaderMatch match : customHeadersForRoutesThatDoNotMatch.values()){
-            if(aRoute.verb() != match.routingDefn.verb() && aRoute.url() != match.routingDefn.url()){
+            if(!(aRoute.verb() == match.routingDefn.verb() && aRoute.url().equals(match.routingDefn.url()))){
                 if(!aRoute.hasCustomHeaderNamed(match.headerDefn.headerName)){
                     aRoute.addCustomHeader(match.headerDefn.headerName, match.headerDefn.headerType);
                 }

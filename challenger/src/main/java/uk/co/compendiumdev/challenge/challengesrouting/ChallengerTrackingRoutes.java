@@ -373,8 +373,9 @@ public class ChallengerTrackingRoutes {
                         RoutingVerb.PUT,
                         "/challenger/database/:guid",
                         RoutingStatus.returnedFromCall(),
-                        null).addDocumentation("Restore a saved set of todos for a challenger matching the supplied X-CHALLENGER guid.")
-                        .addPossibleStatuses(204,400));
+                        null).addDocumentation("Restore a saved set of todos for a challenger matching the supplied X-CHALLENGER guid.").
+                        addPossibleStatuses(204,400)
+        );
 
 
         // TODO: add a protected admin page with an environment variable protection as password

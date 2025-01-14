@@ -67,8 +67,6 @@ public class ChallengeMain {
             }
         }
 
-        config.setToMultiPlayerMode();
-
         thingifier.apiConfig().setApiToAllowRobotsIndexingResponses(false);
         thingifier.apiConfig().setSupportsMultipleDatabases(true);
 

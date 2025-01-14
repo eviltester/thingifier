@@ -69,6 +69,9 @@ public class AuthRoutes {
 
         // TODO: this all feels too tightly coupled to SparkJava we should have our own routing internally that spark delegates too
 
+        // todo: need to add res.addHeader("Access-Control-Expose-Headers", "Location"); to see headers in swagger
+        // i.e. https://groups.google.com/g/swagger-swaggersocket/c/TD0MWY09ESo?pli=1
+
         // POST /secret/token with basic auth to get a secret/token to use as X-AUTH-TOKEN header
         // todo: or {username, password} payload
         post("/secret/token", (request, result) -> {
@@ -98,14 +101,15 @@ public class AuthRoutes {
 
         SimpleSparkRouteCreator.routeStatusWhenNot(405, "/secret/token", List.of("post", "options"));
 
-        // TODO: configure for basic auth in documentation
         apiDefn.addRouteToDocumentation(
                 new RoutingDefinition(
                 RoutingVerb.POST,
                 "/secret/token",
                 RoutingStatus.returnedFromCall(),
                 null).addDocumentation("POST /secret/token with basic auth to get a secret/token to use as X-AUTH-TOKEN header, to allow access to the /secret/note end points.").
-                    addPossibleStatuses(201,401));
+                    addPossibleStatuses(201,401).
+                secureWithBasicAuth()
+        );
 
 
 
