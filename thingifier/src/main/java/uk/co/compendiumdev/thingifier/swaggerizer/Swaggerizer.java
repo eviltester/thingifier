@@ -22,7 +22,6 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.F
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class Swaggerizer {
@@ -43,8 +42,6 @@ public class Swaggerizer {
     // e.g. for testing we would want validation off, examples on, include all verbs
 
     // TODO: need the field definitions to have descriptions so these can be shown in Swagger
-
-    // TODO: need the api definition to have custom headers for certain API defined end points
 
     public OpenAPI swagger(){
 
