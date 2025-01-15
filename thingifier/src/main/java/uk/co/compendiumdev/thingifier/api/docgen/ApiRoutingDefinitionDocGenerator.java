@@ -73,7 +73,6 @@ public class ApiRoutingDefinitionDocGenerator {
 
             String uniqueIdentifier="?";
             String uniqueIdFieldName="fieldName";
-            String uniqueUrlIdentifier = "{?}";
 
             // a thing can have many id fields, so should choose one to be in the url
             // e.g. set a field as 'usedForIndividualRouting'
@@ -81,7 +80,6 @@ public class ApiRoutingDefinitionDocGenerator {
             if(uniqueIdField!=null){
                 uniqueIdentifier = uniqueReferenceText.get(uniqueIdField.getType());
                 uniqueIdFieldName = uniqueIdField.getName();
-                uniqueUrlIdentifier = "{" + uniqueIdFieldName + "}";
             }
 
 
@@ -155,7 +153,7 @@ public class ApiRoutingDefinitionDocGenerator {
             defn.addRouting("method not allowed",
                     RoutingVerb.TRACE, pluralUrl, RoutingStatus.returnValue(405));
 
-            String aUrlWGuid = pluralUrl + "/" + uniqueUrlIdentifier;
+            String aUrlWGuid = pluralUrl + "/" + uniqueIdentifier;
             // we should be able to get specific things based on the GUID e.g. GET project/GUID
             defn.addRouting(
                     String.format("return a specific instances of %s using a %s",
@@ -239,23 +237,19 @@ public class ApiRoutingDefinitionDocGenerator {
     }
 
     private Field getUniqueIdField(final EntityDefinition thingDefn) {
-        Field aField = thingDefn.getPrimaryKeyField();
+        return thingDefn.getPrimaryKeyField();
 
-        if(aField==null) {
-            final List<Field> idFields = thingDefn.getFieldsOfType(FieldType.AUTO_INCREMENT);
-            if (config.willUrlsShowIdsIfAvailable() && !idFields.isEmpty()) {
-                aField = idFields.get(0);
-            } else {
-                final List<Field> guidFields = thingDefn.getFieldsOfType(FieldType.AUTO_GUID);
-                if (!guidFields.isEmpty()) {
-                    aField = guidFields.get(0);
-                } else {
-                    aField = null;
-                }
-            }
-        }
-
-        return aField;
+//        final List<Field> idFields = thingDefn.getFieldsOfType(FieldType.AUTO_INCREMENT);
+//        if(config.willUrlsShowIdsIfAvailable() && !idFields.isEmpty()){
+//            return idFields.get(0);
+//        }else{
+//            final List<Field> guidFields = thingDefn.getFieldsOfType(FieldType.AUTO_GUID);
+//            if(!guidFields.isEmpty()) {
+//                return guidFields.get(0);
+//            }else{
+//                return null;
+//            }
+//        }
     }
 
     private void addRoutingsForRelationship(final ApiRoutingDefinition defn, final RelationshipVectorDefinition relationship) {
@@ -277,8 +271,6 @@ public class ApiRoutingDefinitionDocGenerator {
             uniqueIdentifier = uniqueReferenceText.get(uniqueIdField.getType());
             uniqueIdFieldName = uniqueIdField.getName();
         }
-
-        String uniqueUrlParam = "{" + uniqueIdentifier + "}";
 
 //        final List<Field> idFields = thingDefn.getFieldsOfType(FieldType.ID);
 //        if(config.willUrlsShowIdsIfAvailable() && !idFields.isEmpty()){

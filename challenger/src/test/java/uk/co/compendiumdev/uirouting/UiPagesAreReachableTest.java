@@ -148,7 +148,7 @@ public class UiPagesAreReachableTest {
 
         Assertions.assertEquals(200, response.statusCode);
         Assertions.assertEquals("attachment; filename=\"Simple-Todo-List-swagger.json\"", response.getHeader("Content-Disposition"));
-        Assertions.assertTrue(response.body.contains("\"openapi\": \"3.0.1\","));
+        Assertions.assertTrue(response.body.contains("\"openapi\" : \"3.0.1\","));
     }
 
 }

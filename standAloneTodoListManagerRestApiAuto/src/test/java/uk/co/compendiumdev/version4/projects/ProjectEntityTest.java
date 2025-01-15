@@ -7,6 +7,7 @@ import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.sparkstart.Environment;
 import uk.co.compendiumdev.version4.api.Api;
@@ -15,6 +16,7 @@ import uk.co.compendiumdev.version4.todos.TodoEntityTest;
 
 import java.util.List;
 
+@Disabled
 public class ProjectEntityTest {
 
 

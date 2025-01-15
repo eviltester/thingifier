@@ -112,7 +112,7 @@ public class Swaggerizer {
                     if(!route.url().startsWith("/")){
                         prefix = "/";
                     }
-                    paths.addPathItem(prefix + route.url(), path);
+                    paths.addPathItem(prefix + route.urlWithParamFormatter("{", "}"), path);
                     processedAdditionalRoutes.add(route.url());
 
                     // handle all verbs for this route

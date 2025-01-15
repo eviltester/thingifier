@@ -44,7 +44,7 @@ public final class Field {
     // todo: rather than all these fields, consider moving to more validation rules
     // to help keep the class to a more manageable size or create a FieldValidator class
 
-    private Field(final String name, final FieldType type) {
+    public Field(final String name, final FieldType type) {
         this.name = name;
         this.type = type;
         validationRules = new ArrayList<>();

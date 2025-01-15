@@ -63,6 +63,11 @@ public class RoutingDefinition {
         return url;
     }
 
+    public String urlWithParamFormatter(String prefix, String postfix) {
+        // replace \/:([^\/\?]+)
+        return url.replaceAll("\\/:([^\\/\\?]+)", "/" + prefix + "$1" + postfix);
+    }
+
     public String header() {
         if (header.headerName == null) {
             return "";

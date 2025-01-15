@@ -10,6 +10,8 @@ import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.docgen.*;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponseAsJson;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponseError;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.instances.ERInstanceData;
 import uk.co.compendiumdev.thingifier.spark.SimpleSparkRouteCreator;
 
@@ -87,14 +89,17 @@ public class ChallengerTrackingRoutes {
             );
         }
 
+        Field guidField = new Field("guid", FieldType.AUTO_GUID);
+
         // Document the endpoint
         apiDefn.addRouteToDocumentation(
                 new RoutingDefinition(
                         RoutingVerb.GET,
                         "/challenger/:guid",
                         RoutingStatus.returnedFromCall(),
-                        null).addDocumentation("Get a challenger in Json format to allow continued tracking of challenges.")
-                        .addPossibleStatuses(200,404));
+                        null).addDocumentation("Get a challenger in Json format to allow continued tracking of challenges.").
+                        addPossibleStatuses(200,404).
+                        addRequestUrlParam(guidField));
 
         // endpoint to restore a saved challenger status from UI
         put("/challenger/:id", (request, result) -> {
@@ -182,7 +187,8 @@ public class ChallengerTrackingRoutes {
                         "/challenger/:guid",
                         RoutingStatus.returnedFromCall(),
                         null).addDocumentation("Restore a saved challenger matching the supplied X-CHALLENGER guid to allow continued tracking of challenges.")
-                        .addPossibleStatuses(200,201,400));
+                        .addPossibleStatuses(200,201,400).
+                        addRequestUrlParam(guidField));
 
 
         /*
@@ -258,7 +264,8 @@ public class ChallengerTrackingRoutes {
                         "/challenger/database/:guid",
                         RoutingStatus.returnedFromCall(),
                         null).addDocumentation("Get the todo data for the supplied X-CHALLENGER guid to allow later restoration of the todos.")
-                        .addPossibleStatuses(200,400,404));
+                        .addPossibleStatuses(200,400,404).
+                        addRequestUrlParam(guidField));
 
         Route getChallengerDatabaseId = (request, result) -> {
             ChallengerAuthData challenger;
@@ -374,7 +381,8 @@ public class ChallengerTrackingRoutes {
                         "/challenger/database/:guid",
                         RoutingStatus.returnedFromCall(),
                         null).addDocumentation("Restore a saved set of todos for a challenger matching the supplied X-CHALLENGER guid.").
-                        addPossibleStatuses(204,400)
+                        addPossibleStatuses(204,400).
+                        addRequestUrlParam(guidField)
         );
 
 

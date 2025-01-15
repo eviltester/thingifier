@@ -31,9 +31,9 @@ public class TodoListThingifierTestModel {
 
         EntityDefinition todo = todoList.defineThing("todo", "todos");
 
+        todo.addAsPrimaryKeyField(Field.is("id",FieldType.AUTO_INCREMENT));
         todo
                 .addFields(
-                        Field.is("id",FieldType.AUTO_INCREMENT),
                         Field.is("title", STRING).
                                 makeMandatory().
                                 withValidation(
