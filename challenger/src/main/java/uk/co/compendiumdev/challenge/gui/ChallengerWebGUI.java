@@ -99,7 +99,7 @@ public class ChallengerWebGUI {
                                     <li><a href="/practice-modes/simpleapi">About Simple API</a>
                                     <li><a href="/simpleapi/docs">API Docs</a>
                                     <li><a href="/simpleapi/gui/entities">Data Explorer</a></li>
-                                    <li><a href="/simpleapi/docs/swagger">[Download Open API File]</a>
+                                    <li><a href="/practice-modes/simpleapi-openapi">OpenAPI File</a>
                                 </ul>
                             </li>
                         
@@ -110,7 +110,7 @@ public class ChallengerWebGUI {
                                     <li><a href="/gui/challenges">Progress</a></li>
                                     <li><a href="/gui/entities">Data Explorer</a></li>
                                     <li><a href="/apichallenges/solutions">Solutions</a></li>
-                                    <li><a href="/docs/swagger">[Download Open API File]</a>
+                                    <li><a href="/apichallenges/openapi">OpenAPI File</a>
                                 </ul>
                             </li>
                        

@@ -39,6 +39,9 @@ public class ThingifierAutoDocGenRouting {
         // TODO: move into swagger package
         // now that we have an api definition we should be able to generate swagger
         get("%s/docs/swagger".formatted(apiDefn.getPathPrefix()), (request, response) -> {
+
+            String permissive = request.queryParams("permissive");
+
             response.type("text/html");
             response.status(200);
             String nameprefix = "";
@@ -48,12 +51,20 @@ public class ThingifierAutoDocGenRouting {
                 // invalid apidefn setup
                 System.out.println("Possibly incomplete swagger generation, api not defined from model");
             }
+            if(permissive!=null){
+                nameprefix = nameprefix + "permissive-";
+            }
             response.header("Content-Type", "application/octet-stream");
             response.header("Content-Disposition",
                     String.format("attachment; filename=\"%sswagger.json\"",nameprefix));
 
             // TODO: the swaggerizer could be stored at a class level and allow caching to be used for the output
-            return new Swaggerizer(apiDefn).asJson();
+            if(permissive==null){
+                return new Swaggerizer(apiDefn).asJson();
+            }else{
+                return new Swaggerizer(apiDefn).asJson(true);
+            }
+
         });
 
     }

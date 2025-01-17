@@ -33,4 +33,4 @@ Open API Swagger File to load into your API tool of choice and start testing str
 
 ## Swagger OpenAPI File
 
-You can download a Simple API Swagger [OpenAPI File for Simple Api](/simpleapi/docs/swagger).
+You can download a Simple API Swagger [OpenAPI File for Simple Api](/practice-modes/simpleapi-openapi).

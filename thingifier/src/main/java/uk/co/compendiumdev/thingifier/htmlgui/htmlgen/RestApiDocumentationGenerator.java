@@ -381,8 +381,10 @@ public class RestApiDocumentationGenerator {
             }
         }
 
-        // TODO: we need to support multiple APIs so this approach to linking to the swagger file is not correct
-        output.append(paragraph(href("[download swagger file]",prependPath + "/docs/swagger")));
+        output.append(paragraph(href("[download normal swagger file]",prependPath + "/docs/swagger")));
+        output.append(paragraph(href("[download swagger file with less validation]",
+                prependPath + "/docs/swagger?permissive"))
+        );
 
         output.append(defaultGui.getEndOfMainContentMarker());
         output.append(defaultGui.getPageFooter());

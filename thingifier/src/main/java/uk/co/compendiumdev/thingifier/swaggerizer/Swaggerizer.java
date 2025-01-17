@@ -27,25 +27,48 @@ import java.util.List;
 public class Swaggerizer {
 
     private final ThingifierApiDocumentationDefn apiDefn;
-    OpenAPI api;
+    OpenAPI apiNormal;
+    OpenAPI apiPermissive;
 
     public Swaggerizer(ThingifierApiDocumentationDefn apiDefn){
         this.apiDefn = apiDefn;
     }
 
-    // TODO: create a swagger configuration to allow configuring
-    // field validation on or off - type, min/max etc.
-    // examples on or off
-    // include all verbs for all urls, regardless of the API definition (by default it would only output the verbs in the definition)
-    // exclude verbs with status 405 (do not add not implemented into swagger)
+    // a swagger configuration allows configuring
+    // - field validation on or off - type, min/max etc.
+    // - exclude verbs with status 405 (do not add not implemented into swagger)
     // e.g. for Development and Use of API we would want validation on, examples on, only include verbs in definition, exclude verbs with status 405
     // e.g. for testing we would want validation off, examples on, include all verbs
 
     // TODO: need the field definitions to have descriptions so these can be shown in Swagger
 
+    /*
+        Swagger file for normal usage
+     */
     public OpenAPI swagger(){
+        SwaggerGenerationConfig config = new SwaggerGenerationConfig();
 
-        api = new OpenAPI();
+        config.includeMethodNotAllowedEndpoints = false;
+        config.includeFieldValidation = true;
+
+        return swagger(config);
+    }
+
+    /*
+        Swagger file for use in testing
+     */
+    public OpenAPI swaggerPermissive(){
+        SwaggerGenerationConfig config = new SwaggerGenerationConfig();
+
+        config.includeMethodNotAllowedEndpoints = true;
+        config.includeFieldValidation = false;
+
+        return swagger(config);
+    }
+
+    public OpenAPI swagger(SwaggerGenerationConfig config){
+
+        OpenAPI api = new OpenAPI();
 
         final Thingifier thingifier = apiDefn.getThingifier();
 
@@ -90,6 +113,7 @@ public class Swaggerizer {
             components.addSchemas(objectSchemaDefinition.getName(), object);
 
             ObjectSchema createObject = asCreateObjectSchema(objectSchemaDefinition);
+            createObject.title("create " + createObject.getTitle());
             components.addSchemas("create_" + objectSchemaDefinition.getName(), createObject);
 
             ArraySchema arrayObject = asArrayObjectSchema(objectSchemaDefinition);
@@ -118,6 +142,15 @@ public class Swaggerizer {
                     // handle all verbs for this route
                     for (RoutingDefinition subroute : routes) {
                         if (subroute.url().contentEquals(route.url())) {
+
+                            List<RoutingStatus> possibleStatuses = subroute.getPossibleStatusReponses();
+                            if(!config.includeMethodNotAllowedEndpoints &&
+                                subroute.status() !=null &&
+                                subroute.status().value() == 405
+                            ){
+                                // method not allowed so do not add it to the swagger
+                                continue;
+                            }
 
                             final Operation operation = new Operation();
                             operation.setDescription(subroute.getDocumentation());
@@ -218,31 +251,42 @@ public class Swaggerizer {
                                     param.
                                             in("path").
                                             name(aField.getName()).
-                                            required(true).
                                             example(aField.getRandomExampleValue());
+
+                                    // if it is in path it will always be required
+                                    // but we can remove the type validation
+                                    if(!config.includeFieldValidation){
+                                        param.setAllowEmptyValue(true);
+                                    }
+
 
                                     Schema<String> schema = new Schema<>();
 
-                                    switch (aField.getType()) {
-                                        case AUTO_INCREMENT:
-                                        case INTEGER:
-                                            schema.addType("integer");
-                                            break;
+                                    if(config.includeFieldValidation){
+                                        switch (aField.getType()) {
+                                            case AUTO_INCREMENT:
+                                            case INTEGER:
+                                                schema.addType("integer");
+                                                break;
 
-                                        case FLOAT:
-                                            schema.addType("number");
-                                            break;
-                                        case BOOLEAN:
-                                            schema.addType("boolean");
-                                            break;
-                                        case AUTO_GUID:
-                                        case STRING:
-                                        case DATE:
-                                        case ENUM: // TODO: properly do Enums
-                                            schema.addType("string");
-                                            break;
-                                        default:
-                                            schema.addType("string");
+                                            case FLOAT:
+                                                schema.addType("number");
+                                                break;
+                                            case BOOLEAN:
+                                                schema.addType("boolean");
+                                                break;
+                                            case AUTO_GUID:
+                                            case STRING:
+                                            case DATE:
+                                            case ENUM: // TODO: properly do Enums
+                                                schema.addType("string");
+                                                break;
+                                            default:
+                                                schema.addType("string");
+                                        }
+
+                                        // TODO: add min max etc.
+
                                     }
 
                                     param.setSchema(schema);
@@ -394,10 +438,23 @@ public class Swaggerizer {
     }
 
     // TODO: the output from swaggerizer json could be cached
+
     public String asJson(){
-        if(api==null){
-            swagger();
+        return asJson(false);
+    }
+
+    public String asJson(boolean permissive){
+        if(apiNormal==null){
+            apiNormal=swagger();
         }
-        return Json31.pretty(api);
+        if(apiPermissive==null){
+            apiPermissive=swaggerPermissive();
+        }
+        if(permissive){
+            return Json31.pretty(apiPermissive);
+        }else{
+            return Json31.pretty(apiNormal);
+        }
+
     }
 }
