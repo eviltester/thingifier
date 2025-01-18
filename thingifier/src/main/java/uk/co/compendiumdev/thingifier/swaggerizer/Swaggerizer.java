@@ -106,20 +106,7 @@ public class Swaggerizer {
 
         List<String> processedAdditionalRoutes = new ArrayList<>();
 
-        Components components = new Components();
-        for(EntityDefinition objectSchemaDefinition : routingDefinitions.getObjectSchemas()){
-
-            ObjectSchema object = asObjectSchema(objectSchemaDefinition);
-            components.addSchemas(objectSchemaDefinition.getName(), object);
-
-            ObjectSchema createObject = asCreateObjectSchema(objectSchemaDefinition);
-            createObject.title("create " + createObject.getTitle());
-            components.addSchemas("create_" + objectSchemaDefinition.getName(), createObject);
-
-            ArraySchema arrayObject = asArrayObjectSchema(objectSchemaDefinition);
-            components.addSchemas(objectSchemaDefinition.getPlural(), arrayObject);
-
-        }
+        Components components = convertEntityDefinitionsToComponents(routingDefinitions);
 
         api.components(components);
 
@@ -143,7 +130,6 @@ public class Swaggerizer {
                     for (RoutingDefinition subroute : routes) {
                         if (subroute.url().contentEquals(route.url())) {
 
-                            List<RoutingStatus> possibleStatuses = subroute.getPossibleStatusReponses();
                             if(!config.includeMethodNotAllowedEndpoints &&
                                 subroute.status() !=null &&
                                 subroute.status().value() == 405
@@ -158,7 +144,7 @@ public class Swaggerizer {
                             List<Parameter> operationParameters = new ArrayList<>();
 
 
-                            // TODO: need to build up examples and status in the automated route generation
+                            // TODO: don't like this, possible statuses should be used for all situations
                             if(!subroute.status().isReturnedFromCall()){
 
                                 operation.setResponses(
@@ -263,29 +249,8 @@ public class Swaggerizer {
                                     Schema<String> schema = new Schema<>();
 
                                     if(config.includeFieldValidation){
-                                        switch (aField.getType()) {
-                                            case AUTO_INCREMENT:
-                                            case INTEGER:
-                                                schema.addType("integer");
-                                                break;
+                                        addParamSchemeValidationFromField(schema, aField);
 
-                                            case FLOAT:
-                                                schema.addType("number");
-                                                break;
-                                            case BOOLEAN:
-                                                schema.addType("boolean");
-                                                break;
-                                            case AUTO_GUID:
-                                            case STRING:
-                                            case DATE:
-                                            case ENUM: // TODO: properly do Enums
-                                                schema.addType("string");
-                                                break;
-                                            default:
-                                                schema.addType("string");
-                                        }
-
-                                        // TODO: add min max etc.
 
                                     }
 
@@ -293,55 +258,17 @@ public class Swaggerizer {
                                     urlParameters.add(param);
                                 }
 
-                                for(Parameter param : urlParameters){
-                                    Boolean exists = false;
-                                    if(path.getParameters()!=null){
-                                        for(Parameter existingParam : path.getParameters()){
-                                            if(existingParam.getName().equals(param.getName())){
-                                                exists = true;
-                                            }
-                                        }
-                                    }
-                                    if(!exists) {
-                                        path.addParametersItem(param);
-                                    }
-                                }
+                                addUrlParametersAtEndpointLevel(path, urlParameters);
                             }
 
-
                             addRouteCustomHeaders(subroute, operationParameters);
-
-
-
 
                             if(!operationParameters.isEmpty()){
                                 operation.setParameters(operationParameters);
                             }
 
+                            setOperationVerb(subroute, path, operation);
 
-                            switch(subroute.verb()){
-                                case GET:
-                                    path.setGet(operation);
-                                    break;
-                                case POST:
-                                    path.setPost(operation);
-                                    break;
-                                case PUT:
-                                    path.setPut(operation);
-                                    break;
-                                case HEAD:
-                                    path.setHead(operation);
-                                    break;
-                                case PATCH:
-                                    path.setPatch(operation);
-                                    break;
-                                case DELETE:
-                                    path.setDelete(operation);
-                                    break;
-                                case OPTIONS:
-                                    path.setOptions(operation);
-                                    break;
-                            }
                         }
                     }
                 }
@@ -350,6 +277,95 @@ public class Swaggerizer {
 
 
         return api;
+    }
+
+    private Components convertEntityDefinitionsToComponents(ApiRoutingDefinition routingDefinitions) {
+        Components components = new Components();
+        for(EntityDefinition objectSchemaDefinition : routingDefinitions.getObjectSchemas()){
+
+            // add individual entity schema
+            ObjectSchema object = asObjectSchema(objectSchemaDefinition);
+            components.addSchemas(objectSchemaDefinition.getName(), object);
+
+            // add create schema with ID removed for auto added ids
+            ObjectSchema createObject = asCreateObjectSchema(objectSchemaDefinition);
+            createObject.title("create " + createObject.getTitle());
+            components.addSchemas("create_" + objectSchemaDefinition.getName(), createObject);
+
+            // add list response for entity plural
+            ArraySchema arrayObject = asArrayObjectSchema(objectSchemaDefinition);
+            components.addSchemas(objectSchemaDefinition.getPlural(), arrayObject);
+
+        }
+        return components;
+    }
+
+    private void addParamSchemeValidationFromField(Schema<String> schema, Field aField) {
+        switch (aField.getType()) {
+            case AUTO_INCREMENT:
+            case INTEGER:
+                schema.addType("integer");
+                break;
+
+            case FLOAT:
+                schema.addType("number");
+                break;
+            case BOOLEAN:
+                schema.addType("boolean");
+                break;
+            case AUTO_GUID:
+            case STRING:
+            case DATE:
+            case ENUM: // TODO: properly do Enums
+                schema.addType("string");
+                break;
+            default:
+                schema.addType("string");
+        }
+
+        // TODO: add min max etc.
+    }
+
+    private void addUrlParametersAtEndpointLevel(PathItem path, List<Parameter> urlParameters) {
+        for(Parameter param : urlParameters){
+            Boolean exists = false;
+            if(path.getParameters()!=null){
+                for(Parameter existingParam : path.getParameters()){
+                    if(existingParam.getName().equals(param.getName())){
+                        exists = true;
+                    }
+                }
+            }
+            if(!exists) {
+                path.addParametersItem(param);
+            }
+        }
+    }
+
+    private void setOperationVerb(RoutingDefinition subroute, PathItem path, Operation operation) {
+        switch(subroute.verb()){
+            case GET:
+                path.setGet(operation);
+                break;
+            case POST:
+                path.setPost(operation);
+                break;
+            case PUT:
+                path.setPut(operation);
+                break;
+            case HEAD:
+                path.setHead(operation);
+                break;
+            case PATCH:
+                path.setPatch(operation);
+                break;
+            case DELETE:
+                path.setDelete(operation);
+                break;
+            case OPTIONS:
+                path.setOptions(operation);
+                break;
+        }
     }
 
     private void addRouteCustomHeaders(RoutingDefinition subroute, List<Parameter> operationParameters) {

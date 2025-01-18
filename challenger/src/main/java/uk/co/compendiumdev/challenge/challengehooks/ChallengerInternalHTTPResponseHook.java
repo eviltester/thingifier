@@ -29,8 +29,10 @@ public class ChallengerInternalHTTPResponseHook implements InternalHttpResponseH
 
         // TODO: do we actually need this? And if so, why is this not at a spark level for all requests?
         // allow cross origin requests
+        // and swagger https://support.smartbear.com/swaggerhub/docs/en/edit-apis/cors-requirements-for--try-it-out-.html
         response.setHeader("Access-Control-Allow-Origin", "*");
         response.setHeader("Access-Control-Allow-Headers", "*");
+        response.setHeader("Access-Control-Allow-Credentials", "true");
         // this is necessary for swagger UI to show headers in the UI
         response.setHeader("Access-Control-Expose-Headers", "*");
         if (request.getVerb() == OPTIONS && request.getHeaders().headerExists("Access-Control-Allow-Methods")) {
