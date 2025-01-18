@@ -1,10 +1,10 @@
 package uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition;
 
+import uk.co.compendiumdev.thingifier.core.domain.definitions.validation.*;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.DefinedFields;
 import uk.co.compendiumdev.thingifier.core.domain.randomdata.RandomString;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.validation.ValidationRule;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -40,6 +40,7 @@ public final class Field {
 
     private int truncatedStringLength;
     private Function<String, String> transformToMakeUnique;
+    private String description;
 
     // todo: rather than all these fields, consider moving to more validation rules
     // to help keep the class to a more manageable size or create a FieldValidator class
@@ -64,6 +65,7 @@ public final class Field {
         mustBeUnique = false;
         allowedNullable=false;
 
+        description = "";
         transformToMakeUnique = (s) -> s;
     }
 
@@ -185,13 +187,59 @@ public final class Field {
         //}
 
         for (ValidationRule rule : validationRules) {
-            if (!rule.validates(value)) {
-                report.setValid(false);
-                report.addErrorMessage(rule.getErrorMessage(value));
-            }
+            validateAgainstRule(value, rule, report);
         }
 
         return report;
+    }
+
+    public List<ValidationRule> getAllValidationRules(){
+        List<ValidationRule> rules = new ArrayList<>();
+
+        if (type == FieldType.AUTO_INCREMENT) {
+            rules.add(new FieldAutoIncrementValidationRule());
+        }else{
+            if (!fieldIsOptional){
+                rules.add(new MandatoryValidationRule());
+            }
+        }
+
+        if (type == FieldType.BOOLEAN) {
+            rules.add(new BooleanValidationRule());
+        }
+
+        if (type == FieldType.INTEGER) {
+            rules.add(new IntegerValidationRule(minimumIntegerValue, maximumIntegerValue));
+        }
+
+        if(type == FieldType.STRING){
+            // length is validated by a rule
+        }
+
+        if (type == FieldType.FLOAT) {
+            rules.add(new FloatValidationRule(minimumFloatValue, maximumFloatValue));
+        }
+
+        if (type == FieldType.ENUM) {
+            rules.add(new EnumValidationRule(getExamples()));
+        }
+
+        // TODO : add validation for DATE
+
+        if(type == FieldType.OBJECT){
+            // TODO: validation rule for object
+            //validateObjectValue(value, report);
+        }
+
+        rules.addAll(validationRules);
+        return rules;
+    }
+
+    private void validateAgainstRule(FieldValue value, ValidationRule rule, ValidationReport report) {
+        if (!rule.validates(value)) {
+            report.setValid(false);
+            report.addErrorMessage(rule.getErrorMessage(value));
+        }
     }
 
     private void validateObjectValue(final FieldValue value, final ValidationReport report) {
@@ -204,7 +252,8 @@ public final class Field {
     }
 
     private void validateEnumValue(final FieldValue value, final ValidationReport report) {
-        if (!getExamples().contains(value.asString())) {
+        EnumValidationRule rule = new EnumValidationRule(getExamples());
+        if (!rule.validates(value)) {
             reportThisValueDoesNotMatchType(report, value.asString(), getExamples());
         }
     }
@@ -212,14 +261,9 @@ public final class Field {
     private void validateFloatValue(final FieldValue value, final ValidationReport report) {
         try {
             float floatValue = value.asFloat();
-            if (!withinAllowedFloatRange(floatValue)) {
-                report.setValid(false);
-                report.addErrorMessage(
-                        String.format(
-                                "%s : %s is not within range for type %s (%f to %f)",
-                                this.getName(), value.asString(),
-                                type, minimumFloatValue, maximumFloatValue));
-            }
+
+            FloatValidationRule rule = new FloatValidationRule(minimumFloatValue, maximumFloatValue);
+            validateAgainstRule(value, rule, report);
 
         } catch (NumberFormatException e) {
             reportThisValueDoesNotMatchType(report, value.asString());
@@ -228,6 +272,7 @@ public final class Field {
 
     private void validateIntegerValue(final FieldValue value,
                                       final ValidationReport report) {
+
         try {
 
             // integers can come in from JSON as doubles
@@ -239,19 +284,11 @@ public final class Field {
                 throw new NumberFormatException();
             }
 
-            int intVal = intFloatValue.intValue();
+            IntegerValidationRule rule = new IntegerValidationRule(minimumIntegerValue, maximumIntegerValue);
+            validateAgainstRule(value, rule, report);
 
-            if (!withinAllowedIntegerRange(intVal)) {
-                report.setValid(false);
-                report.addErrorMessage(
-                        String.format(
-                                "%s : %d is not within range for type %s (%d to %d)",
-                                this.getName(), intVal,
-                                type, minimumIntegerValue, maximumIntegerValue));
-            }
         } catch (NumberFormatException e) {
             reportThisValueDoesNotMatchType(report, value.asString());
-
         }
     }
 
@@ -260,6 +297,7 @@ public final class Field {
         reportThisValueDoesNotMatchType(report, valueString, List.of());
     }
 
+    // TODO: this should be added into the validation rules
     private void reportThisValueDoesNotMatchType(final ValidationReport report,
                                                  final String valueString,
                                                  final List<String> validValues) {
@@ -279,16 +317,8 @@ public final class Field {
 
     private void validateBooleanValue(final FieldValue value,
                                       final ValidationReport report) {
-        try{
-            value.asBoolean();
-        }catch(IllegalArgumentException e){
-            report.setValid(false);
-            report.addErrorMessage(
-                    String.format(
-                            "%s : %s does not match type %s (true, false)",
-                            this.getName(),
-                            value.asString(), type));
-        }
+        BooleanValidationRule rule = new BooleanValidationRule();
+        validateAgainstRule(value, rule, report);
     }
 
 
@@ -497,5 +527,18 @@ public final class Field {
         }catch (Exception e){
             return "ERROR: " + string + " " + e.getMessage();
         }
+    }
+
+    public Field withDescription(String description) {
+        this.description = description;
+        return this;
+    }
+
+    public boolean hasDescription() {
+        return this.description!=null && !description.isEmpty();
+    }
+
+    public String getDescription() {
+        return description;
     }
 }

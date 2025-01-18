@@ -29,12 +29,15 @@ public class ChallengeApiModel {
                     makeMandatory().
                     withValidation(
                             VRule.notEmpty(),
-                            VRule.maximumLength(50)),
+                            VRule.maximumLength(50)).
+                    withDescription("The title of the TODO Item"),
             Field.is("doneStatus", FieldType.BOOLEAN).
-                    withDefaultValue("false"),
+                    withDefaultValue("false").
+                    withDescription("Status to track the todo completion"),
             Field.is("description", STRING).
                     withExample("my description").
-                    withValidation(VRule.maximumLength(200))
+                    withValidation(VRule.maximumLength(200)).
+                    withDescription("Longer description of the todo")
         );
 
 

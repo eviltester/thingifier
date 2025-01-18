@@ -20,6 +20,7 @@ import uk.co.compendiumdev.thingifier.api.docgen.RoutingStatus;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.validation.ValidationRule;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -328,7 +329,7 @@ public class Swaggerizer {
 
     private void addUrlParametersAtEndpointLevel(PathItem path, List<Parameter> urlParameters) {
         for(Parameter param : urlParameters){
-            Boolean exists = false;
+            boolean exists = false;
             if(path.getParameters()!=null){
                 for(Parameter existingParam : path.getParameters()){
                     if(existingParam.getName().equals(param.getName())){
@@ -439,9 +440,45 @@ public class Swaggerizer {
                 )
             ){
             }else {
-                Schema<String> propertyItem = new Schema<String>();
+                Schema<String> propertyItem = new Schema<>();
                 propertyItem.setExample(propertyDefinition.getExamples().get(0));
+
+                List<String> description = new ArrayList<>();
+                if(propertyDefinition.hasDescription()){
+                   description.add(propertyDefinition.getDescription());
+                }
+
+                for(ValidationRule validationRule : propertyDefinition.getAllValidationRules()){
+                    description.add(validationRule.getExplanation());
+                }
+
+                switch (propertyDefinition.getType()) {
+                    case AUTO_INCREMENT:
+                    case INTEGER:
+                        propertyItem.addType("integer");
+
+                        break;
+
+                    case FLOAT:
+                        propertyItem.addType("number");
+                        break;
+                    case BOOLEAN:
+                        propertyItem.addType("boolean");
+                        break;
+                    case AUTO_GUID:
+                    case STRING:
+                    case DATE:
+                    case ENUM: // TODO: properly do Enums
+                        propertyItem.addType("string");
+                        break;
+                    default:
+                        propertyItem.addType("string");
+                }
+
+                propertyItem.setDescription(joinStrings(description, "."));
+
                 object.addProperties(propertyName, propertyItem);
+
             }
         }
 
@@ -452,6 +489,21 @@ public class Swaggerizer {
         object.setXml(xml);
         return object;
     }
+
+    private static String joinStrings(List<String> description, String postfix) {
+        StringBuilder joined = new StringBuilder();
+        String prependSpace = "";
+        for(String string : description){
+            joined.append(prependSpace);
+            joined.append(string);
+            if(!string.endsWith(postfix)){
+                joined.append(postfix);
+            }
+            prependSpace = " ";
+        }
+        return joined.toString();
+    }
+
 
     // TODO: the output from swaggerizer json could be cached
 
