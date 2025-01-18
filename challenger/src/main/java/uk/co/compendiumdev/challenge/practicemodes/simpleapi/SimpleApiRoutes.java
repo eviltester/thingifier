@@ -103,9 +103,10 @@ public class SimpleApiRoutes {
                 gui);
 
         simpleApiHttpRouting = new ThingifierHttpApiRoutings(simplethings, apiDocDefn);
+
         simpleApiHttpRouting.registerHttpApiRequestHook(new AddMoreItemsIfNecessary(simplethings.getERmodel()));
         simpleApiHttpRouting.registerHttpApiRequestHook(new ResetAutoIncrementWhenTooHigh(simplethings.getERmodel()));
-
+        simpleApiHttpRouting.registerInternalHttpResponseHook(new SimpleApiCorsHeadersResponseHook());
 
         new SimpleSparkRouteCreator("/simpleap/items").status(501, List.of("patch", "trace"));
     }
