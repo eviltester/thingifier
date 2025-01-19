@@ -26,35 +26,12 @@ class FloatFieldTest {
         for(int x=0;x<100;x++){
             final float fieldValue = Float.parseFloat(field.getRandomExampleValue());
             Assertions.assertTrue(
-                    field.withinAllowedFloatRange(fieldValue),
-                    "not in range " + fieldValue);
-            Assertions.assertTrue(
-                    fieldValue>=5.5F,
-                    "example too low " + fieldValue);
-            Assertions.assertTrue(
-                    fieldValue<=10.0F,
-                    "example too high " + fieldValue);
+                    field.validate(
+                                    FieldValue.is(field, String.format("%f",fieldValue))).
+                            isValid());
         }
     }
 
-    @Test
-    void validateFloatOutwithMaxAndMin() {
-
-        final Field field = Field.is("float", FieldType.FLOAT).
-                withMaximumValue(10.0F).
-                withMinimumValue(5.5F);
-
-        Assertions.assertFalse(field.withinAllowedFloatRange(
-                FieldValue.is(field, "11.0")
-                        .asFloat()));
-
-        Assertions.assertFalse(field.withinAllowedFloatRange(
-                FieldValue.is(field, "5.4").
-                        asFloat()));
-
-        Assertions.assertFalse(field.validate(
-                FieldValue.is(field, "5.4")).isValid());
-    }
 
     @Test
     void validationReportsAsFailsForNonFloat() {
@@ -68,23 +45,83 @@ class FloatFieldTest {
     }
 
     @Test
-    void getFloatMinAndMax() {
+    void checkFloatMinAndMax() {
 
         final Field field = Field.is("float", FieldType.FLOAT).
                 withMaximumValue(10.0F).
                 withMinimumValue(5.0F);
 
-        Assertions.assertEquals(10.0F, field.getMaximumFloatValue());
-        Assertions.assertEquals(5.0F, field.getMinimumFloatValue());
+        Assertions.assertFalse(
+                field.validate(
+                                FieldValue.is(field, "4.9")).
+                        isValid());
+
+        Assertions.assertFalse(
+                field.validate(
+                                FieldValue.is(field, "4.99")).
+                        isValid());
+
+        Assertions.assertTrue(
+                field.validate(
+                                FieldValue.is(field, "5.0")).
+                        isValid());
+
+        Assertions.assertTrue(
+                field.validate(
+                                FieldValue.is(field, "5.1")).
+                        isValid());
+
+        Assertions.assertTrue(
+                field.validate(
+                                FieldValue.is(field, "9.99")).
+                        isValid());
+
+        Assertions.assertTrue(
+                field.validate(
+                                FieldValue.is(field, "10.00")).
+                        isValid());
+
+        Assertions.assertTrue(
+                field.validate(
+                                FieldValue.is(field, "10")).
+                        isValid());
+
+
+        Assertions.assertFalse(
+                field.validate(
+                                FieldValue.is(field, "10.01")).
+                        isValid());
+
+        Assertions.assertFalse(
+                field.validate(
+                                FieldValue.is(field, "11.00")).
+                        isValid());
     }
 
     @Test
-    void getDefaultIntegerMinAndMax() {
+    void getDefaultFloatinAndMax() {
 
         final Field field = Field.is("float", FieldType.FLOAT);
 
-        Assertions.assertEquals(Float.MAX_VALUE, field.getMaximumFloatValue());
-        Assertions.assertEquals(Float.MIN_VALUE, field.getMinimumFloatValue());
+        Assertions.assertFalse(
+                field.validate(
+                                FieldValue.is(field, "-0.1")).
+                        isValid());
+
+        Assertions.assertTrue(
+                field.validate(
+                                FieldValue.is(field, "0.0")).
+                        isValid());
+
+        Assertions.assertTrue(
+                field.validate(
+                                FieldValue.is(field, "10000.00")).
+                        isValid());
+
+        Assertions.assertFalse(
+                field.validate(
+                                FieldValue.is(field, "10000.01")).
+                        isValid());
     }
 
     @Test

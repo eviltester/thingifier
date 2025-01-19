@@ -182,26 +182,9 @@ public class RestApiDocumentationGenerator {
                     output.append("<td>");
 
                     output.append("<ul>");
-                    for (ValidationRule validation : theField.validationRules()) {
+                    for (ValidationRule validation : theField.getAllValidationRules()) {
                         //use the validation error message in the documentation
                         output.append("<li>" + validation.getExplanation() + "</li>\n");
-                    }
-
-                    output.append(String.format("<li>Mandatory?: %b</li>", theField.isMandatory()));
-
-                    if(theField.getType()== FieldType.ENUM){
-                        String allowedValues = theField.getExamples().stream().collect(Collectors.joining(", "));
-                        output.append(String.format("<li>Allowed Values: %s </li>", allowedValues));
-                    }
-
-                    if(theField.getType()== FieldType.INTEGER){
-                        output.append(String.format("<li>Allowed Values Between: \"%d\" to \"%d\" </li>",
-                                theField.getMinimumIntegerValue(), theField.getMaximumIntegerValue()));
-                    }
-
-                    if(theField.getType()== FieldType.FLOAT){
-                        output.append(String.format("<li>Allowed Values Between: \"%f\" to \"%f\" </li>",
-                                theField.getMinimumFloatValue(), theField.getMaximumFloatValue()));
                     }
 
                     output.append("</ul>\n");

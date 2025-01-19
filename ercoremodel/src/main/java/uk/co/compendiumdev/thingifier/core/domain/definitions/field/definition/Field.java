@@ -29,12 +29,19 @@ public final class Field {
     private final List<ValidationRule> validationRules;
     private boolean truncateStringIfTooLong;
 
+    private final boolean allowedNullable;
+
+
+    // TODO: create a type validation rule and remove max mins
+    private ValidationRule typeValidationRule;
+
     private int maximumIntegerValue;
     private int minimumIntegerValue;
-    private final boolean allowedNullable;
+
     // todo: use BigDecimal for the internal float representations
     private float maximumFloatValue;
     private float minimumFloatValue;
+
     private DefinedFields objectDefinition;
 
     private boolean mustBeUnique;
@@ -59,10 +66,14 @@ public final class Field {
         truncateStringIfTooLong=false;
         truncatedStringLength=-1;
         fieldExamples = new HashSet<>();
-        maximumIntegerValue = Integer.MAX_VALUE;
+
+        // TODO: add field validation rules based on type instead of tracking max min
         minimumIntegerValue = Integer.MIN_VALUE;
-        maximumFloatValue = Float.MAX_VALUE;
-        minimumFloatValue = Float.MIN_VALUE;
+        maximumIntegerValue = Integer.MAX_VALUE;
+
+        minimumFloatValue = 0.0000F;
+        maximumFloatValue = 10000.0F; // fairly arbitrary number
+
         mustBeUnique = false;
         allowedNullable=false;
 
@@ -382,49 +393,27 @@ public final class Field {
     }
 
     public Field withMaximumValue(final int maximumInteger) {
+        // TODO: do this via a validation rule amendment
         this.maximumIntegerValue = maximumInteger;
         return this;
     }
 
     public Field withMinimumValue(final int minimumInteger) {
+        // TODO: do this via a validation rule amendment
         this.minimumIntegerValue = minimumInteger;
         return this;
     }
 
-    public boolean withinAllowedIntegerRange(final int intVal) {
-        return (intVal>=minimumIntegerValue &&
-                intVal<=maximumIntegerValue);
-    }
-
     public Field withMaximumValue(final float maxFloat) {
+        // TODO: do this via a validation rule amendment
         this.maximumFloatValue = maxFloat;
         return this;
     }
 
     public Field withMinimumValue(final float minFloat) {
+        // TODO: do this via a validation rule amendment
         this.minimumFloatValue = minFloat;
         return this;
-    }
-
-    public boolean withinAllowedFloatRange(final float floatValue) {
-        return (floatValue>=minimumFloatValue &&
-                floatValue<=maximumFloatValue);
-    }
-
-    public int getMaximumIntegerValue() {
-        return maximumIntegerValue;
-    }
-
-    public int getMinimumIntegerValue() {
-        return minimumIntegerValue;
-    }
-
-    public Float getMinimumFloatValue() {
-        return minimumFloatValue;
-    }
-
-    public Float getMaximumFloatValue() {
-        return maximumFloatValue;
     }
 
     public Field withField(final Field childField) {
@@ -454,6 +443,7 @@ public final class Field {
                 }
             case INTEGER:
             case AUTO_INCREMENT:
+                // TODO: integer field uses BigDecimal to do this - check for inconsistency in result
                 Double dVal = Double.parseDouble(value.asString());
                 return String.valueOf(dVal.intValue());
             case AUTO_GUID:
