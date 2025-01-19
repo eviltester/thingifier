@@ -20,8 +20,7 @@ class FloatFieldTest {
     void examplesForFloatFieldsBasedOnMinAndMax() {
 
         final Field field = Field.is("float", FieldType.FLOAT).
-                withMaximumValue(10.0F).
-                withMinimumValue(5.5F);
+                withMinMaxValues(5.5F,10.0F);
 
         for(int x=0;x<100;x++){
             final float fieldValue = Float.parseFloat(field.getRandomExampleValue());
@@ -48,8 +47,7 @@ class FloatFieldTest {
     void checkFloatMinAndMax() {
 
         final Field field = Field.is("float", FieldType.FLOAT).
-                withMaximumValue(10.0F).
-                withMinimumValue(5.0F);
+                withMinMaxValues(5.0F,10.0F);
 
         Assertions.assertFalse(
                 field.validate(
@@ -99,13 +97,13 @@ class FloatFieldTest {
     }
 
     @Test
-    void getDefaultFloatinAndMax() {
+    void noDefaultFloatMinAndMax() {
 
         final Field field = Field.is("float", FieldType.FLOAT);
 
-        Assertions.assertFalse(
+        Assertions.assertTrue(
                 field.validate(
-                                FieldValue.is(field, "-0.1")).
+                                FieldValue.is(field, "-99999.1")).
                         isValid());
 
         Assertions.assertTrue(
@@ -118,7 +116,7 @@ class FloatFieldTest {
                                 FieldValue.is(field, "10000.00")).
                         isValid());
 
-        Assertions.assertFalse(
+        Assertions.assertTrue(
                 field.validate(
                                 FieldValue.is(field, "10000.01")).
                         isValid());

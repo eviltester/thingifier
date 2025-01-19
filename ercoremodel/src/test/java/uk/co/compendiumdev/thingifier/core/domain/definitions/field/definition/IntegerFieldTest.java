@@ -22,8 +22,7 @@ class IntegerFieldTest {
     void examplesForIntegerFieldsBasedOnMinAndMax() {
 
         final Field field = Field.is("integer", FieldType.INTEGER).
-                withMaximumValue(10).
-                withMinimumValue(5);
+                withMinMaxValues(5, 10);
 
         Set<Integer> setValues = new HashSet<>();
 
@@ -45,10 +44,7 @@ class IntegerFieldTest {
     void setIntegerMinAndMax() {
 
         final Field field = Field.is("integer", FieldType.INTEGER).
-                withMaximumValue(10).
-                withMinimumValue(5);
-
-
+                withMinMaxValues(5, 10);
 
         Assertions.assertFalse(
                 field.validate(

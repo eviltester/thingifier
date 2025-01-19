@@ -10,6 +10,12 @@ public class IntegerValidationRule implements ValidationRule{
     private final Integer minimumIntegerValue;
     private final Integer maximumIntegerValue;
 
+    public IntegerValidationRule(){
+        // no limits
+        minimumIntegerValue = null;
+        maximumIntegerValue = null;
+    }
+
     public IntegerValidationRule(Integer minimumIntegerValue, Integer maximumIntegerValue){
         this.minimumIntegerValue = minimumIntegerValue;
         this.maximumIntegerValue = maximumIntegerValue;
@@ -30,8 +36,10 @@ public class IntegerValidationRule implements ValidationRule{
     }
 
     private boolean withinAllowedIntegerRange(final int intVal) {
-        return (intVal>=minimumIntegerValue &&
-                intVal<=maximumIntegerValue);
+        if(minimumIntegerValue == null && maximumIntegerValue == null){
+            return true;
+        }
+        return (intVal>=minimumIntegerValue && intVal<=maximumIntegerValue);
     }
 
     public String getErrorMessage(FieldValue value){
@@ -46,6 +54,18 @@ public class IntegerValidationRule implements ValidationRule{
     }
 
     public String getExplanation(){
-        return String.format("Value must be an Integer of min %d and max %d", minimumIntegerValue, maximumIntegerValue);
+        String postfix = "";
+        if(minimumIntegerValue!=null && maximumIntegerValue!=null){
+            postfix = " of min %d and max %d".formatted(minimumIntegerValue, maximumIntegerValue);
+        }
+        return String.format("Value must be an Integer%s", postfix);
+    }
+
+    public Integer getMinimumIntegerValue() {
+        return minimumIntegerValue;
+    }
+
+    public Integer getMaximumIntegerValue() {
+        return maximumIntegerValue;
     }
 }

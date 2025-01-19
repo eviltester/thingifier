@@ -11,12 +11,6 @@ import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Function;
 
-// TODO: too many of these methods are only for testing - refactor and fix
-// todo: beginning to think that we should have an XField for each field type
-// e.g. IdField, StringField, etc. - possibly with an interface or abstract
-//      AField class - e.g. for 'mandatory'
-//      then we would not have 'maximumStringLength' 'maximumIntegerValue' etc.
-//      would have 'maximum' 'minimum' methods - some fields would have unique methods
 public final class Field {
 
     private final String name;
@@ -31,16 +25,7 @@ public final class Field {
 
     private final boolean allowedNullable;
 
-
-    // TODO: create a type validation rule and remove max mins
     private ValidationRule typeValidationRule;
-
-    private int maximumIntegerValue;
-    private int minimumIntegerValue;
-
-    // todo: use BigDecimal for the internal float representations
-    private float maximumFloatValue;
-    private float minimumFloatValue;
 
     private DefinedFields objectDefinition;
 
@@ -61,18 +46,28 @@ public final class Field {
         fieldIsOptional = true;
         if(type == FieldType.AUTO_INCREMENT || type == FieldType.AUTO_GUID){
             fieldIsOptional = false;
+            typeValidationRule = new FieldAutoIncrementValidationRule();
         }
 
         truncateStringIfTooLong=false;
         truncatedStringLength=-1;
         fieldExamples = new HashSet<>();
 
-        // TODO: add field validation rules based on type instead of tracking max min
-        minimumIntegerValue = Integer.MIN_VALUE;
-        maximumIntegerValue = Integer.MAX_VALUE;
+        if(type == FieldType.INTEGER){
+            typeValidationRule = new IntegerValidationRule();
+        }
 
-        minimumFloatValue = 0.0000F;
-        maximumFloatValue = 10000.0F; // fairly arbitrary number
+        if(type == FieldType.FLOAT){
+            typeValidationRule = new FloatValidationRule();
+        }
+
+        if (type == FieldType.BOOLEAN) {
+           typeValidationRule = new BooleanValidationRule();
+        }
+
+        if(type == FieldType.ENUM){
+            typeValidationRule = new EnumValidationRule(getExamples());
+        }
 
         mustBeUnique = false;
         allowedNullable=false;
@@ -169,24 +164,18 @@ public final class Field {
         // always validate against type
         //if(shouldValidateValuesAgainstType) {
 
-            if (type == FieldType.BOOLEAN) {
-                validateBooleanValue(value, report);
-            }
-
-            if (type == FieldType.INTEGER) {
-                validateIntegerValue(value, report);
+            switch(type){
+                case BOOLEAN:
+                case INTEGER:
+                case FLOAT:
+                case ENUM:
+                    if(typeValidationRule!=null){
+                        validateAgainstRule(value, typeValidationRule, report);
+                    }
             }
 
             if(type == FieldType.STRING){
                 // length is validated by a rule
-            }
-
-            if (type == FieldType.FLOAT) {
-                validateFloatValue(value, report);
-            }
-
-            if (type == FieldType.ENUM) {
-                validateEnumValue(value, report);
             }
 
             // TODO : add validation for DATE
@@ -208,32 +197,12 @@ public final class Field {
     public List<ValidationRule> getAllValidationRules(){
         List<ValidationRule> rules = new ArrayList<>();
 
-        if (type == FieldType.AUTO_INCREMENT) {
-            rules.add(new FieldAutoIncrementValidationRule());
-        }else{
-            if (!fieldIsOptional){
-                rules.add(new MandatoryValidationRule());
-            }
+        if(typeValidationRule!=null) {
+            rules.add(typeValidationRule);
         }
 
-        if (type == FieldType.BOOLEAN) {
-            rules.add(new BooleanValidationRule());
-        }
-
-        if (type == FieldType.INTEGER) {
-            rules.add(new IntegerValidationRule(minimumIntegerValue, maximumIntegerValue));
-        }
-
-        if(type == FieldType.STRING){
-            // length is validated by a rule
-        }
-
-        if (type == FieldType.FLOAT) {
-            rules.add(new FloatValidationRule(minimumFloatValue, maximumFloatValue));
-        }
-
-        if (type == FieldType.ENUM) {
-            rules.add(new EnumValidationRule(getExamples()));
+        if (type != FieldType.AUTO_INCREMENT && !fieldIsOptional){
+            rules.add(new MandatoryValidationRule());
         }
 
         // TODO : add validation for DATE
@@ -262,32 +231,6 @@ public final class Field {
             report.combine(objectValidity);
         }
     }
-
-    private void validateEnumValue(final FieldValue value, final ValidationReport report) {
-        EnumValidationRule rule = new EnumValidationRule(getExamples());
-        validateAgainstRule(value, rule, report);
-    }
-
-    private void validateFloatValue(final FieldValue value, final ValidationReport report) {
-
-        FloatValidationRule rule = new FloatValidationRule(minimumFloatValue, maximumFloatValue);
-        validateAgainstRule(value, rule, report);
-    }
-
-    private void validateIntegerValue(final FieldValue value,
-                                      final ValidationReport report) {
-
-        IntegerValidationRule rule = new IntegerValidationRule(minimumIntegerValue, maximumIntegerValue);
-        validateAgainstRule(value, rule, report);
-
-    }
-
-    private void validateBooleanValue(final FieldValue value,
-                                      final ValidationReport report) {
-        BooleanValidationRule rule = new BooleanValidationRule();
-        validateAgainstRule(value, rule, report);
-    }
-
 
     public List<ValidationRule> validationRules() {
         return validationRules;
@@ -329,6 +272,9 @@ public final class Field {
 
     public Field withExample(final String anExample) {
         fieldExamples.add(anExample);
+        if(type == FieldType.ENUM){
+            typeValidationRule = new EnumValidationRule(getExamples());
+        }
         return this;
     }
 
@@ -347,8 +293,16 @@ public final class Field {
         }
 
         if(type==FieldType.INTEGER){
+            IntegerValidationRule rule = (IntegerValidationRule) typeValidationRule;
+            int min = Integer.MIN_VALUE;
+            int max = Integer.MAX_VALUE;
+
+            if(rule.getMinimumIntegerValue()!=null){
+                min = rule.getMinimumIntegerValue();
+                max = rule.getMaximumIntegerValue();
+            }
             int rndInt = ThreadLocalRandom.current().
-                            nextInt(minimumIntegerValue, maximumIntegerValue + 1);
+                            nextInt(min, max + 1);
             buildExamples.add(String.valueOf(rndInt));
         }
 
@@ -363,7 +317,14 @@ public final class Field {
         }
 
         if(type==FieldType.FLOAT){
-            final float rndFloat = minimumFloatValue + ThreadLocalRandom.current().nextFloat() * (maximumFloatValue - minimumFloatValue);
+            FloatValidationRule rule = (FloatValidationRule) typeValidationRule;
+            Float min = 0.0F;
+            Float max = 100.0F;
+            if(rule.getMinimumFloatValue()!=null){
+                min = rule.getMinimumFloatValue();
+                max = rule.getMaximumFloatValue();
+            }
+            final float rndFloat = min + ThreadLocalRandom.current().nextFloat() * (max - min);
             buildExamples.add(String.valueOf(rndFloat));
         }
 
@@ -392,27 +353,17 @@ public final class Field {
         return examples.get(new Random().nextInt(examples.size()));
     }
 
-    public Field withMaximumValue(final int maximumInteger) {
-        // TODO: do this via a validation rule amendment
-        this.maximumIntegerValue = maximumInteger;
-        return this;
-    }
-
-    public Field withMinimumValue(final int minimumInteger) {
-        // TODO: do this via a validation rule amendment
-        this.minimumIntegerValue = minimumInteger;
-        return this;
-    }
-
-    public Field withMaximumValue(final float maxFloat) {
-        // TODO: do this via a validation rule amendment
-        this.maximumFloatValue = maxFloat;
-        return this;
-    }
-
-    public Field withMinimumValue(final float minFloat) {
-        // TODO: do this via a validation rule amendment
-        this.minimumFloatValue = minFloat;
+    public Field withMinMaxValues(final float minFloat, final float maxFloat) {
+        if(type == FieldType.FLOAT){
+            if(maxFloat>=minFloat) {
+                typeValidationRule = new FloatValidationRule(
+                        minFloat,
+                        maxFloat
+                );
+            }else{
+                throw new IllegalArgumentException("Attempt to create Float field with minimum %f > %f maximum".formatted(minFloat, maxFloat));
+            }
+        }
         return this;
     }
 
@@ -486,5 +437,19 @@ public final class Field {
 
     public String getDescription() {
         return description;
+    }
+
+    public Field withMinMaxValues(int minInt, int maxInt) {
+        if(type == FieldType.INTEGER){
+            if(maxInt>=minInt) {
+                typeValidationRule = new IntegerValidationRule(
+                        minInt,
+                        maxInt
+                );
+            }else{
+                throw new IllegalArgumentException("Attempt to create Integer field with minimum %d > %d maximum".formatted(minInt, maxInt));
+            }
+        }
+        return this;
     }
 }

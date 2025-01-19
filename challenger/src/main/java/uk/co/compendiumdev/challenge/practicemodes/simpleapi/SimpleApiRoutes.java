@@ -61,12 +61,10 @@ public class SimpleApiRoutes {
                 Field.is("price",FieldType.FLOAT).
                         makeMandatory().
                         withExample("97.99").
-                        withMinimumValue(0f).
-                        withMaximumValue(50000.0f),
+                        withMinMaxValues(0f, 50000.0f),
                 Field.is("numberinstock", FieldType.INTEGER).
                         withDefaultValue("0").
-                        withMaximumValue(100).
-                        withMinimumValue(0)
+                        withMinMaxValues(0,100)
         );
 
         simplethings.setDataGenerator(new SimpleAPITestDataPopulator());

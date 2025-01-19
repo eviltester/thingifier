@@ -8,6 +8,12 @@ public class FloatValidationRule implements ValidationRule{
     private final Float minimumFloatValue;
     private final Float maximumFloatValue;
 
+    public FloatValidationRule(){
+        //allow creating without max and min validation
+        this.minimumFloatValue = null;
+        this.maximumFloatValue = null;
+    }
+
     public FloatValidationRule(Float minimumFloatValue, Float maximumFloatValue){
         this.minimumFloatValue = minimumFloatValue;
         this.maximumFloatValue = maximumFloatValue;
@@ -27,6 +33,9 @@ public class FloatValidationRule implements ValidationRule{
     }
 
     private boolean withinAllowedFloatRange(final float floatValue) {
+        if(minimumFloatValue == null || maximumFloatValue == null){
+            return true;
+        }
         return (floatValue>=minimumFloatValue &&
                 floatValue<=maximumFloatValue);
     }
@@ -43,6 +52,19 @@ public class FloatValidationRule implements ValidationRule{
     }
 
     public String getExplanation(){
-        return String.format("Value must be a Float of min %f and max %f", minimumFloatValue, maximumFloatValue);
+        String postfix = "";
+        if(minimumFloatValue!=null){
+            postfix = " of min %f and max %f".formatted(minimumFloatValue, maximumFloatValue);
+        }
+        return String.format("Value must be a Float%s", postfix);
     }
+
+    public Float getMinimumFloatValue() {
+        return minimumFloatValue;
+    }
+
+    public Float getMaximumFloatValue() {
+        return maximumFloatValue;
+    }
+
 }
