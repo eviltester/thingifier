@@ -29,10 +29,7 @@ public class EnumValidationRule implements ValidationRule{
     }
 
     public String getErrorMessage(FieldValue value){
-        return String.format(
-                "%s : %s does not match type %s (%s)",
-                value.getName(),
-                value.asString(), FieldType.ENUM, valuesAsCsv());
+        return TypeValidationFailedMessageGenerator.thisValueDoesNotMatchType(value, FieldType.ENUM, validValues);
     }
 
     public String getExplanation(){

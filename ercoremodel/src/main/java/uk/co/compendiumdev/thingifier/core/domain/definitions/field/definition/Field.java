@@ -11,6 +11,7 @@ import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Function;
 
+// TODO: too many of these methods are only for testing - refactor and fix
 // todo: beginning to think that we should have an XField for each field type
 // e.g. IdField, StringField, etc. - possibly with an interface or abstract
 //      AField class - e.g. for 'mandatory'
@@ -253,66 +254,21 @@ public final class Field {
 
     private void validateEnumValue(final FieldValue value, final ValidationReport report) {
         EnumValidationRule rule = new EnumValidationRule(getExamples());
-        if (!rule.validates(value)) {
-            reportThisValueDoesNotMatchType(report, value.asString(), getExamples());
-        }
+        validateAgainstRule(value, rule, report);
     }
 
     private void validateFloatValue(final FieldValue value, final ValidationReport report) {
-        try {
-            float floatValue = value.asFloat();
 
-            FloatValidationRule rule = new FloatValidationRule(minimumFloatValue, maximumFloatValue);
-            validateAgainstRule(value, rule, report);
-
-        } catch (NumberFormatException e) {
-            reportThisValueDoesNotMatchType(report, value.asString());
-        }
+        FloatValidationRule rule = new FloatValidationRule(minimumFloatValue, maximumFloatValue);
+        validateAgainstRule(value, rule, report);
     }
 
     private void validateIntegerValue(final FieldValue value,
                                       final ValidationReport report) {
 
-        try {
+        IntegerValidationRule rule = new IntegerValidationRule(minimumIntegerValue, maximumIntegerValue);
+        validateAgainstRule(value, rule, report);
 
-            // integers can come in from JSON as doubles
-            BigDecimal intFloatValue = new BigDecimal(value.asString());
-
-            BigDecimal fractionalPart = intFloatValue.abs().subtract(new BigDecimal(intFloatValue.abs().toBigInteger()));
-
-            if(!(fractionalPart.equals(new BigDecimal("0")) || fractionalPart.equals(new BigDecimal("0.0")))){
-                throw new NumberFormatException();
-            }
-
-            IntegerValidationRule rule = new IntegerValidationRule(minimumIntegerValue, maximumIntegerValue);
-            validateAgainstRule(value, rule, report);
-
-        } catch (NumberFormatException e) {
-            reportThisValueDoesNotMatchType(report, value.asString());
-        }
-    }
-
-    private void reportThisValueDoesNotMatchType(final ValidationReport report,
-                                                 final String valueString) {
-        reportThisValueDoesNotMatchType(report, valueString, List.of());
-    }
-
-    // TODO: this should be added into the validation rules
-    private void reportThisValueDoesNotMatchType(final ValidationReport report,
-                                                 final String valueString,
-                                                 final List<String> validValues) {
-
-        String reportValids = "";
-
-        if(validValues!=null && !validValues.isEmpty()){
-            reportValids = " - valid values are [%s]".formatted(String.join(",",validValues));
-        }
-
-        report.setValid(false);
-        report.addErrorMessage(
-                String.format(
-                        "%s : %s does not match type %s%s",
-                        name,  valueString, type, reportValids));
     }
 
     private void validateBooleanValue(final FieldValue value,

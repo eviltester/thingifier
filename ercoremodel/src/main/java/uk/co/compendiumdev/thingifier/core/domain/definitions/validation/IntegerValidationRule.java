@@ -15,24 +15,18 @@ public class IntegerValidationRule implements ValidationRule{
         this.maximumIntegerValue = maximumIntegerValue;
     }
 
-    public boolean validates(FieldValue value){
+    private boolean validatesAgainstType(FieldValue value){
         try {
+            int intVal = value.asInteger();
 
-            // integers can come in from JSON as doubles
-            BigDecimal intFloatValue = new BigDecimal(value.asString());
-
-            BigDecimal fractionalPart = intFloatValue.abs().subtract(new BigDecimal(intFloatValue.abs().toBigInteger()));
-
-            if(!(fractionalPart.equals(new BigDecimal("0")) || fractionalPart.equals(new BigDecimal("0.0")))){
-                throw new NumberFormatException();
-            }
-
-            int intVal = intFloatValue.intValue();
-
-            return withinAllowedIntegerRange(intVal);
+            return true;
         } catch (NumberFormatException e) {
             return false;
         }
+    }
+
+    public boolean validates(FieldValue value){
+            return validatesAgainstType(value) && withinAllowedIntegerRange(value.asInteger());
     }
 
     private boolean withinAllowedIntegerRange(final int intVal) {
@@ -41,6 +35,9 @@ public class IntegerValidationRule implements ValidationRule{
     }
 
     public String getErrorMessage(FieldValue value){
+        if(!validatesAgainstType(value)){
+            return TypeValidationFailedMessageGenerator.thisValueDoesNotMatchType(value, FieldType.INTEGER);
+        }
         return String.format(
                 "%s : %s is not within range for type %s (%d to %d)",
                 value.getName(),

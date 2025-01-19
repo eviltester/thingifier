@@ -13,13 +13,17 @@ public class FloatValidationRule implements ValidationRule{
         this.maximumFloatValue = maximumFloatValue;
     }
 
-    public boolean validates(FieldValue value){
+    private boolean validatesAgainstType(FieldValue value){
         try {
             float floatValue = value.asFloat();
-            return withinAllowedFloatRange(floatValue);
+            return true;
         } catch (NumberFormatException e) {
             return false;
         }
+    }
+
+    public boolean validates(FieldValue value){
+        return validatesAgainstType(value) && withinAllowedFloatRange(value.asFloat());
     }
 
     private boolean withinAllowedFloatRange(final float floatValue) {
@@ -28,6 +32,9 @@ public class FloatValidationRule implements ValidationRule{
     }
 
     public String getErrorMessage(FieldValue value){
+        if(!validatesAgainstType(value)){
+            return TypeValidationFailedMessageGenerator.thisValueDoesNotMatchType(value, FieldType.FLOAT);
+        }
         return String.format(
                 "%s : %s is not within range for type %s (%f to %f)",
                 value.getName(),
