@@ -1,9 +1,6 @@
 package uk.co.compendiumdev.challenger.restassured.api;
 
 import io.restassured.RestAssured;
-import io.restassured.filter.log.RequestLoggingFilter;
-import io.restassured.filter.log.ResponseLoggingFilter;
-import io.restassured.http.ContentType;
 import org.junit.jupiter.api.BeforeAll;
 import uk.co.compendiumdev.sparkstart.Environment;
 
@@ -18,9 +15,10 @@ public class RestAssuredBaseTest {
     static void enableEnv(){
         environment = Environment.getBaseUri();
 
-        RestAssured.filters(
-                new RequestLoggingFilter(),
-                new ResponseLoggingFilter());
+        // switch on logging for RestAssured requests
+//        RestAssured.filters(
+//                new RequestLoggingFilter(),
+//                new ResponseLoggingFilter());
 
         //RestAssured.proxy("localhost",8888);
 

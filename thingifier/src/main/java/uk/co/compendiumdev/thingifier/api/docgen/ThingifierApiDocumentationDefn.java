@@ -1,9 +1,13 @@
 package uk.co.compendiumdev.thingifier.api.docgen;
 
 import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.api.ThingifierRestAPIHandler;
+import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /*
     Used to define some documentation for the Thingifiers
@@ -20,6 +24,7 @@ public class ThingifierApiDocumentationDefn {
     private String title="";
     private String description="";
     private String pathPrefix="";
+    private Map<String, HeaderMatch> customHeadersForRoutesThatDoNotMatch;
 
 
     // todo: convert internal documentation to use a ThingifierApiDefn rather than a direct thingifier and additional routes
@@ -32,6 +37,10 @@ public class ThingifierApiDocumentationDefn {
         // todo: support optional swagger info
         // terms of service, contact, license, extensions
         // https://swagger.io/specification/
+
+        // this is a bit of hack, really I want a list of rules to apply
+        // but I will start with this and see how often I use it
+        customHeadersForRoutesThatDoNotMatch = new HashMap<>();
     }
 
     public ThingifierApiDocumentationDefn setThingifier(Thingifier thingifier)
@@ -50,7 +59,7 @@ public class ThingifierApiDocumentationDefn {
         should be considered part of the API
      */
     public ThingifierApiDocumentationDefn addRouteToDocumentation(final RoutingDefinition routingDefinition) {
-        additionalRoutes.add(routingDefinition);
+        additionalRoutes.add(addAnyGlobalHeaders(routingDefinition));
         return this;
     }
 
@@ -72,7 +81,9 @@ public class ThingifierApiDocumentationDefn {
     }
 
     public ThingifierApiDocumentationDefn addRoutesToDocumentation(final List<RoutingDefinition> routes) {
-        additionalRoutes.addAll(routes);
+        for(RoutingDefinition aRoute : routes){
+            addRouteToDocumentation(aRoute);
+        }
         return this;
     }
 
@@ -103,6 +114,38 @@ public class ThingifierApiDocumentationDefn {
     public String getPathPrefix() {
         return pathPrefix;
     }
+
+    /**
+     * Given a skeletal RoutingDefinition used to match the verb and the endpoint
+     * If
+     * @param routingDefinition
+     */
+    public void addCustomHeaderWhenRouteNotMatches(RoutingDefinition routingDefinition, HeaderDefinition header) {
+
+        customHeadersForRoutesThatDoNotMatch.put(routingDefinition.verb() + routingDefinition.url(), new HeaderMatch(routingDefinition, header));
+
+        // scan any existing routes and add the custom header
+        for(RoutingDefinition aRoute : additionalRoutes){
+
+        }
+
+    }
+
+    public RoutingDefinition addAnyGlobalHeaders(RoutingDefinition route){
+        return addCustomHeadersForRouteNotMatches(route);
+    }
+
+    private RoutingDefinition addCustomHeadersForRouteNotMatches(RoutingDefinition aRoute) {
+        for(HeaderMatch match : customHeadersForRoutesThatDoNotMatch.values()){
+            if(!(aRoute.verb() == match.routingDefn.verb() && aRoute.url().equals(match.routingDefn.url()))){
+                if(!aRoute.hasCustomHeaderNamed(match.headerDefn.headerName)){
+                    aRoute.addCustomHeader(match.headerDefn.headerName, match.headerDefn.headerType);
+                }
+            }
+        }
+        return aRoute;
+    }
+
 
     public class ApiServer{
         public final String url;

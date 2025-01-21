@@ -22,8 +22,7 @@ class IntegerFieldTest {
     void examplesForIntegerFieldsBasedOnMinAndMax() {
 
         final Field field = Field.is("integer", FieldType.INTEGER).
-                withMaximumValue(10).
-                withMinimumValue(5);
+                withMinMaxValues(5, 10);
 
         Set<Integer> setValues = new HashSet<>();
 
@@ -32,16 +31,9 @@ class IntegerFieldTest {
 
             setValues.add(fieldValue);
             Assertions.assertTrue(
-                    field.withinAllowedIntegerRange(fieldValue),
-                    "not in range " + fieldValue);
-
-            Assertions.assertTrue(
-                    fieldValue >= 5,
-                    "too low range " + fieldValue);
-
-            Assertions.assertTrue(
-                    fieldValue <= 10,
-                    "to high for range " + fieldValue);
+                    field.validate(
+                                    FieldValue.is(field, String.format("%d",fieldValue))).
+                            isValid());
         }
 
         // check we generated all 6 - 5, 6, 7, 8, 9, 10
@@ -49,39 +41,38 @@ class IntegerFieldTest {
     }
 
     @Test
-    void examplesForIntegerOutsideMinAndMax() {
+    void setIntegerMinAndMax() {
 
         final Field field = Field.is("integer", FieldType.INTEGER).
-                withMaximumValue(10).
-                withMinimumValue(5);
-
-        Set<Integer> setValues = new HashSet<>();
-
-        Assertions.assertFalse(
-                    field.withinAllowedIntegerRange(
-                            FieldValue.is(field, "11").
-                                    asInteger()));
-
-        Assertions.assertFalse(
-                field.withinAllowedIntegerRange(
-                        FieldValue.is(field, "4").
-                                asInteger()));
+                withMinMaxValues(5, 10);
 
         Assertions.assertFalse(
                 field.validate(
-                        FieldValue.is(field, "4")).
+                                FieldValue.is(field, "4")).
                         isValid());
-    }
 
-    @Test
-    void getIntegerMinAndMax() {
+        Assertions.assertTrue(
+                field.validate(
+                                FieldValue.is(field, "5")).
+                        isValid());
 
-        final Field field = Field.is("integer", FieldType.INTEGER).
-                withMaximumValue(10).
-                withMinimumValue(5);
 
-        Assertions.assertEquals(10, field.getMaximumIntegerValue());
-        Assertions.assertEquals(5, field.getMinimumIntegerValue());
+        Assertions.assertTrue(
+                field.validate(
+                                FieldValue.is(field, "7")).
+                        isValid());
+
+        Assertions.assertTrue(
+                field.validate(
+                                FieldValue.is(field, "10")).
+                        isValid());
+
+
+        Assertions.assertFalse(
+                field.validate(
+                                FieldValue.is(field, "11")).
+                        isValid());
+
     }
 
     @Test
@@ -89,8 +80,17 @@ class IntegerFieldTest {
 
         final Field field = Field.is("integer", FieldType.INTEGER);
 
-        Assertions.assertEquals(Integer.MAX_VALUE, field.getMaximumIntegerValue());
-        Assertions.assertEquals(Integer.MIN_VALUE, field.getMinimumIntegerValue());
+        Assertions.assertTrue(
+                field.validate(
+                                FieldValue.is(field, String.format("%d",Integer.MIN_VALUE))
+                        ).
+                        isValid());
+
+        Assertions.assertTrue(
+                field.validate(
+                                FieldValue.is(field, String.format("%d",Integer.MAX_VALUE))
+                        ).
+                        isValid());
     }
 
     @Test

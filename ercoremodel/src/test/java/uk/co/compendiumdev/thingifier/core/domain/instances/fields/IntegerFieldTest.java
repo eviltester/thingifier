@@ -26,8 +26,7 @@ public class IntegerFieldTest {
 
         EntityDefinition stringFieldEntity = new EntityDefinition("Test Session", "Test Sessions");
         stringFieldEntity.addFields(Field.is("integer", FieldType.INTEGER).
-                withMaximumValue(100).
-                withMinimumValue(50)
+                withMinMaxValues(50,100)
         );
 
         EntityInstance instance = new EntityInstance(stringFieldEntity);
@@ -46,8 +45,7 @@ public class IntegerFieldTest {
 
         EntityDefinition stringFieldEntity = new EntityDefinition("Test Session", "Test Sessions");
         stringFieldEntity.addFields(Field.is("integer", FieldType.INTEGER).
-                withMaximumValue(100).
-                withMinimumValue(50)
+                withMinMaxValues(50,100)
         );
 
         EntityInstance instance = new EntityInstance(stringFieldEntity);

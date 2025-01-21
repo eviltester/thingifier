@@ -3,6 +3,8 @@ package uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.instances.InstanceFields;
 
+import java.math.BigDecimal;
+
 public final class FieldValue {
 
     //TODO: Field Value should have the definition and getValue would return default if not set
@@ -96,7 +98,20 @@ public final class FieldValue {
     }
 
     public int asInteger() {
-        return Integer.parseInt(valueOfField);
+        return getAsInt(this);
+    }
+
+    private int getAsInt(FieldValue value){
+        // integers can come in from JSON as doubles
+        BigDecimal intFloatValue = new BigDecimal(value.asString());
+
+        BigDecimal fractionalPart = intFloatValue.abs().subtract(new BigDecimal(intFloatValue.abs().toBigInteger()));
+
+        if(!(fractionalPart.equals(new BigDecimal("0")) || fractionalPart.equals(new BigDecimal("0.0")))){
+            throw new NumberFormatException();
+        }
+
+        return intFloatValue.intValue();
     }
 
     public String asJsonValue() {

@@ -105,7 +105,7 @@ public class SimpleApiModeTest {
                         """
                             {
                             "price":2.00,
-                            "numberinstock":2,
+                            "numberinstock":3,
                             "isbn13": "1234567890123",
                             "type":book
                         }
@@ -116,7 +116,7 @@ public class SimpleApiModeTest {
 
         Item item = new Gson().fromJson(response.body, Item.class);
         Assertions.assertEquals(2f, item.price);
-        Assertions.assertEquals(2, item.numberinstock);
+        Assertions.assertEquals(3, item.numberinstock);
         Assertions.assertEquals("1234567890123", item.isbn13);
         Assertions.assertEquals("book", item.type);
     }

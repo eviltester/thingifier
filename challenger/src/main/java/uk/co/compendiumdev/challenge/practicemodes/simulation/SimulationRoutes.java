@@ -20,7 +20,6 @@ import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonThing;
 import uk.co.compendiumdev.thingifier.htmlgui.htmlgen.DefaultGUIHTML;
 import uk.co.compendiumdev.thingifier.spark.SimpleSparkRouteCreator;
-import uk.co.compendiumdev.thingifier.swaggerizer.Swaggerizer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -76,9 +75,13 @@ public class SimulationRoutes {
 
         // this gives us access to the common http processing functions
         httpApi = new ThingifierHttpApi(simulation);
+
         jsonThing = new JsonThing(simulation.apiConfig().jsonOutput());
 
         apiDocDefn = new ThingifierApiDocumentationDefn();
+        apiDocDefn.addServer("https://apichallenges.eviltester.com", "cloud hosted version");
+        apiDocDefn.addServer("http://localhost:4567", "local execution");
+        apiDocDefn.setVersion("1.0.0");
         apiDocDefn.setThingifier(simulation);
         apiDocDefn.setPathPrefix("/sim"); // where can the API endpoints be found
 

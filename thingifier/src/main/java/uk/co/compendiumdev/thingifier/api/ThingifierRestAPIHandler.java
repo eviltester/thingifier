@@ -5,11 +5,7 @@ import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.api.restapihandlers.*;
-import uk.co.compendiumdev.thingifier.core.query.FilterBy;
 import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
-
-import java.util.List;
-import java.util.Map;
 
 public class ThingifierRestAPIHandler {
     private final RestApiDeleteHandler delete;

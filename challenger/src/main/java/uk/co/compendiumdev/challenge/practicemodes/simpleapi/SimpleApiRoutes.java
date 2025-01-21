@@ -61,12 +61,10 @@ public class SimpleApiRoutes {
                 Field.is("price",FieldType.FLOAT).
                         makeMandatory().
                         withExample("97.99").
-                        withMinimumValue(0f).
-                        withMaximumValue(50000.0f),
+                        withMinMaxValues(0f, 50000.0f),
                 Field.is("numberinstock", FieldType.INTEGER).
                         withDefaultValue("0").
-                        withMaximumValue(100).
-                        withMinimumValue(0)
+                        withMinMaxValues(0,100)
         );
 
         simplethings.setDataGenerator(new SimpleAPITestDataPopulator());
@@ -92,6 +90,9 @@ public class SimpleApiRoutes {
                 configureRoutes("/simpleapi/gui");
 
         apiDocDefn = new ThingifierApiDocumentationDefn();
+        apiDocDefn.addServer("https://apichallenges.eviltester.com", "cloud hosted version");
+        apiDocDefn.addServer("http://localhost:4567", "local execution");
+        apiDocDefn.setVersion("1.0.0");
         apiDocDefn.setThingifier(simplethings);
         apiDocDefn.setPathPrefix("/simpleapi"); // where can the API endpoints be found
         simpleApiDocsRouting = new ThingifierAutoDocGenRouting(
@@ -100,9 +101,10 @@ public class SimpleApiRoutes {
                 gui);
 
         simpleApiHttpRouting = new ThingifierHttpApiRoutings(simplethings, apiDocDefn);
+
         simpleApiHttpRouting.registerHttpApiRequestHook(new AddMoreItemsIfNecessary(simplethings.getERmodel()));
         simpleApiHttpRouting.registerHttpApiRequestHook(new ResetAutoIncrementWhenTooHigh(simplethings.getERmodel()));
-
+        simpleApiHttpRouting.registerInternalHttpResponseHook(new SimpleApiCorsHeadersResponseHook());
 
         new SimpleSparkRouteCreator("/simpleap/items").status(501, List.of("patch", "trace"));
     }

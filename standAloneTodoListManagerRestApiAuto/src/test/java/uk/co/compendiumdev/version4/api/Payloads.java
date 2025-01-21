@@ -1,11 +1,12 @@
 package uk.co.compendiumdev.version4.api;
 
-import com.google.gson.annotations.SerializedName;
+import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.util.List;
 
 public class Payloads {
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class ProjectPayload{
         public String id;
         public String title;
@@ -23,6 +24,7 @@ public class Payloads {
         public List<ProjectPayload> projects;
     }
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class TodoPayload{
         public String id;
         public String title;

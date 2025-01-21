@@ -6,6 +6,7 @@
     - [HTTP Verbs](/tutorials/http-verbs)
     - [REST API Basics](/tutorials/rest-api-basics)
     - [Testing APIs](/tutorials/testing-apis)
+    - [OpenAPI](/tutorials/openapi-swagger)
     - [Summary](/tutorials/summary)
 - Practice Modes
     - [Simple API](/practice-modes/simpleapi)

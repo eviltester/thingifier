@@ -32,7 +32,8 @@ public class ShutdownRouteHandler {
                             RoutingVerb.GET,
                         "/shutdown",
                             RoutingStatus.returnedFromCall(),
-                        null).addDocumentation("Shutdown the API server"));
+                        null).addDocumentation("Shutdown the API server").
+                    addPossibleStatuses(200));
 
         return this;
     }

@@ -36,9 +36,12 @@ public class ChallengeThingifier {
         this.challengeDefn.addAsPrimaryKeyField(Field.is("id", FieldType.AUTO_INCREMENT));
         this.challengeDefn.addFields(
 
-                Field.is("name", FieldType.STRING).withDefaultValue(""),
-                Field.is("description", FieldType.STRING).withDefaultValue(""),
+                Field.is("name", FieldType.STRING).withDefaultValue("")
+                    .withDescription("title to describe the challenge"),
+                Field.is("description", FieldType.STRING).withDefaultValue("")
+                        .withDescription("description of the challenge"),
                 Field.is("status", FieldType.BOOLEAN).withDefaultValue("false")
+                        .withDescription("status to track if challenges is completed")
         );
     }
 

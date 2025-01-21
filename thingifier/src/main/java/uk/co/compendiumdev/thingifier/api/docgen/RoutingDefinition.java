@@ -2,8 +2,11 @@ package uk.co.compendiumdev.thingifier.api.docgen;
 
 import uk.co.compendiumdev.thingifier.api.response.ResponseHeader;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 
 public class RoutingDefinition {
@@ -15,6 +18,11 @@ public class RoutingDefinition {
     private boolean isFilterable;
     private EntityDefinition filterableEntityDefn;
     private List<RoutingStatus> possibleStatusResponses;
+    private HashMap<Integer,String> returnPayload;
+    private String requestPayload;
+    private List<Field> requestUrlParams;
+    private HashMap<String,String> customHeaders;
+    private boolean usesBasicAuth = false;
 
     public RoutingDefinition(RoutingVerb verb, String url, RoutingStatus routingStatus, ResponseHeader header) {
         this.verb = verb;
@@ -25,16 +33,15 @@ public class RoutingDefinition {
         }
         this.routingStatus = routingStatus;
         this.header = header;
-        this.isFilterable=false;
-        filterableEntityDefn=null;
-        this.possibleStatusResponses= new ArrayList<>();
-    }
 
-    private List<RoutingStatus> getDefaultPossibleStatusResponses() {
-        List<RoutingStatus> defaultPossibleStatusResponses = new ArrayList<>();
-        defaultPossibleStatusResponses.add(RoutingStatus.returnValue(200));
-        defaultPossibleStatusResponses.add(RoutingStatus.returnValue(404));
-        return defaultPossibleStatusResponses;
+        // defaults
+        isFilterable=false;
+        filterableEntityDefn=null;
+        possibleStatusResponses= new ArrayList<>();
+        requestUrlParams = new ArrayList<>();
+        returnPayload=new HashMap<>();
+        requestPayload=null;
+        customHeaders = new HashMap<>();
     }
 
     public RoutingVerb verb() {
@@ -47,6 +54,11 @@ public class RoutingDefinition {
 
     public String url() {
         return url;
+    }
+
+    public String urlWithParamFormatter(String prefix, String postfix) {
+        // replace \/:([^\/\?]+)
+        return url.replaceAll("\\/:([^\\/\\?]+)", "/" + prefix + "$1" + postfix);
     }
 
     public String header() {
@@ -78,9 +90,10 @@ public class RoutingDefinition {
         return isFilterable;
     }
 
-    public void setAsFilterableFrom(final EntityDefinition definition) {
+    public RoutingDefinition setAsFilterableFrom(final EntityDefinition definition) {
         isFilterable=true;
         filterableEntityDefn = definition;
+        return this;
     }
 
     public EntityDefinition getFilterableEntity() {
@@ -93,9 +106,6 @@ public class RoutingDefinition {
     }
 
     public List<RoutingStatus> getPossibleStatusReponses() {
-        if(possibleStatusResponses.size()==0){
-            return getDefaultPossibleStatusResponses();
-        }
         return possibleStatusResponses;
     }
 
@@ -105,5 +115,74 @@ public class RoutingDefinition {
             addPossibleStatus(RoutingStatus.returnValue(statusCode));
         }
         return this;
+    }
+
+    public RoutingDefinition returnPayload(final Integer statusCode, String objectSchemaName) {
+        returnPayload.put(statusCode, objectSchemaName);
+        return this;
+    }
+
+    public boolean hasReturnPayloadFor(final Integer statusCode) {
+        return returnPayload.containsKey(statusCode);
+    }
+
+    public String getReturnPayloadFor(final Integer statusCode) {
+        return returnPayload.get(statusCode);
+    }
+
+    public RoutingDefinition requestPayload(String payloadName) {
+        requestPayload = payloadName;
+        return this;
+    }
+
+    public Boolean hasRequestPayload(){
+        return requestPayload!=null;
+    }
+
+    public String getRequestPayload(){
+        return requestPayload;
+    }
+
+    public RoutingDefinition addRequestUrlParam(Field aField) {
+        requestUrlParams.add(aField);
+        return this;
+    }
+
+    public Boolean hasRequestUrlParams(){
+        return !requestUrlParams.isEmpty();
+    }
+
+    public List<Field> getRequestUrlParams(){
+        return new ArrayList<>(requestUrlParams);
+    }
+
+    public RoutingDefinition addCustomHeader(String headerName, String headerType) {
+        customHeaders.put(headerName,headerType);
+        return this;
+    }
+
+    public boolean hasCustomHeaders() {
+        return !customHeaders.keySet().isEmpty();
+    }
+
+    public Collection<String> getCustomHeaderNames() {
+        return customHeaders.keySet();
+    }
+
+    public String getCustomHeaderType(String headerName) {
+        return customHeaders.get(headerName);
+    }
+
+    public boolean hasCustomHeaderNamed(String headerName) {
+        return customHeaders.containsKey(headerName);
+    }
+
+    public RoutingDefinition secureWithBasicAuth() {
+        usesBasicAuth = true;
+        return this;
+    }
+
+    public boolean isSecuredByBasicAuth(){
+        return usesBasicAuth;
     }
 }

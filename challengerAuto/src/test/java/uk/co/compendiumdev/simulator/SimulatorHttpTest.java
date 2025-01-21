@@ -1,10 +1,12 @@
 package uk.co.compendiumdev.simulator;
 
 import io.restassured.RestAssured;
+
 import io.restassured.http.Header;
 import io.restassured.http.Headers;
 import io.restassured.http.Method;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -24,6 +26,11 @@ public class SimulatorHttpTest extends RestAssuredBaseTest {
         Because it is a simulator the tests do not need to be run in step order to return expected values.
 
      */
+
+    @BeforeAll
+    static void logRestAssuredCalls(){
+        RestAssured.filters();
+    }
 
     @Test
     void step001_GetAllEntities() {
