@@ -141,6 +141,7 @@ public class Swaggerizer {
 
                             final Operation operation = new Operation();
                             operation.setDescription(subroute.getDocumentation());
+                            operation.setSummary(subroute.getDocumentation());
 
                             List<Parameter> operationParameters = new ArrayList<>();
 
@@ -197,7 +198,11 @@ public class Swaggerizer {
                             if(subroute.hasRequestPayload()){
 
                                 RequestBody requestBody = new RequestBody();
-                                requestBody.setRequired(true);
+
+
+                                // allow sending empty payloads if no field validation
+                                requestBody.setRequired(config.includeFieldValidation);
+
 
                                 // assume that all payloads are already setup as components
                                 String ref = "#/components/schemas/" + subroute.getRequestPayload();

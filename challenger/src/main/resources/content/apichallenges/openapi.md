@@ -6,6 +6,10 @@ showads: true
 
 # API Challenge Open API Files
 
+Download an OpenAPI/Swagger JSON file to use in your REST Client.
+
+## File Download Links
+
 Two OpenAPI/Swagger formatted files are available.
 
 - [Download Normal OpenAPI File](/docs/swagger) - to use API like a User

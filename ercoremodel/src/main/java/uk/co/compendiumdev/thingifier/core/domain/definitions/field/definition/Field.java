@@ -128,7 +128,7 @@ public final class Field {
         return this;
     }
 
-    // TODO: when all field values use field, then this should move to the value and out of the field
+    // TODO: when all field values use field, then this could move to the value and out of the field
     public ValidationReport validate(FieldValue value) {
         boolean NOT_ALLOWED_TO_SET_IDs = false;
         return validate(value, NOT_ALLOWED_TO_SET_IDs);

@@ -119,3 +119,15 @@
         position: relative;
     }
 }
+
+
+div.breadcrumb blockquote {
+}
+
+/* main-text-content formatting */
+div.main-text-content ul li { margin-bottom: 0.5rem;}
+
+div.main-text-content blockquote {
+    background: #f5f5f5;
+    padding: 0.5em;
+}
