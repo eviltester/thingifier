@@ -1,6 +1,6 @@
 # Docker
 
-This testing app can be run using Docker.
+The API Challenges testing app can be run using Docker.
 
 To build, run from the root directory
 
@@ -54,3 +54,36 @@ docker container start name_of_container_here
 ```
 
 Alternatively you could just restart the container from the docker desktop.
+
+
+## Other APIs
+
+I've created Dockerfile for additional test APIs. I'll add more as I find them.
+
+### FX Trader API
+
+Stuart du Casse has created an API to support practicing testing.
+
+- https://www.linkedin.com/in/stuart-du-casse-90139775/
+
+The GitHub repo for the application is:
+
+https://github.com/sd576/FX-TradeHub-API
+
+The application is written for node. You can use the command below to create a docker image:
+
+From the root directory containing the `/docker` folder run:
+
+
+```
+docker build -t fxtradehub -f ./docker/fxtradehub/Dockerfile .
+```
+
+Then you can run the image:
+
+```
+docker run -it -p 3000:3000 fxtradehub
+```
+
+And visit http://localhost:3000/api-docs to see the Swagger Docs UI.
+
