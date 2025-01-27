@@ -37,6 +37,8 @@ There are also URL parameters that can be explored:
 
 For extra fun, the documentation page lists different implementations of the API in other languages. One exercise, could be to compare the different implementations. You might even automate the main implementation and then try an repeat the automated execution against a different implementation to see how they compare.
 
+The application also has a 'secret' UI when you make API calls from the Browser URL where you can issue OPTIONS, GET and can see the response headers e.g. use https://swapi.dev/api/people/1 in the browser URL
+
 ## Links
 
 - The main site [swapi.dev](https://swapi.dev)
@@ -63,6 +65,11 @@ I've created a set of suggested exercises in case you need some prompting for pr
 - [swapi.dev](https://swapi.dev)
     - make a request from the GUI
     - Use network tab to view the requests and responses
+
+### Exercise - Use the Built-in REST Interface in the Browser
+
+- visit https://swapi.dev/api/people/1
+- explore the functionality of the different UI
 
 ### Exercise - Use the API
 
