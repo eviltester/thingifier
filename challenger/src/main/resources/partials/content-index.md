@@ -18,4 +18,5 @@
     - [Proxies](/tools/proxies)
 - [Practice Sites](/practice-sites)
     - [Swapi](/practice-sites/swapi)
+    - [Random User](/practice-sites/randomuser)
 - [Sponsors](/sponsors)

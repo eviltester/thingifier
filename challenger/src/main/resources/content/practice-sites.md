@@ -250,6 +250,10 @@ I've listed a few applications here initially and will expand the instructions t
   - Has instructions to use from docker
 - [JSON Server](https://github.com/typicode/json-server)
    - Can be run locally if you have Node and npm installed.
+- [FX-TradeHub](https://github.com/sd576/FX-TradeHub-API/tree/main)
+   - Can be run locally if you have Node installed.
+   - I created a Docker file which can run the application if you use Docker [here](https://github.com/eviltester/thingifier/tree/master/docker)
+   - Has an OpenAPI spec to use within a Swagger UI or REST Client
 
 <!--
 
