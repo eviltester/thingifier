@@ -121,6 +121,10 @@
 }
 
 
+div.side-toc ul {
+    padding-inline-start: 1em;
+}
+
 div.breadcrumb blockquote {
 }
 

@@ -12,7 +12,7 @@ RandomUser.me is an API that returns a randomly generated user.
 
 ## About RandomUser.me
 
-RandomUser.me is a Random Data Generation API. It supports multiple versions, and can be used to generate multiple users at teh same time. Because it is GET based you can use the Browser to explore the API without any additional tooling.
+RandomUser.me is a Random Data Generation API. It supports multiple versions, and can be used to generate multiple users at the same time. Because it is GET based you can use the Browser to explore the API without any additional tooling.
 
 The Random Data represents a 'user' or 'person'.
 

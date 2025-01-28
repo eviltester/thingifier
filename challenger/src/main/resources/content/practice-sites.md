@@ -53,17 +53,6 @@ There are many API simulators so we have only listed a few of the best here.
 
 ---
 
-#### Dummy JSON
-
-[dummyJSON](https://dummyjson.com/)
-
-- An API for JSON requests and responses. 
-- A lot of endpoints for different types of data.
-- Supports filters and limits as URL Query parameters.
-- Simulate Update requests (`POST, PUT, DELETE`)
-
----
-
 #### Fake REST API
 
 [Fake REST API](https://fakerestapi.azurewebsites.net/index.html)
@@ -102,6 +91,18 @@ Additionally they often have a lot of data so can support Query parameters for f
 - Useful for experimenting with Query parameters to filter, paginate and download
 - returns a random User, supports different formats but this is controlled by a `format` URL parameter rather than an `Accept` header, which is a pity, but having different formats can help you practice with additional data formatting and parsing tooling.
 - There is no Swagger spec so you can use this as an exercise in modelling the API by hand.
+
+---
+
+#### Dummy JSON
+
+[dummyJSON](https://dummyjson.com/)
+
+- An API for JSON requests and responses.
+- A lot of endpoints for different types of data.
+- Supports filters and limits as URL Query parameters.
+- Simulate Update requests (`POST, PUT, DELETE`)
+- I originally classified this exclusively as a simulator but because I could craft endpoints that triggered 500 server responses I added it as a GET Only API (Update requests like PUT, POST, PATCH, DELETE are simulated)
 
 ---
 

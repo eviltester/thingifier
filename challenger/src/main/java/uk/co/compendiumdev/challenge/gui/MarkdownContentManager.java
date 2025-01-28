@@ -228,7 +228,9 @@ public class MarkdownContentManager {
         if(!mdheaders.contains("template: index")) {
             html.append("<section class='doc-columns'>");
             html.append("<div class='left-column'>");
+            html.append("<div class='side-toc'>");
             html.append(renderer.render(parser.parse(dropDownMenuAsMarkdown())));
+            html.append("</div>");
             html.append("</div>");
             html.append("<div class='right-column'>");
         }

@@ -17,6 +17,10 @@
     - [REST/HTTP Clients](/tools/clients)
     - [Proxies](/tools/proxies)
 - [Practice Sites](/practice-sites)
+  - Simulators 
+    - [JSON Placeholder](/practice-sites/jsonplaceholder)
+  - Basic GET
     - [Swapi](/practice-sites/swapi)
     - [Random User](/practice-sites/randomuser)
+  
 - [Sponsors](/sponsors)
