@@ -44,7 +44,7 @@ There are many API simulators so we have only listed a few of the best here.
 
 #### JSON Placeholder
 
-[{JSON} Placeholder](https://jsonplaceholder.typicode.com/)
+[JSON Placeholder](https://jsonplaceholder.typicode.com/)
 
 - [read our longer write up with exercises to try here](/practice-sites/jsonplaceholder)
 - An API For `GET` requests.
