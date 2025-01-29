@@ -45,7 +45,8 @@ There are many API simulators so we have only listed a few of the best here.
 #### JSON Placeholder
 
 [{JSON} Placeholder](https://jsonplaceholder.typicode.com/)
-  
+
+- [read our longer write up with exercises to try here](/practice-sites/jsonplaceholder)
 - An API For `GET` requests.
 - Acts as a simulator for Update and Delete requests
 - Useful for getting used to your REST Client Tooling.
@@ -87,6 +88,7 @@ Additionally they often have a lot of data so can support Query parameters for f
 
 [Random User Me](https://randomuser.me)
 
+- [read our longer write up with exercises to try here](/practice-sites/randomuser)
 - A `GET` based API for returning random user details.
 - Useful for experimenting with Query parameters to filter, paginate and download
 - returns a random User, supports different formats but this is controlled by a `format` URL parameter rather than an `Accept` header, which is a pity, but having different formats can help you practice with additional data formatting and parsing tooling.
@@ -98,6 +100,7 @@ Additionally they often have a lot of data so can support Query parameters for f
 
 [dummyJSON](https://dummyjson.com/)
 
+- [read our longer write up with exercises to try here](/practice-sites/dummyjson)
 - An API for JSON requests and responses.
 - A lot of endpoints for different types of data.
 - Supports filters and limits as URL Query parameters.

@@ -42,7 +42,7 @@ The application also has a 'secret' UI when you make API calls from the Browser 
 ## Links
 
 - The main site [swapi.dev](https://swapi.dev)
-- The documentation [/swapi.dev/documentation](https://swapi.dev/documentation)
+- The documentation [swapi.dev/documentation](https://swapi.dev/documentation)
 - The source code [github.com/Juriy/swapi](https://github.com/Juriy/swapi)
 
 ## Summary

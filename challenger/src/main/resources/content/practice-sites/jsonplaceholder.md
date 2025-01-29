@@ -89,6 +89,12 @@ I've created a set of suggested exercises in case you need some prompting for pr
 - experiment with different HTTP Verbs: GET, POST, OPTIONS, HEAD
 - Do you get the responses and status codes you expect?
 
+### Exercise - Automate from the Browser JavaScript Console
+
+- Did you try and run all the examples in the [guide](https://jsonplaceholder.typicode.com/guide/) from the developer JavaScript console?
+- Open the developer console (Right Click, Choose Inspect), then choose the Console
+- Paste each of the examples into the console
+
 ### Exercise - Try backend validation
 
 - The API is JSON based so try an invalid JSON payload

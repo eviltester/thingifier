@@ -22,5 +22,7 @@
   - Basic GET
     - [Swapi](/practice-sites/swapi)
     - [Random User](/practice-sites/randomuser)
+  - Basic
+    - [Dummy JSON](/practice-sites/dummyjson)
   
 - [Sponsors](/sponsors)
