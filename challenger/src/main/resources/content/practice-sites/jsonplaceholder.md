@@ -59,6 +59,7 @@ If you want to experiment with creating your own simple mock API you can do so w
 - Multiple Entity types and response formats
 - Useful for experimenting with tools in a safe environment
 - Remember it is a simulator, rather than an API, so your updates do not make back end changes
+
 ## Exercises
 
 I've created a set of suggested exercises in case you need some prompting for practice.

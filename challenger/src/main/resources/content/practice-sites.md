@@ -58,9 +58,10 @@ There are many API simulators so we have only listed a few of the best here.
 
 [Fake REST API](https://fakerestapi.azurewebsites.net/index.html)
 
+- [read our longer write up with exercises to try here](/practice-sites/fakerestapi)
 - Another simulator with a Swagger front end to experiment easily, but do make sure to use a REST Client as well.
 - The `POST` and `PUT` requests don't update the server but they are validated so you can see an additional approach to JSON validation error reporting.
-- Even as a simulator it has bugs so you can explore the functionality and find issues.
+- A fun API to spend some time exploring.
 
 ---
 

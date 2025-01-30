@@ -17,12 +17,12 @@
     - [REST/HTTP Clients](/tools/clients)
     - [Proxies](/tools/proxies)
 - [Practice Sites](/practice-sites)
-  - Simulators 
+  - Simulators
+    - [Fake Rest API](/practice-sites/fakerestapi)
     - [JSON Placeholder](/practice-sites/jsonplaceholder)
   - Basic GET
-    - [Swapi](/practice-sites/swapi)
     - [Random User](/practice-sites/randomuser)
+    - [Swapi](/practice-sites/swapi)
   - Basic
     - [Dummy JSON](/practice-sites/dummyjson)
-  
 - [Sponsors](/sponsors)
