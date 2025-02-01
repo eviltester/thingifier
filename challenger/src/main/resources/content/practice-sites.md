@@ -26,6 +26,7 @@ There are many API simulators so we have only listed a few of the best here.
 
 [API Challenges Simulator](https://apichallenges.eviltester.com/practice-modes/simulation)
 
+- [follow the instructions and work through the API Challenges Simulator](/practice-modes/simulation)
 - An API Simulator (i.e. it always response the same way and you can't update data on the back-end, but the system will respond as though you did.
 - Follow the instructions on the linked page and issue `GET`, `POST`, `PUT` and `DELETE` requests.
 

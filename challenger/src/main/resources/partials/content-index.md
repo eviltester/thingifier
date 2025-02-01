@@ -18,6 +18,7 @@
     - [Proxies](/tools/proxies)
 - [Practice Sites](/practice-sites)
   - Simulators
+    - [API Simulator](/practice-modes/simulation)
     - [Fake Rest API](/practice-sites/fakerestapi)
     - [JSON Placeholder](/practice-sites/jsonplaceholder)
     - [HttpBin](/practice-sites/httpbin)
