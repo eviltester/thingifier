@@ -70,7 +70,86 @@ The API also supports both XML and JSON payloads by amending the `content-type` 
 
 ## Exercises
 
-Coming Soon.
+I've created a set of suggested exercises in case you need some prompting for practice.
+
+### Exercise - Explore the Data in the Backend
+
+The SimpleAPI has a Data Explorer front end so that you can view the data in the backend.
+
+- view the data to get a feel for the Entity that is used
+- [apichallenges.eviltester.com/simpleapi/gui/instances](https://apichallenges.eviltester.com/simpleapi/gui/instances?entity=item&database=__default)
+
+### Exercise - Read the Documentation
+
+The Simple API has:
+
+- An [About Page](https://apichallenges.eviltester.com/practice-modes/simpleapi)
+   - There is an ISBN generator here which might help when creating requests in the API to create and amend items
+- [Documentation](https://apichallenges.eviltester.com/simpleapi/docs)
+
+### Exercise - try the Open API files in a Swagger UI
+
+- Any Swagger UI can be used to load in the Open API files e.g.
+- Open the [PetStore Swagger UI](https://petstore.swagger.io/)
+- Paste into the url `[Explore]` field either of the [Simple API OpenAPI](/practice-modes/simpleapi-openapi) Urls
+   - Normal `https://apichallenges.eviltester.com/simpleapi/docs/swagger`
+   - Permissive `https://apichallenges.eviltester.com/simpleapi/docs/swagger?permissive`
+- Try each of the API files and see what difference they make to your testing e.g. the Permissive files does not have validation on the input parameters so you can explore more conditions.
+   - OpenAPI files are designed for usage, not for testing, you should not rely on a Swagger UI for testing purposes.
+
+### Exercise - Explore the `/items` endpoint
+
+- The main endpoints `/items` will list all of the items in the system and allow creation of a new item
+- Explore these with `GET`, `OPTIONS`, `HEAD`
+- Try to create an item using `POST` on `/items`
+   - if you don't know the format of the payload then copy one of hte item objects listed in the response of `GET /items`
+   - you should not include an `id` in the `POST` request
+   - the `isbn` field will need to be unique, you can generate a random `isbn` on this page or the [About](/practice-modes/simpleapi) page
 
 
- 
+### Exercise - Explore the `/items/{id}` endpoint
+
+- The individual endpoint `/item/{id}` will allow you to work with a single item using its id
+- Try to amend an item with `POST` on `/items/{id}` for an item that exists
+- Try to amend an item with `PUT` on `/items/{id}` for an item that exists
+- Try to delete an item with `DELETE` on `/items/{id}` for an item that exists
+- Check that the API responds with `404` when the item id does not exist
+
+### Exercise - Explore the endpoints with all verbs
+
+- CRUD operations are based around the `GET`, `PUT`, `POST` and `DELETE` verbs
+- Make sure you call the endpoints with other HTTP verbs e.g. `PATCH` and `TRACE`
+
+### Exercise - Explore the `/items/{id}` field validations
+
+- When you create or amend an item, check that the system enforces the validations for the fields listed in the documentation and the Open API spec
+   - The ISBN must be unique in the system
+   - The ISBN must match a specific format, try the different variations of the format
+     - e.g. `384252925993-2`, `618-3051270614`, `9114-91-557340-1`, `2799488037490`
+     - find more matching variations than the examples above
+     - an easy only tool for generating values from Regex can be found [here](https://onlinetools.com/random/generate-random-data-from-regexp)
+   - Check the field validations of the other fields as well
+
+### Exercise - Explore the system data population validations
+
+- The documentation says that there can be only 100 items, is that true?
+- What is the minimum number of items that can be in the system? Can it be brought down to 0, 1, 2, 3, ...?
+
+### Exercise - Explore the random ISBN endpoint
+
+- There is an endpoint for generating random ISBNs  `GET /simpleapi/randomisbn`
+- Does it work they way you would expect?
+
+### Exercise - Explore the `accept` header
+
+- The Simple API supports both `JSON` and `XML`
+- You should be able to request `XML` as the response payload by using an `accept` header with the value `application/xml`
+- Do all endpoints and calls support this?
+
+### Exercise - Explore the `content-type` header
+
+- The Simple API supports both `JSON` and `XML`
+- You should be able to send request payloads as `XML` by using a `content-type` header with the value `application/xml`
+- Do all endpoints and calls support this?
+- Do you think you could mix and match `content-type` and `accept` so that you can send `JSON` and receive `XML`?
+- Could you send `XML` and receive `JSON`?

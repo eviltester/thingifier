@@ -155,11 +155,12 @@ These are full APIs online, which means you don't have to install anything and c
 
 [Simple API](/practice-modes/simpleapi)
 
-- [read our longer write up of Simple API here](/practice-sites/simpleapi)
+- [read our longer write up of Simple API with exercises here](/practice-sites/simpleapi)
 - An API for JSON and XML requests and responses.
 - A simple data structure to avoid personal data.
 - No Authentication required for updates.
 - Update requests are supported (`POST, PUT, DELETE`).
+- Two OpenAPI specification files: one for using the APi, one to support testing
 
 ---
 
