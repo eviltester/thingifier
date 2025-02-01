@@ -1,0 +1,8 @@
+<div>
+    <form onsubmit="return false;">
+        <button onclick="document.getElementById('randomisbn').value = 'xxx-x-xx-xxxxxx-x'.replaceAll('x', (match, p1, offset) => {return Math.floor(Math.random() * 10)})">
+            Generate Random ISBN
+        </button>
+        <input id="randomisbn"/>
+    </form>
+</div>

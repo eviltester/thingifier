@@ -13,6 +13,8 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 // TODO: consider adding caching for generated markdown pages
@@ -261,6 +263,13 @@ public class MarkdownContentManager {
 
     // TODO: improve the macro parsing
     // TODO: add a variables macro so we can set variables like schemeHost (http://localhost:4567) and replace variables in the docs - should add a 'default.varname': parsing in the markdown, would allow showing the 'proper url' regardless of environment hosting
+    /*
+        Macros are added to the markdown with the following syntax {{<macro_name>}}
+        e.g. {{<HOST_URL>}}
+        Some of these macros are direct string replacement injection from the params map
+        Others like youtube-embed have been hard coded here
+
+     */
     private String processMacrosInContentLine(String line, Map<String, String> params) {
 
         if(!line.contains("{{<"))
@@ -283,6 +292,18 @@ public class MarkdownContentManager {
 
         String youtubeMacroRegex = "\\{\\{<youtube-embed key=\"([a-zA-Z0-9_-]+)\" title=\"(.+)\">}}";
         line = line.replaceAll(youtubeMacroRegex, youTubeHtmlBlock);
+
+
+        if(line.contains("{{<PARTIAL_SNIPPET")){
+            String partialMacroRegex = "\\{\\{<PARTIAL_SNIPPET filename=\"(.+)\">}}";
+            Pattern r = Pattern.compile(partialMacroRegex);
+            Matcher m = r.matcher(line);
+            if(m.find()) {
+                String filename = m.group(1);
+                String partialContent = getResourceAsString(filename);
+                line = line.replaceAll(partialMacroRegex, partialContent);
+            }
+        }
 
         for(String paramReplace : params.keySet()){
             String macroRegex = "\\{\\{<%s>}}".formatted(paramReplace);

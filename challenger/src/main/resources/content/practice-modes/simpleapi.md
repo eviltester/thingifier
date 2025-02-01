@@ -21,6 +21,12 @@ Data will refresh automatically when low, and there is a limit to the number of 
 Because the API has no unstructured text fields e.g. `description`, there is no way to add any potentially offensive
 or personal information.
 
+To create a new item you need to add a unique `ISBN`. We have added an endpoint to generate a random ISBN `/simpleapi/randomisbn`.
+
+Or you can click the button below and copy and paste the value into your APi call.
+
+{{<PARTIAL_SNIPPET filename="partials/generate-random-isbn.html">}}
+
 ## Why did we create this?
 
 We noticed that most APIs, including our API Challenges, require some sort of authentication to use the full capabilities
