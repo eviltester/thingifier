@@ -142,7 +142,7 @@ These are full APIs online, which means you don't have to install anything and c
 [Go REST](https://gorest.co.in)
 
 - A functional API that persists data to the server in a shared session so **do not use any private data or personal information**.
-- To use the ` PUT, POST, PATCH, DELETE` request you need to request an access token by logging in using Github, Google or Microsoft. Then add this as a Bearer token in your request.
+- To use the ` PUT, POST, PATCH, DELETE` request you need to request an access token by logging in using GitHub, Google or Microsoft. Then add this as a Bearer token in your request.
 - It performs data validation, reporting all errors in the response making it easy to work with.
 - The documentation is not automatically generated which is good. You have to read the docs, and model the API then experiment with it.
 - No swagger file is provided so you create the request collection as you test.
@@ -160,7 +160,7 @@ These are full APIs online, which means you don't have to install anything and c
 - A simple data structure to avoid personal data.
 - No Authentication required for updates.
 - Update requests are supported (`POST, PUT, DELETE`).
-- Two OpenAPI specification files: one for using the APi, one to support testing
+- Two OpenAPI specification files: one for using the API, one to support testing
 
 ---
 
