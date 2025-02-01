@@ -27,4 +27,6 @@
     - [Swapi](/practice-sites/swapi)
   - Basic
     - [Dummy JSON](/practice-sites/dummyjson)
+  - Full
+    - [Simple API](/practice-sites/simpleapi)  
 - [Sponsors](/sponsors)
