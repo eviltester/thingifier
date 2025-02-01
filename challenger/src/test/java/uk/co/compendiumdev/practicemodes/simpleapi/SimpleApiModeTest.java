@@ -44,11 +44,20 @@ public class SimpleApiModeTest {
         args.add(Arguments.of(200, "get", "/simpleapi/items"));
         args.add(Arguments.of(200, "head", "/simpleapi/items"));
         args.add(Arguments.of(204, "options", "/simpleapi/items"));
-        args.add(Arguments.of(405, "patch", "/simpleapi/items"));
-        args.add(Arguments.of(405, "trace", "/simpleapi/items"));
+        // deliberate 'bug' of 501 instead of 405
+        args.add(Arguments.of(501, "patch", "/simpleapi/items"));
+        args.add(Arguments.of(501, "trace", "/simpleapi/items"));
         args.add(Arguments.of(405, "delete", "/simpleapi/items"));
         args.add(Arguments.of(405, "put", "/simpleapi/items"));
         args.add(Arguments.of(400, "post", "/simpleapi/items"));
+
+        args.add(Arguments.of(200, "get", "/simpleapi/randomisbn"));
+        args.add(Arguments.of(200, "head", "/simpleapi/randomisbn"));
+        args.add(Arguments.of(200, "options", "/simpleapi/randomisbn"));
+        args.add(Arguments.of(405, "post", "/simpleapi/randomisbn"));
+        args.add(Arguments.of(405, "put", "/simpleapi/randomisbn"));
+        args.add(Arguments.of(405, "patch", "/simpleapi/randomisbn"));
+        args.add(Arguments.of(405, "trace", "/simpleapi/randomisbn"));
 
 
         return args.stream();
@@ -387,5 +396,52 @@ public class SimpleApiModeTest {
         Assertions.assertEquals(4+8, moreItems.items.size());
     }
 
+
+    @Test
+    public void canGetARandomISBN() {
+
+        // full valid payload
+        final HttpResponseDetails response =
+                http.send("/simpleapi/randomisbn", "GET", new HashMap<>(), "");
+
+        Assertions.assertEquals(200, response.statusCode);
+        String isbn = response.body.replace("-","");
+        Assertions.assertTrue(isbn.length()==13);
+    }
+
+    @Test
+    public void canUseRandomISBNToCreateItem() {
+
+        final HttpResponseDetails isbnresponse =
+                http.send("/simpleapi/randomisbn", "GET", new HashMap<>(), "");
+
+        Assertions.assertEquals(200, isbnresponse.statusCode);
+        String isbn = isbnresponse.body.replace("-","");
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Content-Type", "application/json");
+        headers.put("Accept", "application/json");
+
+        // full valid payload
+        final HttpResponseDetails response =
+                http.send("/simpleapi/items", "POST", headers,
+                        """
+                            {
+                            "price":3.00,
+                            "numberinstock":4,
+                            "isbn13": "%s",
+                            "type":book
+                        }
+                        """.formatted(isbn).stripIndent());
+
+        Assertions.assertEquals(201, response.statusCode);
+        Assertions.assertEquals("application/json", response.getHeader("content-type"));
+
+        Item item = new Gson().fromJson(response.body, Item.class);
+        Assertions.assertEquals(3f, item.price);
+        Assertions.assertEquals(4, item.numberinstock);
+        Assertions.assertEquals(isbn, item.isbn13);
+        Assertions.assertEquals("book", item.type);
+    }
 
 }

@@ -1,7 +1,13 @@
 package uk.co.compendiumdev.challenge.practicemodes.simpleapi;
 
+import uk.co.compendiumdev.challenge.ChallengerAuthData;
+import uk.co.compendiumdev.challenge.challengesrouting.XChallengerHeader;
 import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.api.docgen.RoutingDefinition;
+import uk.co.compendiumdev.thingifier.api.docgen.RoutingStatus;
+import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
 import uk.co.compendiumdev.thingifier.api.docgen.ThingifierApiDocumentationDefn;
+import uk.co.compendiumdev.thingifier.api.http.headers.headerparser.BasicAuthHeaderParser;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.application.httprouting.ThingifierAutoDocGenRouting;
 import uk.co.compendiumdev.thingifier.application.httprouting.ThingifierHttpApiRoutings;
@@ -16,6 +22,8 @@ import uk.co.compendiumdev.thingifier.htmlgui.routing.DefaultGuiRoutings;
 import uk.co.compendiumdev.thingifier.spark.SimpleSparkRouteCreator;
 
 import java.util.List;
+
+import static spark.Spark.*;
 
 /*
     The simple API is a no-auth API where anyone can amend, create, delete items.
@@ -95,6 +103,49 @@ public class SimpleApiRoutes {
         apiDocDefn.setVersion("1.0.0");
         apiDocDefn.setThingifier(simplethings);
         apiDocDefn.setPathPrefix("/simpleapi"); // where can the API endpoints be found
+
+
+
+
+        new SimpleSparkRouteCreator("/simpleapi/items").status(501, List.of("patch", "trace"));
+
+
+        get("/simpleapi/randomisbn", (request, result) -> {
+            result.status(200);
+            result.header("content-type", "text/plain");
+            return RandomIsbnGenerator.generate();
+        });
+
+        options("/simpleapi/randomisbn", (request, result) -> {
+            result.status(200);
+            result.header("content-type", "text/plain");
+            result.header("Allow", "GET, HEAD, OPTIONS");
+            return "";
+        });
+
+        head("/simpleapi/randomisbn", (request, result) -> {
+            result.status(200);
+            result.header("content-type", "text/plain");
+            return "";
+        });
+
+
+        apiDocDefn.addRouteToDocumentation(
+            new RoutingDefinition(
+                    RoutingVerb.GET,
+                    "/simpleapi/randomisbn",
+                    RoutingStatus.returnedFromCall(),
+                    null).addDocumentation("return a random ISBN that can be used for testing purposes with the Simple API.").
+                    addPossibleStatuses(200)
+        );
+
+
+        new SimpleSparkRouteCreator("/simpleapi/randomisbn").status(405, List.of("put", "post", "delete", "patch", "trace"));
+
+
+
+
+
         simpleApiDocsRouting = new ThingifierAutoDocGenRouting(
                 simplethings,
                 apiDocDefn,
@@ -105,7 +156,5 @@ public class SimpleApiRoutes {
         simpleApiHttpRouting.registerHttpApiRequestHook(new AddMoreItemsIfNecessary(simplethings.getERmodel()));
         simpleApiHttpRouting.registerHttpApiRequestHook(new ResetAutoIncrementWhenTooHigh(simplethings.getERmodel()));
         simpleApiHttpRouting.registerInternalHttpResponseHook(new SimpleApiCorsHeadersResponseHook());
-
-        new SimpleSparkRouteCreator("/simpleap/items").status(501, List.of("patch", "trace"));
     }
 }

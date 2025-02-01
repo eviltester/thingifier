@@ -44,13 +44,6 @@ public class SimpleAPITestDataPopulator implements DataPopulator {
     }
 
     private String randomIsbn(Random random){
-
-        String isbn13 = "xxx-x-xx-xxxxxx-x";
-
-        while(isbn13.contains("x")){
-            isbn13 = isbn13.replaceFirst("x", String.valueOf(random.nextInt(9)));
-        }
-
-        return isbn13;
+        return RandomIsbnGenerator.generate(random);
     }
 }
