@@ -20,6 +20,7 @@
   - Simulators
     - [Fake Rest API](/practice-sites/fakerestapi)
     - [JSON Placeholder](/practice-sites/jsonplaceholder)
+    - [HttpBin](/practice-sites/httpbin)
   - Basic GET
     - [Random User](/practice-sites/randomuser)
     - [Swapi](/practice-sites/swapi)

@@ -34,7 +34,8 @@ There are many API simulators so we have only listed a few of the best here.
 #### HTTPBin
 
 [httpbin.org](https://httpbin.org)
-  
+ 
+- [read our longer write up of HttpBin with exercises to try here](/practice-sites/httpbin) 
 - This API can help you get used to your tools.
 - It has a set of endpoints that you can call for documented outcomes.
 - e.g. a `DELETE` call to `https://httpbin.org/delete/404` will return payload, using any other verb will return a `405 Method Not Allowed` status code.
@@ -46,7 +47,7 @@ There are many API simulators so we have only listed a few of the best here.
 
 [JSON Placeholder](https://jsonplaceholder.typicode.com/)
 
-- [read our longer write up with exercises to try here](/practice-sites/jsonplaceholder)
+- [read our longer write up of JSON Placeholder with exercises to try here](/practice-sites/jsonplaceholder)
 - An API For `GET` requests.
 - Acts as a simulator for Update and Delete requests
 - Useful for getting used to your REST Client Tooling.
@@ -58,7 +59,7 @@ There are many API simulators so we have only listed a few of the best here.
 
 [Fake REST API](https://fakerestapi.azurewebsites.net/index.html)
 
-- [read our longer write up with exercises to try here](/practice-sites/fakerestapi)
+- [read our longer write up of Fake REST API with exercises to try here](/practice-sites/fakerestapi)
 - Another simulator with a Swagger front end to experiment easily, but do make sure to use a REST Client as well.
 - The `POST` and `PUT` requests don't update the server but they are validated so you can see an additional approach to JSON validation error reporting.
 - A fun API to spend some time exploring.
@@ -77,7 +78,7 @@ Additionally they often have a lot of data so can support Query parameters for f
 
 [swapi the Star Wars API](https://swapi.dev) 
 
-- [read our longer write up with exercises to try here](/practice-sites/swapi)   
+- [read our longer write up of SWAPI with exercises to try here](/practice-sites/swapi)   
 - A `GET` based API (no updates allowed) with a variety of data end points
 - All endpoints return star wars information
 - The UI can help you get started but make sure to use a REST Client on the API to get used to your tooling.
@@ -89,7 +90,7 @@ Additionally they often have a lot of data so can support Query parameters for f
 
 [Random User Me](https://randomuser.me)
 
-- [read our longer write up with exercises to try here](/practice-sites/randomuser)
+- [read our longer write up of Random User Me with exercises to try here](/practice-sites/randomuser)
 - A `GET` based API for returning random user details.
 - Useful for experimenting with Query parameters to filter, paginate and download
 - returns a random User, supports different formats but this is controlled by a `format` URL parameter rather than an `Accept` header, which is a pity, but having different formats can help you practice with additional data formatting and parsing tooling.
@@ -101,7 +102,7 @@ Additionally they often have a lot of data so can support Query parameters for f
 
 [dummyJSON](https://dummyjson.com/)
 
-- [read our longer write up with exercises to try here](/practice-sites/dummyjson)
+- [read our longer write up of Dummy JSON with exercises to try here](/practice-sites/dummyjson)
 - An API for JSON requests and responses.
 - A lot of endpoints for different types of data.
 - Supports filters and limits as URL Query parameters.
