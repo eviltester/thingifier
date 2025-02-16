@@ -28,5 +28,11 @@
   - Basic
     - [Dummy JSON](/practice-sites/dummyjson)
   - Full
-    - [Simple API](/practice-sites/simpleapi)  
+    - [Simple API](/practice-sites/simpleapi)
+  - Apps
+    - [Best Buy](/practice-sites/apps/bestbuy)
+    - [Fx Trade Hub](/practice-sites/apps/fxtradehub)
+    - [Tracks](/practice-sites/apps/tracks) 
+
 - [Sponsors](/sponsors)
+- [Change Log](/changes)

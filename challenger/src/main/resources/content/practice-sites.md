@@ -257,27 +257,43 @@ To have the most control over your practice testing session you can download an 
 
 Getting started with these applications can be a little harder than using the online versions and may require installing Java, Node or Docker.
 
+### Best Buy API Playground
+
+- Best Buy API Playground is a full API that can be run locally using Node or Docker
+- Full range of CRUD operations is supported using `GET`, `POST`, `PATCH`, `DELETE`
+- Large set of data is provided
+- Swagger UI is available
+- Open API Definition is downloadable
+
+[Read a full overview of Best BUY API Playground with sample exercises](/practice-sites/apps/bestbuy)
+
+### Tracks
+
+- Tracks is a full todo app that can be run locally if you have Ruby on Rails installed, or use a [virtual machine from Turnkey](https://www.turnkeylinux.org/tracks) or [run from docker](https://github.com/eviltester/tracksdocker).
+- I recommend running it from Docker
+- Tracks is the case study application used in the book [Automating and Testing a REST API](https://www.eviltester.com/page/books/automating-testing-api-casestudy/)
+
+[Read a full overview of Tracks with sample exercises](/practice-sites/apps/tracks)
+
+### FX Trade Hub
+
+- FX-TradeHub is a simple API simulating a trading application.
+- Can be run locally if you have Node installed or from a Docker file.
+- Has a Swagger UI for easy exploration
+
+[Read a full overview of Fx Trade Hub with sample exercises](/practice-sites/apps/fxtradehub)
+
+### More Applications
+
 I've listed a few applications here initially and will expand the instructions to include walkthroughs and setup guides in future updates.
 
 - [Api Challenges](https://github.com/eviltester/thingifier/tree/master/challenger)
-  - API challenges can be run locally if you install a Java SDK and maven as pre-requisites. 
-- [BestBuy API Playground](https://github.com/BestBuy/api-playground)
-  - The BestBuy API Playground can be run locally if you have Node and npm installed. 
+  - API challenges can be run locally if you install a Java SDK and maven as pre-requisites.  
 - [Device Registry Service](https://github.com/AutomationPanda/device-registry-flask)
   - The Device Registry Service can be run locally if you have Python 3 and Pip installed.
-- [Tracks](https://www.getontracks.org/)
-    - Tracks is a full todo app that can be run locally if you have Ruby on Rails installed, or use a [virtual machine from Turnkey](https://www.turnkeylinux.org/tracks) or [run from docker](https://hub.docker.com/r/staannoe/tracks/).
-    - I recommend running it from Docker
-    - [Instructions and Video Tutorial for using Tracks in Docker or a Virtual Machine](https://www.eviltester.com/page/books/automating-testing-api-casestudy-support/#dockervideo)
-- [TODO API Sample](https://github.com/g33klady/TodoApiSample)
-  - This is the support app for [Hilary Weaver](https://g33klady.com/)'s Testing API Tutorial.
-  - Has instructions to use from docker
 - [JSON Server](https://github.com/typicode/json-server)
    - Can be run locally if you have Node and npm installed.
-- [FX-TradeHub](https://github.com/sd576/FX-TradeHub-API/tree/main)
-   - Can be run locally if you have Node installed.
-   - I created a Docker file which can run the application if you use Docker [here](https://github.com/eviltester/thingifier/tree/master/docker)
-   - Has an OpenAPI spec to use within a Swagger UI or REST Client
+
 
 <!--
 
