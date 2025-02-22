@@ -37,3 +37,13 @@
 
 - [Sponsors](/sponsors)
 - [Change Log](/changes)
+
+---
+
+You can [support this site](https://www.patreon.com/eviltester) from as little as $1 a month on Patreon.
+
+The support pays for site hosting and the expansion of this content.
+
+In addition, Patreon Supporters gain access to exclusive online video training courses and ebooks.
+
+[Join Now](https://www.patreon.com/eviltester)
