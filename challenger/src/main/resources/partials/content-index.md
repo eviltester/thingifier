@@ -31,6 +31,7 @@
     - [Simple API](/practice-sites/simpleapi)
   - Apps
     - [Best Buy](/practice-sites/apps/bestbuy)
+    - [Device Registry](/practice-sites/apps/deviceregistry)
     - [Fx Trade Hub](/practice-sites/apps/fxtradehub)
     - [Tracks](/practice-sites/apps/tracks) 
 

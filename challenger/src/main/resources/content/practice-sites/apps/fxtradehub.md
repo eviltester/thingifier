@@ -1,5 +1,5 @@
 ---
-title: FX Trade Hun - A Productivity GTD App - Practice Web App and API
+title: FX Trade Hub- A Productivity GTD App - Practice Web App and API
 description: Tracks is a mature application implementing the Getting Things Done productivity method with a Web GUI and API.
 showads: true
 ---

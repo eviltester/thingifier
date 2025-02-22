@@ -267,6 +267,17 @@ Getting started with these applications can be a little harder than using the on
 
 [Read a full overview of Best BUY API Playground with sample exercises](/practice-sites/apps/bestbuy)
 
+### Device Registry
+
+- Device Registry is a test API with multiple users for managing 'devices'
+- Can be run locally if you have Python installed.
+- Can be run from Docker using the instructions in our guid
+- Has a Swagger UI to allow easy exploration of the API
+- Has a Redoc UI for an additional UI based exploration of the API
+- API calls are authenticated using two hard coded user/password combinations
+
+[Read a full overview of Device Registry API with sample exercises](/practice-sites/apps/deviceregistry)
+
 ### Tracks
 
 - Tracks is a full todo app that can be run locally if you have Ruby on Rails installed, or use a [virtual machine from Turnkey](https://www.turnkeylinux.org/tracks) or [run from docker](https://github.com/eviltester/tracksdocker).
@@ -288,9 +299,7 @@ Getting started with these applications can be a little harder than using the on
 I've listed a few applications here initially and will expand the instructions to include walkthroughs and setup guides in future updates.
 
 - [Api Challenges](https://github.com/eviltester/thingifier/tree/master/challenger)
-  - API challenges can be run locally if you install a Java SDK and maven as pre-requisites.  
-- [Device Registry Service](https://github.com/AutomationPanda/device-registry-flask)
-  - The Device Registry Service can be run locally if you have Python 3 and Pip installed.
+  - API challenges can be run locally if you install a Java SDK and maven as pre-requisites.
 - [JSON Server](https://github.com/typicode/json-server)
    - Can be run locally if you have Node and npm installed.
 

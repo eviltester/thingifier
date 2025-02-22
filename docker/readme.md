@@ -87,3 +87,41 @@ docker run -it -p 3000:3000 fxtradehub
 
 And visit http://localhost:3000/api-docs to see the Swagger Docs UI.
 
+
+### Device Registry API
+
+Andy Knight has created an API to support practicing testing and support his book "The Way To Test Software".
+
+- https://github.com/AutomationPanda
+- https://automationpanda.com/
+
+The GitHub repo for the application is:
+
+https://github.com/AutomationPanda/device-registry-fastapi
+
+The application is written for python. You can use the command below to create a docker image:
+
+From the root directory containing the `/docker` folder run:
+
+```
+docker build -t devregfastapi -f ./docker/device-registry/Dockerfile .
+```
+
+Then you can run the image:
+
+```
+docker run -it -p 8000:8000 devregfastapi
+```
+
+The authentication information is in https://github.com/AutomationPanda/device-registry-fastapi/blob/main/config.json
+
+e.g. `user` : `password`
+
+- `engineer` : `Muh5devices`
+- `pythonista` : `I<3testing`,
+
+
+And visit http://localhost:8000/docs to see the Swagger Docs UI.
+
+And visit http://localhost:8000/redoc to see the Redoc Documentation UI.
+

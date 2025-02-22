@@ -6,6 +6,11 @@ showads: true
 
 # Change Log
 
+## 2025/02/22 - added pages for apps: Device Registry
+
+- Added page for [Device Registry API](/practice-sites/apps/deviceregistry) showing how to run, and sample exercises to get started. The Device Registry API is a simple (basic authentication) CRUD API with Open API documentation and a Swagger UI.
+
+
 ## 2025/02/16 - added pages for apps: Tracks, Best Buy, FX Trade Hub
 
 - Added page for [Best Buy API Playground](/practice-sites/apps/bestbuy) showing how to run, and sample exercises to get started. The Best BUY API Playground is a full CRUD API with Open API documentation and a Swagger UI. The application also has a lot of data available when it starts.
