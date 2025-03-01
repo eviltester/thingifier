@@ -158,6 +158,13 @@ docker build -t restlisticatorbuggy -f ./docker/restlisticator/Dockerfile-with-b
 docker run -it -p 4567:4567 restlisticatorbuggy 
 ```
 
+The images have been pushed to Docker hub:
+
+```
+docker run -it -p 4567:4567 eviltester/restlisticator:latest
+docker run -it -p 4567:4567 eviltester/restlisticator:latest-buggy
+```
+
 Then visit:
 
 ```
@@ -178,3 +185,25 @@ There are two entities:
 
 - lists
 - users
+
+---
+
+## Publishing To Docker
+
+The instructions for deployment to docker hub are quite easy to follow.
+
+https://docs.docker.com/guides/workshop/04_sharing_app/
+
+- create a repository on docker hub itself e.g. `myapp`
+
+- tag an existing image to match the repository
+
+- `docker tag myapp eviltester/myapp`
+
+- then push this to docker hub
+
+- `docker push eviltester/myapp`
+
+I needed to log into the Docker Desktop app to give docker permissions to push to the repository.
+
+I also tagged it with a version `eviltester/myapp:2.3.0` to match the version of the app that it is running.
