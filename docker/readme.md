@@ -125,3 +125,56 @@ And visit http://localhost:8000/docs to see the Swagger Docs UI.
 
 And visit http://localhost:8000/redoc to see the Redoc Documentation UI.
 
+## RestListicator
+
+The RestListicator is the first Testing API I created, with some deliberate bugs.
+
+It is part of the TestingApp project which as multiple testing practice apps.
+
+- https://github.com/eviltester/TestingApp
+- specifically https://github.com/eviltester/TestingApp/tree/master/java/testingapps/restlisticator
+
+There is a Swagger file in the docs folder.
+
+It has a automated coverage using Java and RestAssured:
+
+- https://github.com/eviltester/rest-listicator-automating-examples
+
+Can be run using Docker as either 'normal' or 'buggy'.
+
+Normal:
+
+```
+docker build -t restlisticator -f ./docker/restlisticator/Dockerfile .
+
+docker run -it -p 4567:4567 restlisticator  
+```
+
+Buggy:
+
+```
+docker build -t restlisticatorbuggy -f ./docker/restlisticator/Dockerfile-with-bugs .
+
+docker run -it -p 4567:4567 restlisticatorbuggy 
+```
+
+Then visit:
+
+```
+http://localhost:4567/listicator/
+```
+
+There are 3 default Users:
+
+Basic authentication to use these users.
+
+```
+username: superadmin, password: password
+username: admin, password: password
+username: user, password: password
+```
+
+There are two entities:
+
+- lists
+- users

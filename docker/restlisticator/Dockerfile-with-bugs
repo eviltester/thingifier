@@ -1,0 +1,13 @@
+FROM maven:3.9.9-amazoncorretto-11-alpine
+RUN wget https://github.com/eviltester/TestingApp/archive/refs/heads/master.zip
+RUN mkdir /home/TestingApp
+RUN unzip master.zip -d /home/TestingApp
+RUN cd /home/TestingApp/TestingApp-master/java/testingapps
+
+WORKDIR /home/TestingApp/TestingApp-master/java/testingapps
+RUN mvn package
+
+EXPOSE 4567
+
+WORKDIR /home/TestingApp/TestingApp-master/java/testingapps/restlisticator/target
+CMD ["java", "-jar", "rest-list-system-1-2-2-jar-with-dependencies.jar", "-bugfixes=false"]
