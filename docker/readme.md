@@ -138,7 +138,7 @@ There is a Swagger file in the docs folder.
 
 It has a automated coverage using Java and RestAssured:
 
-- https://github.com/eviltester/rest-listicator-automating-examples
+- https://github.com/eviltester/automating-rest-api/tree/master/rest-listicator-automating-examples
 
 Can be run using Docker as either 'normal' or 'buggy'.
 
