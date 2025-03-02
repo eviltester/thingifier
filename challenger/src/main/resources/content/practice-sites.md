@@ -278,6 +278,16 @@ Getting started with these applications can be a little harder than using the on
 
 [Read a full overview of Device Registry API with sample exercises](/practice-sites/apps/deviceregistry)
 
+### RestListicator
+
+- RestListicator is a simple API that can be run locally using Java or Docker
+- Can be run in two modes, one with known bugs, one without deliberately added bugs
+- Full range of CRUD operations is supported using `GET`, `POST`, `PATCH`, `DELETE`
+- Application accepts and returns `XML` and `JSON`
+- Open API Definition is downloadable from the GitHub Repo
+
+[Read a full overview of RestListicator with sample exercises](/practice-sites/apps/restlisticator)
+
 ### Tracks
 
 - Tracks is a full todo app that can be run locally if you have Ruby on Rails installed, or use a [virtual machine from Turnkey](https://www.turnkeylinux.org/tracks) or [run from docker](https://github.com/eviltester/tracksdocker).

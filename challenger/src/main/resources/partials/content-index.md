@@ -33,6 +33,7 @@
     - [Best Buy](/practice-sites/apps/bestbuy)
     - [Device Registry](/practice-sites/apps/deviceregistry)
     - [Fx Trade Hub](/practice-sites/apps/fxtradehub)
+    - [RestListicator](/practice-sites/apps/restlisticator)
     - [Tracks](/practice-sites/apps/tracks) 
 
 - [Sponsors](/sponsors)
