@@ -6,6 +6,11 @@ showads: true
 
 # Change Log
 
+## 2025/03/02 - added RestListicator
+
+- Added page for [RestListicator](/practice-sites/apps/restlisticator) showing how to run, and sample exercises to get started. The RestListicator API is a simple (basic authentication) CRUD API.
+
+
 ## 2025/02/22 - added pages for apps: Device Registry
 
 - Added page for [Device Registry API](/practice-sites/apps/deviceregistry) showing how to run, and sample exercises to get started. The Device Registry API is a simple (basic authentication) CRUD API with Open API documentation and a Swagger UI.
