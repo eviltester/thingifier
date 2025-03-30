@@ -8,6 +8,8 @@ In addition to our [API Challenges](/gui/challenges) you should practice on as m
 
 # Device Registry - Simple Authenticated API
 
+## About Device Registry
+
 [Device Registry](https://github.com/AutomationPanda/device-registry-fastapi) is an API to simulate a a management system for devices, it is written in Python and can be run locally if you have Python installed. To make it easy to run, we have also created a Docker file that makes it easy to get started.
 
 The API has a Swagger UI and a Redoc UI.

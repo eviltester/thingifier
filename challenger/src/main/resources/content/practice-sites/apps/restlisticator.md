@@ -8,6 +8,9 @@ In addition to our [API Challenges](/gui/challenges) you should practice on as m
 
 # RestListicator - A Software Testing Practice REST API
 
+
+## About RestListicator
+
 The RestListicator is the first Software Testing API Practice application created by [Alan Richardson](https://eviltester.com). It was written to support [API Testing Training](https://github.com/eviltester/automating-rest-api/tree/master/text/basic-tutorial).
 
 The application is written in Java and full instructions are in the GitHub repository for compiling and running locally. It can also be run using Docker with full instructions for doing so contained below.

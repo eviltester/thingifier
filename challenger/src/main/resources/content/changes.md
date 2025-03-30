@@ -6,6 +6,11 @@ showads: true
 
 # Change Log
 
+## 2025/03/30 - added Toolshop
+
+- Added page for [Toolshop](/practice-sites/apps/toolshop). The Toolshop is a UI and API with a range of API calls and .
+
+
 ## 2025/03/02 - added RestListicator
 
 - Added page for [RestListicator](/practice-sites/apps/restlisticator) showing how to run, and sample exercises to get started. The RestListicator API is a simple (basic authentication) CRUD API.

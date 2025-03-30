@@ -166,23 +166,16 @@ These are full APIs online, which means you don't have to install anything and c
 
 #### Toolshop API
 
-[Toolshop API](https://api.practicesoftwaretesting.com/api/documentation) by [Roy de Kleijn](https://www.linkedin.com/in/roydekleijn/)
+[Toolshop API](https://api.practicesoftwaretesting.com/api/documentation)
 
-- Toolshop API has a [UI](https://practicesoftwaretesting.com/#) and an API backend. This allows you to experiment with the UI, open the network tab and see the relevant API requests, or use the API and double-check the results on screen in the UI.
-- Multiple versions of the Toolshop are available.
-   - A [deliberately buggy version](https://api-with-bugs.practicesoftwaretesting.com/api/documentation) is available if you want to explore for issues.
-   - The [Main Version](https://api.practicesoftwaretesting.com/api/documentation) where bugs are not intended, or perhaps not perceived as bugs, remember every API is different.
-- The Open AI Swagger file is one of the most complete that I've seen, and is a great example of the capabilities of the format.
-- The Toolshop API allows GET,POST, PUT methods without authentication.
+- [read our longer write up of Simple API with exercises here](/practice-sites/toolshop)
+- Toolshop API has a UI and an API backend. This allows you to experiment with the UI, open the network tab and see the relevant API requests, or use the API and double-check the results on screen in the UI.
+- Multiple versions of the Toolshop are available - with bugs and without
+- The Open API Swagger file is one of the most complete that I've seen, and is a great example of the capabilities of the format.
 - Some endpoints require that you master the authentication process which requires logging in as a user, then using the returned token as an HTTP Bearer Token.
 - The DELETE endpoints seemed to require logging in as an admin user.
-- The admin user also receives 'more' data in the responses, so its worth experimenting with the different users.
 - The Database is shared, so don't add any private information (e.g. your name and email) if you create a new user.
 - The error messages returned from the server in the message are useful aids to helping you craft a valid payload.
-
-
-
-
 
 ---
 

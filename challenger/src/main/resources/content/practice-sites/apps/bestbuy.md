@@ -8,6 +8,8 @@ In addition to our [API Challenges](/gui/challenges) you should practice on as m
 
 # Best Buy API Playground - A Practice GET API
 
+## About Best Buy
+
 The Best Buy API Playground is a node application which implements an older version of the Best Buy API. It comes pre-populated with production-like data.
 
 Since this is a practice version of the API, update and delete operations are enabled in addition to the expected `GET` verbs. These would not be available in the production version of the API.

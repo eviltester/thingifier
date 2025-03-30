@@ -8,6 +8,8 @@ In addition to our [API Challenges](/gui/challenges) you should practice on as m
 
 # Tracks - A Web Application with API
 
+## About Tracks
+
 [Tracks](https://www.getontracks.org/) is a Ruby on Rails application which implements the Getting Things Done productivity methodology.
 
 ## Running Tracks

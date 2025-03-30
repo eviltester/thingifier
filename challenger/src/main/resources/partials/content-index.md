@@ -34,6 +34,7 @@
     - [Device Registry](/practice-sites/apps/deviceregistry)
     - [Fx Trade Hub](/practice-sites/apps/fxtradehub)
     - [RestListicator](/practice-sites/apps/restlisticator)
+    - [Toolshop](/practice-sites/apps/toolshop)
     - [Tracks](/practice-sites/apps/tracks) 
 
 - [Sponsors](/sponsors)

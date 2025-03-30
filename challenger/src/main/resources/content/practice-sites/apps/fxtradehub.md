@@ -8,6 +8,9 @@ In addition to our [API Challenges](/gui/challenges) you should practice on as m
 
 # FX Trade Hub - A Web Application with API
 
+
+## About FX Trade Hub
+
 [FX-TradeHub](https://github.com/sd576/FX-TradeHub-API) is an API to simulate a trading system. It is written for Node and can be run locally if you have node installed. To make it easy to run, we have also created a Docker file that makes it easy to get started.
 
 The API has a Swagger UI.
