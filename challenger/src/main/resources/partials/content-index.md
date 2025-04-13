@@ -15,6 +15,8 @@
     - [Simulation Mode](/practice-modes/simulation)
 - Tools
     - [REST/HTTP Clients](/tools/clients)
+      - [Bruno](/tools/clients/bruno) 
+      - [cURL](/tools/clients/curl)
     - [Proxies](/tools/proxies)
 - [Practice Sites](/practice-sites)
   - Simulators

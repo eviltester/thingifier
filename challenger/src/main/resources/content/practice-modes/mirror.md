@@ -7,9 +7,13 @@ The API Challenges Mirror Mode shows you the HTTP request that you sent to the A
 
 # Mirror Mode
 
+## Overview of Mirror Mode
+
 {{<youtube-embed key="Q3qbyUNwYbM" title="how to use mirror mode to see request details">}}
 
 [Patreon ad free video](https://www.patreon.com/posts/54382928)
+
+## About Mirror Mode
 
 The API has a mirror mode, this allows you to experiment with different verbs and configurations.
 

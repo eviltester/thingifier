@@ -31,12 +31,14 @@ At the moment I primarily use [Bruno](https://www.usebruno.com/) or [Thunderclie
     - API examples often shown in cURL
     - recommended that you learn this eventually
     - [download](https://curl.se/download.html)
+  - [Read our More Detailed Review of cURL](/tools/clients/curl)
 
 
 ### GUI Clients
 
 - [Bruno](https://www.usebruno.com/)
-  - An [open source](https://github.com/usebruno/bruno) REST Client which can import Swagger files and is easy to configure. 
+  - An [open source](https://github.com/usebruno/bruno) REST Client which can import Swagger files and is easy to configure.
+  - [Read our More Detailed Review of Bruno](/tools/clients/bruno)
 - [Advanced REST Client](https://www.advancedrestclient.com/home)
   - An electron based [open source client](https://github.com/advanced-rest-client/arc-electron), not updated often
 - [Paw (Mac only)](https://paw.cloud/)
@@ -72,21 +74,61 @@ VS Code:
 - [Thunderclient](https://www.thunderclient.com/)
 
 
----
+## Features Useful For Testing
 
-## cURL Overview
+I look for the following features in an API Client that I want to use for Exploratory Testing.
 
-~~~~~~~~
-curl  {{<ORIGIN_URL>}}/heartbeat -i
-curl -X GET {{<ORIGIN_URL>}}/todos
-curl {{<ORIGIN_URL>}}/todos -H "accept: application/xml"
-~~~~~~~~
+I do not really use API Clients for Automating, I use them to support my testing. For Automating I tend to use code and HTTP libraries so the features below may not be the same review criteria that you apply.
 
-[cURL](https://curl.se) Can be complicated but useful for emergencies, scripting, bug reporting.
+- Optional
+  - Read Open API files
+  - Supports global environment variables e.g. for host
+  - Different payload body types
+  - Easy to add headers
+    - custom headers
+    - auth header support
+    - override body type headers
+  - Variables in headers e.g. for session headers
+  - Custom Verb support
+  - Repeating or cloning earlier requests
+  - View history of requests/responses
+- Essential
+  - Send HTTP or HTTPS requests
+  - Proxy support
+  - Can create invalid requests
+- Bonus
+  - Data driven requests
+  - Output log of test sessions
+  - Scriptable for customisation - not automating
 
-> **HINT**: you can use Postman or Insomnia to generate cURL code but different continuation characters on different operating systems: `^` Windows and `\` on Mac/Linux also `"` and `'` differences.
+### Optional Features
 
-> **NOTE**: By default Windows Powershell has a `curl` command but it is not really curl. It is an alias around `Invoke-WebRequest` and does not have all cURL features or use all the command line parameters. e.g. all the cURL examples listed above would fail. But if you change `curl` to `curl.exe` you can start using the non-alias Windows preinstalled `cURL` tool.
+The Optional features are there to make my Testing a little easier. I can live without them. I have used Proxy tools for HTTP API testing, and when testing in this way there is very little support for easy HTTP Request construction.
+
+Most of the features are usability features. Does the tool make it easy to edit the requests? Can I create variables that I share across requests? e.g. to add custom authentication headers, or change the Host URL in a single place rather than amending on every request.
+
+I like to be able to create a set of requests by opening an Open API file.
+
+Any feature that makes things easier is useful but not essential.
+
+A history of requests and responses is useful to see what I just did, and to let me see what the tool thinks it has sent and received. But if I have proxy capability then I can use the Proxy to do this.
+
+### Essential Features
+
+It sounds obvious, but I need to be able to make any HTTP or HTTPS request. Very often online tools are limited by CORS headers, I need tools that let me explore a wide range of requests. This includes invalid requests. I cannot allow my testing to be constrained by validations imposed upon me by the tooling. e.g. I need to be able to send invalid JSON in payloads to see how the API responds.
+
+I also need Proxy tool support to be able to send every request through a Proxy. This lets me see exactly what is sent and received. Allows me to do basic data driven testing using fuzzing, and allows me to keep a log of my testing.
+
+### Bonus Features
+
+The bonus items are there because many tools don't have them, but if I'm testing for long periods of time then it is useful to:
+
+- feed a set of data into a request and see what happens
+- export what I did while testing to a log file as evidence. It is sometimes possible to get this from a Proxy.
+- I like tools which are scriptable then I can use them in adhoc ways.
+
+Scriptable needs to be easy to use and I mainly use it to support me, rather than automate. e.g. generating random data, outputting information to logs.
+
 
 ## Why test interactively and not just automate?
 

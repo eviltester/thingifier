@@ -7,10 +7,15 @@ description: A simulated API tutorial - follow the guided instructions and learn
 
 The API has a simulation mode, it uses hard coded data in responses, but tries to mimic some conditions.
 
+## Overview of Simulation Mode
+
 {{<youtube-embed key="jlbLr2Ddo6s" title="How to use simulation mode">}}
 
-
 [Patreon ad free video](https://www.patreon.com/posts/54383023)
+
+## About Simulation Mode
+
+The API simulation mode, uses hard coded data for responses, but tries to mimic conditions e.g. JSON vs XML payloads.
 
 The simulator is stateless and does not track your usage, making it deterministic for multiple users. Which means:
 

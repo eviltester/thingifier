@@ -139,3 +139,18 @@ This is typically the approach that most people testing APIs will use because th
 - [OpenAPI Testing Tools List](https://openapi.tools/#testing)
 
 
+## Tools Using Open API
+
+Rather than try and build a large list of Open API Tooling, I will defer to [OpenAPI.Tools](https://openapi.tools/) a list of tools curated by [APIsYouWontHate.com](https://apisyouwonthate.com/).
+
+The list is split into sections e.g.
+
+- Code Generators
+- Convertors
+- Documentation
+- Mocking
+- Validators
+
+The list of tools includes Open Source and commercial tools.
+
+- [OpenAPI.Tools](https://openapi.tools/)

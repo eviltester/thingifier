@@ -6,6 +6,12 @@ showads: true
 
 # Change Log
 
+## 2025/04/13 - Simple API Overview
+
+- Added video of [Simple API](/practice-modes/simpleapi), showing how to use it with Bruno
+- Added page for [Bruno](/tools/clients/bruno)
+- Added page for [cURL](/tools/clients/curl)
+
 ## 2025/03/30 - added Toolshop
 
 - Added page for [Toolshop](/practice-sites/apps/toolshop). The Toolshop is a UI and API with a range of API calls and .
