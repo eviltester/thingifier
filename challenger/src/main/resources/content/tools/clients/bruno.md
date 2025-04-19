@@ -24,6 +24,13 @@ Bruno is a fast developing project so to get a full understanding of the tool I 
 - [Support and Feature Request forums](https://github.com/usebruno/bruno/issues)
 - [Discussions](https://github.com/usebruno/bruno/discussions)
 
+## Demo Video of Bruno
+
+{{<youtube-embed key="3TlwUKyfOMw" title="Bruno API Client Overview">}}
+
+
+[Patreon ad free video](https://www.patreon.com/posts/127001249)
+
 ## Benefits of Bruno
 
 I find Bruno to be easy to use. Bruno focuses on making it easy to interact with an API either interactively using the UI or automating using the `Test` tabs.
@@ -32,28 +39,30 @@ I have not used the `Test` capabilities because I automate using HTTP libraries.
 
 ## Quick Review Criteria
 
-|Feature|Y/N|Comment|
-|-----|-----|-----|
-|**Optional**|||
-|Read Open API files|Y|Also populates Environment host variables|
-|Supports global environment variables e.g. for host|Y|With syntax highlighting and linting|
-|Different payload body types|Y||
-|Easy to add headers|Y||
-|- custom headers|Y||
-|- auth header support|Y||
-|- override body type headers|Y|It is possible to edit as JSON and set content-type header to XML|
-|Variables in headers|Y||
-|Custom Verb support|N|GET, POST, PUT, DELETE, PATCH, OPTIONS, HEAD|
-|Repeating or cloning earlier requests|Y|But not from the History, only the Request UI|
-|View history of requests/responses|Y|But no export capability|
-|**Essential**|||
-|Send HTTP or HTTPS requests|Y||
-|Proxy support|Y||
-|Can create invalid requests|Y||
-|**Bonus**|||
-|Data driven requests|Y|Paid plan only|
-|Output log of test sessions|N||
-|Scriptable for customisation|Y|At Collection and Request level|
+| Feature                                             |Y/N| Comment                                                           |
+|-----------------------------------------------------|-----|-------------------------------------------------------------------|
+| **Optional**                                        ||                                                                   |
+| Read Open API files                                 |Y| Also populates Environment host variables                         |
+| Supports global environment variables e.g. for host |Y| With syntax highlighting and linting                              |
+| Different payload body types                        |Y|                                                                   |
+| Easy to add headers                                 |Y|                                                                   |
+| - custom headers                                    |Y|                                                                   |
+| - auth header support                               |Y|                                                                   |
+| - override body type headers                        |Y| It is possible to edit as JSON and set content-type header to XML |
+| Variables in headers                                |Y|                                                                   |
+| Custom Verb support                                 |N| GET, POST, PUT, DELETE, PATCH, OPTIONS, HEAD                      |
+| Repeating or cloning earlier requests               |Y| But not from the History, only the Request UI                     |
+| View history of requests/responses                  |Y| But no export capability                                          |
+| Exporting requests to cURL format                   |Y|                                                                   |
+| **Essential**                                       ||                                                                   |
+| Send HTTP or HTTPS requests                         |Y|                                                                   |
+| Proxy support                                       |Y|                                                                   |
+| Can create invalid requests                         |Y|                                                                   |
+| **Bonus**                                           ||                                                                   |
+| Data driven requests                                |Y| Paid plan only                                                    |
+| Output log of test sessions                         |N|                                                                   |
+| Scriptable for customisation                        |Y| At Collection and Request level                                   |
+| Importing cURL requests                             |Y| When creating a request can import cURL                           |
 
 Bruno met all my basic needs. The Data Driven feature is only available on a paid plan.
 

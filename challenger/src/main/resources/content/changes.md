@@ -6,6 +6,10 @@ showads: true
 
 # Change Log
 
+## 2025/0419 - Bruno Client Demo
+
+- Added video overview of the [Bruno Client](/tools/clients/bruno)
+
 ## 2025/04/13 - Simple API Overview
 
 - Added video of [Simple API](/practice-modes/simpleapi), showing how to use it with Bruno
