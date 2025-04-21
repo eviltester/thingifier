@@ -24,15 +24,23 @@ But adding the ### to separate requests and documentation seems to work well eno
 
 @host=https://apichallenges.eviltester.com
 
-### @Description Example call to GET https://apichallenges.eviltester.com/todos because it uses the @host
+/*
+ ** Enable to allow all requests to go through a proxy **
 
+ to get proxy to work, make sure the "Proxy Support" is set to on
+ in VS Code Preferences > Settings
+ 'override' doesn't seem to work
+ */
+// # @proxy http://127.0.0.1:8080
+
+### @Description Example call to GET https://apichallenges.eviltester.com/todos because it uses the @host
 GET /todos
 
 ###
 
 ## Create a Session
 
-We can create a session in the challenges by issuing a `POST` request.
+We can create a session in the challenges by issuing a request.
 
 To see the console.info:
 
@@ -71,7 +79,9 @@ POST /challenger
 
 ## TODOs
 
-To get the list of todos from the environment we can issue a `GET` request on the `/todos` endpoint.
+To get the list of todos from the environment we can issue a request on the `/todos` endpoint.
+
+The `@name` will show the response as a variable in HTTPYAC extension view.
 
 ###
 # @name get_all_todos
@@ -148,12 +158,9 @@ x-challenger: {{xChallenger}}
 
 
 ###
-# @proxy http://127.0.0.1:8080
 # @Description Delete all todos
 # @forceref get_all_todos 
 # @loop for id of allTodoIds
 
 DELETE /todos/{{id}}
 x-challenger: {{xChallenger}}
-
-/* have not managed to get proxy working or forceref */

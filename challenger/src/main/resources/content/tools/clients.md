@@ -22,7 +22,7 @@ For exploratory testing, I would use one of the listed tools.
 
 I have used all of the following tools.
 
-At the moment I primarily use [Bruno](https://www.usebruno.com/) or [Thunderclient](https://www.thunderclient.com/) for my exploratory testing. I configure it to feed all traffic through the [BurpSuite](https://portswigger.net/burp/communitydownload) proxy to capture all my traffic and allow me to save and review my testing.
+At the moment I use [Bruno](https://www.usebruno.com/) for my exploratory testing. I configure it to feed all traffic through the [BurpSuite](https://portswigger.net/burp/communitydownload) proxy to capture all my traffic and allow me to save and review my testing.
 
 ### Command Line Clients
 
@@ -36,20 +36,29 @@ At the moment I primarily use [Bruno](https://www.usebruno.com/) or [Thunderclie
 
 ### GUI Clients
 
+I recommend Bruno. It is a very capable free client, with paid plans if you want to use the tool for automated execution.
+
 - [Bruno](https://www.usebruno.com/)
   - An [open source](https://github.com/usebruno/bruno) REST Client which can import Swagger files and is easy to configure.
   - [Read our More Detailed Review of Bruno](/tools/clients/bruno)
-- [Advanced REST Client](https://www.advancedrestclient.com/home)
-  - An electron based [open source client](https://github.com/advanced-rest-client/arc-electron), not updated often
+
+A list of Open Source API Clients is available at the [Awesome API Clients Github list](https://github.com/stepci/awesome-api-clients). This is a well maintained and up to date list containing more clients than are listed here.
+
 - [Paw (Mac only)](https://paw.cloud/)
   - Free Mac only REST Client. A previously commercial REST Client which was good enough for me to buy a license.
+
+### Other Popular clients
+
+The tools listed here are often used for testing.
+
+I have used Postman and Insomnia, but both have now expanded their feature set such that they are suites of API tooling and are not as simple to use for exploratory testing as they once were.
+
 - [Postman](https://www.getpostman.com/)
   - A commercial REST Client with Free version for personal use, requires a free account and login to use effectively
 - [Insomnia](https://insomnia.rest/)
   - Another commercial REST Client with Free version for personal use, which also requires a free account and login to use effectively
 
-
-GUI Clients which I have not yet used:
+GUI Clients which I have not yet used, but are often mentioned by Software Testers. They may be more feature packed than required for exploratory testing.
 
 - [Katalon Studio](https://katalon.com/katalon-studio)
 - [SoapUI Open Source](https://www.soapui.org)
@@ -66,12 +75,6 @@ But they are very useful to experiment with an API quickly.
   - A well implemented browser based client. Import Postman and Swagger (Open API) collections.
 - [RestTestTest](https://resttesttest.com/)
   - This is a very basic online client. Recommend using the Developer Tool Network tab to view the requests and responses.
-
-### IDE Extensions
-
-VS Code:
-
-- [Thunderclient](https://www.thunderclient.com/)
 
 
 ## Features Useful For Testing
@@ -146,3 +149,4 @@ Scriptable needs to be easy to use and I mainly use it to support me, rather tha
 Testing requires variation, observation and exploration, so we need tools that can help us send requests, easily vary requests and inspect the responses to find problems.
 
 Automating helps us identify unanticipated changes in behaviour that we previously asserted as acceptable.
+

@@ -6,7 +6,16 @@ showads: true
 
 # Change Log
 
-## 2025/0419 - Bruno Client Demo
+
+## 2025/04/20
+
+Updated the [API Clients Page](/tools/clients):
+
+- Removed Thunder Client due to the licensing changes and restriction of functionality in the free version.
+- Removed Advanced Rest Client when re-evaluating I could not get it to open an Open API file, and it has now been superseded by other API Clients.
+- Added a link to [Open Source APi Clients list](https://github.com/stepci/awesome-api-clients)
+
+## 2025/04/19 - Bruno Client Demo
 
 - Added video overview of the [Bruno Client](/tools/clients/bruno)
 
