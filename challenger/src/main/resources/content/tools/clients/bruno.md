@@ -41,6 +41,11 @@ I have not used the `Test` capabilities because I automate using HTTP libraries.
 
 | Feature                                             |Y/N| Comment                                                           |
 |-----------------------------------------------------|-----|-------------------------------------------------------------------|
+| **Essential**                                       ||                                                                   |
+| Send HTTP or HTTPS requests                         |Y|                                                                   |
+| View the actual requests and responses |Y| Seen in the timeline view                                         |
+| Proxy support                                       |Y|                                                                   |
+| Can create invalid requests                         |Y|                                                                   |
 | **Optional**                                        ||                                                                   |
 | Read Open API files                                 |Y| Also populates Environment host variables                         |
 | Supports global environment variables e.g. for host |Y| With syntax highlighting and linting                              |
@@ -54,15 +59,12 @@ I have not used the `Test` capabilities because I automate using HTTP libraries.
 | Repeating or cloning earlier requests               |Y| But not from the History, only the Request UI                     |
 | View history of requests/responses                  |Y| But no export capability                                          |
 | Exporting requests to cURL format                   |Y|                                                                   |
-| **Essential**                                       ||                                                                   |
-| Send HTTP or HTTPS requests                         |Y|                                                                   |
-| Proxy support                                       |Y|                                                                   |
-| Can create invalid requests                         |Y|                                                                   |
 | **Bonus**                                           ||                                                                   |
 | Data driven requests                                |Y| Paid plan only                                                    |
 | Output log of test sessions                         |N|                                                                   |
 | Scriptable for customisation                        |Y| At Collection and Request level                                   |
 | Importing cURL requests                             |Y| When creating a request can import cURL                           |
+| Free for commercial use |Y| Additional features are available on paid plan |
 
 Bruno met all my basic needs. The Data Driven feature is only available on a paid plan.
 
@@ -103,7 +105,7 @@ This is documented in the [Dynamic Variables](https://docs.usebruno.com/testing/
 
 Bruno changes frequently.
 
-## Conclusion
+## Summary - Easy Default First Choice for free APi Exploratory Testing Client
 
 Bruno is my current default REST API tool for Exploratory and Interactive Test Sessions.
 

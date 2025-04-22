@@ -15,8 +15,14 @@
     - [Simulation Mode](/practice-modes/simulation)
 - Tools
     - [REST/HTTP Clients](/tools/clients)
-      - [Bruno](/tools/clients/bruno) 
-      - [cURL](/tools/clients/curl)
+      - [Summary Reviews](/tools/clients/summary-reviews)
+      - Detailed Reviews:
+         - [Bruno](/tools/clients/bruno) 
+         - [cURL](/tools/clients/curl)
+         - [Httpie](/tools/clients/httpie)
+         - [Kreya](/tools/clients/kreya)
+         - [Milkman](/tools/clients/milkman)
+         - [Yaak](/tools/clients/yaak)
     - [Proxies](/tools/proxies)
 - [Practice Sites](/practice-sites)
   - Simulators

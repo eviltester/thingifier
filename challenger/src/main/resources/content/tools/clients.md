@@ -33,7 +33,6 @@ At the moment I use [Bruno](https://www.usebruno.com/) for my exploratory testin
     - [download](https://curl.se/download.html)
   - [Read our More Detailed Review of cURL](/tools/clients/curl)
 
-
 ### GUI Clients
 
 I recommend Bruno. It is a very capable free client, with paid plans if you want to use the tool for automated execution.
@@ -42,10 +41,19 @@ I recommend Bruno. It is a very capable free client, with paid plans if you want
   - An [open source](https://github.com/usebruno/bruno) REST Client which can import Swagger files and is easy to configure.
   - [Read our More Detailed Review of Bruno](/tools/clients/bruno)
 
-A list of Open Source API Clients is available at the [Awesome API Clients Github list](https://github.com/stepci/awesome-api-clients). This is a well maintained and up to date list containing more clients than are listed here.
+Other recommended free lightweight GUI Clients:
+
+- [Milkman](/tools/clients/milkman) - a little rough around the edges, but open source and free for commercial use [Milkman on github](https://github.com/warmuuh/milkman)
+- [Kreya](/tools/clients/kreya) - proxy can only be configured via environment variables but capable when configured [Kreya](https://kreya.app)
+- [Yaak](/tools/clients/yaak) - lacks scripting, free for commercial use if run from source. [yaak.app](https://yaak.app/)
+
+
+Mac Only:
 
 - [Paw (Mac only)](https://paw.cloud/)
   - Free Mac only REST Client. A previously commercial REST Client which was good enough for me to buy a license.
+
+We have evaluated [many Desktop GUI Clients here](/tools/clients/summary-reviews).
 
 ### Other Popular clients
 
@@ -83,6 +91,11 @@ I look for the following features in an API Client that I want to use for Explor
 
 I do not really use API Clients for Automating, I use them to support my testing. For Automating I tend to use code and HTTP libraries so the features below may not be the same review criteria that you apply.
 
+- Essential
+  - Send HTTP or HTTPS requests
+  - View the actual requests and responses
+  - Proxy support
+  - Can create invalid requests
 - Optional
   - Read Open API files
   - Supports global environment variables e.g. for host
@@ -95,14 +108,11 @@ I do not really use API Clients for Automating, I use them to support my testing
   - Custom Verb support
   - Repeating or cloning earlier requests
   - View history of requests/responses
-- Essential
-  - Send HTTP or HTTPS requests
-  - Proxy support
-  - Can create invalid requests
 - Bonus
   - Data driven requests
   - Output log of test sessions
   - Scriptable for customisation - not automating
+  - Free for commercial use
 
 ### Optional Features
 
@@ -115,6 +125,8 @@ I like to be able to create a set of requests by opening an Open API file.
 Any feature that makes things easier is useful but not essential.
 
 A history of requests and responses is useful to see what I just did, and to let me see what the tool thinks it has sent and received. But if I have proxy capability then I can use the Proxy to do this.
+
+Most people using the REST Clients will be using them in a commercial setting. It is important to look at the license of the tool. Some tools are 'free' but the license forbids use of the tool in a commercial environment without purchasing a license.
 
 ### Essential Features
 
@@ -150,3 +162,6 @@ Testing requires variation, observation and exploration, so we need tools that c
 
 Automating helps us identify unanticipated changes in behaviour that we previously asserted as acceptable.
 
+## Other Client Lists
+
+A list of Open Source API Clients is available at the [Awesome API Clients Github list](https://github.com/stepci/awesome-api-clients). This is a well maintained and up to date list containing more clients than are listed here.
