@@ -6,7 +6,9 @@ showads: true
 
 # REST API Client Support for Exploratory Testing Summary Reviews
 
-## Introduction
+Reviews of REST API Clients covering how well the tool supports Exploratory Testing.
+
+## Introduction to Exploratory Testing Support Reviews
 
 There are so many REST Clients available I have tried to list all those that I have evaluated here, with a summary of the evaluation results. The evaluation criteria was 'how well does the tool support exploratory testing'. If you also use the REST API Client for 'Test Automation' then you will evaluate and rank these tools differently.
 
@@ -20,7 +22,7 @@ A list of Open Source API Clients is available at the [Awesome API Clients Githu
 
 ## Grouped Recommendations for Exploratory Testing
 
-All of the tools listed in this section are recommended. If you are evaluating a tool for Exploratory Testing then start with these.
+If you are evaluating a tool for Exploratory Testing then start with those listed in this section.
 
 ### Recommended Lightweight Free Clients
 
@@ -29,6 +31,10 @@ All of the tools listed in this section are recommended. If you are evaluating a
 - Kreya [review](/tools/clients/kreya) - proxy can only be configured via environment variables but capable when configured [Kreya](https://kreya.app)
 - Yaak [review](/tools/clients/yaak) - lacks scripting, free for commercial use if run from source. [yaak.app](https://yaak.app/)
 
+### Recommended Heavyweight Free Clients
+
+- Insomnia - [review](/tools/clients/insomnia) - easy to use without logging in, login required for multiple collections [Insomnia.rest](https://insomnia.rest/)
+- Postman
 
 
 ## All Evaluated Client Summaries
@@ -122,6 +128,16 @@ Requires Open API import and Proxy Support to be viable for supporting Explorato
 
 Read our [full review of Httpie](/tools/clients/httpie)
 
+### HttpMaster - Windows Only
+
+- Completely free
+- Windows only.
+- Lots of features.
+- I found the UI Cluttered and hard to use.
+- Given the amount of competition available there are other tools I would choose.
+- [HttpMaster.net](https://www.httpmaster.net/)
+
+
 ### Httpyac
 
 - VS Code plugin tool
@@ -132,11 +148,38 @@ Read our [full review of Httpie](/tools/clients/httpie)
 - I have an example `.http` file in the thingifier repo: [httpyac example](https://github.com/eviltester/thingifier/tree/master/docs/httpyac)
 - [Httpyac](https://httpyac.github.io/)
 
+### Insomnia
+
+An easy to use client for adhoc exploratory testing using scratchpad mode. Login is required for multiple collections. 
+
+- Can Import many formats of API definition, including Open API
+- A History of requests can be seen, but cannot be exported.
+- cURL is well support for import and generation.
+- Environment variables are supported in requests and headers.
+- Proxy is easy easily configured.
+- Requests can be organised into folders.
+- Scripting is available in the free version.
+- Custom Methods can be used.
+- [Insomnia.rest](https://insomnia.rest/)
+
+Read our [full review of Insomnia](/tools/clients/insomnia)
+
+### Katalon Studio
+
+Based on my evaluation, I don't think Katalon Studio should be viewed as an Exploratory Testing tool. It seems to be aimed at test automation and should be evaluated in those terms.
+
+- Requires Login
+- Clumsy sign up process
+- Free version does not support Open APi 3 files fully
+- Slow to send requests
+- Recommend evaluating it as a Test Automation tool, not an Exploratory Testing tool.
+- [Katalon Studio](https://katalon.com/katalon-studio)
+
+Read our [full review of Katalon](/tools/clients/katalon)
+
 ### MilkMan
 
-I installed milkman by downloading the nightly release zip files.
-
-[Milkman](https://github.com/warmuuh/milkman)
+I installed milkman by downloading the nightly release zip files. A completely free and Open Source REST API Client with collection and Proxy support.
 
 - MilkMan is a JavaFX application and should run on windows, mac and linux.
 - Import Open API files from disk
@@ -148,10 +191,33 @@ I installed milkman by downloading the nightly release zip files.
 - Not support custom methods
 - Collections are saved to the database.db in the application folder when the application exits. Exportable to Postman.
 - Environment variable support.
-
-A completely free and Open Source REST API Client with collection and Proxy support.
+- [Milkman](https://github.com/warmuuh/milkman)
 
 Read our [full review of Milkman](/tools/clients/milkman)
+
+### Paw - Mac Only
+
+- Paw is now called Rapid API
+- Free, not open source
+- Mac only tool
+- Simple to use HTTP API Client
+- [paw.clouc](https://paw.cloud/)
+
+### Postman
+
+- Import many collection formats
+- Export postman formats
+- Easy to configure proxy
+- Simple variable support
+- Most features required for exploratory testing in free plan
+- Scripting available in free plan.
+- Will probably be the default client for most people.
+- Feature Cluttered UI that takes time to get used to.
+- Collections stored in cloud, limited sharing on free plan. Be careful what you make public.
+- [GetPostman.com](https://getpostman.com/)
+
+Read our [full review of Postman](/tools/clients/postman)
+
 
 ### Pororoca
 
@@ -174,6 +240,24 @@ Listed here but requires future evaluation. These are initial notes.
 - Does not get updated very often, last commit (October 2024)
 - Seems like a very interesting tool. Evaluate at the same time as HttpYac
 - [Rest Client](https://github.com/Huachao/vscode-restclient)
+
+### SoapUI
+
+- does not import Open API v3 files in JSON format without amending file
+- UI is a bit clunky,
+- takes time to get used to
+- no shared environment variables
+- cannot switch off product usage data sent to mixpanel.com
+- free and open source
+- can make basic requests
+- can work through a proxy
+- can create collections
+- can create adhoc load tests
+- can output the http log for a test session
+- no cURL support
+- [SoapUI](https://www.soapui.org/)
+
+Read our [full review of SoapUI](/tools/clients/soapui)
 
 ### Thunder Client VS Code extension
 
