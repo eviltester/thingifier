@@ -34,7 +34,7 @@ If you are evaluating a tool for Exploratory Testing then start with those liste
 ### Recommended Heavyweight Free Clients
 
 - Insomnia - [review](/tools/clients/insomnia) - easy to use without logging in, login required for multiple collections [Insomnia.rest](https://insomnia.rest/)
-- Postman
+- Postman - [review](/tools/clients/postman) - requires logging in, feature packed, UI takes time to learn [GetPostman.com](https://getpostman.com/)
 
 
 ## All Evaluated Client Summaries
@@ -201,7 +201,9 @@ Read our [full review of Milkman](/tools/clients/milkman)
 - Free, not open source
 - Mac only tool
 - Simple to use HTTP API Client
-- [paw.clouc](https://paw.cloud/)
+- [paw.cloud](https://paw.cloud/)
+
+A good choice if you are on Mac. I used this a lot for Exploratory Testing when I was primarily Mac OS based.
 
 ### Postman
 

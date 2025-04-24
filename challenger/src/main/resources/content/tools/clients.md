@@ -35,42 +35,25 @@ At the moment I use [Bruno](https://www.usebruno.com/) for my exploratory testin
 
 ### GUI Clients
 
-I recommend Bruno. It is a very capable free client, with paid plans if you want to use the tool for automated execution.
+I recommend and primarily use Bruno. It is a very capable free client, with paid plans if you want to use the tool for automated execution.
 
 - [Bruno](https://www.usebruno.com/)
   - An [open source](https://github.com/usebruno/bruno) REST Client which can import Swagger files and is easy to configure.
   - [Read our More Detailed Review of Bruno](/tools/clients/bruno)
 
-Other recommended free lightweight GUI Clients:
+**Recommended free lightweight GUI Clients for evaluation:**
 
-- [Milkman](/tools/clients/milkman) - a little rough around the edges, but open source and free for commercial use [Milkman on github](https://github.com/warmuuh/milkman)
-- [Kreya](/tools/clients/kreya) - proxy can only be configured via environment variables but capable when configured [Kreya](https://kreya.app)
-- [Yaak](/tools/clients/yaak) - lacks scripting, free for commercial use if run from source. [yaak.app](https://yaak.app/)
+- Bruno [review](/tools/clients/bruno) - good all-rounder, free for commercial use. **Recommended** [usebruno.com](https://usebruno.com)
+- Milkman [review](/tools/clients/milkman) - a little rough around the edges, but open source and free for commercial use [Milkman on github](https://github.com/warmuuh/milkman)
+- Kreya [review](/tools/clients/kreya) - proxy can only be configured via environment variables but capable when configured [Kreya](https://kreya.app)
+- Yaak [review](/tools/clients/yaak) - lacks scripting, free for commercial use if run from source. [yaak.app](https://yaak.app/)
 
+**Recommended free heavyweight GUI Clients for evaluation:**
 
-Mac Only:
-
-- [Paw (Mac only)](https://paw.cloud/)
-  - Free Mac only REST Client. A previously commercial REST Client which was good enough for me to buy a license.
+- Insomnia - [review](/tools/clients/insomnia) - easy to use without logging in, login required for multiple collections [Insomnia.rest](https://insomnia.rest/)
+- Postman - [review](/tools/clients/postman) - requires logging in, feature packed, UI takes time to learn [GetPostman.com](https://getpostman.com/)
 
 We have evaluated [many Desktop GUI Clients here](/tools/clients/summary-reviews).
-
-### Other Popular clients
-
-The tools listed here are often used for testing.
-
-I have used Postman and Insomnia, but both have now expanded their feature set such that they are suites of API tooling and are not as simple to use for exploratory testing as they once were.
-
-- [Postman](https://www.getpostman.com/)
-  - A commercial REST Client with Free version for personal use, requires a free account and login to use effectively
-- [Insomnia](https://insomnia.rest/)
-  - Another commercial REST Client with Free version for personal use, which also requires a free account and login to use effectively
-
-GUI Clients which I have not yet used, but are often mentioned by Software Testers. They may be more feature packed than required for exploratory testing.
-
-- [Katalon Studio](https://katalon.com/katalon-studio)
-- [SoapUI Open Source](https://www.soapui.org)
-  - I have previously used this for testing SOAP APIs, I haven't tried it on REST APIs yet.
 
 
 ### Online Clients
@@ -162,6 +145,7 @@ Testing requires variation, observation and exploration, so we need tools that c
 
 Automating helps us identify unanticipated changes in behaviour that we previously asserted as acceptable.
 
-## Other Client Lists
+## REST API Client Lists
 
-A list of Open Source API Clients is available at the [Awesome API Clients Github list](https://github.com/stepci/awesome-api-clients). This is a well maintained and up to date list containing more clients than are listed here.
+- A list of Open Source API Clients is available at the [Awesome API Clients Github list](https://github.com/stepci/awesome-api-clients). This is a well maintained and up to date list containing more clients than are listed here.
+- Our list of reviewed and considered [Desktop GUI Clients](/tools/clients/summary-reviews).
