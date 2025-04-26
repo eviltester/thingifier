@@ -1,0 +1,414 @@
+{
+  "uuid": "c270c729-19a5-4034-bcf3-3f4eb77feaff",
+  "lastMigration": 33,
+  "name": "Fromhell",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3001,
+  "hostname": "",
+  "folders": [
+    {
+      "uuid": "ee634c9b-a1a6-493b-8034-a3639595d3cc",
+      "name": "Malformed",
+      "children": [
+        {
+          "type": "route",
+          "uuid": "4509bb0d-ad7f-45c2-94f6-b4d89794e52d"
+        },
+        {
+          "type": "route",
+          "uuid": "fe43c8fe-4899-4f18-8f01-e47e7ab05efd"
+        }
+      ]
+    },
+    {
+      "uuid": "d65eddce-d969-4c6c-96f4-c4bf3dcecba0",
+      "name": "Mismatched Content Type",
+      "children": [
+        {
+          "type": "route",
+          "uuid": "bb2ddbaa-ab2e-409a-94ef-ab3ae683ef7f"
+        },
+        {
+          "type": "route",
+          "uuid": "06b007c4-c6e4-4c47-a3b2-a72e7ae07032"
+        }
+      ]
+    },
+    {
+      "uuid": "f6c11405-8bc5-455e-b52e-38afc6a4cca2",
+      "name": "Good",
+      "children": [
+        {
+          "type": "route",
+          "uuid": "3ff3c506-a937-4cd4-9588-78794aa7e30d"
+        },
+        {
+          "type": "route",
+          "uuid": "8b16c6f1-0687-4fef-92da-810dd69dc374"
+        }
+      ]
+    },
+    {
+      "uuid": "469e6d4a-b5cf-4afe-b1e0-10fa423786b4",
+      "name": "HTTP Semantics",
+      "children": []
+    }
+  ],
+  "routes": [
+    {
+      "uuid": "4509bb0d-ad7f-45c2-94f6-b4d89794e52d",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "malformed/json",
+      "responses": [
+        {
+          "uuid": "b09691b8-c53d-4182-91c7-3d9239bdee96",
+          "body": "[{\"id\":\"57ab8bfa-dcad-4649-9442-3b13010e852d\",\"username\":\"Damaris76\"},{\"id\":\"e88067f0-b028-4310-8a33-8cbc03203249\",\"username\":\"Modesto_Reichel61\"},{\"id\":\"fee23d87-721f-4ffa-a598-e350e13385b2\",\"username\":\"Abagail_Shanahan\"},{\"id\":\"987fc185-7cc6-4883-a5f4-3273b1045155\",\"username\":\"Joaquin_Funk12\"},{\"id\":\"0c2744bb-881a-41c0-a577-603b052485d9\",\"username\":\"Maverick.Corkery74\"}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "Json response with missing collection termination",
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "fe43c8fe-4899-4f18-8f01-e47e7ab05efd",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "malformed/xml",
+      "responses": [
+        {
+          "uuid": "5e87e7b0-2d77-448f-a3af-34a5354a0fe7",
+          "body": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\r\n <root>\r\n     <0>\r\n         <id>57ab8bfa-dcad-4649-9442-3b13010e852d</id>\r\n         <username>Damaris76</username>\r\n     </0>\r\n     <1>\r\n         <id>e88067f0-b028-4310-8a33-8cbc03203249</id>\r\n         <username>Modesto_Reichel61</username>\r\n     </1>\r\n     <2>\r\n         <id>fee23d87-721f-4ffa-a598-e350e13385b2</id>\r\n         <username>Abagail_Shanahan</username>\r\n     </2>\r\n     <3>\r\n         <id>987fc185-7cc6-4883-a5f4-3273b1045155</id>\r\n         <username>Joaquin_Funk12</username>\r\n     </3>\r\n     <4>\r\n         <id>0c2744bb-881a-41c0-a577-603b052485d9</id>\r\n         <username>Maverick.Corkery74</username>\r\n     </4>\r\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "XML response with missing root terminator",
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/xml"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "35cfdf52-f6b4-4ea1-8052-09e1a5247adc",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "version",
+      "responses": [
+        {
+          "uuid": "1227aea1-63f4-472a-9c6c-88467dc299eb",
+          "body": "{\"version\":\"6\"}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "bb2ddbaa-ab2e-409a-94ef-ab3ae683ef7f",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "mismatch/content-type/json-xml",
+      "responses": [
+        {
+          "uuid": "3f2c79f6-8153-4002-beda-1aedf4a366c5",
+          "body": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\r\n <root>\r\n     <0>\r\n         <id>57ab8bfa-dcad-4649-9442-3b13010e852d</id>\r\n         <username>Damaris76</username>\r\n     </0>\r\n     <1>\r\n         <id>e88067f0-b028-4310-8a33-8cbc03203249</id>\r\n         <username>Modesto_Reichel61</username>\r\n     </1>\r\n     <2>\r\n         <id>fee23d87-721f-4ffa-a598-e350e13385b2</id>\r\n         <username>Abagail_Shanahan</username>\r\n     </2>\r\n     <3>\r\n         <id>987fc185-7cc6-4883-a5f4-3273b1045155</id>\r\n         <username>Joaquin_Funk12</username>\r\n     </3>\r\n     <4>\r\n         <id>0c2744bb-881a-41c0-a577-603b052485d9</id>\r\n         <username>Maverick.Corkery74</username>\r\n     </4>\r\n </root>",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "Content Type states JSON but is actually XML",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "3ff3c506-a937-4cd4-9588-78794aa7e30d",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "good/json",
+      "responses": [
+        {
+          "uuid": "05177962-604a-4544-a38e-f9373babd8b2",
+          "body": "[{\"id\":\"57ab8bfa-dcad-4649-9442-3b13010e852d\",\"username\":\"Damaris76\"},{\"id\":\"e88067f0-b028-4310-8a33-8cbc03203249\",\"username\":\"Modesto_Reichel61\"},{\"id\":\"fee23d87-721f-4ffa-a598-e350e13385b2\",\"username\":\"Abagail_Shanahan\"},{\"id\":\"987fc185-7cc6-4883-a5f4-3273b1045155\",\"username\":\"Joaquin_Funk12\"},{\"id\":\"0c2744bb-881a-41c0-a577-603b052485d9\",\"username\":\"Maverick.Corkery74\"}]",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "Good JSON Response",
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "8b16c6f1-0687-4fef-92da-810dd69dc374",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "good/xml",
+      "responses": [
+        {
+          "uuid": "d462bfd3-38f6-4dce-9f61-b82d3223022f",
+          "body": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\r\n <root>\r\n     <0>\r\n         <id>57ab8bfa-dcad-4649-9442-3b13010e852d</id>\r\n         <username>Damaris76</username>\r\n     </0>\r\n     <1>\r\n         <id>e88067f0-b028-4310-8a33-8cbc03203249</id>\r\n         <username>Modesto_Reichel61</username>\r\n     </1>\r\n     <2>\r\n         <id>fee23d87-721f-4ffa-a598-e350e13385b2</id>\r\n         <username>Abagail_Shanahan</username>\r\n     </2>\r\n     <3>\r\n         <id>987fc185-7cc6-4883-a5f4-3273b1045155</id>\r\n         <username>Joaquin_Funk12</username>\r\n     </3>\r\n     <4>\r\n         <id>0c2744bb-881a-41c0-a577-603b052485d9</id>\r\n         <username>Maverick.Corkery74</username>\r\n     </4>\r\n </root>",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "Good XML response with header",
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/xml"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "06b007c4-c6e4-4c47-a3b2-a72e7ae07032",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "mismatch/content-type/xml-json",
+      "responses": [
+        {
+          "uuid": "74605101-a629-4d3b-96ae-888a6337e120",
+          "body": "[{\"id\":\"57ab8bfa-dcad-4649-9442-3b13010e852d\",\"username\":\"Damaris76\"},{\"id\":\"e88067f0-b028-4310-8a33-8cbc03203249\",\"username\":\"Modesto_Reichel61\"},{\"id\":\"fee23d87-721f-4ffa-a598-e350e13385b2\",\"username\":\"Abagail_Shanahan\"},{\"id\":\"987fc185-7cc6-4883-a5f4-3273b1045155\",\"username\":\"Joaquin_Funk12\"},{\"id\":\"0c2744bb-881a-41c0-a577-603b052485d9\",\"username\":\"Maverick.Corkery74\"}]",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "Content-Type header says XML but content is JSON",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/xml"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "d8566bf7-a2bd-4fa4-992f-a3be88fd03e6",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "status",
+      "responses": [
+        {
+          "uuid": "894be58f-4ff1-45a5-b98b-0bbd852ac62b",
+          "body": "# Mock API From Hell\n\nAn API designed to test and evaluate REST Clients.\n\n- Do the REST Clients help spot the errors?\n- Are error messages readable and helpful?\n- Do the REST Clients flag errors automatically?\n\nAPI Should have a Swagger file to make it easy to import into clients.\n\nUser should be able to execute requests quickly and spot obvious issues.\n\n## Errors covered\n\n- No Error\n   - [x] good endpoints to cover main content types to check REST Client can render and handle them\n   - TODO: expand to cover more formats e.g. xml without header, text, html, etc.\n- API Returns malformed JSON\n   - [x] Missing final collection terminator\n   - TODO: expand to include more Malformed JSON conditions\n- API Returns malformed XML\n   - [x] Missing final root element closure\n   - TODO: expand to include more Malformed XML conditions\n- API Returns mismatched content-type e.g. content-type xml, but is json\n   - [x] json-xml\n   - [x] xml-json\n- Status code semantic mismatches\n   - [] 201 with no location header\n   - [] 3xx with no redirect location\n   - [] 204 with content\n   - TODO: think through and expand\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "Curent Status and documentation of the API, used for todo tracking",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "text/markdown"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "d8566bf7-a2bd-4fa4-992f-a3be88fd03e6"
+    },
+    {
+      "type": "route",
+      "uuid": "35cfdf52-f6b4-4ea1-8052-09e1a5247adc"
+    },
+    {
+      "type": "folder",
+      "uuid": "f6c11405-8bc5-455e-b52e-38afc6a4cca2"
+    },
+    {
+      "type": "folder",
+      "uuid": "ee634c9b-a1a6-493b-8034-a3639595d3cc"
+    },
+    {
+      "type": "folder",
+      "uuid": "d65eddce-d969-4c6c-96f4-c4bf3dcecba0"
+    },
+    {
+      "type": "folder",
+      "uuid": "469e6d4a-b5cf-4afe-b1e0-10fa423786b4"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    },
+    {
+      "key": "Access-Control-Allow-Origin",
+      "value": "*"
+    },
+    {
+      "key": "Access-Control-Allow-Methods",
+      "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+    },
+    {
+      "key": "Access-Control-Allow-Headers",
+      "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [],
+  "callbacks": []
+}

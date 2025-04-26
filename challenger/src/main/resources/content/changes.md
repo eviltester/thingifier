@@ -6,13 +6,18 @@ showads: true
 
 # Change Log
 
-## 2025/04/22
+## 2025/04/24 - Heavyweight Desktop Client Tool Reviews
+
+- Added detailed reviews of [Postman](/tools/clients/postman), [Katalon](/tools/clients/katalon), [SoapUI](/tools/clients/soapui), [Insomnia](/tools/clients/insomnia)
+- Amended CSS styling on side menu
+
+## 2025/04/22 - Lightweight Desktop Client Tool Reviews
 
 - Created a page of summary reviews for all the evaluated clients [Summary Reviews](/tools/clients/summary-reviews)
 - Added detailed reviews of [Httpie](/tools/clients/httpie), [Kreya](/tools/clients/kreya), [Milkman](/tools/clients/milkman), [Yaak](/tools/clients/yaak)
 - Added LinkedinIn 'contact' in the footer
 
-## 2025/04/20
+## 2025/04/20 - Expanded API Clients Page
 
 Updated the [API Clients Page](/tools/clients):
 
