@@ -54,6 +54,7 @@ I was surprised to see that Insomnia, although requiring a login for the most pa
 | Repeating or cloning earlier requests               | Y   | From the hierarchical view                                      |
 | View history of requests/responses                  | Y   | A History is stored but not exportable                          |
 | Exporting requests to cURL format                   | Y   |                                                                 |
+| Sends Diagnostic information to server              | N   | Does not seem to send diagnostic information                      |
 | **Bonus**                                           |     |                                                                 |
 | Data driven requests                                | Y   | From the 'run' dialog where a full set of requests is executed  |
 | Output log of test sessions                         | N   |                                                                 |

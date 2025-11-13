@@ -94,21 +94,6 @@ I'm tempted to view Cartero more like a front end for creating cURL requests rat
 - It does allow exporting to cURL
 - [Cartero](https://cartero.danirod.es/)
 
-### Kreya
-
-Kreya would be much easy to recommend with simpler Proxy configuration. But it is easier to configure the proxy for Kreya than build Yaak from source.
-
-- A free forever plan and I think can be used in a commercial environment
-- Can import Open API files
-- Can use a proxy but only if set environment variables.
-- No script capabilities in the free version.
-- A templating feature is avaiable with some ability to script.
-- Faker is built in to generate random data
-- Can use custom methods.
-- [Kreya](https://kreya.app)
-
-Read our [full review of Kreya](/tools/clients/kreya)
-
 
 ### HTTPIE
 
@@ -176,6 +161,23 @@ Based on my evaluation, I don't think Katalon Studio should be viewed as an Expl
 - [Katalon Studio](https://katalon.com/katalon-studio)
 
 Read our [full review of Katalon](/tools/clients/katalon)
+
+
+### Kreya
+
+Kreya would be much easy to recommend with simpler Proxy configuration. But it is easier to configure the proxy for Kreya than build Yaak from source.
+
+- A free forever plan and I think can be used in a commercial environment
+- Can import Open API files
+- Can use a proxy but only if set environment variables.
+- No script capabilities in the free version.
+- A templating feature is avaiable with some ability to script.
+- Faker is built in to generate random data
+- Can use custom methods.
+- **Warning: Kreya sends usage diagnostic information back to company e.g. what types of methods and features are used. No Payloads or URLs are sent.**
+- [Kreya](https://kreya.app)
+
+Read our [full review of Kreya](/tools/clients/kreya)
 
 ### MilkMan
 

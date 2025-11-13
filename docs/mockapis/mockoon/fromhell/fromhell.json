@@ -101,7 +101,7 @@
       "responses": [
         {
           "uuid": "5e87e7b0-2d77-448f-a3af-34a5354a0fe7",
-          "body": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\r\n <root>\r\n     <0>\r\n         <id>57ab8bfa-dcad-4649-9442-3b13010e852d</id>\r\n         <username>Damaris76</username>\r\n     </0>\r\n     <1>\r\n         <id>e88067f0-b028-4310-8a33-8cbc03203249</id>\r\n         <username>Modesto_Reichel61</username>\r\n     </1>\r\n     <2>\r\n         <id>fee23d87-721f-4ffa-a598-e350e13385b2</id>\r\n         <username>Abagail_Shanahan</username>\r\n     </2>\r\n     <3>\r\n         <id>987fc185-7cc6-4883-a5f4-3273b1045155</id>\r\n         <username>Joaquin_Funk12</username>\r\n     </3>\r\n     <4>\r\n         <id>0c2744bb-881a-41c0-a577-603b052485d9</id>\r\n         <username>Maverick.Corkery74</username>\r\n     </4>\r\n",
+          "body": "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\r\n <root>\r\n     <0>\r\n         <id>57ab8bfa-dcad-4649-9442-3b13010e852d</id>\r\n         <username>Damaris76</username>\r\n     </0>\r\n\r\n",
           "latency": 0,
           "statusCode": 200,
           "label": "XML response with missing root terminator",

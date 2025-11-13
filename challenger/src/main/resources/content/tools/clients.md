@@ -91,6 +91,7 @@ I do not really use API Clients for Automating, I use them to support my testing
   - Custom Verb support
   - Repeating or cloning earlier requests
   - View history of requests/responses
+  - Does not send diagnostic information to server
 - Bonus
   - Data driven requests
   - Output log of test sessions
@@ -110,6 +111,8 @@ Any feature that makes things easier is useful but not essential.
 A history of requests and responses is useful to see what I just did, and to let me see what the tool thinks it has sent and received. But if I have proxy capability then I can use the Proxy to do this.
 
 Most people using the REST Clients will be using them in a commercial setting. It is important to look at the license of the tool. Some tools are 'free' but the license forbids use of the tool in a commercial environment without purchasing a license.
+
+I would rather tools did not send diagnostic information about how I use them to a server. If it does then I want an option to switch it off. What if there is a bug and it starts sending the actual requests and payloads? How can I fully trust the tool over time?
 
 ### Essential Features
 

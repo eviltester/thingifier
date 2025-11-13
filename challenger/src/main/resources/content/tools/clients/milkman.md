@@ -61,6 +61,7 @@ Shame this doesn't save to local files that are easy to version control like Bru
 | Repeating or cloning earlier requests               | Y   | Duplicate option available on tab right click      |
 | View history of requests/responses                  | N   | Only last response can be viewed                   |
 | Exporting requests to cURL format                   | Y   | Save > export...                                   |
+| Sends Diagnostic information to server              | N   | Does not seem to send diagnostic information       |
 | **Bonus**                                           |     |                                                    |
 | Data driven requests                                | N   |                                                    |
 | Output log of test sessions                         | N   |                                                    |

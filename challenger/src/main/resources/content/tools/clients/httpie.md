@@ -47,32 +47,33 @@ Creating an account and logging in is optional, doing so allows you to create a 
 
 ## Quick Review Criteria
 
-| Feature                                             | Y/N | Comment                                                                                                                  |
-|-----------------------------------------------------|-----|--------------------------------------------------------------------------------------------------------------------------|
-| **Essential**                                       |     |                                                                                                                          |
-| Send HTTP or HTTPS requests                         | Y   |                                                                                                                          |
-| View the actual requests and responses | Y   | Last request and response can be viewed                                                                                  |
-| Proxy support                                       | N   |                                                                                                                          |
-| Can create invalid requests                         | Y   |                                                                                                                          |
-| **Optional**                                        |     |                                                                                                                          |
-| Read Open API files                                 | N   | Can read Postman and Insomnia collections                                                                                |
-| Supports global environment variables e.g. for host | Y   |                                                                                                                          |
-| Different payload body types                        | Y   |                                                                                                                          |
-| Easy to add headers                                 | Y   |                                                                                                                          |
-| - custom headers                                    | Y   |                                                                                                                          |
-| - auth header support                               | Y   |                                                                                                                          |
-| - override body type headers                        | Y   | It is possible to edit as JSON and set content-type header to XML                                                        |
-| Variables in headers                                | Y   |                                                                                                                          |
-| Custom Verb support                                 | Y   |                                                                                                                          |
-| Repeating or cloning earlier requests               | Y   | But not from the History, only the Request UI                                                                            |
-| View history of requests/responses                  | N   | Only last request and response can be viewed                                                                             |
-| Exporting requests to cURL format                   | Y   |                                                                                                                          |
-| **Bonus**                                           |     |                                                                                                                          |
-| Data driven requests                                | N   |                                                                                                                          |
-| Output log of test sessions                         | N   |                                                                                                                          |
-| Scriptable for customisation                        | N   | 'Chaining' can be used to 'pull' values from earlier responses.                                                          |
-| Importing cURL requests                             | Y   |                                                                     |
-| Free for commercial use | Y   |  |
+| Feature                                             | Y/N | Comment                                                           |
+|-----------------------------------------------------|-----|-------------------------------------------------------------------|
+| **Essential**                                       |     |                                                                   |
+| Send HTTP or HTTPS requests                         | Y   |                                                                   |
+| View the actual requests and responses | Y   | Last request and response can be viewed                           |
+| Proxy support                                       | N   |                                                                   |
+| Can create invalid requests                         | Y   |                                                                   |
+| **Optional**                                        |     |                                                                   |
+| Read Open API files                                 | N   | Can read Postman and Insomnia collections                         |
+| Supports global environment variables e.g. for host | Y   |                                                                   |
+| Different payload body types                        | Y   |                                                                   |
+| Easy to add headers                                 | Y   |                                                                   |
+| - custom headers                                    | Y   |                                                                   |
+| - auth header support                               | Y   |                                                                   |
+| - override body type headers                        | Y   | It is possible to edit as JSON and set content-type header to XML |
+| Variables in headers                                | Y   |                                                                   |
+| Custom Verb support                                 | Y   |                                                                   |
+| Repeating or cloning earlier requests               | Y   | But not from the History, only the Request UI                     |
+| View history of requests/responses                  | N   | Only last request and response can be viewed                      |
+| Exporting requests to cURL format                   | Y   |                                                                   |
+| Sends Diagnostic information to server              | ?   | Not possible to configure through proxy                           |
+| **Bonus**                                           |     |                                                                   |
+| Data driven requests                                | N   |                                                                   |
+| Output log of test sessions                         | N   |                                                                   |
+| Scriptable for customisation                        | N   | 'Chaining' can be used to 'pull' values from earlier responses.   |
+| Importing cURL requests                             | Y   |                                                                   |
+| Free for commercial use | Y   |                                                                   |
 
 
 ## Summary - Pretty but lacks basic features

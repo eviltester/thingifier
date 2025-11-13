@@ -16,6 +16,8 @@ Kreya has a free forever plan and I believe can be used in a commercial environm
 
 A very capable API client but the proxy configuration is a little hard to setup as it can only be configured using environment variables, and then all application traffic is visible.
 
+**Warning: Kreya sends usage diagnostic information back to company e.g. what types of methods and features are used. No Payloads or URLs are sent. If this is an issue for your company then you probably should not evaluate. The diagnostic information is visible when you configure Kreya to work with a Proxy.**
+
 It can import Open API files, but I had to amend the collection afterwards because the default base url had been configured incorrectly.
 
 I don't like that I cannot 'see' the actual request that is sent. I was able to view it in proxy but not in the UI.
@@ -53,7 +55,7 @@ But it is easier to configure the proxy for Kreya than build Yaak from source, s
 |-----------------------------------------------------|-----|--------------------------------------------------------------------------|
 | **Essential**                                       |     |                                                                          |
 | Send HTTP or HTTPS requests                         | Y   |                                                                          |
-| View the actual requests and responses | N   | Last Response only. Request can not be viewed.                           |
+| View the actual requests and responses              | N   | Last Response only. Request can not be viewed.                           |
 | Proxy support                                       | Y   | Hard to configure the proxy as it requires setting environment variables |
 | Can create invalid requests                         | Y   |                                                                          |
 | **Optional**                                        |     |                                                                          |
@@ -69,12 +71,13 @@ But it is easier to configure the proxy for Kreya than build Yaak from source, s
 | Repeating or cloning earlier requests               | Y   | from the collection list                                                 |
 | View history of requests/responses                  | N   | Only last response can be viewed                                         |
 | Exporting requests to cURL format                   | N   |                                                                          |
+| Sends Diagnostic information to server              | Y   | Sends diagnostic information. No configuration to stop this.             |
 | **Bonus**                                           |     |                                                                          |
 | Data driven requests                                | N   |                                                                          |
 | Output log of test sessions                         | N   |                                                                          |
 | Scriptable for customisation                        | N   | Scripting and Tests available in Pro plan                                |
 | Importing cURL requests                             | N   |                                                                          |
-| Free for commercial use | Y   |                                                                          |
+| Free for commercial use                             | Y   |                                                                          |
 
 
 ## Summary - Recommended if you use it through a proxy
@@ -82,6 +85,8 @@ But it is easier to configure the proxy for Kreya than build Yaak from source, s
 If the proxy was easier to use, and the request was visible in the UI then Kreya would be easier to recommend.
 
 I think it is a perfectly capable in its free configuration if you use it through a proxy. Its just a shame the Proxy isn't configurable from a dialog in the UI.
+
+But be warned. When used through a Proxy you will see that Kreya is sending usage diagnostic information to the home server.
 
 ## Kreya Proxy Support
 

@@ -52,6 +52,7 @@ Provided excellent Open API import, with other import formats supported.
 | Repeating or cloning earlier requests               | Y   | But not from the History, only the Request UI                                                                            |
 | View history of requests/responses                  | Y   | Only responses can be viewed.                                                                                            |
 | Exporting requests to cURL format                   | Y   |                                                                                                                          |
+| Sends Diagnostic information to server              | N   | Does not seem to send diagnostic information                      |
 | **Bonus**                                           |     |                                                                                                                          |
 | Data driven requests                                | N   |                                                                                                                          |
 | Output log of test sessions                         | N   |                                                                                                                          |

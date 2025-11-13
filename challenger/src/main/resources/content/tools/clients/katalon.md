@@ -32,32 +32,33 @@ I found it to be too slow at sending requests manually to be usable as an Explor
 I didn't fully review the tool hence the incompleteness of the table. I found it was too slow to send requests and so abandoned the review.
 
 
-| Feature                                             | Y/N | Comment                                                                                                                  |
-|-----------------------------------------------------|-----|--------------------------------------------------------------------------------------------------------------------------|
-| **Essential**                                       |     |                                                                                                                          |
-| Send HTTP or HTTPS requests                         | Y   |                                                                                                                          |
-| View the actual requests and responses | Y   | In the HAR view                                                                                                          |
-| Proxy support                                       | N   |                                                                                                                          |
-| Can create invalid requests                         | Y   |                                                                                                                          |
-| **Optional**                                        |     |                                                                                                                          |
-| Read Open API files                                 | Y   | Not Open API v3                                                                                                          |
-| Supports global environment variables e.g. for host | ?   |                                                                                                                          |
-| Different payload body types                        | Y   |                                                                                                                          |
-| Easy to add headers                                 | Y   |                                                                                                                          |
-| - custom headers                                    | Y   |                                                                                                                          |
-| - auth header support                               | Y   |                                                                                                                          |
-| - override body type headers                        | Y   | It is possible to edit as JSON and set content-type header to XML                                                        |
-| Variables in headers                                | ?   |                                                                                                                          |
-| Custom Verb support                                 | N   |                                                                                                                          |
-| Repeating or cloning earlier requests               | Y   | But not from the History, only the Request UI                                                                            |
-| View history of requests/responses                  | N   | Only last request and responses can be viewed.                                                                           |
-| Exporting requests to cURL format                   | N   |                                                                                                                          |
-| **Bonus**                                           |     |                                                                                                                          |
-| Data driven requests                                | ?   |                                                                                                                          |
-| Output log of test sessions                         | N   |                                                                                                                          |
+| Feature                                             | Y/N | Comment                                                           |
+|-----------------------------------------------------|-----|-------------------------------------------------------------------|
+| **Essential**                                       |     |                                                                   |
+| Send HTTP or HTTPS requests                         | Y   |                                                                   |
+| View the actual requests and responses | Y   | In the HAR view                                                   |
+| Proxy support                                       | N   |                                                                   |
+| Can create invalid requests                         | Y   |                                                                   |
+| **Optional**                                        |     |                                                                   |
+| Read Open API files                                 | Y   | Not Open API v3                                                   |
+| Supports global environment variables e.g. for host | ?   |                                                                   |
+| Different payload body types                        | Y   |                                                                   |
+| Easy to add headers                                 | Y   |                                                                   |
+| - custom headers                                    | Y   |                                                                   |
+| - auth header support                               | Y   |                                                                   |
+| - override body type headers                        | Y   | It is possible to edit as JSON and set content-type header to XML |
+| Variables in headers                                | ?   |                                                                   |
+| Custom Verb support                                 | N   |                                                                   |
+| Repeating or cloning earlier requests               | Y   | But not from the History, only the Request UI                     |
+| View history of requests/responses                  | N   | Only last request and responses can be viewed.                    |
+| Exporting requests to cURL format                   | N   |                                                                   |
+| Sends Diagnostic information to server              | ?   | Not configurable through proxy to check                           |
+| **Bonus**                                           |     |                                                                   |
+| Data driven requests                                | ?   |                                                                   |
+| Output log of test sessions                         | N   |                                                                   |
 | Scriptable for customisation                        | ?   |
-| Importing cURL requests                             | N   |                                                                     |
-| Free for commercial use | Y   |  |
+| Importing cURL requests                             | N   |                                                                   |
+| Free for commercial use | Y   |                                                                   |
 
 
 ## Summary - Not designed for Exploratory Testing, designed for Automated Execution of Requests

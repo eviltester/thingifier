@@ -51,6 +51,7 @@ SoapUI was one of the early HTTP clients and I remember using it to test Soap AP
 | Repeating or cloning earlier requests               | Y   | From the Request UI                                               |
 | View history of requests/responses                  | Y   | Shown in HTTP Log, which can be exported to file                  |
 | Exporting requests to cURL format                   | N   |                                                                   |
+| Sends Diagnostic information to server              | Y   | Diagnostic information sent to mixpanel visible in proxy.         |
 | **Bonus**                                           |     |                                                                   |
 | Data driven requests                                | N   |                                                                   |
 | Output log of test sessions                         | N   |                                                                   |

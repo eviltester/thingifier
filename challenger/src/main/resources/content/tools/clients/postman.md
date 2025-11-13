@@ -49,6 +49,7 @@ I have also had to email Postman support in the past to clarify their license ag
 | Repeating or cloning earlier requests               | Y   | From the hierarchical view or history view.                      |
 | View history of requests/responses                  | Y   | A History is stored but not exportable                           |
 | Exporting requests to cURL format                   | Y   |                                                                  |
+| Sends Diagnostic information to server              | N   | Does not seem to send diagnostic information                      |
 | **Bonus**                                           |     |                                                                  |
 | Data driven requests                                | Y   | From the 'run' dialog where a set of requests is executed    |
 | Output log of test sessions                         | N   |                                                                  |

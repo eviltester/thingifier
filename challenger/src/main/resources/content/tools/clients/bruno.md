@@ -39,32 +39,33 @@ I have not used the `Test` capabilities because I automate using HTTP libraries.
 
 ## Quick Review Criteria
 
-| Feature                                             |Y/N| Comment                                                           |
+| Feature                                             | Y/N | Comment                                                           |
 |-----------------------------------------------------|-----|-------------------------------------------------------------------|
-| **Essential**                                       ||                                                                   |
-| Send HTTP or HTTPS requests                         |Y|                                                                   |
-| View the actual requests and responses |Y| Seen in the timeline view                                         |
-| Proxy support                                       |Y|                                                                   |
-| Can create invalid requests                         |Y|                                                                   |
-| **Optional**                                        ||                                                                   |
-| Read Open API files                                 |Y| Also populates Environment host variables                         |
-| Supports global environment variables e.g. for host |Y| With syntax highlighting and linting                              |
-| Different payload body types                        |Y|                                                                   |
-| Easy to add headers                                 |Y|                                                                   |
-| - custom headers                                    |Y|                                                                   |
-| - auth header support                               |Y|                                                                   |
-| - override body type headers                        |Y| It is possible to edit as JSON and set content-type header to XML |
-| Variables in headers                                |Y|                                                                   |
-| Custom Verb support                                 |N| GET, POST, PUT, DELETE, PATCH, OPTIONS, HEAD                      |
-| Repeating or cloning earlier requests               |Y| But not from the History, only the Request UI                     |
-| View history of requests/responses                  |Y| But no export capability                                          |
-| Exporting requests to cURL format                   |Y|                                                                   |
-| **Bonus**                                           ||                                                                   |
-| Data driven requests                                |Y| Paid plan only                                                    |
-| Output log of test sessions                         |N|                                                                   |
-| Scriptable for customisation                        |Y| At Collection and Request level                                   |
-| Importing cURL requests                             |Y| When creating a request can import cURL                           |
-| Free for commercial use |Y| Additional features are available on paid plan |
+| **Essential**                                       |     |                                                                   |
+| Send HTTP or HTTPS requests                         | Y   |                                                                   |
+| View the actual requests and responses | Y   | Seen in the timeline view                                         |
+| Proxy support                                       | Y   |                                                                   |
+| Can create invalid requests                         | Y   |                                                                   |
+| **Optional**                                        |     |                                                                   |
+| Read Open API files                                 | Y   | Also populates Environment host variables                         |
+| Supports global environment variables e.g. for host | Y   | With syntax highlighting and linting                              |
+| Different payload body types                        | Y   |                                                                   |
+| Easy to add headers                                 | Y   |                                                                   |
+| - custom headers                                    | Y   |                                                                   |
+| - auth header support                               | Y   |                                                                   |
+| - override body type headers                        | Y   | It is possible to edit as JSON and set content-type header to XML |
+| Variables in headers                                | Y   |                                                                   |
+| Custom Verb support                                 | N   | GET, POST, PUT, DELETE, PATCH, OPTIONS, HEAD                      |
+| Repeating or cloning earlier requests               | Y   | But not from the History, only the Request UI                     |
+| View history of requests/responses                  | Y   | But no export capability                                          |
+| Exporting requests to cURL format                   | Y   |                                                                   |
+| Sends Diagnostic information to server              | N   | Does not seem to send diagnostic information                      |
+| **Bonus**                                           |     |                                                                   |
+| Data driven requests                                | Y   | Paid plan only                                                    |
+| Output log of test sessions                         | N   |                                                                   |
+| Scriptable for customisation                        | Y   | At Collection and Request level                                   |
+| Importing cURL requests                             | Y   | When creating a request can import cURL                           |
+| Free for commercial use | Y   | Additional features are available on paid plan                    |
 
 Bruno met all my basic needs. The Data Driven feature is only available on a paid plan.
 
