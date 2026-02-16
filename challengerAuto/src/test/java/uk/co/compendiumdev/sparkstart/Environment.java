@@ -18,6 +18,9 @@ public class Environment {
 
     public static String getBaseUri() {
 
+        if(true)
+            return "https://thingifier-production.up.railway.app";
+
         // return environment if want to run externally
 //        if(true)
 //            return "https://apichallenges.eviltester.com";
