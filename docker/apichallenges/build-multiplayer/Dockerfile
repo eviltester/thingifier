@@ -28,8 +28,6 @@ WORKDIR /app
 # Copy the jar from the build stage
 COPY --from=build /app/challenger/target/apichallenges.jar apichallenges.jar
 
-EXPOSE 4567
-
 # Run the app
 ENTRYPOINT ["java", "-jar", "apichallenges.jar", "-model=challengeapi", "-noshutdown", "-multiplayer", "-cloudstorage"]
 
