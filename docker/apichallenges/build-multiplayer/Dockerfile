@@ -13,18 +13,18 @@ FROM maven:3.9.6-eclipse-temurin-17 AS build
 WORKDIR /app
 
 # Copy pom and source code
-COPY ../../pom.xml .
-COPY ../../challenger ./challenger
-COPY ../../challengerAuto ./challengerAuto
-COPY ../../ercoremodel ./ercoremodel
-COPY ../../examplemodels ./examplemodels
-COPY ../../standAloneTodoListManagerRestApi ./standAloneTodoListManagerRestApi
-COPY ../../standAloneTodoListManagerRestApiAuto ./standAloneTodoListManagerRestApiAuto
-COPY ../../standAloneTodoListRestApi ./standAloneTodoListRestApi
-COPY ../../swaggerizer ./swaggerizer
-COPY ../../thingifier ./thingifier
-COPY ../../thingifierapp ./thingifierapp
-COPY ../../todoManagerRestAuto ./todoManagerRestAuto
+COPY ../../../pom.xml .
+COPY ../../../challenger ./challenger
+COPY ../../../challengerAuto ./challengerAuto
+COPY ../../../ercoremodel ./ercoremodel
+COPY ../../../examplemodels ./examplemodels
+COPY ../../../standAloneTodoListManagerRestApi ./standAloneTodoListManagerRestApi
+COPY ../../../standAloneTodoListManagerRestApiAuto ./standAloneTodoListManagerRestApiAuto
+COPY ../../../standAloneTodoListRestApi ./standAloneTodoListRestApi
+COPY ../../../swaggerizer ./swaggerizer
+COPY ../../../thingifier ./thingifier
+COPY ../../../thingifierapp ./thingifierapp
+COPY ../../../todoManagerRestAuto ./todoManagerRestAuto
 
 # Build the application
 RUN mvn clean package -DskipTests
