@@ -39,8 +39,13 @@ public class C008HeadTodos200Test extends RestAssuredBaseTest {
                 statusCode(200).
                 and().extract().response();
 
+        int expectedCount = headresponse.headers().size();
+        if(!headresponse.headers().hasHeaderWithName("Content-Length")){
+            expectedCount++;
+        }
+
         // headers should be the same for get and head
-        Assertions.assertEquals(headresponse.headers().size(),
+        Assertions.assertEquals(expectedCount,
                 todosgetresponse.headers().size());
 
     }

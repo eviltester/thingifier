@@ -38,6 +38,21 @@ public class ChallengerWebGUI {
                 "/gui/challenges");
     }
 
+    String getSponsorMessage(){
+        String sponsorMessage = """
+            <div class='sponsor-top'>
+            <p>
+                Support this site by joining our Patreon.
+                For as little as $1 a month you receive exclusive ad-free content,
+                ebooks and online training courses. -
+                <a href='https://patreon.com/eviltester' target='_blank'>Learn more</a>
+            </p>
+            </div>
+                """;
+
+        return sponsorMessage;
+    }
+
     public void setup(final Challengers challengers, 
                       final ChallengeDefinitions challengeDefinitions, 
                       final PersistenceLayer persistenceLayer, 
@@ -48,7 +63,6 @@ public class ChallengerWebGUI {
         guiManagement.appendMenuItem("Challenges", "/gui/challenges");
         guiManagement.appendMenuItem("API documentation","/docs");
         guiManagement.appendMenuItem("Learning", "/learning");
-
 
         String actualMenu = """
                 <script>
@@ -137,7 +151,7 @@ public class ChallengerWebGUI {
                 </div>
         """.stripIndent();
 
-        guiManagement.setActualMenuHtml(actualMenu);
+        guiManagement.setActualMenuHtml(getSponsorMessage() + actualMenu);
 
         // Add the Default GUI Endpoiints for entity exploration
 
@@ -150,7 +164,7 @@ public class ChallengerWebGUI {
                 """
         );
 
-        guiManagement.setFooter(getChallengesFooter());
+        guiManagement.setFooter(getSponsorMessage() + getChallengesFooter());
 
 
 
@@ -476,7 +490,7 @@ public class ChallengerWebGUI {
 
     private String getChallengesFooter() {
         return """
-                <p>&nbsp;</p><hr/><div class='footer'><p>Copyright Compendium Developments Ltd 2020 </p>
+                <p>&nbsp;</p><hr/><div class='footer'><p>Copyright Compendium Developments Ltd 2020 - 2025</p>
                 <ul class='footerlinks'><li><a href='https://eviltester.com/apichallenges'>API Challenges Info</a></li>
                 <li><a href='https://eviltester.com'>EvilTester.com</a></li>
                 <li><a href='https://linkedin.com/in/eviltester'>Contact</a></li>

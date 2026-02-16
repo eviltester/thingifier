@@ -43,7 +43,7 @@ public class BasicSimpleApiCrudCoverageTest {
 
         Item anItem = new Item();
         // anItem.id is auto generated
-        anItem.isbn13 = "999-9-99-123456-1";
+        anItem.isbn13 = TimestampToIsbn13.currentIsbn(); //"999-9-99-123456-1";
         anItem.numberinstock =23;
         anItem.type="dvd";
         anItem.price = new BigDecimal("51.29");
@@ -67,7 +67,7 @@ public class BasicSimpleApiCrudCoverageTest {
 
         Item anItem = new Item();
         // anItem.id is auto generated
-        anItem.isbn13 = "999-9-99-123456-2";
+        anItem.isbn13 = TimestampToIsbn13.currentIsbn(); //"999-9-99-123456-2";
         anItem.numberinstock =23;
         anItem.type="dvd";
         anItem.price = new BigDecimal("51.29");

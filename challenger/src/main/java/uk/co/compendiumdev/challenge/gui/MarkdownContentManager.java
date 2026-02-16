@@ -184,9 +184,10 @@ public class MarkdownContentManager {
         }
 
         if(mdheaders.contains("showads: true")) {
-            headerInject = headerInject +
-                    "<script async src=\"https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7132305589272099\"" +
-                    " crossorigin=\"anonymous\"></script>";
+            // this did render google ads
+//            headerInject = headerInject +
+//                    "<script async src=\"https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7132305589272099\"" +
+//                    " crossorigin=\"anonymous\"></script>";
         }
 
         headerInject = headerInject + youtubeHeaderInject;
