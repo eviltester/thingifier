@@ -1,12 +1,3 @@
-# syntax=docker/dockerfile:1
-
-FROM eclipse-temurin:11
-WORKDIR /opt/app
-COPY ./challenger/target/apichallenges.jar .
-CMD ["java", "-jar", "apichallenges.jar"]
-EXPOSE 4567
-
-
 # === Build Stage ===
 FROM maven:3.9.6-eclipse-temurin-17 AS build
 
@@ -36,6 +27,8 @@ WORKDIR /app
 
 # Copy the jar from the build stage
 COPY --from=build /app/challenger/target/apichallenges.jar apichallenges.jar
+
+EXPOSE 4567
 
 # Run the app
 ENTRYPOINT ["java", "-jar", "apichallenges.jar", "-model=challengeapi", "-noshutdown", "-multiplayer" -cloudstorage"-multiuser"]
