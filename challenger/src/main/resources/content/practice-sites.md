@@ -168,7 +168,7 @@ These are full APIs online, which means you don't have to install anything and c
 
 [Toolshop API](https://api.practicesoftwaretesting.com/api/documentation)
 
-- [read our longer write up of Simple API with exercises here](/practice-sites/apps/toolshop)
+- [read our longer write up of Toolshop API with exercises here](/practice-sites/apps/toolshop)
 - Toolshop API has a UI and an API backend. This allows you to experiment with the UI, open the network tab and see the relevant API requests, or use the API and double-check the results on screen in the UI.
 - Multiple versions of the Toolshop are available - with bugs and without
 - The Open API Swagger file is one of the most complete that I've seen, and is a great example of the capabilities of the format.
