@@ -2,6 +2,7 @@
 title: Postman HTTP Rest Client - Overview and Review
 seo_title: Postman HTTP Rest Client - Overview and Review | API Client Review
 description: An overview of the Postman HTTP REST API Client.
+lastmod: 2026-02-18
 seo_description: Review Postman HTTP Rest Client for API testing, including strengths, limitations, and practical fit so you can choose the right client for your workflow.
 showads: true
 ---

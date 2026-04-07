@@ -2,6 +2,7 @@
 title: Simple API Open API Swagger File
 seo_title: Simple API Open API Swagger File | API Challenges Practice Mode
 description: Download the Open API files for the Simple API.
+lastmod: 2026-02-18
 seo_description: Use Simple API Open API Swagger to practice safely, understand request-response behavior, and build confidence with guided exercises before advanced.
 showads: true
 ---

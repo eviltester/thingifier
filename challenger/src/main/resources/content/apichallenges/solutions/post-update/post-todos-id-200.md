@@ -1,5 +1,6 @@
 ---
 date:  2021-03-07T09:30:00Z
+lastmod: 2026-02-18
 title: API Challenges Solution For - POST todos/id 200
 seo_title: Solution: POST todos/id 200 Guide | API Challenges
 description: How to solve API challenge POST todos/id 200 to update a todo in the application.

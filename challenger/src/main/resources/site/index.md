@@ -1,6 +1,7 @@
 ---
 title: The API Challenges - API Tutorials and API Testing Practice Exercises
 description: A practice API application with tutorials for HTTP and REST APIs. Guided exercises and gamification hands on learning path.
+lastmod: 2026-02-18
 template: index
 canonical: https://apichallenges.eviltester.com
 ---

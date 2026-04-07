@@ -2,6 +2,7 @@
 title: API Challenges Change Log
 seo_title: Change Log Guide for API Testing | API Challenges Guide
 description: Change log for the API Challenges
+lastmod: 2026-02-18
 seo_description: Track API Challenges updates, including new guides, improvements, and feature changes that help you learn API testing more effectively over time.
 showads: true
 ---

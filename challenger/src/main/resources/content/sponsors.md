@@ -2,6 +2,7 @@
 title: Sponsors of API Challenges
 seo_title: Sponsors of Guide for API Testing | API Challenges
 description: Sponsor the API challenges and support the ongoing development and hosting for this free practice and tutorial site.
+lastmod: 2026-02-18
 seo_description: Explore Sponsors of API Challenges with practical guidance and actionable next steps designed to improve API testing skills through hands-on practice.
 showads: true
 ---

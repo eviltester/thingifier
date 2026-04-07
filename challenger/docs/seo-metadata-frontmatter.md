@@ -8,6 +8,7 @@ Use these front-matter fields for markdown pages under `resources/content/**`.
 title: Human-friendly page title
 seo_title: Search-focused page title
 description: Meta description for search snippets
+lastmod: 2026-02-18
 ```
 
 ## Optional SEO and social fields
@@ -35,6 +36,8 @@ schema_video_id: OpisB0UZq0c     # force specific YouTube id when needed
 ## Notes
 
 - If `seo_description` is not set, `description` is used.
+- `lastmod` is used as the page update date for sitemap `<lastmod>` and schema `dateModified`.
+- If `lastmod` is not set, schema `dateModified` falls back to `date`.
 - If `og_image` is not set, the global default social image is used.
 - If `meta_robots` is not set, `index,follow` is used.
 - `seo_title` is used for the HTML `<title>` tag; `title` remains the human-facing page label.

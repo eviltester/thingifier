@@ -1,5 +1,6 @@
 ---
 date:  2021-01-30T09:00:00Z
+lastmod: 2026-02-18
 title: API Challenges Solution For - GET todos 200 filter
 seo_title: Solution: GET todos 200 filter | API Challenges
 description: How to solve API challenge GET todos 200 filter to use URL parameters to filter the results.

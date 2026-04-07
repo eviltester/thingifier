@@ -1,5 +1,6 @@
 ---
 date:  2021-07-24T08:30:00Z
+lastmod: 2026-02-18
 title: API Challenges Solution For - forbidden secret note 403
 seo_title: Solution: forbidden secret note 403 | API Challenges
 description: How to solve API challenge 31 - forbidden to access secret note 403

@@ -2,6 +2,7 @@
 title: JSON Placeholder - Simulator API - Example API
 seo_title: JSON Placeholder - Example Simulator API | API Practice Site Guide
 description: An overview of the JSON Placeholder simulator API for practicing tooling requests.
+lastmod: 2026-02-18
 seo_description: Use JSON Placeholder - to practice API testing with realistic scenarios and endpoint variety that strengthen request design and validation skills.
 showads: true
 ---

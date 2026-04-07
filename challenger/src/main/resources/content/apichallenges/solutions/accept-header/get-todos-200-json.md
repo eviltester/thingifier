@@ -1,5 +1,6 @@
 ---
 date:  2021-05-09T09:30:00Z
+lastmod: 2026-02-18
 title: API Challenges Solution For - GET todos json 200
 seo_title: Solution: GET todos json 200 | API Challenges
 description: How to solve API challenge GET todos json 200 to accept the todos in json format.

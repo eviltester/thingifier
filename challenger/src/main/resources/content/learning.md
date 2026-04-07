@@ -2,6 +2,7 @@
 title: Learning Utilities and Resources
 seo_title: Learning Utilities and Resources | API Challenges
 description: A list of HTTP REST API learning tutorials and recommended books and practice sites for API Testing.
+lastmod: 2026-02-18
 seo_description: Start learning API testing with curated tutorials, practical resources, and a clear path from fundamentals to confident hands-on execution.
 showads: true
 ---

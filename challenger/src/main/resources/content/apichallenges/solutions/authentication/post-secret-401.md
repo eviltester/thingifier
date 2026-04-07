@@ -1,5 +1,6 @@
 ---
 date:  2021-07-24T08:15:00Z
+lastmod: 2026-02-18
 title: API Challenges Solution For - authentication failed 401
 seo_title: Solution: authentication failed 401 | API Challenges
 description: How to solve API challenge 29 - authentication failed with username and password.

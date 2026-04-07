@@ -177,6 +177,7 @@ public class UiPagesAreReachableTest {
         Assertions.assertTrue(response.body.contains("\"@type\":\"Article\""));
         Assertions.assertTrue(response.body.contains("\"description\":\"Search snippet with Alan's \\\"special\\\" chars & context.\""));
         Assertions.assertTrue(response.body.contains("\"url\":\"https://apichallenges.eviltester.com/seo-metadata-test-page\""));
+        Assertions.assertTrue(response.body.contains("\"dateModified\":\"2026-02-18\""));
         Assertions.assertTrue(response.body.contains("\"@type\":\"HowTo\""));
         Assertions.assertTrue(response.body.contains("\"name\":\"Open the metadata test page\""));
         Assertions.assertTrue(response.body.contains("\"@type\":\"VideoObject\""));
@@ -214,20 +215,43 @@ public class UiPagesAreReachableTest {
         Assertions.assertTrue(response.body.contains("\"@type\":\"Organization\""));
         Assertions.assertTrue(response.body.contains("\"name\":\"eviltester.com\""));
         Assertions.assertTrue(response.body.contains("\"legalName\":\"Compendium Developments Ltd\""));
+        Assertions.assertTrue(response.body.contains("\"dateModified\":\"2026-02-18\""));
         Assertions.assertTrue(response.body.contains("\"@type\":\"BreadcrumbList\""));
     }
 
     @Test
-    void solutionPageEmitsVideoAndBreadcrumbSchemasWithoutExplicitHowToSteps(){
+    void solutionPageEmitsHowToVideoAndBreadcrumbSchemasWithExplicitHowToSteps(){
 
         final HttpResponseDetails response = http.send("/apichallenges/solutions/get/get-todos-200", "get");
 
         Assertions.assertEquals(200, response.statusCode);
-        Assertions.assertFalse(response.body.contains("\"@type\":\"HowTo\""));
-        Assertions.assertFalse(response.body.contains("\"@type\":\"HowToStep\""));
+        Assertions.assertTrue(response.body.contains("\"@type\":\"HowTo\""));
+        Assertions.assertTrue(response.body.contains("\"@type\":\"HowToStep\""));
         Assertions.assertTrue(response.body.contains("\"@type\":\"VideoObject\""));
         Assertions.assertTrue(response.body.contains("\"contentUrl\":\"https://www.youtube.com/watch?v=OpisB0UZq0c\""));
         Assertions.assertTrue(response.body.contains("\"@type\":\"BreadcrumbList\""));
+    }
+
+    @Test
+    void articleSchemaIncludesDatePublishedAndDateModifiedWhenDateAndLastmodExist(){
+
+        final HttpResponseDetails response = http.send("/apichallenges/solutions/authentication/post-secret-201", "get");
+
+        Assertions.assertEquals(200, response.statusCode);
+        Assertions.assertTrue(response.body.contains("\"datePublished\":\"2021-07-24T08:30:00Z\""));
+        Assertions.assertTrue(response.body.contains("\"dateModified\":\"2026-02-18\""));
+    }
+
+    @Test
+    void sitemapUsesFixedLastmodForPhaseOneUrls(){
+
+        final HttpResponseDetails response = http.send("/sitemap.xml", "get");
+
+        Assertions.assertEquals(200, response.statusCode);
+        Assertions.assertTrue(response.body.contains("<loc>https://apichallenges.eviltester.com</loc>"));
+        Assertions.assertTrue(response.body.contains("<loc>https://apichallenges.eviltester.com/docs</loc>"));
+        Assertions.assertTrue(response.body.contains("<loc>https://apichallenges.eviltester.com/gui/challenges</loc>"));
+        Assertions.assertTrue(response.body.contains("<lastmod>2026-02-18</lastmod>"));
     }
 
     static Stream<Arguments> legacyUrlRedirects(){

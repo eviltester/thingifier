@@ -242,6 +242,7 @@ public class MarkdownContentManager {
         String schemaVideoEnabledRaw = "";
         String schemaVideoId = "";
         String pageDatePublished = "";
+        String pageLastModified = "";
         String canonicalUrl = DEFAULT_CANONICAL_HOST + contentPath;
 
         for(String aHeader : mdheaders){
@@ -308,6 +309,9 @@ public class MarkdownContentManager {
             if(aHeader.startsWith("date:")){
                 pageDatePublished = aHeader.replaceFirst("^date:\\s*", "");
             }
+            if(aHeader.startsWith("lastmod:")){
+                pageLastModified = aHeader.replaceFirst("^lastmod:\\s*", "");
+            }
         }
 
         final String htmlTitle = seoTitle.isEmpty() ? pageTitle : seoTitle;
@@ -354,6 +358,7 @@ public class MarkdownContentManager {
         final Boolean schemaHowToEnabled = parseOptionalBoolean(schemaHowToEnabledRaw);
         final List<String> schemaHowToSteps = parseHowToSteps(schemaHowToStepsRaw);
         final Boolean schemaVideoEnabled = parseOptionalBoolean(schemaVideoEnabledRaw);
+        final String pageDateModified = resolveDateModified(pageLastModified, pageDatePublished);
         final String schemaJsonLd = buildSchemaJsonLd(
                 canonicalHost,
                 canonicalAbsoluteUrl,
@@ -366,6 +371,7 @@ public class MarkdownContentManager {
                 schemaAuthorValue,
                 schemaPublisherValue,
                 pageDatePublished,
+                pageDateModified,
                 firstYouTubeVideoId,
                 schemaBreadcrumbEnabled,
                 schemaHowToEnabled,
@@ -520,6 +526,7 @@ public class MarkdownContentManager {
                                      final String schemaAuthor,
                                      final String schemaPublisherValue,
                                      final String pageDatePublished,
+                                     final String pageDateModified,
                                      final String firstYouTubeVideoId,
                                      final Boolean schemaBreadcrumbEnabled,
                                      final Boolean schemaHowToEnabled,
@@ -565,7 +572,8 @@ public class MarkdownContentManager {
                 schemaImageAbsoluteUrl,
                 personId,
                 orgId,
-                pageDatePublished
+                pageDatePublished,
+                pageDateModified
         )));
 
         final boolean includeBreadcrumb = schemaBreadcrumbEnabled == null || schemaBreadcrumbEnabled;
@@ -753,7 +761,8 @@ public class MarkdownContentManager {
                                  final String schemaImageAbsoluteUrl,
                                  final String personId,
                                  final String organizationId,
-                                 final String pageDatePublished){
+                                 final String pageDatePublished,
+                                 final String pageDateModified){
         StringBuilder json = new StringBuilder();
         json.append("{");
         json.append("\"@context\":\"https://schema.org\",");
@@ -781,6 +790,11 @@ public class MarkdownContentManager {
         if(!pageDatePublished.isEmpty()){
             json.append(",\"datePublished\":\"")
                     .append(escapeJsonValue(pageDatePublished))
+                    .append("\"");
+        }
+        if(!pageDateModified.isEmpty()){
+            json.append(",\"dateModified\":\"")
+                    .append(escapeJsonValue(pageDateModified))
                     .append("\"");
         }
 
@@ -978,6 +992,16 @@ public class MarkdownContentManager {
 
     private String getSchemaPublisherDefaultUrl(){
         return schemaPublisherDefaults.getProperty("url", "").trim();
+    }
+
+    static String resolveDateModified(final String pageLastModified, final String pageDatePublished){
+        if(pageLastModified!=null && !pageLastModified.trim().isEmpty()){
+            return pageLastModified.trim();
+        }
+        if(pageDatePublished!=null && !pageDatePublished.trim().isEmpty()){
+            return pageDatePublished.trim();
+        }
+        return "";
     }
 
     private Boolean parseOptionalBoolean(final String rawValue){

@@ -2,6 +2,7 @@
 title: API Challenges Solution For - GET Todos (200)
 seo_title: Solution: GET Todos (200) Guide | API Challenges
 description: How to solve the API challenge and GET all the Todos
+lastmod: 2026-02-18
 seo_description: Use this walkthrough to solve GET Todos (200) with request setup, key headers, and expected status codes so you can complete the challenge confidently.
 schema_howto_steps: Create a GET request to /todos||Include X-CHALLENGER so the challenge is tracked in your current session||Send the request and verify the response status is 200
 showads: true

@@ -1,5 +1,6 @@
 ---
 date:  2021-04-21T09:30:00Z
+lastmod: 2026-02-18
 title: API Challenges Solution For - OPTIONS todos 200
 seo_title: Solution: OPTIONS todos 200 Guide | API Challenges
 description: How to solve API challenge 13 OPTIONS todos 200 to identify the allowed verbs for an API End Point.

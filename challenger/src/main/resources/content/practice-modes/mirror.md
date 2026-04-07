@@ -2,6 +2,7 @@
 title: API Challenges Mirror Mode
 seo_title: HTTP Mirror Mode | API Challenges Practice Mode
 description: See the raw HTTP request sent to the API server and check if your REST API tool sends what you expect.
+lastmod: 2026-02-18
 seo_description: Use API Challenges Mirror Mode to practice safely, understand request-response behavior, and build confidence with guided exercises before advanced testing.
 ---
 

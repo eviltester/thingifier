@@ -58,6 +58,9 @@ public class SeoTitleContentValidationTest {
         final List<String> missingSeoDescription = new ArrayList<>();
         final List<String> emptySeoDescription = new ArrayList<>();
         final List<String> outOfRangeSeoDescription = new ArrayList<>();
+        final List<String> missingLastmod = new ArrayList<>();
+        final List<String> emptyLastmod = new ArrayList<>();
+        final List<String> invalidLastmodFormat = new ArrayList<>();
         final List<String> missingDescriptionForIndexablePage = new ArrayList<>();
         final List<String> malformedMetadataKeys = new ArrayList<>();
         final List<String> invalidOgImageOverrides = new ArrayList<>();
@@ -70,6 +73,7 @@ public class SeoTitleContentValidationTest {
             final String seoTitle = extractHeaderValue(lines, "seo_title");
             final String description = extractHeaderValue(lines, "description");
             final String seoDescription = extractHeaderValue(lines, "seo_description");
+            final String lastmod = extractHeaderValue(lines, "lastmod");
             final String metaRobots = extractHeaderValue(lines, "meta_robots");
             final String ogImage = extractHeaderValue(lines, "og_image");
             final List<String> headerKeys = extractHeaderKeys(lines);
@@ -89,6 +93,14 @@ public class SeoTitleContentValidationTest {
             }
 
             seoTitlesToPaths.computeIfAbsent(seoTitle, key -> new ArrayList<>()).add(relativePath);
+
+            if (lastmod == null) {
+                missingLastmod.add(relativePath);
+            } else if (lastmod.trim().isEmpty()) {
+                emptyLastmod.add(relativePath);
+            } else if (!lastmod.matches("^\\d{4}-\\d{2}-\\d{2}$")) {
+                invalidLastmodFormat.add(relativePath + " -> " + lastmod);
+            }
 
             if (seoDescription == null) {
                 missingSeoDescription.add(relativePath);
@@ -145,6 +157,12 @@ public class SeoTitleContentValidationTest {
                 "Empty seo_description in: " + String.join("; ", emptySeoDescription));
         Assertions.assertTrue(outOfRangeSeoDescription.isEmpty(),
                 "seo_description out of range (110-170 chars): " + String.join("; ", outOfRangeSeoDescription));
+        Assertions.assertTrue(missingLastmod.isEmpty(),
+                "Missing lastmod in: " + String.join("; ", missingLastmod));
+        Assertions.assertTrue(emptyLastmod.isEmpty(),
+                "Empty lastmod in: " + String.join("; ", emptyLastmod));
+        Assertions.assertTrue(invalidLastmodFormat.isEmpty(),
+                "Invalid lastmod format (expected YYYY-MM-DD): " + String.join("; ", invalidLastmodFormat));
         Assertions.assertTrue(duplicateSeoTitles.isEmpty(),
                 "Duplicate seo_title values found: " + String.join("; ", duplicateSeoTitles));
         Assertions.assertTrue(missingDescriptionForIndexablePage.isEmpty(),

@@ -1,5 +1,6 @@
 ---
 date:  2025-01-01T15:26:00Z
+lastmod: 2026-02-18
 title: API Challenges Solution For - Delete /todos/id (200) all
 seo_title: Solution: Delete /todos/id (200) all | API Challenges
 description: How to solve API challenges to Delete all the todos

@@ -1,5 +1,6 @@
 ---
 date:  2021-01-24T09:00:00Z
+lastmod: 2026-02-18
 title: API Challenges Solution For - HEAD todos 200
 seo_title: Solution: HEAD todos 200 Guide | API Challenges
 description: How to solve API challenge HEAD todos 200

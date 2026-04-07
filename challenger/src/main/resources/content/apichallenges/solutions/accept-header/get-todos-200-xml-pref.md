@@ -1,5 +1,6 @@
 ---
 date:  2021-05-29T10:30:00Z
+lastmod: 2026-02-18
 title: API Challenges Solution For - GET todos XML as Preference 200
 seo_title: Solution: GET todos XML Preference 200 | API Challenges
 description: How to solve API challenge GET todos XML 200 to accept the todos in XML format as preferred format.

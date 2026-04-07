@@ -2,6 +2,7 @@
 title: API Challenges Simulation Mode
 seo_title: Simulation Mode | API Challenges Practice Mode
 description: A simulated API tutorial - follow the guided instructions and learn how to use your API Tool without any side-effects or risk.
+lastmod: 2026-02-18
 seo_description: Use API Challenges Simulation to practice safely, understand request-response behavior, and build confidence with guided exercises before advanced testing.
 ---
 

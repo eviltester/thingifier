@@ -2,6 +2,7 @@
 title: HTTP Rest Clients - Introduction
 seo_title: HTTP Rest Clients - Introduction | API Testing Tools
 description: An overview of the most popular, and mostly free, HTTP and REST Clients.
+lastmod: 2026-02-18
 seo_description: Compare popular API clients, see where each tool fits best, and choose the right option for exploratory testing, debugging, and daily request work.
 showads: true
 ---

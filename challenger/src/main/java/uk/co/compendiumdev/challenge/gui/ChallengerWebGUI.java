@@ -18,6 +18,7 @@ import java.util.*;
 import static spark.Spark.*;
 
 public class ChallengerWebGUI {
+    private static final LocalDate SEO_FIXED_LASTMOD = LocalDate.parse("2026-02-18");
 
     private final PageNotFoundResponse pageNotFoundHtmlResponse;
     Logger logger = LoggerFactory.getLogger(ChallengerWebGUI.class);
@@ -222,9 +223,9 @@ public class ChallengerWebGUI {
         for(String pathToMarkdownFile : contentUrls.keySet()){
             siteMap.addUrl("https://apichallenges.eviltester.com/"+pathToMarkdownFile,contentUrls.get(pathToMarkdownFile).toString());
         }
-        siteMap.addUrl("https://apichallenges.eviltester.com", LocalDate.now().toString());
-        siteMap.addUrl("https://apichallenges.eviltester.com/docs", LocalDate.now().toString());
-        siteMap.addUrl("https://apichallenges.eviltester.com/gui/challenges", LocalDate.now().toString());
+        siteMap.addUrl("https://apichallenges.eviltester.com", SEO_FIXED_LASTMOD.toString());
+        siteMap.addUrl("https://apichallenges.eviltester.com/docs", SEO_FIXED_LASTMOD.toString());
+        siteMap.addUrl("https://apichallenges.eviltester.com/gui/challenges", SEO_FIXED_LASTMOD.toString());
 
         get("/sitemap.xml",(request, response) -> {
             response.type("application/xml");

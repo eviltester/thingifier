@@ -2,6 +2,7 @@
 title: HTTP Proxies - Introduction
 seo_title: HTTP Proxies - Introduction | API Testing Tools
 description: A list of essential HTTP Proxies tools and how you can use HTTP Proxies to improve your REST API Testing.
+lastmod: 2026-02-18
 seo_description: Learn how HTTP proxies improve API testing by exposing raw traffic, speeding up debugging, and revealing request details your client may hide.
 showads: true
 ---

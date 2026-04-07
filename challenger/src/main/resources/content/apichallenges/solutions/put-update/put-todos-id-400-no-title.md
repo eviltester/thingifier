@@ -1,5 +1,6 @@
 ---
 date:  2025-01-01T12:53:00Z
+lastmod: 2026-02-18
 title: API Challenges Solution For - PUT todos/id 400 no title
 seo_title: Solution: PUT todos/id 400 no title | API Challenges
 description: How to solve API challenge PUT todos/id 400 to fail validation due to no title in the payload.

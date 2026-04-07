@@ -1,5 +1,6 @@
 ---
 date:  2021-07-17T11:15:00Z
+lastmod: 2026-02-18
 title: API Challenges Solution For - POST todos (415)
 seo_title: Solution: POST todos (415) Guide | API Challenges
 description: How to solve API challenge POST todos 415. Failing to creating a todo due to unsupported content format.

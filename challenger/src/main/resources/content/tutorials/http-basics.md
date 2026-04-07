@@ -2,6 +2,7 @@
 title: HTTP Basics - Tutorial
 seo_title: Tutorial: HTTP Basics Tutorial | API Challenges
 description: Basic HTTP tutorial and overview of key HTTP terminology and status codes.
+lastmod: 2026-02-18
 seo_description: Learn HTTP Basics with practical examples and clear guidance you can apply immediately when creating requests, analyzing responses, and testing APIs.
 showads: true
 ---

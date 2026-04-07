@@ -1,5 +1,6 @@
 ---
 date:  2021-01-30T09:30:00Z
+lastmod: 2026-02-18
 title: API Challenges Solution For - POST todos 400
 seo_title: Solution: POST todos 400 Guide | API Challenges
 description: How to solve API challenge POST todos 400 to amend the request details such that they fail validation.

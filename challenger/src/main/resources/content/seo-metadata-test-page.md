@@ -2,6 +2,7 @@
 title: SEO Metadata Test Page
 seo_title: Open Graph Metadata Test Page for Validation | API Challenges
 description: Base description for SEO metadata test coverage.
+lastmod: 2026-02-18
 seo_description: Search snippet with Alan's "special" chars & context.
 meta_robots: noindex,nofollow
 og_image: /images/social/apichallenges-og-1200x630.png

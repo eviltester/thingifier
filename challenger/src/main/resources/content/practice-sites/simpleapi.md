@@ -2,6 +2,7 @@
 title: Simple API - A Multi-verb API with no security requirements - Practice API
 seo_title: Simple API - A Multi-verb API with no login | API Practice Site Guide
 description: An overview of the Simple API practice API site, explaining how to use it to learn about APIs and practice with API tooling.
+lastmod: 2026-02-18
 seo_description: Use Simple API - A Multi-verb to practice API testing with realistic scenarios and endpoint variety that strengthen request design and validation skills.
 showads: true
 ---

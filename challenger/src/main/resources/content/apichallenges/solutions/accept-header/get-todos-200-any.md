@@ -1,5 +1,6 @@
 ---
 date:  2021-05-29T09:30:00Z
+lastmod: 2026-02-18
 title: API Challenges Solution For - GET todos any 200
 seo_title: Solution: GET todos any 200 Guide | API Challenges
 description: How to solve API challenge GET todos any 200 to accept the todos in default format.

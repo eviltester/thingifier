@@ -2,6 +2,7 @@
 title: Katalon Studio HTTP Rest Client - Overview and Review
 seo_title: Katalon Studio HTTP REST Client Review | API Client Review
 description: An overview of the Katalon Studio HTTP REST API Client.
+lastmod: 2026-02-18
 seo_description: Review Katalon Studio HTTP Rest for API testing, including strengths, limitations, and practical fit so you can choose the right client for your workflow.
 showads: true
 ---

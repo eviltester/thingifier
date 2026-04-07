@@ -2,6 +2,7 @@
 title: Summary - Tutorial
 seo_title: Tutorial: Summary Tutorial for API Testing | API Challenges
 description: Basic Summary of REST API tutorial content.
+lastmod: 2026-02-18
 seo_description: Learn Summary with practical examples and clear guidance you can apply immediately when creating requests, analyzing responses, and testing APIs.
 showads: true
 ---

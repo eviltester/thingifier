@@ -1,5 +1,6 @@
 ---
 date:  2021-07-25T09:30:00Z
+lastmod: 2026-02-18
 title: API Challenges Solution For - Use Bearer Tokens
 seo_title: Solution: Use Bearer Tokens Guide | API Challenges
 description: How to solve API challenge - Use bearer token as authorization mechanism

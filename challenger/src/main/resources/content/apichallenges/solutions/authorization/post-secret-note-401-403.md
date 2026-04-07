@@ -1,5 +1,6 @@
 ---
 date:  2021-07-25T09:15:00Z
+lastmod: 2026-02-18
 title: API Challenges Solution For - POST Unauthorised 401 403
 seo_title: Solution: POST Unauthorised 401 403 | API Challenges
 description: How to solve API challenge - fail to amend the secret note with a POST request and receive 401 and 403 status codes
