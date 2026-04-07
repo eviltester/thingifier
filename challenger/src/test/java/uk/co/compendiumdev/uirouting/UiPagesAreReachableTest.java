@@ -203,6 +203,8 @@ public class UiPagesAreReachableTest {
         Assertions.assertTrue(response.body.contains("\"@type\":\"Article\""));
         Assertions.assertTrue(response.body.contains("\"url\":\"https://apichallenges.eviltester.com/learning\""));
         Assertions.assertTrue(response.body.contains("\"mainEntityOfPage\":\"https://apichallenges.eviltester.com/learning\""));
+        Assertions.assertTrue(response.body.contains("\"author\":{\"@type\":\"Person\",\"name\":\"alan-richardson\""));
+        Assertions.assertTrue(response.body.contains("\"publisher\":{\"@type\":\"Organization\",\"name\":\"eviltester.com\""));
     }
 
     static Stream<Arguments> legacyUrlRedirects(){

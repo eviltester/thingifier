@@ -12,6 +12,7 @@ import uk.co.compendiumdev.thingifier.htmlgui.htmlgen.DefaultGUIHTML;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.IOException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -30,16 +31,24 @@ public class MarkdownContentManager {
     private static final String DEFAULT_META_ROBOTS = "index,follow";
     private static final String DEFAULT_SCHEMA_TYPE_CONTENT = "Article";
     private static final String DEFAULT_SCHEMA_TYPE_INDEX = "WebPage";
+    private static final String DEFAULT_SCHEMA_AUTHOR_NAME = "alan-richardson";
+    private static final String DEFAULT_SCHEMA_PUBLISHER_NAME = "eviltester.com";
+    private static final String DEFAULT_SCHEMA_AUTHOR_RESOURCE = "seo/schema-author.properties";
+    private static final String DEFAULT_SCHEMA_PUBLISHER_RESOURCE = "seo/schema-publisher.properties";
 
     private final DefaultGUIHTML guiManagement;
     Logger logger = LoggerFactory.getLogger(MarkdownContentManager.class);
     private final Set<String> markdownContentPaths;
+    private final Properties schemaAuthorDefaults;
+    private final Properties schemaPublisherDefaults;
     private String sideMenuText;
 
     public MarkdownContentManager(final List<String> pathsToFileContent, final DefaultGUIHTML defaultGui) {
         markdownContentPaths = new HashSet<>();
         markdownContentPaths.addAll(pathsToFileContent);
         this.guiManagement = defaultGui;
+        this.schemaAuthorDefaults = loadPropertiesFromResource(DEFAULT_SCHEMA_AUTHOR_RESOURCE);
+        this.schemaPublisherDefaults = loadPropertiesFromResource(DEFAULT_SCHEMA_PUBLISHER_RESOURCE);
         sideMenuText="";
     }
 
@@ -312,8 +321,10 @@ public class MarkdownContentManager {
         final String schemaTypeValue = schemaType.isEmpty() ?
                 (indexTemplate ? DEFAULT_SCHEMA_TYPE_INDEX : DEFAULT_SCHEMA_TYPE_CONTENT) : schemaType;
         final String schemaImageAbsoluteUrl = absolutizeUrl(schemaImage.isEmpty() ? ogImageAbsoluteUrl : schemaImage, canonicalHost);
-        final String schemaPublisherValue = schemaPublisher.isEmpty() ?
-                getEnvironmentOrDefault("SEO_SCHEMA_ORG_NAME", DEFAULT_SITE_NAME) : schemaPublisher;
+        final String defaultSchemaAuthor = getSchemaAuthorDefaultName();
+        final String schemaAuthorValue = schemaAuthor.isEmpty() ? defaultSchemaAuthor : schemaAuthor;
+        final String defaultSchemaPublisher = getSchemaPublisherDefaultName();
+        final String schemaPublisherValue = schemaPublisher.isEmpty() ? defaultSchemaPublisher : schemaPublisher;
         final String schemaJsonLd = buildSchemaJsonLd(
                 canonicalHost,
                 canonicalAbsoluteUrl,
@@ -321,7 +332,7 @@ public class MarkdownContentManager {
                 htmlDescription,
                 schemaTypeValue,
                 schemaImageAbsoluteUrl,
-                schemaAuthor,
+                schemaAuthorValue,
                 schemaPublisherValue,
                 pageDatePublished);
         if(!schemaJsonLd.isEmpty()){
@@ -600,12 +611,22 @@ public class MarkdownContentManager {
         if(!schemaAuthor.isEmpty()){
             json.append(",\"author\":{\"@type\":\"Person\",\"name\":\"")
                     .append(escapeJsonValue(schemaAuthor))
-                    .append("\"}");
+                    .append("\"");
+            final String authorUrl = getSchemaAuthorDefaultUrl();
+            if(!authorUrl.isEmpty()){
+                json.append(",\"url\":\"").append(escapeJsonValue(authorUrl)).append("\"");
+            }
+            json.append("}");
         }
         if(!schemaPublisherValue.isEmpty()){
             json.append(",\"publisher\":{\"@type\":\"Organization\",\"name\":\"")
                     .append(escapeJsonValue(schemaPublisherValue))
-                    .append("\"}");
+                    .append("\"");
+            final String publisherUrl = getSchemaPublisherDefaultUrl();
+            if(!publisherUrl.isEmpty()){
+                json.append(",\"url\":\"").append(escapeJsonValue(publisherUrl)).append("\"");
+            }
+            json.append("}");
         }
         if(!pageDatePublished.isEmpty()){
             json.append(",\"datePublished\":\"")
@@ -629,6 +650,42 @@ public class MarkdownContentManager {
                 .replace("\n", "\\n")
                 .replace("\r", "\\r")
                 .replace("\t", "\\t");
+    }
+
+    private Properties loadPropertiesFromResource(final String resourcePath){
+        final Properties properties = new Properties();
+        try(InputStream inputStream = getResourceAsStream(resourcePath)){
+            if(inputStream != null){
+                properties.load(inputStream);
+            }
+        }catch (IOException e){
+            logger.warn("Could not load schema properties from {}", resourcePath, e);
+        }
+        return properties;
+    }
+
+    private String getSchemaAuthorDefaultName(){
+        final String authorFromResource = schemaAuthorDefaults.getProperty("name", "").trim();
+        if(!authorFromResource.isEmpty()){
+            return authorFromResource;
+        }
+        return DEFAULT_SCHEMA_AUTHOR_NAME;
+    }
+
+    private String getSchemaAuthorDefaultUrl(){
+        return schemaAuthorDefaults.getProperty("url", "").trim();
+    }
+
+    private String getSchemaPublisherDefaultName(){
+        final String publisherFromResource = schemaPublisherDefaults.getProperty("name", "").trim();
+        if(!publisherFromResource.isEmpty()){
+            return publisherFromResource;
+        }
+        return DEFAULT_SCHEMA_PUBLISHER_NAME;
+    }
+
+    private String getSchemaPublisherDefaultUrl(){
+        return schemaPublisherDefaults.getProperty("url", "").trim();
     }
 
     private InputStream getResourceAsStream(String fileName) {

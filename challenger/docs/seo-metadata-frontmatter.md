@@ -34,3 +34,7 @@ schema_image: /images/social/apichallenges-og-1200x630.png
 - If `meta_robots` is not set, `index,follow` is used.
 - `seo_title` is used for the HTML `<title>` tag; `title` remains the human-facing page label.
 - If `schema_type` is not set, content pages default to `Article` and index pages default to `WebPage`.
+- Default schema author and publisher are read from resource files:
+  - `src/main/resources/seo/schema-author.properties`
+  - `src/main/resources/seo/schema-publisher.properties`
+- `schema_author` and `schema_publisher` in front matter override the resource defaults on a per-page basis.
