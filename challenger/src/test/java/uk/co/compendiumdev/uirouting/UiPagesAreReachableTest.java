@@ -177,6 +177,11 @@ public class UiPagesAreReachableTest {
         Assertions.assertTrue(response.body.contains("\"@type\":\"Article\""));
         Assertions.assertTrue(response.body.contains("\"description\":\"Search snippet with Alan's \\\"special\\\" chars & context.\""));
         Assertions.assertTrue(response.body.contains("\"url\":\"https://apichallenges.eviltester.com/seo-metadata-test-page\""));
+        Assertions.assertTrue(response.body.contains("\"@type\":\"HowTo\""));
+        Assertions.assertTrue(response.body.contains("\"name\":\"Open the metadata test page\""));
+        Assertions.assertTrue(response.body.contains("\"@type\":\"VideoObject\""));
+        Assertions.assertTrue(response.body.contains("\"contentUrl\":\"https://www.youtube.com/watch?v=dQw4w9WgXcQ\""));
+        Assertions.assertFalse(response.body.contains("\"@type\":\"BreadcrumbList\""));
     }
 
     @Test
@@ -203,8 +208,26 @@ public class UiPagesAreReachableTest {
         Assertions.assertTrue(response.body.contains("\"@type\":\"Article\""));
         Assertions.assertTrue(response.body.contains("\"url\":\"https://apichallenges.eviltester.com/learning\""));
         Assertions.assertTrue(response.body.contains("\"mainEntityOfPage\":\"https://apichallenges.eviltester.com/learning\""));
-        Assertions.assertTrue(response.body.contains("\"author\":{\"@type\":\"Person\",\"name\":\"alan-richardson\""));
-        Assertions.assertTrue(response.body.contains("\"publisher\":{\"@type\":\"Organization\",\"name\":\"eviltester.com\""));
+        Assertions.assertTrue(response.body.contains("\"@type\":\"Person\""));
+        Assertions.assertTrue(response.body.contains("\"name\":\"Alan Richardson\""));
+        Assertions.assertTrue(response.body.contains("\"jobTitle\":\"Software Testing and Development Consultant\""));
+        Assertions.assertTrue(response.body.contains("\"@type\":\"Organization\""));
+        Assertions.assertTrue(response.body.contains("\"name\":\"eviltester.com\""));
+        Assertions.assertTrue(response.body.contains("\"legalName\":\"Compendium Developments Ltd\""));
+        Assertions.assertTrue(response.body.contains("\"@type\":\"BreadcrumbList\""));
+    }
+
+    @Test
+    void solutionPageEmitsVideoAndBreadcrumbSchemasWithoutExplicitHowToSteps(){
+
+        final HttpResponseDetails response = http.send("/apichallenges/solutions/get/get-todos-200", "get");
+
+        Assertions.assertEquals(200, response.statusCode);
+        Assertions.assertFalse(response.body.contains("\"@type\":\"HowTo\""));
+        Assertions.assertFalse(response.body.contains("\"@type\":\"HowToStep\""));
+        Assertions.assertTrue(response.body.contains("\"@type\":\"VideoObject\""));
+        Assertions.assertTrue(response.body.contains("\"contentUrl\":\"https://www.youtube.com/watch?v=OpisB0UZq0c\""));
+        Assertions.assertTrue(response.body.contains("\"@type\":\"BreadcrumbList\""));
     }
 
     static Stream<Arguments> legacyUrlRedirects(){

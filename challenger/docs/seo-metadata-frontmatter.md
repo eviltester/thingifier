@@ -25,6 +25,11 @@ schema_type: Article          # defaults to Article, WebPage for index template
 schema_author: Your Name
 schema_publisher: API Challenges
 schema_image: /images/social/apichallenges-og-1200x630.png
+schema_breadcrumb_enabled: true  # set false to suppress BreadcrumbList JSON-LD
+schema_howto_enabled: true       # enable/disable HowTo generation for this page
+schema_howto_steps: Step one||Step two||Step three
+schema_video_enabled: true       # set false to suppress VideoObject when a YouTube video is present
+schema_video_id: OpisB0UZq0c     # force specific YouTube id when needed
 ```
 
 ## Notes
@@ -38,3 +43,16 @@ schema_image: /images/social/apichallenges-og-1200x630.png
   - `src/main/resources/seo/schema-author.properties`
   - `src/main/resources/seo/schema-publisher.properties`
 - `schema_author` and `schema_publisher` in front matter override the resource defaults on a per-page basis.
+- Page-level schema overrides are available for content-specific schema behavior:
+  - `schema_breadcrumb_enabled: false` disables `BreadcrumbList`
+  - `schema_howto_enabled: true|false` forces `HowTo` on/off
+  - `schema_howto_steps` provides explicit `HowToStep` names separated by `||` (required to emit HowTo)
+  - `schema_video_enabled: true|false` forces `VideoObject` on/off
+  - `schema_video_id` sets the YouTube id used in `VideoObject`
+- Entity depth can be configured in resource files, e.g.:
+  - author: `jobTitle`, `sameAs` (comma separated)
+  - publisher: `legalName`, `contactType`, `email`, `telephone`, `sameAs` (comma separated)
+- Content-specific schema is added automatically:
+  - `BreadcrumbList` for content pages
+  - `HowTo` only when `schema_howto_steps` is provided (recommended on solutions/tutorials)
+  - `VideoObject` when a YouTube video is detected in page content

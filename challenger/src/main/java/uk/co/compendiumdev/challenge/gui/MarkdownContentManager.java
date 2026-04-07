@@ -147,6 +147,7 @@ public class MarkdownContentManager {
 
         String state = "EXPECTING_HEADER";
         boolean addedToc = false;
+        String firstYouTubeVideoId = "";
 
         try {
             while ((line = reader.readLine()) != null) {
@@ -178,6 +179,10 @@ public class MarkdownContentManager {
 
                 // process any macros
                 line = processMacrosInContentLine(line, params);
+
+                if(firstYouTubeVideoId.isEmpty()){
+                    firstYouTubeVideoId = extractYouTubeVideoId(line);
+                }
 
                 if(line.contains("youtube.com/watch")){
                     if(youtubeHeaderInject.isEmpty()){
@@ -231,6 +236,11 @@ public class MarkdownContentManager {
         String schemaAuthor = "";
         String schemaPublisher = "";
         String schemaImage = "";
+        String schemaBreadcrumbEnabledRaw = "";
+        String schemaHowToEnabledRaw = "";
+        String schemaHowToStepsRaw = "";
+        String schemaVideoEnabledRaw = "";
+        String schemaVideoId = "";
         String pageDatePublished = "";
         String canonicalUrl = DEFAULT_CANONICAL_HOST + contentPath;
 
@@ -280,6 +290,21 @@ public class MarkdownContentManager {
             if(aHeader.startsWith("schema_image: ")){
                 schemaImage = aHeader.replace("schema_image: " , "");
             }
+            if(aHeader.startsWith("schema_breadcrumb_enabled: ")){
+                schemaBreadcrumbEnabledRaw = aHeader.replace("schema_breadcrumb_enabled: " , "");
+            }
+            if(aHeader.startsWith("schema_howto_enabled: ")){
+                schemaHowToEnabledRaw = aHeader.replace("schema_howto_enabled: " , "");
+            }
+            if(aHeader.startsWith("schema_howto_steps: ")){
+                schemaHowToStepsRaw = aHeader.replace("schema_howto_steps: " , "");
+            }
+            if(aHeader.startsWith("schema_video_enabled: ")){
+                schemaVideoEnabledRaw = aHeader.replace("schema_video_enabled: " , "");
+            }
+            if(aHeader.startsWith("schema_video_id: ")){
+                schemaVideoId = aHeader.replace("schema_video_id: " , "");
+            }
             if(aHeader.startsWith("date:")){
                 pageDatePublished = aHeader.replaceFirst("^date:\\s*", "");
             }
@@ -325,16 +350,28 @@ public class MarkdownContentManager {
         final String schemaAuthorValue = schemaAuthor.isEmpty() ? defaultSchemaAuthor : schemaAuthor;
         final String defaultSchemaPublisher = getSchemaPublisherDefaultName();
         final String schemaPublisherValue = schemaPublisher.isEmpty() ? defaultSchemaPublisher : schemaPublisher;
+        final Boolean schemaBreadcrumbEnabled = parseOptionalBoolean(schemaBreadcrumbEnabledRaw);
+        final Boolean schemaHowToEnabled = parseOptionalBoolean(schemaHowToEnabledRaw);
+        final List<String> schemaHowToSteps = parseHowToSteps(schemaHowToStepsRaw);
+        final Boolean schemaVideoEnabled = parseOptionalBoolean(schemaVideoEnabledRaw);
         final String schemaJsonLd = buildSchemaJsonLd(
                 canonicalHost,
                 canonicalAbsoluteUrl,
+                contentPath,
+                breadcrumbs,
                 htmlTitle,
                 htmlDescription,
                 schemaTypeValue,
                 schemaImageAbsoluteUrl,
                 schemaAuthorValue,
                 schemaPublisherValue,
-                pageDatePublished);
+                pageDatePublished,
+                firstYouTubeVideoId,
+                schemaBreadcrumbEnabled,
+                schemaHowToEnabled,
+                schemaHowToSteps,
+                schemaVideoEnabled,
+                schemaVideoId);
         if(!schemaJsonLd.isEmpty()){
             headerInject = headerInject + schemaJsonLd;
         }
@@ -474,35 +511,90 @@ public class MarkdownContentManager {
 
     private String buildSchemaJsonLd(final String canonicalHost,
                                      final String canonicalAbsoluteUrl,
+                                     final String contentPath,
+                                     final String[] breadcrumbs,
                                      final String htmlTitle,
                                      final String htmlDescription,
                                      final String schemaTypeValue,
                                      final String schemaImageAbsoluteUrl,
                                      final String schemaAuthor,
                                      final String schemaPublisherValue,
-                                     final String pageDatePublished){
+                                     final String pageDatePublished,
+                                     final String firstYouTubeVideoId,
+                                     final Boolean schemaBreadcrumbEnabled,
+                                     final Boolean schemaHowToEnabled,
+                                     final List<String> schemaHowToSteps,
+                                     final Boolean schemaVideoEnabled,
+                                     final String schemaVideoId){
 
-        final String orgName = getEnvironmentOrDefault("SEO_SCHEMA_ORG_NAME", DEFAULT_SITE_NAME);
+        final String orgName = schemaPublisherValue.isEmpty() ?
+                getEnvironmentOrDefault("SEO_SCHEMA_ORG_NAME", DEFAULT_SITE_NAME) : schemaPublisherValue;
         final String websiteName = getEnvironmentOrDefault("SEO_SCHEMA_WEBSITE_NAME", DEFAULT_SITE_NAME);
         final String logoUrl = absolutizeUrl(
                 getEnvironmentOrDefault("SEO_SCHEMA_LOGO_URL", DEFAULT_OG_IMAGE_PATH), canonicalHost);
 
         final List<String> sameAsLinks = parseCommaSeparatedUrls(System.getenv("SEO_SCHEMA_SAME_AS"));
         final String searchActionTemplate = System.getenv("SEO_SCHEMA_SEARCH_URL_TEMPLATE");
+        final String authorUrl = getSchemaAuthorDefaultUrl();
+        final List<String> authorSameAs = parseCommaSeparatedUrls(schemaAuthorDefaults.getProperty("sameAs", ""));
+        final String authorJobTitle = schemaAuthorDefaults.getProperty("jobTitle", "").trim();
+        final String publisherLegalName = schemaPublisherDefaults.getProperty("legalName", "").trim();
+        final List<String> publisherSameAs = parseCommaSeparatedUrls(schemaPublisherDefaults.getProperty("sameAs", ""));
+        final String publisherContactType = schemaPublisherDefaults.getProperty("contactType", "").trim();
+        final String publisherEmail = schemaPublisherDefaults.getProperty("email", "").trim();
+        final String publisherPhone = schemaPublisherDefaults.getProperty("telephone", "").trim();
+        final String orgId = canonicalHost + "#organization";
+        final String websiteId = canonicalHost + "#website";
+        final String personId = canonicalHost + "#author";
+        final String pageId = canonicalAbsoluteUrl + "#webpage";
 
         final StringBuilder scripts = new StringBuilder();
-        scripts.append(toJsonLdScript(buildOrganizationJson(orgName, canonicalHost, logoUrl, sameAsLinks)));
-        scripts.append(toJsonLdScript(buildWebsiteJson(websiteName, canonicalHost, orgName, searchActionTemplate)));
+        scripts.append(toJsonLdScript(buildOrganizationJson(
+                orgId, orgName, canonicalHost, logoUrl,
+                sameAsLinks, publisherLegalName, publisherSameAs, publisherContactType, publisherEmail, publisherPhone)));
+        scripts.append(toJsonLdScript(buildPersonJson(
+                personId, schemaAuthor, authorUrl, authorSameAs, authorJobTitle, orgId)));
+        scripts.append(toJsonLdScript(buildWebsiteJson(
+                websiteId, websiteName, canonicalHost, orgId, searchActionTemplate)));
         scripts.append(toJsonLdScript(buildPageJson(
                 schemaTypeValue,
+                pageId,
                 htmlTitle,
                 htmlDescription,
                 canonicalAbsoluteUrl,
                 schemaImageAbsoluteUrl,
-                schemaAuthor,
-                schemaPublisherValue,
+                personId,
+                orgId,
                 pageDatePublished
         )));
+
+        final boolean includeBreadcrumb = schemaBreadcrumbEnabled == null || schemaBreadcrumbEnabled;
+        if(includeBreadcrumb){
+            final String breadcrumbJson = buildBreadcrumbListJson(canonicalAbsoluteUrl, canonicalHost, breadcrumbs);
+            scripts.append(toJsonLdScript(breadcrumbJson));
+        }
+
+        final String howToJson = buildHowToJson(
+                contentPath,
+                canonicalAbsoluteUrl,
+                htmlTitle,
+                htmlDescription,
+                schemaImageAbsoluteUrl,
+                schemaHowToEnabled,
+                schemaHowToSteps);
+        scripts.append(toJsonLdScript(howToJson));
+
+        final String videoJson = buildVideoObjectJson(
+                canonicalAbsoluteUrl,
+                htmlTitle,
+                htmlDescription,
+                schemaImageAbsoluteUrl,
+                firstYouTubeVideoId,
+                orgId,
+                schemaVideoEnabled,
+                schemaVideoId);
+        scripts.append(toJsonLdScript(videoJson));
+
         return scripts.toString();
     }
 
@@ -525,16 +617,26 @@ public class MarkdownContentManager {
                 .collect(Collectors.toList());
     }
 
-    private String buildOrganizationJson(final String organizationName,
+    private String buildOrganizationJson(final String organizationId,
+                                         final String organizationName,
                                          final String canonicalHost,
                                          final String logoUrl,
-                                         final List<String> sameAsLinks){
+                                         final List<String> sameAsLinks,
+                                         final String legalName,
+                                         final List<String> publisherSameAs,
+                                         final String contactType,
+                                         final String email,
+                                         final String telephone){
         StringBuilder json = new StringBuilder();
         json.append("{");
         json.append("\"@context\":\"https://schema.org\",");
         json.append("\"@type\":\"Organization\",");
+        json.append("\"@id\":\"").append(escapeJsonValue(organizationId)).append("\",");
         json.append("\"name\":\"").append(escapeJsonValue(organizationName)).append("\",");
         json.append("\"url\":\"").append(escapeJsonValue(canonicalHost)).append("\"");
+        if(!legalName.isEmpty()){
+            json.append(",\"legalName\":\"").append(escapeJsonValue(legalName)).append("\"");
+        }
 
         if(!logoUrl.isEmpty()){
             json.append(",\"logo\":{\"@type\":\"ImageObject\",\"url\":\"")
@@ -542,6 +644,64 @@ public class MarkdownContentManager {
                     .append("\"}");
         }
 
+        final List<String> mergedSameAs = new ArrayList<>();
+        mergedSameAs.addAll(sameAsLinks);
+        for(String aLink : publisherSameAs){
+            if(!mergedSameAs.contains(aLink)){
+                mergedSameAs.add(aLink);
+            }
+        }
+
+        if(!mergedSameAs.isEmpty()){
+            json.append(",\"sameAs\":[");
+            for(int i=0; i<mergedSameAs.size(); i++){
+                if(i>0){
+                    json.append(",");
+                }
+                json.append("\"").append(escapeJsonValue(mergedSameAs.get(i))).append("\"");
+            }
+            json.append("]");
+        }
+
+        if(!contactType.isEmpty() || !email.isEmpty() || !telephone.isEmpty()){
+            json.append(",\"contactPoint\":{\"@type\":\"ContactPoint\"");
+            if(!contactType.isEmpty()){
+                json.append(",\"contactType\":\"").append(escapeJsonValue(contactType)).append("\"");
+            }
+            if(!email.isEmpty()){
+                json.append(",\"email\":\"").append(escapeJsonValue(email)).append("\"");
+            }
+            if(!telephone.isEmpty()){
+                json.append(",\"telephone\":\"").append(escapeJsonValue(telephone)).append("\"");
+            }
+            json.append("}");
+        }
+
+        json.append("}");
+        return json.toString();
+    }
+
+    private String buildPersonJson(final String personId,
+                                   final String authorName,
+                                   final String authorUrl,
+                                   final List<String> sameAsLinks,
+                                   final String jobTitle,
+                                   final String worksForOrgId){
+        if(authorName==null || authorName.trim().isEmpty()){
+            return "";
+        }
+        StringBuilder json = new StringBuilder();
+        json.append("{");
+        json.append("\"@context\":\"https://schema.org\",");
+        json.append("\"@type\":\"Person\",");
+        json.append("\"@id\":\"").append(escapeJsonValue(personId)).append("\",");
+        json.append("\"name\":\"").append(escapeJsonValue(authorName)).append("\"");
+        if(authorUrl!=null && !authorUrl.isEmpty()){
+            json.append(",\"url\":\"").append(escapeJsonValue(authorUrl)).append("\"");
+        }
+        if(jobTitle!=null && !jobTitle.isEmpty()){
+            json.append(",\"jobTitle\":\"").append(escapeJsonValue(jobTitle)).append("\"");
+        }
         if(!sameAsLinks.isEmpty()){
             json.append(",\"sameAs\":[");
             for(int i=0; i<sameAsLinks.size(); i++){
@@ -552,24 +712,26 @@ public class MarkdownContentManager {
             }
             json.append("]");
         }
-
+        if(worksForOrgId!=null && !worksForOrgId.isEmpty()){
+            json.append(",\"worksFor\":{\"@id\":\"").append(escapeJsonValue(worksForOrgId)).append("\"}");
+        }
         json.append("}");
         return json.toString();
     }
 
-    private String buildWebsiteJson(final String websiteName,
+    private String buildWebsiteJson(final String websiteId,
+                                    final String websiteName,
                                     final String canonicalHost,
-                                    final String organizationName,
+                                    final String organizationId,
                                     final String searchActionTemplate){
         StringBuilder json = new StringBuilder();
         json.append("{");
         json.append("\"@context\":\"https://schema.org\",");
         json.append("\"@type\":\"WebSite\",");
+        json.append("\"@id\":\"").append(escapeJsonValue(websiteId)).append("\",");
         json.append("\"name\":\"").append(escapeJsonValue(websiteName)).append("\",");
         json.append("\"url\":\"").append(escapeJsonValue(canonicalHost)).append("\"");
-        json.append(",\"publisher\":{\"@type\":\"Organization\",\"name\":\"")
-                .append(escapeJsonValue(organizationName))
-                .append("\"}");
+        json.append(",\"publisher\":{\"@id\":\"").append(escapeJsonValue(organizationId)).append("\"}");
 
         if(searchActionTemplate!=null && !searchActionTemplate.trim().isEmpty()){
             json.append(",\"potentialAction\":{");
@@ -584,17 +746,19 @@ public class MarkdownContentManager {
     }
 
     private String buildPageJson(final String schemaTypeValue,
+                                 final String pageId,
                                  final String htmlTitle,
                                  final String htmlDescription,
                                  final String canonicalAbsoluteUrl,
                                  final String schemaImageAbsoluteUrl,
-                                 final String schemaAuthor,
-                                 final String schemaPublisherValue,
+                                 final String personId,
+                                 final String organizationId,
                                  final String pageDatePublished){
         StringBuilder json = new StringBuilder();
         json.append("{");
         json.append("\"@context\":\"https://schema.org\",");
         json.append("\"@type\":\"").append(escapeJsonValue(schemaTypeValue)).append("\",");
+        json.append("\"@id\":\"").append(escapeJsonValue(pageId)).append("\",");
         json.append("\"name\":\"").append(escapeJsonValue(htmlTitle)).append("\",");
         if("Article".equalsIgnoreCase(schemaTypeValue)){
             json.append("\"headline\":\"").append(escapeJsonValue(htmlTitle)).append("\",");
@@ -608,25 +772,11 @@ public class MarkdownContentManager {
         if(!schemaImageAbsoluteUrl.isEmpty()){
             json.append(",\"image\":\"").append(escapeJsonValue(schemaImageAbsoluteUrl)).append("\"");
         }
-        if(!schemaAuthor.isEmpty()){
-            json.append(",\"author\":{\"@type\":\"Person\",\"name\":\"")
-                    .append(escapeJsonValue(schemaAuthor))
-                    .append("\"");
-            final String authorUrl = getSchemaAuthorDefaultUrl();
-            if(!authorUrl.isEmpty()){
-                json.append(",\"url\":\"").append(escapeJsonValue(authorUrl)).append("\"");
-            }
-            json.append("}");
+        if(personId!=null && !personId.isEmpty()){
+            json.append(",\"author\":{\"@id\":\"").append(escapeJsonValue(personId)).append("\"}");
         }
-        if(!schemaPublisherValue.isEmpty()){
-            json.append(",\"publisher\":{\"@type\":\"Organization\",\"name\":\"")
-                    .append(escapeJsonValue(schemaPublisherValue))
-                    .append("\"");
-            final String publisherUrl = getSchemaPublisherDefaultUrl();
-            if(!publisherUrl.isEmpty()){
-                json.append(",\"url\":\"").append(escapeJsonValue(publisherUrl)).append("\"");
-            }
-            json.append("}");
+        if(organizationId!=null && !organizationId.isEmpty()){
+            json.append(",\"publisher\":{\"@id\":\"").append(escapeJsonValue(organizationId)).append("\"}");
         }
         if(!pageDatePublished.isEmpty()){
             json.append(",\"datePublished\":\"")
@@ -636,6 +786,148 @@ public class MarkdownContentManager {
 
         json.append("}");
         return json.toString();
+    }
+
+    private String buildBreadcrumbListJson(final String canonicalAbsoluteUrl,
+                                           final String canonicalHost,
+                                           final String[] breadcrumbs){
+        if(breadcrumbs==null || breadcrumbs.length==0){
+            return "";
+        }
+
+        StringBuilder json = new StringBuilder();
+        json.append("{");
+        json.append("\"@context\":\"https://schema.org\",");
+        json.append("\"@type\":\"BreadcrumbList\",");
+        json.append("\"itemListElement\":[");
+
+        int position = 1;
+        json.append("{\"@type\":\"ListItem\",\"position\":")
+                .append(position++)
+                .append(",\"name\":\"Home\",\"item\":\"")
+                .append(escapeJsonValue(canonicalHost))
+                .append("\"}");
+
+        String path = "";
+        for(String crumb : breadcrumbs){
+            if(crumb==null || crumb.isEmpty()){
+                continue;
+            }
+            path = path + "/" + crumb;
+            json.append(",{\"@type\":\"ListItem\",\"position\":")
+                    .append(position++)
+                    .append(",\"name\":\"")
+                    .append(escapeJsonValue(humanizeSlug(crumb)))
+                    .append("\",\"item\":\"")
+                    .append(escapeJsonValue(canonicalHost + path))
+                    .append("\"}");
+        }
+        json.append("]");
+        json.append("}");
+        return json.toString();
+    }
+
+    private String buildHowToJson(final String contentPath,
+                                  final String canonicalAbsoluteUrl,
+                                  final String htmlTitle,
+                                  final String htmlDescription,
+                                  final String schemaImageAbsoluteUrl,
+                                  final Boolean schemaHowToEnabled,
+                                  final List<String> schemaHowToSteps){
+        final boolean isHowToSection = contentPath.startsWith("/apichallenges/solutions/") || contentPath.startsWith("/tutorials/");
+        final boolean includeHowTo = schemaHowToEnabled == null ? isHowToSection : schemaHowToEnabled;
+        if(!includeHowTo){
+            return "";
+        }
+
+        final List<String> steps = new ArrayList<>();
+        if(schemaHowToSteps!=null && !schemaHowToSteps.isEmpty()){
+            steps.addAll(schemaHowToSteps);
+        }
+        if(steps.size()<2){
+            return "";
+        }
+
+        StringBuilder json = new StringBuilder();
+        json.append("{");
+        json.append("\"@context\":\"https://schema.org\",");
+        json.append("\"@type\":\"HowTo\",");
+        json.append("\"name\":\"").append(escapeJsonValue(htmlTitle)).append("\",");
+        json.append("\"description\":\"").append(escapeJsonValue(htmlDescription)).append("\",");
+        json.append("\"url\":\"").append(escapeJsonValue(canonicalAbsoluteUrl)).append("\"");
+        if(!schemaImageAbsoluteUrl.isEmpty()){
+            json.append(",\"image\":\"").append(escapeJsonValue(schemaImageAbsoluteUrl)).append("\"");
+        }
+        json.append(",\"step\":[");
+        for(int i=0; i<steps.size(); i++){
+            if(i>0){
+                json.append(",");
+            }
+            json.append("{\"@type\":\"HowToStep\",\"name\":\"")
+                    .append(escapeJsonValue(steps.get(i)))
+                    .append("\"}");
+        }
+        json.append("]");
+        json.append("}");
+        return json.toString();
+    }
+
+    private String buildVideoObjectJson(final String canonicalAbsoluteUrl,
+                                        final String htmlTitle,
+                                        final String htmlDescription,
+                                        final String schemaImageAbsoluteUrl,
+                                        final String firstYouTubeVideoId,
+                                        final String organizationId,
+                                        final Boolean schemaVideoEnabled,
+                                        final String schemaVideoId){
+        final String videoIdToUse = (schemaVideoId!=null && !schemaVideoId.trim().isEmpty()) ?
+                schemaVideoId.trim() : firstYouTubeVideoId;
+        final boolean includeVideoObject = schemaVideoEnabled == null ? videoIdToUse!=null && !videoIdToUse.isEmpty() : schemaVideoEnabled;
+        if(!includeVideoObject || videoIdToUse==null || videoIdToUse.isEmpty()){
+            return "";
+        }
+        final String videoWatchUrl = "https://www.youtube.com/watch?v=" + videoIdToUse;
+        final String embedUrl = "https://www.youtube.com/embed/" + videoIdToUse;
+
+        StringBuilder json = new StringBuilder();
+        json.append("{");
+        json.append("\"@context\":\"https://schema.org\",");
+        json.append("\"@type\":\"VideoObject\",");
+        json.append("\"name\":\"").append(escapeJsonValue(htmlTitle)).append("\",");
+        json.append("\"description\":\"").append(escapeJsonValue(htmlDescription)).append("\",");
+        json.append("\"url\":\"").append(escapeJsonValue(canonicalAbsoluteUrl)).append("\",");
+        json.append("\"contentUrl\":\"").append(escapeJsonValue(videoWatchUrl)).append("\",");
+        json.append("\"embedUrl\":\"").append(escapeJsonValue(embedUrl)).append("\"");
+        if(!schemaImageAbsoluteUrl.isEmpty()){
+            json.append(",\"thumbnailUrl\":\"").append(escapeJsonValue(schemaImageAbsoluteUrl)).append("\"");
+        }
+        if(organizationId!=null && !organizationId.isEmpty()){
+            json.append(",\"publisher\":{\"@id\":\"").append(escapeJsonValue(organizationId)).append("\"}");
+        }
+        json.append("}");
+        return json.toString();
+    }
+
+    private String humanizeSlug(final String slug){
+        return slug.replace("-", " ").trim();
+    }
+
+    private String extractYouTubeVideoId(final String line){
+        if(line==null || line.isEmpty()){
+            return "";
+        }
+        Pattern macroPattern = Pattern.compile("youtube-embed key=\"([a-zA-Z0-9_-]+)\"");
+        Matcher macroMatcher = macroPattern.matcher(line);
+        if(macroMatcher.find()){
+            return macroMatcher.group(1);
+        }
+
+        Pattern watchPattern = Pattern.compile("youtube\\.com/watch\\?v=([a-zA-Z0-9_-]+)");
+        Matcher watchMatcher = watchPattern.matcher(line);
+        if(watchMatcher.find()){
+            return watchMatcher.group(1);
+        }
+        return "";
     }
 
     private String escapeJsonValue(final String value){
@@ -686,6 +978,30 @@ public class MarkdownContentManager {
 
     private String getSchemaPublisherDefaultUrl(){
         return schemaPublisherDefaults.getProperty("url", "").trim();
+    }
+
+    private Boolean parseOptionalBoolean(final String rawValue){
+        if(rawValue==null || rawValue.trim().isEmpty()){
+            return null;
+        }
+        final String value = rawValue.trim().toLowerCase();
+        if(value.equals("true") || value.equals("yes") || value.equals("on")){
+            return true;
+        }
+        if(value.equals("false") || value.equals("no") || value.equals("off")){
+            return false;
+        }
+        return null;
+    }
+
+    private List<String> parseHowToSteps(final String rawValue){
+        if(rawValue==null || rawValue.trim().isEmpty()){
+            return Collections.emptyList();
+        }
+        return Arrays.stream(rawValue.split("\\|\\|"))
+                .map(String::trim)
+                .filter(item -> !item.isEmpty())
+                .collect(Collectors.toList());
     }
 
     private InputStream getResourceAsStream(String fileName) {

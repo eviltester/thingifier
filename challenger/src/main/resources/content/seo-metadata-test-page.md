@@ -9,6 +9,11 @@ og_image_alt: OG preview image for API Challenges metadata tests
 og_type: article
 twitter_card: summary
 twitter_site: @apichallenges
+schema_breadcrumb_enabled: false
+schema_howto_enabled: true
+schema_howto_steps: Open the metadata test page||Validate title and social tags
+schema_video_enabled: true
+schema_video_id: dQw4w9WgXcQ
 ---
 
 # SEO Metadata Test Page

@@ -45,7 +45,12 @@ public class SeoTitleContentValidationTest {
                 "schema_type",
                 "schema_author",
                 "schema_publisher",
-                "schema_image"
+                "schema_image",
+                "schema_breadcrumb_enabled",
+                "schema_howto_enabled",
+                "schema_howto_steps",
+                "schema_video_enabled",
+                "schema_video_id"
         ));
         final List<String> missingSeoTitle = new ArrayList<>();
         final List<String> emptySeoTitle = new ArrayList<>();
