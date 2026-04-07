@@ -22,8 +22,8 @@ public class Environment {
         //     return "https://thingifier-production.up.railway.app";
 
         // return environment if want to run externally
-        if(true)
-            return "https://apichallenges.eviltester.com";
+//        if(true)
+//            return "https://apichallenges.eviltester.com";
 
 //        if(true)
 //            return "http://localhost:4567";

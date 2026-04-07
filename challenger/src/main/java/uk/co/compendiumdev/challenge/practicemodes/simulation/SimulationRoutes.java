@@ -84,6 +84,11 @@ public class SimulationRoutes {
         apiDocDefn.setVersion("1.0.0");
         apiDocDefn.setThingifier(simulation);
         apiDocDefn.setPathPrefix("/sim"); // where can the API endpoints be found
+        apiDocDefn.setSeoTitle("Simulation Mode API Documentation | API Challenges");
+        apiDocDefn.setSeoDescription("Review Simulation Mode API documentation for deterministic request behavior, payload formats, and response handling used in guided practice.");
+        apiDocDefn.setMetaRobots("noindex,follow");
+        apiDocDefn.setOgType("website");
+        apiDocDefn.setTwitterCard("summary_large_image");
 
         ThingifierApiConfig customApiconfig = new ThingifierApiConfig("/sim");
         simulation.apiConfig().setFrom(customApiconfig);

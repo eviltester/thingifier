@@ -96,8 +96,8 @@ public class UiPagesAreReachableTest {
         List<Arguments> args = new ArrayList<>();
 
         // home page
-        args.add(Arguments.of(200, "The API Challenges - API Tutorials and API Testing Practice Exercises", ""));
-        args.add(Arguments.of(200, "The API Challenges - API Tutorials and API Testing Practice Exercises", "/"));
+        args.add(Arguments.of(200, "API Challenges Tutorials and Testing Practice", ""));
+        args.add(Arguments.of(200, "API Challenges Tutorials and Testing Practice", "/"));
         // entities
         args.add(Arguments.of(200, "Entities Menu", "/gui/entities"));
         args.add(Arguments.of(200, "todo Instances", "gui/instances?entity=todo"));
@@ -109,7 +109,7 @@ public class UiPagesAreReachableTest {
         // Additional Pages
         args.add(Arguments.of(200, "Learning Utilities and Resources | API Challenges", "/learning"));
         args.add(Arguments.of(200, "Multi-User Instructions | API Challenges Guide", "/gui/multiuser"));
-        args.add(Arguments.of(200, "API Documentation", "/docs"));
+        args.add(Arguments.of(200, "API Challenges API Documentation | API Challenges", "/docs"));
         args.add(Arguments.of(200, "HTTP Mirror Mode | API Challenges Practice Mode", "/practice-modes/mirror"));
         args.add(Arguments.of(200, "Simulation Mode | API Challenges Practice Mode", "/practice-modes/simulation"));
         return args.stream();
@@ -157,6 +157,35 @@ public class UiPagesAreReachableTest {
         Assertions.assertEquals(200, response.statusCode);
         Assertions.assertEquals("attachment; filename=\"Simple-Todo-List-swagger.json\"", response.getHeader("Content-Disposition"));
         Assertions.assertTrue(response.body.contains("\"openapi\" : \"3.0.1\","));
+    }
+
+    @Test
+    void docsPagesRenderPerApiSeoMetadata(){
+
+        final HttpResponseDetails docsResponse = http.send("/docs", "get");
+        Assertions.assertEquals(200, docsResponse.statusCode);
+        Assertions.assertTrue(docsResponse.body.contains("<title>API Challenges API Documentation | API Challenges</title>"));
+        Assertions.assertTrue(docsResponse.body.contains("<meta name='description' content='Explore API Challenges endpoint documentation with request formats, payload examples, and expected responses for practical API testing.'>"));
+        Assertions.assertTrue(docsResponse.body.contains("<meta name='robots' content='index,follow'>"));
+        Assertions.assertTrue(docsResponse.body.contains("<meta property='og:url' content='https://apichallenges.eviltester.com/docs'>"));
+        Assertions.assertTrue(docsResponse.body.contains("<meta name='twitter:title' content='API Challenges API Documentation | API Challenges'>"));
+        Assertions.assertTrue(docsResponse.body.contains("<link rel='canonical' href='https://apichallenges.eviltester.com/docs'>"));
+
+        final HttpResponseDetails simpleApiDocsResponse = http.send("/simpleapi/docs", "get");
+        Assertions.assertEquals(200, simpleApiDocsResponse.statusCode);
+        Assertions.assertTrue(simpleApiDocsResponse.body.contains("<title>Simple API Documentation | API Challenges</title>"));
+        Assertions.assertTrue(simpleApiDocsResponse.body.contains("<meta name='robots' content='index,follow'>"));
+        Assertions.assertTrue(simpleApiDocsResponse.body.contains("<meta property='og:url' content='https://apichallenges.eviltester.com/simpleapi/docs'>"));
+
+        final HttpResponseDetails simDocsResponse = http.send("/sim/docs", "get");
+        Assertions.assertEquals(200, simDocsResponse.statusCode);
+        Assertions.assertTrue(simDocsResponse.body.contains("<title>Simulation Mode API Documentation | API Challenges</title>"));
+        Assertions.assertTrue(simDocsResponse.body.contains("<meta name='robots' content='noindex,follow'>"));
+
+        final HttpResponseDetails mirrorDocsResponse = http.send("/mirror/docs", "get");
+        Assertions.assertEquals(200, mirrorDocsResponse.statusCode);
+        Assertions.assertTrue(mirrorDocsResponse.body.contains("<title>Mirror Mode API Documentation | API Challenges</title>"));
+        Assertions.assertTrue(mirrorDocsResponse.body.contains("<meta name='robots' content='noindex,follow'>"));
     }
 
     @Test

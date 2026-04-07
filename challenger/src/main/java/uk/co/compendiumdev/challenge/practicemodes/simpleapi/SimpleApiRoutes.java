@@ -103,6 +103,11 @@ public class SimpleApiRoutes {
         apiDocDefn.setVersion("1.0.0");
         apiDocDefn.setThingifier(simplethings);
         apiDocDefn.setPathPrefix("/simpleapi"); // where can the API endpoints be found
+        apiDocDefn.setSeoTitle("Simple API Documentation | API Challenges");
+        apiDocDefn.setSeoDescription("Read Simple API endpoint documentation with schemas, examples, and response expectations for hands-on HTTP and API testing practice.");
+        apiDocDefn.setMetaRobots("index,follow");
+        apiDocDefn.setOgType("website");
+        apiDocDefn.setTwitterCard("summary_large_image");
 
 
 

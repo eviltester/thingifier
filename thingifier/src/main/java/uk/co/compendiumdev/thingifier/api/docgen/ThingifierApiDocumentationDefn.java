@@ -24,6 +24,13 @@ public class ThingifierApiDocumentationDefn {
     private String title="";
     private String description="";
     private String pathPrefix="";
+    private String seoTitle="";
+    private String seoDescription="";
+    private String metaRobots="";
+    private String ogImage="";
+    private String ogType="";
+    private String twitterCard="";
+    private String twitterSite="";
     private Map<String, HeaderMatch> customHeadersForRoutesThatDoNotMatch;
 
 
@@ -113,6 +120,69 @@ public class ThingifierApiDocumentationDefn {
 
     public String getPathPrefix() {
         return pathPrefix;
+    }
+
+    public String getSeoTitle() {
+        return seoTitle;
+    }
+
+    public ThingifierApiDocumentationDefn setSeoTitle(final String seoTitle) {
+        this.seoTitle = seoTitle;
+        return this;
+    }
+
+    public String getSeoDescription() {
+        return seoDescription;
+    }
+
+    public ThingifierApiDocumentationDefn setSeoDescription(final String seoDescription) {
+        this.seoDescription = seoDescription;
+        return this;
+    }
+
+    public String getMetaRobots() {
+        return metaRobots;
+    }
+
+    public ThingifierApiDocumentationDefn setMetaRobots(final String metaRobots) {
+        this.metaRobots = metaRobots;
+        return this;
+    }
+
+    public String getOgImage() {
+        return ogImage;
+    }
+
+    public ThingifierApiDocumentationDefn setOgImage(final String ogImage) {
+        this.ogImage = ogImage;
+        return this;
+    }
+
+    public String getOgType() {
+        return ogType;
+    }
+
+    public ThingifierApiDocumentationDefn setOgType(final String ogType) {
+        this.ogType = ogType;
+        return this;
+    }
+
+    public String getTwitterCard() {
+        return twitterCard;
+    }
+
+    public ThingifierApiDocumentationDefn setTwitterCard(final String twitterCard) {
+        this.twitterCard = twitterCard;
+        return this;
+    }
+
+    public String getTwitterSite() {
+        return twitterSite;
+    }
+
+    public ThingifierApiDocumentationDefn setTwitterSite(final String twitterSite) {
+        this.twitterSite = twitterSite;
+        return this;
     }
 
     /**

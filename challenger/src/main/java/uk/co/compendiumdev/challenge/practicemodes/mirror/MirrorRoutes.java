@@ -138,6 +138,11 @@ public class MirrorRoutes {
         ThingifierApiDocumentationDefn apiDocDefn = routeCreatorAndDocumentor.getApiDocDefn();
         apiDocDefn.setThingifier(dummy);
         apiDocDefn.setPathPrefix("/mirror"); // where can the API endpoints be found
+        apiDocDefn.setSeoTitle("Mirror Mode API Documentation | API Challenges");
+        apiDocDefn.setSeoDescription("Review Mirror Mode endpoint documentation to inspect reflected HTTP requests, headers, and payload behavior for debugging and learning.");
+        apiDocDefn.setMetaRobots("noindex,follow");
+        apiDocDefn.setOgType("website");
+        apiDocDefn.setTwitterCard("summary_large_image");
 
         ThingifierAutoDocGenRouting mirrorDocsRouting = new ThingifierAutoDocGenRouting(
                 apiDocDefn.getThingifier(),

@@ -7,6 +7,7 @@ import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.api.docgen.ApiRoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
+import uk.co.compendiumdev.thingifier.api.docgen.ThingifierApiDocumentationDefn;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipDefinition;
@@ -24,6 +25,12 @@ import java.util.Random;
 import java.util.stream.Collectors;
 
 public class RestApiDocumentationGenerator {
+    private static final String DEFAULT_CANONICAL_HOST = "https://apichallenges.eviltester.com";
+    private static final String DEFAULT_SITE_NAME = "API Challenges";
+    private static final String DEFAULT_OG_IMAGE_PATH = "/images/social/apichallenges-og-1200x630.png";
+    private static final String DEFAULT_META_ROBOTS = "index,follow";
+    private static final String DEFAULT_OG_TYPE = "website";
+    private static final String DEFAULT_TWITTER_CARD = "summary_large_image";
     private final Thingifier thingifier;
     private final Collection<RelationshipDefinition> relationships;
     private final JsonThing jsonThing;
@@ -51,11 +58,16 @@ public class RestApiDocumentationGenerator {
 
     public String getApiDocumentation(final ApiRoutingDefinition routingDefinitions,
                                       final List<RoutingDefinition> additionalRoutes,
+                                      final ThingifierApiDocumentationDefn apiDocDefn,
                                       final String urlPath, String canonicalUrl) {
 
         StringBuilder output = new StringBuilder();
 
-        output.append(defaultGui.getPageStart("API Documentation", "", canonicalUrl));
+        final String htmlTitle = resolveDocsTitle(apiDocDefn);
+        final String htmlDescription = resolveDocsDescription(apiDocDefn);
+        final String headInject = buildDocsHeadInject(apiDocDefn, htmlTitle, htmlDescription, canonicalUrl);
+
+        output.append(defaultGui.getPageStart(htmlTitle, headInject, canonicalUrl));
         output.append(defaultGui.getMenuAsHTML());
         output.append(defaultGui.getStartOfMainContentMarker());
 
@@ -373,6 +385,111 @@ public class RestApiDocumentationGenerator {
         output.append(defaultGui.getPageFooter());
         output.append(defaultGui.getPageEnd());
         return output.toString();
+    }
+
+    private String resolveDocsTitle(final ThingifierApiDocumentationDefn apiDocDefn){
+        if(apiDocDefn != null && apiDocDefn.getSeoTitle() != null && !apiDocDefn.getSeoTitle().trim().isEmpty()){
+            return apiDocDefn.getSeoTitle().trim();
+        }
+        if(apiDocDefn != null && apiDocDefn.getTitle() != null && !apiDocDefn.getTitle().trim().isEmpty()){
+            return apiDocDefn.getTitle().trim() + " API Documentation";
+        }
+        if(thingifier != null && thingifier.getTitle() != null && !thingifier.getTitle().trim().isEmpty()){
+            return thingifier.getTitle().trim() + " API Documentation";
+        }
+        return "API Documentation";
+    }
+
+    private String resolveDocsDescription(final ThingifierApiDocumentationDefn apiDocDefn){
+        if(apiDocDefn != null && apiDocDefn.getSeoDescription() != null && !apiDocDefn.getSeoDescription().trim().isEmpty()){
+            return apiDocDefn.getSeoDescription().trim();
+        }
+        if(apiDocDefn != null && apiDocDefn.getDescription() != null && !apiDocDefn.getDescription().trim().isEmpty()){
+            return apiDocDefn.getDescription().trim();
+        }
+        if(thingifier != null && thingifier.getInitialParagraph() != null && !thingifier.getInitialParagraph().trim().isEmpty()){
+            return thingifier.getInitialParagraph().trim();
+        }
+        return "Browse API endpoints, payload formats, examples, and route behaviors.";
+    }
+
+    private String buildDocsHeadInject(final ThingifierApiDocumentationDefn apiDocDefn,
+                                       final String htmlTitle,
+                                       final String htmlDescription,
+                                       final String canonicalUrl){
+        final String canonicalHost = getEnvironmentOrDefault("SEO_CANONICAL_HOST", DEFAULT_CANONICAL_HOST);
+        final String canonicalAbsoluteUrl = absolutizeUrl(canonicalUrl, canonicalHost);
+        final String metaRobots = firstNonBlank(apiDocDefn == null ? "" : apiDocDefn.getMetaRobots(), DEFAULT_META_ROBOTS);
+        final String ogImagePath = firstNonBlank(
+                apiDocDefn == null ? "" : apiDocDefn.getOgImage(),
+                getEnvironmentOrDefault("SEO_DEFAULT_OG_IMAGE", DEFAULT_OG_IMAGE_PATH));
+        final String ogImageAbsoluteUrl = absolutizeUrl(ogImagePath, canonicalHost);
+        final String ogType = firstNonBlank(apiDocDefn == null ? "" : apiDocDefn.getOgType(), DEFAULT_OG_TYPE);
+        final String twitterCard = firstNonBlank(apiDocDefn == null ? "" : apiDocDefn.getTwitterCard(), DEFAULT_TWITTER_CARD);
+        final String twitterSite = firstNonBlank(
+                apiDocDefn == null ? "" : apiDocDefn.getTwitterSite(),
+                getEnvironmentOrDefault("SEO_TWITTER_SITE", ""));
+
+        StringBuilder head = new StringBuilder();
+        if(!htmlDescription.isEmpty()){
+            head.append("<meta name='description' content='").append(escapeHtmlAttribute(htmlDescription)).append("'>");
+        }
+        head.append("<meta name='robots' content='").append(escapeHtmlAttribute(metaRobots)).append("'>");
+        head.append("<meta property='og:title' content='").append(escapeHtmlAttribute(htmlTitle)).append("'>");
+        head.append("<meta property='og:description' content='").append(escapeHtmlAttribute(htmlDescription)).append("'>");
+        head.append("<meta property='og:type' content='").append(escapeHtmlAttribute(ogType)).append("'>");
+        head.append("<meta property='og:url' content='").append(escapeHtmlAttribute(canonicalAbsoluteUrl)).append("'>");
+        head.append("<meta property='og:site_name' content='").append(escapeHtmlAttribute(DEFAULT_SITE_NAME)).append("'>");
+        head.append("<meta property='og:image' content='").append(escapeHtmlAttribute(ogImageAbsoluteUrl)).append("'>");
+        head.append("<meta name='twitter:card' content='").append(escapeHtmlAttribute(twitterCard)).append("'>");
+        head.append("<meta name='twitter:title' content='").append(escapeHtmlAttribute(htmlTitle)).append("'>");
+        head.append("<meta name='twitter:description' content='").append(escapeHtmlAttribute(htmlDescription)).append("'>");
+        head.append("<meta name='twitter:image' content='").append(escapeHtmlAttribute(ogImageAbsoluteUrl)).append("'>");
+        if(!twitterSite.isEmpty()){
+            head.append("<meta name='twitter:site' content='").append(escapeHtmlAttribute(twitterSite)).append("'>");
+        }
+        return head.toString();
+    }
+
+    private String getEnvironmentOrDefault(final String envName, final String defaultValue){
+        final String envValue = System.getenv(envName);
+        if(envValue == null || envValue.trim().isEmpty()){
+            return defaultValue;
+        }
+        return envValue.trim();
+    }
+
+    private String firstNonBlank(final String preferred, final String fallback){
+        if(preferred != null && !preferred.trim().isEmpty()){
+            return preferred.trim();
+        }
+        return fallback == null ? "" : fallback.trim();
+    }
+
+    private String absolutizeUrl(final String url, final String host){
+        if(url == null || url.trim().isEmpty()){
+            return host;
+        }
+        final String trimmed = url.trim();
+        if(trimmed.startsWith("http://") || trimmed.startsWith("https://")){
+            return trimmed;
+        }
+        if(trimmed.startsWith("/")){
+            return host + trimmed;
+        }
+        return host + "/" + trimmed;
+    }
+
+    private String escapeHtmlAttribute(final String value){
+        if(value == null){
+            return "";
+        }
+        return value
+                .replace("&", "&amp;")
+                .replace("\"", "&quot;")
+                .replace("'", "&#39;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;");
     }
 
     private String getExampleFilter(final EntityDefinition filterableEntity) {

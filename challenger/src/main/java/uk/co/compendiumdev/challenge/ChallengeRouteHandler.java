@@ -34,15 +34,25 @@ public class ChallengeRouteHandler {
 
         this.apiChallengesDocumentationDefn = apiDefn;
         apiDefn.setThingifier(thingifier);
+        apiDefn.setSeoTitle("API Challenges API Documentation | API Challenges");
+        apiDefn.setSeoDescription("Explore API Challenges endpoint documentation with request formats, payload examples, and expected responses for practical API testing.");
+        apiDefn.setMetaRobots("index,follow");
+        apiDefn.setOgType("website");
+        apiDefn.setTwitterCard("summary_large_image");
 
         this.mirrorModeDocumentationDefn = new ThingifierApiDocumentationDefn();
         mirrorModeDocumentationDefn.setTitle("Mirror Mode");
         mirrorModeDocumentationDefn.setDescription("Mirror HTTP Requests");
-        mirrorModeDocumentationDefn.addServer("https://apichallenges.eviltester.com", "heroku hosted version");
+        mirrorModeDocumentationDefn.setSeoTitle("Mirror Mode API Documentation | API Challenges");
+        mirrorModeDocumentationDefn.setSeoDescription("Review Mirror Mode endpoint documentation to inspect reflected HTTP requests, headers, and payload behavior for debugging and learning.");
+        mirrorModeDocumentationDefn.setMetaRobots("noindex,follow");
+        mirrorModeDocumentationDefn.setOgType("website");
+        mirrorModeDocumentationDefn.setTwitterCard("summary_large_image");
+        mirrorModeDocumentationDefn.addServer("https://apichallenges.eviltester.com", "cloud hosted version");
         mirrorModeDocumentationDefn.addServer("http://localhost:4567", "local execution");
         mirrorModeDocumentationDefn.setVersion("1.0.0");
 
-        apiDefn.addServer("https://apichallenges.eviltester.com", "heroku hosted version");
+        apiDefn.addServer("https://apichallenges.eviltester.com", "cloud hosted version");
         apiDefn.addServer("http://localhost:4567", "local execution");
         apiDefn.setVersion("1.0.0");
 

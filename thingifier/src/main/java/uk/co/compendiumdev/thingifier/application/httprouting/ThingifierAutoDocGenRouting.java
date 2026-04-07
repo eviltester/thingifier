@@ -29,6 +29,7 @@ public class ThingifierAutoDocGenRouting {
                     getApiDocumentation(
                             routingDefinitions,
                             apiDefn.getAdditionalRoutes(),
+                            apiDefn,
                             apiDefn.getPathPrefix(),
                             "%s/docs".formatted(apiDefn.getPathPrefix()));
         });
