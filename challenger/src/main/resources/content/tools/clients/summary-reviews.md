@@ -1,5 +1,6 @@
 ---
 title: REST API Client Suitability for Exploratory Testing Summary Reviews
+seo_title: REST API Client  Exploratory Testing Suitability | API Client Review
 description: A list REST Clients with a summary review of each concerning their support for Exploratory Testing.
 showads: true
 ---

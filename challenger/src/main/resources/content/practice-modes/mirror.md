@@ -1,5 +1,6 @@
 ---
 title: API Challenges Mirror Mode
+seo_title: HTTP Mirror Mode | API Challenges Practice Mode
 description: See the raw HTTP request sent to the API server and check if your REST API tool sends what you expect.
 ---
 

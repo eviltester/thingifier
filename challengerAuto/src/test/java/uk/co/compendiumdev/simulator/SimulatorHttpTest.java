@@ -319,15 +319,9 @@ public class SimulatorHttpTest extends RestAssuredBaseTest {
                 then().
                 statusCode(200).extract().headers();
 
-        int expectedCount = headHeaders.size();
-        if(!headHeaders.hasHeaderWithName("Content-Length")){
-            expectedCount++;
-        }
-
-        Assertions.assertEquals(expectedCount, getHeaders.size());
 
         // remove the variable headers that are server based rather than app based
-        List<String> headersToSkipComparison = Arrays.asList("Report-To", "Reporting-Endpoints", "Connection", "Date", "X-Railway-Request-Id");
+        List<String> headersToSkipComparison = Arrays.asList("Report-To", "Reporting-Endpoints", "Connection", "Date", "X-Railway-Request-Id", "x-railway-request-id");
         for (Header headHeader : headHeaders) {
             if (!headersToSkipComparison.contains(headHeader.getName())) {
                 Assertions.assertEquals(

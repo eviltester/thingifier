@@ -1,5 +1,6 @@
 ---
 title: Simple API Open API Swagger File
+seo_title: Simple API Open API Swagger File | API Challenges Practice Mode
 description: Download the Open API files for the Simple API.
 showads: true
 ---

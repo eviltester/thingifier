@@ -1,5 +1,6 @@
 ---
 title: cURL HTTP Client - Overview and Review
+seo_title: cURL HTTP Client - Overview and Review | API Client Review
 description: An overview of the cURL HTTP Client.
 showads: true
 ---

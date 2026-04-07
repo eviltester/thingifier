@@ -199,12 +199,16 @@ public class MarkdownContentManager {
 
 
         String pageTitle = "Content Page";
+        String seoTitle = "";
         String pageDescription = "";
         String canonicalUrl = "https://apichallenges.eviltester.com"+contentPath;
 
         for(String aHeader : mdheaders){
             if(aHeader.startsWith("title: ")){
                 pageTitle = aHeader.replace("title: " , "");
+            }
+            if(aHeader.startsWith("seo_title: ")){
+                seoTitle = aHeader.replace("seo_title: " , "");
             }
             if(aHeader.startsWith("description: ")){
                 pageDescription = aHeader.replace("description: " , "");
@@ -214,13 +218,14 @@ public class MarkdownContentManager {
             }
         }
 
+        final String htmlTitle = seoTitle.isEmpty() ? pageTitle : seoTitle;
 
         if(!pageDescription.isEmpty()){
             headerInject = headerInject + "<meta name='description' content ='" + pageDescription + "'>";
         }
 
         StringBuilder html = new StringBuilder();
-        html.append(guiManagement.getPageStart(pageTitle,
+        html.append(guiManagement.getPageStart(htmlTitle,
                 """
         <script src='/js/toc.js'></script>
         <script src='/js/externalize-links.js'></script>

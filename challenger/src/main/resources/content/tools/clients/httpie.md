@@ -1,5 +1,6 @@
 ---
 title: Httpie HTTP API Rest Client - Overview and Review
+seo_title: Httpie HTTP API Rest Client - Overview and Review | API Client Review
 description: An overview of the Httpie HTTP REST API Client.
 showads: true
 ---

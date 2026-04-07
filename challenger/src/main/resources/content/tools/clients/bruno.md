@@ -1,5 +1,6 @@
 ---
 title: Bruno HTTP Rest Client - Overview and Review
+seo_title: Bruno HTTP Rest Client - Overview and Review | API Client Review
 description: An overview of the Bruno HTTP REST API Client.
 showads: true
 ---

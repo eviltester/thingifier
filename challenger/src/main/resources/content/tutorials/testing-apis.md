@@ -1,5 +1,6 @@
 ---
 title: Testing APIs - Tutorial
+seo_title: Tutorial: Testing APIs Tutorial | API Challenges
 description: Basic Testing REST API tutorial and how to think when thinking about testing an API.
 showads: true
 ---

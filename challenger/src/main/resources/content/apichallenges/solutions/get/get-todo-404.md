@@ -1,5 +1,6 @@
 ---
 title: API Challenges Solution For -  GET todo 404
+seo_title: Solution: GET todo 404 Guide | API Challenges
 description: How to solve challenge GET todo 404.
 showads: true
 ---

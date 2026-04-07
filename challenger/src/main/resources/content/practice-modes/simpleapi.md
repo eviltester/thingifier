@@ -1,5 +1,6 @@
 ---
 title: API Challenges Simple API
+seo_title: Simple API Practice Mode | API Challenges Practice Mode
 description: The Simple API is a multi-user REST API that you can use to practice testing without any authentication.
 ---
 

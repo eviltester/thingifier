@@ -1,6 +1,7 @@
 ---
 date:  2021-07-17T10:45:00Z
 title: API Challenges Solution For - POST todos create todo with XML
+seo_title: Solution: POST todos create with XML | API Challenges
 description: How to solve API challenge POST todos XML. Creating a todo with XML format.
 showads: true
 ---

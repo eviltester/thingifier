@@ -1,5 +1,6 @@
 ---
 title: Device Registry - A simple API with authentication - Practice Test API
+seo_title: Device Registry - A simple API with auth | Practice API and Web App
 description: Device Registry is a simple API with endpoints protected by basic authentication.
 showads: true
 ---

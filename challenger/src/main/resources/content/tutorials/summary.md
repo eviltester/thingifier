@@ -1,5 +1,6 @@
 ---
 title: Summary - Tutorial
+seo_title: Tutorial: Summary Tutorial for API Testing | API Challenges
 description: Basic Summary of REST API tutorial content.
 showads: true
 ---

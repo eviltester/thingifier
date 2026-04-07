@@ -1,5 +1,6 @@
 ---
 title: Sponsors of API Challenges
+seo_title: Sponsors of Guide for API Testing | API Challenges
 description: Sponsor the API challenges and support the ongoing development and hosting for this free practice and tutorial site.
 showads: true
 ---

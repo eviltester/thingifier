@@ -1,5 +1,6 @@
 ---
 title: Katalon Studio HTTP Rest Client - Overview and Review
+seo_title: Katalon Studio HTTP REST Client Review | API Client Review
 description: An overview of the Katalon Studio HTTP REST API Client.
 showads: true
 ---

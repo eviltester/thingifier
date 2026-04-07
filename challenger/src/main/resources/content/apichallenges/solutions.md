@@ -1,5 +1,6 @@
 ---
 title: API Challenges Solution Index
+seo_title: Solution Index and Walkthroughs | API Challenges
 description: A list of all the solutions for the API Challenges. Try them yourself, but if you get stuck, we have instructions and solution videos.
 showads: true
 ---

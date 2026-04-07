@@ -1,5 +1,6 @@
 ---
 title: API Challenges Open API Swagger File
+seo_title: Open API Swagger File for Practicing | API Challenges
 description: Download the Open API files for the API Challenges.
 showads: true
 ---

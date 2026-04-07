@@ -1,5 +1,6 @@
 ---
 title: Swapi - Star Wars API - Example Site
+seo_title: Swapi - Star Wars API - Example Site | API Practice Site Guide
 description: An overview of the Star Wars API application, explaining how to use it to learn about APIs and practice with API tooling.
 showads: true
 ---

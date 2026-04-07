@@ -1,5 +1,6 @@
 ---
 title: HTTP Proxies - Introduction
+seo_title: HTTP Proxies - Introduction | API Testing Tools
 description: A list of essential HTTP Proxies tools and how you can use HTTP Proxies to improve your REST API Testing.
 showads: true
 ---

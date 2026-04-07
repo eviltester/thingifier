@@ -1,5 +1,6 @@
 ---
 title: Fake REST API - A Simulator API 
+seo_title: Fake REST API - A Simulator API | API Practice Site Guide
 description: An overview of the Fake REST API for practicing tooling requests.
 showads: true
 ---

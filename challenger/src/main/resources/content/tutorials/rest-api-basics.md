@@ -1,5 +1,6 @@
 ---
 title: REST API - Tutorial
+seo_title: Tutorial: REST API Tutorial for API Testing | API Challenges
 description: Basic REST API tutorial to learn what is a REST API and how they work.
 showads: true
 ---

@@ -1,5 +1,6 @@
 ---
 title: API Challenges Simulation Mode
+seo_title: Simulation Mode | API Challenges Practice Mode
 description: A simulated API tutorial - follow the guided instructions and learn how to use your API Tool without any side-effects or risk.
 ---
 
@@ -336,4 +337,3 @@ You can download a simple Swagger [OpenAPI File for simulation mode](/sim/docs/s
 {{<youtube-embed key="CF3gVz9zc2s" title="How to use Postman with simulation mode as example api">}}
 
 [Patreon ad free video](https://www.patreon.com/posts/54383110)
-

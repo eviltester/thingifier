@@ -1,5 +1,6 @@
 ---
 title: Yaak HTTP Rest Client - Overview and Review
+seo_title: Yaak HTTP Rest Client - Overview and Review | API Client Review
 description: An overview of the Yaak HTTP REST API Client.
 showads: true
 ---

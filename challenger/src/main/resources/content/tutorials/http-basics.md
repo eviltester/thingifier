@@ -1,5 +1,6 @@
 ---
 title: HTTP Basics - Tutorial
+seo_title: Tutorial: HTTP Basics Tutorial | API Challenges
 description: Basic HTTP tutorial and overview of key HTTP terminology and status codes.
 showads: true
 ---

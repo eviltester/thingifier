@@ -1,5 +1,6 @@
 ---
 title: API Challenges Multi-User Instructions
+seo_title: Multi-User Instructions | API Challenges Guide
 description: How to use the API Challenges in multi-user mode to track your progress through the gamified API Testing learning exercises.
 ---
 

@@ -1,6 +1,7 @@
 ---
 date:  2025-01-01T14:24:00Z
 title: API Challenges Solution For - PUT todos/id 400 no amend id
+seo_title: Solution: PUT todos/id 400 no amend id | API Challenges
 description: How to solve API challenge PUT todos/id 400 to fail updating a todo due to mismatched ids.
 showads: true
 ---

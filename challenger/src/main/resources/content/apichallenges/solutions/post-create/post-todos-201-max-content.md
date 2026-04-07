@@ -1,6 +1,7 @@
 ---
 date:  2024-12-31T14:04:00Z
 title: API Challenges Solution For - POST todos 201 - max out content
+seo_title: Solution POST todos 201 max out content | API Challenges
 description: How to solve API challenge POST todos 201 max out content by sending request details such that all fields are maximum length.
 showads: true
 ---

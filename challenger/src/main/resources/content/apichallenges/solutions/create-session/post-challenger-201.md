@@ -1,5 +1,6 @@
 ---
 title: API Challenges Solution For - POST Challenger (201)
+seo_title: Solution: POST Challenger (201) | API Challenges
 description: How to use a POST request to create a Challenger session and start using the API challenges
 showads: true
 ---

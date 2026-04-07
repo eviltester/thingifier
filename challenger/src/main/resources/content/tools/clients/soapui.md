@@ -1,5 +1,6 @@
 ---
 title: Soap UI HTTP Rest Client - Overview and Review
+seo_title: Soap UI HTTP Rest Client - Overview and Review | API Client Review
 description: An overview of the Soap UI HTTP REST API Client.
 showads: true
 ---

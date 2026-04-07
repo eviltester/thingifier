@@ -1,5 +1,6 @@
 ---
 title: Toolshop API - A Web Application and API for Practicing Testing and Automating
+seo_title: Toolshop API - A Web Application and API | Practice API and Web App
 description: Toolshop API is an online public application and API supporting logins and has multiple versions with bugs and without bugs.
 showads: true
 ---

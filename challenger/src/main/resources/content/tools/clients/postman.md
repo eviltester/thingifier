@@ -1,5 +1,6 @@
 ---
 title: Postman HTTP Rest Client - Overview and Review
+seo_title: Postman HTTP Rest Client - Overview and Review | API Client Review
 description: An overview of the Postman HTTP REST API Client.
 showads: true
 ---

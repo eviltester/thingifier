@@ -1,5 +1,6 @@
 ---
 title: Insomnia HTTP Rest Client - Overview and Review
+seo_title: Insomnia HTTP Rest Client - Overview and Review | API Client Review
 description: An overview of the Insomnia HTTP REST API Client.
 showads: true
 ---

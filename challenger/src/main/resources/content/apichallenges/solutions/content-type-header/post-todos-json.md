@@ -1,6 +1,7 @@
 ---
 date:  2021-07-17T11:00:00Z
 title: API Challenges Solution For - POST todos create todo with JSON
+seo_title: Solution: POST todos create with JSON | API Challenges
 description: How to solve API challenge POST todos JSON. Creating a todo with JSON format.
 showads: true
 ---

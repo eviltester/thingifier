@@ -1,5 +1,6 @@
 ---
 title: HTTP Verbs - Tutorial
+seo_title: Tutorial: HTTP Verbs Tutorial | API Challenges
 description: Basic HTTP Verbs and Methods tutorial what they do and how to use them.
 showads: true
 ---

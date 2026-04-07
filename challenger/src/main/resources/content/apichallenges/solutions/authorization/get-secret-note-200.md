@@ -1,6 +1,7 @@
 ---
 date:  2021-07-25T08:45:00Z
 title: API Challenges Solution For - GET authorized secret note 200
+seo_title: Solution: GET authorized secret note 20 | API Challenges
 description: How to solve API challenge 33 - authorized to access secret note 200
 showads: true
 ---

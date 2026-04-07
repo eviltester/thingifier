@@ -1,5 +1,6 @@
 ---
 title: Dummy JSON - A Mix of API Simulator and GET API - Practice API
+seo_title: Dummy JSON - A Mix of API Simulator and GET | API Practice Site Guide
 description: An overview of the Dummy JSON practice API site, explaining how to use it to learn about APIs and practice with API tooling.
 showads: true
 ---

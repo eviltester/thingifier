@@ -1,5 +1,6 @@
 ---
 title: API Challenges Solution For - GET Challenges (200)
+seo_title: Solution: GET Challenges (200) | API Challenges
 description: How to use a GET request with an x-challenger header to get the progress status of all the API Challenges
 showads: true
 ---

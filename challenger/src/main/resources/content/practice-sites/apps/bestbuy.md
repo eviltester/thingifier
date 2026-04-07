@@ -1,5 +1,6 @@
 ---
 title: Best Buy API Playground - An old version of the Best Buy API - Practice API
+seo_title: Best Buy API Playground real-world example | Practice API and Web App
 description: Best Buy API Playground is an old version of the Best Buy API. Notable for comprehensive query filter operations.
 showads: true
 ---

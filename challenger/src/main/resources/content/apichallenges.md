@@ -1,5 +1,6 @@
 ---
 title: About The API Challenges
+seo_title: Learn API Testing by Doing Hands on Practice | API Challenges
 description: A brief overview of the API challenges and how to use them as a self-guided learning path for API Testing
 showads: true
 ---

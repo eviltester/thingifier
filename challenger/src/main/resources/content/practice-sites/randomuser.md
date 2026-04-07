@@ -1,5 +1,6 @@
 ---
 title: RandomUser - Random User Generator - Example API
+seo_title: RandomUser - Random User Generator - Example | API Practice Site Guide
 description: An overview of the Random User Generator API, explaining how to use it to learn about APIs and practice with API tooling.
 showads: true
 ---

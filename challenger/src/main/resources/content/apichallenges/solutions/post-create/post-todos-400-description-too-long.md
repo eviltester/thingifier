@@ -1,6 +1,7 @@
 ---
 date:  2024-12-31T14:30:00Z
 title: API Challenges Solution For - POST todos 400 - description too long
+seo_title: Solution: POST todos 400 - description | API Challenges
 description: How to solve API challenge POST todos 400 description too long by sending request details such that they fail validation.
 showads: true
 ---

@@ -1,5 +1,6 @@
 ---
 title: MilkMan HTTP API Rest Client - Overview and Review
+seo_title: MilkMan HTTP API Rest Client - Overview and Review | API Client Review
 description: An overview of the MilkMan HTTP REST API Client.
 showads: true
 ---
