@@ -9,6 +9,14 @@ showads: true
 
 # API Challenge Solutions
 
+Use this API challenge walkthrough index to find step-by-step REST API challenge solutions for every major topic in the API Challenges app. Each page focuses on a single outcome and shows the exact request method, endpoint, headers, payload constraints, and expected status code. If you are learning API testing, this gives you a practical way to understand why requests pass, why they fail, and how to debug quickly.
+
+Treat this page as your API testing roadmap. Start with session setup and challenge tracking, then progress through GET, POST, PUT, DELETE, HEAD, and OPTIONS behavior. Continue into content negotiation (`Accept` and `Content-Type`), then move into authentication, authorization, method override scenarios, and status-code edge cases. Following this order builds durable test design skills and helps you avoid random trial-and-error testing.
+
+These API test walkthroughs are designed for real hands-on execution in tools like Postman, Insomnia, Bruno, or cURL. Send the request yourself first, compare the response to the expected result, then use the solution details to close gaps in your approach.
+
+If your goal is API automation, each solution also provides clear assertion targets you can translate into maintainable automated checks.
+
 ## Getting Started
 
 - [POST /challenger (201)](/apichallenges/solutions/create-session/post-challenger-201)

@@ -13,6 +13,15 @@ There are many lists of 'free to use' APIs online. Most of these are not designe
 
 All of the sites and applications listed here are designed for practice. This carefully curated list only presents the best applications to use to improve your testing and automating.
 
+You can practice against endpoints that expose meaningful behavior such as validation errors, authentication flows, status-code variation, and realistic CRUD lifecycle operations.
+
+You will find several categories of API practice environments: simulators, GET-only public APIs, full CRUD APIs, and applications you can run locally.
+
+Start with simulators to build confidence in request construction and getting used to tools, then move to persistent APIs where `POST`, `PUT`, `PATCH`, and `DELETE` save data. That transition is essential for learning test data management, session control, and cleanup strategies used in real API test projects.
+
+Each practice API entry is designed to support hands-on API test design. Follow the linked guides to run focused exercises, compare docs to real responses, and build stronger assertions. If your goal is API automation practice, these sites also help you build reusable request models, negative tests, and end-to-end API scenarios across multiple API styles.
+
+
 ## Online and Free to Use
 
 ### API Simulators
