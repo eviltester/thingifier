@@ -151,4 +151,22 @@ public class UiPagesAreReachableTest {
         Assertions.assertTrue(response.body.contains("\"openapi\" : \"3.0.1\","));
     }
 
+    static Stream<Arguments> legacyUrlRedirects(){
+        List<Arguments> args = new ArrayList<>();
+        args.add(Arguments.of("/apichallenges/solutions/method-overrides/all-method-overrides",
+                "/apichallenges/solutions/method-override/all-method-overrides"));
+        args.add(Arguments.of("/tools/clients/soapyi",
+                "/tools/clients/soapui"));
+        return args.stream();
+    }
+
+    @ParameterizedTest(name = "legacy url {0} redirects to {1}")
+    @MethodSource("legacyUrlRedirects")
+    void legacyUrlsRedirectToCanonicalContent(String legacyUrl, String canonicalUrl){
+        final HttpResponseDetails response = http.send(legacyUrl, "get");
+
+        Assertions.assertEquals(301, response.statusCode);
+        Assertions.assertEquals(canonicalUrl, response.getHeader("Location"));
+    }
+
 }

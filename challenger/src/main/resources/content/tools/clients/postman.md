@@ -61,7 +61,7 @@ Postman is probably the most fully featured of all the clients, but I find the U
 
 ## Summary - Free to use. Requires logging in and Practice to get the most of.
 
-The non-login 'lightweight API Client' is like the Endpoint Explorer of [Soap UI](/tools/clients/soapyi) or [Cartero](/tools/clients/summary-reviews). This can be used for very adhoc testing.
+The non-login 'lightweight API Client' is like the Endpoint Explorer of [Soap UI](/tools/clients/soapui) or [Cartero](/tools/clients/summary-reviews). This can be used for very adhoc testing.
 
 Requires login to get the most of. It is a very capable tool and you get a lot for free, but I find the UI to be cluttered and hard to use. I'm sure you get used to it if you use it as your main API Client, but I don't use all the features so I tend to use a simpler tool.
 

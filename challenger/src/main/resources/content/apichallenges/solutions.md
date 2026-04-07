@@ -98,7 +98,7 @@ showads: true
 
 ## HTTP Method Override Challenges
 
-- [Solve the /heartbeat Method Override Challenges](/apichallenges/solutions/method-overrides/all-method-overrides)
+- [Solve the /heartbeat Method Override Challenges](/apichallenges/solutions/method-override/all-method-overrides)
   - POST /heartbeat as DELETE (405)
   - POST /heartbeat as PATCH (500)
   - POST /heartbeat as Trace (501)

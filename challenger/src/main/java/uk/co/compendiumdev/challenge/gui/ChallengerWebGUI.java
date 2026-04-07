@@ -232,8 +232,19 @@ public class ChallengerWebGUI {
             return siteMap.asSitemapXml();
         });
 
+        // Redirect legacy URLs to avoid SEO penalties from old inbound links.
+        get("/apichallenges/solutions/method-overrides/all-method-overrides", (request, response) -> {
+            response.redirect("/apichallenges/solutions/method-override/all-method-overrides", 301);
+            return "";
+        });
+
+        get("/tools/clients/soapyi", (request, response) -> {
+            response.redirect("/tools/clients/soapui", 301);
+            return "";
+        });
+
         
-        // use the site/index.md to allow easier creation of landing page, rather than public/index.hmlt
+        // use the site/index.md to allow easier creation of landing page, rather than public/index.html
         get("/", (request, response) -> {
             String responseBody = contentManager.getHtmlVersionOfMarkdownContent("site", "/index", getMarkdownParamsFromRequest(request));
             response.body(responseBody);
