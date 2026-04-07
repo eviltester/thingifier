@@ -9,9 +9,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 
 public class SeoTitleContentValidationTest {
@@ -30,14 +33,33 @@ public class SeoTitleContentValidationTest {
         Assertions.assertFalse(markdownFiles.isEmpty(), "No markdown files found in content directory");
 
         final Map<String, List<String>> seoTitlesToPaths = new HashMap<>();
+        final Set<String> allowedMetadataKeys = new HashSet<>(Arrays.asList(
+                "seo_title",
+                "seo_description",
+                "meta_robots",
+                "og_image",
+                "og_image_alt",
+                "og_type",
+                "twitter_card",
+                "twitter_site"
+        ));
         final List<String> missingSeoTitle = new ArrayList<>();
         final List<String> emptySeoTitle = new ArrayList<>();
         final List<String> outOfRangeSeoTitle = new ArrayList<>();
+        final List<String> missingDescriptionForIndexablePage = new ArrayList<>();
+        final List<String> malformedMetadataKeys = new ArrayList<>();
+        final List<String> invalidOgImageOverrides = new ArrayList<>();
+
+        final Path publicRoot = resolvePublicRoot();
 
         for (Path markdownFile : markdownFiles) {
             final String relativePath = contentRoot.relativize(markdownFile).toString().replace("\\", "/");
             final List<String> lines = Files.readAllLines(markdownFile, StandardCharsets.UTF_8);
             final String seoTitle = extractHeaderValue(lines, "seo_title");
+            final String description = extractHeaderValue(lines, "description");
+            final String metaRobots = extractHeaderValue(lines, "meta_robots");
+            final String ogImage = extractHeaderValue(lines, "og_image");
+            final List<String> headerKeys = extractHeaderKeys(lines);
 
             if (seoTitle == null) {
                 missingSeoTitle.add(relativePath);
@@ -54,6 +76,25 @@ public class SeoTitleContentValidationTest {
             }
 
             seoTitlesToPaths.computeIfAbsent(seoTitle, key -> new ArrayList<>()).add(relativePath);
+
+            final boolean indexable = metaRobots == null || !metaRobots.toLowerCase().contains("noindex");
+            if (indexable && (description == null || description.trim().isEmpty())) {
+                missingDescriptionForIndexablePage.add(relativePath);
+            }
+
+            for (String key : headerKeys) {
+                final boolean isMetadataKey = key.startsWith("seo_") || key.startsWith("og_") || key.startsWith("twitter_") || key.equals("meta_robots");
+                if (isMetadataKey && !allowedMetadataKeys.contains(key)) {
+                    malformedMetadataKeys.add(relativePath + " -> " + key);
+                }
+            }
+
+            if (ogImage != null && !ogImage.trim().isEmpty() && ogImage.startsWith("/")) {
+                final Path ogImagePath = publicRoot.resolve(ogImage.substring(1).replace("/", java.io.File.separator));
+                if (!Files.exists(ogImagePath)) {
+                    invalidOgImageOverrides.add(relativePath + " -> " + ogImage);
+                }
+            }
         }
 
         final List<String> duplicateSeoTitles = new ArrayList<>();
@@ -71,6 +112,12 @@ public class SeoTitleContentValidationTest {
                 "seo_title out of range (45-70 chars): " + String.join("; ", outOfRangeSeoTitle));
         Assertions.assertTrue(duplicateSeoTitles.isEmpty(),
                 "Duplicate seo_title values found: " + String.join("; ", duplicateSeoTitles));
+        Assertions.assertTrue(missingDescriptionForIndexablePage.isEmpty(),
+                "Indexable pages missing description: " + String.join("; ", missingDescriptionForIndexablePage));
+        Assertions.assertTrue(malformedMetadataKeys.isEmpty(),
+                "Malformed SEO/OG/Twitter metadata keys: " + String.join("; ", malformedMetadataKeys));
+        Assertions.assertTrue(invalidOgImageOverrides.isEmpty(),
+                "og_image override paths not found in public assets: " + String.join("; ", invalidOgImageOverrides));
     }
 
     private Path resolveContentRoot() {
@@ -79,6 +126,14 @@ public class SeoTitleContentValidationTest {
             return moduleRelative;
         }
         return Paths.get("challenger", "src", "main", "resources", "content");
+    }
+
+    private Path resolvePublicRoot() {
+        final Path moduleRelative = Paths.get("src", "main", "resources", "public");
+        if (Files.exists(moduleRelative)) {
+            return moduleRelative;
+        }
+        return Paths.get("challenger", "src", "main", "resources", "public");
     }
 
     private String extractHeaderValue(final List<String> lines, final String key) {
@@ -100,5 +155,26 @@ public class SeoTitleContentValidationTest {
         }
 
         return null;
+    }
+
+    private List<String> extractHeaderKeys(final List<String> lines) {
+        final List<String> keys = new ArrayList<>();
+        if (lines.size() < 3 || !lines.get(0).trim().equals("---")) {
+            return keys;
+        }
+
+        for (int i = 1; i < lines.size(); i++) {
+            final String line = lines.get(i);
+
+            if (line.trim().equals("---")) {
+                break;
+            }
+
+            final int keySeparator = line.indexOf(": ");
+            if (keySeparator > 0) {
+                keys.add(line.substring(0, keySeparator).trim());
+            }
+        }
+        return keys;
     }
 }

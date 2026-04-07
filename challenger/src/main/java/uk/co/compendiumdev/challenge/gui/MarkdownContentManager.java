@@ -21,6 +21,14 @@ import java.util.stream.Collectors;
 
 public class MarkdownContentManager {
 
+    private static final String DEFAULT_CANONICAL_HOST = "https://apichallenges.eviltester.com";
+    private static final String DEFAULT_SITE_NAME = "API Challenges";
+    private static final String DEFAULT_OG_IMAGE_PATH = "/images/social/apichallenges-og-1200x630.png";
+    private static final String DEFAULT_OG_TYPE_CONTENT = "article";
+    private static final String DEFAULT_OG_TYPE_WEBSITE = "website";
+    private static final String DEFAULT_TWITTER_CARD = "summary_large_image";
+    private static final String DEFAULT_META_ROBOTS = "index,follow";
+
     private final DefaultGUIHTML guiManagement;
     Logger logger = LoggerFactory.getLogger(MarkdownContentManager.class);
     private final Set<String> markdownContentPaths;
@@ -201,7 +209,14 @@ public class MarkdownContentManager {
         String pageTitle = "Content Page";
         String seoTitle = "";
         String pageDescription = "";
-        String canonicalUrl = "https://apichallenges.eviltester.com"+contentPath;
+        String seoDescription = "";
+        String metaRobots = "";
+        String ogImage = "";
+        String ogImageAlt = "";
+        String ogType = "";
+        String twitterCard = "";
+        String twitterSite = "";
+        String canonicalUrl = DEFAULT_CANONICAL_HOST + contentPath;
 
         for(String aHeader : mdheaders){
             if(aHeader.startsWith("title: ")){
@@ -213,15 +228,63 @@ public class MarkdownContentManager {
             if(aHeader.startsWith("description: ")){
                 pageDescription = aHeader.replace("description: " , "");
             }
+            if(aHeader.startsWith("seo_description: ")){
+                seoDescription = aHeader.replace("seo_description: " , "");
+            }
+            if(aHeader.startsWith("meta_robots: ")){
+                metaRobots = aHeader.replace("meta_robots: " , "");
+            }
             if(aHeader.startsWith("canonical: ")){
                 canonicalUrl = aHeader.replace("canonical: " , "");
+            }
+            if(aHeader.startsWith("og_image: ")){
+                ogImage = aHeader.replace("og_image: " , "");
+            }
+            if(aHeader.startsWith("og_image_alt: ")){
+                ogImageAlt = aHeader.replace("og_image_alt: " , "");
+            }
+            if(aHeader.startsWith("og_type: ")){
+                ogType = aHeader.replace("og_type: " , "");
+            }
+            if(aHeader.startsWith("twitter_card: ")){
+                twitterCard = aHeader.replace("twitter_card: " , "");
+            }
+            if(aHeader.startsWith("twitter_site: ")){
+                twitterSite = aHeader.replace("twitter_site: " , "");
             }
         }
 
         final String htmlTitle = seoTitle.isEmpty() ? pageTitle : seoTitle;
+        final String htmlDescription = seoDescription.isEmpty() ? pageDescription : seoDescription;
+        final String robotsValue = metaRobots.isEmpty() ? DEFAULT_META_ROBOTS : metaRobots;
 
-        if(!pageDescription.isEmpty()){
-            headerInject = headerInject + "<meta name='description' content ='" + pageDescription + "'>";
+        final String canonicalHost = getEnvironmentOrDefault("SEO_CANONICAL_HOST", DEFAULT_CANONICAL_HOST);
+        final String canonicalAbsoluteUrl = absolutizeUrl(canonicalUrl, canonicalHost);
+        final String defaultOgImagePath = getEnvironmentOrDefault("SEO_DEFAULT_OG_IMAGE", DEFAULT_OG_IMAGE_PATH);
+        final String ogImageAbsoluteUrl = absolutizeUrl(ogImage.isEmpty() ? defaultOgImagePath : ogImage, canonicalHost);
+        final String ogImageAltValue = ogImageAlt.isEmpty() ? htmlTitle : ogImageAlt;
+        final boolean indexTemplate = mdheaders.contains("template: index");
+        final String ogTypeValue = ogType.isEmpty() ? (indexTemplate ? DEFAULT_OG_TYPE_WEBSITE : DEFAULT_OG_TYPE_CONTENT) : ogType;
+        final String twitterCardValue = twitterCard.isEmpty() ? DEFAULT_TWITTER_CARD : twitterCard;
+        final String twitterSiteValue = twitterSite.isEmpty() ? getEnvironmentOrDefault("SEO_TWITTER_SITE", "") : twitterSite;
+
+        if(!htmlDescription.isEmpty()){
+            headerInject = headerInject + "<meta name='description' content='" + escapeHtmlAttribute(htmlDescription) + "'>";
+        }
+        headerInject = headerInject + "<meta name='robots' content='" + escapeHtmlAttribute(robotsValue) + "'>";
+        headerInject = headerInject + "<meta property='og:title' content='" + escapeHtmlAttribute(htmlTitle) + "'>";
+        headerInject = headerInject + "<meta property='og:description' content='" + escapeHtmlAttribute(htmlDescription) + "'>";
+        headerInject = headerInject + "<meta property='og:type' content='" + escapeHtmlAttribute(ogTypeValue) + "'>";
+        headerInject = headerInject + "<meta property='og:url' content='" + escapeHtmlAttribute(canonicalAbsoluteUrl) + "'>";
+        headerInject = headerInject + "<meta property='og:site_name' content='" + escapeHtmlAttribute(DEFAULT_SITE_NAME) + "'>";
+        headerInject = headerInject + "<meta property='og:image' content='" + escapeHtmlAttribute(ogImageAbsoluteUrl) + "'>";
+        headerInject = headerInject + "<meta property='og:image:alt' content='" + escapeHtmlAttribute(ogImageAltValue) + "'>";
+        headerInject = headerInject + "<meta name='twitter:card' content='" + escapeHtmlAttribute(twitterCardValue) + "'>";
+        headerInject = headerInject + "<meta name='twitter:title' content='" + escapeHtmlAttribute(htmlTitle) + "'>";
+        headerInject = headerInject + "<meta name='twitter:description' content='" + escapeHtmlAttribute(htmlDescription) + "'>";
+        headerInject = headerInject + "<meta name='twitter:image' content='" + escapeHtmlAttribute(ogImageAbsoluteUrl) + "'>";
+        if(!twitterSiteValue.isEmpty()){
+            headerInject = headerInject + "<meta name='twitter:site' content='" + escapeHtmlAttribute(twitterSiteValue) + "'>";
         }
 
         StringBuilder html = new StringBuilder();
@@ -229,7 +292,7 @@ public class MarkdownContentManager {
                 """
         <script src='/js/toc.js'></script>
         <script src='/js/externalize-links.js'></script>
-        """+headerInject, canonicalUrl));
+        """+headerInject, canonicalAbsoluteUrl));
 
         html.append(guiManagement.getMenuAsHTML());
         // todo: create proper templates
@@ -321,6 +384,40 @@ public class MarkdownContentManager {
     private String getResourceAsString(String fileName){
         return new BufferedReader(new InputStreamReader(getResourceAsStream(fileName)))
                 .lines().collect(Collectors.joining("\n"));
+    }
+
+    private String getEnvironmentOrDefault(final String envName, final String defaultValue){
+        final String envValue = System.getenv(envName);
+        if(envValue==null || envValue.trim().isEmpty()){
+            return defaultValue;
+        }
+        return envValue.trim();
+    }
+
+    private String absolutizeUrl(final String url, final String host){
+        if(url==null || url.isEmpty()){
+            return "";
+        }
+        final String trimmed = url.trim();
+        if(trimmed.startsWith("http://") || trimmed.startsWith("https://")){
+            return trimmed;
+        }
+        if(trimmed.startsWith("/")){
+            return host + trimmed;
+        }
+        return host + "/" + trimmed;
+    }
+
+    private String escapeHtmlAttribute(final String value){
+        if(value==null){
+            return "";
+        }
+        return value
+                .replace("&", "&amp;")
+                .replace("\"", "&quot;")
+                .replace("'", "&#39;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;");
     }
 
     private InputStream getResourceAsStream(String fileName) {

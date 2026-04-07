@@ -43,6 +43,8 @@ public class UiPagesAreReachableTest {
         final HttpResponseDetails response = http.send("/", "get");
 
         Assertions.assertEquals(200, response.statusCode);
+        Assertions.assertTrue(response.body.contains("<meta property='og:type' content='website'>"));
+        Assertions.assertTrue(response.body.contains("<meta property='og:url' content='https://apichallenges.eviltester.com'>"));
         assertContainsHeaderAndFooter(response);
 
     }
@@ -150,6 +152,38 @@ public class UiPagesAreReachableTest {
         Assertions.assertEquals(200, response.statusCode);
         Assertions.assertEquals("attachment; filename=\"Simple-Todo-List-swagger.json\"", response.getHeader("Content-Disposition"));
         Assertions.assertTrue(response.body.contains("\"openapi\" : \"3.0.1\","));
+    }
+
+    @Test
+    void markdownPageWithMetadataOverridesRendersExpectedSeoAndSocialTags(){
+
+        final HttpResponseDetails response = http.send("/seo-metadata-test-page", "get");
+
+        Assertions.assertEquals(200, response.statusCode);
+        Assertions.assertTrue(response.body.contains("<title>Open Graph Metadata Test Page for Validation | API Challenges</title>"));
+        Assertions.assertTrue(response.body.contains("<meta name='description' content='Search snippet with Alan&#39;s &quot;special&quot; chars &amp; context.'>"));
+        Assertions.assertTrue(response.body.contains("<meta name='robots' content='noindex,nofollow'>"));
+        Assertions.assertTrue(response.body.contains("<meta property='og:type' content='article'>"));
+        Assertions.assertTrue(response.body.contains("<meta property='og:url' content='https://apichallenges.eviltester.com/seo-metadata-test-page'>"));
+        Assertions.assertTrue(response.body.contains("<meta property='og:image' content='https://apichallenges.eviltester.com/images/social/apichallenges-og-1200x630.png'>"));
+        Assertions.assertTrue(response.body.contains("<meta property='og:image:alt' content='OG preview image for API Challenges metadata tests'>"));
+        Assertions.assertTrue(response.body.contains("<meta name='twitter:card' content='summary'>"));
+        Assertions.assertTrue(response.body.contains("<meta name='twitter:site' content='@apichallenges'>"));
+        Assertions.assertTrue(response.body.contains("<meta name='twitter:image' content='https://apichallenges.eviltester.com/images/social/apichallenges-og-1200x630.png'>"));
+    }
+
+    @Test
+    void markdownPageWithNoOptionalMetadataUsesFallbackDefaults(){
+
+        final HttpResponseDetails response = http.send("/learning", "get");
+
+        Assertions.assertEquals(200, response.statusCode);
+        Assertions.assertTrue(response.body.contains("<meta name='description' content='A list of HTTP REST API learning tutorials and recommended books and practice sites for API Testing.'>"));
+        Assertions.assertTrue(response.body.contains("<meta name='robots' content='index,follow'>"));
+        Assertions.assertTrue(response.body.contains("<meta property='og:type' content='article'>"));
+        Assertions.assertTrue(response.body.contains("<meta property='og:url' content='https://apichallenges.eviltester.com/learning'>"));
+        Assertions.assertTrue(response.body.contains("<meta property='og:image' content='https://apichallenges.eviltester.com/images/social/apichallenges-og-1200x630.png'>"));
+        Assertions.assertTrue(response.body.contains("<meta name='twitter:card' content='summary_large_image'>"));
     }
 
     static Stream<Arguments> legacyUrlRedirects(){
