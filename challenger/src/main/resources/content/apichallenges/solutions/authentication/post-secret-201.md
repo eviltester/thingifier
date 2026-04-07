@@ -4,6 +4,7 @@ title: API Challenges Solution For - authentication passed 201
 seo_title: Solution: authentication passed 201 | API Challenges
 description: How to solve API challenge 30 - authenticate with username and password for basic auth.
 seo_description: Use this walkthrough to solve authentication passed 201 with request setup, key headers, and expected status codes so you can complete the challenge.
+schema_howto_steps: Create a POST request to /secret/token||Add Basic Authorization with the username and password required by the challenge||Include X-CHALLENGER so the challenge is tracked in your current session||Send the request with no body and verify the response status is 201||Capture the returned X-AUTH-TOKEN for later authorization challenges
 showads: true
 ---
 

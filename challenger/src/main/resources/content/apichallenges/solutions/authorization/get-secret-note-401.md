@@ -4,6 +4,7 @@ title: API Challenges Solution For - unauthorized secret note 401
 seo_title: Solution: unauthorized secret note 401 | API Challenges
 description: How to solve API challenge 32 - unauthorized to access secret note 403
 seo_description: Use this walkthrough to solve unauthorized secret note 401 with request setup, key headers, and expected status codes so you can complete the challenge.
+schema_howto_steps: Create a GET request to /secret/note||Add an invalid or missing X-AUTH-TOKEN value to trigger unauthorized access||Include X-CHALLENGER so the challenge is tracked in your current session||Send the request and verify the response status is 401
 showads: true
 ---
 

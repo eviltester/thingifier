@@ -4,6 +4,7 @@ title: API Challenges Solution For - Method Override Challenges
 seo_title: Solution: Method Override Challenges | API Challenges
 description: How to solve API challenges for Method Override DELETE, PATCH, TRACE.
 seo_description: Use this walkthrough to solve Method Override Challenges with request setup, key headers, and expected status codes so you can complete the challenge.
+schema_howto_steps: Create a POST request to /heartbeat for method override testing||Set X-HTTP-Method-Override to DELETE, PATCH, or TRACE as required||Include X-CHALLENGER so each override challenge is tracked in your session||Send requests for each override verb and verify the expected status code||Repeat until all method override challenges are marked complete
 showads: true
 ---
 

@@ -4,6 +4,7 @@ title: API Challenges Solution For - OPTIONS todos 200
 seo_title: Solution: OPTIONS todos 200 Guide | API Challenges
 description: How to solve API challenge 13 OPTIONS todos 200 to identify the allowed verbs for an API End Point.
 seo_description: Use this walkthrough to solve OPTIONS todos 200 with request setup, key headers, and expected status codes so you can complete the challenge confidently.
+schema_howto_steps: Create an OPTIONS request to /todos||Include X-CHALLENGER so the challenge is tracked in your current session||Send the request and verify the response status is 200
 showads: true
 ---
 

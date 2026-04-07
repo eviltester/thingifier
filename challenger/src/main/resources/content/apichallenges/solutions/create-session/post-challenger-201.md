@@ -3,6 +3,7 @@ title: API Challenges Solution For - POST Challenger (201)
 seo_title: Solution: POST Challenger (201) | API Challenges
 description: How to use a POST request to create a Challenger session and start using the API challenges
 seo_description: Use this walkthrough to solve POST Challenger (201) with request setup, key headers, and expected status codes so you can complete the challenge.
+schema_howto_steps: Create a POST request to /challenger||Send the request with no body to create a new challenger session||Capture the returned X-CHALLENGER value for subsequent challenge requests||Send the request and verify the response status is 201
 showads: true
 ---
 

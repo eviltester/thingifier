@@ -4,6 +4,7 @@ title: API Challenges Solution For - POST todos 201 - max out content
 seo_title: Solution POST todos 201 max out content | API Challenges
 description: How to solve API challenge POST todos 201 max out content by sending request details such that all fields are maximum length.
 seo_description: Use this walkthrough to solve POST todos 201 - max out with request setup, key headers, and expected status codes so you can complete the challenge.
+schema_howto_steps: Create a POST request to /todos||Include X-CHALLENGER so the challenge is tracked in your current session||Send a valid JSON payload that matches the field and content constraints||Send the request and verify the response status is 201
 showads: true
 ---
 

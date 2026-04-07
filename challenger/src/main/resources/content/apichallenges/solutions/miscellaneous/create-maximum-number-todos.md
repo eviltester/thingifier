@@ -4,6 +4,7 @@ title: API Challenges Solution For - POST /todos (201) all
 seo_title: Solution: POST /todos (201) all | API Challenges
 description: How to solve API challenges to Create maximum number of todos
 seo_description: Use this walkthrough to solve POST /todos (201) all with request setup, key headers, and expected status codes so you can complete the challenge.
+schema_howto_steps: Create todos repeatedly with POST /todos until the maximum limit is reached||Use valid JSON payloads and include X-CHALLENGER for every create request||Track successful creations so you can confirm the max-count boundary||Verify the final allowed create response and behavior at the limit||Check challenge status and confirm maximum todo creation is complete
 showads: true
 ---
 
