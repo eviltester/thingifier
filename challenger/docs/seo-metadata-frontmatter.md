@@ -21,6 +21,10 @@ og_image_alt: Image alt text for social previews
 og_type: article            # use website for home/index style pages
 twitter_card: summary_large_image
 twitter_site: @your_handle
+schema_type: Article          # defaults to Article, WebPage for index template
+schema_author: Your Name
+schema_publisher: API Challenges
+schema_image: /images/social/apichallenges-og-1200x630.png
 ```
 
 ## Notes
@@ -29,3 +33,4 @@ twitter_site: @your_handle
 - If `og_image` is not set, the global default social image is used.
 - If `meta_robots` is not set, `index,follow` is used.
 - `seo_title` is used for the HTML `<title>` tag; `title` remains the human-facing page label.
+- If `schema_type` is not set, content pages default to `Article` and index pages default to `WebPage`.

@@ -41,7 +41,11 @@ public class SeoTitleContentValidationTest {
                 "og_image_alt",
                 "og_type",
                 "twitter_card",
-                "twitter_site"
+                "twitter_site",
+                "schema_type",
+                "schema_author",
+                "schema_publisher",
+                "schema_image"
         ));
         final List<String> missingSeoTitle = new ArrayList<>();
         final List<String> emptySeoTitle = new ArrayList<>();
@@ -99,7 +103,11 @@ public class SeoTitleContentValidationTest {
             }
 
             for (String key : headerKeys) {
-                final boolean isMetadataKey = key.startsWith("seo_") || key.startsWith("og_") || key.startsWith("twitter_") || key.equals("meta_robots");
+                final boolean isMetadataKey = key.startsWith("seo_") ||
+                        key.startsWith("og_") ||
+                        key.startsWith("twitter_") ||
+                        key.startsWith("schema_") ||
+                        key.equals("meta_robots");
                 if (isMetadataKey && !allowedMetadataKeys.contains(key)) {
                     malformedMetadataKeys.add(relativePath + " -> " + key);
                 }

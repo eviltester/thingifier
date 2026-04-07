@@ -45,6 +45,10 @@ public class UiPagesAreReachableTest {
         Assertions.assertEquals(200, response.statusCode);
         Assertions.assertTrue(response.body.contains("<meta property='og:type' content='website'>"));
         Assertions.assertTrue(response.body.contains("<meta property='og:url' content='https://apichallenges.eviltester.com'>"));
+        Assertions.assertTrue(response.body.contains("application/ld+json"));
+        Assertions.assertTrue(response.body.contains("\"@type\":\"Organization\""));
+        Assertions.assertTrue(response.body.contains("\"@type\":\"WebSite\""));
+        Assertions.assertTrue(response.body.contains("\"@type\":\"WebPage\""));
         assertContainsHeaderAndFooter(response);
 
     }
@@ -170,6 +174,9 @@ public class UiPagesAreReachableTest {
         Assertions.assertTrue(response.body.contains("<meta name='twitter:card' content='summary'>"));
         Assertions.assertTrue(response.body.contains("<meta name='twitter:site' content='@apichallenges'>"));
         Assertions.assertTrue(response.body.contains("<meta name='twitter:image' content='https://apichallenges.eviltester.com/images/social/apichallenges-og-1200x630.png'>"));
+        Assertions.assertTrue(response.body.contains("\"@type\":\"Article\""));
+        Assertions.assertTrue(response.body.contains("\"description\":\"Search snippet with Alan's \\\"special\\\" chars & context.\""));
+        Assertions.assertTrue(response.body.contains("\"url\":\"https://apichallenges.eviltester.com/seo-metadata-test-page\""));
     }
 
     @Test
@@ -184,6 +191,18 @@ public class UiPagesAreReachableTest {
         Assertions.assertTrue(response.body.contains("<meta property='og:url' content='https://apichallenges.eviltester.com'>"));
         Assertions.assertTrue(response.body.contains("<meta property='og:image' content='https://apichallenges.eviltester.com/images/social/apichallenges-og-1200x630.png'>"));
         Assertions.assertTrue(response.body.contains("<meta name='twitter:card' content='summary_large_image'>"));
+        Assertions.assertTrue(response.body.contains("\"@type\":\"WebPage\""));
+    }
+
+    @Test
+    void markdownContentPageDefaultsToArticleSchema(){
+
+        final HttpResponseDetails response = http.send("/learning", "get");
+
+        Assertions.assertEquals(200, response.statusCode);
+        Assertions.assertTrue(response.body.contains("\"@type\":\"Article\""));
+        Assertions.assertTrue(response.body.contains("\"url\":\"https://apichallenges.eviltester.com/learning\""));
+        Assertions.assertTrue(response.body.contains("\"mainEntityOfPage\":\"https://apichallenges.eviltester.com/learning\""));
     }
 
     static Stream<Arguments> legacyUrlRedirects(){

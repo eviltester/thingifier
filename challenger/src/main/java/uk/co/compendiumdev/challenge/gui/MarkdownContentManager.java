@@ -28,6 +28,8 @@ public class MarkdownContentManager {
     private static final String DEFAULT_OG_TYPE_WEBSITE = "website";
     private static final String DEFAULT_TWITTER_CARD = "summary_large_image";
     private static final String DEFAULT_META_ROBOTS = "index,follow";
+    private static final String DEFAULT_SCHEMA_TYPE_CONTENT = "Article";
+    private static final String DEFAULT_SCHEMA_TYPE_INDEX = "WebPage";
 
     private final DefaultGUIHTML guiManagement;
     Logger logger = LoggerFactory.getLogger(MarkdownContentManager.class);
@@ -216,6 +218,11 @@ public class MarkdownContentManager {
         String ogType = "";
         String twitterCard = "";
         String twitterSite = "";
+        String schemaType = "";
+        String schemaAuthor = "";
+        String schemaPublisher = "";
+        String schemaImage = "";
+        String pageDatePublished = "";
         String canonicalUrl = DEFAULT_CANONICAL_HOST + contentPath;
 
         for(String aHeader : mdheaders){
@@ -252,6 +259,21 @@ public class MarkdownContentManager {
             if(aHeader.startsWith("twitter_site: ")){
                 twitterSite = aHeader.replace("twitter_site: " , "");
             }
+            if(aHeader.startsWith("schema_type: ")){
+                schemaType = aHeader.replace("schema_type: " , "");
+            }
+            if(aHeader.startsWith("schema_author: ")){
+                schemaAuthor = aHeader.replace("schema_author: " , "");
+            }
+            if(aHeader.startsWith("schema_publisher: ")){
+                schemaPublisher = aHeader.replace("schema_publisher: " , "");
+            }
+            if(aHeader.startsWith("schema_image: ")){
+                schemaImage = aHeader.replace("schema_image: " , "");
+            }
+            if(aHeader.startsWith("date:")){
+                pageDatePublished = aHeader.replaceFirst("^date:\\s*", "");
+            }
         }
 
         final String htmlTitle = seoTitle.isEmpty() ? pageTitle : seoTitle;
@@ -285,6 +307,25 @@ public class MarkdownContentManager {
         headerInject = headerInject + "<meta name='twitter:image' content='" + escapeHtmlAttribute(ogImageAbsoluteUrl) + "'>";
         if(!twitterSiteValue.isEmpty()){
             headerInject = headerInject + "<meta name='twitter:site' content='" + escapeHtmlAttribute(twitterSiteValue) + "'>";
+        }
+
+        final String schemaTypeValue = schemaType.isEmpty() ?
+                (indexTemplate ? DEFAULT_SCHEMA_TYPE_INDEX : DEFAULT_SCHEMA_TYPE_CONTENT) : schemaType;
+        final String schemaImageAbsoluteUrl = absolutizeUrl(schemaImage.isEmpty() ? ogImageAbsoluteUrl : schemaImage, canonicalHost);
+        final String schemaPublisherValue = schemaPublisher.isEmpty() ?
+                getEnvironmentOrDefault("SEO_SCHEMA_ORG_NAME", DEFAULT_SITE_NAME) : schemaPublisher;
+        final String schemaJsonLd = buildSchemaJsonLd(
+                canonicalHost,
+                canonicalAbsoluteUrl,
+                htmlTitle,
+                htmlDescription,
+                schemaTypeValue,
+                schemaImageAbsoluteUrl,
+                schemaAuthor,
+                schemaPublisherValue,
+                pageDatePublished);
+        if(!schemaJsonLd.isEmpty()){
+            headerInject = headerInject + schemaJsonLd;
         }
 
         StringBuilder html = new StringBuilder();
@@ -418,6 +459,176 @@ public class MarkdownContentManager {
                 .replace("'", "&#39;")
                 .replace("<", "&lt;")
                 .replace(">", "&gt;");
+    }
+
+    private String buildSchemaJsonLd(final String canonicalHost,
+                                     final String canonicalAbsoluteUrl,
+                                     final String htmlTitle,
+                                     final String htmlDescription,
+                                     final String schemaTypeValue,
+                                     final String schemaImageAbsoluteUrl,
+                                     final String schemaAuthor,
+                                     final String schemaPublisherValue,
+                                     final String pageDatePublished){
+
+        final String orgName = getEnvironmentOrDefault("SEO_SCHEMA_ORG_NAME", DEFAULT_SITE_NAME);
+        final String websiteName = getEnvironmentOrDefault("SEO_SCHEMA_WEBSITE_NAME", DEFAULT_SITE_NAME);
+        final String logoUrl = absolutizeUrl(
+                getEnvironmentOrDefault("SEO_SCHEMA_LOGO_URL", DEFAULT_OG_IMAGE_PATH), canonicalHost);
+
+        final List<String> sameAsLinks = parseCommaSeparatedUrls(System.getenv("SEO_SCHEMA_SAME_AS"));
+        final String searchActionTemplate = System.getenv("SEO_SCHEMA_SEARCH_URL_TEMPLATE");
+
+        final StringBuilder scripts = new StringBuilder();
+        scripts.append(toJsonLdScript(buildOrganizationJson(orgName, canonicalHost, logoUrl, sameAsLinks)));
+        scripts.append(toJsonLdScript(buildWebsiteJson(websiteName, canonicalHost, orgName, searchActionTemplate)));
+        scripts.append(toJsonLdScript(buildPageJson(
+                schemaTypeValue,
+                htmlTitle,
+                htmlDescription,
+                canonicalAbsoluteUrl,
+                schemaImageAbsoluteUrl,
+                schemaAuthor,
+                schemaPublisherValue,
+                pageDatePublished
+        )));
+        return scripts.toString();
+    }
+
+    private String toJsonLdScript(final String json){
+        if(json==null || json.isEmpty()){
+            return "";
+        }
+        // Prevent accidental script close within inline JSON.
+        final String safeJson = json.replace("</", "<\\/");
+        return "<script type='application/ld+json'>" + safeJson + "</script>";
+    }
+
+    private List<String> parseCommaSeparatedUrls(final String csv){
+        if(csv==null || csv.trim().isEmpty()){
+            return Collections.emptyList();
+        }
+        return Arrays.stream(csv.split(","))
+                .map(String::trim)
+                .filter(item -> !item.isEmpty())
+                .collect(Collectors.toList());
+    }
+
+    private String buildOrganizationJson(final String organizationName,
+                                         final String canonicalHost,
+                                         final String logoUrl,
+                                         final List<String> sameAsLinks){
+        StringBuilder json = new StringBuilder();
+        json.append("{");
+        json.append("\"@context\":\"https://schema.org\",");
+        json.append("\"@type\":\"Organization\",");
+        json.append("\"name\":\"").append(escapeJsonValue(organizationName)).append("\",");
+        json.append("\"url\":\"").append(escapeJsonValue(canonicalHost)).append("\"");
+
+        if(!logoUrl.isEmpty()){
+            json.append(",\"logo\":{\"@type\":\"ImageObject\",\"url\":\"")
+                    .append(escapeJsonValue(logoUrl))
+                    .append("\"}");
+        }
+
+        if(!sameAsLinks.isEmpty()){
+            json.append(",\"sameAs\":[");
+            for(int i=0; i<sameAsLinks.size(); i++){
+                if(i>0){
+                    json.append(",");
+                }
+                json.append("\"").append(escapeJsonValue(sameAsLinks.get(i))).append("\"");
+            }
+            json.append("]");
+        }
+
+        json.append("}");
+        return json.toString();
+    }
+
+    private String buildWebsiteJson(final String websiteName,
+                                    final String canonicalHost,
+                                    final String organizationName,
+                                    final String searchActionTemplate){
+        StringBuilder json = new StringBuilder();
+        json.append("{");
+        json.append("\"@context\":\"https://schema.org\",");
+        json.append("\"@type\":\"WebSite\",");
+        json.append("\"name\":\"").append(escapeJsonValue(websiteName)).append("\",");
+        json.append("\"url\":\"").append(escapeJsonValue(canonicalHost)).append("\"");
+        json.append(",\"publisher\":{\"@type\":\"Organization\",\"name\":\"")
+                .append(escapeJsonValue(organizationName))
+                .append("\"}");
+
+        if(searchActionTemplate!=null && !searchActionTemplate.trim().isEmpty()){
+            json.append(",\"potentialAction\":{");
+            json.append("\"@type\":\"SearchAction\",");
+            json.append("\"target\":\"").append(escapeJsonValue(searchActionTemplate.trim())).append("\",");
+            json.append("\"query-input\":\"required name=search_term_string\"");
+            json.append("}");
+        }
+
+        json.append("}");
+        return json.toString();
+    }
+
+    private String buildPageJson(final String schemaTypeValue,
+                                 final String htmlTitle,
+                                 final String htmlDescription,
+                                 final String canonicalAbsoluteUrl,
+                                 final String schemaImageAbsoluteUrl,
+                                 final String schemaAuthor,
+                                 final String schemaPublisherValue,
+                                 final String pageDatePublished){
+        StringBuilder json = new StringBuilder();
+        json.append("{");
+        json.append("\"@context\":\"https://schema.org\",");
+        json.append("\"@type\":\"").append(escapeJsonValue(schemaTypeValue)).append("\",");
+        json.append("\"name\":\"").append(escapeJsonValue(htmlTitle)).append("\",");
+        if("Article".equalsIgnoreCase(schemaTypeValue)){
+            json.append("\"headline\":\"").append(escapeJsonValue(htmlTitle)).append("\",");
+        }
+        if(!htmlDescription.isEmpty()){
+            json.append("\"description\":\"").append(escapeJsonValue(htmlDescription)).append("\",");
+        }
+        json.append("\"url\":\"").append(escapeJsonValue(canonicalAbsoluteUrl)).append("\",");
+        json.append("\"mainEntityOfPage\":\"").append(escapeJsonValue(canonicalAbsoluteUrl)).append("\"");
+
+        if(!schemaImageAbsoluteUrl.isEmpty()){
+            json.append(",\"image\":\"").append(escapeJsonValue(schemaImageAbsoluteUrl)).append("\"");
+        }
+        if(!schemaAuthor.isEmpty()){
+            json.append(",\"author\":{\"@type\":\"Person\",\"name\":\"")
+                    .append(escapeJsonValue(schemaAuthor))
+                    .append("\"}");
+        }
+        if(!schemaPublisherValue.isEmpty()){
+            json.append(",\"publisher\":{\"@type\":\"Organization\",\"name\":\"")
+                    .append(escapeJsonValue(schemaPublisherValue))
+                    .append("\"}");
+        }
+        if(!pageDatePublished.isEmpty()){
+            json.append(",\"datePublished\":\"")
+                    .append(escapeJsonValue(pageDatePublished))
+                    .append("\"");
+        }
+
+        json.append("}");
+        return json.toString();
+    }
+
+    private String escapeJsonValue(final String value){
+        if(value==null){
+            return "";
+        }
+        return value
+                .replace("\\", "\\\\")
+                .replace("\"", "\\\"")
+                .replace("\b", "\\b")
+                .replace("\f", "\\f")
+                .replace("\n", "\\n")
+                .replace("\r", "\\r")
+                .replace("\t", "\\t");
     }
 
     private InputStream getResourceAsStream(String fileName) {
