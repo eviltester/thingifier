@@ -165,3 +165,13 @@ div.sponsor-top {
 div.sponsor-top a {
     color: #c0e0de;
 }
+aside.author-bio-snippet {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    border-left: 4px solid #1f4e79;
+    background: #f2f6fb;
+}
+
+aside.author-bio-snippet p {
+    margin: 0.25rem 0;
+}

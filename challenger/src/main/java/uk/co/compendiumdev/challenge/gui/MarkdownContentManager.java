@@ -35,6 +35,8 @@ public class MarkdownContentManager {
     private static final String DEFAULT_SCHEMA_PUBLISHER_NAME = "eviltester.com";
     private static final String DEFAULT_SCHEMA_AUTHOR_RESOURCE = "seo/schema-author.properties";
     private static final String DEFAULT_SCHEMA_PUBLISHER_RESOURCE = "seo/schema-publisher.properties";
+    private static final String DEFAULT_AUTHOR_BIO_PATH = "/author/alan-richardson";
+    private static final String DEFAULT_AUTHOR_BIO_SNIPPET_RESOURCE = "partials/author-bio-snippet.html";
 
     private final DefaultGUIHTML guiManagement;
     Logger logger = LoggerFactory.getLogger(MarkdownContentManager.class);
@@ -354,6 +356,13 @@ public class MarkdownContentManager {
         final String schemaAuthorValue = schemaAuthor.isEmpty() ? defaultSchemaAuthor : schemaAuthor;
         final String defaultSchemaPublisher = getSchemaPublisherDefaultName();
         final String schemaPublisherValue = schemaPublisher.isEmpty() ? defaultSchemaPublisher : schemaPublisher;
+        final String authorJobTitle = schemaAuthorDefaults.getProperty("jobTitle", "").trim();
+        final String authorBioSnippet = buildAuthorBioSnippet(
+                contentFolder,
+                contentPath,
+                schemaAuthorValue,
+                authorJobTitle,
+                DEFAULT_AUTHOR_BIO_PATH);
         final Boolean schemaBreadcrumbEnabled = parseOptionalBoolean(schemaBreadcrumbEnabledRaw);
         final Boolean schemaHowToEnabled = parseOptionalBoolean(schemaHowToEnabledRaw);
         final List<String> schemaHowToSteps = parseHowToSteps(schemaHowToStepsRaw);
@@ -405,6 +414,7 @@ public class MarkdownContentManager {
         html.append("<div class=\"main-text-content\">\n");
         html.append(renderer.render(document));
         html.append("</div>\n");
+        html.append(authorBioSnippet);
         html.append(guiManagement.getEndOfMainContentMarker());
         if(!mdheaders.contains("template: index")) {
             html.append("</div>");
@@ -1026,6 +1036,56 @@ public class MarkdownContentManager {
                 .map(String::trim)
                 .filter(item -> !item.isEmpty())
                 .collect(Collectors.toList());
+    }
+
+    private String buildAuthorBioSnippet(final String contentFolder,
+                                         final String contentPath,
+                                         final String authorName,
+                                         final String authorJobTitle,
+                                         final String authorBioPath){
+        final boolean isContentPage = "content".equalsIgnoreCase(contentFolder);
+        final boolean isAuthorPage = contentPath != null && contentPath.equalsIgnoreCase(authorBioPath);
+        if(!isContentPage || isAuthorPage){
+            return "";
+        }
+
+        final String safeAuthorName = escapeHtmlAttribute(authorName);
+        final String safeAuthorJobTitle = escapeHtmlAttribute(authorJobTitle);
+        final String safeAuthorJobTitleWithPrefix = safeAuthorJobTitle.isEmpty() ? "" : ", " + safeAuthorJobTitle;
+        final String safeAuthorBioPath = escapeHtmlAttribute(authorBioPath);
+
+        try{
+            return getResourceAsString(DEFAULT_AUTHOR_BIO_SNIPPET_RESOURCE)
+                    .replace("{{AUTHOR_NAME}}", safeAuthorName)
+                    .replace("{{AUTHOR_JOB_TITLE_WITH_PREFIX}}", safeAuthorJobTitleWithPrefix)
+                    .replace("{{AUTHOR_BIO_PATH}}", safeAuthorBioPath);
+        }catch(Exception e){
+            logger.warn("Could not load author snippet resource {}, using fallback html", DEFAULT_AUTHOR_BIO_SNIPPET_RESOURCE, e);
+            return buildInlineAuthorBioSnippetFallback(
+                    safeAuthorName,
+                    safeAuthorJobTitle,
+                    safeAuthorBioPath);
+        }
+    }
+
+    private String buildInlineAuthorBioSnippetFallback(final String safeAuthorName,
+                                                       final String safeAuthorJobTitle,
+                                                       final String safeAuthorBioPath){
+        StringBuilder snippet = new StringBuilder();
+        snippet.append("<aside class='author-bio-snippet' aria-label='About the author'>");
+        snippet.append("<p><strong>Written by ")
+                .append(safeAuthorName)
+                .append("</strong>");
+        if(!safeAuthorJobTitle.isEmpty()){
+            snippet.append(", ").append(safeAuthorJobTitle);
+        }
+        snippet.append(".</p>");
+        snippet.append("<p><a href='")
+                .append(safeAuthorBioPath)
+                .append("'>Read the full author bio and credentials</a>")
+                .append(".</p>");
+        snippet.append("</aside>");
+        return snippet.toString();
     }
 
     private InputStream getResourceAsStream(String fileName) {

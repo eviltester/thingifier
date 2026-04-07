@@ -217,6 +217,19 @@ public class UiPagesAreReachableTest {
         Assertions.assertTrue(response.body.contains("\"legalName\":\"Compendium Developments Ltd\""));
         Assertions.assertTrue(response.body.contains("\"dateModified\":\"2026-02-18\""));
         Assertions.assertTrue(response.body.contains("\"@type\":\"BreadcrumbList\""));
+        Assertions.assertTrue(response.body.contains("<aside class='author-bio-snippet'"));
+        Assertions.assertTrue(response.body.contains("href='/author/alan-richardson'"));
+    }
+
+    @Test
+    void authorBioPageIsReachable(){
+
+        final HttpResponseDetails response = http.send("/author/alan-richardson", "get");
+
+        Assertions.assertEquals(200, response.statusCode);
+        Assertions.assertTrue(response.body.contains("<title>Alan Richardson Author Profile and API Testing Credentials</title>"));
+        Assertions.assertTrue(response.body.contains("<h1>About Alan Richardson</h1>"));
+        Assertions.assertFalse(response.body.contains("<aside class='author-bio-snippet'"));
     }
 
     @Test
@@ -273,3 +286,4 @@ public class UiPagesAreReachableTest {
     }
 
 }
+
