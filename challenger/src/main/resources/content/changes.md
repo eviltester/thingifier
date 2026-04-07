@@ -2,12 +2,17 @@
 title: API Challenges Change Log
 seo_title: Change Log Guide for API Testing | API Challenges Guide
 description: Change log for the API Challenges
-lastmod: 2026-02-18
+lastmod: 2026-04-07
 seo_description: Track API Challenges updates, including new guides, improvements, and feature changes that help you learn API testing more effectively over time.
 showads: true
 ---
 
 # Change Log
+
+## 2026/04/07 - Author page and formatting
+
+- Added [Author page](/author/alan-richardson)
+- Various page formatting tweaks and minor content edits
 
 ## 2025/04/24 - Heavyweight Desktop Client Tool Reviews
 
