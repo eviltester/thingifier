@@ -1,6 +1,6 @@
 ---
 title: Insomnia HTTP Rest Client - Overview and Review
-seo_title: Insomnia HTTP Rest Client - Overview and Review | API Client Review
+seo_title: Insomnia API Client Review for Exploratory Testing
 description: An overview of the Insomnia HTTP REST API Client.
 lastmod: 2026-02-18
 seo_description: Review Insomnia HTTP Rest Client for API testing, including strengths, limitations, and practical fit so you can choose the right client for your workflow.
@@ -110,3 +110,4 @@ It is possible to use Insomnia in scratchpad mode as a capable free exploratory 
 When logged in it is possible to work on multiple collections. And these can be locally stored. I am not sure where they are locally stored so they are not suitable for sharing. The Git Sync feature where you can choose the folder is part of the Team Plan. It is possible to store your projects in cloud and collaborate, but I think only for 1 project.
 
 Insomnia is still a capable tool for local exploratory testing and free to use. Can be used without login in scratchpad mode, you just don't get shared collections online.
+

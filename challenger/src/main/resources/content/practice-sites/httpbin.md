@@ -1,6 +1,6 @@
 ---
 title: HttpBin - An Attp Request and Response Service - Practice HTTP
-seo_title: HttpBin - Http Request and Response Service | API Practice Site Guide
+seo_title: HTTPBin API Practice Site Guide for HTTP Testing
 description: An overview of the HttpBin site, explaining how to use it to learn about HTTP Requests and Responses.
 lastmod: 2026-02-18
 seo_description: Use HttpBin - An Attp Request to practice API testing with realistic scenarios and endpoint variety that strengthen request design and validation skills.
@@ -115,3 +115,5 @@ The Dynamic Data Endpoints respond based on the input so it is possible to explo
 - when exploring the headers endpoint, the only way I can determine if the client is adding the header, or if it is the HTTP server, is by configuring my REST Client to use an HTTP Proxy like BurpSuite.
 - My Http Proxy was also the only way I found of issuing a clean request to the server.
 - I also found it interesting that when I amended the "Host" header in my REST Client (Bruno) to be an invalid host like "bob", my Proxy refused to send the message to the server. So I discovered a guard in my Proxy that I didn't know about.
+
+

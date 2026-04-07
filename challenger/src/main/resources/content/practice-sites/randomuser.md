@@ -1,6 +1,6 @@
 ---
 title: RandomUser - Random User Generator - Example API
-seo_title: RandomUser - Random User Generator - Example | API Practice Site Guide
+seo_title: RandomUser API Practice Site Guide for Data Testing
 description: An overview of the Random User Generator API, explaining how to use it to learn about APIs and practice with API tooling.
 lastmod: 2026-02-18
 seo_description: Use RandomUser - Random User to practice API testing with realistic scenarios and endpoint variety that strengthen request design and validation skills.
@@ -94,3 +94,5 @@ I've created a set of suggested exercises in case you need some prompting for pr
 
 
  
+
+

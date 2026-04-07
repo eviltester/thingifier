@@ -21,7 +21,7 @@ If you are a company or corporation that would like to sponsor the project then 
 
 ## Current Platinum sponsor
 
-[![](https://www.eviltester.com/siteimages/evil_laugh_cleaned_transparent_h300.png)](https://eviltester.com)
+[![EvilTester.com log](https://www.eviltester.com/siteimages/evil_laugh_cleaned_transparent_h300.png)](https://eviltester.com)
 
 - [EvilTester.com](https://eviltester.com) free online training and books related to Software Testing and Development. Also including The Evil Tester Show podcast, and YouTube video channel.
 

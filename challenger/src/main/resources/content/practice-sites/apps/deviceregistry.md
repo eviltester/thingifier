@@ -1,6 +1,6 @@
 ---
 title: Device Registry - A simple API with authentication - Practice Test API
-seo_title: Device Registry - A simple API with auth | Practice API and Web App
+seo_title: Device Registry API Practice Guide with Authentication
 description: Device Registry is a simple API with endpoints protected by basic authentication.
 lastmod: 2026-02-18
 seo_description: Practice with Device Registry - A simple using realistic endpoints and scenarios that help you improve API testing decisions, and request quality.
@@ -192,4 +192,6 @@ Some observations made when I followed the sample exercises. It is generally rec
 
 - When not authenticated the system responds with `unauthenticated`
 - When authenticated the system leaks information about the other users' content e.g. `GET /devices/3` results in `"Forbidden"` so I know that some user has a device with `id = 3`, but I don't know who.
+
+
 

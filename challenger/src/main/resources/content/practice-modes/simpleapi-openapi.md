@@ -1,6 +1,6 @@
 ---
 title: Simple API Open API Swagger File
-seo_title: Simple API Open API Swagger File | API Challenges Practice Mode
+seo_title: Simple API OpenAPI Swagger | API Practice Mode
 description: Download the Open API files for the Simple API.
 lastmod: 2026-02-18
 seo_description: Use Simple API Open API Swagger to practice safely, understand request-response behavior, and build confidence with guided exercises before advanced.
@@ -37,3 +37,4 @@ It lists all the end points with more Verbs i.e. even verbs that the API defines
 The parameters are also possible to send as empty and type validation is not performed on the parameter values. This makes it possible to use Swagger UI applications to test more extreme situations.
 
 - [Download Permissive OpenAPI File](/simpleapi/docs/swagger?permissive)
+

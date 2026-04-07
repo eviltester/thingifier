@@ -1,6 +1,6 @@
 ---
 title: Bruno HTTP Rest Client - Overview and Review
-seo_title: Bruno HTTP Rest Client - Overview and Review | API Client Review
+seo_title: Bruno API Client Review for Exploratory Testing
 description: An overview of the Bruno HTTP REST API Client.
 lastmod: 2026-02-18
 seo_description: Review Bruno HTTP Rest Client for API testing, including strengths, limitations, and practical fit so you can choose the right client for your workflow.
@@ -273,3 +273,4 @@ if(comment!=null){
 
 fs.appendFileSync(filename, content);
 ```
+

@@ -1,6 +1,6 @@
 ---
 title: Toolshop API - A Web Application and API for Practicing Testing and Automating
-seo_title: Toolshop API - A Web Application and API | Practice API and Web App
+seo_title: Toolshop API Practice Guide for Web and API Testing
 description: Toolshop API is an online public application and API supporting logins and has multiple versions with bugs and without bugs.
 lastmod: 2026-02-18
 seo_description: Practice with Toolshop API - A Web using realistic endpoints and scenarios that help you improve API testing decisions, request quality, and confidence.
@@ -163,3 +163,5 @@ e.g.
 
 - The user management is vulnerable, possibly by design because it is a testing app, to insecure access e.g. I should not be able to change the password but that is what the forgotten password request does
 - Endpoints also reveal if emails are already in use
+
+

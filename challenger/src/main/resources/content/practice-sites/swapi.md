@@ -1,6 +1,6 @@
 ---
 title: Swapi - Star Wars API - Example Site
-seo_title: Swapi - Star Wars API - Example Site | API Practice Site Guide
+seo_title: SWAPI API Practice Site Guide for Endpoint Exploration
 description: An overview of the Star Wars API application, explaining how to use it to learn about APIs and practice with API tooling.
 lastmod: 2026-02-18
 seo_description: Use Swapi - Star Wars API - to practice API testing with realistic scenarios and endpoint variety that strengthen request design and validation skills.
@@ -159,3 +159,5 @@ The interesting part of exploring the API is that I don’t know if these non-st
 One thing I might want to do is look through the source code and try to decide if any of the observations are bugs or if they are there intentionally. 
 
  
+
+

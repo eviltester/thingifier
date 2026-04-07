@@ -1,6 +1,6 @@
 ---
 title: Postman HTTP Rest Client - Overview and Review
-seo_title: Postman HTTP Rest Client - Overview and Review | API Client Review
+seo_title: Postman API Client Review for Exploratory Testing
 description: An overview of the Postman HTTP REST API Client.
 lastmod: 2026-02-18
 seo_description: Review Postman HTTP Rest Client for API testing, including strengths, limitations, and practical fit so you can choose the right client for your workflow.
@@ -106,3 +106,4 @@ It is possible to export collections to disk.
 I'm sure, with time, I could get used to the UI, but I don't need the complexity on offer here.
 
 Looking through the pricing and licensing page https://www.postman.com/pricing/ it does seem as though there has been an effort to clean this up and make it less ambiguous. The free plan does seem to be completely free, for any sized companies. The free plan limits the number of people you can collaborate with via cloud projects, but since you can export collections and save them locally you can share the collection with as many people as you want. The 'teams of 3' text is just an example, not a license condition.
+

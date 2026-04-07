@@ -1,6 +1,6 @@
 ---
 title: JSON Placeholder - Simulator API - Example API
-seo_title: JSON Placeholder - Example Simulator API | API Practice Site Guide
+seo_title: JSONPlaceholder API Practice Site Guide for Testers
 description: An overview of the JSON Placeholder simulator API for practicing tooling requests.
 lastmod: 2026-02-18
 seo_description: Use JSON Placeholder - to practice API testing with realistic scenarios and endpoint variety that strengthen request design and validation skills.
@@ -117,3 +117,5 @@ I've created a set of suggested exercises in case you need some prompting for pr
    - POST to `https://jsonplaceholder.typicode.com/posts/3` resulted in a 404, but I would expect it to have been a `405` METHOD NOT ALLOWED because this API simulator uses `PUT` to amend entities
 
  
+
+

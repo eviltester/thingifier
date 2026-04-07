@@ -1,6 +1,6 @@
 ---
 title: Kreya HTTP API Rest Client - Overview and Review
-seo_title: Kreya HTTP API Rest Client - Overview and Review | API Client Review
+seo_title: Kreya API Client Review for Exploratory Testing
 description: An overview of the Kreya HTTP REST API Client.
 lastmod: 2026-02-18
 seo_description: Review Kreya HTTP API Rest Client for API testing, including strengths, limitations, and practical fit so you can choose the right client for your workflow.
@@ -122,3 +122,4 @@ Without proxy support I might not have found this quickly because there is no hi
 The Open API import did not pick up the environments in the file so the base url needs to be set at the collection level.
 
 But it does support Open API, which is good.
+

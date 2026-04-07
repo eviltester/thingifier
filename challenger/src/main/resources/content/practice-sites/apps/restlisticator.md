@@ -1,6 +1,6 @@
 ---
 title: RestListicator - A Simple REST API for practicing testing - Practice API
-seo_title: RestListicator - A Simple REST API | Practice API and Web App
+seo_title: RestListicator API Practice Guide for REST Testing
 description: A very simple REST API with user management and full HTTP Verb support, runnable via Docker.
 lastmod: 2026-02-18
 seo_description: Practice with RestListicator - A Simple using realistic endpoints and scenarios that help you improve API testing decisions, and approach.
@@ -208,5 +208,7 @@ These observations were made using the buggy version of the application.
 - `GET` a list that does not exist generated a `400` without an error message not a `404` e.g. `lists/bob`
 - `GET` on a user that does not exist does not show different error to one which does, if I'm not authenticated then I just see `401`, that's good
 - `GET` on a listicator endpoint that does not exist returns a 404 in HTML mode rather than an API - content-type text/html - suggests it is more of a 'web app' and only some endpoints are API endpoints
+
+
 
 

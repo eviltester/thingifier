@@ -1,6 +1,6 @@
 ---
 title: Yaak HTTP Rest Client - Overview and Review
-seo_title: Yaak HTTP Rest Client - Overview and Review | API Client Review
+seo_title: Yaak API Client Review for Exploratory Testing
 description: An overview of the Yaak HTTP REST API Client.
 lastmod: 2026-02-18
 seo_description: Review Yaak HTTP Rest Client for API testing, including strengths, limitations, and practical fit so you can choose the right client for your workflow.
@@ -129,3 +129,4 @@ From then on, running `npm start` in the directory will run `Yaak`
 **Note: closing the application the VITE server was still running on port 1420, to allow me to re-run Yaak and stop the VITE server I issued the command `npx kill-port 1420`**
 
 So it isn't quite as convenient as running the pre-built binary, but if you are using this in a commercial environment with more than two people and want to use it as a free tool. This is what you do.
+

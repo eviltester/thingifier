@@ -1,6 +1,6 @@
 ---
 title: About The API Challenges
-seo_title: Learn API Testing by Doing Hands on Practice | API Challenges
+seo_title: Learn API Testing with Hands-On Challenges and Tutorials
 description: A brief overview of the API challenges and how to use them as a self-guided learning path for API Testing
 lastmod: 2026-02-18
 seo_description: Learn API testing by doing with guided challenges, practical tutorials, and realistic exercises that build confidence with real requests and responses.
@@ -71,3 +71,5 @@ To track your challenges and use the gamification tracking to view your progress
 - and your progress will be tracked in the system memory
 
 Full details are included in the [multi-user](/gui/multiuser) instructions. And in the information on the [challenges list page](/gui/challenges).
+
+

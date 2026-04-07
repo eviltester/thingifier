@@ -1,6 +1,6 @@
 ---
 title: Soap UI HTTP Rest Client - Overview and Review
-seo_title: Soap UI HTTP Rest Client - Overview and Review | API Client Review
+seo_title: SoapUI API Client Review for Exploratory Testing
 description: An overview of the Soap UI HTTP REST API Client.
 lastmod: 2026-02-18
 seo_description: Review Soap UI HTTP Rest Client for API testing, including strengths, limitations, and practical fit so you can choose the right client for your workflow.
@@ -151,3 +151,4 @@ Pros:
 - can create adhoc load tests
 - can output the http log for a test session
 - no cURL support
+

@@ -1,5 +1,6 @@
 ---
 title: The API Challenges - API Tutorials and API Testing Practice Exercises
+seo_title: API Challenges Tutorials and Testing Practice
 description: A practice API application with tutorials for HTTP and REST APIs. Guided exercises and gamification hands on learning path.
 lastmod: 2026-02-18
 template: index
@@ -113,4 +114,5 @@ This application is sponsored by [EvilTester.com](https://eviltester.com) - a bl
 For a full list of corporate sponsors and how you can sponsor and support this application check out our [sponsorship page](/sponsors)
 
 Individuals can support this project through [Patreon](https://patreon.com/eviltester), or Github Sponsors
+
 

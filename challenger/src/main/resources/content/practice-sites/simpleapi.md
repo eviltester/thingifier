@@ -1,6 +1,6 @@
 ---
 title: Simple API - A Multi-verb API with no security requirements - Practice API
-seo_title: Simple API - A Multi-verb API with no login | API Practice Site Guide
+seo_title: Simple API Practice Site Guide for Multi-Verb Testing
 description: An overview of the Simple API practice API site, explaining how to use it to learn about APIs and practice with API tooling.
 lastmod: 2026-02-18
 seo_description: Use Simple API - A Multi-verb to practice API testing with realistic scenarios and endpoint variety that strengthen request design and validation skills.
@@ -156,3 +156,5 @@ The Simple API has:
 - Do all endpoints and calls support this?
 - Do you think you could mix and match `content-type` and `accept` so that you can send `JSON` and receive `XML`?
 - Could you send `XML` and receive `JSON`?
+
+

@@ -1,6 +1,6 @@
 ---
 title: Best Buy API Playground - An old version of the Best Buy API - Practice API
-seo_title: Best Buy API Playground real-world example | Practice API and Web App
+seo_title: Best Buy API Playground Practice Guide for Testers
 description: Best Buy API Playground is an old version of the Best Buy API. Notable for comprehensive query filter operations.
 lastmod: 2026-02-18
 seo_description: Practice with Best Buy API Playground - using realistic endpoints and scenarios that help you improve API testing decisions, and request quality.
@@ -134,3 +134,5 @@ The main endpoints are:
 
 - The API examples are all `JSON` so I tried asking the API for `application/xml` I received a `500` error. I rather expected a `400` error because the request was asking for something the API did not support, rather than the server throwing a `500` General Error.
 - Since the `xml` request failed I wondered what would happen with a `text/html` response and I found it interesting that the server did actually respond with an error in HTML format.
+
+

@@ -1,6 +1,6 @@
 ---
 title: Httpie HTTP API Rest Client - Overview and Review
-seo_title: Httpie HTTP API Rest Client - Overview and Review | API Client Review
+seo_title: HTTPie API Client Review for Exploratory Testing
 description: An overview of the Httpie HTTP REST API Client.
 lastmod: 2026-02-18
 seo_description: Review Httpie HTTP API Rest Client for API testing, including strengths, limitations, and practical fit so you can choose the right client for you.
@@ -86,3 +86,4 @@ Httpie was pretty but did not meet my basic needs.
 The lack of Open API import would hinder most people using it in production environments.
 
 The lack of Proxy support means that I wouldn't consider it for exploratory testing.
+
