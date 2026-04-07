@@ -2,6 +2,7 @@
 title: API Challenges Solution For -  GET todo 404
 seo_title: Solution: GET todo 404 Guide | API Challenges
 description: How to solve challenge GET todo 404.
+seo_description: Use this walkthrough to solve GET todo 404 with request setup, key headers, and expected status codes so you can complete the challenge confidently.
 showads: true
 ---
 

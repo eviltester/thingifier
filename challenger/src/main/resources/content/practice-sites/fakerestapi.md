@@ -2,6 +2,7 @@
 title: Fake REST API - A Simulator API 
 seo_title: Fake REST API - A Simulator API | API Practice Site Guide
 description: An overview of the Fake REST API for practicing tooling requests.
+seo_description: Use Fake REST API - A Simulator to practice API testing with realistic scenarios and endpoint variety that strengthen request design and validation skills.
 showads: true
 ---
 

@@ -3,6 +3,7 @@ date:  2021-07-17T10:32:00Z
 title: API Challenges Solution For - GET todos Invalid Accept Header 406
 seo_title: Solution: GET todos Invalid Accept Head | API Challenges
 description: How to solve API challenge GET todos Invalid Accept 406 to GET the todos with an unsupported accept header present which generates a 406 error response.
+seo_description: Use this walkthrough to solve GET todos Invalid Accept with request setup, key headers, and expected status codes so you can complete the challenge.
 showads: true
 ---
 

@@ -3,6 +3,7 @@ date:  2025-01-01T12:53:00Z
 title: API Challenges Solution For - PUT todos/id 200 full update
 seo_title: Solution: PUT todos/id 200 partial | API Challenges
 description: How to solve API challenge PUT todos/id 200 to update a todo in the application with a full payload.
+seo_description: Use this walkthrough to solve PUT todos/id 200 full update with request setup, key headers, and expected status codes so you can complete the challenge.
 showads: true
 ---
 

@@ -2,6 +2,7 @@
 title: API Challenges Open API Swagger File
 seo_title: Open API Swagger File for Practicing | API Challenges
 description: Download the Open API files for the API Challenges.
+seo_description: Explore API Challenges Open API with practical guidance and actionable next steps designed to improve API testing skills through hands-on practice.
 showads: true
 ---
 

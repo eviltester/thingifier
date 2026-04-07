@@ -3,6 +3,7 @@ date:  2024-12-31T15:35:00Z
 title: API Challenges Solution For - POST todos 413 - content too long
 seo_title: Solution POST todos 413 long content | API Challenges
 description: How to solve API challenge POST todos 413 content too long by sending a payload that is too large.
+seo_description: Use this walkthrough to solve POST todos 413 - content with request setup, key headers, and expected status codes so you can complete the challenge.
 showads: true
 ---
 

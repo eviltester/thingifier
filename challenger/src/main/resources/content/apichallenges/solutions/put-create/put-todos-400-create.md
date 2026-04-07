@@ -3,6 +3,7 @@ date:  2025-01-01T11:05:00Z
 title: API Challenges Solution For - PUT todos/id 400
 seo_title: Solution: PUT todos/id 400 Guide | API Challenges
 description: How to solve API challenge PUT todos/id 400 invalid to create with PUT.
+seo_description: Use this walkthrough to solve PUT todos/id 400 with request setup, key headers, and expected status codes so you can complete the challenge confidently.
 showads: true
 ---
 

@@ -2,6 +2,7 @@
 title: API Challenges Solution For - GET todos id 200
 seo_title: Solution: GET todos id 200 Guide | API Challenges
 description: How to solve challenge GET todos id 200.
+seo_description: Use this walkthrough to solve GET todos id 200 with request setup, key headers, and expected status codes so you can complete the challenge confidently.
 showads: true
 ---
 

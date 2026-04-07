@@ -46,6 +46,9 @@ public class SeoTitleContentValidationTest {
         final List<String> missingSeoTitle = new ArrayList<>();
         final List<String> emptySeoTitle = new ArrayList<>();
         final List<String> outOfRangeSeoTitle = new ArrayList<>();
+        final List<String> missingSeoDescription = new ArrayList<>();
+        final List<String> emptySeoDescription = new ArrayList<>();
+        final List<String> outOfRangeSeoDescription = new ArrayList<>();
         final List<String> missingDescriptionForIndexablePage = new ArrayList<>();
         final List<String> malformedMetadataKeys = new ArrayList<>();
         final List<String> invalidOgImageOverrides = new ArrayList<>();
@@ -57,6 +60,7 @@ public class SeoTitleContentValidationTest {
             final List<String> lines = Files.readAllLines(markdownFile, StandardCharsets.UTF_8);
             final String seoTitle = extractHeaderValue(lines, "seo_title");
             final String description = extractHeaderValue(lines, "description");
+            final String seoDescription = extractHeaderValue(lines, "seo_description");
             final String metaRobots = extractHeaderValue(lines, "meta_robots");
             final String ogImage = extractHeaderValue(lines, "og_image");
             final List<String> headerKeys = extractHeaderKeys(lines);
@@ -76,6 +80,18 @@ public class SeoTitleContentValidationTest {
             }
 
             seoTitlesToPaths.computeIfAbsent(seoTitle, key -> new ArrayList<>()).add(relativePath);
+
+            if (seoDescription == null) {
+                missingSeoDescription.add(relativePath);
+            } else if (seoDescription.trim().isEmpty()) {
+                emptySeoDescription.add(relativePath);
+            } else {
+                // keep explicit fixture override free for escaping/special-char assertions
+                if (!relativePath.equals("seo-metadata-test-page.md") &&
+                        (seoDescription.length() < 110 || seoDescription.length() > 170)) {
+                    outOfRangeSeoDescription.add(relativePath + " (" + seoDescription.length() + "): " + seoDescription);
+                }
+            }
 
             final boolean indexable = metaRobots == null || !metaRobots.toLowerCase().contains("noindex");
             if (indexable && (description == null || description.trim().isEmpty())) {
@@ -110,6 +126,12 @@ public class SeoTitleContentValidationTest {
                 "Empty seo_title in: " + String.join("; ", emptySeoTitle));
         Assertions.assertTrue(outOfRangeSeoTitle.isEmpty(),
                 "seo_title out of range (45-70 chars): " + String.join("; ", outOfRangeSeoTitle));
+        Assertions.assertTrue(missingSeoDescription.isEmpty(),
+                "Missing seo_description in: " + String.join("; ", missingSeoDescription));
+        Assertions.assertTrue(emptySeoDescription.isEmpty(),
+                "Empty seo_description in: " + String.join("; ", emptySeoDescription));
+        Assertions.assertTrue(outOfRangeSeoDescription.isEmpty(),
+                "seo_description out of range (110-170 chars): " + String.join("; ", outOfRangeSeoDescription));
         Assertions.assertTrue(duplicateSeoTitles.isEmpty(),
                 "Duplicate seo_title values found: " + String.join("; ", duplicateSeoTitles));
         Assertions.assertTrue(missingDescriptionForIndexablePage.isEmpty(),

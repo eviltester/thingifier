@@ -3,6 +3,7 @@ date:  2025-01-01T15:26:00Z
 title: API Challenges Solution For - POST /todos (201) all
 seo_title: Solution: POST /todos (201) all | API Challenges
 description: How to solve API challenges to Create maximum number of todos
+seo_description: Use this walkthrough to solve POST /todos (201) all with request setup, key headers, and expected status codes so you can complete the challenge.
 showads: true
 ---
 

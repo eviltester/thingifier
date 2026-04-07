@@ -2,6 +2,7 @@
 title: API Challenges Solution For - GET Todos (200)
 seo_title: Solution: GET Todos (200) Guide | API Challenges
 description: How to solve the API challenge and GET all the Todos
+seo_description: Use this walkthrough to solve GET Todos (200) with request setup, key headers, and expected status codes so you can complete the challenge confidently.
 showads: true
 ---
 

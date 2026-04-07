@@ -2,6 +2,7 @@
 title: Bruno HTTP Rest Client - Overview and Review
 seo_title: Bruno HTTP Rest Client - Overview and Review | API Client Review
 description: An overview of the Bruno HTTP REST API Client.
+seo_description: Review Bruno HTTP Rest Client for API testing, including strengths, limitations, and practical fit so you can choose the right client for your workflow.
 showads: true
 ---
 

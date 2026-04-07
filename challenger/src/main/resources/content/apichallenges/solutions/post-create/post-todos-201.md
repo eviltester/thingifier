@@ -3,6 +3,7 @@ date:  2021-01-24T10:00:00Z
 title: API Challenges Solution For - POST todos 201
 seo_title: Solution: POST todos 201 Guide | API Challenges
 description: How to solve API challenge POST todos 201 to create a todo item in the application.
+seo_description: Use this walkthrough to solve POST todos 201 with request setup, key headers, and expected status codes so you can complete the challenge confidently.
 showads: true
 ---
 

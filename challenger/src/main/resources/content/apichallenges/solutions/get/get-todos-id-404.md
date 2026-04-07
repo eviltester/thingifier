@@ -3,6 +3,7 @@ date:  2020-12-15T09:00:00Z
 title: API Challenges Solution For - GET todos id 404
 seo_title: Solution: GET todos id 404 Guide | API Challenges
 description: How to solve challenge GET todos id 404.
+seo_description: Use this walkthrough to solve GET todos id 404 with request setup, key headers, and expected status codes so you can complete the challenge confidently.
 showads: true
 ---
 

@@ -2,6 +2,7 @@
 title: Tracks - A Productivity GTD App - Practice Web App and API
 seo_title: Tracks - A Productivity GTD App | Practice API and Web App
 description: Tracks is a mature application implementing the Getting Things Done productivity method with a Web GUI and API.
+seo_description: Practice with Tracks - A Productivity GTD using realistic endpoints and scenarios that help you improve API testing decisions, and request quality.
 showads: true
 ---
 

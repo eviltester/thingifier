@@ -3,6 +3,7 @@ date:  2021-07-24T08:30:00Z
 title: API Challenges Solution For - authentication passed 201
 seo_title: Solution: authentication passed 201 | API Challenges
 description: How to solve API challenge 30 - authenticate with username and password for basic auth.
+seo_description: Use this walkthrough to solve authentication passed 201 with request setup, key headers, and expected status codes so you can complete the challenge.
 showads: true
 ---
 

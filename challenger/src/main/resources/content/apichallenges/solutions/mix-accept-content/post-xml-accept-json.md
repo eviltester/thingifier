@@ -3,6 +3,7 @@ date:  2021-07-17T11:30:00Z
 title: API Challenges Solution For - POST XML accept JSON
 seo_title: Solution: POST XML accept JSON | API Challenges
 description: How to solve API challenge POST /todos XML to JSON. Creating a todo with XML and receiving response in JSON.
+seo_description: Use this walkthrough to solve POST XML accept JSON with request setup, key headers, and expected status codes so you can complete the challenge confidently.
 showads: true
 ---
 

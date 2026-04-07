@@ -3,6 +3,7 @@ date:  2021-05-29T10:32:00Z
 title: API Challenges Solution For - GET todos No Accept Header 200
 seo_title: Solution GET todos No Accept Header 200 | API Challenges
 description: How to solve API challenge GET todos No Accept 200 to GET the todos with no accept header present.
+seo_description: Use this walkthrough to solve GET todos No Accept Header with request setup, key headers, and expected status codes so you can complete the challenge.
 showads: true
 ---
 

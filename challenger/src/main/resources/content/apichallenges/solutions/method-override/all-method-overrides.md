@@ -3,6 +3,7 @@ date:  2025-01-01T14:54:00Z
 title: API Challenges Solution For - Method Override Challenges
 seo_title: Solution: Method Override Challenges | API Challenges
 description: How to solve API challenges for Method Override DELETE, PATCH, TRACE.
+seo_description: Use this walkthrough to solve Method Override Challenges with request setup, key headers, and expected status codes so you can complete the challenge.
 showads: true
 ---
 

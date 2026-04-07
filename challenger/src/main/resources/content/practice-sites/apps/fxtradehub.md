@@ -2,6 +2,7 @@
 title: FX Trade Hub- A Productivity GTD App - Practice Web App and API
 seo_title: FX Trade Hub - Dummy Node API | Practice API and Web App
 description: Fx Trace Hub is an API to simulate a trading system. It is written for Node and can be run locally if you have node installed..
+seo_description: Practice with FX Trade Hub- A using realistic endpoints and scenarios that help you improve API testing decisions, request quality, and confidence.
 showads: true
 ---
 

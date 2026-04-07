@@ -2,6 +2,7 @@
 title: HTTP Verbs - Tutorial
 seo_title: Tutorial: HTTP Verbs Tutorial | API Challenges
 description: Basic HTTP Verbs and Methods tutorial what they do and how to use them.
+seo_description: Learn HTTP Verbs with practical examples and clear guidance you can apply immediately when creating requests, analyzing responses, and testing APIs.
 showads: true
 ---
 

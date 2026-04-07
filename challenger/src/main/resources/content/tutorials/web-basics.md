@@ -2,6 +2,7 @@
 title: Web Basics - Tutorial
 seo_title: Tutorial: Web Basics Tutorial | API Challenges
 description: Overview of how Web applications work and an introductory HTTP tutorial.
+seo_description: Learn Web Basics with practical examples and clear guidance you can apply immediately when creating requests, analyzing responses, and testing APIs.
 showads: true
 ---
 

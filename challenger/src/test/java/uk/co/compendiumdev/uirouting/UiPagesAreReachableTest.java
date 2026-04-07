@@ -175,13 +175,13 @@ public class UiPagesAreReachableTest {
     @Test
     void markdownPageWithNoOptionalMetadataUsesFallbackDefaults(){
 
-        final HttpResponseDetails response = http.send("/learning", "get");
+        final HttpResponseDetails response = http.send("/", "get");
 
         Assertions.assertEquals(200, response.statusCode);
-        Assertions.assertTrue(response.body.contains("<meta name='description' content='A list of HTTP REST API learning tutorials and recommended books and practice sites for API Testing.'>"));
+        Assertions.assertTrue(response.body.contains("<meta name='description' content='A practice API application with tutorials for HTTP and REST APIs. Guided exercises and gamification hands on learning path.'>"));
         Assertions.assertTrue(response.body.contains("<meta name='robots' content='index,follow'>"));
-        Assertions.assertTrue(response.body.contains("<meta property='og:type' content='article'>"));
-        Assertions.assertTrue(response.body.contains("<meta property='og:url' content='https://apichallenges.eviltester.com/learning'>"));
+        Assertions.assertTrue(response.body.contains("<meta property='og:type' content='website'>"));
+        Assertions.assertTrue(response.body.contains("<meta property='og:url' content='https://apichallenges.eviltester.com'>"));
         Assertions.assertTrue(response.body.contains("<meta property='og:image' content='https://apichallenges.eviltester.com/images/social/apichallenges-og-1200x630.png'>"));
         Assertions.assertTrue(response.body.contains("<meta name='twitter:card' content='summary_large_image'>"));
     }

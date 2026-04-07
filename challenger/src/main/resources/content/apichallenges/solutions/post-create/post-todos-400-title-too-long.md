@@ -3,6 +3,7 @@ date:  2024-12-31T14:04:00Z
 title: API Challenges Solution For - POST todos 400 - title too long
 seo_title: Solution POST todos 400 title too long | API Challenges
 description: How to solve API challenge POST todos 400 title too long by sending request details such that they fail validation.
+seo_description: Use this walkthrough to solve POST todos 400 - title too with request setup, key headers, and expected status codes so you can complete the challenge.
 showads: true
 ---
 

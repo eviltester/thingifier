@@ -2,6 +2,7 @@
 title: HttpBin - An Attp Request and Response Service - Practice HTTP
 seo_title: HttpBin - Http Request and Response Service | API Practice Site Guide
 description: An overview of the HttpBin site, explaining how to use it to learn about HTTP Requests and Responses.
+seo_description: Use HttpBin - An Attp Request to practice API testing with realistic scenarios and endpoint variety that strengthen request design and validation skills.
 showads: true
 ---
 

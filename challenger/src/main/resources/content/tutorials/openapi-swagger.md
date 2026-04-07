@@ -2,6 +2,7 @@
 title: OpenAPI / Swagger- Tutorial
 seo_title: Tutorial: OpenAPI / Swagger- Tutorial | API Challenges
 description: An introduction to the OpenAPI (Swagger) API Specification Format.
+seo_description: Learn OpenAPI / Swagger- Tutorial with practical examples and clear guidance you can apply immediately when creating requests, and analyzing responses.
 showads: true
 ---
 

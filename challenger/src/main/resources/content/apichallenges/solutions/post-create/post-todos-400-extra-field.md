@@ -3,6 +3,7 @@ date:  2021-01-30T15:55:00Z
 title: API Challenges Solution For - POST todos 400 extra
 seo_title: Solution: POST todos 400 extra | API Challenges
 description: How to solve API challenge POST todos 400 extra to trigger validation errors due to an extra field in the payload.
+seo_description: Use this walkthrough to solve POST todos 400 extra with request setup, key headers, and expected status codes so you can complete the challenge confidently.
 showads: true
 ---
 
