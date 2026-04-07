@@ -5,6 +5,7 @@ title: API Challenges Solution For - Delete /todos/id (200) all
 seo_title: Solution: Delete /todos/id (200) all | API Challenges
 description: How to solve API challenges to Delete all the todos
 seo_description: Use this walkthrough to solve Delete /todos/id (200) all with request setup, key headers, and expected status codes so you can complete the challenge.
+next_challenge: /gui/challenges
 schema_howto_steps: GET /todos and capture all todo ids currently returned by the API||Send DELETE /todos/{id} for every id until no todos remain||Include X-CHALLENGER on each delete request to track challenge completion||GET /todos again and confirm the response contains an empty todo list||Verify the Delete All Todos challenge is marked complete in your session
 showads: true
 ---

@@ -175,3 +175,22 @@ aside.author-bio-snippet {
 aside.author-bio-snippet p {
     margin: 0.25rem 0;
 }
+
+aside.next-challenge-cta {
+    margin-top: 1.25rem;
+    margin-bottom: 1rem;
+}
+
+a.next-challenge-cta-link {
+    display: inline-block;
+    background: #1f4e79;
+    color: #ffffff;
+    text-decoration: none;
+    padding: 0.6rem 0.9rem;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+a.next-challenge-cta-link:hover {
+    background: #163858;
+}

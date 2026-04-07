@@ -5,6 +5,7 @@ title: API Challenges Solution For - POST todos create todo with XML
 seo_title: Solution: POST todos create with XML | API Challenges
 description: How to solve API challenge POST todos XML. Creating a todo with XML format.
 seo_description: Use this walkthrough to solve POST todos create todo with with request setup, key headers, and expected status codes so you can complete the challenge.
+next_challenge: /apichallenges/solutions/content-type-header/post-todos-json
 schema_howto_steps: Create a POST request to /todos||Include X-CHALLENGER so the challenge is tracked in your current session||Set the Accept header to the required media type and verify response format||Send a valid XML payload that matches the field and content constraints
 showads: true
 ---

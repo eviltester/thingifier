@@ -5,6 +5,7 @@ title: API Challenges Solution For - POST Unauthorised 401 403
 seo_title: Solution: POST Unauthorised 401 403 | API Challenges
 description: How to solve API challenge - fail to amend the secret note with a POST request and receive 401 and 403 status codes
 seo_description: Use this walkthrough to solve POST Unauthorised 401 403 with request setup, key headers, and expected status codes so you can complete the challenge.
+next_challenge: /apichallenges/solutions/authorization/get-post-secret-note-bearer
 schema_howto_steps: Create a POST request to /secret/note||Add the X-AUTH-TOKEN header from your authenticated challenger session||Include X-CHALLENGER so the challenge is tracked in your current session||Send a valid JSON payload that matches the field and content constraints||Send the request and verify the response status is 401, 403
 showads: true
 ---

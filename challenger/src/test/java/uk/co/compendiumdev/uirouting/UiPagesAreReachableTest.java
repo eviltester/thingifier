@@ -217,6 +217,7 @@ public class UiPagesAreReachableTest {
         Assertions.assertTrue(response.body.contains("\"legalName\":\"Compendium Developments Ltd\""));
         Assertions.assertTrue(response.body.contains("\"dateModified\":\"2026-02-18\""));
         Assertions.assertTrue(response.body.contains("\"@type\":\"BreadcrumbList\""));
+        Assertions.assertFalse(response.body.contains("<aside class='next-challenge-cta'"));
         Assertions.assertTrue(response.body.contains("<aside class='author-bio-snippet'"));
         Assertions.assertTrue(response.body.contains("href='/author/alan-richardson'"));
     }
@@ -243,6 +244,9 @@ public class UiPagesAreReachableTest {
         Assertions.assertTrue(response.body.contains("\"@type\":\"VideoObject\""));
         Assertions.assertTrue(response.body.contains("\"contentUrl\":\"https://www.youtube.com/watch?v=OpisB0UZq0c\""));
         Assertions.assertTrue(response.body.contains("\"@type\":\"BreadcrumbList\""));
+        Assertions.assertTrue(response.body.contains("<aside class='next-challenge-cta'"));
+        Assertions.assertTrue(response.body.contains("class='next-challenge-cta-link'"));
+        Assertions.assertTrue(response.body.contains("Try the next challenge walkthrough"));
     }
 
     @Test
@@ -286,4 +290,5 @@ public class UiPagesAreReachableTest {
     }
 
 }
+
 

@@ -5,6 +5,7 @@ title: API Challenges Solution For - GET authorized secret note 200
 seo_title: Solution: GET authorized secret note 20 | API Challenges
 description: How to solve API challenge 33 - authorized to access secret note 200
 seo_description: Use this walkthrough to solve GET authorized secret note with request setup, key headers, and expected status codes so you can complete the challenge.
+next_challenge: /apichallenges/solutions/authorization/post-secret-note-200
 schema_howto_steps: Create a GET request to /secret/note||Add the X-AUTH-TOKEN header from your authenticated challenger session||Include X-CHALLENGER so the challenge is tracked in your current session||Send the request and verify the response status is 200
 showads: true
 ---

@@ -37,6 +37,7 @@ public class MarkdownContentManager {
     private static final String DEFAULT_SCHEMA_PUBLISHER_RESOURCE = "seo/schema-publisher.properties";
     private static final String DEFAULT_AUTHOR_BIO_PATH = "/author/alan-richardson";
     private static final String DEFAULT_AUTHOR_BIO_SNIPPET_RESOURCE = "partials/author-bio-snippet.html";
+    private static final String DEFAULT_NEXT_CHALLENGE_CTA_RESOURCE = "partials/next-challenge-cta.html";
 
     private final DefaultGUIHTML guiManagement;
     Logger logger = LoggerFactory.getLogger(MarkdownContentManager.class);
@@ -243,6 +244,7 @@ public class MarkdownContentManager {
         String schemaHowToStepsRaw = "";
         String schemaVideoEnabledRaw = "";
         String schemaVideoId = "";
+        String nextChallengePath = "";
         String pageDatePublished = "";
         String pageLastModified = "";
         String canonicalUrl = DEFAULT_CANONICAL_HOST + contentPath;
@@ -308,6 +310,9 @@ public class MarkdownContentManager {
             if(aHeader.startsWith("schema_video_id: ")){
                 schemaVideoId = aHeader.replace("schema_video_id: " , "");
             }
+            if(aHeader.startsWith("next_challenge: ")){
+                nextChallengePath = aHeader.replace("next_challenge: " , "");
+            }
             if(aHeader.startsWith("date:")){
                 pageDatePublished = aHeader.replaceFirst("^date:\\s*", "");
             }
@@ -363,6 +368,7 @@ public class MarkdownContentManager {
                 schemaAuthorValue,
                 authorJobTitle,
                 DEFAULT_AUTHOR_BIO_PATH);
+        final String nextChallengeCtaSnippet = buildNextChallengeCtaSnippet(contentFolder, contentPath, nextChallengePath);
         final Boolean schemaBreadcrumbEnabled = parseOptionalBoolean(schemaBreadcrumbEnabledRaw);
         final Boolean schemaHowToEnabled = parseOptionalBoolean(schemaHowToEnabledRaw);
         final List<String> schemaHowToSteps = parseHowToSteps(schemaHowToStepsRaw);
@@ -414,6 +420,7 @@ public class MarkdownContentManager {
         html.append("<div class=\"main-text-content\">\n");
         html.append(renderer.render(document));
         html.append("</div>\n");
+        html.append(nextChallengeCtaSnippet);
         html.append(authorBioSnippet);
         html.append(guiManagement.getEndOfMainContentMarker());
         if(!mdheaders.contains("template: index")) {
@@ -1086,6 +1093,34 @@ public class MarkdownContentManager {
                 .append(".</p>");
         snippet.append("</aside>");
         return snippet.toString();
+    }
+
+    private String buildNextChallengeCtaSnippet(final String contentFolder,
+                                                final String contentPath,
+                                                final String nextChallengePath){
+        if(!"content".equalsIgnoreCase(contentFolder) || contentPath == null){
+            return "";
+        }
+        if(!contentPath.startsWith("/apichallenges/solutions/")){
+            return "";
+        }
+        if(nextChallengePath == null || nextChallengePath.trim().isEmpty()){
+            return "";
+        }
+
+        final String trimmedPath = nextChallengePath.trim();
+        final String ctaUrl = trimmedPath.startsWith("/") ? trimmedPath : "/" + trimmedPath;
+        final String ctaLabel = "Try the next challenge walkthrough";
+
+        try{
+            return getResourceAsString(DEFAULT_NEXT_CHALLENGE_CTA_RESOURCE)
+                    .replace("{{NEXT_URL}}", escapeHtmlAttribute(ctaUrl))
+                    .replace("{{NEXT_LABEL}}", escapeHtmlAttribute(ctaLabel));
+        }catch(Exception e){
+            logger.warn("Could not load next challenge cta resource {}, using fallback html", DEFAULT_NEXT_CHALLENGE_CTA_RESOURCE, e);
+            return "<aside class='next-challenge-cta'><a class='next-challenge-cta-link' href='" +
+                    escapeHtmlAttribute(ctaUrl) + "'>" + escapeHtmlAttribute(ctaLabel) + "</a></aside>";
+        }
     }
 
     private InputStream getResourceAsStream(String fileName) {

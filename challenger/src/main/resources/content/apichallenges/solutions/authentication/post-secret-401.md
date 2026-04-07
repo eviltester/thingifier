@@ -5,6 +5,7 @@ title: API Challenges Solution For - authentication failed 401
 seo_title: Solution: authentication failed 401 | API Challenges
 description: How to solve API challenge 29 - authentication failed with username and password.
 seo_description: Use this walkthrough to solve authentication failed 401 with request setup, key headers, and expected status codes so you can complete the challenge.
+next_challenge: /apichallenges/solutions/authentication/post-secret-201
 schema_howto_steps: Create a POST request to /secret/token||Add Basic Authorization with credentials that should fail for this challenge||Include X-CHALLENGER so the challenge is tracked in your current session||Send the request with no body and verify the response status is 401
 showads: true
 ---

@@ -5,6 +5,7 @@ title: API Challenges Solution For - GET todos json 200
 seo_title: Solution: GET todos json 200 | API Challenges
 description: How to solve API challenge GET todos json 200 to accept the todos in json format.
 seo_description: Use this walkthrough to solve GET todos json 200 with request setup, key headers, and expected status codes so you can complete the challenge confidently.
+next_challenge: /apichallenges/solutions/accept-header/get-todos-200-any
 schema_howto_steps: Create a GET request to /todos||Include X-CHALLENGER so the challenge is tracked in your current session||Set the Accept header to the required media type and verify response format||Send the request and verify the response status is 200
 showads: true
 ---

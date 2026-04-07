@@ -5,6 +5,7 @@ title: API Challenges Solution For - POST amend secret note 200
 seo_title: Solution: POST amend secret note 200 | API Challenges
 description: How to solve API challenge 34 - amend the secret note with a POST request and receive 200 status code
 seo_description: Use this walkthrough to solve POST amend secret note 200 with request setup, key headers, and expected status codes so you can complete the challenge.
+next_challenge: /apichallenges/solutions/authorization/post-secret-note-401-403
 schema_howto_steps: Create a POST request to /secret/note||Add the X-AUTH-TOKEN header from your authenticated challenger session||Include X-CHALLENGER so the challenge is tracked in your current session||Send a valid JSON payload that matches the field and content constraints||Send the request and verify the response status is 200
 showads: true
 ---

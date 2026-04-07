@@ -5,6 +5,7 @@ title: API Challenges Solution For - POST todos 400 extra
 seo_title: Solution: POST todos 400 extra | API Challenges
 description: How to solve API challenge POST todos 400 extra to trigger validation errors due to an extra field in the payload.
 seo_description: Use this walkthrough to solve POST todos 400 extra with request setup, key headers, and expected status codes so you can complete the challenge confidently.
+next_challenge: /apichallenges/solutions/put-create/put-todos-400-create
 schema_howto_steps: Create a POST request to /todos||Include X-CHALLENGER so the challenge is tracked in your current session||Send a valid JSON payload that matches the field and content constraints||Send the request and verify the response status is 400
 showads: true
 ---

@@ -4,6 +4,7 @@ seo_title: Solution: GET todo 404 Guide | API Challenges
 description: How to solve challenge GET todo 404.
 lastmod: 2026-02-18
 seo_description: Use this walkthrough to solve GET todo 404 with request setup, key headers, and expected status codes so you can complete the challenge confidently.
+next_challenge: /apichallenges/solutions/get/get-todos-id-200
 schema_howto_steps: Create a GET request to /todo||Include X-CHALLENGER so the challenge is tracked in your current session||Send the request and verify the response status is 404
 showads: true
 ---

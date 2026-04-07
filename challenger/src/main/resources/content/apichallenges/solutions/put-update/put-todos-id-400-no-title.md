@@ -5,6 +5,7 @@ title: API Challenges Solution For - PUT todos/id 400 no title
 seo_title: Solution: PUT todos/id 400 no title | API Challenges
 description: How to solve API challenge PUT todos/id 400 to fail validation due to no title in the payload.
 seo_description: Use this walkthrough to solve PUT todos/id 400 no title with request setup, key headers, and expected status codes so you can complete the challenge.
+next_challenge: /apichallenges/solutions/put-update/put-todos-id-400-no-amend-id
 schema_howto_steps: Create a PUT request to /todos/{id}||Include X-CHALLENGER so the challenge is tracked in your current session||Send a valid JSON payload that matches the field and content constraints||Send the request and verify the response status is 400
 showads: true
 ---

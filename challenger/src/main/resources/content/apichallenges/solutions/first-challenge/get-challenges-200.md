@@ -4,6 +4,7 @@ seo_title: Solution: GET Challenges (200) | API Challenges
 description: How to use a GET request with an x-challenger header to get the progress status of all the API Challenges
 lastmod: 2026-02-18
 seo_description: Use this walkthrough to solve GET Challenges (200) with request setup, key headers, and expected status codes so you can complete the challenge confidently.
+next_challenge: /apichallenges/solutions/get/get-todos-200
 schema_howto_steps: Create a GET request to /challenges||Include X-CHALLENGER so the challenge is tracked in your current session||Send the request and verify the response status is 200
 showads: true
 ---

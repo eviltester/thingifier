@@ -4,6 +4,7 @@ seo_title: Solution: GET todos id 200 Guide | API Challenges
 description: How to solve challenge GET todos id 200.
 lastmod: 2026-02-18
 seo_description: Use this walkthrough to solve GET todos id 200 with request setup, key headers, and expected status codes so you can complete the challenge confidently.
+next_challenge: /apichallenges/solutions/get/get-todos-id-404
 schema_howto_steps: Create a GET request to /todos/{id}||Include X-CHALLENGER so the challenge is tracked in your current session||Send the request and verify the response status is 200
 showads: true
 ---

@@ -5,6 +5,7 @@ title: API Challenges Solution For - forbidden secret note 403
 seo_title: Solution: forbidden secret note 403 | API Challenges
 description: How to solve API challenge 31 - forbidden to access secret note 403
 seo_description: Use this walkthrough to solve forbidden secret note 403 with request setup, key headers, and expected status codes so you can complete the challenge.
+next_challenge: /apichallenges/solutions/authorization/get-secret-note-401
 schema_howto_steps: Create a GET request to /secret/note||Add the X-AUTH-TOKEN header from your authenticated challenger session||Include X-CHALLENGER so the challenge is tracked in your current session||Send the request and verify the response status is 403
 showads: true
 ---
