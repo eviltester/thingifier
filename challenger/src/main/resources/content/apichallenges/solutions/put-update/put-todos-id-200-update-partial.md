@@ -4,7 +4,7 @@ lastmod: 2026-02-18
 title: API Challenges Solution For - PUT todos/id 200 full update
 seo_title: Solution: PUT todos/id 200 partial | API Challenges
 description: How to solve API challenge PUT todos/id 200 to update a todo in the application with a full payload.
-seo_description: Use this walkthrough to solve PUT todos/id 200 full update with request setup, key headers, and expected status codes so you can complete the challenge.
+seo_description: Learn how partial PUT /todos/{id} updates behave, which fields can be omitted, and how to verify a 200 response with expected changes.
 next_challenge: /apichallenges/solutions/put-update/put-todos-id-400-no-title
 schema_howto_steps: Create a PUT request to /todos/{id}||Include X-CHALLENGER so the challenge is tracked in your current session||Send a valid JSON payload that matches the field and content constraints||Send the request and verify the response status is 200
 showads: true
