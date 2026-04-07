@@ -87,6 +87,7 @@ public class DefaultGUIHTML {
         StringBuilder html = new StringBuilder();
         html.append("<!DOCTYPE html><html lang='en'><head>");
         html.append("<meta charset='UTF-8'>");
+        html.append("<meta name='viewport' content='width=device-width, initial-scale=1'>");
         html.append("<title>" + title + "</title>");
         html.append(" <link rel='stylesheet' href='/css/default.css'>");
         String injectFromEnv = System.getenv("HTML_HEAD_INJECT");

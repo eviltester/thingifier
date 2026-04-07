@@ -43,6 +43,7 @@ public class UiPagesAreReachableTest {
         final HttpResponseDetails response = http.send("/", "get");
 
         Assertions.assertEquals(200, response.statusCode);
+        Assertions.assertTrue(response.body.contains("<meta name='viewport' content='width=device-width, initial-scale=1'>"));
         Assertions.assertTrue(response.body.contains("<meta property='og:type' content='website'>"));
         Assertions.assertTrue(response.body.contains("<meta property='og:url' content='https://apichallenges.eviltester.com'>"));
         Assertions.assertTrue(response.body.contains("application/ld+json"));
