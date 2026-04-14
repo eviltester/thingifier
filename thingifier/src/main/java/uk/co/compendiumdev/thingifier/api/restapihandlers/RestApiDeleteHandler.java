@@ -8,7 +8,6 @@ import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.query.SimpleQuery;
 
 import java.util.List;
-import java.util.Map;
 
 public class RestApiDeleteHandler {
     private final Thingifier thingifier;

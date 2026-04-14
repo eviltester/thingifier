@@ -9,7 +9,6 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.F
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVectorDefinition;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class ApiRoutingDefinitionDocGenerator {

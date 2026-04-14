@@ -7,7 +7,6 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.ERInstanceData;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 
 import java.util.*;
 

@@ -3,8 +3,6 @@ package uk.co.compendiumdev.thingifier.core.domain.definitions.validation;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
 
-import java.math.BigDecimal;
-
 public class IntegerValidationRule implements ValidationRule{
 
     private final Integer minimumIntegerValue;

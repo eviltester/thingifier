@@ -2,9 +2,6 @@ package uk.co.compendiumdev.thingifier.application.internalhttpconversion;
 
 import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /*
     The HttpApiResponse is too complicated to re-use and is tied to the ApiResponse
 

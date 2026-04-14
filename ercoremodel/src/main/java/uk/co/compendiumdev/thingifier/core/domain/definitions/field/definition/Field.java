@@ -6,7 +6,6 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.DefinedFields;
 import uk.co.compendiumdev.thingifier.core.domain.randomdata.RandomString;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
 
-import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Function;

@@ -2,8 +2,6 @@ package uk.co.compendiumdev.thingifier.core.domain.definitions.relationship;
 
 import uk.co.compendiumdev.thingifier.core.domain.definitions.Cardinality;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
-import uk.co.compendiumdev.thingifier.core.domain.instances.RelationshipVectorInstance;
-import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 
 import static uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.Optionality.*;
 

@@ -1,8 +1,6 @@
 package uk.co.compendiumdev.thingifier.api.docgen;
 
 import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.api.ThingifierRestAPIHandler;
-import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
 
 import java.util.ArrayList;
 import java.util.HashMap;

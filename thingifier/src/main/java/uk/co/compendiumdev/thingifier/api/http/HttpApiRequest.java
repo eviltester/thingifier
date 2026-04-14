@@ -2,7 +2,6 @@ package uk.co.compendiumdev.thingifier.api.http;
 
 import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
 import uk.co.compendiumdev.thingifier.application.internalhttpconversion.StringPair;
-import uk.co.compendiumdev.thingifier.core.query.FilterBy;
 import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
 import uk.co.compendiumdev.thingifier.core.query.fromurl.UrlParamParser;
 

@@ -2,7 +2,6 @@ package uk.co.compendiumdev.thingifier.core.query;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 // TODO: create a matchParams (like sortBys), and use an object to support longer term handling of complex filters like, ranges, etc.
 public class EntityListSortParamParser {

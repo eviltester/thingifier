@@ -6,8 +6,6 @@ import uk.co.compendiumdev.thingifier.api.docgen.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingStatus;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
 import uk.co.compendiumdev.thingifier.spark.SimpleSparkRouteCreator;
-
-import java.util.Arrays;
 import java.util.List;
 
 /*

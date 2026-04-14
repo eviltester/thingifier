@@ -1,7 +1,6 @@
 package uk.co.compendiumdev.thingifier.core.query;
 
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
 import java.util.ArrayList;

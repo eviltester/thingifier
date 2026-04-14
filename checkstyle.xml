@@ -5,7 +5,6 @@
 
 <module name="Checker">
     <module name="TreeWalker">
-        <module name="AvoidStarImport"/>
         <module name="RedundantImport"/>
         <module name="UnusedImports"/>
     </module>

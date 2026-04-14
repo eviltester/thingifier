@@ -1,7 +1,5 @@
 package uk.co.compendiumdev.thingifier.apiconfig;
 
-import java.util.Map;
-
 public class ApiDocsConfig {
     private String headerSectionAppend;
     private String headerSectionOverride;
