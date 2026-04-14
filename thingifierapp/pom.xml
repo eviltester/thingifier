@@ -5,13 +5,12 @@
     <parent>
         <artifactId>thingifier-root</artifactId>
         <groupId>uk.co.compendiumdev.thingifier</groupId>
-        <version>1.0.0</version>
+        <version>1.5.6-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>uk.co.compendiumdev</groupId>
     <artifactId>thingifierapp</artifactId>
-    <version>${thingifier.version}</version>
     <packaging>jar</packaging>
 
     <name>thingifier app</name>

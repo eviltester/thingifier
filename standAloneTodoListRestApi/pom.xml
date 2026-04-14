@@ -7,12 +7,11 @@
     <parent>
         <groupId>uk.co.compendiumdev.thingifier</groupId>
         <artifactId>thingifier-root</artifactId>
-        <version>1.0.0</version>
+        <version>1.5.6-SNAPSHOT</version>
     </parent>
 
     <groupId>uk.co.compendiumdev.thingifier</groupId>
     <artifactId>standAloneTodoListRestApi</artifactId>
-    <version>${thingifier.version}</version>
 
     <dependencies>
         <dependency>
