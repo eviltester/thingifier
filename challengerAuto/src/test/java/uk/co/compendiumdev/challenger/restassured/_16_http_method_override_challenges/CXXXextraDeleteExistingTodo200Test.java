@@ -14,9 +14,7 @@ public class CXXXextraDeleteExistingTodo200Test extends RestAssuredBaseTest {
 
         TodosApi api = new TodosApi();
 
-        Todo created = api.createTodo("my new todo",
-                    "my description",
-                    true);
+        Todo created = api.getOrCreateAnyExistingTodo();
 
         RestAssured.
             given().
