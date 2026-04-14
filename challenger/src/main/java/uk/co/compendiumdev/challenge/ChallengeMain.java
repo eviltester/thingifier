@@ -28,6 +28,8 @@ public class ChallengeMain {
         app.configurePortAndDefaultRoutes();
         app.setupBuiltInConfigurableRoutes();
 
+        new IndexNowRouteHandler().configureRoutes();
+
         // create a default configuration class which we pass into the ChallengeRouteHandler and configure via args
         ChallengerConfig config = new ChallengerConfig();
 
