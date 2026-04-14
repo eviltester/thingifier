@@ -301,6 +301,16 @@ public class UiPagesAreReachableTest {
         Assertions.assertTrue(response.body.contains("<lastmod>2026-02-18</lastmod>"));
     }
 
+    @Test
+    void headRequestsToExistingContentPagesReturn200(){
+
+        HttpResponseDetails response = http.send("/", "head");
+        Assertions.assertEquals(200, response.statusCode);
+
+        response = http.send("/learning", "head");
+        Assertions.assertEquals(200, response.statusCode);
+    }
+
     static Stream<Arguments> legacyUrlRedirects(){
         List<Arguments> args = new ArrayList<>();
         args.add(Arguments.of("/apichallenges/solutions/method-overrides/all-method-overrides",

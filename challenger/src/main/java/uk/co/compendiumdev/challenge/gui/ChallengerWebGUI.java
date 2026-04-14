@@ -215,6 +215,23 @@ public class ChallengerWebGUI {
                 }
                 return "";
             }));
+            head(endPointForMarkdownFile, ((request, response) -> {
+                try {
+                    contentManager.getResourceMarkdownFileAsHtml(
+                                        "content", request.pathInfo(),
+                                                    getMarkdownParamsFromRequest(request));
+                    response.type("text/html");
+                    if(response.raw().containsHeader("x-robots-tag")){
+                        // we want it indexed because it is content
+                        response.raw().setHeader("x-robots-tag", "all");
+                    }
+                    response.status(200);
+                }catch (IllegalArgumentException e){
+                    // in theory this will never happen because we are only creating endpoints for existing resources
+                    pageNotFoundHtmlResponse.amendResponse(response,"");
+                }
+                return "";
+            }));
         }
 
         // using the ResourceContentScanner, we can build the sitemap.xml automatically
@@ -249,6 +266,16 @@ public class ChallengerWebGUI {
         get("/", (request, response) -> {
             String responseBody = contentManager.getHtmlVersionOfMarkdownContent("site", "/index", getMarkdownParamsFromRequest(request));
             response.body(responseBody);
+            response.type("text/html");
+            if(response.raw().containsHeader("x-robots-tag")){
+                // we want it indexed because it is content
+                response.raw().setHeader("x-robots-tag", "all");
+            }
+            response.status(200);
+            return "";
+        });
+        head("/", (request, response) -> {
+            contentManager.getHtmlVersionOfMarkdownContent("site", "/index", getMarkdownParamsFromRequest(request));
             response.type("text/html");
             if(response.raw().containsHeader("x-robots-tag")){
                 // we want it indexed because it is content
