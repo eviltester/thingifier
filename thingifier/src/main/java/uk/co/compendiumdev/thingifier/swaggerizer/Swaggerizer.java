@@ -371,6 +371,8 @@ public class Swaggerizer {
             case OPTIONS:
                 path.setOptions(operation);
                 break;
+            default:
+                break;
         }
     }
 

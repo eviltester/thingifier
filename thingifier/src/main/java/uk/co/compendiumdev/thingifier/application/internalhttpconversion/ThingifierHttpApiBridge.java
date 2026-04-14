@@ -10,7 +10,7 @@ import uk.co.compendiumdev.thingifier.application.httpapimessagehooks.HttpApiRes
 
 import java.util.*;
 
-final public class ThingifierHttpApiBridge {
+public final class ThingifierHttpApiBridge {
 
     // todo: the methods here are all very similar, we should refactor this commonality
 

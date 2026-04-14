@@ -25,7 +25,7 @@ processing on top.
 Use the isResultACollection, wasIntentToMatchACollection, lastMatchWasInstance
 in the calling method.
  */
-final public class SimpleQuery {
+public final class SimpleQuery {
 
     private final ERInstanceData database;
     private final ERSchema schema; // all the definitions

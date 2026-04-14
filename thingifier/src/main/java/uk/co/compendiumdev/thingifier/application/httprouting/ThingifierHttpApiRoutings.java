@@ -148,6 +148,8 @@ public class ThingifierHttpApiRoutings {
                         });
                     }
                     break;
+                default:
+                    break;
                 case HEAD:
                     if (defn.status().isReturnedFromCall()) {
                         head(defn.url(), (request, response) -> {

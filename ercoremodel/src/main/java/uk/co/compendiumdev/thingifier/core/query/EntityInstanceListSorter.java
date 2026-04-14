@@ -39,14 +39,16 @@ public class EntityInstanceListSorter {
         List<EntityInstance>sortedList = new ArrayList<>();
         sortedList.addAll(itemsToSort);
 
-        if(sortedList.size()==0)
+        if(sortedList.size()==0) {
             return sortedList;
+        }
 
         Field fieldDefn = sortedList.get(0).getEntity().getField(fieldName);
 
         // there is no field of that name
-        if(fieldDefn==null)
+        if(fieldDefn==null) {
             return sortedList;
+        }
 
         Comparator<EntityInstance> compareByFieldValue = new Comparator<EntityInstance>() {
             @Override

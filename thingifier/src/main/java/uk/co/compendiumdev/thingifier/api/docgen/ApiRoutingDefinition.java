@@ -8,7 +8,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
-final public class ApiRoutingDefinition {
+public final class ApiRoutingDefinition {
 
     private List<RoutingDefinition> routings;
     private HashMap<String, EntityDefinition> objectSchemas;

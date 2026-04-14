@@ -171,6 +171,9 @@ public final class Field {
                     if(typeValidationRule!=null){
                         validateAgainstRule(value, typeValidationRule, report);
                     }
+                    break;
+                default:
+                    break;
             }
 
             if(type == FieldType.STRING){

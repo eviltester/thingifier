@@ -7,7 +7,7 @@ class RelationshipDetails {
     public final String guidName;
     public final String guidValue;
 
-    public RelationshipDetails(final String relationshipName, final String toType, final String keyName, final String keyValue) {
+    RelationshipDetails(final String relationshipName, final String toType, final String keyName, final String keyValue) {
         this.relationshipName = relationshipName;
         this.toType = toType;
         this.guidName = keyName;

@@ -30,8 +30,9 @@ public class BasicAuthHeaderParser {
     }
 
     private void decodeBase64() {
-        if(this.base64UserNamePass.length()==0)
+        if(this.base64UserNamePass.length()==0) {
             return;
+        }
 
         try {
             String usernamePassword = new String(Base64.getDecoder().decode(base64UserNamePass));

@@ -21,7 +21,7 @@ public class EntityDefinition {
     private final DefinedFields fields;
     private final DefinedRelationships definedRelationships;
 
-    private final static int NO_INSTANCE_LIMIT = -1;
+    private static final int NO_INSTANCE_LIMIT = -1;
     public EntityDefinition(String name, String plural) {
         this(name,plural,EntityDefinition.NO_INSTANCE_LIMIT);
     }

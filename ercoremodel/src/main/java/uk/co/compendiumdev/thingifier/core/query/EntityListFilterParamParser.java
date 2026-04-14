@@ -81,22 +81,14 @@ public class EntityListFilterParamParser {
                     case "~=": //regex match
                         pattern = Pattern.compile(filterByCondition.fieldValue);
                         matcher = pattern.matcher(actualValue.getValue().asString());
-                        if(matcher.matches()){
-                            return true;
-                        }else{
-                            return false;
-                        }
+                        return matcher.matches();
                     case "*=": //wildcard match so * matches any multiple and ? matches one
                         String actualFilter = filterByCondition.fieldValue;
                         actualFilter = filterByCondition.fieldValue.replace("*", ".*");
                         actualFilter = actualFilter.replace("?", ".");
                         pattern = Pattern.compile(actualFilter);
                         matcher = pattern.matcher(actualValue.getValue().asString());
-                        if(matcher.matches()){
-                            return true;
-                        }else{
-                            return false;
-                        }
+                        return matcher.matches();
                     default:
                         System.out.println(String.format("Unhandled filterby condition %s%s%s",
                                             fieldName, filterByCondition.filterOperation, value

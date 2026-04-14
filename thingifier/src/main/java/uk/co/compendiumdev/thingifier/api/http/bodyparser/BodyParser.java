@@ -151,8 +151,9 @@ public class BodyParser {
      */
     public void parseMap() {
 
-        if(args!=null)
+        if(args!=null) {
             return;
+        }
 
         if(request.getBody().trim().isEmpty()){
             args = new HashMap<>();

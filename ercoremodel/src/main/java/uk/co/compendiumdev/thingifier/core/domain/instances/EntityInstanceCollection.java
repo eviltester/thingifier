@@ -11,7 +11,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 
-final public class EntityInstanceCollection {
+public final class EntityInstanceCollection {
 
     private final EntityDefinition definition;
     private final Map<String, EntityInstance> instances = new ConcurrentHashMap<>();
@@ -144,8 +144,12 @@ final public class EntityInstanceCollection {
 
     public EntityInstance findInstanceByFieldNameAndValue(String fieldName, String fieldValue) {
 
-        if(fieldName==null) return null;
-        if(fieldValue==null) return null;
+        if(fieldName==null) {
+            return null;
+        }
+        if(fieldValue==null) {
+            return null;
+        }
 
         for (EntityInstance thing : instances.values()) {
             if(thing.hasFieldNamed(fieldName)) {

@@ -7,5 +7,21 @@
     <module name="TreeWalker">
         <module name="RedundantImport"/>
         <module name="UnusedImports"/>
+        <module name="NeedBraces"/>
+        <module name="EqualsHashCode"/>
+        <module name="FallThrough"/>
+        <module name="MissingSwitchDefault"/>
+        <module name="OneStatementPerLine"/>
+        <module name="MultipleVariableDeclarations"/>
+        <module name="IllegalCatch">
+            <property name="illegalClassNames" value="RuntimeException,Throwable"/>
+        </module>
+        <module name="IllegalImport">
+            <property name="illegalPkgs" value="sun,com.sun"/>
+        </module>
+        <module name="SimplifyBooleanExpression"/>
+        <module name="SimplifyBooleanReturn"/>
+        <module name="ModifierOrder"/>
+        <module name="RedundantModifier"/>
     </module>
 </module>

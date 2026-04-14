@@ -8,7 +8,7 @@ import uk.co.compendiumdev.thingifier.api.ermodelconversion.XmlThing;
 
 import java.util.*;
 
-final public class ApiResponseAsXml {
+public final class ApiResponseAsXml {
     private final ApiResponse apiResponse;
     private final JsonThing jsonThing;
     private final XmlThing xmlThing;

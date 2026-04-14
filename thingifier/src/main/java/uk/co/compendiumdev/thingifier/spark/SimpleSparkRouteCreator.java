@@ -100,6 +100,8 @@ public class SimpleSparkRouteCreator {
             case "trace":
                 trace(endpoint, route);
                 break;
+            default:
+                break;
         }
     }
 

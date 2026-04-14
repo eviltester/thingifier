@@ -77,7 +77,7 @@ public class DefaultGUIHTML {
         public String menuTitle;
         public String url;
 
-        public GuiMenuItem(String title, String url){
+        GuiMenuItem(String title, String url){
             this.menuTitle = title;
             this.url = url;
         }

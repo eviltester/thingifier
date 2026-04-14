@@ -11,7 +11,7 @@ import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonThing;
 import java.util.ArrayList;
 import java.util.List;
 
-final public class ThingifierHttpApi {
+public final class ThingifierHttpApi {
 
     // TODO: each 'session' could have its own thingifier to support multiple users
     // TODO: would need the ability to create and delete sessions
@@ -156,6 +156,8 @@ final public class ThingifierHttpApi {
                                                     new BodyParser(request, thingifier.getThingNames()),
                                                     request.getHeaders()
                                                     );
+                break;
+            default:
                 break;
         }
 

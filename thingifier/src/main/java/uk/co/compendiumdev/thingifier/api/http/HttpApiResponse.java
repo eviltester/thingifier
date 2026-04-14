@@ -12,7 +12,7 @@ import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonThing;
  * Given an internal ApiResponse create an HTTP abstraction response
  * The requestHeaders are used to configure the content type using the Accept header
  */
-final public class HttpApiResponse {
+public final class HttpApiResponse {
 
     private final ApiResponse apiResponse;
     private final HttpHeadersBlock apiResponseHeaders;

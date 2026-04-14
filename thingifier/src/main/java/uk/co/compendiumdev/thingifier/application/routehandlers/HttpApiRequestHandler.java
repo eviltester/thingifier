@@ -5,5 +5,5 @@ import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 
 public interface HttpApiRequestHandler {
 
-    ApiResponse handle(final HttpApiRequest myRequest);
+    ApiResponse handle(HttpApiRequest myRequest);
 }

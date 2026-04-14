@@ -63,8 +63,9 @@ public class DefinedFields {
 
         for(Map.Entry<String,Field> field : fields.entrySet()){
             Field aField = field.getValue();
-            if(typeCheck.contains(aField.getType()))
+            if(typeCheck.contains(aField.getType())) {
                 returnFields.add(aField);
+            }
         }
 
         return returnFields;

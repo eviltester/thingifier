@@ -23,7 +23,7 @@ import java.util.*;
     - the API Definition and config
     - TODO: why is the API documentation not in here?
  */
-final public class Thingifier {
+public final class Thingifier {
 
     private final EntityRelModel erm;
     private ApiDocsConfig apiDocsConfig;
