@@ -11,6 +11,7 @@ import uk.co.compendiumdev.challenger.payloads.Challenger;
 import uk.co.compendiumdev.challenger.payloads.Todos;
 import uk.co.compendiumdev.challenger.restassured.api.ChallengesStatus;
 import uk.co.compendiumdev.challenger.restassured.api.RestAssuredBaseTest;
+import uk.co.compendiumdev.challenger.restassured.api.TodosApi;
 
 public class C037GetTodosDatabaseForRestoringTest extends RestAssuredBaseTest {
 
@@ -27,6 +28,8 @@ public class C037GetTodosDatabaseForRestoringTest extends RestAssuredBaseTest {
                 get(apiPath("/challenger/" + xChallenger)).
                 then().
                 statusCode(Matchers.anyOf(Matchers.is(200), Matchers.is(204)));
+
+        new TodosApi().getOrCreateAnyExistingTodo();
 
         Response todoResponse = RestAssured.
                 given().
