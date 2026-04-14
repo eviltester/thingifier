@@ -29,6 +29,7 @@ public class CXXXextraDeleteExistingTodo200Test extends RestAssuredBaseTest {
         // check it was actually deleted
         RestAssured.
                 given().
+            header("X-CHALLENGER", xChallenger).
                 accept("application/json").
                 get(apiPath( "/todos/" + created.id)).
                 then().

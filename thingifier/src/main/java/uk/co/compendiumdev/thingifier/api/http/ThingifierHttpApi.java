@@ -71,6 +71,7 @@ public final class ThingifierHttpApi {
 
         // any pre-request override processing
         HttpApiResponse httpResponse = runTheHttpApiRequestHooksOn(request);
+        final HttpVerb effectiveVerb = MethodOverrideParser.getEffectiveVerb(request, verb);
 
         ApiResponse apiResponse = null;
 
@@ -78,14 +79,14 @@ public final class ThingifierHttpApi {
 
         // validate request syntax
         if(httpResponse==null) {
-            httpResponse = validateRequestSyntax(request, verb);
+            httpResponse = validateRequestSyntax(request, effectiveVerb);
         }
 
         // TODO: consider 'processing' hooks which can be used to override the generic processing
 
         // no httpResponse generated after validation so it is not in error
         if(httpResponse==null) {
-            apiResponse = routeAndProcessRequest(request, verb);
+            apiResponse = routeAndProcessRequest(request, effectiveVerb);
 
             httpResponse = new HttpApiResponse(request.getHeaders(), apiResponse,
                     jsonThing, thingifier.apiConfig());

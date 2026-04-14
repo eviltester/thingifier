@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.challenger.payloads.Challenger;
@@ -18,6 +19,14 @@ public class C037GetTodosDatabaseForRestoringTest extends RestAssuredBaseTest {
 
         Assertions.assertNotNull(xChallenger);
         Assertions.assertTrue(xChallenger.length()>5);
+
+        RestAssured.
+                given().
+                header("X-CHALLENGER", xChallenger).
+                accept("application/json").
+                get(apiPath("/challenger/" + xChallenger)).
+                then().
+                statusCode(Matchers.anyOf(Matchers.is(200), Matchers.is(204)));
 
         Response todoResponse = RestAssured.
                 given().
