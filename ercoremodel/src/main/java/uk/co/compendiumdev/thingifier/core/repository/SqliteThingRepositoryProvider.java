@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.function.Function;
 
 public class SqliteThingRepositoryProvider implements ThingRepositoryProvider {
@@ -28,8 +29,10 @@ public class SqliteThingRepositoryProvider implements ThingRepositoryProvider {
     }
 
     public static SqliteThingRepositoryProvider inMemory() {
+        String providerName = "thingifier_" + UUID.randomUUID().toString().replace("-", "");
         return new SqliteThingRepositoryProvider(
-                databaseKey -> "jdbc:sqlite:file:" + safeName(databaseKey) + "?mode=memory&cache=shared");
+                databaseKey -> "jdbc:sqlite:file:" + providerName + "_" + safeName(databaseKey) +
+                        "?mode=memory&cache=shared");
     }
 
     public static SqliteThingRepositoryProvider fileBacked(final Path directory) {

@@ -3,6 +3,8 @@ package uk.co.compendiumdev.challenge.apimodel;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
+import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.Cardinality;
@@ -114,5 +116,100 @@ public class ChallengeApiModelRepositoryTest {
                     "File paperwork",
                     response.getReturnedInstanceCollection().get(0).getFieldValue("title").asString());
         }
+    }
+
+    @Test
+    public void simpleEntityWritesUseSqliteRepositoryWithoutLoadingCompatibilitySnapshot() {
+        try (SqliteThingRepositoryProvider provider = SqliteThingRepositoryProvider.inMemory()) {
+            Thingifier thingifier = new Thingifier(new EntityRelModel(provider));
+
+            EntityDefinition note = thingifier.defineThing("note", "notes");
+            note.addAsPrimaryKeyField(Field.is("id", FieldType.AUTO_INCREMENT));
+            note.addField(Field.is("title", FieldType.STRING));
+
+            ThingRepository repository = thingifier.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME);
+
+            ApiResponse create = thingifier.api().post(
+                    "/notes",
+                    bodyParser(thingifier, "{\"title\":\"created\"}"),
+                    new HttpHeadersBlock());
+
+            Assertions.assertEquals(201, create.getStatusCode());
+            Assertions.assertFalse(repository.hasLoadedCompatibilitySnapshot());
+            Assertions.assertEquals(1, repository.listInstances(note).size());
+
+            ApiResponse postAmend = thingifier.api().post(
+                    "/notes/1",
+                    bodyParser(thingifier, "{\"title\":\"posted\"}"),
+                    new HttpHeadersBlock());
+
+            Assertions.assertEquals(200, postAmend.getStatusCode());
+            Assertions.assertEquals(
+                    "posted",
+                    repository.findInstanceByQueryIdentifier(note, "1").
+                            getFieldValue("title").asString());
+            Assertions.assertFalse(repository.hasLoadedCompatibilitySnapshot());
+
+            ApiResponse putAmend = thingifier.api().put(
+                    "/notes/1",
+                    bodyParser(thingifier, "{\"title\":\"put\"}"),
+                    new HttpHeadersBlock());
+
+            Assertions.assertEquals(200, putAmend.getStatusCode());
+            Assertions.assertEquals(
+                    "put",
+                    repository.findInstanceByQueryIdentifier(note, "1").
+                            getFieldValue("title").asString());
+            Assertions.assertFalse(repository.hasLoadedCompatibilitySnapshot());
+
+            ApiResponse delete = thingifier.api().delete(
+                    "/notes/1", new HttpHeadersBlock());
+
+            Assertions.assertEquals(200, delete.getStatusCode());
+            Assertions.assertEquals(0, repository.listInstances(note).size());
+            Assertions.assertFalse(repository.hasLoadedCompatibilitySnapshot());
+        }
+    }
+
+    @Test
+    public void sqliteMemoryProvidersHaveSeparateNamedDatabaseLifetimes() {
+        EntityRelModel firstModel = null;
+        EntityRelModel secondModel = null;
+        try (SqliteThingRepositoryProvider firstProvider = SqliteThingRepositoryProvider.inMemory();
+             SqliteThingRepositoryProvider secondProvider = SqliteThingRepositoryProvider.inMemory()) {
+            firstModel = new EntityRelModel(firstProvider);
+            secondModel = new EntityRelModel(secondProvider);
+
+            EntityDefinition firstNote = firstModel.createEntityDefinition("note", "notes");
+            firstNote.addAsPrimaryKeyField(Field.is("id", FieldType.AUTO_INCREMENT));
+            firstNote.addField(Field.is("title", FieldType.STRING));
+
+            EntityDefinition secondNote = secondModel.createEntityDefinition("note", "notes");
+            secondNote.addAsPrimaryKeyField(Field.is("id", FieldType.AUTO_INCREMENT));
+            secondNote.addField(Field.is("title", FieldType.STRING));
+
+            firstModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).
+                    addInstance(new EntityInstance(firstNote).setValue("title", "first"));
+
+            Assertions.assertEquals(
+                    1,
+                    firstModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).
+                            listInstances(firstNote).size());
+            Assertions.assertEquals(
+                    0,
+                    secondModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).
+                            listInstances(secondNote).size());
+        } finally {
+            if (firstModel != null) {
+                firstModel.close();
+            }
+            if (secondModel != null) {
+                secondModel.close();
+            }
+        }
+    }
+
+    private BodyParser bodyParser(final Thingifier thingifier, final String json) {
+        return new BodyParser(new HttpApiRequest("/path").setBody(json), thingifier.getThingNames());
     }
 }

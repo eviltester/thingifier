@@ -7,6 +7,7 @@ import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
 
 import java.util.List;
 import java.util.Map;
@@ -43,6 +44,36 @@ public class BodyCreationValidator {
 
     public ValidationReport areFieldsUnique(final BodyParser bodyargs, final EntityInstanceCollection thing,
                                             List<String> uniqueFields) {
+        final ValidationReport report = new ValidationReport();
+
+        for (Map.Entry<String, String> entry : bodyargs.getFlattenedStringMap()) {
+
+            if (uniqueFields.contains(entry.getKey())) {
+                String existingValue = entry.getValue();
+
+                if (existingValue != null && existingValue.trim().length() > 0) {
+                    final EntityInstance foundInstance = thing.findInstanceByFieldNameAndValue(
+                            entry.getKey(),
+                            entry.getValue()
+                    );
+
+                    if (foundInstance != null) {
+                        report.setValid(false);
+                        report.addErrorMessage(
+                                String.format("Found Existing item with %s of %s",
+                                        entry.getKey(), entry.getValue()));
+                    }
+                }
+            }
+        }
+        return report;
+    }
+
+    public ValidationReport areFieldsUnique(
+            final BodyParser bodyargs,
+            final EntityDefinition thingDefinition,
+            final ThingRepository repository,
+            final List<String> uniqueFields) {
 
         final ValidationReport report = new ValidationReport();
 
@@ -54,10 +85,13 @@ public class BodyCreationValidator {
 
                 if (existingValue != null && existingValue.trim().length() > 0) {
                     // not unique if we can find something by that field value
-                    final EntityInstance foundInstance = thing.findInstanceByFieldNameAndValue(
-                                    entry.getKey(),
-                                    entry.getValue()
-                    );
+                    final EntityInstance foundInstance;
+                    if (repository == null) {
+                        foundInstance = null;
+                    } else {
+                        foundInstance = repository.findInstanceByFieldNameAndValue(
+                                thingDefinition, entry.getKey(), entry.getValue());
+                    }
 
                     if (foundInstance!=null) {
                         report.setValid(false);

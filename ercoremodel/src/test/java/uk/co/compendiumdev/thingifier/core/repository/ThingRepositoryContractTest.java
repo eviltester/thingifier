@@ -50,6 +50,19 @@ public class ThingRepositoryContractTest {
     }
 
     @Test
+    public void sqliteRepositoryCannotBeUsedAfterClose() {
+        ERSchema schema = todoSchema();
+        ThingRepository repository = SqliteThingRepository.inMemory(EntityRelModel.DEFAULT_DATABASE_NAME);
+        repository.initializeFrom(schema);
+
+        repository.close();
+
+        Assertions.assertThrows(
+                IllegalStateException.class,
+                () -> repository.listInstances(schema.getEntityDefinitionNamed("project")));
+    }
+
+    @Test
     public void sqliteFileBackedRepositorySurvivesCloseAndReopen() {
         ERSchema schema = todoSchema();
         Path databasePath = tempDir.resolve("thingifier.sqlite");

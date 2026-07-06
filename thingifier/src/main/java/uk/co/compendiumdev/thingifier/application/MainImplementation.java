@@ -28,7 +28,7 @@ import java.util.Map;
     This is a bit too tied down to the concept of one app, one thingifier at a time though.
     We should be able to have multiple thingifiers at different endpoints e.g. /api1/, /api2/ etc.
  */
-public class MainImplementation {
+public class MainImplementation implements AutoCloseable {
 
     Integer proxyport;
     private Map<String,Thingifier> thingifierModels;
@@ -253,7 +253,7 @@ public class MainImplementation {
     public void setupBuiltInConfigurableRoutes() {
         if(allowShutdown) {
             apiDefn.addRoutesToDocumentation(
-                new ShutdownRouteHandler().
+                new ShutdownRouteHandler(this).
                     configureRoutes().
                     getRoutes());
         }
@@ -390,5 +390,12 @@ public class MainImplementation {
 
     public ThingifierApiDocumentationDefn getApiDefn() {
         return apiDefn;
+    }
+
+    @Override
+    public void close() {
+        for (Thingifier model : thingifierModels.values()) {
+            model.close();
+        }
     }
 }

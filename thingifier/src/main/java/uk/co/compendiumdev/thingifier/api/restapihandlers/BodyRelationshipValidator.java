@@ -86,8 +86,8 @@ public class BodyRelationshipValidator {
         if(thingToRelateTo==null) {
             final List<RelationshipVectorDefinition> relationshipsNamed = thingDefinition.related().getRelationships(relationShipName);
             for(RelationshipVectorDefinition vector : relationshipsNamed){
-                final EntityInstanceCollection thingToRelationship = thingifier.getThingInstancesNamed(vector.getTo().getName(), database);
-                thingToRelateTo = thingToRelationship.findInstanceByPrimaryKey(guidValue);
+                thingToRelateTo = thingifier.getRepository(database).
+                        findInstanceByQueryIdentifier(vector.getTo(), guidValue);
                 if(thingToRelateTo!=null){
                     break;
                 }
@@ -143,19 +143,22 @@ public class BodyRelationshipValidator {
         String uniqueId = complexKeyValue;
         EntityInstance thingToRelateTo = null;
 
-        EntityInstanceCollection things = thingifier.
-                getInstancesForSingularOrPluralNamedEntity(relationshipToPart, database);
+        EntityDefinition things = thingifier.getERmodel().getSchema().
+                getDefinitionWithSingularOrPluralNamed(relationshipToPart);
 
         if(things!=null){
-            thingToRelateTo = things.findInstanceByPrimaryKey(uniqueId);
+            thingToRelateTo = thingifier.getRepository(database).
+                    findInstanceByQueryIdentifier(things, uniqueId);
         }
 
         // haven't found it yet
         if(thingToRelateTo==null){
-            things = thingifier.getInstancesForSingularOrPluralNamedEntity(relationshipToPart, database);
+            things = thingifier.getERmodel().getSchema().
+                    getDefinitionWithSingularOrPluralNamed(relationshipToPart);
 
             if(things!=null) {
-                thingToRelateTo = things.findInstanceByFieldNameAndValue(relationshipFieldPart, uniqueId);
+                thingToRelateTo = thingifier.getRepository(database).
+                        findInstanceByFieldNameAndValue(things, relationshipFieldPart, uniqueId);
             }
         }
 

@@ -1,10 +1,10 @@
 package uk.co.compendiumdev.thingifier.api.restapihandlers;
 
 import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.NamedValue;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
@@ -26,7 +26,7 @@ public class RestApiPutHandler {
 
         // if queryis empty then need a way to check if the query matched
         // create a thing
-        EntityInstanceCollection thing = thingifier.getInstancesForSingularOrPluralNamedEntity(url, instanceDatabaseName);
+        EntityDefinition thing = EntityUrlMatcher.entityFromCollectionUrl(thingifier, url);
         if (thing != null) {
             // can't create a new thing at root level with PUT
             return ApiResponse.error(405, "Cannot create root level entity with a PUT");
@@ -35,24 +35,22 @@ public class RestApiPutHandler {
 
         // amend  a thing
         // thing/guid
-        String[] urlParts = url.split("/");
-        if (urlParts.length != 2) {
+        thing = EntityUrlMatcher.entityFromInstanceUrl(thingifier, url);
+        if (thing == null) {
             // WHAT was that query?
+            if (EntityUrlMatcher.hasPartCount(url, 2)) {
+                String thingName = EntityUrlMatcher.entityTermFromUrl(url);
+                if (!thingName.isEmpty()) {
+                    return NoSuchEntity.response(thingName);
+                }
+            }
             return ApiResponse.error(400, "Your request was not understood");
         }
 
-        String thingName = urlParts[0];
-        thing = thingifier.getInstancesForSingularOrPluralNamedEntity(thingName, instanceDatabaseName);
+        String instanceGuid = EntityUrlMatcher.identifierFromInstanceUrl(url);
 
-        if (thing == null) {
-            // this is not a URL for thing/guid
-            // unknown thing
-            return NoSuchEntity.response(urlParts[0]);
-        }
-
-        String instanceGuid = urlParts[1];
-
-        EntityInstance instance = thing.findInstanceByPrimaryKey(instanceGuid);
+        EntityInstance instance = thingifier.getRepository(instanceDatabaseName).
+                findInstanceByQueryIdentifier(thing, instanceGuid);
 
         if (instance == null) {
 
@@ -60,7 +58,7 @@ public class RestApiPutHandler {
             // if the primary key is an AUTO i.e. AUTO_GUID or AUTO_INCREMENT then we should not be able to create it
             // in fact if there are any fields at all which are AUTO then we should not be able to create it with PUT
 
-            List<Field> forbiddenPutCreationFields = thing.definition().getFieldsOfType(FieldType.AUTO_INCREMENT, FieldType.AUTO_GUID);
+            List<Field> forbiddenPutCreationFields = thing.getFieldsOfType(FieldType.AUTO_INCREMENT, FieldType.AUTO_GUID);
             if(forbiddenPutCreationFields.size()>0){
 
                 String names = "";
@@ -70,7 +68,7 @@ public class RestApiPutHandler {
                     }
                     names = names + field.getName();
                 }
-                return ApiResponse.error(400, String.format("Cannot create %s with PUT due to Auto fields %s", thing.definition().getName(), names));
+                return ApiResponse.error(400, String.format("Cannot create %s with PUT due to Auto fields %s", thing.getName(), names));
             }
 
 
@@ -78,10 +76,10 @@ public class RestApiPutHandler {
             // any field in the body for the primary key must match the primarykey field
             List<NamedValue> fieldValues = FieldValues.fromListMapEntryStringString(args.getFlattenedStringMap());
             for( NamedValue namedValue : fieldValues){
-                if(namedValue.name.equals(thing.definition().getPrimaryKeyField().getName())){
+                if(namedValue.name.equals(thing.getPrimaryKeyField().getName())){
                     if(!namedValue.value.equals(instanceGuid)){
                         // primary key does not match the value in the message
-                        return ApiResponse.error(400, String.format("Cannot create %s with PUT as key does not match body value %s != %s", thing.definition().getName(), instanceGuid, namedValue.value));
+                        return ApiResponse.error(400, String.format("Cannot create %s with PUT as key does not match body value %s != %s", thing.getName(), instanceGuid, namedValue.value));
                     }
                 }
             }

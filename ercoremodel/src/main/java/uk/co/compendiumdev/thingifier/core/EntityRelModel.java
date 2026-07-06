@@ -18,7 +18,7 @@ import java.util.*;
     Schema and instances are separate to allow us to have multiple
     'databases' in memory at the same time built from the same schema.
  */
-public class EntityRelModel {
+public class EntityRelModel implements AutoCloseable {
 
     public static final String DEFAULT_DATABASE_NAME = "__default";
 
@@ -97,6 +97,11 @@ public class EntityRelModel {
 
     public ThingRepositoryProvider getRepositoryProvider() {
         return repositories;
+    }
+
+    @Override
+    public void close() {
+        repositories.close();
     }
 
     // ERM Object Level

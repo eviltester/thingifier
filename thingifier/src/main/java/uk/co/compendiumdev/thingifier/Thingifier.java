@@ -24,7 +24,7 @@ import java.util.*;
     - the API Definition and config
     - TODO: why is the API documentation not in here?
  */
-public final class Thingifier {
+public final class Thingifier implements AutoCloseable {
 
     private final EntityRelModel erm;
     private ApiDocsConfig apiDocsConfig;
@@ -226,6 +226,11 @@ public final class Thingifier {
 
     public ThingRepository getRepository(final String database) {
         return erm.getRepository(database);
+    }
+
+    @Override
+    public void close() {
+        erm.close();
     }
 
 

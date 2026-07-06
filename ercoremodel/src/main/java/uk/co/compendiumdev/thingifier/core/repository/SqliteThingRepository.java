@@ -45,6 +45,7 @@ public class SqliteThingRepository extends InMemoryThingRepository {
     private ERSchema schema;
     private Connection connection;
     private boolean legacySnapshotLoaded;
+    private boolean closed;
 
     public SqliteThingRepository(final String databaseKey, final String jdbcUrl) {
         super(databaseKey, new ERInstanceData());
@@ -75,6 +76,11 @@ public class SqliteThingRepository extends InMemoryThingRepository {
             legacySnapshotLoaded = true;
         }
         return super.getInstanceData();
+    }
+
+    @Override
+    public boolean hasLoadedCompatibilitySnapshot() {
+        return legacySnapshotLoaded;
     }
 
     @Override
@@ -327,6 +333,7 @@ public class SqliteThingRepository extends InMemoryThingRepository {
 
     @Override
     public void close() {
+        closed = true;
         if (connection == null) {
             return;
         }
@@ -339,6 +346,9 @@ public class SqliteThingRepository extends InMemoryThingRepository {
     }
 
     private void openConnection() {
+        if (closed) {
+            throw new IllegalStateException("SQLite repository has been closed");
+        }
         if (connection != null) {
             return;
         }

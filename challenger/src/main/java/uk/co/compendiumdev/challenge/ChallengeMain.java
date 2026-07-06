@@ -118,6 +118,9 @@ public class ChallengeMain {
     }
 
     public static void stop(){
+        if (challenger != null) {
+            challenger.getThingifier().close();
+        }
         challenger = null;
     }
 }

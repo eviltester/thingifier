@@ -69,6 +69,10 @@ public interface ThingRepository extends AutoCloseable {
 
     Collection<EntityInstance> getConnectedItems(EntityInstance instance, String relationshipName);
 
+    default boolean hasLoadedCompatibilitySnapshot() {
+        return true;
+    }
+
     default void flush() {
         // Allows persistent repositories to sync legacy direct collection mutations.
     }
