@@ -36,9 +36,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.logging.Logger;
 
 public class SqliteThingRepository extends InMemoryThingRepository {
 
+    private static final Logger LOGGER =
+            Logger.getLogger(SqliteThingRepository.class.getName());
     private static final String INTERNAL_ID_COLUMN = "__internal_id";
     private static final String COUNTERS_TABLE = "__thingifier_counters";
 
@@ -158,18 +161,16 @@ public class SqliteThingRepository extends InMemoryThingRepository {
             final EntityDefinition entity, final QueryFilterParams queryParams) {
         ensureSchemaReady();
         QueryFilterParams params = queryParams == null ? new QueryFilterParams() : queryParams;
-        if (hasJavaOnlyFilters(params)) {
-            List<EntityInstance> instances = new ArrayList<>(super.listInstances(entity));
-            if (!legacySnapshotLoaded) {
-                instances = new ArrayList<>(getInstanceData().
-                        getInstanceCollectionForEntityNamed(entity.getName()).
-                        getInstances());
-            }
-            return filterAndSort(instances, params);
-        }
 
-        SqlQuery sqlQuery = selectInstancesSql(entity, params);
-        return queryEntityRows(entity, sqlQuery.sql, sqlQuery.parameters);
+        try {
+            SqlQuery sqlQuery = selectInstancesSql(entity, params);
+            return queryEntityRows(entity, sqlQuery.sql, sqlQuery.parameters);
+        } catch (SqliteRegexToLikeConverter.RegexToLikeConversionException e) {
+            LOGGER.warning("SQLite regex filter for " + entity.getName() +
+                    " could not be converted to LIKE; using Java compatibility filtering: " +
+                    e.getMessage());
+            return listInstancesUsingJavaFilter(entity, params);
+        }
     }
 
     @Override
@@ -336,26 +337,29 @@ public class SqliteThingRepository extends InMemoryThingRepository {
         ensureSchemaReady();
         QueryFilterParams params = queryParams == null ? new QueryFilterParams() : queryParams;
 
-        if (hasJavaOnlyFilters(params)) {
+        try {
+            Map<String, EntityInstance> related = new LinkedHashMap<>();
+            for (RelationshipVectorDefinition vector :
+                    relationshipVectorsFor(instance, relationshipName)) {
+                SqlQuery query = selectRelatedInstancesSql(instance, vector, params);
+                if (query == null) {
+                    continue;
+                }
+                for (EntityInstance item : queryEntityRows(query.entity, query.sql, query.parameters)) {
+                    related.put(item.getInternalId(), item);
+                }
+            }
+
+            return new EntityInstanceListSorter(params).
+                    sort(new ArrayList<>(related.values()));
+        } catch (SqliteRegexToLikeConverter.RegexToLikeConversionException e) {
+            LOGGER.warning("SQLite regex relationship filter for " + relationshipName +
+                    " could not be converted to LIKE; using Java compatibility filtering: " +
+                    e.getMessage());
             return filterAndSort(
                     new ArrayList<>(getConnectedItems(instance, relationshipName)),
                     params);
         }
-
-        Map<String, EntityInstance> related = new LinkedHashMap<>();
-        for (RelationshipVectorDefinition vector :
-                relationshipVectorsFor(instance, relationshipName)) {
-            SqlQuery query = selectRelatedInstancesSql(instance, vector, params);
-            if (query == null) {
-                continue;
-            }
-            for (EntityInstance item : queryEntityRows(query.entity, query.sql, query.parameters)) {
-                related.put(item.getInternalId(), item);
-            }
-        }
-
-        return new EntityInstanceListSorter(params).
-                sort(new ArrayList<>(related.values()));
     }
 
     @Override
@@ -405,12 +409,17 @@ public class SqliteThingRepository extends InMemoryThingRepository {
         try {
             Class.forName("org.sqlite.JDBC");
             connection = DriverManager.getConnection(jdbcUrl);
+            configureConnection();
         } catch (ClassNotFoundException e) {
             throw new IllegalStateException(
                     "SQLite repository requires org.xerial:sqlite-jdbc on the runtime classpath", e);
         } catch (SQLException e) {
             throw new IllegalStateException("Could not open SQLite repository " + jdbcUrl, e);
         }
+    }
+
+    private void configureConnection() {
+        executeSql("PRAGMA case_sensitive_like = ON");
     }
 
     private void ensureSchemaReady() {
@@ -593,6 +602,9 @@ public class SqliteThingRepository extends InMemoryThingRepository {
                     whereClauses.add(column + " LIKE ? ESCAPE '\\'");
                     parameters.add(sqlLikeWildcard(filterBy.fieldValue));
                     break;
+                case "~=":
+                    whereClauses.add(regexLikeSqlCondition(column, filterBy.fieldValue, parameters));
+                    break;
                 default:
                     break;
             }
@@ -667,6 +679,10 @@ public class SqliteThingRepository extends InMemoryThingRepository {
                     sql.append(" AND ").append(column).append(" LIKE ? ESCAPE '\\'");
                     parameters.add(sqlLikeWildcard(filterBy.fieldValue));
                     break;
+                case "~=":
+                    sql.append(" AND ").
+                            append(regexLikeSqlCondition(column, filterBy.fieldValue, parameters));
+                    break;
                 default:
                     break;
             }
@@ -695,13 +711,17 @@ public class SqliteThingRepository extends InMemoryThingRepository {
         }
     }
 
-    private boolean hasJavaOnlyFilters(final QueryFilterParams queryParams) {
-        for (FilterBy filterBy : queryParams.toList()) {
-            if ("~=".equals(filterBy.filterOperation)) {
-                return true;
-            }
+    private String regexLikeSqlCondition(
+            final String column,
+            final String regex,
+            final List<Object> parameters) {
+        SqliteRegexToLikeConverter.Conversion conversion =
+                SqliteRegexToLikeConverter.convert(regex);
+        parameters.add(conversion.sqlValue());
+        if (conversion.isEquality()) {
+            return column + " = ?";
         }
-        return false;
+        return column + " LIKE ? ESCAPE '\\'";
     }
 
     private List<EntityInstance> queryEntityRows(
@@ -720,6 +740,18 @@ public class SqliteThingRepository extends InMemoryThingRepository {
             throw new IllegalStateException("Could not query SQLite entity rows for " + entity.getName(), e);
         }
         return instances;
+    }
+
+    private List<EntityInstance> listInstancesUsingJavaFilter(
+            final EntityDefinition entity,
+            final QueryFilterParams params) {
+        List<EntityInstance> instances = new ArrayList<>(super.listInstances(entity));
+        if (!legacySnapshotLoaded) {
+            instances = new ArrayList<>(getInstanceData().
+                    getInstanceCollectionForEntityNamed(entity.getName()).
+                    getInstances());
+        }
+        return filterAndSort(instances, params);
     }
 
     private EntityInstance instanceFromRow(
@@ -867,8 +899,10 @@ public class SqliteThingRepository extends InMemoryThingRepository {
     }
 
     private void persistCountersFor(final EntityDefinition entity) {
-        executeSql("DELETE FROM " + identifier(COUNTERS_TABLE) +
-                " WHERE entity_name = " + quotedValue(entity.getName()));
+        executePreparedSql(
+                "DELETE FROM " + identifier(COUNTERS_TABLE) +
+                        " WHERE entity_name = ?",
+                List.of(entity.getName()));
 
         String sql = "INSERT INTO " + identifier(COUNTERS_TABLE) +
                 " (entity_name, field_name, next_value) VALUES (?, ?, ?)";
@@ -886,13 +920,16 @@ public class SqliteThingRepository extends InMemoryThingRepository {
 
     private void deletePersistedInstance(final String internalId) {
         for (EntityDefinition entity : schema.getEntityDefinitions()) {
-            executeSql("DELETE FROM " + table(entity) +
-                    " WHERE " + identifier(INTERNAL_ID_COLUMN) + " = " + quotedValue(internalId));
+            executePreparedSql(
+                    "DELETE FROM " + table(entity) +
+                            " WHERE " + identifier(INTERNAL_ID_COLUMN) + " = ?",
+                    List.of(internalId));
         }
         for (RelationshipVectorDefinition vector : relationshipVectors()) {
-            executeSql("DELETE FROM " + relationshipTable(vector) +
-                    " WHERE from_internal_id = " + quotedValue(internalId) +
-                    " OR to_internal_id = " + quotedValue(internalId));
+            executePreparedSql(
+                    "DELETE FROM " + relationshipTable(vector) +
+                            " WHERE from_internal_id = ? OR to_internal_id = ?",
+                    List.of(internalId, internalId));
         }
     }
 
@@ -904,19 +941,24 @@ public class SqliteThingRepository extends InMemoryThingRepository {
             if (!vector.getRelationshipDefinition().isKnownAs(relationshipName)) {
                 continue;
             }
-            executeSql("DELETE FROM " + relationshipTable(vector) +
-                    " WHERE (from_internal_id = " + quotedValue(parent.getInternalId()) +
-                    " AND to_internal_id = " + quotedValue(child.getInternalId()) + ")" +
-                    " OR (from_internal_id = " + quotedValue(child.getInternalId()) +
-                    " AND to_internal_id = " + quotedValue(parent.getInternalId()) + ")");
+            executePreparedSql(
+                    "DELETE FROM " + relationshipTable(vector) +
+                            " WHERE (from_internal_id = ? AND to_internal_id = ?)" +
+                            " OR (from_internal_id = ? AND to_internal_id = ?)",
+                    List.of(
+                            parent.getInternalId(),
+                            child.getInternalId(),
+                            child.getInternalId(),
+                            parent.getInternalId()));
         }
     }
 
     private void deleteRelationshipRowsInvolving(final EntityInstance instance) {
         for (RelationshipVectorDefinition vector : relationshipVectors()) {
-            executeSql("DELETE FROM " + relationshipTable(vector) +
-                    " WHERE from_internal_id = " + quotedValue(instance.getInternalId()) +
-                    " OR to_internal_id = " + quotedValue(instance.getInternalId()));
+            executePreparedSql(
+                    "DELETE FROM " + relationshipTable(vector) +
+                            " WHERE from_internal_id = ? OR to_internal_id = ?",
+                    List.of(instance.getInternalId(), instance.getInternalId()));
         }
     }
 
@@ -1009,6 +1051,17 @@ public class SqliteThingRepository extends InMemoryThingRepository {
         }
     }
 
+    private void executePreparedSql(final String sql, final List<Object> parameters) {
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            for (int index = 0; index < parameters.size(); index++) {
+                statement.setObject(index + 1, parameters.get(index));
+            }
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            throw new IllegalStateException("Could not execute SQLite SQL: " + sql, e);
+        }
+    }
+
     private void runInTransaction(final Runnable operation) {
         try {
             boolean originalAutoCommit = connection.getAutoCommit();
@@ -1066,10 +1119,6 @@ public class SqliteThingRepository extends InMemoryThingRepository {
 
     private String identifier(final String rawIdentifier) {
         return "\"" + rawIdentifier.replace("\"", "\"\"") + "\"";
-    }
-
-    private String quotedValue(final String value) {
-        return "'" + value.replace("'", "''") + "'";
     }
 
     private static class SqlQuery {

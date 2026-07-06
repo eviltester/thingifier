@@ -210,6 +210,76 @@ public class ThingRepositoryContractTest {
         }
     }
 
+    @Test
+    public void sqliteConvertibleRegexFilterDoesNotHydrateCompatibilitySnapshot() {
+        ERSchema schema = todoSchema();
+        EntityDefinition projectDefinition = schema.getEntityDefinitionNamed("project");
+        Path databasePath = tempDir.resolve("regex-like-lazy.sqlite");
+
+        try (ThingRepository repository =
+                     SqliteThingRepository.fileBacked(EntityRelModel.DEFAULT_DATABASE_NAME, databasePath)) {
+            repository.initializeFrom(schema);
+
+            repository.addInstance(new EntityInstance(projectDefinition).
+                    setValue("title", "Repository project"));
+            repository.addInstance(new EntityInstance(projectDefinition).
+                    setValue("title", "repository project"));
+            repository.addInstance(new EntityInstance(projectDefinition).
+                    setValue("title", "Another project"));
+        }
+
+        try (ThingRepository reopened =
+                     SqliteThingRepository.fileBacked(EntityRelModel.DEFAULT_DATABASE_NAME, databasePath)) {
+            reopened.initializeFrom(schema);
+
+            QueryFilterParams regexParams = new QueryFilterParams();
+            regexParams.put("title", "~=Repository.*");
+
+            List<EntityInstance> filtered =
+                    reopened.listInstances(projectDefinition, regexParams);
+
+            Assertions.assertEquals(1, filtered.size());
+            Assertions.assertEquals("Repository project",
+                    filtered.get(0).getFieldValue("title").asString());
+            Assertions.assertFalse(reopened.hasLoadedCompatibilitySnapshot());
+            Assertions.assertEquals(1,
+                    reopened.getInstanceCollectionForEntityNamed("project").countInstances());
+        }
+    }
+
+    @Test
+    public void sqliteUnsupportedRegexFilterUsesCompatibilityFallback() {
+        ERSchema schema = todoSchema();
+        EntityDefinition projectDefinition = schema.getEntityDefinitionNamed("project");
+        Path databasePath = tempDir.resolve("regex-java-fallback.sqlite");
+
+        try (ThingRepository repository =
+                     SqliteThingRepository.fileBacked(EntityRelModel.DEFAULT_DATABASE_NAME, databasePath)) {
+            repository.initializeFrom(schema);
+
+            repository.addInstance(new EntityInstance(projectDefinition).
+                    setValue("title", "Repository project"));
+            repository.addInstance(new EntityInstance(projectDefinition).
+                    setValue("title", "Another project"));
+        }
+
+        try (ThingRepository reopened =
+                     SqliteThingRepository.fileBacked(EntityRelModel.DEFAULT_DATABASE_NAME, databasePath)) {
+            reopened.initializeFrom(schema);
+
+            QueryFilterParams regexParams = new QueryFilterParams();
+            regexParams.put("title", "~=Repository [Pp]roject");
+
+            List<EntityInstance> filtered =
+                    reopened.listInstances(projectDefinition, regexParams);
+
+            Assertions.assertEquals(1, filtered.size());
+            Assertions.assertEquals("Repository project",
+                    filtered.get(0).getFieldValue("title").asString());
+            Assertions.assertTrue(reopened.hasLoadedCompatibilitySnapshot());
+        }
+    }
+
     private void exerciseRepositoryContract(final ThingRepository repository) {
         ERSchema schema = todoSchema();
         repository.initializeFrom(schema);
