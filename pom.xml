@@ -57,6 +57,7 @@
         <module>challengerAuto</module>
         <module>standAloneTodoListRestApi</module>
         <module>standAloneTodoListManagerRestApi</module>
+        <module>standAloneSqlLiteTodoListManagerRestApi</module>
         <module>standAloneTodoListManagerRestApiAuto</module>
         <module>thingifierapp</module>
         <module>swaggerizer</module>

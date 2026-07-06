@@ -10,6 +10,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.Cardinality;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.validation.VRule;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
+import uk.co.compendiumdev.thingifier.core.repository.ThingRepositoryProvider;
 
 import static uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType.STRING;
 
@@ -19,6 +20,14 @@ public class TodoManagerThingifier {
             REMEMBER - THIS IS THE PRODUCTION DEFINITION
      */
     public Thingifier get() {
+        return get(new EntityRelModel());
+    }
+
+    public Thingifier get(final ThingRepositoryProvider repositoryProvider) {
+        return get(new EntityRelModel(repositoryProvider));
+    }
+
+    public Thingifier get(final EntityRelModel entityRelModel) {
 
         // this is basically an Entity Relationship diagram as source
         // TODO:  should expand functionality based on E-R diagrams
@@ -40,7 +49,7 @@ public class TodoManagerThingifier {
         // e.g. (.|\s)*\S(.|\s)*    non empty
 
 
-        Thingifier todoManager = new Thingifier();
+        Thingifier todoManager = new Thingifier(entityRelModel);
 
         StringBuilder para = new StringBuilder();
 
