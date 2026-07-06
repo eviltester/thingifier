@@ -12,9 +12,10 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.F
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVectorDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
+import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
 
-import java.util.Collection;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class DefaultGuiHtmlPages {
@@ -119,16 +120,20 @@ public class DefaultGuiHtmlPages {
                 htmlErrorMessage = htmlErrorMessage + "<p>Database Named " + HtmlUtils.sanitise(database) + " not found. Have you made any API Calls?" + tryDefault + "</p>";
             }
 
-            EntityInstanceCollection thing = null;
+            EntityDefinition definition = thingifier.getERmodel().
+                    getSchema().
+                    getDefinitionWithSingularOrPluralNamed(entityName);
+            List<EntityInstance> instances = new ArrayList<>();
 
             if (htmlErrorMessage.isEmpty()) {
                 try {
-                    thing = thingifier.getThingInstancesNamed(entityName, database);
+                    ThingRepository repository = thingifier.getRepository(database);
+                    instances = new ArrayList<>(repository.listInstances(definition));
                 } catch (Exception e) {
                     //htmlErrorMessage = htmlErrorMessage + "<p>Database Access Error: " + e.getMessage() + ".</p>";
                 }
 
-                if (thing == null) {
+                if (definition == null) {
                     htmlErrorMessage = htmlErrorMessage + "<p>Entity instances not found in database, have you made any API calls?" + tryDefault + "</p>";
                 }
             }
@@ -141,13 +146,11 @@ public class DefaultGuiHtmlPages {
 
                 try {
 
-                    final EntityDefinition definition = thing.definition();
-
                     html.append("<h2>" + definition.getPlural() + "</h2>");
 
                     html.append(startHtmlTableFor(definition));
 
-                    for (EntityInstance instance : thing.getInstances()) {
+                    for (EntityInstance instance : instances) {
                         html.append(htmlTableRowFor(instance, database));
                     }
 
@@ -276,16 +279,19 @@ public class DefaultGuiHtmlPages {
         html.append(templates.getMenuAsHTML());
         html.append(templates.getStartOfMainContentMarker());
 
-        EntityInstanceCollection thing = null;
+        EntityDefinition definition = thingifier.getERmodel().
+                getSchema().
+                getDefinitionWithSingularOrPluralNamed(entityName);
+        ThingRepository repository = null;
 
         if(htmlErrorMessage.isEmpty()){
             try{
-                thing = thingifier.getThingInstancesNamed(entityName, database);
+                repository = thingifier.getRepository(database);
             }catch(Exception e){
                 //htmlErrorMessage = htmlErrorMessage + "<p>Database Access Error: " + e.getMessage() + ".</p>";
             }
 
-            if(thing == null){
+            if(definition == null || repository == null){
                 htmlErrorMessage = htmlErrorMessage + "<p>Entity instances not found in database, have you made any API calls?" + tryDefault + "</p>";
             }
         }
@@ -297,9 +303,11 @@ public class DefaultGuiHtmlPages {
             String keyName = "";
             String keyValue = "";
             for (String queryParam : instanceQueryParams.keySet()) {
-                Field field = thing.definition().getField(queryParam);
+                Field field = definition.getField(queryParam);
                 if (field != null) {
-                    if (field.getType() == FieldType.AUTO_GUID || field.getType() == FieldType.AUTO_INCREMENT) {
+                    if (field == definition.getPrimaryKeyField() ||
+                            field.getType() == FieldType.AUTO_GUID ||
+                            field.getType() == FieldType.AUTO_INCREMENT) {
                         keyName = field.getName();
                         keyValue = instanceQueryParams.get(queryParam);
                         break;
@@ -308,7 +316,8 @@ public class DefaultGuiHtmlPages {
             }
 
             try {
-                instance = thing.findInstanceByFieldNameAndValue(keyName, keyValue);
+                instance = repository.findInstanceByFieldNameAndValue(
+                        definition, keyName, keyValue);
             }catch(Exception e){
                 htmlErrorMessage = htmlErrorMessage + "<p>Instances not found in database, have you made any API calls?" + tryDefault + "</p>";
             }
@@ -324,7 +333,6 @@ public class DefaultGuiHtmlPages {
             html.append(getExploringDatabaseHtml(database));
 
             try {
-                final EntityDefinition definition = thing.definition();
 
                 html.append(getInstancesRootMenuHtml(database));
 
@@ -339,12 +347,13 @@ public class DefaultGuiHtmlPages {
                 html.append("</details>");
 
 
-                if (instance.getRelationships().hasAnyRelationshipInstances()) {
+                if (!definition.related().getRelationships().isEmpty()) {
 
                     html.append("<h2>Relationships</h2>");
 
                     for (RelationshipVectorDefinition relationship : definition.related().getRelationships()) {
-                        final Collection<EntityInstance> relatedItems = instance.getRelationships().getConnectedItems(relationship.getName());
+                        final List<EntityInstance> relatedItems =
+                                repository.listRelatedInstances(instance, relationship.getName());
                         html.append("<h3>" + relationship.getName() + "</h3>");
                         if (!relatedItems.isEmpty()) {
                             boolean header = true;

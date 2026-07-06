@@ -4,11 +4,13 @@ This note classifies the current `getInstanceData()` and `getThingInstancesNamed
 
 ## Normal API Request Paths
 
-Simple entity `GET` requests already use `ThingRepository` for `/entity`, `/entities`, `/entity/{id}`, and `/entities/{id}` when the path does not traverse a relationship.
+Simple entity `GET` requests use `ThingRepository` for `/entity`, `/entities`, `/entity/{id}`, and `/entities/{id}`.
 
-Simple entity `POST`, `PUT`, and `DELETE` requests now resolve entity definitions and entity instances through `ThingRepository` for root collection and root instance paths. These paths should not call `getInstanceData()` for SQLite unless a payload uses unsupported legacy behavior.
+Simple relationship `GET` traversal, such as `/projects/{id}/tasks`, now uses `ThingRepository.listRelatedInstances(...)`. SQLite executes the relationship lookup against relationship tables and materializes only the returned rows.
 
-Relationship URL paths still use the legacy `SimpleQuery` fallback. This includes relationship traversal and relationship create/delete paths such as `/projects/{id}/tasks` and `/projects/{id}/tasks/{id}`.
+Simple entity `POST`, `PUT`, and `DELETE` requests resolve entity definitions and entity instances through `ThingRepository` for root collection and root instance paths. These paths should not call `getInstanceData()` for SQLite unless a payload uses unsupported legacy behavior.
+
+Relationship create/delete URL paths still use the legacy `SimpleQuery` fallback. This includes write paths such as `POST /projects/{id}/tasks` and `DELETE /projects/{id}/tasks/{id}`.
 
 ## Relationship Payload Helpers
 
@@ -22,11 +24,14 @@ Known compatibility users:
 
 - data populator and JSON import paths;
 - admin/debug/export views and reporting;
-- Challenger persistence/session restore;
-- GUI data explorer pages;
-- relationship URL fallback paths.
+- legacy data populators that have not implemented `RepositoryDataPopulator`;
+- relationship write URL fallback paths.
 
-These are acceptable for this phase, but they are the next places to reduce if memory efficiency needs to extend beyond simple entity API operations.
+The default Todo API and Todo Manager seed populators now implement `RepositoryDataPopulator`, so SQLite-backed Todo apps can seed through repository writes without first hydrating `ERInstanceData`.
+
+The base GUI data explorer list/detail pages now read via `ThingRepository` and render relationship sections via `ThingRepository.listRelatedInstances(...)`.
+
+These remaining compatibility paths are acceptable for this phase, but they are the next places to reduce if memory efficiency needs to extend beyond simple entity reads and Todo-style population.
 
 ## Test Helpers
 

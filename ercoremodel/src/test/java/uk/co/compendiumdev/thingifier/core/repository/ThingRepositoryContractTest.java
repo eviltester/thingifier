@@ -12,6 +12,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.F
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
+import uk.co.compendiumdev.thingifier.core.query.RepositoryBackedSimpleQuery;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -158,6 +159,57 @@ public class ThingRepositoryContractTest {
         }
     }
 
+    @Test
+    public void sqliteRelationshipReadsDoNotHydrateCompatibilitySnapshot() {
+        ERSchema schema = todoSchema();
+        EntityDefinition projectDefinition = schema.getEntityDefinitionNamed("project");
+        EntityDefinition taskDefinition = schema.getEntityDefinitionNamed("task");
+        Path databasePath = tempDir.resolve("relationship-lazy.sqlite");
+
+        try (ThingRepository repository =
+                     SqliteThingRepository.fileBacked(EntityRelModel.DEFAULT_DATABASE_NAME, databasePath)) {
+            repository.initializeFrom(schema);
+
+            EntityInstance project = repository.addInstance(
+                    new EntityInstance(projectDefinition).setValue("title", "SQLite project"));
+            EntityInstance firstTask = repository.addInstance(
+                    new EntityInstance(taskDefinition).setValue("title", "Wire repository"));
+            EntityInstance secondTask = repository.addInstance(
+                    new EntityInstance(taskDefinition).setValue("title", "Write tests"));
+
+            repository.connectRelationship(project, "tasks", firstTask);
+            repository.connectRelationship(project, "tasks", secondTask);
+        }
+
+        try (ThingRepository reopened =
+                     SqliteThingRepository.fileBacked(EntityRelModel.DEFAULT_DATABASE_NAME, databasePath)) {
+            reopened.initializeFrom(schema);
+
+            Assertions.assertFalse(reopened.hasLoadedCompatibilitySnapshot());
+
+            EntityInstance project = reopened.findInstanceByPrimaryKey(projectDefinition, "1");
+
+            QueryFilterParams params = new QueryFilterParams();
+            params.put("title", "*=Wire*");
+
+            List<EntityInstance> filteredTasks =
+                    reopened.listRelatedInstances(project, "tasks", params);
+
+            Assertions.assertEquals(1, filteredTasks.size());
+            Assertions.assertEquals("Wire repository",
+                    filteredTasks.get(0).getFieldValue("title").asString());
+            Assertions.assertFalse(reopened.hasLoadedCompatibilitySnapshot());
+
+            RepositoryBackedSimpleQuery query =
+                    new RepositoryBackedSimpleQuery(schema, reopened, "project/1/tasks").
+                            performQuery(new QueryFilterParams());
+
+            Assertions.assertTrue(query.isResultACollection());
+            Assertions.assertEquals(2, query.getListEntityInstances().size());
+            Assertions.assertFalse(reopened.hasLoadedCompatibilitySnapshot());
+        }
+    }
+
     private void exerciseRepositoryContract(final ThingRepository repository) {
         ERSchema schema = todoSchema();
         repository.initializeFrom(schema);
@@ -209,17 +261,49 @@ public class ThingRepositoryContractTest {
         EntityInstance task = new EntityInstance(taskDefinition);
         task.setValue("title", "Wire repository");
         repository.addInstance(task);
-        repository.connectRelationship(task, "task-of", project);
+        repository.connectRelationship(project, "tasks", task);
+
+        EntityInstance secondTask = new EntityInstance(taskDefinition);
+        secondTask.setValue("title", "Write tests");
+        repository.addInstance(secondTask);
+        repository.connectRelationship(project, "tasks", secondTask);
 
         Assertions.assertTrue(repository.getConnectedItems(task, "task-of").contains(project));
         Assertions.assertTrue(repository.getConnectedItems(project, "tasks").contains(task));
 
-        repository.removeRelationshipsInvolving(task, project, "task-of");
+        Assertions.assertTrue(
+                repository.listRelatedInstances(task, "task-of").contains(project));
+        Assertions.assertTrue(
+                repository.listRelatedInstances(project, "tasks").contains(task));
+        Assertions.assertTrue(
+                repository.listRelatedInstances(project, "tasks").contains(secondTask));
+
+        QueryFilterParams relationshipFilterParams = new QueryFilterParams();
+        relationshipFilterParams.put("title", "*=Wire*");
+        List<EntityInstance> filteredTasks =
+                repository.listRelatedInstances(project, "tasks", relationshipFilterParams);
+        Assertions.assertEquals(1, filteredTasks.size());
+        Assertions.assertEquals(task, filteredTasks.get(0));
+
+        QueryFilterParams relationshipSortParams = new QueryFilterParams();
+        relationshipSortParams.put("sortBy", "-id");
+        List<EntityInstance> sortedTasks =
+                repository.listRelatedInstances(project, "tasks", relationshipSortParams);
+        Assertions.assertEquals("2", sortedTasks.get(0).getPrimaryKeyValue());
+        Assertions.assertEquals("1", sortedTasks.get(1).getPrimaryKeyValue());
+
+        repository.removeRelationshipsInvolving(project, task, "tasks");
 
         Assertions.assertTrue(repository.getConnectedItems(task, "task-of").isEmpty());
+        Assertions.assertFalse(repository.getConnectedItems(project, "tasks").contains(task));
+        Assertions.assertTrue(repository.getConnectedItems(project, "tasks").contains(secondTask));
+
+        repository.removeRelationshipsInvolving(project, secondTask, "tasks");
+
         Assertions.assertTrue(repository.getConnectedItems(project, "tasks").isEmpty());
 
         repository.deleteEntityInstance(task);
+        repository.deleteEntityInstance(secondTask);
 
         Assertions.assertEquals(0, repository.listInstances(taskDefinition).size());
 

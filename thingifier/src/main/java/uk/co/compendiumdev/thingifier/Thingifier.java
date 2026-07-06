@@ -7,6 +7,7 @@ import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfigProfile;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfigProfiles;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonPopulator;
+import uk.co.compendiumdev.thingifier.core.domain.datapopulator.RepositoryDataPopulator;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.core.domain.datapopulator.DataPopulator;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.*;
@@ -133,13 +134,34 @@ public final class Thingifier implements AutoCloseable {
         return erm.getRepository(database).findEntityInstanceByGUID(thingGUID);
     }
 
-
+    @Deprecated
     public EntityInstanceCollection getThingInstancesNamed(final String aName, final String database) {
         return erm.getRepository(database).getInstanceCollectionForEntityNamed(aName);
     }
 
+    public List<EntityInstance> listThingInstancesNamed(final String aName, final String database) {
+        EntityDefinition definition = erm.getSchema().getDefinitionWithSingularOrPluralNamed(aName);
+        ThingRepository repository = erm.getRepository(database);
+        if (definition == null || repository == null) {
+            return Collections.emptyList();
+        }
+        return new ArrayList<>(repository.listInstances(definition));
+    }
 
+    public EntityInstance findThingInstanceByFieldNameAndValue(
+            final String entityName,
+            final String fieldName,
+            final String fieldValue,
+            final String database) {
+        EntityDefinition definition = erm.getSchema().getDefinitionWithSingularOrPluralNamed(entityName);
+        ThingRepository repository = erm.getRepository(database);
+        if (definition == null || repository == null) {
+            return null;
+        }
+        return repository.findInstanceByFieldNameAndValue(definition, fieldName, fieldValue);
+    }
 
+    @Deprecated
     public EntityInstanceCollection getInstancesForSingularOrPluralNamedEntity(final String term, final String database) {
         final EntityDefinition defn = erm.getSchema().getDefinitionWithSingularOrPluralNamed(term);
         if(defn!=null){
@@ -173,9 +195,12 @@ public final class Thingifier implements AutoCloseable {
     // data generation
     public void generateData(final String database) {
         if(dataPopulator!=null){
-            erm.getRepository(database).refreshSchema(erm.getSchema());
-            dataPopulator.populate(erm.getSchema(), erm.getInstanceData(database));
-            erm.getRepository(database).flush();
+            ThingRepository repository = erm.getRepository(database);
+            if (repository == null) {
+                return;
+            }
+            repository.refreshSchema(erm.getSchema());
+            populateRepository(repository);
         }
     }
 
@@ -272,13 +297,9 @@ public final class Thingifier implements AutoCloseable {
             // if we created it then populate it
             if(getDefaultDataPopulator()!=null){
                 // Use any default data populator to populate the new database
-                getERmodel().getRepository(databaseName).refreshSchema(getERmodel().getSchema());
-                getDefaultDataPopulator().
-                        populate(
-                                getERmodel().getSchema(),
-                                getERmodel().getRepository(databaseName).getInstanceData()
-                        );
-                getERmodel().getRepository(databaseName).flush();
+                ThingRepository repository = getERmodel().getRepository(databaseName);
+                repository.refreshSchema(getERmodel().getSchema());
+                populateRepository(repository);
             }
         }
     }
@@ -296,5 +317,15 @@ public final class Thingifier implements AutoCloseable {
 
     public ApiDocsConfig apidocsconfig() {
         return apiDocsConfig;
+    }
+
+    private void populateRepository(final ThingRepository repository) {
+        if (dataPopulator instanceof RepositoryDataPopulator) {
+            ((RepositoryDataPopulator) dataPopulator).populate(erm.getSchema(), repository);
+            return;
+        }
+
+        dataPopulator.populate(erm.getSchema(), repository.getInstanceData());
+        repository.flush();
     }
 }

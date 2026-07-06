@@ -37,7 +37,7 @@ public class RepositoryBackedSimpleQuery implements QueryResult {
 
     public static boolean canHandle(final ERSchema schema, final String query) {
         String[] terms = termsFrom(query);
-        if (terms.length == 0 || terms.length > 2) {
+        if (terms.length == 0 || terms.length > 3) {
             return false;
         }
 
@@ -51,8 +51,16 @@ public class RepositoryBackedSimpleQuery implements QueryResult {
         }
 
         String identifierCandidate = terms[1];
-        return !schema.hasRelationshipNamed(identifierCandidate) &&
-                entityForTerm(schema, identifierCandidate) == null;
+        if (schema.hasRelationshipNamed(identifierCandidate) ||
+                entityForTerm(schema, identifierCandidate) != null) {
+            return false;
+        }
+
+        if (terms.length == 2) {
+            return true;
+        }
+
+        return entity.related().hasRelationship(terms[2]);
     }
 
     public RepositoryBackedSimpleQuery performQuery(final QueryFilterParams queryParams) {
@@ -72,6 +80,17 @@ public class RepositoryBackedSimpleQuery implements QueryResult {
         if (currentInstance == null) {
             foundItems = new ArrayList<>();
             lastMatchWasNothing = true;
+            lastMatchWasInstance = false;
+            return this;
+        }
+
+        if (terms.length == 3) {
+            wasIntentToMatchInstance = true;
+            isCollection = true;
+            foundItems = new ArrayList<>(
+                    repository.listRelatedInstances(currentInstance, terms[2], queryParams));
+            resultContainsDefinition = relatedEntityFor(currentInstance, terms[2]);
+            lastMatchWasNothing = false;
             lastMatchWasInstance = false;
             return this;
         }
@@ -140,5 +159,13 @@ public class RepositoryBackedSimpleQuery implements QueryResult {
             return new String[0];
         }
         return normalized.split("/");
+    }
+
+    private EntityDefinition relatedEntityFor(
+            final EntityInstance instance, final String relationshipName) {
+        if (instance.getEntity().related().getRelationships(relationshipName).isEmpty()) {
+            return null;
+        }
+        return instance.getEntity().related().getRelationships(relationshipName).get(0).getTo();
     }
 }

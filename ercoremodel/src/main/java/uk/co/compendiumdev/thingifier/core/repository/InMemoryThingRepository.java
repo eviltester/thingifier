@@ -208,6 +208,18 @@ public class InMemoryThingRepository implements ThingRepository {
         return instance.getRelationships().getConnectedItems(relationshipName);
     }
 
+    @Override
+    public List<EntityInstance> listRelatedInstances(
+            final EntityInstance instance,
+            final String relationshipName,
+            final QueryFilterParams queryParams) {
+        QueryFilterParams params = queryParams == null ? new QueryFilterParams() : queryParams;
+        List<EntityInstance> instances = new ArrayList<>(
+                getConnectedItems(instance, relationshipName));
+        instances = new EntityInstanceListFilter(params).filter(instances);
+        return new EntityInstanceListSorter(params).sort(instances);
+    }
+
     private boolean matchesQueryIdentifier(final EntityInstance instance, final String identifier) {
         for (Field autoIncrementField : instance.getEntity().getFieldsOfType(FieldType.AUTO_INCREMENT)) {
             String idValue = instance.getFieldValue(autoIncrementField.getName()).asString();

@@ -1,6 +1,7 @@
 package uk.co.compendiumdev.thingifier.core;
 
 import uk.co.compendiumdev.thingifier.core.domain.datapopulator.DataPopulator;
+import uk.co.compendiumdev.thingifier.core.domain.datapopulator.RepositoryDataPopulator;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.Cardinality;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.ERSchema;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
@@ -174,7 +175,8 @@ public class EntityRelModel implements AutoCloseable {
     }
 
     public boolean populateDatabase(String databaseKey){
-        if(repositories.getRepository(databaseKey)==null){
+        ThingRepository repository = repositories.getRepository(databaseKey);
+        if(repository==null){
             return false;
         }
 
@@ -182,13 +184,8 @@ public class EntityRelModel implements AutoCloseable {
             return false;
         }
 
-        repositories.getRepository(databaseKey).refreshSchema(getSchema());
-
-        dataPopulator.populate(
-                getSchema(),
-                repositories.getRepository(databaseKey).getInstanceData()
-        );
-        repositories.getRepository(databaseKey).flush();
+        repository.refreshSchema(getSchema());
+        populateRepository(repository);
 
         return true;
     }
@@ -201,5 +198,15 @@ public class EntityRelModel implements AutoCloseable {
         for(String databaseKey : repositories.getRepositoryNames()){
             repositories.getRepository(databaseKey).refreshSchema(schema);
         }
+    }
+
+    private void populateRepository(final ThingRepository repository) {
+        if(dataPopulator instanceof RepositoryDataPopulator) {
+            ((RepositoryDataPopulator) dataPopulator).populate(getSchema(), repository);
+            return;
+        }
+
+        dataPopulator.populate(getSchema(), repository.getInstanceData());
+        repository.flush();
     }
 }

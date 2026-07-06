@@ -22,6 +22,7 @@ public interface ThingRepository extends AutoCloseable {
 
     void refreshSchema(ERSchema schema);
 
+    @Deprecated
     ERInstanceData getInstanceData();
 
     EntityInstanceCollection createInstanceCollectionFor(EntityDefinition definition);
@@ -30,6 +31,7 @@ public interface ThingRepository extends AutoCloseable {
 
     List<EntityInstanceCollection> getAllInstanceCollections();
 
+    @Deprecated
     EntityInstanceCollection getInstanceCollectionForEntityNamed(String entityName);
 
     EntityInstance findEntityInstanceByGUID(String thingGUID);
@@ -43,6 +45,14 @@ public interface ThingRepository extends AutoCloseable {
     List<EntityInstance> listInstances(EntityDefinition entity, QueryFilterParams queryParams);
 
     EntityInstance findInstanceByQueryIdentifier(EntityDefinition entity, String identifier);
+
+    default List<EntityInstance> listRelatedInstances(
+            EntityInstance instance, String relationshipName) {
+        return listRelatedInstances(instance, relationshipName, new QueryFilterParams());
+    }
+
+    List<EntityInstance> listRelatedInstances(
+            EntityInstance instance, String relationshipName, QueryFilterParams queryParams);
 
     EntityInstance addInstance(EntityInstance instance);
 

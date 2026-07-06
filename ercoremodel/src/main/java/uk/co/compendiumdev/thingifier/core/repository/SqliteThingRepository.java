@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -164,8 +165,7 @@ public class SqliteThingRepository extends InMemoryThingRepository {
                         getInstanceCollectionForEntityNamed(entity.getName()).
                         getInstances());
             }
-            instances = new EntityInstanceListFilter(params).filter(instances);
-            return new EntityInstanceListSorter(params).sort(instances);
+            return filterAndSort(instances, params);
         }
 
         SqlQuery sqlQuery = selectInstancesSql(entity, params);
@@ -207,25 +207,32 @@ public class SqliteThingRepository extends InMemoryThingRepository {
     @Override
     public EntityInstance addInstance(final EntityInstance instance) {
         ensureSchemaReady();
-        super.addInstance(instance);
-        persistInstance(instance);
-        persistCountersFor(instance.getEntity());
+        runInTransaction(() -> {
+            super.addInstance(instance);
+            persistInstance(instance);
+            persistCountersFor(instance.getEntity());
+        });
         return instance;
     }
 
     @Override
     public EntityInstance updateInstance(final EntityInstance instance) {
         ensureSchemaReady();
-        persistInstance(instance);
-        persistCountersFor(instance.getEntity());
+        runInTransaction(() -> {
+            persistInstance(instance);
+            persistCountersFor(instance.getEntity());
+        });
         return instance;
     }
 
     @Override
     public void deleteEntityInstance(final EntityInstance instance) {
+        ensureSchemaReady();
         if (!legacySnapshotLoaded) {
-            super.deleteEntityInstance(instance);
-            deletePersistedInstance(instance.getInternalId());
+            runInTransaction(() -> {
+                super.deleteEntityInstance(instance);
+                deletePersistedInstance(instance.getInternalId());
+            });
             return;
         }
 
@@ -233,40 +240,49 @@ public class SqliteThingRepository extends InMemoryThingRepository {
         super.deleteEntityInstance(instance);
         Set<String> idsAfterDelete = currentInternalIds();
 
-        idsBeforeDelete.removeAll(idsAfterDelete);
-        for (String internalId : idsBeforeDelete) {
-            deletePersistedInstance(internalId);
-        }
-        replaceAllRelationshipRowsFromCache();
+        runInTransaction(() -> {
+            idsBeforeDelete.removeAll(idsAfterDelete);
+            for (String internalId : idsBeforeDelete) {
+                deletePersistedInstance(internalId);
+            }
+            replaceAllRelationshipRowsFromCache();
+        });
     }
 
     @Override
     public void clearAllData() {
+        ensureSchemaReady();
         super.clearAllData();
-        for (EntityDefinition entity : schema.getEntityDefinitions()) {
-            executeSql("DELETE FROM " + table(entity));
-            persistCountersFor(entity);
-        }
-        clearRelationshipRows();
+        runInTransaction(() -> {
+            for (EntityDefinition entity : schema.getEntityDefinitions()) {
+                executeSql("DELETE FROM " + table(entity));
+                persistCountersFor(entity);
+            }
+            clearRelationshipRows();
+        });
     }
 
     @Override
     public void clearInstanceDataFor(final String entityName) {
+        ensureSchemaReady();
         EntityInstanceCollection collection = getInstanceCollectionForEntityNamed(entityName);
         if (collection == null) {
             return;
         }
         super.clearInstanceDataFor(entityName);
-        executeSql("DELETE FROM " + table(collection.definition()));
-        persistCountersFor(collection.definition());
-        replaceAllRelationshipRowsFromCache();
+        runInTransaction(() -> {
+            executeSql("DELETE FROM " + table(collection.definition()));
+            persistCountersFor(collection.definition());
+            replaceAllRelationshipRowsFromCache();
+        });
     }
 
     @Override
     public void connectRelationship(
             final EntityInstance from, final String relationshipName, final EntityInstance to) {
+        ensureSchemaReady();
         super.connectRelationship(from, relationshipName, to);
-        replaceAllRelationshipRowsFromCache();
+        runInTransaction(() -> persistRelationship(from, relationshipName, to));
     }
 
     @Override
@@ -274,15 +290,17 @@ public class SqliteThingRepository extends InMemoryThingRepository {
             final EntityInstance parent,
             final EntityInstance child,
             final String relationshipName) {
+        ensureSchemaReady();
         List<EntityInstance> removed = super.removeRelationshipsInvolving(parent, child, relationshipName);
-        replaceAllRelationshipRowsFromCache();
+        runInTransaction(() -> deleteRelationshipRowsInvolving(parent, child, relationshipName));
         return removed;
     }
 
     @Override
     public List<EntityInstance> removeAllRelationships(final EntityInstance instance) {
+        ensureSchemaReady();
         List<EntityInstance> removed = super.removeAllRelationships(instance);
-        replaceAllRelationshipRowsFromCache();
+        runInTransaction(() -> deleteRelationshipRowsInvolving(instance));
         return removed;
     }
 
@@ -311,24 +329,56 @@ public class SqliteThingRepository extends InMemoryThingRepository {
     }
 
     @Override
+    public List<EntityInstance> listRelatedInstances(
+            final EntityInstance instance,
+            final String relationshipName,
+            final QueryFilterParams queryParams) {
+        ensureSchemaReady();
+        QueryFilterParams params = queryParams == null ? new QueryFilterParams() : queryParams;
+
+        if (hasJavaOnlyFilters(params)) {
+            return filterAndSort(
+                    new ArrayList<>(getConnectedItems(instance, relationshipName)),
+                    params);
+        }
+
+        Map<String, EntityInstance> related = new LinkedHashMap<>();
+        for (RelationshipVectorDefinition vector :
+                relationshipVectorsFor(instance, relationshipName)) {
+            SqlQuery query = selectRelatedInstancesSql(instance, vector, params);
+            if (query == null) {
+                continue;
+            }
+            for (EntityInstance item : queryEntityRows(query.entity, query.sql, query.parameters)) {
+                related.put(item.getInternalId(), item);
+            }
+        }
+
+        return new EntityInstanceListSorter(params).
+                sort(new ArrayList<>(related.values()));
+    }
+
+    @Override
     public void flush() {
         if (!legacySnapshotLoaded) {
             return;
         }
         refreshSchema(schema);
-        for (EntityDefinition entity : schema.getEntityDefinitions()) {
-            executeSql("DELETE FROM " + table(entity));
-        }
-        clearRelationshipRows();
-
-        for (EntityInstanceCollection collection : getAllInstanceCollections()) {
-            for (EntityInstance instance : collection.getInstances()) {
-                persistInstance(instance);
+        runInTransaction(() -> {
+            for (EntityDefinition entity : schema.getEntityDefinitions()) {
+                executeSql("DELETE FROM " + table(entity));
             }
-            persistCountersFor(collection.definition());
-        }
+            clearRelationshipRows();
 
-        replaceAllRelationshipRowsFromCache();
+            for (EntityInstanceCollection collection : getAllInstanceCollections()) {
+                for (EntityInstance instance : collection.getInstances()) {
+                    persistInstance(instance);
+                }
+                persistCountersFor(collection.definition());
+            }
+
+            replaceAllRelationshipRowsFromCache();
+        });
     }
 
     @Override
@@ -418,6 +468,18 @@ public class SqliteThingRepository extends InMemoryThingRepository {
                         "from_internal_id TEXT NOT NULL, " +
                         "to_internal_id TEXT NOT NULL, " +
                         "PRIMARY KEY(from_internal_id, to_internal_id))");
+        createRelationshipIndex(vector, "from_internal_id");
+        createRelationshipIndex(vector, "to_internal_id");
+    }
+
+    private void createRelationshipIndex(
+            final RelationshipVectorDefinition vector, final String columnName) {
+        String indexName = "__thingifier_rel_idx_" +
+                Integer.toHexString((relationshipTableName(vector) + "_" + columnName).hashCode());
+        executeSql(
+                "CREATE INDEX IF NOT EXISTS " + identifier(indexName) +
+                        " ON " + relationshipTable(vector) +
+                        " (" + identifier(columnName) + ")");
     }
 
     private void loadExistingData() {
@@ -540,19 +602,97 @@ public class SqliteThingRepository extends InMemoryThingRepository {
             sql.append(" WHERE ").append(String.join(" AND ", whereClauses));
         }
 
+        appendOrderBy(sql, entity, queryParams, "");
+
+        return new SqlQuery(entity, sql.toString(), parameters);
+    }
+
+    private SqlQuery selectRelatedInstancesSql(
+            final EntityInstance instance,
+            final RelationshipVectorDefinition vector,
+            final QueryFilterParams queryParams) {
+        EntityDefinition connectedEntity;
+        String targetJoinColumn;
+        String sourceWhereColumn;
+
+        if (vector.getFrom() == instance.getEntity()) {
+            connectedEntity = vector.getTo();
+            targetJoinColumn = "to_internal_id";
+            sourceWhereColumn = "from_internal_id";
+        } else if (vector.getTo() == instance.getEntity()) {
+            connectedEntity = vector.getFrom();
+            targetJoinColumn = "from_internal_id";
+            sourceWhereColumn = "to_internal_id";
+        } else {
+            return null;
+        }
+
+        StringBuilder sql = new StringBuilder(
+                "SELECT target.* FROM " + relationshipTable(vector) + " rel " +
+                        "JOIN " + table(connectedEntity) + " target " +
+                        "ON target." + identifier(INTERNAL_ID_COLUMN) +
+                        " = rel." + targetJoinColumn +
+                        " WHERE rel." + sourceWhereColumn + " = ?");
+        List<Object> parameters = new ArrayList<>();
+        parameters.add(instance.getInternalId());
+
+        for (FilterBy filterBy : queryParams.toList()) {
+            if (EntityListSortParamParser.isSortByParam(filterBy.fieldName)) {
+                continue;
+            }
+            if (!connectedEntity.hasFieldNameDefined(filterBy.fieldName)) {
+                continue;
+            }
+
+            String column = "target." + identifier(filterBy.fieldName);
+            switch (filterBy.filterOperation) {
+                case "=":
+                    sql.append(" AND ").append(column).append(" = ?");
+                    parameters.add(filterBy.fieldValue);
+                    break;
+                case "!":
+                case "!=":
+                    sql.append(" AND ").append(column).append(" <> ?");
+                    parameters.add(filterBy.fieldValue);
+                    break;
+                case "<":
+                case ">":
+                case "<=":
+                case ">=":
+                    sql.append(" AND ").append(column).append(" ")
+                            .append(filterBy.filterOperation).append(" ?");
+                    parameters.add(filterBy.fieldValue);
+                    break;
+                case "*=":
+                    sql.append(" AND ").append(column).append(" LIKE ? ESCAPE '\\'");
+                    parameters.add(sqlLikeWildcard(filterBy.fieldValue));
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        appendOrderBy(sql, connectedEntity, queryParams, "target.");
+
+        return new SqlQuery(connectedEntity, sql.toString(), parameters);
+    }
+
+    private void appendOrderBy(
+            final StringBuilder sql,
+            final EntityDefinition entity,
+            final QueryFilterParams queryParams,
+            final String columnPrefix) {
         List<String> orderClauses = new ArrayList<>();
         for (SortByFieldName sortBy : new EntityListSortParamParser(queryParams).sortBys()) {
             if (!entity.hasFieldNameDefined(sortBy.getFieldName())) {
                 continue;
             }
-            orderClauses.add(identifier(sortBy.getFieldName()) +
+            orderClauses.add(columnPrefix + identifier(sortBy.getFieldName()) +
                     (sortBy.getOrder() < 0 ? " ASC" : " DESC"));
         }
         if (!orderClauses.isEmpty()) {
             sql.append(" ORDER BY ").append(String.join(", ", orderClauses));
         }
-
-        return new SqlQuery(sql.toString(), parameters);
     }
 
     private boolean hasJavaOnlyFilters(final QueryFilterParams queryParams) {
@@ -638,6 +778,36 @@ public class SqliteThingRepository extends InMemoryThingRepository {
         connected.addAll(queryEntityRows(connectedEntity, sql, List.of(instance.getInternalId())));
     }
 
+    private List<RelationshipVectorDefinition> relationshipVectorsFor(
+            final EntityInstance instance, final String relationshipName) {
+        List<RelationshipVectorDefinition> vectors = new ArrayList<>();
+        Set<String> seenTables = new HashSet<>();
+
+        for (RelationshipVectorDefinition vector :
+                instance.getEntity().related().getRelationships(relationshipName)) {
+            addRelationshipVectorIfNew(vectors, seenTables, vector);
+            if (vector.getRelationshipDefinition().isTwoWay()) {
+                RelationshipVectorDefinition otherVector =
+                        vector.getRelationshipDefinition().otherVectorOf(vector);
+                if (otherVector != null) {
+                    addRelationshipVectorIfNew(vectors, seenTables, otherVector);
+                }
+            }
+        }
+
+        return vectors;
+    }
+
+    private void addRelationshipVectorIfNew(
+            final List<RelationshipVectorDefinition> vectors,
+            final Set<String> seenTables,
+            final RelationshipVectorDefinition vector) {
+        String tableName = relationshipTableName(vector);
+        if (seenTables.add(tableName)) {
+            vectors.add(vector);
+        }
+    }
+
     private void persistInstance(final EntityInstance instance) {
         EntityDefinition entity = instance.getEntity();
         List<String> columns = new ArrayList<>();
@@ -675,6 +845,27 @@ public class SqliteThingRepository extends InMemoryThingRepository {
         }
     }
 
+    private void persistRelationship(
+            final EntityInstance from, final String relationshipName, final EntityInstance to) {
+        RelationshipVectorDefinition vector =
+                from.getEntity().getNamedRelationshipTo(relationshipName, to.getEntity());
+        if (vector == null) {
+            throw new IllegalArgumentException(
+                    "Unknown relationship " + relationshipName + " between " +
+                            from.getEntity().getName() + " and " + to.getEntity().getName());
+        }
+
+        String sql = "INSERT OR IGNORE INTO " + relationshipTable(vector) +
+                " (from_internal_id, to_internal_id) VALUES (?, ?)";
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, from.getInternalId());
+            statement.setString(2, to.getInternalId());
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            throw new IllegalStateException("Could not persist SQLite relationship", e);
+        }
+    }
+
     private void persistCountersFor(final EntityDefinition entity) {
         executeSql("DELETE FROM " + identifier(COUNTERS_TABLE) +
                 " WHERE entity_name = " + quotedValue(entity.getName()));
@@ -702,6 +893,30 @@ public class SqliteThingRepository extends InMemoryThingRepository {
             executeSql("DELETE FROM " + relationshipTable(vector) +
                     " WHERE from_internal_id = " + quotedValue(internalId) +
                     " OR to_internal_id = " + quotedValue(internalId));
+        }
+    }
+
+    private void deleteRelationshipRowsInvolving(
+            final EntityInstance parent,
+            final EntityInstance child,
+            final String relationshipName) {
+        for (RelationshipVectorDefinition vector : relationshipVectors()) {
+            if (!vector.getRelationshipDefinition().isKnownAs(relationshipName)) {
+                continue;
+            }
+            executeSql("DELETE FROM " + relationshipTable(vector) +
+                    " WHERE (from_internal_id = " + quotedValue(parent.getInternalId()) +
+                    " AND to_internal_id = " + quotedValue(child.getInternalId()) + ")" +
+                    " OR (from_internal_id = " + quotedValue(child.getInternalId()) +
+                    " AND to_internal_id = " + quotedValue(parent.getInternalId()) + ")");
+        }
+    }
+
+    private void deleteRelationshipRowsInvolving(final EntityInstance instance) {
+        for (RelationshipVectorDefinition vector : relationshipVectors()) {
+            executeSql("DELETE FROM " + relationshipTable(vector) +
+                    " WHERE from_internal_id = " + quotedValue(instance.getInternalId()) +
+                    " OR to_internal_id = " + quotedValue(instance.getInternalId()));
         }
     }
 
@@ -765,6 +980,13 @@ public class SqliteThingRepository extends InMemoryThingRepository {
         return vectors;
     }
 
+    private List<EntityInstance> filterAndSort(
+            final List<EntityInstance> instances,
+            final QueryFilterParams params) {
+        List<EntityInstance> filtered = new EntityInstanceListFilter(params).filter(instances);
+        return new EntityInstanceListSorter(params).sort(filtered);
+    }
+
     private Set<String> columnNames(final String tableName) {
         Set<String> names = new HashSet<>();
         String sql = "PRAGMA table_info(" + identifier(tableName) + ")";
@@ -784,6 +1006,24 @@ public class SqliteThingRepository extends InMemoryThingRepository {
             statement.executeUpdate(sql);
         } catch (SQLException e) {
             throw new IllegalStateException("Could not execute SQLite SQL: " + sql, e);
+        }
+    }
+
+    private void runInTransaction(final Runnable operation) {
+        try {
+            boolean originalAutoCommit = connection.getAutoCommit();
+            connection.setAutoCommit(false);
+            try {
+                operation.run();
+                connection.commit();
+            } catch (RuntimeException e) {
+                connection.rollback();
+                throw e;
+            } finally {
+                connection.setAutoCommit(originalAutoCommit);
+            }
+        } catch (SQLException e) {
+            throw new IllegalStateException("Could not run SQLite transaction", e);
         }
     }
 
@@ -814,11 +1054,14 @@ public class SqliteThingRepository extends InMemoryThingRepository {
     }
 
     private String relationshipTable(final RelationshipVectorDefinition vector) {
-        return identifier(
-                "thing_rel_" +
-                        vector.getFrom().getName() + "_" +
-                        vector.getName() + "_" +
-                        vector.getTo().getName());
+        return identifier(relationshipTableName(vector));
+    }
+
+    private String relationshipTableName(final RelationshipVectorDefinition vector) {
+        return "thing_rel_" +
+                vector.getFrom().getName() + "_" +
+                vector.getName() + "_" +
+                vector.getTo().getName();
     }
 
     private String identifier(final String rawIdentifier) {
@@ -830,10 +1073,15 @@ public class SqliteThingRepository extends InMemoryThingRepository {
     }
 
     private static class SqlQuery {
+        private final EntityDefinition entity;
         private final String sql;
         private final List<Object> parameters;
 
-        private SqlQuery(final String sql, final List<Object> parameters) {
+        private SqlQuery(
+                final EntityDefinition entity,
+                final String sql,
+                final List<Object> parameters) {
+            this.entity = entity;
             this.sql = sql;
             this.parameters = parameters;
         }
