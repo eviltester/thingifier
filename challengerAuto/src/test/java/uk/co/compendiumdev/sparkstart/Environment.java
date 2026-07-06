@@ -39,8 +39,8 @@ public class Environment {
             if(SINGLE_PLAYER_MODE){
                 args = "-sqlite-memory".split(",");
             }else{
-                args = "-multiplayer".split(",");
-            };
+                args = "-sqlite-memory,-multiplayer".split(",");
+            }
 
 
             ChallengeMain.main(args);
