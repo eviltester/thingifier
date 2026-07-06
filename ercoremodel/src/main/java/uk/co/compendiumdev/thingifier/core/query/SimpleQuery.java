@@ -14,17 +14,24 @@ import java.util.List;
 
 import static uk.co.compendiumdev.thingifier.core.query.SimpleQuery.LastMatchValue.*;
 
-/*
-Note this is not the same as a GET e.g.
-- /item will always mark the query as not a collection
-- /items will always mark the query as a collection
-
-This is a simple query to then build more complex or specific query
-processing on top.
-
-Use the isResultACollection, wasIntentToMatchACollection, lastMatchWasInstance
-in the calling method.
+/**
+ * Legacy ERInstanceData-backed query engine.
+ *
+ * Note this is not the same as a GET e.g.
+ * - /item will always mark the query as not a collection
+ * - /items will always mark the query as a collection
+ *
+ * This is a simple query to then build more complex or specific query
+ * processing on top.
+ *
+ * Use the isResultACollection, wasIntentToMatchACollection, lastMatchWasInstance
+ * in the calling method.
+ *
+ * @deprecated Runtime API paths should use repository-backed query resolution so
+ * repositories such as SQLite can query without hydrating compatibility snapshots.
+ * Keep this class only for compatibility/fallback paths until replacement is complete.
  */
+@Deprecated
 public final class SimpleQuery implements QueryResult {
 
     private final ERInstanceData database;
