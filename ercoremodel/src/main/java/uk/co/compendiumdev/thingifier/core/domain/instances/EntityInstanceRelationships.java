@@ -216,6 +216,10 @@ public class EntityInstanceRelationships {
         return !relationships.isEmpty();
     }
 
+    public List<RelationshipVectorInstance> getRelationshipInstances() {
+        return new ArrayList<>(relationships);
+    }
+
     public ValidationReport validateRelationships() {
         ValidationReport report = new ValidationReport();
 

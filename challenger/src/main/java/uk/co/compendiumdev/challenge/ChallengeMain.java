@@ -7,6 +7,7 @@ import uk.co.compendiumdev.challenge.challengers.Challengers;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.application.MainImplementation;
 import uk.co.compendiumdev.thingifier.application.httprouting.ThingifierHttpApiRoutings;
+import uk.co.compendiumdev.thingifier.core.repository.ThingRepositoryProviderConfig;
 
 public class ChallengeMain {
 
@@ -19,7 +20,9 @@ public class ChallengeMain {
         logger.info("Starting Challenger");
 
         MainImplementation app = new MainImplementation();
-        Thingifier thingifier = new ChallengeApiModel().get();
+        ThingRepositoryProviderConfig repositoryConfig = ThingRepositoryProviderConfig.fromArgs(args);
+        logger.info("Using Thingifier repository {}", repositoryConfig.describe());
+        Thingifier thingifier = new ChallengeApiModel().get(repositoryConfig.createProvider());
         app.registerModel("challengeapi", thingifier);
 
         // add any additional thingifier configurations here if more needed than model has defined

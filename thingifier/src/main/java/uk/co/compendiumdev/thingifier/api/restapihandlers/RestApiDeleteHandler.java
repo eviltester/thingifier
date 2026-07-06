@@ -35,7 +35,8 @@ public class RestApiDeleteHandler {
             EntityInstance child = queryResult.getLastInstance();
             // todo: this returns a list of 'items' to be removed based on
             // removal of the relationships, these should really be deleted from thingifier now
-            parent.getRelationships().removeRelationshipsInvolving(child, queryResult.getLastRelationshipName());
+            thingifier.getRepository(instanceDatabaseName).
+                    removeRelationshipsInvolving(parent, child, queryResult.getLastRelationshipName());
         } else {
             List<EntityInstance> items = queryResult.getListEntityInstances();
             if (items.isEmpty()) {

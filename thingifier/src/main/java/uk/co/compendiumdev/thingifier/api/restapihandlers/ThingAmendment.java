@@ -66,8 +66,7 @@ public class ThingAmendment {
         ValidationReport relationshipsValidation = new BodyRelationshipValidator(thingifier).validate(bodyargs, cloned.getEntity(), database);
         validation.combine(relationshipsValidation);
 
-        ValidationReport uniquenessCheck = thingifier.getERmodel().getInstanceData(database).
-                                        getInstanceCollectionForEntityNamed(instance.getEntity().getName()).
+        ValidationReport uniquenessCheck = thingifier.getRepository(database).
                                         checkFieldsForUniqueNess(cloned, true);
         validation.combine(uniquenessCheck);
 
@@ -76,7 +75,7 @@ public class ThingAmendment {
                 instance.clearAllFields();
                 // delete all existing relationships for idempotent amend
                 // todo: this returns a list of 'items' to be removed based on relationship
-                instance.getRelationships().removeAllRelationships();
+                thingifier.getRepository(database).removeAllRelationships(instance);
             }
             List<NamedValue> fieldValues = FieldValues.
                     fromListMapEntryStringString(
@@ -84,6 +83,8 @@ public class ThingAmendment {
                                     removeRelationshipsFrom(instance, database));
 
             new EntityInstanceBulkUpdater(instance).setFieldValuesFrom(fieldValues);
+
+            thingifier.getRepository(database).updateInstance(instance);
 
             // todo: should we check that this was actually a success?
             final ApiResponse relresponse = new RelationshipCreator(thingifier).createRelationships(bodyargs, instance, database);

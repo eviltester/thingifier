@@ -47,7 +47,7 @@ public class RestApiPostHandler {
             if (validity.isValid()) {
                 return response;
             } else {
-                instancesCollection.deleteInstance(response.getReturnedInstance());
+                thingifier.deleteThing(response.getReturnedInstance(), instanceDatabaseName);
                 return ApiResponse.error(400, validity.getErrorMessages()).addToErrorMessages("No new item created");
             }
         }

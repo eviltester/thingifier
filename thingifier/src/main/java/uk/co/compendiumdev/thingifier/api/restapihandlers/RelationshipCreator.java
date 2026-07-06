@@ -19,7 +19,8 @@ public class RelationshipCreator {
         try {
             List<RelationshipDetails> relationships = getRelationshipsFromArgs(bodyargs, instance, database);
             for (RelationshipDetails relationship : relationships) {
-                instance.getRelationships().connect(
+                thingifier.getRepository(database).connectRelationship(
+                        instance,
                         relationship.relationshipName,
                             thingifier.getInstancesForSingularOrPluralNamedEntity(relationship.toType, database).
                                     findInstanceByFieldNameAndValue(relationship.guidName, relationship.guidValue));

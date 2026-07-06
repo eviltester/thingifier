@@ -12,6 +12,7 @@ import uk.co.compendiumdev.thingifier.core.domain.datapopulator.DataPopulator;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.*;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
 import uk.co.compendiumdev.thingifier.reporting.ThingReporter;
 
 import java.util.*;
@@ -34,7 +35,11 @@ public final class Thingifier {
     private final ThingifierApiConfigProfiles apiConfigProfiles;
 
     public Thingifier(){
-        erm = new EntityRelModel();
+        this(new EntityRelModel());
+    }
+
+    public Thingifier(final EntityRelModel erm) {
+        this.erm = erm;
         title = "";
         initialParagraph = "";
         apiConfig = new ThingifierApiConfig("");
@@ -120,17 +125,17 @@ public final class Thingifier {
     // Instances
 
     public List<EntityInstanceCollection> getThings(final String database) {
-        return erm.getInstanceData(database).getAllInstanceCollections();
+        return erm.getRepository(database).getAllInstanceCollections();
     }
 
 
     public EntityInstance findThingInstanceByGuid(final String thingGUID, final String database) {
-        return erm.getInstanceData(database).findEntityInstanceByGUID(thingGUID);
+        return erm.getRepository(database).findEntityInstanceByGUID(thingGUID);
     }
 
 
     public EntityInstanceCollection getThingInstancesNamed(final String aName, final String database) {
-        return erm.getInstanceData(database).getInstanceCollectionForEntityNamed(aName);
+        return erm.getRepository(database).getInstanceCollectionForEntityNamed(aName);
     }
 
 
@@ -139,7 +144,7 @@ public final class Thingifier {
         final EntityDefinition defn = erm.getSchema().getDefinitionWithSingularOrPluralNamed(term);
         if(defn!=null){
             final String entityName = defn.getName();
-            return erm.getInstanceData(database).getInstanceCollectionForEntityNamed(entityName);
+            return erm.getRepository(database).getInstanceCollectionForEntityNamed(entityName);
         }
 
         return null;
@@ -157,18 +162,20 @@ public final class Thingifier {
     }
 
     public void clearAllData(final String database) {
-        erm.getInstanceData(database).clearAllData();
+        erm.getRepository(database).clearAllData();
     }
 
     public void deleteThing(final EntityInstance aThingInstance, final String database) {
-        erm.getInstanceData(database).deleteEntityInstance(aThingInstance);
+        erm.getRepository(database).deleteEntityInstance(aThingInstance);
     }
 
 
     // data generation
     public void generateData(final String database) {
         if(dataPopulator!=null){
+            erm.getRepository(database).refreshSchema(erm.getSchema());
             dataPopulator.populate(erm.getSchema(), erm.getInstanceData(database));
+            erm.getRepository(database).flush();
         }
     }
 
@@ -217,6 +224,10 @@ public final class Thingifier {
         return erm;
     }
 
+    public ThingRepository getRepository(final String database) {
+        return erm.getRepository(database);
+    }
+
 
     /*
         TODO: these are documentation methods, why are they not in the
@@ -256,11 +267,13 @@ public final class Thingifier {
             // if we created it then populate it
             if(getDefaultDataPopulator()!=null){
                 // Use any default data populator to populate the new database
+                getERmodel().getRepository(databaseName).refreshSchema(getERmodel().getSchema());
                 getDefaultDataPopulator().
                         populate(
                                 getERmodel().getSchema(),
-                                getERmodel().getInstanceData(databaseName)
+                                getERmodel().getRepository(databaseName).getInstanceData()
                         );
+                getERmodel().getRepository(databaseName).flush();
             }
         }
     }
@@ -270,8 +283,9 @@ public final class Thingifier {
 
         new JsonPopulator(jsonDatabaseContents).populate(
                 getERmodel().getSchema(),
-                getERmodel().getInstanceData(databaseName)
+                getERmodel().getRepository(databaseName).getInstanceData()
         );
+        getERmodel().getRepository(databaseName).flush();
 
     }
 

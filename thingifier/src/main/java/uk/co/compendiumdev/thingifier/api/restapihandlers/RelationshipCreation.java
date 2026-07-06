@@ -131,7 +131,8 @@ public class RelationshipCreation {
                 return response;
             }
 
-            connectThis.getRelationships().connect(relationshipToUse.getName(), relatedItem);
+            thingifier.getRepository(database).connectRelationship(
+                    connectThis, relationshipToUse.getName(), relatedItem);
 
             // enforce cardinality on relationship
             ValidationReport validNow = relatedItem.validateRelationships();

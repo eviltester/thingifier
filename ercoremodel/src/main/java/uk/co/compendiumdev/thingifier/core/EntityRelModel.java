@@ -7,6 +7,9 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.ERInstanceData;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import uk.co.compendiumdev.thingifier.core.repository.InMemoryThingRepositoryProvider;
+import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
+import uk.co.compendiumdev.thingifier.core.repository.ThingRepositoryProvider;
 
 import java.util.*;
 
@@ -19,23 +22,35 @@ public class EntityRelModel {
 
     public static final String DEFAULT_DATABASE_NAME = "__default";
 
-    // a Map so that key, database can be used
-    // e.g. key from a 'session', or 'custom' or 'default'
-    private final Map<String, ERInstanceData> databases;
+    // a provider so that key, database can be backed by memory, files, SQLite, etc.
     private final ERSchema schema; // all the definitions
+    private final ThingRepositoryProvider repositories;
     private DataPopulator dataPopulator;
 
     public EntityRelModel(){
         schema = new ERSchema();
-        databases = new HashMap<String,ERInstanceData>();
-        databases.put(DEFAULT_DATABASE_NAME, new ERInstanceData());
+        repositories = new InMemoryThingRepositoryProvider();
         dataPopulator = null;
     }
 
     public EntityRelModel(final ERSchema schema, final ERInstanceData erInstanceData) {
         this.schema = schema;
-        this.databases = new HashMap<String, ERInstanceData>();
-        this.databases.put(DEFAULT_DATABASE_NAME,erInstanceData);
+        this.repositories = new InMemoryThingRepositoryProvider(erInstanceData);
+        dataPopulator = null;
+    }
+
+    public EntityRelModel(final ThingRepositoryProvider repositories) {
+        this.schema = new ERSchema();
+        this.repositories = repositories;
+        this.repositories.getDefaultRepository().initializeFrom(schema);
+        dataPopulator = null;
+    }
+
+    public EntityRelModel(final ERSchema schema, final ThingRepositoryProvider repositories) {
+        this.schema = schema;
+        this.repositories = repositories;
+        this.repositories.getDefaultRepository().initializeFrom(schema);
+        dataPopulator = null;
     }
 
     public EntityDefinition createEntityDefinition(final String entityName, final String pluralName) {
@@ -44,8 +59,8 @@ public class EntityRelModel {
 
     public EntityDefinition createEntityDefinition(final String entityName, final String pluralName, int maximumNumberOfInstances) {
         EntityDefinition defn = schema.defineEntity(entityName, pluralName, maximumNumberOfInstances);
-        for(ERInstanceData database : databases.values()){
-            database.createInstanceCollectionFor(defn);
+        for(String databaseKey : repositories.getRepositoryNames()){
+            repositories.getRepository(databaseKey).createInstanceCollectionFor(defn);
         }
         return defn;
     }
@@ -57,19 +72,31 @@ public class EntityRelModel {
     // TODO: use of this is basically deprecated since is refers to the default database
     @Deprecated() // we should use the parameterised version
     public ERInstanceData getInstanceData(){
-        return databases.get(DEFAULT_DATABASE_NAME);
+        return getInstanceData(DEFAULT_DATABASE_NAME);
     }
 
     public ERInstanceData getInstanceDataAsJson(){
-        return databases.get(DEFAULT_DATABASE_NAME);
+        return getInstanceData(DEFAULT_DATABASE_NAME);
     }
 
     public ERInstanceData getInstanceData(String databaseKey) {
-        return databases.get(databaseKey);
+        ThingRepository repository = repositories.getRepository(databaseKey);
+        if(repository==null){
+            return null;
+        }
+        return repository.getInstanceData();
     }
 
     public Set<String> getDatabaseNames(){
-        return databases.keySet();
+        return repositories.getRepositoryNames();
+    }
+
+    public ThingRepository getRepository(String databaseKey) {
+        return repositories.getRepository(databaseKey);
+    }
+
+    public ThingRepositoryProvider getRepositoryProvider() {
+        return repositories;
     }
 
     // ERM Object Level
@@ -97,7 +124,9 @@ public class EntityRelModel {
 
     public RelationshipDefinition createRelationshipDefinition(
             EntityDefinition from, EntityDefinition to, final String named, final Cardinality of) {
-        return schema.defineRelationship(from, to, named, of);
+        RelationshipDefinition relationship = schema.defineRelationship(from, to, named, of);
+        refreshRepositorySchemas();
+        return relationship;
     }
 
     public boolean hasRelationshipNamed(final String relationshipName) {
@@ -120,7 +149,7 @@ public class EntityRelModel {
     // Multiple Databases
     public void createInstanceDatabase(String databaseKey) {
 
-        if(databases.containsKey(databaseKey)){
+        if(repositories.getRepository(databaseKey)!=null){
             throw new IllegalStateException("ERM Database Already Exists with name " + databaseKey);
         }
 
@@ -132,22 +161,15 @@ public class EntityRelModel {
         if(databaseKey.equals(DEFAULT_DATABASE_NAME)){
             throw new IllegalStateException("Cannot delete default database");
         }
-        databases.remove(databaseKey);
+        repositories.deleteRepository(databaseKey);
     }
 
     public boolean createInstanceDatabaseIfNotExisting(String databaseKey) {
-        if(databases.containsKey(databaseKey)){
-            return false;
-        }
-
-        ERInstanceData aDatabase = new ERInstanceData();
-        aDatabase.createInstanceCollectionFrom(this.schema);
-        databases.put(databaseKey, aDatabase);
-        return true;
+        return repositories.createRepositoryIfNotExisting(databaseKey, this.schema);
     }
 
     public boolean populateDatabase(String databaseKey){
-        if(!databases.containsKey(databaseKey)){
+        if(repositories.getRepository(databaseKey)==null){
             return false;
         }
 
@@ -155,15 +177,24 @@ public class EntityRelModel {
             return false;
         }
 
+        repositories.getRepository(databaseKey).refreshSchema(getSchema());
+
         dataPopulator.populate(
                 getSchema(),
-                getInstanceData(databaseKey)
+                repositories.getRepository(databaseKey).getInstanceData()
         );
+        repositories.getRepository(databaseKey).flush();
 
         return true;
     }
 
     public void setDataGenerator(DataPopulator dataPopulator) {
         this.dataPopulator = dataPopulator;
+    }
+
+    private void refreshRepositorySchemas() {
+        for(String databaseKey : repositories.getRepositoryNames()){
+            repositories.getRepository(databaseKey).refreshSchema(schema);
+        }
     }
 }

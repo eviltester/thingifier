@@ -36,7 +36,8 @@ public class ThingCreation {
         // todo: separate validation for creation of 'cannot' create with ID, or cannot create with GUID
         EntityInstance instance = new EntityInstance(thing.definition());
         instance.addAutoGUIDstoInstance();
-        instance.addAutoIncrementIdsToInstance(thing.getCounters());
+        instance.addAutoIncrementIdsToInstance(
+                thingifier.getRepository(database).countersFor(thing.definition()));
         return addNewThingWithFields(bodyargs, instance, thing, database);
     }
 
@@ -59,7 +60,8 @@ public class ThingCreation {
         instance.overrideValue(thing.definition().getPrimaryKeyField().getName(), primaryKey);
 
         // TODO: should we really do this for a PUT when everything needs to exist, suspect this is a bug
-        instance.addAutoIncrementIdsToInstance(thing.getCounters());
+        instance.addAutoIncrementIdsToInstance(
+                thingifier.getRepository(database).countersFor(thing.definition()));
 
         validated = new BodyRelationshipValidator(thingifier).validate(bodyargs, thing, database);
 
@@ -76,7 +78,7 @@ public class ThingCreation {
                                     bodyargs.getFlattenedStringMap());
 
 
-        thing.setNextIdCountersToAccomodate(fieldValues);
+        thingifier.getRepository(database).setNextIdCountersToAccomodate(thing.definition(), fieldValues);
 
         return insertNewThingWithFields(bodyargs, instance, thing, database);
     }
@@ -148,14 +150,13 @@ public class ThingCreation {
     private ApiResponse addValidatedInstance(BodyParser bodyargs, EntityInstance instance, EntityInstanceCollection thing, String database, ValidationReport validation) {
 
         // check for uniqueness prior to adding
-        ValidationReport uniquenessCheck = thingifier.getERmodel().getInstanceData(database).
-                getInstanceCollectionForEntityNamed(instance.getEntity().getName()).
+        ValidationReport uniquenessCheck = thingifier.getRepository(database).
                 checkFieldsForUniqueNess(instance, false);
         validation.combine(uniquenessCheck);
 
         if (validation.isValid()) {
             try {
-                thing.addInstance(instance);
+                thingifier.getRepository(database).addInstance(instance);
             }catch(Exception e){
                 return ApiResponse.error(400, e.getMessage());
             }
