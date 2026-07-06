@@ -11,6 +11,10 @@ import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollec
 
 import java.util.List;
 
+/**
+ * Legacy compatibility coverage for {@link SimpleQuery}. Runtime API paths
+ * should use repository-backed query resolution.
+ */
 public class SortingViaQueryFiltersTest {
 
     // todo: lower level testing at the EntityInstanceListSorter level

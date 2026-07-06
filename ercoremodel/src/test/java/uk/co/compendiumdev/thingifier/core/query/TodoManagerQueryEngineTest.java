@@ -15,6 +15,10 @@ import java.util.List;
 
 import static uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType.STRING;
 
+/**
+ * Legacy compatibility coverage for {@link SimpleQuery}. Runtime API paths
+ * should use repository-backed query resolution.
+ */
 public class TodoManagerQueryEngineTest {
 
     private EntityRelModel todoManager;

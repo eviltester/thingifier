@@ -5,9 +5,6 @@ import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-import uk.co.compendiumdev.thingifier.core.query.SimpleQuery;
-
-import java.util.List;
 
 public class RestApiDeleteHandler {
     private final Thingifier thingifier;
@@ -38,27 +35,23 @@ public class RestApiDeleteHandler {
             return ApiResponse.success();
         }
 
-        SimpleQuery queryResult = new SimpleQuery(thingifier.getERmodel().getSchema(), thingifier.getERmodel().getInstanceData(instanceDatabaseName), url).performQuery();
-
-        if (queryResult.wasItemFoundUnderARelationship()) {
-            // delete the relationships not the items
-            EntityInstance parent = queryResult.getParentInstance();
-            EntityInstance child = queryResult.getLastInstance();
-            // todo: this returns a list of 'items' to be removed based on
-            // removal of the relationships, these should really be deleted from thingifier now
-            thingifier.getRepository(instanceDatabaseName).
-                    removeRelationshipsInvolving(parent, child, queryResult.getLastRelationshipName());
-        } else {
-            List<EntityInstance> items = queryResult.getListEntityInstances();
-            if (items.isEmpty()) {
-                // 404 not found - nothing to delete
+        RepositoryBackedRelationshipUrlResolver.RelationshipUrlResolution relationship =
+                new RepositoryBackedRelationshipUrlResolver(thingifier, instanceDatabaseName).
+                        resolveRelationshipInstance(url);
+        if (relationship.matchedRelationshipPath()) {
+            if (!relationship.relationshipInstancePath() ||
+                    relationship.parentInstance() == null ||
+                    relationship.childInstance() == null) {
                 return ApiResponse.error404(String.format("Could not find any instances with %s", url));
             }
-            for (EntityInstance instance : items) {
-                thingifier.deleteThing(instance, instanceDatabaseName);
-            }
-
+            thingifier.getRepository(instanceDatabaseName).
+                    removeRelationshipsInvolving(
+                            relationship.parentInstance(),
+                            relationship.childInstance(),
+                            relationship.relationshipName());
+            return ApiResponse.success();
         }
-        return ApiResponse.success();
+
+        return ApiResponse.error404(String.format("Could not find any instances with %s", url));
     }
 }

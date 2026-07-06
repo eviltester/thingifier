@@ -9,7 +9,6 @@ import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.api.restapihandlers.commonerrorresponse.NoSuchEntity;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-import uk.co.compendiumdev.thingifier.core.query.SimpleQuery;
 
 import java.util.List;
 
@@ -93,12 +92,12 @@ public class RestApiPostHandler {
         /*
             Match a Relationship
          */
-        // get the things to post to
-        SimpleQuery query = new SimpleQuery(
-                                    thingifier.getERmodel().getSchema(),
-                                    thingifier.getERmodel().getInstanceData(instanceDatabaseName), url).performQuery();
-        if (query.lastMatchWasRelationship()) {
-            return new RelationshipCreation(thingifier).create(url, args, query, instanceDatabaseName);
+        RepositoryBackedRelationshipUrlResolver.RelationshipUrlResolution relationship =
+                new RepositoryBackedRelationshipUrlResolver(thingifier, instanceDatabaseName).
+                        resolveCollection(url);
+        if (relationship.matchedRelationshipPath()) {
+            return new RelationshipCreation(thingifier).
+                    create(url, args, relationship, instanceDatabaseName);
         }
 
         // WHAT was that query?

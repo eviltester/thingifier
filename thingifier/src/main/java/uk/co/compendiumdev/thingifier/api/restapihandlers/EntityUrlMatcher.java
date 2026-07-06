@@ -58,7 +58,7 @@ final class EntityUrlMatcher {
                 findInstanceByQueryIdentifier(entity, identifier);
     }
 
-    private static String[] parts(final String url) {
+    static String[] parts(final String url) {
         String normalized = url == null ? "" : url.trim();
         while (normalized.startsWith("/")) {
             normalized = normalized.substring(1);

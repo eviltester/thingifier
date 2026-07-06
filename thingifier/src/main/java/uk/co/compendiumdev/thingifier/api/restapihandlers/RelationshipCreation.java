@@ -9,7 +9,6 @@ import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVectorDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-import uk.co.compendiumdev.thingifier.core.query.SimpleQuery;
 
 import java.util.List;
 import java.util.Map;
@@ -22,19 +21,23 @@ public class RelationshipCreation {
         this.thingifier = aThingifier;
     }
 
-    public ApiResponse create(final String url, final BodyParser bodyargs, final SimpleQuery query, final String database) {
+    public ApiResponse create(
+            final String url,
+            final BodyParser bodyargs,
+            final RepositoryBackedRelationshipUrlResolver.RelationshipUrlResolution relationship,
+            final String database) {
 
         final Map<String, String> args = bodyargs.getStringMap();
 
         // get the relationship name
-        String relationshipName = query.getLastRelationshipName();
+        String relationshipName = relationship.relationshipName();
 
         // find the thing in the body
 
         EntityInstance relatedItem = null;
 
         // find the thing from the query to connect the relatedItem to
-        EntityInstance connectThis = query.getParentInstance();
+        EntityInstance connectThis = relationship.parentInstance();
         if (connectThis == null) {
             // TODO: I don't think it is possible to ever hit this line of code
             return ApiResponse.error404(String.format("Could not find parent thing for relationship %s", url));
