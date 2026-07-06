@@ -1,5 +1,6 @@
 package uk.co.compendiumdev.thingifier.core.repository;
 
+import org.sqlite.Function;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.ERSchema;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
@@ -12,7 +13,6 @@ import uk.co.compendiumdev.thingifier.core.domain.instances.ERInstanceData;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.core.domain.instances.RelationshipVectorInstance;
-import uk.co.compendiumdev.thingifier.core.query.EntityInstanceListFilter;
 import uk.co.compendiumdev.thingifier.core.query.EntityInstanceListSorter;
 import uk.co.compendiumdev.thingifier.core.query.EntityListSortParamParser;
 import uk.co.compendiumdev.thingifier.core.query.FilterBy;
@@ -37,6 +37,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 public class SqliteThingRepository extends InMemoryThingRepository {
 
@@ -162,15 +163,8 @@ public class SqliteThingRepository extends InMemoryThingRepository {
         ensureSchemaReady();
         QueryFilterParams params = queryParams == null ? new QueryFilterParams() : queryParams;
 
-        try {
-            SqlQuery sqlQuery = selectInstancesSql(entity, params);
-            return queryEntityRows(entity, sqlQuery.sql, sqlQuery.parameters);
-        } catch (SqliteRegexToLikeConverter.RegexToLikeConversionException e) {
-            LOGGER.warning("SQLite regex filter for " + entity.getName() +
-                    " could not be converted to LIKE; using Java compatibility filtering: " +
-                    e.getMessage());
-            return listInstancesUsingJavaFilter(entity, params);
-        }
+        SqlQuery sqlQuery = selectInstancesSql(entity, params);
+        return queryEntityRows(entity, sqlQuery.sql, sqlQuery.parameters);
     }
 
     @Override
@@ -337,29 +331,20 @@ public class SqliteThingRepository extends InMemoryThingRepository {
         ensureSchemaReady();
         QueryFilterParams params = queryParams == null ? new QueryFilterParams() : queryParams;
 
-        try {
-            Map<String, EntityInstance> related = new LinkedHashMap<>();
-            for (RelationshipVectorDefinition vector :
-                    relationshipVectorsFor(instance, relationshipName)) {
-                SqlQuery query = selectRelatedInstancesSql(instance, vector, params);
-                if (query == null) {
-                    continue;
-                }
-                for (EntityInstance item : queryEntityRows(query.entity, query.sql, query.parameters)) {
-                    related.put(item.getInternalId(), item);
-                }
+        Map<String, EntityInstance> related = new LinkedHashMap<>();
+        for (RelationshipVectorDefinition vector :
+                relationshipVectorsFor(instance, relationshipName)) {
+            SqlQuery query = selectRelatedInstancesSql(instance, vector, params);
+            if (query == null) {
+                continue;
             }
-
-            return new EntityInstanceListSorter(params).
-                    sort(new ArrayList<>(related.values()));
-        } catch (SqliteRegexToLikeConverter.RegexToLikeConversionException e) {
-            LOGGER.warning("SQLite regex relationship filter for " + relationshipName +
-                    " could not be converted to LIKE; using Java compatibility filtering: " +
-                    e.getMessage());
-            return filterAndSort(
-                    new ArrayList<>(getConnectedItems(instance, relationshipName)),
-                    params);
+            for (EntityInstance item : queryEntityRows(query.entity, query.sql, query.parameters)) {
+                related.put(item.getInternalId(), item);
+            }
         }
+
+        return new EntityInstanceListSorter(params).
+                sort(new ArrayList<>(related.values()));
     }
 
     @Override
@@ -419,7 +404,21 @@ public class SqliteThingRepository extends InMemoryThingRepository {
     }
 
     private void configureConnection() {
+        registerRegexpFunction();
         executeSql("PRAGMA case_sensitive_like = ON");
+    }
+
+    private void registerRegexpFunction() {
+        try {
+            Function.create(
+                    connection,
+                    "regexp",
+                    new JavaRegexpFunction(),
+                    2,
+                    Function.FLAG_DETERMINISTIC);
+        } catch (SQLException e) {
+            throw new IllegalStateException("Could not register SQLite REGEXP function", e);
+        }
     }
 
     private void ensureSchemaReady() {
@@ -603,7 +602,7 @@ public class SqliteThingRepository extends InMemoryThingRepository {
                     parameters.add(sqlLikeWildcard(filterBy.fieldValue));
                     break;
                 case "~=":
-                    whereClauses.add(regexLikeSqlCondition(column, filterBy.fieldValue, parameters));
+                    whereClauses.add(regexSqlCondition(column, filterBy.fieldValue, parameters));
                     break;
                 default:
                     break;
@@ -681,7 +680,7 @@ public class SqliteThingRepository extends InMemoryThingRepository {
                     break;
                 case "~=":
                     sql.append(" AND ").
-                            append(regexLikeSqlCondition(column, filterBy.fieldValue, parameters));
+                            append(regexSqlCondition(column, filterBy.fieldValue, parameters));
                     break;
                 default:
                     break;
@@ -711,17 +710,25 @@ public class SqliteThingRepository extends InMemoryThingRepository {
         }
     }
 
-    private String regexLikeSqlCondition(
+    private String regexSqlCondition(
             final String column,
             final String regex,
             final List<Object> parameters) {
-        SqliteRegexToLikeConverter.Conversion conversion =
-                SqliteRegexToLikeConverter.convert(regex);
-        parameters.add(conversion.sqlValue());
-        if (conversion.isEquality()) {
-            return column + " = ?";
+        try {
+            SqliteRegexToLikeConverter.Conversion conversion =
+                    SqliteRegexToLikeConverter.convert(regex);
+            parameters.add(conversion.sqlValue());
+            if (conversion.isEquality()) {
+                return column + " = ?";
+            }
+            return column + " LIKE ? ESCAPE '\\'";
+        } catch (SqliteRegexToLikeConverter.RegexToLikeConversionException e) {
+            SqliteRegexFilterPolicy.compileSupported(regex);
+            LOGGER.warning("SQLite regex filter could not be converted to LIKE; using REGEXP: " +
+                    e.getMessage());
+            parameters.add(regex);
+            return column + " REGEXP ?";
         }
-        return column + " LIKE ? ESCAPE '\\'";
     }
 
     private List<EntityInstance> queryEntityRows(
@@ -740,18 +747,6 @@ public class SqliteThingRepository extends InMemoryThingRepository {
             throw new IllegalStateException("Could not query SQLite entity rows for " + entity.getName(), e);
         }
         return instances;
-    }
-
-    private List<EntityInstance> listInstancesUsingJavaFilter(
-            final EntityDefinition entity,
-            final QueryFilterParams params) {
-        List<EntityInstance> instances = new ArrayList<>(super.listInstances(entity));
-        if (!legacySnapshotLoaded) {
-            instances = new ArrayList<>(getInstanceData().
-                    getInstanceCollectionForEntityNamed(entity.getName()).
-                    getInstances());
-        }
-        return filterAndSort(instances, params);
     }
 
     private EntityInstance instanceFromRow(
@@ -1022,13 +1017,6 @@ public class SqliteThingRepository extends InMemoryThingRepository {
         return vectors;
     }
 
-    private List<EntityInstance> filterAndSort(
-            final List<EntityInstance> instances,
-            final QueryFilterParams params) {
-        List<EntityInstance> filtered = new EntityInstanceListFilter(params).filter(instances);
-        return new EntityInstanceListSorter(params).sort(filtered);
-    }
-
     private Set<String> columnNames(final String tableName) {
         Set<String> names = new HashSet<>();
         String sql = "PRAGMA table_info(" + identifier(tableName) + ")";
@@ -1119,6 +1107,41 @@ public class SqliteThingRepository extends InMemoryThingRepository {
 
     private String identifier(final String rawIdentifier) {
         return "\"" + rawIdentifier.replace("\"", "\"\"") + "\"";
+    }
+
+    private static class JavaRegexpFunction extends Function {
+        private String cachedRegex;
+        private Pattern cachedPattern;
+
+        @Override
+        protected void xFunc() throws SQLException {
+            if (args() != 2) {
+                result(0);
+                return;
+            }
+
+            String regex = value_text(0);
+            String value = value_text(1);
+            if (regex == null || value == null) {
+                result(0);
+                return;
+            }
+
+            Pattern pattern = patternFor(regex);
+            result(pattern.matcher(value).matches() ? 1 : 0);
+        }
+
+        private Pattern patternFor(final String regex) throws SQLException {
+            if (!regex.equals(cachedRegex)) {
+                try {
+                    cachedPattern = SqliteRegexFilterPolicy.compileSupported(regex);
+                    cachedRegex = regex;
+                } catch (SqliteRegexFilterPolicy.UnsupportedRegexFilterException e) {
+                    throw new SQLException("Unsupported SQLite regex filter: " + e.getMessage(), e);
+                }
+            }
+            return cachedPattern;
+        }
     }
 
     private static class SqlQuery {
