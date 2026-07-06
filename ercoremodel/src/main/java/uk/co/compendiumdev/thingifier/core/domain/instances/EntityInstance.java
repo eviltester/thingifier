@@ -20,10 +20,14 @@ public class EntityInstance {
     private final UUID internalId;
 
     public EntityInstance(EntityDefinition eDefn) {
+        this(eDefn, UUID.randomUUID());
+    }
+
+    public EntityInstance(EntityDefinition eDefn, UUID internalId) {
         this.entityDefinition = eDefn;
         this.instanceFields = eDefn.instantiateFields();
         this.relationships = new EntityInstanceRelationships(this);
-        internalId = UUID.randomUUID();
+        this.internalId = internalId;
     }
 
     public EntityInstance addAutoGUIDstoInstance(){

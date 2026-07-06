@@ -1,6 +1,7 @@
 package uk.co.compendiumdev.thingifier.api.restapihandlers;
 
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.NamedValue;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
@@ -21,6 +22,10 @@ public class ThingCreation {
     }
 
     public ApiResponse with(final BodyParser bodyargs, final EntityInstanceCollection thing, final String database) {
+        return with(bodyargs, thing.definition(), database);
+    }
+
+    public ApiResponse with(final BodyParser bodyargs, final EntityDefinition thing, final String database) {
 
         ValidationReport validated = new BodyRelationshipValidator(thingifier).validate(bodyargs, thing, database);
 
@@ -34,32 +39,42 @@ public class ThingCreation {
         }
 
         // todo: separate validation for creation of 'cannot' create with ID, or cannot create with GUID
-        EntityInstance instance = new EntityInstance(thing.definition());
+        EntityInstance instance = new EntityInstance(thing);
         instance.addAutoGUIDstoInstance();
-        instance.addAutoIncrementIdsToInstance(thing.getCounters());
+        instance.addAutoIncrementIdsToInstance(
+                thingifier.getRepository(database).countersFor(thing));
         return addNewThingWithFields(bodyargs, instance, thing, database);
     }
 
     // create with GUID and IDs is normally associated with PUT or 'insert'
     public ApiResponse withPrimaryKey(final String primaryKey, final BodyParser bodyargs,
                                       final EntityInstanceCollection thing, final String database) {
+        return withPrimaryKey(primaryKey, bodyargs, thing.definition(), database);
+    }
+
+    public ApiResponse withPrimaryKey(final String primaryKey, final BodyParser bodyargs,
+                                      final EntityDefinition thing, final String database) {
 
         EntityInstance instance;
         ValidationReport validated;
 
         validated = new BodyCreationValidator(thingifier).
-                areFieldsUnique(bodyargs, thing,
-                        thing.definition().getFieldNamesOfType(FieldType.AUTO_INCREMENT, FieldType.AUTO_GUID));
+                areFieldsUnique(
+                        bodyargs,
+                        thing,
+                        thingifier.getRepository(database),
+                        thing.getFieldNamesOfType(FieldType.AUTO_INCREMENT, FieldType.AUTO_GUID));
         if(!validated.isValid()){
             return ApiResponse.error(409,"Cannot Create with duplicate values: "+
                     validated.getCombinedErrorMessages());
         }
 
-        instance = new EntityInstance(thing.definition());
-        instance.overrideValue(thing.definition().getPrimaryKeyField().getName(), primaryKey);
+        instance = new EntityInstance(thing);
+        instance.overrideValue(thing.getPrimaryKeyField().getName(), primaryKey);
 
         // TODO: should we really do this for a PUT when everything needs to exist, suspect this is a bug
-        instance.addAutoIncrementIdsToInstance(thing.getCounters());
+        instance.addAutoIncrementIdsToInstance(
+                thingifier.getRepository(database).countersFor(thing));
 
         validated = new BodyRelationshipValidator(thingifier).validate(bodyargs, thing, database);
 
@@ -76,14 +91,14 @@ public class ThingCreation {
                                     bodyargs.getFlattenedStringMap());
 
 
-        thing.setNextIdCountersToAccomodate(fieldValues);
+        thingifier.getRepository(database).setNextIdCountersToAccomodate(thing, fieldValues);
 
         return insertNewThingWithFields(bodyargs, instance, thing, database);
     }
 
 
     private ApiResponse addNewThingWithFields(final BodyParser bodyargs, final EntityInstance instance,
-                                              final EntityInstanceCollection thing, final String database) {
+                                              final EntityDefinition thing, final String database) {
 
         if(thingifier.apiConfig().willApiEnforceDeclaredTypesInInput()) {
             ValidationReport validatedTypes = bodyargs.validateAgainstType(instance.getEntity());
@@ -116,7 +131,7 @@ public class ThingCreation {
     }
 
     private ApiResponse insertNewThingWithFields(final BodyParser bodyargs, final EntityInstance instance,
-                                              final EntityInstanceCollection thing, final String database) {
+                                              final EntityDefinition thing, final String database) {
 
         if(thingifier.apiConfig().willApiEnforceDeclaredTypesInInput()) {
             ValidationReport validatedTypes = bodyargs.validateAgainstType(instance.getEntity());
@@ -145,17 +160,16 @@ public class ThingCreation {
         return addValidatedInstance(bodyargs, instance, thing, database, validation);
     }
 
-    private ApiResponse addValidatedInstance(BodyParser bodyargs, EntityInstance instance, EntityInstanceCollection thing, String database, ValidationReport validation) {
+    private ApiResponse addValidatedInstance(BodyParser bodyargs, EntityInstance instance, EntityDefinition thing, String database, ValidationReport validation) {
 
         // check for uniqueness prior to adding
-        ValidationReport uniquenessCheck = thingifier.getERmodel().getInstanceData(database).
-                getInstanceCollectionForEntityNamed(instance.getEntity().getName()).
+        ValidationReport uniquenessCheck = thingifier.getRepository(database).
                 checkFieldsForUniqueNess(instance, false);
         validation.combine(uniquenessCheck);
 
         if (validation.isValid()) {
             try {
-                thing.addInstance(instance);
+                thingifier.getRepository(database).addInstance(instance);
             }catch(Exception e){
                 return ApiResponse.error(400, e.getMessage());
             }

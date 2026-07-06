@@ -3,6 +3,7 @@ package uk.co.compendiumdev.thingifier.api.restapihandlers;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
 import java.util.ArrayList;
@@ -19,10 +20,14 @@ public class RelationshipCreator {
         try {
             List<RelationshipDetails> relationships = getRelationshipsFromArgs(bodyargs, instance, database);
             for (RelationshipDetails relationship : relationships) {
-                instance.getRelationships().connect(
+                EntityDefinition relatedEntity = thingifier.getERmodel().getSchema().
+                        getDefinitionWithSingularOrPluralNamed(relationship.toType);
+                thingifier.getRepository(database).connectRelationship(
+                        instance,
                         relationship.relationshipName,
-                            thingifier.getInstancesForSingularOrPluralNamedEntity(relationship.toType, database).
-                                    findInstanceByFieldNameAndValue(relationship.guidName, relationship.guidValue));
+                        thingifier.getRepository(database).
+                                findInstanceByFieldNameAndValue(
+                                        relatedEntity, relationship.guidName, relationship.guidValue));
             }
 
             return ApiResponse.created(instance, thingifier.apiConfig());

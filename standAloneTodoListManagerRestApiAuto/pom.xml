@@ -21,6 +21,13 @@
         </dependency>
 
         <dependency>
+            <groupId>uk.co.compendiumdev.thingifier</groupId>
+            <artifactId>standAloneSqlLiteTodoListManagerRestApi</artifactId>
+            <version>${thingifier.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
             <version>${junit.jupiter.version}</version>

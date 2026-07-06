@@ -37,10 +37,10 @@ public class Environment {
             String [] args;
 
             if(SINGLE_PLAYER_MODE){
-                args = "".split(",");
+                args = "-sqlite-memory".split(",");
             }else{
-                args = "-multiplayer".split(",");
-            };
+                args = "-sqlite-memory,-multiplayer".split(",");
+            }
 
 
             ChallengeMain.main(args);

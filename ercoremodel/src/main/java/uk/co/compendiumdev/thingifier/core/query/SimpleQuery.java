@@ -14,18 +14,25 @@ import java.util.List;
 
 import static uk.co.compendiumdev.thingifier.core.query.SimpleQuery.LastMatchValue.*;
 
-/*
-Note this is not the same as a GET e.g.
-- /item will always mark the query as not a collection
-- /items will always mark the query as a collection
-
-This is a simple query to then build more complex or specific query
-processing on top.
-
-Use the isResultACollection, wasIntentToMatchACollection, lastMatchWasInstance
-in the calling method.
+/**
+ * Legacy ERInstanceData-backed query engine.
+ *
+ * Note this is not the same as a GET e.g.
+ * - /item will always mark the query as not a collection
+ * - /items will always mark the query as a collection
+ *
+ * This is a simple query to then build more complex or specific query
+ * processing on top.
+ *
+ * Use the isResultACollection, wasIntentToMatchACollection, lastMatchWasInstance
+ * in the calling method.
+ *
+ * @deprecated Runtime API paths should use repository-backed query resolution so
+ * repositories such as SQLite can query without hydrating compatibility snapshots.
+ * Keep this class only for compatibility/fallback paths until replacement is complete.
  */
-public final class SimpleQuery {
+@Deprecated
+public final class SimpleQuery implements QueryResult {
 
     private final ERInstanceData database;
     private final ERSchema schema; // all the definitions
@@ -229,10 +236,12 @@ public final class SimpleQuery {
     }
 
     // i.e. did the query end with an identifier which was a primary key
+    @Override
     public boolean wasQueryIntendedToMatchAnInstance(){
         return wasIntentToMatchInstance;
     }
 
+    @Override
     public boolean isResultACollection() {
         return isCollection;
     }
@@ -259,6 +268,7 @@ public final class SimpleQuery {
         return this;
     }
 
+    @Override
     public List<EntityInstance> getListEntityInstances() {
         List<EntityInstance> returnThis = new ArrayList<>();
 
@@ -303,18 +313,22 @@ public final class SimpleQuery {
         return foundItemsHistoryList.get(foundItemsHistoryList.size() - 2) instanceof RelationshipVectorDefinition;
     }
 
+    @Override
     public EntityInstance getLastInstance() {
         return currentInstance;
     }
 
+    @Override
     public boolean lastMatchWasInstance() {
         return lastMatch == CURRENT_INSTANCE;
     }
 
+    @Override
     public boolean lastMatchWasNothing() {
         return lastMatch == NOTHING;
     }
 
+    @Override
     public EntityDefinition resultContainsDefn() {
         return resultContainsDefinition;
     }

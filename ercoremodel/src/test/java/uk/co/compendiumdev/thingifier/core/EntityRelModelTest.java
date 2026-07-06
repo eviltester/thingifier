@@ -3,6 +3,7 @@ package uk.co.compendiumdev.thingifier.core;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.core.domain.datapopulator.DataPopulator;
+import uk.co.compendiumdev.thingifier.core.domain.datapopulator.RepositoryDataPopulator;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.Cardinality;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.ERSchema;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
@@ -12,6 +13,11 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.Optio
 import uk.co.compendiumdev.thingifier.core.domain.instances.ERInstanceData;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
+import uk.co.compendiumdev.thingifier.core.repository.SqliteThingRepositoryProvider;
+import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class EntityRelModelTest {
 
@@ -244,5 +250,39 @@ public class EntityRelModelTest {
         dataPopulator.populate(erm.getSchema(), erm.getInstanceData());
 
         Assertions.assertEquals(1, erm.getInstanceData().getAllInstanceCollections().size());
+    }
+
+    @Test
+    public void populateDatabaseUsesRepositoryDataPopulatorWithoutCompatibilitySnapshot(){
+        try (EntityRelModel erm = new EntityRelModel(SqliteThingRepositoryProvider.inMemory())) {
+            EntityDefinition thing = erm.createEntityDefinition("thing", "things");
+            thing.addAsPrimaryKeyField(Field.is("id", FieldType.AUTO_INCREMENT));
+            thing.addField(Field.is("name", FieldType.STRING));
+
+            RepositoryDataPopulator dataPopulator = new RepositoryDataPopulator() {
+                @Override
+                public void populate(final ERSchema schema, final ERInstanceData database) {
+                    Assertions.fail("Repository-aware data populators should not use ERInstanceData");
+                }
+
+                @Override
+                public void populate(final ERSchema schema, final ThingRepository repository) {
+                    repository.addInstance(new EntityInstance(
+                            schema.getEntityDefinitionNamed("thing")).
+                            setValue("name", "repository"));
+                }
+            };
+
+            erm.setDataGenerator(dataPopulator);
+
+            Assertions.assertTrue(erm.populateDatabase(EntityRelModel.DEFAULT_DATABASE_NAME));
+
+            ThingRepository repository = erm.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME);
+            List<EntityInstance> instances = new ArrayList<>(repository.listInstances(thing));
+
+            Assertions.assertEquals(1, instances.size());
+            Assertions.assertEquals("repository", instances.get(0).getFieldValue("name").asString());
+            Assertions.assertFalse(repository.hasLoadedCompatibilitySnapshot());
+        }
     }
 }

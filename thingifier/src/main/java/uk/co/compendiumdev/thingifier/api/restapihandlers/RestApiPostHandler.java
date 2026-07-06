@@ -1,8 +1,8 @@
 package uk.co.compendiumdev.thingifier.api.restapihandlers;
 
 import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
@@ -30,11 +30,12 @@ public class RestApiPostHandler {
          */
         // if queryis empty then need a way to check if the query matched
         // create a thing
-        EntityInstanceCollection instancesCollection = thingifier.getInstancesForSingularOrPluralNamedEntity(url, instanceDatabaseName);
-        if (instancesCollection != null) {
+        EntityDefinition entityDefinition = EntityUrlMatcher.entityFromCollectionUrl(thingifier, url);
+        if (entityDefinition != null) {
             // create a new thing does not enforce relationships
             // TODO: validate before creation so as to only delete in an 'emergency' not as default
-            final ApiResponse response = new ThingCreation(thingifier).with(args, instancesCollection, instanceDatabaseName);
+            final ApiResponse response = new ThingCreation(thingifier).with(
+                    args, entityDefinition, instanceDatabaseName);
             if (response.isErrorResponse()) {
                 return response;
             }
@@ -47,7 +48,7 @@ public class RestApiPostHandler {
             if (validity.isValid()) {
                 return response;
             } else {
-                instancesCollection.deleteInstance(response.getReturnedInstance());
+                thingifier.deleteThing(response.getReturnedInstance(), instanceDatabaseName);
                 return ApiResponse.error(400, validity.getErrorMessages()).addToErrorMessages("No new item created");
             }
         }
@@ -58,38 +59,34 @@ public class RestApiPostHandler {
          */
         // amend  a thing
         // thing/guid
-        String[] urlParts = url.split("/");
-        if (urlParts.length == 2) {
+        entityDefinition = EntityUrlMatcher.entityFromInstanceUrl(thingifier, url);
+        if (entityDefinition != null) {
 
-            String thingName = urlParts[0];
-            instancesCollection = thingifier.getInstancesForSingularOrPluralNamedEntity(thingName, instanceDatabaseName);
+            String primaryKey = EntityUrlMatcher.identifierFromInstanceUrl(url);
 
-            if (instancesCollection == null) {
-                // this is not a URL for thing/guid
-                // unknown thing
-                return NoSuchEntity.response(thingName);
-
-            }
-
-            String primaryKey = urlParts[1];
-
-            if(instancesCollection.definition().hasPrimaryKeyField()){
-                EntityInstance instance = instancesCollection.findInstanceByPrimaryKey(primaryKey);
+            if(entityDefinition.hasPrimaryKeyField()){
+                EntityInstance instance = thingifier.getRepository(instanceDatabaseName).
+                        findInstanceByQueryIdentifier(entityDefinition, primaryKey);
 
                 if (instance == null) {
                     // cannot amend something that does not exist
                     return ApiResponse.error404(String.format("No such %s entity instance with %s == %s found",
-                            instancesCollection.definition().getName(),
-                            instancesCollection.definition().getPrimaryKeyField().getName(),
+                            entityDefinition.getName(),
+                            entityDefinition.getPrimaryKeyField().getName(),
                             primaryKey)
                     );
                 }
 
                 return amendAThingWithPost(args, instance, instanceDatabaseName);
             }else{
-                return ApiResponse.error404(String.format("Entity %s does not have a primary key defined", instancesCollection.definition().getName()));
+                return ApiResponse.error404(String.format("Entity %s does not have a primary key defined", entityDefinition.getName()));
             }
 
+        }
+
+        String thingName = EntityUrlMatcher.entityTermFromUrl(url);
+        if (!thingName.isEmpty() && EntityUrlMatcher.hasPartCount(url, 2)) {
+            return NoSuchEntity.response(thingName);
         }
 
 

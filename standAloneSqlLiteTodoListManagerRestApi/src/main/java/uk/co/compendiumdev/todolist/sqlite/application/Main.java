@@ -1,0 +1,35 @@
+package uk.co.compendiumdev.todolist.sqlite.application;
+
+import uk.co.compendiumdev.thingifier.application.MainImplementation;
+import uk.co.compendiumdev.thingifier.application.examples.TodoManagerThingifier;
+import uk.co.compendiumdev.thingifier.core.repository.SqliteThingRepositoryProvider;
+
+import static spark.Spark.get;
+
+public class Main {
+
+    public static void main(String[] args) {
+
+        MainImplementation app = new MainImplementation();
+        app.registerModel("todoManager",
+                new TodoManagerThingifier().get(SqliteThingRepositoryProvider.inMemory()));
+
+        app.setDefaultsFromArgs(args);
+
+        app.configurePortAndDefaultRoutes();
+        app.setupBuiltInConfigurableRoutes();
+
+        app.chooseThingifier();
+        app.configureThingifierWithProfile();
+
+        app.setupDefaultGui();
+
+        get("/", (request, response) -> {
+            response.redirect("/gui/entities");
+            return "";
+        });
+
+        app.startRestServer();
+        app.addBuiltInArgConfiguredHooks();
+    }
+}

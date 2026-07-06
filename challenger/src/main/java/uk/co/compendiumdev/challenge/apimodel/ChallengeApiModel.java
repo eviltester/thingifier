@@ -6,12 +6,21 @@ import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.validation.VRule;
+import uk.co.compendiumdev.thingifier.core.repository.ThingRepositoryProvider;
 
 import static uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType.STRING;
 
 public class ChallengeApiModel {
     public Thingifier get() {
-        Thingifier todoList = new Thingifier();
+        return get(new EntityRelModel());
+    }
+
+    public Thingifier get(final ThingRepositoryProvider repositoryProvider) {
+        return get(new EntityRelModel(repositoryProvider));
+    }
+
+    public Thingifier get(final EntityRelModel entityRelModel) {
+        Thingifier todoList = new Thingifier(entityRelModel);
 
         StringBuilder para = new StringBuilder();
 

@@ -12,9 +12,15 @@ import static spark.Spark.get;
 public class ShutdownRouteHandler {
 
     List<RoutingDefinition> routes;
+    private final AutoCloseable closeable;
 
     public ShutdownRouteHandler(){
+        this(null);
+    }
+
+    public ShutdownRouteHandler(final AutoCloseable closeable){
         routes = new ArrayList();
+        this.closeable = closeable;
     }
 
     public List<RoutingDefinition> getRoutes(){
@@ -24,6 +30,9 @@ public class ShutdownRouteHandler {
     public ShutdownRouteHandler configureRoutes() {
 
         get("/shutdown", (request, result) -> {
+            if (closeable != null) {
+                closeable.close();
+            }
             System.exit(0);
             return "";
         });
