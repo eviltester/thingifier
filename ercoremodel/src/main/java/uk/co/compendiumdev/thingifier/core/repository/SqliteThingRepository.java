@@ -12,6 +12,12 @@ import uk.co.compendiumdev.thingifier.core.domain.instances.ERInstanceData;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.core.domain.instances.RelationshipVectorInstance;
+import uk.co.compendiumdev.thingifier.core.query.EntityInstanceListFilter;
+import uk.co.compendiumdev.thingifier.core.query.EntityInstanceListSorter;
+import uk.co.compendiumdev.thingifier.core.query.EntityListSortParamParser;
+import uk.co.compendiumdev.thingifier.core.query.FilterBy;
+import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
+import uk.co.compendiumdev.thingifier.core.query.SortByFieldName;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 
 import java.nio.file.Path;
@@ -38,7 +44,7 @@ public class SqliteThingRepository extends InMemoryThingRepository {
     private final String jdbcUrl;
     private ERSchema schema;
     private Connection connection;
-    private boolean loadedExistingData;
+    private boolean legacySnapshotLoaded;
 
     public SqliteThingRepository(final String databaseKey, final String jdbcUrl) {
         super(databaseKey, new ERInstanceData());
@@ -60,10 +66,15 @@ public class SqliteThingRepository extends InMemoryThingRepository {
         openConnection();
         createMetadataTables();
         refreshSchema(schema);
-        if (!loadedExistingData) {
+    }
+
+    @Override
+    public ERInstanceData getInstanceData() {
+        if (!legacySnapshotLoaded) {
             loadExistingData();
-            loadedExistingData = true;
+            legacySnapshotLoaded = true;
         }
+        return super.getInstanceData();
     }
 
     @Override
@@ -89,6 +100,105 @@ public class SqliteThingRepository extends InMemoryThingRepository {
     }
 
     @Override
+    public EntityInstance findEntityInstanceByGUID(final String thingGUID) {
+        ensureSchemaReady();
+        for (EntityDefinition entity : schema.getEntityDefinitions()) {
+            for (Field guidField : entity.getFieldsOfType(FieldType.AUTO_GUID)) {
+                EntityInstance instance = findInstanceByFieldNameAndValue(
+                        entity, guidField.getName(), thingGUID);
+                if (instance != null) {
+                    return instance;
+                }
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public EntityInstance findInstanceByPrimaryKey(
+            final EntityDefinition entity, final String primaryKeyValue) {
+        if (!entity.hasPrimaryKeyField()) {
+            return null;
+        }
+        return findInstanceByFieldNameAndValue(
+                entity, entity.getPrimaryKeyField().getName(), primaryKeyValue);
+    }
+
+    @Override
+    public EntityInstance findInstanceByFieldNameAndValue(
+            final EntityDefinition entity, final String fieldName, final String fieldValue) {
+        ensureSchemaReady();
+        if (!entity.hasFieldNameDefined(fieldName)) {
+            return null;
+        }
+
+        String sql = "SELECT * FROM " + table(entity) +
+                " WHERE " + identifier(fieldName) + " = ? LIMIT 1";
+        List<EntityInstance> instances = queryEntityRows(entity, sql, List.of(fieldValue));
+        if (instances.isEmpty()) {
+            return null;
+        }
+        return instances.get(0);
+    }
+
+    @Override
+    public Collection<EntityInstance> listInstances(final EntityDefinition entity) {
+        return listInstances(entity, new QueryFilterParams());
+    }
+
+    @Override
+    public List<EntityInstance> listInstances(
+            final EntityDefinition entity, final QueryFilterParams queryParams) {
+        ensureSchemaReady();
+        QueryFilterParams params = queryParams == null ? new QueryFilterParams() : queryParams;
+        if (hasJavaOnlyFilters(params)) {
+            List<EntityInstance> instances = new ArrayList<>(super.listInstances(entity));
+            if (!legacySnapshotLoaded) {
+                instances = new ArrayList<>(getInstanceData().
+                        getInstanceCollectionForEntityNamed(entity.getName()).
+                        getInstances());
+            }
+            instances = new EntityInstanceListFilter(params).filter(instances);
+            return new EntityInstanceListSorter(params).sort(instances);
+        }
+
+        SqlQuery sqlQuery = selectInstancesSql(entity, params);
+        return queryEntityRows(entity, sqlQuery.sql, sqlQuery.parameters);
+    }
+
+    @Override
+    public EntityInstance findInstanceByQueryIdentifier(
+            final EntityDefinition entity, final String identifierValue) {
+        ensureSchemaReady();
+        List<String> clauses = new ArrayList<>();
+        List<Object> parameters = new ArrayList<>();
+
+        for (Field autoIncrementField : entity.getFieldsOfType(FieldType.AUTO_INCREMENT)) {
+            clauses.add(identifier(autoIncrementField.getName()) + " = ?");
+            parameters.add(identifierValue);
+            break;
+        }
+
+        if (entity.hasPrimaryKeyField()) {
+            clauses.add(identifier(entity.getPrimaryKeyField().getName()) + " = ?");
+            parameters.add(identifierValue);
+        }
+
+        if (clauses.isEmpty()) {
+            return null;
+        }
+
+        String sql = "SELECT * FROM " + table(entity) +
+                " WHERE " + String.join(" OR ", clauses) +
+                " LIMIT 1";
+        List<EntityInstance> instances = queryEntityRows(entity, sql, parameters);
+        if (instances.isEmpty()) {
+            return null;
+        }
+        return instances.get(0);
+    }
+
+    @Override
     public EntityInstance addInstance(final EntityInstance instance) {
         ensureSchemaReady();
         super.addInstance(instance);
@@ -107,6 +217,12 @@ public class SqliteThingRepository extends InMemoryThingRepository {
 
     @Override
     public void deleteEntityInstance(final EntityInstance instance) {
+        if (!legacySnapshotLoaded) {
+            super.deleteEntityInstance(instance);
+            deletePersistedInstance(instance.getInternalId());
+            return;
+        }
+
         Set<String> idsBeforeDelete = currentInternalIds();
         super.deleteEntityInstance(instance);
         Set<String> idsAfterDelete = currentInternalIds();
@@ -165,7 +281,34 @@ public class SqliteThingRepository extends InMemoryThingRepository {
     }
 
     @Override
+    public Collection<EntityInstance> getConnectedItems(
+            final EntityInstance instance, final String relationshipName) {
+        ensureSchemaReady();
+        Set<EntityInstance> connected = new HashSet<>();
+
+        for (RelationshipVectorDefinition vector :
+                instance.getEntity().related().getRelationships(relationshipName)) {
+            addConnectedItemsFromVectorTable(connected, instance, vector);
+            if (vector.getRelationshipDefinition().isTwoWay()) {
+                RelationshipVectorDefinition otherVector =
+                        vector.getRelationshipDefinition().otherVectorOf(vector);
+                if (otherVector != null) {
+                    addConnectedItemsFromVectorTable(connected, instance, otherVector);
+                }
+            }
+        }
+
+        if (connected.isEmpty() && legacySnapshotLoaded) {
+            return super.getConnectedItems(instance, relationshipName);
+        }
+        return connected;
+    }
+
+    @Override
     public void flush() {
+        if (!legacySnapshotLoaded) {
+            return;
+        }
         refreshSchema(schema);
         for (EntityDefinition entity : schema.getEntityDefinitions()) {
             executeSql("DELETE FROM " + table(entity));
@@ -309,7 +452,8 @@ public class SqliteThingRepository extends InMemoryThingRepository {
                 while (resultSet.next()) {
                     EntityInstance from = instances.get(resultSet.getString("from_internal_id"));
                     EntityInstance to = instances.get(resultSet.getString("to_internal_id"));
-                    if (from != null && to != null) {
+                    if (from != null && to != null &&
+                            !from.getRelationships().getConnectedItems(vector.getName()).contains(to)) {
                         from.getRelationships().connect(vector.getName(), to);
                     }
                 }
@@ -339,6 +483,149 @@ public class SqliteThingRepository extends InMemoryThingRepository {
         } catch (SQLException e) {
             throw new IllegalStateException("Could not restore SQLite counters for " + entity.getName(), e);
         }
+    }
+
+    private SqlQuery selectInstancesSql(
+            final EntityDefinition entity, final QueryFilterParams queryParams) {
+        StringBuilder sql = new StringBuilder("SELECT * FROM " + table(entity));
+        List<String> whereClauses = new ArrayList<>();
+        List<Object> parameters = new ArrayList<>();
+
+        for (FilterBy filterBy : queryParams.toList()) {
+            if (EntityListSortParamParser.isSortByParam(filterBy.fieldName)) {
+                continue;
+            }
+            if (!entity.hasFieldNameDefined(filterBy.fieldName)) {
+                continue;
+            }
+
+            String column = identifier(filterBy.fieldName);
+            switch (filterBy.filterOperation) {
+                case "=":
+                    whereClauses.add(column + " = ?");
+                    parameters.add(filterBy.fieldValue);
+                    break;
+                case "!":
+                case "!=":
+                    whereClauses.add(column + " <> ?");
+                    parameters.add(filterBy.fieldValue);
+                    break;
+                case "<":
+                case ">":
+                case "<=":
+                case ">=":
+                    whereClauses.add(column + " " + filterBy.filterOperation + " ?");
+                    parameters.add(filterBy.fieldValue);
+                    break;
+                case "*=":
+                    whereClauses.add(column + " LIKE ? ESCAPE '\\'");
+                    parameters.add(sqlLikeWildcard(filterBy.fieldValue));
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        if (!whereClauses.isEmpty()) {
+            sql.append(" WHERE ").append(String.join(" AND ", whereClauses));
+        }
+
+        List<String> orderClauses = new ArrayList<>();
+        for (SortByFieldName sortBy : new EntityListSortParamParser(queryParams).sortBys()) {
+            if (!entity.hasFieldNameDefined(sortBy.getFieldName())) {
+                continue;
+            }
+            orderClauses.add(identifier(sortBy.getFieldName()) +
+                    (sortBy.getOrder() < 0 ? " ASC" : " DESC"));
+        }
+        if (!orderClauses.isEmpty()) {
+            sql.append(" ORDER BY ").append(String.join(", ", orderClauses));
+        }
+
+        return new SqlQuery(sql.toString(), parameters);
+    }
+
+    private boolean hasJavaOnlyFilters(final QueryFilterParams queryParams) {
+        for (FilterBy filterBy : queryParams.toList()) {
+            if ("~=".equals(filterBy.filterOperation)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private List<EntityInstance> queryEntityRows(
+            final EntityDefinition entity, final String sql, final List<Object> parameters) {
+        List<EntityInstance> instances = new ArrayList<>();
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            for (int index = 0; index < parameters.size(); index++) {
+                statement.setObject(index + 1, parameters.get(index));
+            }
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    instances.add(instanceFromRow(entity, resultSet));
+                }
+            }
+        } catch (SQLException e) {
+            throw new IllegalStateException("Could not query SQLite entity rows for " + entity.getName(), e);
+        }
+        return instances;
+    }
+
+    private EntityInstance instanceFromRow(
+            final EntityDefinition entity, final ResultSet resultSet) throws SQLException {
+        String internalId = resultSet.getString(INTERNAL_ID_COLUMN);
+        EntityInstanceCollection collection = getInstanceCollectionForEntityNamed(entity.getName());
+        EntityInstance existing = collection.findInstanceByInternalID(internalId);
+        if (existing != null) {
+            return existing;
+        }
+
+        EntityInstance instance = new EntityInstance(
+                entity, UUID.fromString(internalId));
+        for (String fieldName : entity.getFieldNames()) {
+            String value = resultSet.getString(fieldName);
+            if (value != null) {
+                instance.overrideValue(fieldName, value);
+            }
+        }
+        collection.addInstance(instance);
+        return instance;
+    }
+
+    private String sqlLikeWildcard(final String wildcard) {
+        return wildcard.
+                replace("\\", "\\\\").
+                replace("%", "\\%").
+                replace("_", "\\_").
+                replace("*", "%").
+                replace("?", "_");
+    }
+
+    private void addConnectedItemsFromVectorTable(
+            final Set<EntityInstance> connected,
+            final EntityInstance instance,
+            final RelationshipVectorDefinition vector) {
+        EntityDefinition connectedEntity;
+        String sql;
+
+        if (vector.getFrom() == instance.getEntity()) {
+            connectedEntity = vector.getTo();
+            sql = "SELECT target.* FROM " + relationshipTable(vector) + " rel " +
+                    "JOIN " + table(connectedEntity) + " target " +
+                    "ON target." + identifier(INTERNAL_ID_COLUMN) + " = rel.to_internal_id " +
+                    "WHERE rel.from_internal_id = ?";
+        } else if (vector.getTo() == instance.getEntity()) {
+            connectedEntity = vector.getFrom();
+            sql = "SELECT target.* FROM " + relationshipTable(vector) + " rel " +
+                    "JOIN " + table(connectedEntity) + " target " +
+                    "ON target." + identifier(INTERNAL_ID_COLUMN) + " = rel.from_internal_id " +
+                    "WHERE rel.to_internal_id = ?";
+        } else {
+            return;
+        }
+
+        connected.addAll(queryEntityRows(connectedEntity, sql, List.of(instance.getInternalId())));
     }
 
     private void persistInstance(final EntityInstance instance) {
@@ -530,5 +817,15 @@ public class SqliteThingRepository extends InMemoryThingRepository {
 
     private String quotedValue(final String value) {
         return "'" + value.replace("'", "''") + "'";
+    }
+
+    private static class SqlQuery {
+        private final String sql;
+        private final List<Object> parameters;
+
+        private SqlQuery(final String sql, final List<Object> parameters) {
+            this.sql = sql;
+            this.parameters = parameters;
+        }
     }
 }

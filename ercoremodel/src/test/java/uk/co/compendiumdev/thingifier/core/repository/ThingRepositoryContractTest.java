@@ -10,8 +10,11 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
+import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
 
 import java.nio.file.Path;
+import java.util.List;
 
 public class ThingRepositoryContractTest {
 
@@ -106,6 +109,42 @@ public class ThingRepositoryContractTest {
         }
     }
 
+    @Test
+    public void sqliteFileBackedRepositoryOnlyHydratesCompatibilitySnapshotWhenRequested() {
+        ERSchema schema = todoSchema();
+        EntityDefinition projectDefinition = schema.getEntityDefinitionNamed("project");
+        Path databasePath = tempDir.resolve("lazy.sqlite");
+
+        try (ThingRepository repository =
+                     SqliteThingRepository.fileBacked(EntityRelModel.DEFAULT_DATABASE_NAME, databasePath)) {
+            repository.initializeFrom(schema);
+
+            repository.addInstance(new EntityInstance(projectDefinition).setValue("title", "First"));
+            repository.addInstance(new EntityInstance(projectDefinition).setValue("title", "Second"));
+        }
+
+        try (ThingRepository reopened =
+                     SqliteThingRepository.fileBacked(EntityRelModel.DEFAULT_DATABASE_NAME, databasePath)) {
+            reopened.initializeFrom(schema);
+
+            EntityInstanceCollection cachedProjects =
+                    reopened.getInstanceCollectionForEntityNamed("project");
+            Assertions.assertEquals(0, cachedProjects.countInstances());
+
+            QueryFilterParams params = new QueryFilterParams();
+            params.put("title", "First");
+
+            List<EntityInstance> filtered = reopened.listInstances(projectDefinition, params);
+
+            Assertions.assertEquals(1, filtered.size());
+            Assertions.assertEquals(1, cachedProjects.countInstances());
+
+            reopened.getInstanceData();
+
+            Assertions.assertEquals(2, cachedProjects.countInstances());
+        }
+    }
+
     private void exerciseRepositoryContract(final ThingRepository repository) {
         ERSchema schema = todoSchema();
         repository.initializeFrom(schema);
@@ -120,6 +159,7 @@ public class ThingRepositoryContractTest {
 
         Assertions.assertEquals("1", project.getPrimaryKeyValue());
         Assertions.assertEquals(project, repository.findInstanceByPrimaryKey(projectDefinition, "1"));
+        Assertions.assertEquals(project, repository.findInstanceByQueryIdentifier(projectDefinition, "1"));
         Assertions.assertEquals(project, repository.findInstanceByFieldNameAndValue(
                 projectDefinition, "title", "Repository project"));
         Assertions.assertEquals(1, repository.listInstances(projectDefinition).size());
@@ -127,6 +167,31 @@ public class ThingRepositoryContractTest {
         EntityInstance duplicate = new EntityInstance(projectDefinition);
         duplicate.setValue("title", "Repository project");
         Assertions.assertFalse(repository.checkFieldsForUniqueNess(duplicate, false).isValid());
+
+        EntityInstance secondProject = new EntityInstance(projectDefinition);
+        secondProject.setValue("title", "Another project");
+        repository.addInstance(secondProject);
+
+        QueryFilterParams filteredParams = new QueryFilterParams();
+        filteredParams.put("id", ">=2");
+        List<EntityInstance> filteredProjects =
+                repository.listInstances(projectDefinition, filteredParams);
+        Assertions.assertEquals(1, filteredProjects.size());
+        Assertions.assertEquals(secondProject, filteredProjects.get(0));
+
+        QueryFilterParams sortedParams = new QueryFilterParams();
+        sortedParams.put("sortBy", "-id");
+        List<EntityInstance> sortedProjects =
+                repository.listInstances(projectDefinition, sortedParams);
+        Assertions.assertEquals("2", sortedProjects.get(0).getPrimaryKeyValue());
+        Assertions.assertEquals("1", sortedProjects.get(1).getPrimaryKeyValue());
+
+        QueryFilterParams regexParams = new QueryFilterParams();
+        regexParams.put("title", "~=Repository.*");
+        List<EntityInstance> regexProjects =
+                repository.listInstances(projectDefinition, regexParams);
+        Assertions.assertEquals(1, regexProjects.size());
+        Assertions.assertEquals(project, regexProjects.get(0));
 
         EntityInstance task = new EntityInstance(taskDefinition);
         task.setValue("title", "Wire repository");

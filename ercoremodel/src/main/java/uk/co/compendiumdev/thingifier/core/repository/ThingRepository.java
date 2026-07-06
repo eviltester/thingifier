@@ -7,6 +7,7 @@ import uk.co.compendiumdev.thingifier.core.domain.instances.AutoIncrement;
 import uk.co.compendiumdev.thingifier.core.domain.instances.ERInstanceData;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
+import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 
 import java.util.Collection;
@@ -38,6 +39,10 @@ public interface ThingRepository extends AutoCloseable {
     EntityInstance findInstanceByFieldNameAndValue(EntityDefinition entity, String fieldName, String fieldValue);
 
     Collection<EntityInstance> listInstances(EntityDefinition entity);
+
+    List<EntityInstance> listInstances(EntityDefinition entity, QueryFilterParams queryParams);
+
+    EntityInstance findInstanceByQueryIdentifier(EntityDefinition entity, String identifier);
 
     EntityInstance addInstance(EntityInstance instance);
 

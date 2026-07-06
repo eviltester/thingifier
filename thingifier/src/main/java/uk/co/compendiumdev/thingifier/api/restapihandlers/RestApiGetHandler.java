@@ -4,7 +4,9 @@ import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import uk.co.compendiumdev.thingifier.core.query.QueryResult;
 import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
+import uk.co.compendiumdev.thingifier.core.query.RepositoryBackedSimpleQuery;
 import uk.co.compendiumdev.thingifier.core.query.SimpleQuery;
 
 import java.util.List;
@@ -28,13 +30,28 @@ public class RestApiGetHandler {
 
         String instanceDatabaseName = SessionHeaderParser.getDatabaseNameFromHeaderValue(requestHeaders);
 
-        SimpleQuery queryResults;
+        QueryResult queryResults;
+        boolean allowFiltering = thingifier.apiConfig().forParams().willAllowFilteringThroughUrlParams();
+        QueryFilterParams effectiveQueryParams = allowFiltering ? queryParams : new QueryFilterParams();
 
-        if(thingifier.apiConfig().forParams().willAllowFilteringThroughUrlParams()){
-           queryResults = new SimpleQuery(thingifier.getERmodel().getSchema(), thingifier.getERmodel().getInstanceData(instanceDatabaseName), url).performQuery(
-                   queryParams);
-        }else{
-            queryResults = new SimpleQuery(thingifier.getERmodel().getSchema(), thingifier.getERmodel().getInstanceData(instanceDatabaseName), url).performQuery();
+        if (RepositoryBackedSimpleQuery.canHandle(thingifier.getERmodel().getSchema(), url)) {
+            queryResults = new RepositoryBackedSimpleQuery(
+                    thingifier.getERmodel().getSchema(),
+                    thingifier.getRepository(instanceDatabaseName),
+                    url).
+                    performQuery(effectiveQueryParams);
+        } else if(allowFiltering){
+            queryResults = new SimpleQuery(
+                    thingifier.getERmodel().getSchema(),
+                    thingifier.getERmodel().getInstanceData(instanceDatabaseName),
+                    url).
+                    performQuery(queryParams);
+        } else {
+            queryResults = new SimpleQuery(
+                    thingifier.getERmodel().getSchema(),
+                    thingifier.getERmodel().getInstanceData(instanceDatabaseName),
+                    url).
+                    performQuery();
         }
 
         // TODO: we should support pagination through query params

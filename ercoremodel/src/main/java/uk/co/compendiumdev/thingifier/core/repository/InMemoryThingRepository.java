@@ -2,13 +2,19 @@ package uk.co.compendiumdev.thingifier.core.repository;
 
 import uk.co.compendiumdev.thingifier.core.domain.definitions.ERSchema;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.NamedValue;
 import uk.co.compendiumdev.thingifier.core.domain.instances.AutoIncrement;
 import uk.co.compendiumdev.thingifier.core.domain.instances.ERInstanceData;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
+import uk.co.compendiumdev.thingifier.core.query.EntityInstanceListFilter;
+import uk.co.compendiumdev.thingifier.core.query.EntityInstanceListSorter;
+import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -108,6 +114,31 @@ public class InMemoryThingRepository implements ThingRepository {
     }
 
     @Override
+    public List<EntityInstance> listInstances(
+            final EntityDefinition entity, final QueryFilterParams queryParams) {
+        List<EntityInstance> instances = new ArrayList<>(listInstances(entity));
+        QueryFilterParams params = queryParams == null ? new QueryFilterParams() : queryParams;
+        instances = new EntityInstanceListFilter(params).filter(instances);
+        return new EntityInstanceListSorter(params).sort(instances);
+    }
+
+    @Override
+    public EntityInstance findInstanceByQueryIdentifier(
+            final EntityDefinition entity, final String identifier) {
+        EntityInstanceCollection collection = getInstanceCollectionForEntityNamed(entity.getName());
+        if (collection == null) {
+            return null;
+        }
+
+        for (EntityInstance instance : collection.getInstances()) {
+            if (matchesQueryIdentifier(instance, identifier)) {
+                return instance;
+            }
+        }
+        return null;
+    }
+
+    @Override
     public EntityInstance addInstance(final EntityInstance instance) {
         getInstanceCollectionForEntityNamed(instance.getEntity().getName()).addInstance(instance);
         return instance;
@@ -175,5 +206,18 @@ public class InMemoryThingRepository implements ThingRepository {
     public Collection<EntityInstance> getConnectedItems(
             final EntityInstance instance, final String relationshipName) {
         return instance.getRelationships().getConnectedItems(relationshipName);
+    }
+
+    private boolean matchesQueryIdentifier(final EntityInstance instance, final String identifier) {
+        for (Field autoIncrementField : instance.getEntity().getFieldsOfType(FieldType.AUTO_INCREMENT)) {
+            String idValue = instance.getFieldValue(autoIncrementField.getName()).asString();
+            if (idValue.contentEquals(identifier)) {
+                return true;
+            }
+            break;
+        }
+
+        String primaryKeyValue = instance.getPrimaryKeyValue();
+        return primaryKeyValue != null && primaryKeyValue.contentEquals(identifier);
     }
 }

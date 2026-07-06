@@ -25,7 +25,7 @@ processing on top.
 Use the isResultACollection, wasIntentToMatchACollection, lastMatchWasInstance
 in the calling method.
  */
-public final class SimpleQuery {
+public final class SimpleQuery implements QueryResult {
 
     private final ERInstanceData database;
     private final ERSchema schema; // all the definitions
@@ -229,10 +229,12 @@ public final class SimpleQuery {
     }
 
     // i.e. did the query end with an identifier which was a primary key
+    @Override
     public boolean wasQueryIntendedToMatchAnInstance(){
         return wasIntentToMatchInstance;
     }
 
+    @Override
     public boolean isResultACollection() {
         return isCollection;
     }
@@ -259,6 +261,7 @@ public final class SimpleQuery {
         return this;
     }
 
+    @Override
     public List<EntityInstance> getListEntityInstances() {
         List<EntityInstance> returnThis = new ArrayList<>();
 
@@ -303,18 +306,22 @@ public final class SimpleQuery {
         return foundItemsHistoryList.get(foundItemsHistoryList.size() - 2) instanceof RelationshipVectorDefinition;
     }
 
+    @Override
     public EntityInstance getLastInstance() {
         return currentInstance;
     }
 
+    @Override
     public boolean lastMatchWasInstance() {
         return lastMatch == CURRENT_INSTANCE;
     }
 
+    @Override
     public boolean lastMatchWasNothing() {
         return lastMatch == NOTHING;
     }
 
+    @Override
     public EntityDefinition resultContainsDefn() {
         return resultContainsDefinition;
     }
