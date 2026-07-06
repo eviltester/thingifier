@@ -27,7 +27,7 @@ public class Main {
         app.setupDefaultGui();
 
         get("/", (request, response) -> {
-            response.redirect("/gui");
+            response.redirect("/gui/entities");
             return "";
         });
 
