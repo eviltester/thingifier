@@ -13,7 +13,7 @@ public interface RepositoryDataPopulator extends DataPopulator {
      * {@link #populate(ERSchema, ThingRepository)}.
      */
     @Override
-    @Deprecated
+    @Deprecated(forRemoval = true, since = "1.5.6")
     default void populate(final ERSchema schema, final ERInstanceData database) {
         populate(schema, new InMemoryThingRepository("__repository-populator-compatibility", database));
     }

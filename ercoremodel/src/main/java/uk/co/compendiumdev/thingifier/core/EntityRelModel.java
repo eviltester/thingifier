@@ -61,9 +61,7 @@ public class EntityRelModel implements AutoCloseable {
 
     public EntityDefinition createEntityDefinition(final String entityName, final String pluralName, int maximumNumberOfInstances) {
         EntityDefinition defn = schema.defineEntity(entityName, pluralName, maximumNumberOfInstances);
-        for(String databaseKey : repositories.getRepositoryNames()){
-            repositories.getRepository(databaseKey).createInstanceCollectionFor(defn);
-        }
+        refreshRepositorySchemas();
         return defn;
     }
 
@@ -75,7 +73,7 @@ public class EntityRelModel implements AutoCloseable {
      * @deprecated Compatibility snapshot access. Use {@link #getRepository(String)}
      * and repository-native reads/writes instead.
      */
-    @Deprecated
+    @Deprecated(forRemoval = true, since = "1.5.6")
     public ERInstanceData getInstanceData(){
         return getInstanceData(DEFAULT_DATABASE_NAME);
     }
@@ -84,7 +82,7 @@ public class EntityRelModel implements AutoCloseable {
      * @deprecated This returns compatibility instance data, not JSON. Use
      * {@link #exportInstanceDataAsJson(String)} for JSON export.
      */
-    @Deprecated
+    @Deprecated(forRemoval = true, since = "1.5.6")
     public ERInstanceData getInstanceDataAsJson(){
         return getInstanceData(DEFAULT_DATABASE_NAME);
     }
@@ -93,7 +91,7 @@ public class EntityRelModel implements AutoCloseable {
      * @deprecated Compatibility snapshot access. Use {@link #getRepository(String)}
      * and repository-native reads/writes instead.
      */
-    @Deprecated
+    @Deprecated(forRemoval = true, since = "1.5.6")
     public ERInstanceData getInstanceData(String databaseKey) {
         ThingRepository repository = repositories.getRepository(databaseKey);
         if(repository==null){
@@ -136,6 +134,11 @@ public class EntityRelModel implements AutoCloseable {
     }
 
     // ERM Object Level
+    /**
+     * @deprecated Compatibility helper backed by legacy instance data. Prefer a
+     * repository/provider configured with the desired data source.
+     */
+    @Deprecated(forRemoval = true, since = "1.5.6")
     public EntityRelModel cloneWithDifferentData(final List<EntityInstance> instances) {
         return new EntityRelModel(schema, new ERInstanceData(instances));
     }

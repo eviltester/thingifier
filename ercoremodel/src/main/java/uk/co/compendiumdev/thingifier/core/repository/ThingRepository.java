@@ -28,7 +28,7 @@ public interface ThingRepository extends AutoCloseable {
      * @deprecated Compatibility snapshot access. Repository callers should use
      * repository-native query and mutation methods instead.
      */
-    @Deprecated
+    @Deprecated(forRemoval = true, since = "1.5.6")
     ERInstanceData getInstanceData();
 
     /**
@@ -36,7 +36,7 @@ public interface ThingRepository extends AutoCloseable {
      * should initialize schema through {@link #initializeFrom(ERSchema)} or
      * {@link #refreshSchema(ERSchema)}.
      */
-    @Deprecated
+    @Deprecated(forRemoval = true, since = "1.5.6")
     EntityInstanceCollection createInstanceCollectionFor(EntityDefinition definition);
 
     void createInstanceCollectionsFrom(ERSchema schema);
@@ -45,7 +45,7 @@ public interface ThingRepository extends AutoCloseable {
      * @deprecated Compatibility collection access. Use schema entity definitions
      * with {@link #listInstances(EntityDefinition)} or reporting/export APIs.
      */
-    @Deprecated
+    @Deprecated(forRemoval = true, since = "1.5.6")
     List<EntityInstanceCollection> getAllInstanceCollections();
 
     /**
@@ -53,7 +53,7 @@ public interface ThingRepository extends AutoCloseable {
      * such as {@link #listInstances(EntityDefinition)} and
      * {@link #findInstanceByQueryIdentifier(EntityDefinition, String)}.
      */
-    @Deprecated
+    @Deprecated(forRemoval = true, since = "1.5.6")
     EntityInstanceCollection getInstanceCollectionForEntityNamed(String entityName);
 
     default String exportDataAsJson(final ERSchema schema) {

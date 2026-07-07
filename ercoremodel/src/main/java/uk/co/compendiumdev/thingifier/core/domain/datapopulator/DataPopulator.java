@@ -9,6 +9,6 @@ public interface DataPopulator {
      * @deprecated Implement {@link RepositoryDataPopulator} so population writes
      * through the configured repository without hydrating a compatibility snapshot.
      */
-    @Deprecated
+    @Deprecated(forRemoval = true, since = "1.5.6")
     void populate(ERSchema schema, ERInstanceData database);
 }

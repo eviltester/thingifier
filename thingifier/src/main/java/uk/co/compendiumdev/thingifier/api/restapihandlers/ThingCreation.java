@@ -2,7 +2,6 @@ package uk.co.compendiumdev.thingifier.api.restapihandlers;
 
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.NamedValue;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
@@ -19,15 +18,6 @@ public class ThingCreation {
 
     public ThingCreation(final Thingifier thingifier) {
         this.thingifier = thingifier;
-    }
-
-    /**
-     * @deprecated Use {@link #with(BodyParser, EntityDefinition, String)} so
-     * creation can stay repository-native.
-     */
-    @Deprecated
-    public ApiResponse with(final BodyParser bodyargs, final EntityInstanceCollection thing, final String database) {
-        return with(bodyargs, thing.definition(), database);
     }
 
     public ApiResponse with(final BodyParser bodyargs, final EntityDefinition thing, final String database) {
@@ -52,16 +42,6 @@ public class ThingCreation {
     }
 
     // create with GUID and IDs is normally associated with PUT or 'insert'
-    /**
-     * @deprecated Use {@link #withPrimaryKey(String, BodyParser, EntityDefinition, String)}
-     * so creation can stay repository-native.
-     */
-    @Deprecated
-    public ApiResponse withPrimaryKey(final String primaryKey, final BodyParser bodyargs,
-                                      final EntityInstanceCollection thing, final String database) {
-        return withPrimaryKey(primaryKey, bodyargs, thing.definition(), database);
-    }
-
     public ApiResponse withPrimaryKey(final String primaryKey, final BodyParser bodyargs,
                                       final EntityDefinition thing, final String database) {
 

@@ -1,6 +1,5 @@
 package uk.co.compendiumdev.thingifier.api.restapihandlers;
 
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
@@ -17,16 +16,6 @@ public class BodyRelationshipValidator {
 
     public BodyRelationshipValidator(final Thingifier thingifier) {
         this.thingifier = thingifier;
-    }
-
-    /**
-     * @deprecated Use {@link #validate(BodyParser, EntityDefinition, String)} to
-     * avoid requiring a compatibility collection.
-     */
-    @Deprecated
-    public ValidationReport validate(final BodyParser bodyargs, final EntityInstanceCollection thing, final String database) {
-        final EntityDefinition thingDefinition = thing.definition();
-        return validate(bodyargs, thingDefinition, database);
     }
 
     public ValidationReport validate(final BodyParser bodyargs, final EntityDefinition thingDefinition, final String database) {

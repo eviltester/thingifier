@@ -20,10 +20,16 @@ public class RepositoryMigrationGuardTest {
                         "getInstanceData(",
                         "getThingInstancesNamed(",
                         "getInstancesForSingularOrPluralNamedEntity(",
-                        "getThings("),
+                        "getThings(",
+                        "cloneWithDifferentData(",
+                        "createInstanceCollectionFor(",
+                        "getAllInstanceCollections(",
+                        "getInstanceCollectionForEntityNamed("),
                 List.of(
                         "ercoremodel/src/main/java/uk/co/compendiumdev/thingifier/core/EntityRelModel.java",
+                        "ercoremodel/src/main/java/uk/co/compendiumdev/thingifier/core/domain/instances/ERInstanceData.java",
                         "ercoremodel/src/main/java/uk/co/compendiumdev/thingifier/core/domain/datapopulator/LegacyDataPopulatorAdapter.java",
+                        "ercoremodel/src/main/java/uk/co/compendiumdev/thingifier/core/query/SimpleQuery.java",
                         "ercoremodel/src/main/java/uk/co/compendiumdev/thingifier/core/repository/ThingRepository.java",
                         "ercoremodel/src/main/java/uk/co/compendiumdev/thingifier/core/repository/InMemoryThingRepository.java",
                         "ercoremodel/src/main/java/uk/co/compendiumdev/thingifier/core/repository/SqliteThingRepository.java",
@@ -32,6 +38,19 @@ public class RepositoryMigrationGuardTest {
         Assertions.assertTrue(
                 violations.isEmpty(),
                 "Production code should use repository-native APIs instead of legacy snapshot escapes:\n" +
+                        String.join("\n", violations));
+    }
+
+    @Test
+    public void thingifierAndChallengerProductionCodeDoesNotDependOnCompatibilityCollections() throws IOException {
+        List<String> violations = productionJavaLinesContaining(
+                List.of("EntityInstanceCollection"),
+                List.of("thingifier/src/main/java/uk/co/compendiumdev/thingifier/Thingifier.java"),
+                List.of("thingifier", "challenger"));
+
+        Assertions.assertTrue(
+                violations.isEmpty(),
+                "Thingifier and Challenger runtime code should not use compatibility collections outside the deprecated public Thingifier API:\n" +
                         String.join("\n", violations));
     }
 
@@ -50,11 +69,19 @@ public class RepositoryMigrationGuardTest {
     private List<String> productionJavaLinesContaining(
             final List<String> terms,
             final List<String> allowedFileSuffixes) throws IOException {
+        return productionJavaLinesContaining(
+                terms, allowedFileSuffixes, List.of("ercoremodel", "thingifier", "challenger"));
+    }
+
+    private List<String> productionJavaLinesContaining(
+            final List<String> terms,
+            final List<String> allowedFileSuffixes,
+            final List<String> modules) throws IOException {
 
         Path root = repoRoot();
         List<String> violations = new ArrayList<>();
 
-        for (String module : List.of("ercoremodel", "thingifier", "challenger")) {
+        for (String module : modules) {
             Path sourceRoot = root.resolve(module).resolve("src/main/java");
             if (!Files.exists(sourceRoot)) {
                 continue;

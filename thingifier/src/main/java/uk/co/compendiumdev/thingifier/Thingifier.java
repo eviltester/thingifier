@@ -130,7 +130,7 @@ public final class Thingifier implements AutoCloseable {
      * @deprecated Compatibility collection access. Use {@link #getRepository(String)}
      * with schema entity definitions, or {@link #listThingInstancesNamed(String, String)}.
      */
-    @Deprecated
+    @Deprecated(forRemoval = true, since = "1.5.6")
     public List<EntityInstanceCollection> getThings(final String database) {
         return erm.getRepository(database).getAllInstanceCollections();
     }
@@ -144,7 +144,7 @@ public final class Thingifier implements AutoCloseable {
      * @deprecated Compatibility collection access. Use {@link #getRepository(String)}
      * or {@link #listThingInstancesNamed(String, String)}.
      */
-    @Deprecated
+    @Deprecated(forRemoval = true, since = "1.5.6")
     public EntityInstanceCollection getThingInstancesNamed(final String aName, final String database) {
         return erm.getRepository(database).getInstanceCollectionForEntityNamed(aName);
     }
@@ -175,7 +175,7 @@ public final class Thingifier implements AutoCloseable {
      * @deprecated Compatibility collection access. Use {@link #getRepository(String)}
      * with {@link EntityDefinition} resolved from {@link #getERmodel()}.
      */
-    @Deprecated
+    @Deprecated(forRemoval = true, since = "1.5.6")
     public EntityInstanceCollection getInstancesForSingularOrPluralNamedEntity(final String term, final String database) {
         final EntityDefinition defn = erm.getSchema().getDefinitionWithSingularOrPluralNamed(term);
         if(defn!=null){
@@ -302,7 +302,7 @@ public final class Thingifier implements AutoCloseable {
      * @deprecated Compatibility helper backed by legacy instance data. Prefer a
      * repository/provider configured with the desired data source.
      */
-    @Deprecated
+    @Deprecated(forRemoval = true, since = "1.5.6")
     public Thingifier cloneWithDifferentData(final List<EntityInstance> instances) {
         return new Thingifier(  this.getERmodel().cloneWithDifferentData(instances),
                                                     this.apiConfig(),

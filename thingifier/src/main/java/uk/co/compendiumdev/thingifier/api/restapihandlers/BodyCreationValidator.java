@@ -1,6 +1,5 @@
 package uk.co.compendiumdev.thingifier.api.restapihandlers;
 
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
@@ -19,16 +18,6 @@ public class BodyCreationValidator {
         this.thingifier = thingifier;
     }
 
-    /**
-     * @deprecated Use {@link #validate(BodyParser, EntityDefinition)} to avoid
-     * requiring a compatibility collection.
-     */
-    @Deprecated
-    public ValidationReport validate(final BodyParser bodyargs, final EntityInstanceCollection thing) {
-        final EntityDefinition thingDefinition = thing.definition();
-        return validate(bodyargs, thingDefinition);
-    }
-
     public ValidationReport validate(final BodyParser bodyargs, final EntityDefinition thingDefinition) {
         final ValidationReport report = new ValidationReport();
 
@@ -44,38 +33,6 @@ public class BodyCreationValidator {
             }
         }
 
-        return report;
-    }
-
-    /**
-     * @deprecated Use {@link #areFieldsUnique(BodyParser, EntityDefinition, ThingRepository, List)}
-     * so uniqueness checks use the configured repository.
-     */
-    @Deprecated
-    public ValidationReport areFieldsUnique(final BodyParser bodyargs, final EntityInstanceCollection thing,
-                                            List<String> uniqueFields) {
-        final ValidationReport report = new ValidationReport();
-
-        for (Map.Entry<String, String> entry : bodyargs.getFlattenedStringMap()) {
-
-            if (uniqueFields.contains(entry.getKey())) {
-                String existingValue = entry.getValue();
-
-                if (existingValue != null && existingValue.trim().length() > 0) {
-                    final EntityInstance foundInstance = thing.findInstanceByFieldNameAndValue(
-                            entry.getKey(),
-                            entry.getValue()
-                    );
-
-                    if (foundInstance != null) {
-                        report.setValid(false);
-                        report.addErrorMessage(
-                                String.format("Found Existing item with %s of %s",
-                                        entry.getKey(), entry.getValue()));
-                    }
-                }
-            }
-        }
         return report;
     }
 

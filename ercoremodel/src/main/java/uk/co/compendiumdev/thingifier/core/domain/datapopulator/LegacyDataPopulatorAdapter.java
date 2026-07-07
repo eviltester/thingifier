@@ -8,7 +8,7 @@ public final class LegacyDataPopulatorAdapter {
     private LegacyDataPopulatorAdapter() {
     }
 
-    @Deprecated
+    @Deprecated(forRemoval = true, since = "1.5.6")
     public static void populate(
             final DataPopulator dataPopulator,
             final ERSchema schema,

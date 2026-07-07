@@ -31,7 +31,7 @@ import static uk.co.compendiumdev.thingifier.core.query.SimpleQuery.LastMatchVal
  * repositories such as SQLite can query without hydrating compatibility snapshots.
  * Keep this class only for compatibility/fallback paths until replacement is complete.
  */
-@Deprecated
+@Deprecated(forRemoval = true, since = "1.5.6")
 public final class SimpleQuery implements UrlQueryResult {
 
     private final ERInstanceData database;
