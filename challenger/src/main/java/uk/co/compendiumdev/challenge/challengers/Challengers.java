@@ -155,7 +155,9 @@ public class Challengers {
     public void persistChallengerState(final ChallengerAuthData challenger){
         if (persistenceLayer != null) {
            String databaseName = challenger.getXChallenger();
-            persistenceLayer.saveChallengerStatus(challenger, erModel.getInstanceData(databaseName));
+            persistenceLayer.saveChallengerStatus(
+                    challenger,
+                    erModel.exportInstanceDataAsJson(databaseName));
         }
     }
 

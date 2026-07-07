@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ERInstanceData;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -71,7 +70,7 @@ public class ChallengerFileStorage implements ChallengerPersistenceMechanism, Da
         }
     }
 
-    public PersistenceResponse saveDatabaseContent(String guid, ERInstanceData todos) {
+    public PersistenceResponse saveDatabaseContent(String guid, String databaseContents) {
 
         File folder = new File(System.getProperty("User.dir"), "challengersessions");
         folder.mkdirs();
@@ -83,10 +82,7 @@ public class ChallengerFileStorage implements ChallengerPersistenceMechanism, Da
         }
 
         try(FileOutputStream out = new FileOutputStream(file)) {
-            String dataString = "";
-            if(todos!=null){
-                dataString=todos.asJson();
-            }
+            String dataString = databaseContents == null ? "" : databaseContents;
             out.write(dataString.getBytes());
             return new PersistenceResponse().
                     withSuccess(true);

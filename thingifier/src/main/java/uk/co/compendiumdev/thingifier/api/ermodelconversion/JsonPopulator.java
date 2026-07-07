@@ -4,24 +4,25 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import uk.co.compendiumdev.thingifier.core.domain.datapopulator.DataPopulator;
+import uk.co.compendiumdev.thingifier.core.domain.datapopulator.RepositoryDataPopulator;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.ERSchema;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.instances.ERInstanceData;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
+import uk.co.compendiumdev.thingifier.core.repository.InMemoryThingRepository;
+import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.UUID;
 
-public class JsonPopulator implements DataPopulator {
+public class JsonPopulator implements RepositoryDataPopulator {
 
     private final String jsonData;
     private ERSchema schema;
-    private ERInstanceData database;
+    private ThingRepository repository;
 
     public JsonPopulator(String jsonDatabaseContents) {
         this.jsonData = jsonDatabaseContents;
@@ -29,9 +30,15 @@ public class JsonPopulator implements DataPopulator {
 
     @Override
     public void populate(ERSchema schema, ERInstanceData database) {
+        populate(schema, new InMemoryThingRepository("__json-import", database));
+    }
+
+    @Override
+    public void populate(ERSchema schema, ThingRepository repository) {
 
         this.schema = schema;
-        this.database = database;
+        this.repository = repository;
+        this.repository.refreshSchema(schema);
 
         JsonElement data = JsonParser.parseString(jsonData);
 
@@ -41,6 +48,7 @@ public class JsonPopulator implements DataPopulator {
         }
 
         JsonObject entities = data.getAsJsonObject();
+        repository.clearAllData();
         entities.entrySet().forEach(property -> {
             populateEntityInstances(property);
         });
@@ -56,8 +64,6 @@ public class JsonPopulator implements DataPopulator {
         if(!entity.getValue().isJsonArray()){
             throw new RuntimeException(String.format("ERROR: Expected array of instances as %s value", entity.getKey()));
         }
-
-        database.clearAllData();
 
         JsonArray instances = entity.getValue().getAsJsonArray();
         instances.forEach(instance -> {populateAsInstanceOf(entity.getKey(), instance);});
@@ -100,7 +106,6 @@ public class JsonPopulator implements DataPopulator {
         }
 
         // instance is valid, so add it
-        EntityInstanceCollection instances = database.getInstanceCollectionForEntityNamed(entityDefn.getName());
-        instances.addInstance(entityInstance);
+        repository.addInstance(entityInstance);
     }
 }

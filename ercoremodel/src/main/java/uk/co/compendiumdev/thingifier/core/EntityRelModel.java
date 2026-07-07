@@ -1,6 +1,7 @@
 package uk.co.compendiumdev.thingifier.core;
 
 import uk.co.compendiumdev.thingifier.core.domain.datapopulator.DataPopulator;
+import uk.co.compendiumdev.thingifier.core.domain.datapopulator.LegacyDataPopulatorAdapter;
 import uk.co.compendiumdev.thingifier.core.domain.datapopulator.RepositoryDataPopulator;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.Cardinality;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.ERSchema;
@@ -222,7 +223,6 @@ public class EntityRelModel implements AutoCloseable {
             return;
         }
 
-        dataPopulator.populate(getSchema(), repository.getInstanceData());
-        repository.flush();
+        LegacyDataPopulatorAdapter.populate(dataPopulator, getSchema(), repository);
     }
 }

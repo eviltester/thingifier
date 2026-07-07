@@ -1,17 +1,22 @@
 package uk.co.compendiumdev.challenge.apimodel;
 
-import uk.co.compendiumdev.thingifier.core.EntityRelModel;
+import uk.co.compendiumdev.thingifier.core.domain.datapopulator.RepositoryDataPopulator;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.ERSchema;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.ERInstanceData;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
-import uk.co.compendiumdev.thingifier.core.domain.datapopulator.DataPopulator;
+import uk.co.compendiumdev.thingifier.core.repository.InMemoryThingRepository;
+import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
 
-public class TodoAPIDataPopulator implements DataPopulator {
+public class TodoAPIDataPopulator implements RepositoryDataPopulator {
 
     @Override
     public void populate(final ERSchema schema, final ERInstanceData database) {
+        populate(schema, new InMemoryThingRepository("__todo-populator", database));
+    }
 
+    @Override
+    public void populate(final ERSchema schema, final ThingRepository repository) {
         String [] todos={
                         "scan paperwork",
                         "file paperwork",
@@ -24,12 +29,12 @@ public class TodoAPIDataPopulator implements DataPopulator {
                         "tidy meeting room",
                         "install webcam"};
 
-        EntityInstanceCollection todo = database.getInstanceCollectionForEntityNamed("todo");
+        EntityDefinition todo = schema.getEntityDefinitionNamed("todo");
 
         for(String todoItem : todos){
-            EntityInstance instance = new EntityInstance(todo.definition());
-            todo.addInstance(instance);
-            instance.setValue("title", todoItem);
+            EntityInstance instance = new EntityInstance(todo).
+                    setValue("title", todoItem);
+            repository.addInstance(instance);
         }
     }
 }

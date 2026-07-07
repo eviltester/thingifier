@@ -1,9 +1,7 @@
 package uk.co.compendiumdev.challenge.persistence;
 
-import uk.co.compendiumdev.thingifier.core.domain.instances.ERInstanceData;
-
 public interface DatabaseContentPersistenceMechanism {
 
-    PersistenceResponse saveDatabaseContent(String guid, ERInstanceData instanceCollection);
+    PersistenceResponse saveDatabaseContent(String guid, String databaseContents);
     PersistenceResponse loadDatabaseContent(String guid);
 }

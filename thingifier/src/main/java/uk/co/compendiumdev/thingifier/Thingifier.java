@@ -7,6 +7,7 @@ import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfigProfile;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfigProfiles;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonPopulator;
+import uk.co.compendiumdev.thingifier.core.domain.datapopulator.LegacyDataPopulatorAdapter;
 import uk.co.compendiumdev.thingifier.core.domain.datapopulator.RepositoryDataPopulator;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.core.domain.datapopulator.DataPopulator;
@@ -317,9 +318,8 @@ public final class Thingifier implements AutoCloseable {
 
         new JsonPopulator(jsonDatabaseContents).populate(
                 getERmodel().getSchema(),
-                getERmodel().getRepository(databaseName).getInstanceData()
+                getERmodel().getRepository(databaseName)
         );
-        getERmodel().getRepository(databaseName).flush();
 
     }
 
@@ -333,7 +333,6 @@ public final class Thingifier implements AutoCloseable {
             return;
         }
 
-        dataPopulator.populate(erm.getSchema(), repository.getInstanceData());
-        repository.flush();
+        LegacyDataPopulatorAdapter.populate(dataPopulator, erm.getSchema(), repository);
     }
 }

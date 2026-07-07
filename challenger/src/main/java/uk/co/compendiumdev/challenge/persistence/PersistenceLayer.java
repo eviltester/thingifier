@@ -4,7 +4,6 @@ import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.ChallengerState;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
 import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonPopulator;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ERInstanceData;
 
 public class PersistenceLayer {
 
@@ -43,7 +42,7 @@ public class PersistenceLayer {
             if(!response.getDatabaseContents().isEmpty()){
                 new JsonPopulator(response.getDatabaseContents()).populate(
                         challengers.getErModel().getSchema(),
-                        challengers.getErModel().getInstanceData(databaseName)
+                        challengers.getErModel().getRepository(databaseName)
                 );
             }else{
                 // set the database to default values
@@ -76,11 +75,12 @@ public class PersistenceLayer {
         }
     }
 
-    public PersistenceResponse saveChallengerStatus(ChallengerAuthData data, ERInstanceData instanceData){
+    public PersistenceResponse saveChallengerStatus(ChallengerAuthData data, String databaseContents){
 
         if(storeOn== StorageType.LOCAL){
             PersistenceResponse fileStoreChallenger = file.saveChallengerStatus(data);
-            PersistenceResponse fileStoreDatabase = dbfile.saveDatabaseContent(data.getXChallenger(), instanceData);
+            PersistenceResponse fileStoreDatabase =
+                    dbfile.saveDatabaseContent(data.getXChallenger(), databaseContents);
             return new PersistenceResponse().
                     withSuccess(fileStoreChallenger.isSuccess() && fileStoreDatabase.isSuccess()).
                     withErrorMessage(fileStoreChallenger.getErrorMessage() + fileStoreDatabase.getErrorMessage()).
