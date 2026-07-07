@@ -5,6 +5,7 @@ import io.restassured.filter.log.RequestLoggingFilter;
 import io.restassured.filter.log.ResponseLoggingFilter;
 import io.restassured.http.ContentType;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.simpleapi.payloads.Item;
@@ -15,12 +16,13 @@ import java.math.BigDecimal;
 
 public class BasicSimpleApiCrudCoverageTest {
 
-    String apiPathPrefix = Environment.getBaseUri();
-
     // TODO: risk that the isbns here are not unique and tests fail intermittently
 
     @BeforeAll
     static void logRestAssuredCalls(){
+        Assumptions.assumeTrue(
+                Environment.shouldRunFullSuite(),
+                Environment.fullSuiteSkipReason());
         RestAssured.filters(new RequestLoggingFilter(), new ResponseLoggingFilter());
     }
 
@@ -126,6 +128,6 @@ public class BasicSimpleApiCrudCoverageTest {
     }
 
     private String apiPath(String postfix) {
-        return apiPathPrefix + "/simpleapi" + postfix;
+        return Environment.getBaseUri() + "/simpleapi" + postfix;
     }
 }
