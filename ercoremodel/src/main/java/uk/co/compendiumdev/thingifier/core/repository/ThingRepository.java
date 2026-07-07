@@ -24,15 +24,35 @@ public interface ThingRepository extends AutoCloseable {
 
     void refreshSchema(ERSchema schema);
 
+    /**
+     * @deprecated Compatibility snapshot access. Repository callers should use
+     * repository-native query and mutation methods instead.
+     */
     @Deprecated
     ERInstanceData getInstanceData();
 
+    /**
+     * @deprecated Compatibility collection creation. Repository implementations
+     * should initialize schema through {@link #initializeFrom(ERSchema)} or
+     * {@link #refreshSchema(ERSchema)}.
+     */
+    @Deprecated
     EntityInstanceCollection createInstanceCollectionFor(EntityDefinition definition);
 
     void createInstanceCollectionsFrom(ERSchema schema);
 
+    /**
+     * @deprecated Compatibility collection access. Use schema entity definitions
+     * with {@link #listInstances(EntityDefinition)} or reporting/export APIs.
+     */
+    @Deprecated
     List<EntityInstanceCollection> getAllInstanceCollections();
 
+    /**
+     * @deprecated Compatibility collection access. Use repository-native methods
+     * such as {@link #listInstances(EntityDefinition)} and
+     * {@link #findInstanceByQueryIdentifier(EntityDefinition, String)}.
+     */
     @Deprecated
     EntityInstanceCollection getInstanceCollectionForEntityNamed(String entityName);
 
@@ -79,6 +99,8 @@ public interface ThingRepository extends AutoCloseable {
     ValidationReport checkFieldsForUniqueNess(EntityInstance instance, boolean isAmendment);
 
     Map<String, AutoIncrement> countersFor(EntityDefinition entity);
+
+    void resetAutoIncrementCounter(EntityDefinition entity, String fieldName);
 
     void setNextIdCountersToAccomodate(EntityDefinition entity, List<NamedValue> fieldValues);
 

@@ -5,5 +5,10 @@ import uk.co.compendiumdev.thingifier.core.domain.instances.ERInstanceData;
 
 public interface DataPopulator {
 
+    /**
+     * @deprecated Implement {@link RepositoryDataPopulator} so population writes
+     * through the configured repository without hydrating a compatibility snapshot.
+     */
+    @Deprecated
     void populate(ERSchema schema, ERInstanceData database);
 }

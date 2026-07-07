@@ -126,6 +126,11 @@ public final class Thingifier implements AutoCloseable {
 
     // Instances
 
+    /**
+     * @deprecated Compatibility collection access. Use {@link #getRepository(String)}
+     * with schema entity definitions, or {@link #listThingInstancesNamed(String, String)}.
+     */
+    @Deprecated
     public List<EntityInstanceCollection> getThings(final String database) {
         return erm.getRepository(database).getAllInstanceCollections();
     }
@@ -135,6 +140,10 @@ public final class Thingifier implements AutoCloseable {
         return erm.getRepository(database).findEntityInstanceByGUID(thingGUID);
     }
 
+    /**
+     * @deprecated Compatibility collection access. Use {@link #getRepository(String)}
+     * or {@link #listThingInstancesNamed(String, String)}.
+     */
     @Deprecated
     public EntityInstanceCollection getThingInstancesNamed(final String aName, final String database) {
         return erm.getRepository(database).getInstanceCollectionForEntityNamed(aName);
@@ -162,6 +171,10 @@ public final class Thingifier implements AutoCloseable {
         return repository.findInstanceByFieldNameAndValue(definition, fieldName, fieldValue);
     }
 
+    /**
+     * @deprecated Compatibility collection access. Use {@link #getRepository(String)}
+     * with {@link EntityDefinition} resolved from {@link #getERmodel()}.
+     */
     @Deprecated
     public EntityInstanceCollection getInstancesForSingularOrPluralNamedEntity(final String term, final String database) {
         final EntityDefinition defn = erm.getSchema().getDefinitionWithSingularOrPluralNamed(term);
@@ -285,6 +298,11 @@ public final class Thingifier implements AutoCloseable {
         return this.initialParagraph;
     }
 
+    /**
+     * @deprecated Compatibility helper backed by legacy instance data. Prefer a
+     * repository/provider configured with the desired data source.
+     */
+    @Deprecated
     public Thingifier cloneWithDifferentData(final List<EntityInstance> instances) {
         return new Thingifier(  this.getERmodel().cloneWithDifferentData(instances),
                                                     this.apiConfig(),

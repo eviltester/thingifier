@@ -9,7 +9,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
+import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
 
 public class ChallengeThingifier {
 
@@ -49,19 +49,14 @@ public class ChallengeThingifier {
         this.challengeDefinitions = challengeDefinitions;
         // create all instances from the definitions, then when we want to
         // set all the status codes to the specific challenger status
+        ThingRepository repository = challengeThingifier.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME);
         for (ChallengeDefinitionData challenge : challengeDefinitions.getChallenges()) {
-            EntityInstanceCollection instances = challengeThingifier.getThingInstancesNamed(challengeDefn.getName(), EntityRelModel.DEFAULT_DATABASE_NAME);
-            createManagedInstance(instances).
+            EntityInstance instance = new EntityInstance(challengeDefn).
                     overrideValue("id", challenge.id).
                     setValue("name", challenge.name).
                     setValue("description", challenge.description);
+            repository.addInstance(instance);
         }
-    }
-
-    private EntityInstance createManagedInstance(EntityInstanceCollection entityStorage) {
-        EntityInstance instance = new EntityInstance(entityStorage.definition());
-        entityStorage.addInstance(instance);
-        return instance;
     }
 
     public void populateThingifierFromStatus(ChallengerAuthData challenger){
@@ -73,16 +68,17 @@ public class ChallengeThingifier {
             challengerToUse = new ChallengerAuthData(challengeDefinitions.getDefinedChallenges());
         }
 
+        ThingRepository repository = challengeThingifier.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME);
         for (ChallengeDefinitionData challenge : challengeDefinitions.getChallenges()) {
             final EntityInstance instance =
-                    challengeThingifier.getThingInstancesNamed(challengeDefn.getName(), EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .findInstanceByFieldNameAndValue("id", challenge.id);
+                    repository.findInstanceByFieldNameAndValue(challengeDefn, "id", challenge.id);
             instance.setValue("status",
                                         challengerToUse.statusOfChallenge(
                                                 challengeDefinitions.
                                                         getChallenge(challenge.name)
                                 ).toString()
             );
+            repository.updateInstance(instance);
         }
     }
 }

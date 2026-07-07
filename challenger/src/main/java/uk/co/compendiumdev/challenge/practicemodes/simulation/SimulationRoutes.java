@@ -5,18 +5,20 @@ import uk.co.compendiumdev.thingifier.api.docgen.ThingifierApiDocumentationDefn;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
-import uk.co.compendiumdev.thingifier.api.restapihandlers.RestApiGetHandler;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.application.httprouting.ThingifierAutoDocGenRouting;
 import uk.co.compendiumdev.thingifier.application.routehandlers.HttpApiRequestHandler;
 import uk.co.compendiumdev.thingifier.application.routehandlers.SparkApiRequestResponseHandler;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.validation.MaximumLengthValidationRule;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import uk.co.compendiumdev.thingifier.core.query.EntityInstanceListFilter;
+import uk.co.compendiumdev.thingifier.core.query.EntityInstanceListSorter;
+import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
+import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
 import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonThing;
 import uk.co.compendiumdev.thingifier.htmlgui.htmlgen.DefaultGUIHTML;
 import uk.co.compendiumdev.thingifier.spark.SimpleSparkRouteCreator;
@@ -32,7 +34,7 @@ public class SimulationRoutes {
     private JsonThing jsonThing;
     public Thingifier simulation;
     public EntityDefinition entityDefn;
-    private EntityInstanceCollection entityStorage;
+    private ThingRepository entityRepository;
 
     private ThingifierApiDocumentationDefn apiDocDefn;
     private ThingifierAutoDocGenRouting simulatorDocsRouting;
@@ -60,18 +62,14 @@ public class SimulationRoutes {
                         withValidation(new MaximumLengthValidationRule(200))
         );
 
-        entityStorage = simulation.getThingInstancesNamed("entity", EntityRelModel.DEFAULT_DATABASE_NAME);
+        entityRepository = simulation.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME);
 
         for(int id=1; id<=10; id++){
 
-            createManagedInstance(entityStorage).
-                //setValue("id", String.valueOf(id)).
-                setValue("name", "entity number " +id);
+            createManagedEntityNamed("entity number " + id);
         }
 
-        createManagedInstance(entityStorage).
-            //setValue("id", String.valueOf(id)).
-            setValue("name", "bob");
+        createManagedEntityNamed("bob");
 
         // this gives us access to the common http processing functions
         httpApi = new ThingifierHttpApi(simulation);
@@ -116,9 +114,9 @@ public class SimulationRoutes {
 
     }
 
-    private EntityInstance createManagedInstance(EntityInstanceCollection entityStorage) {
-        EntityInstance instance = new EntityInstance(entityStorage.definition());
-        entityStorage.addInstance(instance);
+    private EntityInstance createManagedEntityNamed(final String name) {
+        EntityInstance instance = new EntityInstance(entityDefn).setValue("name", name);
+        entityRepository.addInstance(instance);
         return instance;
     }
 
@@ -156,16 +154,20 @@ public class SimulationRoutes {
             idsToRemove.add(11);
 
             // process it because the request validated
-            List<EntityInstance> instances = new ArrayList();
-            for (EntityInstance possible : entityStorage.getInstances()) {
+            List<EntityInstance> instances = new ArrayList<>();
+            for (EntityInstance possible : entityRepository.listInstances(entityDefn)) {
                 if (!idsToRemove.contains(
                         possible.getFieldValue("id").asInteger())) {
                     instances.add(possible);
                 }
             }
 
-            Thingifier cloned = simulation.cloneWithDifferentData(instances);
-            return new RestApiGetHandler(cloned).handle("entities", anHttpApiRequest.getFilterableQueryParams(), anHttpApiRequest.getHeaders());
+            QueryFilterParams queryParams = anHttpApiRequest.getFilterableQueryParams();
+            instances = new EntityInstanceListFilter(queryParams).filter(instances);
+            instances = new EntityInstanceListSorter(queryParams).sort(instances);
+            return ApiResponse.success().
+                    returnInstanceCollection(instances).
+                    resultContainsType(entityDefn);
 
         };
 
@@ -187,7 +189,7 @@ public class SimulationRoutes {
 
             // process it because the request validated
             String id = anHttpApiRequest.getUrlParam(":id");
-            EntityInstance instance = entityStorage.findInstanceByPrimaryKey(id);
+            EntityInstance instance = entityRepository.findInstanceByPrimaryKey(entityDefn, id);
             if (instance == null) {
                 response = ApiResponse.error404("Could not find Entity with ID " + id);
             } else {
@@ -232,8 +234,8 @@ public class SimulationRoutes {
 
             return new SparkApiRequestResponseHandler(request, result, simulation).
                     usingHandler((anHttpApiRequest) -> {
-                        return ApiResponse.created(entityStorage.
-                                        findInstanceByPrimaryKey("11"),
+                        return ApiResponse.created(entityRepository.
+                                        findInstanceByPrimaryKey(entityDefn, "11"),
                                 simulation.apiConfig());
                     }).handle();
         });
@@ -245,7 +247,7 @@ public class SimulationRoutes {
             if (id.equals("11")) {
                 // we can create id 11
                 response = ApiResponse.created(
-                        entityStorage.findInstanceByPrimaryKey("11"),
+                        entityRepository.findInstanceByPrimaryKey(entityDefn, "11"),
                         simulation.apiConfig());
             } else {
                 if (id.equals("10")) {
@@ -254,7 +256,7 @@ public class SimulationRoutes {
                             overrideValue("id", "10").setValue("name", "eris");
                     response = ApiResponse.success().returnSingleInstance(fake);
                 } else {
-                    final EntityInstance instance = entityStorage.findInstanceByPrimaryKey(id);
+                    final EntityInstance instance = entityRepository.findInstanceByPrimaryKey(entityDefn, id);
                     if (instance == null) {
                         if (anHttpApiRequest.getVerb() == HttpApiRequest.VERB.POST) {
                             response = ApiResponse.error404("Could not find Entity with ID " + id);
@@ -293,7 +295,7 @@ public class SimulationRoutes {
                             // we can delete id 9
                             response = new ApiResponse(204);
                         } else {
-                            final EntityInstance instance = entityStorage.findInstanceByPrimaryKey(id);
+                            final EntityInstance instance = entityRepository.findInstanceByPrimaryKey(entityDefn, id);
                             if (instance == null) {
                                 response = ApiResponse.error404("Could not find Entity with ID " + id);
                             } else {

@@ -411,6 +411,15 @@ public class SqliteThingRepository extends InMemoryThingRepository {
     }
 
     @Override
+    public void resetAutoIncrementCounter(final EntityDefinition entity, final String fieldName) {
+        ensureSchemaReady();
+        runInTransaction(() -> {
+            super.resetAutoIncrementCounter(entity, fieldName);
+            persistCountersFor(entity);
+        });
+    }
+
+    @Override
     public void close() {
         closed = true;
         if (connection == null) {

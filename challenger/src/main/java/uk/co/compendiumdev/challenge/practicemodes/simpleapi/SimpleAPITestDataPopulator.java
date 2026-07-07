@@ -3,19 +3,12 @@ package uk.co.compendiumdev.challenge.practicemodes.simpleapi;
 import uk.co.compendiumdev.thingifier.core.domain.datapopulator.RepositoryDataPopulator;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.ERSchema;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ERInstanceData;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-import uk.co.compendiumdev.thingifier.core.repository.InMemoryThingRepository;
 import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
 
 import java.util.Random;
 
 public class SimpleAPITestDataPopulator implements RepositoryDataPopulator {
-
-    @Override
-    public void populate(final ERSchema schema, final ERInstanceData database) {
-        populate(schema, new InMemoryThingRepository("__simple-api-populator", database));
-    }
 
     @Override
     public void populate(final ERSchema schema, final ThingRepository repository) {

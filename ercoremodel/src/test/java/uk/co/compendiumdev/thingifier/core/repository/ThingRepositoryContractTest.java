@@ -569,6 +569,14 @@ public class ThingRepositoryContractTest {
         Assertions.assertEquals(0, repository.listInstances(taskDefinition).size());
         Assertions.assertEquals(0, repository.countInstances(projectDefinition));
         Assertions.assertEquals(0, repository.countInstances(taskDefinition));
+
+        repository.resetAutoIncrementCounter(projectDefinition, "id");
+
+        EntityInstance resetProject = new EntityInstance(projectDefinition);
+        resetProject.setValue("title", "Reset project");
+        repository.addInstance(resetProject);
+
+        Assertions.assertEquals("1", resetProject.getPrimaryKeyValue());
     }
 
     private void exerciseProviderIsolation(final ThingRepositoryProvider provider) {

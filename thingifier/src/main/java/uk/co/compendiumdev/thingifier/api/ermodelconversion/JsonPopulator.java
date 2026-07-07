@@ -8,9 +8,7 @@ import uk.co.compendiumdev.thingifier.core.domain.datapopulator.RepositoryDataPo
 import uk.co.compendiumdev.thingifier.core.domain.definitions.ERSchema;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ERInstanceData;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-import uk.co.compendiumdev.thingifier.core.repository.InMemoryThingRepository;
 import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 
@@ -26,11 +24,6 @@ public class JsonPopulator implements RepositoryDataPopulator {
 
     public JsonPopulator(String jsonDatabaseContents) {
         this.jsonData = jsonDatabaseContents;
-    }
-
-    @Override
-    public void populate(ERSchema schema, ERInstanceData database) {
-        populate(schema, new InMemoryThingRepository("__json-import", database));
     }
 
     @Override

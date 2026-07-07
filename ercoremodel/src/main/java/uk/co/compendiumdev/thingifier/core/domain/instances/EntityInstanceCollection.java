@@ -66,6 +66,8 @@ public final class EntityInstanceCollection {
 
     public EntityInstance addInstance(EntityInstance instance) {
 
+        ensureCountersInitialized();
+
         if(instance.getEntity()!=definition){
             throw new RuntimeException(String.format(
                     "ERROR: Tried to add a %s instance to the %s",

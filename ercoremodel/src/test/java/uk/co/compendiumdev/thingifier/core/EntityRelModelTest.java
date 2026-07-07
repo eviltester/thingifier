@@ -79,6 +79,24 @@ public class EntityRelModelTest {
     }
 
     @Test
+    public void repositoryCanAddExplicitAutoIncrementValueWhenFieldAddedAfterCollectionCreated() {
+
+        EntityRelModel erm = new EntityRelModel();
+        EntityDefinition defn = erm.createEntityDefinition("challenge", "challenges");
+        defn.addAsPrimaryKeyField(Field.is("id", FieldType.AUTO_INCREMENT));
+
+        ThingRepository repository = erm.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME);
+        EntityInstance explicitId = new EntityInstance(defn).overrideValue("id", "12");
+        repository.addInstance(explicitId);
+
+        EntityInstance nextId = new EntityInstance(defn);
+        repository.addInstance(nextId);
+
+        Assertions.assertEquals("12", explicitId.getPrimaryKeyValue());
+        Assertions.assertEquals("13", nextId.getPrimaryKeyValue());
+    }
+
+    @Test
     public void canFindAThingInAModel() {
 
         EntityRelModel erm = new EntityRelModel();

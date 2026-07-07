@@ -273,7 +273,7 @@ public class AuthRoutes {
                 ApiResponse response=null;
                 response = new ThingCreation(this.secretNoteStore).with(
                         new BodyParser(myRequest, List.of("secretnote")),
-                        this.secretNoteStore.getThingInstancesNamed("secretnote", EntityRelModel.DEFAULT_DATABASE_NAME), EntityRelModel.DEFAULT_DATABASE_NAME);
+                        this.secretNote, EntityRelModel.DEFAULT_DATABASE_NAME);
                 if (!response.isErrorResponse()) {
 
                     EntityInstance returnedInstance = response.getReturnedInstance();

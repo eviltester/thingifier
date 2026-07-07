@@ -186,6 +186,20 @@ public class InMemoryThingRepository implements ThingRepository {
     }
 
     @Override
+    public void resetAutoIncrementCounter(final EntityDefinition entity, final String fieldName) {
+        Field field = entity.getField(fieldName);
+        if (field == null || field.getType() != FieldType.AUTO_INCREMENT) {
+            throw new IllegalArgumentException(
+                    String.format("%s is not an auto-increment field on %s", fieldName, entity.getName()));
+        }
+
+        AutoIncrement counter = countersFor(entity).get(fieldName);
+        if (counter != null) {
+            counter.incrementToNextAbove(field.getDefaultValue().asInteger() - 1);
+        }
+    }
+
+    @Override
     public void setNextIdCountersToAccomodate(
             final EntityDefinition entity, final List<NamedValue> fieldValues) {
         getInstanceCollectionForEntityNamed(entity.getName()).

@@ -19,6 +19,11 @@ public class BodyCreationValidator {
         this.thingifier = thingifier;
     }
 
+    /**
+     * @deprecated Use {@link #validate(BodyParser, EntityDefinition)} to avoid
+     * requiring a compatibility collection.
+     */
+    @Deprecated
     public ValidationReport validate(final BodyParser bodyargs, final EntityInstanceCollection thing) {
         final EntityDefinition thingDefinition = thing.definition();
         return validate(bodyargs, thingDefinition);
@@ -42,6 +47,11 @@ public class BodyCreationValidator {
         return report;
     }
 
+    /**
+     * @deprecated Use {@link #areFieldsUnique(BodyParser, EntityDefinition, ThingRepository, List)}
+     * so uniqueness checks use the configured repository.
+     */
+    @Deprecated
     public ValidationReport areFieldsUnique(final BodyParser bodyargs, final EntityInstanceCollection thing,
                                             List<String> uniqueFields) {
         final ValidationReport report = new ValidationReport();

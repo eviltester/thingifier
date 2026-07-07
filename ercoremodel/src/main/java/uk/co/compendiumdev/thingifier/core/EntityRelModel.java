@@ -71,16 +71,29 @@ public class EntityRelModel implements AutoCloseable {
         return schema;
     }
 
-    // TODO: use of this is basically deprecated since is refers to the default database
-    @Deprecated() // we should use the parameterised version
+    /**
+     * @deprecated Compatibility snapshot access. Use {@link #getRepository(String)}
+     * and repository-native reads/writes instead.
+     */
+    @Deprecated
     public ERInstanceData getInstanceData(){
         return getInstanceData(DEFAULT_DATABASE_NAME);
     }
 
+    /**
+     * @deprecated This returns compatibility instance data, not JSON. Use
+     * {@link #exportInstanceDataAsJson(String)} for JSON export.
+     */
+    @Deprecated
     public ERInstanceData getInstanceDataAsJson(){
         return getInstanceData(DEFAULT_DATABASE_NAME);
     }
 
+    /**
+     * @deprecated Compatibility snapshot access. Use {@link #getRepository(String)}
+     * and repository-native reads/writes instead.
+     */
+    @Deprecated
     public ERInstanceData getInstanceData(String databaseKey) {
         ThingRepository repository = repositories.getRepository(databaseKey);
         if(repository==null){

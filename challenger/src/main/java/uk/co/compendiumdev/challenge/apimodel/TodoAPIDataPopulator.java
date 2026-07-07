@@ -3,17 +3,10 @@ package uk.co.compendiumdev.challenge.apimodel;
 import uk.co.compendiumdev.thingifier.core.domain.datapopulator.RepositoryDataPopulator;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.ERSchema;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ERInstanceData;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-import uk.co.compendiumdev.thingifier.core.repository.InMemoryThingRepository;
 import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
 
 public class TodoAPIDataPopulator implements RepositoryDataPopulator {
-
-    @Override
-    public void populate(final ERSchema schema, final ERInstanceData database) {
-        populate(schema, new InMemoryThingRepository("__todo-populator", database));
-    }
 
     @Override
     public void populate(final ERSchema schema, final ThingRepository repository) {

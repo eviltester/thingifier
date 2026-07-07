@@ -21,6 +21,11 @@ public class ThingCreation {
         this.thingifier = thingifier;
     }
 
+    /**
+     * @deprecated Use {@link #with(BodyParser, EntityDefinition, String)} so
+     * creation can stay repository-native.
+     */
+    @Deprecated
     public ApiResponse with(final BodyParser bodyargs, final EntityInstanceCollection thing, final String database) {
         return with(bodyargs, thing.definition(), database);
     }
@@ -47,6 +52,11 @@ public class ThingCreation {
     }
 
     // create with GUID and IDs is normally associated with PUT or 'insert'
+    /**
+     * @deprecated Use {@link #withPrimaryKey(String, BodyParser, EntityDefinition, String)}
+     * so creation can stay repository-native.
+     */
+    @Deprecated
     public ApiResponse withPrimaryKey(final String primaryKey, final BodyParser bodyargs,
                                       final EntityInstanceCollection thing, final String database) {
         return withPrimaryKey(primaryKey, bodyargs, thing.definition(), database);
