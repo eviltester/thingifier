@@ -13,8 +13,7 @@ import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollec
 import java.util.List;
 
 /**
- * Legacy compatibility coverage for {@link SimpleQuery}. Runtime API paths
- * should use repository-backed query resolution.
+ * Repository-backed URL query coverage for API-style entity reads.
  */
 public class QueryFiltersIdTest {
 
@@ -45,7 +44,7 @@ public class QueryFiltersIdTest {
         params.put("id", ">=3");
         params.put("sortBy", "+id");
 
-        SimpleQuery queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
+        RepositoryUrlQuery queryResults = RepositoryUrlQueryTestSupport.query(erModel, "things").
                 performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
@@ -62,7 +61,7 @@ public class QueryFiltersIdTest {
         params.put("id", "<3");
         params.put("sortBy", "-id");
 
-        SimpleQuery queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
+        RepositoryUrlQuery queryResults = RepositoryUrlQueryTestSupport.query(erModel, "things").
                 performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");

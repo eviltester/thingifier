@@ -253,6 +253,14 @@ public final class Thingifier implements AutoCloseable {
         return erm.getRepository(database);
     }
 
+    public String exportDataAsJson(final String database) {
+        return erm.exportInstanceDataAsJson(database);
+    }
+
+    public String reportAsMarkdown(final String database) {
+        return erm.reportAsMarkdown(database);
+    }
+
     @Override
     public void close() {
         erm.close();

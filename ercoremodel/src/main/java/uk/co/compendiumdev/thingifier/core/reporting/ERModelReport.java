@@ -5,27 +5,35 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.ERSchema;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
+import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
 
 public class ERModelReport {
-    private final EntityRelModel erModel;
+    private final ERSchema schema;
+    private final ThingRepository repository;
 
     public ERModelReport(final EntityRelModel erModel) {
-        this.erModel = erModel;
+        this(erModel.getSchema(), erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME));
+    }
+
+    public ERModelReport(
+            final ERSchema schema,
+            final ThingRepository repository) {
+        this.schema = schema;
+        this.repository = repository;
     }
 
     public String asMarkdown() {
         StringBuilder output = new StringBuilder();
 
-        output.append(schemaAsMarkdown(erModel.getSchema()));
+        output.append(schemaAsMarkdown(schema));
 
         output.append("\n# Instances\n");
 
-        for (EntityInstanceCollection instances : erModel.getInstanceData().getAllInstanceCollections()) {
+        for (EntityDefinition entity : schema.getEntityDefinitions()) {
 
-            output.append("## Of " + instances.definition().getName() + "\n");
+            output.append("## Of " + entity.getName() + "\n");
 
-            for (EntityInstance anInstance : instances.getInstances()) {
+            for (EntityInstance anInstance : repository.listInstances(entity)) {
                 output.append(anInstance);
             }
         }

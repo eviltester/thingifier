@@ -16,8 +16,7 @@ import java.util.List;
 import static uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType.STRING;
 
 /**
- * Legacy compatibility coverage for {@link SimpleQuery}. Runtime API paths
- * should use repository-backed query resolution.
+ * Repository-backed URL query coverage for API-style entity reads.
  */
 public class TodoManagerQueryEngineTest {
 
@@ -84,7 +83,7 @@ public class TodoManagerQueryEngineTest {
     public void canGetListOfEntityInstancesViaName(){
         // to do
 
-        final SimpleQuery query = new SimpleQuery(todoManager.getSchema(), todoManager.getInstanceData(), "todo");
+        final RepositoryUrlQuery query = RepositoryUrlQueryTestSupport.query(todoManager, "todo");
 
         List<EntityInstance> queryResults = query.performQuery().getListEntityInstances();
 
@@ -99,7 +98,7 @@ public class TodoManagerQueryEngineTest {
     @Test
     public void canGetListOfEntityInstancesViaPluralName(){
         // todos
-        final SimpleQuery query = new SimpleQuery(todoManager.getSchema(), todoManager.getInstanceData(), "todos");
+        final RepositoryUrlQuery query = RepositoryUrlQueryTestSupport.query(todoManager, "todos");
 
         List<EntityInstance> queryResults = query.performQuery().getListEntityInstances();
 
@@ -117,7 +116,7 @@ public class TodoManagerQueryEngineTest {
 
         // to do/_GUID_
 
-        final SimpleQuery query = new SimpleQuery(todoManager.getSchema(), todoManager.getInstanceData(), "todo/" + paperwork.getPrimaryKeyValue());
+        final RepositoryUrlQuery query = RepositoryUrlQueryTestSupport.query(todoManager, "todo/" + paperwork.getPrimaryKeyValue());
 
         queryResults = query.performQuery().getListEntityInstances();
 
@@ -136,11 +135,12 @@ public class TodoManagerQueryEngineTest {
 
         // to do/_GUID_
 
-        final SimpleQuery query = new SimpleQuery(todoManager.getSchema(), todoManager.getInstanceData(), "todos/" + paperwork.getPrimaryKeyValue());
+        final RepositoryUrlQuery query = RepositoryUrlQueryTestSupport.query(todoManager, "todos/" + paperwork.getPrimaryKeyValue());
 
         queryResults = query.performQuery().getListEntityInstances();
 
-        Assertions.assertTrue(query.isResultACollection()); // plural should always report itself as a collection even on instance
+        Assertions.assertTrue(query.wasQueryIntendedToMatchAnInstance());
+        Assertions.assertFalse(query.isResultACollection());
 
         Assertions.assertEquals(1, queryResults.size());
         Assertions.assertTrue(queryResults.contains(paperwork));
@@ -156,13 +156,14 @@ public class TodoManagerQueryEngineTest {
 
         // to do/_GUID_
 
-        final SimpleQuery query = new SimpleQuery(todoManager.getSchema(), todoManager.getInstanceData(), "todo/" + paperwork.getPrimaryKeyValue() + "bob");
+        final RepositoryUrlQuery query = RepositoryUrlQueryTestSupport.query(todoManager, "todo/" + paperwork.getPrimaryKeyValue() + "bob");
 
         queryResults = query.performQuery().getListEntityInstances();
 
-        // even though it doesn not match anything I should know what type of thing this empty collection is
-        Assertions.assertTrue(query.isResultACollection());
-        Assertions.assertEquals(todoManager.getInstanceData().getInstanceCollectionForEntityNamed("todo").definition(), query.resultContainsDefn());
+        // even though it does not match anything I should know what type of thing this empty collection is
+        Assertions.assertTrue(query.wasQueryIntendedToMatchAnInstance());
+        Assertions.assertTrue(query.lastMatchWasNothing());
+        Assertions.assertEquals(todoManager.getSchema().getEntityDefinitionNamed("todo"), query.resultContainsDefn());
 
         Assertions.assertEquals(0, queryResults.size());
     }
@@ -174,13 +175,14 @@ public class TodoManagerQueryEngineTest {
 
         // to do/_GUID_
 
-        final SimpleQuery query = new SimpleQuery(todoManager.getSchema(), todoManager.getInstanceData(), "todos/" + paperwork.getPrimaryKeyValue() + "bob");
+        final RepositoryUrlQuery query = RepositoryUrlQueryTestSupport.query(todoManager, "todos/" + paperwork.getPrimaryKeyValue() + "bob");
 
         queryResults = query.performQuery().getListEntityInstances();
 
-        // even though it doesn not match anything I should know what type of thing this empty collection is
-        Assertions.assertTrue(query.isResultACollection());
-        Assertions.assertEquals(todoManager.getInstanceData().getInstanceCollectionForEntityNamed("todo").definition(), query.resultContainsDefn());
+        // even though it does not match anything I should know what type of thing this empty collection is
+        Assertions.assertTrue(query.wasQueryIntendedToMatchAnInstance());
+        Assertions.assertTrue(query.lastMatchWasNothing());
+        Assertions.assertEquals(todoManager.getSchema().getEntityDefinitionNamed("todo"), query.resultContainsDefn());
 
         Assertions.assertEquals(0, queryResults.size());
 
@@ -206,7 +208,7 @@ public class TodoManagerQueryEngineTest {
         // match on relationships
         // project/_GUID_/tasks
 
-        queryResults = new SimpleQuery(todoManager.getSchema(), todoManager.getInstanceData(), String.format("project/%s/tasks", officeWork.getPrimaryKeyValue())).performQuery().getListEntityInstances();
+        queryResults = RepositoryUrlQueryTestSupport.query(todoManager, String.format("project/%s/tasks", officeWork.getPrimaryKeyValue())).performQuery().getListEntityInstances();
 
         Assertions.assertEquals(2, queryResults.size());
         Assertions.assertTrue(queryResults.contains(paperwork));
@@ -215,33 +217,27 @@ public class TodoManagerQueryEngineTest {
 
         // should be able to get projects for a task
 
-        queryResults = new SimpleQuery(todoManager.getSchema(), todoManager.getInstanceData(), String.format("todo/%s/task-of", paperwork.getPrimaryKeyValue())).performQuery().getListEntityInstances();
+        queryResults = RepositoryUrlQueryTestSupport.query(todoManager, String.format("todo/%s/task-of", paperwork.getPrimaryKeyValue())).performQuery().getListEntityInstances();
         Assertions.assertEquals(1, queryResults.size());
         Assertions.assertTrue(queryResults.contains(officeWork));
 
 
-        // match on entity types
-        // project/_GUID_/to do
+        // Repository URL query handles explicit relationship names, not legacy
+        // entity-type traversal or multi-hop guesses.
+        Assertions.assertFalse(RepositoryUrlQuery.canHandle(
+                todoManager.getSchema(),
+                String.format("project/%s/todo", officeWork.getPrimaryKeyValue())));
 
-        queryResults = new SimpleQuery(todoManager.getSchema(), todoManager.getInstanceData(), String.format("project/%s/todo", officeWork.getPrimaryKeyValue())).performQuery().getListEntityInstances();
-
-        Assertions.assertEquals(2, queryResults.size());
-        Assertions.assertTrue(queryResults.contains(paperwork));
-        Assertions.assertTrue(queryResults.contains(filework));
-
-        // project/_GUID_/to do/category
-
-        queryResults = new SimpleQuery(todoManager.getSchema(), todoManager.getInstanceData(), String.format("project/%s/todo/category", officeWork.getPrimaryKeyValue())).performQuery().getListEntityInstances();
-
-        Assertions.assertEquals(1, queryResults.size());
-        Assertions.assertTrue(queryResults.contains(officeCategory));
+        Assertions.assertFalse(RepositoryUrlQuery.canHandle(
+                todoManager.getSchema(),
+                String.format("project/%s/todo/category", officeWork.getPrimaryKeyValue())));
 
         // invalid query should match nothing there is no entity called task
         // project/_GUID_/task
 
-        queryResults = new SimpleQuery(todoManager.getSchema(), todoManager.getInstanceData(), String.format("project/%s/task", officeWork.getPrimaryKeyValue())).performQuery().getListEntityInstances();
-
-        Assertions.assertEquals(0, queryResults.size());
+        Assertions.assertFalse(RepositoryUrlQuery.canHandle(
+                todoManager.getSchema(),
+                String.format("project/%s/task", officeWork.getPrimaryKeyValue())));
 
     }
 

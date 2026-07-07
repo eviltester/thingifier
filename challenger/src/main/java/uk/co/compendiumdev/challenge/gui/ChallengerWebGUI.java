@@ -314,7 +314,8 @@ public class ChallengerWebGUI {
                 //reportOn = new ChallengesPayload(challengeDefinitions, challengers.SINGLE_PLAYER).getAsChallenges();
                 String json = "{}";
                 if(challengers.getErModel().getDatabaseNames().contains(EntityRelModel.DEFAULT_DATABASE_NAME)){
-                    json = challengers.getErModel().getInstanceData(EntityRelModel.DEFAULT_DATABASE_NAME).asJson();
+                    json = challengers.getErModel().
+                            exportInstanceDataAsJson(EntityRelModel.DEFAULT_DATABASE_NAME);
                 }
                 html.append(outputChallengeDataAsJS(challengers.SINGLE_PLAYER, json));
                 html.append(renderChallengeData(challengeDefinitions, challengers.SINGLE_PLAYER));
@@ -413,7 +414,7 @@ public class ChallengerWebGUI {
 
                 String json = "{}";
                 if(challengers.getErModel().getDatabaseNames().contains(xChallenger)){
-                    json = challengers.getErModel().getInstanceData(xChallenger).asJson();
+                    json = challengers.getErModel().exportInstanceDataAsJson(xChallenger);
                 }
                 html.append(outputChallengeDataAsJS(challenger, json));
 

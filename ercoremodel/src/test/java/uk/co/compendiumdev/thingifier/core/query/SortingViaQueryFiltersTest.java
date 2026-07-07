@@ -12,8 +12,7 @@ import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollec
 import java.util.List;
 
 /**
- * Legacy compatibility coverage for {@link SimpleQuery}. Runtime API paths
- * should use repository-backed query resolution.
+ * Repository-backed URL query coverage for API-style entity reads.
  */
 public class SortingViaQueryFiltersTest {
 
@@ -49,7 +48,7 @@ public class SortingViaQueryFiltersTest {
         QueryFilterParams params = new QueryFilterParams();
         params.put("sortBy", "-int");
 
-        SimpleQuery ascSortedResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
+        RepositoryUrlQuery ascSortedResults = RepositoryUrlQueryTestSupport.query(erModel, "things").
                 performQuery(params);
 
         Assertions.assertTrue(ascSortedResults.isResultACollection(), "result should be a collection");
@@ -63,7 +62,7 @@ public class SortingViaQueryFiltersTest {
         params = new QueryFilterParams();
         params.put("sortBy", "+int");
 
-        SimpleQuery descSortedResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
+        RepositoryUrlQuery descSortedResults = RepositoryUrlQueryTestSupport.query(erModel, "things").
                 performQuery(params);
 
         final List<EntityInstance> descInstances = descSortedResults.getListEntityInstances();
@@ -76,7 +75,7 @@ public class SortingViaQueryFiltersTest {
         params = new QueryFilterParams();
         params.put("sortBy", "int");
 
-        SimpleQuery defaultSortedResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
+        RepositoryUrlQuery defaultSortedResults = RepositoryUrlQueryTestSupport.query(erModel, "things").
                 performQuery(params);
 
         final List<EntityInstance> defaultSortedInstances = defaultSortedResults.getListEntityInstances();
@@ -104,7 +103,7 @@ public class SortingViaQueryFiltersTest {
         QueryFilterParams params = new QueryFilterParams();
         params.put("sortBy", "-truefalse");
 
-        SimpleQuery ascSortedResults = new SimpleQuery(aThingifier.getSchema(), aThingifier.getInstanceData(), "things").
+        RepositoryUrlQuery ascSortedResults = RepositoryUrlQueryTestSupport.query(aThingifier, "things").
                                         performQuery(params);
 
         Assertions.assertTrue(ascSortedResults.isResultACollection(), "result should be a collection");
@@ -118,7 +117,7 @@ public class SortingViaQueryFiltersTest {
         params = new QueryFilterParams();
         params.put("sortBy", "+truefalse");
 
-        SimpleQuery descSortedResults = new SimpleQuery(aThingifier.getSchema(), aThingifier.getInstanceData(), "things").
+        RepositoryUrlQuery descSortedResults = RepositoryUrlQueryTestSupport.query(aThingifier, "things").
                 performQuery(params);
 
         final List<EntityInstance> descInstances = descSortedResults.getListEntityInstances();
@@ -130,7 +129,7 @@ public class SortingViaQueryFiltersTest {
         params = new QueryFilterParams();
         params.put("sortBy", "truefalse");
 
-        SimpleQuery defaultSortedResults = new SimpleQuery(aThingifier.getSchema(), aThingifier.getInstanceData(), "things").
+        RepositoryUrlQuery defaultSortedResults = RepositoryUrlQueryTestSupport.query(aThingifier, "things").
                 performQuery(params);
 
         final List<EntityInstance> defaultSortedInstances = defaultSortedResults.getListEntityInstances();

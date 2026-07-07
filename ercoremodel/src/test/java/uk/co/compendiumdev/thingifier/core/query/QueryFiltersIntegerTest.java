@@ -13,8 +13,7 @@ import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollec
 import java.util.List;
 
 /**
- * Legacy compatibility coverage for {@link SimpleQuery}. Runtime API paths
- * should use repository-backed query resolution.
+ * Repository-backed URL query coverage for API-style entity reads.
  */
 public class QueryFiltersIntegerTest {
 
@@ -47,7 +46,7 @@ public class QueryFiltersIntegerTest {
         QueryFilterParams params = new QueryFilterParams();
         params.put("int", "1");
 
-        SimpleQuery queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").performQuery(params);
+        RepositoryUrlQuery queryResults = RepositoryUrlQueryTestSupport.query(erModel, "things").performQuery(params);
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
         List<EntityInstance> instances = queryResults.getListEntityInstances();
         Assertions.assertEquals(1, instances.size(), "expected 1 value");
@@ -61,7 +60,7 @@ public class QueryFiltersIntegerTest {
         params.put("int", "!1");
         params.put("sortby", "+int");
 
-        SimpleQuery queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").performQuery(params);
+        RepositoryUrlQuery queryResults = RepositoryUrlQueryTestSupport.query(erModel, "things").performQuery(params);
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
         List<EntityInstance> instances = queryResults.getListEntityInstances();
         Assertions.assertEquals(3, instances.size(), "expected 3 value");
@@ -79,7 +78,7 @@ public class QueryFiltersIntegerTest {
         params.put("int", "!3");    // and not equal to 3
         params.put("sortby", "+int");
 
-        SimpleQuery queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").performQuery(params);
+        RepositoryUrlQuery queryResults = RepositoryUrlQueryTestSupport.query(erModel, "things").performQuery(params);
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
         List<EntityInstance> instances = queryResults.getListEntityInstances();
         Assertions.assertEquals(2, instances.size(), "expected 2 value");
@@ -93,7 +92,7 @@ public class QueryFiltersIntegerTest {
         params.put("int", ">1");
         params.put("sortby", "+int");
 
-        SimpleQuery queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").performQuery(params);
+        RepositoryUrlQuery queryResults = RepositoryUrlQueryTestSupport.query(erModel, "things").performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
         List<EntityInstance> instances = queryResults.getListEntityInstances();
@@ -109,7 +108,7 @@ public class QueryFiltersIntegerTest {
         params.put("int", "<2");
         params.put("sortby", "+int");
 
-        SimpleQuery queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").performQuery(params);
+        RepositoryUrlQuery queryResults = RepositoryUrlQueryTestSupport.query(erModel, "things").performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
         List<EntityInstance> instances = queryResults.getListEntityInstances();
@@ -123,7 +122,7 @@ public class QueryFiltersIntegerTest {
         params.put("int", "<1");
         params.put("sortby", "+int");
 
-        SimpleQuery queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").performQuery(params);
+        RepositoryUrlQuery queryResults = RepositoryUrlQueryTestSupport.query(erModel, "things").performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
         List<EntityInstance> instances = queryResults.getListEntityInstances();
@@ -136,7 +135,7 @@ public class QueryFiltersIntegerTest {
         params.put("int", ">=3");
         params.put("sortby", "+int");
 
-        SimpleQuery queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
+        RepositoryUrlQuery queryResults = RepositoryUrlQueryTestSupport.query(erModel, "things").
                 performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
@@ -152,7 +151,7 @@ public class QueryFiltersIntegerTest {
         params.put("int", "<=3");
         params.put("sortby", "+int");
 
-        SimpleQuery queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
+        RepositoryUrlQuery queryResults = RepositoryUrlQueryTestSupport.query(erModel, "things").
                 performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
@@ -169,7 +168,7 @@ public class QueryFiltersIntegerTest {
         params.put("int", "<3");
         params.put("sortby", "-int");
 
-        SimpleQuery queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
+        RepositoryUrlQuery queryResults = RepositoryUrlQueryTestSupport.query(erModel, "things").
                 performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
@@ -185,7 +184,7 @@ public class QueryFiltersIntegerTest {
         QueryFilterParams params = new QueryFilterParams();
         params.put("sortby", "-int");
 
-        SimpleQuery queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
+        RepositoryUrlQuery queryResults = RepositoryUrlQueryTestSupport.query(erModel, "things").
                 performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
@@ -202,7 +201,7 @@ public class QueryFiltersIntegerTest {
         QueryFilterParams params = new QueryFilterParams();
         params.put("sortby", "+int");
 
-        SimpleQuery queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
+        RepositoryUrlQuery queryResults = RepositoryUrlQueryTestSupport.query(erModel, "things").
                 performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
@@ -221,7 +220,7 @@ public class QueryFiltersIntegerTest {
         params.put("int", "~=[1,2]");
         params.put("sortby", "+int");
 
-        SimpleQuery queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
+        RepositoryUrlQuery queryResults = RepositoryUrlQueryTestSupport.query(erModel, "things").
                 performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");

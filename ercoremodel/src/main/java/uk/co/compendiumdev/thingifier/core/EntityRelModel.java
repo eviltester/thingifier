@@ -88,6 +88,22 @@ public class EntityRelModel implements AutoCloseable {
         return repository.getInstanceData();
     }
 
+    public String exportInstanceDataAsJson(final String databaseKey) {
+        ThingRepository repository = repositories.getRepository(databaseKey);
+        if (repository == null) {
+            return "{}";
+        }
+        return repository.exportDataAsJson(schema);
+    }
+
+    public String reportAsMarkdown(final String databaseKey) {
+        ThingRepository repository = repositories.getRepository(databaseKey);
+        if (repository == null) {
+            return "";
+        }
+        return repository.reportAsMarkdown(schema);
+    }
+
     public Set<String> getDatabaseNames(){
         return repositories.getRepositoryNames();
     }

@@ -13,8 +13,7 @@ import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollec
 import java.util.List;
 
 /**
- * Legacy compatibility coverage for {@link SimpleQuery}. Runtime API paths
- * should use repository-backed query resolution.
+ * Repository-backed URL query coverage for API-style entity reads.
  */
 public class QueryFiltersStringTest {
 
@@ -42,7 +41,7 @@ public class QueryFiltersStringTest {
         QueryFilterParams params = new QueryFilterParams();
         params.put("sortBy", "+string");
 
-        SimpleQuery queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
+        RepositoryUrlQuery queryResults = RepositoryUrlQueryTestSupport.query(erModel, "things").
                 performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
@@ -60,7 +59,7 @@ public class QueryFiltersStringTest {
         QueryFilterParams params = new QueryFilterParams();
         params.put("sortBy", "-string");
 
-        SimpleQuery queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
+        RepositoryUrlQuery queryResults = RepositoryUrlQueryTestSupport.query(erModel, "things").
                 performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
@@ -79,7 +78,7 @@ public class QueryFiltersStringTest {
         QueryFilterParams params = new QueryFilterParams();
         params.put("string", "=one");
 
-        SimpleQuery queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
+        RepositoryUrlQuery queryResults = RepositoryUrlQueryTestSupport.query(erModel, "things").
                 performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
@@ -95,7 +94,7 @@ public class QueryFiltersStringTest {
         params.put("string", "~=.*o.*");
         params.put("sortBy", "+string");
 
-        SimpleQuery queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
+        RepositoryUrlQuery queryResults = RepositoryUrlQueryTestSupport.query(erModel, "things").
                 performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
@@ -114,7 +113,7 @@ public class QueryFiltersStringTest {
         params.put("string", "~=.*o.*");
         params.put("sortBy", "-string");
 
-        SimpleQuery queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
+        RepositoryUrlQuery queryResults = RepositoryUrlQueryTestSupport.query(erModel, "things").
                 performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
@@ -134,7 +133,7 @@ public class QueryFiltersStringTest {
         params.put("string", "*=*e");
         params.put("sortBy", "+string");
 
-        SimpleQuery queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
+        RepositoryUrlQuery queryResults = RepositoryUrlQueryTestSupport.query(erModel, "things").
                 performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
@@ -152,7 +151,7 @@ public class QueryFiltersStringTest {
         params.put("string", "*=t*");
         params.put("sortBy", "+string");
 
-        SimpleQuery queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
+        RepositoryUrlQuery queryResults = RepositoryUrlQueryTestSupport.query(erModel, "things").
                 performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
@@ -170,7 +169,7 @@ public class QueryFiltersStringTest {
         params.put("string", "*=t?*");
         params.put("sortBy", "+string");
 
-        SimpleQuery queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
+        RepositoryUrlQuery queryResults = RepositoryUrlQueryTestSupport.query(erModel, "things").
                 performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
@@ -188,7 +187,7 @@ public class QueryFiltersStringTest {
         params.put("string", "*=t?o");
         params.put("sortBy", "+string");
 
-        SimpleQuery queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
+        RepositoryUrlQuery queryResults = RepositoryUrlQueryTestSupport.query(erModel, "things").
                 performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");

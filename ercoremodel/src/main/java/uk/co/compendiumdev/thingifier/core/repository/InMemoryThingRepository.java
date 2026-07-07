@@ -123,6 +123,15 @@ public class InMemoryThingRepository implements ThingRepository {
     }
 
     @Override
+    public int countInstances(final EntityDefinition entity) {
+        EntityInstanceCollection collection = getInstanceCollectionForEntityNamed(entity.getName());
+        if (collection == null) {
+            return 0;
+        }
+        return collection.countInstances();
+    }
+
+    @Override
     public EntityInstance findInstanceByQueryIdentifier(
             final EntityDefinition entity, final String identifier) {
         EntityInstanceCollection collection = getInstanceCollectionForEntityNamed(entity.getName());

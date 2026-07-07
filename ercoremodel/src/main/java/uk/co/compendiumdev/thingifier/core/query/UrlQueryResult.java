@@ -5,7 +5,7 @@ import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
 import java.util.List;
 
-public interface QueryResult {
+public interface UrlQueryResult {
 
     boolean wasQueryIntendedToMatchAnInstance();
 

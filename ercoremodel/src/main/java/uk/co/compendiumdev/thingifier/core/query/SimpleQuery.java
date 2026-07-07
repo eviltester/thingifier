@@ -32,7 +32,7 @@ import static uk.co.compendiumdev.thingifier.core.query.SimpleQuery.LastMatchVal
  * Keep this class only for compatibility/fallback paths until replacement is complete.
  */
 @Deprecated
-public final class SimpleQuery implements QueryResult {
+public final class SimpleQuery implements UrlQueryResult {
 
     private final ERInstanceData database;
     private final ERSchema schema; // all the definitions

@@ -13,8 +13,7 @@ import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import java.util.List;
 
 /**
- * Legacy compatibility coverage for {@link SimpleQuery}. Runtime API paths
- * should use repository-backed query resolution.
+ * Repository-backed URL query coverage for API-style entity reads.
  */
 public class QueryFiltersBooleanTest {
 
@@ -22,7 +21,7 @@ public class QueryFiltersBooleanTest {
     // e.g https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/
     // https://softwareengineering.stackexchange.com/questions/233164/how-do-searches-fit-into-a-restful-interface
 
-    // TODO: risk that Spark does not pass in args in a way that flow through to simple query
+    // TODO: risk that Spark does not pass in args in a way that flow through to repository URL query
     //       so test this at an HTTP level as well
 
     EntityRelModel erModel;
@@ -49,7 +48,7 @@ public class QueryFiltersBooleanTest {
         QueryFilterParams params = new QueryFilterParams();
         params.put("truefalse", "true");
 
-        SimpleQuery queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
+        RepositoryUrlQuery queryResults = RepositoryUrlQueryTestSupport.query(erModel, "things").
                 performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
@@ -63,7 +62,7 @@ public class QueryFiltersBooleanTest {
         QueryFilterParams params = new QueryFilterParams();
         params.put("truefalse", "false");
 
-        SimpleQuery queryResults = queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
+        RepositoryUrlQuery queryResults = RepositoryUrlQueryTestSupport.query(erModel, "things").
                 performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
@@ -76,7 +75,7 @@ public class QueryFiltersBooleanTest {
         QueryFilterParams params = new QueryFilterParams();
         params.put("truefalse", "!false");
 
-        SimpleQuery queryResults = queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
+        RepositoryUrlQuery queryResults = RepositoryUrlQueryTestSupport.query(erModel, "things").
                 performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
@@ -89,7 +88,7 @@ public class QueryFiltersBooleanTest {
         QueryFilterParams params = new QueryFilterParams();
         params.put("truefalse", "!true");
 
-        SimpleQuery queryResults = queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
+        RepositoryUrlQuery queryResults = RepositoryUrlQueryTestSupport.query(erModel, "things").
                 performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
@@ -102,7 +101,7 @@ public class QueryFiltersBooleanTest {
         QueryFilterParams params = new QueryFilterParams();
         params.put("sortBy", "+truefalse");
 
-        SimpleQuery queryResults = queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
+        RepositoryUrlQuery queryResults = RepositoryUrlQueryTestSupport.query(erModel, "things").
                 performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
@@ -120,7 +119,7 @@ public class QueryFiltersBooleanTest {
         QueryFilterParams params = new QueryFilterParams();
         params.put("sortBy", "-truefalse");
 
-        SimpleQuery queryResults = queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
+        RepositoryUrlQuery queryResults = RepositoryUrlQueryTestSupport.query(erModel, "things").
                 performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");

@@ -12,7 +12,6 @@ import uk.co.compendiumdev.thingifier.api.response.ApiResponseAsJson;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponseError;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ERInstanceData;
 import uk.co.compendiumdev.thingifier.spark.SimpleSparkRouteCreator;
 
 import java.util.*;
@@ -294,14 +293,13 @@ public class ChallengerTrackingRoutes {
                 challenger.touch();
                 result.header("content-type", "application/json");
 
-                ERInstanceData instanceData = challengers.getErModel().getInstanceData(xChallengerGuid);
-                if(instanceData==null){
+                if(challengers.getErModel().getRepository(xChallengerGuid)==null){
                     result.status(404);
                     return ApiResponseAsJson.getErrorMessageJson("Challenger database not instantiated " + xChallengerGuid);
                 }
 
                 result.status(200);
-                return challengers.getErModel().getInstanceData(xChallengerGuid).asJson();
+                return challengers.getErModel().exportInstanceDataAsJson(xChallengerGuid);
             }else{
                 result.status(404);
                 return ApiResponseAsJson.getErrorMessageJson("Challenger not found " + xChallengerGuid);

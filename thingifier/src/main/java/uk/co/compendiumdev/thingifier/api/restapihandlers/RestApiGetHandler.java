@@ -4,9 +4,9 @@ import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-import uk.co.compendiumdev.thingifier.core.query.QueryResult;
+import uk.co.compendiumdev.thingifier.core.query.UrlQueryResult;
 import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
-import uk.co.compendiumdev.thingifier.core.query.RepositoryBackedSimpleQuery;
+import uk.co.compendiumdev.thingifier.core.query.RepositoryUrlQuery;
 
 import java.util.List;
 
@@ -29,12 +29,12 @@ public class RestApiGetHandler {
 
         String instanceDatabaseName = SessionHeaderParser.getDatabaseNameFromHeaderValue(requestHeaders);
 
-        QueryResult queryResults;
+        UrlQueryResult queryResults;
         boolean allowFiltering = thingifier.apiConfig().forParams().willAllowFilteringThroughUrlParams();
         QueryFilterParams effectiveQueryParams = allowFiltering ? queryParams : new QueryFilterParams();
 
-        if (RepositoryBackedSimpleQuery.canHandle(thingifier.getERmodel().getSchema(), url)) {
-            queryResults = new RepositoryBackedSimpleQuery(
+        if (RepositoryUrlQuery.canHandle(thingifier.getERmodel().getSchema(), url)) {
+            queryResults = new RepositoryUrlQuery(
                     thingifier.getERmodel().getSchema(),
                     thingifier.getRepository(instanceDatabaseName),
                     url).

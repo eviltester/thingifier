@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 import uk.co.compendiumdev.challenge.CHALLENGE;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.headers.headerparser.ContentTypeHeaderParser;
 import uk.co.compendiumdev.thingifier.api.http.headers.headerparser.AcceptHeaderParser;
@@ -13,7 +12,10 @@ import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiResponse;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.application.httpapimessagehooks.HttpApiResponseHook;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
+
 import java.util.Collection;
 
 
@@ -125,9 +127,8 @@ public class ChallengerApiResponseHook implements HttpApiResponseHook {
                 request.getQueryParams().get("doneStatus").contentEquals("true") &&
                 response.getStatusCode()==200){
             // only pass if there are done and not done todos
-            final EntityInstanceCollection thing = thingifier.getThingInstancesNamed("todo", challenger.getXChallenger());
-            final EntityInstance aDoneThing = thing.findInstanceByFieldNameAndValue("doneStatus", "true");
-            final EntityInstance aNotDoneThing = thing.findInstanceByFieldNameAndValue("doneStatus", "false");
+            final EntityInstance aDoneThing = findTodoByField(challenger, "doneStatus", "true");
+            final EntityInstance aNotDoneThing = findTodoByField(challenger, "doneStatus", "false");
             if(aDoneThing!=null && aNotDoneThing!=null) {
                 challengers.pass(challenger,CHALLENGE.GET_TODOS_FILTERED);
             }
@@ -159,12 +160,12 @@ public class ChallengerApiResponseHook implements HttpApiResponseHook {
                 String location = response.getHeaders().get("Location");
                 String[] locationParts = location.split("/");
 
-                if(locationParts.length>1){
+                if(locationParts.length>2){
                     // to check it is an int
-                    int todoId = Integer.parseInt(locationParts[2]);
-                    final EntityInstanceCollection thing = thingifier.getThingInstancesNamed("todo", challenger.getXChallenger());
-                    EntityInstance aTodo = thing.findInstanceByPrimaryKey(locationParts[2]);
-                    if(aTodo.getFieldValue("title").asString().length() == 50 &&
+                    Integer.parseInt(locationParts[2]);
+                    EntityInstance aTodo = findTodoByIdentifier(challenger, locationParts[2]);
+                    if(aTodo != null &&
+                            aTodo.getFieldValue("title").asString().length() == 50 &&
                             aTodo.getFieldValue("description").asString().length() == 200
                     ){
                         challengers.pass(challenger, CHALLENGE.POST_MAX_OUT_TITLE_DESCRIPTION_LENGTH);
@@ -286,12 +287,52 @@ public class ChallengerApiResponseHook implements HttpApiResponseHook {
         if(request.getVerb() == HttpApiRequest.VERB.DELETE &&
                 request.getPath().matches("todos/.*") &&
                 response.getStatusCode()==200 &&
-                thingifier.getThingInstancesNamed("todo", challenger.getXChallenger()).countInstances()==0){
+                countTodos(challenger)==0){
             challengers.pass(challenger,CHALLENGE.DELETE_ALL_TODOS);
         }
 
         // do not interfere with api and return null
         return null;
+    }
+
+    private EntityInstance findTodoByField(
+            final ChallengerAuthData challenger,
+            final String fieldName,
+            final String fieldValue) {
+        EntityDefinition todo = todoDefinition();
+        ThingRepository repository = repositoryFor(challenger);
+        if (todo == null || repository == null) {
+            return null;
+        }
+        return repository.findInstanceByFieldNameAndValue(todo, fieldName, fieldValue);
+    }
+
+    private EntityInstance findTodoByIdentifier(
+            final ChallengerAuthData challenger,
+            final String identifier) {
+        EntityDefinition todo = todoDefinition();
+        ThingRepository repository = repositoryFor(challenger);
+        if (todo == null || repository == null) {
+            return null;
+        }
+        return repository.findInstanceByQueryIdentifier(todo, identifier);
+    }
+
+    private int countTodos(final ChallengerAuthData challenger) {
+        EntityDefinition todo = todoDefinition();
+        ThingRepository repository = repositoryFor(challenger);
+        if (todo == null || repository == null) {
+            return -1;
+        }
+        return repository.countInstances(todo);
+    }
+
+    private ThingRepository repositoryFor(final ChallengerAuthData challenger) {
+        return thingifier.getRepository(challenger.getXChallenger());
+    }
+
+    private EntityDefinition todoDefinition() {
+        return thingifier.getDefinitionNamed("todo");
     }
 
     String collate(Collection<String> strings){

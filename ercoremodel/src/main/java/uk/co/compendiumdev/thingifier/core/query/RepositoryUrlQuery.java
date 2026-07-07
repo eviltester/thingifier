@@ -8,7 +8,7 @@ import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RepositoryBackedSimpleQuery implements QueryResult {
+public class RepositoryUrlQuery implements UrlQueryResult {
 
     private final ERSchema schema;
     private final ThingRepository repository;
@@ -22,7 +22,7 @@ public class RepositoryBackedSimpleQuery implements QueryResult {
     private EntityInstance currentInstance;
     private List<EntityInstance> foundItems = new ArrayList<>();
 
-    public RepositoryBackedSimpleQuery(
+    public RepositoryUrlQuery(
             final ERSchema schema,
             final ThingRepository repository,
             final String query) {
@@ -33,6 +33,10 @@ public class RepositoryBackedSimpleQuery implements QueryResult {
         } else {
             this.query = query;
         }
+    }
+
+    public RepositoryUrlQuery performQuery() {
+        return performQuery(new QueryFilterParams());
     }
 
     public static boolean canHandle(final ERSchema schema, final String query) {
@@ -63,7 +67,7 @@ public class RepositoryBackedSimpleQuery implements QueryResult {
         return entity.related().hasRelationship(terms[2]);
     }
 
-    public RepositoryBackedSimpleQuery performQuery(final QueryFilterParams queryParams) {
+    public RepositoryUrlQuery performQuery(final QueryFilterParams queryParams) {
         String[] terms = termsFrom(query);
         EntityDefinition entity = entityForTerm(schema, terms[0]);
         resultContainsDefinition = entity;

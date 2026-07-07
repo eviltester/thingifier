@@ -18,6 +18,7 @@ import uk.co.compendiumdev.thingifier.core.query.EntityListSortParamParser;
 import uk.co.compendiumdev.thingifier.core.query.FilterBy;
 import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
 import uk.co.compendiumdev.thingifier.core.query.SortByFieldName;
+import uk.co.compendiumdev.thingifier.core.reporting.RepositoryJsonExporter;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 
 import java.nio.file.Path;
@@ -86,6 +87,29 @@ public class SqliteThingRepository extends InMemoryThingRepository {
     @Override
     public boolean hasLoadedCompatibilitySnapshot() {
         return legacySnapshotLoaded;
+    }
+
+    @Override
+    public String exportDataAsJson(final ERSchema schema) {
+        ensureSchemaReady();
+
+        StringBuilder json = new StringBuilder();
+        json.append("{");
+
+        String entitySeparator = "";
+        for (EntityDefinition entity : schema.getEntityDefinitions()) {
+            json.append(entitySeparator).
+                    append(RepositoryJsonExporter.quoted(entity.getPlural())).
+                    append(" : [");
+
+            appendEntityRowsAsJson(json, entity);
+
+            json.append("]");
+            entitySeparator = ", ";
+        }
+
+        json.append("}");
+        return json.toString();
     }
 
     @Override
@@ -165,6 +189,22 @@ public class SqliteThingRepository extends InMemoryThingRepository {
 
         SqlQuery sqlQuery = selectInstancesSql(entity, params);
         return queryEntityRows(entity, sqlQuery.sql, sqlQuery.parameters);
+    }
+
+    @Override
+    public int countInstances(final EntityDefinition entity) {
+        ensureSchemaReady();
+        String sql = "SELECT COUNT(*) FROM " + table(entity);
+        try (PreparedStatement statement = connection.prepareStatement(sql);
+             ResultSet resultSet = statement.executeQuery()) {
+            if (resultSet.next()) {
+                return resultSet.getInt(1);
+            }
+            return 0;
+        } catch (SQLException e) {
+            throw new IllegalStateException(
+                    "Could not count SQLite entity rows for " + entity.getName(), e);
+        }
     }
 
     @Override
@@ -747,6 +787,50 @@ public class SqliteThingRepository extends InMemoryThingRepository {
             throw new IllegalStateException("Could not query SQLite entity rows for " + entity.getName(), e);
         }
         return instances;
+    }
+
+    private void appendEntityRowsAsJson(
+            final StringBuilder json,
+            final EntityDefinition entity) {
+        String sql = "SELECT * FROM " + table(entity);
+        try (Statement statement = connection.createStatement();
+             ResultSet resultSet = statement.executeQuery(sql)) {
+            String instanceSeparator = "";
+            while (resultSet.next()) {
+                json.append(instanceSeparator);
+                appendEntityRowAsJson(json, entity, resultSet);
+                instanceSeparator = ", ";
+            }
+        } catch (SQLException e) {
+            throw new IllegalStateException(
+                    "Could not export SQLite entity rows for " + entity.getName(), e);
+        }
+    }
+
+    private void appendEntityRowAsJson(
+            final StringBuilder json,
+            final EntityDefinition entity,
+            final ResultSet resultSet) throws SQLException {
+        json.append("{");
+
+        String fieldSeparator = "";
+        for (String fieldName : entity.getFieldNames()) {
+            Field field = entity.getField(fieldName);
+            String fieldJsonValue =
+                    RepositoryJsonExporter.fieldJsonValue(
+                            field, resultSet.getString(fieldName));
+            if (fieldJsonValue == null) {
+                continue;
+            }
+
+            json.append(fieldSeparator).
+                    append(RepositoryJsonExporter.quoted(field.getName())).
+                    append(": ").
+                    append(fieldJsonValue);
+            fieldSeparator = ", ";
+        }
+
+        json.append("}");
     }
 
     private EntityInstance instanceFromRow(

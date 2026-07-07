@@ -8,6 +8,8 @@ import uk.co.compendiumdev.thingifier.core.domain.instances.ERInstanceData;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
+import uk.co.compendiumdev.thingifier.core.reporting.ERModelReport;
+import uk.co.compendiumdev.thingifier.core.reporting.RepositoryJsonExporter;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 
 import java.util.Collection;
@@ -34,6 +36,14 @@ public interface ThingRepository extends AutoCloseable {
     @Deprecated
     EntityInstanceCollection getInstanceCollectionForEntityNamed(String entityName);
 
+    default String exportDataAsJson(final ERSchema schema) {
+        return new RepositoryJsonExporter(schema, this).asJson();
+    }
+
+    default String reportAsMarkdown(final ERSchema schema) {
+        return new ERModelReport(schema, this).asMarkdown();
+    }
+
     EntityInstance findEntityInstanceByGUID(String thingGUID);
 
     EntityInstance findInstanceByPrimaryKey(EntityDefinition entity, String primaryKeyValue);
@@ -43,6 +53,8 @@ public interface ThingRepository extends AutoCloseable {
     Collection<EntityInstance> listInstances(EntityDefinition entity);
 
     List<EntityInstance> listInstances(EntityDefinition entity, QueryFilterParams queryParams);
+
+    int countInstances(EntityDefinition entity);
 
     EntityInstance findInstanceByQueryIdentifier(EntityDefinition entity, String identifier);
 
