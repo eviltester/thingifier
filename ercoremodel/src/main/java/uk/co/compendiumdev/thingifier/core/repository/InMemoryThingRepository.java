@@ -189,8 +189,15 @@ public class InMemoryThingRepository implements ThingRepository {
     @Override
     public void setNextIdCountersToAccomodate(
             final EntityDefinition entity, final List<NamedValue> fieldValues) {
-        getInstanceCollectionForEntityNamed(entity.getName()).
-                setNextIdCountersToAccomodate(fieldValues);
+        for (NamedValue fieldNameValue : fieldValues) {
+            Field field = entity.getField(fieldNameValue.getName());
+            if (field != null && field.getType() == FieldType.AUTO_INCREMENT) {
+                AutoIncrement counter = countersFor(entity).get(field.getName());
+                if (counter != null) {
+                    counter.incrementToNextAbove(Integer.parseInt(fieldNameValue.value));
+                }
+            }
+        }
     }
 
     @Override

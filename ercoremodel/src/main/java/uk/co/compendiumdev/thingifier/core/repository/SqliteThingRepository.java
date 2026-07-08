@@ -493,7 +493,7 @@ public class SqliteThingRepository implements ThingRepository {
         for (String fieldName : explicitAutoIncrementFields) {
             AutoIncrement counter = countersFor(entity).get(fieldName);
             int value = instance.getFieldValue(fieldName).asInteger();
-            if (counter.getCurrentValue() < value) {
+            if (counter.peekNextValue() < value) {
                 counter.incrementToNextAbove(value);
             }
         }
@@ -767,7 +767,7 @@ public class SqliteThingRepository implements ThingRepository {
                     AutoIncrement counter = countersFor(entity).get(resultSet.getString("field_name"));
                     if (counter != null) {
                         int nextValue = resultSet.getInt("next_value");
-                        if (counter.getCurrentValue() < nextValue) {
+                        if (counter.peekNextValue() < nextValue) {
                             counter.incrementToNextAbove(nextValue - 1);
                         }
                     }
@@ -1169,7 +1169,7 @@ public class SqliteThingRepository implements ThingRepository {
             for (AutoIncrement counter : countersFor(entity).values()) {
                 statement.setString(1, entity.getName());
                 statement.setString(2, counter.getName());
-                statement.setInt(3, counter.getCurrentValue());
+                statement.setInt(3, counter.peekNextValue());
                 statement.executeUpdate();
             }
         } catch (SQLException e) {

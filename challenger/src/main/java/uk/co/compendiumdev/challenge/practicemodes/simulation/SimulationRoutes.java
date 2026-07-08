@@ -136,10 +136,10 @@ public class SimulationRoutes {
             return "";
         });
 
-        new SimpleSparkRouteCreator(apiEndpoint).status(501, List.of("patch", "trace"));
-        new SimpleSparkRouteCreator(apiEndpoint).status(405, List.of("delete"));
+        new SimpleSparkRouteCreator(apiEndpoint).status(501, true, List.of("patch", "trace"));
+        new SimpleSparkRouteCreator(apiEndpoint).status(405, true, List.of("delete"));
 
-        new SimpleSparkRouteCreator(apiEndpoint + "/*").status(501, List.of("patch", "trace"));
+        new SimpleSparkRouteCreator(apiEndpoint + "/*").status(501, true, List.of("patch", "trace"));
 
         options(apiEndpoint + "/*", (request, result) -> {
             result.status(204);

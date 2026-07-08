@@ -4,7 +4,6 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.F
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.NamedValue;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 
 import java.util.*;
@@ -131,7 +130,7 @@ public final class EntityInstanceCollection {
             // auto increment auto increments to above the value
             // should only do this if we actually add the item
             AutoIncrement counter = counters.get(autoIncrementFieldSet);
-            if(counter.getCurrentValue() < instance.getFieldValue(autoIncrementFieldSet).asInteger()) {
+            if(counter.peekNextValue() < instance.getFieldValue(autoIncrementFieldSet).asInteger()) {
                 counter.incrementToNextAbove(instance.getFieldValue(autoIncrementFieldSet).asInteger());
             }
         }
@@ -246,29 +245,6 @@ public final class EntityInstanceCollection {
     public Map<String, AutoIncrement> getCounters() {
         ensureCountersInitialized();
         return counters;
-    }
-
-    @Deprecated // todo: not sure this should exist - think it through, added for backwards compatibility when moving to AutoIncrement
-    public void setNextIdCountersToAccomodate(List<NamedValue> fieldValues) {
-    /*
-        given a list of field values,
-        if any of those match an id field
-        then set our 'next id' for that field to above
-        the value provided
-     */
-        ensureCountersInitialized();
-        // todo: still have to handle nested objects - currently assume these are not ids, but they might be
-        for(NamedValue fieldNameValue : fieldValues){
-            final Field field = definition.getField(fieldNameValue.getName());
-            if(field!=null && field.getType()== FieldType.AUTO_INCREMENT) {
-                AutoIncrement auto = counters.get(field.getName());
-                if(auto==null){
-                    auto = createCounterFor(field);
-                }
-                auto.incrementToNextAbove(Integer.parseInt(fieldNameValue.value));
-            }
-        }
-
     }
 
     public ValidationReport checkFieldsForUniqueNess(EntityInstance instance, boolean isAmendment) {

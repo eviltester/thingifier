@@ -27,11 +27,6 @@ public class SimpleSparkRouteCreator {
         return this;
     }
 
-    @Deprecated // should pass in the allow response indexing
-    public SimpleSparkRouteCreator status(final int statusCode, final List<String> verbs) {
-        return status(statusCode, true, verbs);
-    }
-
     public SimpleSparkRouteCreator status(final int statusCode, boolean allowResponseIndexing, final List<String> verbs) {
 
         routeStatus(statusCode, endpoint, allowResponseIndexing, verbs);

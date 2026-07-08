@@ -27,8 +27,8 @@ public class ResetAutoIncrementWhenTooHigh implements HttpApiRequestHook {
         }
 
         AutoIncrement idCounter = repository.countersFor(item).get("id");
-        //if(idCounter.getCurrentValue()>2140000000){
-        if(idCounter != null && idCounter.getCurrentValue()>99999){
+        //if(idCounter.peekNextValue()>2140000000){
+        if(idCounter != null && idCounter.peekNextValue()>99999){
             repository.resetAutoIncrementCounter(item, "id");
         }
         if(repository.countInstances(item)<5) {

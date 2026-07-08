@@ -112,7 +112,7 @@ public class SimpleApiRoutes {
 
 
 
-        new SimpleSparkRouteCreator("/simpleapi/items").status(501, List.of("patch", "trace"));
+        new SimpleSparkRouteCreator("/simpleapi/items").status(501, true, List.of("patch", "trace"));
 
 
         get("/simpleapi/randomisbn", (request, result) -> {
@@ -145,7 +145,7 @@ public class SimpleApiRoutes {
         );
 
 
-        new SimpleSparkRouteCreator("/simpleapi/randomisbn").status(405, List.of("put", "post", "delete", "patch", "trace"));
+        new SimpleSparkRouteCreator("/simpleapi/randomisbn").status(405, true, List.of("put", "post", "delete", "patch", "trace"));
 
 
 

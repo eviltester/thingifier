@@ -20,8 +20,7 @@ public class AutoIncrement {
         return name;
     }
 
-    @Deprecated // we probably want to use getNextValueAndUpdate
-    public int getCurrentValue(){
+    public int peekNextValue(){
         //TODO: have a list of free items, used prior to the nextInt
         // e.g. on DELETE, or if we do not create an item, or if we skip items during an increment on PUT
         return nextInt;
@@ -32,7 +31,7 @@ public class AutoIncrement {
     }
 
     public synchronized int getNextValueAndUpdate(){
-        int curr = getCurrentValue();
+        int curr = peekNextValue();
         update();
         return curr;
     }

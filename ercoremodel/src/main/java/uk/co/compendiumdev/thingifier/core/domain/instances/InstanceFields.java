@@ -27,28 +27,6 @@ public class InstanceFields {
         defaultAuto = new AutoIncrement("default", 1);
     }
 
-    // TODO: this should be using a set of ID Counters, not the field definition - id counts should not be on field definition
-    @Deprecated
-    public InstanceFields addAutoIncrementIdsToInstance() {
-        return addAutoIncrementIdsToInstance(defaultAuto);
-    }
-
-    @Deprecated
-    public InstanceFields addAutoIncrementIdsToInstance(AutoIncrement anAuto) {
-
-        List<Field>idfields = objectDefinition.getFieldsOfType(FieldType.AUTO_INCREMENT);
-        for(Field aField : idfields){
-            if(aField.getType()==FieldType.AUTO_INCREMENT){
-                if(!values.containsKey(aField.getName().toLowerCase())) {
-                    addValue(
-                        FieldValue.is(aField,
-                            String.valueOf(anAuto.getNextValueAndUpdate())));
-                }
-            }
-        }
-        return this;
-    }
-
     public void addValue(final FieldValue value) {
         values.put(value.getName().toLowerCase(), value);
     }
@@ -215,12 +193,22 @@ public class InstanceFields {
             if(field.getType()==FieldType.OBJECT){
                 final FieldValue objectValue = FieldValue.is(field,
                         new InstanceFields(field.getObjectDefinition()).
-                                addAutoIncrementIdsToInstance(defaultAuto));
+                                withAutoIncrementIds(defaultAuto));
                 addValue(objectValue);
                 return objectValue;
             }
         }
         return null;
+    }
+
+    private InstanceFields withAutoIncrementIds(final AutoIncrement auto) {
+        List<Field> idfields = objectDefinition.getFieldsOfType(FieldType.AUTO_INCREMENT);
+        for (Field field : idfields) {
+            if (!values.containsKey(field.getName().toLowerCase())) {
+                addValue(FieldValue.is(field, String.valueOf(auto.getNextValueAndUpdate())));
+            }
+        }
+        return this;
     }
 
     private void reportCannotFindFieldError(final String fieldName) {

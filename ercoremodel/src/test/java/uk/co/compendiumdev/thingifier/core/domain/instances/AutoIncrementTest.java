@@ -13,7 +13,7 @@ public class AutoIncrementTest {
         AutoIncrement auto = new AutoIncrement("afield", 1);
 
         Assertions.assertEquals("afield", auto.getName());
-        Assertions.assertEquals(1, auto.getCurrentValue());
+        Assertions.assertEquals(1, auto.peekNextValue());
     }
 
     @Test

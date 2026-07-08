@@ -10,7 +10,9 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.Nam
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 class InstanceFieldsTest {
@@ -99,12 +101,13 @@ class InstanceFieldsTest {
     @Test
     void weCanInstantiateTheIdsAfterCreation() {
 
-        DefinedFields fieldsDefn = new DefinedFields();
-        fieldsDefn.addField(Field.is("id", FieldType.AUTO_INCREMENT));
+        EntityDefinition entity = new EntityDefinition("thing", "things");
+        entity.addField(Field.is("id", FieldType.AUTO_INCREMENT));
+        EntityInstance instance = new EntityInstance(entity);
+        Map<String, AutoIncrement> counters = new HashMap<>();
+        counters.put("id", new AutoIncrement("id", 1));
 
-        InstanceFields instance = new InstanceFields(fieldsDefn);
-
-        instance.addAutoIncrementIdsToInstance();
+        instance.addAutoIncrementIdsToInstance(counters);
 
         Assertions.assertNotNull(instance.getFieldValue("id"));
         Assertions.assertEquals("1", instance.getFieldValue("id").asString());
@@ -293,7 +296,7 @@ class InstanceFieldsTest {
                 Field.is("guid", FieldType.AUTO_GUID));
 
         InstanceFields instance = new InstanceFields(fieldsDefn);
-        instance.addAutoIncrementIdsToInstance();
+        instance.putValue("id", "1");
         instance.putValue("guid", UUID.randomUUID().toString());
 
         List<NamedValue> values = new ArrayList<>();
@@ -323,7 +326,7 @@ class InstanceFieldsTest {
                 Field.is("guid", FieldType.AUTO_GUID));
 
         InstanceFields instance = new InstanceFields(fieldsDefn);
-        instance.addAutoIncrementIdsToInstance();
+        instance.putValue("id", "1");
         String aGUID = UUID.randomUUID().toString();
         instance.putValue("guid", aGUID);
         instance.putValue("id", "2344");

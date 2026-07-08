@@ -36,9 +36,9 @@ public class HeartBeatRoutes {
 
         // undocumented handlers
         SimpleSparkRouteCreator simpleSparkRouteCreator = new SimpleSparkRouteCreator(endpoint);
-        simpleSparkRouteCreator.status(405, List.of("post", "delete", "put"));
-        simpleSparkRouteCreator.status(500, List.of("patch"));
-        simpleSparkRouteCreator.status(501, List.of("trace"));
+        simpleSparkRouteCreator.status(405, true, List.of("post", "delete", "put"));
+        simpleSparkRouteCreator.status(500, true, List.of("patch"));
+        simpleSparkRouteCreator.status(501, true, List.of("trace"));
 
     }
 }
