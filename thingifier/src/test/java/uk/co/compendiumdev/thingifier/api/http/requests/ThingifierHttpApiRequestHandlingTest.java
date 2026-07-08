@@ -7,14 +7,13 @@ import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiResponse;
 import uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
-import uk.co.compendiumdev.thingifier.core.domain.datapopulator.DataPopulator;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.ERSchema;
+import uk.co.compendiumdev.thingifier.core.domain.datapopulator.RepositoryDataPopulator;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ERInstanceData;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
+import uk.co.compendiumdev.thingifier.testsupport.RepositoryBackedTestCollection;
+import uk.co.compendiumdev.thingifier.testsupport.ThingifierRepositoryTestSupport;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -46,7 +45,7 @@ public class ThingifierHttpApiRequestHandlingTest {
         final HttpApiResponse response = api.get(new HttpApiRequest("/things").setHeaders(headers));
 
         // add a thing
-        final EntityInstanceCollection thing = thingifier.getERmodel().getInstanceData("other_things").getInstanceCollectionForEntityNamed("thing");
+        final RepositoryBackedTestCollection thing = ThingifierRepositoryTestSupport.collection(thingifier, "other_things", "thing");
         final EntityInstance existingInstance = thing.addInstance(new EntityInstance(thing.definition())).setValue("title", "My Title" + System.nanoTime());
 
         final HttpApiResponse response2 = api.get(new HttpApiRequest("/things/" + existingInstance.getPrimaryKeyValue()).setHeaders(headers));
@@ -59,22 +58,20 @@ public class ThingifierHttpApiRequestHandlingTest {
 
         Thingifier thingifier = getTestThingifier();
 
-        DataPopulator dataPopulator = new DataPopulator() {
-            @Override
-            public void populate(final ERSchema schema, final ERInstanceData database) {
+        RepositoryDataPopulator dataPopulator = (schema, repository) -> {
+            String [] titles= {"thing1", "thing2", "thing3"};
+            EntityDefinition thing = schema.getEntityDefinitionNamed("thing");
 
-                String [] titles= {"thing1", "thing2", "thing3"};
-                EntityInstanceCollection things = database.getInstanceCollectionForEntityNamed("thing");
-
-                for(String thingTitle : titles){
-                    things.addInstance(new EntityInstance(things.definition())).setValue("title", thingTitle);
-                }
+            for(String thingTitle : titles){
+                repository.addInstance(new EntityInstance(thing).setValue("title", thingTitle));
             }
         };
         thingifier.setDataGenerator(dataPopulator);
 
         // populate default database
-        dataPopulator.populate(thingifier.getERmodel().getSchema(), thingifier.getERmodel().getInstanceData());
+        dataPopulator.populate(
+                thingifier.getERmodel().getSchema(),
+                thingifier.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME));
 
         final ThingifierHttpApi api = new ThingifierHttpApi(thingifier, null, null);
 
@@ -85,9 +82,8 @@ public class ThingifierHttpApiRequestHandlingTest {
 
         Assertions.assertEquals(200, response.getStatusCode());
 
-        EntityInstanceCollection thingInstances = thingifier.getERmodel().
-                                                        getInstanceData("other_things").
-                                                        getInstanceCollectionForEntityNamed("thing");
+        RepositoryBackedTestCollection thingInstances =
+                ThingifierRepositoryTestSupport.collection(thingifier, "other_things", "thing");
 
         Assertions.assertEquals(3, thingInstances.countInstances());
     }
@@ -112,15 +108,13 @@ public class ThingifierHttpApiRequestHandlingTest {
         // check added a thing to db
         Assertions.assertEquals(201, response.getStatusCode());
 
-        EntityInstanceCollection thingInstances = thingifier.getERmodel().
-                getInstanceData("other_things").
-                getInstanceCollectionForEntityNamed("thing");
+        RepositoryBackedTestCollection thingInstances =
+                ThingifierRepositoryTestSupport.collection(thingifier, "other_things", "thing");
 
         Assertions.assertEquals(1, thingInstances.countInstances());
 
-        Assertions.assertEquals(0, thingifier.getERmodel().
-                getInstanceData(EntityRelModel.DEFAULT_DATABASE_NAME).
-                getInstanceCollectionForEntityNamed("thing").countInstances());
+        Assertions.assertEquals(0,
+                ThingifierRepositoryTestSupport.collection(thingifier, "thing").countInstances());
     }
 
     @Test
@@ -141,9 +135,8 @@ public class ThingifierHttpApiRequestHandlingTest {
         // check added a thing to db
         Assertions.assertEquals(404, response.getStatusCode());
 
-        EntityInstanceCollection thingInstances = thingifier.getERmodel().
-                getInstanceData("other_things").
-                getInstanceCollectionForEntityNamed("thing");
+        RepositoryBackedTestCollection thingInstances =
+                ThingifierRepositoryTestSupport.collection(thingifier, "other_things", "thing");
 
         EntityInstance anInstance = thingInstances.addInstance(new EntityInstance(thingInstances.definition()));
 
@@ -155,9 +148,8 @@ public class ThingifierHttpApiRequestHandlingTest {
 
         Assertions.assertEquals(0, thingInstances.countInstances());
 
-        Assertions.assertEquals(0, thingifier.getERmodel().
-                getInstanceData(EntityRelModel.DEFAULT_DATABASE_NAME).
-                getInstanceCollectionForEntityNamed("thing").countInstances());
+        Assertions.assertEquals(0,
+                ThingifierRepositoryTestSupport.collection(thingifier, "thing").countInstances());
     }
 
     // OPTIONS

@@ -3,9 +3,7 @@ package uk.co.compendiumdev.thingifier.application.data;
 import uk.co.compendiumdev.thingifier.core.domain.datapopulator.RepositoryDataPopulator;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.ERSchema;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ERInstanceData;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
 
 public class TodoAPIDataPopulator implements RepositoryDataPopulator {
@@ -19,17 +17,6 @@ public class TodoAPIDataPopulator implements RepositoryDataPopulator {
             "process payroll",
             "train staff",
             "schedule meeting"};
-
-    @Override
-    public void populate(final ERSchema schema, final ERInstanceData database) {
-
-        EntityInstanceCollection todo = database.getInstanceCollectionForEntityNamed("todo");
-
-        for(String todoItem : TODOS){
-            todo.addInstance(new EntityInstance(todo.definition())).
-                    setValue("title", todoItem);
-        }
-    }
 
     @Override
     public void populate(final ERSchema schema, final ThingRepository repository) {

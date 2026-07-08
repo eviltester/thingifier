@@ -7,7 +7,8 @@ import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
+import uk.co.compendiumdev.thingifier.testsupport.RepositoryBackedTestCollection;
+import uk.co.compendiumdev.thingifier.testsupport.ThingifierRepositoryTestSupport;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
@@ -124,7 +125,7 @@ public class ApiResponseAsXmlTest {
         Thingifier thingifier = new Thingifier();
         EntityDefinition todo = thingifier.defineThing("todo", "todos");
         todo.addFields( Field.is("title", STRING));
-        EntityInstanceCollection todos = thingifier.getThingInstancesNamed("todo", EntityRelModel.DEFAULT_DATABASE_NAME);
+        RepositoryBackedTestCollection todos = ThingifierRepositoryTestSupport.collection(thingifier, "todo");
 
         EntityInstance aTodo = todos.addInstance(new EntityInstance(todos.definition())).setValue("title", "a todo");
 
@@ -152,7 +153,7 @@ public class ApiResponseAsXmlTest {
         EntityDefinition todo = thingifier.defineThing("todo", "todos");
         todo.addAsPrimaryKeyField(Field.is("guid", FieldType.AUTO_GUID));
         todo.addFields( Field.is("title", STRING));
-        EntityInstanceCollection todos = thingifier.getThingInstancesNamed("todo", EntityRelModel.DEFAULT_DATABASE_NAME);
+        RepositoryBackedTestCollection todos = ThingifierRepositoryTestSupport.collection(thingifier, "todo");
 
         EntityInstance aTodo = todos.addInstance(new EntityInstance(todos.definition())).setValue("title", "a todo");
         EntityInstance anotherTodo = todos.addInstance(new EntityInstance(todos.definition())).setValue("title", "another todo");

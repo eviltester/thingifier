@@ -4,10 +4,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 
 import java.util.List;
 
@@ -18,32 +18,30 @@ public class SortingViaQueryFiltersTest {
 
     // todo: lower level testing at the EntityInstanceListSorter level
 
-    EntityInstanceCollection thing;
+    EntityDefinition thing;
     EntityRelModel erModel;
 
     @BeforeEach
     public void setupThingifier(){
 
         erModel = new EntityRelModel();
-        erModel.createEntityDefinition("thing", "things")
+        thing = erModel.createEntityDefinition("thing", "things")
                 .addFields(Field.is("truefalse", FieldType.BOOLEAN),
                         Field.is("int", FieldType.INTEGER));
-
-        thing = erModel.getInstanceData().getInstanceCollectionForEntityNamed("thing");
 
     }
 
     @Test
     public void canSortIntViaAQuery(){
 
-        final EntityInstance thing1 = thing.addInstance(new EntityInstance(thing.definition()));
-        thing1.setValue("int", "1");
+        final EntityInstance thing1 = erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).
+                addInstance(new EntityInstance(thing).setValue("int", "1"));
 
-        final EntityInstance thing2 = thing.addInstance(new EntityInstance(thing.definition()));
-        thing2.setValue("int", "2");
+        final EntityInstance thing2 = erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).
+                addInstance(new EntityInstance(thing).setValue("int", "2"));
 
-        final EntityInstance thing3 = thing.addInstance(new EntityInstance(thing.definition()));
-        thing3.setValue("int", "3");
+        final EntityInstance thing3 = erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).
+                addInstance(new EntityInstance(thing).setValue("int", "3"));
 
         QueryFilterParams params = new QueryFilterParams();
         params.put("sortBy", "-int");
@@ -89,16 +87,16 @@ public class SortingViaQueryFiltersTest {
     public void canSortViaAQuery(){
 
         EntityRelModel aThingifier = new EntityRelModel();
-        aThingifier.createEntityDefinition("thing", "things")
-                .addField(Field.is("truefalse", FieldType.BOOLEAN));
+        EntityDefinition thing = aThingifier.createEntityDefinition("thing", "things");
+        thing.addField(Field.is("truefalse", FieldType.BOOLEAN));
 
-        EntityInstanceCollection thing = aThingifier.getInstanceData().getInstanceCollectionForEntityNamed("thing");
+        final EntityInstance trueThing =
+                aThingifier.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).
+                        addInstance(new EntityInstance(thing).setValue("truefalse", "true"));
 
-        final EntityInstance trueThing = thing.addInstance(new EntityInstance(thing.definition()));
-        trueThing.setValue("truefalse", "true");
-
-        final EntityInstance falseThing = thing.addInstance(new EntityInstance(thing.definition()));
-        falseThing.setValue("truefalse", "false");
+        final EntityInstance falseThing =
+                aThingifier.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).
+                        addInstance(new EntityInstance(thing).setValue("truefalse", "false"));
 
         QueryFilterParams params = new QueryFilterParams();
         params.put("sortBy", "-truefalse");

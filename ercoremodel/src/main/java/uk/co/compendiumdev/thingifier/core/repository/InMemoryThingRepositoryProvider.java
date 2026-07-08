@@ -2,7 +2,6 @@ package uk.co.compendiumdev.thingifier.core.repository;
 
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.ERSchema;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ERInstanceData;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -15,10 +14,6 @@ public class InMemoryThingRepositoryProvider implements ThingRepositoryProvider 
 
     public InMemoryThingRepositoryProvider() {
         this(new InMemoryThingRepository(EntityRelModel.DEFAULT_DATABASE_NAME));
-    }
-
-    public InMemoryThingRepositoryProvider(final ERInstanceData defaultInstanceData) {
-        this(new InMemoryThingRepository(EntityRelModel.DEFAULT_DATABASE_NAME, defaultInstanceData));
     }
 
     public InMemoryThingRepositoryProvider(final ThingRepository defaultRepository) {

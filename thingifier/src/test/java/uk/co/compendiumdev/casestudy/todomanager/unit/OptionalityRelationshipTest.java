@@ -6,7 +6,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.casestudy.todomanager.TodoManagerModel;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
+import uk.co.compendiumdev.thingifier.testsupport.RepositoryBackedTestCollection;
+import uk.co.compendiumdev.thingifier.testsupport.ThingifierRepositoryTestSupport;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
@@ -33,14 +34,14 @@ public class OptionalityRelationshipTest {
     public void byDefaultRelationshipsAreOptional(){
 
 
-        EntityInstanceCollection projects = todoManager.getThingInstancesNamed("project", EntityRelModel.DEFAULT_DATABASE_NAME);
+        RepositoryBackedTestCollection projects = ThingifierRepositoryTestSupport.collection(todoManager, "project");
 
         EntityInstance aProject = projects.addInstance(new EntityInstance(projects.definition())).setValue("title", "myproject");
 
         Assertions.assertTrue(aProject.validate().isValid());
 
 
-        EntityInstanceCollection todos = todoManager.getThingInstancesNamed("todo", EntityRelModel.DEFAULT_DATABASE_NAME);
+        RepositoryBackedTestCollection todos = ThingifierRepositoryTestSupport.collection(todoManager, "todo");
 
         EntityInstance tidy = todos.addInstance(new EntityInstance(todos.definition())).
                 setValue("title", "Tidy up my room").
@@ -54,13 +55,13 @@ public class OptionalityRelationshipTest {
     @Test
     public void anEstimateWithoutATodoIsInvalid(){
 
-        EntityInstanceCollection todos = todoManager.getThingInstancesNamed("todo", EntityRelModel.DEFAULT_DATABASE_NAME);
+        RepositoryBackedTestCollection todos = ThingifierRepositoryTestSupport.collection(todoManager, "todo");
 
         EntityInstance tidy = todos.addInstance(new EntityInstance(todos.definition())).
                 setValue("title", "Tidy up my room").
                 setValue("description", "I need to tidy up my room because it is a mess");
 
-        EntityInstanceCollection estimates = todoManager.getThingInstancesNamed("estimate", EntityRelModel.DEFAULT_DATABASE_NAME);
+        RepositoryBackedTestCollection estimates = ThingifierRepositoryTestSupport.collection(todoManager, "estimate");
 
         EntityInstance tidyRoomEstimate = estimates.addInstance(new EntityInstance(estimates.definition())).
                                         setValue("duration", "1");
@@ -73,13 +74,13 @@ public class OptionalityRelationshipTest {
     @Test
     public void anEstimateMustHaveATodoToBeValid(){
 
-        EntityInstanceCollection todos = todoManager.getThingInstancesNamed("todo", EntityRelModel.DEFAULT_DATABASE_NAME);
+        RepositoryBackedTestCollection todos = ThingifierRepositoryTestSupport.collection(todoManager, "todo");
 
         EntityInstance tidy = todos.addInstance(new EntityInstance(todos.definition())).
                 setValue("title", "Tidy up my room").
                 setValue("description", "I need to tidy up my room because it is a mess");
 
-        EntityInstanceCollection estimates = todoManager.getThingInstancesNamed("estimate", EntityRelModel.DEFAULT_DATABASE_NAME);
+        RepositoryBackedTestCollection estimates = ThingifierRepositoryTestSupport.collection(todoManager, "estimate");
 
         EntityInstance tidyRoomEstimate = estimates.addInstance(new EntityInstance(estimates.definition())).
                 setValue("duration", "1");
@@ -100,14 +101,14 @@ public class OptionalityRelationshipTest {
     @Test
     public void deleteAlsoCoversMandatoryOptionalityRelationships(){
 
-        EntityInstanceCollection todos = todoManager.getThingInstancesNamed("todo", EntityRelModel.DEFAULT_DATABASE_NAME);
+        RepositoryBackedTestCollection todos = ThingifierRepositoryTestSupport.collection(todoManager, "todo");
 
         EntityInstance tidy = todos.addInstance(new EntityInstance(todos.definition())).
                 setValue("title", "Tidy up my room").
                 setValue("description", "I need to tidy up my room because it is a mess");
 
 
-        EntityInstanceCollection estimates = todoManager.getThingInstancesNamed("estimate", EntityRelModel.DEFAULT_DATABASE_NAME);
+        RepositoryBackedTestCollection estimates = ThingifierRepositoryTestSupport.collection(todoManager, "estimate");
 
         EntityInstance tidyRoomEstimate = estimates.addInstance(new EntityInstance(estimates.definition())).
                 setValue("duration", "1");

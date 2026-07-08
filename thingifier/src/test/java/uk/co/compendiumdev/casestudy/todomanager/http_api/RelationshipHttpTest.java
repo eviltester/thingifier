@@ -7,7 +7,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.casestudy.todomanager.TodoManagerModel;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
+import uk.co.compendiumdev.thingifier.testsupport.RepositoryBackedTestCollection;
+import uk.co.compendiumdev.thingifier.testsupport.ThingifierRepositoryTestSupport;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiResponse;
@@ -20,18 +21,18 @@ public class RelationshipHttpTest {
 
     private Thingifier todoManager;
 
-    EntityInstanceCollection todo;
-    EntityInstanceCollection project;
-    EntityInstanceCollection categories;
+    RepositoryBackedTestCollection todo;
+    RepositoryBackedTestCollection project;
+    RepositoryBackedTestCollection categories;
 
     @BeforeEach
     public void createDefinitions() {
 
         todoManager = TodoManagerModel.definedAsThingifier();
 
-        todo = todoManager.getThingInstancesNamed("todo", EntityRelModel.DEFAULT_DATABASE_NAME);
-        project = todoManager.getThingInstancesNamed("project", EntityRelModel.DEFAULT_DATABASE_NAME);
-        categories = todoManager.getThingInstancesNamed("category", EntityRelModel.DEFAULT_DATABASE_NAME);
+        todo = ThingifierRepositoryTestSupport.collection(todoManager, "todo");
+        project = ThingifierRepositoryTestSupport.collection(todoManager, "project");
+        categories = ThingifierRepositoryTestSupport.collection(todoManager, "category");
 
 
     }
@@ -338,7 +339,7 @@ public class RelationshipHttpTest {
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).post(request);
         Assertions.assertEquals(400, response.getStatusCode());
 
-        Assertions.assertEquals(0, todoManager.getThingInstancesNamed("estimate", EntityRelModel.DEFAULT_DATABASE_NAME).countInstances());
+        Assertions.assertEquals(0, ThingifierRepositoryTestSupport.collection(todoManager, "estimate").countInstances());
     }
 
     @Test
@@ -357,7 +358,7 @@ public class RelationshipHttpTest {
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).post(request);
         Assertions.assertEquals(201, response.getStatusCode());
 
-        Assertions.assertEquals(1, todoManager.getThingInstancesNamed("estimate", EntityRelModel.DEFAULT_DATABASE_NAME).countInstances());
+        Assertions.assertEquals(1, ThingifierRepositoryTestSupport.collection(todoManager, "estimate").countInstances());
         Assertions.assertEquals(1, atodo.getRelationships().getConnectedItems("estimates").size());
 
     }
@@ -369,7 +370,7 @@ public class RelationshipHttpTest {
 
         final EntityInstance atodo = todo.addInstance(new EntityInstance(todo.definition())).setValue("title", "a TODO for estimating");
 
-        final EntityInstanceCollection estimates = todoManager.getThingInstancesNamed("estimate", EntityRelModel.DEFAULT_DATABASE_NAME);
+        final RepositoryBackedTestCollection estimates = ThingifierRepositoryTestSupport.collection(todoManager, "estimate");
         final EntityInstance anEstimate = estimates.addInstance(new EntityInstance(estimates.definition())).setValue("duration", "7");
 
         anEstimate.getRelationships().connect("estimate", atodo);
@@ -396,7 +397,7 @@ public class RelationshipHttpTest {
 
         final EntityInstance atodo = todo.addInstance(new EntityInstance(todo.definition())).setValue("title", "a TODO for estimating");
 
-        final EntityInstanceCollection estimates = todoManager.getThingInstancesNamed("estimate", EntityRelModel.DEFAULT_DATABASE_NAME);
+        final RepositoryBackedTestCollection estimates = ThingifierRepositoryTestSupport.collection(todoManager, "estimate");
         final EntityInstance anEstimate = estimates.addInstance(new EntityInstance(estimates.definition())).setValue("duration", "7").setValue("description", "an estimate");
 
         anEstimate.getRelationships().connect("estimate", atodo);

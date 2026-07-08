@@ -7,7 +7,8 @@ import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.casestudy.todomanager.TodoManagerModel;
 import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
+import uk.co.compendiumdev.thingifier.testsupport.RepositoryBackedTestCollection;
+import uk.co.compendiumdev.thingifier.testsupport.ThingifierRepositoryTestSupport;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
@@ -26,8 +27,8 @@ public class RelationshipApiNonHttpTest {
 
 
 
-    EntityInstanceCollection todo;
-    EntityInstanceCollection project;
+    RepositoryBackedTestCollection todo;
+    RepositoryBackedTestCollection project;
     private JsonThing jsonThing;
 
 
@@ -36,8 +37,8 @@ public class RelationshipApiNonHttpTest {
 
         todoManager = TodoManagerModel.definedAsThingifier();
         jsonThing = new JsonThing(todoManager.apiConfig().jsonOutput());
-        todo = todoManager.getThingInstancesNamed("todo", EntityRelModel.DEFAULT_DATABASE_NAME);
-        project = todoManager.getThingInstancesNamed("project", EntityRelModel.DEFAULT_DATABASE_NAME);
+        todo = ThingifierRepositoryTestSupport.collection(todoManager, "todo");
+        project = ThingifierRepositoryTestSupport.collection(todoManager, "project");
 
     }
 
@@ -588,7 +589,7 @@ public class RelationshipApiNonHttpTest {
         EntityInstance myTodo = todo.addInstance(new EntityInstance(todo.definition())).
                 setValue("title", "an estimated todo");
 
-        final EntityInstanceCollection estimates = todoManager.getThingInstancesNamed("estimate", EntityRelModel.DEFAULT_DATABASE_NAME);
+        final RepositoryBackedTestCollection estimates = ThingifierRepositoryTestSupport.collection(todoManager, "estimate");
         int numberOfEstimates = estimates.countInstances();
         Assertions.assertEquals(0, numberOfEstimates );
 
@@ -647,7 +648,7 @@ public class RelationshipApiNonHttpTest {
         EntityInstance myTodo = todo.addInstance(new EntityInstance(todo.definition())).
                 setValue("title", "an estimated todo");
 
-        final EntityInstanceCollection estimates = todoManager.getThingInstancesNamed("estimate", EntityRelModel.DEFAULT_DATABASE_NAME);
+        final RepositoryBackedTestCollection estimates = ThingifierRepositoryTestSupport.collection(todoManager, "estimate");
         int numberOfEstimates = estimates.countInstances();
         Assertions.assertEquals(0, numberOfEstimates );
 
@@ -679,7 +680,7 @@ public class RelationshipApiNonHttpTest {
                 0, myTodo.getRelationships().getConnectedItems("estimates").size());
 
         // there are no estimates at all
-        final EntityInstanceCollection estimates = todoManager.getThingInstancesNamed("estimate", EntityRelModel.DEFAULT_DATABASE_NAME);
+        final RepositoryBackedTestCollection estimates = ThingifierRepositoryTestSupport.collection(todoManager, "estimate");
         int numberOfEstimates = estimates.countInstances();
         Assertions.assertEquals(0, numberOfEstimates );
 

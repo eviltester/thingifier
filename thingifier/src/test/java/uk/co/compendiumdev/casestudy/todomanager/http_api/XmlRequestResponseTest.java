@@ -5,7 +5,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.casestudy.todomanager.TodoManagerModel;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
+import uk.co.compendiumdev.thingifier.testsupport.RepositoryBackedTestCollection;
+import uk.co.compendiumdev.thingifier.testsupport.ThingifierRepositoryTestSupport;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiResponse;
@@ -18,8 +19,8 @@ public class XmlRequestResponseTest {
 
     private Thingifier todoManager;
 
-    EntityInstanceCollection todo;
-    EntityInstanceCollection project;
+    RepositoryBackedTestCollection todo;
+    RepositoryBackedTestCollection project;
 
 
     // todo: Too complicated any test that uses the TodoManagerModel in thingifier needs to be simplified
@@ -30,8 +31,8 @@ public class XmlRequestResponseTest {
 
         todoManager = TodoManagerModel.definedAsThingifier();
 
-        todo = todoManager.getThingInstancesNamed("todo", EntityRelModel.DEFAULT_DATABASE_NAME);
-        project = todoManager.getThingInstancesNamed("project", EntityRelModel.DEFAULT_DATABASE_NAME);
+        todo = ThingifierRepositoryTestSupport.collection(todoManager, "todo");
+        project = ThingifierRepositoryTestSupport.collection(todoManager, "project");
 
 
     }

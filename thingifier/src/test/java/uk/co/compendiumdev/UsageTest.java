@@ -5,7 +5,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
+import uk.co.compendiumdev.thingifier.testsupport.RepositoryBackedTestCollection;
+import uk.co.compendiumdev.thingifier.testsupport.ThingifierRepositoryTestSupport;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
@@ -44,7 +45,7 @@ public class UsageTest {
                     addFields(Field.is("url", STRING),Field.is("name",STRING)
                     );
 
-        EntityInstanceCollection urls = things.getThingInstancesNamed("URL", EntityRelModel.DEFAULT_DATABASE_NAME);
+        RepositoryBackedTestCollection urls = ThingifierRepositoryTestSupport.collection(things, "URL");
 
         Assertions.assertTrue(urls.definition().hasFieldNameDefined("url"));
         Assertions.assertTrue(urls.definition().hasFieldNameDefined("name"));
@@ -57,8 +58,8 @@ public class UsageTest {
 
         user.addFields(Field.is("name", STRING));
 
-        EntityInstanceCollection entityInstanceCollection = things.getThingInstancesNamed("USER", EntityRelModel.DEFAULT_DATABASE_NAME);
-        EntityInstance alan = entityInstanceCollection.addInstance(new EntityInstance(entityInstanceCollection.definition())).
+        RepositoryBackedTestCollection RepositoryBackedTestCollection = ThingifierRepositoryTestSupport.collection(things, "USER");
+        EntityInstance alan = RepositoryBackedTestCollection.addInstance(new EntityInstance(RepositoryBackedTestCollection.definition())).
                 setValue("name","alan");
 
 

@@ -5,8 +5,6 @@ import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.challenge.CHALLENGE;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.ERSchema;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ERInstanceData;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
@@ -16,7 +14,7 @@ public class ChallengersTest {
     @Test
     void canPurgeUserData() throws NoSuchFieldException, IllegalAccessException {
 
-        EntityRelModel erModel = new EntityRelModel( new ERSchema(), new ERInstanceData());
+        EntityRelModel erModel = new EntityRelModel();
         erModel.createInstanceDatabaseIfNotExisting("an-active-user");
 
         int originalNumberOfDatabases = erModel.getDatabaseNames().size();

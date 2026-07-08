@@ -59,7 +59,6 @@ public class RelationshipApiSqliteRepositoryTest {
             Assertions.assertEquals(1, tasksResponse.getReturnedInstanceCollection().size());
             Assertions.assertEquals(task.getPrimaryKeyValue(),
                     tasksResponse.getReturnedInstanceCollection().get(0).getPrimaryKeyValue());
-            Assertions.assertFalse(repository.hasLoadedCompatibilitySnapshot());
 
             ApiResponse projectResponse = todoManager.api().get(
                     String.format("todo/%s/task-of", task.getPrimaryKeyValue()),
@@ -71,7 +70,6 @@ public class RelationshipApiSqliteRepositoryTest {
             Assertions.assertEquals(1, projectResponse.getReturnedInstanceCollection().size());
             Assertions.assertEquals(projectInstance.getPrimaryKeyValue(),
                     projectResponse.getReturnedInstanceCollection().get(0).getPrimaryKeyValue());
-            Assertions.assertFalse(repository.hasLoadedCompatibilitySnapshot());
         }
     }
 
@@ -95,7 +93,6 @@ public class RelationshipApiSqliteRepositoryTest {
                     new HttpHeadersBlock());
 
             Assertions.assertEquals(404, response.getStatusCode());
-            Assertions.assertFalse(repository.hasLoadedCompatibilitySnapshot());
         }
     }
 
@@ -128,7 +125,6 @@ public class RelationshipApiSqliteRepositoryTest {
                     task.getPrimaryKeyValue(),
                     repository.listRelatedInstances(projectInstance, "tasks").
                             get(0).getPrimaryKeyValue());
-            Assertions.assertFalse(repository.hasLoadedCompatibilitySnapshot());
         }
     }
 
@@ -161,7 +157,6 @@ public class RelationshipApiSqliteRepositoryTest {
                     projectInstance.getPrimaryKeyValue(),
                     repository.listRelatedInstances(task, "task-of").
                             get(0).getPrimaryKeyValue());
-            Assertions.assertFalse(repository.hasLoadedCompatibilitySnapshot());
         }
     }
 
@@ -192,7 +187,6 @@ public class RelationshipApiSqliteRepositoryTest {
                     "created through relationship path",
                     relatedTasks.get(0).getFieldValue("title").asString());
             Assertions.assertEquals(1, repository.listInstances(todo).size());
-            Assertions.assertFalse(repository.hasLoadedCompatibilitySnapshot());
         }
     }
 
@@ -222,7 +216,6 @@ public class RelationshipApiSqliteRepositoryTest {
                     repository.listRelatedInstances(projectInstance, "tasks").isEmpty());
             Assertions.assertNotNull(
                     repository.findInstanceByQueryIdentifier(todo, task.getPrimaryKeyValue()));
-            Assertions.assertFalse(repository.hasLoadedCompatibilitySnapshot());
         }
     }
 
@@ -249,7 +242,6 @@ public class RelationshipApiSqliteRepositoryTest {
             Assertions.assertEquals(404, response.getStatusCode());
             Assertions.assertTrue(
                     repository.listRelatedInstances(projectInstance, "tasks").isEmpty());
-            Assertions.assertFalse(repository.hasLoadedCompatibilitySnapshot());
         }
     }
 

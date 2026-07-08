@@ -7,7 +7,8 @@ import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.casestudy.todomanager.TodoManagerModel;
 import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
+import uk.co.compendiumdev.thingifier.testsupport.RepositoryBackedTestCollection;
+import uk.co.compendiumdev.thingifier.testsupport.ThingifierRepositoryTestSupport;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
@@ -23,8 +24,8 @@ public class VerbPutEntityInstanceApiNonHttpTest {
 
     private Thingifier todoManager;
 
-    EntityInstanceCollection todo;
-    EntityInstanceCollection project;
+    RepositoryBackedTestCollection todo;
+    RepositoryBackedTestCollection project;
 
 
     // TODO: tests that use the TodoManagerModel were created early and are too complicated - simplify
@@ -37,8 +38,8 @@ public class VerbPutEntityInstanceApiNonHttpTest {
 
         todoManager = TodoManagerModel.definedAsThingifier();
 
-        todo = todoManager.getThingInstancesNamed("todo", EntityRelModel.DEFAULT_DATABASE_NAME);
-        project = todoManager.getThingInstancesNamed("project", EntityRelModel.DEFAULT_DATABASE_NAME);
+        todo = ThingifierRepositoryTestSupport.collection(todoManager, "todo");
+        project = ThingifierRepositoryTestSupport.collection(todoManager, "project");
 
     }
     
@@ -211,7 +212,7 @@ public class VerbPutEntityInstanceApiNonHttpTest {
 //        Map requestBody;
 //        ApiResponse apiresponse;
 //
-//        project = todoManager.getThingInstancesNamed("project", EntityRelModel.DEFAULT_DATABASE_NAME);
+//        project = ThingifierRepositoryTestSupport.collection(todoManager, "project");
 //        final Field anIdField = Field.is("id", FieldType.AUTO_INCREMENT);
 //        project.definition().addField(anIdField);
 //
@@ -246,7 +247,7 @@ public class VerbPutEntityInstanceApiNonHttpTest {
         Map requestBody;
         ApiResponse apiresponse;
 
-        project = todoManager.getThingInstancesNamed("project", EntityRelModel.DEFAULT_DATABASE_NAME);
+        project = ThingifierRepositoryTestSupport.collection(todoManager, "project");
         final Field anIdField = Field.is("id", FieldType.AUTO_INCREMENT);
         project.definition().addField(anIdField);
 

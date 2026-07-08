@@ -26,14 +26,8 @@ public class RepositoryMigrationGuardTest {
                         "getAllInstanceCollections(",
                         "getInstanceCollectionForEntityNamed("),
                 List.of(
-                        "ercoremodel/src/main/java/uk/co/compendiumdev/thingifier/core/EntityRelModel.java",
                         "ercoremodel/src/main/java/uk/co/compendiumdev/thingifier/core/domain/instances/ERInstanceData.java",
-                        "ercoremodel/src/main/java/uk/co/compendiumdev/thingifier/core/domain/datapopulator/LegacyDataPopulatorAdapter.java",
-                        "ercoremodel/src/main/java/uk/co/compendiumdev/thingifier/core/query/SimpleQuery.java",
-                        "ercoremodel/src/main/java/uk/co/compendiumdev/thingifier/core/repository/ThingRepository.java",
-                        "ercoremodel/src/main/java/uk/co/compendiumdev/thingifier/core/repository/InMemoryThingRepository.java",
-                        "ercoremodel/src/main/java/uk/co/compendiumdev/thingifier/core/repository/SqliteThingRepository.java",
-                        "thingifier/src/main/java/uk/co/compendiumdev/thingifier/Thingifier.java"));
+                        "ercoremodel/src/main/java/uk/co/compendiumdev/thingifier/core/repository/InMemoryThingRepository.java"));
 
         Assertions.assertTrue(
                 violations.isEmpty(),
@@ -42,23 +36,28 @@ public class RepositoryMigrationGuardTest {
     }
 
     @Test
-    public void thingifierAndChallengerProductionCodeDoesNotDependOnCompatibilityCollections() throws IOException {
+    public void thingifierAndChallengerProductionCodeDoesNotDependOnInstanceCollections() throws IOException {
         List<String> violations = productionJavaLinesContaining(
                 List.of("EntityInstanceCollection"),
-                List.of("thingifier/src/main/java/uk/co/compendiumdev/thingifier/Thingifier.java"),
+                List.of(),
                 List.of("thingifier", "challenger"));
 
         Assertions.assertTrue(
                 violations.isEmpty(),
-                "Thingifier and Challenger runtime code should not use compatibility collections outside the deprecated public Thingifier API:\n" +
+                "Thingifier and Challenger runtime code should use ThingRepository instead of EntityInstanceCollection:\n" +
                         String.join("\n", violations));
     }
 
     @Test
-    public void productionCodeDoesNotUseDeprecatedSimpleQueryOutsideItsOwnClass() throws IOException {
+    public void productionCodeDoesNotUseSimpleQuery() throws IOException {
+        Assertions.assertFalse(
+                Files.exists(repoRoot().resolve(
+                        "ercoremodel/src/main/java/uk/co/compendiumdev/thingifier/core/query/SimpleQuery.java")),
+                "SimpleQuery should be deleted; use RepositoryUrlQuery or repository APIs");
+
         List<String> violations = productionJavaLinesContaining(
                 List.of("SimpleQuery"),
-                List.of("ercoremodel/src/main/java/uk/co/compendiumdev/thingifier/core/query/SimpleQuery.java"));
+                List.of());
 
         Assertions.assertTrue(
                 violations.isEmpty(),

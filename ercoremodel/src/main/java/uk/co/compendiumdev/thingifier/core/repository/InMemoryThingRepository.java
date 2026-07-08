@@ -28,7 +28,7 @@ public class InMemoryThingRepository implements ThingRepository {
         this(databaseKey, new ERInstanceData());
     }
 
-    public InMemoryThingRepository(final String databaseKey, final ERInstanceData instanceData) {
+    InMemoryThingRepository(final String databaseKey, final ERInstanceData instanceData) {
         this.databaseKey = databaseKey;
         this.instanceData = instanceData;
     }
@@ -48,13 +48,7 @@ public class InMemoryThingRepository implements ThingRepository {
         createInstanceCollectionsFrom(schema);
     }
 
-    @Override
-    public ERInstanceData getInstanceData() {
-        return instanceData;
-    }
-
-    @Override
-    public EntityInstanceCollection createInstanceCollectionFor(final EntityDefinition definition) {
+    private EntityInstanceCollection createInstanceCollectionFor(final EntityDefinition definition) {
         EntityInstanceCollection existing = getInstanceCollectionForEntityNamed(definition.getName());
         if (existing != null) {
             return existing;
@@ -62,20 +56,13 @@ public class InMemoryThingRepository implements ThingRepository {
         return instanceData.createInstanceCollectionFor(definition);
     }
 
-    @Override
-    public void createInstanceCollectionsFrom(final ERSchema schema) {
+    private void createInstanceCollectionsFrom(final ERSchema schema) {
         for (EntityDefinition defn : schema.getEntityDefinitions()) {
             createInstanceCollectionFor(defn);
         }
     }
 
-    @Override
-    public List<EntityInstanceCollection> getAllInstanceCollections() {
-        return instanceData.getAllInstanceCollections();
-    }
-
-    @Override
-    public EntityInstanceCollection getInstanceCollectionForEntityNamed(final String entityName) {
+    private EntityInstanceCollection getInstanceCollectionForEntityNamed(final String entityName) {
         return instanceData.getInstanceCollectionForEntityNamed(entityName);
     }
 

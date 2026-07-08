@@ -7,10 +7,7 @@ import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfigProfile;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfigProfiles;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonPopulator;
-import uk.co.compendiumdev.thingifier.core.domain.datapopulator.LegacyDataPopulatorAdapter;
 import uk.co.compendiumdev.thingifier.core.domain.datapopulator.RepositoryDataPopulator;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
-import uk.co.compendiumdev.thingifier.core.domain.datapopulator.DataPopulator;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.*;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
@@ -30,7 +27,7 @@ public final class Thingifier implements AutoCloseable {
 
     private final EntityRelModel erm;
     private ApiDocsConfig apiDocsConfig;
-    private DataPopulator dataPopulator;
+    private RepositoryDataPopulator dataPopulator;
     private String title;
     private String initialParagraph;
     private final ThingifierApiConfig apiConfig;
@@ -126,27 +123,8 @@ public final class Thingifier implements AutoCloseable {
 
     // Instances
 
-    /**
-     * @deprecated Compatibility collection access. Use {@link #getRepository(String)}
-     * with schema entity definitions, or {@link #listThingInstancesNamed(String, String)}.
-     */
-    @Deprecated(forRemoval = true, since = "1.5.6")
-    public List<EntityInstanceCollection> getThings(final String database) {
-        return erm.getRepository(database).getAllInstanceCollections();
-    }
-
-
     public EntityInstance findThingInstanceByGuid(final String thingGUID, final String database) {
         return erm.getRepository(database).findEntityInstanceByGUID(thingGUID);
-    }
-
-    /**
-     * @deprecated Compatibility collection access. Use {@link #getRepository(String)}
-     * or {@link #listThingInstancesNamed(String, String)}.
-     */
-    @Deprecated(forRemoval = true, since = "1.5.6")
-    public EntityInstanceCollection getThingInstancesNamed(final String aName, final String database) {
-        return erm.getRepository(database).getInstanceCollectionForEntityNamed(aName);
     }
 
     public List<EntityInstance> listThingInstancesNamed(final String aName, final String database) {
@@ -169,21 +147,6 @@ public final class Thingifier implements AutoCloseable {
             return null;
         }
         return repository.findInstanceByFieldNameAndValue(definition, fieldName, fieldValue);
-    }
-
-    /**
-     * @deprecated Compatibility collection access. Use {@link #getRepository(String)}
-     * with {@link EntityDefinition} resolved from {@link #getERmodel()}.
-     */
-    @Deprecated(forRemoval = true, since = "1.5.6")
-    public EntityInstanceCollection getInstancesForSingularOrPluralNamedEntity(final String term, final String database) {
-        final EntityDefinition defn = erm.getSchema().getDefinitionWithSingularOrPluralNamed(term);
-        if(defn!=null){
-            final String entityName = defn.getName();
-            return erm.getRepository(database).getInstanceCollectionForEntityNamed(entityName);
-        }
-
-        return null;
     }
 
     public void clearAllData() {
@@ -218,7 +181,7 @@ public final class Thingifier implements AutoCloseable {
         }
     }
 
-    public void setDataGenerator(DataPopulator dataPopulator) {
+    public void setDataGenerator(RepositoryDataPopulator dataPopulator) {
         this.dataPopulator = dataPopulator;
         erm.setDataGenerator(dataPopulator);
     }
@@ -298,22 +261,7 @@ public final class Thingifier implements AutoCloseable {
         return this.initialParagraph;
     }
 
-    /**
-     * @deprecated Compatibility helper backed by legacy instance data. Prefer a
-     * repository/provider configured with the desired data source.
-     */
-    @Deprecated(forRemoval = true, since = "1.5.6")
-    public Thingifier cloneWithDifferentData(final List<EntityInstance> instances) {
-        return new Thingifier(  this.getERmodel().cloneWithDifferentData(instances),
-                                                    this.apiConfig(),
-                                                    this.apiConfigProfiles(),
-                                                    this.title,
-                                                    this.initialParagraph,
-                                                    this.apiDocsConfig
-                );
-    }
-
-    public DataPopulator getDefaultDataPopulator() {
+    public RepositoryDataPopulator getDefaultDataPopulator() {
         return dataPopulator;
     }
 
@@ -346,11 +294,6 @@ public final class Thingifier implements AutoCloseable {
     }
 
     private void populateRepository(final ThingRepository repository) {
-        if (dataPopulator instanceof RepositoryDataPopulator) {
-            ((RepositoryDataPopulator) dataPopulator).populate(erm.getSchema(), repository);
-            return;
-        }
-
-        LegacyDataPopulatorAdapter.populate(dataPopulator, erm.getSchema(), repository);
+        dataPopulator.populate(erm.getSchema(), repository);
     }
 }

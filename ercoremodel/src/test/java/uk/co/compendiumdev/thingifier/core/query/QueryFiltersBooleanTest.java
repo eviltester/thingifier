@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
@@ -33,12 +32,10 @@ public class QueryFiltersBooleanTest {
                 .addFields( Field.is("truefalse", FieldType.BOOLEAN)
                 );
 
-        EntityInstanceCollection thing = erModel.getInstanceData().getInstanceCollectionForEntityNamed("thing");
-
-        thing.addInstance( new EntityInstance(thing.definition())).setValue("truefalse", "true");
-        thing.addInstance( new EntityInstance(thing.definition())).setValue("truefalse", "true");
-        thing.addInstance( new EntityInstance(thing.definition())).setValue("truefalse", "true");
-        thing.addInstance(new EntityInstance(thing.definition())).setValue("truefalse", "false");
+        RepositoryUrlQueryTestSupport.add(erModel, "thing", "truefalse", "true");
+        RepositoryUrlQueryTestSupport.add(erModel, "thing", "truefalse", "true");
+        RepositoryUrlQueryTestSupport.add(erModel, "thing", "truefalse", "true");
+        RepositoryUrlQueryTestSupport.add(erModel, "thing", "truefalse", "false");
 
     }
 

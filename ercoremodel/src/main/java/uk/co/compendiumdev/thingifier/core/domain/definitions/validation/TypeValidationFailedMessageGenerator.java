@@ -8,7 +8,7 @@ import java.util.List;
 public class TypeValidationFailedMessageGenerator {
 
     public static String thisValueDoesNotMatchType(final FieldValue value, FieldType type) {
-        return TypeValidationFailedMessageGenerator.thisValueDoesNotMatchType(value, type, List.of());
+        return thisValueDoesNotMatchType(value, type, List.of());
     }
 
     public static String thisValueDoesNotMatchType( FieldValue value, FieldType type,

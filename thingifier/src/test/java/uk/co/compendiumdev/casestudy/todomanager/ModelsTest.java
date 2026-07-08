@@ -4,7 +4,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
+import uk.co.compendiumdev.thingifier.testsupport.RepositoryBackedTestCollection;
+import uk.co.compendiumdev.thingifier.testsupport.ThingifierRepositoryTestSupport;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
@@ -36,7 +37,7 @@ public class ModelsTest {
     @Test
     public void createAndDelete(){
 
-        final EntityInstanceCollection todos = todoManager.getThingInstancesNamed("todo", EntityRelModel.DEFAULT_DATABASE_NAME);
+        final RepositoryBackedTestCollection todos = ThingifierRepositoryTestSupport.collection(todoManager, "todo");
 
         for(int todoCount=0; todoCount < 100; todoCount++){
             todos.addInstance(new EntityInstance(todos.definition())).
@@ -53,14 +54,14 @@ public class ModelsTest {
     @Test
     public void createAndDeleteRelationships(){
 
-        final EntityInstanceCollection todos = todoManager.getThingInstancesNamed("todo", EntityRelModel.DEFAULT_DATABASE_NAME);
+        final RepositoryBackedTestCollection todos = ThingifierRepositoryTestSupport.collection(todoManager, "todo");
 
         for(int todoCount=0; todoCount < 100; todoCount++){
             todos.addInstance(new EntityInstance(todos.definition())).
                     setValue("title", "title " + System.nanoTime());
         }
 
-        final EntityInstanceCollection projects = todoManager.getThingInstancesNamed("project", EntityRelModel.DEFAULT_DATABASE_NAME);
+        final RepositoryBackedTestCollection projects = ThingifierRepositoryTestSupport.collection(todoManager, "project");
 
         for(int todoCount=0; todoCount < 50; todoCount++){
             projects.addInstance(new EntityInstance(projects.definition())).

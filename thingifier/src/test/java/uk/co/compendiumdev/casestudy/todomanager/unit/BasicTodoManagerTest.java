@@ -5,7 +5,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.casestudy.todomanager.TodoManagerModel;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
+import uk.co.compendiumdev.thingifier.testsupport.RepositoryBackedTestCollection;
+import uk.co.compendiumdev.thingifier.testsupport.ThingifierRepositoryTestSupport;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import java.util.Collection;
@@ -25,7 +26,7 @@ public class BasicTodoManagerTest {
     public void todoModelDefinitionCheck(){
 
 
-        EntityInstanceCollection todo = todoManager.getThingInstancesNamed("todo", EntityRelModel.DEFAULT_DATABASE_NAME);
+        RepositoryBackedTestCollection todo = ThingifierRepositoryTestSupport.collection(todoManager, "todo");
 
         Assertions.assertTrue(todo.definition().hasFieldNameDefined("title"));
         Assertions.assertTrue(todo.definition().hasFieldNameDefined("description"));
@@ -42,8 +43,8 @@ public class BasicTodoManagerTest {
     public void relationshipDefinitionCheck(){
 
 
-        EntityInstanceCollection todo = todoManager.getThingInstancesNamed("todo", EntityRelModel.DEFAULT_DATABASE_NAME);
-        EntityInstanceCollection project = todoManager.getThingInstancesNamed("project", EntityRelModel.DEFAULT_DATABASE_NAME);
+        RepositoryBackedTestCollection todo = ThingifierRepositoryTestSupport.collection(todoManager, "todo");
+        RepositoryBackedTestCollection project = ThingifierRepositoryTestSupport.collection(todoManager, "project");
 
         EntityInstance paperwork = todo.addInstance(new EntityInstance(todo.definition())).setValue("title", "scan paperwork");
         EntityInstance filework = todo.addInstance(new EntityInstance(todo.definition())).setValue("title", "file paperwork");
@@ -75,7 +76,7 @@ public class BasicTodoManagerTest {
     @Test
     public void createAndAmendSomeTodos(){
 
-        EntityInstanceCollection todos = todoManager.getThingInstancesNamed("todo", EntityRelModel.DEFAULT_DATABASE_NAME);
+        RepositoryBackedTestCollection todos = ThingifierRepositoryTestSupport.collection(todoManager, "todo");
 
         EntityInstance tidy = todos.addInstance(new EntityInstance(todos.definition())).
                 setValue("title", "Tidy up my room").
@@ -98,7 +99,7 @@ public class BasicTodoManagerTest {
     @Test
     public void createAndDeleteTodos(){
 
-        EntityInstanceCollection todos = todoManager.getThingInstancesNamed("todo", EntityRelModel.DEFAULT_DATABASE_NAME);
+        RepositoryBackedTestCollection todos = ThingifierRepositoryTestSupport.collection(todoManager, "todo");
 
         int originalTodosCount = todos.countInstances();
 
@@ -131,7 +132,7 @@ public class BasicTodoManagerTest {
     @Test
     public void createAmendAndDeleteATodoWithAGivenGUID(){
 
-        EntityInstanceCollection todos = todoManager.getThingInstancesNamed("todo", EntityRelModel.DEFAULT_DATABASE_NAME);
+        RepositoryBackedTestCollection todos = ThingifierRepositoryTestSupport.collection(todoManager, "todo");
 
         int originalTodosCount = todos.countInstances();
 

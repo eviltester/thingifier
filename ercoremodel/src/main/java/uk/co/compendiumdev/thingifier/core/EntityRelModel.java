@@ -1,14 +1,10 @@
 package uk.co.compendiumdev.thingifier.core;
 
-import uk.co.compendiumdev.thingifier.core.domain.datapopulator.DataPopulator;
-import uk.co.compendiumdev.thingifier.core.domain.datapopulator.LegacyDataPopulatorAdapter;
 import uk.co.compendiumdev.thingifier.core.domain.datapopulator.RepositoryDataPopulator;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.Cardinality;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.ERSchema;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipDefinition;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ERInstanceData;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.repository.InMemoryThingRepositoryProvider;
 import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
 import uk.co.compendiumdev.thingifier.core.repository.ThingRepositoryProvider;
@@ -27,17 +23,11 @@ public class EntityRelModel implements AutoCloseable {
     // a provider so that key, database can be backed by memory, files, SQLite, etc.
     private final ERSchema schema; // all the definitions
     private final ThingRepositoryProvider repositories;
-    private DataPopulator dataPopulator;
+    private RepositoryDataPopulator dataPopulator;
 
     public EntityRelModel(){
         schema = new ERSchema();
         repositories = new InMemoryThingRepositoryProvider();
-        dataPopulator = null;
-    }
-
-    public EntityRelModel(final ERSchema schema, final ERInstanceData erInstanceData) {
-        this.schema = schema;
-        this.repositories = new InMemoryThingRepositoryProvider(erInstanceData);
         dataPopulator = null;
     }
 
@@ -67,37 +57,6 @@ public class EntityRelModel implements AutoCloseable {
 
     public ERSchema getSchema(){
         return schema;
-    }
-
-    /**
-     * @deprecated Compatibility snapshot access. Use {@link #getRepository(String)}
-     * and repository-native reads/writes instead.
-     */
-    @Deprecated(forRemoval = true, since = "1.5.6")
-    public ERInstanceData getInstanceData(){
-        return getInstanceData(DEFAULT_DATABASE_NAME);
-    }
-
-    /**
-     * @deprecated This returns compatibility instance data, not JSON. Use
-     * {@link #exportInstanceDataAsJson(String)} for JSON export.
-     */
-    @Deprecated(forRemoval = true, since = "1.5.6")
-    public ERInstanceData getInstanceDataAsJson(){
-        return getInstanceData(DEFAULT_DATABASE_NAME);
-    }
-
-    /**
-     * @deprecated Compatibility snapshot access. Use {@link #getRepository(String)}
-     * and repository-native reads/writes instead.
-     */
-    @Deprecated(forRemoval = true, since = "1.5.6")
-    public ERInstanceData getInstanceData(String databaseKey) {
-        ThingRepository repository = repositories.getRepository(databaseKey);
-        if(repository==null){
-            return null;
-        }
-        return repository.getInstanceData();
     }
 
     public String exportInstanceDataAsJson(final String databaseKey) {
@@ -131,16 +90,6 @@ public class EntityRelModel implements AutoCloseable {
     @Override
     public void close() {
         repositories.close();
-    }
-
-    // ERM Object Level
-    /**
-     * @deprecated Compatibility helper backed by legacy instance data. Prefer a
-     * repository/provider configured with the desired data source.
-     */
-    @Deprecated(forRemoval = true, since = "1.5.6")
-    public EntityRelModel cloneWithDifferentData(final List<EntityInstance> instances) {
-        return new EntityRelModel(schema, new ERInstanceData(instances));
     }
 
     // Schema methods
@@ -223,7 +172,7 @@ public class EntityRelModel implements AutoCloseable {
         return true;
     }
 
-    public void setDataGenerator(DataPopulator dataPopulator) {
+    public void setDataGenerator(RepositoryDataPopulator dataPopulator) {
         this.dataPopulator = dataPopulator;
     }
 
@@ -234,11 +183,6 @@ public class EntityRelModel implements AutoCloseable {
     }
 
     private void populateRepository(final ThingRepository repository) {
-        if(dataPopulator instanceof RepositoryDataPopulator) {
-            ((RepositoryDataPopulator) dataPopulator).populate(getSchema(), repository);
-            return;
-        }
-
-        LegacyDataPopulatorAdapter.populate(dataPopulator, getSchema(), repository);
+        dataPopulator.populate(getSchema(), repository);
     }
 }

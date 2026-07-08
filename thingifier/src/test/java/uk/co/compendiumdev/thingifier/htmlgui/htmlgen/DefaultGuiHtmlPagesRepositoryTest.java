@@ -48,7 +48,6 @@ public class DefaultGuiHtmlPagesRepositoryTest {
             String listHtml = pages.getInstancesListPage(
                     EntityRelModel.DEFAULT_DATABASE_NAME, "todo");
             Assertions.assertTrue(listHtml.contains("Repository&nbsp;Todo"), listHtml);
-            Assertions.assertFalse(repository.hasLoadedCompatibilitySnapshot());
 
             String detailHtml = pages.getInstanceDetailsPage(
                     EntityRelModel.DEFAULT_DATABASE_NAME,
@@ -57,7 +56,6 @@ public class DefaultGuiHtmlPagesRepositoryTest {
 
             Assertions.assertTrue(detailHtml.contains("Repository&nbsp;Project"), detailHtml);
             Assertions.assertTrue(detailHtml.contains("Repository&nbsp;Todo"), detailHtml);
-            Assertions.assertFalse(repository.hasLoadedCompatibilitySnapshot());
         }
     }
 }

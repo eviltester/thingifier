@@ -8,7 +8,6 @@ import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 
 import java.util.List;
 
@@ -26,12 +25,10 @@ public class QueryFiltersStringTest {
                 .addFields( Field.is("string", FieldType.STRING)
                 );
 
-        EntityInstanceCollection thing = erModel.getInstanceData().getInstanceCollectionForEntityNamed("thing");
-
-        thing.addInstance(new EntityInstance(thing.definition())).setValue("string", "one");
-        thing.addInstance(new EntityInstance(thing.definition())).setValue("string", "two");
-        thing.addInstance(new EntityInstance(thing.definition())).setValue("string", "three");
-        thing.addInstance(new EntityInstance(thing.definition())).setValue("string", "four");
+        RepositoryUrlQueryTestSupport.add(erModel, "thing", "string", "one");
+        RepositoryUrlQueryTestSupport.add(erModel, "thing", "string", "two");
+        RepositoryUrlQueryTestSupport.add(erModel, "thing", "string", "three");
+        RepositoryUrlQueryTestSupport.add(erModel, "thing", "string", "four");
 
     }
 

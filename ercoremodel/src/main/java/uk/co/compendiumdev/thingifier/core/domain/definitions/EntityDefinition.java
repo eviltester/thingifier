@@ -23,7 +23,7 @@ public class EntityDefinition {
 
     private static final int NO_INSTANCE_LIMIT = -1;
     public EntityDefinition(String name, String plural) {
-        this(name,plural,EntityDefinition.NO_INSTANCE_LIMIT);
+        this(name, plural, NO_INSTANCE_LIMIT);
     }
 
     public EntityDefinition(String name, String plural, int maxInstanceCount) {
@@ -125,7 +125,7 @@ public class EntityDefinition {
     }
 
     public void setNoMaxInstanceLimit() {
-        maxInstanceCount = EntityDefinition.NO_INSTANCE_LIMIT;
+        maxInstanceCount = NO_INSTANCE_LIMIT;
     }
 
     public boolean hasPrimaryKeyField() {

@@ -1,15 +1,15 @@
 package uk.co.compendiumdev.thingifier.swaggerizer;
 
+import uk.co.compendiumdev.thingifier.core.domain.datapopulator.RepositoryDataPopulator;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.ERSchema;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ERInstanceData;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
-import uk.co.compendiumdev.thingifier.core.domain.datapopulator.DataPopulator;
+import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
 
-public class TodoAPITestDataPopulator implements DataPopulator {
+public class TodoAPITestDataPopulator implements RepositoryDataPopulator {
 
     @Override
-    public void populate(final ERSchema schema, final ERInstanceData database) {
+    public void populate(final ERSchema schema, final ThingRepository repository) {
 
         String [] todos={
                         "scan paperwork",
@@ -21,11 +21,10 @@ public class TodoAPITestDataPopulator implements DataPopulator {
                         "train staff",
                         "schedule meeting"};
 
-        EntityInstanceCollection todo = database.getInstanceCollectionForEntityNamed("todo");
+        EntityDefinition todo = schema.getEntityDefinitionNamed("todo");
 
         for(String todoItem : todos){
-            todo.addInstance(new EntityInstance(todo.definition())).
-                                    setValue("title", todoItem);
+            repository.addInstance(new EntityInstance(todo).setValue("title", todoItem));
         }
     }
 }

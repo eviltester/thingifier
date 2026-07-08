@@ -6,10 +6,10 @@ import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.Cardinality;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
 
 import java.util.List;
 
@@ -23,7 +23,6 @@ public class TodoManagerQueryEngineTest {
     private EntityRelModel todoManager;
     EntityInstance paperwork;
     EntityInstance filework;
-    EntityInstanceCollection projects;
     EntityInstance officeCategory;
     private EntityDefinition project;
 
@@ -55,22 +54,22 @@ public class TodoManagerQueryEngineTest {
         todoManager.createRelationshipDefinition(category, project, "projects", Cardinality.ONE_TO_MANY());
         todoManager.createRelationshipDefinition(todo, category, "categories", Cardinality.ONE_TO_MANY());
 
-        final EntityInstanceCollection todos = todoManager.getInstanceData().getInstanceCollectionForEntityNamed("todo");
-        final EntityInstanceCollection categories = todoManager.getInstanceData().getInstanceCollectionForEntityNamed("category");
-        projects = todoManager.getInstanceData().getInstanceCollectionForEntityNamed("project");
+        ThingRepository repository = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME);
 
-        paperwork = todos.addInstance(new EntityInstance(todos.definition())).setValue("title", "scan paperwork");
+        paperwork = repository.addInstance(
+                new EntityInstance(todo).setValue("title", "scan paperwork"));
 
         //System.out.println(new Gson().toJson(JsonThing.asJsonObject(paperwork)));
 
-        filework = todos.addInstance(new EntityInstance(todos.definition())).setValue("title", "file paperwork");
+        filework = repository.addInstance(
+                new EntityInstance(todo).setValue("title", "file paperwork"));
 
-        officeCategory = categories.addInstance(new EntityInstance(categories.definition())).setValue("title", "Office");
+        officeCategory = repository.addInstance(
+                new EntityInstance(category).setValue("title", "Office"));
 
-        EntityInstance homeCategory = categories.addInstance(new EntityInstance(categories.definition())).setValue("title", "Home");
+        repository.addInstance(new EntityInstance(category).setValue("title", "Home"));
 
-
-        paperwork.getRelationships().connect("categories", officeCategory);
+        repository.connectRelationship(paperwork, "categories", officeCategory);
 
     }
 
@@ -199,10 +198,12 @@ public class TodoManagerQueryEngineTest {
         List<EntityInstance> queryResults;
 
         //
-        EntityInstance officeWork = projects.addInstance(new EntityInstance(projects.definition())).setValue("title", "Office Work");
+        ThingRepository repository = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME);
+        EntityInstance officeWork = repository.addInstance(
+                new EntityInstance(project).setValue("title", "Office Work"));
 
-        officeWork.getRelationships().connect("tasks", paperwork);
-        officeWork.getRelationships().connect("tasks", filework);
+        repository.connectRelationship(officeWork, "tasks", paperwork);
+        repository.connectRelationship(officeWork, "tasks", filework);
 
 
         // match on relationships

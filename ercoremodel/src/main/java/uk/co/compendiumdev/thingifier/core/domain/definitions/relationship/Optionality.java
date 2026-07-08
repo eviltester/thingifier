@@ -8,11 +8,11 @@ public enum Optionality {
 
     public static Optionality from(final String textRepresentation) {
         if(textRepresentation==null){
-            return Optionality.OPTIONAL_RELATIONSHIP;
+            return OPTIONAL_RELATIONSHIP;
         }
 
         return textRepresentation.equalsIgnoreCase("M") ?
-                Optionality.MANDATORY_RELATIONSHIP :
-                Optionality.OPTIONAL_RELATIONSHIP;
+                MANDATORY_RELATIONSHIP :
+                OPTIONAL_RELATIONSHIP;
     }
 }

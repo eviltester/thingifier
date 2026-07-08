@@ -8,7 +8,6 @@ import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 
 import java.util.List;
 
@@ -27,12 +26,10 @@ public class QueryFiltersFloatTest {
                         Field.is("float", FieldType.FLOAT)
                 );
 
-        EntityInstanceCollection thing = erModel.getInstanceData().getInstanceCollectionForEntityNamed("thing");
-
-        thing.addInstance(new EntityInstance(thing.definition())).setValue("float", "4.4");
-        thing.addInstance(new EntityInstance(thing.definition())).setValue("float", "1.1");
-        thing.addInstance(new EntityInstance(thing.definition())).setValue("float", "3.3");
-        thing.addInstance(new EntityInstance(thing.definition())).setValue("float", "2.2");
+        RepositoryUrlQueryTestSupport.add(erModel, "thing", "float", "4.4");
+        RepositoryUrlQueryTestSupport.add(erModel, "thing", "float", "1.1");
+        RepositoryUrlQueryTestSupport.add(erModel, "thing", "float", "3.3");
+        RepositoryUrlQueryTestSupport.add(erModel, "thing", "float", "2.2");
 
     }
 

@@ -5,7 +5,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
+import uk.co.compendiumdev.thingifier.testsupport.RepositoryBackedTestCollection;
+import uk.co.compendiumdev.thingifier.testsupport.ThingifierRepositoryTestSupport;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiResponse;
@@ -25,7 +26,7 @@ public class NestedObjectsApiTest {
     EntityDefinition defn;
     EntityInstance instance;
     ThingifierHttpApi api;
-    EntityInstanceCollection thing;
+    RepositoryBackedTestCollection thing;
 
     @BeforeEach
     public void createThingWithNestedObjectField(){
@@ -36,7 +37,7 @@ public class NestedObjectsApiTest {
         defn = thingifier.defineThing("thing", "things");
         defn.addAsPrimaryKeyField(Field.is("guid", FieldType.AUTO_GUID));
 
-        thing = thingifier.getThingInstancesNamed("thing", EntityRelModel.DEFAULT_DATABASE_NAME);
+        thing = ThingifierRepositoryTestSupport.collection(thingifier, "thing");
 
         defn.addField(Field.is("person", FieldType.OBJECT)
                 .withField(

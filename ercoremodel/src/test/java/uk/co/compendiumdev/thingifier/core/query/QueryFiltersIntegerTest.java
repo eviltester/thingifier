@@ -8,7 +8,6 @@ import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 
 import java.util.List;
 
@@ -31,12 +30,10 @@ public class QueryFiltersIntegerTest {
                             Field.is("int", FieldType.INTEGER)
                 );
 
-        EntityInstanceCollection thing = erModel.getInstanceData().getInstanceCollectionForEntityNamed("thing");
-
-        thing.addInstance(new EntityInstance(thing.definition())).setValue("int", "3");
-        thing.addInstance(new EntityInstance(thing.definition())).setValue("int", "1");
-        thing.addInstance(new EntityInstance(thing.definition())).setValue("int", "4");
-        thing.addInstance(new EntityInstance(thing.definition())).setValue("int", "2");
+        RepositoryUrlQueryTestSupport.add(erModel, "thing", "int", "3");
+        RepositoryUrlQueryTestSupport.add(erModel, "thing", "int", "1");
+        RepositoryUrlQueryTestSupport.add(erModel, "thing", "int", "4");
+        RepositoryUrlQueryTestSupport.add(erModel, "thing", "int", "2");
 
     }
 

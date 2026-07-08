@@ -8,7 +8,6 @@ import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 
 import java.util.List;
 
@@ -27,13 +26,11 @@ public class QueryFiltersIdTest {
                 .addFields( Field.is("fakeid", FieldType.INTEGER)
                 );
 
-        EntityInstanceCollection thing = erModel.getInstanceData().getInstanceCollectionForEntityNamed("thing");
-
         // fakeid is a proxy for the actual id which always starts at 1 and auto increments
-        thing.addInstance(new EntityInstance(thing.definition())).setValue("fakeid", "1");
-        thing.addInstance(new EntityInstance(thing.definition())).setValue("fakeid", "2");
-        thing.addInstance(new EntityInstance(thing.definition())).setValue("fakeid", "3");
-        thing.addInstance(new EntityInstance(thing.definition())).setValue("fakeid", "4");
+        RepositoryUrlQueryTestSupport.add(erModel, "thing", "fakeid", "1");
+        RepositoryUrlQueryTestSupport.add(erModel, "thing", "fakeid", "2");
+        RepositoryUrlQueryTestSupport.add(erModel, "thing", "fakeid", "3");
+        RepositoryUrlQueryTestSupport.add(erModel, "thing", "fakeid", "4");
 
     }
 

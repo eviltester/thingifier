@@ -10,7 +10,6 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
 import uk.co.compendiumdev.thingifier.core.query.RepositoryUrlQuery;
 
@@ -124,7 +123,7 @@ public class ThingRepositoryContractTest {
     }
 
     @Test
-    public void sqliteFileBackedRepositoryOnlyHydratesCompatibilitySnapshotWhenRequested() {
+    public void sqliteFileBackedRepositoryFiltersAfterReopen() {
         ERSchema schema = todoSchema();
         EntityDefinition projectDefinition = schema.getEntityDefinitionNamed("project");
         Path databasePath = tempDir.resolve("lazy.sqlite");
@@ -141,26 +140,19 @@ public class ThingRepositoryContractTest {
                      SqliteThingRepository.fileBacked(EntityRelModel.DEFAULT_DATABASE_NAME, databasePath)) {
             reopened.initializeFrom(schema);
 
-            EntityInstanceCollection cachedProjects =
-                    reopened.getInstanceCollectionForEntityNamed("project");
-            Assertions.assertEquals(0, cachedProjects.countInstances());
-
             QueryFilterParams params = new QueryFilterParams();
             params.put("title", "First");
 
             List<EntityInstance> filtered = reopened.listInstances(projectDefinition, params);
 
             Assertions.assertEquals(1, filtered.size());
-            Assertions.assertEquals(1, cachedProjects.countInstances());
-
-            reopened.getInstanceData();
-
-            Assertions.assertEquals(2, cachedProjects.countInstances());
+            Assertions.assertEquals("First", filtered.get(0).getFieldValue("title").asString());
+            Assertions.assertEquals(2, reopened.countInstances(projectDefinition));
         }
     }
 
     @Test
-    public void sqliteCountInstancesDoesNotHydrateCompatibilitySnapshot() {
+    public void sqliteCountInstancesWorksAfterReopen() {
         ERSchema schema = todoSchema();
         EntityDefinition projectDefinition = schema.getEntityDefinitionNamed("project");
         Path databasePath = tempDir.resolve("count-lazy.sqlite");
@@ -177,13 +169,7 @@ public class ThingRepositoryContractTest {
                      SqliteThingRepository.fileBacked(EntityRelModel.DEFAULT_DATABASE_NAME, databasePath)) {
             reopened.initializeFrom(schema);
 
-            EntityInstanceCollection cachedProjects =
-                    reopened.getInstanceCollectionForEntityNamed("project");
-
-            Assertions.assertEquals(0, cachedProjects.countInstances());
             Assertions.assertEquals(2, reopened.countInstances(projectDefinition));
-            Assertions.assertEquals(0, cachedProjects.countInstances());
-            Assertions.assertFalse(reopened.hasLoadedCompatibilitySnapshot());
         }
     }
 
@@ -203,12 +189,11 @@ public class ThingRepositoryContractTest {
 
             assertExportedJsonContainsProjectAndTask(memoryRepository.exportDataAsJson(schema));
             assertExportedJsonContainsProjectAndTask(sqliteRepository.exportDataAsJson(schema));
-            Assertions.assertFalse(sqliteRepository.hasLoadedCompatibilitySnapshot());
         }
     }
 
     @Test
-    public void sqliteJsonExportDoesNotHydrateCompatibilitySnapshot() {
+    public void sqliteJsonExportWorksAfterReopen() {
         ERSchema schema = todoSchema();
         Path databasePath = tempDir.resolve("export-lazy.sqlite");
 
@@ -222,20 +207,9 @@ public class ThingRepositoryContractTest {
                      SqliteThingRepository.fileBacked(EntityRelModel.DEFAULT_DATABASE_NAME, databasePath)) {
             reopened.initializeFrom(schema);
 
-            EntityInstanceCollection cachedProjects =
-                    reopened.getInstanceCollectionForEntityNamed("project");
-            EntityInstanceCollection cachedTasks =
-                    reopened.getInstanceCollectionForEntityNamed("task");
-
-            Assertions.assertEquals(0, cachedProjects.countInstances());
-            Assertions.assertEquals(0, cachedTasks.countInstances());
-
             String json = reopened.exportDataAsJson(schema);
 
             assertExportedJsonContainsProjectAndTask(json);
-            Assertions.assertFalse(reopened.hasLoadedCompatibilitySnapshot());
-            Assertions.assertEquals(0, cachedProjects.countInstances());
-            Assertions.assertEquals(0, cachedTasks.countInstances());
         }
     }
 
@@ -255,12 +229,11 @@ public class ThingRepositoryContractTest {
             Assertions.assertTrue(markdown.contains("## Of project"));
             Assertions.assertTrue(markdown.contains("Repository project"));
             Assertions.assertTrue(markdown.contains("Wire repository"));
-            Assertions.assertFalse(repository.hasLoadedCompatibilitySnapshot());
         }
     }
 
     @Test
-    public void sqliteRelationshipReadsDoNotHydrateCompatibilitySnapshot() {
+    public void sqliteRelationshipReadsWorkAfterReopen() {
         ERSchema schema = todoSchema();
         EntityDefinition projectDefinition = schema.getEntityDefinitionNamed("project");
         EntityDefinition taskDefinition = schema.getEntityDefinitionNamed("task");
@@ -285,8 +258,6 @@ public class ThingRepositoryContractTest {
                      SqliteThingRepository.fileBacked(EntityRelModel.DEFAULT_DATABASE_NAME, databasePath)) {
             reopened.initializeFrom(schema);
 
-            Assertions.assertFalse(reopened.hasLoadedCompatibilitySnapshot());
-
             EntityInstance project = reopened.findInstanceByPrimaryKey(projectDefinition, "1");
 
             QueryFilterParams params = new QueryFilterParams();
@@ -298,7 +269,6 @@ public class ThingRepositoryContractTest {
             Assertions.assertEquals(1, filteredTasks.size());
             Assertions.assertEquals("Wire repository",
                     filteredTasks.get(0).getFieldValue("title").asString());
-            Assertions.assertFalse(reopened.hasLoadedCompatibilitySnapshot());
 
             QueryFilterParams regexParams = new QueryFilterParams();
             regexParams.put("title", "~=Wire [Rr]epository");
@@ -309,7 +279,6 @@ public class ThingRepositoryContractTest {
             Assertions.assertEquals(1, regexFilteredTasks.size());
             Assertions.assertEquals("Wire repository",
                     regexFilteredTasks.get(0).getFieldValue("title").asString());
-            Assertions.assertFalse(reopened.hasLoadedCompatibilitySnapshot());
 
             RepositoryUrlQuery query =
                     new RepositoryUrlQuery(schema, reopened, "project/1/tasks").
@@ -317,12 +286,11 @@ public class ThingRepositoryContractTest {
 
             Assertions.assertTrue(query.isResultACollection());
             Assertions.assertEquals(2, query.getListEntityInstances().size());
-            Assertions.assertFalse(reopened.hasLoadedCompatibilitySnapshot());
         }
     }
 
     @Test
-    public void sqliteConvertibleRegexFilterDoesNotHydrateCompatibilitySnapshot() {
+    public void sqliteConvertibleRegexFilterWorksAfterReopen() {
         ERSchema schema = todoSchema();
         EntityDefinition projectDefinition = schema.getEntityDefinitionNamed("project");
         Path databasePath = tempDir.resolve("regex-like-lazy.sqlite");
@@ -352,14 +320,12 @@ public class ThingRepositoryContractTest {
             Assertions.assertEquals(1, filtered.size());
             Assertions.assertEquals("Repository project",
                     filtered.get(0).getFieldValue("title").asString());
-            Assertions.assertFalse(reopened.hasLoadedCompatibilitySnapshot());
-            Assertions.assertEquals(1,
-                    reopened.getInstanceCollectionForEntityNamed("project").countInstances());
+            Assertions.assertEquals(3, reopened.countInstances(projectDefinition));
         }
     }
 
     @Test
-    public void sqliteRegexpFilterDoesNotHydrateCompatibilitySnapshot() {
+    public void sqliteRegexpFilterWorksAfterReopen() {
         ERSchema schema = todoSchema();
         EntityDefinition projectDefinition = schema.getEntityDefinitionNamed("project");
         Path databasePath = tempDir.resolve("regex-regexp-lazy.sqlite");
@@ -387,14 +353,12 @@ public class ThingRepositoryContractTest {
             Assertions.assertEquals(1, filtered.size());
             Assertions.assertEquals("Repository project",
                     filtered.get(0).getFieldValue("title").asString());
-            Assertions.assertFalse(reopened.hasLoadedCompatibilitySnapshot());
-            Assertions.assertEquals(1,
-                    reopened.getInstanceCollectionForEntityNamed("project").countInstances());
+            Assertions.assertEquals(2, reopened.countInstances(projectDefinition));
         }
     }
 
     @Test
-    public void sqliteInMemoryRegexpFilterDoesNotHydrateCompatibilitySnapshot() {
+    public void sqliteInMemoryRegexpFilterWorks() {
         ERSchema schema = todoSchema();
         EntityDefinition projectDefinition = schema.getEntityDefinitionNamed("project");
 
@@ -416,12 +380,11 @@ public class ThingRepositoryContractTest {
             Assertions.assertEquals(1, filtered.size());
             Assertions.assertEquals("Repository project",
                     filtered.get(0).getFieldValue("title").asString());
-            Assertions.assertFalse(repository.hasLoadedCompatibilitySnapshot());
         }
     }
 
     @Test
-    public void sqliteInvalidRegexFilterFailsWithoutHydratingCompatibilitySnapshot() {
+    public void sqliteInvalidRegexFilterFails() {
         ERSchema schema = todoSchema();
         EntityDefinition projectDefinition = schema.getEntityDefinitionNamed("project");
 
@@ -437,12 +400,11 @@ public class ThingRepositoryContractTest {
             Assertions.assertThrows(
                     SqliteRegexFilterPolicy.UnsupportedRegexFilterException.class,
                     () -> repository.listInstances(projectDefinition, regexParams));
-            Assertions.assertFalse(repository.hasLoadedCompatibilitySnapshot());
         }
     }
 
     @Test
-    public void sqliteTooComplexRegexFilterFailsWithoutHydratingCompatibilitySnapshot() {
+    public void sqliteTooComplexRegexFilterFails() {
         ERSchema schema = todoSchema();
         EntityDefinition projectDefinition = schema.getEntityDefinitionNamed("project");
 
@@ -458,7 +420,6 @@ public class ThingRepositoryContractTest {
             Assertions.assertThrows(
                     SqliteRegexFilterPolicy.UnsupportedRegexFilterException.class,
                     () -> repository.listInstances(projectDefinition, regexParams));
-            Assertions.assertFalse(repository.hasLoadedCompatibilitySnapshot());
         }
     }
 

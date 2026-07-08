@@ -66,9 +66,9 @@ public final class FieldValue {
 
     public FieldValue cloned() {
         if(objectValue!=null){
-            return FieldValue.is(forField, objectValue.cloned());
+            return is(forField, objectValue.cloned());
         }else{
-            return FieldValue.is(forField, valueOfField);
+            return is(forField, valueOfField);
         }
     }
 

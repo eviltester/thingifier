@@ -6,7 +6,8 @@ import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.casestudy.todomanager.TodoManagerModel;
 import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
+import uk.co.compendiumdev.thingifier.testsupport.RepositoryBackedTestCollection;
+import uk.co.compendiumdev.thingifier.testsupport.ThingifierRepositoryTestSupport;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
@@ -21,8 +22,8 @@ public class VerbGetEntityInstanceApiNonHttpTest {
 
     private Thingifier todoManager;
 
-    EntityInstanceCollection todo;
-    EntityInstanceCollection project;
+    RepositoryBackedTestCollection todo;
+    RepositoryBackedTestCollection project;
 
 
     // TODO: tests that use the TodoManagerModel were created early and are too complicated - simplify
@@ -35,8 +36,8 @@ public class VerbGetEntityInstanceApiNonHttpTest {
 
         todoManager = TodoManagerModel.definedAsThingifier();
 
-        todo = todoManager.getThingInstancesNamed("todo", EntityRelModel.DEFAULT_DATABASE_NAME);
-        project = todoManager.getThingInstancesNamed("project", EntityRelModel.DEFAULT_DATABASE_NAME);
+        todo = ThingifierRepositoryTestSupport.collection(todoManager, "todo");
+        project = ThingifierRepositoryTestSupport.collection(todoManager, "project");
 
     }
     

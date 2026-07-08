@@ -6,13 +6,11 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.NamedValue;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVectorDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.AutoIncrement;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ERInstanceData;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
-import uk.co.compendiumdev.thingifier.core.domain.instances.RelationshipVectorInstance;
 import uk.co.compendiumdev.thingifier.core.query.EntityInstanceListSorter;
 import uk.co.compendiumdev.thingifier.core.query.EntityListSortParamParser;
 import uk.co.compendiumdev.thingifier.core.query.FilterBy;
@@ -40,22 +38,26 @@ import java.util.UUID;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
-public class SqliteThingRepository extends InMemoryThingRepository {
+public class SqliteThingRepository implements ThingRepository {
 
     private static final Logger LOGGER =
             Logger.getLogger(SqliteThingRepository.class.getName());
     private static final String INTERNAL_ID_COLUMN = "__internal_id";
     private static final String COUNTERS_TABLE = "__thingifier_counters";
 
+    private final String databaseKey;
     private final String jdbcUrl;
+    private final Map<String, EntityInstance> materializedInstances;
+    private final Map<String, Map<String, AutoIncrement>> countersByEntity;
     private ERSchema schema;
     private Connection connection;
-    private boolean legacySnapshotLoaded;
     private boolean closed;
 
     public SqliteThingRepository(final String databaseKey, final String jdbcUrl) {
-        super(databaseKey, new ERInstanceData());
+        this.databaseKey = databaseKey;
         this.jdbcUrl = jdbcUrl;
+        this.materializedInstances = new HashMap<>();
+        this.countersByEntity = new HashMap<>();
     }
 
     public static SqliteThingRepository inMemory(final String databaseKey) {
@@ -68,25 +70,16 @@ public class SqliteThingRepository extends InMemoryThingRepository {
     }
 
     @Override
+    public String databaseKey() {
+        return databaseKey;
+    }
+
+    @Override
     public void initializeFrom(final ERSchema schema) {
         this.schema = schema;
         openConnection();
         createMetadataTables();
         refreshSchema(schema);
-    }
-
-    @Override
-    public ERInstanceData getInstanceData() {
-        if (!legacySnapshotLoaded) {
-            loadExistingData();
-            legacySnapshotLoaded = true;
-        }
-        return super.getInstanceData();
-    }
-
-    @Override
-    public boolean hasLoadedCompatibilitySnapshot() {
-        return legacySnapshotLoaded;
     }
 
     @Override
@@ -116,22 +109,14 @@ public class SqliteThingRepository extends InMemoryThingRepository {
     public void refreshSchema(final ERSchema schema) {
         this.schema = schema;
         openConnection();
-        super.refreshSchema(schema);
         for (EntityDefinition entity : schema.getEntityDefinitions()) {
+            initializeCountersFor(entity);
             createEntityTable(entity);
+            restoreCountersFor(entity);
         }
         for (RelationshipVectorDefinition vector : relationshipVectors()) {
             createRelationshipTable(vector);
         }
-    }
-
-    @Override
-    public EntityInstanceCollection createInstanceCollectionFor(final EntityDefinition definition) {
-        EntityInstanceCollection collection = super.createInstanceCollectionFor(definition);
-        if (connection != null) {
-            createEntityTable(definition);
-        }
-        return collection;
     }
 
     @Override
@@ -243,8 +228,9 @@ public class SqliteThingRepository extends InMemoryThingRepository {
     public EntityInstance addInstance(final EntityInstance instance) {
         ensureSchemaReady();
         runInTransaction(() -> {
-            super.addInstance(instance);
+            prepareInstanceForInsert(instance);
             persistInstance(instance);
+            materializedInstances.put(instance.getInternalId(), instance);
             persistCountersFor(instance.getEntity());
         });
         return instance;
@@ -255,6 +241,7 @@ public class SqliteThingRepository extends InMemoryThingRepository {
         ensureSchemaReady();
         runInTransaction(() -> {
             persistInstance(instance);
+            materializedInstances.put(instance.getInternalId(), instance);
             persistCountersFor(instance.getEntity());
         });
         return instance;
@@ -263,52 +250,38 @@ public class SqliteThingRepository extends InMemoryThingRepository {
     @Override
     public void deleteEntityInstance(final EntityInstance instance) {
         ensureSchemaReady();
-        if (!legacySnapshotLoaded) {
-            runInTransaction(() -> {
-                super.deleteEntityInstance(instance);
-                deletePersistedInstance(instance.getInternalId());
-            });
-            return;
-        }
-
-        Set<String> idsBeforeDelete = currentInternalIds();
-        super.deleteEntityInstance(instance);
-        Set<String> idsAfterDelete = currentInternalIds();
-
-        runInTransaction(() -> {
-            idsBeforeDelete.removeAll(idsAfterDelete);
-            for (String internalId : idsBeforeDelete) {
-                deletePersistedInstance(internalId);
-            }
-            replaceAllRelationshipRowsFromCache();
-        });
+        runInTransaction(() -> deleteEntityInstanceAndMandatoryRelated(instance, new HashSet<>()));
     }
 
     @Override
     public void clearAllData() {
         ensureSchemaReady();
-        super.clearAllData();
         runInTransaction(() -> {
             for (EntityDefinition entity : schema.getEntityDefinitions()) {
                 executeSql("DELETE FROM " + table(entity));
+                resetCountersFor(entity);
                 persistCountersFor(entity);
             }
             clearRelationshipRows();
+            materializedInstances.clear();
         });
     }
 
     @Override
     public void clearInstanceDataFor(final String entityName) {
         ensureSchemaReady();
-        EntityInstanceCollection collection = getInstanceCollectionForEntityNamed(entityName);
-        if (collection == null) {
+        EntityDefinition entity = schema.getEntityDefinitionNamed(entityName);
+        if (entity == null) {
             return;
         }
-        super.clearInstanceDataFor(entityName);
         runInTransaction(() -> {
-            executeSql("DELETE FROM " + table(collection.definition()));
-            persistCountersFor(collection.definition());
-            replaceAllRelationshipRowsFromCache();
+            Set<String> internalIds = internalIdsFor(entity);
+            executeSql("DELETE FROM " + table(entity));
+            deleteRelationshipRowsInvolving(internalIds);
+            resetCountersFor(entity);
+            persistCountersFor(entity);
+            materializedInstances.entrySet().
+                    removeIf(entry -> entry.getValue().getEntity() == entity);
         });
     }
 
@@ -316,7 +289,7 @@ public class SqliteThingRepository extends InMemoryThingRepository {
     public void connectRelationship(
             final EntityInstance from, final String relationshipName, final EntityInstance to) {
         ensureSchemaReady();
-        super.connectRelationship(from, relationshipName, to);
+        from.getRelationships().connect(relationshipName, to);
         runInTransaction(() -> persistRelationship(from, relationshipName, to));
     }
 
@@ -326,7 +299,9 @@ public class SqliteThingRepository extends InMemoryThingRepository {
             final EntityInstance child,
             final String relationshipName) {
         ensureSchemaReady();
-        List<EntityInstance> removed = super.removeRelationshipsInvolving(parent, child, relationshipName);
+        materializeRelationshipsInvolving(parent, child, relationshipName);
+        List<EntityInstance> removed = parent.getRelationships().
+                removeRelationshipsInvolving(child, relationshipName);
         runInTransaction(() -> deleteRelationshipRowsInvolving(parent, child, relationshipName));
         return removed;
     }
@@ -334,7 +309,8 @@ public class SqliteThingRepository extends InMemoryThingRepository {
     @Override
     public List<EntityInstance> removeAllRelationships(final EntityInstance instance) {
         ensureSchemaReady();
-        List<EntityInstance> removed = super.removeAllRelationships(instance);
+        materializeRelationshipsFor(instance);
+        List<EntityInstance> removed = instance.getRelationships().removeAllRelationships();
         runInTransaction(() -> deleteRelationshipRowsInvolving(instance));
         return removed;
     }
@@ -357,9 +333,6 @@ public class SqliteThingRepository extends InMemoryThingRepository {
             }
         }
 
-        if (connected.isEmpty() && legacySnapshotLoaded) {
-            return super.getConnectedItems(instance, relationshipName);
-        }
         return connected;
     }
 
@@ -388,33 +361,73 @@ public class SqliteThingRepository extends InMemoryThingRepository {
     }
 
     @Override
-    public void flush() {
-        if (!legacySnapshotLoaded) {
-            return;
-        }
-        refreshSchema(schema);
-        runInTransaction(() -> {
-            for (EntityDefinition entity : schema.getEntityDefinitions()) {
-                executeSql("DELETE FROM " + table(entity));
-            }
-            clearRelationshipRows();
+    public ValidationReport checkFieldsForUniqueNess(
+            final EntityInstance instance, final boolean isAmendment) {
+        ensureSchemaReady();
 
-            for (EntityInstanceCollection collection : getAllInstanceCollections()) {
-                for (EntityInstance instance : collection.getInstances()) {
-                    persistInstance(instance);
+        ValidationReport report = new ValidationReport();
+        for (String fieldName : instance.getEntity().getFieldNames()) {
+            Field field = instance.getEntity().getField(fieldName);
+            if (!field.mustBeUnique()) {
+                continue;
+            }
+
+            FieldValue value = instance.getFieldValue(fieldName);
+            if (value == null) {
+                continue;
+            }
+
+            String sql = "SELECT * FROM " + table(instance.getEntity()) +
+                    " WHERE " + identifier(fieldName) + " = ?";
+            List<EntityInstance> matching = queryEntityRows(
+                    instance.getEntity(),
+                    sql,
+                    List.of(field.getActualValueToAdd(value)));
+            String uniqueValue = value.asUniqueComparisonString();
+            for (EntityInstance existing : matching) {
+                if (isAmendment &&
+                        existing.getPrimaryKeyValue().equals(instance.getPrimaryKeyValue())) {
+                    continue;
                 }
-                persistCountersFor(collection.definition());
-            }
 
-            replaceAllRelationshipRowsFromCache();
-        });
+                FieldValue existingValue = existing.getFieldValue(fieldName);
+                if (existingValue != null &&
+                        uniqueValue.equals(existingValue.asUniqueComparisonString())) {
+                    report.setValid(false);
+                    report.addErrorMessage("Field %s Value is not unique".formatted(fieldName));
+                    return report;
+                }
+            }
+        }
+        return report;
+    }
+
+    @Override
+    public Map<String, AutoIncrement> countersFor(final EntityDefinition entity) {
+        initializeCountersFor(entity);
+        return countersByEntity.get(entity.getName());
+    }
+
+    @Override
+    public void setNextIdCountersToAccomodate(
+            final EntityDefinition entity, final List<NamedValue> fieldValues) {
+        initializeCountersFor(entity);
+        for (NamedValue fieldNameValue : fieldValues) {
+            Field field = entity.getField(fieldNameValue.getName());
+            if (field != null && field.getType() == FieldType.AUTO_INCREMENT) {
+                AutoIncrement counter = counterFor(entity, field);
+                counter.incrementToNextAbove(Integer.parseInt(fieldNameValue.value));
+            }
+        }
+        ensureSchemaReady();
+        persistCountersFor(entity);
     }
 
     @Override
     public void resetAutoIncrementCounter(final EntityDefinition entity, final String fieldName) {
         ensureSchemaReady();
         runInTransaction(() -> {
-            super.resetAutoIncrementCounter(entity, fieldName);
+            resetAutoIncrementCounterInCache(entity, fieldName);
             persistCountersFor(entity);
         });
     }
@@ -431,6 +444,211 @@ public class SqliteThingRepository extends InMemoryThingRepository {
         } catch (SQLException e) {
             throw new IllegalStateException("Could not close SQLite repository", e);
         }
+    }
+
+    private void prepareInstanceForInsert(final EntityInstance instance) {
+        EntityDefinition entity = instance.getEntity();
+        initializeCountersFor(entity);
+
+        if (entity.hasMaxInstanceLimit() && countInstances(entity) >= entity.getMaxInstanceLimit()) {
+            throw new RuntimeException(
+                    String.format(
+                            "ERROR: Cannot add instance, maximum limit of %d reached",
+                            entity.getMaxInstanceLimit()));
+        }
+
+        List<String> explicitAutoIncrementFields = new ArrayList<>();
+        for (Field field : entity.getFieldsOfType(FieldType.AUTO_GUID, FieldType.AUTO_INCREMENT)) {
+            if (!instance.hasInstantiatedFieldNamed(field.getName())) {
+                if (field.getType() == FieldType.AUTO_GUID) {
+                    instance.setValue(field.getName(), UUID.randomUUID().toString());
+                }
+                if (field.getType() == FieldType.AUTO_INCREMENT) {
+                    instance.overrideValue(
+                            field.getName(),
+                            String.valueOf(counterFor(entity, field).getNextValueAndUpdate()));
+                }
+            } else if (field.getType() == FieldType.AUTO_INCREMENT) {
+                explicitAutoIncrementFields.add(field.getName());
+            }
+        }
+
+        if (entity.hasPrimaryKeyField()) {
+            Field primaryField = entity.getPrimaryKeyField();
+            if (!instance.hasInstantiatedFieldNamed(primaryField.getName())) {
+                throw new RuntimeException(
+                        String.format(
+                                "ERROR: Cannot add instance, primary key field %s not set",
+                                primaryField.getName()));
+            }
+
+            EntityInstance existing = findInstanceByPrimaryKey(entity, instance.getPrimaryKeyValue());
+            if (existing != null && !existing.getInternalId().equals(instance.getInternalId())) {
+                throw new RuntimeException(
+                        "ERROR: Cannot add instance, another instance with primary key value exists: " +
+                                existing.getPrimaryKeyValue());
+            }
+        }
+
+        for (String fieldName : explicitAutoIncrementFields) {
+            AutoIncrement counter = countersFor(entity).get(fieldName);
+            int value = instance.getFieldValue(fieldName).asInteger();
+            if (counter.getCurrentValue() < value) {
+                counter.incrementToNextAbove(value);
+            }
+        }
+    }
+
+    private void initializeCountersFor(final EntityDefinition entity) {
+        Map<String, AutoIncrement> counters =
+                countersByEntity.computeIfAbsent(entity.getName(), ignored -> new HashMap<>());
+        for (Field field : entity.getFieldsOfType(FieldType.AUTO_INCREMENT)) {
+            counters.computeIfAbsent(
+                    field.getName(),
+                    ignored -> new AutoIncrement(field.getName(), field.getDefaultValue().asInteger()));
+        }
+    }
+
+    private AutoIncrement counterFor(final EntityDefinition entity, final Field field) {
+        initializeCountersFor(entity);
+        return countersByEntity.get(entity.getName()).
+                computeIfAbsent(
+                        field.getName(),
+                        ignored -> new AutoIncrement(field.getName(), field.getDefaultValue().asInteger()));
+    }
+
+    private void resetCountersFor(final EntityDefinition entity) {
+        countersByEntity.remove(entity.getName());
+        initializeCountersFor(entity);
+    }
+
+    private void resetAutoIncrementCounterInCache(
+            final EntityDefinition entity, final String fieldName) {
+        Field field = entity.getField(fieldName);
+        if (field == null || field.getType() != FieldType.AUTO_INCREMENT) {
+            throw new IllegalArgumentException(
+                    String.format("%s is not an auto-increment field on %s", fieldName, entity.getName()));
+        }
+
+        AutoIncrement counter = counterFor(entity, field);
+        counter.incrementToNextAbove(field.getDefaultValue().asInteger() - 1);
+    }
+
+    private void deleteEntityInstanceAndMandatoryRelated(
+            final EntityInstance instance, final Set<String> alreadyDeleting) {
+        if (!alreadyDeleting.add(instance.getInternalId())) {
+            return;
+        }
+
+        materializeRelationshipsFor(instance);
+        List<EntityInstance> alsoDelete =
+                instance.getRelationships().removeAllRelationships();
+        deletePersistedInstance(instance.getInternalId());
+        materializedInstances.remove(instance.getInternalId());
+
+        for (EntityInstance deleteMe : alsoDelete) {
+            if (!deleteMe.getInternalId().equals(instance.getInternalId())) {
+                deleteEntityInstanceAndMandatoryRelated(deleteMe, alreadyDeleting);
+            }
+        }
+    }
+
+    private void materializeRelationshipsInvolving(
+            final EntityInstance parent,
+            final EntityInstance child,
+            final String relationshipName) {
+        for (RelationshipVectorDefinition vector : relationshipVectors()) {
+            if (!vector.getRelationshipDefinition().isKnownAs(relationshipName)) {
+                continue;
+            }
+            if (!relationshipRowExists(parent, child, vector)) {
+                continue;
+            }
+            EntityInstance from = parent.getEntity() == vector.getFrom() ? parent : child;
+            EntityInstance to = from == parent ? child : parent;
+            if (!from.getRelationships().getConnectedItems(vector.getName()).contains(to)) {
+                from.getRelationships().connect(vector.getName(), to);
+            }
+        }
+    }
+
+    private void materializeRelationshipsFor(final EntityInstance instance) {
+        for (RelationshipVectorDefinition vector : relationshipVectors()) {
+            String sql = "SELECT from_internal_id, to_internal_id FROM " +
+                    relationshipTable(vector) +
+                    " WHERE from_internal_id = ? OR to_internal_id = ?";
+            try (PreparedStatement statement = connection.prepareStatement(sql)) {
+                statement.setString(1, instance.getInternalId());
+                statement.setString(2, instance.getInternalId());
+                try (ResultSet resultSet = statement.executeQuery()) {
+                    while (resultSet.next()) {
+                        EntityInstance from = findInstanceByInternalId(
+                                vector.getFrom(),
+                                resultSet.getString("from_internal_id"));
+                        EntityInstance to = findInstanceByInternalId(
+                                vector.getTo(),
+                                resultSet.getString("to_internal_id"));
+                        if (from != null && to != null &&
+                                !from.getRelationships().getConnectedItems(vector.getName()).contains(to)) {
+                            from.getRelationships().connect(vector.getName(), to);
+                        }
+                    }
+                }
+            } catch (SQLException e) {
+                throw new IllegalStateException("Could not materialize SQLite relationship rows", e);
+            }
+        }
+    }
+
+    private boolean relationshipRowExists(
+            final EntityInstance parent,
+            final EntityInstance child,
+            final RelationshipVectorDefinition vector) {
+        String sql = "SELECT 1 FROM " + relationshipTable(vector) +
+                " WHERE (from_internal_id = ? AND to_internal_id = ?)" +
+                " OR (from_internal_id = ? AND to_internal_id = ?)" +
+                " LIMIT 1";
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, parent.getInternalId());
+            statement.setString(2, child.getInternalId());
+            statement.setString(3, child.getInternalId());
+            statement.setString(4, parent.getInternalId());
+            try (ResultSet resultSet = statement.executeQuery()) {
+                return resultSet.next();
+            }
+        } catch (SQLException e) {
+            throw new IllegalStateException("Could not query SQLite relationship row", e);
+        }
+    }
+
+    private EntityInstance findInstanceByInternalId(
+            final EntityDefinition entity, final String internalId) {
+        if (internalId == null) {
+            return null;
+        }
+        EntityInstance existing = materializedInstances.get(internalId);
+        if (existing != null) {
+            return existing;
+        }
+
+        String sql = "SELECT * FROM " + table(entity) +
+                " WHERE " + identifier(INTERNAL_ID_COLUMN) + " = ? LIMIT 1";
+        List<EntityInstance> instances = queryEntityRows(entity, sql, List.of(internalId));
+        return instances.isEmpty() ? null : instances.get(0);
+    }
+
+    private Set<String> internalIdsFor(final EntityDefinition entity) {
+        Set<String> ids = new HashSet<>();
+        String sql = "SELECT " + identifier(INTERNAL_ID_COLUMN) + " FROM " + table(entity);
+        try (Statement statement = connection.createStatement();
+             ResultSet resultSet = statement.executeQuery(sql)) {
+            while (resultSet.next()) {
+                ids.add(resultSet.getString(INTERNAL_ID_COLUMN));
+            }
+        } catch (SQLException e) {
+            throw new IllegalStateException("Could not query SQLite ids for " + entity.getName(), e);
+        }
+        return ids;
     }
 
     private void openConnection() {
@@ -539,68 +757,14 @@ public class SqliteThingRepository extends InMemoryThingRepository {
                         " (" + identifier(columnName) + ")");
     }
 
-    private void loadExistingData() {
-        for (EntityDefinition entity : schema.getEntityDefinitions()) {
-            loadEntityRows(entity);
-            restoreCountersFor(entity);
-        }
-        loadRelationshipRows();
-    }
-
-    private void loadEntityRows(final EntityDefinition entity) {
-        EntityInstanceCollection collection = getInstanceCollectionForEntityNamed(entity.getName());
-        String sql = "SELECT * FROM " + table(entity);
-        try (Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery(sql)) {
-            while (resultSet.next()) {
-                String internalId = resultSet.getString(INTERNAL_ID_COLUMN);
-                if (collection.findInstanceByInternalID(internalId) != null) {
-                    continue;
-                }
-
-                EntityInstance instance = new EntityInstance(entity, UUID.fromString(internalId));
-                for (String fieldName : entity.getFieldNames()) {
-                    String value = resultSet.getString(fieldName);
-                    if (value != null) {
-                        instance.overrideValue(fieldName, value);
-                    }
-                }
-                collection.addInstance(instance);
-            }
-        } catch (SQLException e) {
-            throw new IllegalStateException("Could not load SQLite entity rows for " + entity.getName(), e);
-        }
-    }
-
-    private void loadRelationshipRows() {
-        Map<String, EntityInstance> instances = instancesByInternalId();
-        for (RelationshipVectorDefinition vector : relationshipVectors()) {
-            String sql = "SELECT from_internal_id, to_internal_id FROM " + relationshipTable(vector);
-            try (Statement statement = connection.createStatement();
-                 ResultSet resultSet = statement.executeQuery(sql)) {
-                while (resultSet.next()) {
-                    EntityInstance from = instances.get(resultSet.getString("from_internal_id"));
-                    EntityInstance to = instances.get(resultSet.getString("to_internal_id"));
-                    if (from != null && to != null &&
-                            !from.getRelationships().getConnectedItems(vector.getName()).contains(to)) {
-                        from.getRelationships().connect(vector.getName(), to);
-                    }
-                }
-            } catch (SQLException e) {
-                throw new IllegalStateException("Could not load SQLite relationship rows", e);
-            }
-        }
-    }
-
     private void restoreCountersFor(final EntityDefinition entity) {
-        EntityInstanceCollection collection = getInstanceCollectionForEntityNamed(entity.getName());
         String sql = "SELECT field_name, next_value FROM " + identifier(COUNTERS_TABLE) +
                 " WHERE entity_name = ?";
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, entity.getName());
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
-                    AutoIncrement counter = collection.getCounters().get(resultSet.getString("field_name"));
+                    AutoIncrement counter = countersFor(entity).get(resultSet.getString("field_name"));
                     if (counter != null) {
                         int nextValue = resultSet.getInt("next_value");
                         if (counter.getCurrentValue() < nextValue) {
@@ -845,22 +1009,29 @@ public class SqliteThingRepository extends InMemoryThingRepository {
     private EntityInstance instanceFromRow(
             final EntityDefinition entity, final ResultSet resultSet) throws SQLException {
         String internalId = resultSet.getString(INTERNAL_ID_COLUMN);
-        EntityInstanceCollection collection = getInstanceCollectionForEntityNamed(entity.getName());
-        EntityInstance existing = collection.findInstanceByInternalID(internalId);
+        EntityInstance existing = materializedInstances.get(internalId);
         if (existing != null) {
+            hydrateInstanceFromRow(existing, resultSet);
             return existing;
         }
 
         EntityInstance instance = new EntityInstance(
                 entity, UUID.fromString(internalId));
+        hydrateInstanceFromRow(instance, resultSet);
+        materializedInstances.put(internalId, instance);
+        return instance;
+    }
+
+    private void hydrateInstanceFromRow(
+            final EntityInstance instance,
+            final ResultSet resultSet) throws SQLException {
+        EntityDefinition entity = instance.getEntity();
         for (String fieldName : entity.getFieldNames()) {
             String value = resultSet.getString(fieldName);
             if (value != null) {
                 instance.overrideValue(fieldName, value);
             }
         }
-        collection.addInstance(instance);
-        return instance;
     }
 
     private String sqlLikeWildcard(final String wildcard) {
@@ -1050,28 +1221,13 @@ public class SqliteThingRepository extends InMemoryThingRepository {
         }
     }
 
-    private void replaceAllRelationshipRowsFromCache() {
-        clearRelationshipRows();
-        Set<String> persisted = new HashSet<>();
-
-        String sql = "INSERT OR IGNORE INTO %s (from_internal_id, to_internal_id) VALUES (?, ?)";
-        for (EntityInstance instance : instancesByInternalId().values()) {
-            for (RelationshipVectorInstance relationship : instance.getRelationships().getRelationshipInstances()) {
-                RelationshipVectorDefinition vector = relationship.getDefinition();
-                String key = vector.getName() + "|" +
-                        relationship.getFrom().getInternalId() + "|" +
-                        relationship.getTo().getInternalId();
-                if (!persisted.add(key)) {
-                    continue;
-                }
-                try (PreparedStatement statement = connection.prepareStatement(
-                        String.format(sql, relationshipTable(vector)))) {
-                    statement.setString(1, relationship.getFrom().getInternalId());
-                    statement.setString(2, relationship.getTo().getInternalId());
-                    statement.executeUpdate();
-                } catch (SQLException e) {
-                    throw new IllegalStateException("Could not persist SQLite relationship", e);
-                }
+    private void deleteRelationshipRowsInvolving(final Set<String> internalIds) {
+        for (String internalId : internalIds) {
+            for (RelationshipVectorDefinition vector : relationshipVectors()) {
+                executePreparedSql(
+                        "DELETE FROM " + relationshipTable(vector) +
+                                " WHERE from_internal_id = ? OR to_internal_id = ?",
+                        List.of(internalId, internalId));
             }
         }
     }
@@ -1080,20 +1236,6 @@ public class SqliteThingRepository extends InMemoryThingRepository {
         for (RelationshipVectorDefinition vector : relationshipVectors()) {
             executeSql("DELETE FROM " + relationshipTable(vector));
         }
-    }
-
-    private Set<String> currentInternalIds() {
-        return instancesByInternalId().keySet();
-    }
-
-    private Map<String, EntityInstance> instancesByInternalId() {
-        Map<String, EntityInstance> instances = new HashMap<>();
-        for (EntityInstanceCollection collection : getAllInstanceCollections()) {
-            for (EntityInstance instance : collection.getInstances()) {
-                instances.put(instance.getInternalId(), instance);
-            }
-        }
-        return instances;
     }
 
     private List<RelationshipVectorDefinition> relationshipVectors() {
@@ -1150,9 +1292,12 @@ public class SqliteThingRepository extends InMemoryThingRepository {
             try {
                 operation.run();
                 connection.commit();
-            } catch (RuntimeException e) {
+            } catch (Exception e) {
                 connection.rollback();
-                throw e;
+                if (e instanceof RuntimeException) {
+                    throw (RuntimeException) e;
+                }
+                throw new IllegalStateException("Could not run SQLite transaction", e);
             } finally {
                 connection.setAutoCommit(originalAutoCommit);
             }

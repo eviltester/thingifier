@@ -6,7 +6,8 @@ import uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi;
 import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
+import uk.co.compendiumdev.thingifier.testsupport.RepositoryBackedTestCollection;
+import uk.co.compendiumdev.thingifier.testsupport.ThingifierRepositoryTestSupport;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
@@ -41,7 +42,7 @@ public class IdBasedInstanceNonHttpTest {
 
         Thingifier model = getThingifier();
 
-        final EntityInstanceCollection thing = model.getThingInstancesNamed("thing", EntityRelModel.DEFAULT_DATABASE_NAME);
+        final RepositoryBackedTestCollection thing = ThingifierRepositoryTestSupport.collection(model, "thing");
         final EntityInstance existingInstance = thing.addInstance(new EntityInstance(thing.definition())).setValue("title",
                 "My Title" + System.nanoTime());
 
@@ -56,7 +57,7 @@ public class IdBasedInstanceNonHttpTest {
 
         Thingifier model = getThingifier();
 
-        final EntityInstanceCollection thing = model.getThingInstancesNamed("thing", EntityRelModel.DEFAULT_DATABASE_NAME);
+        final RepositoryBackedTestCollection thing = ThingifierRepositoryTestSupport.collection(model, "thing");
         final EntityInstance existingInstance = thing.addInstance(new EntityInstance(thing.definition())).setValue("title",
                 "My Title" + System.nanoTime());
 
@@ -82,7 +83,7 @@ public class IdBasedInstanceNonHttpTest {
         Assertions.assertEquals(404, idApiResponse.getStatusCode());
 
         // add instance to custom session
-        final EntityInstanceCollection thing = model.getERmodel().getInstanceData("other_things").getInstanceCollectionForEntityNamed("thing");
+        final RepositoryBackedTestCollection thing = ThingifierRepositoryTestSupport.collection(model, "other_things", "thing");
         final EntityInstance existingInstance = thing.addInstance(new EntityInstance(thing.definition())).setValue("title", "My Title" + System.nanoTime());
 
         final ApiResponse idApiResponse2 = model.api().get("/thing/" + existingInstance.getPrimaryKeyValue(), new QueryFilterParams(), headers);
@@ -105,7 +106,7 @@ public class IdBasedInstanceNonHttpTest {
         Assertions.assertEquals(404, idApiResponse.getStatusCode());
 
         // add instance to custom session
-        final EntityInstanceCollection thing = model.getERmodel().getInstanceData("other_things").getInstanceCollectionForEntityNamed("thing");
+        final RepositoryBackedTestCollection thing = ThingifierRepositoryTestSupport.collection(model, "other_things", "thing");
         final EntityInstance existingInstance = thing.addInstance(new EntityInstance(thing.definition())).setValue("title", "My Title" + System.nanoTime());
 
         final ApiResponse idApiResponse2 = model.api().get("/thing/" + existingInstance.getFieldValue("id").asString(), new QueryFilterParams(), headers);

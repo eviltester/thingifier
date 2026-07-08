@@ -1,5 +1,7 @@
 package uk.co.compendiumdev.challenge.apimodel;
 
+
+import uk.co.compendiumdev.challenge.testsupport.ThingifierRepositoryTestSupport;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.Thingifier;
@@ -30,7 +32,7 @@ public class ChallengeApiModelRepositoryTest {
                             instanceof SqliteThingRepository);
             Assertions.assertEquals(
                     10,
-                    thingifier.getThingInstancesNamed("todo", EntityRelModel.DEFAULT_DATABASE_NAME).
+                    ThingifierRepositoryTestSupport.collection(thingifier, EntityRelModel.DEFAULT_DATABASE_NAME, "todo").
                             countInstances());
         }
     }
@@ -135,7 +137,6 @@ public class ChallengeApiModelRepositoryTest {
                     new HttpHeadersBlock());
 
             Assertions.assertEquals(201, create.getStatusCode());
-            Assertions.assertFalse(repository.hasLoadedCompatibilitySnapshot());
             Assertions.assertEquals(1, repository.listInstances(note).size());
 
             ApiResponse postAmend = thingifier.api().post(
@@ -148,7 +149,6 @@ public class ChallengeApiModelRepositoryTest {
                     "posted",
                     repository.findInstanceByQueryIdentifier(note, "1").
                             getFieldValue("title").asString());
-            Assertions.assertFalse(repository.hasLoadedCompatibilitySnapshot());
 
             ApiResponse putAmend = thingifier.api().put(
                     "/notes/1",
@@ -160,14 +160,12 @@ public class ChallengeApiModelRepositoryTest {
                     "put",
                     repository.findInstanceByQueryIdentifier(note, "1").
                             getFieldValue("title").asString());
-            Assertions.assertFalse(repository.hasLoadedCompatibilitySnapshot());
 
             ApiResponse delete = thingifier.api().delete(
                     "/notes/1", new HttpHeadersBlock());
 
             Assertions.assertEquals(200, delete.getStatusCode());
             Assertions.assertEquals(0, repository.listInstances(note).size());
-            Assertions.assertFalse(repository.hasLoadedCompatibilitySnapshot());
         }
     }
 

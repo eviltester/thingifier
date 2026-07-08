@@ -13,7 +13,8 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
+import uk.co.compendiumdev.thingifier.testsupport.RepositoryBackedTestCollection;
+import uk.co.compendiumdev.thingifier.testsupport.ThingifierRepositoryTestSupport;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -60,7 +61,7 @@ public class SimpleVerbPutEntityInstanceApiNonHttpTest {
         ApiResponse apiresponse;
 
         Thingifier thingifier = thingifierWithAutoFields();
-        EntityInstanceCollection instances = thingifier.getThingInstancesNamed("entity", EntityRelModel.DEFAULT_DATABASE_NAME);
+        RepositoryBackedTestCollection instances = ThingifierRepositoryTestSupport.collection(thingifier, "entity");
 
         // PUT
 
@@ -95,7 +96,7 @@ public class SimpleVerbPutEntityInstanceApiNonHttpTest {
         ApiResponse apiresponse;
 
         Thingifier thingifier = thingifierWithAutoFields();
-        EntityInstanceCollection instances = thingifier.getThingInstancesNamed("entity", EntityRelModel.DEFAULT_DATABASE_NAME);
+        RepositoryBackedTestCollection instances = ThingifierRepositoryTestSupport.collection(thingifier, "entity");
 
         // create something to amend with PUT
         EntityInstance officeWork = instances.addInstance(new EntityInstance(instances.definition())).
@@ -124,7 +125,7 @@ public class SimpleVerbPutEntityInstanceApiNonHttpTest {
         ApiResponse apiresponse;
 
         Thingifier thingifier = thingifierWithAutoFields();
-        EntityInstanceCollection instances = thingifier.getThingInstancesNamed("entity", EntityRelModel.DEFAULT_DATABASE_NAME);
+        RepositoryBackedTestCollection instances = ThingifierRepositoryTestSupport.collection(thingifier, "entity");
 
         // create something to amend with PUT
         EntityInstance officeWork = instances.addInstance(new EntityInstance(instances.definition())).
@@ -153,7 +154,7 @@ public class SimpleVerbPutEntityInstanceApiNonHttpTest {
         ApiResponse apiresponse;
 
         Thingifier thingifier = thingifierWithAutoFields();
-        EntityInstanceCollection instances = thingifier.getThingInstancesNamed("entity", EntityRelModel.DEFAULT_DATABASE_NAME);
+        RepositoryBackedTestCollection instances = ThingifierRepositoryTestSupport.collection(thingifier, "entity");
 
         // PUT
 
@@ -194,7 +195,7 @@ public class SimpleVerbPutEntityInstanceApiNonHttpTest {
         ApiResponse apiresponse;
 
         Thingifier thingifier = thingifierWithAutoFields();
-        EntityInstanceCollection instances = thingifier.getThingInstancesNamed("entity", EntityRelModel.DEFAULT_DATABASE_NAME);
+        RepositoryBackedTestCollection instances = ThingifierRepositoryTestSupport.collection(thingifier, "entity");
 
         // PUT
 
@@ -238,7 +239,7 @@ public class SimpleVerbPutEntityInstanceApiNonHttpTest {
         entityDefn.addField(Field.is("title", FieldType.STRING).makeMandatory());
         entityDefn.addField(Field.is("guid", FieldType.AUTO_GUID));
 
-        EntityInstanceCollection myInstances = myThingifier.getThingInstancesNamed("entity", EntityRelModel.DEFAULT_DATABASE_NAME);
+        RepositoryBackedTestCollection myInstances = ThingifierRepositoryTestSupport.collection(myThingifier, "entity");
 
         // PUT
 
@@ -286,7 +287,7 @@ public class SimpleVerbPutEntityInstanceApiNonHttpTest {
         entityDefn.addAsPrimaryKeyField(Field.is("id", FieldType.STRING));
         entityDefn.addField(Field.is("title", FieldType.STRING).makeMandatory());
 
-        EntityInstanceCollection myInstances = myThingifier.getThingInstancesNamed("entity", EntityRelModel.DEFAULT_DATABASE_NAME);
+        RepositoryBackedTestCollection myInstances = ThingifierRepositoryTestSupport.collection(myThingifier, "entity");
 
         // PUT
 
@@ -334,7 +335,7 @@ public class SimpleVerbPutEntityInstanceApiNonHttpTest {
         entityDefn.addAsPrimaryKeyField(Field.is("id", FieldType.STRING));
         entityDefn.addField(Field.is("title", FieldType.STRING).makeMandatory());
 
-        EntityInstanceCollection myInstances = myThingifier.getThingInstancesNamed("entity", EntityRelModel.DEFAULT_DATABASE_NAME);
+        RepositoryBackedTestCollection myInstances = ThingifierRepositoryTestSupport.collection(myThingifier, "entity");
 
         // PUT
 
@@ -383,7 +384,7 @@ public class SimpleVerbPutEntityInstanceApiNonHttpTest {
         entityDefn.addAsPrimaryKeyField(Field.is("id", FieldType.STRING));
         entityDefn.addField(Field.is("title", FieldType.STRING).makeMandatory());
 
-        EntityInstanceCollection myInstances = myThingifier.getThingInstancesNamed("entity", EntityRelModel.DEFAULT_DATABASE_NAME);
+        RepositoryBackedTestCollection myInstances = ThingifierRepositoryTestSupport.collection(myThingifier, "entity");
 
         // PUT
 
