@@ -6,7 +6,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.casestudy.todomanager.TodoManagerModel;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
-import uk.co.compendiumdev.thingifier.testsupport.RepositoryBackedTestCollection;
 import uk.co.compendiumdev.thingifier.testsupport.ThingifierRepositoryTestSupport;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
@@ -14,6 +13,7 @@ import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 public class OptionalityRelationshipTest {
 
     // relationships can be Optional:Optional
@@ -34,16 +34,16 @@ public class OptionalityRelationshipTest {
     public void byDefaultRelationshipsAreOptional(){
 
 
-        RepositoryBackedTestCollection projects = ThingifierRepositoryTestSupport.collection(todoManager, "project");
+        EntityDefinition projects = ThingifierRepositoryTestSupport.entity(todoManager, "project");
 
-        EntityInstance aProject = projects.addInstance(new EntityInstance(projects.definition())).setValue("title", "myproject");
+        EntityInstance aProject = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(projects)).setValue("title", "myproject");
 
         Assertions.assertTrue(aProject.validate().isValid());
 
 
-        RepositoryBackedTestCollection todos = ThingifierRepositoryTestSupport.collection(todoManager, "todo");
+        EntityDefinition todos = ThingifierRepositoryTestSupport.entity(todoManager, "todo");
 
-        EntityInstance tidy = todos.addInstance(new EntityInstance(todos.definition())).
+        EntityInstance tidy = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(todos)).
                 setValue("title", "Tidy up my room").
                 setValue("description", "I need to tidy up my room because it is a mess");
 
@@ -55,15 +55,15 @@ public class OptionalityRelationshipTest {
     @Test
     public void anEstimateWithoutATodoIsInvalid(){
 
-        RepositoryBackedTestCollection todos = ThingifierRepositoryTestSupport.collection(todoManager, "todo");
+        EntityDefinition todos = ThingifierRepositoryTestSupport.entity(todoManager, "todo");
 
-        EntityInstance tidy = todos.addInstance(new EntityInstance(todos.definition())).
+        EntityInstance tidy = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(todos)).
                 setValue("title", "Tidy up my room").
                 setValue("description", "I need to tidy up my room because it is a mess");
 
-        RepositoryBackedTestCollection estimates = ThingifierRepositoryTestSupport.collection(todoManager, "estimate");
+        EntityDefinition estimates = ThingifierRepositoryTestSupport.entity(todoManager, "estimate");
 
-        EntityInstance tidyRoomEstimate = estimates.addInstance(new EntityInstance(estimates.definition())).
+        EntityInstance tidyRoomEstimate = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(estimates)).
                                         setValue("duration", "1");
 
         // it should be invalid because the estimate does not have a relationship with a to do
@@ -74,15 +74,15 @@ public class OptionalityRelationshipTest {
     @Test
     public void anEstimateMustHaveATodoToBeValid(){
 
-        RepositoryBackedTestCollection todos = ThingifierRepositoryTestSupport.collection(todoManager, "todo");
+        EntityDefinition todos = ThingifierRepositoryTestSupport.entity(todoManager, "todo");
 
-        EntityInstance tidy = todos.addInstance(new EntityInstance(todos.definition())).
+        EntityInstance tidy = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(todos)).
                 setValue("title", "Tidy up my room").
                 setValue("description", "I need to tidy up my room because it is a mess");
 
-        RepositoryBackedTestCollection estimates = ThingifierRepositoryTestSupport.collection(todoManager, "estimate");
+        EntityDefinition estimates = ThingifierRepositoryTestSupport.entity(todoManager, "estimate");
 
-        EntityInstance tidyRoomEstimate = estimates.addInstance(new EntityInstance(estimates.definition())).
+        EntityInstance tidyRoomEstimate = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(estimates)).
                 setValue("duration", "1");
 
         tidyRoomEstimate.getRelationships().connect("estimate", tidy);
@@ -101,16 +101,16 @@ public class OptionalityRelationshipTest {
     @Test
     public void deleteAlsoCoversMandatoryOptionalityRelationships(){
 
-        RepositoryBackedTestCollection todos = ThingifierRepositoryTestSupport.collection(todoManager, "todo");
+        EntityDefinition todos = ThingifierRepositoryTestSupport.entity(todoManager, "todo");
 
-        EntityInstance tidy = todos.addInstance(new EntityInstance(todos.definition())).
+        EntityInstance tidy = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(todos)).
                 setValue("title", "Tidy up my room").
                 setValue("description", "I need to tidy up my room because it is a mess");
 
 
-        RepositoryBackedTestCollection estimates = ThingifierRepositoryTestSupport.collection(todoManager, "estimate");
+        EntityDefinition estimates = ThingifierRepositoryTestSupport.entity(todoManager, "estimate");
 
-        EntityInstance tidyRoomEstimate = estimates.addInstance(new EntityInstance(estimates.definition())).
+        EntityInstance tidyRoomEstimate = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(estimates)).
                 setValue("duration", "1");
 
         tidyRoomEstimate.getRelationships().connect("estimate", tidy);
@@ -120,8 +120,8 @@ public class OptionalityRelationshipTest {
 
         final Collection<EntityInstance> relatedEstimates = tidy.getRelationships().getConnectedItems("estimates");
         Assertions.assertEquals(1, relatedEstimates.size());
-        Assertions.assertEquals(1, estimates.getInstances().size());
-        Assertions.assertEquals(1, todos.getInstances().size());
+        Assertions.assertEquals(1, ThingifierRepositoryTestSupport.repository(todoManager).listInstances(estimates).size());
+        Assertions.assertEquals(1, ThingifierRepositoryTestSupport.repository(todoManager).listInstances(todos).size());
 
         // now delete the to do, and the estimate should also be deleted
 
@@ -131,8 +131,8 @@ public class OptionalityRelationshipTest {
         // things only know about themselves and their instances, but the thingifier knows about
         // all things and so can delete related items as well
 
-        Assertions.assertEquals(0, todos.getInstances().size());
-        Assertions.assertEquals(0, estimates.getInstances().size());
+        Assertions.assertEquals(0, ThingifierRepositoryTestSupport.repository(todoManager).listInstances(todos).size());
+        Assertions.assertEquals(0, ThingifierRepositoryTestSupport.repository(todoManager).listInstances(estimates).size());
     }
 
 

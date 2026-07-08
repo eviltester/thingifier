@@ -12,7 +12,6 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-import uk.co.compendiumdev.thingifier.testsupport.RepositoryBackedTestCollection;
 import uk.co.compendiumdev.thingifier.testsupport.ThingifierRepositoryTestSupport;
 
 import java.util.HashMap;
@@ -45,8 +44,8 @@ public class ThingifierHttpApiRequestHandlingTest {
         final HttpApiResponse response = api.get(new HttpApiRequest("/things").setHeaders(headers));
 
         // add a thing
-        final RepositoryBackedTestCollection thing = ThingifierRepositoryTestSupport.collection(thingifier, "other_things", "thing");
-        final EntityInstance existingInstance = thing.addInstance(new EntityInstance(thing.definition())).setValue("title", "My Title" + System.nanoTime());
+        final EntityDefinition thing = ThingifierRepositoryTestSupport.entity(thingifier, "other_things", "thing");
+        final EntityInstance existingInstance = ThingifierRepositoryTestSupport.repository(thingifier, "other_things").addInstance(new EntityInstance(thing)).setValue("title", "My Title" + System.nanoTime());
 
         final HttpApiResponse response2 = api.get(new HttpApiRequest("/things/" + existingInstance.getPrimaryKeyValue()).setHeaders(headers));
 
@@ -82,10 +81,10 @@ public class ThingifierHttpApiRequestHandlingTest {
 
         Assertions.assertEquals(200, response.getStatusCode());
 
-        RepositoryBackedTestCollection thingInstances =
-                ThingifierRepositoryTestSupport.collection(thingifier, "other_things", "thing");
+        EntityDefinition thingInstances =
+                ThingifierRepositoryTestSupport.entity(thingifier, "other_things", "thing");
 
-        Assertions.assertEquals(3, thingInstances.countInstances());
+        Assertions.assertEquals(3, ThingifierRepositoryTestSupport.repository(thingifier, "other_things").countInstances(thingInstances));
     }
 
     @Test
@@ -108,13 +107,14 @@ public class ThingifierHttpApiRequestHandlingTest {
         // check added a thing to db
         Assertions.assertEquals(201, response.getStatusCode());
 
-        RepositoryBackedTestCollection thingInstances =
-                ThingifierRepositoryTestSupport.collection(thingifier, "other_things", "thing");
+        EntityDefinition thingInstances =
+                ThingifierRepositoryTestSupport.entity(thingifier, "other_things", "thing");
 
-        Assertions.assertEquals(1, thingInstances.countInstances());
+        Assertions.assertEquals(1, ThingifierRepositoryTestSupport.repository(thingifier, "other_things").countInstances(thingInstances));
 
         Assertions.assertEquals(0,
-                ThingifierRepositoryTestSupport.collection(thingifier, "thing").countInstances());
+                ThingifierRepositoryTestSupport.repository(thingifier).countInstances(
+                        ThingifierRepositoryTestSupport.entity(thingifier, "thing")));
     }
 
     @Test
@@ -135,21 +135,22 @@ public class ThingifierHttpApiRequestHandlingTest {
         // check added a thing to db
         Assertions.assertEquals(404, response.getStatusCode());
 
-        RepositoryBackedTestCollection thingInstances =
-                ThingifierRepositoryTestSupport.collection(thingifier, "other_things", "thing");
+        EntityDefinition thingInstances =
+                ThingifierRepositoryTestSupport.entity(thingifier, "other_things", "thing");
 
-        EntityInstance anInstance = thingInstances.addInstance(new EntityInstance(thingInstances.definition()));
+        EntityInstance anInstance = ThingifierRepositoryTestSupport.repository(thingifier, "other_things").addInstance(new EntityInstance(thingInstances));
 
-        Assertions.assertEquals(1, thingInstances.countInstances());
+        Assertions.assertEquals(1, ThingifierRepositoryTestSupport.repository(thingifier, "other_things").countInstances(thingInstances));
 
         final HttpApiResponse actualDeleteResponse = api.delete(new HttpApiRequest("/things/" + anInstance.getPrimaryKeyValue())
                 .setHeaders(headers)
         );
 
-        Assertions.assertEquals(0, thingInstances.countInstances());
+        Assertions.assertEquals(0, ThingifierRepositoryTestSupport.repository(thingifier, "other_things").countInstances(thingInstances));
 
         Assertions.assertEquals(0,
-                ThingifierRepositoryTestSupport.collection(thingifier, "thing").countInstances());
+                ThingifierRepositoryTestSupport.repository(thingifier).countInstances(
+                        ThingifierRepositoryTestSupport.entity(thingifier, "thing")));
     }
 
     // OPTIONS

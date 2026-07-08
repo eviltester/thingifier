@@ -318,22 +318,7 @@ public class SqliteThingRepository implements ThingRepository {
     @Override
     public Collection<EntityInstance> getConnectedItems(
             final EntityInstance instance, final String relationshipName) {
-        ensureSchemaReady();
-        Set<EntityInstance> connected = new HashSet<>();
-
-        for (RelationshipVectorDefinition vector :
-                instance.getEntity().related().getRelationships(relationshipName)) {
-            addConnectedItemsFromVectorTable(connected, instance, vector);
-            if (vector.getRelationshipDefinition().isTwoWay()) {
-                RelationshipVectorDefinition otherVector =
-                        vector.getRelationshipDefinition().otherVectorOf(vector);
-                if (otherVector != null) {
-                    addConnectedItemsFromVectorTable(connected, instance, otherVector);
-                }
-            }
-        }
-
-        return connected;
+        return listRelatedInstances(instance, relationshipName, new QueryFilterParams());
     }
 
     @Override
@@ -1041,32 +1026,6 @@ public class SqliteThingRepository implements ThingRepository {
                 replace("_", "\\_").
                 replace("*", "%").
                 replace("?", "_");
-    }
-
-    private void addConnectedItemsFromVectorTable(
-            final Set<EntityInstance> connected,
-            final EntityInstance instance,
-            final RelationshipVectorDefinition vector) {
-        EntityDefinition connectedEntity;
-        String sql;
-
-        if (vector.getFrom() == instance.getEntity()) {
-            connectedEntity = vector.getTo();
-            sql = "SELECT target.* FROM " + relationshipTable(vector) + " rel " +
-                    "JOIN " + table(connectedEntity) + " target " +
-                    "ON target." + identifier(INTERNAL_ID_COLUMN) + " = rel.to_internal_id " +
-                    "WHERE rel.from_internal_id = ?";
-        } else if (vector.getTo() == instance.getEntity()) {
-            connectedEntity = vector.getFrom();
-            sql = "SELECT target.* FROM " + relationshipTable(vector) + " rel " +
-                    "JOIN " + table(connectedEntity) + " target " +
-                    "ON target." + identifier(INTERNAL_ID_COLUMN) + " = rel.from_internal_id " +
-                    "WHERE rel.to_internal_id = ?";
-        } else {
-            return;
-        }
-
-        connected.addAll(queryEntityRows(connectedEntity, sql, List.of(instance.getInternalId())));
     }
 
     private List<RelationshipVectorDefinition> relationshipVectorsFor(

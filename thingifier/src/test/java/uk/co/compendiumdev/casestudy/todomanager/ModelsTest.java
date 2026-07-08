@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
-import uk.co.compendiumdev.thingifier.testsupport.RepositoryBackedTestCollection;
 import uk.co.compendiumdev.thingifier.testsupport.ThingifierRepositoryTestSupport;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
@@ -12,6 +11,7 @@ import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import java.util.Collection;
 import java.util.Random;
 
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 public class ModelsTest {
     private Thingifier todoManager;
 
@@ -37,58 +37,58 @@ public class ModelsTest {
     @Test
     public void createAndDelete(){
 
-        final RepositoryBackedTestCollection todos = ThingifierRepositoryTestSupport.collection(todoManager, "todo");
+        final EntityDefinition todos = ThingifierRepositoryTestSupport.entity(todoManager, "todo");
 
         for(int todoCount=0; todoCount < 100; todoCount++){
-            todos.addInstance(new EntityInstance(todos.definition())).
+            ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(todos)).
                     setValue("title", "title " + System.nanoTime());
         }
 
-        Assertions.assertEquals(100, todos.countInstances());
+        Assertions.assertEquals(100, ThingifierRepositoryTestSupport.repository(todoManager).countInstances(todos));
 
         todoManager.clearAllData();
 
-        Assertions.assertEquals(0, todos.countInstances());
+        Assertions.assertEquals(0, ThingifierRepositoryTestSupport.repository(todoManager).countInstances(todos));
     }
 
     @Test
     public void createAndDeleteRelationships(){
 
-        final RepositoryBackedTestCollection todos = ThingifierRepositoryTestSupport.collection(todoManager, "todo");
+        final EntityDefinition todos = ThingifierRepositoryTestSupport.entity(todoManager, "todo");
 
         for(int todoCount=0; todoCount < 100; todoCount++){
-            todos.addInstance(new EntityInstance(todos.definition())).
+            ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(todos)).
                     setValue("title", "title " + System.nanoTime());
         }
 
-        final RepositoryBackedTestCollection projects = ThingifierRepositoryTestSupport.collection(todoManager, "project");
+        final EntityDefinition projects = ThingifierRepositoryTestSupport.entity(todoManager, "project");
 
         for(int todoCount=0; todoCount < 50; todoCount++){
-            projects.addInstance(new EntityInstance(projects.definition())).
+            ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(projects)).
                     setValue("title", "title " + System.nanoTime());
         }
 
 
-        Assertions.assertEquals(100, todos.countInstances());
-        Assertions.assertEquals(50, projects.countInstances());
+        Assertions.assertEquals(100, ThingifierRepositoryTestSupport.repository(todoManager).countInstances(todos));
+        Assertions.assertEquals(50, ThingifierRepositoryTestSupport.repository(todoManager).countInstances(projects));
 
-        for(EntityInstance project : projects.getInstances()){
+        for(EntityInstance project : ThingifierRepositoryTestSupport.repository(todoManager).listInstances(projects)){
 
-            project.getRelationships().connect("tasks", getRandomThingInstance(todos.getInstances()));
+            project.getRelationships().connect("tasks", getRandomThingInstance(ThingifierRepositoryTestSupport.repository(todoManager).listInstances(todos)));
         }
 
 
-        for(EntityInstance todo : todos.getInstances()){
+        for(EntityInstance todo : ThingifierRepositoryTestSupport.repository(todoManager).listInstances(todos)){
 
-            todo.getRelationships().connect("task-of", getRandomThingInstance(projects.getInstances()));
+            todo.getRelationships().connect("task-of", getRandomThingInstance(ThingifierRepositoryTestSupport.repository(todoManager).listInstances(projects)));
         }
 
         System.out.println(todoManager.toString());
 
         todoManager.clearAllData();
 
-        Assertions.assertEquals(0, todos.countInstances());
-        Assertions.assertEquals(0, projects.countInstances());
+        Assertions.assertEquals(0, ThingifierRepositoryTestSupport.repository(todoManager).countInstances(todos));
+        Assertions.assertEquals(0, ThingifierRepositoryTestSupport.repository(todoManager).countInstances(projects));
 
         System.out.println(todoManager.toString());
     }

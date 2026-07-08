@@ -32,8 +32,13 @@ public class ChallengeApiModelRepositoryTest {
                             instanceof SqliteThingRepository);
             Assertions.assertEquals(
                     10,
-                    ThingifierRepositoryTestSupport.collection(thingifier, EntityRelModel.DEFAULT_DATABASE_NAME, "todo").
-                            countInstances());
+                    ThingifierRepositoryTestSupport.repository(
+                            thingifier,
+                            EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(
+                                    ThingifierRepositoryTestSupport.entity(
+                                            thingifier,
+                                            EntityRelModel.DEFAULT_DATABASE_NAME,
+                                            "todo")));
         }
     }
 

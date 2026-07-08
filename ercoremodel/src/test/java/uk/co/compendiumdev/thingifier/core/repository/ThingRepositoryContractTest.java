@@ -280,12 +280,25 @@ public class ThingRepositoryContractTest {
             Assertions.assertEquals("Wire repository",
                     regexFilteredTasks.get(0).getFieldValue("title").asString());
 
+            QueryFilterParams sortedParams = new QueryFilterParams();
+            sortedParams.put("sortBy", "-id");
+
+            List<EntityInstance> sortedTasks =
+                    reopened.listRelatedInstances(project, "tasks", sortedParams);
+
+            Assertions.assertEquals(2, sortedTasks.size());
+            Assertions.assertEquals("2", sortedTasks.get(0).getPrimaryKeyValue());
+            Assertions.assertEquals("1", sortedTasks.get(1).getPrimaryKeyValue());
+            Assertions.assertEquals(2, reopened.getConnectedItems(project, "tasks").size());
+
             RepositoryUrlQuery query =
                     new RepositoryUrlQuery(schema, reopened, "project/1/tasks").
-                            performQuery(new QueryFilterParams());
+                            performQuery(params);
 
             Assertions.assertTrue(query.isResultACollection());
-            Assertions.assertEquals(2, query.getListEntityInstances().size());
+            Assertions.assertEquals(1, query.getListEntityInstances().size());
+            Assertions.assertEquals("Wire repository",
+                    query.getListEntityInstances().get(0).getFieldValue("title").asString());
         }
     }
 

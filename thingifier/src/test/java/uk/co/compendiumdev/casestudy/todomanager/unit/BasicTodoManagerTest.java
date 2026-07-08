@@ -5,12 +5,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.casestudy.todomanager.TodoManagerModel;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
-import uk.co.compendiumdev.thingifier.testsupport.RepositoryBackedTestCollection;
 import uk.co.compendiumdev.thingifier.testsupport.ThingifierRepositoryTestSupport;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import java.util.Collection;
 
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 public class BasicTodoManagerTest {
 
     private Thingifier todoManager;
@@ -26,13 +26,13 @@ public class BasicTodoManagerTest {
     public void todoModelDefinitionCheck(){
 
 
-        RepositoryBackedTestCollection todo = ThingifierRepositoryTestSupport.collection(todoManager, "todo");
+        EntityDefinition todo = ThingifierRepositoryTestSupport.entity(todoManager, "todo");
 
-        Assertions.assertTrue(todo.definition().hasFieldNameDefined("title"));
-        Assertions.assertTrue(todo.definition().hasFieldNameDefined("description"));
-        Assertions.assertTrue(todo.definition().hasFieldNameDefined("doneStatus"));
+        Assertions.assertTrue(todo.hasFieldNameDefined("title"));
+        Assertions.assertTrue(todo.hasFieldNameDefined("description"));
+        Assertions.assertTrue(todo.hasFieldNameDefined("doneStatus"));
 
-        Assertions.assertEquals("false", todo.definition().
+        Assertions.assertEquals("false", todo.
                                                     getField("doneStatus").
                                                     getDefaultValue().asString());
 
@@ -43,13 +43,13 @@ public class BasicTodoManagerTest {
     public void relationshipDefinitionCheck(){
 
 
-        RepositoryBackedTestCollection todo = ThingifierRepositoryTestSupport.collection(todoManager, "todo");
-        RepositoryBackedTestCollection project = ThingifierRepositoryTestSupport.collection(todoManager, "project");
+        EntityDefinition todo = ThingifierRepositoryTestSupport.entity(todoManager, "todo");
+        EntityDefinition project = ThingifierRepositoryTestSupport.entity(todoManager, "project");
 
-        EntityInstance paperwork = todo.addInstance(new EntityInstance(todo.definition())).setValue("title", "scan paperwork");
-        EntityInstance filework = todo.addInstance(new EntityInstance(todo.definition())).setValue("title", "file paperwork");
+        EntityInstance paperwork = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(todo)).setValue("title", "scan paperwork");
+        EntityInstance filework = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(todo)).setValue("title", "file paperwork");
 
-        EntityInstance officeWork = project.addInstance(new EntityInstance(project.definition())).setValue("title", "Office Work");
+        EntityInstance officeWork = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(project)).setValue("title", "Office Work");
 
         officeWork.getRelationships().connect("tasks", paperwork);
         officeWork.getRelationships().connect("tasks", filework);
@@ -76,13 +76,13 @@ public class BasicTodoManagerTest {
     @Test
     public void createAndAmendSomeTodos(){
 
-        RepositoryBackedTestCollection todos = ThingifierRepositoryTestSupport.collection(todoManager, "todo");
+        EntityDefinition todos = ThingifierRepositoryTestSupport.entity(todoManager, "todo");
 
-        EntityInstance tidy = todos.addInstance(new EntityInstance(todos.definition())).
+        EntityInstance tidy = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(todos)).
                 setValue("title", "Tidy up my room").
                 setValue("description", "I need to tidy up my room because it is a mess");
 
-        EntityInstance paperwork = todos.addInstance(new EntityInstance(todos.definition())).
+        EntityInstance paperwork = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(todos)).
                 setValue("title","Do Paperwork").
                 setValue("description", "Scan everything in, upload to document management system and file paperwork");
 
@@ -99,23 +99,23 @@ public class BasicTodoManagerTest {
     @Test
     public void createAndDeleteTodos(){
 
-        RepositoryBackedTestCollection todos = ThingifierRepositoryTestSupport.collection(todoManager, "todo");
+        EntityDefinition todos = ThingifierRepositoryTestSupport.entity(todoManager, "todo");
 
-        int originalTodosCount = todos.countInstances();
+        int originalTodosCount = ThingifierRepositoryTestSupport.repository(todoManager).countInstances(todos);
 
-        EntityInstance tidy = todos.addInstance(new EntityInstance(todos.definition())).
+        EntityInstance tidy = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(todos)).
                 setValue("title","Delete this todo").
                 setValue("description", "I need to be deleted");
 
-        EntityInstance foundit = todos.findInstanceByPrimaryKey(tidy.getPrimaryKeyValue());
+        EntityInstance foundit = ThingifierRepositoryTestSupport.repository(todoManager).findInstanceByPrimaryKey(todos, tidy.getPrimaryKeyValue());
 
         Assertions.assertEquals("Delete this todo", foundit.getFieldValue("title").asString());
 
         todoManager.deleteThing(foundit, EntityRelModel.DEFAULT_DATABASE_NAME);
-        Assertions.assertEquals(originalTodosCount, todos.countInstances());
+        Assertions.assertEquals(originalTodosCount, ThingifierRepositoryTestSupport.repository(todoManager).countInstances(todos));
 
 
-        foundit = todos.findInstanceByPrimaryKey(tidy.getPrimaryKeyValue());
+        foundit = ThingifierRepositoryTestSupport.repository(todoManager).findInstanceByPrimaryKey(todos, tidy.getPrimaryKeyValue());
 
         Assertions.assertNull(foundit);
 
@@ -132,30 +132,30 @@ public class BasicTodoManagerTest {
     @Test
     public void createAmendAndDeleteATodoWithAGivenGUID(){
 
-        RepositoryBackedTestCollection todos = ThingifierRepositoryTestSupport.collection(todoManager, "todo");
+        EntityDefinition todos = ThingifierRepositoryTestSupport.entity(todoManager, "todo");
 
-        int originalTodosCount = todos.countInstances();
+        int originalTodosCount = ThingifierRepositoryTestSupport.repository(todoManager).countInstances(todos);
 
         String guid="6fd86e2d-7c52-4dea-85bb-34760ef66d9d";
 
-        EntityInstance tidy = new EntityInstance(todos.definition());
+        EntityInstance tidy = new EntityInstance(todos);
         tidy.overrideValue("guid", guid);
 
         tidy.setValue("title", "Delete this todo").
         setValue("description", "I need to be deleted");
 
-        todos.addInstance(tidy);
+        ThingifierRepositoryTestSupport.repository(todoManager).addInstance(tidy);
 
-        EntityInstance foundit = todos.findInstanceByFieldNameAndValue("guid", guid);
+        EntityInstance foundit = ThingifierRepositoryTestSupport.repository(todoManager).findInstanceByFieldNameAndValue(todos, "guid", guid);
 
         Assertions.assertEquals("Delete this todo", foundit.getFieldValue("title").asString());
 
         todoManager.deleteThing(foundit, EntityRelModel.DEFAULT_DATABASE_NAME);
 
-        Assertions.assertEquals(originalTodosCount, todos.countInstances());
+        Assertions.assertEquals(originalTodosCount, ThingifierRepositoryTestSupport.repository(todoManager).countInstances(todos));
 
 
-        foundit = todos.findInstanceByFieldNameAndValue("guid", guid);
+        foundit = ThingifierRepositoryTestSupport.repository(todoManager).findInstanceByFieldNameAndValue(todos, "guid", guid);
 
         Assertions.assertNull(foundit);
 

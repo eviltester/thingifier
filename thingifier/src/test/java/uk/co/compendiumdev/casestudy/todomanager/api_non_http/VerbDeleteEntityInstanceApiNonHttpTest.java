@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.casestudy.todomanager.TodoManagerModel;
 import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
-import uk.co.compendiumdev.thingifier.testsupport.RepositoryBackedTestCollection;
 import uk.co.compendiumdev.thingifier.testsupport.ThingifierRepositoryTestSupport;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
@@ -14,13 +13,14 @@ import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
 import java.util.*;
 
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 public class VerbDeleteEntityInstanceApiNonHttpTest {
 
 
     private Thingifier todoManager;
 
-    RepositoryBackedTestCollection todo;
-    RepositoryBackedTestCollection project;
+    EntityDefinition todo;
+    EntityDefinition project;
 
 
     // TODO: tests that use the TodoManagerModel were created early and are too complicated - simplify
@@ -33,8 +33,8 @@ public class VerbDeleteEntityInstanceApiNonHttpTest {
 
         todoManager = TodoManagerModel.definedAsThingifier();
 
-        todo = ThingifierRepositoryTestSupport.collection(todoManager, "todo");
-        project = ThingifierRepositoryTestSupport.collection(todoManager, "project");
+        todo = ThingifierRepositoryTestSupport.entity(todoManager, "todo");
+        project = ThingifierRepositoryTestSupport.entity(todoManager, "project");
 
     }
     
@@ -53,10 +53,10 @@ public class VerbDeleteEntityInstanceApiNonHttpTest {
     public void deleteAnEntityInstanceAPI() {
         ApiResponse apiresponse;
 
-        EntityInstance officeWork = project.addInstance(new EntityInstance(project.definition())).
+        EntityInstance officeWork = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(project)).
                 setValue("title", "An Existing Project");
 
-        Assertions.assertEquals(1, project.countInstances());
+        Assertions.assertEquals(1, ThingifierRepositoryTestSupport.repository(todoManager).countInstances(project));
 
         apiresponse = todoManager.api().delete(String.format("project/%s", officeWork.getPrimaryKeyValue()), new HttpHeadersBlock());
         Assertions.assertEquals(200, apiresponse.getStatusCode());
@@ -64,7 +64,7 @@ public class VerbDeleteEntityInstanceApiNonHttpTest {
 
         Assertions.assertFalse(apiresponse.hasABody());
 
-        Assertions.assertEquals(0, project.countInstances());
+        Assertions.assertEquals(0, ThingifierRepositoryTestSupport.repository(todoManager).countInstances(project));
 
         apiresponse = todoManager.api().delete(String.format("project/%s", officeWork.getPrimaryKeyValue()), new HttpHeadersBlock());
         Assertions.assertEquals(404, apiresponse.getStatusCode());

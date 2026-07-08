@@ -13,7 +13,6 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-import uk.co.compendiumdev.thingifier.testsupport.RepositoryBackedTestCollection;
 import uk.co.compendiumdev.thingifier.testsupport.ThingifierRepositoryTestSupport;
 
 import java.util.HashMap;
@@ -61,14 +60,14 @@ public class SimpleVerbPutEntityInstanceApiNonHttpTest {
         ApiResponse apiresponse;
 
         Thingifier thingifier = thingifierWithAutoFields();
-        RepositoryBackedTestCollection instances = ThingifierRepositoryTestSupport.collection(thingifier, "entity");
+        EntityDefinition instances = ThingifierRepositoryTestSupport.entity(thingifier, "entity");
 
         // PUT
 
         requestBody = new HashMap<String, String>();
         requestBody.put("title", "My Office Work");
 
-        EntityInstance officeWork = instances.addInstance(new EntityInstance(instances.definition())).
+        EntityInstance officeWork = ThingifierRepositoryTestSupport.repository(thingifier).addInstance(new EntityInstance(instances)).
                 setValue("title", "An Existing instances");
 
         String officeWorkGuid = officeWork.getPrimaryKeyValue();
@@ -96,10 +95,10 @@ public class SimpleVerbPutEntityInstanceApiNonHttpTest {
         ApiResponse apiresponse;
 
         Thingifier thingifier = thingifierWithAutoFields();
-        RepositoryBackedTestCollection instances = ThingifierRepositoryTestSupport.collection(thingifier, "entity");
+        EntityDefinition instances = ThingifierRepositoryTestSupport.entity(thingifier, "entity");
 
         // create something to amend with PUT
-        EntityInstance officeWork = instances.addInstance(new EntityInstance(instances.definition())).
+        EntityInstance officeWork = ThingifierRepositoryTestSupport.repository(thingifier).addInstance(new EntityInstance(instances)).
                 setValue("title", "An Existing instances").
                 setValue("description", "Existing Description");
 
@@ -125,10 +124,10 @@ public class SimpleVerbPutEntityInstanceApiNonHttpTest {
         ApiResponse apiresponse;
 
         Thingifier thingifier = thingifierWithAutoFields();
-        RepositoryBackedTestCollection instances = ThingifierRepositoryTestSupport.collection(thingifier, "entity");
+        EntityDefinition instances = ThingifierRepositoryTestSupport.entity(thingifier, "entity");
 
         // create something to amend with PUT
-        EntityInstance officeWork = instances.addInstance(new EntityInstance(instances.definition())).
+        EntityInstance officeWork = ThingifierRepositoryTestSupport.repository(thingifier).addInstance(new EntityInstance(instances)).
                 setValue("description", "An Existing instance title");
 
         String officeWorkGuid = officeWork.getPrimaryKeyValue();
@@ -154,12 +153,12 @@ public class SimpleVerbPutEntityInstanceApiNonHttpTest {
         ApiResponse apiresponse;
 
         Thingifier thingifier = thingifierWithAutoFields();
-        RepositoryBackedTestCollection instances = ThingifierRepositoryTestSupport.collection(thingifier, "entity");
+        EntityDefinition instances = ThingifierRepositoryTestSupport.entity(thingifier, "entity");
 
         // PUT
 
 
-        EntityInstance officeWork = instances.addInstance(new EntityInstance(instances.definition())).
+        EntityInstance officeWork = ThingifierRepositoryTestSupport.repository(thingifier).addInstance(new EntityInstance(instances)).
                 setValue("title", "An Existing instances").
                 setValue("description", "my original description");
 
@@ -195,7 +194,7 @@ public class SimpleVerbPutEntityInstanceApiNonHttpTest {
         ApiResponse apiresponse;
 
         Thingifier thingifier = thingifierWithAutoFields();
-        RepositoryBackedTestCollection instances = ThingifierRepositoryTestSupport.collection(thingifier, "entity");
+        EntityDefinition instances = ThingifierRepositoryTestSupport.entity(thingifier, "entity");
 
         // PUT
 
@@ -204,7 +203,7 @@ public class SimpleVerbPutEntityInstanceApiNonHttpTest {
         requestBody.put("title", title);
 
 
-        int currentinstances = instances.countInstances();
+        int currentinstances = ThingifierRepositoryTestSupport.repository(thingifier).countInstances(instances);
         Assertions.assertEquals(0, currentinstances);
 
         // create with a PUT and a given ID
@@ -214,7 +213,7 @@ public class SimpleVerbPutEntityInstanceApiNonHttpTest {
         Assertions.assertEquals(400, apiresponse.getStatusCode());
 
 
-        Assertions.assertEquals(currentinstances, instances.countInstances());
+        Assertions.assertEquals(currentinstances, ThingifierRepositoryTestSupport.repository(thingifier).countInstances(instances));
 
 
         Assertions.assertTrue(apiresponse.hasABody());
@@ -239,12 +238,12 @@ public class SimpleVerbPutEntityInstanceApiNonHttpTest {
         entityDefn.addField(Field.is("title", FieldType.STRING).makeMandatory());
         entityDefn.addField(Field.is("guid", FieldType.AUTO_GUID));
 
-        RepositoryBackedTestCollection myInstances = ThingifierRepositoryTestSupport.collection(myThingifier, "entity");
+        EntityDefinition myInstances = ThingifierRepositoryTestSupport.entity(myThingifier, "entity");
 
         // PUT
 
 
-        EntityInstance officeWork = myInstances.addInstance(new EntityInstance(myInstances.definition())).
+        EntityInstance officeWork = ThingifierRepositoryTestSupport.repository(myThingifier).addInstance(new EntityInstance(myInstances)).
                 setValue("title", "An Existing instance");
 
         String originalID = officeWork.getPrimaryKeyValue();
@@ -287,14 +286,14 @@ public class SimpleVerbPutEntityInstanceApiNonHttpTest {
         entityDefn.addAsPrimaryKeyField(Field.is("id", FieldType.STRING));
         entityDefn.addField(Field.is("title", FieldType.STRING).makeMandatory());
 
-        RepositoryBackedTestCollection myInstances = ThingifierRepositoryTestSupport.collection(myThingifier, "entity");
+        EntityDefinition myInstances = ThingifierRepositoryTestSupport.entity(myThingifier, "entity");
 
         // PUT
 
         EntityInstance officeWork = new EntityInstance(entityDefn).setValue("id", "one").
                 setValue("title", "An Existing instance");
 
-        myInstances.addInstance(officeWork);
+        ThingifierRepositoryTestSupport.repository(myThingifier).addInstance(officeWork);
 
         String originalID = officeWork.getPrimaryKeyValue();
         String originalGuid = officeWork.getFieldValue("id").asString();
@@ -317,7 +316,7 @@ public class SimpleVerbPutEntityInstanceApiNonHttpTest {
         Assertions.assertEquals("An Existing instance", officeWork.getFieldValue("title").asString());
         Assertions.assertEquals(originalID, officeWork.getFieldValue("id").asString());
 
-        EntityInstance newInstance = myInstances.findInstanceByPrimaryKey(newGuid);
+        EntityInstance newInstance = ThingifierRepositoryTestSupport.repository(myThingifier).findInstanceByPrimaryKey(myInstances, newGuid);
         Assertions.assertEquals("My Office Work", newInstance.getFieldValue("title").asString());
         Assertions.assertEquals(newGuid, newInstance.getFieldValue("id").asString());
     }
@@ -335,14 +334,14 @@ public class SimpleVerbPutEntityInstanceApiNonHttpTest {
         entityDefn.addAsPrimaryKeyField(Field.is("id", FieldType.STRING));
         entityDefn.addField(Field.is("title", FieldType.STRING).makeMandatory());
 
-        RepositoryBackedTestCollection myInstances = ThingifierRepositoryTestSupport.collection(myThingifier, "entity");
+        EntityDefinition myInstances = ThingifierRepositoryTestSupport.entity(myThingifier, "entity");
 
         // PUT
 
         EntityInstance officeWork = new EntityInstance(entityDefn).setValue("id", "one").
                 setValue("title", "An Existing instance");
 
-        myInstances.addInstance(officeWork);
+        ThingifierRepositoryTestSupport.repository(myThingifier).addInstance(officeWork);
 
         String originalID = officeWork.getPrimaryKeyValue();
         String originalGuid = officeWork.getFieldValue("id").asString();
@@ -366,7 +365,7 @@ public class SimpleVerbPutEntityInstanceApiNonHttpTest {
         Assertions.assertEquals("An Existing instance", officeWork.getFieldValue("title").asString());
         Assertions.assertEquals(originalID, officeWork.getFieldValue("id").asString());
 
-        EntityInstance newInstance = myInstances.findInstanceByPrimaryKey(newGuid);
+        EntityInstance newInstance = ThingifierRepositoryTestSupport.repository(myThingifier).findInstanceByPrimaryKey(myInstances, newGuid);
         Assertions.assertEquals("My Office Work", newInstance.getFieldValue("title").asString());
         Assertions.assertEquals(newGuid, newInstance.getFieldValue("id").asString());
     }
@@ -384,14 +383,14 @@ public class SimpleVerbPutEntityInstanceApiNonHttpTest {
         entityDefn.addAsPrimaryKeyField(Field.is("id", FieldType.STRING));
         entityDefn.addField(Field.is("title", FieldType.STRING).makeMandatory());
 
-        RepositoryBackedTestCollection myInstances = ThingifierRepositoryTestSupport.collection(myThingifier, "entity");
+        EntityDefinition myInstances = ThingifierRepositoryTestSupport.entity(myThingifier, "entity");
 
         // PUT
 
         EntityInstance officeWork = new EntityInstance(entityDefn).setValue("id", "one").
                 setValue("title", "An Existing instance");
 
-        myInstances.addInstance(officeWork);
+        ThingifierRepositoryTestSupport.repository(myThingifier).addInstance(officeWork);
 
         String originalID = officeWork.getPrimaryKeyValue();
         String originalGuid = officeWork.getFieldValue("id").asString();

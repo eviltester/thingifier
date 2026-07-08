@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
-import uk.co.compendiumdev.thingifier.testsupport.RepositoryBackedTestCollection;
 import uk.co.compendiumdev.thingifier.testsupport.ThingifierRepositoryTestSupport;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
@@ -45,12 +44,12 @@ public class UsageTest {
                     addFields(Field.is("url", STRING),Field.is("name",STRING)
                     );
 
-        RepositoryBackedTestCollection urls = ThingifierRepositoryTestSupport.collection(things, "URL");
+        EntityDefinition urls = ThingifierRepositoryTestSupport.entity(things, "URL");
 
-        Assertions.assertTrue(urls.definition().hasFieldNameDefined("url"));
-        Assertions.assertTrue(urls.definition().hasFieldNameDefined("name"));
+        Assertions.assertTrue(urls.hasFieldNameDefined("url"));
+        Assertions.assertTrue(urls.hasFieldNameDefined("name"));
 
-        urls.addInstance(new EntityInstance(urls.definition())).
+        ThingifierRepositoryTestSupport.repository(things).addInstance(new EntityInstance(urls)).
                 setValue("name","EvilTester.com").
                 setValue("url","http://eviltester.com");
 
@@ -58,8 +57,8 @@ public class UsageTest {
 
         user.addFields(Field.is("name", STRING));
 
-        RepositoryBackedTestCollection RepositoryBackedTestCollection = ThingifierRepositoryTestSupport.collection(things, "USER");
-        EntityInstance alan = RepositoryBackedTestCollection.addInstance(new EntityInstance(RepositoryBackedTestCollection.definition())).
+        EntityDefinition users = ThingifierRepositoryTestSupport.entity(things, "USER");
+        EntityInstance alan = ThingifierRepositoryTestSupport.repository(things).addInstance(new EntityInstance(users)).
                 setValue("name","alan");
 
 

@@ -10,19 +10,26 @@ public final class ThingifierRepositoryTestSupport {
     private ThingifierRepositoryTestSupport() {
     }
 
-    public static RepositoryBackedTestCollection collection(
-            final Thingifier thingifier,
-            final String entityName) {
-        return collection(thingifier, EntityRelModel.DEFAULT_DATABASE_NAME, entityName);
+    public static ThingRepository repository(final Thingifier thingifier) {
+        return repository(thingifier, EntityRelModel.DEFAULT_DATABASE_NAME);
     }
 
-    public static RepositoryBackedTestCollection collection(
+    public static ThingRepository repository(
+            final Thingifier thingifier,
+            final String databaseName) {
+        return thingifier.getRepository(databaseName);
+    }
+
+    public static EntityDefinition entity(
+            final Thingifier thingifier,
+            final String entityName) {
+        return entity(thingifier, EntityRelModel.DEFAULT_DATABASE_NAME, entityName);
+    }
+
+    public static EntityDefinition entity(
             final Thingifier thingifier,
             final String databaseName,
             final String entityName) {
-        EntityDefinition definition =
-                thingifier.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed(entityName);
-        ThingRepository repository = thingifier.getRepository(databaseName);
-        return new RepositoryBackedTestCollection(definition, repository);
+        return thingifier.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed(entityName);
     }
 }

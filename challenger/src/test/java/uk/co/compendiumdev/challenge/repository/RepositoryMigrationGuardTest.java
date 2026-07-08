@@ -65,6 +65,18 @@ public class RepositoryMigrationGuardTest {
                         String.join("\n", violations));
     }
 
+    @Test
+    public void productionCodeDoesNotAddDeprecatedApisWithoutExplicitAllowList() throws IOException {
+        List<String> violations = productionJavaLinesContaining(
+                List.of("@Deprecated"),
+                List.of());
+
+        Assertions.assertTrue(
+                violations.isEmpty(),
+                "Production code should not add @Deprecated APIs without an explicit guard allow-list:\n" +
+                        String.join("\n", violations));
+    }
+
     private List<String> productionJavaLinesContaining(
             final List<String> terms,
             final List<String> allowedFileSuffixes) throws IOException {

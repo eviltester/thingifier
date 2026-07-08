@@ -13,7 +13,6 @@ import uk.co.compendiumdev.challenger.http.httpclient.HttpMessageSender;
 import uk.co.compendiumdev.challenger.payloads.Todo;
 import uk.co.compendiumdev.challenger.payloads.Todos;
 import uk.co.compendiumdev.sparkstart.Environment;
-import uk.co.compendiumdev.challenge.testsupport.RepositoryBackedTestCollection;
 import uk.co.compendiumdev.challenge.testsupport.ThingifierRepositoryTestSupport;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
@@ -22,6 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 public abstract class ChallengeCompleteTest{
 
     static Logger logger = LoggerFactory.getLogger(ChallengeCompleteTest.class);
@@ -241,7 +241,7 @@ public abstract class ChallengeCompleteTest{
     @Test
     public void canPutTodosFull200AmendPass() {
 
-        final RepositoryBackedTestCollection todos = ThingifierRepositoryTestSupport.collection(ChallengeMain.getChallenger().getThingifier(), challenger.getXChallenger(), "todo");
+        final EntityDefinition todos = ThingifierRepositoryTestSupport.entity(ChallengeMain.getChallenger().getThingifier(), challenger.getXChallenger(), "todo");
 
         Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
 
@@ -249,7 +249,7 @@ public abstract class ChallengeCompleteTest{
         headers.putAll(x_challenger_header);
         headers.put("Content-Type", "application/json");
 
-        EntityInstance aTodo = new ArrayList<>(todos.getInstances()).get(0);
+        EntityInstance aTodo = new ArrayList<>(ThingifierRepositoryTestSupport.repository(ChallengeMain.getChallenger().getThingifier(), challenger.getXChallenger()).listInstances(todos)).get(0);
 
         // amend a to do successfully
         final HttpResponseDetails response =
@@ -267,7 +267,7 @@ public abstract class ChallengeCompleteTest{
     @Test
     public void canPutTodosPartial200AmendPass() {
 
-        final RepositoryBackedTestCollection todos = ThingifierRepositoryTestSupport.collection(ChallengeMain.getChallenger().getThingifier(), challenger.getXChallenger(), "todo");
+        final EntityDefinition todos = ThingifierRepositoryTestSupport.entity(ChallengeMain.getChallenger().getThingifier(), challenger.getXChallenger(), "todo");
 
         Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
 
@@ -275,7 +275,7 @@ public abstract class ChallengeCompleteTest{
         headers.putAll(x_challenger_header);
         headers.put("Content-Type", "application/json");
 
-        EntityInstance aTodo = new ArrayList<>(todos.getInstances()).get(0);
+        EntityInstance aTodo = new ArrayList<>(ThingifierRepositoryTestSupport.repository(ChallengeMain.getChallenger().getThingifier(), challenger.getXChallenger()).listInstances(todos)).get(0);
 
         // amend a to do successfully
         final HttpResponseDetails response =
@@ -291,7 +291,7 @@ public abstract class ChallengeCompleteTest{
     @Test
     public void canPutTodos200MissingTitleAmendPass() {
 
-        final RepositoryBackedTestCollection todos = ThingifierRepositoryTestSupport.collection(ChallengeMain.getChallenger().getThingifier(), challenger.getXChallenger(), "todo");
+        final EntityDefinition todos = ThingifierRepositoryTestSupport.entity(ChallengeMain.getChallenger().getThingifier(), challenger.getXChallenger(), "todo");
 
         Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
 
@@ -299,7 +299,7 @@ public abstract class ChallengeCompleteTest{
         headers.putAll(x_challenger_header);
         headers.put("Content-Type", "application/json");
 
-        EntityInstance aTodo = new ArrayList<>(todos.getInstances()).get(0);
+        EntityInstance aTodo = new ArrayList<>(ThingifierRepositoryTestSupport.repository(ChallengeMain.getChallenger().getThingifier(), challenger.getXChallenger()).listInstances(todos)).get(0);
 
         // amend a to do unsuccessfully
         final HttpResponseDetails response =
@@ -315,7 +315,7 @@ public abstract class ChallengeCompleteTest{
     @Test
     public void canNotPutTodos400ChangeIdAmendPass() {
 
-        final RepositoryBackedTestCollection todos = ThingifierRepositoryTestSupport.collection(ChallengeMain.getChallenger().getThingifier(), challenger.getXChallenger(), "todo");
+        final EntityDefinition todos = ThingifierRepositoryTestSupport.entity(ChallengeMain.getChallenger().getThingifier(), challenger.getXChallenger(), "todo");
 
         Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
 
@@ -323,7 +323,7 @@ public abstract class ChallengeCompleteTest{
         headers.putAll(x_challenger_header);
         headers.put("Content-Type", "application/json");
 
-        EntityInstance aTodo = new ArrayList<>(todos.getInstances()).get(0);
+        EntityInstance aTodo = new ArrayList<>(ThingifierRepositoryTestSupport.repository(ChallengeMain.getChallenger().getThingifier(), challenger.getXChallenger()).listInstances(todos)).get(0);
 
         // amend a to do unsuccessfully
         final HttpResponseDetails response =
@@ -487,8 +487,8 @@ public abstract class ChallengeCompleteTest{
 
         ensureAtMostXTodoAvailable(10);
 
-        final RepositoryBackedTestCollection todos = ThingifierRepositoryTestSupport.collection(ChallengeMain.getChallenger().getThingifier(), challenger.getXChallenger(), "todo");
-        final EntityInstance todo = todos.addInstance( new EntityInstance(todos.definition()));
+        final EntityDefinition todos = ThingifierRepositoryTestSupport.entity(ChallengeMain.getChallenger().getThingifier(), challenger.getXChallenger(), "todo");
+        final EntityInstance todo = ThingifierRepositoryTestSupport.repository(ChallengeMain.getChallenger().getThingifier(), challenger.getXChallenger()).addInstance( new EntityInstance(todos));
 
         Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
 
@@ -621,10 +621,10 @@ public abstract class ChallengeCompleteTest{
     }
 
     public void ensureAtMostXTodoAvailable(int x){
-        final RepositoryBackedTestCollection todos = ThingifierRepositoryTestSupport.collection(ChallengeMain.getChallenger().getThingifier(), challenger.getXChallenger(), "todo");
-        if(todos.countInstances()>x){
-            for(int delCount = todos.countInstances()-x; delCount > 0; delCount--) {
-                todos.deleteInstance((EntityInstance) (todos.getInstances().toArray()[0]));
+        final EntityDefinition todos = ThingifierRepositoryTestSupport.entity(ChallengeMain.getChallenger().getThingifier(), challenger.getXChallenger(), "todo");
+        if(ThingifierRepositoryTestSupport.repository(ChallengeMain.getChallenger().getThingifier(), challenger.getXChallenger()).countInstances(todos)>x){
+            for(int delCount = ThingifierRepositoryTestSupport.repository(ChallengeMain.getChallenger().getThingifier(), challenger.getXChallenger()).countInstances(todos)-x; delCount > 0; delCount--) {
+                ThingifierRepositoryTestSupport.repository(ChallengeMain.getChallenger().getThingifier(), challenger.getXChallenger()).deleteEntityInstance((EntityInstance) (ThingifierRepositoryTestSupport.repository(ChallengeMain.getChallenger().getThingifier(), challenger.getXChallenger()).listInstances(todos).toArray()[0]));
             }
         }
     }
@@ -634,8 +634,8 @@ public abstract class ChallengeCompleteTest{
 
         ensureAtMostXTodoAvailable(10);
 
-        final RepositoryBackedTestCollection todos = ThingifierRepositoryTestSupport.collection(ChallengeMain.getChallenger().getThingifier(), challenger.getXChallenger(), "todo");
-        final EntityInstance todo = todos.addInstance( new EntityInstance(todos.definition()));
+        final EntityDefinition todos = ThingifierRepositoryTestSupport.entity(ChallengeMain.getChallenger().getThingifier(), challenger.getXChallenger(), "todo");
+        final EntityInstance todo = ThingifierRepositoryTestSupport.repository(ChallengeMain.getChallenger().getThingifier(), challenger.getXChallenger()).addInstance( new EntityInstance(todos));
 
         Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
 
@@ -653,8 +653,8 @@ public abstract class ChallengeCompleteTest{
     @Test
     public void canGetSpecificTodoPass() {
 
-        final RepositoryBackedTestCollection todos = ThingifierRepositoryTestSupport.collection(ChallengeMain.getChallenger().getThingifier(), challenger.getXChallenger(), "todo");
-        final EntityInstance todo = todos.addInstance(new EntityInstance(todos.definition()));
+        final EntityDefinition todos = ThingifierRepositoryTestSupport.entity(ChallengeMain.getChallenger().getThingifier(), challenger.getXChallenger(), "todo");
+        final EntityInstance todo = ThingifierRepositoryTestSupport.repository(ChallengeMain.getChallenger().getThingifier(), challenger.getXChallenger()).addInstance(new EntityInstance(todos));
 
         Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
 
@@ -768,10 +768,10 @@ public abstract class ChallengeCompleteTest{
 
         Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
 
-        final RepositoryBackedTestCollection todos = ThingifierRepositoryTestSupport.collection(ChallengeMain.getChallenger().getThingifier(), challenger.getXChallenger(), "todo");
+        final EntityDefinition todos = ThingifierRepositoryTestSupport.entity(ChallengeMain.getChallenger().getThingifier(), challenger.getXChallenger(), "todo");
 
-        todos.addInstance(new EntityInstance(todos.definition())).setValue("doneStatus", "true");
-        todos.addInstance(new EntityInstance(todos.definition())).setValue("doneStatus", "false");
+        ThingifierRepositoryTestSupport.repository(ChallengeMain.getChallenger().getThingifier(), challenger.getXChallenger()).addInstance(new EntityInstance(todos)).setValue("doneStatus", "true");
+        ThingifierRepositoryTestSupport.repository(ChallengeMain.getChallenger().getThingifier(), challenger.getXChallenger()).addInstance(new EntityInstance(todos)).setValue("doneStatus", "false");
 
         final HttpResponseDetails response =
                 http.send("/todos?doneStatus=true", "GET", x_challenger_header, "");
@@ -1108,9 +1108,9 @@ public abstract class ChallengeCompleteTest{
         Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
 
 
-        final RepositoryBackedTestCollection todos = ThingifierRepositoryTestSupport.collection(ChallengeMain.getChallenger().getThingifier(), challenger.getXChallenger(), "todo");
+        final EntityDefinition todos = ThingifierRepositoryTestSupport.entity(ChallengeMain.getChallenger().getThingifier(), challenger.getXChallenger(), "todo");
 
-        for(EntityInstance instance : todos.getInstances()){
+        for(EntityInstance instance : ThingifierRepositoryTestSupport.repository(ChallengeMain.getChallenger().getThingifier(), challenger.getXChallenger()).listInstances(todos)){
             final HttpResponseDetails response =
                     http.send("/todos/" + instance.getFieldValue("id").asString(),
                             "DELETE",
@@ -1122,10 +1122,10 @@ public abstract class ChallengeCompleteTest{
 
         // add some todos in case this is not the last test
 
-        todos.addInstance(new EntityInstance(todos.definition()));
-        todos.addInstance(new EntityInstance(todos.definition()));
-        todos.addInstance(new EntityInstance(todos.definition()));
-        todos.addInstance(new EntityInstance(todos.definition()));
+        ThingifierRepositoryTestSupport.repository(ChallengeMain.getChallenger().getThingifier(), challenger.getXChallenger()).addInstance(new EntityInstance(todos));
+        ThingifierRepositoryTestSupport.repository(ChallengeMain.getChallenger().getThingifier(), challenger.getXChallenger()).addInstance(new EntityInstance(todos));
+        ThingifierRepositoryTestSupport.repository(ChallengeMain.getChallenger().getThingifier(), challenger.getXChallenger()).addInstance(new EntityInstance(todos));
+        ThingifierRepositoryTestSupport.repository(ChallengeMain.getChallenger().getThingifier(), challenger.getXChallenger()).addInstance(new EntityInstance(todos));
 
     }
 
