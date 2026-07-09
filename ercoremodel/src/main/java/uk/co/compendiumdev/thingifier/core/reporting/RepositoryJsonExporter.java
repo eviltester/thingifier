@@ -11,9 +11,7 @@ public class RepositoryJsonExporter {
     private final ERSchema schema;
     private final ThingRepository repository;
 
-    public RepositoryJsonExporter(
-            final ERSchema schema,
-            final ThingRepository repository) {
+    public RepositoryJsonExporter(final ERSchema schema, final ThingRepository repository) {
         this.schema = schema;
         this.repository = repository;
     }
@@ -24,9 +22,7 @@ public class RepositoryJsonExporter {
 
         String entitySeparator = "";
         for (EntityDefinition entity : schema.getEntityDefinitions()) {
-            json.append(entitySeparator).
-                    append(quoted(entity.getPlural())).
-                    append(" : [");
+            json.append(entitySeparator).append(quoted(entity.getPlural())).append(" : [");
 
             String instanceSeparator = "";
             for (EntityInstance instance : repository.listInstances(entity)) {
@@ -57,19 +53,17 @@ public class RepositoryJsonExporter {
                 continue;
             }
 
-            json.append(fieldSeparator).
-                    append(quoted(field.getName())).
-                    append(": ").
-                    append(fieldJsonValue);
+            json.append(fieldSeparator)
+                    .append(quoted(field.getName()))
+                    .append(": ")
+                    .append(fieldJsonValue);
             fieldSeparator = ", ";
         }
 
         json.append("}");
     }
 
-    public static String fieldJsonValue(
-            final Field field,
-            final EntityInstance instance) {
+    public static String fieldJsonValue(final Field field, final EntityInstance instance) {
         if (instance.hasInstantiatedFieldNamed(field.getName())) {
             return instance.getFieldValue(field.getName()).asJsonValue();
         }

@@ -1,20 +1,19 @@
 package uk.co.compendiumdev.thingifier.core.domain.instances;
 
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.NamedValue;
-import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
+import java.util.*;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.DefinedFields;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
-
-import java.util.*;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.NamedValue;
+import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 
 /*
-    InstanceFields is a sparse list, i.e. it might not have a value
-    for a specific field, in which case the default from the DefinedFields
-    will be used instead.
+   InstanceFields is a sparse list, i.e. it might not have a value
+   for a specific field, in which case the default from the DefinedFields
+   will be used instead.
 
- */
+*/
 public class InstanceFields {
 
     private final DefinedFields objectDefinition;
@@ -39,14 +38,14 @@ public class InstanceFields {
 
         // todo : support complex fieldNames e.g. person.firstname
 
-        if(!objectDefinition.hasFieldNameDefined(fieldName)){
+        if (!objectDefinition.hasFieldNameDefined(fieldName)) {
             reportCannotFindFieldError(fieldName);
         }
 
         // bypass default processing for OBJECT, ARRAY - at the moment
         // todo: allow defaults for OBJECT, ARRAY, etc.
         Field field = objectDefinition.getField(fieldName);
-        if(field.getType()==FieldType.OBJECT){
+        if (field.getType() == FieldType.OBJECT) {
             getAssignedValue(fieldName);
         }
 
@@ -60,7 +59,7 @@ public class InstanceFields {
                 // return the field type default value
                 String defaultVal = objectDefinition.getField(fieldName).getType().getDefault();
                 if (defaultVal != null) {
-                    assignedValue =  FieldValue.is(field, defaultVal);
+                    assignedValue = FieldValue.is(field, defaultVal);
                 }
             }
         }
@@ -79,7 +78,6 @@ public class InstanceFields {
         return output.toString();
     }
 
-
     public void deleteAllFieldValuesExcept(List<String> fieldNamesToIgnore) {
 
         Set<String> ignorekeys = new HashSet<>(fieldNamesToIgnore);
@@ -92,14 +90,13 @@ public class InstanceFields {
         }
     }
 
-    public InstanceFields cloned(){
+    public InstanceFields cloned() {
         final InstanceFields clone = new InstanceFields(objectDefinition);
-        for(FieldValue value : values.values()){
+        for (FieldValue value : values.values()) {
             clone.addValue(value.cloned());
         }
         return clone;
     }
-
 
     public DefinedFields getDefinition() {
         return objectDefinition;
@@ -121,12 +118,10 @@ public class InstanceFields {
 
         final ValidationReport validationReport = field.validate(value);
         if (validationReport.isValid()) {
-            addValue(FieldValue.is(field,
-                    field.getActualValueToAdd(value)));
+            addValue(FieldValue.is(field, field.getActualValueToAdd(value)));
 
         } else {
-            throw new IllegalArgumentException(
-                    validationReport.getCombinedErrorMessages());
+            throw new IllegalArgumentException(validationReport.getCombinedErrorMessages());
         }
 
         return this;
@@ -137,7 +132,8 @@ public class InstanceFields {
         note that this can create partial objects which may not actually
         match validation rules
     */
-    private void setFieldNameAsPath(final String fieldName, final String value, boolean shouldValidateValue) {
+    private void setFieldNameAsPath(
+            final String fieldName, final String value, boolean shouldValidateValue) {
         // processing a complex set of fields
 
         final String[] fields = fieldName.split("\\.");
@@ -148,34 +144,35 @@ public class InstanceFields {
     }
 
     /*
-        recursive setFieldValue to handle 'objects'
-     */
-    private void setFieldValue(final List<String> fieldNames, final String value, boolean shouldValidateValue) {
+       recursive setFieldValue to handle 'objects'
+    */
+    private void setFieldValue(
+            final List<String> fieldNames, final String value, boolean shouldValidateValue) {
 
         String fieldName = fieldNames.get(0);
-        if(!objectDefinition.hasFieldNameDefined(fieldName)){
+        if (!objectDefinition.hasFieldNameDefined(fieldName)) {
             reportCannotFindFieldError(fieldName);
         }
 
         final Field field = objectDefinition.getField(fieldName);
 
-        if(fieldNames.size()==1){
+        if (fieldNames.size() == 1) {
             // set the primitive value
-            if(shouldValidateValue) {
+            if (shouldValidateValue) {
                 setFieldValue(field, FieldValue.is(field, value));
-            }else{
+            } else {
                 addValue(FieldValue.is(field, value));
             }
-        }else{
+        } else {
 
-            if(field.getType()!= FieldType.OBJECT){
+            if (field.getType() != FieldType.OBJECT) {
                 throw new RuntimeException(
                         "Cannot reference fields on non object fields: " + fieldName);
             }
 
             // to traverse to next object, may need to create it
             FieldValue objectValue = getAssignedValue(fieldName);
-            if(objectValue==null){
+            if (objectValue == null) {
                 objectValue = createObjectField(fieldName);
             }
             final InstanceFields fieldInstance = objectValue.asObject();
@@ -184,16 +181,17 @@ public class InstanceFields {
 
             fieldInstance.setFieldValue(fieldNames, value, shouldValidateValue);
         }
-
     }
 
     private FieldValue createObjectField(final String fieldName) {
-        if(objectDefinition.hasFieldNameDefined(fieldName)){
+        if (objectDefinition.hasFieldNameDefined(fieldName)) {
             Field field = objectDefinition.getField(fieldName);
-            if(field.getType()==FieldType.OBJECT){
-                final FieldValue objectValue = FieldValue.is(field,
-                        new InstanceFields(field.getObjectDefinition()).
-                                withAutoIncrementIds(defaultAuto));
+            if (field.getType() == FieldType.OBJECT) {
+                final FieldValue objectValue =
+                        FieldValue.is(
+                                field,
+                                new InstanceFields(field.getObjectDefinition())
+                                        .withAutoIncrementIds(defaultAuto));
                 addValue(objectValue);
                 return objectValue;
             }
@@ -215,22 +213,19 @@ public class InstanceFields {
         throw new RuntimeException("Could not find field: " + fieldName);
     }
 
-
-
     // todo: not sure about the amAllowedToSetIds would prefer a different
     // way to configure the validation rules or exceptions to the rules
-    public ValidationReport validateFields(final List<String> excluding,
-                                           final boolean amAllowedToSetIds) {
+    public ValidationReport validateFields(
+            final List<String> excluding, final boolean amAllowedToSetIds) {
         ValidationReport report = new ValidationReport();
 
         // Field validation
 
         for (String fieldName : objectDefinition.getFieldNames()) {
-            if(!excluding.contains(fieldName)) {
+            if (!excluding.contains(fieldName)) {
                 Field field = objectDefinition.getField(fieldName);
-                ValidationReport validity = field.validate(
-                                                    getAssignedValue(fieldName),
-                                                amAllowedToSetIds);
+                ValidationReport validity =
+                        field.validate(getAssignedValue(fieldName), amAllowedToSetIds);
                 report.combine(validity);
             }
         }
@@ -239,19 +234,17 @@ public class InstanceFields {
     }
 
     /**
-     * Given a list of field values
-     * look at all the GUIDs and IDs referenced
-     * if they have different values to current then
-     * report the differences as errormessages
+     * Given a list of field values look at all the GUIDs and IDs referenced if they have different
+     * values to current then report the differences as errormessages
      *
      * @return a List of error messages about the GUIDs and IDs mentioned
      */
-    public List<String> findAnyGuidOrIdDifferences(final  List<NamedValue> args) {
+    public List<String> findAnyGuidOrIdDifferences(final List<NamedValue> args) {
 
         List<String> errorMessages = new ArrayList<>();
 
-        List<Field> idOrGuidFields = objectDefinition.getFieldsOfType(
-                                        FieldType.AUTO_GUID, FieldType.AUTO_INCREMENT);
+        List<Field> idOrGuidFields =
+                objectDefinition.getFieldsOfType(FieldType.AUTO_GUID, FieldType.AUTO_INCREMENT);
 
         for (NamedValue entry : args) {
 
@@ -261,11 +254,11 @@ public class InstanceFields {
                 // if editing it then throw error, ignore if same value
                 String existingValue = getFieldValue(entry.name).asString();
                 String entryValue = entry.value;
-                if(field.getType()== FieldType.AUTO_INCREMENT){
+                if (field.getType() == FieldType.AUTO_INCREMENT) {
                     // the potential value will be a Float, so amend it to an integer for comparison
-                    try{
-                        entryValue = String.valueOf((int)Float.parseFloat(entryValue));
-                    }catch(Exception e){
+                    try {
+                        entryValue = String.valueOf((int) Float.parseFloat(entryValue));
+                    } catch (Exception e) {
 
                     }
                 }
@@ -273,10 +266,9 @@ public class InstanceFields {
                     // if value is different then it is an attempt to amend it
                     if (!existingValue.equalsIgnoreCase(entryValue)) {
                         errorMessages.add(
-                                String.format("Can not amend %s from %s to %s",
-                                        entry.name,
-                                        existingValue,
-                                        entryValue));
+                                String.format(
+                                        "Can not amend %s from %s to %s",
+                                        entry.name, existingValue, entryValue));
                     }
                 }
             }

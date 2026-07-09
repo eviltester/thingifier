@@ -1,23 +1,21 @@
 package uk.co.compendiumdev.thingifier.api.non_http;
 
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
+import java.util.Map;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import uk.co.compendiumdev.thingifier.core.EntityRelModel;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiResponse;
 import uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
+import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 import uk.co.compendiumdev.thingifier.core.domain.instances.InstanceFields;
-
-import java.util.Map;
-
 
 public class NestedObjectsApiTest {
 
@@ -28,7 +26,7 @@ public class NestedObjectsApiTest {
     EntityDefinition thing;
 
     @BeforeEach
-    public void createThingWithNestedObjectField(){
+    public void createThingWithNestedObjectField() {
 
         thingifier = new Thingifier();
         thingifier.apiConfig().setApiToEnforceAcceptHeaderForResponses(false);
@@ -38,94 +36,112 @@ public class NestedObjectsApiTest {
 
         thing = thingifier.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("thing");
 
-        defn.addField(Field.is("person", FieldType.OBJECT)
-                .withField(
-                        Field.is("firstname", FieldType.STRING).
-                                withExample("Bob")).
-                        withField(
-                                Field.is("surname", FieldType.STRING).withExample("D'obbs")
-                        ));
-
+        defn.addField(
+                Field.is("person", FieldType.OBJECT)
+                        .withField(Field.is("firstname", FieldType.STRING).withExample("Bob"))
+                        .withField(Field.is("surname", FieldType.STRING).withExample("D'obbs")));
     }
 
     @Test
-    void canAmendConnie(){
+    void canAmendConnie() {
 
-        instance = thingifier.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(defn).withField("person.firstname", "Connie").withField("person.surname", "Dobbs"));
+        instance =
+                thingifier
+                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .createInstance(
+                                EntityInstanceDraft.forEntity(defn)
+                                        .withField("person.firstname", "Connie")
+                                        .withField("person.surname", "Dobbs"));
 
-        api = new ThingifierHttpApi(thingifier,
-                null, null);
+        api = new ThingifierHttpApi(thingifier, null, null);
 
-
-        final HttpApiRequest amendConnieRequest = new HttpApiRequest("/things/" + instance.getPrimaryKeyValue());
+        final HttpApiRequest amendConnieRequest =
+                new HttpApiRequest("/things/" + instance.getPrimaryKeyValue());
         amendConnieRequest.setVerb(HttpApiRequest.VERB.POST);
         amendConnieRequest.setHeaders(Map.of("content-type", "application/json"));
-        //{"person" : {"firstname": "bob"}}
+        // {"person" : {"firstname": "bob"}}
         amendConnieRequest.setBody("{\"person\" : {\"firstname\": \"bob\"}}");
 
         final HttpApiResponse response = api.post(amendConnieRequest);
 
         Assertions.assertEquals(200, response.getStatusCode());
-        Assertions.assertEquals("bob",
+        Assertions.assertEquals(
+                "bob",
                 instance.getFieldValue("person").asObject().getFieldValue("firstname").asString());
     }
 
     @Test
-    void canCreateBob(){
+    void canCreateBob() {
 
-        api = new ThingifierHttpApi(thingifier,
-                null, null);
+        api = new ThingifierHttpApi(thingifier, null, null);
 
-        Assertions.assertEquals(0,thingifier.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(thing));
+        Assertions.assertEquals(
+                0,
+                thingifier
+                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .countInstances(thing));
 
         final HttpApiRequest createBobRequest = new HttpApiRequest("/things");
         createBobRequest.setHeaders(Map.of("content-type", "application/json"));
         createBobRequest.setVerb(HttpApiRequest.VERB.POST);
-        //{"person" : {"firstname": "bob", "surname" : "dobbs"}}
-        createBobRequest.setBody("{\"person\" : {\"firstname\": \"bob\", \"surname\" : \"dobbs\"}}");
+        // {"person" : {"firstname": "bob", "surname" : "dobbs"}}
+        createBobRequest.setBody(
+                "{\"person\" : {\"firstname\": \"bob\", \"surname\" : \"dobbs\"}}");
 
         final HttpApiResponse response = api.post(createBobRequest);
 
         Assertions.assertEquals(201, response.getStatusCode());
-        Assertions.assertEquals(1,thingifier.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(thing));
+        Assertions.assertEquals(
+                1,
+                thingifier
+                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .countInstances(thing));
 
-        for(EntityInstance bob : thingifier.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).listInstances(thing)){
+        for (EntityInstance bob :
+                thingifier
+                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .listInstances(thing)) {
             FieldValue fv = bob.getFieldValue("person");
             InstanceFields obj = fv.asObject();
             FieldValue fn = obj.getFieldValue("firstname");
             String str = fn.asString();
-            
-            Assertions.assertEquals("bob", bob.getFieldValue("person").asObject().
-                    getFieldValue("firstname").asString());
+
+            Assertions.assertEquals(
+                    "bob",
+                    bob.getFieldValue("person").asObject().getFieldValue("firstname").asString());
         }
     }
 
     @Test
     public void failValidationAtObjectFieldLevel() {
 
-        defn.getField("person").
-                getObjectDefinition().
-                getField("surname").makeMandatory();
+        defn.getField("person").getObjectDefinition().getField("surname").makeMandatory();
 
-        api = new ThingifierHttpApi(thingifier,
-                null, null);
+        api = new ThingifierHttpApi(thingifier, null, null);
 
-        Assertions.assertEquals(0,thingifier.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(thing));
+        Assertions.assertEquals(
+                0,
+                thingifier
+                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .countInstances(thing));
 
         final HttpApiRequest failToCreateBobRequest = new HttpApiRequest("/things");
         failToCreateBobRequest.setVerb(HttpApiRequest.VERB.POST);
         failToCreateBobRequest.setHeaders(Map.of("content-type", "application/json"));
-        //{"person" : {"firstname": "bob"}}
+        // {"person" : {"firstname": "bob"}}
         failToCreateBobRequest.setBody("{\"person\" : {\"firstname\": \"bob\"}}");
 
         final HttpApiResponse response = api.post(failToCreateBobRequest);
 
         Assertions.assertEquals(400, response.getStatusCode());
-        Assertions.assertEquals(0,thingifier.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(thing));
+        Assertions.assertEquals(
+                0,
+                thingifier
+                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .countInstances(thing));
 
         Assertions.assertTrue(
-            response.apiResponse().getErrorMessages().
-                    stream().
-                    anyMatch(error -> error.contains("surname : field is mandatory")));
+                response.apiResponse().getErrorMessages().stream()
+                        .anyMatch(error -> error.contains("surname : field is mandatory")));
     }
 }

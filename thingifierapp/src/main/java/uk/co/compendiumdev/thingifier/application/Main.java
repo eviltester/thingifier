@@ -5,7 +5,6 @@ import uk.co.compendiumdev.thingifier.application.examples.TodoListThingifier;
 import uk.co.compendiumdev.thingifier.application.examples.TodoManagerThingifier;
 import uk.co.compendiumdev.thingifier.application.httprouting.ThingifierHttpApiRoutings;
 
-
 /*
 
 Backlog
@@ -86,7 +85,7 @@ public class Main {
         if (hasHerokuAssignedPort()) {
             return Integer.parseInt(processBuilder.environment().get("PORT"));
         }
-        return -1; //return default port if heroku-port isn't set (i.e. on localhost)
+        return -1; // return default port if heroku-port isn't set (i.e. on localhost)
     }
 
     public static void main(String[] args) {
@@ -101,16 +100,17 @@ public class Main {
         // could process args independently here
         // or override args
         // e.g. set port independently to a different default
-        if(hasHerokuAssignedPort()) {
+        if (hasHerokuAssignedPort()) {
             app.setPort(getHerokuAssignedPort());
         }
-        //app.setStaticFileLocation("/public");
-        //app.setAllowShutdown(false);
+        // app.setStaticFileLocation("/public");
+        // app.setAllowShutdown(false);
 
         app.configurePortAndDefaultRoutes();
         app.setupBuiltInConfigurableRoutes();
 
-        // todo : add shutdown behind an admin authentication with basic auth and a custom secret code header
+        // todo : add shutdown behind an admin authentication with basic auth and a custom secret
+        // code header
         // todo : add some other admin endpoints e.g. show version details of the app etc.
 
         // allows thingifier to be used in additional custom route configuration
@@ -123,19 +123,14 @@ public class Main {
         app.configureThingifierWithProfile();
 
         // can configure additional routes and processing
-//        app.addAdditionalRoutes(new DefaultGUI(thingifier).
-//                                    configureRoutes().
-//                                getRoutes());
+        //        app.addAdditionalRoutes(new DefaultGUI(thingifier).
+        //                                    configureRoutes().
+        //                                getRoutes());
         app.setupDefaultGui();
-
 
         // returning the restServer supports adding more 'hooks'
         ThingifierHttpApiRoutings restServer = app.startRestServer();
 
         app.addBuiltInArgConfiguredHooks();
-
-
     }
-
-
 }

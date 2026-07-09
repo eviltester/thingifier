@@ -4,9 +4,9 @@ public class ContentTypeHeaderParser {
     private final String header;
 
     public ContentTypeHeaderParser(final String header) {
-        if(header==null){
-            this.header="";
-        }else {
+        if (header == null) {
+            this.header = "";
+        } else {
             this.header = header.trim().toLowerCase();
         }
     }

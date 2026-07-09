@@ -1,12 +1,11 @@
 package uk.co.compendiumdev.thingifier.core.domain.instances;
 
-import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.NamedValue;
-import uk.co.compendiumdev.thingifier.core.domain.instances.validation.EntityInstanceDraftValidator;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.NamedValue;
+import uk.co.compendiumdev.thingifier.core.domain.instances.validation.EntityInstanceDraftValidator;
 
 public final class EntityInstanceDraft {
 
@@ -28,8 +27,7 @@ public final class EntityInstanceDraft {
     }
 
     public static EntityInstanceDraft fromNamedValues(
-            final EntityDefinition entityDefinition,
-            final List<NamedValue> values) {
+            final EntityDefinition entityDefinition, final List<NamedValue> values) {
         EntityInstanceDraft draft = forEntity(entityDefinition);
         for (NamedValue value : values) {
             draft.withField(value.getName(), value.asString());

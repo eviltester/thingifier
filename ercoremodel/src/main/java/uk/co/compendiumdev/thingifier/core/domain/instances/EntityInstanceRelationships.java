@@ -1,19 +1,18 @@
 package uk.co.compendiumdev.thingifier.core.domain.instances;
 
-import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVectorDefinition;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
+import static uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.Optionality.MANDATORY_RELATIONSHIP;
 
 import java.util.*;
-
-import static uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.Optionality.MANDATORY_RELATIONSHIP;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVectorDefinition;
+import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 
 public class EntityInstanceRelationships {
 
     private final List<RelationshipVectorInstance> relationships;
     private final EntityInstance forThis;
 
-    public EntityInstanceRelationships(final EntityInstance thingInstance){
+    public EntityInstanceRelationships(final EntityInstance thingInstance) {
         this.forThis = thingInstance;
         this.relationships = new ArrayList<>();
     }
@@ -44,34 +43,33 @@ public class EntityInstanceRelationships {
 
         // check if relationship is defined
         if (!entityDefinition.related().hasRelationship(relationshipName)) {
-            throw new IllegalArgumentException(String.format("Unknown Relationship %s for %s : %s",
-                    relationshipName, entityDefinition.getName(), forThis.getInternalId()));
+            throw new IllegalArgumentException(
+                    String.format(
+                            "Unknown Relationship %s for %s : %s",
+                            relationshipName, entityDefinition.getName(), forThis.getInternalId()));
         }
 
         // get the relationship vector between this thing and the passed in thing
-        RelationshipVectorDefinition relationship = entityDefinition.
-                                            getNamedRelationshipTo(
-                                                    relationshipName,
-                                                    thing.getEntity());
+        RelationshipVectorDefinition relationship =
+                entityDefinition.getNamedRelationshipTo(relationshipName, thing.getEntity());
 
-        if (relationship==null) {
+        if (relationship == null) {
             throw new IllegalArgumentException(
-                    String.format("Unknown Relationship %s for %s : %s",
-                        relationshipName, entityDefinition.getName(),
-                        thing.getEntity().getName()));
+                    String.format(
+                            "Unknown Relationship %s for %s : %s",
+                            relationshipName,
+                            entityDefinition.getName(),
+                            thing.getEntity().getName()));
         }
 
-
-        RelationshipVectorInstance related = new RelationshipVectorInstance(
-                                                relationship,
-                                                forThis, thing);
+        RelationshipVectorInstance related =
+                new RelationshipVectorInstance(relationship, forThis, thing);
 
         addFromRepository(related);
 
         if (relationship.getRelationshipDefinition().isTwoWay()) {
             thing.getRelationships().addFromRepository(related);
         }
-
     }
 
     private void add(final RelationshipVectorInstance relationship) {
@@ -83,27 +81,31 @@ public class EntityInstanceRelationships {
 
         String instanceIdentification = "";
 
-        try{
+        try {
             instanceIdentification = forThis.getInternalId();
-        }catch(Exception e){
+        } catch (Exception e) {
             // ignore, no guid
         }
 
         // enforce validation
-        if(!relationship.involves(forThis)){
+        if (!relationship.involves(forThis)) {
             throw new RuntimeException(
-                    String.format("Cannot add relationship to %s of type %s not valid",
-                            instanceIdentification,
-                            relationship.getDefinition().getName()));
+                    String.format(
+                            "Cannot add relationship to %s of type %s not valid",
+                            instanceIdentification, relationship.getDefinition().getName()));
         }
 
-        if(relationship.getDefinition().getCardinality().hasMaximumLimit()){
+        if (relationship.getDefinition().getCardinality().hasMaximumLimit()) {
             int maximumLimit = relationship.getDefinition().getCardinality().maximumLimit();
-            if(relationships.size()>=maximumLimit){
+            if (relationships.size() >= maximumLimit) {
                 throw new RuntimeException(
-                    String.format("Cannot add relationship type %s, exceeds maximum %d",
-                            relationship.getRelationshipDefinition().getFromRelationship().getName(),
-                            maximumLimit));
+                        String.format(
+                                "Cannot add relationship type %s, exceeds maximum %d",
+                                relationship
+                                        .getRelationshipDefinition()
+                                        .getFromRelationship()
+                                        .getName(),
+                                maximumLimit));
             }
         }
 
@@ -115,7 +117,8 @@ public class EntityInstanceRelationships {
         // types of related items, even if there are no actual relationships
         final EntityDefinition entityDefinition = forThis.getEntity();
 
-        for (RelationshipVectorDefinition relationship : entityDefinition.related().getRelationships()) {
+        for (RelationshipVectorDefinition relationship :
+                entityDefinition.related().getRelationships()) {
             if (relationship.getRelationshipDefinition().isKnownAs(relationshipName)) {
                 if (relationship.getTo() == entityDefinition) {
                     return relationship.getFrom();
@@ -132,8 +135,7 @@ public class EntityInstanceRelationships {
         Set<EntityInstance> theConnectedItems = new HashSet<>();
         for (RelationshipVectorInstance relationship : relationships) {
             if (relationship.getRelationshipDefinition().isKnownAs(relationshipName)) {
-                theConnectedItems.add(
-                        relationship.getOtherThingInstance(forThis));
+                theConnectedItems.add(relationship.getOtherThingInstance(forThis));
             }
         }
 
@@ -143,24 +145,27 @@ public class EntityInstanceRelationships {
     public List<EntityInstance> getConnectedItemsOfType(final String type) {
         List<EntityInstance> theConnectedItems = new ArrayList<>();
         for (RelationshipVectorInstance relationship : relationships) {
-            if (relationship.getTo().getEntity().getName().
-                    toLowerCase().contentEquals(type.toLowerCase())) {
+            if (relationship
+                    .getTo()
+                    .getEntity()
+                    .getName()
+                    .toLowerCase()
+                    .contentEquals(type.toLowerCase())) {
                 theConnectedItems.add(relationship.getTo());
             }
         }
         return theConnectedItems;
     }
 
-    public List<EntityInstance> removeRelationshipsInvolving(final EntityInstance thing,
-                                                             final String relationshipName) {
+    public List<EntityInstance> removeRelationshipsInvolving(
+            final EntityInstance thing, final String relationshipName) {
         forThis.ensureWritable();
         thing.ensureWritable();
         return removeRelationshipsInvolvingFromRepository(thing, relationshipName);
     }
 
     List<EntityInstance> removeRelationshipsInvolvingFromRepository(
-            final EntityInstance thing,
-            final String relationshipName) {
+            final EntityInstance thing, final String relationshipName) {
 
         List<EntityInstance> thingsToDelete = new ArrayList<>();
         List<RelationshipVectorInstance> toDelete = new ArrayList<>();
@@ -182,9 +187,9 @@ public class EntityInstanceRelationships {
     }
 
     /*
-        Remove all relationships and, as a knock on side-effect, return any of the
-        'things' that are no longer valid since they were involved in a mandatory relationship.
-     */
+       Remove all relationships and, as a knock on side-effect, return any of the
+       'things' that are no longer valid since they were involved in a mandatory relationship.
+    */
     public List<EntityInstance> removeAllRelationships() {
         forThis.ensureWritable();
         return removeAllRelationshipsFromRepository();
@@ -199,7 +204,7 @@ public class EntityInstanceRelationships {
         for (RelationshipVectorInstance relationship : relationships) {
             if (relationship.getFrom() == forThis) {
                 // me -> them
-                them= relationship.getTo();
+                them = relationship.getTo();
             } else {
                 // them -> me
                 them = relationship.getFrom();
@@ -236,7 +241,7 @@ public class EntityInstanceRelationships {
         List<RelationshipVectorInstance> toDelete = new ArrayList<>();
 
         for (RelationshipVectorInstance relationship : relationships) {
-            if(relationship.involves(thing)){
+            if (relationship.involves(thing)) {
                 toDelete.add(relationship);
                 instancesToDelete.addAll(relationship.instancesSubjectToMandatoryRelationship());
             }
@@ -260,51 +265,57 @@ public class EntityInstanceRelationships {
 
         final EntityDefinition entityDefinition = forThis.getEntity();
 
-
         // Optionality Relationship Validation
-        final Collection<RelationshipVectorDefinition> theRelationshipVectorDefns = entityDefinition.related().getRelationships();
-        for(RelationshipVectorDefinition vector : theRelationshipVectorDefns){
+        final Collection<RelationshipVectorDefinition> theRelationshipVectorDefns =
+                entityDefinition.related().getRelationships();
+        for (RelationshipVectorDefinition vector : theRelationshipVectorDefns) {
 
             int foundRelationshipCount = 0;
-            for(RelationshipVectorInstance relationship : relationships){
-                if(relationship.getRelationshipDefinition()==vector.getRelationshipDefinition()){
+            for (RelationshipVectorInstance relationship : relationships) {
+                if (relationship.getRelationshipDefinition()
+                        == vector.getRelationshipDefinition()) {
                     foundRelationshipCount++;
                 }
             }
 
             // for each definition vector, does it have relationships Vector Instances that match
-            if(vector.getOptionality() == MANDATORY_RELATIONSHIP){
-                if(foundRelationshipCount==0){
-                    report.setValid(false).
-                            addErrorMessage(String.format("Mandatory Relationship not found %s", vector.getName())
-                    );
+            if (vector.getOptionality() == MANDATORY_RELATIONSHIP) {
+                if (foundRelationshipCount == 0) {
+                    report.setValid(false)
+                            .addErrorMessage(
+                                    String.format(
+                                            "Mandatory Relationship not found %s",
+                                            vector.getName()));
                 }
             }
 
             // check cardinality here
-            if(vector.getCardinality().hasMaximumLimit()){
-                if(foundRelationshipCount>vector.getCardinality().maximumLimit()){
-                    report.setValid(false).
-                            addErrorMessage(String.format("Maximum related instances exceeded for %s at %d",
-                                    vector.getName(), vector.getCardinality().maximumLimit())) ;
+            if (vector.getCardinality().hasMaximumLimit()) {
+                if (foundRelationshipCount > vector.getCardinality().maximumLimit()) {
+                    report.setValid(false)
+                            .addErrorMessage(
+                                    String.format(
+                                            "Maximum related instances exceeded for %s at %d",
+                                            vector.getName(),
+                                            vector.getCardinality().maximumLimit()));
                 }
             }
         }
 
         // validate each instance in detail
-        for(RelationshipVectorInstance relationship : relationships){
+        for (RelationshipVectorInstance relationship : relationships) {
             ValidationReport vectorInstanceReport = relationship.validate();
-            if(!vectorInstanceReport.isValid()){
-                Collection<String> errorMessages =vectorInstanceReport.getErrorMessages();
-                for(String errorMessage : errorMessages){
-                    report.setValid(false).addErrorMessage(
-                            String.format("Error with EntityInstance relationship %s - %s",
-                            forThis.getInternalId(), errorMessage)
-                    );
+            if (!vectorInstanceReport.isValid()) {
+                Collection<String> errorMessages = vectorInstanceReport.getErrorMessages();
+                for (String errorMessage : errorMessages) {
+                    report.setValid(false)
+                            .addErrorMessage(
+                                    String.format(
+                                            "Error with EntityInstance relationship %s - %s",
+                                            forThis.getInternalId(), errorMessage));
                 }
             }
         }
-
 
         return report;
     }

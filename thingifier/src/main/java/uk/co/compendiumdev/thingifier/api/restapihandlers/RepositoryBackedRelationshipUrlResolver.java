@@ -1,5 +1,6 @@
 package uk.co.compendiumdev.thingifier.api.restapihandlers;
 
+import java.util.List;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
@@ -7,16 +8,13 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.F
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
 
-import java.util.List;
-
 final class RepositoryBackedRelationshipUrlResolver {
 
     private final Thingifier thingifier;
     private final ThingRepository repository;
 
     RepositoryBackedRelationshipUrlResolver(
-            final Thingifier thingifier,
-            final String databaseName) {
+            final Thingifier thingifier, final String databaseName) {
         this.thingifier = thingifier;
         this.repository = thingifier.getRepository(databaseName);
     }
@@ -32,11 +30,9 @@ final class RepositoryBackedRelationshipUrlResolver {
             return RelationshipUrlResolution.notMatched();
         }
 
-        EntityInstance parent =
-                repository.findInstanceByQueryIdentifier(parentEntity, parts[1]);
+        EntityInstance parent = repository.findInstanceByQueryIdentifier(parentEntity, parts[1]);
 
-        return RelationshipUrlResolution.collection(
-                parentEntity, parent, parts[2]);
+        return RelationshipUrlResolution.collection(parentEntity, parent, parts[2]);
     }
 
     RelationshipUrlResolution resolveRelationshipInstance(final String url) {
@@ -52,8 +48,9 @@ final class RepositoryBackedRelationshipUrlResolver {
         }
 
         EntityInstance child = null;
-        List<EntityInstance> relatedInstances = repository.listRelatedInstances(
-                collection.parentInstance(), collection.relationshipName());
+        List<EntityInstance> relatedInstances =
+                repository.listRelatedInstances(
+                        collection.parentInstance(), collection.relationshipName());
         for (EntityInstance relatedInstance : relatedInstances) {
             if (matchesQueryIdentifier(relatedInstance, parts[3])) {
                 child = relatedInstance;
@@ -69,13 +66,10 @@ final class RepositoryBackedRelationshipUrlResolver {
     }
 
     private EntityDefinition entityFor(final String term) {
-        return thingifier.getERmodel().getSchema().
-                getDefinitionWithSingularOrPluralNamed(term);
+        return thingifier.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed(term);
     }
 
-    private boolean matchesQueryIdentifier(
-            final EntityInstance instance,
-            final String identifier) {
+    private boolean matchesQueryIdentifier(final EntityInstance instance, final String identifier) {
         for (Field autoIncrementField :
                 instance.getEntity().getFieldsOfType(FieldType.AUTO_INCREMENT)) {
             String idValue = instance.getFieldValue(autoIncrementField.getName()).asString();
@@ -113,8 +107,7 @@ final class RepositoryBackedRelationshipUrlResolver {
         }
 
         static RelationshipUrlResolution notMatched() {
-            return new RelationshipUrlResolution(
-                    false, false, null, null, null, null);
+            return new RelationshipUrlResolution(false, false, null, null, null, null);
         }
 
         static RelationshipUrlResolution collection(

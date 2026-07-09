@@ -15,9 +15,7 @@ public class ERModelReport {
         this(erModel.getSchema(), erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME));
     }
 
-    public ERModelReport(
-            final ERSchema schema,
-            final ThingRepository repository) {
+    public ERModelReport(final ERSchema schema, final ThingRepository repository) {
         this.schema = schema;
         this.repository = repository;
     }
@@ -50,7 +48,6 @@ public class ERModelReport {
         for (EntityDefinition entityDefn : schema.getEntityDefinitions()) {
             output.append(entityDefn);
         }
-
 
         output.append("\n# Relationship Definitions\n");
 

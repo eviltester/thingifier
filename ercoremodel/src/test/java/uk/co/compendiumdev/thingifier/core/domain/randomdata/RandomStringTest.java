@@ -6,11 +6,11 @@ import org.junit.jupiter.api.Test;
 public class RandomStringTest {
 
     @Test
-    public void truncateStrings(){
+    public void truncateStrings() {
 
-        for(int x=0; x<100; x++){
+        for (int x = 0; x < 100; x++) {
             // check that we have no exceptions
-            int desiredLength = x+10;
+            int desiredLength = x + 10;
             String generated = new RandomString().get(desiredLength);
             System.out.println(generated);
             Assertions.assertEquals(desiredLength, generated.length());

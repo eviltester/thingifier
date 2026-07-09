@@ -1,5 +1,7 @@
 package uk.co.compendiumdev.thingifier.core;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.core.domain.datapopulator.RepositoryDataPopulator;
@@ -11,11 +13,8 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.F
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.Optionality;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
-import uk.co.compendiumdev.thingifier.core.repository.sqlite.SqliteThingRepositoryProvider;
 import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
-
-import java.util.ArrayList;
-import java.util.List;
+import uk.co.compendiumdev.thingifier.core.repository.sqlite.SqliteThingRepositoryProvider;
 
 public class EntityRelModelTest {
 
@@ -24,8 +23,9 @@ public class EntityRelModelTest {
         EntityRelModel erm = new EntityRelModel();
 
         Assertions.assertFalse(erm.hasEntityNamed("bob"));
-        Assertions.assertNull(erm.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).
-                findEntityInstanceByGUID("bob"));
+        Assertions.assertNull(
+                erm.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .findEntityInstanceByGUID("bob"));
         Assertions.assertFalse(erm.hasEntityWithPluralNamed("bob"));
         Assertions.assertNull(erm.getSchema().getEntityDefinitionWithPluralNamed("bob"));
         Assertions.assertNull(erm.getSchema().getDefinitionWithSingularOrPluralNamed("bob"));
@@ -36,11 +36,14 @@ public class EntityRelModelTest {
     public void nothingHappensWhenTryToDeleteThingThatDoesNotExist() {
         EntityRelModel erm = new EntityRelModel();
 
-        EntityInstance missing = EntityInstance.fromDraft(EntityInstanceDraft.forEntity(
-                new EntityDefinition("no", "nos")));
+        EntityInstance missing =
+                EntityInstance.fromDraft(
+                        EntityInstanceDraft.forEntity(new EntityDefinition("no", "nos")));
 
-        Assertions.assertDoesNotThrow(() ->
-                erm.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).deleteEntityInstance(missing));
+        Assertions.assertDoesNotThrow(
+                () ->
+                        erm.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
+                                .deleteEntityInstance(missing));
     }
 
     @Test
@@ -50,13 +53,16 @@ public class EntityRelModelTest {
 
         Assertions.assertTrue(erm.hasEntityNamed("thing"));
         Assertions.assertTrue(erm.hasEntityWithPluralNamed("things"));
-        Assertions.assertEquals(thing, erm.getSchema().getEntityDefinitionWithPluralNamed("things"));
-        Assertions.assertEquals(thing, erm.getSchema().getDefinitionWithSingularOrPluralNamed("thing"));
-        Assertions.assertEquals(thing, erm.getSchema().getDefinitionWithSingularOrPluralNamed("things"));
+        Assertions.assertEquals(
+                thing, erm.getSchema().getEntityDefinitionWithPluralNamed("things"));
+        Assertions.assertEquals(
+                thing, erm.getSchema().getDefinitionWithSingularOrPluralNamed("thing"));
+        Assertions.assertEquals(
+                thing, erm.getSchema().getDefinitionWithSingularOrPluralNamed("things"));
         Assertions.assertEquals(1, erm.getEntityNames().size());
         Assertions.assertTrue(erm.getEntityNames().contains("thing"));
-        Assertions.assertEquals(0,
-                erm.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(thing));
+        Assertions.assertEquals(
+                0, erm.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(thing));
     }
 
     @Test
@@ -66,8 +72,9 @@ public class EntityRelModelTest {
         defn.addAsPrimaryKeyField(Field.is("id", FieldType.AUTO_INCREMENT));
 
         ThingRepository repository = erm.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME);
-        EntityInstance explicitId = repository.createInstance(
-                EntityInstanceDraft.forEntity(defn).withProtectedField("id", "12"));
+        EntityInstance explicitId =
+                repository.createInstance(
+                        EntityInstanceDraft.forEntity(defn).withProtectedField("id", "12"));
 
         EntityInstance nextId = repository.createInstance(EntityInstanceDraft.forEntity(defn));
 
@@ -154,10 +161,10 @@ public class EntityRelModelTest {
         EntityDefinition thing = erm.createEntityDefinition("thing", "things");
         EntityDefinition dependant = erm.createEntityDefinition("dependantthing", "dthings");
 
-        erm.createRelationshipDefinition(thing, dependant, "things", Cardinality.ONE_TO_MANY()).
-                whenReversed(Cardinality.ONE_TO_ONE(), "idiewithoutyou").
-                getReversedRelationship().
-                setOptionality(Optionality.MANDATORY_RELATIONSHIP);
+        erm.createRelationshipDefinition(thing, dependant, "things", Cardinality.ONE_TO_MANY())
+                .whenReversed(Cardinality.ONE_TO_ONE(), "idiewithoutyou")
+                .getReversedRelationship()
+                .setOptionality(Optionality.MANDATORY_RELATIONSHIP);
 
         Assertions.assertTrue(erm.hasRelationshipNamed("idiewithoutyou"));
     }
@@ -169,10 +176,10 @@ public class EntityRelModelTest {
         thing.addAsPrimaryKeyField(Field.is("guid", FieldType.AUTO_GUID));
         EntityDefinition dependant = erm.createEntityDefinition("dependantthing", "dthings");
 
-        erm.createRelationshipDefinition(thing, dependant, "things", Cardinality.ONE_TO_MANY()).
-                whenReversed(Cardinality.ONE_TO_ONE(), "idiewithoutyou").
-                getReversedRelationship().
-                setOptionality(Optionality.MANDATORY_RELATIONSHIP);
+        erm.createRelationshipDefinition(thing, dependant, "things", Cardinality.ONE_TO_MANY())
+                .whenReversed(Cardinality.ONE_TO_ONE(), "idiewithoutyou")
+                .getReversedRelationship()
+                .setOptionality(Optionality.MANDATORY_RELATIONSHIP);
 
         ThingRepository repository = erm.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME);
         EntityInstance mainThing = repository.createInstance(EntityInstanceDraft.forEntity(thing));
@@ -207,15 +214,17 @@ public class EntityRelModelTest {
         EntityRelModel erm = new EntityRelModel();
         EntityDefinition thing = erm.createEntityDefinition("thing", "things");
 
-        RepositoryDataPopulator dataPopulator = (ERSchema schema, ThingRepository repository) ->
-                repository.createInstance(
-                        EntityInstanceDraft.forEntity(schema.getEntityDefinitionNamed("thing")));
+        RepositoryDataPopulator dataPopulator =
+                (ERSchema schema, ThingRepository repository) ->
+                        repository.createInstance(
+                                EntityInstanceDraft.forEntity(
+                                        schema.getEntityDefinitionNamed("thing")));
 
         erm.setDataGenerator(dataPopulator);
 
         Assertions.assertTrue(erm.populateDatabase(EntityRelModel.DEFAULT_DATABASE_NAME));
-        Assertions.assertEquals(1,
-                erm.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(thing));
+        Assertions.assertEquals(
+                1, erm.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(thing));
     }
 
     @Test
@@ -225,10 +234,12 @@ public class EntityRelModelTest {
             thing.addAsPrimaryKeyField(Field.is("id", FieldType.AUTO_INCREMENT));
             thing.addField(Field.is("name", FieldType.STRING));
 
-            RepositoryDataPopulator dataPopulator = (ERSchema schema, ThingRepository repository) ->
-                    repository.createInstance(
-                            EntityInstanceDraft.forEntity(schema.getEntityDefinitionNamed("thing")).
-                                    withField("name", "repository"));
+            RepositoryDataPopulator dataPopulator =
+                    (ERSchema schema, ThingRepository repository) ->
+                            repository.createInstance(
+                                    EntityInstanceDraft.forEntity(
+                                                    schema.getEntityDefinitionNamed("thing"))
+                                            .withField("name", "repository"));
 
             erm.setDataGenerator(dataPopulator);
 
@@ -238,7 +249,8 @@ public class EntityRelModelTest {
             List<EntityInstance> instances = new ArrayList<>(repository.listInstances(thing));
 
             Assertions.assertEquals(1, instances.size());
-            Assertions.assertEquals("repository", instances.get(0).getFieldValue("name").asString());
+            Assertions.assertEquals(
+                    "repository", instances.get(0).getFieldValue("name").asString());
         }
     }
 }

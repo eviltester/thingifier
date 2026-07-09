@@ -1,25 +1,25 @@
 package uk.co.compendiumdev.thingifier.core.domain.instances;
 
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 
 public class ThingInstanceCreationTest {
 
     EntityDefinition entityTestSession;
 
     @BeforeEach
-    public void createEntity(){
+    public void createEntity() {
 
         entityTestSession = new EntityDefinition("Test Session", "Test Sessions");
 
         entityTestSession.addAsPrimaryKeyField(Field.is("guid", FieldType.AUTO_GUID));
         entityTestSession.addField(Field.is("Title", FieldType.STRING));
-        entityTestSession.addFields(Field.is("CompletedStatus", FieldType.STRING).withDefaultValue("Not Completed"));
+        entityTestSession.addFields(
+                Field.is("CompletedStatus", FieldType.STRING).withDefaultValue("Not Completed"));
         entityTestSession.addFields(Field.is("review", FieldType.BOOLEAN).withDefaultValue("TRUE"));
         entityTestSession.addFields(Field.is("falsey", FieldType.BOOLEAN));
     }
@@ -30,7 +30,7 @@ public class ThingInstanceCreationTest {
         EntityInstance session;
         session = new EntityInstance(entityTestSession);
 
-        Assertions.assertEquals(4+1, session.getFieldNames().size()); // +1 for guid
+        Assertions.assertEquals(4 + 1, session.getFieldNames().size()); // +1 for guid
 
         session.setValue("Title", "My Test Session");
         Assertions.assertEquals("My Test Session", session.getFieldValue("Title").asString());
@@ -41,7 +41,7 @@ public class ThingInstanceCreationTest {
     }
 
     @Test
-    public void canCreateAThingWithAGUID(){
+    public void canCreateAThingWithAGUID() {
 
         // note potential bug this is risky if the GUID is later created
         EntityInstance instance = new EntityInstance(entityTestSession);
@@ -49,6 +49,4 @@ public class ThingInstanceCreationTest {
 
         Assertions.assertEquals("1234-1234-1324-1234", instance.getPrimaryKeyValue());
     }
-
-
 }

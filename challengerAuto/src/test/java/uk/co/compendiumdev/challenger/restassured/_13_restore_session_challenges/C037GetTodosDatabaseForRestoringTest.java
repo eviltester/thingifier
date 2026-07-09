@@ -16,50 +16,55 @@ import uk.co.compendiumdev.challenger.restassured.api.TodosApi;
 public class C037GetTodosDatabaseForRestoringTest extends RestAssuredBaseTest {
 
     @Test
-    public void canGetTodosForChallengerSession(){
+    public void canGetTodosForChallengerSession() {
 
         Assertions.assertNotNull(xChallenger);
-        Assertions.assertTrue(xChallenger.length()>5);
+        Assertions.assertTrue(xChallenger.length() > 5);
 
-        RestAssured.
-                given().
-                header("X-CHALLENGER", xChallenger).
-                accept("application/json").
-                get(apiPath("/challenger/" + xChallenger)).
-                then().
-                statusCode(Matchers.anyOf(Matchers.is(200), Matchers.is(204)));
+        RestAssured.given()
+                .header("X-CHALLENGER", xChallenger)
+                .accept("application/json")
+                .get(apiPath("/challenger/" + xChallenger))
+                .then()
+                .statusCode(Matchers.anyOf(Matchers.is(200), Matchers.is(204)));
 
         new TodosApi().getOrCreateAnyExistingTodo();
 
-        Response todoResponse = RestAssured.
-                given().
-                header("X-CHALLENGER", xChallenger).
-                accept("application/json").
-                get(apiPath("/challenger/database/" + xChallenger)).
-                then().
-                statusCode(200).
-                contentType(ContentType.JSON).and().extract().response();
+        Response todoResponse =
+                RestAssured.given()
+                        .header("X-CHALLENGER", xChallenger)
+                        .accept("application/json")
+                        .get(apiPath("/challenger/database/" + xChallenger))
+                        .then()
+                        .statusCode(200)
+                        .contentType(ContentType.JSON)
+                        .and()
+                        .extract()
+                        .response();
 
         Todos todosResponse = new Gson().fromJson(todoResponse.body().asString(), Todos.class);
         Assertions.assertFalse(todosResponse.todos.isEmpty());
 
+        Response cResponse =
+                RestAssured.given()
+                        .header("X-CHALLENGER", xChallenger)
+                        .accept("application/json")
+                        .get(apiPath("/challenger/" + xChallenger))
+                        .then()
+                        .statusCode(200)
+                        .contentType(ContentType.JSON)
+                        .and()
+                        .extract()
+                        .response();
 
-        Response cResponse = RestAssured.
-                given().
-                header("X-CHALLENGER", xChallenger).
-                accept("application/json").
-                get(apiPath("/challenger/" + xChallenger)).
-                then().
-                statusCode(200).
-                contentType(ContentType.JSON).and().extract().response();
-
-        Challenger challengerResponse = new Gson().fromJson(cResponse.body().asString(), Challenger.class);
+        Challenger challengerResponse =
+                new Gson().fromJson(cResponse.body().asString(), Challenger.class);
         Assertions.assertTrue(challengerResponse.challengeStatus.GET_RESTORABLE_TODOS);
 
         ChallengesStatus statuses = new ChallengesStatus();
         statuses.get();
-        Assertions.assertTrue(statuses.getChallengeNamed("GET /challenger/database/guid (200)").status,
+        Assertions.assertTrue(
+                statuses.getChallengeNamed("GET /challenger/database/guid (200)").status,
                 "challenge not passed");
-
     }
 }

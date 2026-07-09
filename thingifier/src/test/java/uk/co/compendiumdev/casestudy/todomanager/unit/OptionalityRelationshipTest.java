@@ -1,19 +1,18 @@
 package uk.co.compendiumdev.casestudy.todomanager.unit;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.casestudy.todomanager.TodoManagerModel;
-import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.core.EntityRelModel;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
 
-import java.util.ArrayList;
-import java.util.Collection;
-
-import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 public class OptionalityRelationshipTest {
 
     // relationships can be Optional:Optional
@@ -24,78 +23,93 @@ public class OptionalityRelationshipTest {
     private ThingRepository repository;
 
     @BeforeEach
-    public void createDefinitions(){
+    public void createDefinitions() {
 
         todoManager = TodoManagerModel.definedAsThingifier();
         repository = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME);
-
     }
 
     // by default relationships are optional optional
     @Test
-    public void byDefaultRelationshipsAreOptional(){
+    public void byDefaultRelationshipsAreOptional() {
 
+        EntityDefinition projects =
+                todoManager
+                        .getERmodel()
+                        .getSchema()
+                        .getDefinitionWithSingularOrPluralNamed("project");
 
-        EntityDefinition projects = todoManager.getERmodel().getSchema().
-                getDefinitionWithSingularOrPluralNamed("project");
-
-        EntityInstance aProject = repository.createInstance(
-                EntityInstanceDraft.forEntity(projects).withField("title", "myproject"));
+        EntityInstance aProject =
+                repository.createInstance(
+                        EntityInstanceDraft.forEntity(projects).withField("title", "myproject"));
 
         Assertions.assertTrue(aProject.validate().isValid());
 
+        EntityDefinition todos =
+                todoManager.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("todo");
 
-        EntityDefinition todos = todoManager.getERmodel().getSchema().
-                getDefinitionWithSingularOrPluralNamed("todo");
-
-        EntityInstance tidy = repository.createInstance(
-                EntityInstanceDraft.forEntity(todos).
-                        withField("title", "Tidy up my room").
-                        withField("description", "I need to tidy up my room because it is a mess"));
+        EntityInstance tidy =
+                repository.createInstance(
+                        EntityInstanceDraft.forEntity(todos)
+                                .withField("title", "Tidy up my room")
+                                .withField(
+                                        "description",
+                                        "I need to tidy up my room because it is a mess"));
 
         Assertions.assertTrue(tidy.validateFieldValues(new ArrayList<>(), true).isValid());
-
-
     }
 
     @Test
-    public void anEstimateWithoutATodoIsInvalid(){
+    public void anEstimateWithoutATodoIsInvalid() {
 
-        EntityDefinition todos = todoManager.getERmodel().getSchema().
-                getDefinitionWithSingularOrPluralNamed("todo");
+        EntityDefinition todos =
+                todoManager.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("todo");
 
-        EntityInstance tidy = repository.createInstance(
-                EntityInstanceDraft.forEntity(todos).
-                        withField("title", "Tidy up my room").
-                        withField("description", "I need to tidy up my room because it is a mess"));
+        EntityInstance tidy =
+                repository.createInstance(
+                        EntityInstanceDraft.forEntity(todos)
+                                .withField("title", "Tidy up my room")
+                                .withField(
+                                        "description",
+                                        "I need to tidy up my room because it is a mess"));
 
-        EntityDefinition estimates = todoManager.getERmodel().getSchema().
-                getDefinitionWithSingularOrPluralNamed("estimate");
+        EntityDefinition estimates =
+                todoManager
+                        .getERmodel()
+                        .getSchema()
+                        .getDefinitionWithSingularOrPluralNamed("estimate");
 
-        EntityInstance tidyRoomEstimate = repository.createInstance(
-                EntityInstanceDraft.forEntity(estimates).withField("duration", "1"));
+        EntityInstance tidyRoomEstimate =
+                repository.createInstance(
+                        EntityInstanceDraft.forEntity(estimates).withField("duration", "1"));
 
         // it should be invalid because the estimate does not have a relationship with a to do
         Assertions.assertFalse(tidyRoomEstimate.validate().isValid());
-
     }
 
     @Test
-    public void anEstimateMustHaveATodoToBeValid(){
+    public void anEstimateMustHaveATodoToBeValid() {
 
-        EntityDefinition todos = todoManager.getERmodel().getSchema().
-                getDefinitionWithSingularOrPluralNamed("todo");
+        EntityDefinition todos =
+                todoManager.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("todo");
 
-        EntityInstance tidy = repository.createInstance(
-                EntityInstanceDraft.forEntity(todos).
-                        withField("title", "Tidy up my room").
-                        withField("description", "I need to tidy up my room because it is a mess"));
+        EntityInstance tidy =
+                repository.createInstance(
+                        EntityInstanceDraft.forEntity(todos)
+                                .withField("title", "Tidy up my room")
+                                .withField(
+                                        "description",
+                                        "I need to tidy up my room because it is a mess"));
 
-        EntityDefinition estimates = todoManager.getERmodel().getSchema().
-                getDefinitionWithSingularOrPluralNamed("estimate");
+        EntityDefinition estimates =
+                todoManager
+                        .getERmodel()
+                        .getSchema()
+                        .getDefinitionWithSingularOrPluralNamed("estimate");
 
-        EntityInstance tidyRoomEstimate = repository.createInstance(
-                EntityInstanceDraft.forEntity(estimates).withField("duration", "1"));
+        EntityInstance tidyRoomEstimate =
+                repository.createInstance(
+                        EntityInstanceDraft.forEntity(estimates).withField("duration", "1"));
 
         repository.connectRelationship(tidyRoomEstimate, "estimate", tidy);
 
@@ -104,29 +118,33 @@ public class OptionalityRelationshipTest {
 
         final Collection<EntityInstance> relatedEstimates = tidy.getRelatedItems("estimate");
         Assertions.assertEquals(1, relatedEstimates.size());
-
     }
 
-
-
-    // deleting a thing which is related to another thing where the relationship is mandatory should delete the other thing
+    // deleting a thing which is related to another thing where the relationship is mandatory should
+    // delete the other thing
     @Test
-    public void deleteAlsoCoversMandatoryOptionalityRelationships(){
+    public void deleteAlsoCoversMandatoryOptionalityRelationships() {
 
-        EntityDefinition todos = todoManager.getERmodel().getSchema().
-                getDefinitionWithSingularOrPluralNamed("todo");
+        EntityDefinition todos =
+                todoManager.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("todo");
 
-        EntityInstance tidy = repository.createInstance(
-                EntityInstanceDraft.forEntity(todos).
-                        withField("title", "Tidy up my room").
-                        withField("description", "I need to tidy up my room because it is a mess"));
+        EntityInstance tidy =
+                repository.createInstance(
+                        EntityInstanceDraft.forEntity(todos)
+                                .withField("title", "Tidy up my room")
+                                .withField(
+                                        "description",
+                                        "I need to tidy up my room because it is a mess"));
 
+        EntityDefinition estimates =
+                todoManager
+                        .getERmodel()
+                        .getSchema()
+                        .getDefinitionWithSingularOrPluralNamed("estimate");
 
-        EntityDefinition estimates = todoManager.getERmodel().getSchema().
-                getDefinitionWithSingularOrPluralNamed("estimate");
-
-        EntityInstance tidyRoomEstimate = repository.createInstance(
-                EntityInstanceDraft.forEntity(estimates).withField("duration", "1"));
+        EntityInstance tidyRoomEstimate =
+                repository.createInstance(
+                        EntityInstanceDraft.forEntity(estimates).withField("duration", "1"));
 
         repository.connectRelationship(tidyRoomEstimate, "estimate", tidy);
 
@@ -149,8 +167,4 @@ public class OptionalityRelationshipTest {
         Assertions.assertEquals(0, repository.listInstances(todos).size());
         Assertions.assertEquals(0, repository.listInstances(estimates).size());
     }
-
-
-
-
 }

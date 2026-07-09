@@ -10,9 +10,8 @@ import uk.co.compendiumdev.version4.api.Payloads;
 
 public class ProjectEntityTest {
 
-
     @Test
-    void canCreateAProject(){
+    void canCreateAProject() {
 
         Payloads.ProjectPayload proj = new Payloads.ProjectPayload();
         proj.title = "A Created Project";
@@ -20,13 +19,12 @@ public class ProjectEntityTest {
 
         Assertions.assertEquals(201, response.getStatusCode());
 
-        final Payloads.ProjectPayload created = response.body().as(
-                Payloads.ProjectPayload.class);
+        final Payloads.ProjectPayload created = response.body().as(Payloads.ProjectPayload.class);
         Assertions.assertEquals("A Created Project", created.title);
     }
 
     @Test
-    void canCreateAMinimalProject(){
+    void canCreateAMinimalProject() {
 
         Payloads.ProjectPayload proj = new Payloads.ProjectPayload();
         final Response response = Api.createProject(proj);
@@ -34,18 +32,15 @@ public class ProjectEntityTest {
         Assertions.assertEquals(201, response.getStatusCode());
     }
 
-
     @Test
-    void canGetASpecificProject(){
+    void canGetASpecificProject() {
 
         Payloads.ProjectPayload proj = new Payloads.ProjectPayload();
         proj.title = "A Created Project";
         final Response response = Api.createProject(proj);
-        final Payloads.ProjectPayload created =
-                response.body().as(Payloads.ProjectPayload.class);
+        final Payloads.ProjectPayload created = response.body().as(Payloads.ProjectPayload.class);
 
-        Response getresponse = RestAssured.
-                get(Environment.getEnv("/projects/" + created.id));
+        Response getresponse = RestAssured.get(Environment.getEnv("/projects/" + created.id));
         Assertions.assertEquals(200, getresponse.getStatusCode());
 
         final Payloads.ProjectsPayload retrieved =
@@ -58,20 +53,17 @@ public class ProjectEntityTest {
     }
 
     @Test
-    void canDeleteASpecificProject(){
+    void canDeleteASpecificProject() {
 
         Response response = Api.createProject(new Payloads.ProjectPayload());
-        final Payloads.ProjectPayload created =
-                response.body().as(Payloads.ProjectPayload.class);
+        final Payloads.ProjectPayload created = response.body().as(Payloads.ProjectPayload.class);
 
         // delete the project we just created
-        response = RestAssured.
-                delete(Environment.getEnv("/projects/" + created.id));
+        response = RestAssured.delete(Environment.getEnv("/projects/" + created.id));
         Assertions.assertEquals(200, response.getStatusCode());
 
         // check it has gone
-        response = RestAssured.
-                get(Environment.getEnv("/projects/" + created.id));
+        response = RestAssured.get(Environment.getEnv("/projects/" + created.id));
         Assertions.assertEquals(404, response.getStatusCode());
     }
 }

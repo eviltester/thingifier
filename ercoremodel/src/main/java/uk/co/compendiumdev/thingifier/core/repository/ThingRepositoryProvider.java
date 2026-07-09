@@ -1,8 +1,7 @@
 package uk.co.compendiumdev.thingifier.core.repository;
 
-import uk.co.compendiumdev.thingifier.core.domain.definitions.ERSchema;
-
 import java.util.Set;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.ERSchema;
 
 public interface ThingRepositoryProvider extends AutoCloseable {
 

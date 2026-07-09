@@ -1,10 +1,9 @@
 package uk.co.compendiumdev.thingifier.core.repository;
 
-import uk.co.compendiumdev.thingifier.core.repository.inmemory.InMemoryThingRepositoryProvider;
-import uk.co.compendiumdev.thingifier.core.repository.sqlite.SqliteThingRepositoryProvider;
-
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import uk.co.compendiumdev.thingifier.core.repository.inmemory.InMemoryThingRepositoryProvider;
+import uk.co.compendiumdev.thingifier.core.repository.sqlite.SqliteThingRepositoryProvider;
 
 public class ThingRepositoryProviderConfig {
 
@@ -30,18 +29,20 @@ public class ThingRepositoryProviderConfig {
         if (hasArg(args, ARG_SQLITE_MEMORY)) {
             repositoryMode = "sqlite-memory";
         } else {
-            repositoryMode = firstNonBlank(
-                    argValue(args, ARG_REPOSITORY_MODE),
-                    System.getProperty(PROPERTY_REPOSITORY_MODE),
-                    System.getenv(ENV_REPOSITORY_MODE),
-                    DEFAULT_REPOSITORY_MODE);
+            repositoryMode =
+                    firstNonBlank(
+                            argValue(args, ARG_REPOSITORY_MODE),
+                            System.getProperty(PROPERTY_REPOSITORY_MODE),
+                            System.getenv(ENV_REPOSITORY_MODE),
+                            DEFAULT_REPOSITORY_MODE);
         }
 
-        String sqliteDirectory = firstNonBlank(
-                argValue(args, ARG_SQLITE_DIRECTORY),
-                System.getProperty(PROPERTY_SQLITE_DIRECTORY),
-                System.getenv(ENV_SQLITE_DIRECTORY),
-                "thingifier-sqlite");
+        String sqliteDirectory =
+                firstNonBlank(
+                        argValue(args, ARG_SQLITE_DIRECTORY),
+                        System.getProperty(PROPERTY_SQLITE_DIRECTORY),
+                        System.getenv(ENV_SQLITE_DIRECTORY),
+                        "thingifier-sqlite");
 
         return new ThingRepositoryProviderConfig(repositoryMode, Paths.get(sqliteDirectory));
     }
@@ -62,8 +63,9 @@ public class ThingRepositoryProviderConfig {
                 return SqliteThingRepositoryProvider.fileBacked(sqliteDirectory);
             default:
                 throw new IllegalArgumentException(
-                        "Unknown Thingifier repository mode " + repositoryMode +
-                                ". Expected memory, sqlite-memory, or sqlite-file.");
+                        "Unknown Thingifier repository mode "
+                                + repositoryMode
+                                + ". Expected memory, sqlite-memory, or sqlite-file.");
         }
     }
 
@@ -76,9 +78,9 @@ public class ThingRepositoryProviderConfig {
     }
 
     public String describe() {
-        if (repositoryMode.equals("sqlite-file") ||
-                repositoryMode.equals("sqlite-disk") ||
-                repositoryMode.equals("file")) {
+        if (repositoryMode.equals("sqlite-file")
+                || repositoryMode.equals("sqlite-disk")
+                || repositoryMode.equals("file")) {
             return repositoryMode + " at " + sqliteDirectory.toAbsolutePath();
         }
         return repositoryMode;
@@ -126,9 +128,6 @@ public class ThingRepositoryProviderConfig {
     }
 
     private static String normalize(final String mode) {
-        return firstNonBlank(mode, DEFAULT_REPOSITORY_MODE).
-                trim().
-                toLowerCase().
-                replace("_", "-");
+        return firstNonBlank(mode, DEFAULT_REPOSITORY_MODE).trim().toLowerCase().replace("_", "-");
     }
 }

@@ -1,14 +1,13 @@
 package uk.co.compendiumdev.thingifier.core.repository.inmemory;
 
-import uk.co.compendiumdev.thingifier.core.EntityRelModel;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.ERSchema;
-import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
-import uk.co.compendiumdev.thingifier.core.repository.ThingRepositoryProvider;
-
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import uk.co.compendiumdev.thingifier.core.EntityRelModel;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.ERSchema;
+import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
+import uk.co.compendiumdev.thingifier.core.repository.ThingRepositoryProvider;
 
 public class InMemoryThingRepositoryProvider implements ThingRepositoryProvider {
 

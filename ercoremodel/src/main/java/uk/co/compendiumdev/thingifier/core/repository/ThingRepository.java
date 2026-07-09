@@ -1,5 +1,8 @@
 package uk.co.compendiumdev.thingifier.core.repository;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.ERSchema;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.NamedValue;
@@ -10,10 +13,6 @@ import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
 import uk.co.compendiumdev.thingifier.core.reporting.ERModelReport;
 import uk.co.compendiumdev.thingifier.core.reporting.RepositoryJsonExporter;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
 
 public interface ThingRepository extends AutoCloseable {
 
@@ -35,7 +34,8 @@ public interface ThingRepository extends AutoCloseable {
 
     EntityInstance findInstanceByPrimaryKey(EntityDefinition entity, String primaryKeyValue);
 
-    EntityInstance findInstanceByFieldNameAndValue(EntityDefinition entity, String fieldName, String fieldValue);
+    EntityInstance findInstanceByFieldNameAndValue(
+            EntityDefinition entity, String fieldName, String fieldValue);
 
     Collection<EntityInstance> listInstances(EntityDefinition entity);
 

@@ -1,6 +1,5 @@
 package uk.co.compendiumdev.challenger.http.httpclient;
 
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,29 +21,29 @@ public class HttpRequestDetails {
         headers.put(key, value);
     }
 
-    public String raw(){
+    public String raw() {
 
         StringBuilder rawOutput = new StringBuilder();
 
-        for(String key : headers.keySet()){
+        for (String key : headers.keySet()) {
             // output only the null key which is the VERB header
-            if(headers.get(key)==null){
+            if (headers.get(key) == null) {
                 rawOutput.append(key);
                 rawOutput.append("\n");
             }
         }
 
         // output the rest of the headers
-        for(String key : headers.keySet()){
-            if(headers.get(key)!=null){
+        for (String key : headers.keySet()) {
+            if (headers.get(key) != null) {
                 rawOutput.append(key);
                 rawOutput.append(": ");
                 rawOutput.append(headers.get(key));
                 rawOutput.append("\n");
             }
         }
-        
-        if(body!=null){
+
+        if (body != null) {
             rawOutput.append("\n");
             rawOutput.append(body);
         }

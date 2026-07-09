@@ -3,11 +3,11 @@ package uk.co.compendiumdev.thingifier.application.internalhttpconversion;
 import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
 
 /*
-    The HttpApiResponse is too complicated to re-use and is tied to the ApiResponse
+   The HttpApiResponse is too complicated to re-use and is tied to the ApiResponse
 
-    This is just a cleaner bridge for pure Http access.
+   This is just a cleaner bridge for pure Http access.
 
- */
+*/
 public class InternalHttpResponse {
     private int status;
     private String contentType;
@@ -15,7 +15,7 @@ public class InternalHttpResponse {
 
     private HttpHeadersBlock headers;
 
-    public InternalHttpResponse(){
+    public InternalHttpResponse() {
 
         headers = new HttpHeadersBlock();
     }
@@ -45,7 +45,7 @@ public class InternalHttpResponse {
     }
 
     public boolean hasType() {
-        return contentType!=null;
+        return contentType != null;
     }
 
     public String getType() {

@@ -1,12 +1,11 @@
 package uk.co.compendiumdev.thingifier.core.domain.definitions.validation;
 
+import java.util.regex.Pattern;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
 
-import java.util.regex.Pattern;
-
 /*
-    Does the regex match the whole text? i.e ^regex$
- */
+   Does the regex match the whole text? i.e ^regex$
+*/
 public class MatchesRegexValidationRule implements ValidationRule {
     private final String regexToMatch;
     private final Pattern pattern;
@@ -25,7 +24,7 @@ public class MatchesRegexValidationRule implements ValidationRule {
 
     @Override
     public String getErrorMessage(final FieldValue value) {
-        return String.format("%s does not match the regex %s",value.getName(), this.regexToMatch);
+        return String.format("%s does not match the regex %s", value.getName(), this.regexToMatch);
     }
 
     @Override

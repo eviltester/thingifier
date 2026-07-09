@@ -1,5 +1,9 @@
 package uk.co.compendiumdev.thingifier.core.repository.inmemory;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.ERSchema;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
@@ -14,14 +18,9 @@ import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceReposi
 import uk.co.compendiumdev.thingifier.core.query.EntityInstanceListFilter;
 import uk.co.compendiumdev.thingifier.core.query.EntityInstanceListSorter;
 import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
+import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
 import uk.co.compendiumdev.thingifier.core.repository.validation.EntityInstanceWriteValidator;
-import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
 
 public class InMemoryThingRepository implements ThingRepository {
 
@@ -54,8 +53,10 @@ public class InMemoryThingRepository implements ThingRepository {
         createInstanceCollectionsFrom(schema);
     }
 
-    private EntityInstanceCollection createInstanceCollectionFor(final EntityDefinition definition) {
-        EntityInstanceCollection existing = getInstanceCollectionForEntityNamed(definition.getName());
+    private EntityInstanceCollection createInstanceCollectionFor(
+            final EntityDefinition definition) {
+        EntityInstanceCollection existing =
+                getInstanceCollectionForEntityNamed(definition.getName());
         if (existing != null) {
             return existing;
         }
@@ -150,8 +151,7 @@ public class InMemoryThingRepository implements ThingRepository {
 
     @Override
     public EntityInstance patchInstance(
-            final EntityInstance instance,
-            final EntityInstanceDraft draft) {
+            final EntityInstance instance, final EntityInstanceDraft draft) {
         EntityInstance candidate = EntityInstanceRepositoryAccess.patch(instance, draft);
         writeValidator.assertValidForAmendment(candidate);
         return EntityInstanceRepositoryAccess.lock(
@@ -160,8 +160,7 @@ public class InMemoryThingRepository implements ThingRepository {
 
     @Override
     public EntityInstance replaceInstance(
-            final EntityInstance instance,
-            final EntityInstanceDraft draft) {
+            final EntityInstance instance, final EntityInstanceDraft draft) {
         EntityInstance candidate = EntityInstanceRepositoryAccess.replace(instance, draft);
         writeValidator.assertValidForAmendment(candidate);
         EntityInstanceRepositoryAccess.clearAllFields(instance);
@@ -187,8 +186,8 @@ public class InMemoryThingRepository implements ThingRepository {
     @Override
     public ValidationReport checkFieldsForUniqueNess(
             final EntityInstance instance, final boolean isAmendment) {
-        return getInstanceCollectionForEntityNamed(instance.getEntity().getName()).
-                checkFieldsForUniqueNess(instance, isAmendment);
+        return getInstanceCollectionForEntityNamed(instance.getEntity().getName())
+                .checkFieldsForUniqueNess(instance, isAmendment);
     }
 
     @Override
@@ -201,7 +200,9 @@ public class InMemoryThingRepository implements ThingRepository {
         Field field = entity.getField(fieldName);
         if (field == null || field.getType() != FieldType.AUTO_INCREMENT) {
             throw new IllegalArgumentException(
-                    String.format("%s is not an auto-increment field on %s", fieldName, entity.getName()));
+                    String.format(
+                            "%s is not an auto-increment field on %s",
+                            fieldName, entity.getName()));
         }
 
         AutoIncrement counter = countersFor(entity).get(fieldName);
@@ -256,14 +257,15 @@ public class InMemoryThingRepository implements ThingRepository {
             final String relationshipName,
             final QueryFilterParams queryParams) {
         QueryFilterParams params = queryParams == null ? new QueryFilterParams() : queryParams;
-        List<EntityInstance> instances = new ArrayList<>(
-                getConnectedItems(instance, relationshipName));
+        List<EntityInstance> instances =
+                new ArrayList<>(getConnectedItems(instance, relationshipName));
         instances = new EntityInstanceListFilter(params).filter(instances);
         return new EntityInstanceListSorter(params).sort(instances);
     }
 
     private boolean matchesQueryIdentifier(final EntityInstance instance, final String identifier) {
-        for (Field autoIncrementField : instance.getEntity().getFieldsOfType(FieldType.AUTO_INCREMENT)) {
+        for (Field autoIncrementField :
+                instance.getEntity().getFieldsOfType(FieldType.AUTO_INCREMENT)) {
             String idValue = instance.getFieldValue(autoIncrementField.getName()).asString();
             if (idValue.contentEquals(identifier)) {
                 return true;
@@ -274,5 +276,4 @@ public class InMemoryThingRepository implements ThingRepository {
         String primaryKeyValue = instance.getPrimaryKeyValue();
         return primaryKeyValue != null && primaryKeyValue.contentEquals(identifier);
     }
-
 }

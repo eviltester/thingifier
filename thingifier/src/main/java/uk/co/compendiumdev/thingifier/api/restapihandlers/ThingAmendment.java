@@ -1,16 +1,15 @@
 package uk.co.compendiumdev.thingifier.api.restapihandlers;
 
+import java.util.List;
+import java.util.Map;
 import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.NamedValue;
-import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.NamedValue;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
-
-import java.util.List;
-import java.util.Map;
+import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 
 // TODO - there should be a generic API handlers package that does create, read, update, delete
 // which I think this is, and they should not use http status codes
@@ -25,15 +24,21 @@ public class ThingAmendment {
         this.thingifier = thingifier;
     }
 
-    public ApiResponse amendInstance(final BodyParser bodyargs, final EntityInstance instance,
-                                     final Boolean clearFieldsBeforeSettingFromArgs, final String database) {
+    public ApiResponse amendInstance(
+            final BodyParser bodyargs,
+            final EntityInstance instance,
+            final Boolean clearFieldsBeforeSettingFromArgs,
+            final String database) {
 
         Map<String, String> args = bodyargs.getStringMap();
 
-        if(thingifier.apiConfig().willApiEnforceDeclaredTypesInInput()) {
-            List<String> doNotValidateFields = instance.getEntity().getFieldNamesOfType(FieldType.AUTO_INCREMENT, FieldType.AUTO_GUID);
-            ValidationReport validatedTypes = bodyargs.validateAgainstTypeIgnoring(instance.getEntity(), doNotValidateFields);
-            if(!validatedTypes.isValid()){
+        if (thingifier.apiConfig().willApiEnforceDeclaredTypesInInput()) {
+            List<String> doNotValidateFields =
+                    instance.getEntity()
+                            .getFieldNamesOfType(FieldType.AUTO_INCREMENT, FieldType.AUTO_GUID);
+            ValidationReport validatedTypes =
+                    bodyargs.validateAgainstTypeIgnoring(instance.getEntity(), doNotValidateFields);
+            if (!validatedTypes.isValid()) {
                 return ApiResponse.error(400, validatedTypes.getCombinedErrorMessages());
             }
         }
@@ -41,10 +46,10 @@ public class ThingAmendment {
         EntityInstanceDraft draft;
 
         try {
-            List<NamedValue> fieldValues = FieldValues.
-                                        fromListMapEntryStringString(
-                                                new BodyArgsProcessor(thingifier, bodyargs).
-                                                        removeRelationshipsFrom(instance, database));
+            List<NamedValue> fieldValues =
+                    FieldValues.fromListMapEntryStringString(
+                            new BodyArgsProcessor(thingifier, bodyargs)
+                                    .removeRelationshipsFrom(instance, database));
 
             draft = new EntityInstanceBulkUpdater(instance).setFieldValuesFrom(fieldValues);
 
@@ -53,13 +58,14 @@ public class ThingAmendment {
         }
 
         // validate the relationships as well
-        ValidationReport validation = new BodyRelationshipValidator(thingifier).
-                validate(bodyargs, instance.getEntity(), database);
+        ValidationReport validation =
+                new BodyRelationshipValidator(thingifier)
+                        .validate(bodyargs, instance.getEntity(), database);
 
         if (validation.isValid()) {
             final EntityInstance updated;
             try {
-                if(clearFieldsBeforeSettingFromArgs){
+                if (clearFieldsBeforeSettingFromArgs) {
                     updated = thingifier.getRepository(database).replaceInstance(instance, draft);
                     // delete all existing relationships for idempotent amend
                     // todo: this returns a list of 'items' to be removed based on relationship
@@ -72,14 +78,16 @@ public class ThingAmendment {
             }
 
             // todo: should we check that this was actually a success?
-            final ApiResponse relresponse = new RelationshipCreator(thingifier).createRelationships(bodyargs, updated, database);
-            // todo: should check if any of the 'removed items due to relationship removal' need to be removed
+            final ApiResponse relresponse =
+                    new RelationshipCreator(thingifier)
+                            .createRelationships(bodyargs, updated, database);
+            // todo: should check if any of the 'removed items due to relationship removal' need to
+            // be removed
             // and remove them if we do
             return ApiResponse.success().returnSingleInstance(updated);
         } else {
             // do not add it, report the errors
             return ApiResponse.error(400, validation.getErrorMessages());
         }
-
     }
 }

@@ -1,20 +1,20 @@
 package uk.co.compendiumdev.thingifier.api.non_http;
 
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
+import static uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType.STRING;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi;
 import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
+import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
-import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
-
-import static uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType.STRING;
 
 public class IdBasedInstanceNonHttpTest {
 
@@ -24,49 +24,63 @@ public class IdBasedInstanceNonHttpTest {
 
         EntityDefinition thing = thingifier.defineThing("thing", "things");
         thing.addAsPrimaryKeyField(Field.is("guid", FieldType.AUTO_GUID));
-        thing
-                .addFields(Field.is("title", STRING),
-                        Field.is("id", FieldType.AUTO_INCREMENT)
-                )
-        ;
+        thing.addFields(Field.is("title", STRING), Field.is("id", FieldType.AUTO_INCREMENT));
 
         thingifier.apiConfig().setReturnSingleGetItemsAsCollection(false);
 
         return thingifier;
     }
 
-
     @Test
-    public void canGetAThingUsingGuidFromDefaultSession(){
+    public void canGetAThingUsingGuidFromDefaultSession() {
 
         Thingifier model = getThingifier();
 
-        final EntityDefinition thing = model.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("thing");
-        final EntityInstance existingInstance = model.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(thing).withField("title", "My Title" + System.nanoTime()));
+        final EntityDefinition thing =
+                model.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("thing");
+        final EntityInstance existingInstance =
+                model.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .createInstance(
+                                EntityInstanceDraft.forEntity(thing)
+                                        .withField("title", "My Title" + System.nanoTime()));
 
         // no session header so use default session
-        final ApiResponse apiResponse = model.api().get("/thing/" + existingInstance.getPrimaryKeyValue(), new QueryFilterParams(), new HttpHeadersBlock());
+        final ApiResponse apiResponse =
+                model.api()
+                        .get(
+                                "/thing/" + existingInstance.getPrimaryKeyValue(),
+                                new QueryFilterParams(),
+                                new HttpHeadersBlock());
         Assertions.assertEquals(200, apiResponse.getStatusCode());
         Assertions.assertEquals(existingInstance, apiResponse.getReturnedInstance());
     }
 
     @Test
-    public void canGetAThingUsingIdFromDefaultSession(){
+    public void canGetAThingUsingIdFromDefaultSession() {
 
         Thingifier model = getThingifier();
 
-        final EntityDefinition thing = model.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("thing");
-        final EntityInstance existingInstance = model.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(thing).withField("title", "My Title" + System.nanoTime()));
+        final EntityDefinition thing =
+                model.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("thing");
+        final EntityInstance existingInstance =
+                model.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .createInstance(
+                                EntityInstanceDraft.forEntity(thing)
+                                        .withField("title", "My Title" + System.nanoTime()));
 
         // no session header so use default session
-        final ApiResponse idApiResponse = model.api().get("/thing/" + existingInstance.getFieldValue("id").asString(), new QueryFilterParams(), new HttpHeadersBlock());
+        final ApiResponse idApiResponse =
+                model.api()
+                        .get(
+                                "/thing/" + existingInstance.getFieldValue("id").asString(),
+                                new QueryFilterParams(),
+                                new HttpHeadersBlock());
         Assertions.assertEquals(200, idApiResponse.getStatusCode());
         Assertions.assertEquals(existingInstance, idApiResponse.getReturnedInstance());
-
     }
 
     @Test
-    public void canGetAThingUsingGuidFromCustomSession(){
+    public void canGetAThingUsingGuidFromCustomSession() {
 
         Thingifier model = getThingifier();
 
@@ -76,20 +90,31 @@ public class IdBasedInstanceNonHttpTest {
         // we are bypassing the HTTP api so need to create the database
         model.getERmodel().createInstanceDatabase("other_things");
 
-        final ApiResponse idApiResponse = model.api().get("/thing/200", new QueryFilterParams(), headers);
+        final ApiResponse idApiResponse =
+                model.api().get("/thing/200", new QueryFilterParams(), headers);
         Assertions.assertEquals(404, idApiResponse.getStatusCode());
 
         // add instance to custom session
-        final EntityDefinition thing = model.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("thing");
-        final EntityInstance existingInstance = model.getRepository("other_things").createInstance(EntityInstanceDraft.forEntity(thing).withField("title", "My Title" + System.nanoTime()));
+        final EntityDefinition thing =
+                model.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("thing");
+        final EntityInstance existingInstance =
+                model.getRepository("other_things")
+                        .createInstance(
+                                EntityInstanceDraft.forEntity(thing)
+                                        .withField("title", "My Title" + System.nanoTime()));
 
-        final ApiResponse idApiResponse2 = model.api().get("/thing/" + existingInstance.getPrimaryKeyValue(), new QueryFilterParams(), headers);
+        final ApiResponse idApiResponse2 =
+                model.api()
+                        .get(
+                                "/thing/" + existingInstance.getPrimaryKeyValue(),
+                                new QueryFilterParams(),
+                                headers);
         Assertions.assertEquals(200, idApiResponse2.getStatusCode());
         Assertions.assertEquals(existingInstance, idApiResponse2.getReturnedInstance());
     }
 
     @Test
-    public void canGetAThingUsingIdFromCustomSession(){
+    public void canGetAThingUsingIdFromCustomSession() {
 
         Thingifier model = getThingifier();
 
@@ -99,14 +124,25 @@ public class IdBasedInstanceNonHttpTest {
         // we are bypassing the HTTP api so need to create the database
         model.getERmodel().createInstanceDatabase("other_things");
 
-        final ApiResponse idApiResponse = model.api().get("/thing/200", new QueryFilterParams(), headers);
+        final ApiResponse idApiResponse =
+                model.api().get("/thing/200", new QueryFilterParams(), headers);
         Assertions.assertEquals(404, idApiResponse.getStatusCode());
 
         // add instance to custom session
-        final EntityDefinition thing = model.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("thing");
-        final EntityInstance existingInstance = model.getRepository("other_things").createInstance(EntityInstanceDraft.forEntity(thing).withField("title", "My Title" + System.nanoTime()));
+        final EntityDefinition thing =
+                model.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("thing");
+        final EntityInstance existingInstance =
+                model.getRepository("other_things")
+                        .createInstance(
+                                EntityInstanceDraft.forEntity(thing)
+                                        .withField("title", "My Title" + System.nanoTime()));
 
-        final ApiResponse idApiResponse2 = model.api().get("/thing/" + existingInstance.getFieldValue("id").asString(), new QueryFilterParams(), headers);
+        final ApiResponse idApiResponse2 =
+                model.api()
+                        .get(
+                                "/thing/" + existingInstance.getFieldValue("id").asString(),
+                                new QueryFilterParams(),
+                                headers);
         Assertions.assertEquals(200, idApiResponse2.getStatusCode());
         Assertions.assertEquals(existingInstance, idApiResponse2.getReturnedInstance());
     }

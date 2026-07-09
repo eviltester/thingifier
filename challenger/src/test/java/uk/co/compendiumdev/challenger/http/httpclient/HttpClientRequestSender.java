@@ -1,9 +1,5 @@
 package uk.co.compendiumdev.challenger.http.httpclient;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import uk.co.compendiumdev.challenger.http.completechallenges.ChallengeCompleteTest;
-
 import java.net.*;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -11,9 +7,10 @@ import java.net.http.HttpResponse;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-/**
- */
+/** */
 public class HttpClientRequestSender implements CanSendHttpRequests {
 
     static Logger logger = LoggerFactory.getLogger(HttpClientRequestSender.class);
@@ -27,57 +24,65 @@ public class HttpClientRequestSender implements CanSendHttpRequests {
     private HttpResponseDetails lastResponse;
 
     public HttpClientRequestSender(String proxyHost, int proxyPort) {
-        if(proxyHost!=null){
+        if (proxyHost != null) {
             proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));
-            client = HttpClient.newBuilder().proxy(ProxySelector.of(new InetSocketAddress(proxyHost, proxyPort))).build();
-        }else{
+            client =
+                    HttpClient.newBuilder()
+                            .proxy(ProxySelector.of(new InetSocketAddress(proxyHost, proxyPort)))
+                            .build();
+        } else {
             client = HttpClient.newBuilder().proxy(ProxySelector.getDefault()).build();
         }
     }
 
-//    public static void setProxy(String ip, int port){
-//        proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(ip, port));
-//    }
+    //    public static void setProxy(String ip, int port){
+    //        proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(ip, port));
+    //    }
 
-    public HttpRequestDetails getLastRequest(){
+    public HttpRequestDetails getLastRequest() {
         return this.lastRequest;
     }
 
-    public HttpResponseDetails getLastResponse(){
+    public HttpResponseDetails getLastResponse() {
         return this.lastResponse;
     }
 
-    public HttpResponseDetails send(URL url, String verb, Map<String, String> headers, String body) {
+    public HttpResponseDetails send(
+            URL url, String verb, Map<String, String> headers, String body) {
 
         HttpResponseDetails response = new HttpResponseDetails();
 
         try {
 
-
             lastRequest = new HttpRequestDetails();
 
-            final HttpRequest.Builder request = HttpRequest.newBuilder().
-                    uri(url.toURI()).
-                    method(verb, HttpRequest.BodyPublishers.ofString(body));
+            final HttpRequest.Builder request =
+                    HttpRequest.newBuilder()
+                            .uri(url.toURI())
+                            .method(verb, HttpRequest.BodyPublishers.ofString(body));
 
             // SET HEADERS
-            for(Map.Entry<String, String> header : headers.entrySet()){
+            for (Map.Entry<String, String> header : headers.entrySet()) {
                 request.header(header.getKey(), header.getValue());
-                logger.info("Header - " + header.getKey() + " : " +  headers.get(header.getValue()) );
+                logger.info("Header - " + header.getKey() + " : " + headers.get(header.getValue()));
             }
 
-            logger.info("\nSending '" + verb +"' request to URL : " + url);
+            logger.info("\nSending '" + verb + "' request to URL : " + url);
 
             final HttpRequest actualRequest = request.build();
 
             lastRequest.body = body;
-            for(Map.Entry<String, List<String>> actualHeader :
-                    actualRequest.headers().map().entrySet()){
+            for (Map.Entry<String, List<String>> actualHeader :
+                    actualRequest.headers().map().entrySet()) {
                 lastRequest.addHeader(actualHeader.getKey(), actualHeader.getValue().get(0));
-                logger.info(String.format("Request Header - %s:%s", actualHeader.getKey(), actualHeader.getValue().get(0)));
+                logger.info(
+                        String.format(
+                                "Request Header - %s:%s",
+                                actualHeader.getKey(), actualHeader.getValue().get(0)));
             }
 
-            final HttpResponse<String> actualResponse = client.send(actualRequest, HttpResponse.BodyHandlers.ofString());
+            final HttpResponse<String> actualResponse =
+                    client.send(actualRequest, HttpResponse.BodyHandlers.ofString());
 
             response.statusCode = actualResponse.statusCode();
 
@@ -85,27 +90,22 @@ public class HttpClientRequestSender implements CanSendHttpRequests {
 
             response.body = actualResponse.body();
 
-            //print result
+            // print result
             logger.info("Response Body: " + response.body);
-
 
             // add the headers
             Map<String, String> responseHeaders = new HashMap<>();
-            for(Map.Entry<String, List<String>> header : actualResponse.headers().map().entrySet()){
-                String headerValue =  header.getValue().get(0);
-                responseHeaders.put(header.getKey(),headerValue);
+            for (Map.Entry<String, List<String>> header :
+                    actualResponse.headers().map().entrySet()) {
+                String headerValue = header.getValue().get(0);
+                responseHeaders.put(header.getKey(), headerValue);
                 logger.info("Header: " + header.getKey() + " - " + headerValue);
             }
             response.setHeaders(responseHeaders);
 
-
-
             lastResponse = response;
 
-
-
-
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException(e);
         }

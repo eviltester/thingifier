@@ -1,12 +1,11 @@
 package uk.co.compendiumdev.thingifier.core.repository.validation;
 
+import java.util.List;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceRepositoryAccess;
-import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
-
-import java.util.List;
+import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
 
 public final class EntityInstanceWriteValidator {
 
@@ -33,12 +32,13 @@ public final class EntityInstanceWriteValidator {
     }
 
     private ValidationReport validateForWrite(
-            final EntityInstance instance,
-            final boolean isAmendment) {
-        List<String> protectedFields = instance.getEntity().
-                getFieldNamesOfType(FieldType.AUTO_INCREMENT, FieldType.AUTO_GUID);
+            final EntityInstance instance, final boolean isAmendment) {
+        List<String> protectedFields =
+                instance.getEntity()
+                        .getFieldNamesOfType(FieldType.AUTO_INCREMENT, FieldType.AUTO_GUID);
         ValidationReport validation =
-                EntityInstanceRepositoryAccess.validateFieldValues(instance, protectedFields, false);
+                EntityInstanceRepositoryAccess.validateFieldValues(
+                        instance, protectedFields, false);
         validation.combine(repository.checkFieldsForUniqueNess(instance, isAmendment));
         return validation;
     }

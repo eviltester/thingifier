@@ -1,17 +1,13 @@
 package uk.co.compendiumdev.thingifier.core.domain.definitions;
 
+import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.NamedValue;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVectorDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.InstanceFields;
-
-import java.util.ArrayList;
-import java.util.List;
-
 
 class ThingDefinitionTest {
 
@@ -56,7 +52,8 @@ class ThingDefinitionTest {
         eDefn = new EntityDefinition("Requirement", "Requirements");
 
         eDefn.addAsPrimaryKeyField(Field.is("guid", FieldType.AUTO_GUID));
-        eDefn.addFields(Field.is("Title", FieldType.STRING), Field.is("Description", FieldType.STRING));
+        eDefn.addFields(
+                Field.is("Title", FieldType.STRING), Field.is("Description", FieldType.STRING));
 
         Assertions.assertEquals(3, eDefn.getFieldNames().size());
 
@@ -71,8 +68,8 @@ class ThingDefinitionTest {
         EntityDefinition eDefn;
         eDefn = new EntityDefinition("Requirement", "Requirements");
 
-        eDefn.addFields(Field.is("Title", FieldType.STRING),
-                Field.is("Description", FieldType.STRING));
+        eDefn.addFields(
+                Field.is("Title", FieldType.STRING), Field.is("Description", FieldType.STRING));
 
         final Field anIdField = Field.is("anId", FieldType.AUTO_INCREMENT);
         final Field anotherIdField = Field.is("anotherID", FieldType.AUTO_INCREMENT);
@@ -86,8 +83,6 @@ class ThingDefinitionTest {
         Assertions.assertEquals(2, fields.size());
         Assertions.assertTrue(fields.contains(anIdField));
         Assertions.assertTrue(fields.contains(anotherIdField));
-
-
     }
 
     @Test
@@ -124,12 +119,9 @@ class ThingDefinitionTest {
         final EntityDefinition slack = new EntityDefinition("slack", "slack");
 
         final RelationshipVectorDefinition vec =
-                new RelationshipVectorDefinition(stress,
-                        "withbob",
-                        slack,
-                        Cardinality.ONE_TO_MANY());
+                new RelationshipVectorDefinition(
+                        stress, "withbob", slack, Cardinality.ONE_TO_MANY());
         final RelationshipDefinition defn = RelationshipDefinition.create(vec);
-
 
         final DefinedRelationships rels = new DefinedRelationships();
         rels.addRelationship(vec);
@@ -141,7 +133,6 @@ class ThingDefinitionTest {
         Assertions.assertNotNull(stress.getNamedRelationshipTo("withbob", slack));
         Assertions.assertEquals(vec, stress.getNamedRelationshipTo("withbob", slack));
     }
-
 
     @Test
     void canInstantiateFieldDefinitions() {
@@ -156,7 +147,4 @@ class ThingDefinitionTest {
 
         Assertions.assertEquals(1, instance1.getFieldValue("anId").asInteger());
     }
-
-
-
 }

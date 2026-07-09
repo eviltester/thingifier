@@ -8,13 +8,13 @@ public class SiteMapXml {
     List<SiteMapUrl> urls = new ArrayList<>();
     String cache = "";
 
-    public void addUrl(String aUrl, String lastModified){
+    public void addUrl(String aUrl, String lastModified) {
         urls.add(new SiteMapUrl(aUrl, lastModified));
     }
 
     public boolean contains(String aUrl) {
-        for(SiteMapUrl url : urls){
-            if(aUrl.equals(url.aUrl())){
+        for (SiteMapUrl url : urls) {
+            if (aUrl.equals(url.aUrl())) {
                 return true;
             }
         }
@@ -23,25 +23,35 @@ public class SiteMapXml {
 
     public String asSitemapXml() {
 
-        if(cache.isEmpty()) {
+        if (cache.isEmpty()) {
             StringBuilder sitemapxml = new StringBuilder();
-            sitemapxml.append("""
+            sitemapxml.append(
+                    """
                     <?xml version="1.0" encoding="utf-8"?>
                     <urlset xmlns="https://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
-                    """.stripIndent().stripLeading());
+                    """
+                            .stripIndent()
+                            .stripLeading());
             for (SiteMapUrl aUrl : urls) {
-                sitemapxml.append("""
+                sitemapxml.append(
+                        """
                         <url>
                         <loc>%s</loc>
                         <lastmod>%s</lastmod>
                         <changefreq>weekly</changefreq>
                         <priority>0.5</priority>
                         </url>
-                        """.formatted(aUrl.aUrl(), aUrl.lastModified()).stripIndent().stripLeading());
+                        """
+                                .formatted(aUrl.aUrl(), aUrl.lastModified())
+                                .stripIndent()
+                                .stripLeading());
             }
-            sitemapxml.append("""
+            sitemapxml.append(
+                    """
                     </urlset>
-                    """.stripIndent().stripLeading());
+                    """
+                            .stripIndent()
+                            .stripLeading());
             cache = sitemapxml.toString();
         }
 
@@ -49,4 +59,5 @@ public class SiteMapXml {
     }
 }
 
-record SiteMapUrl(String aUrl, String lastModified) {};
+record SiteMapUrl(String aUrl, String lastModified) {}
+;

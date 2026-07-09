@@ -1,12 +1,11 @@
 package uk.co.compendiumdev.thingifier.core.query;
 
+import java.util.ArrayList;
+import java.util.List;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.ERSchema;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class RepositoryUrlQuery implements UrlQueryResult {
 
@@ -23,9 +22,7 @@ public class RepositoryUrlQuery implements UrlQueryResult {
     private List<EntityInstance> foundItems = new ArrayList<>();
 
     public RepositoryUrlQuery(
-            final ERSchema schema,
-            final ThingRepository repository,
-            final String query) {
+            final ERSchema schema, final ThingRepository repository, final String query) {
         this.schema = schema;
         this.repository = repository;
         if (query.startsWith("/")) {
@@ -55,8 +52,8 @@ public class RepositoryUrlQuery implements UrlQueryResult {
         }
 
         String identifierCandidate = terms[1];
-        if (schema.hasRelationshipNamed(identifierCandidate) ||
-                entityForTerm(schema, identifierCandidate) != null) {
+        if (schema.hasRelationshipNamed(identifierCandidate)
+                || entityForTerm(schema, identifierCandidate) != null) {
             return false;
         }
 
@@ -91,8 +88,10 @@ public class RepositoryUrlQuery implements UrlQueryResult {
         if (terms.length == 3) {
             wasIntentToMatchInstance = true;
             isCollection = true;
-            foundItems = new ArrayList<>(
-                    repository.listRelatedInstances(currentInstance, terms[2], queryParams));
+            foundItems =
+                    new ArrayList<>(
+                            repository.listRelatedInstances(
+                                    currentInstance, terms[2], queryParams));
             resultContainsDefinition = relatedEntityFor(currentInstance, terms[2]);
             lastMatchWasNothing = false;
             lastMatchWasInstance = false;

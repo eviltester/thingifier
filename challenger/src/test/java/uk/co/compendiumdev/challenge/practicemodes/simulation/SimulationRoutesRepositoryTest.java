@@ -4,8 +4,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.challenge.ChallengerConfig;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
-import uk.co.compendiumdev.thingifier.core.repository.sqlite.SqliteThingRepository;
 import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
+import uk.co.compendiumdev.thingifier.core.repository.sqlite.SqliteThingRepository;
 import uk.co.compendiumdev.thingifier.htmlgui.htmlgen.DefaultGUIHTML;
 
 public class SimulationRoutesRepositoryTest {
@@ -13,12 +13,10 @@ public class SimulationRoutesRepositoryTest {
     @Test
     void simulationRoutesUseConfiguredSqliteMemoryRepository() {
         ChallengerConfig config = new ChallengerConfig();
-        config.setSimulationRepositoryFromArgs(
-                new String[]{"-sim-repository=sqlite-memory"});
+        config.setSimulationRepositoryFromArgs(new String[] {"-sim-repository=sqlite-memory"});
 
-        SimulationRoutes routes = new SimulationRoutes(
-                new DefaultGUIHTML(),
-                config.getSimulationRepositoryConfig());
+        SimulationRoutes routes =
+                new SimulationRoutes(new DefaultGUIHTML(), config.getSimulationRepositoryConfig());
 
         try {
             routes.setUpRepositoryBackedData();

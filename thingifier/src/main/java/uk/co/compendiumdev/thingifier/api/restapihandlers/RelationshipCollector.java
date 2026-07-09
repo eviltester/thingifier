@@ -6,16 +6,17 @@ import java.util.Map;
 
 public class RelationshipCollector {
 
-    private List<Map.Entry<String,String>> identifiedRelationships;
+    private List<Map.Entry<String, String>> identifiedRelationships;
     private List<RelationshipDetails> theRelationshipDetails;
 
-    public RelationshipCollector(){
+    public RelationshipCollector() {
         identifiedRelationships = new ArrayList<>();
         theRelationshipDetails = new ArrayList<>();
     }
 
-    public void thisIsARelationship(final Map.Entry<String, String> complexKeyValue,
-                                        final RelationshipDetails aRelationshipDetails) {
+    public void thisIsARelationship(
+            final Map.Entry<String, String> complexKeyValue,
+            final RelationshipDetails aRelationshipDetails) {
         identifiedRelationships.add(complexKeyValue);
         theRelationshipDetails.add(aRelationshipDetails);
     }

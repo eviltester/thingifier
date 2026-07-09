@@ -14,20 +14,24 @@ public class TodoManagerAPIDataPopulator implements RepositoryDataPopulator {
         EntityDefinition category = schema.getEntityDefinitionNamed("category");
         EntityDefinition project = schema.getEntityDefinitionNamed("project");
 
-        EntityInstance paperwork = repository.createInstance(
-                EntityInstanceDraft.forEntity(todo).withField("title", "scan paperwork"));
+        EntityInstance paperwork =
+                repository.createInstance(
+                        EntityInstanceDraft.forEntity(todo).withField("title", "scan paperwork"));
 
-        EntityInstance filework = repository.createInstance(
-                EntityInstanceDraft.forEntity(todo).withField("title", "file paperwork"));
+        EntityInstance filework =
+                repository.createInstance(
+                        EntityInstanceDraft.forEntity(todo).withField("title", "file paperwork"));
 
-        EntityInstance officeCategory = repository.createInstance(
-                EntityInstanceDraft.forEntity(category).withField("title", "Office"));
+        EntityInstance officeCategory =
+                repository.createInstance(
+                        EntityInstanceDraft.forEntity(category).withField("title", "Office"));
 
         repository.createInstance(
                 EntityInstanceDraft.forEntity(category).withField("title", "Home"));
 
-        EntityInstance officeWork = repository.createInstance(
-                EntityInstanceDraft.forEntity(project).withField("title", "Office Work"));
+        EntityInstance officeWork =
+                repository.createInstance(
+                        EntityInstanceDraft.forEntity(project).withField("title", "Office Work"));
 
         repository.connectRelationship(officeWork, "tasks", paperwork);
         repository.connectRelationship(officeWork, "tasks", filework);

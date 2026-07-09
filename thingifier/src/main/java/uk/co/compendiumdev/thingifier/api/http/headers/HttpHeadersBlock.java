@@ -5,15 +5,18 @@ import java.util.Map;
 
 public class HttpHeadersBlock {
 
-    final Map<String,String> headers;
+    final Map<String, String> headers;
 
-    public HttpHeadersBlock(){
+    public HttpHeadersBlock() {
         headers = new HashMap<>();
     }
-    public void put(String headername, String value) {
-        if(headername==null){return;}
 
-        String valueToAdd = value==null ? "" : value;
+    public void put(String headername, String value) {
+        if (headername == null) {
+            return;
+        }
+
+        String valueToAdd = value == null ? "" : value;
 
         // header names are case insensitive
         headers.put(headername.trim().toLowerCase(), valueToAdd);
@@ -21,7 +24,7 @@ public class HttpHeadersBlock {
 
     public String get(String headername) {
 
-        if(headername==null){
+        if (headername == null) {
             return "";
         }
 
@@ -38,9 +41,11 @@ public class HttpHeadersBlock {
 
     public void putAll(Map<String, String> headers) {
 
-        if(headers==null){return;}
+        if (headers == null) {
+            return;
+        }
 
-        for( Map.Entry<String, String> entry : headers.entrySet()) {
+        for (Map.Entry<String, String> entry : headers.entrySet()) {
             put(entry.getKey(), entry.getValue());
         }
     }
@@ -54,7 +59,7 @@ public class HttpHeadersBlock {
     }
 
     public boolean headerExists(String headerName) {
-        if(headerName==null){
+        if (headerName == null) {
             return false;
         }
         return headers.containsKey(headerName.trim().toLowerCase());

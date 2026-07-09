@@ -1,36 +1,35 @@
 package uk.co.compendiumdev.casestudy.todomanager.api_non_http;
 
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 import com.google.gson.Gson;
+import java.util.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.casestudy.todomanager.TodoManagerModel;
-import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
-import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
+import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-
-import java.util.*;
-
+import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
-public class VerbPutEntityInstanceApiNonHttpTest {
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 
+public class VerbPutEntityInstanceApiNonHttpTest {
 
     private Thingifier todoManager;
 
     EntityDefinition todo;
     EntityDefinition project;
 
-
-    // TODO: tests that use the TodoManagerModel were created early and are too complicated - simplify
+    // TODO: tests that use the TodoManagerModel were created early and are too complicated -
+    // simplify
     // when the thingifier was a prototype and we were building the todo manager at the same
-    // time this saved time. Now, the tests are too complicated to maintain because the TodoManagerModel
+    // time this saved time. Now, the tests are too complicated to maintain because the
+    // TodoManagerModel
     // is complex. We should simplify these tests and move them into the actual standAlone
     // projects
     @BeforeEach
@@ -39,11 +38,14 @@ public class VerbPutEntityInstanceApiNonHttpTest {
         todoManager = TodoManagerModel.definedAsThingifier();
 
         todo = todoManager.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("todo");
-        project = todoManager.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("project");
-
+        project =
+                todoManager
+                        .getERmodel()
+                        .getSchema()
+                        .getDefinitionWithSingularOrPluralNamed("project");
     }
-    
-       /*
+
+    /*
 
 
     Non HTTP API Based Tests
@@ -53,10 +55,10 @@ public class VerbPutEntityInstanceApiNonHttpTest {
 
     private BodyParser getSimpleParser(final Map requestBody) {
 
-        final HttpApiRequest arequest = new HttpApiRequest("/path").setBody(new Gson().toJson(requestBody));
+        final HttpApiRequest arequest =
+                new HttpApiRequest("/path").setBody(new Gson().toJson(requestBody));
         return new BodyParser(arequest, todoManager.getThingNames());
     }
-
 
     @Test
     public void putCanAmendExistingProject() {
@@ -64,30 +66,47 @@ public class VerbPutEntityInstanceApiNonHttpTest {
         Map requestBody;
         ApiResponse apiresponse;
 
-
         // PUT
 
         requestBody = new HashMap<String, String>();
         requestBody.put("title", "My Office Work");
 
-        EntityInstance officeWork = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(project).withField("title", "An Existing Project"));
+        EntityInstance officeWork =
+                todoManager
+                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .createInstance(
+                                EntityInstanceDraft.forEntity(project)
+                                        .withField("title", "An Existing Project"));
 
         String officeWorkGuid = officeWork.getPrimaryKeyValue();
         Assertions.assertNotNull(officeWorkGuid);
 
-        // amend existing project with PUT - this should validate that all required fields are present
-        apiresponse = todoManager.api().put(String.format("project/%s", officeWork.getPrimaryKeyValue()),  getSimpleParser(requestBody), new HttpHeadersBlock());
+        // amend existing project with PUT - this should validate that all required fields are
+        // present
+        apiresponse =
+                todoManager
+                        .api()
+                        .put(
+                                String.format("project/%s", officeWork.getPrimaryKeyValue()),
+                                getSimpleParser(requestBody),
+                                new HttpHeadersBlock());
         Assertions.assertEquals(200, apiresponse.getStatusCode());
         Assertions.assertEquals("My Office Work", officeWork.getFieldValue("title").asString());
 
-        officeWork = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).patchInstance(officeWork, EntityInstanceDraft.forEntity(officeWork.getEntity()).withField("title", "office"));
+        officeWork =
+                todoManager
+                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .patchInstance(
+                                officeWork,
+                                EntityInstanceDraft.forEntity(officeWork.getEntity())
+                                        .withField("title", "office"));
         Assertions.assertEquals("office", officeWork.getFieldValue("title").asString());
         Assertions.assertNotNull(officeWorkGuid);
 
         Assertions.assertTrue(apiresponse.hasABody());
         Assertions.assertFalse(apiresponse.isCollection());
-        Assertions.assertEquals(officeWorkGuid, apiresponse.getReturnedInstance().getPrimaryKeyValue());
-
+        Assertions.assertEquals(
+                officeWorkGuid, apiresponse.getReturnedInstance().getPrimaryKeyValue());
     }
 
     @Test
@@ -96,32 +115,42 @@ public class VerbPutEntityInstanceApiNonHttpTest {
         Map requestBody;
         ApiResponse apiresponse;
 
-
         // PUT
 
-
-        EntityInstance officeWork = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(project).withField("title", "An Existing Project").withField("description", "my original description"));
+        EntityInstance officeWork =
+                todoManager
+                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .createInstance(
+                                EntityInstanceDraft.forEntity(project)
+                                        .withField("title", "An Existing Project")
+                                        .withField("description", "my original description"));
 
         String officeWorkGuid = officeWork.getPrimaryKeyValue();
         Assertions.assertNotNull(officeWorkGuid);
 
-        // amend existing project with PUT - this should validate that all required fields are present
+        // amend existing project with PUT - this should validate that all required fields are
+        // present
 
         requestBody = new HashMap<String, String>();
         requestBody.put("title", "My Office Work");
         // note, I haven't added a description
 
-        apiresponse = todoManager.api().put(String.format("project/%s", officeWork.getPrimaryKeyValue()),  getSimpleParser(requestBody), new HttpHeadersBlock());
+        apiresponse =
+                todoManager
+                        .api()
+                        .put(
+                                String.format("project/%s", officeWork.getPrimaryKeyValue()),
+                                getSimpleParser(requestBody),
+                                new HttpHeadersBlock());
         Assertions.assertEquals(200, apiresponse.getStatusCode());
         Assertions.assertEquals("My Office Work", officeWork.getFieldValue("title").asString());
         Assertions.assertEquals("", officeWork.getFieldValue("description").asString());
 
         Assertions.assertTrue(apiresponse.hasABody());
         Assertions.assertFalse(apiresponse.isCollection());
-        Assertions.assertEquals(officeWorkGuid, apiresponse.getReturnedInstance().getPrimaryKeyValue());
-
+        Assertions.assertEquals(
+                officeWorkGuid, apiresponse.getReturnedInstance().getPrimaryKeyValue());
     }
-
 
     @Test
     public void putCanNotAmendGUID() {
@@ -129,111 +158,129 @@ public class VerbPutEntityInstanceApiNonHttpTest {
         Map requestBody;
         ApiResponse apiresponse;
 
-
         // PUT
 
-
-        EntityInstance officeWork = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(project).withField("title", "An Existing Project").withField("description", "my original description"));
+        EntityInstance officeWork =
+                todoManager
+                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .createInstance(
+                                EntityInstanceDraft.forEntity(project)
+                                        .withField("title", "An Existing Project")
+                                        .withField("description", "my original description"));
 
         String originalGUID = officeWork.getPrimaryKeyValue();
         Assertions.assertNotNull(originalGUID);
 
-        // amend existing project with PUT - this should validate that all required fields are present
+        // amend existing project with PUT - this should validate that all required fields are
+        // present
 
         requestBody = new HashMap<String, String>();
         requestBody.put("title", "My Office Work");
         String newGUID = UUID.randomUUID().toString();
         requestBody.put("guid", newGUID);
 
-        apiresponse = todoManager.api().put(String.format("project/%s", originalGUID),  getSimpleParser(requestBody), new HttpHeadersBlock());
+        apiresponse =
+                todoManager
+                        .api()
+                        .put(
+                                String.format("project/%s", originalGUID),
+                                getSimpleParser(requestBody),
+                                new HttpHeadersBlock());
 
         Assertions.assertEquals(400, apiresponse.getStatusCode());
-        Assertions.assertEquals("An Existing Project", officeWork.getFieldValue("title").asString());
-        Assertions.assertEquals("my original description", officeWork.getFieldValue("description").asString());
+        Assertions.assertEquals(
+                "An Existing Project", officeWork.getFieldValue("title").asString());
+        Assertions.assertEquals(
+                "my original description", officeWork.getFieldValue("description").asString());
         Assertions.assertEquals(originalGUID, officeWork.getFieldValue("guid").asString());
 
         Assertions.assertTrue(apiresponse.hasABody());
         Assertions.assertTrue(apiresponse.isErrorResponse());
-
     }
 
+    //    @Test
+    //    public void putCanCreateAnEntityInstanceWithAGivenGUID() {
+    //
+    //        Map requestBody;
+    //        ApiResponse apiresponse;
+    //
+    //
+    //        // PUT
+    //
+    //        requestBody = new HashMap<String, String>();
+    //        String title = "My Office Work " + System.currentTimeMillis();
+    //        requestBody.put("title", title);
+    //
+    //
+    //        int currentProjects =
+    // todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(project);
+    //        Assertions.assertEquals(0, currentProjects);
+    //
+    //        // create with a PUT and a given GUID
+    //        String guid = UUID.randomUUID().toString();
+    //
+    //
+    //        apiresponse = todoManager.api().put(String.format("project/%s", guid),
+    // getSimpleParser(requestBody), new HttpHeadersBlock());
+    //        Assertions.assertEquals(201, apiresponse.getStatusCode());
+    //
+    //
+    //        Assertions.assertEquals(guid,
+    // apiresponse.getHeaderValue(ApiResponse.PRIMARY_KEY_HEADER));
+    //        Assertions.assertTrue(apiresponse.getHeaderValue("Location").endsWith(guid));
+    //
+    //        Assertions.assertEquals(currentProjects + 1,
+    // todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(project));
+    //
+    //
+    //        EntityInstance newProject =
+    // todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).findInstanceByFieldNameAndValue(project, "guid", guid);
+    //
+    //        Assertions.assertEquals(title, newProject.getFieldValue("title").asString());
+    //        Assertions.assertEquals(guid, newProject.getFieldValue("guid").asString());
+    //
+    //        Assertions.assertTrue(apiresponse.hasABody());
+    //        Assertions.assertFalse(apiresponse.isCollection());
+    //        Assertions.assertTrue(apiresponse.getErrorMessages().size() == 0);
+    //        Assertions.assertEquals(newProject, apiresponse.getReturnedInstance());
+    //    }
 
-//    @Test
-//    public void putCanCreateAnEntityInstanceWithAGivenGUID() {
-//
-//        Map requestBody;
-//        ApiResponse apiresponse;
-//
-//
-//        // PUT
-//
-//        requestBody = new HashMap<String, String>();
-//        String title = "My Office Work " + System.currentTimeMillis();
-//        requestBody.put("title", title);
-//
-//
-//        int currentProjects = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(project);
-//        Assertions.assertEquals(0, currentProjects);
-//
-//        // create with a PUT and a given GUID
-//        String guid = UUID.randomUUID().toString();
-//
-//
-//        apiresponse = todoManager.api().put(String.format("project/%s", guid),  getSimpleParser(requestBody), new HttpHeadersBlock());
-//        Assertions.assertEquals(201, apiresponse.getStatusCode());
-//
-//
-//        Assertions.assertEquals(guid, apiresponse.getHeaderValue(ApiResponse.PRIMARY_KEY_HEADER));
-//        Assertions.assertTrue(apiresponse.getHeaderValue("Location").endsWith(guid));
-//
-//        Assertions.assertEquals(currentProjects + 1, todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(project));
-//
-//
-//        EntityInstance newProject = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).findInstanceByFieldNameAndValue(project, "guid", guid);
-//
-//        Assertions.assertEquals(title, newProject.getFieldValue("title").asString());
-//        Assertions.assertEquals(guid, newProject.getFieldValue("guid").asString());
-//
-//        Assertions.assertTrue(apiresponse.hasABody());
-//        Assertions.assertFalse(apiresponse.isCollection());
-//        Assertions.assertTrue(apiresponse.getErrorMessages().size() == 0);
-//        Assertions.assertEquals(newProject, apiresponse.getReturnedInstance());
-//    }
-
-
-//    @Test
-//    public void putCanCreateAnEntityInstanceWithAGivenGUIDAndIds() {
-//
-//        Map requestBody;
-//        ApiResponse apiresponse;
-//
-//        project = todoManager.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("project");
-//        final Field anIdField = Field.is("id", FieldType.AUTO_INCREMENT);
-//        project.addField(anIdField);
-//
-//        // PUT
-//        requestBody = new HashMap<String, String>();
-//        String title = "My Office Work " + System.currentTimeMillis();
-//        requestBody.put("title", title);
-//        requestBody.put("id", "12");
-//
-//
-//        int currentProjects = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(project);
-//        Assertions.assertEquals(0, currentProjects);
-//
-//        // create with a PUT and a given GUID
-//        String guid = UUID.randomUUID().toString();
-//
-//
-//        apiresponse = todoManager.api().put(String.format("project/%s", guid),  getSimpleParser(requestBody), new HttpHeadersBlock());
-//        Assertions.assertEquals(201, apiresponse.getStatusCode());
-//
-//
-//        EntityInstance newProject = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).findInstanceByFieldNameAndValue(project, "guid", guid);
-//        Assertions.assertEquals("12", newProject.getFieldValue("id").asString());
-//
-//    }
-
+    //    @Test
+    //    public void putCanCreateAnEntityInstanceWithAGivenGUIDAndIds() {
+    //
+    //        Map requestBody;
+    //        ApiResponse apiresponse;
+    //
+    //        project =
+    // todoManager.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("project");
+    //        final Field anIdField = Field.is("id", FieldType.AUTO_INCREMENT);
+    //        project.addField(anIdField);
+    //
+    //        // PUT
+    //        requestBody = new HashMap<String, String>();
+    //        String title = "My Office Work " + System.currentTimeMillis();
+    //        requestBody.put("title", title);
+    //        requestBody.put("id", "12");
+    //
+    //
+    //        int currentProjects =
+    // todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(project);
+    //        Assertions.assertEquals(0, currentProjects);
+    //
+    //        // create with a PUT and a given GUID
+    //        String guid = UUID.randomUUID().toString();
+    //
+    //
+    //        apiresponse = todoManager.api().put(String.format("project/%s", guid),
+    // getSimpleParser(requestBody), new HttpHeadersBlock());
+    //        Assertions.assertEquals(201, apiresponse.getStatusCode());
+    //
+    //
+    //        EntityInstance newProject =
+    // todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).findInstanceByFieldNameAndValue(project, "guid", guid);
+    //        Assertions.assertEquals("12", newProject.getFieldValue("id").asString());
+    //
+    //    }
 
     @Test
     public void putCanNotCreateAnEntityInstanceWithADuplicateId() {
@@ -241,12 +288,20 @@ public class VerbPutEntityInstanceApiNonHttpTest {
         Map requestBody;
         ApiResponse apiresponse;
 
-        project = todoManager.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("project");
+        project =
+                todoManager
+                        .getERmodel()
+                        .getSchema()
+                        .getDefinitionWithSingularOrPluralNamed("project");
         final Field anIdField = Field.is("id", FieldType.AUTO_INCREMENT);
         project.addField(anIdField);
 
         final EntityInstance instance =
-                todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(project).withField("title", "Existing project"));
+                todoManager
+                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .createInstance(
+                                EntityInstanceDraft.forEntity(project)
+                                        .withField("title", "Existing project"));
 
         // Want to PUT
         requestBody = new HashMap<String, String>();
@@ -255,17 +310,30 @@ public class VerbPutEntityInstanceApiNonHttpTest {
         // duplicate id
         requestBody.put("id", String.valueOf(instance.getFieldValue("id").asString()));
 
-        Assertions.assertEquals(1, todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(project));
+        Assertions.assertEquals(
+                1,
+                todoManager
+                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .countInstances(project));
 
         // create with a PUT and a given GUID
         String guid = UUID.randomUUID().toString();
 
-        apiresponse = todoManager.api().put(String.format("project/%s", guid),  getSimpleParser(requestBody), new HttpHeadersBlock());
+        apiresponse =
+                todoManager
+                        .api()
+                        .put(
+                                String.format("project/%s", guid),
+                                getSimpleParser(requestBody),
+                                new HttpHeadersBlock());
         Assertions.assertEquals(400, apiresponse.getStatusCode());
 
-        Assertions.assertEquals(1, todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(project));
+        Assertions.assertEquals(
+                1,
+                todoManager
+                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .countInstances(project));
     }
-
 
     @Test
     public void putFailValidationEntityInstanceAPI() {
@@ -278,35 +346,55 @@ public class VerbPutEntityInstanceApiNonHttpTest {
         // will generate 400 because description should be title
         requestBody.put("description", "A new TODO Item");
         requestBody.put("doneStatus", "TRUE");
-        apiresponse = todoManager.api().put(String.format("todo/%s", UUID.randomUUID().toString()), getSimpleParser(requestBody), new HttpHeadersBlock());
+        apiresponse =
+                todoManager
+                        .api()
+                        .put(
+                                String.format("todo/%s", UUID.randomUUID().toString()),
+                                getSimpleParser(requestBody),
+                                new HttpHeadersBlock());
         Assertions.assertEquals(400, apiresponse.getStatusCode());
         Assertions.assertTrue(apiresponse.getErrorMessages().size() > 0);
         Assertions.assertTrue(apiresponse.hasABody());
 
-
-        EntityInstance paperwork = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(todo).withField("title", "Todo for amending"));
+        EntityInstance paperwork =
+                todoManager
+                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .createInstance(
+                                EntityInstanceDraft.forEntity(todo)
+                                        .withField("title", "Todo for amending"));
 
         // Mandatory field validation PUT amend
         requestBody = new HashMap<String, String>();
         // will generate 400 because description should be title
         requestBody.put("description", "Amended TODO Item ");
         requestBody.put("doneStatus", "TRUE");
-        apiresponse = todoManager.api().put(String.format("todo/%s", paperwork.getPrimaryKeyValue()), getSimpleParser(requestBody), new HttpHeadersBlock());
+        apiresponse =
+                todoManager
+                        .api()
+                        .put(
+                                String.format("todo/%s", paperwork.getPrimaryKeyValue()),
+                                getSimpleParser(requestBody),
+                                new HttpHeadersBlock());
         Assertions.assertEquals(400, apiresponse.getStatusCode());
         Assertions.assertTrue(apiresponse.getErrorMessages().size() > 0);
         Assertions.assertTrue(apiresponse.hasABody());
-
 
         // Field validation on boolean for Amend with PUT
         requestBody = new HashMap<String, String>();
         requestBody.put("title", "A new TODO Item");
         requestBody.put("description", "A new TODO Item");
         requestBody.put("doneStatus", "FALSEY");
-        apiresponse = todoManager.api().put(String.format("todo/%s", paperwork.getPrimaryKeyValue()), getSimpleParser(requestBody), new HttpHeadersBlock());
+        apiresponse =
+                todoManager
+                        .api()
+                        .put(
+                                String.format("todo/%s", paperwork.getPrimaryKeyValue()),
+                                getSimpleParser(requestBody),
+                                new HttpHeadersBlock());
         Assertions.assertEquals(400, apiresponse.getStatusCode());
         Assertions.assertTrue(apiresponse.getErrorMessages().size() > 0);
         Assertions.assertTrue(apiresponse.hasABody());
-
     }
 
     @Test
@@ -320,11 +408,16 @@ public class VerbPutEntityInstanceApiNonHttpTest {
         // will generate 400 because description should be title
         requestBody.put("description", "A new TODO Item");
         requestBody.put("doneStatus", "TRUE");
-        apiresponse = todoManager.api().put(String.format("todo/%s", UUID.randomUUID().toString()), getSimpleParser(requestBody), new HttpHeadersBlock());
+        apiresponse =
+                todoManager
+                        .api()
+                        .put(
+                                String.format("todo/%s", UUID.randomUUID().toString()),
+                                getSimpleParser(requestBody),
+                                new HttpHeadersBlock());
         Assertions.assertEquals(400, apiresponse.getStatusCode());
         Assertions.assertTrue(apiresponse.getErrorMessages().size() > 0);
         Assertions.assertTrue(apiresponse.hasABody());
-
     }
 
     @Test
@@ -333,29 +426,43 @@ public class VerbPutEntityInstanceApiNonHttpTest {
         Map requestBody;
         ApiResponse apiresponse;
 
-
-        EntityInstance paperwork = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(todo).withField("title", "Todo for amending"));
+        EntityInstance paperwork =
+                todoManager
+                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .createInstance(
+                                EntityInstanceDraft.forEntity(todo)
+                                        .withField("title", "Todo for amending"));
 
         // Mandatory field validation PUT amend
         requestBody = new HashMap<String, String>();
         // will generate 400 because description should be title
         requestBody.put("description", "Amended TODO Item ");
         requestBody.put("doneStatus", "TRUE");
-        apiresponse = todoManager.api().put(String.format("todo/%s", paperwork.getPrimaryKeyValue()), getSimpleParser(requestBody), new HttpHeadersBlock());
+        apiresponse =
+                todoManager
+                        .api()
+                        .put(
+                                String.format("todo/%s", paperwork.getPrimaryKeyValue()),
+                                getSimpleParser(requestBody),
+                                new HttpHeadersBlock());
         Assertions.assertEquals(400, apiresponse.getStatusCode());
         Assertions.assertTrue(apiresponse.getErrorMessages().size() > 0);
         Assertions.assertTrue(apiresponse.hasABody());
-
 
         // Field validation on boolean for Amend with PUT
         requestBody = new HashMap<String, String>();
         requestBody.put("title", "A new TODO Item");
         requestBody.put("description", "A new TODO Item");
         requestBody.put("doneStatus", "FALSEY");
-        apiresponse = todoManager.api().put(String.format("todo/%s", paperwork.getPrimaryKeyValue()), getSimpleParser(requestBody), new HttpHeadersBlock());
+        apiresponse =
+                todoManager
+                        .api()
+                        .put(
+                                String.format("todo/%s", paperwork.getPrimaryKeyValue()),
+                                getSimpleParser(requestBody),
+                                new HttpHeadersBlock());
         Assertions.assertEquals(400, apiresponse.getStatusCode());
         Assertions.assertTrue(apiresponse.getErrorMessages().size() > 0);
         Assertions.assertTrue(apiresponse.hasABody());
-
     }
 }

@@ -20,7 +20,8 @@ public class ChallengeMain {
         logger.info("Starting Challenger");
 
         MainImplementation app = new MainImplementation();
-        ThingRepositoryProviderConfig repositoryConfig = ThingRepositoryProviderConfig.fromArgs(args);
+        ThingRepositoryProviderConfig repositoryConfig =
+                ThingRepositoryProviderConfig.fromArgs(args);
         logger.info("Using Thingifier repository {}", repositoryConfig.describe());
         Thingifier thingifier = new ChallengeApiModel().get(repositoryConfig.createProvider());
         app.registerModel("challengeapi", thingifier);
@@ -33,15 +34,17 @@ public class ChallengeMain {
 
         new IndexNowRouteHandler().configureRoutes();
 
-        // create a default configuration class which we pass into the ChallengeRouteHandler and configure via args
+        // create a default configuration class which we pass into the ChallengeRouteHandler and
+        // configure via args
         ChallengerConfig config = new ChallengerConfig();
         config.setSimulationRepositoryFromArgs(args);
-        logger.info("Using Simulation repository {}",
+        logger.info(
+                "Using Simulation repository {}",
                 config.getSimulationRepositoryConfig().describe());
 
         for (String arg : args) {
-            if (arg.toLowerCase().startsWith("-multiplayer") ||
-                arg.toLowerCase().startsWith("-multiuser")) {
+            if (arg.toLowerCase().startsWith("-multiplayer")
+                    || arg.toLowerCase().startsWith("-multiuser")) {
                 logger.info("Running in multiplayer mode");
                 config.setToMultiPlayerMode();
             }
@@ -51,14 +54,13 @@ public class ChallengeMain {
                 config.setToCloudPersistenceMode();
             }
 
-            if(arg.toLowerCase().startsWith("-guikeepalive")){
+            if (arg.toLowerCase().startsWith("-guikeepalive")) {
                 logger.info("Setting GUI to keep session alive through XHR");
                 config.setGuiToKeepSessionAlive();
             }
 
-            if (arg.toLowerCase().startsWith("-memory") ||
-                arg.toLowerCase().startsWith("-nostorage")
-            ) {
+            if (arg.toLowerCase().startsWith("-memory")
+                    || arg.toLowerCase().startsWith("-nostorage")) {
                 logger.info("Setting persistence mechanism to no persistence");
                 config.setToNoPersistenceMode();
             }
@@ -68,7 +70,7 @@ public class ChallengeMain {
                 config.enableAdminApi();
             }
 
-            if(arg.toLowerCase().startsWith("-unlimitedtodos")){
+            if (arg.toLowerCase().startsWith("-unlimitedtodos")) {
                 // remove the limit on number of todos
                 logger.info("Enabling Unlimited TODO Instances");
                 thingifier.getDefinitionNamed("todo").setNoMaxInstanceLimit();
@@ -81,7 +83,6 @@ public class ChallengeMain {
         // setup routes required for challenges
         challenger = new ChallengeRouteHandler(thingifier, app.getApiDefn(), config);
 
-
         app.chooseThingifier();
         // can set profile by adding more configs, or just
         // app.setProfileToUse(aProfile)
@@ -89,23 +90,25 @@ public class ChallengeMain {
 
         app.setupDefaultGui();
         app.getGuiManagement().setCanonicalHost("https://apichallenges.eviltester.com");
-        app.getGuiManagement().appendToCustomHeadContent(
-"""
+        app.getGuiManagement()
+                .appendToCustomHeadContent(
+                        """
         <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png">
         <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png">
         <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png">
         <link rel="manifest" href="/favicon/site.webmanifest">
         <link rel="stylesheet" href="/css/toc.css">
         <link rel="stylesheet" href="/css/content.css">
-            """
-        );
+            """);
 
         challenger.setupGui(app.getGuiManagement());
         challenger.configureRoutes();
 
-        if(challenger.isSinglePlayerMode()){
+        if (challenger.isSinglePlayerMode()) {
             logger.info("Running in Single User Mode");
-            challenger.getThingifier().ensureCreatedAndPopulatedInstanceDatabaseNamed(Challengers.SINGLE_PLAYER_GUID);
+            challenger
+                    .getThingifier()
+                    .ensureCreatedAndPopulatedInstanceDatabaseNamed(Challengers.SINGLE_PLAYER_GUID);
         }
 
         final ThingifierHttpApiRoutings restServer = app.startRestServer();
@@ -113,14 +116,13 @@ public class ChallengeMain {
         app.addBuiltInArgConfiguredHooks();
 
         challenger.addHooks(restServer);
-
     }
 
-    public static ChallengeRouteHandler getChallenger(){
+    public static ChallengeRouteHandler getChallenger() {
         return challenger;
     }
 
-    public static void stop(){
+    public static void stop() {
         if (challenger != null) {
             challenger.close();
         }

@@ -1,10 +1,5 @@
 package uk.co.compendiumdev.thingifier.core.repository.sqlite;
 
-import uk.co.compendiumdev.thingifier.core.EntityRelModel;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.ERSchema;
-import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
-import uk.co.compendiumdev.thingifier.core.repository.ThingRepositoryProvider;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -14,6 +9,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
+import uk.co.compendiumdev.thingifier.core.EntityRelModel;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.ERSchema;
+import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
+import uk.co.compendiumdev.thingifier.core.repository.ThingRepositoryProvider;
 
 public class SqliteThingRepositoryProvider implements ThingRepositoryProvider {
 
@@ -33,21 +32,28 @@ public class SqliteThingRepositoryProvider implements ThingRepositoryProvider {
     public static SqliteThingRepositoryProvider inMemory() {
         String providerName = "thingifier_" + UUID.randomUUID().toString().replace("-", "");
         return new SqliteThingRepositoryProvider(
-                databaseKey -> "jdbc:sqlite:file:" + providerName + "_" + safeName(databaseKey) +
-                        "?mode=memory&cache=shared");
+                databaseKey ->
+                        "jdbc:sqlite:file:"
+                                + providerName
+                                + "_"
+                                + safeName(databaseKey)
+                                + "?mode=memory&cache=shared");
     }
 
     public static SqliteThingRepositoryProvider fileBacked(final Path directory) {
         try {
             Files.createDirectories(directory);
         } catch (IOException e) {
-            throw new IllegalStateException("Could not create SQLite repository directory " + directory, e);
+            throw new IllegalStateException(
+                    "Could not create SQLite repository directory " + directory, e);
         }
 
-        return new SqliteThingRepositoryProvider(databaseKey -> {
-            Path databasePath = directory.resolve(safeName(databaseKey) + ".sqlite");
-            return "jdbc:sqlite:" + databasePath.toAbsolutePath().toString().replace("\\", "/");
-        });
+        return new SqliteThingRepositoryProvider(
+                databaseKey -> {
+                    Path databasePath = directory.resolve(safeName(databaseKey) + ".sqlite");
+                    return "jdbc:sqlite:"
+                            + databasePath.toAbsolutePath().toString().replace("\\", "/");
+                });
     }
 
     @Override
@@ -71,7 +77,8 @@ public class SqliteThingRepositoryProvider implements ThingRepositoryProvider {
             throw new IllegalStateException("ERM Database Already Exists with name " + databaseKey);
         }
 
-        ThingRepository repository = new SqliteThingRepository(databaseKey, jdbcUrlFactory.apply(databaseKey));
+        ThingRepository repository =
+                new SqliteThingRepository(databaseKey, jdbcUrlFactory.apply(databaseKey));
         repository.initializeFrom(schema);
         repositories.put(databaseKey, repository);
         return repository;
@@ -83,7 +90,8 @@ public class SqliteThingRepositoryProvider implements ThingRepositoryProvider {
             return false;
         }
 
-        ThingRepository repository = new SqliteThingRepository(databaseKey, jdbcUrlFactory.apply(databaseKey));
+        ThingRepository repository =
+                new SqliteThingRepository(databaseKey, jdbcUrlFactory.apply(databaseKey));
         repository.initializeFrom(schema);
         repositories.put(databaseKey, repository);
         return true;

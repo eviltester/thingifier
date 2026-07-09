@@ -5,9 +5,7 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
 
-/**
- * check if port is in use
- */
+/** check if port is in use */
 public class Port {
 
     public static boolean inUse(String host, String port) {
@@ -34,7 +32,7 @@ public class Port {
             System.out.println("Port " + port + " is free, no proxy running");
             return false;
         } finally {
-            if( s != null){
+            if (s != null) {
                 try {
                     s.close();
                 } catch (IOException e) {

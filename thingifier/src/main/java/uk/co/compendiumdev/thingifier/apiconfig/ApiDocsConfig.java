@@ -6,15 +6,14 @@ public class ApiDocsConfig {
     private String apiIntroductionParaOverride;
     private boolean hideOptionsVerb;
 
-    public ApiDocsConfig(){
+    public ApiDocsConfig() {
         headerSectionAppend = "";
-        headerSectionOverride= "";
+        headerSectionOverride = "";
         apiIntroductionParaOverride = "";
-        hideOptionsVerb=false;
-
+        hideOptionsVerb = false;
     }
 
-    public ApiDocsConfig setHeaderSectionAppend(String append){
+    public ApiDocsConfig setHeaderSectionAppend(String append) {
         headerSectionAppend = append;
         return this;
     }
@@ -36,7 +35,6 @@ public class ApiDocsConfig {
         this.hideOptionsVerb = !show;
         return this;
     }
-
 
     public String apiIntroductionParaOverride() {
         return "";

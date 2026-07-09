@@ -4,8 +4,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.ERSchema;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
@@ -18,7 +18,7 @@ public class AutoGuidTest {
     ThingRepository repository;
 
     @BeforeEach
-    public void createEntity(){
+    public void createEntity() {
 
         ERSchema schema = new ERSchema();
         entityTestSession = schema.defineEntity("Test Session", "Test Sessions", -1);
@@ -36,7 +36,7 @@ public class AutoGuidTest {
 
         Assertions.assertNotNull(session.getPrimaryKeyValue());
         Assertions.assertTrue(
-                session.getPrimaryKeyValue().length()>8,
+                session.getPrimaryKeyValue().length() > 8,
                 "Guid should be longish " + session.getPrimaryKeyValue());
         Assertions.assertTrue(
                 session.getPrimaryKeyValue().contains("-"),
@@ -49,7 +49,7 @@ public class AutoGuidTest {
         EntityInstance session;
         session = repository.createInstance(EntityInstanceDraft.forEntity(entityTestSession));
 
-        Assertions.assertEquals(session.getPrimaryKeyValue(), session.getFieldValue("guid").asString());
-
+        Assertions.assertEquals(
+                session.getPrimaryKeyValue(), session.getFieldValue("guid").asString());
     }
 }

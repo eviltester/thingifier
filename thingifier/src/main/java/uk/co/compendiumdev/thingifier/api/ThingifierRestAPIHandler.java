@@ -20,22 +20,25 @@ public class ThingifierRestAPIHandler {
         this.put = new RestApiPutHandler(aThingifier);
     }
 
-
     // TODO: we should be able to accept xml with correct content type
     // TODO: we should be able to accept html forms with correct content type
-    // todo allow an accept text/html to create different output - (probably handled by routings rather than api)
+    // todo allow an accept text/html to create different output - (probably handled by routings
+    // rather than api)
     // todo : generate examples when outputing the api documentation
 
-    // TODO: - listed here https://www.lisihocke.com/2018/07/testing-tour-stop-16-pair-exploring-an-api-with-thomas.html
-    // TODO: ensure that relationshps enforce the type of thing e.g. if I pass in a GUID of the wrong type then it should not cross ref
+    // TODO: - listed here
+    // https://www.lisihocke.com/2018/07/testing-tour-stop-16-pair-exploring-an-api-with-thomas.html
+    // TODO: ensure that relationshps enforce the type of thing e.g. if I pass in a GUID of the
+    // wrong type then it should not cross ref
     // TODO: possibly consider an X- header which has the number of items in the collection
 
-
-    public ApiResponse get(final String url, final QueryFilterParams queryParams, HttpHeadersBlock headers) {
+    public ApiResponse get(
+            final String url, final QueryFilterParams queryParams, HttpHeadersBlock headers) {
         return get.handle(url, queryParams, headers);
     }
 
-    public ApiResponse head(final String url, final QueryFilterParams queryParams, HttpHeadersBlock headers) {
+    public ApiResponse head(
+            final String url, final QueryFilterParams queryParams, HttpHeadersBlock headers) {
         final ApiResponse response = get.handle(url, queryParams, headers);
         response.clearBody();
         return response;
@@ -52,7 +55,4 @@ public class ThingifierRestAPIHandler {
     public ApiResponse put(final String url, final BodyParser args, HttpHeadersBlock headers) {
         return put.handle(url, args, headers);
     }
-
-
-
 }

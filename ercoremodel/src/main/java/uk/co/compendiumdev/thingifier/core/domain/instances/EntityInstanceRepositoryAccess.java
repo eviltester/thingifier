@@ -1,37 +1,32 @@
 package uk.co.compendiumdev.thingifier.core.domain.instances;
 
+import java.util.Collection;
+import java.util.List;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.NamedValue;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
 public final class EntityInstanceRepositoryAccess {
 
-    private EntityInstanceRepositoryAccess() {
-    }
+    private EntityInstanceRepositoryAccess() {}
 
     public static EntityInstance patch(
-            final EntityInstance existing,
-            final EntityInstanceDraft draft) {
-        EntityInstance patched = existing.createDuplicateWithoutRelationships(existing.getInternalId());
+            final EntityInstance existing, final EntityInstanceDraft draft) {
+        EntityInstance patched =
+                existing.createDuplicateWithoutRelationships(existing.getInternalId());
         return apply(patched, draft);
     }
 
     public static EntityInstance replace(
-            final EntityInstance existing,
-            final EntityInstanceDraft draft) {
-        EntityInstance replacement = existing.createDuplicateWithoutRelationships(existing.getInternalId());
+            final EntityInstance existing, final EntityInstanceDraft draft) {
+        EntityInstance replacement =
+                existing.createDuplicateWithoutRelationships(existing.getInternalId());
         clearAllFields(replacement);
         return apply(replacement, draft);
     }
 
     public static EntityInstance apply(
-            final EntityInstance existing,
-            final EntityInstanceDraft draft) {
+            final EntityInstance existing, final EntityInstanceDraft draft) {
         return existing.applyDraftFromRepository(draft);
     }
 
@@ -40,22 +35,17 @@ public final class EntityInstanceRepositoryAccess {
     }
 
     public static EntityInstance empty(
-            final EntityDefinition entity,
-            final java.util.UUID internalId) {
+            final EntityDefinition entity, final java.util.UUID internalId) {
         return new EntityInstance(entity, internalId);
     }
 
     public static void setValue(
-            final EntityInstance instance,
-            final String fieldName,
-            final String value) {
+            final EntityInstance instance, final String fieldName, final String value) {
         instance.setValueFromRepository(fieldName, value);
     }
 
     public static void overrideValue(
-            final EntityInstance instance,
-            final String fieldName,
-            final String value) {
+            final EntityInstance instance, final String fieldName, final String value) {
         instance.overrideValueFromRepository(fieldName, value);
     }
 
@@ -68,9 +58,7 @@ public final class EntityInstanceRepositoryAccess {
     }
 
     public static void connectRelationship(
-            final EntityInstance from,
-            final String relationshipName,
-            final EntityInstance to) {
+            final EntityInstance from, final String relationshipName, final EntityInstance to) {
         from.getRelationships().connectFromRepository(relationshipName, to);
     }
 
@@ -78,8 +66,8 @@ public final class EntityInstanceRepositoryAccess {
             final EntityInstance parent,
             final EntityInstance child,
             final String relationshipName) {
-        return parent.getRelationships().
-                removeRelationshipsInvolvingFromRepository(child, relationshipName);
+        return parent.getRelationships()
+                .removeRelationshipsInvolvingFromRepository(child, relationshipName);
     }
 
     public static List<EntityInstance> removeAllRelationships(final EntityInstance instance) {
@@ -87,8 +75,7 @@ public final class EntityInstanceRepositoryAccess {
     }
 
     public static Collection<EntityInstance> connectedItems(
-            final EntityInstance instance,
-            final String relationshipName) {
+            final EntityInstance instance, final String relationshipName) {
         return instance.getRelationships().getConnectedItems(relationshipName);
     }
 
@@ -104,8 +91,7 @@ public final class EntityInstanceRepositoryAccess {
     }
 
     public static List<String> findAnyGuidOrIdDifferences(
-            final EntityInstance instance,
-            final List<NamedValue> fieldValues) {
+            final EntityInstance instance, final List<NamedValue> fieldValues) {
         return instance.getFields().findAnyGuidOrIdDifferences(fieldValues);
     }
 

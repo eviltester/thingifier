@@ -1,15 +1,14 @@
 package uk.co.compendiumdev.thingifier.core.domain.definitions;
 
-import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVectorDefinition;
-
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVectorDefinition;
 
 public class DefinedRelationships {
 
     private Map<String, List<RelationshipVectorDefinition>> relationships;
 
-    public DefinedRelationships(){
+    public DefinedRelationships() {
         this.relationships = new ConcurrentHashMap<>();
     }
 
@@ -18,7 +17,8 @@ public class DefinedRelationships {
     }
 
     public void addRelationship(final RelationshipVectorDefinition relationship) {
-        List<RelationshipVectorDefinition> relationshipsWithThisName = relationships.get(relationship.getName());
+        List<RelationshipVectorDefinition> relationshipsWithThisName =
+                relationships.get(relationship.getName());
         if (relationshipsWithThisName == null) {
             // there is no relationship with this name
             relationshipsWithThisName = new ArrayList<>();
@@ -32,7 +32,7 @@ public class DefinedRelationships {
 
         String seekName = relationshipName.toLowerCase();
 
-        if(!relationships.containsKey(seekName)){
+        if (!relationships.containsKey(seekName)) {
             return new ArrayList<>();
         }
 
@@ -47,7 +47,6 @@ public class DefinedRelationships {
             for (RelationshipVectorDefinition rel : list) {
                 myRelationships.add(rel);
             }
-
         }
         return myRelationships;
     }

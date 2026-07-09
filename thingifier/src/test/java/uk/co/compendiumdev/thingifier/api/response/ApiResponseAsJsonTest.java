@@ -1,30 +1,29 @@
 package uk.co.compendiumdev.thingifier.api.response;
 
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
-import com.google.gson.Gson;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-import uk.co.compendiumdev.thingifier.core.EntityRelModel;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
-import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonThing;
+import static uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType.STRING;
 
+import com.google.gson.Gson;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import static uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType.STRING;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonThing;
+import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
+import uk.co.compendiumdev.thingifier.core.EntityRelModel;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 
 public class ApiResponseAsJsonTest {
 
     public JsonThing defaultJsonThing = new JsonThing(new ThingifierApiConfig("").jsonOutput());
 
     @Test
-    public void response404HasSingleErrorMessage(){
+    public void response404HasSingleErrorMessage() {
 
         ApiResponse response = ApiResponse.error404("oops");
 
@@ -37,11 +36,10 @@ public class ApiResponseAsJsonTest {
         ErrorMessagesResponse messages = new Gson().fromJson(json, ErrorMessagesResponse.class);
         Assertions.assertEquals(1, messages.errorMessages.length);
         Assertions.assertEquals("oops", messages.errorMessages[0]);
-
     }
 
     @Test
-    public void responseError(){
+    public void responseError() {
 
         ApiResponse response = ApiResponse.error(500, "oopsy");
 
@@ -55,11 +53,10 @@ public class ApiResponseAsJsonTest {
         ErrorMessagesResponse messages = new Gson().fromJson(json, ErrorMessagesResponse.class);
         Assertions.assertEquals(1, messages.errorMessages.length);
         Assertions.assertEquals("oopsy", messages.errorMessages[0]);
-
     }
 
     @Test
-    public void responseErrors(){
+    public void responseErrors() {
 
         List<String> errors = new ArrayList();
         errors.add("oopsy");
@@ -83,11 +80,10 @@ public class ApiResponseAsJsonTest {
         Assertions.assertTrue(checkErrors.contains("oopsy"));
         Assertions.assertTrue(checkErrors.contains("doopsy"));
         Assertions.assertTrue(checkErrors.contains("do"));
-
     }
 
     @Test
-    public void response200(){
+    public void response200() {
 
         ApiResponse response = ApiResponse.success();
 
@@ -98,18 +94,22 @@ public class ApiResponseAsJsonTest {
 
         String json = new ApiResponseAsJson(response, defaultJsonThing).getJson();
         Assertions.assertEquals("", json);
-
     }
 
     @Test
-    public void response200WithInstance(){
+    public void response200WithInstance() {
 
         Thingifier thingifier = new Thingifier();
         EntityDefinition todo = thingifier.defineThing("todo", "todos");
-        todo.addFields( Field.is("title", STRING));
-        EntityDefinition todos = thingifier.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("todo");
+        todo.addFields(Field.is("title", STRING));
+        EntityDefinition todos =
+                thingifier.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("todo");
 
-        EntityInstance aTodo = thingifier.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(todos).withField("title", "a todo"));
+        EntityInstance aTodo =
+                thingifier
+                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .createInstance(
+                                EntityInstanceDraft.forEntity(todos).withField("title", "a todo"));
 
         ApiResponse response = ApiResponse.success().returnSingleInstance(aTodo);
 
@@ -124,22 +124,37 @@ public class ApiResponseAsJsonTest {
 
         Assertions.assertEquals(aTodo.getPrimaryKeyValue(), myTodo.guid);
         Assertions.assertEquals("a todo", myTodo.title);
-
     }
 
     @Test
-    public void response200WithInstances(){
+    public void response200WithInstances() {
 
         Thingifier thingifier = new Thingifier();
         EntityDefinition todo = thingifier.defineThing("todo", "todos");
         todo.addAsPrimaryKeyField(Field.is("guid", FieldType.AUTO_GUID));
-        todo.addFields( Field.is("title", STRING));
-        EntityDefinition todos = thingifier.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("todo");
+        todo.addFields(Field.is("title", STRING));
+        EntityDefinition todos =
+                thingifier.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("todo");
 
-        EntityInstance aTodo = thingifier.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(todos).withField("title", "a todo"));
-        EntityInstance anotherTodo = thingifier.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(todos).withField("title", "another todo"));
+        EntityInstance aTodo =
+                thingifier
+                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .createInstance(
+                                EntityInstanceDraft.forEntity(todos).withField("title", "a todo"));
+        EntityInstance anotherTodo =
+                thingifier
+                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .createInstance(
+                                EntityInstanceDraft.forEntity(todos)
+                                        .withField("title", "another todo"));
 
-        ApiResponse response = ApiResponse.success().returnInstanceCollection(new ArrayList(thingifier.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).listInstances(todos)));
+        ApiResponse response =
+                ApiResponse.success()
+                        .returnInstanceCollection(
+                                new ArrayList(
+                                        thingifier
+                                                .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
+                                                .listInstances(todos)));
 
         Assertions.assertEquals(200, response.getStatusCode());
         Assertions.assertEquals(true, response.hasABody());
@@ -150,27 +165,25 @@ public class ApiResponseAsJsonTest {
         System.out.println(json);
         TodoCollectionResponse myTodo = new Gson().fromJson(json, TodoCollectionResponse.class);
 
-        int foundCount=0;
-        for(int todoid = 0; todoid < 2; todoid++){
+        int foundCount = 0;
+        for (int todoid = 0; todoid < 2; todoid++) {
 
             if (myTodo.todos[todoid].guid.equals(aTodo.getPrimaryKeyValue())) {
                 Assertions.assertEquals(aTodo.getPrimaryKeyValue(), myTodo.todos[todoid].guid);
                 Assertions.assertEquals("a todo", myTodo.todos[todoid].title);
                 foundCount++;
-            }else {
-                Assertions.assertEquals(anotherTodo.getPrimaryKeyValue(), myTodo.todos[todoid].guid);
+            } else {
+                Assertions.assertEquals(
+                        anotherTodo.getPrimaryKeyValue(), myTodo.todos[todoid].guid);
                 Assertions.assertEquals("another todo", myTodo.todos[todoid].title);
                 foundCount++;
             }
-
-
         }
         Assertions.assertEquals(2, foundCount);
-
     }
 
     @Test
-    public void response200WithEmptyInstances(){
+    public void response200WithEmptyInstances() {
 
         ApiResponse response = ApiResponse.success().returnInstanceCollection(new ArrayList());
 
@@ -188,23 +201,19 @@ public class ApiResponseAsJsonTest {
         Assertions.assertNull(myTodo.todos);
     }
 
-    private class ErrorMessagesResponse{
+    private class ErrorMessagesResponse {
 
-        String []errorMessages;
-
+        String[] errorMessages;
     }
 
-
-    private class TodoCollectionResponse{
+    private class TodoCollectionResponse {
 
         Todo[] todos;
-
     }
 
-    private class Todo{
+    private class Todo {
 
         String guid;
         String title;
     }
-
 }

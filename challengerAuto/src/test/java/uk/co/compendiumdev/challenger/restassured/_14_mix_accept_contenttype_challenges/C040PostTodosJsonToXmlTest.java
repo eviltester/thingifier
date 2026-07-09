@@ -11,24 +11,26 @@ import uk.co.compendiumdev.challenger.restassured.api.RestAssuredBaseTest;
 public class C040PostTodosJsonToXmlTest extends RestAssuredBaseTest {
 
     @Test
-    void canCreateATodoWithJSONAcceptingXMLPost(){
+    void canCreateATodoWithJSONAcceptingXMLPost() {
 
         Todo createMe = new Todo();
         createMe.title = "json name " + System.currentTimeMillis();
         createMe.description = "json description " + System.currentTimeMillis();
         createMe.doneStatus = true;
 
-        final Todo todo = RestAssured.
-                given().
-                header("X-CHALLENGER", xChallenger).
-                accept("application/xml").
-                contentType("application/json").
-                body(createMe).
-                post(apiPath("/todos")).
-                then().
-                statusCode(201).
-                contentType(ContentType.XML).
-                extract().response().as(Todo.class);
+        final Todo todo =
+                RestAssured.given()
+                        .header("X-CHALLENGER", xChallenger)
+                        .accept("application/xml")
+                        .contentType("application/json")
+                        .body(createMe)
+                        .post(apiPath("/todos"))
+                        .then()
+                        .statusCode(201)
+                        .contentType(ContentType.XML)
+                        .extract()
+                        .response()
+                        .as(Todo.class);
 
         ChallengesStatus statuses = new ChallengesStatus();
         statuses.get();
@@ -37,8 +39,5 @@ public class C040PostTodosJsonToXmlTest extends RestAssuredBaseTest {
         Assertions.assertEquals(createMe.title, todo.title);
         Assertions.assertEquals(createMe.description, todo.description);
         Assertions.assertEquals(createMe.doneStatus, todo.doneStatus);
-
     }
-
-
 }

@@ -1,6 +1,13 @@
 package uk.co.compendiumdev.challenge.challengehooks;
 
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
+import static uk.co.compendiumdev.thingifier.api.http.HttpApiRequest.VERB.DELETE;
+import static uk.co.compendiumdev.thingifier.api.http.HttpApiRequest.VERB.GET;
+import static uk.co.compendiumdev.thingifier.api.http.HttpApiRequest.VERB.POST;
+
+import java.util.Arrays;
+import java.util.Map;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -19,94 +26,84 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-import uk.co.compendiumdev.thingifier.core.repository.inmemory.InMemoryThingRepositoryProvider;
-import uk.co.compendiumdev.thingifier.core.repository.sqlite.SqliteThingRepositoryProvider;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
 import uk.co.compendiumdev.thingifier.core.repository.ThingRepositoryProvider;
-
-import java.util.Arrays;
-import java.util.Map;
-import java.util.function.Supplier;
-import java.util.stream.Stream;
-
-import static uk.co.compendiumdev.thingifier.api.http.HttpApiRequest.VERB.DELETE;
-import static uk.co.compendiumdev.thingifier.api.http.HttpApiRequest.VERB.GET;
-import static uk.co.compendiumdev.thingifier.api.http.HttpApiRequest.VERB.POST;
+import uk.co.compendiumdev.thingifier.core.repository.inmemory.InMemoryThingRepositoryProvider;
+import uk.co.compendiumdev.thingifier.core.repository.sqlite.SqliteThingRepositoryProvider;
 
 public class ChallengerApiResponseHookTest {
 
     @ParameterizedTest(name = "{0}")
     @MethodSource("repositoryProviders")
     public void filteredTodosChallengeCompletesWhenDoneAndNotDoneTodosExist(
-            final String repositoryName,
-            final Supplier<ThingRepositoryProvider> providerFactory) {
+            final String repositoryName, final Supplier<ThingRepositoryProvider> providerFactory) {
 
         try (HookFixture fixture = new HookFixture(providerFactory.get())) {
             fixture.addTodo("done", "true");
             fixture.addTodo("not done", "false");
 
             fixture.hook.run(
-                    fixture.request("todos", GET).
-                            setQueryParams(Map.of("doneStatus", "true")),
+                    fixture.request("todos", GET).setQueryParams(Map.of("doneStatus", "true")),
                     fixture.response(200),
                     fixture.thingifier.apiConfig());
 
-            Assertions.assertTrue(fixture.challenger.statusOfChallenge(CHALLENGE.GET_TODOS_FILTERED));
+            Assertions.assertTrue(
+                    fixture.challenger.statusOfChallenge(CHALLENGE.GET_TODOS_FILTERED));
         }
     }
 
     @ParameterizedTest(name = "{0}")
     @MethodSource("repositoryProviders")
     public void filteredTodosChallengeDoesNotCompleteWithoutMixedDoneStatusTodos(
-            final String repositoryName,
-            final Supplier<ThingRepositoryProvider> providerFactory) {
+            final String repositoryName, final Supplier<ThingRepositoryProvider> providerFactory) {
 
         try (HookFixture fixture = new HookFixture(providerFactory.get())) {
             fixture.addTodo("done", "true");
 
             fixture.hook.run(
-                    fixture.request("todos", GET).
-                            setQueryParams(Map.of("doneStatus", "true")),
+                    fixture.request("todos", GET).setQueryParams(Map.of("doneStatus", "true")),
                     fixture.response(200),
                     fixture.thingifier.apiConfig());
 
-            Assertions.assertFalse(fixture.challenger.statusOfChallenge(CHALLENGE.GET_TODOS_FILTERED));
+            Assertions.assertFalse(
+                    fixture.challenger.statusOfChallenge(CHALLENGE.GET_TODOS_FILTERED));
         }
     }
 
     @ParameterizedTest(name = "{0}")
     @MethodSource("repositoryProviders")
     public void postMaxContentChallengeReadsCreatedTodoThroughRepository(
-            final String repositoryName,
-            final Supplier<ThingRepositoryProvider> providerFactory) {
+            final String repositoryName, final Supplier<ThingRepositoryProvider> providerFactory) {
 
         try (HookFixture fixture = new HookFixture(providerFactory.get())) {
-            EntityInstance todo = fixture.addTodo(
-                    "2*4*6*8*11*14*17*20*23*26*29*32*35*38*41*44*47*50*",
-                    "true",
-                    "*3*5*7*9*12*15*18*21*24*27*30*33*36*39*42*45*48*51*" +
-                            "54*57*60*63*66*69*72*75*78*81*84*87*90*93*96*100*" +
-                            "104*108*112*116*120*124*128*132*136*140*144*148*" +
-                            "152*156*160*164*168*172*176*180*184*188*192*196*200*");
+            EntityInstance todo =
+                    fixture.addTodo(
+                            "2*4*6*8*11*14*17*20*23*26*29*32*35*38*41*44*47*50*",
+                            "true",
+                            "*3*5*7*9*12*15*18*21*24*27*30*33*36*39*42*45*48*51*"
+                                    + "54*57*60*63*66*69*72*75*78*81*84*87*90*93*96*100*"
+                                    + "104*108*112*116*120*124*128*132*136*140*144*148*"
+                                    + "152*156*160*164*168*172*176*180*184*188*192*196*200*");
 
-            ApiResponse created = new ApiResponse(201).
-                    setLocationHeader("/todos/" + todo.getPrimaryKeyValue());
+            ApiResponse created =
+                    new ApiResponse(201).setLocationHeader("/todos/" + todo.getPrimaryKeyValue());
 
             fixture.hook.run(
                     fixture.request("todos", POST),
                     fixture.response(created),
                     fixture.thingifier.apiConfig());
 
-            Assertions.assertTrue(fixture.challenger.
-                    statusOfChallenge(CHALLENGE.POST_MAX_OUT_TITLE_DESCRIPTION_LENGTH));
+            Assertions.assertTrue(
+                    fixture.challenger.statusOfChallenge(
+                            CHALLENGE.POST_MAX_OUT_TITLE_DESCRIPTION_LENGTH));
         }
     }
 
     @ParameterizedTest(name = "{0}")
     @MethodSource("repositoryProviders")
     public void deleteAllTodosChallengeCompletesWhenRepositoryIsEmpty(
-            final String repositoryName,
-            final Supplier<ThingRepositoryProvider> providerFactory) {
+            final String repositoryName, final Supplier<ThingRepositoryProvider> providerFactory) {
 
         try (HookFixture fixture = new HookFixture(providerFactory.get())) {
             EntityInstance todo = fixture.addTodo("delete me", "false");
@@ -124,8 +121,7 @@ public class ChallengerApiResponseHookTest {
     @ParameterizedTest(name = "{0}")
     @MethodSource("repositoryProviders")
     public void deleteAllTodosChallengeDoesNotCompleteWhenRepositoryStillHasTodos(
-            final String repositoryName,
-            final Supplier<ThingRepositoryProvider> providerFactory) {
+            final String repositoryName, final Supplier<ThingRepositoryProvider> providerFactory) {
 
         try (HookFixture fixture = new HookFixture(providerFactory.get())) {
             EntityInstance deletedTodo = fixture.addTodo("delete me", "false");
@@ -137,7 +133,8 @@ public class ChallengerApiResponseHookTest {
                     fixture.response(200),
                     fixture.thingifier.apiConfig());
 
-            Assertions.assertFalse(fixture.challenger.statusOfChallenge(CHALLENGE.DELETE_ALL_TODOS));
+            Assertions.assertFalse(
+                    fixture.challenger.statusOfChallenge(CHALLENGE.DELETE_ALL_TODOS));
         }
     }
 
@@ -148,8 +145,8 @@ public class ChallengerApiResponseHookTest {
                         (Supplier<ThingRepositoryProvider>) InMemoryThingRepositoryProvider::new),
                 Arguments.of(
                         "sqlite-memory",
-                        (Supplier<ThingRepositoryProvider>) SqliteThingRepositoryProvider::inMemory)
-        );
+                        (Supplier<ThingRepositoryProvider>)
+                                SqliteThingRepositoryProvider::inMemory));
     }
 
     private static class HookFixture implements AutoCloseable {
@@ -169,9 +166,8 @@ public class ChallengerApiResponseHookTest {
                     Field.is("doneStatus", FieldType.BOOLEAN).withDefaultValue("false"),
                     Field.is("description", FieldType.STRING));
 
-            challengers = new Challengers(
-                    thingifier.getERmodel(),
-                    Arrays.asList(CHALLENGE.values()));
+            challengers =
+                    new Challengers(thingifier.getERmodel(), Arrays.asList(CHALLENGE.values()));
             challengers.setMultiPlayerMode();
             challenger = challengers.createNewChallenger();
             thingifier.ensureCreatedAndPopulatedInstanceDatabaseNamed(challenger.getXChallenger());
@@ -184,20 +180,18 @@ public class ChallengerApiResponseHookTest {
         }
 
         EntityInstance addTodo(
-                final String title,
-                final String doneStatus,
-                final String description) {
+                final String title, final String doneStatus, final String description) {
             return repository.createInstance(
-                    EntityInstanceDraft.forEntity(todo).
-                            withField("title", title).
-                            withField("doneStatus", doneStatus).
-                            withField("description", description));
+                    EntityInstanceDraft.forEntity(todo)
+                            .withField("title", title)
+                            .withField("doneStatus", doneStatus)
+                            .withField("description", description));
         }
 
         HttpApiRequest request(final String path, final HttpApiRequest.VERB verb) {
-            return new HttpApiRequest(path).
-                    setVerb(verb).
-                    addHeader("X-CHALLENGER", challenger.getXChallenger());
+            return new HttpApiRequest(path)
+                    .setVerb(verb)
+                    .addHeader("X-CHALLENGER", challenger.getXChallenger());
         }
 
         HttpApiResponse response(final int statusCode) {

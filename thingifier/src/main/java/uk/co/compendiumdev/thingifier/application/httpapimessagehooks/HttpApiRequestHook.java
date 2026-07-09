@@ -5,10 +5,9 @@ import uk.co.compendiumdev.thingifier.api.http.HttpApiResponse;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 
 /**
- * Run prior to any validation or internal API processing
- * This can be used to amend the request if necessary
- * And we can shortcut any API processing by returning an HttpApiResponse
- * This response would be passed back to the user.
+ * Run prior to any validation or internal API processing This can be used to amend the request if
+ * necessary And we can shortcut any API processing by returning an HttpApiResponse This response
+ * would be passed back to the user.
  */
 public interface HttpApiRequestHook {
 

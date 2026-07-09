@@ -1,20 +1,19 @@
 package uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition;
 
+import java.util.UUID;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import java.util.UUID;
 
 class GuidFieldTest {
 
     @Test
-    void canValidateExampleGuid(){
+    void canValidateExampleGuid() {
 
         Field field = Field.is("guid", FieldType.AUTO_GUID);
 
         try {
             UUID.fromString(field.getRandomExampleValue());
-        }catch(IllegalArgumentException e){
+        } catch (IllegalArgumentException e) {
             Assertions.fail("Should have converted example GUID");
         }
     }

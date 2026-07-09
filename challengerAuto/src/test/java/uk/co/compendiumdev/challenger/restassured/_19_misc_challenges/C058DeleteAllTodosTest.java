@@ -1,6 +1,6 @@
 package uk.co.compendiumdev.challenger.restassured._19_misc_challenges;
 
-import io.restassured.RestAssured;
+import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.challenger.payloads.Todo;
@@ -8,18 +8,16 @@ import uk.co.compendiumdev.challenger.restassured.api.ChallengesStatus;
 import uk.co.compendiumdev.challenger.restassured.api.RestAssuredBaseTest;
 import uk.co.compendiumdev.challenger.restassured.api.TodosApi;
 
-import java.util.List;
-
 public class C058DeleteAllTodosTest extends RestAssuredBaseTest {
 
     @Test
-    void canDeleteAllTodoItems(){
+    void canDeleteAllTodoItems() {
 
         TodosApi api = new TodosApi();
 
         List<Todo> todos = api.getTodos();
 
-        for(Todo todo : todos) {
+        for (Todo todo : todos) {
             api.deleteTodo(todo.id);
         }
 

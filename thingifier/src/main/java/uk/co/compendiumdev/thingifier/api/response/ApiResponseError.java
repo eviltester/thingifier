@@ -4,8 +4,7 @@ import uk.co.compendiumdev.thingifier.api.http.headers.headerparser.AcceptHeader
 
 public final class ApiResponseError {
 
-    private ApiResponseError() {
-    }
+    private ApiResponseError() {}
 
     public static String asAppropriate(final String accept, final String errorMessage) {
 
@@ -13,7 +12,8 @@ public final class ApiResponseError {
 
         AcceptHeaderParser acceptable = new AcceptHeaderParser(accept);
 
-        // TODO: should be able to configure a default API response type rather than assume it is JSON
+        // TODO: should be able to configure a default API response type rather than assume it is
+        // JSON
         if (acceptable.hasAPreferenceForXml()) {
             isJson = false;
         }

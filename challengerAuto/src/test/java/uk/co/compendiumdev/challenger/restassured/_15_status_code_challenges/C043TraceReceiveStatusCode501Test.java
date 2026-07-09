@@ -10,22 +10,16 @@ import uk.co.compendiumdev.challenger.restassured.api.RestAssuredBaseTest;
 public class C043TraceReceiveStatusCode501Test extends RestAssuredBaseTest {
 
     @Test
-    void canNotTraceHeartbeat501(){
+    void canNotTraceHeartbeat501() {
 
-        RestAssured.
-                given().
-                header("X-CHALLENGER", xChallenger).
-                request(
-                        Method.TRACE,
-                        apiPath("/heartbeat")).
-                then().
-                statusCode(501);
-
+        RestAssured.given()
+                .header("X-CHALLENGER", xChallenger)
+                .request(Method.TRACE, apiPath("/heartbeat"))
+                .then()
+                .statusCode(501);
 
         ChallengesStatus statuses = new ChallengesStatus();
         statuses.get();
         Assertions.assertTrue(statuses.getChallengeNamed("TRACE /heartbeat (501)").status);
-
     }
-
 }

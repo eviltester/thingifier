@@ -9,8 +9,7 @@ final class SqliteRegexFilterPolicy {
     private static final Pattern NESTED_QUANTIFIER =
             Pattern.compile("\\((?:\\\\.|[^\\\\)])*[+*](?:\\\\.|[^\\\\)])*\\)\\s*[+*?{]");
 
-    private SqliteRegexFilterPolicy() {
-    }
+    private SqliteRegexFilterPolicy() {}
 
     static Pattern compileSupported(final String regex) {
         if (regex == null) {

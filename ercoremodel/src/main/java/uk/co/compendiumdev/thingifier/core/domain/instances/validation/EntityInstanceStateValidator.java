@@ -1,11 +1,10 @@
 package uk.co.compendiumdev.thingifier.core.domain.instances.validation;
 
+import java.util.ArrayList;
+import java.util.List;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceRepositoryAccess;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public final class EntityInstanceStateValidator {
 
@@ -20,9 +19,7 @@ public final class EntityInstanceStateValidator {
             final List<String> excluding,
             final boolean allowedToSetIds) {
         return EntityInstanceRepositoryAccess.validateFieldValues(
-                instance,
-                excluding,
-                allowedToSetIds);
+                instance, excluding, allowedToSetIds);
     }
 
     public ValidationReport validateRelationships(final EntityInstance instance) {

@@ -1,5 +1,9 @@
 package uk.co.compendiumdev.thingifier.core.domain.instances.validation;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.DefinedFields;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
@@ -10,24 +14,15 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.validation.TypeVal
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
-
 public final class EntityInstanceDraftValidator {
 
     public void assertCanAddField(
-            final EntityDefinition entityDefinition,
-            final String name,
-            final String value) {
+            final EntityDefinition entityDefinition, final String name, final String value) {
         throwIfInvalid(validateFieldValue(entityDefinition, name, value, false));
     }
 
     public void assertCanAddProtectedField(
-            final EntityDefinition entityDefinition,
-            final String name,
-            final String value) {
+            final EntityDefinition entityDefinition, final String name, final String value) {
         throwIfInvalid(validateFieldValue(entityDefinition, name, value, true));
     }
 
@@ -40,18 +35,11 @@ public final class EntityInstanceDraftValidator {
         for (NamedValue value : draft.getFieldValues()) {
             validation.combine(
                     validateFieldValue(
-                            draft.getEntity(),
-                            value.getName(),
-                            value.asString(),
-                            false));
+                            draft.getEntity(), value.getName(), value.asString(), false));
         }
         for (NamedValue value : draft.getProtectedFieldValues()) {
             validation.combine(
-                    validateFieldValue(
-                            draft.getEntity(),
-                            value.getName(),
-                            value.asString(),
-                            true));
+                    validateFieldValue(draft.getEntity(), value.getName(), value.asString(), true));
         }
         return validation;
     }
@@ -80,8 +68,8 @@ public final class EntityInstanceDraftValidator {
         if (!protectedWrite && isProtected(field)) {
             report.setValid(false);
             report.addErrorMessage(
-                    "%s : field is protected and can only be set with withProtectedField".
-                            formatted(name));
+                    "%s : field is protected and can only be set with withProtectedField"
+                            .formatted(name));
             return report;
         }
 
@@ -105,9 +93,7 @@ public final class EntityInstanceDraftValidator {
     }
 
     private void validateProtectedAutoIncrement(
-            final Field field,
-            final FieldValue fieldValue,
-            final ValidationReport report) {
+            final Field field, final FieldValue fieldValue, final ValidationReport report) {
         if (field.getType() != FieldType.AUTO_INCREMENT) {
             return;
         }
@@ -123,9 +109,7 @@ public final class EntityInstanceDraftValidator {
     }
 
     private void validateProtectedAutoGuid(
-            final Field field,
-            final FieldValue fieldValue,
-            final ValidationReport report) {
+            final Field field, final FieldValue fieldValue, final ValidationReport report) {
         if (field.getType() != FieldType.AUTO_GUID) {
             return;
         }
@@ -173,8 +157,8 @@ public final class EntityInstanceDraftValidator {
     }
 
     private boolean isProtected(final Field field) {
-        return field.getType() == FieldType.AUTO_INCREMENT ||
-                field.getType() == FieldType.AUTO_GUID;
+        return field.getType() == FieldType.AUTO_INCREMENT
+                || field.getType() == FieldType.AUTO_GUID;
     }
 
     private void throwIfInvalid(final ValidationReport report) {

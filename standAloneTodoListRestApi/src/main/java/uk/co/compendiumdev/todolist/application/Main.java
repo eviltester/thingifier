@@ -1,14 +1,13 @@
 package uk.co.compendiumdev.todolist.application;
 
+import static spark.Spark.get;
+
 import uk.co.compendiumdev.thingifier.application.MainImplementation;
 import uk.co.compendiumdev.thingifier.application.examples.TodoListThingifier;
-
-import static spark.Spark.get;
 
 public class Main {
 
     public static void main(String[] args) {
-
 
         MainImplementation app = new MainImplementation();
         app.registerModel("simpleTodoList", new TodoListThingifier().get());
@@ -26,13 +25,14 @@ public class Main {
 
         app.setupDefaultGui();
 
-        get("/", (request, response) -> {
-            response.redirect("/gui/entities");
-            return "";
-        });
+        get(
+                "/",
+                (request, response) -> {
+                    response.redirect("/gui/entities");
+                    return "";
+                });
 
         app.startRestServer();
         app.addBuiltInArgConfiguredHooks();
-
     }
 }

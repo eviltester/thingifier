@@ -1,14 +1,12 @@
 package uk.co.compendiumdev.thingifier.application.internalhttpconversion;
 
-
+import java.util.*;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiResponse;
 import uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi;
 import uk.co.compendiumdev.thingifier.application.httpapimessagehooks.HttpApiRequestHook;
 import uk.co.compendiumdev.thingifier.application.httpapimessagehooks.HttpApiResponseHook;
-
-import java.util.*;
 
 public final class ThingifierHttpApiBridge {
 
@@ -19,27 +17,28 @@ public final class ThingifierHttpApiBridge {
     private List<HttpApiRequestHook> apiRequestHooks;
     private List<HttpApiResponseHook> apiResponseHooks;
 
-    public ThingifierHttpApiBridge(final Thingifier aThingifier){
+    public ThingifierHttpApiBridge(final Thingifier aThingifier) {
         this(aThingifier, null, null);
     }
 
-    public ThingifierHttpApiBridge(final Thingifier aThingifier,
-                                   List<HttpApiRequestHook> apiRequestHooks,
-                                   List<HttpApiResponseHook> apiResponseHooks) {
+    public ThingifierHttpApiBridge(
+            final Thingifier aThingifier,
+            List<HttpApiRequestHook> apiRequestHooks,
+            List<HttpApiResponseHook> apiResponseHooks) {
         this.thingifier = aThingifier;
-        if(apiRequestHooks==null){
+        if (apiRequestHooks == null) {
             this.apiRequestHooks = new ArrayList<>();
-        }else{
+        } else {
             this.apiRequestHooks = apiRequestHooks;
         }
-        if(apiResponseHooks==null){
+        if (apiResponseHooks == null) {
             this.apiResponseHooks = new ArrayList<>();
-        }else{
+        } else {
             this.apiResponseHooks = apiResponseHooks;
         }
 
-        this.thingifierHttpApi = new ThingifierHttpApi(thingifier,
-                                        apiRequestHooks, apiResponseHooks);
+        this.thingifierHttpApi =
+                new ThingifierHttpApi(thingifier, apiRequestHooks, apiResponseHooks);
     }
 
     public HttpApiResponse get(final HttpApiRequest theRequest) {

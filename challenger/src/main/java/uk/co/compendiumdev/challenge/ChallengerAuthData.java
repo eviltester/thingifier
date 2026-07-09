@@ -2,12 +2,11 @@ package uk.co.compendiumdev.challenge;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
-import uk.co.compendiumdev.challenge.challengers.Challengers;
-
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import uk.co.compendiumdev.challenge.challengers.Challengers;
 
 public class ChallengerAuthData {
 
@@ -21,7 +20,7 @@ public class ChallengerAuthData {
 
     private ChallengerState state;
 
-    public ChallengerAuthData(Collection<CHALLENGE> definedChallenges){
+    public ChallengerAuthData(Collection<CHALLENGE> definedChallenges) {
         this.xChallenger = UUID.randomUUID().toString();
         this.xAuthToken = UUID.randomUUID().toString();
         this.expiresin = 600000; // 10 * 60 * 1000; // 10 minutes
@@ -35,7 +34,7 @@ public class ChallengerAuthData {
     private void resetChallengesStatus(Collection<CHALLENGE> definedChallenges) {
         challengeStatus = new HashMap<>();
         // this should only be challenges defined
-        for(CHALLENGE challenge : definedChallenges){
+        for (CHALLENGE challenge : definedChallenges) {
             challengeStatus.put(challenge, false);
         }
     }
@@ -53,12 +52,12 @@ public class ChallengerAuthData {
     public void setNote(final String note) {
         touch();
         int maxLen = 100;
-        if(note == null){
+        if (note == null) {
             throw new RuntimeException("No Note Provided");
         }
-        if(note.length()<=maxLen){
-            secretNote=note;
-        }else {
+        if (note.length() <= maxLen) {
+            secretNote = note;
+        } else {
             secretNote = note.substring(0, maxLen);
         }
     }
@@ -74,7 +73,7 @@ public class ChallengerAuthData {
     public void touch() {
         lastAccessed = System.currentTimeMillis();
         expiresin = expiresin + extratime;
-        if(expiresin > 600000){
+        if (expiresin > 600000) {
             expiresin = 600000;
         }
     }
@@ -85,7 +84,7 @@ public class ChallengerAuthData {
 
     public Boolean statusOfChallenge(final CHALLENGE challenge) {
         Boolean status = challengeStatus.get(challenge);
-        if(status==null){
+        if (status == null) {
             return false;
         }
         return challengeStatus.get(challenge);
@@ -93,7 +92,7 @@ public class ChallengerAuthData {
 
     public void pass(final CHALLENGE id) {
         // only update challenge if configured for it
-        if(challengeStatus.containsKey(id)){
+        if (challengeStatus.containsKey(id)) {
             challengeStatus.put(id, true);
         }
     }
@@ -106,12 +105,13 @@ public class ChallengerAuthData {
         this.state = challengerState;
     }
 
-    public ChallengerAuthData fromData(ChallengerAuthData data, Collection<CHALLENGE> definedChallenges){
+    public ChallengerAuthData fromData(
+            ChallengerAuthData data, Collection<CHALLENGE> definedChallenges) {
         // set from data but do not fully trust data
         setNote(data.secretNote);
 
         // only allow setting the uuid if we are not in single player mode
-        if(!xChallenger.equals(Challengers.SINGLE_PLAYER_GUID)) {
+        if (!xChallenger.equals(Challengers.SINGLE_PLAYER_GUID)) {
             try {
                 setXChallengerGUID(UUID.fromString(data.getXChallenger()).toString());
             } catch (Exception e) {
@@ -121,7 +121,7 @@ public class ChallengerAuthData {
 
         try {
             xAuthToken = UUID.fromString(data.getXAuthToken()).toString();
-        }catch(Exception e){
+        } catch (Exception e) {
             // could not convert to GUID so use the existing
         }
 
@@ -130,7 +130,7 @@ public class ChallengerAuthData {
         resetChallengesStatus(definedChallenges);
         // this should not be all challenges, only those which have been defined
 
-        for(CHALLENGE challenge : definedChallenges){
+        for (CHALLENGE challenge : definedChallenges) {
             challengeStatus.put(challenge, data.statusOfChallenge(challenge));
         }
 
@@ -152,6 +152,6 @@ public class ChallengerAuthData {
     }
 
     public void setAsExpired() {
-        lastAccessed =  lastAccessed - expiresin - expiresin;
+        lastAccessed = lastAccessed - expiresin - expiresin;
     }
 }

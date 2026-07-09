@@ -42,9 +42,9 @@ public final class ChallengerAutoRuntime implements AutoCloseable {
         }
 
         ChallengerAutoConfig config = ChallengerAutoConfig.current();
-        if (currentRuntime == null ||
-                currentConfig == null ||
-                !currentConfig.toString().equals(config.toString())) {
+        if (currentRuntime == null
+                || currentConfig == null
+                || !currentConfig.toString().equals(config.toString())) {
             closeCurrentRuntime();
             currentRuntime = start(config);
             currentConfig = config;
@@ -77,8 +77,8 @@ public final class ChallengerAutoRuntime implements AutoCloseable {
             return startOwnedLocal(config);
         }
 
-        ChallengerAutoRuntime runtime = new ChallengerAutoRuntime(
-                config, config.getBaseUrl(), null, null);
+        ChallengerAutoRuntime runtime =
+                new ChallengerAutoRuntime(config, config.getBaseUrl(), null, null);
         runtime.waitUntilReady();
         return runtime;
     }
@@ -124,31 +124,34 @@ public final class ChallengerAutoRuntime implements AutoCloseable {
         int port = config.isAutoPort() ? findFreePort() : config.fixedPort();
         if (!config.isAutoPort() && portIsOpen("localhost", port, 250)) {
             throw new IllegalStateException(
-                    "Configured Challenger local port is already in use: " + port +
-                            ". Use -D" + ChallengerAutoConfig.PROPERTY_LOCAL_PORT + "=auto " +
-                            "or target=existing to attach to it.");
+                    "Configured Challenger local port is already in use: "
+                            + port
+                            + ". Use -D"
+                            + ChallengerAutoConfig.PROPERTY_LOCAL_PORT
+                            + "=auto "
+                            + "or target=existing to attach to it.");
         }
 
         deleteSinglePlayerDataIfNeeded(config);
 
         File targetDirectory = new File(System.getProperty("user.dir"), "target");
         if (!targetDirectory.exists() && !targetDirectory.mkdirs()) {
-            throw new IllegalStateException("Could not create " + targetDirectory.getAbsolutePath());
+            throw new IllegalStateException(
+                    "Could not create " + targetDirectory.getAbsolutePath());
         }
         File logFile = new File(targetDirectory, "challenger-auto-local-" + port + ".log");
 
         Process process = startProcess(config, port, logFile);
         String baseUrl = "http://localhost:" + port;
-        ChallengerAutoRuntime runtime = new ChallengerAutoRuntime(config, baseUrl, process, logFile);
+        ChallengerAutoRuntime runtime =
+                new ChallengerAutoRuntime(config, baseUrl, process, logFile);
         Runtime.getRuntime().addShutdownHook(new Thread(runtime::close));
         runtime.waitUntilReady();
         return runtime;
     }
 
     private static Process startProcess(
-            final ChallengerAutoConfig config,
-            final int port,
-            final File logFile) {
+            final ChallengerAutoConfig config, final int port, final File logFile) {
         List<String> command = new ArrayList<>();
         command.add(javaBinary());
         command.add("-cp");
@@ -175,8 +178,8 @@ public final class ChallengerAutoRuntime implements AutoCloseable {
         while (System.currentTimeMillis() < deadline) {
             if (localProcess != null && !localProcess.isAlive()) {
                 throw new IllegalStateException(
-                        "Challenger local process exited before readiness. Log: " +
-                                logFile.getAbsolutePath());
+                        "Challenger local process exited before readiness. Log: "
+                                + logFile.getAbsolutePath());
             }
             if (httpStatus(heartbeat) == 204) {
                 return;
@@ -232,10 +235,7 @@ public final class ChallengerAutoRuntime implements AutoCloseable {
         }
     }
 
-    private static boolean portIsOpen(
-            final String host,
-            final int port,
-            final int timeoutMillis) {
+    private static boolean portIsOpen(final String host, final int port, final int timeoutMillis) {
         try (Socket socket = new Socket()) {
             socket.connect(new java.net.InetSocketAddress(host, port), timeoutMillis);
             return true;
@@ -251,9 +251,7 @@ public final class ChallengerAutoRuntime implements AutoCloseable {
     }
 
     private static boolean isWindows() {
-        return System.getProperty("os.name", "").
-                toLowerCase(java.util.Locale.ROOT).
-                contains("win");
+        return System.getProperty("os.name", "").toLowerCase(java.util.Locale.ROOT).contains("win");
     }
 
     private static String testClasspath() {

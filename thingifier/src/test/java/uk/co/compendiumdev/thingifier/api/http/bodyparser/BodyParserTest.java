@@ -1,15 +1,14 @@
 package uk.co.compendiumdev.thingifier.api.http.bodyparser;
 
+import java.util.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 
-import java.util.*;
-
 public class BodyParserTest {
 
     @Test
-    public void simpleJsonParse(){
+    public void simpleJsonParse() {
 
         HttpApiRequest request = new HttpApiRequest("/estimates");
         request.setBody("{'duration':'5'}");
@@ -26,7 +25,7 @@ public class BodyParserTest {
     }
 
     @Test
-    public void simpleJsonParseErrorMessage(){
+    public void simpleJsonParseErrorMessage() {
 
         HttpApiRequest request = new HttpApiRequest("/estimates");
         request.setHeaders(Map.of("content-type", "application/json"));
@@ -38,11 +37,12 @@ public class BodyParserTest {
 
         final String validated = new BodyParser(request, names).validBodyBasedOnContentType();
 
-        Assertions.assertEquals("Invalid Json Payload: please check the syntax of the request body",validated);
+        Assertions.assertEquals(
+                "Invalid Json Payload: please check the syntax of the request body", validated);
     }
 
     @Test
-    public void simpleXmlParseErrorMessage(){
+    public void simpleXmlParseErrorMessage() {
 
         HttpApiRequest request = new HttpApiRequest("/estimates");
         request.setHeaders(Map.of("content-type", "application/xml"));
@@ -54,11 +54,13 @@ public class BodyParserTest {
 
         final String validated = new BodyParser(request, names).validBodyBasedOnContentType();
 
-        Assertions.assertEquals("Invalid XML Payload: Unclosed tag estimate at 32 [character 33 line 1]",validated);
+        Assertions.assertEquals(
+                "Invalid XML Payload: Unclosed tag estimate at 32 [character 33 line 1]",
+                validated);
     }
 
     @Test
-    public void simpleTextXmlParseErrorMessage(){
+    public void simpleTextXmlParseErrorMessage() {
 
         HttpApiRequest request = new HttpApiRequest("/estimates");
         request.setHeaders(Map.of("content-type", "text/xml"));
@@ -70,11 +72,13 @@ public class BodyParserTest {
 
         final String validated = new BodyParser(request, names).validBodyBasedOnContentType();
 
-        Assertions.assertEquals("Invalid XML Payload: Unclosed tag estimate at 32 [character 33 line 1]",validated);
+        Assertions.assertEquals(
+                "Invalid XML Payload: Unclosed tag estimate at 32 [character 33 line 1]",
+                validated);
     }
 
     @Test
-    public void simpleUnknownContentParseErrorMessage(){
+    public void simpleUnknownContentParseErrorMessage() {
 
         HttpApiRequest request = new HttpApiRequest("/estimates");
         request.setHeaders(Map.of("content-type", "application/csv"));
@@ -86,11 +90,12 @@ public class BodyParserTest {
 
         final String validated = new BodyParser(request, names).validBodyBasedOnContentType();
 
-        Assertions.assertEquals("Unknown content Type: API cannot parse application/csv",validated);
+        Assertions.assertEquals(
+                "Unknown content Type: API cannot parse application/csv", validated);
     }
 
     @Test
-    public void embeddedObjectParseIgnoredOnStringMap(){
+    public void embeddedObjectParseIgnoredOnStringMap() {
 
         HttpApiRequest request = new HttpApiRequest("/estimates");
         request.setBody("{'duration':'5', 'estimate' : {'guid' : '1234567890'}}");
@@ -107,7 +112,7 @@ public class BodyParserTest {
     }
 
     @Test
-    public void embeddedObjectParseFoundOnMapParse(){
+    public void embeddedObjectParseFoundOnMapParse() {
 
         HttpApiRequest request = new HttpApiRequest("/estimates");
         request.setBody("{'duration':'5', 'estimate' : {'guid' : '1234567890'}}");
@@ -134,7 +139,7 @@ public class BodyParserTest {
     }
 
     @Test
-    public void embeddedCollectionOfObject(){
+    public void embeddedCollectionOfObject() {
 
         HttpApiRequest request = new HttpApiRequest("/estimates");
         request.setBody("{'duration':'5', 'estimate' : [{'guid' : '1234567890'}]}");
@@ -151,7 +156,6 @@ public class BodyParserTest {
         Assertions.assertTrue(valuesmap.keySet().contains("duration"));
         Assertions.assertEquals("5", valuesmap.get("duration"));
 
-
         final Map<String, Object> map = bodyParser.getMap();
 
         Assertions.assertEquals(2, map.keySet().size());
@@ -167,10 +171,11 @@ public class BodyParserTest {
     }
 
     @Test
-    public void embeddedCollectionOfObjects(){
+    public void embeddedCollectionOfObjects() {
 
         HttpApiRequest request = new HttpApiRequest("/estimates");
-        request.setBody("{'duration':'5', 'estimate' : [{'guid' : '1234567890'}, {'guid' : '12345678901234567890'}]}");
+        request.setBody(
+                "{'duration':'5', 'estimate' : [{'guid' : '1234567890'}, {'guid' : '12345678901234567890'}]}");
 
         List<String> names = new ArrayList<>();
 
@@ -183,7 +188,6 @@ public class BodyParserTest {
         Assertions.assertEquals(1, valuesmap.keySet().size());
         Assertions.assertTrue(valuesmap.keySet().contains("duration"));
         Assertions.assertEquals("5", valuesmap.get("duration"));
-
 
         final Map<String, Object> map = bodyParser.getMap();
 
@@ -200,12 +204,13 @@ public class BodyParserTest {
     }
 
     @Test
-    public void embeddedCollectionOfObjectFromXML(){
+    public void embeddedCollectionOfObjectFromXML() {
 
         HttpApiRequest request = new HttpApiRequest("/estimates");
         request.addHeader("Content-Type", "application/xml");
         // <estimate><duration>5</duration><estimates><estimate><guid>1234567890</guid></estimate></estimates></estimate>
-        request.setBody("<estimate><duration>5</duration><estimate><todo><guid>1234567890</guid></todo></estimate></estimate>");
+        request.setBody(
+                "<estimate><duration>5</duration><estimate><todo><guid>1234567890</guid></todo></estimate></estimate>");
 
         List<String> names = new ArrayList<>();
 
@@ -234,13 +239,15 @@ public class BodyParserTest {
     }
 
     @Test
-    public void embeddedCollectionOfObjectsFromXML(){
+    public void embeddedCollectionOfObjectsFromXML() {
 
         HttpApiRequest request = new HttpApiRequest("/estimates");
         request.addHeader("Content-Type", "application/xml");
         // <estimate><duration>5</duration><estimates><estimate><guid>1234567890</guid></estimate></estimates></estimate>
-        // this is an estimate which wants to be linked to multiple to dos using the estimate relationship - each estimate can  only be linked to 1 to do
-        request.setBody("<estimate><duration>5</duration><estimate><todo><guid>1234567890</guid></todo></estimate></estimate>");
+        // this is an estimate which wants to be linked to multiple to dos using the estimate
+        // relationship - each estimate can  only be linked to 1 to do
+        request.setBody(
+                "<estimate><duration>5</duration><estimate><todo><guid>1234567890</guid></todo></estimate></estimate>");
 
         List<String> names = new ArrayList<>();
 

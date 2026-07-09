@@ -1,14 +1,14 @@
 package uk.co.compendiumdev.challenge.persistence;
 
 import com.google.gson.Gson;
+import java.io.*;
+import java.nio.file.Files;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
 
-import java.io.*;
-import java.nio.file.Files;
-
-public class ChallengerFileStorage implements ChallengerPersistenceMechanism, DatabaseContentPersistenceMechanism {
+public class ChallengerFileStorage
+        implements ChallengerPersistenceMechanism, DatabaseContentPersistenceMechanism {
 
     Logger logger = LoggerFactory.getLogger(ChallengerFileStorage.class);
 
@@ -17,22 +17,19 @@ public class ChallengerFileStorage implements ChallengerPersistenceMechanism, Da
         File folder = new File(System.getProperty("User.dir"), "challengersessions");
         folder.mkdirs();
 
-        File file = new File(folder , getFileNameFor(data.getXChallenger()));
+        File file = new File(folder, getFileNameFor(data.getXChallenger()));
 
-        if(!file.exists()){
+        if (!file.exists()) {
             logger.warn("Creating new challenger status file: {}", file.getAbsolutePath());
         }
 
-        try(FileOutputStream out = new FileOutputStream(file)) {
+        try (FileOutputStream out = new FileOutputStream(file)) {
             final String dataString = new Gson().toJson(data);
             out.write(dataString.getBytes());
-            return new PersistenceResponse().
-                    withSuccess(true);
+            return new PersistenceResponse().withSuccess(true);
         } catch (IOException e) {
             logger.error("Error writing to file: {}", file.getAbsolutePath(), e);
-            return new PersistenceResponse().
-                    withSuccess(false).
-                    withErrorMessage(e.getMessage());
+            return new PersistenceResponse().withSuccess(false).withErrorMessage(e.getMessage());
         }
     }
 
@@ -42,31 +39,29 @@ public class ChallengerFileStorage implements ChallengerPersistenceMechanism, Da
 
     public PersistenceResponse loadChallengerStatus(final String guid) {
         File folder = new File(System.getProperty("User.dir"), "challengersessions");
-        File file = new File(folder , getFileNameFor(guid));
+        File file = new File(folder, getFileNameFor(guid));
 
-        if(!file.exists()){
+        if (!file.exists()) {
             String message = "Could not find challenger status file: " + file.getAbsolutePath();
-            if(guid.startsWith("rest-api-challenges-single-player")){
-                message = message + "\nChallenger status file will be created when a challenge is completed.";
+            if (guid.startsWith("rest-api-challenges-single-player")) {
+                message =
+                        message
+                                + "\nChallenger status file will be created when a challenge is completed.";
             }
             logger.warn(message);
-            return new PersistenceResponse().
-                    withSuccess(false).
-                    withErrorMessage(message);
+            return new PersistenceResponse().withSuccess(false).withErrorMessage(message);
         }
 
         try {
             final byte[] data = Files.readAllBytes(file.toPath());
             final String dataString = new String(data);
-            return new PersistenceResponse().
-                    withSuccess(true).
-                    withChallengerAuthData(
+            return new PersistenceResponse()
+                    .withSuccess(true)
+                    .withChallengerAuthData(
                             new Gson().fromJson(dataString, ChallengerAuthData.class));
         } catch (IOException e) {
             logger.error("Error Reading Challenge Status From file: {}", file.getAbsolutePath(), e);
-            return new PersistenceResponse().
-                    withSuccess(false).
-                    withErrorMessage(e.getMessage());
+            return new PersistenceResponse().withSuccess(false).withErrorMessage(e.getMessage());
         }
     }
 
@@ -75,22 +70,19 @@ public class ChallengerFileStorage implements ChallengerPersistenceMechanism, Da
         File folder = new File(System.getProperty("User.dir"), "challengersessions");
         folder.mkdirs();
 
-        File file = new File(folder , getDatabaseFileNameFor(guid));
+        File file = new File(folder, getDatabaseFileNameFor(guid));
 
-        if(!file.exists()){
+        if (!file.exists()) {
             logger.warn("Creating new challenger database file: {}", file.getAbsolutePath());
         }
 
-        try(FileOutputStream out = new FileOutputStream(file)) {
+        try (FileOutputStream out = new FileOutputStream(file)) {
             String dataString = databaseContents == null ? "" : databaseContents;
             out.write(dataString.getBytes());
-            return new PersistenceResponse().
-                    withSuccess(true);
+            return new PersistenceResponse().withSuccess(true);
         } catch (IOException e) {
             logger.error("Error writing to file: {}", file.getAbsolutePath(), e);
-            return new PersistenceResponse().
-                    withSuccess(false).
-                    withErrorMessage(e.getMessage());
+            return new PersistenceResponse().withSuccess(false).withErrorMessage(e.getMessage());
         }
     }
 
@@ -100,31 +92,27 @@ public class ChallengerFileStorage implements ChallengerPersistenceMechanism, Da
 
     public PersistenceResponse loadDatabaseContent(String guid) {
         File folder = new File(System.getProperty("User.dir"), "challengersessions");
-        File file = new File(folder , getDatabaseFileNameFor(guid));
+        File file = new File(folder, getDatabaseFileNameFor(guid));
 
-        if(!file.exists()){
+        if (!file.exists()) {
             String message = "Could not find database contents file: " + file.getAbsolutePath();
-            if(guid.startsWith("rest-api-challenges-single-player")){
-                message = message + "\nDatabase content file will be created when a challenge is completed.";
+            if (guid.startsWith("rest-api-challenges-single-player")) {
+                message =
+                        message
+                                + "\nDatabase content file will be created when a challenge is completed.";
             }
             logger.warn(message);
-            return new PersistenceResponse().
-                    withSuccess(false).
-                    withErrorMessage(message);
+            return new PersistenceResponse().withSuccess(false).withErrorMessage(message);
         }
 
         try {
             final byte[] data = Files.readAllBytes(file.toPath());
             final String dataString = new String(data);
 
-            return new PersistenceResponse().
-                    withSuccess(true).
-                    withDatabaseContents(dataString);
+            return new PersistenceResponse().withSuccess(true).withDatabaseContents(dataString);
         } catch (IOException e) {
             logger.error("Error Reading Database content From file: {}", file.getAbsolutePath(), e);
-            return new PersistenceResponse().
-                    withSuccess(false).
-                    withErrorMessage(e.getMessage());
+            return new PersistenceResponse().withSuccess(false).withErrorMessage(e.getMessage());
         }
     }
 }

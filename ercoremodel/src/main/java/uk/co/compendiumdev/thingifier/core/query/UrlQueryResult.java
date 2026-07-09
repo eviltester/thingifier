@@ -1,9 +1,8 @@
 package uk.co.compendiumdev.thingifier.core.query;
 
+import java.util.List;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-
-import java.util.List;
 
 public interface UrlQueryResult {
 

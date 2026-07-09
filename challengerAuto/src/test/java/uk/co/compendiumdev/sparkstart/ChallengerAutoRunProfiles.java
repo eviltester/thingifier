@@ -5,37 +5,41 @@ import io.restassured.http.ContentType;
 import org.junit.jupiter.api.Test;
 
 /**
- * IDE convenience runners. This class name deliberately avoids Surefire's
- * default *Test naming pattern so each profile can be right-clicked manually.
+ * IDE convenience runners. This class name deliberately avoids Surefire's default *Test naming
+ * pattern so each profile can be right-clicked manually.
  */
 public class ChallengerAutoRunProfiles {
 
     @Test
     void localMemorySinglePlayer() {
-        runProfile(ChallengerAutoConfig.localProfile(
-                ChallengerAutoConfig.Repository.MEMORY,
-                ChallengerAutoConfig.PlayerMode.SINGLE));
+        runProfile(
+                ChallengerAutoConfig.localProfile(
+                        ChallengerAutoConfig.Repository.MEMORY,
+                        ChallengerAutoConfig.PlayerMode.SINGLE));
     }
 
     @Test
     void localMemoryMultiPlayer() {
-        runProfile(ChallengerAutoConfig.localProfile(
-                ChallengerAutoConfig.Repository.MEMORY,
-                ChallengerAutoConfig.PlayerMode.MULTI));
+        runProfile(
+                ChallengerAutoConfig.localProfile(
+                        ChallengerAutoConfig.Repository.MEMORY,
+                        ChallengerAutoConfig.PlayerMode.MULTI));
     }
 
     @Test
     void localSqliteMemorySinglePlayer() {
-        runProfile(ChallengerAutoConfig.localProfile(
-                ChallengerAutoConfig.Repository.SQLITE_MEMORY,
-                ChallengerAutoConfig.PlayerMode.SINGLE));
+        runProfile(
+                ChallengerAutoConfig.localProfile(
+                        ChallengerAutoConfig.Repository.SQLITE_MEMORY,
+                        ChallengerAutoConfig.PlayerMode.SINGLE));
     }
 
     @Test
     void localSqliteMemoryMultiPlayer() {
-        runProfile(ChallengerAutoConfig.localProfile(
-                ChallengerAutoConfig.Repository.SQLITE_MEMORY,
-                ChallengerAutoConfig.PlayerMode.MULTI));
+        runProfile(
+                ChallengerAutoConfig.localProfile(
+                        ChallengerAutoConfig.Repository.SQLITE_MEMORY,
+                        ChallengerAutoConfig.PlayerMode.MULTI));
     }
 
     @Test
@@ -54,18 +58,13 @@ public class ChallengerAutoRunProfiles {
     }
 
     private void assertSmokeEndpoints(final String baseUrl) {
-        RestAssured.
-                given().
-                get(baseUrl + "/heartbeat").
-                then().
-                statusCode(204);
+        RestAssured.given().get(baseUrl + "/heartbeat").then().statusCode(204);
 
-        RestAssured.
-                given().
-                accept(ContentType.JSON).
-                get(baseUrl + "/challenges").
-                then().
-                statusCode(200).
-                contentType(ContentType.JSON);
+        RestAssured.given()
+                .accept(ContentType.JSON)
+                .get(baseUrl + "/challenges")
+                .then()
+                .statusCode(200)
+                .contentType(ContentType.JSON);
     }
 }

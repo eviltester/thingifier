@@ -7,31 +7,28 @@ public class AcceptHeaderParser {
     private final String acceptHeader;
     private final List<String> acceptMediaTypeDefinitionsList;
     private final String[] acceptedXmlStrings = {
-                                            "application/xml",
-                        };
-    private final String[] acceptedJsonStrings = {
-            "application/json"
+        "application/xml",
     };
+    private final String[] acceptedJsonStrings = {"application/json"};
 
-    private final String[] acceptedAnythingStrings = {
-            "application/*", "*/*"
-    };
+    private final String[] acceptedAnythingStrings = {"application/*", "*/*"};
 
-    private final String[] acceptedTextStrings = {
-            "text/plain", "text/html"
-    };
+    private final String[] acceptedTextStrings = {"text/plain", "text/html"};
 
     private final Map<ACCEPT_TYPE, List<String>> acceptedTypes;
 
     public boolean willAcceptAnything() {
         return willAccept(ACCEPT_TYPE.ANYTHING);
     }
+
     public boolean willAcceptXml() {
         return willAccept(ACCEPT_TYPE.XML);
     }
+
     public boolean willAcceptJson() {
         return willAccept(ACCEPT_TYPE.JSON);
     }
+
     public boolean willAcceptText() {
         return willAccept(ACCEPT_TYPE.TEXT);
     }
@@ -39,46 +36,54 @@ public class AcceptHeaderParser {
     public boolean hasAskedForXML() {
         return hasAskedFor(AcceptHeaderParser.ACCEPT_TYPE.XML);
     }
+
     public boolean hasAskedForJSON() {
         return hasAskedFor(ACCEPT_TYPE.JSON);
     }
+
     public boolean hasAskedForANY() {
         return hasAskedFor(ACCEPT_TYPE.ANYTHING);
     }
+
     public boolean hasAskedForTEXT() {
         return hasAskedFor(ACCEPT_TYPE.TEXT);
     }
 
     public boolean missingAcceptHeader() {
-        return this.acceptHeader.length()==0;
+        return this.acceptHeader.length() == 0;
     }
 
     public boolean isSupportedHeader() {
         boolean supported = false;
 
-        if(acceptMediaTypeDefinitionsList.size()==0){
+        if (acceptMediaTypeDefinitionsList.size() == 0) {
             // we are allowed blank or missing accept - that counts as default
-            supported=true;
+            supported = true;
         }
 
-        for(String askedFor : acceptMediaTypeDefinitionsList){
-            if(getMatchingType(askedFor)!=ACCEPT_TYPE.NO_MATCHING_TYPE){
-                supported=true;
+        for (String askedFor : acceptMediaTypeDefinitionsList) {
+            if (getMatchingType(askedFor) != ACCEPT_TYPE.NO_MATCHING_TYPE) {
+                supported = true;
             }
         }
         return supported;
     }
 
-
-    public enum ACCEPT_TYPE{ XML, JSON, ANYTHING, NO_MATCHING_TYPE, TEXT};
+    public enum ACCEPT_TYPE {
+        XML,
+        JSON,
+        ANYTHING,
+        NO_MATCHING_TYPE,
+        TEXT
+    };
 
     // TODO: configure to all new accept headers and remove accept headers
     //       should probably do this with an AllowedAcceptableHeaders class
     public AcceptHeaderParser(final String acceptHeader) {
 
-        if(acceptHeader== null){
-            this.acceptHeader="";
-        }else{
+        if (acceptHeader == null) {
+            this.acceptHeader = "";
+        } else {
             this.acceptHeader = acceptHeader.trim().toLowerCase();
         }
 
@@ -92,15 +97,15 @@ public class AcceptHeaderParser {
         // TODO: use ;q=0.9 to sort items in the array
         String[] acceptMediaTypeDefinitions = this.acceptHeader.split(",");
         acceptMediaTypeDefinitionsList = new ArrayList<>();
-        for(String type : acceptMediaTypeDefinitions){
-            if(type!=null && type.trim().length()>0){
+        for (String type : acceptMediaTypeDefinitions) {
+            if (type != null && type.trim().length() > 0) {
                 acceptMediaTypeDefinitionsList.add(type.trim());
             }
         }
     }
 
-    public String getPreferredType(){
-        if(acceptMediaTypeDefinitionsList.size()==0){
+    public String getPreferredType() {
+        if (acceptMediaTypeDefinitionsList.size() == 0) {
             return "";
         }
         return acceptMediaTypeDefinitionsList.get(0);
@@ -111,22 +116,21 @@ public class AcceptHeaderParser {
         // if type is found in the array before any other type
         // then assume this is a preference
         // TODO: use ;q=0.9 to allow preferences to have a priority but listed in different order
-        for(String acceptedType : acceptMediaTypeDefinitionsList){
+        for (String acceptedType : acceptMediaTypeDefinitionsList) {
             ACCEPT_TYPE matchingType = getMatchingType(acceptedType);
-            if(matchingType!= ACCEPT_TYPE.NO_MATCHING_TYPE &&
-                    matchingType!= ACCEPT_TYPE.ANYTHING){
-                return matchingType==type;
+            if (matchingType != ACCEPT_TYPE.NO_MATCHING_TYPE
+                    && matchingType != ACCEPT_TYPE.ANYTHING) {
+                return matchingType == type;
             }
-
         }
         return false;
     }
 
     private ACCEPT_TYPE getMatchingType(final String matchMe) {
-        for(Map.Entry<ACCEPT_TYPE, List<String>> type : acceptedTypes.entrySet()){
+        for (Map.Entry<ACCEPT_TYPE, List<String>> type : acceptedTypes.entrySet()) {
             List<String> validMatches = type.getValue();
-            for(String possibleMatch : validMatches){
-                if(matchMe.contains(possibleMatch)){
+            for (String possibleMatch : validMatches) {
+                if (matchMe.contains(possibleMatch)) {
                     return type.getKey();
                 }
             }
@@ -145,12 +149,12 @@ public class AcceptHeaderParser {
     public boolean willAccept(final ACCEPT_TYPE type) {
 
         // if no types provided then we will accept anything
-        if(acceptMediaTypeDefinitionsList.size()==0){
+        if (acceptMediaTypeDefinitionsList.size() == 0) {
             return true;
         }
 
         boolean askedFor = hasAskedFor(type);
-        if(askedFor){
+        if (askedFor) {
             return true;
         }
 
@@ -158,12 +162,12 @@ public class AcceptHeaderParser {
         return hasAskedFor(ACCEPT_TYPE.ANYTHING);
     }
 
-    public boolean hasAskedFor(final ACCEPT_TYPE type){
+    public boolean hasAskedFor(final ACCEPT_TYPE type) {
         List<String> typeValues = acceptedTypes.get(type);
 
         // look for specific type
-        for(String acceptedType : acceptMediaTypeDefinitionsList){
-            for(String typeValue : typeValues) {
+        for (String acceptedType : acceptMediaTypeDefinitionsList) {
+            for (String typeValue : typeValues) {
                 if (acceptedType.contains(typeValue)) {
                     return true;
                 }

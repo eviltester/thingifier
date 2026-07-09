@@ -1,14 +1,13 @@
 package uk.co.compendiumdev.thingifier.api.restapihandlers;
 
+import java.util.List;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-import uk.co.compendiumdev.thingifier.core.query.UrlQueryResult;
 import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
 import uk.co.compendiumdev.thingifier.core.query.RepositoryUrlQuery;
-
-import java.util.List;
+import uk.co.compendiumdev.thingifier.core.query.UrlQueryResult;
 
 public class RestApiGetHandler {
     private final Thingifier thingifier;
@@ -17,28 +16,35 @@ public class RestApiGetHandler {
         this.thingifier = aThingifier;
     }
 
-    public ApiResponse handle(final String url, final QueryFilterParams queryParams, final HttpHeadersBlock requestHeaders) {
+    public ApiResponse handle(
+            final String url,
+            final QueryFilterParams queryParams,
+            final HttpHeadersBlock requestHeaders) {
 
         // if there are params, and we are not allowed to filter, and we enforce that
-        if(queryParams.size()>0 &&
-            thingifier.apiConfig().forParams().willEnforceFilteringThroughUrlParams() &&
-            !thingifier.apiConfig().forParams().willAllowFilteringThroughUrlParams()){
-            return ApiResponse.error(400,
-                        String.format("Can not use query parameters with %s", url));
+        if (queryParams.size() > 0
+                && thingifier.apiConfig().forParams().willEnforceFilteringThroughUrlParams()
+                && !thingifier.apiConfig().forParams().willAllowFilteringThroughUrlParams()) {
+            return ApiResponse.error(
+                    400, String.format("Can not use query parameters with %s", url));
         }
 
-        String instanceDatabaseName = SessionHeaderParser.getDatabaseNameFromHeaderValue(requestHeaders);
+        String instanceDatabaseName =
+                SessionHeaderParser.getDatabaseNameFromHeaderValue(requestHeaders);
 
         UrlQueryResult queryResults;
-        boolean allowFiltering = thingifier.apiConfig().forParams().willAllowFilteringThroughUrlParams();
-        QueryFilterParams effectiveQueryParams = allowFiltering ? queryParams : new QueryFilterParams();
+        boolean allowFiltering =
+                thingifier.apiConfig().forParams().willAllowFilteringThroughUrlParams();
+        QueryFilterParams effectiveQueryParams =
+                allowFiltering ? queryParams : new QueryFilterParams();
 
         if (RepositoryUrlQuery.canHandle(thingifier.getERmodel().getSchema(), url)) {
-            queryResults = new RepositoryUrlQuery(
-                    thingifier.getERmodel().getSchema(),
-                    thingifier.getRepository(instanceDatabaseName),
-                    url).
-                    performQuery(effectiveQueryParams);
+            queryResults =
+                    new RepositoryUrlQuery(
+                                    thingifier.getERmodel().getSchema(),
+                                    thingifier.getRepository(instanceDatabaseName),
+                                    url)
+                            .performQuery(effectiveQueryParams);
         } else {
             return ApiResponse.error404(String.format("Could not find an instance with %s", url));
         }
@@ -47,10 +53,9 @@ public class RestApiGetHandler {
         // TODO: api config should also support defining sorting for specific end points
         List<EntityInstance> queryItems = queryResults.getListEntityInstances();
 
-
         // return a 404 if it doesn't match anything
-        if (queryResults.lastMatchWasNothing() ||
-                (queryResults.lastMatchWasInstance() && queryItems.isEmpty())) {
+        if (queryResults.lastMatchWasNothing()
+                || (queryResults.lastMatchWasInstance() && queryItems.isEmpty())) {
             // if query list was empty then return a 404
             return ApiResponse.error404(String.format("Could not find an instance with %s", url));
         }
@@ -58,33 +63,34 @@ public class RestApiGetHandler {
         if (queryResults.lastMatchWasInstance()) {
 
             boolean asCollection = false;
-//            if(queryResults.wasQueryIntendedToMatchAnInstance() && !thingifier.apiConfig().willReturnSingleGetItemsAsCollection()){
-//                asCollection = false;
-//            }
+            //            if(queryResults.wasQueryIntendedToMatchAnInstance() &&
+            // !thingifier.apiConfig().willReturnSingleGetItemsAsCollection()){
+            //                asCollection = false;
+            //            }
 
-            if(queryResults.wasQueryIntendedToMatchAnInstance() && thingifier.apiConfig().willReturnSingleGetItemsAsCollection()){
+            if (queryResults.wasQueryIntendedToMatchAnInstance()
+                    && thingifier.apiConfig().willReturnSingleGetItemsAsCollection()) {
                 asCollection = true;
             }
 
-            if (queryResults.isResultACollection() && !queryResults.wasQueryIntendedToMatchAnInstance()) {
+            if (queryResults.isResultACollection()
+                    && !queryResults.wasQueryIntendedToMatchAnInstance()) {
                 asCollection = true;
             }
 
-            if(asCollection){
+            if (asCollection) {
                 // if we asked for /projects then we should always return a collection
-                return ApiResponse.success().
-                        returnInstanceCollection(
-                                queryResults.getListEntityInstances());
-            }else {
+                return ApiResponse.success()
+                        .returnInstanceCollection(queryResults.getListEntityInstances());
+            } else {
                 return ApiResponse.success().returnSingleInstance(queryResults.getLastInstance());
             }
 
         } else {
 
-            return ApiResponse.success().
-                    returnInstanceCollection(queryItems).
-                    resultContainsType(queryResults.resultContainsDefn());
+            return ApiResponse.success()
+                    .returnInstanceCollection(queryItems)
+                    .resultContainsType(queryResults.resultContainsDefn());
         }
     }
-
 }

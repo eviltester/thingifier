@@ -8,25 +8,19 @@ import uk.co.compendiumdev.sparkstart.Environment;
 import uk.co.compendiumdev.version4.api.Api;
 import uk.co.compendiumdev.version4.api.Payloads;
 
-
 public class TodoEntityTest {
 
-
-
-
-
-    private Response createATodo(){
+    private Response createATodo() {
         Payloads.TodoPayload todo = new Payloads.TodoPayload();
-        todo.doneStatus=true;
-        todo.title="Created Todo";
-        todo.description="hello world";
+        todo.doneStatus = true;
+        todo.title = "Created Todo";
+        todo.description = "hello world";
 
         return Api.createTodo(todo);
     }
 
-
     @Test
-    void canCreateATodo(){
+    void canCreateATodo() {
 
         final Response response = createATodo();
 
@@ -38,10 +32,10 @@ public class TodoEntityTest {
     }
 
     @Test
-    void canCreateAMinimalTodo(){
+    void canCreateAMinimalTodo() {
 
         Payloads.TodoPayload todo = new Payloads.TodoPayload();
-        todo.title="Created Todo";
+        todo.title = "Created Todo";
         final Response response = Api.createTodo(todo);
 
         Assertions.assertEquals(201, response.getStatusCode());
@@ -53,11 +47,11 @@ public class TodoEntityTest {
     }
 
     @Test
-    void titleIsMandatoryOnCreateTodo(){
+    void titleIsMandatoryOnCreateTodo() {
 
         Payloads.TodoPayload todo = new Payloads.TodoPayload();
-        todo.doneStatus=true;
-        todo.description="no title";
+        todo.doneStatus = true;
+        todo.description = "no title";
 
         final Response response = Api.createTodo(todo);
 
@@ -66,23 +60,21 @@ public class TodoEntityTest {
         final Payloads.ErrorMessageResponse errors =
                 response.body().as(Payloads.ErrorMessageResponse.class);
         Assertions.assertEquals(1, errors.errorMessages.size());
-        Assertions.assertEquals("title : field is mandatory",
-                errors.errorMessages.get(0));
+        Assertions.assertEquals("title : field is mandatory", errors.errorMessages.get(0));
     }
 
-
     @Test
-    void canGetASpecificTodo(){
+    void canGetASpecificTodo() {
 
         Response response = createATodo();
         final Payloads.TodoPayload created = response.body().as(Payloads.TodoPayload.class);
 
         // get the todoinstance we just created
-        response = RestAssured.
-                get(Environment.getEnv("/todos/" + created.id));
+        response = RestAssured.get(Environment.getEnv("/todos/" + created.id));
         Assertions.assertEquals(200, response.getStatusCode());
 
-        final Payloads.TodosPayload retrievedTodos = response.body().as(Payloads.TodosPayload.class);
+        final Payloads.TodosPayload retrievedTodos =
+                response.body().as(Payloads.TodosPayload.class);
         Assertions.assertEquals(1, retrievedTodos.todos.size());
 
         Payloads.TodoPayload retrieved = retrievedTodos.todos.get(0);
@@ -93,22 +85,17 @@ public class TodoEntityTest {
     }
 
     @Test
-    void canDeleteASpecificTodo(){
+    void canDeleteASpecificTodo() {
 
         Response response = createATodo();
         final Payloads.TodoPayload created = response.body().as(Payloads.TodoPayload.class);
 
         // delete the todoinstance we just created
-        response = RestAssured.
-                delete(Environment.getEnv("/todos/" + created.id));
+        response = RestAssured.delete(Environment.getEnv("/todos/" + created.id));
         Assertions.assertEquals(200, response.getStatusCode());
 
         // check it has gone
-        response = RestAssured.
-                get(Environment.getEnv("/todos/" + created.id));
+        response = RestAssured.get(Environment.getEnv("/todos/" + created.id));
         Assertions.assertEquals(404, response.getStatusCode());
     }
-
-
-
 }

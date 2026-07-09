@@ -13,31 +13,30 @@ public class AcceptHeaderValidator {
 
     public ApiResponse validate(final String acceptHeader) {
         final AcceptHeaderParser accept = new AcceptHeaderParser(acceptHeader);
-        ApiResponse apiResponse=null;
+        ApiResponse apiResponse = null;
 
         int statusAcceptTypeNotSupported = this.apiConfig.statusCodes().acceptTypeNotSupported();
 
-        if(this.apiConfig.willApiEnforceAcceptHeaderForResponses()){
-            if (!accept.isSupportedHeader()){
-                apiResponse = ApiResponse.error(statusAcceptTypeNotSupported, "Unrecognised Accept Type");
+        if (this.apiConfig.willApiEnforceAcceptHeaderForResponses()) {
+            if (!accept.isSupportedHeader()) {
+                apiResponse =
+                        ApiResponse.error(statusAcceptTypeNotSupported, "Unrecognised Accept Type");
             }
         }
 
-        boolean willOnlyAcceptXML = accept.hasAskedFor(AcceptHeaderParser.ACCEPT_TYPE.XML) &&
-                !accept.willAcceptJson();
-        if (    willOnlyAcceptXML &&
-                !this.apiConfig.willApiAllowXmlForResponses() &&
-                this.apiConfig.willApiEnforceAcceptHeaderForResponses()
-        ) {
+        boolean willOnlyAcceptXML =
+                accept.hasAskedFor(AcceptHeaderParser.ACCEPT_TYPE.XML) && !accept.willAcceptJson();
+        if (willOnlyAcceptXML
+                && !this.apiConfig.willApiAllowXmlForResponses()
+                && this.apiConfig.willApiEnforceAcceptHeaderForResponses()) {
             apiResponse = ApiResponse.error(statusAcceptTypeNotSupported, "XML not supported");
         }
 
-        boolean willOnlyAcceptJSON = accept.hasAskedFor(AcceptHeaderParser.ACCEPT_TYPE.JSON) &&
-                !accept.willAcceptXml();
-        if (    willOnlyAcceptJSON &&
-                !this.apiConfig.willApiAllowJsonForResponses() &&
-                this.apiConfig.willApiEnforceAcceptHeaderForResponses()
-        ) {
+        boolean willOnlyAcceptJSON =
+                accept.hasAskedFor(AcceptHeaderParser.ACCEPT_TYPE.JSON) && !accept.willAcceptXml();
+        if (willOnlyAcceptJSON
+                && !this.apiConfig.willApiAllowJsonForResponses()
+                && this.apiConfig.willApiEnforceAcceptHeaderForResponses()) {
             apiResponse = ApiResponse.error(statusAcceptTypeNotSupported, "JSON not supported");
         }
 

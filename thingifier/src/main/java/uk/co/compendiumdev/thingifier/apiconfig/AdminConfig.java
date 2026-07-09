@@ -8,9 +8,9 @@ public class AdminConfig {
     private String adminClearDataUrl = "/admin/data/thingifier";
 
     public void setFrom(final AdminConfig adminConfig) {
-        this.allowAdminSearch=adminConfig.isAdminSearchAllowed();
-        this.allowAdminClearData=adminConfig.isAdminDataClearAllowed();
-        this.adminSearchUrl=adminConfig.getAdminSearchUrl();
+        this.allowAdminSearch = adminConfig.isAdminSearchAllowed();
+        this.allowAdminClearData = adminConfig.isAdminDataClearAllowed();
+        this.adminSearchUrl = adminConfig.getAdminSearchUrl();
         this.adminClearDataUrl = adminConfig.getAdminDataClearUrl();
     }
 
@@ -31,10 +31,10 @@ public class AdminConfig {
     }
 
     public void enableAdminSearch() {
-        allowAdminSearch=true;
+        allowAdminSearch = true;
     }
 
     public void enableAdminDataClear() {
-        allowAdminClearData=true;
+        allowAdminClearData = true;
     }
 }

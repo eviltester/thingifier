@@ -1,5 +1,8 @@
 package uk.co.compendiumdev.challenge.challengesrouting;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -10,15 +13,11 @@ import uk.co.compendiumdev.challenger.http.httpclient.HttpMessageSender;
 import uk.co.compendiumdev.challenger.http.httpclient.HttpResponseDetails;
 import uk.co.compendiumdev.sparkstart.Environment;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Stream;
-
 public class HeartBeatRoutesTest {
     private static HttpMessageSender http;
 
     @BeforeAll
-    static void createHttp(){
+    static void createHttp() {
         // this uses the Environment to startup the spark app to
         // issue http tests and test the routing in spark
         http = new HttpMessageSender(Environment.getBaseUri());
@@ -27,15 +26,13 @@ public class HeartBeatRoutesTest {
     @Test
     public void optionsOnHeartbeat() {
 
-        final HttpResponseDetails response =
-                http.send("/heartbeat", "OPTIONS");
+        final HttpResponseDetails response = http.send("/heartbeat", "OPTIONS");
 
         Assertions.assertEquals(204, response.statusCode);
-        Assertions.assertEquals("GET, HEAD, OPTIONS",
-                response.getHeader("Allow"));
+        Assertions.assertEquals("GET, HEAD, OPTIONS", response.getHeader("Allow"));
     }
 
-    static Stream simpleRoutingStatus(){
+    static Stream simpleRoutingStatus() {
         List<Arguments> args = new ArrayList<>();
 
         args.add(Arguments.of(204, "get"));
@@ -50,9 +47,8 @@ public class HeartBeatRoutesTest {
 
     @ParameterizedTest(name = "simple status routing expected {0} for {1}")
     @MethodSource("simpleRoutingStatus")
-    void simpleRoutingTest(int statusCode, String verb){
-        final HttpResponseDetails response =
-                http.send("/heartbeat", verb);
+    void simpleRoutingTest(int statusCode, String verb) {
+        final HttpResponseDetails response = http.send("/heartbeat", verb);
 
         Assertions.assertEquals(statusCode, response.statusCode);
     }

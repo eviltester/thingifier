@@ -1,13 +1,11 @@
 package uk.co.compendiumdev.thingifier.api.response;
 
+import java.util.*;
+import uk.co.compendiumdev.thingifier.api.ApiUrls;
 import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
-import uk.co.compendiumdev.thingifier.api.ApiUrls;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-
-import java.util.*;
-
 
 public final class ApiResponse {
 
@@ -29,7 +27,6 @@ public final class ApiResponse {
     private EntityDefinition typeOfResults;
     private String body;
 
-
     public ApiResponse(final int aStatusCode) {
         this.statusCode = aStatusCode;
         headers = new HttpHeadersBlock();
@@ -38,10 +35,13 @@ public final class ApiResponse {
         isErrorResponse = false;
         errorMessages = new ArrayList<>();
         hasBody = false;
-        body=null;
+        body = null;
     }
 
-    public ApiResponse(final int aStatusCode, final boolean isError, final Collection<String> theErrorMessages) {
+    public ApiResponse(
+            final int aStatusCode,
+            final boolean isError,
+            final Collection<String> theErrorMessages) {
         this(aStatusCode);
         isErrorResponse = isError;
         if (isError) {
@@ -54,7 +54,6 @@ public final class ApiResponse {
     public int getStatusCode() {
         return this.statusCode;
     }
-
 
     public static ApiResponse success() {
         return new ApiResponse(200);
@@ -80,11 +79,9 @@ public final class ApiResponse {
         return this;
     }
 
-
-
     /*
-            HEADERS
-     */
+           HEADERS
+    */
 
     public ApiResponse setHeader(final String headername, final String value) {
         this.headers.put(headername, value);
@@ -103,26 +100,23 @@ public final class ApiResponse {
         return headers;
     }
 
-
-
-
-
     /*
-            SPECIAL CASE RESPONSES
-     */
+           SPECIAL CASE RESPONSES
+    */
 
-    public static ApiResponse created(final EntityInstance thingInstance, ThingifierApiConfig apiConfig) {
+    public static ApiResponse created(
+            final EntityInstance thingInstance, ThingifierApiConfig apiConfig) {
         ApiResponse response = new ApiResponse(201);
 
         if (thingInstance != null) {
             response.returnSingleInstance(thingInstance);
 
             response.setLocationHeader(
-                    new ApiUrls(apiConfig).
-                            getCreatedLocationHeader(thingInstance));
+                    new ApiUrls(apiConfig).getCreatedLocationHeader(thingInstance));
 
-            if(apiConfig.willResponsesShowPrimaryKeyHeader()) {
-                response.setHeader(ApiResponse.PRIMARY_KEY_HEADER, thingInstance.getPrimaryKeyValue());
+            if (apiConfig.willResponsesShowPrimaryKeyHeader()) {
+                response.setHeader(
+                        ApiResponse.PRIMARY_KEY_HEADER, thingInstance.getPrimaryKeyValue());
             }
             response.hasBody = true;
         }
@@ -130,13 +124,9 @@ public final class ApiResponse {
         return response;
     }
 
-
-
-
     /*
-            ERROR MESSAGES
-     */
-
+           ERROR MESSAGES
+    */
 
     public static ApiResponse error404(final String errorMessage) {
         return error(404, errorMessage);
@@ -156,11 +146,9 @@ public final class ApiResponse {
         return isErrorResponse;
     }
 
-
     public Collection<String> getErrorMessages() {
         return errorMessages;
     }
-
 
     public EntityInstance getReturnedInstance() {
         if (isCollection) {
@@ -176,7 +164,6 @@ public final class ApiResponse {
         }
         return thingsToReturn;
     }
-
 
     public boolean isCollection() {
         return isCollection;
@@ -204,16 +191,16 @@ public final class ApiResponse {
 
     public void clearBody() {
         this.hasBody = false;
-        this.body=null;
+        this.body = null;
     }
 
     public void setBody(final String bodyDetails) {
-        this.hasBody=true;
+        this.hasBody = true;
         this.body = bodyDetails;
     }
 
     public boolean hasABodyOverride() {
-        return this.body!=null;
+        return this.body != null;
     }
 
     public String getBody() {

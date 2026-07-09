@@ -7,10 +7,10 @@ public class JsonOutputConfig {
     private boolean convertFieldsToDefinedTypes;
     private boolean showPrimaryKeyHeaderInResponse;
 
-    public JsonOutputConfig(){
-        allowCompressedRelationships=true;
-        convertFieldsToDefinedTypes =true;
-        showPrimaryKeyHeaderInResponse=true;
+    public JsonOutputConfig() {
+        allowCompressedRelationships = true;
+        convertFieldsToDefinedTypes = true;
+        showPrimaryKeyHeaderInResponse = true;
     }
 
     public void setFrom(final JsonOutputConfig jsonOutput) {
@@ -23,15 +23,16 @@ public class JsonOutputConfig {
         return showPrimaryKeyHeaderInResponse;
     }
 
-
     public void setCompressRelationships(final boolean config) {
-        allowCompressedRelationships=config;
+        allowCompressedRelationships = config;
     }
+
     public void setConvertFieldsToDefinedTypes(final boolean config) {
-        convertFieldsToDefinedTypes =config;
+        convertFieldsToDefinedTypes = config;
     }
-    public void setShowPrimaryKeyInResponse(boolean config){
-        showPrimaryKeyHeaderInResponse =config;
+
+    public void setShowPrimaryKeyInResponse(boolean config) {
+        showPrimaryKeyHeaderInResponse = config;
     }
 
     public Boolean willRenderRelationshipsAsCompressed() {
@@ -41,5 +42,4 @@ public class JsonOutputConfig {
     public boolean willRenderFieldsAsDefinedTypes() {
         return convertFieldsToDefinedTypes;
     }
-
 }

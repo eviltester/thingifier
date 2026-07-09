@@ -1,13 +1,12 @@
 package uk.co.compendiumdev.challenge.challengers;
 
+import java.lang.reflect.Field;
+import java.util.Arrays;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.challenge.CHALLENGE;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
-
-import java.lang.reflect.Field;
-import java.util.Arrays;
 
 public class ChallengersTest {
 
@@ -27,15 +26,14 @@ public class ChallengersTest {
         String guid = challenger.getXChallenger();
         erModel.createInstanceDatabaseIfNotExisting(guid);
 
-
         // hack last accessed time so that we can purge it
         Field lastAccessedField = ChallengerAuthData.class.getDeclaredField("lastAccessed");
         lastAccessedField.setAccessible(true);
         lastAccessedField.set(challenger, 0L);
         Assertions.assertEquals(0, challenger.getLastAccessed());
 
-        //forget about it
-        challenger=null;
+        // forget about it
+        challenger = null;
 
         Assertions.assertTrue(erModel.getDatabaseNames().contains(guid));
 

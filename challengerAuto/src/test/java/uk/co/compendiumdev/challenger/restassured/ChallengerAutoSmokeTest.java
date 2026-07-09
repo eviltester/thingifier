@@ -9,21 +9,16 @@ public class ChallengerAutoSmokeTest {
 
     @Test
     void heartbeatEndpointIsAvailable() {
-        RestAssured.
-                given().
-                get(Environment.getEnv("/heartbeat")).
-                then().
-                statusCode(204);
+        RestAssured.given().get(Environment.getEnv("/heartbeat")).then().statusCode(204);
     }
 
     @Test
     void challengesEndpointIsAvailable() {
-        RestAssured.
-                given().
-                accept(ContentType.JSON).
-                get(Environment.getEnv("/challenges")).
-                then().
-                statusCode(200).
-                contentType(ContentType.JSON);
+        RestAssured.given()
+                .accept(ContentType.JSON)
+                .get(Environment.getEnv("/challenges"))
+                .then()
+                .statusCode(200)
+                .contentType(ContentType.JSON);
     }
 }

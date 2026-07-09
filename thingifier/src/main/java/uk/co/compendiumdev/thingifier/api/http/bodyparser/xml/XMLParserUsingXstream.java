@@ -1,20 +1,20 @@
-//package uk.co.compendiumdev.thingifier.api.http.bodyparser.xml;
+// package uk.co.compendiumdev.thingifier.api.http.bodyparser.xml;
 //
-//import com.google.gson.Gson;
-//import com.thoughtworks.xstream.XStream;
-//import com.thoughtworks.xstream.converters.Converter;
-//import com.thoughtworks.xstream.converters.MarshallingContext;
-//import com.thoughtworks.xstream.converters.UnmarshallingContext;
-//import com.thoughtworks.xstream.io.HierarchicalStreamReader;
-//import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
-//import com.thoughtworks.xstream.io.StreamException;
-//import com.thoughtworks.xstream.io.xml.DomDriver;
-//import org.json.JSONObject;
-//import org.json.XML;
+// import com.google.gson.Gson;
+// import com.thoughtworks.xstream.XStream;
+// import com.thoughtworks.xstream.converters.Converter;
+// import com.thoughtworks.xstream.converters.MarshallingContext;
+// import com.thoughtworks.xstream.converters.UnmarshallingContext;
+// import com.thoughtworks.xstream.io.HierarchicalStreamReader;
+// import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
+// import com.thoughtworks.xstream.io.StreamException;
+// import com.thoughtworks.xstream.io.xml.DomDriver;
+// import org.json.JSONObject;
+// import org.json.XML;
 //
-//import java.util.*;
+// import java.util.*;
 //
-//public class XMLParserUsingXstream implements XMLParserAbstraction {
+// public class XMLParserUsingXstream implements XMLParserAbstraction {
 //    private final String xml;
 //    private final List<String> thingNames;
 //
@@ -66,14 +66,16 @@
 //    }
 //
 //
-//    // https://stackoverflow.com/Questions/1537207/how-to-convert-xml-to-java-util-map-and-vice-versa
+//    //
+// https://stackoverflow.com/Questions/1537207/how-to-convert-xml-to-java-util-map-and-vice-versa
 //    private class MapEntryConverter implements Converter {
 //
 //        public boolean canConvert(Class clazz) {
 //            return AbstractMap.class.isAssignableFrom(clazz);
 //        }
 //
-//        public void marshal(Object value, HierarchicalStreamWriter writer, MarshallingContext context) {
+//        public void marshal(Object value, HierarchicalStreamWriter writer, MarshallingContext
+// context) {
 //
 //            AbstractMap map = (AbstractMap) value;
 //            for (Object obj : map.entrySet()) {
@@ -107,4 +109,4 @@
 //
 //    }
 //
-//}
+// }

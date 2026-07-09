@@ -12,7 +12,7 @@ public class AddMoreItemsIfNecessary implements HttpApiRequestHook {
 
     private final EntityRelModel erModel;
 
-    public AddMoreItemsIfNecessary(EntityRelModel eRmodel){
+    public AddMoreItemsIfNecessary(EntityRelModel eRmodel) {
         this.erModel = eRmodel;
     }
 
@@ -21,7 +21,7 @@ public class AddMoreItemsIfNecessary implements HttpApiRequestHook {
 
         EntityDefinition item = erModel.getSchema().getEntityDefinitionNamed("item");
         ThingRepository repository = erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME);
-        if(repository != null && item != null && repository.countInstances(item)<5) {
+        if (repository != null && item != null && repository.countInstances(item) < 5) {
             erModel.populateDatabase(EntityRelModel.DEFAULT_DATABASE_NAME);
         }
         return null;

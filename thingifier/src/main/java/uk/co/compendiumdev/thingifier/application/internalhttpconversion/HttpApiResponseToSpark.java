@@ -1,19 +1,18 @@
 package uk.co.compendiumdev.thingifier.application.internalhttpconversion;
 
+import java.util.Set;
 import spark.Response;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiResponse;
 
-import java.util.Set;
-
 public class HttpApiResponseToSpark {
 
-    public static String convert(HttpApiResponse internalResponse, Response response){
+    public static String convert(HttpApiResponse internalResponse, Response response) {
         updateResponseFromHttpResponse(internalResponse, response);
         return internalResponse.getBody();
     }
 
-    private static void updateResponseFromHttpResponse(final HttpApiResponse httpResponse,
-                                                       final Response response) {
+    private static void updateResponseFromHttpResponse(
+            final HttpApiResponse httpResponse, final Response response) {
 
         response.status(httpResponse.getStatusCode());
 

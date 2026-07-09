@@ -1,5 +1,6 @@
 package uk.co.compendiumdev.thingifier.core.domain.instances;
 
+import java.util.UUID;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -7,14 +8,12 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 
-import java.util.UUID;
-
 public class EntityInstanceCollectionTest {
 
     EntityDefinition entityDefn;
 
     @BeforeEach
-    public void createEntity(){
+    public void createEntity() {
 
         entityDefn = new EntityDefinition("Entity", "Entities");
 
@@ -29,11 +28,14 @@ public class EntityInstanceCollectionTest {
 
         EntityInstance instance1 = new EntityInstance(entityDefn);
 
-        Exception exception = Assertions.assertThrows(RuntimeException.class,
-                () -> collection.addInstance(instance1)
-        );
+        Exception exception =
+                Assertions.assertThrows(
+                        RuntimeException.class, () -> collection.addInstance(instance1));
 
-        Assertions.assertTrue(exception.getMessage().contains("Cannot add instance, primary key field pk not set"));
+        Assertions.assertTrue(
+                exception
+                        .getMessage()
+                        .contains("Cannot add instance, primary key field pk not set"));
     }
 
     @Test
@@ -49,18 +51,21 @@ public class EntityInstanceCollectionTest {
         EntityInstance instance2 = new EntityInstance(entityDefn);
         instance2.setValue("pk", instance1.getPrimaryKeyValue());
 
-        Exception exception = Assertions.assertThrows(RuntimeException.class,
-                () -> collection.addInstance(instance2)
-        );
+        Exception exception =
+                Assertions.assertThrows(
+                        RuntimeException.class, () -> collection.addInstance(instance2));
 
-        Assertions.assertTrue(exception.getMessage().contains("another instance with primary key value exists"));
+        Assertions.assertTrue(
+                exception.getMessage().contains("another instance with primary key value exists"));
     }
 
     @Test
-    public void canAutoIncrementOnAdd(){
-        EntityDefinition defn = new EntityDefinition("entity", "entities").
-                addFields(Field.is("id", FieldType.AUTO_INCREMENT),
-                        Field.is("name", FieldType.STRING));
+    public void canAutoIncrementOnAdd() {
+        EntityDefinition defn =
+                new EntityDefinition("entity", "entities")
+                        .addFields(
+                                Field.is("id", FieldType.AUTO_INCREMENT),
+                                Field.is("name", FieldType.STRING));
 
         EntityInstanceCollection col = new EntityInstanceCollection(defn);
 
@@ -75,10 +80,12 @@ public class EntityInstanceCollectionTest {
     }
 
     @Test
-    public void canAutoGuidOnAdd(){
-        EntityDefinition defn = new EntityDefinition("entity", "entities").
-                addFields(Field.is("id", FieldType.AUTO_GUID),
-                        Field.is("name", FieldType.STRING));
+    public void canAutoGuidOnAdd() {
+        EntityDefinition defn =
+                new EntityDefinition("entity", "entities")
+                        .addFields(
+                                Field.is("id", FieldType.AUTO_GUID),
+                                Field.is("name", FieldType.STRING));
 
         EntityInstanceCollection col = new EntityInstanceCollection(defn);
 
@@ -88,17 +95,22 @@ public class EntityInstanceCollectionTest {
         col.addInstance(instance1);
         col.addInstance(instance2);
 
-        Assertions.assertEquals(instance1.getFieldValue("id").asString(), UUID.fromString(instance1.getFieldValue("id").asString()).toString() );
-        Assertions.assertEquals(instance2.getFieldValue("id").asString(), UUID.fromString(instance2.getFieldValue("id").asString()).toString());
+        Assertions.assertEquals(
+                instance1.getFieldValue("id").asString(),
+                UUID.fromString(instance1.getFieldValue("id").asString()).toString());
+        Assertions.assertEquals(
+                instance2.getFieldValue("id").asString(),
+                UUID.fromString(instance2.getFieldValue("id").asString()).toString());
     }
 
     @Test
-    public void canAutoGuidAndIdOnAdd(){
-        EntityDefinition defn = new EntityDefinition("entity", "entities").
-                addFields(
-                        Field.is("guid", FieldType.AUTO_GUID),
-                        Field.is("id", FieldType.AUTO_INCREMENT),
-                        Field.is("name", FieldType.STRING));
+    public void canAutoGuidAndIdOnAdd() {
+        EntityDefinition defn =
+                new EntityDefinition("entity", "entities")
+                        .addFields(
+                                Field.is("guid", FieldType.AUTO_GUID),
+                                Field.is("id", FieldType.AUTO_INCREMENT),
+                                Field.is("name", FieldType.STRING));
 
         EntityInstanceCollection col = new EntityInstanceCollection(defn);
 
@@ -108,10 +120,17 @@ public class EntityInstanceCollectionTest {
         col.addInstance(instance1);
         col.addInstance(instance2);
 
-        Assertions.assertNotEquals(instance1.getFieldValue("guid").asString(), instance2.getFieldValue("guid").asString());
-        Assertions.assertEquals(instance1.getFieldValue("guid").asString(), UUID.fromString(instance1.getFieldValue("guid").asString()).toString());
-        Assertions.assertEquals(instance2.getFieldValue("guid").asString(), UUID.fromString(instance2.getFieldValue("guid").asString()).toString());
-        Assertions.assertNotEquals(instance1.getFieldValue("id").asString(), instance2.getFieldValue("id").asString());
+        Assertions.assertNotEquals(
+                instance1.getFieldValue("guid").asString(),
+                instance2.getFieldValue("guid").asString());
+        Assertions.assertEquals(
+                instance1.getFieldValue("guid").asString(),
+                UUID.fromString(instance1.getFieldValue("guid").asString()).toString());
+        Assertions.assertEquals(
+                instance2.getFieldValue("guid").asString(),
+                UUID.fromString(instance2.getFieldValue("guid").asString()).toString());
+        Assertions.assertNotEquals(
+                instance1.getFieldValue("id").asString(), instance2.getFieldValue("id").asString());
         Assertions.assertEquals(1, instance1.getFieldValue("id").asInteger());
         Assertions.assertEquals(2, instance2.getFieldValue("id").asInteger());
     }

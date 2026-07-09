@@ -1,13 +1,12 @@
 package uk.co.compendiumdev.thingifier.core.domain.definitions;
 
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 
 public class DefinedFields {
 
@@ -61,9 +60,9 @@ public class DefinedFields {
         final List<FieldType> typeCheck = Arrays.asList(types);
         List<Field> returnFields = new ArrayList<>();
 
-        for(Map.Entry<String,Field> field : fields.entrySet()){
+        for (Map.Entry<String, Field> field : fields.entrySet()) {
             Field aField = field.getValue();
-            if(typeCheck.contains(aField.getType())) {
+            if (typeCheck.contains(aField.getType())) {
                 returnFields.add(aField);
             }
         }
@@ -76,7 +75,7 @@ public class DefinedFields {
         List<String> fieldNames = new ArrayList<>();
         List<Field> typedFields = getFieldsOfType(types);
 
-        for(Field field : typedFields){
+        for (Field field : typedFields) {
             fieldNames.add(field.getName());
         }
 

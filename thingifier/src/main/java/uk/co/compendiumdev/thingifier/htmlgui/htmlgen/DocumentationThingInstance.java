@@ -6,7 +6,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.F
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 
-public class DocumentationThingInstance{
+public class DocumentationThingInstance {
 
     private final EntityInstanceDraft draft;
     private final EntityDefinition definition;
@@ -16,12 +16,13 @@ public class DocumentationThingInstance{
         this.draft = EntityInstanceDraft.forEntity(eDefn);
     }
 
-    public EntityInstance getInstance(){
+    public EntityInstance getInstance() {
         return EntityInstance.fromDraft(this.draft);
     }
 
-    public EntityInstance withoutIDsOrGUIDs(){
-        for(String name : definition.getFieldNamesOfType(FieldType.AUTO_INCREMENT, FieldType.AUTO_GUID)){
+    public EntityInstance withoutIDsOrGUIDs() {
+        for (String name :
+                definition.getFieldNamesOfType(FieldType.AUTO_INCREMENT, FieldType.AUTO_GUID)) {
             overrideValue(name, null);
         }
         return getInstance();
@@ -29,9 +30,9 @@ public class DocumentationThingInstance{
 
     public void overrideValue(final String name, final String exampleValue) {
         Field field = definition.getField(name);
-        if (field != null &&
-                (field.getType() == FieldType.AUTO_INCREMENT ||
-                        field.getType() == FieldType.AUTO_GUID)) {
+        if (field != null
+                && (field.getType() == FieldType.AUTO_INCREMENT
+                        || field.getType() == FieldType.AUTO_GUID)) {
             this.draft.withProtectedField(name, exampleValue);
             return;
         }

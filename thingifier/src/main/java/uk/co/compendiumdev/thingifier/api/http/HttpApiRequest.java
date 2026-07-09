@@ -1,36 +1,47 @@
 package uk.co.compendiumdev.thingifier.api.http;
 
+import java.util.*;
 import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
 import uk.co.compendiumdev.thingifier.application.internalhttpconversion.StringPair;
 import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
 import uk.co.compendiumdev.thingifier.core.query.fromurl.UrlParamParser;
 
-import java.util.*;
-
 public final class HttpApiRequest {
 
-    private String path="";
+    private String path = "";
     private HttpHeadersBlock headers;
-    private String body="";
+    private String body = "";
     private Map<String, String> queryParams; // only contains the first query param value
     private VERB verb;
-    private String url="";
+    private String url = "";
     private Map<String, String> rawQueryParams; // contains all the query param values e.g. ?p=1&p=2
 
-    private QueryFilterParams filterableQueryParams; // contains all the query param values in a form we can use for sorting and filtering e.g. ?id>=1&id<=4
-    private String ip="";
-    private Map<String, String>  urlParams;
+    private QueryFilterParams
+            filterableQueryParams; // contains all the query param values in a form we can use for
+    // sorting and filtering e.g. ?id>=1&id<=4
+    private String ip = "";
+    private Map<String, String> urlParams;
 
     // a storage for the raw headers, which might include duplicates
     private ArrayList<StringPair> headersList;
 
     public void removePrefixFromPath(String prefix) {
-        if(path.startsWith(prefix)){
-            path = justThePath(path.replaceFirst(prefix,""));
+        if (path.startsWith(prefix)) {
+            path = justThePath(path.replaceFirst(prefix, ""));
         }
     }
 
-    public enum VERB{ GET, HEAD, POST, PUT, DELETE, PATCH, OPTIONS, CONNECT, TRACE}
+    public enum VERB {
+        GET,
+        HEAD,
+        POST,
+        PUT,
+        DELETE,
+        PATCH,
+        OPTIONS,
+        CONNECT,
+        TRACE
+    }
 
     public HttpApiRequest(final String pathInfo) {
         path = justThePath(pathInfo);
@@ -51,7 +62,6 @@ public final class HttpApiRequest {
         return this.url;
     }
 
-
     public Collection<String> getQueryParamNames() {
         return queryParams.keySet();
     }
@@ -61,7 +71,7 @@ public final class HttpApiRequest {
     }
 
     public HttpApiRequest setIP(final String ip) {
-        this.ip=ip;
+        this.ip = ip;
         return this;
     }
 
@@ -97,8 +107,6 @@ public final class HttpApiRequest {
         return new ArrayList<>(headersList);
     }
 
-
-
     private String justThePath(final String path) {
         if (path.startsWith("/")) {
             return path.substring(1);
@@ -106,13 +114,13 @@ public final class HttpApiRequest {
         return path;
     }
 
-    public HttpApiRequest setUrl(String url){
+    public HttpApiRequest setUrl(String url) {
         this.url = url;
         return this;
     }
 
     public HttpApiRequest setHeaders(final Map<String, String> mapOfHeaderValues) {
-        for(Map.Entry<String, String>header : mapOfHeaderValues.entrySet()){
+        for (Map.Entry<String, String> header : mapOfHeaderValues.entrySet()) {
             addHeader(header.getKey(), header.getValue());
         }
 
@@ -145,9 +153,8 @@ public final class HttpApiRequest {
         return getHeader("Content-Type", "");
     }
 
-
     public String getHeader(final String headerName, final String aDefault) {
-        if(!this.headers.headerExists(headerName)){
+        if (!this.headers.headerExists(headerName)) {
             return aDefault;
         }
         return getHeader(headerName);
@@ -175,8 +182,6 @@ public final class HttpApiRequest {
     public Map<String, String> getQueryParams() {
         return queryParams;
     }
-
-
 
     public HttpApiRequest setVerb(final VERB verb) {
         this.verb = verb;

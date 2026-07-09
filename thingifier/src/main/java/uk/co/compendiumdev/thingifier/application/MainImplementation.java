@@ -1,37 +1,36 @@
 package uk.co.compendiumdev.thingifier.application;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import spark.Spark;
 import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.api.docgen.ThingifierApiDocumentationDefn;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingDefinition;
+import uk.co.compendiumdev.thingifier.api.docgen.ThingifierApiDocumentationDefn;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfigProfile;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfigProfiles;
 import uk.co.compendiumdev.thingifier.application.httprouting.SparkHttpGenericExceptionRoutings;
 import uk.co.compendiumdev.thingifier.application.httprouting.ThingifierAutoDocGenRouting;
 import uk.co.compendiumdev.thingifier.application.httprouting.ThingifierHttpApiRoutings;
-import uk.co.compendiumdev.thingifier.application.sparkhttpmessageHooks.ClearDataPreSparkRequestHook;
-import uk.co.compendiumdev.thingifier.application.sparkhttpmessageHooks.LogTheSparkRequestHook;
-import uk.co.compendiumdev.thingifier.application.sparkhttpmessageHooks.LogTheResponseHook;
 import uk.co.compendiumdev.thingifier.application.routehandlers.ShutdownRouteHandler;
-import uk.co.compendiumdev.thingifier.htmlgui.routing.DefaultGuiRoutings;
+import uk.co.compendiumdev.thingifier.application.sparkhttpmessageHooks.ClearDataPreSparkRequestHook;
+import uk.co.compendiumdev.thingifier.application.sparkhttpmessageHooks.LogTheResponseHook;
+import uk.co.compendiumdev.thingifier.application.sparkhttpmessageHooks.LogTheSparkRequestHook;
 import uk.co.compendiumdev.thingifier.htmlgui.htmlgen.DefaultGUIHTML;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import uk.co.compendiumdev.thingifier.htmlgui.routing.DefaultGuiRoutings;
 
 /*
-    common main implementation details,
-    but still flexible enough to have custom
-    processing per api Instance
+   common main implementation details,
+   but still flexible enough to have custom
+   processing per api Instance
 
-    This is a bit too tied down to the concept of one app, one thingifier at a time though.
-    We should be able to have multiple thingifiers at different endpoints e.g. /api1/, /api2/ etc.
- */
+   This is a bit too tied down to the concept of one app, one thingifier at a time though.
+   We should be able to have multiple thingifiers at different endpoints e.g. /api1/, /api2/ etc.
+*/
 public class MainImplementation implements AutoCloseable {
 
     Integer proxyport;
-    private Map<String,Thingifier> thingifierModels;
+    private Map<String, Thingifier> thingifierModels;
     private String defaultModelName;
     private String staticFilePath;
     private ThingifierApiDocumentationDefn apiDefn;
@@ -55,34 +54,33 @@ public class MainImplementation implements AutoCloseable {
     private ThingifierAutoDocGenRouting docsServerRouting;
     private SparkHttpGenericExceptionRoutings exceptionRoutings;
 
-    public MainImplementation(){
+    public MainImplementation() {
 
         proxyport = 4567; // default for spark
 
-        // added to support heroku as per https://sparktutorials.github.io/2015/08/24/spark-heroku.html
+        // added to support heroku as per
+        // https://sparktutorials.github.io/2015/08/24/spark-heroku.html
         // environment can override config for port
         if (hasHerokuAssignedPort()) {
             proxyport = getHerokuAssignedPort();
         }
 
-        apiDefn =  new ThingifierApiDocumentationDefn();
+        apiDefn = new ThingifierApiDocumentationDefn();
         thingifierModels = new HashMap<>();
-        defaultModelName="";
-
+        defaultModelName = "";
 
         staticFilePath = "/public"; // for built in styles
         allowShutdown = true;
         clearDataPeriodically = false;
-        clearDownMinutes=10;
-        verboseMode=false;
+        clearDownMinutes = 10;
+        verboseMode = false;
         profileToUse = null;
 
-        desiredVersionNumber=-1;
-        desiredVersionName=null;
+        desiredVersionNumber = -1;
+        desiredVersionName = null;
 
         guiManagement = new DefaultGUIHTML();
     }
-
 
     private boolean hasHerokuAssignedPort() {
         ProcessBuilder processBuilder = new ProcessBuilder();
@@ -94,40 +92,39 @@ public class MainImplementation implements AutoCloseable {
         if (hasHerokuAssignedPort()) {
             return Integer.parseInt(processBuilder.environment().get("PORT"));
         }
-        return -1; //return default port if heroku-port isn't set (i.e. on localhost)
+        return -1; // return default port if heroku-port isn't set (i.e. on localhost)
     }
-
 
     public void registerModel(final String modelName, final Thingifier thingifier) {
         thingifierModels.put(modelName, thingifier);
-        if(defaultModelName.isEmpty()){
+        if (defaultModelName.isEmpty()) {
             // set this as the default
             defaultModelName = modelName;
         }
     }
 
-    public void registerModel(final String modelName, final Thingifier thingifier,
-                              final boolean asDefault) {
+    public void registerModel(
+            final String modelName, final Thingifier thingifier, final boolean asDefault) {
         registerModel(modelName, thingifier);
         // overwrite the model name
         setDefaultModelName(modelName);
     }
 
-    public void setDefaultModelName(final String modelName){
-        defaultModelName=modelName;
+    public void setDefaultModelName(final String modelName) {
+        defaultModelName = modelName;
     }
 
     public void setDefaultsFromArgs(final String[] args) {
 
-        String modelName=defaultModelName;
+        String modelName = defaultModelName;
         this.args = args;
 
         System.out.println("Valid Model Names -model=");
-        for(String aModelName : thingifierModels.keySet()){
+        for (String aModelName : thingifierModels.keySet()) {
             System.out.println(aModelName);
         }
 
-        for(Map.Entry<String, Thingifier> models: thingifierModels.entrySet()){
+        for (Map.Entry<String, Thingifier> models : thingifierModels.entrySet()) {
             outputVersionDetailsFor(models.getKey(), models.getValue());
         }
 
@@ -146,12 +143,13 @@ public class MainImplementation implements AutoCloseable {
                 String[] details = arg.split("=");
                 if (details != null && details.length > 1) {
                     String argModelName = details[1].trim();
-                    if(thingifierModels.containsKey(argModelName)){
+                    if (thingifierModels.containsKey(argModelName)) {
                         modelName = argModelName;
                         System.out.println("Will use model named " + modelName);
-                    }else{
+                    } else {
                         System.out.println(
-                                String.format("Invalid model name %s, using %s",
+                                String.format(
+                                        "Invalid model name %s, using %s",
                                         argModelName, modelName));
                     }
                 }
@@ -170,12 +168,13 @@ public class MainImplementation implements AutoCloseable {
                 String[] details = arg.split("=");
                 if (details != null && details.length > 1) {
                     String minutes = details[1].trim();
-                    try{
+                    try {
                         clearDownMinutes = Integer.parseInt(minutes);
-                    }catch(Exception e){
-                        System.out.println("Invalid minutes " + minutes + " " +e.getMessage());
+                    } catch (Exception e) {
+                        System.out.println("Invalid minutes " + minutes + " " + e.getMessage());
                     }
-                    System.out.println(String.format("Will clear down every %d minutes", clearDownMinutes));
+                    System.out.println(
+                            String.format("Will clear down every %d minutes", clearDownMinutes));
                 }
             }
 
@@ -183,26 +182,24 @@ public class MainImplementation implements AutoCloseable {
                 String[] details = arg.split("=");
                 if (details != null && details.length > 1) {
                     desiredVersionNumber = Integer.parseInt(details[1].trim());
-                    System.out.println("Argument version number provided: "+ desiredVersionNumber);
+                    System.out.println("Argument version number provided: " + desiredVersionNumber);
                 }
             }
             if (arg.startsWith("-versionName")) {
                 String[] details = arg.split("=");
                 if (details != null && details.length > 1) {
                     desiredVersionName = details[1].trim();
-                    System.out.println("Argument version number provided: "+ desiredVersionName);
+                    System.out.println("Argument version number provided: " + desiredVersionName);
                 }
             }
-
         }
-
     }
 
     private void outputVersionDetailsFor(String modelName, final Thingifier aThingifier) {
 
         final ThingifierApiConfigProfiles profiles = aThingifier.apiConfigProfiles();
 
-        if(profiles.countOfProfiles()>=1) {
+        if (profiles.countOfProfiles() >= 1) {
             int version = profiles.countOfProfiles();
             System.out.println(
                     String.format(
@@ -210,39 +207,35 @@ public class MainImplementation implements AutoCloseable {
                             modelName, version));
             final List<ThingifierApiConfigProfile> actualProfiles = profiles.getProfiles();
             int profileCount = 1;
-            for(ThingifierApiConfigProfile profile : actualProfiles){
+            for (ThingifierApiConfigProfile profile : actualProfiles) {
                 System.out.println(
                         String.format(
                                 "%d - %s : %s",
-                                profileCount, profile.getName(),
-                                profile.getDescription()
-                        )
-                );
+                                profileCount, profile.getName(), profile.getDescription()));
                 profileCount++;
             }
         }
     }
 
-
     public void setPort(final int port) {
-        this.proxyport=port;
+        this.proxyport = port;
     }
 
     public void setStaticFileLocation(final String filePath) {
         this.staticFilePath = filePath;
     }
 
-    public void setVerboseMode(boolean config){
-        verboseMode=config;
+    public void setVerboseMode(boolean config) {
+        verboseMode = config;
     }
 
-    public void setAutoShutdown(boolean config){
-        allowShutdown=config;
+    public void setAutoShutdown(boolean config) {
+        allowShutdown = config;
     }
 
-    public void setClearDataPeriodically(boolean config, int minutes){
-        clearDataPeriodically=config;
-        clearDownMinutes=minutes;
+    public void setClearDataPeriodically(boolean config, int minutes) {
+        clearDataPeriodically = config;
+        clearDownMinutes = minutes;
     }
 
     public void configurePortAndDefaultRoutes() {
@@ -251,27 +244,24 @@ public class MainImplementation implements AutoCloseable {
     }
 
     public void setupBuiltInConfigurableRoutes() {
-        if(allowShutdown) {
+        if (allowShutdown) {
             apiDefn.addRoutesToDocumentation(
-                new ShutdownRouteHandler(this).
-                    configureRoutes().
-                    getRoutes());
+                    new ShutdownRouteHandler(this).configureRoutes().getRoutes());
         }
     }
 
     public Thingifier chooseThingifier() {
-        if(defaultModelName!=null && defaultModelName.length()>0) {
+        if (defaultModelName != null && defaultModelName.length() > 0) {
             return chooseThingifier(defaultModelName);
-        }else{
+        } else {
             throw new RuntimeException("No Thingifier Model Specified");
         }
     }
 
     public Thingifier chooseThingifier(final String thingifierName) {
-        if(!thingifierModels.containsKey(defaultModelName)){
+        if (!thingifierModels.containsKey(defaultModelName)) {
             throw new RuntimeException(
-                    "Specified Thingifier Model Has Not Been Registered " +
-                            defaultModelName);
+                    "Specified Thingifier Model Has Not Been Registered " + defaultModelName);
         }
         System.out.println("Using model " + defaultModelName);
         this.thingifier = thingifierModels.get(defaultModelName);
@@ -284,29 +274,21 @@ public class MainImplementation implements AutoCloseable {
 
     public void setupDefaultGui() {
 
-            new DefaultGuiRoutings(thingifier, guiManagement).
-                configureRoutes("/gui");
+        new DefaultGuiRoutings(thingifier, guiManagement).configureRoutes("/gui");
     }
 
     public ThingifierHttpApiRoutings startRestServer() {
 
-        if(thingifier==null){
+        if (thingifier == null) {
             throw new RuntimeException("No Thingifier Model Setup");
         }
 
         apiDefn.setThingifier(thingifier);
 
         // start the docs and swagger endpoints
-        docsServerRouting = new ThingifierAutoDocGenRouting(
-                thingifier,
-                apiDefn,
-                guiManagement);
+        docsServerRouting = new ThingifierAutoDocGenRouting(thingifier, apiDefn, guiManagement);
 
-
-        restServer = new ThingifierHttpApiRoutings(
-                                    thingifier,
-                                    apiDefn);
-
+        restServer = new ThingifierHttpApiRoutings(thingifier, apiDefn);
 
         // sets up the wide * based generic 404s so no routings created after this will work
         exceptionRoutings = new SparkHttpGenericExceptionRoutings();
@@ -319,23 +301,21 @@ public class MainImplementation implements AutoCloseable {
 
     public void addBuiltInArgConfiguredHooks() {
 
-        if(clearDataPeriodically) {
+        if (clearDataPeriodically) {
             restServer.registerPreRequestHook(
                     new ClearDataPreSparkRequestHook(clearDownMinutes, thingifier));
         }
 
-        if(verboseMode){
-            restServer.registerPreRequestHook(
-                    new LogTheSparkRequestHook());
-            restServer.registerPreRequestHook(
-                    new LogTheResponseHook());
+        if (verboseMode) {
+            restServer.registerPreRequestHook(new LogTheSparkRequestHook());
+            restServer.registerPreRequestHook(new LogTheResponseHook());
         }
     }
 
     public void configureThingifierWithProfile() {
 
         // we hard coded a profile
-        if(profileToUse!=null){
+        if (profileToUse != null) {
             thingifier.configureWithProfile(profileToUse);
             return;
         }
@@ -343,7 +323,7 @@ public class MainImplementation implements AutoCloseable {
         final ThingifierApiConfigProfiles profiles = thingifier.apiConfigProfiles();
 
         // try to use the arg versions
-        if(desiredVersionNumber!=-1) {
+        if (desiredVersionNumber != -1) {
             if (desiredVersionNumber > 0 && desiredVersionNumber <= profiles.countOfProfiles()) {
                 profileToUse = profiles.getProfiles().get(desiredVersionNumber - 1);
             } else {
@@ -351,36 +331,36 @@ public class MainImplementation implements AutoCloseable {
             }
         }
 
-        if(desiredVersionName!=null && !desiredVersionName.isEmpty()) {
+        if (desiredVersionName != null && !desiredVersionName.isEmpty()) {
             profileToUse = profiles.getProfile(desiredVersionName);
             if (profileToUse == null) {
                 System.out.println("Invalid version name provided: " + desiredVersionName);
             }
         }
 
-        if(profileToUse!=null) {
+        if (profileToUse != null) {
             System.out.println(
                     String.format(
                             "Will configure app as release version %s : %s ",
-                                    profileToUse.getName(), profileToUse.getDescription()));
-        }else{
+                            profileToUse.getName(), profileToUse.getDescription()));
+        } else {
             profileToUse = profiles.getDefault();
-            if(profileToUse!=null){
+            if (profileToUse != null) {
                 System.out.println(
                         String.format(
                                 "Will configure app as release version %s : %s ",
-                                        profileToUse.getName(), profileToUse.getDescription()));
+                                profileToUse.getName(), profileToUse.getDescription()));
             }
         }
 
-        if(profileToUse!=null){
+        if (profileToUse != null) {
             thingifier.configureWithProfile(profileToUse);
-        }else{
+        } else {
             String.format("Will configure app as default profile");
         }
     }
 
-    public void setProfileToUse(ThingifierApiConfigProfile aProfile){
+    public void setProfileToUse(ThingifierApiConfigProfile aProfile) {
         profileToUse = aProfile;
     }
 

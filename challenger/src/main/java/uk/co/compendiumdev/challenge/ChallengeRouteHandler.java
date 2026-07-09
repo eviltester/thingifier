@@ -14,10 +14,9 @@ import uk.co.compendiumdev.thingifier.api.docgen.ThingifierApiDocumentationDefn;
 import uk.co.compendiumdev.thingifier.application.httprouting.ThingifierHttpApiRoutings;
 import uk.co.compendiumdev.thingifier.htmlgui.htmlgen.DefaultGUIHTML;
 
-
 public class ChallengeRouteHandler {
     private final Thingifier thingifier;
-    //List<RoutingDefinition> routes;
+    // List<RoutingDefinition> routes;
 
     ThingifierApiDocumentationDefn apiChallengesDocumentationDefn;
     ThingifierApiDocumentationDefn mirrorModeDocumentationDefn;
@@ -27,18 +26,24 @@ public class ChallengeRouteHandler {
     private boolean single_player_mode;
     private final ChallengerConfig config;
     PersistenceLayer persistenceLayer;
-    private boolean guiStayAlive=false; // when set gui makes a call every 5 mins to keep session alive,
+    private boolean guiStayAlive =
+            false; // when set gui makes a call every 5 mins to keep session alive,
     private DefaultGUIHTML guiTemplates;
     private SimulationRoutes simulationRoutes;
+
     // not needed when storing data
 
-    public ChallengeRouteHandler(Thingifier thingifier, ThingifierApiDocumentationDefn apiDefn, ChallengerConfig config){
+    public ChallengeRouteHandler(
+            Thingifier thingifier,
+            ThingifierApiDocumentationDefn apiDefn,
+            ChallengerConfig config) {
 
         this.config = config;
         this.apiChallengesDocumentationDefn = apiDefn;
         apiDefn.setThingifier(thingifier);
         apiDefn.setSeoTitle("API Challenges API Documentation | API Challenges");
-        apiDefn.setSeoDescription("Explore API Challenges endpoint documentation with request formats, payload examples, and expected responses for practical API testing.");
+        apiDefn.setSeoDescription(
+                "Explore API Challenges endpoint documentation with request formats, payload examples, and expected responses for practical API testing.");
         apiDefn.setMetaRobots("index,follow");
         apiDefn.setOgType("website");
         apiDefn.setTwitterCard("summary_large_image");
@@ -47,11 +52,13 @@ public class ChallengeRouteHandler {
         mirrorModeDocumentationDefn.setTitle("Mirror Mode");
         mirrorModeDocumentationDefn.setDescription("Mirror HTTP Requests");
         mirrorModeDocumentationDefn.setSeoTitle("Mirror Mode API Documentation | API Challenges");
-        mirrorModeDocumentationDefn.setSeoDescription("Review Mirror Mode endpoint documentation to inspect reflected HTTP requests, headers, and payload behavior for debugging and learning.");
+        mirrorModeDocumentationDefn.setSeoDescription(
+                "Review Mirror Mode endpoint documentation to inspect reflected HTTP requests, headers, and payload behavior for debugging and learning.");
         mirrorModeDocumentationDefn.setMetaRobots("noindex,follow");
         mirrorModeDocumentationDefn.setOgType("website");
         mirrorModeDocumentationDefn.setTwitterCard("summary_large_image");
-        mirrorModeDocumentationDefn.addServer("https://apichallenges.eviltester.com", "cloud hosted version");
+        mirrorModeDocumentationDefn.addServer(
+                "https://apichallenges.eviltester.com", "cloud hosted version");
         mirrorModeDocumentationDefn.addServer("http://localhost:4567", "local execution");
         mirrorModeDocumentationDefn.setVersion("1.0.0");
 
@@ -61,40 +68,52 @@ public class ChallengeRouteHandler {
 
         single_player_mode = config.single_player_mode;
         persistenceLayer = config.persistenceLayer;
-        guiStayAlive=config.guiStayAlive;
+        guiStayAlive = config.guiStayAlive;
 
         challengeDefinitions = new ChallengeDefinitions(config);
         this.thingifier = thingifier;
-        challengers = new Challengers(thingifier.getERmodel(), challengeDefinitions.getDefinedChallenges());
+        challengers =
+                new Challengers(
+                        thingifier.getERmodel(), challengeDefinitions.getDefinedChallenges());
         challengers.setPersistenceLayer(persistenceLayer);
-        if(!single_player_mode){
+        if (!single_player_mode) {
             challengers.setMultiPlayerMode();
         }
 
-        if(single_player_mode) {
+        if (single_player_mode) {
             // auto load any single player challenger details in single player mode
             persistenceLayer.tryToLoadChallenger(challengers, challengers.SINGLE_PLAYER_GUID);
         }
 
         challengers.setApiConfig(thingifier.apiConfig());
 
-        if(config.isAdminApiEnabled){
+        if (config.isAdminApiEnabled) {
             enableAdminApi();
         }
 
         this.guiTemplates = new DefaultGUIHTML();
-
-
     }
 
-    public boolean isSinglePlayerMode(){
+    public boolean isSinglePlayerMode() {
         return single_player_mode;
     }
 
     public ChallengeRouteHandler configureRoutes() {
 
-        new ChallengerTrackingRoutes().configure(challengers, single_player_mode, apiChallengesDocumentationDefn, persistenceLayer, thingifier, challengeDefinitions);
-        new ChallengesRoutes().configure(challengers, single_player_mode, apiChallengesDocumentationDefn, challengeDefinitions);
+        new ChallengerTrackingRoutes()
+                .configure(
+                        challengers,
+                        single_player_mode,
+                        apiChallengesDocumentationDefn,
+                        persistenceLayer,
+                        thingifier,
+                        challengeDefinitions);
+        new ChallengesRoutes()
+                .configure(
+                        challengers,
+                        single_player_mode,
+                        apiChallengesDocumentationDefn,
+                        challengeDefinitions);
         new HeartBeatRoutes().configure(apiChallengesDocumentationDefn);
         new AuthRoutes().configure(challengers, apiChallengesDocumentationDefn);
 
@@ -102,9 +121,8 @@ public class ChallengeRouteHandler {
         new MirrorRoutes().configure(mirrorModeDocumentationDefn, guiTemplates);
 
         // Simulation routes should not show
-        simulationRoutes = new SimulationRoutes(
-                guiTemplates,
-                config.getSimulationRepositoryConfig());
+        simulationRoutes =
+                new SimulationRoutes(guiTemplates, config.getSimulationRepositoryConfig());
         simulationRoutes.configure();
 
         new SimpleApiRoutes(guiTemplates).configure();
@@ -117,21 +135,25 @@ public class ChallengeRouteHandler {
         // TODO: this is wrong - rethink this - we need SparkLevel, InternalHttp level (pre-post
         // these hooks are registered at a spark before and after level so run on every request,
         // regardless of thingifier used - this is wrong
-        restServer.registerInternalHttpResponseHook(new ChallengerInternalHTTPResponseHook(challengers));
-        restServer.registerInternalHttpRequestHook(new ChallengerInternalHTTPRequestHook(challengers));
+        restServer.registerInternalHttpResponseHook(
+                new ChallengerInternalHTTPResponseHook(challengers));
+        restServer.registerInternalHttpRequestHook(
+                new ChallengerInternalHTTPRequestHook(challengers));
 
-        // add hooks at the API bridge pre and post level so they only work in the specific thingifier
+        // add hooks at the API bridge pre and post level so they only work in the specific
+        // thingifier
         restServer.registerHttpApiRequestHook(new ChallengerApiRequestHook(challengers));
-        restServer.registerHttpApiResponseHook(new ChallengerApiResponseHook(challengers, thingifier));
+        restServer.registerHttpApiResponseHook(
+                new ChallengerApiResponseHook(challengers, thingifier));
     }
 
     public void setupGui(DefaultGUIHTML guiManagement) {
         this.guiTemplates = guiManagement;
-        new ChallengerWebGUI(guiManagement, guiStayAlive).setup(challengers, challengeDefinitions,
-                                                persistenceLayer, single_player_mode);
+        new ChallengerWebGUI(guiManagement, guiStayAlive)
+                .setup(challengers, challengeDefinitions, persistenceLayer, single_player_mode);
     }
 
-    public Challengers getChallengers(){
+    public Challengers getChallengers() {
         return challengers;
     }
 

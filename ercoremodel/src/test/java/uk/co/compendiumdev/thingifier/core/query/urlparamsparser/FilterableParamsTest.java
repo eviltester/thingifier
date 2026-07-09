@@ -5,11 +5,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
-import uk.co.compendiumdev.thingifier.core.query.FilterBy;
 import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
 import uk.co.compendiumdev.thingifier.core.query.fromurl.UrlParamParser;
-
-import java.util.List;
 
 public class FilterableParamsTest {
 
@@ -24,7 +21,7 @@ public class FilterableParamsTest {
 
     @ParameterizedTest
     @CsvSource({"id%3E%3D4,id>=4", "id%3E=4,id>=4"})
-    public void canProcessUrlEncoded(String encoded, String decoded){
+    public void canProcessUrlEncoded(String encoded, String decoded) {
 
         UrlParamParser parser = new UrlParamParser();
         String decodedValue = parser.urlDecode(encoded);
@@ -32,7 +29,7 @@ public class FilterableParamsTest {
     }
 
     @Test
-    public void canSplitGreaterThanEqual(){
+    public void canSplitGreaterThanEqual() {
         UrlParamParser parser = new UrlParamParser();
         QueryFilterParams values = parser.parse("id%3E%3D4");
         Assertions.assertEquals("id", values.get(0).fieldName);
@@ -41,7 +38,7 @@ public class FilterableParamsTest {
     }
 
     @Test
-    public void canSplitIntoGreaterThanEqualAndLessThanEqual(){
+    public void canSplitIntoGreaterThanEqualAndLessThanEqual() {
         UrlParamParser parser = new UrlParamParser();
         QueryFilterParams values = parser.parse("id%3E%3D4&id<=7");
         Assertions.assertEquals(2, values.size());
@@ -56,8 +53,9 @@ public class FilterableParamsTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"id%3E%3D4&", "id%3E%3D4&     ", "id%3E%3D4&&&&", "id%3E%3D4&%20  && & "})
-    public void canHandleNullParams(){
+    @ValueSource(
+            strings = {"id%3E%3D4&", "id%3E%3D4&     ", "id%3E%3D4&&&&", "id%3E%3D4&%20  && & "})
+    public void canHandleNullParams() {
         UrlParamParser parser = new UrlParamParser();
         QueryFilterParams values = parser.parse("id%3E%3D4&");
         Assertions.assertEquals(1, values.size());
@@ -68,7 +66,7 @@ public class FilterableParamsTest {
     }
 
     @Test
-    public void canHandleNullUrl(){
+    public void canHandleNullUrl() {
         UrlParamParser parser = new UrlParamParser();
         QueryFilterParams values = parser.parse(null);
         Assertions.assertEquals(0, values.size());
@@ -76,14 +74,14 @@ public class FilterableParamsTest {
 
     @ParameterizedTest
     @ValueSource(strings = {" ", "     ", ""})
-    public void canHandleEmptyStrings(String aString){
+    public void canHandleEmptyStrings(String aString) {
         UrlParamParser parser = new UrlParamParser();
         QueryFilterParams values = parser.parse(aString);
         Assertions.assertEquals(0, values.size());
     }
 
     @Test
-    public void processPartialFilterWithoutOperator(){
+    public void processPartialFilterWithoutOperator() {
         UrlParamParser parser = new UrlParamParser();
         QueryFilterParams values = parser.parse("fieldname4");
         Assertions.assertEquals(1, values.size());
@@ -94,7 +92,7 @@ public class FilterableParamsTest {
     }
 
     @Test
-    public void processPartialFilterWithoutValue(){
+    public void processPartialFilterWithoutValue() {
         UrlParamParser parser = new UrlParamParser();
         QueryFilterParams values = parser.parse("fieldname>=");
         Assertions.assertEquals(1, values.size());

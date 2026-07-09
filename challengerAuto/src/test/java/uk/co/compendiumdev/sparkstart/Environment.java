@@ -1,10 +1,9 @@
 package uk.co.compendiumdev.sparkstart;
 
-
 public class Environment {
 
-    public static String getEnv(String urlPath){
-        return  getBaseUri() + urlPath;
+    public static String getEnv(String urlPath) {
+        return getBaseUri() + urlPath;
     }
 
     public static String getBaseUri() {

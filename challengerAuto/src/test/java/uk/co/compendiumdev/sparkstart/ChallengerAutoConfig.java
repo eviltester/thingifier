@@ -69,35 +69,28 @@ public final class ChallengerAutoConfig {
     }
 
     public static ChallengerAutoConfig from(
-            final Map<String, String> properties,
-            final Map<String, String> environment) {
+            final Map<String, String> properties, final Map<String, String> environment) {
         Map<String, String> props = properties == null ? Collections.emptyMap() : properties;
         Map<String, String> env = environment == null ? Collections.emptyMap() : environment;
 
         Target target = parseTarget(valueFor(props, env, PROPERTY_TARGET, "local"));
-        Repository repository = parseRepository(
-                valueFor(props, env, PROPERTY_LOCAL_REPOSITORY, "sqlite-memory"));
-        PlayerMode playerMode = parsePlayerMode(
-                valueFor(props, env, PROPERTY_LOCAL_PLAYER_MODE, "multi"));
+        Repository repository =
+                parseRepository(valueFor(props, env, PROPERTY_LOCAL_REPOSITORY, "sqlite-memory"));
+        PlayerMode playerMode =
+                parsePlayerMode(valueFor(props, env, PROPERTY_LOCAL_PLAYER_MODE, "multi"));
         String port = normalizePort(valueFor(props, env, PROPERTY_LOCAL_PORT, "auto"));
-        List<String> extraArgs = parseExtraArgs(valueFor(props, env, PROPERTY_LOCAL_EXTRA_ARGS, ""));
+        List<String> extraArgs =
+                parseExtraArgs(valueFor(props, env, PROPERTY_LOCAL_EXTRA_ARGS, ""));
         boolean externalFull = parseBoolean(valueFor(props, env, PROPERTY_EXTERNAL_FULL, "false"));
 
         String baseUrl = configuredBaseUrlFor(target, props, env);
 
         return new ChallengerAutoConfig(
-                target,
-                baseUrl,
-                repository,
-                playerMode,
-                port,
-                extraArgs,
-                externalFull);
+                target, baseUrl, repository, playerMode, port, extraArgs, externalFull);
     }
 
     public static ChallengerAutoConfig localProfile(
-            final Repository repository,
-            final PlayerMode playerMode) {
+            final Repository repository, final PlayerMode playerMode) {
         Map<String, String> properties = new LinkedHashMap<>();
         properties.put(PROPERTY_TARGET, "local");
         properties.put(PROPERTY_LOCAL_REPOSITORY, repositoryName(repository));
@@ -106,9 +99,9 @@ public final class ChallengerAutoConfig {
     }
 
     public static ChallengerAutoConfig existingLocal() {
-        return from(Map.of(
-                PROPERTY_TARGET, "existing",
-                PROPERTY_BASE_URL, DEFAULT_EXISTING_BASE_URL), System.getenv());
+        return from(
+                Map.of(PROPERTY_TARGET, "existing", PROPERTY_BASE_URL, DEFAULT_EXISTING_BASE_URL),
+                System.getenv());
     }
 
     public static ChallengerAutoConfig liveSmoke() {
@@ -170,8 +163,9 @@ public final class ChallengerAutoConfig {
         if (shouldRunFullSuite()) {
             return "";
         }
-        return "External Challenger target is smoke-only by default; set -D" +
-                PROPERTY_EXTERNAL_FULL + "=true to run the mutating suite.";
+        return "External Challenger target is smoke-only by default; set -D"
+                + PROPERTY_EXTERNAL_FULL
+                + "=true to run the mutating suite.";
     }
 
     public List<String> challengeMainArgs(final int port) {
@@ -202,19 +196,27 @@ public final class ChallengerAutoConfig {
 
     @Override
     public String toString() {
-        return "ChallengerAutoConfig{" +
-                "target=" + target +
-                ", baseUrl='" + baseUrl + '\'' +
-                ", localRepository=" + localRepository +
-                ", localPlayerMode=" + localPlayerMode +
-                ", localPort='" + localPort + '\'' +
-                ", localExtraArgs=" + localExtraArgs +
-                ", externalFull=" + externalFull +
-                '}';
+        return "ChallengerAutoConfig{"
+                + "target="
+                + target
+                + ", baseUrl='"
+                + baseUrl
+                + '\''
+                + ", localRepository="
+                + localRepository
+                + ", localPlayerMode="
+                + localPlayerMode
+                + ", localPort='"
+                + localPort
+                + '\''
+                + ", localExtraArgs="
+                + localExtraArgs
+                + ", externalFull="
+                + externalFull
+                + '}';
     }
 
-    private void validate() {
-    }
+    private void validate() {}
 
     private static Map<String, String> systemPropertiesAsMap() {
         Properties properties = System.getProperties();
@@ -233,7 +235,8 @@ public final class ChallengerAutoConfig {
             case LOCAL:
                 return "";
             case EXISTING:
-                return valueFor(properties, environment, PROPERTY_BASE_URL, DEFAULT_EXISTING_BASE_URL);
+                return valueFor(
+                        properties, environment, PROPERTY_BASE_URL, DEFAULT_EXISTING_BASE_URL);
             case LIVE:
                 return valueFor(properties, environment, PROPERTY_BASE_URL, DEFAULT_LIVE_BASE_URL);
             default:
@@ -278,8 +281,9 @@ public final class ChallengerAutoConfig {
                 return Target.LIVE;
             default:
                 throw new IllegalArgumentException(
-                        "Unknown challenger auto target " + value +
-                                ". Expected local, existing, or live.");
+                        "Unknown challenger auto target "
+                                + value
+                                + ". Expected local, existing, or live.");
         }
     }
 
@@ -300,8 +304,9 @@ public final class ChallengerAutoConfig {
                 return Repository.SQLITE_FILE;
             default:
                 throw new IllegalArgumentException(
-                        "Unknown local repository " + value +
-                                ". Expected memory, sqlite-memory, or sqlite-file.");
+                        "Unknown local repository "
+                                + value
+                                + ". Expected memory, sqlite-memory, or sqlite-file.");
         }
     }
 
@@ -320,8 +325,7 @@ public final class ChallengerAutoConfig {
                 return PlayerMode.MULTI;
             default:
                 throw new IllegalArgumentException(
-                        "Unknown local player mode " + value +
-                                ". Expected single or multi.");
+                        "Unknown local player mode " + value + ". Expected single or multi.");
         }
     }
 
@@ -358,10 +362,10 @@ public final class ChallengerAutoConfig {
 
     private static boolean parseBoolean(final String value) {
         String normalized = normalize(value);
-        return "true".equals(normalized) ||
-                "yes".equals(normalized) ||
-                "y".equals(normalized) ||
-                "1".equals(normalized);
+        return "true".equals(normalized)
+                || "yes".equals(normalized)
+                || "y".equals(normalized)
+                || "1".equals(normalized);
     }
 
     private static String repositoryName(final Repository repository) {
@@ -389,10 +393,10 @@ public final class ChallengerAutoConfig {
     }
 
     private static String envName(final String propertyName) {
-        return propertyName.
-                replaceAll("([a-z])([A-Z])", "$1_$2").
-                toUpperCase(Locale.ROOT).
-                replace('.', '_');
+        return propertyName
+                .replaceAll("([a-z])([A-Z])", "$1_$2")
+                .toUpperCase(Locale.ROOT)
+                .replace('.', '_');
     }
 
     private static String legacyEnvName(final String propertyName) {
@@ -400,10 +404,7 @@ public final class ChallengerAutoConfig {
     }
 
     private static String normalize(final String value) {
-        return trimToEmpty(value).
-                toLowerCase(Locale.ROOT).
-                replace('_', '-').
-                replace(' ', '-');
+        return trimToEmpty(value).toLowerCase(Locale.ROOT).replace('_', '-').replace(' ', '-');
     }
 
     private static String normalizeBaseUrl(final String value) {

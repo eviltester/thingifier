@@ -6,16 +6,14 @@ import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
 final class EntityUrlMatcher {
 
-    private EntityUrlMatcher() {
-    }
+    private EntityUrlMatcher() {}
 
     static EntityDefinition entityFromCollectionUrl(final Thingifier thingifier, final String url) {
         String[] parts = parts(url);
         if (parts.length != 1) {
             return null;
         }
-        return thingifier.getERmodel().getSchema().
-                getDefinitionWithSingularOrPluralNamed(parts[0]);
+        return thingifier.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed(parts[0]);
     }
 
     static EntityDefinition entityFromInstanceUrl(final Thingifier thingifier, final String url) {
@@ -23,8 +21,7 @@ final class EntityUrlMatcher {
         if (parts.length != 2) {
             return null;
         }
-        return thingifier.getERmodel().getSchema().
-                getDefinitionWithSingularOrPluralNamed(parts[0]);
+        return thingifier.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed(parts[0]);
     }
 
     static String identifierFromInstanceUrl(final String url) {
@@ -54,8 +51,7 @@ final class EntityUrlMatcher {
         if (entity == null || identifier == null) {
             return null;
         }
-        return thingifier.getRepository(database).
-                findInstanceByQueryIdentifier(entity, identifier);
+        return thingifier.getRepository(database).findInstanceByQueryIdentifier(entity, identifier);
     }
 
     static String[] parts(final String url) {

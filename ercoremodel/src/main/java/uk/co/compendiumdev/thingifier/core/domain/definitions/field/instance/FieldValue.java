@@ -1,19 +1,19 @@
 package uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance;
 
+import java.math.BigDecimal;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.instances.InstanceFields;
 
-import java.math.BigDecimal;
-
 public final class FieldValue {
 
-    //TODO: Field Value should have the definition and getValue would return default if not set
+    // TODO: Field Value should have the definition and getValue would return default if not set
     // this would allow field values to compare against each other and simplify other code
     private final String fieldName; // should this be name or should it be a Field reference?
     private final String valueOfField;
     private final Field forField; // the related field
     private final String valueForUniqueComparison;
     private InstanceFields objectValue;
+
     // todo: list of strings for an array
     // todo: list of InstanceFields for an array of objects
 
@@ -23,19 +23,24 @@ public final class FieldValue {
         this.valueOfField = fieldValue;
         this.objectValue = null;
 
-        if(forField.mustBeUnique()){
+        if (forField.mustBeUnique()) {
             this.valueForUniqueComparison = forField.uniqueAfterTransform(fieldValue);
-        }else {
+        } else {
             this.valueForUniqueComparison = fieldValue;
         }
     }
 
     @Override
     public String toString() {
-        String string =  "FieldValue{" +
-                "fieldName='" + fieldName + "'" +
-                ", fieldValue='" + valueOfField + "'";
-        if(objectValue!=null){
+        String string =
+                "FieldValue{"
+                        + "fieldName='"
+                        + fieldName
+                        + "'"
+                        + ", fieldValue='"
+                        + valueOfField
+                        + "'";
+        if (objectValue != null) {
             string = string + ",{ " + objectValue + " }";
         }
         string = string + "}";
@@ -63,16 +68,13 @@ public final class FieldValue {
         return fieldName;
     }
 
-
     public FieldValue cloned() {
-        if(objectValue!=null){
+        if (objectValue != null) {
             return is(forField, objectValue.cloned());
-        }else{
+        } else {
             return is(forField, valueOfField);
         }
     }
-
-
 
     public String asString() {
         return valueOfField;
@@ -87,10 +89,10 @@ public final class FieldValue {
     }
 
     public boolean asBoolean() {
-        if (valueOfField.toLowerCase().contentEquals("true")){
+        if (valueOfField.toLowerCase().contentEquals("true")) {
             return true;
         }
-        if(valueOfField.toLowerCase().contentEquals("false")) {
+        if (valueOfField.toLowerCase().contentEquals("false")) {
             return false;
         }
 
@@ -101,13 +103,15 @@ public final class FieldValue {
         return getAsInt(this);
     }
 
-    private int getAsInt(FieldValue value){
+    private int getAsInt(FieldValue value) {
         // integers can come in from JSON as doubles
         BigDecimal intFloatValue = new BigDecimal(value.asString());
 
-        BigDecimal fractionalPart = intFloatValue.abs().subtract(new BigDecimal(intFloatValue.abs().toBigInteger()));
+        BigDecimal fractionalPart =
+                intFloatValue.abs().subtract(new BigDecimal(intFloatValue.abs().toBigInteger()));
 
-        if(!(fractionalPart.equals(new BigDecimal("0")) || fractionalPart.equals(new BigDecimal("0.0")))){
+        if (!(fractionalPart.equals(new BigDecimal("0"))
+                || fractionalPart.equals(new BigDecimal("0.0")))) {
             throw new NumberFormatException();
         }
 
@@ -115,7 +119,7 @@ public final class FieldValue {
     }
 
     public String asJsonValue() {
-        switch(forField.getType()) {
+        switch (forField.getType()) {
             case BOOLEAN:
             case FLOAT:
             case AUTO_INCREMENT:
@@ -131,7 +135,7 @@ public final class FieldValue {
         }
     }
 
-    private String quoted(String aString){
+    private String quoted(String aString) {
         return "\"" + aString.replaceAll("\"", "\\\\\"") + "\"";
     }
 

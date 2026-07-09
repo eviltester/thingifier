@@ -12,42 +12,39 @@ public class BasicAuthHeaderParser {
     private String username;
 
     public BasicAuthHeaderParser(final String header) {
-        if(header==null){
+        if (header == null) {
             this.authHeader = "";
-        }else{
-            this.authHeader= header;
+        } else {
+            this.authHeader = header;
         }
 
         this.basic = "";
         this.base64UserNamePass = "";
-        this.username="";
-        this.password="";
+        this.username = "";
+        this.password = "";
 
         splitParts(this.authHeader);
         decodeBase64();
-
-
     }
 
     private void decodeBase64() {
-        if(this.base64UserNamePass.length()==0) {
+        if (this.base64UserNamePass.length() == 0) {
             return;
         }
 
         try {
             String usernamePassword = new String(Base64.getDecoder().decode(base64UserNamePass));
             final String[] up = usernamePassword.split(":");
-            if(up.length>=1){
+            if (up.length >= 1) {
                 this.username = up[0];
             }
-            if(up.length>=2){
+            if (up.length >= 2) {
                 this.password = up[1];
             }
 
-        }catch(Exception e){
+        } catch (Exception e) {
             // ignore
         }
-
     }
 
     private void splitParts(final String authHeader) {
@@ -55,35 +52,33 @@ public class BasicAuthHeaderParser {
         List<String> parts = new ArrayList<>();
 
         String[] theparts = authHeader.split(" ");
-        for(String aPart : theparts){
-            if(aPart.trim().length()>0){
+        for (String aPart : theparts) {
+            if (aPart.trim().length() > 0) {
                 parts.add(aPart);
             }
         }
-        if(parts.size()>=1){
+        if (parts.size() >= 1) {
             basic = parts.get(0).toLowerCase();
         }
-        if(parts.size()>=2){
+        if (parts.size() >= 2) {
             base64UserNamePass = parts.get(1);
         }
     }
 
-
     public boolean matches(final String username, final String password) {
 
-        if(!basic.equals("basic")){
+        if (!basic.equals("basic")) {
             return false;
         }
 
-        if(username==null){
+        if (username == null) {
             return false;
         }
 
-        if(password==null){
+        if (password == null) {
             return false;
         }
 
-        return this.username.contentEquals(username) &&
-                this.password.contentEquals(password);
+        return this.username.contentEquals(username) && this.password.contentEquals(password);
     }
 }

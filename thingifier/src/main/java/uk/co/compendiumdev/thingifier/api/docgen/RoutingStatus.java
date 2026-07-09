@@ -8,7 +8,7 @@ public class RoutingStatus {
     private RoutingStatus() {
         this.returnedFromCall = true;
         this.returnedStatusCode = 0;
-        this.description="";
+        this.description = "";
     }
 
     public static RoutingStatus returnedFromCall() {
@@ -20,15 +20,15 @@ public class RoutingStatus {
     }
 
     public static RoutingStatus returnValue(final int status, final String statusDescription) {
-        return new RoutingStatus().
-                    setStatusCode(status).
-                    setStatusDescription(statusDescription).
-                    setReturnedFromCall(false);
+        return new RoutingStatus()
+                .setStatusCode(status)
+                .setStatusDescription(statusDescription)
+                .setReturnedFromCall(false);
     }
 
     private RoutingStatus setStatusDescription(final String statusDescription) {
 
-        if(statusDescription != null && statusDescription.trim().length() >0){
+        if (statusDescription != null && statusDescription.trim().length() > 0) {
             this.description = statusDescription.trim();
         }
 
@@ -53,11 +53,11 @@ public class RoutingStatus {
         return returnedStatusCode;
     }
 
-    public String description(){
-        if(description.length()>0){
+    public String description() {
+        if (description.length() > 0) {
             return description;
         }
-        switch (returnedStatusCode){
+        switch (returnedStatusCode) {
             case 200:
                 return "OK";
             case 201:

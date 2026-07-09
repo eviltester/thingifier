@@ -1,12 +1,11 @@
 package uk.co.compendiumdev.thingifier.api.response;
 
+import java.util.*;
+import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonThing;
+import uk.co.compendiumdev.thingifier.api.ermodelconversion.XmlThing;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.xml.StringToXML;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonThing;
-import uk.co.compendiumdev.thingifier.api.ermodelconversion.XmlThing;
-
-import java.util.*;
 
 public final class ApiResponseAsXml {
     private final ApiResponse apiResponse;
@@ -32,35 +31,39 @@ public final class ApiResponseAsXml {
         // collections are named with their plural
         if (apiResponse.isCollection()) {
 
-
             List<EntityInstance> thingsToReturn = apiResponse.getReturnedInstanceCollection();
 
             if (thingsToReturn.size() == 0) {
-                // when an XML response is asked for, but the collection is empty then we don't know what to return and {}
-                // would be returned but- ApiResponse should know the Thing that is in the collection
+                // when an XML response is asked for, but the collection is empty then we don't know
+                // what to return and {}
+                // would be returned but- ApiResponse should know the Thing that is in the
+                // collection
                 EntityDefinition defn = apiResponse.getTypeOfThingReturned();
                 if (defn != null) {
                     return StringToXML.getEmptyElement(defn.getPlural());
                 } else {
                     // todo should probably throw an exception
                     return "";
-                    //throw new IllegalStateException("Do not know type of thing returned");
+                    // throw new IllegalStateException("Do not know type of thing returned");
                 }
-
             }
 
             // could default to JSON in case the xml conversion fails
-            //  jsonThing.asJsonTypedArrayWithContentsUntyped(thingsToReturn, apiResponse.getTypeOfThingReturned().getPlural());
-            String output ="";
+            //  jsonThing.asJsonTypedArrayWithContentsUntyped(thingsToReturn,
+            // apiResponse.getTypeOfThingReturned().getPlural());
+            String output = "";
 
             // xml output via JSON
             try {
                 if (thingsToReturn.size() > 0) {
 
-                    output = xmlThing.getCollectionOfThings(thingsToReturn, apiResponse.getTypeOfThingReturned());
+                    output =
+                            xmlThing.getCollectionOfThings(
+                                    thingsToReturn, apiResponse.getTypeOfThingReturned());
                 }
             } catch (Exception e) {
-                // TODO: if this happens then the status code is going to be wrong, should probably throw an exception instead
+                // TODO: if this happens then the status code is going to be wrong, should probably
+                // throw an exception instead
                 output = getErrorMessageXml(e.getMessage());
             }
 

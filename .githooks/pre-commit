@@ -1,0 +1,20 @@
+#!/bin/sh
+
+set -e
+
+run_maven() {
+  shell_name="$(uname -s 2>/dev/null || echo unknown)"
+
+  if [ -x "./mvnw" ]; then
+    "./mvnw" "$@"
+  elif [ -f "./mvnw.cmd" ] && case "$shell_name" in MINGW*|MSYS*|CYGWIN*) true;; *) false;; esac; then
+    ./mvnw.cmd "$@"
+  elif command -v mvn.cmd >/dev/null 2>&1 && case "$shell_name" in MINGW*|MSYS*|CYGWIN*) true;; *) false;; esac; then
+    mvn.cmd "$@"
+  else
+    mvn "$@"
+  fi
+}
+
+echo "Running Spotless formatting check..."
+run_maven -q spotless:check

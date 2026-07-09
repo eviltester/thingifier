@@ -1,12 +1,11 @@
 package uk.co.compendiumdev.todolist.application;
 
-import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.application.MainImplementation;
-import uk.co.compendiumdev.thingifier.application.examples.TodoManagerThingifier;
-
 import static spark.Spark.get;
 import static spark.route.HttpMethod.get;
 
+import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.application.MainImplementation;
+import uk.co.compendiumdev.thingifier.application.examples.TodoManagerThingifier;
 
 public class Main {
 
@@ -25,9 +24,11 @@ public class Main {
 
         app.setupDefaultGui();
 
-        get("/", (request, response) -> {
-            response.redirect("/gui/entities");
-            return "";
+        get(
+                "/",
+                (request, response) -> {
+                    response.redirect("/gui/entities");
+                    return "";
                 });
 
         app.startRestServer();

@@ -37,20 +37,24 @@ public class RepositoryBackedRelationshipUrlResolverTest {
         project.addField(Field.is("id", FieldType.AUTO_INCREMENT));
         project.addField(Field.is("title", FieldType.STRING));
 
-        thingifier.defineRelationship(project, todo, "tasks", Cardinality.ONE_TO_MANY()).
-                whenReversed(Cardinality.ONE_TO_MANY(), "task-of");
+        thingifier
+                .defineRelationship(project, todo, "tasks", Cardinality.ONE_TO_MANY())
+                .whenReversed(Cardinality.ONE_TO_MANY(), "task-of");
 
         repository = thingifier.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME);
-        task = repository.createInstance(
-                EntityInstanceDraft.forEntity(todo).
-                        withField("title", "relationship task"));
-        projectInstance = repository.createInstance(
-                EntityInstanceDraft.forEntity(project).
-                        withField("title", "relationship project"));
+        task =
+                repository.createInstance(
+                        EntityInstanceDraft.forEntity(todo)
+                                .withField("title", "relationship task"));
+        projectInstance =
+                repository.createInstance(
+                        EntityInstanceDraft.forEntity(project)
+                                .withField("title", "relationship project"));
         repository.connectRelationship(projectInstance, "tasks", task);
 
-        resolver = new RepositoryBackedRelationshipUrlResolver(
-                thingifier, EntityRelModel.DEFAULT_DATABASE_NAME);
+        resolver =
+                new RepositoryBackedRelationshipUrlResolver(
+                        thingifier, EntityRelModel.DEFAULT_DATABASE_NAME);
     }
 
     @Test
@@ -116,8 +120,7 @@ public class RepositoryBackedRelationshipUrlResolverTest {
                 resolver.resolveRelationshipInstance(
                         String.format(
                                 "project/%s/tasks/%s",
-                                projectInstance.getPrimaryKeyValue(),
-                                task.getPrimaryKeyValue()));
+                                projectInstance.getPrimaryKeyValue(), task.getPrimaryKeyValue()));
 
         Assertions.assertTrue(resolution.matchedRelationshipPath());
         Assertions.assertTrue(resolution.relationshipInstancePath());
@@ -142,9 +145,9 @@ public class RepositoryBackedRelationshipUrlResolverTest {
 
     @Test
     public void relationshipInstancePathRequiresChildToBeConnected() {
-        EntityInstance unconnectedTask = repository.createInstance(
-                EntityInstanceDraft.forEntity(todo).
-                        withField("title", "unconnected task"));
+        EntityInstance unconnectedTask =
+                repository.createInstance(
+                        EntityInstanceDraft.forEntity(todo).withField("title", "unconnected task"));
 
         RepositoryBackedRelationshipUrlResolver.RelationshipUrlResolution resolution =
                 resolver.resolveRelationshipInstance(

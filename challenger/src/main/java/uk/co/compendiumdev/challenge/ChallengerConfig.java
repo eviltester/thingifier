@@ -1,10 +1,9 @@
 package uk.co.compendiumdev.challenge;
 
-import uk.co.compendiumdev.challenge.persistence.PersistenceLayer;
-import uk.co.compendiumdev.thingifier.core.repository.ThingRepositoryProviderConfig;
-
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import uk.co.compendiumdev.challenge.persistence.PersistenceLayer;
+import uk.co.compendiumdev.thingifier.core.repository.ThingRepositoryProviderConfig;
 
 public class ChallengerConfig {
 
@@ -15,8 +14,9 @@ public class ChallengerConfig {
 
     public boolean single_player_mode = true;
     public boolean isAdminApiEnabled = false;
-    public boolean guiStayAlive=false;
-    public PersistenceLayer persistenceLayer = new PersistenceLayer(PersistenceLayer.StorageType.LOCAL);
+    public boolean guiStayAlive = false;
+    public PersistenceLayer persistenceLayer =
+            new PersistenceLayer(PersistenceLayer.StorageType.LOCAL);
     private ThingRepositoryProviderConfig simulationRepositoryConfig =
             defaultSimulationRepositoryConfig();
 
@@ -42,9 +42,8 @@ public class ChallengerConfig {
             sqliteDirectory = DEFAULT_SIM_SQLITE_DIRECTORY;
         }
 
-        simulationRepositoryConfig = new ThingRepositoryProviderConfig(
-                repositoryMode,
-                Path.of(sqliteDirectory));
+        simulationRepositoryConfig =
+                new ThingRepositoryProviderConfig(repositoryMode, Path.of(sqliteDirectory));
     }
 
     public ThingRepositoryProviderConfig getSimulationRepositoryConfig() {
@@ -52,7 +51,7 @@ public class ChallengerConfig {
     }
 
     public void setToMultiPlayerMode() {
-        single_player_mode=false;
+        single_player_mode = false;
     }
 
     public void setToCloudPersistenceMode() {
@@ -60,7 +59,7 @@ public class ChallengerConfig {
     }
 
     public void setGuiToKeepSessionAlive() {
-        guiStayAlive=true;
+        guiStayAlive = true;
     }
 
     public void setToNoPersistenceMode() {
@@ -68,7 +67,7 @@ public class ChallengerConfig {
     }
 
     public void enableAdminApi() {
-        isAdminApiEnabled=true;
+        isAdminApiEnabled = true;
     }
 
     private static String argValue(final String[] args, final String argName) {

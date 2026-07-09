@@ -1,17 +1,13 @@
 package uk.co.compendiumdev.sparkstart;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import uk.co.compendiumdev.challenger.http.httpclient.HttpRequestSender;
-
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-/**
- * check if port is in use
- */
+/** check if port is in use */
 public class Port {
 
     static Logger logger = LoggerFactory.getLogger(Port.class);
@@ -34,13 +30,13 @@ public class Port {
 
             // If the code makes it this far without an exception it means
             // something is using the port and has responded.
-           logger.warn("Port " + port + " is in use, assuming proxy is running");
+            logger.warn("Port " + port + " is in use, assuming proxy is running");
             return true;
         } catch (IOException e) {
             logger.info("Port " + port + " is free, no proxy running");
             return false;
         } finally {
-            if( s != null){
+            if (s != null) {
                 try {
                     s.close();
                 } catch (IOException e) {

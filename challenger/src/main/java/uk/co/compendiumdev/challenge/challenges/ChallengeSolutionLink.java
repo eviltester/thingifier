@@ -6,34 +6,36 @@ public class ChallengeSolutionLink {
     public final String linkType;
     public final String linkData;
 
-    public ChallengeSolutionLink(final String linkText, final String linkType, final String linkUrl) {
+    public ChallengeSolutionLink(
+            final String linkText, final String linkType, final String linkUrl) {
         this.linkText = linkText.trim();
 
-        if(linkType==null){
+        if (linkType == null) {
             this.linkType = "";
-        }else{
+        } else {
             this.linkType = linkType.trim().toUpperCase();
         }
 
-        if(linkUrl==null) {
+        if (linkUrl == null) {
             this.linkData = "";
-        }else{
+        } else {
             this.linkData = linkUrl.trim();
         }
     }
 
     public String asHtmlAHref() {
-        if(linkType.equals("YOUTUBE")){
-            return String.format("<a href='https://youtu.be/%s' target='_blank'>%s</a>",linkData, linkText);
+        if (linkType.equals("YOUTUBE")) {
+            return String.format(
+                    "<a href='https://youtu.be/%s' target='_blank'>%s</a>", linkData, linkText);
         }
-        if(linkData.isEmpty()){
+        if (linkData.isEmpty()) {
             return linkText;
         }
 
-        String target="target='_blank'";
-        if(!linkData.startsWith("http")){
-            target="";
+        String target = "target='_blank'";
+        if (!linkData.startsWith("http")) {
+            target = "";
         }
-        return String.format("<a href='%s' %s>%s</a>",linkData, target, linkText);
+        return String.format("<a href='%s' %s>%s</a>", linkData, target, linkText);
     }
 }

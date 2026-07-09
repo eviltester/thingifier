@@ -5,8 +5,7 @@ import java.util.regex.PatternSyntaxException;
 
 final class SqliteRegexToLikeConverter {
 
-    private SqliteRegexToLikeConverter() {
-    }
+    private SqliteRegexToLikeConverter() {}
 
     static Conversion convert(final String regex) {
         validateRegex(regex);
@@ -75,9 +74,7 @@ final class SqliteRegexToLikeConverter {
     }
 
     private static void appendLiteral(
-            final StringBuilder exactValue,
-            final StringBuilder likeValue,
-            final char literal) {
+            final StringBuilder exactValue, final StringBuilder likeValue, final char literal) {
         exactValue.append(literal);
         if (literal == '\\' || literal == '%' || literal == '_') {
             likeValue.append('\\');
@@ -90,18 +87,18 @@ final class SqliteRegexToLikeConverter {
     }
 
     private static boolean isUnsupportedRegexMeta(final char current) {
-        return current == '[' ||
-                current == ']' ||
-                current == '(' ||
-                current == ')' ||
-                current == '{' ||
-                current == '}' ||
-                current == '+' ||
-                current == '?' ||
-                current == '*' ||
-                current == '|' ||
-                current == '^' ||
-                current == '$';
+        return current == '['
+                || current == ']'
+                || current == '('
+                || current == ')'
+                || current == '{'
+                || current == '}'
+                || current == '+'
+                || current == '?'
+                || current == '*'
+                || current == '|'
+                || current == '^'
+                || current == '$';
     }
 
     private static boolean hasTrailingUnescapedDollar(final String pattern) {
@@ -111,8 +108,8 @@ final class SqliteRegexToLikeConverter {
 
         int backslashes = 0;
         for (int index = pattern.length() - 2;
-             index >= 0 && pattern.charAt(index) == '\\';
-             index--) {
+                index >= 0 && pattern.charAt(index) == '\\';
+                index--) {
             backslashes++;
         }
         return backslashes % 2 == 0;

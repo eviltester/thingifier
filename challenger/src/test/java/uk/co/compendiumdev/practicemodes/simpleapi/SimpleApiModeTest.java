@@ -1,6 +1,8 @@
 package uk.co.compendiumdev.practicemodes.simpleapi;
 
 import com.google.gson.Gson;
+import java.util.*;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -16,30 +18,25 @@ import uk.co.compendiumdev.practicemodes.simpleapi.testabstractions.Items;
 import uk.co.compendiumdev.practicemodes.simpleapi.testabstractions.SimpleAPIApi;
 import uk.co.compendiumdev.sparkstart.Environment;
 
-import java.util.*;
-import java.util.stream.Stream;
-
 /*
-    The Simple API is wired up using the default thingifier so we are mainly confirming format,
-    specific API Config, and wiring
- */
+   The Simple API is wired up using the default thingifier so we are mainly confirming format,
+   specific API Config, and wiring
+*/
 public class SimpleApiModeTest {
 
     private static HttpMessageSender http;
     private static SimpleAPIApi api;
 
-
     @BeforeAll
-    static void createHttp(){
+    static void createHttp() {
         // this uses the Environment to startup the spark app to
         // issue http tests and test the routing in spark
         http = new HttpMessageSender(Environment.getBaseUri());
         api = new SimpleAPIApi(http);
     }
 
-    static Stream<Arguments> simpleRoutingStatus(){
+    static Stream<Arguments> simpleRoutingStatus() {
         List<Arguments> args = new ArrayList<>();
-
 
         args.add(Arguments.of(200, "get", "/simpleapi/items"));
         args.add(Arguments.of(200, "head", "/simpleapi/items"));
@@ -59,19 +56,16 @@ public class SimpleApiModeTest {
         args.add(Arguments.of(405, "patch", "/simpleapi/randomisbn"));
         args.add(Arguments.of(405, "trace", "/simpleapi/randomisbn"));
 
-
         return args.stream();
     }
 
     @ParameterizedTest(name = "simple status routing expected {0} for {1} {2}")
     @MethodSource("simpleRoutingStatus")
-    void simpleRoutingTest(int statusCode, String verb, String url){
-        final HttpResponseDetails response =
-                http.send(url, verb);
+    void simpleRoutingTest(int statusCode, String verb, String url) {
+        final HttpResponseDetails response = http.send(url, verb);
 
         Assertions.assertEquals(statusCode, response.statusCode);
     }
-
 
     @Test
     public void canPostItemAsXmlAndAcceptJson() {
@@ -82,14 +76,18 @@ public class SimpleApiModeTest {
 
         // Minimum payload
         final HttpResponseDetails response =
-                http.send("/simpleapi/items", "POST", headers,
+                http.send(
+                        "/simpleapi/items",
+                        "POST",
+                        headers,
                         """
                         <item>
                             <price>1.64</price>
                             <isbn13>128-6-32-856404-0</isbn13>
                             <type>cd</type>
                         </item>
-                        """.stripIndent());
+                        """
+                                .stripIndent());
 
         Assertions.assertEquals(201, response.statusCode);
         Assertions.assertEquals("application/json", response.getHeader("content-type"));
@@ -110,7 +108,10 @@ public class SimpleApiModeTest {
 
         // full valid payload
         final HttpResponseDetails response =
-                http.send("/simpleapi/items", "POST", headers,
+                http.send(
+                        "/simpleapi/items",
+                        "POST",
+                        headers,
                         """
                             {
                             "price":2.00,
@@ -118,7 +119,8 @@ public class SimpleApiModeTest {
                             "isbn13": "1234567890123",
                             "type":book
                         }
-                        """.stripIndent());
+                        """
+                                .stripIndent());
 
         Assertions.assertEquals(201, response.statusCode);
         Assertions.assertEquals("application/json", response.getHeader("content-type"));
@@ -130,12 +132,8 @@ public class SimpleApiModeTest {
         Assertions.assertEquals("book", item.type);
     }
 
-
     @ParameterizedTest
-    @ValueSource(strings = {
-            "",
-            "-"
-    })
+    @ValueSource(strings = {"", "-"})
     public void canNotPostCreateItemsWithDuplicateISBN(String dupeSynonymReplace) {
 
         Map<String, String> headers = new HashMap<>();
@@ -147,7 +145,10 @@ public class SimpleApiModeTest {
 
         // full valid payload
         final HttpResponseDetails response =
-                http.send("/simpleapi/items", "POST", headers,
+                http.send(
+                        "/simpleapi/items",
+                        "POST",
+                        headers,
                         """
                             {
                             "price":2.00,
@@ -155,10 +156,15 @@ public class SimpleApiModeTest {
                             "isbn13": "%s",
                             "type":book
                         }
-                        """.formatted(aRandomIsbn).stripIndent());
+                        """
+                                .formatted(aRandomIsbn)
+                                .stripIndent());
 
         final HttpResponseDetails duplicateIsbnResponse =
-                http.send("/simpleapi/items", "POST", headers,
+                http.send(
+                        "/simpleapi/items",
+                        "POST",
+                        headers,
                         """
                             {
                             "price":2.00,
@@ -166,13 +172,17 @@ public class SimpleApiModeTest {
                             "isbn13": "%s",
                             "type":book
                         }
-                        """.formatted(aRandomIsbn.replace("-",dupeSynonymReplace)).stripIndent());
+                        """
+                                .formatted(aRandomIsbn.replace("-", dupeSynonymReplace))
+                                .stripIndent());
 
         Assertions.assertEquals(201, response.statusCode);
         Assertions.assertEquals("application/json", response.getHeader("content-type"));
 
         Assertions.assertEquals(400, duplicateIsbnResponse.statusCode);
-        Assertions.assertTrue(duplicateIsbnResponse.body.contains("Field isbn13 Value is not unique"), "did not expect " + duplicateIsbnResponse.body);
+        Assertions.assertTrue(
+                duplicateIsbnResponse.body.contains("Field isbn13 Value is not unique"),
+                "did not expect " + duplicateIsbnResponse.body);
     }
 
     @ParameterizedTest
@@ -186,20 +196,23 @@ public class SimpleApiModeTest {
         headers.put("Accept", "application/json");
 
         Item anItem = new Item();
-        anItem.type="book";
-        anItem.price=2.00F;
+        anItem.type = "book";
+        anItem.price = 2.00F;
         anItem.isbn13 = Item.randomIsbn(random);
 
         Item anItemToAmend = new Item();
-        anItemToAmend.type="book";
-        anItemToAmend.price=3.00F;
+        anItemToAmend.type = "book";
+        anItemToAmend.price = 3.00F;
         anItemToAmend.isbn13 = Item.randomIsbn(random);
 
         api.apiCreateItem(anItem);
         Item itemToAmend = api.apiCreateItem(anItemToAmend);
 
         final HttpResponseDetails amendResponse =
-                http.send("/simpleapi/items/"+itemToAmend.id, verbPostPut, headers,
+                http.send(
+                        "/simpleapi/items/" + itemToAmend.id,
+                        verbPostPut,
+                        headers,
                         """
                             {
                             "price":2.00,
@@ -207,19 +220,23 @@ public class SimpleApiModeTest {
                             "isbn13": "%s",
                             "type":book
                         }
-                        """.formatted(anItem.isbn13).stripIndent());
+                        """
+                                .formatted(anItem.isbn13)
+                                .stripIndent());
 
-
-        Assertions.assertEquals(400, amendResponse.statusCode, "should not be able to amend item to " + amendResponse.body);
-        Assertions.assertTrue(amendResponse.body.contains("Field isbn13 Value is not unique"), "did not expect " + amendResponse.body);
+        Assertions.assertEquals(
+                400,
+                amendResponse.statusCode,
+                "should not be able to amend item to " + amendResponse.body);
+        Assertions.assertTrue(
+                amendResponse.body.contains("Field isbn13 Value is not unique"),
+                "did not expect " + amendResponse.body);
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {
-            "",
-            "-"
-    })
-    public void canNotAmendItemsToHaveDuplicateISBNBasedOnUniqueComparison(String dupeSynonymReplace) {
+    @ValueSource(strings = {"", "-"})
+    public void canNotAmendItemsToHaveDuplicateISBNBasedOnUniqueComparison(
+            String dupeSynonymReplace) {
 
         Random random = new Random();
 
@@ -228,20 +245,23 @@ public class SimpleApiModeTest {
         headers.put("Accept", "application/json");
 
         Item anItem = new Item();
-        anItem.type="book";
-        anItem.price=2.00F;
+        anItem.type = "book";
+        anItem.price = 2.00F;
         anItem.isbn13 = Item.randomIsbn(random);
 
         Item anItemToAmend = new Item();
-        anItemToAmend.type="book";
-        anItemToAmend.price=3.00F;
+        anItemToAmend.type = "book";
+        anItemToAmend.price = 3.00F;
         anItemToAmend.isbn13 = Item.randomIsbn(random);
 
         api.apiCreateItem(anItem);
         Item itemToAmend = api.apiCreateItem(anItemToAmend);
 
         final HttpResponseDetails amendResponse =
-                http.send("/simpleapi/items/"+itemToAmend.id, "POST", headers,
+                http.send(
+                        "/simpleapi/items/" + itemToAmend.id,
+                        "POST",
+                        headers,
                         """
                             {
                             "price":2.00,
@@ -249,11 +269,17 @@ public class SimpleApiModeTest {
                             "isbn13": "%s",
                             "type":book
                         }
-                        """.formatted(anItem.isbn13.replace("-",dupeSynonymReplace)).stripIndent());
+                        """
+                                .formatted(anItem.isbn13.replace("-", dupeSynonymReplace))
+                                .stripIndent());
 
-
-        Assertions.assertEquals(400, amendResponse.statusCode, "should not be able to amend item to " + amendResponse.body);
-        Assertions.assertTrue(amendResponse.body.contains("Field isbn13 Value is not unique"), "did not expect " + amendResponse.body);
+        Assertions.assertEquals(
+                400,
+                amendResponse.statusCode,
+                "should not be able to amend item to " + amendResponse.body);
+        Assertions.assertTrue(
+                amendResponse.body.contains("Field isbn13 Value is not unique"),
+                "did not expect " + amendResponse.body);
     }
 
     @Test
@@ -265,7 +291,10 @@ public class SimpleApiModeTest {
 
         // full valid payload
         final HttpResponseDetails response =
-                http.send("/simpleapi/items", "POST", headers,
+                http.send(
+                        "/simpleapi/items",
+                        "POST",
+                        headers,
                         """
                             {
                             "id" : 1,
@@ -274,16 +303,17 @@ public class SimpleApiModeTest {
                             "isbn13": "1234567890123",
                             "type":book
                         }
-                        """.stripIndent());
+                        """
+                                .stripIndent());
 
         Assertions.assertEquals(400, response.statusCode);
         Assertions.assertEquals("application/json", response.getHeader("content-type"));
 
-        ErrorMessagesResponse error = new Gson().fromJson(response.body, ErrorMessagesResponse.class);
+        ErrorMessagesResponse error =
+                new Gson().fromJson(response.body, ErrorMessagesResponse.class);
         Assertions.assertEquals(1, error.errorMessages.size());
         Assertions.assertTrue(error.errorMessages.get(0).contains("Not allowed to create with id"));
     }
-
 
     @Test
     public void canGetItemsAsJson() {
@@ -293,12 +323,12 @@ public class SimpleApiModeTest {
     }
 
     @Test
-    public void canCreateAnItemAndThenGetIt(){
+    public void canCreateAnItemAndThenGetIt() {
 
         Item itemToCreate = new Item();
-        itemToCreate.isbn13="1111111111111";
-        itemToCreate.price=1.23f;
-        itemToCreate.type="book";
+        itemToCreate.isbn13 = "1111111111111";
+        itemToCreate.price = 1.23f;
+        itemToCreate.type = "book";
 
         Item createdItem = api.apiCreateItem(itemToCreate);
 
@@ -311,12 +341,12 @@ public class SimpleApiModeTest {
     }
 
     @Test
-    public void canCreateAnItemAndThenDeleteIt(){
+    public void canCreateAnItemAndThenDeleteIt() {
 
         Item itemToCreate = new Item();
-        itemToCreate.isbn13="9111111111111";
-        itemToCreate.price=1.23f;
-        itemToCreate.type="book";
+        itemToCreate.isbn13 = "9111111111111";
+        itemToCreate.price = 1.23f;
+        itemToCreate.type = "book";
 
         Item createdItem = api.apiCreateItem(itemToCreate);
 
@@ -326,38 +356,40 @@ public class SimpleApiModeTest {
         Assertions.assertEquals(404, api.apiGetItemResponse(createdItem.id).statusCode);
     }
 
-
     @Test
-    public void canOnlyCreateAMaxOf100Items(){
+    public void canOnlyCreateAMaxOf100Items() {
 
         Items items = api.apiGetItems();
 
-        int numberToCreate = 100- items.items.size();
+        int numberToCreate = 100 - items.items.size();
 
         Item itemToCreate = new Item();
-        itemToCreate.isbn13= "0001234567890";
-        itemToCreate.price=1.23f;
-        itemToCreate.type="book";
+        itemToCreate.isbn13 = "0001234567890";
+        itemToCreate.price = 1.23f;
+        itemToCreate.type = "book";
 
-        for(int itemx=0; itemx<numberToCreate; itemx++){
-            itemToCreate.isbn13= String.format("%03d", itemx) + "1234567890";
+        for (int itemx = 0; itemx < numberToCreate; itemx++) {
+            itemToCreate.isbn13 = String.format("%03d", itemx) + "1234567890";
             api.apiCreateItem(itemToCreate);
         }
 
-        itemToCreate.isbn13= "101" + "1234567890";
+        itemToCreate.isbn13 = "101" + "1234567890";
         HttpResponseDetails finalResponse = api.apiCreateItemResponse(itemToCreate);
         Assertions.assertEquals(400, finalResponse.statusCode);
 
-        ErrorMessagesResponse errorMessage = new Gson().fromJson(finalResponse.body, ErrorMessagesResponse.class);
-        Assertions.assertEquals(errorMessage.errorMessages.get(0), "ERROR: Cannot add instance, maximum limit of 100 reached");
+        ErrorMessagesResponse errorMessage =
+                new Gson().fromJson(finalResponse.body, ErrorMessagesResponse.class);
+        Assertions.assertEquals(
+                errorMessage.errorMessages.get(0),
+                "ERROR: Cannot add instance, maximum limit of 100 reached");
     }
 
     @Test
-    public void canNeverDeleteItemsToEmpty(){
+    public void canNeverDeleteItemsToEmpty() {
 
         Items items = api.apiGetItems();
 
-        for(Item item : items.items){
+        for (Item item : items.items) {
             api.apiDeleteItem(item.id);
         }
 
@@ -369,16 +401,16 @@ public class SimpleApiModeTest {
     }
 
     @Test
-    public void dataRepopulationHappensWhen3Left(){
+    public void dataRepopulationHappensWhen3Left() {
 
         Items items = api.apiGetItems();
 
         int itemsLeft = items.items.size();
 
-        for(Item item : items.items){
+        for (Item item : items.items) {
             api.apiDeleteItem(item.id);
             itemsLeft--;
-            if(itemsLeft==5) break;
+            if (itemsLeft == 5) break;
         }
 
         // population kicks in when less than 5
@@ -393,9 +425,8 @@ public class SimpleApiModeTest {
         Items moreItems = api.apiGetItems();
 
         // the data populator creates 8 items
-        Assertions.assertEquals(4+8, moreItems.items.size());
+        Assertions.assertEquals(4 + 8, moreItems.items.size());
     }
-
 
     @Test
     public void canGetARandomISBN() {
@@ -405,8 +436,8 @@ public class SimpleApiModeTest {
                 http.send("/simpleapi/randomisbn", "GET", new HashMap<>(), "");
 
         Assertions.assertEquals(200, response.statusCode);
-        String isbn = response.body.replace("-","");
-        Assertions.assertTrue(isbn.length()==13);
+        String isbn = response.body.replace("-", "");
+        Assertions.assertTrue(isbn.length() == 13);
     }
 
     @Test
@@ -416,7 +447,7 @@ public class SimpleApiModeTest {
                 http.send("/simpleapi/randomisbn", "GET", new HashMap<>(), "");
 
         Assertions.assertEquals(200, isbnresponse.statusCode);
-        String isbn = isbnresponse.body.replace("-","");
+        String isbn = isbnresponse.body.replace("-", "");
 
         Map<String, String> headers = new HashMap<>();
         headers.put("Content-Type", "application/json");
@@ -424,7 +455,10 @@ public class SimpleApiModeTest {
 
         // full valid payload
         final HttpResponseDetails response =
-                http.send("/simpleapi/items", "POST", headers,
+                http.send(
+                        "/simpleapi/items",
+                        "POST",
+                        headers,
                         """
                             {
                             "price":3.00,
@@ -432,7 +466,9 @@ public class SimpleApiModeTest {
                             "isbn13": "%s",
                             "type":book
                         }
-                        """.formatted(isbn).stripIndent());
+                        """
+                                .formatted(isbn)
+                                .stripIndent());
 
         Assertions.assertEquals(201, response.statusCode);
         Assertions.assertEquals("application/json", response.getHeader("content-type"));
@@ -443,5 +479,4 @@ public class SimpleApiModeTest {
         Assertions.assertEquals(isbn, item.isbn13);
         Assertions.assertEquals("book", item.type);
     }
-
 }

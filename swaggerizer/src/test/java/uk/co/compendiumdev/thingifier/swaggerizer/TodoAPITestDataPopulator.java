@@ -11,19 +11,20 @@ public class TodoAPITestDataPopulator implements RepositoryDataPopulator {
     @Override
     public void populate(final ERSchema schema, final ThingRepository repository) {
 
-        String [] todos={
-                        "scan paperwork",
-                        "file paperwork",
-                        "process payments",
-                        "escalate late payments",
-                        "pay invoices",
-                        "process payroll",
-                        "train staff",
-                        "schedule meeting"};
+        String[] todos = {
+            "scan paperwork",
+            "file paperwork",
+            "process payments",
+            "escalate late payments",
+            "pay invoices",
+            "process payroll",
+            "train staff",
+            "schedule meeting"
+        };
 
         EntityDefinition todo = schema.getEntityDefinitionNamed("todo");
 
-        for(String todoItem : todos){
+        for (String todoItem : todos) {
             repository.createInstance(
                     EntityInstanceDraft.forEntity(todo).withField("title", todoItem));
         }

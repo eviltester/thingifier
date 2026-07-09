@@ -1,12 +1,11 @@
 package uk.co.compendiumdev.thingifier.core.domain.instances;
 
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.NamedValue;
-import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
+import java.util.*;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
-
-import java.util.*;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.NamedValue;
+import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 
 public class EntityInstance {
 
@@ -37,11 +36,9 @@ public class EntityInstance {
     }
 
     private static EntityInstance fromDraft(
-            final EntityInstanceDraft draft,
-            final String internalId) {
-        EntityInstance instance = new EntityInstance(
-                draft.getEntity(),
-                UUID.fromString(internalId));
+            final EntityInstanceDraft draft, final String internalId) {
+        EntityInstance instance =
+                new EntityInstance(draft.getEntity(), UUID.fromString(internalId));
         return instance.applyDraftFromRepository(draft);
     }
 
@@ -62,11 +59,12 @@ public class EntityInstance {
 
         output.append("\t\t\t" + entityDefinition.getName() + "\n");
         output.append("\t\t\tInternal Ref: " + getInternalId() + "\n");
-        //output.append(instance.toString() + "\n");
+        // output.append(instance.toString() + "\n");
         for (String fieldName : entityDefinition.getFieldNames()) {
             FieldValue fieldValue = getFieldValue(fieldName);
-            if(fieldValue!=null) {
-                output.append(String.format("\t\t\t\t %s : %s %n", fieldName, fieldValue.asString()));
+            if (fieldValue != null) {
+                output.append(
+                        String.format("\t\t\t\t %s : %s %n", fieldName, fieldValue.asString()));
                 if (entityDefinition.getField(fieldName).getType() == FieldType.OBJECT) {
                     output.append("\t\t\t\t\t\t" + fieldValue.asObject().toString());
                 }
@@ -82,13 +80,15 @@ public class EntityInstance {
         return internalId.toString();
     }
 
-
     public String getPrimaryKeyValue() {
-        if(entityDefinition.hasPrimaryKeyField()){
-            return instanceFields.getFieldValue(entityDefinition.getPrimaryKeyField().getName()).asString();
+        if (entityDefinition.hasPrimaryKeyField()) {
+            return instanceFields
+                    .getFieldValue(entityDefinition.getPrimaryKeyField().getName())
+                    .asString();
         }
 
-        // TODO: what should we do if a primary key has not been defined? return the first auto field? or null like this?
+        // TODO: what should we do if a primary key has not been defined? return the first auto
+        // field? or null like this?
         return null;
     }
 
@@ -106,7 +106,6 @@ public class EntityInstance {
         return this;
     }
 
-
     EntityInstance overrideValue(final String key, final String value) {
         ensureWritable();
         return overrideValueFromRepository(key, value);
@@ -118,37 +117,32 @@ public class EntityInstance {
         return this;
     }
 
-    public FieldValue getFieldValue(String fieldName){
+    public FieldValue getFieldValue(String fieldName) {
         return instanceFields.getFieldValue(fieldName);
     }
-
 
     public EntityDefinition getEntity() {
         return this.entityDefinition;
     }
 
-    /**
-     * connect this thing to another thing using the relationship relationshipName
-     */
-    EntityInstanceRelationships getRelationships(){
+    /** connect this thing to another thing using the relationship relationshipName */
+    EntityInstanceRelationships getRelationships() {
         return relationships;
     }
 
     /*
-        Validation
-     */
+       Validation
+    */
 
-    private ValidationReport validateFields(){
+    private ValidationReport validateFields() {
         return validateFieldValues(new ArrayList<>(), false);
     }
 
-    public ValidationReport validateFieldValues(List<String> excluding, boolean amAllowedToSetIds){
+    public ValidationReport validateFieldValues(List<String> excluding, boolean amAllowedToSetIds) {
         return instanceFields.validateFields(excluding, amAllowedToSetIds);
     }
 
-
-
-    public ValidationReport validateRelationships(){
+    public ValidationReport validateRelationships() {
         return relationships.validateRelationships();
     }
 
@@ -177,29 +171,27 @@ public class EntityInstance {
     }
 
     void clearAllFieldsFromRepository() {
-        List<String>ignoreFields = new ArrayList<>();
+        List<String> ignoreFields = new ArrayList<>();
 
-        ignoreFields.addAll(getEntity().
-                                getFieldNamesOfType(
-                                    FieldType.AUTO_INCREMENT,
-                                    FieldType.AUTO_GUID));
+        ignoreFields.addAll(
+                getEntity().getFieldNamesOfType(FieldType.AUTO_INCREMENT, FieldType.AUTO_GUID));
 
         instanceFields.deleteAllFieldValuesExcept(ignoreFields);
     }
 
     EntityInstance createDuplicateWithoutRelationships(final String internalId) {
-        EntityInstance cloneInstance = new EntityInstance(entityDefinition, UUID.fromString(internalId));
+        EntityInstance cloneInstance =
+                new EntityInstance(entityDefinition, UUID.fromString(internalId));
 
-        for(String fieldName : instanceFields.getDefinition().getFieldNames()){
+        for (String fieldName : instanceFields.getDefinition().getFieldNames()) {
             FieldValue value = instanceFields.getAssignedValue(fieldName);
-            if(value!=null){
+            if (value != null) {
                 cloneInstance.instanceFields.addValue(value.cloned());
             }
         }
 
         return cloneInstance;
     }
-
 
     InstanceFields getFields() {
         return instanceFields;
@@ -216,10 +208,9 @@ public class EntityInstance {
         }
     }
 
-
     public boolean hasInstantiatedFieldNamed(String fieldName) {
 
-        if(entityDefinition.hasFieldNameDefined(fieldName)) {
+        if (entityDefinition.hasFieldNameDefined(fieldName)) {
             return instanceFields.hasAssignedValue(fieldName);
         }
 
@@ -229,6 +220,4 @@ public class EntityInstance {
     public boolean hasFieldNamed(String fieldName) {
         return entityDefinition.hasFieldNameDefined(fieldName);
     }
-
-
 }

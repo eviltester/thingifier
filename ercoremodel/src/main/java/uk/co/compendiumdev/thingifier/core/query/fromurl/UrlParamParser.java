@@ -1,9 +1,8 @@
 package uk.co.compendiumdev.thingifier.core.query.fromurl;
 
+import java.net.URLDecoder;
 import uk.co.compendiumdev.thingifier.core.query.FilterBy;
 import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
-
-import java.net.URLDecoder;
 
 public class UrlParamParser {
     public String urlDecode(String possiblyUrlEncodedString) {
@@ -11,7 +10,7 @@ public class UrlParamParser {
 
         try {
             decoded = URLDecoder.decode(possiblyUrlEncodedString, "UTF-8");
-        }catch(Exception e){
+        } catch (Exception e) {
             System.out.println("error decoding " + possiblyUrlEncodedString);
             System.out.println(e.getMessage());
         }
@@ -23,25 +22,24 @@ public class UrlParamParser {
 
         QueryFilterParams filters = new QueryFilterParams();
 
-        if(rawUrlParams==null){
+        if (rawUrlParams == null) {
             return filters;
         }
 
         String parseThis = rawUrlParams.trim();
 
-        if(parseThis.isEmpty()){
+        if (parseThis.isEmpty()) {
             return filters;
         }
 
         String rawDecoded = urlDecode(parseThis);
         String[] rawParams = rawDecoded.split("&");
 
-
-        for (String rawParam : rawParams){
+        for (String rawParam : rawParams) {
             try {
                 FilterBy aFilterBy = parseToFilterBy(rawParam);
                 filters.add(aFilterBy);
-            }catch (Exception e){
+            } catch (Exception e) {
                 // TODO: should really have added a logger by now and avoid System.out
                 System.out.println(e.getMessage());
             }
@@ -63,8 +61,8 @@ public class UrlParamParser {
         // for each FilterBy operator, try to find it in the string
         // if present, split the string there and the fieldname is to the
         // left of the operator
-        for(String anOperator : FilterBy.operators){
-            if(param.contains(anOperator)){
+        for (String anOperator : FilterBy.operators) {
+            if (param.contains(anOperator)) {
                 return param.substring(0, param.indexOf(anOperator));
             }
         }

@@ -35,11 +35,13 @@ public class MultipleEntityInstancesDatabasesTest {
         ThingRepository otherRepository = erm.getRepository("other_things");
         EntityInstance thing = create(otherRepository, thingDefn);
 
-        EntityInstance foundThing = otherRepository.findEntityInstanceByGUID(thing.getPrimaryKeyValue());
+        EntityInstance foundThing =
+                otherRepository.findEntityInstanceByGUID(thing.getPrimaryKeyValue());
 
         Assertions.assertEquals("Thing 1", foundThing.getFieldValue("Title").asString());
         Assertions.assertEquals(foundThing, thing);
-        Assertions.assertEquals(0,
+        Assertions.assertEquals(
+                0,
                 erm.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(thingDefn));
     }
 
@@ -50,11 +52,13 @@ public class MultipleEntityInstancesDatabasesTest {
 
         erm.createInstanceDatabase("other_things");
 
-        Exception e = Assertions.assertThrows(
-                IllegalStateException.class,
-                () -> erm.createInstanceDatabase("other_things"));
+        Exception e =
+                Assertions.assertThrows(
+                        IllegalStateException.class,
+                        () -> erm.createInstanceDatabase("other_things"));
 
-        Assertions.assertEquals("ERM Database Already Exists with name other_things", e.getMessage());
+        Assertions.assertEquals(
+                "ERM Database Already Exists with name other_things", e.getMessage());
     }
 
     @Test
@@ -80,9 +84,10 @@ public class MultipleEntityInstancesDatabasesTest {
         EntityRelModel erm = new EntityRelModel();
         defineThing(erm);
 
-        Exception e = Assertions.assertThrows(
-                IllegalStateException.class,
-                () -> erm.deleteInstanceDatabase(EntityRelModel.DEFAULT_DATABASE_NAME));
+        Exception e =
+                Assertions.assertThrows(
+                        IllegalStateException.class,
+                        () -> erm.deleteInstanceDatabase(EntityRelModel.DEFAULT_DATABASE_NAME));
 
         Assertions.assertEquals("Cannot delete default database", e.getMessage());
         Assertions.assertNotNull(erm.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME));
@@ -95,7 +100,8 @@ public class MultipleEntityInstancesDatabasesTest {
         return thingDefn;
     }
 
-    private EntityInstance create(final ThingRepository repository, final EntityDefinition thingDefn) {
+    private EntityInstance create(
+            final ThingRepository repository, final EntityDefinition thingDefn) {
         return repository.createInstance(
                 EntityInstanceDraft.forEntity(thingDefn).withField("Title", "Thing 1"));
     }

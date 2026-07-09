@@ -14,7 +14,7 @@ public class HttpResponseDetails {
     }
 
     public void setHeaders(Map<String, String> headers) {
-        for(Map.Entry<String, String>given : headers.entrySet()){
+        for (Map.Entry<String, String> given : headers.entrySet()) {
             this.headers.put(given.getKey().toUpperCase(), given.getValue());
         }
     }

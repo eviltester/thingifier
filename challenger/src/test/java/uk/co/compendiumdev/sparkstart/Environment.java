@@ -1,14 +1,11 @@
 package uk.co.compendiumdev.sparkstart;
 
-
+import java.util.ArrayList;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spark.Spark;
 import uk.co.compendiumdev.challenge.ChallengeMain;
-import uk.co.compendiumdev.challenge.ChallengerAuthData;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class Environment {
 
@@ -17,8 +14,8 @@ public class Environment {
     // these unit tests only work in multi-player mode
     public static boolean SINGLE_PLAYER_MODE = false;
 
-    public static String getEnv(String urlPath){
-        return  getBaseUri() + urlPath;
+    public static String getEnv(String urlPath) {
+        return getBaseUri() + urlPath;
     }
 
     public static String getBaseUri() {
@@ -32,15 +29,16 @@ public class Environment {
     public static String getBaseUri(boolean isSinglePlayerMode, boolean writeFiles) {
 
         // return environment if want to run externally
-//        if(true)
-//            return "https://apichallenges.eviltester.com";
+        //        if(true)
+        //            return "https://apichallenges.eviltester.com";
 
         logger.info("Checking app running");
         // if not running then start the spark
-        if(ChallengeMain.getChallenger()==null || !Port.inUse("localhost", 4567)) {
+        if (ChallengeMain.getChallenger() == null || !Port.inUse("localhost", 4567)) {
 
-            logger.info("App not running starting with single player mode == " + isSinglePlayerMode);
-            //start it up
+            logger.info(
+                    "App not running starting with single player mode == " + isSinglePlayerMode);
+            // start it up
             Spark.port(4567);
             List<String> args = new ArrayList<>();
 
@@ -51,14 +49,16 @@ public class Environment {
                 args.add("-multiplayer");
             }
 
-            if(!writeFiles){
-               args.add("-nostorage");
+            if (!writeFiles) {
+                args.add("-nostorage");
             }
 
             ChallengeMain.main(args.toArray(new String[0]));
             waitTillRunningStatus(true);
 
-            logger.info("App running started with single player mode == " + ChallengeMain.getChallenger().isSinglePlayerMode());
+            logger.info(
+                    "App running started with single player mode == "
+                            + ChallengeMain.getChallenger().isSinglePlayerMode());
         }
 
         return "http://localhost:4567";
@@ -77,16 +77,16 @@ public class Environment {
                 logger.info(String.format("Waiting for server %d", maxtries));
                 Thread.sleep(500);
             } catch (InterruptedException e) {
-                logger.error("Interruption during running check ",e);
+                logger.error("Interruption during running check ", e);
             }
-            if(maxtries<=0){
+            if (maxtries <= 0) {
                 logger.info("Max retries in running status finished.");
                 return;
             }
         }
     }
 
-    public static void stop(){
+    public static void stop() {
         Spark.stop();
         Spark.awaitStop();
         ChallengeMain.stop();

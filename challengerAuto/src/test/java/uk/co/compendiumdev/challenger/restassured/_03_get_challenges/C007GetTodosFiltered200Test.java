@@ -20,15 +20,17 @@ public class C007GetTodosFiltered200Test extends RestAssuredBaseTest {
         api.createTodo("not done", "this todo is not done", false);
         final Todo doneTodo = api.createTodo("done", "this todo is done", true);
 
-        Todos todosList = RestAssured.
-                given().
-                header("X-CHALLENGER", xChallenger).
-                accept("application/json").
-                get(apiPath("/todos?doneStatus=true")).
-                then().
-                statusCode(200).
-                contentType(ContentType.JSON).extract().body().as(Todos.class);
-
+        Todos todosList =
+                RestAssured.given()
+                        .header("X-CHALLENGER", xChallenger)
+                        .accept("application/json")
+                        .get(apiPath("/todos?doneStatus=true"))
+                        .then()
+                        .statusCode(200)
+                        .contentType(ContentType.JSON)
+                        .extract()
+                        .body()
+                        .as(Todos.class);
 
         ChallengesStatus statuses = new ChallengesStatus();
         statuses.get();
@@ -45,14 +47,13 @@ public class C007GetTodosFiltered200Test extends RestAssuredBaseTest {
             foundAllTrue = foundAllTrue && todo.doneStatus;
         }
 
-        Assertions.assertTrue(foundOurTodo,
-                "Expected to see the todo we created as 'done' in the list");
-        Assertions.assertTrue(foundAllTrue,
-                "Expected all todos returned to be 'done'");
+        Assertions.assertTrue(
+                foundOurTodo, "Expected to see the todo we created as 'done' in the list");
+        Assertions.assertTrue(foundAllTrue, "Expected all todos returned to be 'done'");
     }
 
     /* exercises:
-        - filter on multiple fields
-        - filter on false to get to do items still requiring action
-     */
+       - filter on multiple fields
+       - filter on false to get to do items still requiring action
+    */
 }

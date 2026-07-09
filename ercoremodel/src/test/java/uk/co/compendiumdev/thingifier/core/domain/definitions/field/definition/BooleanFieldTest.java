@@ -1,16 +1,15 @@
 package uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition;
 
+import java.util.HashSet;
+import java.util.Set;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
 
-import java.util.HashSet;
-import java.util.Set;
-
 class BooleanFieldTest {
 
     @Test
-    void byDefaultABooleanFieldIsFalse(){
+    void byDefaultABooleanFieldIsFalse() {
 
         final Field field = Field.is("false", FieldType.BOOLEAN);
 
@@ -18,7 +17,7 @@ class BooleanFieldTest {
     }
 
     @Test
-    void canConfigureBooleanDefaultAsTrue(){
+    void canConfigureBooleanDefaultAsTrue() {
 
         final Field field = Field.is("false", FieldType.BOOLEAN).withDefaultValue("true");
 
@@ -26,64 +25,43 @@ class BooleanFieldTest {
     }
 
     @Test
-    void booleanCanOnlyBeFalseOrTrue(){
+    void booleanCanOnlyBeFalseOrTrue() {
 
         final Field field = Field.is("boolean", FieldType.BOOLEAN);
 
-        Assertions.assertTrue(
-                field.validate(
-                        FieldValue.is(field,"false")).
-                        isValid());
+        Assertions.assertTrue(field.validate(FieldValue.is(field, "false")).isValid());
 
-        Assertions.assertTrue(
-                field.validate(
-                        FieldValue.is(field,"true")).
-                        isValid());
+        Assertions.assertTrue(field.validate(FieldValue.is(field, "true")).isValid());
 
-        Assertions.assertTrue(
-                field.validate(
-                        FieldValue.is(field,"TRUE")).
-                        isValid());
+        Assertions.assertTrue(field.validate(FieldValue.is(field, "TRUE")).isValid());
 
-        Assertions.assertFalse(
-                field.validate(
-                        FieldValue.is(field,"bob")).
-                        isValid());
+        Assertions.assertFalse(field.validate(FieldValue.is(field, "bob")).isValid());
     }
 
-
     @Test
-    void booleanExamplesAreTrueOrFalse(){
+    void booleanExamplesAreTrueOrFalse() {
 
         final Field field = Field.is("boolean", FieldType.BOOLEAN);
 
         Set<String> bools = new HashSet<>();
 
-        for(int x=0; x<100; x++){
+        for (int x = 0; x < 100; x++) {
             bools.add(field.getRandomExampleValue());
         }
 
         Assertions.assertEquals(2, bools.size());
         Assertions.assertTrue(bools.contains("true"));
         Assertions.assertTrue(bools.contains("false"));
-
     }
 
     @Test
-    void canConvertFromString(){
+    void canConvertFromString() {
         final Field field = Field.is("boolean", FieldType.BOOLEAN);
 
-        Assertions.assertEquals("true",
-                field.getActualValueToAdd(
-                        FieldValue.is(field, "true")));
+        Assertions.assertEquals("true", field.getActualValueToAdd(FieldValue.is(field, "true")));
 
-        Assertions.assertEquals("true",
-                field.getActualValueToAdd(
-                        FieldValue.is(field, "True")));
+        Assertions.assertEquals("true", field.getActualValueToAdd(FieldValue.is(field, "True")));
 
-        Assertions.assertEquals("false",
-                field.getActualValueToAdd(
-                        FieldValue.is( field, "FALSE")));
-
+        Assertions.assertEquals("false", field.getActualValueToAdd(FieldValue.is(field, "FALSE")));
     }
 }
