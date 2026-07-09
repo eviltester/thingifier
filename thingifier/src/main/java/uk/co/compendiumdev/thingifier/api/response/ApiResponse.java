@@ -6,6 +6,7 @@ import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
 
 public final class ApiResponse {
 
@@ -26,6 +27,7 @@ public final class ApiResponse {
     private HttpHeadersBlock headers;
     private EntityDefinition typeOfResults;
     private String body;
+    private ThingRepository relationshipRepository;
 
     public ApiResponse(final int aStatusCode) {
         this.statusCode = aStatusCode;
@@ -174,6 +176,15 @@ public final class ApiResponse {
             this.typeOfResults = thingDefinition;
         }
         return this;
+    }
+
+    public ApiResponse usingRepository(final ThingRepository repository) {
+        this.relationshipRepository = repository;
+        return this;
+    }
+
+    public ThingRepository getRelationshipRepository() {
+        return relationshipRepository;
     }
 
     public EntityDefinition getTypeOfThingReturned() {

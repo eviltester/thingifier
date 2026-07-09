@@ -1,6 +1,6 @@
 package uk.co.compendiumdev.thingifier.application.internalhttpconversion;
 
-import java.util.*;
+import java.util.List;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiResponse;
@@ -14,8 +14,6 @@ public final class ThingifierHttpApiBridge {
 
     private final Thingifier thingifier;
     private final ThingifierHttpApi thingifierHttpApi;
-    private List<HttpApiRequestHook> apiRequestHooks;
-    private List<HttpApiResponseHook> apiResponseHooks;
 
     public ThingifierHttpApiBridge(final Thingifier aThingifier) {
         this(aThingifier, null, null);
@@ -26,17 +24,6 @@ public final class ThingifierHttpApiBridge {
             List<HttpApiRequestHook> apiRequestHooks,
             List<HttpApiResponseHook> apiResponseHooks) {
         this.thingifier = aThingifier;
-        if (apiRequestHooks == null) {
-            this.apiRequestHooks = new ArrayList<>();
-        } else {
-            this.apiRequestHooks = apiRequestHooks;
-        }
-        if (apiResponseHooks == null) {
-            this.apiResponseHooks = new ArrayList<>();
-        } else {
-            this.apiResponseHooks = apiResponseHooks;
-        }
-
         this.thingifierHttpApi =
                 new ThingifierHttpApi(thingifier, apiRequestHooks, apiResponseHooks);
     }

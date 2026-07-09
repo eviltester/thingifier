@@ -10,17 +10,14 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.F
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVectorDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-import uk.co.compendiumdev.thingifier.core.domain.instances.validation.EntityInstanceStateValidator;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 
 public class RelationshipCreation {
 
     private final Thingifier thingifier;
-    private final EntityInstanceStateValidator stateValidator;
 
     public RelationshipCreation(final Thingifier aThingifier) {
         this.thingifier = aThingifier;
-        this.stateValidator = new EntityInstanceStateValidator();
     }
 
     public ApiResponse create(
@@ -112,9 +109,6 @@ public class RelationshipCreation {
                     connectThis
                             .getEntity()
                             .getNamedRelationshipTo(relationshipName, relatedItem.getEntity());
-            //            relationshipToUse =
-            // connectThis.getEntity().related().getRelationship(relationshipName,
-            // relatedItem.getEntity());
         }
 
         try {
@@ -161,8 +155,9 @@ public class RelationshipCreation {
                     .getRepository(database)
                     .connectRelationship(connectThis, relationshipToUse.getName(), relatedItem);
 
-            // enforce cardinality on relationship
-            ValidationReport validNow = stateValidator.validateRelationships(relatedItem);
+            // Repository connect enforces cardinality; validate the resulting relationship state.
+            ValidationReport validNow =
+                    thingifier.getRepository(database).validateRelationships(relatedItem);
             if (!validNow.isValid()) {
                 response = ApiResponse.error(400, validNow.getErrorMessages());
                 thingifier.deleteThing(relatedItem, database);

@@ -1,6 +1,5 @@
 package uk.co.compendiumdev.thingifier.core.domain.instances;
 
-import java.util.Collection;
 import java.util.List;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.NamedValue;
@@ -57,37 +56,11 @@ public final class EntityInstanceRepositoryAccess {
         return instance.getFields();
     }
 
-    public static void connectRelationship(
-            final EntityInstance from, final String relationshipName, final EntityInstance to) {
-        from.getRelationships().connectFromRepository(relationshipName, to);
-    }
-
-    public static List<EntityInstance> removeRelationshipsInvolving(
-            final EntityInstance parent,
-            final EntityInstance child,
-            final String relationshipName) {
-        return parent.getRelationships()
-                .removeRelationshipsInvolvingFromRepository(child, relationshipName);
-    }
-
-    public static List<EntityInstance> removeAllRelationships(final EntityInstance instance) {
-        return instance.getRelationships().removeAllRelationshipsFromRepository();
-    }
-
-    public static Collection<EntityInstance> connectedItems(
-            final EntityInstance instance, final String relationshipName) {
-        return instance.getRelationships().getConnectedItems(relationshipName);
-    }
-
     public static ValidationReport validateFieldValues(
             final EntityInstance instance,
             final List<String> excluding,
             final boolean allowedToSetIds) {
         return instance.validateFieldValues(excluding, allowedToSetIds);
-    }
-
-    public static ValidationReport validateRelationships(final EntityInstance instance) {
-        return instance.validateRelationships();
     }
 
     public static List<String> findAnyGuidOrIdDifferences(

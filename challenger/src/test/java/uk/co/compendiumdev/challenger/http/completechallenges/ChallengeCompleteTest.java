@@ -42,11 +42,21 @@ public abstract class ChallengeCompleteTest {
     @BeforeAll
     public static void controlEnvStart() {
         Environment.stop();
+        resetEnvironmentState();
     }
 
     @AfterAll
     public static void controlEnvStop() {
         Environment.stop();
+        resetEnvironmentState();
+    }
+
+    private static void resetEnvironmentState() {
+        isEnvironmentSet = false;
+        challengers = null;
+        challenger = null;
+        http = null;
+        newChallenger = null;
     }
 
     abstract boolean getIsSinglePlayerMode();
@@ -541,8 +551,6 @@ public abstract class ChallengeCompleteTest {
         Map<String, String> headers = new HashMap<>();
         headers.putAll(x_challenger_header);
         headers.put("Content-Type", "application/json");
-
-        String fiveThousandChars = stringOfLength(5000);
 
         // TODO: should send back multiple error messages to allow all validations to fail in one
         // request e.g. todo status fails validation before title
@@ -1231,6 +1239,7 @@ public abstract class ChallengeCompleteTest {
                             "DELETE",
                             x_challenger_header,
                             "");
+            Assertions.assertEquals(200, response.statusCode);
         }
 
         Assertions.assertTrue(challenger.statusOfChallenge(CHALLENGE.DELETE_ALL_TODOS));
@@ -1306,6 +1315,7 @@ public abstract class ChallengeCompleteTest {
         Assertions.assertTrue(challenger.statusOfChallenge(CHALLENGE.GET_RESTORABLE_TODOS));
 
         Todos todos = new Gson().fromJson(response.body, Todos.class);
+        Assertions.assertNotNull(todos.todos);
     }
 
     @Test

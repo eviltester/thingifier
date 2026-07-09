@@ -11,7 +11,6 @@ public class EntityInstance {
 
     // TODO: this is messy because of cloning and documentation - find a way to simplify
 
-    private final EntityInstanceRelationships relationships;
     private final EntityDefinition entityDefinition;
     private final InstanceFields instanceFields;
 
@@ -26,7 +25,6 @@ public class EntityInstance {
     EntityInstance(EntityDefinition eDefn, UUID internalId) {
         this.entityDefinition = eDefn;
         this.instanceFields = eDefn.instantiateFields();
-        this.relationships = new EntityInstanceRelationships(this);
         this.internalId = internalId;
         this.repositoryOwned = false;
     }
@@ -70,8 +68,6 @@ public class EntityInstance {
                 }
             }
         }
-
-        output.append(relationships.toString());
 
         return output.toString();
     }
@@ -125,11 +121,6 @@ public class EntityInstance {
         return this.entityDefinition;
     }
 
-    /** connect this thing to another thing using the relationship relationshipName */
-    EntityInstanceRelationships getRelationships() {
-        return relationships;
-    }
-
     /*
        Validation
     */
@@ -142,25 +133,8 @@ public class EntityInstance {
         return instanceFields.validateFields(excluding, amAllowedToSetIds);
     }
 
-    public ValidationReport validateRelationships() {
-        return relationships.validateRelationships();
-    }
-
     public ValidationReport validate() {
-        ValidationReport report = new ValidationReport();
-
-        report.combine(validateFields());
-        report.combine(validateRelationships());
-
-        return report;
-    }
-
-    public boolean hasRelationshipInstances() {
-        return relationships.hasAnyRelationshipInstances();
-    }
-
-    public Collection<EntityInstance> getRelatedItems(final String relationshipName) {
-        return relationships.getConnectedItems(relationshipName);
+        return validateFields();
     }
 
     // Cloning and documentation

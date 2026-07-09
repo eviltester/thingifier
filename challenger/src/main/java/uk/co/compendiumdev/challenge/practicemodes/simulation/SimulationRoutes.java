@@ -6,9 +6,7 @@ import java.util.List;
 import uk.co.compendiumdev.challenge.ChallengerConfig;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.docgen.ThingifierApiDocumentationDefn;
-import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonThing;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
-import uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.application.httprouting.ThingifierAutoDocGenRouting;
@@ -30,14 +28,11 @@ import uk.co.compendiumdev.thingifier.spark.SimpleSparkRouteCreator;
 
 public class SimulationRoutes {
 
-    private ThingifierHttpApi httpApi;
-    private JsonThing jsonThing;
     public Thingifier simulation;
     public EntityDefinition entityDefn;
     private ThingRepository entityRepository;
 
     private ThingifierApiDocumentationDefn apiDocDefn;
-    private ThingifierAutoDocGenRouting simulatorDocsRouting;
     private DefaultGUIHTML guiTemplates;
     private final ThingRepositoryProviderConfig simulationRepositoryConfig;
 
@@ -86,11 +81,6 @@ public class SimulationRoutes {
 
         createManagedEntityNamed("bob");
 
-        // this gives us access to the common http processing functions
-        httpApi = new ThingifierHttpApi(simulation);
-
-        jsonThing = new JsonThing(simulation.apiConfig().jsonOutput());
-
         ThingifierApiConfig customApiconfig = new ThingifierApiConfig("/sim");
         simulation.apiConfig().setFrom(customApiconfig);
     }
@@ -128,8 +118,7 @@ public class SimulationRoutes {
                 """
                                 .stripIndent());
 
-        simulatorDocsRouting =
-                new ThingifierAutoDocGenRouting(simulation, apiDocDefn, guiTemplates);
+        new ThingifierAutoDocGenRouting(simulation, apiDocDefn, guiTemplates);
     }
 
     private EntityInstance createManagedEntityNamed(final String name) {
@@ -203,7 +192,7 @@ public class SimulationRoutes {
 
         HttpApiRequestHandler getEntityHandler =
                 (HttpApiRequest anHttpApiRequest) -> {
-                    ApiResponse response = null;
+                    ApiResponse response;
 
                     // process it because the request validated
                     String id = anHttpApiRequest.getUrlParam(":id");
@@ -271,7 +260,7 @@ public class SimulationRoutes {
         HttpApiRequestHandler putAndPostEntityHandler =
                 (HttpApiRequest anHttpApiRequest) -> {
                     // process it because the request validated
-                    ApiResponse response = null;
+                    ApiResponse response;
                     String id = anHttpApiRequest.getUrlParam(":id");
                     if (id.equals("11")) {
                         // we can create id 11
@@ -337,7 +326,7 @@ public class SimulationRoutes {
                     return new SparkApiRequestResponseHandler(request, result, simulation)
                             .usingHandler(
                                     (anHttpApiRequest) -> {
-                                        ApiResponse response = null;
+                                        ApiResponse response;
                                         String id = anHttpApiRequest.getUrlParam(":id");
                                         if (id.equals("9")) {
                                             // we can delete id 9

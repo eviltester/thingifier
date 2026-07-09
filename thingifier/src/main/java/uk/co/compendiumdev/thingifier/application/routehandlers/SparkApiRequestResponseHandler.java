@@ -8,6 +8,7 @@ import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiResponse;
 import uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
+import uk.co.compendiumdev.thingifier.api.restapihandlers.SessionHeaderParser;
 import uk.co.compendiumdev.thingifier.application.internalhttpconversion.HttpApiResponseToSpark;
 import uk.co.compendiumdev.thingifier.application.internalhttpconversion.SparkToHttpApiRequest;
 
@@ -43,8 +44,6 @@ public class SparkApiRequestResponseHandler {
 
         final JsonThing jsonThing = new JsonThing(thingifier.apiConfig().jsonOutput());
 
-        ApiResponse apiResponse = null;
-
         // handle input validation - e.g. mirror/raw should not validate request
         HttpApiResponse httpApiResponse = null;
         if (validate) {
@@ -53,7 +52,11 @@ public class SparkApiRequestResponseHandler {
         }
 
         if (httpApiResponse == null) {
-            apiResponse = handler.handle(myRequest);
+            ApiResponse apiResponse = handler.handle(myRequest);
+            apiResponse.usingRepository(
+                    thingifier.getRepository(
+                            SessionHeaderParser.getDatabaseNameFromHeaderValue(
+                                    myRequest.getHeaders())));
 
             httpApiResponse =
                     new HttpApiResponse(

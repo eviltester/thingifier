@@ -57,7 +57,12 @@ public class RelationshipHttpTest {
                                 EntityInstanceDraft.forEntity(project)
                                         .withField("title", "a Project"));
 
-        Assertions.assertEquals(0, aproject.getRelatedItems("tasks").size());
+        Assertions.assertEquals(
+                0,
+                todoManager
+                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .listRelatedInstances(aproject, "tasks")
+                        .size());
 
         HttpApiRequest request =
                 new HttpApiRequest("projects/" + aproject.getPrimaryKeyValue() + "/tasks");
@@ -71,7 +76,12 @@ public class RelationshipHttpTest {
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).post(request);
         Assertions.assertEquals(201, response.getStatusCode());
 
-        Assertions.assertEquals(1, aproject.getRelatedItems("tasks").size());
+        Assertions.assertEquals(
+                1,
+                todoManager
+                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .listRelatedInstances(aproject, "tasks")
+                        .size());
     }
 
     @Test
@@ -90,7 +100,12 @@ public class RelationshipHttpTest {
                                 EntityInstanceDraft.forEntity(project)
                                         .withField("title", "a Project"));
 
-        Assertions.assertEquals(0, aproject.getRelatedItems("tasks").size());
+        Assertions.assertEquals(
+                0,
+                todoManager
+                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .listRelatedInstances(aproject, "tasks")
+                        .size());
 
         HttpApiRequest request =
                 new HttpApiRequest("projects/" + aproject.getPrimaryKeyValue() + "/tasks");
@@ -104,7 +119,12 @@ public class RelationshipHttpTest {
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).post(request);
         Assertions.assertEquals(201, response.getStatusCode());
 
-        Assertions.assertEquals(1, aproject.getRelatedItems("tasks").size());
+        Assertions.assertEquals(
+                1,
+                todoManager
+                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .listRelatedInstances(aproject, "tasks")
+                        .size());
     }
 
     @Test
@@ -117,7 +137,12 @@ public class RelationshipHttpTest {
                                 EntityInstanceDraft.forEntity(project)
                                         .withField("title", "a Project"));
 
-        Assertions.assertEquals(0, aproject.getRelatedItems("tasks").size());
+        Assertions.assertEquals(
+                0,
+                todoManager
+                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .listRelatedInstances(aproject, "tasks")
+                        .size());
         Assertions.assertEquals(
                 0,
                 todoManager
@@ -137,7 +162,12 @@ public class RelationshipHttpTest {
 
         Assertions.assertEquals(201, response.getStatusCode());
 
-        Assertions.assertEquals(1, aproject.getRelatedItems("tasks").size());
+        Assertions.assertEquals(
+                1,
+                todoManager
+                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .listRelatedInstances(aproject, "tasks")
+                        .size());
         Assertions.assertEquals(
                 1,
                 todoManager
@@ -170,7 +200,12 @@ public class RelationshipHttpTest {
                                 EntityInstanceDraft.forEntity(project)
                                         .withField("title", "a Project"));
 
-        Assertions.assertEquals(0, aproject.getRelatedItems("tasks").size());
+        Assertions.assertEquals(
+                0,
+                todoManager
+                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .listRelatedInstances(aproject, "tasks")
+                        .size());
 
         HttpApiRequest request =
                 new HttpApiRequest("projects/" + aproject.getPrimaryKeyValue() + "/tasks");
@@ -184,7 +219,12 @@ public class RelationshipHttpTest {
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).post(request);
         Assertions.assertEquals(404, response.getStatusCode());
 
-        Assertions.assertEquals(0, aproject.getRelatedItems("tasks").size());
+        Assertions.assertEquals(
+                0,
+                todoManager
+                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .listRelatedInstances(aproject, "tasks")
+                        .size());
 
         final ErrorMessages errors = new Gson().fromJson(response.getBody(), ErrorMessages.class);
 
@@ -210,7 +250,12 @@ public class RelationshipHttpTest {
                                 EntityInstanceDraft.forEntity(project)
                                         .withField("title", "a Project"));
 
-        Assertions.assertEquals(0, aproject.getRelatedItems("tasks").size());
+        Assertions.assertEquals(
+                0,
+                todoManager
+                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .listRelatedInstances(aproject, "tasks")
+                        .size());
 
         HttpApiRequest request =
                 new HttpApiRequest("projects/" + aproject.getPrimaryKeyValue() + "/tasks");
@@ -249,7 +294,12 @@ public class RelationshipHttpTest {
                         .createInstance(
                                 EntityInstanceDraft.forEntity(todo).withField("title", "a TODO"));
 
-        Assertions.assertEquals(0, acategory.getRelatedItems("todos").size());
+        Assertions.assertEquals(
+                0,
+                todoManager
+                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .listRelatedInstances(acategory, "todos")
+                        .size());
 
         HttpApiRequest request =
                 new HttpApiRequest("categories/" + acategory.getPrimaryKeyValue() + "/todos");
@@ -263,7 +313,12 @@ public class RelationshipHttpTest {
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).post(request);
         Assertions.assertEquals(201, response.getStatusCode());
 
-        Assertions.assertEquals(1, acategory.getRelatedItems("todos").size());
+        Assertions.assertEquals(
+                1,
+                todoManager
+                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .listRelatedInstances(acategory, "todos")
+                        .size());
     }
 
     @Test
@@ -276,7 +331,12 @@ public class RelationshipHttpTest {
                                 EntityInstanceDraft.forEntity(categories)
                                         .withField("title", "a Category"));
 
-        Assertions.assertEquals(0, acategory.getRelatedItems("todos").size());
+        Assertions.assertEquals(
+                0,
+                todoManager
+                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .listRelatedInstances(acategory, "todos")
+                        .size());
         Assertions.assertEquals(
                 0,
                 todoManager
@@ -296,7 +356,12 @@ public class RelationshipHttpTest {
 
         Assertions.assertEquals(201, response.getStatusCode());
 
-        Assertions.assertEquals(1, acategory.getRelatedItems("todos").size());
+        Assertions.assertEquals(
+                1,
+                todoManager
+                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .listRelatedInstances(acategory, "todos")
+                        .size());
         Assertions.assertEquals(
                 1,
                 todoManager
@@ -328,7 +393,12 @@ public class RelationshipHttpTest {
                                 EntityInstanceDraft.forEntity(project)
                                         .withField("title", "a Project"));
 
-        Assertions.assertEquals(0, aproject.getRelatedItems("tasks").size());
+        Assertions.assertEquals(
+                0,
+                todoManager
+                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .listRelatedInstances(aproject, "tasks")
+                        .size());
 
         HttpApiRequest request =
                 new HttpApiRequest("projects/" + aproject.getPrimaryKeyValue() + "/tasks");
@@ -340,7 +410,12 @@ public class RelationshipHttpTest {
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).post(request);
         Assertions.assertEquals(201, response.getStatusCode());
 
-        Assertions.assertEquals(1, aproject.getRelatedItems("tasks").size());
+        Assertions.assertEquals(
+                1,
+                todoManager
+                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .listRelatedInstances(aproject, "tasks")
+                        .size());
     }
 
     @Test
@@ -363,7 +438,12 @@ public class RelationshipHttpTest {
                 .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
                 .connectRelationship(aproject, "tasks", atodo);
 
-        Assertions.assertEquals(1, aproject.getRelatedItems("tasks").size());
+        Assertions.assertEquals(
+                1,
+                todoManager
+                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .listRelatedInstances(aproject, "tasks")
+                        .size());
         Assertions.assertEquals(
                 1,
                 todoManager
@@ -385,7 +465,12 @@ public class RelationshipHttpTest {
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).delete(request);
         Assertions.assertEquals(200, response.getStatusCode());
 
-        Assertions.assertEquals(0, aproject.getRelatedItems("tasks").size());
+        Assertions.assertEquals(
+                0,
+                todoManager
+                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .listRelatedInstances(aproject, "tasks")
+                        .size());
         Assertions.assertEquals(
                 1,
                 todoManager
@@ -419,7 +504,12 @@ public class RelationshipHttpTest {
                 .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
                 .connectRelationship(acategory, "todos", atodo);
 
-        Assertions.assertEquals(1, acategory.getRelatedItems("todos").size());
+        Assertions.assertEquals(
+                1,
+                todoManager
+                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .listRelatedInstances(acategory, "todos")
+                        .size());
         Assertions.assertEquals(
                 1,
                 todoManager
@@ -441,7 +531,12 @@ public class RelationshipHttpTest {
         HttpApiResponse response = new ThingifierHttpApi(todoManager).delete(request);
         Assertions.assertEquals(200, response.getStatusCode());
 
-        Assertions.assertEquals(0, acategory.getRelatedItems("todos").size());
+        Assertions.assertEquals(
+                0,
+                todoManager
+                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .listRelatedInstances(acategory, "todos")
+                        .size());
         Assertions.assertEquals(
                 1,
                 todoManager
@@ -457,7 +552,12 @@ public class RelationshipHttpTest {
         response = new ThingifierHttpApi(todoManager).delete(request);
         Assertions.assertEquals(404, response.getStatusCode());
 
-        Assertions.assertEquals(0, acategory.getRelatedItems("todos").size());
+        Assertions.assertEquals(
+                0,
+                todoManager
+                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .listRelatedInstances(acategory, "todos")
+                        .size());
         Assertions.assertEquals(
                 1,
                 todoManager
@@ -536,7 +636,12 @@ public class RelationshipHttpTest {
                                         .getERmodel()
                                         .getSchema()
                                         .getDefinitionWithSingularOrPluralNamed("estimate")));
-        Assertions.assertEquals(1, atodo.getRelatedItems("estimates").size());
+        Assertions.assertEquals(
+                1,
+                todoManager
+                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .listRelatedInstances(atodo, "estimates")
+                        .size());
     }
 
     @Test
@@ -565,7 +670,12 @@ public class RelationshipHttpTest {
                 .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
                 .connectRelationship(anEstimate, "estimate", atodo);
 
-        Assertions.assertEquals(1, atodo.getRelatedItems("estimates").size());
+        Assertions.assertEquals(
+                1,
+                todoManager
+                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .listRelatedInstances(atodo, "estimates")
+                        .size());
         Assertions.assertEquals(
                 1,
                 todoManager
@@ -621,7 +731,12 @@ public class RelationshipHttpTest {
                 .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
                 .connectRelationship(anEstimate, "estimate", atodo);
 
-        Assertions.assertEquals(1, atodo.getRelatedItems("estimates").size());
+        Assertions.assertEquals(
+                1,
+                todoManager
+                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .listRelatedInstances(atodo, "estimates")
+                        .size());
         Assertions.assertEquals(
                 1,
                 todoManager

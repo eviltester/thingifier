@@ -51,16 +51,14 @@ public final class ApiResponseAsXml {
             // could default to JSON in case the xml conversion fails
             //  jsonThing.asJsonTypedArrayWithContentsUntyped(thingsToReturn,
             // apiResponse.getTypeOfThingReturned().getPlural());
-            String output = "";
-
             // xml output via JSON
+            String output;
             try {
-                if (thingsToReturn.size() > 0) {
-
-                    output =
-                            xmlThing.getCollectionOfThings(
-                                    thingsToReturn, apiResponse.getTypeOfThingReturned());
-                }
+                output =
+                        xmlThing.getCollectionOfThings(
+                                thingsToReturn,
+                                apiResponse.getTypeOfThingReturned(),
+                                apiResponse.getRelationshipRepository());
             } catch (Exception e) {
                 // TODO: if this happens then the status code is going to be wrong, should probably
                 // throw an exception instead
@@ -73,10 +71,11 @@ public final class ApiResponseAsXml {
         } else {
             EntityInstance instance = apiResponse.getReturnedInstance();
 
-            String output = "";
-
+            String output;
             try {
-                output = xmlThing.getSingleObjectXml(instance);
+                output =
+                        xmlThing.getSingleObjectXml(
+                                instance, apiResponse.getRelationshipRepository());
             } catch (Exception e) {
                 // TODO: if this happens then the status code is going to be wrong
                 output = getErrorMessageXml(e.getMessage());

@@ -21,8 +21,7 @@ public class IntegerValidationRule implements ValidationRule {
 
     private boolean validatesAgainstType(FieldValue value) {
         try {
-            int intVal = value.asInteger();
-
+            value.asInteger();
             return true;
         } catch (NumberFormatException e) {
             return false;

@@ -57,6 +57,7 @@ public class ThingifierHttpApiRequestHandlingTest {
                                 .setHeaders(headers));
 
         Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals(200, response2.getStatusCode());
     }
 
     @Test
@@ -166,6 +167,7 @@ public class ThingifierHttpApiRequestHandlingTest {
                 api.delete(
                         new HttpApiRequest("/things/" + anInstance.getPrimaryKeyValue())
                                 .setHeaders(headers));
+        Assertions.assertEquals(200, actualDeleteResponse.getStatusCode());
 
         Assertions.assertEquals(
                 0, thingifier.getRepository("other_things").countInstances(thingInstances));

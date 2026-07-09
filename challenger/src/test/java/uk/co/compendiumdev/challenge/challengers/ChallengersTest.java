@@ -32,15 +32,12 @@ public class ChallengersTest {
         lastAccessedField.set(challenger, 0L);
         Assertions.assertEquals(0, challenger.getLastAccessed());
 
-        // forget about it
-        challenger = null;
-
         Assertions.assertTrue(erModel.getDatabaseNames().contains(guid));
 
         challengers.purgeOldAuthData();
 
-        challenger = challengers.getChallenger(guid);
-        Assertions.assertNull(challenger);
+        ChallengerAuthData purgedChallenger = challengers.getChallenger(guid);
+        Assertions.assertNull(purgedChallenger);
 
         Assertions.assertEquals(originalNumberOfDatabases, erModel.getDatabaseNames().size());
         Assertions.assertTrue(erModel.getDatabaseNames().contains("an-active-user"));

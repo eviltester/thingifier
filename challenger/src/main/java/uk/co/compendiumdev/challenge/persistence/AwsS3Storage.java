@@ -6,16 +6,11 @@ package uk.co.compendiumdev.challenge.persistence;
 // import com.amazonaws.services.s3.model.GetObjectRequest;
 // import com.amazonaws.services.s3.model.S3Object;
 // import com.google.gson.Gson;
-import java.io.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
 
 public class AwsS3Storage implements ChallengerPersistenceMechanism {
-
-    private final boolean allowSave;
-    private final boolean allowLoad;
-    private final String bucketName;
 
     Logger logger = LoggerFactory.getLogger(AwsS3Storage.class);
 
@@ -29,9 +24,11 @@ public class AwsS3Storage implements ChallengerPersistenceMechanism {
     // https://docs.aws.amazon.com/AmazonS3/latest/dev/UploadObjSingleOpJava.html
 
     public AwsS3Storage(boolean allowSave, boolean allowLoad, String awsBucket) {
-        this.allowSave = allowSave;
-        this.allowLoad = allowLoad;
-        this.bucketName = awsBucket;
+        logger.debug(
+                "AWS S3 storage unavailable in this build: allowSave={}, allowLoad={}, bucket={}",
+                allowSave,
+                allowLoad,
+                awsBucket);
     }
 
     @Override
@@ -69,21 +66,6 @@ public class AwsS3Storage implements ChallengerPersistenceMechanism {
         //        }
     }
 
-    private void ensureClientExists() {
-
-        //        if(s3Client!=null){
-        //            return;
-        //        }
-        //
-        //        // requires environment variables for
-        //        // AWS_ACCESS_KEY_ID
-        //        // AWS_SECRET_ACCESS_KEY
-        //        s3Client = AmazonS3ClientBuilder.standard()
-        //                .withRegion(Regions.US_EAST_2)
-        //                .build();
-
-    }
-
     @Override
     public PersistenceResponse loadChallengerStatus(final String guid) {
 
@@ -111,15 +93,5 @@ public class AwsS3Storage implements ChallengerPersistenceMechanism {
         //                    withSuccess(false).
         //                    withErrorMessage("Error Reading Challenges Status from S3");
         //        }
-    }
-
-    private static String getObjectContent(InputStream input) throws IOException {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(input));
-        String line = null;
-        String content = "";
-        while ((line = reader.readLine()) != null) {
-            content = content + line + "\n";
-        }
-        return content;
     }
 }

@@ -401,7 +401,6 @@ public class SimpleVerbPutEntityInstanceApiNonHttpTest {
                                         .withField("title", "An Existing instance"));
 
         String originalID = officeWork.getPrimaryKeyValue();
-        String originalGuid = officeWork.getFieldValue("id").asString();
         Assertions.assertNotNull(originalID);
 
         // amend existing instances with PUT - this should validate that all required fields are
@@ -465,7 +464,6 @@ public class SimpleVerbPutEntityInstanceApiNonHttpTest {
                                         .withField("title", "An Existing instance"));
 
         String originalID = officeWork.getPrimaryKeyValue();
-        String originalGuid = officeWork.getFieldValue("id").asString();
         Assertions.assertNotNull(originalID);
 
         // amend existing instances with PUT - this should validate that all required fields are
@@ -513,12 +511,6 @@ public class SimpleVerbPutEntityInstanceApiNonHttpTest {
         entityDefn.addAsPrimaryKeyField(Field.is("id", FieldType.STRING));
         entityDefn.addField(Field.is("title", FieldType.STRING).makeMandatory());
 
-        EntityDefinition myInstances =
-                myThingifier
-                        .getERmodel()
-                        .getSchema()
-                        .getDefinitionWithSingularOrPluralNamed("entity");
-
         // PUT
 
         EntityInstance officeWork =
@@ -530,7 +522,6 @@ public class SimpleVerbPutEntityInstanceApiNonHttpTest {
                                         .withField("title", "An Existing instance"));
 
         String originalID = officeWork.getPrimaryKeyValue();
-        String originalGuid = officeWork.getFieldValue("id").asString();
         Assertions.assertNotNull(originalID);
 
         // amend existing instances with PUT - this should validate that all required fields are

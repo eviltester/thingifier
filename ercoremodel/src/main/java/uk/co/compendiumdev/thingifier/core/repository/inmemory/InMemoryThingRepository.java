@@ -10,9 +10,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.F
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.NamedValue;
 import uk.co.compendiumdev.thingifier.core.domain.instances.AutoIncrement;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ERInstanceData;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceRepositoryAccess;
 import uk.co.compendiumdev.thingifier.core.query.EntityInstanceListFilter;
@@ -25,16 +23,19 @@ import uk.co.compendiumdev.thingifier.core.repository.validation.EntityInstanceW
 public class InMemoryThingRepository implements ThingRepository {
 
     private final String databaseKey;
-    private final ERInstanceData instanceData;
+    private final InMemoryEntityInstanceStore instanceData;
+    private final InMemoryRelationshipStore relationships;
     private final EntityInstanceWriteValidator writeValidator;
 
     public InMemoryThingRepository(final String databaseKey) {
-        this(databaseKey, new ERInstanceData());
+        this(databaseKey, new InMemoryEntityInstanceStore());
     }
 
-    InMemoryThingRepository(final String databaseKey, final ERInstanceData instanceData) {
+    InMemoryThingRepository(
+            final String databaseKey, final InMemoryEntityInstanceStore instanceData) {
         this.databaseKey = databaseKey;
         this.instanceData = instanceData;
+        this.relationships = new InMemoryRelationshipStore();
         this.writeValidator = new EntityInstanceWriteValidator(this);
     }
 
@@ -53,9 +54,9 @@ public class InMemoryThingRepository implements ThingRepository {
         createInstanceCollectionsFrom(schema);
     }
 
-    private EntityInstanceCollection createInstanceCollectionFor(
+    private InMemoryEntityInstanceCollection createInstanceCollectionFor(
             final EntityDefinition definition) {
-        EntityInstanceCollection existing =
+        InMemoryEntityInstanceCollection existing =
                 getInstanceCollectionForEntityNamed(definition.getName());
         if (existing != null) {
             return existing;
@@ -69,7 +70,8 @@ public class InMemoryThingRepository implements ThingRepository {
         }
     }
 
-    private EntityInstanceCollection getInstanceCollectionForEntityNamed(final String entityName) {
+    private InMemoryEntityInstanceCollection getInstanceCollectionForEntityNamed(
+            final String entityName) {
         return instanceData.getInstanceCollectionForEntityNamed(entityName);
     }
 
@@ -81,7 +83,8 @@ public class InMemoryThingRepository implements ThingRepository {
     @Override
     public EntityInstance findInstanceByPrimaryKey(
             final EntityDefinition entity, final String primaryKeyValue) {
-        EntityInstanceCollection collection = getInstanceCollectionForEntityNamed(entity.getName());
+        InMemoryEntityInstanceCollection collection =
+                getInstanceCollectionForEntityNamed(entity.getName());
         if (collection == null) {
             return null;
         }
@@ -91,7 +94,8 @@ public class InMemoryThingRepository implements ThingRepository {
     @Override
     public EntityInstance findInstanceByFieldNameAndValue(
             final EntityDefinition entity, final String fieldName, final String fieldValue) {
-        EntityInstanceCollection collection = getInstanceCollectionForEntityNamed(entity.getName());
+        InMemoryEntityInstanceCollection collection =
+                getInstanceCollectionForEntityNamed(entity.getName());
         if (collection == null) {
             return null;
         }
@@ -100,7 +104,8 @@ public class InMemoryThingRepository implements ThingRepository {
 
     @Override
     public Collection<EntityInstance> listInstances(final EntityDefinition entity) {
-        EntityInstanceCollection collection = getInstanceCollectionForEntityNamed(entity.getName());
+        InMemoryEntityInstanceCollection collection =
+                getInstanceCollectionForEntityNamed(entity.getName());
         if (collection == null) {
             return List.of();
         }
@@ -118,7 +123,8 @@ public class InMemoryThingRepository implements ThingRepository {
 
     @Override
     public int countInstances(final EntityDefinition entity) {
-        EntityInstanceCollection collection = getInstanceCollectionForEntityNamed(entity.getName());
+        InMemoryEntityInstanceCollection collection =
+                getInstanceCollectionForEntityNamed(entity.getName());
         if (collection == null) {
             return 0;
         }
@@ -128,7 +134,8 @@ public class InMemoryThingRepository implements ThingRepository {
     @Override
     public EntityInstance findInstanceByQueryIdentifier(
             final EntityDefinition entity, final String identifier) {
-        EntityInstanceCollection collection = getInstanceCollectionForEntityNamed(entity.getName());
+        InMemoryEntityInstanceCollection collection =
+                getInstanceCollectionForEntityNamed(entity.getName());
         if (collection == null) {
             return null;
         }
@@ -170,17 +177,45 @@ public class InMemoryThingRepository implements ThingRepository {
 
     @Override
     public void deleteEntityInstance(final EntityInstance instance) {
+        if (instance == null) {
+            throw new IllegalArgumentException("Cannot delete a null entity instance");
+        }
+        deleteEntityInstanceAndMandatoryRelated(instance, new ArrayList<>());
+    }
+
+    private void deleteEntityInstanceAndMandatoryRelated(
+            final EntityInstance instance, final List<String> alreadyDeleting) {
+        if (alreadyDeleting.contains(instance.getInternalId())) {
+            return;
+        }
+
+        alreadyDeleting.add(instance.getInternalId());
+        List<EntityInstance> alsoDelete =
+                relationships.removeAllRelationships(instance, this::findByInternalId);
         instanceData.deleteEntityInstance(instance);
+        for (EntityInstance deleteMe : alsoDelete) {
+            if (!deleteMe.getInternalId().equals(instance.getInternalId())) {
+                deleteEntityInstanceAndMandatoryRelated(deleteMe, alreadyDeleting);
+            }
+        }
     }
 
     @Override
     public void clearAllData() {
+        relationships.clear();
         instanceData.clearAllData();
     }
 
     @Override
     public void clearInstanceDataFor(final String entityName) {
-        instanceData.clearInstanceDataFor(entityName);
+        InMemoryEntityInstanceCollection collection =
+                getInstanceCollectionForEntityNamed(entityName);
+        if (collection == null) {
+            return;
+        }
+        for (EntityInstance instance : new ArrayList<>(collection.getInstances())) {
+            deleteEntityInstance(instance);
+        }
     }
 
     @Override
@@ -228,7 +263,7 @@ public class InMemoryThingRepository implements ThingRepository {
     @Override
     public void connectRelationship(
             final EntityInstance from, final String relationshipName, final EntityInstance to) {
-        EntityInstanceRepositoryAccess.connectRelationship(from, relationshipName, to);
+        relationships.connect(from, relationshipName, to, this::findByInternalId);
     }
 
     @Override
@@ -236,19 +271,13 @@ public class InMemoryThingRepository implements ThingRepository {
             final EntityInstance parent,
             final EntityInstance child,
             final String relationshipName) {
-        return EntityInstanceRepositoryAccess.removeRelationshipsInvolving(
-                parent, child, relationshipName);
+        return relationships.removeRelationshipsInvolving(
+                parent, child, relationshipName, this::findByInternalId);
     }
 
     @Override
     public List<EntityInstance> removeAllRelationships(final EntityInstance instance) {
-        return EntityInstanceRepositoryAccess.removeAllRelationships(instance);
-    }
-
-    @Override
-    public Collection<EntityInstance> getConnectedItems(
-            final EntityInstance instance, final String relationshipName) {
-        return EntityInstanceRepositoryAccess.connectedItems(instance, relationshipName);
+        return relationships.removeAllRelationships(instance, this::findByInternalId);
     }
 
     @Override
@@ -258,9 +287,21 @@ public class InMemoryThingRepository implements ThingRepository {
             final QueryFilterParams queryParams) {
         QueryFilterParams params = queryParams == null ? new QueryFilterParams() : queryParams;
         List<EntityInstance> instances =
-                new ArrayList<>(getConnectedItems(instance, relationshipName));
+                new ArrayList<>(
+                        relationships.listRelatedInstances(
+                                instance, relationshipName, this::findByInternalId));
         instances = new EntityInstanceListFilter(params).filter(instances);
         return new EntityInstanceListSorter(params).sort(instances);
+    }
+
+    @Override
+    public boolean hasRelationshipInstances(final EntityInstance instance) {
+        return relationships.hasRelationshipInstances(instance);
+    }
+
+    @Override
+    public ValidationReport validateRelationships(final EntityInstance instance) {
+        return relationships.validateRelationships(instance, this::findByInternalId);
     }
 
     private boolean matchesQueryIdentifier(final EntityInstance instance, final String identifier) {
@@ -275,5 +316,15 @@ public class InMemoryThingRepository implements ThingRepository {
 
         String primaryKeyValue = instance.getPrimaryKeyValue();
         return primaryKeyValue != null && primaryKeyValue.contentEquals(identifier);
+    }
+
+    private EntityInstance findByInternalId(
+            final EntityDefinition entity, final String internalId) {
+        InMemoryEntityInstanceCollection collection =
+                getInstanceCollectionForEntityNamed(entity.getName());
+        if (collection == null) {
+            return null;
+        }
+        return collection.findInstanceByInternalID(internalId);
     }
 }

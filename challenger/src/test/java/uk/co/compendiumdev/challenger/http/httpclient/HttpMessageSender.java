@@ -24,7 +24,7 @@ public class HttpMessageSender {
     public final String CONTENT_XML = "application/xml";
     public final String CONTENT_JSON = "application/json";
 
-    public Map<String, String> headers = new HashMap<>();
+    public Map<String, String> headers;
     private String proxyHost;
     private int proxyPort;
 

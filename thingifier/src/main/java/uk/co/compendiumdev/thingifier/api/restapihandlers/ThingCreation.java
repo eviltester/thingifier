@@ -32,7 +32,7 @@ public class ThingCreation {
                             "Invalid relationships: %s", validated.getCombinedErrorMessages()));
         }
 
-        validated = new BodyCreationValidator(thingifier).validate(bodyargs, thing);
+        validated = new BodyCreationValidator().validate(bodyargs, thing);
         if (!validated.isValid()) {
             return ApiResponse.error(
                     400,
@@ -53,7 +53,7 @@ public class ThingCreation {
         ValidationReport validated;
 
         validated =
-                new BodyCreationValidator(thingifier)
+                new BodyCreationValidator()
                         .areFieldsUnique(
                                 bodyargs,
                                 thing,
@@ -121,7 +121,7 @@ public class ThingCreation {
             return ApiResponse.error(400, e.getMessage());
         }
 
-        return addValidatedInstance(bodyargs, draft, thing, database);
+        return addValidatedInstance(bodyargs, draft, database);
     }
 
     private ApiResponse insertNewThingWithFields(
@@ -155,14 +155,11 @@ public class ThingCreation {
             return ApiResponse.error(400, e.getMessage());
         }
 
-        return addValidatedInstance(bodyargs, draft, thing, database);
+        return addValidatedInstance(bodyargs, draft, database);
     }
 
     private ApiResponse addValidatedInstance(
-            BodyParser bodyargs,
-            EntityInstanceDraft draft,
-            EntityDefinition thing,
-            String database) {
+            BodyParser bodyargs, EntityInstanceDraft draft, String database) {
 
         try {
             EntityInstance instance = thingifier.getRepository(database).createInstance(draft);

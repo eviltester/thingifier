@@ -1,4 +1,4 @@
-package uk.co.compendiumdev.thingifier.core.domain.instances;
+package uk.co.compendiumdev.thingifier.core.repository.inmemory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,6 +7,8 @@ import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 
 public class ThingInstanceCardinalityCreationTest {
 
@@ -15,14 +17,14 @@ public class ThingInstanceCardinalityCreationTest {
 
         EntityDefinition entityDefn = new EntityDefinition("Test", "Tests", 3);
         entityDefn.addField(Field.is("Title", FieldType.STRING));
-        EntityInstanceCollection instances =
-                new EntityInstanceCollection(entityDefn, new ArrayList<>());
+        InMemoryEntityInstanceCollection instances =
+                new InMemoryEntityInstanceCollection(entityDefn, new ArrayList<>());
 
-        instances.addInstance(new EntityInstance(entityDefn).setValue("Title", "test1"));
+        instances.addInstance(instance(entityDefn, "test1"));
 
-        instances.addInstance(new EntityInstance(entityDefn).setValue("Title", "test2"));
+        instances.addInstance(instance(entityDefn, "test2"));
 
-        instances.addInstance(new EntityInstance(entityDefn).setValue("Title", "test3"));
+        instances.addInstance(instance(entityDefn, "test3"));
 
         Assertions.assertEquals(3, instances.countInstances());
     }
@@ -32,21 +34,20 @@ public class ThingInstanceCardinalityCreationTest {
 
         EntityDefinition entityDefn = new EntityDefinition("Test", "Tests", 3);
         entityDefn.addField(Field.is("Title", FieldType.STRING));
-        EntityInstanceCollection instances =
-                new EntityInstanceCollection(entityDefn, new ArrayList<>());
+        InMemoryEntityInstanceCollection instances =
+                new InMemoryEntityInstanceCollection(entityDefn, new ArrayList<>());
 
-        instances.addInstance(new EntityInstance(entityDefn).setValue("Title", "test1"));
+        instances.addInstance(instance(entityDefn, "test1"));
 
-        instances.addInstance(new EntityInstance(entityDefn).setValue("Title", "test2"));
+        instances.addInstance(instance(entityDefn, "test2"));
 
-        instances.addInstance(new EntityInstance(entityDefn).setValue("Title", "test3"));
+        instances.addInstance(instance(entityDefn, "test3"));
 
         Exception exception =
                 Assertions.assertThrows(
                         RuntimeException.class,
                         () -> {
-                            instances.addInstance(
-                                    new EntityInstance(entityDefn).setValue("Title", "test4"));
+                            instances.addInstance(instance(entityDefn, "test4"));
                         });
 
         Assertions.assertEquals(
@@ -59,17 +60,16 @@ public class ThingInstanceCardinalityCreationTest {
 
         EntityDefinition entityDefn = new EntityDefinition("Test", "Tests", 1);
         entityDefn.addField(Field.is("Title", FieldType.STRING));
-        EntityInstanceCollection instances =
-                new EntityInstanceCollection(entityDefn, new ArrayList<>());
+        InMemoryEntityInstanceCollection instances =
+                new InMemoryEntityInstanceCollection(entityDefn, new ArrayList<>());
 
-        instances.addInstance(new EntityInstance(entityDefn).setValue("Title", "test1"));
+        instances.addInstance(instance(entityDefn, "test1"));
 
         Exception exception =
                 Assertions.assertThrows(
                         RuntimeException.class,
                         () -> {
-                            instances.addInstance(
-                                    new EntityInstance(entityDefn).setValue("Title", "test2"));
+                            instances.addInstance(instance(entityDefn, "test2"));
                         });
 
         Assertions.assertEquals(
@@ -82,16 +82,16 @@ public class ThingInstanceCardinalityCreationTest {
 
         EntityDefinition entityDefn = new EntityDefinition("Test", "Tests", 3);
         entityDefn.addField(Field.is("Title", FieldType.STRING));
-        EntityInstanceCollection instances =
-                new EntityInstanceCollection(entityDefn, new ArrayList<>());
+        InMemoryEntityInstanceCollection instances =
+                new InMemoryEntityInstanceCollection(entityDefn, new ArrayList<>());
 
-        instances.addInstance(new EntityInstance(entityDefn).setValue("Title", "test1"));
+        instances.addInstance(instance(entityDefn, "test1"));
 
         List<EntityInstance> toAdd = new ArrayList<>();
 
-        toAdd.add(new EntityInstance(entityDefn).setValue("Title", "test2"));
-        toAdd.add(new EntityInstance(entityDefn).setValue("Title", "test3"));
-        toAdd.add(new EntityInstance(entityDefn).setValue("Title", "test4"));
+        toAdd.add(instance(entityDefn, "test2"));
+        toAdd.add(instance(entityDefn, "test3"));
+        toAdd.add(instance(entityDefn, "test4"));
 
         Exception exception =
                 Assertions.assertThrows(
@@ -111,14 +111,14 @@ public class ThingInstanceCardinalityCreationTest {
 
         EntityDefinition entityDefn = new EntityDefinition("Test", "Tests", 3);
         entityDefn.addField(Field.is("Title", FieldType.STRING));
-        EntityInstanceCollection instances =
-                new EntityInstanceCollection(entityDefn, new ArrayList<>());
+        InMemoryEntityInstanceCollection instances =
+                new InMemoryEntityInstanceCollection(entityDefn, new ArrayList<>());
 
         List<EntityInstance> toAdd = new ArrayList<>();
 
-        toAdd.add(new EntityInstance(entityDefn).setValue("Title", "test1"));
-        toAdd.add(new EntityInstance(entityDefn).setValue("Title", "test2"));
-        toAdd.add(new EntityInstance(entityDefn).setValue("Title", "test3"));
+        toAdd.add(instance(entityDefn, "test1"));
+        toAdd.add(instance(entityDefn, "test2"));
+        toAdd.add(instance(entityDefn, "test3"));
 
         instances.addInstances(toAdd);
 
@@ -130,12 +130,11 @@ public class ThingInstanceCardinalityCreationTest {
 
         EntityDefinition entityDefn = new EntityDefinition("Test", "Tests", -1);
         entityDefn.addField(Field.is("Title", FieldType.STRING));
-        EntityInstanceCollection instances =
-                new EntityInstanceCollection(entityDefn, new ArrayList<>());
+        InMemoryEntityInstanceCollection instances =
+                new InMemoryEntityInstanceCollection(entityDefn, new ArrayList<>());
 
         for (int instanceNum = 1; instanceNum <= 100; instanceNum++) {
-            instances.addInstance(
-                    new EntityInstance(entityDefn).setValue("Title", "test" + instanceNum));
+            instances.addInstance(instance(entityDefn, "test" + instanceNum));
         }
 
         Assertions.assertEquals(100, instances.countInstances());
@@ -146,14 +145,18 @@ public class ThingInstanceCardinalityCreationTest {
 
         EntityDefinition entityDefn = new EntityDefinition("Test", "Tests");
         entityDefn.addField(Field.is("Title", FieldType.STRING));
-        EntityInstanceCollection instances =
-                new EntityInstanceCollection(entityDefn, new ArrayList<>());
+        InMemoryEntityInstanceCollection instances =
+                new InMemoryEntityInstanceCollection(entityDefn, new ArrayList<>());
 
         for (int instanceNum = 1; instanceNum <= 100; instanceNum++) {
-            instances.addInstance(
-                    new EntityInstance(entityDefn).setValue("Title", "test" + instanceNum));
+            instances.addInstance(instance(entityDefn, "test" + instanceNum));
         }
 
         Assertions.assertEquals(100, instances.countInstances());
+    }
+
+    private EntityInstance instance(final EntityDefinition entityDefn, final String title) {
+        return EntityInstance.fromDraft(
+                EntityInstanceDraft.forEntity(entityDefn).withField("Title", title));
     }
 }

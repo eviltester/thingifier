@@ -1,8 +1,6 @@
 package uk.co.compendiumdev.thingifier.core.query;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
@@ -46,9 +44,6 @@ public class EntityListFilterParamParser {
                                 defn.getField(fieldName),
                                 defn.getField(fieldName).valueFor(filterByCondition.fieldValue));
 
-                Pattern pattern = null;
-                Matcher matcher = null;
-
                 switch (filterByCondition.filterOperation) {
                     case "=":
                         if (!(actualValue.compareTo(filterConditionValue) == 0)) {
@@ -81,17 +76,20 @@ public class EntityListFilterParamParser {
                             return false;
                         }
                         break;
-                    case "~=": // regex match
-                        pattern = Pattern.compile(filterByCondition.fieldValue);
-                        matcher = pattern.matcher(actualValue.getValue().asString());
-                        return matcher.matches();
-                    case "*=": // wildcard match so * matches any multiple and ? matches one
-                        String actualFilter = filterByCondition.fieldValue;
-                        actualFilter = filterByCondition.fieldValue.replace("*", ".*");
-                        actualFilter = actualFilter.replace("?", ".");
-                        pattern = Pattern.compile(actualFilter);
-                        matcher = pattern.matcher(actualValue.getValue().asString());
-                        return matcher.matches();
+                    case "~=":
+                        { // regex match
+                            Pattern pattern = Pattern.compile(filterByCondition.fieldValue);
+                            Matcher matcher = pattern.matcher(actualValue.getValue().asString());
+                            return matcher.matches();
+                        }
+                    case "*=":
+                        { // wildcard match so * matches any multiple and ? matches one
+                            String actualFilter = filterByCondition.fieldValue.replace("*", ".*");
+                            actualFilter = actualFilter.replace("?", ".");
+                            Pattern pattern = Pattern.compile(actualFilter);
+                            Matcher matcher = pattern.matcher(actualValue.getValue().asString());
+                            return matcher.matches();
+                        }
                     default:
                         System.out.println(
                                 String.format(
@@ -106,24 +104,5 @@ public class EntityListFilterParamParser {
 
     public List<FilterBy> filterBys() {
         return filterByConditions;
-    }
-
-    private List<FilterBy> paramsMapToList(Map<String, String> params) {
-        List<FilterBy> filterbys = new ArrayList<>();
-
-        try {
-            for (Map.Entry<String, String> field : params.entrySet()) {
-                if (!EntityListSortParamParser.isSortByParam(field.getKey())) {
-
-                    FilterBy filterby = new FilterBy(field.getKey(), field.getValue());
-                    filterbys.add(filterby);
-                }
-            }
-        } catch (Exception e) {
-            System.out.println("Error parsing params map to filter bys");
-            System.out.println(e.getMessage());
-        }
-
-        return filterbys;
     }
 }

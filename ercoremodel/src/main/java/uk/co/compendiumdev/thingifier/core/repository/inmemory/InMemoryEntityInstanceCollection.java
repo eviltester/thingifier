@@ -1,4 +1,4 @@
-package uk.co.compendiumdev.thingifier.core.domain.instances;
+package uk.co.compendiumdev.thingifier.core.repository.inmemory;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -6,9 +6,12 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
+import uk.co.compendiumdev.thingifier.core.domain.instances.AutoIncrement;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceRepositoryAccess;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 
-public final class EntityInstanceCollection {
+final class InMemoryEntityInstanceCollection {
 
     private final EntityDefinition definition;
     private final Map<String, EntityInstance> instances = new ConcurrentHashMap<>();
@@ -16,7 +19,7 @@ public final class EntityInstanceCollection {
     // id's should be auto incremented at an instance collection level, not on the field definitions
     private final Map<String, AutoIncrement> counters = new ConcurrentHashMap<>();
 
-    public EntityInstanceCollection(EntityDefinition thingDefinition) {
+    InMemoryEntityInstanceCollection(EntityDefinition thingDefinition) {
         this.definition = thingDefinition;
         ensureCountersInitialized();
     }
@@ -41,14 +44,14 @@ public final class EntityInstanceCollection {
         }
     }
 
-    public EntityInstanceCollection(
+    InMemoryEntityInstanceCollection(
             final EntityDefinition entity, final List<EntityInstance> instances) {
         this.definition = entity;
         ensureCountersInitialized();
         addInstances(instances);
     }
 
-    public EntityInstanceCollection addInstances(List<EntityInstance> addInstances) {
+    InMemoryEntityInstanceCollection addInstances(List<EntityInstance> addInstances) {
 
         if (definition.hasMaxInstanceLimit()
                 && ((instances.size() + addInstances.size()) > definition.getMaxInstanceLimit())) {
@@ -92,15 +95,18 @@ public final class EntityInstanceCollection {
             if (!instance.hasInstantiatedFieldNamed(fieldDefn.getName())) {
                 // set it here using the counter for the field
                 if (fieldDefn.getType() == FieldType.AUTO_GUID) {
-                    instance.setValue(fieldDefn.getName(), UUID.randomUUID().toString());
+                    EntityInstanceRepositoryAccess.setValue(
+                            instance, fieldDefn.getName(), UUID.randomUUID().toString());
                 }
                 if (fieldDefn.getType() == FieldType.AUTO_INCREMENT) {
                     AutoIncrement counter = counters.get(fieldDefn.getName());
                     if (counter == null) {
                         counter = createCounterFor(fieldDefn);
                     }
-                    instance.overrideValue(
-                            fieldDefn.getName(), String.valueOf(counter.getNextValueAndUpdate()));
+                    EntityInstanceRepositoryAccess.overrideValue(
+                            instance,
+                            fieldDefn.getName(),
+                            String.valueOf(counter.getNextValueAndUpdate()));
                 }
             } else {
                 if (fieldDefn.getType() == FieldType.AUTO_INCREMENT) {
@@ -189,12 +195,7 @@ public final class EntityInstanceCollection {
         return instances.values();
     }
 
-    /**
-     * This deletes the instance but does not delete any mandatorily related items, these need to be
-     * handled by another class using the returned list of alsoDelete, otherwise the model will be
-     * invalid
-     */
-    public List<EntityInstance> deleteInstance(String guid) {
+    public void deleteInstance(String guid) {
 
         if (!instances.containsKey(guid)) {
             throw new IndexOutOfBoundsException(
@@ -205,10 +206,10 @@ public final class EntityInstanceCollection {
 
         EntityInstance item = instances.get(guid);
 
-        return deleteInstance(item);
+        deleteInstance(item);
     }
 
-    public List<EntityInstance> deleteInstance(EntityInstance anInstance) {
+    public void deleteInstance(EntityInstance anInstance) {
 
         if (!instances.containsValue(anInstance)) {
             throw new IndexOutOfBoundsException(
@@ -220,11 +221,6 @@ public final class EntityInstanceCollection {
         }
 
         instances.remove(anInstance.getInternalId());
-
-        final List<EntityInstance> alsoDelete =
-                anInstance.getRelationships().removeAllRelationshipsFromRepository();
-
-        return alsoDelete;
     }
 
     /*

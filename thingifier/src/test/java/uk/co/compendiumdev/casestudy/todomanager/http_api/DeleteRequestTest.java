@@ -96,11 +96,9 @@ public class DeleteRequestTest {
     @Test
     public void cannotDeleteRootItem() {
 
-        final EntityInstance instance =
-                todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .createInstance(
-                                EntityInstanceDraft.forEntity(todo).withField("title", "my title"));
+        todoManager
+                .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
+                .createInstance(EntityInstanceDraft.forEntity(todo).withField("title", "my title"));
 
         Assertions.assertEquals(
                 1,

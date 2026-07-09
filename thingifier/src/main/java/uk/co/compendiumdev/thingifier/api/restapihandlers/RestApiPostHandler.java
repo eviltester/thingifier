@@ -36,8 +36,8 @@ public class RestApiPostHandler {
         EntityDefinition entityDefinition =
                 EntityUrlMatcher.entityFromCollectionUrl(thingifier, url);
         if (entityDefinition != null) {
-            // create a new thing does not enforce relationships
-            // TODO: validate before creation so as to only delete in an 'emergency' not as default
+            // Creation stores field state first; relationship invariants are repository-validated
+            // before the response is accepted.
             final ApiResponse response =
                     new ThingCreation(thingifier)
                             .with(args, entityDefinition, instanceDatabaseName);
@@ -52,7 +52,10 @@ public class RestApiPostHandler {
                             .getFieldNamesOfType(FieldType.AUTO_INCREMENT, FieldType.AUTO_GUID);
             ValidationReport validity =
                     stateValidator.validateFields(returnedInstance, protectedFieldNames, false);
-            validity.combine(stateValidator.validateRelationships(returnedInstance));
+            validity.combine(
+                    thingifier
+                            .getRepository(instanceDatabaseName)
+                            .validateRelationships(returnedInstance));
 
             if (validity.isValid()) {
                 return response;

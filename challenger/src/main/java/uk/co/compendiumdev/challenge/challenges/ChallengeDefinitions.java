@@ -27,10 +27,6 @@ public class ChallengeDefinitions {
         return sections;
     }
 
-    private String renderChallengeNumber(int challengeOrder) {
-        return String.format("%02d", challengeOrder);
-    }
-
     public ChallengeDefinitions(ChallengerConfig config) {
 
         challengeData = new HashMap<>();
@@ -38,7 +34,6 @@ public class ChallengeDefinitions {
         sections = new ArrayList<>();
 
         int challengeOrder = 1;
-        ChallengeDefinitionData aChallenge;
 
         ChallengeSection getStarted =
                 new ChallengeSection(
@@ -438,7 +433,7 @@ public class ChallengeDefinitions {
                 miscChallenges);
         storeChallengeAs(
                 CHALLENGE.POST_ALL_TODOS,
-                MiscChallenges.postAllTodos201(challengeOrder++),
+                MiscChallenges.postAllTodos201(challengeOrder),
                 miscChallenges);
 
         Set challengeNames = new HashSet();

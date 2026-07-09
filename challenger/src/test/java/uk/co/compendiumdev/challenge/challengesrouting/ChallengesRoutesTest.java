@@ -32,6 +32,7 @@ public class ChallengesRoutesTest {
         ChallengerConfig config = new ChallengerConfig();
         config.setToNoPersistenceMode();
         Collection<CHALLENGE> challenges = new ChallengeDefinitions(config).getDefinedChallenges();
+        Assertions.assertFalse(challenges.isEmpty());
         challenger = ChallengeMain.getChallenger().getChallengers().createNewChallenger();
     }
 

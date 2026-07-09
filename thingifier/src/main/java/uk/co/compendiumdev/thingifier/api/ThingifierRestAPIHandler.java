@@ -8,12 +8,14 @@ import uk.co.compendiumdev.thingifier.api.restapihandlers.*;
 import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
 
 public class ThingifierRestAPIHandler {
+    private final Thingifier thingifier;
     private final RestApiDeleteHandler delete;
     private final RestApiPostHandler post;
     private final RestApiPutHandler put;
     private final RestApiGetHandler get;
 
     public ThingifierRestAPIHandler(final Thingifier aThingifier) {
+        this.thingifier = aThingifier;
         this.get = new RestApiGetHandler(aThingifier);
         this.delete = new RestApiDeleteHandler(aThingifier);
         this.post = new RestApiPostHandler(aThingifier);
@@ -34,25 +36,34 @@ public class ThingifierRestAPIHandler {
 
     public ApiResponse get(
             final String url, final QueryFilterParams queryParams, HttpHeadersBlock headers) {
-        return get.handle(url, queryParams, headers);
+        return withRepository(get.handle(url, queryParams, headers), headers);
     }
 
     public ApiResponse head(
             final String url, final QueryFilterParams queryParams, HttpHeadersBlock headers) {
         final ApiResponse response = get.handle(url, queryParams, headers);
         response.clearBody();
-        return response;
+        return withRepository(response, headers);
     }
 
     public ApiResponse delete(final String url, HttpHeadersBlock headers) {
-        return delete.handle(url, headers);
+        return withRepository(delete.handle(url, headers), headers);
     }
 
     public ApiResponse post(final String url, final BodyParser args, HttpHeadersBlock headers) {
-        return post.handle(url, args, headers);
+        return withRepository(post.handle(url, args, headers), headers);
     }
 
     public ApiResponse put(final String url, final BodyParser args, HttpHeadersBlock headers) {
-        return put.handle(url, args, headers);
+        return withRepository(put.handle(url, args, headers), headers);
+    }
+
+    private ApiResponse withRepository(final ApiResponse response, final HttpHeadersBlock headers) {
+        if (response == null) {
+            return null;
+        }
+        HttpHeadersBlock safeHeaders = headers == null ? new HttpHeadersBlock() : headers;
+        String databaseName = SessionHeaderParser.getDatabaseNameFromHeaderValue(safeHeaders);
+        return response.usingRepository(thingifier.getRepository(databaseName));
     }
 }

@@ -1,4 +1,4 @@
-package uk.co.compendiumdev.thingifier.core.domain.instances;
+package uk.co.compendiumdev.thingifier.core.repository.inmemory;
 
 import java.util.UUID;
 import org.junit.jupiter.api.Assertions;
@@ -7,8 +7,10 @@ import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 
-public class EntityInstanceCollectionTest {
+public class InMemoryEntityInstanceCollectionTest {
 
     EntityDefinition entityDefn;
 
@@ -24,9 +26,11 @@ public class EntityInstanceCollectionTest {
     @Test
     public void cannotCreateInstanceWithoutPrimaryKeySet() {
 
-        EntityInstanceCollection collection = new EntityInstanceCollection(entityDefn);
+        InMemoryEntityInstanceCollection collection =
+                new InMemoryEntityInstanceCollection(entityDefn);
 
-        EntityInstance instance1 = new EntityInstance(entityDefn);
+        EntityInstance instance1 =
+                EntityInstance.fromDraft(EntityInstanceDraft.forEntity(entityDefn));
 
         Exception exception =
                 Assertions.assertThrows(
@@ -41,15 +45,19 @@ public class EntityInstanceCollectionTest {
     @Test
     public void cannotCreateInstanceWithDuplicatePrimaryKey() {
 
-        EntityInstanceCollection collection = new EntityInstanceCollection(entityDefn);
+        InMemoryEntityInstanceCollection collection =
+                new InMemoryEntityInstanceCollection(entityDefn);
 
-        EntityInstance instance1 = new EntityInstance(entityDefn);
-        instance1.setValue("pk", "instance1");
+        EntityInstance instance1 =
+                EntityInstance.fromDraft(
+                        EntityInstanceDraft.forEntity(entityDefn).withField("pk", "instance1"));
 
         collection.addInstance(instance1);
 
-        EntityInstance instance2 = new EntityInstance(entityDefn);
-        instance2.setValue("pk", instance1.getPrimaryKeyValue());
+        EntityInstance instance2 =
+                EntityInstance.fromDraft(
+                        EntityInstanceDraft.forEntity(entityDefn)
+                                .withField("pk", instance1.getPrimaryKeyValue()));
 
         Exception exception =
                 Assertions.assertThrows(
@@ -67,10 +75,14 @@ public class EntityInstanceCollectionTest {
                                 Field.is("id", FieldType.AUTO_INCREMENT),
                                 Field.is("name", FieldType.STRING));
 
-        EntityInstanceCollection col = new EntityInstanceCollection(defn);
+        InMemoryEntityInstanceCollection col = new InMemoryEntityInstanceCollection(defn);
 
-        EntityInstance instance1 = new EntityInstance(defn).setValue("name", "bob");
-        EntityInstance instance2 = new EntityInstance(defn).setValue("name", "connie");
+        EntityInstance instance1 =
+                EntityInstance.fromDraft(
+                        EntityInstanceDraft.forEntity(defn).withField("name", "bob"));
+        EntityInstance instance2 =
+                EntityInstance.fromDraft(
+                        EntityInstanceDraft.forEntity(defn).withField("name", "connie"));
 
         col.addInstance(instance1);
         col.addInstance(instance2);
@@ -87,10 +99,14 @@ public class EntityInstanceCollectionTest {
                                 Field.is("id", FieldType.AUTO_GUID),
                                 Field.is("name", FieldType.STRING));
 
-        EntityInstanceCollection col = new EntityInstanceCollection(defn);
+        InMemoryEntityInstanceCollection col = new InMemoryEntityInstanceCollection(defn);
 
-        EntityInstance instance1 = new EntityInstance(defn).setValue("name", "bob");
-        EntityInstance instance2 = new EntityInstance(defn).setValue("name", "connie");
+        EntityInstance instance1 =
+                EntityInstance.fromDraft(
+                        EntityInstanceDraft.forEntity(defn).withField("name", "bob"));
+        EntityInstance instance2 =
+                EntityInstance.fromDraft(
+                        EntityInstanceDraft.forEntity(defn).withField("name", "connie"));
 
         col.addInstance(instance1);
         col.addInstance(instance2);
@@ -112,10 +128,14 @@ public class EntityInstanceCollectionTest {
                                 Field.is("id", FieldType.AUTO_INCREMENT),
                                 Field.is("name", FieldType.STRING));
 
-        EntityInstanceCollection col = new EntityInstanceCollection(defn);
+        InMemoryEntityInstanceCollection col = new InMemoryEntityInstanceCollection(defn);
 
-        EntityInstance instance1 = new EntityInstance(defn).setValue("name", "bob");
-        EntityInstance instance2 = new EntityInstance(defn).setValue("name", "connie");
+        EntityInstance instance1 =
+                EntityInstance.fromDraft(
+                        EntityInstanceDraft.forEntity(defn).withField("name", "bob"));
+        EntityInstance instance2 =
+                EntityInstance.fromDraft(
+                        EntityInstanceDraft.forEntity(defn).withField("name", "connie"));
 
         col.addInstance(instance1);
         col.addInstance(instance2);

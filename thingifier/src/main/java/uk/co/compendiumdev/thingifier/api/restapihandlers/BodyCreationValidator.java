@@ -2,7 +2,6 @@ package uk.co.compendiumdev.thingifier.api.restapihandlers;
 
 import java.util.List;
 import java.util.Map;
-import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
@@ -11,11 +10,6 @@ import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
 
 public class BodyCreationValidator {
-    private final Thingifier thingifier;
-
-    public BodyCreationValidator(final Thingifier thingifier) {
-        this.thingifier = thingifier;
-    }
 
     public ValidationReport validate(
             final BodyParser bodyargs, final EntityDefinition thingDefinition) {

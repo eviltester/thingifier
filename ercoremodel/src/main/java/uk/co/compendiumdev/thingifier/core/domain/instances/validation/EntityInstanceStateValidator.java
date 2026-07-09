@@ -9,9 +9,7 @@ import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 public final class EntityInstanceStateValidator {
 
     public ValidationReport validate(final EntityInstance instance) {
-        ValidationReport report = validateFields(instance, new ArrayList<>(), false);
-        report.combine(validateRelationships(instance));
-        return report;
+        return validateFields(instance, new ArrayList<>(), false);
     }
 
     public ValidationReport validateFields(
@@ -20,9 +18,5 @@ public final class EntityInstanceStateValidator {
             final boolean allowedToSetIds) {
         return EntityInstanceRepositoryAccess.validateFieldValues(
                 instance, excluding, allowedToSetIds);
-    }
-
-    public ValidationReport validateRelationships(final EntityInstance instance) {
-        return EntityInstanceRepositoryAccess.validateRelationships(instance);
     }
 }

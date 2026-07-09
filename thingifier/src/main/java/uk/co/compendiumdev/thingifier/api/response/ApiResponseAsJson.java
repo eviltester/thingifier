@@ -47,7 +47,9 @@ public final class ApiResponseAsJson {
             if (typeName.length() > 0) {
                 output =
                         jsonThing.asJsonTypedArrayWithContentsUntyped(
-                                apiResponse.getReturnedInstanceCollection(), typeName);
+                                apiResponse.getReturnedInstanceCollection(),
+                                typeName,
+                                apiResponse.getRelationshipRepository());
             } else {
                 if (things.size() == 0) {
                     output = "{}";
@@ -60,7 +62,9 @@ public final class ApiResponseAsJson {
             EntityInstance instance = apiResponse.getReturnedInstance();
 
             // return JsonThing.asNamedJsonObject(instance).toString();
-            return jsonThing.asJsonObject(instance).toString();
+            return jsonThing
+                    .asJsonObject(instance, apiResponse.getRelationshipRepository())
+                    .toString();
         }
     }
 

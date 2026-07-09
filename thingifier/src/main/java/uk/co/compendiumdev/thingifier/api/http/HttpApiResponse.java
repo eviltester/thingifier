@@ -76,19 +76,14 @@ public final class HttpApiResponse {
 
     // TODO: handle text/plain, text/html
     public String getBody() {
-
-        String returnBody = "";
-
         if (apiResponse.hasABodyOverride()) {
             return apiResponse.getBody();
         }
         if (asJson) {
-            returnBody = new ApiResponseAsJson(apiResponse, jsonThing).getJson();
-        } else {
-            returnBody = new ApiResponseAsXml(apiResponse, jsonThing).getXml();
+            return new ApiResponseAsJson(apiResponse, jsonThing).getJson();
         }
 
-        return returnBody;
+        return new ApiResponseAsXml(apiResponse, jsonThing).getXml();
     }
 
     public boolean hasType() {

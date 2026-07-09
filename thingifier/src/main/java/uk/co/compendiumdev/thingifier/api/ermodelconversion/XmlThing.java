@@ -5,6 +5,7 @@ import org.json.JSONObject;
 import org.json.XML;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
 
 public class XmlThing {
 
@@ -15,16 +16,28 @@ public class XmlThing {
     }
 
     public String getSingleObjectXml(final EntityInstance instance) {
-        String parseForXMLOutput = jsonConvertor.asNamedJsonObject(instance).toString();
+        return getSingleObjectXml(instance, null);
+    }
+
+    public String getSingleObjectXml(
+            final EntityInstance instance, final ThingRepository repository) {
+        String parseForXMLOutput = jsonConvertor.asNamedJsonObject(instance, repository).toString();
         // System.out.println(parseForXMLOutput);
         return XML.toString(new JSONObject(parseForXMLOutput));
     }
 
     public String getCollectionOfThings(
             final List<EntityInstance> thingsToReturn, final EntityDefinition typeOfThingReturned) {
+        return getCollectionOfThings(thingsToReturn, typeOfThingReturned, null);
+    }
+
+    public String getCollectionOfThings(
+            final List<EntityInstance> thingsToReturn,
+            final EntityDefinition typeOfThingReturned,
+            final ThingRepository repository) {
         String parseForXMLOutput =
                 jsonConvertor.asJsonTypedArrayWithContentsTyped(
-                        thingsToReturn, typeOfThingReturned);
+                        thingsToReturn, typeOfThingReturned, repository);
 
         String output = XML.toString(new JSONObject(parseForXMLOutput));
 

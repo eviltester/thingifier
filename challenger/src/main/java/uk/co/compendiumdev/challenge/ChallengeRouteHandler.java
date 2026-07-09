@@ -26,8 +26,8 @@ public class ChallengeRouteHandler {
     private boolean single_player_mode;
     private final ChallengerConfig config;
     PersistenceLayer persistenceLayer;
-    private boolean guiStayAlive =
-            false; // when set gui makes a call every 5 mins to keep session alive,
+    // when set gui makes a call every 5 mins to keep session alive
+    private boolean guiStayAlive;
     private DefaultGUIHTML guiTemplates;
     private SimulationRoutes simulationRoutes;
 

@@ -1,7 +1,6 @@
 package uk.co.compendiumdev.thingifier.api.restapihandlers;
 
 import java.util.List;
-import java.util.Map;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
@@ -30,7 +29,7 @@ public class ThingAmendment {
             final Boolean clearFieldsBeforeSettingFromArgs,
             final String database) {
 
-        Map<String, String> args = bodyargs.getStringMap();
+        bodyargs.getMap();
 
         if (thingifier.apiConfig().willApiEnforceDeclaredTypesInInput()) {
             List<String> doNotValidateFields =
@@ -67,8 +66,8 @@ public class ThingAmendment {
             try {
                 if (clearFieldsBeforeSettingFromArgs) {
                     updated = thingifier.getRepository(database).replaceInstance(instance, draft);
-                    // delete all existing relationships for idempotent amend
-                    // todo: this returns a list of 'items' to be removed based on relationship
+                    // Reset repository-owned relationships for idempotent amend.
+                    // TODO: handle mandatory dependents returned by relationship removal.
                     thingifier.getRepository(database).removeAllRelationships(updated);
                 } else {
                     updated = thingifier.getRepository(database).patchInstance(instance, draft);
@@ -78,12 +77,9 @@ public class ThingAmendment {
             }
 
             // todo: should we check that this was actually a success?
-            final ApiResponse relresponse =
-                    new RelationshipCreator(thingifier)
-                            .createRelationships(bodyargs, updated, database);
-            // todo: should check if any of the 'removed items due to relationship removal' need to
-            // be removed
-            // and remove them if we do
+            new RelationshipCreator(thingifier).createRelationships(bodyargs, updated, database);
+            // TODO: relationship removal can return mandatory dependents that may also need
+            // deletion.
             return ApiResponse.success().returnSingleInstance(updated);
         } else {
             // do not add it, report the errors

@@ -58,6 +58,7 @@ class ThingifierHttpApiRequestHooksTest {
 
         HttpApiRequest request = new HttpApiRequest("/bob");
         final HttpApiResponse response = api.get(request);
+        Assertions.assertNotNull(response);
         Assertions.assertEquals("dobbs", request.getHeader("X-BOB"));
     }
 

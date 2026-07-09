@@ -21,7 +21,7 @@ public class FloatValidationRule implements ValidationRule {
 
     private boolean validatesAgainstType(FieldValue value) {
         try {
-            float floatValue = value.asFloat();
+            value.asFloat();
             return true;
         } catch (NumberFormatException e) {
             return false;

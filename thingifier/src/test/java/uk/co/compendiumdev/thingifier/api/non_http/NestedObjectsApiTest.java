@@ -106,9 +106,7 @@ public class NestedObjectsApiTest {
             FieldValue fn = obj.getFieldValue("firstname");
             String str = fn.asString();
 
-            Assertions.assertEquals(
-                    "bob",
-                    bob.getFieldValue("person").asObject().getFieldValue("firstname").asString());
+            Assertions.assertEquals("bob", str);
         }
     }
 

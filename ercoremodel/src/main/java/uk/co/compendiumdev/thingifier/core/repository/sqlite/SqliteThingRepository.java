@@ -1,5 +1,7 @@
 package uk.co.compendiumdev.thingifier.core.repository.sqlite;
 
+import static uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.Optionality.MANDATORY_RELATIONSHIP;
+
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -329,8 +331,13 @@ public class SqliteThingRepository implements ThingRepository {
     public void connectRelationship(
             final EntityInstance from, final String relationshipName, final EntityInstance to) {
         ensureSchemaReady();
-        EntityInstanceRepositoryAccess.connectRelationship(from, relationshipName, to);
-        runInTransaction(() -> persistRelationship(from, relationshipName, to));
+        RelationshipVectorDefinition vector =
+                relationshipVectorForConnection(from, relationshipName, to);
+        if (relationshipExistsBetween(from, to, relationshipName)) {
+            return;
+        }
+        assertRelationshipCardinalityAllows(vector, from, to);
+        runInTransaction(() -> persistRelationship(from, vector, to));
     }
 
     @Override
@@ -339,10 +346,8 @@ public class SqliteThingRepository implements ThingRepository {
             final EntityInstance child,
             final String relationshipName) {
         ensureSchemaReady();
-        materializeRelationshipsInvolving(parent, child, relationshipName);
         List<EntityInstance> removed =
-                EntityInstanceRepositoryAccess.removeRelationshipsInvolving(
-                        parent, child, relationshipName);
+                mandatoryInstancesForRelationship(parent, child, relationshipName);
         runInTransaction(() -> deleteRelationshipRowsInvolving(parent, child, relationshipName));
         return removed;
     }
@@ -350,17 +355,72 @@ public class SqliteThingRepository implements ThingRepository {
     @Override
     public List<EntityInstance> removeAllRelationships(final EntityInstance instance) {
         ensureSchemaReady();
-        materializeRelationshipsFor(instance);
-        List<EntityInstance> removed =
-                EntityInstanceRepositoryAccess.removeAllRelationships(instance);
+        List<EntityInstance> removed = mandatoryInstancesForRelationshipsInvolving(instance);
         runInTransaction(() -> deleteRelationshipRowsInvolving(instance));
         return removed;
     }
 
     @Override
-    public Collection<EntityInstance> getConnectedItems(
-            final EntityInstance instance, final String relationshipName) {
-        return listRelatedInstances(instance, relationshipName, new QueryFilterParams());
+    public boolean hasRelationshipInstances(final EntityInstance instance) {
+        ensureSchemaReady();
+        for (RelationshipVectorDefinition vector : relationshipVectors()) {
+            String sql =
+                    "SELECT 1 FROM "
+                            + relationshipTable(vector)
+                            + " WHERE from_internal_id = ? OR to_internal_id = ? LIMIT 1";
+            try (PreparedStatement statement = connection.prepareStatement(sql)) {
+                statement.setString(1, instance.getInternalId());
+                statement.setString(2, instance.getInternalId());
+                try (ResultSet resultSet = statement.executeQuery()) {
+                    if (resultSet.next()) {
+                        return true;
+                    }
+                }
+            } catch (SQLException e) {
+                throw new IllegalStateException("Could not query SQLite relationship rows", e);
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public ValidationReport validateRelationships(final EntityInstance instance) {
+        ensureSchemaReady();
+        ValidationReport report = new ValidationReport();
+
+        for (RelationshipVectorDefinition vector :
+                instance.getEntity().related().getRelationships()) {
+            int count = countRowsForVector(instance, vector);
+            if (vector.getOptionality() == MANDATORY_RELATIONSHIP && count == 0) {
+                report.setValid(false)
+                        .addErrorMessage(
+                                String.format(
+                                        "Mandatory Relationship not found %s", vector.getName()));
+            }
+            if (vector.getCardinality().hasMaximumLimit()
+                    && count > vector.getCardinality().maximumLimit()) {
+                report.setValid(false)
+                        .addErrorMessage(
+                                String.format(
+                                        "Maximum related instances exceeded for %s at %d",
+                                        vector.getName(), vector.getCardinality().maximumLimit()));
+            }
+        }
+
+        for (RelationshipRow row : relationshipRowsInvolving(instance)) {
+            ValidationReport rowReport = validateRelationshipRow(row);
+            if (!rowReport.isValid()) {
+                for (String errorMessage : rowReport.getErrorMessages()) {
+                    report.setValid(false)
+                            .addErrorMessage(
+                                    String.format(
+                                            "Error with EntityInstance relationship %s - %s",
+                                            instance.getInternalId(), errorMessage));
+                }
+            }
+        }
+
+        return report;
     }
 
     @Override
@@ -581,9 +641,7 @@ public class SqliteThingRepository implements ThingRepository {
             return;
         }
 
-        materializeRelationshipsFor(instance);
-        List<EntityInstance> alsoDelete =
-                EntityInstanceRepositoryAccess.removeAllRelationships(instance);
+        List<EntityInstance> alsoDelete = mandatoryInstancesForRelationshipsInvolving(instance);
         deletePersistedInstance(instance.getInternalId());
         materializedInstances.remove(instance.getInternalId());
 
@@ -594,81 +652,264 @@ public class SqliteThingRepository implements ThingRepository {
         }
     }
 
-    private void materializeRelationshipsInvolving(
-            final EntityInstance parent,
-            final EntityInstance child,
+    private RelationshipVectorDefinition relationshipVectorForConnection(
+            final EntityInstance from, final String relationshipName, final EntityInstance to) {
+        RelationshipVectorDefinition vector =
+                from.getEntity().getNamedRelationshipTo(relationshipName, to.getEntity());
+        if (vector == null) {
+            throw new IllegalArgumentException(
+                    "Unknown relationship "
+                            + relationshipName
+                            + " between "
+                            + from.getEntity().getName()
+                            + " and "
+                            + to.getEntity().getName());
+        }
+        return vector;
+    }
+
+    private void assertRelationshipCardinalityAllows(
+            final RelationshipVectorDefinition vector,
+            final EntityInstance from,
+            final EntityInstance to) {
+        if (vector.getCardinality().hasMaximumLimit()
+                && countRowsForVector(from, vector) >= vector.getCardinality().maximumLimit()) {
+            throw new RuntimeException(
+                    String.format(
+                            "Cannot add relationship type %s, exceeds maximum %d",
+                            vector.getName(), vector.getCardinality().maximumLimit()));
+        }
+
+        if (!vector.getRelationshipDefinition().isTwoWay()) {
+            return;
+        }
+
+        RelationshipVectorDefinition reverse =
+                vector.getRelationshipDefinition().otherVectorOf(vector);
+        if (reverse != null
+                && reverse.getCardinality().hasMaximumLimit()
+                && countRowsForVector(to, reverse) >= reverse.getCardinality().maximumLimit()) {
+            throw new RuntimeException(
+                    String.format(
+                            "Cannot add relationship type %s, exceeds maximum %d",
+                            reverse.getName(), reverse.getCardinality().maximumLimit()));
+        }
+    }
+
+    private boolean relationshipExistsBetween(
+            final EntityInstance first,
+            final EntityInstance second,
             final String relationshipName) {
         for (RelationshipVectorDefinition vector : relationshipVectors()) {
             if (!vector.getRelationshipDefinition().isKnownAs(relationshipName)) {
                 continue;
             }
-            if (!relationshipRowExists(parent, child, vector)) {
-                continue;
+            if (relationshipRowExists(vector, first.getInternalId(), second.getInternalId())) {
+                return true;
             }
-            EntityInstance from = parent.getEntity() == vector.getFrom() ? parent : child;
-            EntityInstance to = from == parent ? child : parent;
-            if (!EntityInstanceRepositoryAccess.connectedItems(from, vector.getName())
-                    .contains(to)) {
-                EntityInstanceRepositoryAccess.connectRelationship(from, vector.getName(), to);
+            if (relationshipRowExists(vector, second.getInternalId(), first.getInternalId())) {
+                return true;
             }
         }
-    }
-
-    private void materializeRelationshipsFor(final EntityInstance instance) {
-        for (RelationshipVectorDefinition vector : relationshipVectors()) {
-            String sql =
-                    "SELECT from_internal_id, to_internal_id FROM "
-                            + relationshipTable(vector)
-                            + " WHERE from_internal_id = ? OR to_internal_id = ?";
-            try (PreparedStatement statement = connection.prepareStatement(sql)) {
-                statement.setString(1, instance.getInternalId());
-                statement.setString(2, instance.getInternalId());
-                try (ResultSet resultSet = statement.executeQuery()) {
-                    while (resultSet.next()) {
-                        EntityInstance from =
-                                findInstanceByInternalId(
-                                        vector.getFrom(), resultSet.getString("from_internal_id"));
-                        EntityInstance to =
-                                findInstanceByInternalId(
-                                        vector.getTo(), resultSet.getString("to_internal_id"));
-                        if (from != null
-                                && to != null
-                                && !EntityInstanceRepositoryAccess.connectedItems(
-                                                from, vector.getName())
-                                        .contains(to)) {
-                            EntityInstanceRepositoryAccess.connectRelationship(
-                                    from, vector.getName(), to);
-                        }
-                    }
-                }
-            } catch (SQLException e) {
-                throw new IllegalStateException(
-                        "Could not materialize SQLite relationship rows", e);
-            }
-        }
+        return false;
     }
 
     private boolean relationshipRowExists(
-            final EntityInstance parent,
-            final EntityInstance child,
-            final RelationshipVectorDefinition vector) {
+            final RelationshipVectorDefinition vector,
+            final String fromInternalId,
+            final String toInternalId) {
         String sql =
                 "SELECT 1 FROM "
                         + relationshipTable(vector)
-                        + " WHERE (from_internal_id = ? AND to_internal_id = ?)"
-                        + " OR (from_internal_id = ? AND to_internal_id = ?)"
-                        + " LIMIT 1";
+                        + " WHERE from_internal_id = ? AND to_internal_id = ? LIMIT 1";
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setString(1, parent.getInternalId());
-            statement.setString(2, child.getInternalId());
-            statement.setString(3, child.getInternalId());
-            statement.setString(4, parent.getInternalId());
+            statement.setString(1, fromInternalId);
+            statement.setString(2, toInternalId);
             try (ResultSet resultSet = statement.executeQuery()) {
                 return resultSet.next();
             }
         } catch (SQLException e) {
             throw new IllegalStateException("Could not query SQLite relationship row", e);
         }
+    }
+
+    private int countRowsForVector(
+            final EntityInstance instance, final RelationshipVectorDefinition vector) {
+        int count = countRowsInVectorTable(vector, "from_internal_id", instance.getInternalId());
+
+        if (vector.getRelationshipDefinition().isTwoWay()) {
+            RelationshipVectorDefinition reverse =
+                    vector.getRelationshipDefinition().otherVectorOf(vector);
+            if (reverse != null) {
+                count +=
+                        countRowsInVectorTable(reverse, "to_internal_id", instance.getInternalId());
+            }
+        }
+
+        return count;
+    }
+
+    private int countRowsInVectorTable(
+            final RelationshipVectorDefinition vector,
+            final String columnName,
+            final String internalId) {
+        String sql =
+                "SELECT COUNT(*) FROM "
+                        + relationshipTable(vector)
+                        + " WHERE "
+                        + identifier(columnName)
+                        + " = ?";
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, internalId);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    return resultSet.getInt(1);
+                }
+                return 0;
+            }
+        } catch (SQLException e) {
+            throw new IllegalStateException("Could not count SQLite relationship rows", e);
+        }
+    }
+
+    private List<EntityInstance> mandatoryInstancesForRelationship(
+            final EntityInstance parent,
+            final EntityInstance child,
+            final String relationshipName) {
+        List<EntityInstance> instances = new ArrayList<>();
+        for (RelationshipRow row : relationshipRowsConnecting(parent, child, relationshipName)) {
+            instances.addAll(instancesSubjectToMandatoryRelationship(row));
+        }
+        return instances;
+    }
+
+    private List<EntityInstance> mandatoryInstancesForRelationshipsInvolving(
+            final EntityInstance instance) {
+        List<EntityInstance> instances = new ArrayList<>();
+        for (RelationshipRow row : relationshipRowsInvolving(instance)) {
+            instances.addAll(instancesSubjectToMandatoryRelationship(row));
+        }
+        return instances;
+    }
+
+    private List<RelationshipRow> relationshipRowsConnecting(
+            final EntityInstance parent,
+            final EntityInstance child,
+            final String relationshipName) {
+        List<RelationshipRow> rows = new ArrayList<>();
+        for (RelationshipVectorDefinition vector : relationshipVectors()) {
+            if (!vector.getRelationshipDefinition().isKnownAs(relationshipName)) {
+                continue;
+            }
+            rows.addAll(
+                    queryRelationshipRows(
+                            vector,
+                            " WHERE (from_internal_id = ? AND to_internal_id = ?)"
+                                    + " OR (from_internal_id = ? AND to_internal_id = ?)",
+                            List.of(
+                                    parent.getInternalId(),
+                                    child.getInternalId(),
+                                    child.getInternalId(),
+                                    parent.getInternalId())));
+        }
+        return rows;
+    }
+
+    private List<RelationshipRow> relationshipRowsInvolving(final EntityInstance instance) {
+        List<RelationshipRow> rows = new ArrayList<>();
+        for (RelationshipVectorDefinition vector : relationshipVectors()) {
+            rows.addAll(
+                    queryRelationshipRows(
+                            vector,
+                            " WHERE from_internal_id = ? OR to_internal_id = ?",
+                            List.of(instance.getInternalId(), instance.getInternalId())));
+        }
+        return rows;
+    }
+
+    private List<RelationshipRow> queryRelationshipRows(
+            final RelationshipVectorDefinition vector,
+            final String whereClause,
+            final List<Object> parameters) {
+        List<RelationshipRow> rows = new ArrayList<>();
+        String sql =
+                "SELECT from_internal_id, to_internal_id FROM "
+                        + relationshipTable(vector)
+                        + whereClause;
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            for (int index = 0; index < parameters.size(); index++) {
+                statement.setObject(index + 1, parameters.get(index));
+            }
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    rows.add(
+                            new RelationshipRow(
+                                    vector,
+                                    resultSet.getString("from_internal_id"),
+                                    resultSet.getString("to_internal_id")));
+                }
+            }
+        } catch (SQLException e) {
+            throw new IllegalStateException("Could not query SQLite relationship row", e);
+        }
+        return rows;
+    }
+
+    private List<EntityInstance> instancesSubjectToMandatoryRelationship(
+            final RelationshipRow row) {
+        List<EntityInstance> deleteThese = new ArrayList<>();
+
+        if (row.vector.getOptionality() == MANDATORY_RELATIONSHIP) {
+            EntityInstance from =
+                    findInstanceByInternalId(row.vector.getFrom(), row.fromInternalId);
+            if (from != null) {
+                deleteThese.add(from);
+            }
+        }
+
+        if (row.vector.getRelationshipDefinition().isTwoWay()) {
+            RelationshipVectorDefinition otherVector =
+                    row.vector.getRelationshipDefinition().otherVectorOf(row.vector);
+            if (otherVector != null && otherVector.getOptionality() == MANDATORY_RELATIONSHIP) {
+                EntityInstance to = findInstanceByInternalId(row.vector.getTo(), row.toInternalId);
+                if (to != null) {
+                    deleteThese.add(to);
+                }
+            }
+        }
+
+        return deleteThese;
+    }
+
+    private ValidationReport validateRelationshipRow(final RelationshipRow row) {
+        ValidationReport report = new ValidationReport();
+        EntityInstance from = findInstanceByInternalId(row.vector.getFrom(), row.fromInternalId);
+        EntityInstance to = findInstanceByInternalId(row.vector.getTo(), row.toInternalId);
+
+        if (from == null) {
+            report.setValid(false).addErrorMessage("No From Instance found");
+        }
+        if (to == null) {
+            report.setValid(false).addErrorMessage("No To Instance found");
+        }
+        if (!report.isValid()) {
+            return report;
+        }
+        if (from.getEntity() != row.vector.getFrom()) {
+            report.setValid(false)
+                    .addErrorMessage(
+                            String.format(
+                                    "Found from EntityInstance types %s but expected of type %s",
+                                    from.getEntity().getName(), row.vector.getFrom().getName()));
+        }
+        if (to.getEntity() != row.vector.getTo()) {
+            report.setValid(false)
+                    .addErrorMessage(
+                            String.format(
+                                    "Found to EntityInstance types %s but expected of type %s",
+                                    to.getEntity().getName(), row.vector.getTo().getName()));
+        }
+        return report;
     }
 
     private EntityInstance findInstanceByInternalId(
@@ -1206,19 +1447,9 @@ public class SqliteThingRepository implements ThingRepository {
     }
 
     private void persistRelationship(
-            final EntityInstance from, final String relationshipName, final EntityInstance to) {
-        RelationshipVectorDefinition vector =
-                from.getEntity().getNamedRelationshipTo(relationshipName, to.getEntity());
-        if (vector == null) {
-            throw new IllegalArgumentException(
-                    "Unknown relationship "
-                            + relationshipName
-                            + " between "
-                            + from.getEntity().getName()
-                            + " and "
-                            + to.getEntity().getName());
-        }
-
+            final EntityInstance from,
+            final RelationshipVectorDefinition vector,
+            final EntityInstance to) {
         String sql =
                 "INSERT OR IGNORE INTO "
                         + relationshipTable(vector)
@@ -1478,6 +1709,21 @@ public class SqliteThingRepository implements ThingRepository {
             this.entity = entity;
             this.sql = sql;
             this.parameters = parameters;
+        }
+    }
+
+    private static class RelationshipRow {
+        private final RelationshipVectorDefinition vector;
+        private final String fromInternalId;
+        private final String toInternalId;
+
+        private RelationshipRow(
+                final RelationshipVectorDefinition vector,
+                final String fromInternalId,
+                final String toInternalId) {
+            this.vector = vector;
+            this.fromInternalId = fromInternalId;
+            this.toInternalId = toInternalId;
         }
     }
 }

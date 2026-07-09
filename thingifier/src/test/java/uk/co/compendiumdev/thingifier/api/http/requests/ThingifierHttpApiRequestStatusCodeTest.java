@@ -36,6 +36,7 @@ public class ThingifierHttpApiRequestStatusCodeTest {
         headers.put(ThingifierHttpApi.HTTP_SESSION_HEADER_NAME, "other_things");
 
         final HttpApiResponse response = api.get(new HttpApiRequest("/things").setHeaders(headers));
+        Assertions.assertEquals(200, response.getStatusCode());
 
         final HttpApiResponse response413 =
                 api.post(

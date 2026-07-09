@@ -1,9 +1,9 @@
 package uk.co.compendiumdev.thingifier.core.query;
 
 public class FilterBy {
-    public String fieldName = "";
-    public String fieldValue = "";
-    public String filterOperation = "=";
+    public String fieldName;
+    public String fieldValue;
+    public String filterOperation;
 
     public static final String[] operators = {
         "<=", // <= e.g. ?id=<=2 id is less than or equal to 3

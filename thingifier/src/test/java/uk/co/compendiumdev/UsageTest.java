@@ -58,6 +58,7 @@ public class UsageTest {
         EntityInstance alan =
                 repository.createInstance(
                         EntityInstanceDraft.forEntity(users).withField("name", "alan"));
+        Assertions.assertEquals("alan", alan.getFieldValue("name").asString());
 
         // TODO fix relationshps so that they have values
         // RelationshipDefinition relationship = things.defineRelationshipBetween("USER", "URL",

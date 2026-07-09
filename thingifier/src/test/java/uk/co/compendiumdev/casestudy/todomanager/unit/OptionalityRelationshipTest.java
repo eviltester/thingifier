@@ -55,6 +55,7 @@ public class OptionalityRelationshipTest {
                                 .withField(
                                         "description",
                                         "I need to tidy up my room because it is a mess"));
+        Assertions.assertEquals("Tidy up my room", tidy.getFieldValue("title").asString());
 
         Assertions.assertTrue(tidy.validateFieldValues(new ArrayList<>(), true).isValid());
     }
@@ -65,13 +66,11 @@ public class OptionalityRelationshipTest {
         EntityDefinition todos =
                 todoManager.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("todo");
 
-        EntityInstance tidy =
-                repository.createInstance(
-                        EntityInstanceDraft.forEntity(todos)
-                                .withField("title", "Tidy up my room")
-                                .withField(
-                                        "description",
-                                        "I need to tidy up my room because it is a mess"));
+        repository.createInstance(
+                EntityInstanceDraft.forEntity(todos)
+                        .withField("title", "Tidy up my room")
+                        .withField(
+                                "description", "I need to tidy up my room because it is a mess"));
 
         EntityDefinition estimates =
                 todoManager
@@ -84,7 +83,7 @@ public class OptionalityRelationshipTest {
                         EntityInstanceDraft.forEntity(estimates).withField("duration", "1"));
 
         // it should be invalid because the estimate does not have a relationship with a to do
-        Assertions.assertFalse(tidyRoomEstimate.validate().isValid());
+        Assertions.assertFalse(repository.validateRelationships(tidyRoomEstimate).isValid());
     }
 
     @Test
@@ -114,9 +113,12 @@ public class OptionalityRelationshipTest {
         repository.connectRelationship(tidyRoomEstimate, "estimate", tidy);
 
         // it should be valid because the estimate has a relationship with a to do
-        Assertions.assertTrue(tidyRoomEstimate.validate().isValid());
+        Assertions.assertTrue(repository.validateRelationships(tidyRoomEstimate).isValid());
 
-        final Collection<EntityInstance> relatedEstimates = tidy.getRelatedItems("estimate");
+        final Collection<EntityInstance> relatedEstimates =
+                todoManager
+                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .listRelatedInstances(tidy, "estimate");
         Assertions.assertEquals(1, relatedEstimates.size());
     }
 
@@ -149,9 +151,12 @@ public class OptionalityRelationshipTest {
         repository.connectRelationship(tidyRoomEstimate, "estimate", tidy);
 
         // it should be valid because the estimate has a relationship with a to do
-        Assertions.assertTrue(tidyRoomEstimate.validate().isValid());
+        Assertions.assertTrue(repository.validateRelationships(tidyRoomEstimate).isValid());
 
-        final Collection<EntityInstance> relatedEstimates = tidy.getRelatedItems("estimates");
+        final Collection<EntityInstance> relatedEstimates =
+                todoManager
+                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .listRelatedInstances(tidy, "estimates");
         Assertions.assertEquals(1, relatedEstimates.size());
         Assertions.assertEquals(1, repository.listInstances(estimates).size());
         Assertions.assertEquals(1, repository.listInstances(todos).size());

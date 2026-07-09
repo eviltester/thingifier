@@ -77,8 +77,6 @@ public final class ThingifierHttpApi {
         HttpApiResponse httpResponse = runTheHttpApiRequestHooksOn(request);
         final HttpVerb effectiveVerb = MethodOverrideParser.getEffectiveVerb(request, verb);
 
-        ApiResponse apiResponse = null;
-
         // TODO: consider 'validation' hooks which can be used to override/augment validation
 
         // validate request syntax
@@ -90,7 +88,7 @@ public final class ThingifierHttpApi {
 
         // no httpResponse generated after validation so it is not in error
         if (httpResponse == null) {
-            apiResponse = routeAndProcessRequest(request, effectiveVerb);
+            ApiResponse apiResponse = routeAndProcessRequest(request, effectiveVerb);
 
             httpResponse =
                     new HttpApiResponse(

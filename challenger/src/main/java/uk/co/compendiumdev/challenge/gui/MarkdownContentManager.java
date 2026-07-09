@@ -94,15 +94,12 @@ public class MarkdownContentManager {
                         .toArray(String[]::new);
 
         StringBuilder bcHtmlHeader = new StringBuilder();
-        StringBuilder bcHeader = new StringBuilder();
-        bcHeader.append("\n");
         String bcPath = "";
         int linksInBreadcrumb = 0;
         if (breadcrumbs.length > 0) {
             // https://spec.commonmark.org/0.29/#html-blocks
             bcHtmlHeader.append("<div class=\"breadcrumb\">\n\n");
             bcHtmlHeader.append("<blockquote>");
-            bcHeader.append("> ");
 
             for (String bc : breadcrumbs) {
                 bcPath = bcPath + bc;
@@ -110,13 +107,11 @@ public class MarkdownContentManager {
                 if (!bc.isEmpty()) {
 
                     if (contentPath.endsWith(bc)) {
-                        bcHeader.append(bc);
                         bcHtmlHeader.append(String.format(" %s", bc));
                     } else {
                         // if there is an index file then show the breadcrumb
                         if (markdownContentPaths.contains(contentFolder + "/" + bcPath + ".md")) {
                             linksInBreadcrumb++;
-                            bcHeader.append(String.format(" [%s](%s) > ", bc, "/" + bcPath));
                             bcHtmlHeader.append(
                                     String.format("<a href=\"%s\">%s</a> &gt;", "/" + bcPath, bc));
                         }
@@ -124,14 +119,12 @@ public class MarkdownContentManager {
                 }
                 bcPath = bcPath + "/";
             }
-            bcHeader.append("\n");
             bcHtmlHeader.append("</blockquote>");
             bcHtmlHeader.append("</div >\n\n");
         }
 
         if (linksInBreadcrumb == 0) {
             // do not output the breadcrumb
-            bcHeader = new StringBuilder();
             bcHtmlHeader = new StringBuilder();
         }
 
@@ -143,7 +136,7 @@ public class MarkdownContentManager {
         Parser parser = Parser.builder().extensions(extensions).build();
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-        String line = "";
+        String line;
 
         List<String> mdheaders = new ArrayList<>();
 
@@ -716,8 +709,7 @@ public class MarkdownContentManager {
         final boolean includeBreadcrumb =
                 schemaBreadcrumbEnabled == null || schemaBreadcrumbEnabled;
         if (includeBreadcrumb) {
-            final String breadcrumbJson =
-                    buildBreadcrumbListJson(canonicalAbsoluteUrl, canonicalHost, breadcrumbs);
+            final String breadcrumbJson = buildBreadcrumbListJson(canonicalHost, breadcrumbs);
             scripts.append(toJsonLdScript(breadcrumbJson));
         }
 
@@ -963,10 +955,7 @@ public class MarkdownContentManager {
         return json.toString();
     }
 
-    private String buildBreadcrumbListJson(
-            final String canonicalAbsoluteUrl,
-            final String canonicalHost,
-            final String[] breadcrumbs) {
+    private String buildBreadcrumbListJson(final String canonicalHost, final String[] breadcrumbs) {
         if (breadcrumbs == null || breadcrumbs.length == 0) {
             return "";
         }
@@ -1165,10 +1154,6 @@ public class MarkdownContentManager {
             return publisherFromResource;
         }
         return DEFAULT_SCHEMA_PUBLISHER_NAME;
-    }
-
-    private String getSchemaPublisherDefaultUrl() {
-        return schemaPublisherDefaults.getProperty("url", "").trim();
     }
 
     static String resolveDateModified(

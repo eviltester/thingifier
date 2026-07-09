@@ -16,10 +16,6 @@ public class StatusCodeConfig {
 
     private int maxRequestBodyLengthBytes =
             -1; // by default no limit on request size, if set then generate 413 when exceeded
-    private int maxRequestContentLengthBytes =
-            -1; // by default no limit on content size, this includes headers and generates 413 when
-
-    // exceeded
 
     public StatusCodeConfig() {
         resetClientSideErrorStatusCodes();

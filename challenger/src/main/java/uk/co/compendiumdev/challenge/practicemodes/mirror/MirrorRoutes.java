@@ -109,7 +109,7 @@ public class MirrorRoutes {
         for (String anEndpoint : verbEndpoints) {
             Route routeHAndler =
                     (request, result) -> {
-                        String body = requestMirror.mirrorRequest(request, result);
+                        requestMirror.mirrorRequest(request, result);
                         return "";
                     };
             if (anEndpoint.endsWith("/*")) {
@@ -167,8 +167,6 @@ public class MirrorRoutes {
         apiDocDefn.setOgType("website");
         apiDocDefn.setTwitterCard("summary_large_image");
 
-        ThingifierAutoDocGenRouting mirrorDocsRouting =
-                new ThingifierAutoDocGenRouting(
-                        apiDocDefn.getThingifier(), apiDocDefn, guiTemplates);
+        new ThingifierAutoDocGenRouting(apiDocDefn.getThingifier(), apiDocDefn, guiTemplates);
     }
 }

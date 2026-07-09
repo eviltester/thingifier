@@ -12,6 +12,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.ERSchema;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.Optionality;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
@@ -102,8 +103,8 @@ public class ThingRepositoryContractTest {
             Assertions.assertNotNull(project);
             Assertions.assertNotNull(task);
             Assertions.assertEquals("Persisted", project.getFieldValue("title").asString());
-            Assertions.assertTrue(reopened.getConnectedItems(task, "task-of").contains(project));
-            Assertions.assertTrue(reopened.getConnectedItems(project, "tasks").contains(task));
+            Assertions.assertTrue(reopened.listRelatedInstances(task, "task-of").contains(project));
+            Assertions.assertTrue(reopened.listRelatedInstances(project, "tasks").contains(task));
         }
     }
 
@@ -141,6 +142,22 @@ public class ThingRepositoryContractTest {
         try (ThingRepository repository =
                 SqliteThingRepository.inMemory(EntityRelModel.DEFAULT_DATABASE_NAME)) {
             exerciseAutoIdGeneration(repository);
+        }
+    }
+
+    @Test
+    public void inMemoryRepositoryOwnsRelationshipValidationAndCascade() {
+        ThingRepository repository =
+                new InMemoryThingRepository(EntityRelModel.DEFAULT_DATABASE_NAME);
+
+        exerciseMandatoryRelationshipValidationAndCascade(repository);
+    }
+
+    @Test
+    public void sqliteRepositoryOwnsRelationshipValidationAndCascade() {
+        try (ThingRepository repository =
+                SqliteThingRepository.inMemory(EntityRelModel.DEFAULT_DATABASE_NAME)) {
+            exerciseMandatoryRelationshipValidationAndCascade(repository);
         }
     }
 
@@ -316,7 +333,7 @@ public class ThingRepositoryContractTest {
             Assertions.assertEquals(2, sortedTasks.size());
             Assertions.assertEquals("2", sortedTasks.get(0).getPrimaryKeyValue());
             Assertions.assertEquals("1", sortedTasks.get(1).getPrimaryKeyValue());
-            Assertions.assertEquals(2, reopened.getConnectedItems(project, "tasks").size());
+            Assertions.assertEquals(2, reopened.listRelatedInstances(project, "tasks").size());
 
             RepositoryUrlQuery query =
                     new RepositoryUrlQuery(schema, reopened, "project/1/tasks")
@@ -531,10 +548,21 @@ public class ThingRepositoryContractTest {
         Assertions.assertEquals(project, regexProjects.get(0));
 
         EntityInstance task = create(repository, taskDefinition, "Wire repository");
+        Assertions.assertFalse(repository.hasRelationshipInstances(project));
+        Assertions.assertFalse(repository.hasRelationshipInstances(task));
         repository.connectRelationship(project, "tasks", task);
+        Assertions.assertTrue(repository.hasRelationshipInstances(project));
+        Assertions.assertTrue(repository.hasRelationshipInstances(task));
+        Assertions.assertTrue(repository.validateRelationships(project).isValid());
+        Assertions.assertTrue(repository.validateRelationships(task).isValid());
 
         EntityInstance secondTask = create(repository, taskDefinition, "Write tests");
         repository.connectRelationship(project, "tasks", secondTask);
+        EntityInstance overAssignedProject =
+                create(repository, projectDefinition, "Second assignment target");
+        Assertions.assertThrows(
+                RuntimeException.class,
+                () -> repository.connectRelationship(task, "task-of", overAssignedProject));
 
         Assertions.assertThrows(
                 NoSuchMethodException.class,
@@ -542,8 +570,8 @@ public class ThingRepositoryContractTest {
         Assertions.assertThrows(
                 NoSuchMethodException.class,
                 () -> EntityInstance.class.getMethod("clearAllFields"));
-        Assertions.assertTrue(repository.getConnectedItems(task, "task-of").contains(project));
-        Assertions.assertTrue(repository.getConnectedItems(project, "tasks").contains(task));
+        Assertions.assertTrue(repository.listRelatedInstances(task, "task-of").contains(project));
+        Assertions.assertTrue(repository.listRelatedInstances(project, "tasks").contains(task));
 
         Assertions.assertTrue(repository.listRelatedInstances(task, "task-of").contains(project));
         Assertions.assertTrue(repository.listRelatedInstances(project, "tasks").contains(task));
@@ -566,13 +594,15 @@ public class ThingRepositoryContractTest {
 
         repository.removeRelationshipsInvolving(project, task, "tasks");
 
-        Assertions.assertTrue(repository.getConnectedItems(task, "task-of").isEmpty());
-        Assertions.assertFalse(repository.getConnectedItems(project, "tasks").contains(task));
-        Assertions.assertTrue(repository.getConnectedItems(project, "tasks").contains(secondTask));
+        Assertions.assertTrue(repository.listRelatedInstances(task, "task-of").isEmpty());
+        Assertions.assertFalse(repository.hasRelationshipInstances(task));
+        Assertions.assertFalse(repository.listRelatedInstances(project, "tasks").contains(task));
+        Assertions.assertTrue(
+                repository.listRelatedInstances(project, "tasks").contains(secondTask));
 
         repository.removeRelationshipsInvolving(project, secondTask, "tasks");
 
-        Assertions.assertTrue(repository.getConnectedItems(project, "tasks").isEmpty());
+        Assertions.assertTrue(repository.listRelatedInstances(project, "tasks").isEmpty());
 
         repository.deleteEntityInstance(task);
         repository.deleteEntityInstance(secondTask);
@@ -651,6 +681,31 @@ public class ThingRepositoryContractTest {
         Assertions.assertEquals("26", ticketAfterExplicit.getPrimaryKeyValue());
     }
 
+    private void exerciseMandatoryRelationshipValidationAndCascade(
+            final ThingRepository repository) {
+        ERSchema schema = mandatoryRelationshipSchema();
+        repository.initializeFrom(schema);
+
+        EntityDefinition parentDefinition = schema.getEntityDefinitionNamed("parent");
+        EntityDefinition childDefinition = schema.getEntityDefinitionNamed("child");
+
+        EntityInstance parent = create(repository, parentDefinition, "Parent");
+        EntityInstance child = create(repository, childDefinition, "Child");
+
+        Assertions.assertFalse(repository.validateRelationships(child).isValid());
+
+        repository.connectRelationship(child, "parent", parent);
+
+        Assertions.assertTrue(repository.validateRelationships(child).isValid());
+        Assertions.assertTrue(repository.listRelatedInstances(parent, "children").contains(child));
+        Assertions.assertTrue(repository.listRelatedInstances(child, "parent").contains(parent));
+
+        repository.deleteEntityInstance(parent);
+
+        Assertions.assertEquals(0, repository.countInstances(parentDefinition));
+        Assertions.assertEquals(0, repository.countInstances(childDefinition));
+    }
+
     private void addProjectAndTask(final ThingRepository repository, final ERSchema schema) {
         EntityDefinition projectDefinition = schema.getEntityDefinitionNamed("project");
         EntityDefinition taskDefinition = schema.getEntityDefinitionNamed("task");
@@ -699,6 +754,25 @@ public class ThingRepositoryContractTest {
 
         schema.defineRelationship(task, project, "task-of", Cardinality.ONE_TO_ONE())
                 .whenReversed(Cardinality.ONE_TO_MANY(), "tasks");
+
+        return schema;
+    }
+
+    private ERSchema mandatoryRelationshipSchema() {
+        ERSchema schema = new ERSchema();
+
+        EntityDefinition parent = schema.defineEntity("parent", "parents", -1);
+        parent.addAsPrimaryKeyField(Field.is("id", FieldType.AUTO_INCREMENT));
+        parent.addField(Field.is("title", FieldType.STRING));
+
+        EntityDefinition child = schema.defineEntity("child", "children", -1);
+        child.addAsPrimaryKeyField(Field.is("id", FieldType.AUTO_INCREMENT));
+        child.addField(Field.is("title", FieldType.STRING));
+
+        schema.defineRelationship(child, parent, "parent", Cardinality.ONE_TO_ONE())
+                .whenReversed(Cardinality.ONE_TO_MANY(), "children")
+                .getFromRelationship()
+                .setOptionality(Optionality.MANDATORY_RELATIONSHIP);
 
         return schema;
     }

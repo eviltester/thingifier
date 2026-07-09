@@ -37,7 +37,7 @@ public class ApiDocsConfig {
     }
 
     public String apiIntroductionParaOverride() {
-        return "";
+        return apiIntroductionParaOverride;
     }
 
     public ApiDocsConfig setApiIntroductionParaOverride(String introductionParaOverride) {

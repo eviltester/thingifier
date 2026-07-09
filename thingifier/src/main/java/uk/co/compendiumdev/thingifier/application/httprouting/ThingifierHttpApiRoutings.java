@@ -21,8 +21,6 @@ import uk.co.compendiumdev.thingifier.spark.SimpleSparkRouteCreator;
 
 public class ThingifierHttpApiRoutings {
 
-    private final ThingifierApiDocumentationDefn apiDefn;
-
     //    private String urlPath;
     private List<SparkRequestResponseHook> preSparkHttpRequestHooks;
     private List<SparkRequestResponseHook> postSparkHttpResponseHooks;
@@ -35,8 +33,6 @@ public class ThingifierHttpApiRoutings {
 
     public ThingifierHttpApiRoutings(
             final Thingifier thingifier, ThingifierApiDocumentationDefn apiDefn) {
-
-        this.apiDefn = apiDefn;
 
         // hooks that take Spark request and responses pre and post the http message receipt /
         // sending

@@ -297,8 +297,7 @@ public class AuthRoutes {
                     // TODO: this should be simpler to use by apps building on thingifier
                     if (httpApiResponse == null) {
 
-                        ApiResponse response = null;
-                        response =
+                        ApiResponse response =
                                 new ThingCreation(this.secretNoteStore)
                                         .with(
                                                 new BodyParser(myRequest, List.of("secretnote")),
@@ -316,7 +315,9 @@ public class AuthRoutes {
                                     stateValidator.validateFields(
                                             returnedInstance, protectedFieldNames, false);
                             validity.combine(
-                                    stateValidator.validateRelationships(returnedInstance));
+                                    secretNoteStore
+                                            .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
+                                            .validateRelationships(returnedInstance));
 
                             this.secretNoteStore.deleteThing(
                                     response.getReturnedInstance(),

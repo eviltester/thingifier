@@ -32,10 +32,6 @@ public class SimpleApiRoutes {
     private final DefaultGUIHTML guiTemplates;
     public Thingifier simplethings;
     public EntityDefinition entityDefn;
-    private ThingifierApiDocumentationDefn apiDocDefn;
-    private ThingifierAutoDocGenRouting simpleApiDocsRouting;
-    private ThingifierHttpApiRoutings simpleApiHttpRouting;
-    private DefaultGuiRoutings simpleApiGuiRouting;
 
     public SimpleApiRoutes(DefaultGUIHTML guiTemplates) {
         // fake the data storage
@@ -91,10 +87,9 @@ public class SimpleApiRoutes {
 
         DefaultGUIHTML gui = guiTemplates;
 
-        simpleApiGuiRouting =
-                new DefaultGuiRoutings(simplethings, gui).configureRoutes("/simpleapi/gui");
+        new DefaultGuiRoutings(simplethings, gui).configureRoutes("/simpleapi/gui");
 
-        apiDocDefn = new ThingifierApiDocumentationDefn();
+        ThingifierApiDocumentationDefn apiDocDefn = new ThingifierApiDocumentationDefn();
         apiDocDefn.addServer("https://apichallenges.eviltester.com", "cloud hosted version");
         apiDocDefn.addServer("http://localhost:4567", "local execution");
         apiDocDefn.setVersion("1.0.0");
@@ -148,9 +143,10 @@ public class SimpleApiRoutes {
         new SimpleSparkRouteCreator("/simpleapi/randomisbn")
                 .status(405, true, List.of("put", "post", "delete", "patch", "trace"));
 
-        simpleApiDocsRouting = new ThingifierAutoDocGenRouting(simplethings, apiDocDefn, gui);
+        new ThingifierAutoDocGenRouting(simplethings, apiDocDefn, gui);
 
-        simpleApiHttpRouting = new ThingifierHttpApiRoutings(simplethings, apiDocDefn);
+        ThingifierHttpApiRoutings simpleApiHttpRouting =
+                new ThingifierHttpApiRoutings(simplethings, apiDocDefn);
 
         simpleApiHttpRouting.registerHttpApiRequestHook(
                 new AddMoreItemsIfNecessary(simplethings.getERmodel()));

@@ -80,7 +80,9 @@ public interface ThingRepository extends AutoCloseable {
 
     List<EntityInstance> removeAllRelationships(EntityInstance instance);
 
-    Collection<EntityInstance> getConnectedItems(EntityInstance instance, String relationshipName);
+    boolean hasRelationshipInstances(EntityInstance instance);
+
+    ValidationReport validateRelationships(EntityInstance instance);
 
     @Override
     default void close() {

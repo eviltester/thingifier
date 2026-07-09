@@ -6,43 +6,44 @@ import static uk.co.compendiumdev.thingifier.core.domain.definitions.field.defin
 import java.util.Collection;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.ERSchema;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
+import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
+import uk.co.compendiumdev.thingifier.core.repository.inmemory.InMemoryThingRepository;
 
 public class ThingTest {
 
     @Test
     public void thingUsageExample() {
 
-        EntityInstanceCollection person =
-                new EntityInstanceCollection(new EntityDefinition("person", "people"));
-
-        person.definition().addFields(Field.is("name", STRING), Field.is("age", INTEGER));
+        ERSchema schema = new ERSchema();
+        EntityDefinition person = schema.defineEntity("person", "people", -1);
+        person.addFields(Field.is("name", STRING), Field.is("age", INTEGER));
+        ThingRepository repository = new InMemoryThingRepository("example");
+        repository.initializeFrom(schema);
 
         EntityInstance bob =
-                person.addInstance(
-                        EntityInstance.fromDraft(
-                                EntityInstanceDraft.forEntity(person.definition())
-                                        .withField("name", "Bob")
-                                        .withField("age", "56")));
+                repository.createInstance(
+                        EntityInstanceDraft.forEntity(person)
+                                .withField("name", "Bob")
+                                .withField("age", "56"));
 
-        EntityInstance eris =
-                person.addInstance(
-                        EntityInstance.fromDraft(
-                                EntityInstanceDraft.forEntity(person.definition())
-                                        .withField("name", "Eris")
-                                        .withField("age", "1000")));
+        repository.createInstance(
+                EntityInstanceDraft.forEntity(person)
+                        .withField("name", "Eris")
+                        .withField("age", "1000"));
 
-        Assertions.assertEquals(2, person.countInstances());
+        Assertions.assertEquals(2, repository.countInstances(person));
         Assertions.assertEquals("Bob", bob.getFieldValue("name").asString());
         Assertions.assertEquals("56", bob.getFieldValue("age").asString());
         Assertions.assertEquals(
                 "1000",
-                person.findInstanceByFieldNameAndValue("name", "Eris")
+                repository
+                        .findInstanceByFieldNameAndValue(person, "name", "Eris")
                         .getFieldValue("age")
                         .asString());
     }
@@ -50,32 +51,28 @@ public class ThingTest {
     @Test
     public void moreThingUsageExamples() {
 
-        EntityInstanceCollection url =
-                new EntityInstanceCollection(new EntityDefinition("URL", "URLs"));
+        ERSchema schema = new ERSchema();
+        EntityDefinition url = schema.defineEntity("URL", "URLs", -1);
+        url.addFields(
+                Field.is("url", STRING), Field.is("visited", INTEGER), Field.is("name", STRING));
+        ThingRepository repository = new InMemoryThingRepository("example");
+        repository.initializeFrom(schema);
 
-        url.definition()
-                .addFields(
-                        Field.is("url", STRING),
-                        Field.is("visited", INTEGER),
-                        Field.is("name", STRING));
+        Assertions.assertTrue(url.hasFieldNameDefined("url"));
+        Assertions.assertTrue(url.hasFieldNameDefined("name"));
+        Assertions.assertTrue(url.hasFieldNameDefined("visited"));
 
-        Assertions.assertTrue(url.definition().hasFieldNameDefined("url"));
-        Assertions.assertTrue(url.definition().hasFieldNameDefined("name"));
-        Assertions.assertTrue(url.definition().hasFieldNameDefined("visited"));
+        repository.createInstance(
+                EntityInstanceDraft.forEntity(url)
+                        .withField("name", "EvilTester.com")
+                        .withField("url", "http://eviltester.com"));
 
-        url.addInstance(
-                EntityInstance.fromDraft(
-                        EntityInstanceDraft.forEntity(url.definition())
-                                .withField("name", "EvilTester.com")
-                                .withField("url", "http://eviltester.com")));
+        repository.createInstance(
+                EntityInstanceDraft.forEntity(url)
+                        .withField("name", "JavaForTesters.com")
+                        .withField("url", "http://javaForTesters.com"));
 
-        url.addInstance(
-                EntityInstance.fromDraft(
-                        EntityInstanceDraft.forEntity(url.definition())
-                                .withField("name", "JavaForTesters.com")
-                                .withField("url", "http://javaForTesters.com")));
-
-        Collection<EntityInstance> instances = url.getInstances();
+        Collection<EntityInstance> instances = repository.listInstances(url);
 
         System.out.println("NAME\tURL");
         System.out.println("==========");
@@ -97,20 +94,17 @@ public class ThingTest {
         // Start simple with a to do manager model e.g. to do items, context, project (can also be a
         // sub-project), task group
 
-        EntityInstanceCollection todo =
-                new EntityInstanceCollection(new EntityDefinition("ToDo", "ToDos"));
+        EntityDefinition todo = new EntityDefinition("ToDo", "ToDos");
 
-        todo.definition()
-                .addFields(
-                        Field.is("title", STRING),
-                        Field.is("description", STRING),
-                        Field.is("doneStatus", FieldType.BOOLEAN).withDefaultValue("FALSE"));
+        todo.addFields(
+                Field.is("title", STRING),
+                Field.is("description", STRING),
+                Field.is("doneStatus", FieldType.BOOLEAN).withDefaultValue("FALSE"));
 
-        Assertions.assertTrue(todo.definition().hasFieldNameDefined("title"));
-        Assertions.assertTrue(todo.definition().hasFieldNameDefined("description"));
-        Assertions.assertTrue(todo.definition().hasFieldNameDefined("doneStatus"));
+        Assertions.assertTrue(todo.hasFieldNameDefined("title"));
+        Assertions.assertTrue(todo.hasFieldNameDefined("description"));
+        Assertions.assertTrue(todo.hasFieldNameDefined("doneStatus"));
 
-        Assertions.assertEquals(
-                "FALSE", todo.definition().getField("doneStatus").getDefaultValue().asString());
+        Assertions.assertEquals("FALSE", todo.getField("doneStatus").getDefaultValue().asString());
     }
 }

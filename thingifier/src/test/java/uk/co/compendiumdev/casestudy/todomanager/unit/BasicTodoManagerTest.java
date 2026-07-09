@@ -62,18 +62,27 @@ public class BasicTodoManagerTest {
         repository.connectRelationship(officeWork, "tasks", paperwork);
         repository.connectRelationship(officeWork, "tasks", filework);
 
-        Collection<EntityInstance> relatedItems = officeWork.getRelatedItems("tasks");
+        Collection<EntityInstance> relatedItems =
+                todoManager
+                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .listRelatedInstances(officeWork, "tasks");
 
         Assertions.assertTrue(relatedItems.contains(paperwork));
         Assertions.assertTrue(relatedItems.contains(filework));
 
-        relatedItems = officeWork.getRelatedItems("tasks");
+        relatedItems =
+                todoManager
+                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .listRelatedInstances(officeWork, "tasks");
         Assertions.assertTrue(relatedItems.contains(paperwork));
         Assertions.assertTrue(relatedItems.contains(filework));
 
         todoManager.deleteThing(paperwork, EntityRelModel.DEFAULT_DATABASE_NAME);
 
-        relatedItems = officeWork.getRelatedItems("tasks");
+        relatedItems =
+                todoManager
+                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .listRelatedInstances(officeWork, "tasks");
         Assertions.assertFalse(relatedItems.contains(paperwork));
         Assertions.assertTrue(relatedItems.contains(filework));
     }
@@ -161,6 +170,7 @@ public class BasicTodoManagerTest {
                                 .withProtectedField("guid", guid)
                                 .withField("title", "Delete this todo")
                                 .withField("description", "I need to be deleted"));
+        Assertions.assertEquals(guid, tidy.getPrimaryKeyValue());
 
         EntityInstance foundit = repository.findInstanceByFieldNameAndValue(todos, "guid", guid);
 

@@ -191,7 +191,7 @@ public class EntityRelModelTest {
         repository.connectRelationship(mainThing, "things", second);
         repository.connectRelationship(mainThing, "things", third);
 
-        Assertions.assertEquals(3, repository.getConnectedItems(mainThing, "things").size());
+        Assertions.assertEquals(3, repository.listRelatedInstances(mainThing, "things").size());
         Assertions.assertEquals(3, repository.countInstances(dependant));
 
         String thingGuid = mainThing.getPrimaryKeyValue();

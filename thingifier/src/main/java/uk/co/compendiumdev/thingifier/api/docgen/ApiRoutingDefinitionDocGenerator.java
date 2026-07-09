@@ -16,7 +16,6 @@ public class ApiRoutingDefinitionDocGenerator {
     private final ThingifierApiConfig config;
 
     private final String uniqueGUID = ":guid";
-    private final String uniqueID = ":id";
     private final Map<FieldType, String> uniqueReferenceText;
 
     public ApiRoutingDefinitionDocGenerator(final Thingifier thingifier) {

@@ -196,7 +196,9 @@ public class ThingifierApiDocumentationDefn {
                 new HeaderMatch(routingDefinition, header));
 
         // scan any existing routes and add the custom header
-        for (RoutingDefinition aRoute : additionalRoutes) {}
+        for (RoutingDefinition aRoute : additionalRoutes) {
+            addCustomHeadersForRouteNotMatches(aRoute);
+        }
     }
 
     public RoutingDefinition addAnyGlobalHeaders(RoutingDefinition route) {

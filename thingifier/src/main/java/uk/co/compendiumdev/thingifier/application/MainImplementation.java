@@ -37,7 +37,6 @@ public class MainImplementation implements AutoCloseable {
     private Thingifier thingifier;
     private ThingifierApiConfigProfile profileToUse;
     ThingifierHttpApiRoutings restServer;
-    private String[] args;
     // prevent shutdown verb as configurable through arguments e.g. -noshutdown
     boolean allowShutdown;
     // clear data every 10 minutes configurable through arguments e.g. -autocleardown
@@ -51,8 +50,6 @@ public class MainImplementation implements AutoCloseable {
     String desiredVersionName;
 
     DefaultGUIHTML guiManagement;
-    private ThingifierAutoDocGenRouting docsServerRouting;
-    private SparkHttpGenericExceptionRoutings exceptionRoutings;
 
     public MainImplementation() {
 
@@ -117,7 +114,6 @@ public class MainImplementation implements AutoCloseable {
     public void setDefaultsFromArgs(final String[] args) {
 
         String modelName = defaultModelName;
-        this.args = args;
 
         System.out.println("Valid Model Names -model=");
         for (String aModelName : thingifierModels.keySet()) {
@@ -286,12 +282,12 @@ public class MainImplementation implements AutoCloseable {
         apiDefn.setThingifier(thingifier);
 
         // start the docs and swagger endpoints
-        docsServerRouting = new ThingifierAutoDocGenRouting(thingifier, apiDefn, guiManagement);
+        new ThingifierAutoDocGenRouting(thingifier, apiDefn, guiManagement);
 
         restServer = new ThingifierHttpApiRoutings(thingifier, apiDefn);
 
         // sets up the wide * based generic 404s so no routings created after this will work
-        exceptionRoutings = new SparkHttpGenericExceptionRoutings();
+        new SparkHttpGenericExceptionRoutings();
 
         System.out.println("Running on " + Spark.port());
         System.out.println(" e.g. http://localhost:" + Spark.port());
