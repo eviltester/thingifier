@@ -25,13 +25,16 @@ public class ChallengeRouteHandler {
     ChallengeDefinitions challengeDefinitions;
     Challengers challengers;
     private boolean single_player_mode;
+    private final ChallengerConfig config;
     PersistenceLayer persistenceLayer;
     private boolean guiStayAlive=false; // when set gui makes a call every 5 mins to keep session alive,
     private DefaultGUIHTML guiTemplates;
+    private SimulationRoutes simulationRoutes;
     // not needed when storing data
 
     public ChallengeRouteHandler(Thingifier thingifier, ThingifierApiDocumentationDefn apiDefn, ChallengerConfig config){
 
+        this.config = config;
         this.apiChallengesDocumentationDefn = apiDefn;
         apiDefn.setThingifier(thingifier);
         apiDefn.setSeoTitle("API Challenges API Documentation | API Challenges");
@@ -99,7 +102,10 @@ public class ChallengeRouteHandler {
         new MirrorRoutes().configure(mirrorModeDocumentationDefn, guiTemplates);
 
         // Simulation routes should not show
-        new SimulationRoutes(guiTemplates).configure();
+        simulationRoutes = new SimulationRoutes(
+                guiTemplates,
+                config.getSimulationRepositoryConfig());
+        simulationRoutes.configure();
 
         new SimpleApiRoutes(guiTemplates).configure();
 
@@ -131,6 +137,13 @@ public class ChallengeRouteHandler {
 
     public Thingifier getThingifier() {
         return thingifier;
+    }
+
+    public void close() {
+        if (simulationRoutes != null) {
+            simulationRoutes.close();
+        }
+        thingifier.close();
     }
 
     private void enableAdminApi() {

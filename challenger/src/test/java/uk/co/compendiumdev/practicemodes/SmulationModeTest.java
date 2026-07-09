@@ -85,6 +85,39 @@ public class SmulationModeTest {
     }
 
     @Test
+    void canFilterSimulatedEntitiesThroughRepository(){
+
+        http.clearHeaders();
+        http.setHeader("Accept", "application/json");
+
+        HttpResponseDetails response = http.get("/sim/entities?id=11");
+
+        Assertions.assertEquals(200, response.statusCode);
+        Assertions.assertEquals("{\"entities\":[]}", response.body);
+
+        response = http.get("/sim/entities?name*=entity%20number%201");
+
+        Assertions.assertEquals(200, response.statusCode);
+        Assertions.assertTrue(response.body.contains("\"id\":1,"));
+        Assertions.assertFalse(response.body.contains("\"id\":10,"));
+    }
+
+    @Test
+    void canSortSimulatedEntitiesThroughRepository(){
+
+        http.clearHeaders();
+        http.setHeader("Accept", "application/json");
+
+        HttpResponseDetails response = http.get("/sim/entities?sortBy=-id");
+
+        Assertions.assertEquals(200, response.statusCode);
+        Assertions.assertTrue(
+                response.body.indexOf("\"id\":10,") <
+                        response.body.indexOf("\"id\":9,"));
+        Assertions.assertFalse(response.body.contains("\"id\":11,"));
+    }
+
+    @Test
     void canSimulateGetOfEntitiesXML(){
 
         http.clearHeaders();

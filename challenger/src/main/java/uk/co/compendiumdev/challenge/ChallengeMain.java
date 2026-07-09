@@ -35,6 +35,9 @@ public class ChallengeMain {
 
         // create a default configuration class which we pass into the ChallengeRouteHandler and configure via args
         ChallengerConfig config = new ChallengerConfig();
+        config.setSimulationRepositoryFromArgs(args);
+        logger.info("Using Simulation repository {}",
+                config.getSimulationRepositoryConfig().describe());
 
         for (String arg : args) {
             if (arg.toLowerCase().startsWith("-multiplayer") ||
@@ -119,7 +122,7 @@ public class ChallengeMain {
 
     public static void stop(){
         if (challenger != null) {
-            challenger.getThingifier().close();
+            challenger.close();
         }
         challenger = null;
     }

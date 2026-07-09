@@ -1,6 +1,8 @@
 package uk.co.compendiumdev.challenge.practicemodes.simulation;
 
+import uk.co.compendiumdev.challenge.ChallengerConfig;
 import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonThing;
 import uk.co.compendiumdev.thingifier.api.docgen.ThingifierApiDocumentationDefn;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi;
@@ -15,15 +17,13 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.F
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.validation.MaximumLengthValidationRule;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-import uk.co.compendiumdev.thingifier.core.query.EntityInstanceListFilter;
-import uk.co.compendiumdev.thingifier.core.query.EntityInstanceListSorter;
+import uk.co.compendiumdev.thingifier.core.query.FilterBy;
 import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
 import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
-import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonThing;
+import uk.co.compendiumdev.thingifier.core.repository.ThingRepositoryProviderConfig;
 import uk.co.compendiumdev.thingifier.htmlgui.htmlgen.DefaultGUIHTML;
 import uk.co.compendiumdev.thingifier.spark.SimpleSparkRouteCreator;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static spark.Spark.*;
@@ -39,14 +39,28 @@ public class SimulationRoutes {
     private ThingifierApiDocumentationDefn apiDocDefn;
     private ThingifierAutoDocGenRouting simulatorDocsRouting;
     private DefaultGUIHTML guiTemplates;
+    private final ThingRepositoryProviderConfig simulationRepositoryConfig;
 
     public SimulationRoutes(DefaultGUIHTML guiTemplates){
+        this(guiTemplates, ChallengerConfig.defaultSimulationRepositoryConfig());
+    }
+
+    public SimulationRoutes(
+            final DefaultGUIHTML guiTemplates,
+            final ThingRepositoryProviderConfig simulationRepositoryConfig) {
         this.guiTemplates=guiTemplates;
+        this.simulationRepositoryConfig = simulationRepositoryConfig;
     }
 
     public void setUpData(){
+        setUpRepositoryBackedData();
+        setUpDocumentation();
+    }
+
+    void setUpRepositoryBackedData() {
         // fake the data storage
-        simulation = new Thingifier();
+        simulation = new Thingifier(
+                new EntityRelModel(simulationRepositoryConfig.createProvider()));
 
         simulation.setDocumentation("Simulation Mode", "A simulated API, each request generates a new set of data but responses are processed by an API handler.");
         entityDefn = simulation.defineThing("entity", "entities");
@@ -76,6 +90,11 @@ public class SimulationRoutes {
 
         jsonThing = new JsonThing(simulation.apiConfig().jsonOutput());
 
+        ThingifierApiConfig customApiconfig = new ThingifierApiConfig("/sim");
+        simulation.apiConfig().setFrom(customApiconfig);
+    }
+
+    private void setUpDocumentation() {
         apiDocDefn = new ThingifierApiDocumentationDefn();
         apiDocDefn.addServer("https://apichallenges.eviltester.com", "cloud hosted version");
         apiDocDefn.addServer("http://localhost:4567", "local execution");
@@ -87,9 +106,6 @@ public class SimulationRoutes {
         apiDocDefn.setMetaRobots("noindex,follow");
         apiDocDefn.setOgType("website");
         apiDocDefn.setTwitterCard("summary_large_image");
-
-        ThingifierApiConfig customApiconfig = new ThingifierApiConfig("/sim");
-        simulation.apiConfig().setFrom(customApiconfig);
 
         simulation.apidocsconfig().setHeaderSectionOverride("""
                 <p>A simulated API, where each request is run against a new generated set of data but
@@ -149,22 +165,12 @@ public class SimulationRoutes {
         });
 
         HttpApiRequestHandler getEntitiesHandler = (HttpApiRequest anHttpApiRequest) -> {
-            // remove id 11 because that is a POST so not available in the list
-            List<Integer> idsToRemove = new ArrayList<>();
-            idsToRemove.add(11);
-
-            // process it because the request validated
-            List<EntityInstance> instances = new ArrayList<>();
-            for (EntityInstance possible : entityRepository.listInstances(entityDefn)) {
-                if (!idsToRemove.contains(
-                        possible.getFieldValue("id").asInteger())) {
-                    instances.add(possible);
-                }
-            }
-
             QueryFilterParams queryParams = anHttpApiRequest.getFilterableQueryParams();
-            instances = new EntityInstanceListFilter(queryParams).filter(instances);
-            instances = new EntityInstanceListSorter(queryParams).sort(instances);
+            // id 11 is the special POST-created entity and is not visible in collection GET.
+            queryParams.add(new FilterBy("id", "!=11"));
+
+            List<EntityInstance> instances =
+                    entityRepository.listInstances(entityDefn, queryParams);
             return ApiResponse.success().
                     returnInstanceCollection(instances).
                     resultContainsType(entityDefn);
@@ -305,5 +311,11 @@ public class SimulationRoutes {
                         return response;
                     }).handle();
         });
+    }
+
+    public void close() {
+        if (simulation != null) {
+            simulation.close();
+        }
     }
 }
