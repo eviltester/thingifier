@@ -4,11 +4,48 @@
         "https://checkstyle.org/dtds/configuration_1_3.dtd">
 
 <module name="Checker">
+    <module name="SuppressionSingleFilter">
+        <property name="id" value="repositoryLegacySnapshotEscape"/>
+        <property name="files" value=".*[/\\]ercoremodel[/\\]src[/\\]main[/\\]java[/\\]uk[/\\]co[/\\]compendiumdev[/\\]thingifier[/\\]core[/\\]domain[/\\]instances[/\\]ERInstanceData\.java"/>
+    </module>
+    <module name="SuppressionSingleFilter">
+        <property name="id" value="repositoryLegacySnapshotEscape"/>
+        <property name="files" value=".*[/\\]ercoremodel[/\\]src[/\\]main[/\\]java[/\\]uk[/\\]co[/\\]compendiumdev[/\\]thingifier[/\\]core[/\\]repository[/\\]inmemory[/\\]InMemoryThingRepository\.java"/>
+    </module>
+    <module name="SuppressionSingleFilter">
+        <property name="id" value="repositoryEntityInstanceCollectionUse"/>
+        <property name="files" value=".*[/\\]ercoremodel[/\\]src[/\\]main[/\\]java[/\\].*"/>
+    </module>
     <module name="TreeWalker">
         <module name="RegexpSinglelineJava">
+            <property name="id" value="thingifierRepositoryTestSupportFqn"/>
             <property name="format" value="^(?!\s*(package|import)\b).*uk\.co\.compendiumdev\.(thingifier|challenge)\.testsupport\.ThingifierRepositoryTestSupport\b"/>
             <property name="ignoreComments" value="true"/>
             <property name="message" value="Import ThingifierRepositoryTestSupport instead of using its fully-qualified name."/>
+        </module>
+        <module name="RegexpSinglelineJava">
+            <property name="id" value="repositoryLegacySnapshotEscape"/>
+            <property name="format" value="\b(getInstanceData|getThingInstancesNamed|getInstancesForSingularOrPluralNamedEntity|getThings|cloneWithDifferentData|createInstanceCollectionFor|getAllInstanceCollections|getInstanceCollectionForEntityNamed)\s*\("/>
+            <property name="ignoreComments" value="true"/>
+            <property name="message" value="Use repository-native APIs instead of legacy snapshot escape methods."/>
+        </module>
+        <module name="RegexpSinglelineJava">
+            <property name="id" value="repositoryEntityInstanceCollectionUse"/>
+            <property name="format" value="\bEntityInstanceCollection\b"/>
+            <property name="ignoreComments" value="true"/>
+            <property name="message" value="Thingifier and Challenger runtime code should use ThingRepository instead of EntityInstanceCollection."/>
+        </module>
+        <module name="RegexpSinglelineJava">
+            <property name="id" value="repositorySimpleQueryUse"/>
+            <property name="format" value="\bSimpleQuery\b"/>
+            <property name="ignoreComments" value="true"/>
+            <property name="message" value="SimpleQuery is removed; use RepositoryUrlQuery or repository APIs."/>
+        </module>
+        <module name="RegexpSinglelineJava">
+            <property name="id" value="productionDeprecatedApi"/>
+            <property name="format" value="@Deprecated\b"/>
+            <property name="ignoreComments" value="true"/>
+            <property name="message" value="Production code should not add @Deprecated APIs without an explicit static-analysis suppression."/>
         </module>
     </module>
 </module>

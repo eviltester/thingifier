@@ -16,8 +16,8 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.F
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
-import uk.co.compendiumdev.thingifier.core.repository.SqliteThingRepository;
-import uk.co.compendiumdev.thingifier.core.repository.SqliteThingRepositoryProvider;
+import uk.co.compendiumdev.thingifier.core.repository.sqlite.SqliteThingRepository;
+import uk.co.compendiumdev.thingifier.core.repository.sqlite.SqliteThingRepositoryProvider;
 import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
 
 public class ChallengeApiModelRepositoryTest {

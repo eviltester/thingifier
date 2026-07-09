@@ -1,4 +1,4 @@
-package uk.co.compendiumdev.thingifier.core.repository;
+package uk.co.compendiumdev.thingifier.core.repository.sqlite;
 
 import org.sqlite.Function;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.ERSchema;
@@ -16,6 +16,7 @@ import uk.co.compendiumdev.thingifier.core.query.EntityListSortParamParser;
 import uk.co.compendiumdev.thingifier.core.query.FilterBy;
 import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
 import uk.co.compendiumdev.thingifier.core.query.SortByFieldName;
+import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
 import uk.co.compendiumdev.thingifier.core.reporting.RepositoryJsonExporter;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 

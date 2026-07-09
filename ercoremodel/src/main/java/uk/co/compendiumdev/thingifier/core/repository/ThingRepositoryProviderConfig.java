@@ -1,5 +1,8 @@
 package uk.co.compendiumdev.thingifier.core.repository;
 
+import uk.co.compendiumdev.thingifier.core.repository.inmemory.InMemoryThingRepositoryProvider;
+import uk.co.compendiumdev.thingifier.core.repository.sqlite.SqliteThingRepositoryProvider;
+
 import java.nio.file.Path;
 import java.nio.file.Paths;
 

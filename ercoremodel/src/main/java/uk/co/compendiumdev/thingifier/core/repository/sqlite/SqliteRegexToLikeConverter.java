@@ -1,4 +1,4 @@
-package uk.co.compendiumdev.thingifier.core.repository;
+package uk.co.compendiumdev.thingifier.core.repository.sqlite;
 
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;

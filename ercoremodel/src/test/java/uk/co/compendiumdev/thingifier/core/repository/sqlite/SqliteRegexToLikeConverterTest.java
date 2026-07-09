@@ -1,4 +1,4 @@
-package uk.co.compendiumdev.thingifier.core.repository;
+package uk.co.compendiumdev.thingifier.core.repository.sqlite;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

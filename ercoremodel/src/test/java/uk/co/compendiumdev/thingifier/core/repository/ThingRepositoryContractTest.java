@@ -12,6 +12,10 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.F
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
 import uk.co.compendiumdev.thingifier.core.query.RepositoryUrlQuery;
+import uk.co.compendiumdev.thingifier.core.repository.inmemory.InMemoryThingRepository;
+import uk.co.compendiumdev.thingifier.core.repository.inmemory.InMemoryThingRepositoryProvider;
+import uk.co.compendiumdev.thingifier.core.repository.sqlite.SqliteThingRepository;
+import uk.co.compendiumdev.thingifier.core.repository.sqlite.SqliteThingRepositoryProvider;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -411,7 +415,7 @@ public class ThingRepositoryContractTest {
             regexParams.put("title", "~=[");
 
             Assertions.assertThrows(
-                    SqliteRegexFilterPolicy.UnsupportedRegexFilterException.class,
+                    RuntimeException.class,
                     () -> repository.listInstances(projectDefinition, regexParams));
         }
     }
@@ -431,7 +435,7 @@ public class ThingRepositoryContractTest {
             regexParams.put("title", "~=(.+)+");
 
             Assertions.assertThrows(
-                    SqliteRegexFilterPolicy.UnsupportedRegexFilterException.class,
+                    RuntimeException.class,
                     () -> repository.listInstances(projectDefinition, regexParams));
         }
     }

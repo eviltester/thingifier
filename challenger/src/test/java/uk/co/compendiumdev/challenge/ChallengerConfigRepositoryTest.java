@@ -2,8 +2,8 @@ package uk.co.compendiumdev.challenge;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import uk.co.compendiumdev.thingifier.core.repository.InMemoryThingRepositoryProvider;
-import uk.co.compendiumdev.thingifier.core.repository.SqliteThingRepositoryProvider;
+import uk.co.compendiumdev.thingifier.core.repository.inmemory.InMemoryThingRepositoryProvider;
+import uk.co.compendiumdev.thingifier.core.repository.sqlite.SqliteThingRepositoryProvider;
 import uk.co.compendiumdev.thingifier.core.repository.ThingRepositoryProvider;
 
 import java.nio.file.Path;

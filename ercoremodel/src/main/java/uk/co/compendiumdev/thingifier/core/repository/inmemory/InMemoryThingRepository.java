@@ -1,4 +1,4 @@
-package uk.co.compendiumdev.thingifier.core.repository;
+package uk.co.compendiumdev.thingifier.core.repository.inmemory;
 
 import uk.co.compendiumdev.thingifier.core.domain.definitions.ERSchema;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
@@ -12,6 +12,7 @@ import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollec
 import uk.co.compendiumdev.thingifier.core.query.EntityInstanceListFilter;
 import uk.co.compendiumdev.thingifier.core.query.EntityInstanceListSorter;
 import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
+import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 
 import java.util.ArrayList;
