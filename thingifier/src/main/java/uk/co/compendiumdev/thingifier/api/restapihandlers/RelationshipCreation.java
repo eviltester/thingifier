@@ -9,6 +9,7 @@ import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVectorDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.validation.EntityInstanceStateValidator;
 
 import java.util.List;
 import java.util.Map;
@@ -16,9 +17,11 @@ import java.util.Map;
 public class RelationshipCreation {
 
     private final Thingifier thingifier;
+    private final EntityInstanceStateValidator stateValidator;
 
     public RelationshipCreation(final Thingifier aThingifier) {
         this.thingifier = aThingifier;
+        this.stateValidator = new EntityInstanceStateValidator();
     }
 
     public ApiResponse create(
@@ -138,7 +141,7 @@ public class RelationshipCreation {
                     connectThis, relationshipToUse.getName(), relatedItem);
 
             // enforce cardinality on relationship
-            ValidationReport validNow = relatedItem.validateRelationships();
+            ValidationReport validNow = stateValidator.validateRelationships(relatedItem);
             if(!validNow.isValid()){
                 response = ApiResponse.error(400, validNow.getErrorMessages());
                 thingifier.deleteThing(relatedItem, database);

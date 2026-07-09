@@ -40,24 +40,6 @@ public class ThingInstanceCreationTest {
         System.out.println(session.toString());
     }
 
-
-    @Test
-    public void canCreateUniqueGUIDs(){
-        EntityInstance session = new EntityInstance(entityTestSession);
-        session.addAutoGUIDstoInstance();
-
-        Assertions.assertNotNull(session.getPrimaryKeyValue());
-
-        EntityInstance session2 = new EntityInstance(entityTestSession);
-        session2.addAutoGUIDstoInstance();
-
-        Assertions.assertNotNull(session2.getPrimaryKeyValue());
-        Assertions.assertTrue(session2.getPrimaryKeyValue().length()>10);
-
-        Assertions.assertNotEquals(session.getPrimaryKeyValue(), session2.getPrimaryKeyValue());
-    }
-
-
     @Test
     public void canCreateAThingWithAGUID(){
 

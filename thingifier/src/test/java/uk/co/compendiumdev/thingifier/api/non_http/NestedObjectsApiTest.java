@@ -1,11 +1,11 @@
 package uk.co.compendiumdev.thingifier.api.non_http;
 
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
-import uk.co.compendiumdev.thingifier.testsupport.ThingifierRepositoryTestSupport;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiResponse;
@@ -36,7 +36,7 @@ public class NestedObjectsApiTest {
         defn = thingifier.defineThing("thing", "things");
         defn.addAsPrimaryKeyField(Field.is("guid", FieldType.AUTO_GUID));
 
-        thing = ThingifierRepositoryTestSupport.entity(thingifier, "thing");
+        thing = thingifier.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("thing");
 
         defn.addField(Field.is("person", FieldType.OBJECT)
                 .withField(
@@ -51,11 +51,7 @@ public class NestedObjectsApiTest {
     @Test
     void canAmendConnie(){
 
-        instance = new EntityInstance(defn);
-        instance.setValue("person.firstname", "Connie");
-        instance.setValue("person.surname", "Dobbs");
-
-        ThingifierRepositoryTestSupport.repository(thingifier).addInstance(instance);
+        instance = thingifier.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(defn).withField("person.firstname", "Connie").withField("person.surname", "Dobbs"));
 
         api = new ThingifierHttpApi(thingifier,
                 null, null);
@@ -80,7 +76,7 @@ public class NestedObjectsApiTest {
         api = new ThingifierHttpApi(thingifier,
                 null, null);
 
-        Assertions.assertEquals(0,ThingifierRepositoryTestSupport.repository(thingifier).countInstances(thing));
+        Assertions.assertEquals(0,thingifier.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(thing));
 
         final HttpApiRequest createBobRequest = new HttpApiRequest("/things");
         createBobRequest.setHeaders(Map.of("content-type", "application/json"));
@@ -91,9 +87,9 @@ public class NestedObjectsApiTest {
         final HttpApiResponse response = api.post(createBobRequest);
 
         Assertions.assertEquals(201, response.getStatusCode());
-        Assertions.assertEquals(1,ThingifierRepositoryTestSupport.repository(thingifier).countInstances(thing));
+        Assertions.assertEquals(1,thingifier.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(thing));
 
-        for(EntityInstance bob : ThingifierRepositoryTestSupport.repository(thingifier).listInstances(thing)){
+        for(EntityInstance bob : thingifier.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).listInstances(thing)){
             FieldValue fv = bob.getFieldValue("person");
             InstanceFields obj = fv.asObject();
             FieldValue fn = obj.getFieldValue("firstname");
@@ -114,7 +110,7 @@ public class NestedObjectsApiTest {
         api = new ThingifierHttpApi(thingifier,
                 null, null);
 
-        Assertions.assertEquals(0,ThingifierRepositoryTestSupport.repository(thingifier).countInstances(thing));
+        Assertions.assertEquals(0,thingifier.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(thing));
 
         final HttpApiRequest failToCreateBobRequest = new HttpApiRequest("/things");
         failToCreateBobRequest.setVerb(HttpApiRequest.VERB.POST);
@@ -125,9 +121,11 @@ public class NestedObjectsApiTest {
         final HttpApiResponse response = api.post(failToCreateBobRequest);
 
         Assertions.assertEquals(400, response.getStatusCode());
-        Assertions.assertEquals(0,ThingifierRepositoryTestSupport.repository(thingifier).countInstances(thing));
+        Assertions.assertEquals(0,thingifier.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(thing));
 
         Assertions.assertTrue(
-            response.apiResponse().getErrorMessages().contains("surname : field is mandatory"));
+            response.apiResponse().getErrorMessages().
+                    stream().
+                    anyMatch(error -> error.contains("surname : field is mandatory")));
     }
 }

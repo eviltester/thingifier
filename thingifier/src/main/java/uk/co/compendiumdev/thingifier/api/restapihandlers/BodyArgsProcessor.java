@@ -22,11 +22,17 @@ public class BodyArgsProcessor {
 
 
     public List<Map.Entry<String,String>> removeRelationshipsFrom(final EntityInstance instance, final String database) {
+        return removeRelationshipsFrom(instance.getEntity(), database);
+    }
+
+    public List<Map.Entry<String,String>> removeRelationshipsFrom(
+            final EntityDefinition entity,
+            final String database) {
 
         List<Map.Entry<String,String>> fullargs = bodyargs.getFlattenedStringMap();
         RelationshipCollector collectedRelationships = new RelationshipCollector();
 
-        identifyRelationships(fullargs, instance, collectedRelationships, database);
+        identifyRelationships(fullargs, entity, collectedRelationships, database);
 
         for(Map.Entry<String, String> removeMe : collectedRelationships.getRelationshipsKeys()) {
             fullargs.remove(removeMe);
@@ -38,6 +44,13 @@ public class BodyArgsProcessor {
 
     public void identifyRelationships(List<Map.Entry<String,String>> fullargs,
                                      final EntityInstance instance,
+                                     RelationshipCollector collector,
+                                      final String database){
+        identifyRelationships(fullargs, instance.getEntity(), collector, database);
+    }
+
+    public void identifyRelationships(List<Map.Entry<String,String>> fullargs,
+                                     final EntityDefinition entity,
                                      RelationshipCollector collector,
                                       final String database){
 
@@ -68,9 +81,9 @@ public class BodyArgsProcessor {
                         if(instanceToRelateTo ==null){
                             // but it might not be
                             // TODO: find other usages of this pattern and refactor to
-                            if(instance.getEntity().related().hasRelationship(relationshipName)){
+                            if(entity.related().hasRelationship(relationshipName)){
                                 final List<RelationshipVectorDefinition> relationshipsAre =
-                                        instance.getEntity().related().getRelationships(relationshipName);
+                                        entity.related().getRelationships(relationshipName);
                                 for(RelationshipVectorDefinition relate : relationshipsAre){
                                     final EntityDefinition typeOfThing = relate.getTo();
                                     instanceToRelateTo = thingifier.getRepository(database).

@@ -6,6 +6,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
 
 public class MultipleEntityInstancesDatabasesTest {
@@ -16,8 +17,7 @@ public class MultipleEntityInstancesDatabasesTest {
         EntityDefinition thingDefn = defineThing(erm);
 
         ThingRepository repository = erm.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME);
-        EntityInstance thing = repository.addInstance(
-                new EntityInstance(thingDefn).setValue("Title", "Thing 1"));
+        EntityInstance thing = create(repository, thingDefn);
 
         EntityInstance foundThing = repository.findEntityInstanceByGUID(thing.getPrimaryKeyValue());
 
@@ -33,8 +33,7 @@ public class MultipleEntityInstancesDatabasesTest {
         erm.createInstanceDatabase("other_things");
 
         ThingRepository otherRepository = erm.getRepository("other_things");
-        EntityInstance thing = otherRepository.addInstance(
-                new EntityInstance(thingDefn).setValue("Title", "Thing 1"));
+        EntityInstance thing = create(otherRepository, thingDefn);
 
         EntityInstance foundThing = otherRepository.findEntityInstanceByGUID(thing.getPrimaryKeyValue());
 
@@ -66,8 +65,7 @@ public class MultipleEntityInstancesDatabasesTest {
         erm.createInstanceDatabase("other_things");
 
         ThingRepository otherRepository = erm.getRepository("other_things");
-        EntityInstance thing = otherRepository.addInstance(
-                new EntityInstance(thingDefn).setValue("Title", "Thing 1"));
+        EntityInstance thing = create(otherRepository, thingDefn);
 
         Assertions.assertNotNull(
                 otherRepository.findEntityInstanceByGUID(thing.getPrimaryKeyValue()));
@@ -95,5 +93,10 @@ public class MultipleEntityInstancesDatabasesTest {
         thingDefn.addField(Field.is("Title", FieldType.STRING));
         thingDefn.addAsPrimaryKeyField(Field.is("guid", FieldType.AUTO_GUID));
         return thingDefn;
+    }
+
+    private EntityInstance create(final ThingRepository repository, final EntityDefinition thingDefn) {
+        return repository.createInstance(
+                EntityInstanceDraft.forEntity(thingDefn).withField("Title", "Thing 1"));
     }
 }

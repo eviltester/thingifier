@@ -24,6 +24,8 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.F
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.validation.MaximumLengthValidationRule;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
+import uk.co.compendiumdev.thingifier.core.domain.instances.validation.EntityInstanceStateValidator;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonThing;
 import uk.co.compendiumdev.thingifier.spark.SimpleSparkRouteCreator;
@@ -38,6 +40,7 @@ public class AuthRoutes {
     private EntityDefinition secretNote;
     private ThingifierHttpApi httpApi;
     private JsonThing jsonThing;
+    private final EntityInstanceStateValidator stateValidator = new EntityInstanceStateValidator();
 
     public void configure(final Challengers challengers,
                           final ThingifierApiDocumentationDefn apiDefn) {
@@ -173,7 +176,8 @@ public class AuthRoutes {
 
             final HttpApiRequest myRequest = SparkToHttpApiRequest.convert(request);
 
-            EntityInstance note = new EntityInstance(secretNote).setValue("note", challenger.getNote());
+            EntityInstance note = EntityInstance.fromDraft(EntityInstanceDraft.forEntity(secretNote).
+                    withField("note", challenger.getNote()));
             final ApiResponse response = ApiResponse.success().returnSingleInstance(note);
 
             final HttpApiResponse httpApiResponse = new HttpApiResponse(myRequest.getHeaders(), response,
@@ -278,8 +282,9 @@ public class AuthRoutes {
 
                     EntityInstance returnedInstance = response.getReturnedInstance();
                     final List<String> protectedFieldNames = returnedInstance.getEntity().getFieldNamesOfType(FieldType.AUTO_INCREMENT, FieldType.AUTO_GUID);
-                    ValidationReport validity = returnedInstance.validateFieldValues(protectedFieldNames, false);
-                    validity.combine(returnedInstance.validateRelationships());
+                    ValidationReport validity = stateValidator.validateFields(
+                            returnedInstance, protectedFieldNames, false);
+                    validity.combine(stateValidator.validateRelationships(returnedInstance));
 
                     this.secretNoteStore.deleteThing(response.getReturnedInstance(), EntityRelModel.DEFAULT_DATABASE_NAME);
 

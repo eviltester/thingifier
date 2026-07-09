@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
@@ -29,9 +30,9 @@ public class ObjectFieldTest {
                         ));
 
 
-        instance = new EntityInstance(defn);
-        instance.setValue("person.firstname", "Connie");
-        instance.setValue("person.surname", "Dobbs");
+        instance = EntityInstance.fromDraft(EntityInstanceDraft.forEntity(defn).
+                withField("person.firstname", "Connie").
+                withField("person.surname", "Dobbs"));
     }
 
     @Test
@@ -51,8 +52,8 @@ public class ObjectFieldTest {
                 getObjectDefinition().
                 getField("surname").makeMandatory();
 
-        instance = new EntityInstance(defn);
-        instance.setValue("person.firstname", "Eris");
+        instance = EntityInstance.fromDraft(EntityInstanceDraft.forEntity(defn).
+                withField("person.firstname", "Eris"));
 
         final ValidationReport validation = instance.validate();
 
@@ -68,15 +69,13 @@ public class ObjectFieldTest {
                 getField("surname").makeMandatory().
                 withValidation(VRule.notEmpty());
 
-        instance = new EntityInstance(defn);
-        instance.setValue("person.firstname", "Eris");
+        final IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class,
+                () -> EntityInstanceDraft.forEntity(defn).
+                        withField("person.firstname", "Eris").
+                        withField("person.surname", "")
+        );
 
-        // bypass set validation rules and see if validation picks it up
-        instance.overrideValue("person.surname", "");
-
-        final ValidationReport validation = instance.validate();
-        Assertions.assertFalse(validation.isValid(), "surname should fail validation");
-        Assertions.assertTrue(validation.getCombinedErrorMessages().contains("surname : can not be empty"));
+        Assertions.assertTrue(e.getMessage().contains("surname : can not be empty"));
     }
 
     @Test
@@ -87,13 +86,10 @@ public class ObjectFieldTest {
                 getField("surname").
                 withValidation(VRule.notEmpty());
 
-        instance = new EntityInstance(defn);
-        instance.setValue("person.firstname", "Eris");
-
         final IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class,
-                () -> {
-                    instance.setValue("person.surname", "");
-                }
+                () -> EntityInstanceDraft.forEntity(defn).
+                        withField("person.firstname", "Eris").
+                        withField("person.surname", "")
         );
 
         Assertions.assertTrue(e.getMessage().contains("surname : can not be empty"));

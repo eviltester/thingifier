@@ -9,14 +9,17 @@ import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.api.restapihandlers.commonerrorresponse.NoSuchEntity;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.validation.EntityInstanceStateValidator;
 
 import java.util.List;
 
 public class RestApiPostHandler {
     private final Thingifier thingifier;
+    private final EntityInstanceStateValidator stateValidator;
 
     public RestApiPostHandler(final Thingifier aThingifier) {
         thingifier = aThingifier;
+        stateValidator = new EntityInstanceStateValidator();
     }
 
     public ApiResponse handle(final String url, final BodyParser args, final HttpHeadersBlock requestHeaders) {
@@ -41,8 +44,9 @@ public class RestApiPostHandler {
 
             EntityInstance returnedInstance = response.getReturnedInstance();
             final List<String> protectedFieldNames = returnedInstance.getEntity().getFieldNamesOfType(FieldType.AUTO_INCREMENT, FieldType.AUTO_GUID);
-            ValidationReport validity = returnedInstance.validateFieldValues(protectedFieldNames, false);
-            validity.combine(returnedInstance.validateRelationships());
+            ValidationReport validity = stateValidator.validateFields(
+                    returnedInstance, protectedFieldNames, false);
+            validity.combine(stateValidator.validateRelationships(returnedInstance));
 
             if (validity.isValid()) {
                 return response;

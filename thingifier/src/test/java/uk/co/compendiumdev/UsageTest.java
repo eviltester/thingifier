@@ -1,14 +1,14 @@
 package uk.co.compendiumdev;
 
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
-import uk.co.compendiumdev.thingifier.testsupport.ThingifierRepositoryTestSupport;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
+import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
 
 import static uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType.STRING;
 
@@ -44,22 +44,25 @@ public class UsageTest {
                     addFields(Field.is("url", STRING),Field.is("name",STRING)
                     );
 
-        EntityDefinition urls = ThingifierRepositoryTestSupport.entity(things, "URL");
+        EntityDefinition urls = things.getERmodel().getSchema().
+                getDefinitionWithSingularOrPluralNamed("URL");
+        ThingRepository repository = things.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME);
 
         Assertions.assertTrue(urls.hasFieldNameDefined("url"));
         Assertions.assertTrue(urls.hasFieldNameDefined("name"));
 
-        ThingifierRepositoryTestSupport.repository(things).addInstance(new EntityInstance(urls)).
-                setValue("name","EvilTester.com").
-                setValue("url","http://eviltester.com");
+        repository.createInstance(EntityInstanceDraft.forEntity(urls).
+                withField("name", "EvilTester.com").
+                withField("url", "http://eviltester.com"));
 
         EntityDefinition user = things.defineThing("USER", "users");
 
         user.addFields(Field.is("name", STRING));
 
-        EntityDefinition users = ThingifierRepositoryTestSupport.entity(things, "USER");
-        EntityInstance alan = ThingifierRepositoryTestSupport.repository(things).addInstance(new EntityInstance(users)).
-                setValue("name","alan");
+        EntityDefinition users = things.getERmodel().getSchema().
+                getDefinitionWithSingularOrPluralNamed("USER");
+        EntityInstance alan = repository.createInstance(
+                EntityInstanceDraft.forEntity(users).withField("name", "alan"));
 
 
         // TODO fix relationshps so that they have values

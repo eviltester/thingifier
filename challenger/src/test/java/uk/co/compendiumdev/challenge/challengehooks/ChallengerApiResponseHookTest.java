@@ -1,5 +1,6 @@
 package uk.co.compendiumdev.challenge.challengehooks;
 
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -186,10 +187,11 @@ public class ChallengerApiResponseHookTest {
                 final String title,
                 final String doneStatus,
                 final String description) {
-            return repository.addInstance(new EntityInstance(todo).
-                    setValue("title", title).
-                    setValue("doneStatus", doneStatus).
-                    setValue("description", description));
+            return repository.createInstance(
+                    EntityInstanceDraft.forEntity(todo).
+                            withField("title", title).
+                            withField("doneStatus", doneStatus).
+                            withField("description", description));
         }
 
         HttpApiRequest request(final String path, final HttpApiRequest.VERB verb) {

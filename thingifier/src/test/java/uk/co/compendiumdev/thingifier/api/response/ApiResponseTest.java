@@ -1,10 +1,10 @@
 package uk.co.compendiumdev.thingifier.api.response;
 
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
-import uk.co.compendiumdev.thingifier.testsupport.ThingifierRepositoryTestSupport;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
@@ -86,9 +86,9 @@ public class ApiResponseTest {
         Thingifier thingifier = new Thingifier();
         EntityDefinition todo = thingifier.defineThing("todo", "todos");
         todo.addFields( Field.is("title", STRING));
-        EntityDefinition todos = ThingifierRepositoryTestSupport.entity(thingifier, "todo");
+        EntityDefinition todos = thingifier.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("todo");
 
-        EntityInstance aTodo = ThingifierRepositoryTestSupport.repository(thingifier).addInstance(new EntityInstance(todos)).setValue("title", "a todo");
+        EntityInstance aTodo = thingifier.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(todos).withField("title", "a todo"));
 
         ApiResponse response = ApiResponse.success().returnSingleInstance(aTodo);
 
@@ -107,12 +107,12 @@ public class ApiResponseTest {
         Thingifier thingifier = new Thingifier();
         EntityDefinition todo = thingifier.defineThing("todo", "todos");
         todo.addFields( Field.is("title", STRING));
-        EntityDefinition todos = ThingifierRepositoryTestSupport.entity(thingifier, "todo");
+        EntityDefinition todos = thingifier.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("todo");
 
-        EntityInstance aTodo = ThingifierRepositoryTestSupport.repository(thingifier).addInstance(new EntityInstance(todos)).setValue("title", "a todo");
-        EntityInstance anotherTodo = ThingifierRepositoryTestSupport.repository(thingifier).addInstance(new EntityInstance(todos)).setValue("title", "another todo");
+        EntityInstance aTodo = thingifier.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(todos).withField("title", "a todo"));
+        EntityInstance anotherTodo = thingifier.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(todos).withField("title", "another todo"));
 
-        ApiResponse response = ApiResponse.success().returnInstanceCollection(new ArrayList(ThingifierRepositoryTestSupport.repository(thingifier).listInstances(todos)));
+        ApiResponse response = ApiResponse.success().returnInstanceCollection(new ArrayList(thingifier.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).listInstances(todos)));
 
         Assertions.assertEquals(200, response.getStatusCode());
         Assertions.assertEquals(true, response.hasABody());

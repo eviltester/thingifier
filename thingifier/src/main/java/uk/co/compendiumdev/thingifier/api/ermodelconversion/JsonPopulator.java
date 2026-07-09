@@ -8,11 +8,9 @@ import uk.co.compendiumdev.thingifier.core.domain.datapopulator.RepositoryDataPo
 import uk.co.compendiumdev.thingifier.core.domain.definitions.ERSchema;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
-import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.UUID;
 
@@ -78,27 +76,24 @@ public class JsonPopulator implements RepositoryDataPopulator {
             }
         });
 
-        EntityInstance entityInstance = new EntityInstance(entityDefn);
+        EntityInstanceDraft draft = EntityInstanceDraft.forEntity(entityDefn);
         obj.entrySet().forEach(value -> {
             Field fieldDefn = entityDefn.getField(value.getKey());
             switch (fieldDefn.getType()){
                 case AUTO_GUID:
-                    entityInstance.overrideValue(fieldDefn.getName(), UUID.fromString(value.getValue().getAsString()).toString());
+                    draft.withProtectedField(
+                            fieldDefn.getName(),
+                            UUID.fromString(value.getValue().getAsString()).toString());
                     break;
                 case AUTO_INCREMENT:
-                    entityInstance.overrideValue(fieldDefn.getName(), String.valueOf(value.getValue().getAsInt()));
+                    draft.withProtectedField(fieldDefn.getName(), String.valueOf(value.getValue().getAsInt()));
                     break;
                 default:
-                    entityInstance.setValue(value.getKey(), value.getValue().getAsString());
+                    draft.withField(value.getKey(), value.getValue().getAsString());
             }
         });
 
-        ValidationReport validation = entityInstance.validateFieldValues(new ArrayList<>(), true);
-        if(!validation.isValid()){
-            throw new RuntimeException(String.format("ERROR: Invalid %s entity instance because %s", entityDefn.getName(), validation.getCombinedErrorMessages()));
-        }
-
         // instance is valid, so add it
-        repository.addInstance(entityInstance);
+        repository.createInstance(draft);
     }
 }

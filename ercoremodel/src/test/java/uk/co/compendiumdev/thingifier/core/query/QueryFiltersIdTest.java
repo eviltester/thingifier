@@ -8,6 +8,7 @@ import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 
 import java.util.List;
 
@@ -27,10 +28,10 @@ public class QueryFiltersIdTest {
                 );
 
         // fakeid is a proxy for the actual id which always starts at 1 and auto increments
-        RepositoryUrlQueryTestSupport.add(erModel, "thing", "fakeid", "1");
-        RepositoryUrlQueryTestSupport.add(erModel, "thing", "fakeid", "2");
-        RepositoryUrlQueryTestSupport.add(erModel, "thing", "fakeid", "3");
-        RepositoryUrlQueryTestSupport.add(erModel, "thing", "fakeid", "4");
+        erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(erModel.getSchema().getEntityDefinitionNamed("thing")).withField("fakeid", "1"));
+        erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(erModel.getSchema().getEntityDefinitionNamed("thing")).withField("fakeid", "2"));
+        erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(erModel.getSchema().getEntityDefinitionNamed("thing")).withField("fakeid", "3"));
+        erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(erModel.getSchema().getEntityDefinitionNamed("thing")).withField("fakeid", "4"));
 
     }
 
@@ -41,7 +42,7 @@ public class QueryFiltersIdTest {
         params.put("id", ">=3");
         params.put("sortBy", "+id");
 
-        RepositoryUrlQuery queryResults = RepositoryUrlQueryTestSupport.query(erModel, "things").
+        RepositoryUrlQuery queryResults = new RepositoryUrlQuery(erModel.getSchema(), erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME), "things").
                 performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
@@ -58,7 +59,7 @@ public class QueryFiltersIdTest {
         params.put("id", "<3");
         params.put("sortBy", "-id");
 
-        RepositoryUrlQuery queryResults = RepositoryUrlQueryTestSupport.query(erModel, "things").
+        RepositoryUrlQuery queryResults = new RepositoryUrlQuery(erModel.getSchema(), erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME), "things").
                 performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");

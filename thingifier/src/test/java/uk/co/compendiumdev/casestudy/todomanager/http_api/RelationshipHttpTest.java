@@ -1,5 +1,6 @@
 package uk.co.compendiumdev.casestudy.todomanager.http_api;
 
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 import com.google.gson.Gson;
 
 import org.junit.jupiter.api.Assertions;
@@ -7,7 +8,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.casestudy.todomanager.TodoManagerModel;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
-import uk.co.compendiumdev.thingifier.testsupport.ThingifierRepositoryTestSupport;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiResponse;
@@ -30,9 +30,9 @@ public class RelationshipHttpTest {
 
         todoManager = TodoManagerModel.definedAsThingifier();
 
-        todo = ThingifierRepositoryTestSupport.entity(todoManager, "todo");
-        project = ThingifierRepositoryTestSupport.entity(todoManager, "project");
-        categories = ThingifierRepositoryTestSupport.entity(todoManager, "category");
+        todo = todoManager.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("todo");
+        project = todoManager.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("project");
+        categories = todoManager.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("category");
 
 
     }
@@ -40,11 +40,11 @@ public class RelationshipHttpTest {
     @Test
     public void canCreateARelationshipBetweenProjectAndTodoViaTasks(){
 
-        final EntityInstance atodo = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(todo)).setValue("title", "a TODO");
+        final EntityInstance atodo = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(todo).withField("title", "a TODO"));
 
-        final EntityInstance aproject = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(project)).setValue("title", "a Project");
+        final EntityInstance aproject = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(project).withField("title", "a Project"));
 
-        Assertions.assertEquals(0, aproject.getRelationships().getConnectedItems("tasks").size());
+        Assertions.assertEquals(0, aproject.getRelatedItems("tasks").size());
 
         HttpApiRequest request = new HttpApiRequest("projects/" + aproject.getPrimaryKeyValue() + "/tasks");
         request.getHeaders().putAll(HeadersSupport.acceptJson());
@@ -57,18 +57,18 @@ public class RelationshipHttpTest {
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).post(request);
         Assertions.assertEquals(201, response.getStatusCode());
 
-        Assertions.assertEquals(1, aproject.getRelationships().getConnectedItems("tasks").size());
+        Assertions.assertEquals(1, aproject.getRelatedItems("tasks").size());
 
     }
 
     @Test
     public void canCreateARelationshipBetweenProjectAndTodoViaTasksUsingID(){
 
-        final EntityInstance atodo = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(todo)).setValue("title", "a TODO");
+        final EntityInstance atodo = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(todo).withField("title", "a TODO"));
 
-        final EntityInstance aproject = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(project)).setValue("title", "a Project");
+        final EntityInstance aproject = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(project).withField("title", "a Project"));
 
-        Assertions.assertEquals(0, aproject.getRelationships().getConnectedItems("tasks").size());
+        Assertions.assertEquals(0, aproject.getRelatedItems("tasks").size());
 
         HttpApiRequest request = new HttpApiRequest("projects/" + aproject.getPrimaryKeyValue() + "/tasks");
         request.getHeaders().putAll(HeadersSupport.acceptJson());
@@ -81,7 +81,7 @@ public class RelationshipHttpTest {
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).post(request);
         Assertions.assertEquals(201, response.getStatusCode());
 
-        Assertions.assertEquals(1, aproject.getRelationships().getConnectedItems("tasks").size());
+        Assertions.assertEquals(1, aproject.getRelatedItems("tasks").size());
 
     }
 
@@ -91,10 +91,10 @@ public class RelationshipHttpTest {
     @Test
     public void canCreateARelationshipAndTodoBetweenProjectAndTodoViaTasks(){
 
-        final EntityInstance aproject = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(project)).setValue("title", "a Project");
+        final EntityInstance aproject = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(project).withField("title", "a Project"));
 
-        Assertions.assertEquals(0, aproject.getRelationships().getConnectedItems("tasks").size());
-        Assertions.assertEquals(0,ThingifierRepositoryTestSupport.repository(todoManager).countInstances(todo));
+        Assertions.assertEquals(0, aproject.getRelatedItems("tasks").size());
+        Assertions.assertEquals(0,todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(todo));
 
         HttpApiRequest request = new HttpApiRequest("projects/" + aproject.getPrimaryKeyValue() + "/tasks");
         request.getHeaders().putAll(HeadersSupport.acceptJson());
@@ -108,10 +108,10 @@ public class RelationshipHttpTest {
 
         Assertions.assertEquals(201, response.getStatusCode());
 
-        Assertions.assertEquals(1, aproject.getRelationships().getConnectedItems("tasks").size());
-        Assertions.assertEquals(1,ThingifierRepositoryTestSupport.repository(todoManager).countInstances(todo));
+        Assertions.assertEquals(1, aproject.getRelatedItems("tasks").size());
+        Assertions.assertEquals(1,todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(todo));
 
-        final EntityInstance inMemoryTodo = ThingifierRepositoryTestSupport.repository(todoManager).findInstanceByPrimaryKey(todo, response.getHeaders().get(ApiResponse.PRIMARY_KEY_HEADER));
+        final EntityInstance inMemoryTodo = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).findInstanceByPrimaryKey(todo, response.getHeaders().get(ApiResponse.PRIMARY_KEY_HEADER));
         Assertions.assertTrue(response.getBody().contains(inMemoryTodo.getPrimaryKeyValue()),
                 response.getBody());
 
@@ -121,11 +121,11 @@ public class RelationshipHttpTest {
     public void cannotCreateARelationshipBetweenProjectAndCategoryViaTasks(){
 
 
-        final EntityInstance acategory = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(categories)).setValue("title", "a Category");
+        final EntityInstance acategory = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(categories).withField("title", "a Category"));
 
-        final EntityInstance aproject = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(project)).setValue("title", "a Project");
+        final EntityInstance aproject = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(project).withField("title", "a Project"));
 
-        Assertions.assertEquals(0, aproject.getRelationships().getConnectedItems("tasks").size());
+        Assertions.assertEquals(0, aproject.getRelatedItems("tasks").size());
 
         HttpApiRequest request = new HttpApiRequest("projects/" + aproject.getPrimaryKeyValue() + "/tasks");
         request.getHeaders().putAll(HeadersSupport.acceptJson());
@@ -138,7 +138,7 @@ public class RelationshipHttpTest {
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).post(request);
         Assertions.assertEquals(404, response.getStatusCode());
 
-        Assertions.assertEquals(0, aproject.getRelationships().getConnectedItems("tasks").size());
+        Assertions.assertEquals(0, aproject.getRelatedItems("tasks").size());
 
         final ErrorMessages errors = new Gson().fromJson(response.getBody(), ErrorMessages.class);
 
@@ -151,11 +151,11 @@ public class RelationshipHttpTest {
     public void cannotCreateARelationshipWhenGivenGuidDoesNotExist(){
 
 
-        final EntityInstance atodo = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(todo)).setValue("title", "a TODO");
+        final EntityInstance atodo = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(todo).withField("title", "a TODO"));
 
-        final EntityInstance aproject = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(project)).setValue("title", "a Project");
+        final EntityInstance aproject = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(project).withField("title", "a Project"));
 
-        Assertions.assertEquals(0, aproject.getRelationships().getConnectedItems("tasks").size());
+        Assertions.assertEquals(0, aproject.getRelatedItems("tasks").size());
 
         HttpApiRequest request = new HttpApiRequest("projects/" + aproject.getPrimaryKeyValue() + "/tasks");
         request.getHeaders().putAll(HeadersSupport.acceptJson());
@@ -180,11 +180,11 @@ public class RelationshipHttpTest {
     public void canCreateARelationshipBetweenCategoryAndTodoViaTodos(){
 
 
-        final EntityInstance acategory = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(categories)).setValue("title", "a Category");
+        final EntityInstance acategory = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(categories).withField("title", "a Category"));
 
-        final EntityInstance atodo = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(todo)).setValue("title", "a TODO");
+        final EntityInstance atodo = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(todo).withField("title", "a TODO"));
 
-        Assertions.assertEquals(0, acategory.getRelationships().getConnectedItems("todos").size());
+        Assertions.assertEquals(0, acategory.getRelatedItems("todos").size());
 
         HttpApiRequest request = new HttpApiRequest("categories/" + acategory.getPrimaryKeyValue() + "/todos");
         request.getHeaders().putAll(HeadersSupport.acceptJson());
@@ -197,17 +197,17 @@ public class RelationshipHttpTest {
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).post(request);
         Assertions.assertEquals(201, response.getStatusCode());
 
-        Assertions.assertEquals(1, acategory.getRelationships().getConnectedItems("todos").size());
+        Assertions.assertEquals(1, acategory.getRelatedItems("todos").size());
 
     }
 
     @Test
     public void canCreateARelationshipAndTodoBetweenCategoryAndTodoViaTodos(){
 
-        final EntityInstance acategory = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(categories)).setValue("title", "a Category");
+        final EntityInstance acategory = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(categories).withField("title", "a Category"));
 
-        Assertions.assertEquals(0, acategory.getRelationships().getConnectedItems("todos").size());
-        Assertions.assertEquals(0,ThingifierRepositoryTestSupport.repository(todoManager).countInstances(todo));
+        Assertions.assertEquals(0, acategory.getRelatedItems("todos").size());
+        Assertions.assertEquals(0,todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(todo));
 
         HttpApiRequest request = new HttpApiRequest("categories/" + acategory.getPrimaryKeyValue() + "/todos");
         request.getHeaders().putAll(HeadersSupport.acceptJson());
@@ -222,10 +222,10 @@ public class RelationshipHttpTest {
 
         Assertions.assertEquals(201, response.getStatusCode());
 
-        Assertions.assertEquals(1, acategory.getRelationships().getConnectedItems("todos").size());
-        Assertions.assertEquals(1,ThingifierRepositoryTestSupport.repository(todoManager).countInstances(todo));
+        Assertions.assertEquals(1, acategory.getRelatedItems("todos").size());
+        Assertions.assertEquals(1,todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(todo));
 
-        final EntityInstance inMemoryTodo = ThingifierRepositoryTestSupport.repository(todoManager).findInstanceByPrimaryKey(todo, response.getHeaders().get(ApiResponse.PRIMARY_KEY_HEADER));
+        final EntityInstance inMemoryTodo = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).findInstanceByPrimaryKey(todo, response.getHeaders().get(ApiResponse.PRIMARY_KEY_HEADER));
         Assertions.assertTrue(response.getBody().contains(inMemoryTodo.getPrimaryKeyValue()),
                 response.getBody());
 
@@ -234,11 +234,11 @@ public class RelationshipHttpTest {
     @Test
     public void canCreateARelationshipBetweenProjectAndTodoViaTasksUsingXml(){
 
-        final EntityInstance atodo = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(todo)).setValue("title", "a TODO");
+        final EntityInstance atodo = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(todo).withField("title", "a TODO"));
 
-        final EntityInstance aproject = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(project)).setValue("title", "a Project");
+        final EntityInstance aproject = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(project).withField("title", "a Project"));
 
-        Assertions.assertEquals(0, aproject.getRelationships().getConnectedItems("tasks").size());
+        Assertions.assertEquals(0, aproject.getRelatedItems("tasks").size());
 
         HttpApiRequest request = new HttpApiRequest("projects/" + aproject.getPrimaryKeyValue() + "/tasks");
         request.getHeaders().putAll(HeadersSupport.containsXml());
@@ -249,22 +249,22 @@ public class RelationshipHttpTest {
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).post(request);
         Assertions.assertEquals(201, response.getStatusCode());
 
-        Assertions.assertEquals(1, aproject.getRelationships().getConnectedItems("tasks").size());
+        Assertions.assertEquals(1, aproject.getRelatedItems("tasks").size());
 
     }
 
     @Test
     public void canDeleteARelationshipBetweenProjectAndTodoViaTasks(){
 
-        final EntityInstance atodo = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(todo)).setValue("title", "a TODO");
+        final EntityInstance atodo = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(todo).withField("title", "a TODO"));
 
-        final EntityInstance aproject = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(project)).setValue("title", "a Project");
+        final EntityInstance aproject = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(project).withField("title", "a Project"));
 
-        aproject.getRelationships().connect("tasks", atodo);
+        todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).connectRelationship(aproject, "tasks", atodo);
 
-        Assertions.assertEquals(1, aproject.getRelationships().getConnectedItems("tasks").size());
-        Assertions.assertEquals(1, ThingifierRepositoryTestSupport.repository(todoManager).countInstances(todo));
-        Assertions.assertEquals(1, ThingifierRepositoryTestSupport.repository(todoManager).countInstances(project));
+        Assertions.assertEquals(1, aproject.getRelatedItems("tasks").size());
+        Assertions.assertEquals(1, todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(todo));
+        Assertions.assertEquals(1, todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(project));
 
 
         HttpApiRequest request = new HttpApiRequest("projects/" + aproject.getPrimaryKeyValue() + "/tasks/" + atodo.getPrimaryKeyValue());
@@ -272,9 +272,9 @@ public class RelationshipHttpTest {
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).delete(request);
         Assertions.assertEquals(200, response.getStatusCode());
 
-        Assertions.assertEquals(0, aproject.getRelationships().getConnectedItems("tasks").size());
-        Assertions.assertEquals(1, ThingifierRepositoryTestSupport.repository(todoManager).countInstances(todo));
-        Assertions.assertEquals(1, ThingifierRepositoryTestSupport.repository(todoManager).countInstances(project));
+        Assertions.assertEquals(0, aproject.getRelatedItems("tasks").size());
+        Assertions.assertEquals(1, todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(todo));
+        Assertions.assertEquals(1, todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(project));
 
     }
 
@@ -283,32 +283,32 @@ public class RelationshipHttpTest {
     public void canDeleteARelationshipBetweenCategoryAndTodoViaTodos(){
 
 
-        final EntityInstance acategory = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(categories)).setValue("title", "a Category");
+        final EntityInstance acategory = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(categories).withField("title", "a Category"));
 
-        final EntityInstance atodo = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(todo)).setValue("title", "a TODO");
+        final EntityInstance atodo = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(todo).withField("title", "a TODO"));
 
-        acategory.getRelationships().connect("todos", atodo);
+        todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).connectRelationship(acategory, "todos", atodo);
 
-        Assertions.assertEquals(1, acategory.getRelationships().getConnectedItems("todos").size());
-        Assertions.assertEquals(1, ThingifierRepositoryTestSupport.repository(todoManager).countInstances(todo));
-        Assertions.assertEquals(1, ThingifierRepositoryTestSupport.repository(todoManager).countInstances(categories));
+        Assertions.assertEquals(1, acategory.getRelatedItems("todos").size());
+        Assertions.assertEquals(1, todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(todo));
+        Assertions.assertEquals(1, todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(categories));
 
         final HttpApiRequest request = new HttpApiRequest("categories/" + acategory.getPrimaryKeyValue() + "/todos/" + atodo.getPrimaryKeyValue());
 
         HttpApiResponse response = new ThingifierHttpApi(todoManager).delete(request);
         Assertions.assertEquals(200, response.getStatusCode());
 
-        Assertions.assertEquals(0, acategory.getRelationships().getConnectedItems("todos").size());
-        Assertions.assertEquals(1, ThingifierRepositoryTestSupport.repository(todoManager).countInstances(todo));
-        Assertions.assertEquals(1, ThingifierRepositoryTestSupport.repository(todoManager).countInstances(categories));
+        Assertions.assertEquals(0, acategory.getRelatedItems("todos").size());
+        Assertions.assertEquals(1, todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(todo));
+        Assertions.assertEquals(1, todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(categories));
 
         // if relationship doesn't exist, I should get a 404 if I reissue therequest
         response = new ThingifierHttpApi(todoManager).delete(request);
         Assertions.assertEquals(404, response.getStatusCode());
 
-        Assertions.assertEquals(0, acategory.getRelationships().getConnectedItems("todos").size());
-        Assertions.assertEquals(1, ThingifierRepositoryTestSupport.repository(todoManager).countInstances(todo));
-        Assertions.assertEquals(1, ThingifierRepositoryTestSupport.repository(todoManager).countInstances(categories));
+        Assertions.assertEquals(0, acategory.getRelatedItems("todos").size());
+        Assertions.assertEquals(1, todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(todo));
+        Assertions.assertEquals(1, todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(categories));
     }
 
     /**
@@ -339,14 +339,14 @@ public class RelationshipHttpTest {
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).post(request);
         Assertions.assertEquals(400, response.getStatusCode());
 
-        Assertions.assertEquals(0, ThingifierRepositoryTestSupport.repository(todoManager).countInstances(
-                ThingifierRepositoryTestSupport.entity(todoManager, "estimate")));
+        Assertions.assertEquals(0, todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(
+                todoManager.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("estimate")));
     }
 
     @Test
     public void canCreateAnEstimateForTodoMandatoryRelationship(){
 
-        final EntityInstance atodo = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(todo)).setValue("title", "a TODO for estimating");
+        final EntityInstance atodo = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(todo).withField("title", "a TODO for estimating"));
 
 
         HttpApiRequest request = new HttpApiRequest("todos/" + atodo.getPrimaryKeyValue() + "/estimates" );
@@ -359,9 +359,9 @@ public class RelationshipHttpTest {
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).post(request);
         Assertions.assertEquals(201, response.getStatusCode());
 
-        Assertions.assertEquals(1, ThingifierRepositoryTestSupport.repository(todoManager).countInstances(
-                ThingifierRepositoryTestSupport.entity(todoManager, "estimate")));
-        Assertions.assertEquals(1, atodo.getRelationships().getConnectedItems("estimates").size());
+        Assertions.assertEquals(1, todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(
+                todoManager.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("estimate")));
+        Assertions.assertEquals(1, atodo.getRelatedItems("estimates").size());
 
     }
 
@@ -370,16 +370,16 @@ public class RelationshipHttpTest {
     public void canDeleteAnEstimateWhenTodoDeletedBecauseOfMandatoryRelationship(){
 
 
-        final EntityInstance atodo = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(todo)).setValue("title", "a TODO for estimating");
+        final EntityInstance atodo = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(todo).withField("title", "a TODO for estimating"));
 
-        final EntityDefinition estimates = ThingifierRepositoryTestSupport.entity(todoManager, "estimate");
-        final EntityInstance anEstimate = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(estimates)).setValue("duration", "7");
+        final EntityDefinition estimates = todoManager.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("estimate");
+        final EntityInstance anEstimate = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(estimates).withField("duration", "7"));
 
-        anEstimate.getRelationships().connect("estimate", atodo);
+        todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).connectRelationship(anEstimate, "estimate", atodo);
 
-        Assertions.assertEquals(1, atodo.getRelationships().getConnectedItems("estimates").size());
-        Assertions.assertEquals(1, ThingifierRepositoryTestSupport.repository(todoManager).countInstances(estimates));
-        Assertions.assertEquals(1, ThingifierRepositoryTestSupport.repository(todoManager).countInstances(todo));
+        Assertions.assertEquals(1, atodo.getRelatedItems("estimates").size());
+        Assertions.assertEquals(1, todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(estimates));
+        Assertions.assertEquals(1, todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(todo));
 
 
         final HttpApiRequest request = new HttpApiRequest("todos/" + atodo.getPrimaryKeyValue());
@@ -388,8 +388,8 @@ public class RelationshipHttpTest {
         Assertions.assertEquals(200, response.getStatusCode());
 
 
-        Assertions.assertEquals(0, ThingifierRepositoryTestSupport.repository(todoManager).countInstances(todo));
-        Assertions.assertEquals(0, ThingifierRepositoryTestSupport.repository(todoManager).countInstances(estimates));
+        Assertions.assertEquals(0, todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(todo));
+        Assertions.assertEquals(0, todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(estimates));
 
     }
 
@@ -397,16 +397,16 @@ public class RelationshipHttpTest {
     public void canGetEstimatesViaRelationship(){
 
 
-        final EntityInstance atodo = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(todo)).setValue("title", "a TODO for estimating");
+        final EntityInstance atodo = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(todo).withField("title", "a TODO for estimating"));
 
-        final EntityDefinition estimates = ThingifierRepositoryTestSupport.entity(todoManager, "estimate");
-        final EntityInstance anEstimate = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(estimates)).setValue("duration", "7").setValue("description", "an estimate");
+        final EntityDefinition estimates = todoManager.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("estimate");
+        final EntityInstance anEstimate = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(estimates).withField("duration", "7").withField("description", "an estimate"));
 
-        anEstimate.getRelationships().connect("estimate", atodo);
+        todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).connectRelationship(anEstimate, "estimate", atodo);
 
-        Assertions.assertEquals(1, atodo.getRelationships().getConnectedItems("estimates").size());
-        Assertions.assertEquals(1, ThingifierRepositoryTestSupport.repository(todoManager).countInstances(estimates));
-        Assertions.assertEquals(1, ThingifierRepositoryTestSupport.repository(todoManager).countInstances(todo));
+        Assertions.assertEquals(1, atodo.getRelatedItems("estimates").size());
+        Assertions.assertEquals(1, todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(estimates));
+        Assertions.assertEquals(1, todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(todo));
 
 
         HttpApiRequest request = new HttpApiRequest("todos/" + atodo.getPrimaryKeyValue() + "/estimates");

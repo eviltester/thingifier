@@ -216,7 +216,8 @@ public final class EntityInstanceCollection {
 
         instances.remove(anInstance.getInternalId());
 
-        final List<EntityInstance> alsoDelete = anInstance.getRelationships().removeAllRelationships();
+        final List<EntityInstance> alsoDelete =
+                anInstance.getRelationships().removeAllRelationshipsFromRepository();
 
         return alsoDelete;
     }

@@ -8,8 +8,8 @@ import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class ThingCreation {
@@ -33,19 +33,13 @@ public class ThingCreation {
             return ApiResponse.error(400, String.format("Invalid Creation: %s",validated.getCombinedErrorMessages()));
         }
 
-        // todo: separate validation for creation of 'cannot' create with ID, or cannot create with GUID
-        EntityInstance instance = new EntityInstance(thing);
-        instance.addAutoGUIDstoInstance();
-        instance.addAutoIncrementIdsToInstance(
-                thingifier.getRepository(database).countersFor(thing));
-        return addNewThingWithFields(bodyargs, instance, thing, database);
+        return addNewThingWithFields(bodyargs, EntityInstanceDraft.forEntity(thing), thing, database);
     }
 
     // create with GUID and IDs is normally associated with PUT or 'insert'
     public ApiResponse withPrimaryKey(final String primaryKey, final BodyParser bodyargs,
                                       final EntityDefinition thing, final String database) {
 
-        EntityInstance instance;
         ValidationReport validated;
 
         validated = new BodyCreationValidator(thingifier).
@@ -59,12 +53,12 @@ public class ThingCreation {
                     validated.getCombinedErrorMessages());
         }
 
-        instance = new EntityInstance(thing);
-        instance.overrideValue(thing.getPrimaryKeyField().getName(), primaryKey);
-
-        // TODO: should we really do this for a PUT when everything needs to exist, suspect this is a bug
-        instance.addAutoIncrementIdsToInstance(
-                thingifier.getRepository(database).countersFor(thing));
+        EntityInstanceDraft draft = EntityInstanceDraft.forEntity(thing);
+        if (isProtectedField(thing.getPrimaryKeyField().getType())) {
+            draft.withProtectedField(thing.getPrimaryKeyField().getName(), primaryKey);
+        } else {
+            draft.withField(thing.getPrimaryKeyField().getName(), primaryKey);
+        }
 
         validated = new BodyRelationshipValidator(thingifier).validate(bodyargs, thing, database);
 
@@ -83,93 +77,113 @@ public class ThingCreation {
 
         thingifier.getRepository(database).setNextIdCountersToAccomodate(thing, fieldValues);
 
-        return insertNewThingWithFields(bodyargs, instance, thing, database);
+        return insertNewThingWithFields(bodyargs, draft, thing, database);
     }
 
 
-    private ApiResponse addNewThingWithFields(final BodyParser bodyargs, final EntityInstance instance,
+    private ApiResponse addNewThingWithFields(final BodyParser bodyargs, final EntityInstanceDraft baseDraft,
                                               final EntityDefinition thing, final String database) {
 
         if(thingifier.apiConfig().willApiEnforceDeclaredTypesInInput()) {
-            ValidationReport validatedTypes = bodyargs.validateAgainstType(instance.getEntity());
+            ValidationReport validatedTypes = bodyargs.validateAgainstType(thing);
             if(!validatedTypes.isValid()){
                 return ApiResponse.error(400, validatedTypes.getCombinedErrorMessages());
             }
         }
 
         // todo: need to separate relationships from field in the path prior to sending through to setFields
+        EntityInstanceDraft draft;
 
         try {
             // if any guids or ids then throw an error if they are not the same
             List<NamedValue> fieldValues = FieldValues.
                     fromListMapEntryStringString(
                             new BodyArgsProcessor(thingifier, bodyargs).
-                                    removeRelationshipsFrom(instance, database));
+                                    removeRelationshipsFrom(thing, database));
 
-            new EntityInstanceBulkUpdater(instance).setFieldValuesFrom(fieldValues);
+            draft = new EntityInstanceBulkUpdater(thing).setFieldValuesFrom(fieldValues);
+            copyBaseDraftValues(baseDraft, draft);
         } catch (Exception e) {
             return ApiResponse.error(400, e.getMessage());
         }
 
-
-        final List<String> protectedFieldNames = instance.getEntity().
-                                getFieldNamesOfType(FieldType.AUTO_INCREMENT, FieldType.AUTO_GUID);
-
-        ValidationReport validation = instance.validateFieldValues(protectedFieldNames, false);
-
-        return addValidatedInstance(bodyargs, instance, thing, database, validation);
+        return addValidatedInstance(bodyargs, draft, thing, database);
     }
 
-    private ApiResponse insertNewThingWithFields(final BodyParser bodyargs, final EntityInstance instance,
+    private ApiResponse insertNewThingWithFields(final BodyParser bodyargs, final EntityInstanceDraft baseDraft,
                                               final EntityDefinition thing, final String database) {
 
         if(thingifier.apiConfig().willApiEnforceDeclaredTypesInInput()) {
-            ValidationReport validatedTypes = bodyargs.validateAgainstType(instance.getEntity());
+            ValidationReport validatedTypes = bodyargs.validateAgainstType(thing);
             if(!validatedTypes.isValid()){
                 return ApiResponse.error(400, validatedTypes.getCombinedErrorMessages());
             }
         }
 
+        EntityInstanceDraft draft;
         try {
             // set all the fields and values, except guids
-            List<String> ignoreFields = instance.getEntity().
+            List<String> ignoreFields = thing.
                                 getFieldNamesOfType(FieldType.AUTO_GUID);
 
             List<NamedValue> fieldValues = FieldValues.
                     fromListMapEntryStringString(
                             new BodyArgsProcessor(thingifier, bodyargs).
-                                    removeRelationshipsFrom(instance, database));
+                                    removeRelationshipsFrom(thing, database));
 
-            new EntityInstanceBulkUpdater(instance).overrideFieldValuesFromArgsIgnoring(fieldValues, ignoreFields);
+            draft = new EntityInstanceBulkUpdater(thing).
+                    overrideFieldValuesFromArgsIgnoring(fieldValues, ignoreFields);
+            copyBaseDraftValues(baseDraft, draft);
         } catch (Exception e) {
             return ApiResponse.error(400, e.getMessage());
         }
 
-        ValidationReport validation = instance.validateFieldValues(new ArrayList<>(), true);
-
-        return addValidatedInstance(bodyargs, instance, thing, database, validation);
+        return addValidatedInstance(bodyargs, draft, thing, database);
     }
 
-    private ApiResponse addValidatedInstance(BodyParser bodyargs, EntityInstance instance, EntityDefinition thing, String database, ValidationReport validation) {
+    private ApiResponse addValidatedInstance(
+            BodyParser bodyargs,
+            EntityInstanceDraft draft,
+            EntityDefinition thing,
+            String database) {
 
-        // check for uniqueness prior to adding
-        ValidationReport uniquenessCheck = thingifier.getRepository(database).
-                checkFieldsForUniqueNess(instance, false);
-        validation.combine(uniquenessCheck);
-
-        if (validation.isValid()) {
-            try {
-                thingifier.getRepository(database).addInstance(instance);
-            }catch(Exception e){
-                return ApiResponse.error(400, e.getMessage());
-            }
-
+        try {
+            EntityInstance instance = thingifier.getRepository(database).createInstance(draft);
             return new RelationshipCreator(thingifier).createRelationships(bodyargs, instance, database);
-
-        } else {
-            // do not add it, report the errors
-            return ApiResponse.error(400, validation.getErrorMessages());
+        }catch(Exception e){
+            return ApiResponse.error(400, creationErrorMessage(e));
         }
+    }
+
+    private String creationErrorMessage(final Exception e) {
+        String message = e.getMessage();
+        if (message == null) {
+            return "";
+        }
+
+        String validationPrefix = "Failed Validation: ";
+        if (message.startsWith(validationPrefix) &&
+                message.substring(validationPrefix.length()).endsWith(" : field is mandatory") &&
+                !message.substring(validationPrefix.length()).contains(", ")) {
+            return message.substring(validationPrefix.length());
+        }
+        return message;
+    }
+
+    private void copyBaseDraftValues(
+            final EntityInstanceDraft baseDraft,
+            final EntityInstanceDraft draft) {
+        for (NamedValue value : baseDraft.getFieldValues()) {
+            draft.withField(value.getName(), value.asString());
+        }
+        for (NamedValue protectedValue : baseDraft.getProtectedFieldValues()) {
+            draft.withProtectedField(protectedValue.getName(), protectedValue.asString());
+        }
+    }
+
+    private boolean isProtectedField(final FieldType fieldType) {
+        return fieldType == FieldType.AUTO_INCREMENT ||
+                fieldType == FieldType.AUTO_GUID;
     }
 
 }

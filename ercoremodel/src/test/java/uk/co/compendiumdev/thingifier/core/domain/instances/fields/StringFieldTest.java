@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
@@ -20,7 +21,7 @@ public class StringFieldTest {
         EntityDefinition stringFieldEntity = new EntityDefinition("Test Session", "Test Sessions");
         stringFieldEntity.addFields(Field.is("defaultString", FieldType.STRING));
 
-        EntityInstance instance = new EntityInstance(stringFieldEntity);
+        EntityInstance instance = EntityInstance.fromDraft(EntityInstanceDraft.forEntity(stringFieldEntity));
 
         Assertions.assertEquals("", instance.getFieldValue("defaultString").asString());
     }
@@ -31,7 +32,7 @@ public class StringFieldTest {
         EntityDefinition stringFieldEntity = new EntityDefinition("Test Session", "Test Sessions");
         stringFieldEntity.addFields(Field.is("defaultString", FieldType.STRING).withDefaultValue("bob"));
 
-        EntityInstance instance = new EntityInstance(stringFieldEntity);
+        EntityInstance instance = EntityInstance.fromDraft(EntityInstanceDraft.forEntity(stringFieldEntity));
 
         Assertions.assertEquals("bob", instance.getFieldValue("defaultString").asString());
     }
@@ -45,12 +46,13 @@ public class StringFieldTest {
                                         withDefaultValue("").
                                         withValidation(VRule.notEmpty()));
 
-        EntityInstance instance = new EntityInstance(stringFieldEntity);
+        EntityInstance instance = EntityInstance.fromDraft(EntityInstanceDraft.forEntity(stringFieldEntity));
 
         // defaultString is not valid because it has an empty string
         Assertions.assertFalse(instance.validate().isValid());
 
-        instance.setValue("defaultString", "Eris");
+        instance = EntityInstance.fromDraft(EntityInstanceDraft.forEntity(stringFieldEntity).
+                withField("defaultString", "Eris"));
         Assertions.assertTrue(instance.validate().isValid());
         Assertions.assertEquals("Eris", instance.getFieldValue("defaultString").asString());
     }
@@ -64,9 +66,8 @@ public class StringFieldTest {
                 withDefaultValue("").
                 withValidation(VRule.notEmpty()).truncateStringTo(10));
 
-        EntityInstance instance = new EntityInstance(stringFieldEntity);
-
-        instance.setValue("field", "This is too long");
+        EntityInstance instance = EntityInstance.fromDraft(EntityInstanceDraft.forEntity(stringFieldEntity).
+                withField("field", "This is too long"));
         String fieldValue = instance.getFieldValue("field").asString();
 
         Assertions.assertEquals(10, fieldValue.length());
@@ -82,13 +83,12 @@ public class StringFieldTest {
                 withDefaultValue("").
                 withValidation(VRule.maximumLength(10)));
 
-        EntityInstance instance = new EntityInstance(stringFieldEntity);
-        instance.overrideValue("field","12345678901");
+        IllegalArgumentException e = Assertions.assertThrows(
+                IllegalArgumentException.class,
+                () -> EntityInstanceDraft.forEntity(stringFieldEntity).
+                        withField("field","12345678901"));
 
-        ValidationReport report = instance.validate();
-
-        Assertions.assertFalse(report.isValid());
-        report.getCombinedErrorMessages().contains("Maximum allowable length exceeded");
+        Assertions.assertTrue(e.getMessage().contains("Maximum allowable length exceeded"));
     }
 
     @Test
@@ -100,10 +100,10 @@ public class StringFieldTest {
                 withDefaultValue("").
                 withValidation(VRule.matchesRegex("^Bug:.*")));
 
-        EntityInstance instance = new EntityInstance(stringFieldEntity);
         IllegalArgumentException e =
                 Assertions.assertThrows(IllegalArgumentException.class, () ->{
-            instance.setValue("field", "ISSUE: reporting a bug - this is a bug");
+            EntityInstanceDraft.forEntity(stringFieldEntity).
+                    withField("field", "ISSUE: reporting a bug - this is a bug");
         });
 
         System.out.println(e.getMessage());

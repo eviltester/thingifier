@@ -10,6 +10,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
 import uk.co.compendiumdev.thingifier.core.query.RepositoryUrlQuery;
 import uk.co.compendiumdev.thingifier.core.repository.inmemory.InMemoryThingRepository;
@@ -19,6 +20,7 @@ import uk.co.compendiumdev.thingifier.core.repository.sqlite.SqliteThingReposito
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.UUID;
 
 public class ThingRepositoryContractTest {
 
@@ -77,11 +79,8 @@ public class ThingRepositoryContractTest {
 
             EntityDefinition projectDefinition = schema.getEntityDefinitionNamed("project");
             EntityDefinition taskDefinition = schema.getEntityDefinitionNamed("task");
-            EntityInstance project = new EntityInstance(projectDefinition).setValue("title", "Persisted");
-            EntityInstance task = new EntityInstance(taskDefinition).setValue("title", "Loaded relationship");
-
-            repository.addInstance(project);
-            repository.addInstance(task);
+            EntityInstance project = create(repository, projectDefinition, "Persisted");
+            EntityInstance task = create(repository, taskDefinition, "Loaded relationship");
             repository.connectRelationship(task, "task-of", project);
         }
 
@@ -114,15 +113,29 @@ public class ThingRepositoryContractTest {
         try (ThingRepository repository = SqliteThingRepository.inMemory("quoted")) {
             repository.initializeFrom(schema);
 
-            EntityInstance instance = new EntityInstance(select);
-            instance.setValue("field with space", "works");
-            repository.addInstance(instance);
+            repository.createInstance(
+                    EntityInstanceDraft.forEntity(select).withField("field with space", "works"));
 
             EntityInstance found = repository.findInstanceByFieldNameAndValue(
                     select, "field with space", "works");
 
             Assertions.assertNotNull(found);
             Assertions.assertEquals("works", found.getFieldValue("field with space").asString());
+        }
+    }
+
+    @Test
+    public void inMemoryRepositoryGeneratesAutoIdsThroughTheContract() {
+        ThingRepository repository = new InMemoryThingRepository(EntityRelModel.DEFAULT_DATABASE_NAME);
+
+        exerciseAutoIdGeneration(repository);
+    }
+
+    @Test
+    public void sqliteRepositoryGeneratesAutoIdsThroughTheContract() {
+        try (ThingRepository repository =
+                     SqliteThingRepository.inMemory(EntityRelModel.DEFAULT_DATABASE_NAME)) {
+            exerciseAutoIdGeneration(repository);
         }
     }
 
@@ -136,8 +149,8 @@ public class ThingRepositoryContractTest {
                      SqliteThingRepository.fileBacked(EntityRelModel.DEFAULT_DATABASE_NAME, databasePath)) {
             repository.initializeFrom(schema);
 
-            repository.addInstance(new EntityInstance(projectDefinition).setValue("title", "First"));
-            repository.addInstance(new EntityInstance(projectDefinition).setValue("title", "Second"));
+            create(repository, projectDefinition, "First");
+            create(repository, projectDefinition, "Second");
         }
 
         try (ThingRepository reopened =
@@ -165,8 +178,8 @@ public class ThingRepositoryContractTest {
                      SqliteThingRepository.fileBacked(EntityRelModel.DEFAULT_DATABASE_NAME, databasePath)) {
             repository.initializeFrom(schema);
 
-            repository.addInstance(new EntityInstance(projectDefinition).setValue("title", "First"));
-            repository.addInstance(new EntityInstance(projectDefinition).setValue("title", "Second"));
+            create(repository, projectDefinition, "First");
+            create(repository, projectDefinition, "Second");
         }
 
         try (ThingRepository reopened =
@@ -247,12 +260,9 @@ public class ThingRepositoryContractTest {
                      SqliteThingRepository.fileBacked(EntityRelModel.DEFAULT_DATABASE_NAME, databasePath)) {
             repository.initializeFrom(schema);
 
-            EntityInstance project = repository.addInstance(
-                    new EntityInstance(projectDefinition).setValue("title", "SQLite project"));
-            EntityInstance firstTask = repository.addInstance(
-                    new EntityInstance(taskDefinition).setValue("title", "Wire repository"));
-            EntityInstance secondTask = repository.addInstance(
-                    new EntityInstance(taskDefinition).setValue("title", "Write tests"));
+            EntityInstance project = create(repository, projectDefinition, "SQLite project");
+            EntityInstance firstTask = create(repository, taskDefinition, "Wire repository");
+            EntityInstance secondTask = create(repository, taskDefinition, "Write tests");
 
             repository.connectRelationship(project, "tasks", firstTask);
             repository.connectRelationship(project, "tasks", secondTask);
@@ -316,12 +326,9 @@ public class ThingRepositoryContractTest {
                      SqliteThingRepository.fileBacked(EntityRelModel.DEFAULT_DATABASE_NAME, databasePath)) {
             repository.initializeFrom(schema);
 
-            repository.addInstance(new EntityInstance(projectDefinition).
-                    setValue("title", "Repository project"));
-            repository.addInstance(new EntityInstance(projectDefinition).
-                    setValue("title", "repository project"));
-            repository.addInstance(new EntityInstance(projectDefinition).
-                    setValue("title", "Another project"));
+            create(repository, projectDefinition, "Repository project");
+            create(repository, projectDefinition, "repository project");
+            create(repository, projectDefinition, "Another project");
         }
 
         try (ThingRepository reopened =
@@ -351,10 +358,8 @@ public class ThingRepositoryContractTest {
                      SqliteThingRepository.fileBacked(EntityRelModel.DEFAULT_DATABASE_NAME, databasePath)) {
             repository.initializeFrom(schema);
 
-            repository.addInstance(new EntityInstance(projectDefinition).
-                    setValue("title", "Repository project"));
-            repository.addInstance(new EntityInstance(projectDefinition).
-                    setValue("title", "Another project"));
+            create(repository, projectDefinition, "Repository project");
+            create(repository, projectDefinition, "Another project");
         }
 
         try (ThingRepository reopened =
@@ -383,10 +388,8 @@ public class ThingRepositoryContractTest {
                      SqliteThingRepository.inMemory(EntityRelModel.DEFAULT_DATABASE_NAME)) {
             repository.initializeFrom(schema);
 
-            repository.addInstance(new EntityInstance(projectDefinition).
-                    setValue("title", "Repository project"));
-            repository.addInstance(new EntityInstance(projectDefinition).
-                    setValue("title", "Another project"));
+            create(repository, projectDefinition, "Repository project");
+            create(repository, projectDefinition, "Another project");
 
             QueryFilterParams regexParams = new QueryFilterParams();
             regexParams.put("title", "~=Repository [Pp]roject");
@@ -408,8 +411,7 @@ public class ThingRepositoryContractTest {
         try (ThingRepository repository =
                      SqliteThingRepository.inMemory(EntityRelModel.DEFAULT_DATABASE_NAME)) {
             repository.initializeFrom(schema);
-            repository.addInstance(new EntityInstance(projectDefinition).
-                    setValue("title", "Repository project"));
+            create(repository, projectDefinition, "Repository project");
 
             QueryFilterParams regexParams = new QueryFilterParams();
             regexParams.put("title", "~=[");
@@ -428,8 +430,7 @@ public class ThingRepositoryContractTest {
         try (ThingRepository repository =
                      SqliteThingRepository.inMemory(EntityRelModel.DEFAULT_DATABASE_NAME)) {
             repository.initializeFrom(schema);
-            repository.addInstance(new EntityInstance(projectDefinition).
-                    setValue("title", "Repository project"));
+            create(repository, projectDefinition, "Repository project");
 
             QueryFilterParams regexParams = new QueryFilterParams();
             regexParams.put("title", "~=(.+)+");
@@ -447,12 +448,16 @@ public class ThingRepositoryContractTest {
         EntityDefinition projectDefinition = schema.getEntityDefinitionNamed("project");
         EntityDefinition taskDefinition = schema.getEntityDefinitionNamed("task");
 
-        EntityInstance project = new EntityInstance(projectDefinition);
-        project.setValue("title", "Repository project");
-
-        repository.addInstance(project);
+        EntityInstance project = create(repository, projectDefinition, "Repository project");
 
         Assertions.assertEquals("1", project.getPrimaryKeyValue());
+        Assertions.assertThrows(
+                NoSuchMethodException.class,
+                () -> EntityInstance.class.getMethod("setValue", String.class, String.class));
+        Assertions.assertEquals(
+                "Repository project",
+                repository.findInstanceByPrimaryKey(
+                        projectDefinition, "1").getFieldValue("title").asString());
         Assertions.assertEquals(project, repository.findInstanceByPrimaryKey(projectDefinition, "1"));
         Assertions.assertEquals(project, repository.findInstanceByQueryIdentifier(projectDefinition, "1"));
         Assertions.assertEquals(project, repository.findInstanceByFieldNameAndValue(
@@ -461,14 +466,20 @@ public class ThingRepositoryContractTest {
         Assertions.assertEquals(1, repository.countInstances(projectDefinition));
         Assertions.assertEquals(0, repository.countInstances(taskDefinition));
 
-        EntityInstance duplicate = new EntityInstance(projectDefinition);
-        duplicate.setValue("title", "Repository project");
+        EntityInstance duplicate = EntityInstance.fromDraft(EntityInstanceDraft.forEntity(projectDefinition).
+                withField("title", "Repository project"));
         Assertions.assertFalse(repository.checkFieldsForUniqueNess(duplicate, false).isValid());
 
-        EntityInstance secondProject = new EntityInstance(projectDefinition);
-        secondProject.setValue("title", "Another project");
-        repository.addInstance(secondProject);
+        EntityInstance secondProject = create(repository, projectDefinition, "Another project");
         Assertions.assertEquals(2, repository.countInstances(projectDefinition));
+        secondProject = repository.replaceInstance(
+                secondProject,
+                EntityInstanceDraft.forEntity(projectDefinition).withField("title", "Replacement project"));
+        Assertions.assertEquals("2", secondProject.getPrimaryKeyValue());
+        Assertions.assertEquals(
+                "Replacement project",
+                repository.findInstanceByPrimaryKey(projectDefinition, "2").
+                        getFieldValue("title").asString());
 
         QueryFilterParams filteredParams = new QueryFilterParams();
         filteredParams.put("id", ">=2");
@@ -491,16 +502,19 @@ public class ThingRepositoryContractTest {
         Assertions.assertEquals(1, regexProjects.size());
         Assertions.assertEquals(project, regexProjects.get(0));
 
-        EntityInstance task = new EntityInstance(taskDefinition);
-        task.setValue("title", "Wire repository");
-        repository.addInstance(task);
+        EntityInstance task = create(repository, taskDefinition, "Wire repository");
         repository.connectRelationship(project, "tasks", task);
 
-        EntityInstance secondTask = new EntityInstance(taskDefinition);
-        secondTask.setValue("title", "Write tests");
-        repository.addInstance(secondTask);
+        EntityInstance secondTask = create(repository, taskDefinition, "Write tests");
         repository.connectRelationship(project, "tasks", secondTask);
 
+        Assertions.assertThrows(
+                NoSuchMethodException.class,
+                () -> EntityInstance.class.getMethod("getRelationships"));
+        Assertions.assertThrows(
+                NoSuchMethodException.class,
+                () -> EntityInstance.class.getMethod(
+                        "clearAllFields"));
         Assertions.assertTrue(repository.getConnectedItems(task, "task-of").contains(project));
         Assertions.assertTrue(repository.getConnectedItems(project, "tasks").contains(task));
 
@@ -550,9 +564,7 @@ public class ThingRepositoryContractTest {
 
         repository.resetAutoIncrementCounter(projectDefinition, "id");
 
-        EntityInstance resetProject = new EntityInstance(projectDefinition);
-        resetProject.setValue("title", "Reset project");
-        repository.addInstance(resetProject);
+        EntityInstance resetProject = create(repository, projectDefinition, "Reset project");
 
         Assertions.assertEquals("1", resetProject.getPrimaryKeyValue());
     }
@@ -564,15 +576,51 @@ public class ThingRepositoryContractTest {
         provider.createRepository("session-one", schema);
 
         EntityDefinition projectDefinition = schema.getEntityDefinitionNamed("project");
-        EntityInstance project = new EntityInstance(projectDefinition);
-        project.setValue("title", "Only default");
-
-        defaultRepository.addInstance(project);
+        create(defaultRepository, projectDefinition, "Only default");
 
         Assertions.assertEquals(1, defaultRepository.listInstances(projectDefinition).size());
         Assertions.assertEquals(
                 0,
                 provider.getRepository("session-one").listInstances(projectDefinition).size());
+    }
+
+    private void exerciseAutoIdGeneration(final ThingRepository repository) {
+        ERSchema schema = autoIdSchema();
+        repository.initializeFrom(schema);
+
+        EntityDefinition session = schema.getEntityDefinitionNamed("session");
+        EntityInstance firstSession = repository.createInstance(EntityInstanceDraft.forEntity(session));
+        EntityInstance secondSession = repository.createInstance(EntityInstanceDraft.forEntity(session));
+
+        Assertions.assertNotNull(firstSession.getPrimaryKeyValue());
+        Assertions.assertNotNull(secondSession.getPrimaryKeyValue());
+        Assertions.assertDoesNotThrow(() -> UUID.fromString(firstSession.getPrimaryKeyValue()));
+        Assertions.assertDoesNotThrow(() -> UUID.fromString(secondSession.getPrimaryKeyValue()));
+        Assertions.assertNotEquals(
+                firstSession.getPrimaryKeyValue(),
+                secondSession.getPrimaryKeyValue());
+
+        String explicitGuid = "12345678-1234-1234-1234-123456789abc";
+        EntityInstance explicitSession = repository.createInstance(
+                EntityInstanceDraft.forEntity(session).
+                        withProtectedField("guid", explicitGuid));
+        Assertions.assertEquals(explicitGuid, explicitSession.getPrimaryKeyValue());
+
+        EntityDefinition ticket = schema.getEntityDefinitionNamed("ticket");
+        EntityInstance firstTicket = repository.createInstance(EntityInstanceDraft.forEntity(ticket));
+        EntityInstance secondTicket = repository.createInstance(EntityInstanceDraft.forEntity(ticket));
+
+        Assertions.assertEquals("1", firstTicket.getPrimaryKeyValue());
+        Assertions.assertEquals("2", secondTicket.getPrimaryKeyValue());
+
+        EntityInstance explicitTicket = repository.createInstance(
+                EntityInstanceDraft.forEntity(ticket).
+                        withProtectedField("id", "25"));
+        EntityInstance ticketAfterExplicit = repository.createInstance(
+                EntityInstanceDraft.forEntity(ticket));
+
+        Assertions.assertEquals("25", explicitTicket.getPrimaryKeyValue());
+        Assertions.assertEquals("26", ticketAfterExplicit.getPrimaryKeyValue());
     }
 
     private void addProjectAndTask(
@@ -581,14 +629,29 @@ public class ThingRepositoryContractTest {
         EntityDefinition projectDefinition = schema.getEntityDefinitionNamed("project");
         EntityDefinition taskDefinition = schema.getEntityDefinitionNamed("task");
 
-        EntityInstance project = new EntityInstance(projectDefinition).
-                setValue("title", "Repository project");
-        EntityInstance task = new EntityInstance(taskDefinition).
-                setValue("title", "Wire repository");
-
-        repository.addInstance(project);
-        repository.addInstance(task);
+        EntityInstance project = create(repository, projectDefinition, "Repository project");
+        EntityInstance task = create(repository, taskDefinition, "Wire repository");
         repository.connectRelationship(project, "tasks", task);
+    }
+
+    private EntityInstance create(
+            final ThingRepository repository,
+            final EntityDefinition entity,
+            final String title) {
+        return repository.createInstance(
+                EntityInstanceDraft.forEntity(entity).withField("title", title));
+    }
+
+    private ERSchema autoIdSchema() {
+        ERSchema schema = new ERSchema();
+
+        EntityDefinition session = schema.defineEntity("session", "sessions", -1);
+        session.addAsPrimaryKeyField(Field.is("guid", FieldType.AUTO_GUID));
+
+        EntityDefinition ticket = schema.defineEntity("ticket", "tickets", -1);
+        ticket.addAsPrimaryKeyField(Field.is("id", FieldType.AUTO_INCREMENT));
+
+        return schema;
     }
 
     private void assertExportedJsonContainsProjectAndTask(final String json) {

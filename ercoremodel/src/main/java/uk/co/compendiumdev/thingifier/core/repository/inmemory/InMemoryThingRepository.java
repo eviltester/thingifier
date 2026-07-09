@@ -9,10 +9,13 @@ import uk.co.compendiumdev.thingifier.core.domain.instances.AutoIncrement;
 import uk.co.compendiumdev.thingifier.core.domain.instances.ERInstanceData;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceRepositoryAccess;
 import uk.co.compendiumdev.thingifier.core.query.EntityInstanceListFilter;
 import uk.co.compendiumdev.thingifier.core.query.EntityInstanceListSorter;
 import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
 import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
+import uk.co.compendiumdev.thingifier.core.repository.validation.EntityInstanceWriteValidator;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 
 import java.util.ArrayList;
@@ -24,6 +27,7 @@ public class InMemoryThingRepository implements ThingRepository {
 
     private final String databaseKey;
     private final ERInstanceData instanceData;
+    private final EntityInstanceWriteValidator writeValidator;
 
     public InMemoryThingRepository(final String databaseKey) {
         this(databaseKey, new ERInstanceData());
@@ -32,6 +36,7 @@ public class InMemoryThingRepository implements ThingRepository {
     InMemoryThingRepository(final String databaseKey, final ERInstanceData instanceData) {
         this.databaseKey = databaseKey;
         this.instanceData = instanceData;
+        this.writeValidator = new EntityInstanceWriteValidator(this);
     }
 
     @Override
@@ -136,14 +141,32 @@ public class InMemoryThingRepository implements ThingRepository {
     }
 
     @Override
-    public EntityInstance addInstance(final EntityInstance instance) {
+    public EntityInstance createInstance(final EntityInstanceDraft draft) {
+        EntityInstance instance = EntityInstance.fromDraft(draft);
+        writeValidator.assertValidForCreate(instance);
         getInstanceCollectionForEntityNamed(instance.getEntity().getName()).addInstance(instance);
-        return instance;
+        return EntityInstanceRepositoryAccess.lock(instance);
     }
 
     @Override
-    public EntityInstance updateInstance(final EntityInstance instance) {
-        return instance;
+    public EntityInstance patchInstance(
+            final EntityInstance instance,
+            final EntityInstanceDraft draft) {
+        EntityInstance candidate = EntityInstanceRepositoryAccess.patch(instance, draft);
+        writeValidator.assertValidForAmendment(candidate);
+        return EntityInstanceRepositoryAccess.lock(
+                EntityInstanceRepositoryAccess.apply(instance, draft));
+    }
+
+    @Override
+    public EntityInstance replaceInstance(
+            final EntityInstance instance,
+            final EntityInstanceDraft draft) {
+        EntityInstance candidate = EntityInstanceRepositoryAccess.replace(instance, draft);
+        writeValidator.assertValidForAmendment(candidate);
+        EntityInstanceRepositoryAccess.clearAllFields(instance);
+        return EntityInstanceRepositoryAccess.lock(
+                EntityInstanceRepositoryAccess.apply(instance, draft));
     }
 
     @Override
@@ -204,7 +227,7 @@ public class InMemoryThingRepository implements ThingRepository {
     @Override
     public void connectRelationship(
             final EntityInstance from, final String relationshipName, final EntityInstance to) {
-        from.getRelationships().connect(relationshipName, to);
+        EntityInstanceRepositoryAccess.connectRelationship(from, relationshipName, to);
     }
 
     @Override
@@ -212,18 +235,19 @@ public class InMemoryThingRepository implements ThingRepository {
             final EntityInstance parent,
             final EntityInstance child,
             final String relationshipName) {
-        return parent.getRelationships().removeRelationshipsInvolving(child, relationshipName);
+        return EntityInstanceRepositoryAccess.removeRelationshipsInvolving(
+                parent, child, relationshipName);
     }
 
     @Override
     public List<EntityInstance> removeAllRelationships(final EntityInstance instance) {
-        return instance.getRelationships().removeAllRelationships();
+        return EntityInstanceRepositoryAccess.removeAllRelationships(instance);
     }
 
     @Override
     public Collection<EntityInstance> getConnectedItems(
             final EntityInstance instance, final String relationshipName) {
-        return instance.getRelationships().getConnectedItems(relationshipName);
+        return EntityInstanceRepositoryAccess.connectedItems(instance, relationshipName);
     }
 
     @Override
@@ -250,4 +274,5 @@ public class InMemoryThingRepository implements ThingRepository {
         String primaryKeyValue = instance.getPrimaryKeyValue();
         return primaryKeyValue != null && primaryKeyValue.contentEquals(identifier);
     }
+
 }

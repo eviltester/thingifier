@@ -1,12 +1,12 @@
 package uk.co.compendiumdev.casestudy.todomanager.http_api;
 
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 import com.google.gson.Gson;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.casestudy.todomanager.TodoManagerModel;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
-import uk.co.compendiumdev.thingifier.testsupport.ThingifierRepositoryTestSupport;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiResponse;
@@ -33,8 +33,8 @@ public class JsonRequestResponseTest {
         todoManager = TodoManagerModel.definedAsThingifier();
 
         todoManager.apiConfig().setApiToEnforceAcceptHeaderForResponses(false);
-        todo = ThingifierRepositoryTestSupport.entity(todoManager, "todo");
-        project = ThingifierRepositoryTestSupport.entity(todoManager, "project");
+        todo = todoManager.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("todo");
+        project = todoManager.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("project");
 
 
     }
@@ -57,7 +57,7 @@ public class JsonRequestResponseTest {
     public void canGetJsonItems() {
 
 
-        ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(todo)).setValue("title", "my title");
+        todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(todo).withField("title", "my title"));
 
         HttpApiRequest request = new HttpApiRequest("/todos");
         request.getHeaders().putAll(HeadersSupport.acceptJson());
@@ -78,7 +78,7 @@ public class JsonRequestResponseTest {
     public void canGetJsonItemAsACollection() {
 
         todoManager.apiConfig().setReturnSingleGetItemsAsCollection(true);
-        final EntityInstance aTodo = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(todo)).setValue("title", "my title");
+        final EntityInstance aTodo = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(todo).withField("title", "my title"));
 
         HttpApiRequest request = new HttpApiRequest("/todos/" + aTodo.getPrimaryKeyValue());
         request.getHeaders().putAll(HeadersSupport.acceptJson());
@@ -99,8 +99,8 @@ public class JsonRequestResponseTest {
     public void canGetMultipleJsonItems() {
 
 
-        ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(todo)).setValue("title", "my title");
-        ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(todo)).setValue("title", "my other title");
+        todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(todo).withField("title", "my title"));
+        todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(todo).withField("title", "my other title"));
 
         HttpApiRequest request = new HttpApiRequest("todos");
         request.getHeaders().putAll(HeadersSupport.acceptJson());
@@ -112,8 +112,8 @@ public class JsonRequestResponseTest {
         final TodoCollectionResponse todos = new Gson().fromJson(response.getBody(), TodoCollectionResponse.class);
 
         Assertions.assertEquals(2, todos.todos.length);
-        Assertions.assertEquals(todos.todos[0].title, ThingifierRepositoryTestSupport.repository(todoManager).findInstanceByPrimaryKey(todo, todos.todos[0].guid).getFieldValue("title").asString());
-        Assertions.assertEquals(todos.todos[1].title, ThingifierRepositoryTestSupport.repository(todoManager).findInstanceByPrimaryKey(todo, todos.todos[1].guid).getFieldValue("title").asString());
+        Assertions.assertEquals(todos.todos[0].title, todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).findInstanceByPrimaryKey(todo, todos.todos[0].guid).getFieldValue("title").asString());
+        Assertions.assertEquals(todos.todos[1].title, todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).findInstanceByPrimaryKey(todo, todos.todos[1].guid).getFieldValue("title").asString());
 
     }
 
@@ -121,8 +121,8 @@ public class JsonRequestResponseTest {
     public void cannotGetFromMissingEndpoint() {
 
 
-        ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(todo)).setValue("title", "my title");
-        ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(todo)).setValue("title", "my other title");
+        todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(todo).withField("title", "my title"));
+        todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(todo).withField("title", "my other title"));
 
         HttpApiRequest request = new HttpApiRequest("todos" + System.nanoTime());
         request.getHeaders().putAll(HeadersSupport.acceptJson());
@@ -159,19 +159,19 @@ public class JsonRequestResponseTest {
         //{"title":"title from json"}
         request.setBody("{\"title\":\"title from json\"}");
 
-        Assertions.assertEquals(0, ThingifierRepositoryTestSupport.repository(todoManager).countInstances(todo));
+        Assertions.assertEquals(0, todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(todo));
 
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).post(request);
 
         Assertions.assertEquals(201, response.getStatusCode());
         System.out.println(response.getBody());
 
-        Assertions.assertEquals(1, ThingifierRepositoryTestSupport.repository(todoManager).countInstances(todo));
+        Assertions.assertEquals(1, todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(todo));
 
         // header should give me the guid
         String guid = response.getHeaders().get(ApiResponse.PRIMARY_KEY_HEADER);
 
-        final EntityInstance aTodo = ThingifierRepositoryTestSupport.repository(todoManager).findInstanceByPrimaryKey(todo, guid);
+        final EntityInstance aTodo = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).findInstanceByPrimaryKey(todo, guid);
 
         Assertions.assertEquals("title from json", aTodo.getFieldValue("title").asString());
 
@@ -199,7 +199,7 @@ public class JsonRequestResponseTest {
         //{"title":"title from json"}
         request.setBody("{\"title\":\"title from json\"}");
 
-        Assertions.assertEquals(0, ThingifierRepositoryTestSupport.repository(todoManager).countInstances(todo));
+        Assertions.assertEquals(0, todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(todo));
 
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).post(request);
 
@@ -208,12 +208,12 @@ public class JsonRequestResponseTest {
         Assertions.assertEquals(201, response.getStatusCode());
 
 
-        Assertions.assertEquals(1, ThingifierRepositoryTestSupport.repository(todoManager).countInstances(todo));
+        Assertions.assertEquals(1, todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(todo));
 
         // header should give me the guid
         String guid = response.getHeaders().get(ApiResponse.PRIMARY_KEY_HEADER);
 
-        final EntityInstance aTodo = ThingifierRepositoryTestSupport.repository(todoManager).findInstanceByPrimaryKey(todo, guid);
+        final EntityInstance aTodo = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).findInstanceByPrimaryKey(todo, guid);
 
         Assertions.assertEquals("false", aTodo.getFieldValue("doneStatus").asString());
         Assertions.assertEquals("title from json", aTodo.getFieldValue("title").asString());
@@ -236,9 +236,9 @@ public class JsonRequestResponseTest {
     @Test
     public void canPostToAmendAnItemWithJson() {
 
-        final EntityInstance atodo = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(todo)).setValue("title", "my title");
+        final EntityInstance atodo = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(todo).withField("title", "my title"));
 
-        Assertions.assertEquals(1, ThingifierRepositoryTestSupport.repository(todoManager).countInstances(todo));
+        Assertions.assertEquals(1, todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(todo));
 
         HttpApiRequest request = new HttpApiRequest("todos/" + atodo.getPrimaryKeyValue());
         request.getHeaders().putAll(HeadersSupport.acceptJson());
@@ -255,7 +255,7 @@ public class JsonRequestResponseTest {
 
         System.out.println(response.getBody());
 
-        Assertions.assertEquals(1, ThingifierRepositoryTestSupport.repository(todoManager).countInstances(todo));
+        Assertions.assertEquals(1, todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(todo));
 
         Assertions.assertEquals("title from json", atodo.getFieldValue("title").asString());
 
@@ -272,9 +272,9 @@ public class JsonRequestResponseTest {
     @Test
     public void canPutToAmendAnItemWithJson() {
 
-        final EntityInstance atodo = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(todo)).setValue("title", "my title");
+        final EntityInstance atodo = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(todo).withField("title", "my title"));
 
-        Assertions.assertEquals(1, ThingifierRepositoryTestSupport.repository(todoManager).countInstances(todo));
+        Assertions.assertEquals(1, todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(todo));
 
         HttpApiRequest request = new HttpApiRequest("todos/" + atodo.getPrimaryKeyValue());
         request.getHeaders().putAll(HeadersSupport.acceptJson());
@@ -292,7 +292,7 @@ public class JsonRequestResponseTest {
 
         Assertions.assertEquals(200, response.getStatusCode());
 
-        Assertions.assertEquals(1, ThingifierRepositoryTestSupport.repository(todoManager).countInstances(todo));
+        Assertions.assertEquals(1, todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(todo));
 
         Assertions.assertEquals("title from json", atodo.getFieldValue("title").asString());
 

@@ -1,5 +1,6 @@
 package uk.co.compendiumdev.casestudy.todomanager.api_non_http;
 
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 import com.google.gson.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -7,7 +8,6 @@ import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.casestudy.todomanager.TodoManagerModel;
 import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
-import uk.co.compendiumdev.thingifier.testsupport.ThingifierRepositoryTestSupport;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
@@ -37,8 +37,8 @@ public class RelationshipApiNonHttpTest {
 
         todoManager = TodoManagerModel.definedAsThingifier();
         jsonThing = new JsonThing(todoManager.apiConfig().jsonOutput());
-        todo = ThingifierRepositoryTestSupport.entity(todoManager, "todo");
-        project = ThingifierRepositoryTestSupport.entity(todoManager, "project");
+        todo = todoManager.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("todo");
+        project = todoManager.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("project");
 
     }
 
@@ -78,15 +78,13 @@ public class RelationshipApiNonHttpTest {
         ApiResponse apiresponse;
 
 
-        EntityInstance paperwork = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(todo)).
-                setValue("title", "Todo for relating");
+        EntityInstance paperwork = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(todo).withField("title", "Todo for relating"));
 
-        EntityInstance myNewProject = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(project)).
-                setValue("title", "My New Project " + System.currentTimeMillis());
+        EntityInstance myNewProject = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(project).withField("title", "My New Project " + System.currentTimeMillis()));
 
-        myNewProject.getRelationships().connect("tasks", paperwork);
+        todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).connectRelationship(myNewProject, "tasks", paperwork);
 
-        int numberOfTasks = myNewProject.getRelationships().getConnectedItems("tasks").size();
+        int numberOfTasks = myNewProject.getRelatedItems("tasks").size();
         Assertions.assertEquals(1, numberOfTasks);
 
         apiresponse = todoManager.api().get(String.format("project/%s/tasks", myNewProject.getPrimaryKeyValue()), new QueryFilterParams(), new HttpHeadersBlock());
@@ -96,7 +94,7 @@ public class RelationshipApiNonHttpTest {
         Assertions.assertTrue(apiresponse.isCollection());
         Assertions.assertFalse(apiresponse.isErrorResponse());
 
-        EntityInstance foundInstance = ThingifierRepositoryTestSupport.repository(todoManager).findInstanceByFieldNameAndValue(todo, "guid", paperwork.getPrimaryKeyValue());
+        EntityInstance foundInstance = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).findInstanceByFieldNameAndValue(todo, "guid", paperwork.getPrimaryKeyValue());
         Assertions.assertNotNull(
                 foundInstance,
                 "Task should exist, only the relationship should be deleted");
@@ -115,27 +113,25 @@ public class RelationshipApiNonHttpTest {
         ApiResponse apiresponse;
 
 
-        EntityInstance paperwork = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(todo)).
-                setValue("title", "Todo for amending");
+        EntityInstance paperwork = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(todo).withField("title", "Todo for amending"));
 
 
-        EntityInstance myNewProject = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(project)).
-                setValue("title", "My New Project " + System.currentTimeMillis());
+        EntityInstance myNewProject = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(project).withField("title", "My New Project " + System.currentTimeMillis()));
 
-        myNewProject.getRelationships().connect("tasks", paperwork);
+        todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).connectRelationship(myNewProject, "tasks", paperwork);
 
         // DELETE a Relationship
         // DELETE project/_GUID_/tasks/_GUID_
-        int numberOfTasks = myNewProject.getRelationships().getConnectedItems("tasks").size();
+        int numberOfTasks = myNewProject.getRelatedItems("tasks").size();
         Assertions.assertEquals(1, numberOfTasks);
 
         apiresponse = todoManager.api().delete(String.format("project/%s/tasks/%s", myNewProject.getPrimaryKeyValue(), paperwork.getPrimaryKeyValue()), new HttpHeadersBlock());
 
         Assertions.assertEquals(200, apiresponse.getStatusCode());
 
-        Assertions.assertEquals(numberOfTasks - 1, myNewProject.getRelationships().getConnectedItems("tasks").size());
+        Assertions.assertEquals(numberOfTasks - 1, myNewProject.getRelatedItems("tasks").size());
         Assertions.assertNotNull(
-                ThingifierRepositoryTestSupport.repository(todoManager).findInstanceByFieldNameAndValue(todo, "guid", paperwork.getPrimaryKeyValue()),
+                todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).findInstanceByFieldNameAndValue(todo, "guid", paperwork.getPrimaryKeyValue()),
                 "Task should exist, only the relationship should be deleted");
 
         Assertions.assertTrue(apiresponse.getErrorMessages().size()==0);
@@ -154,18 +150,16 @@ public class RelationshipApiNonHttpTest {
         ApiResponse apiresponse;
 
 
-        EntityInstance paperwork = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(todo)).
-                setValue("title", "Todo for amending");
+        EntityInstance paperwork = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(todo).withField("title", "Todo for amending"));
 
-        EntityInstance myNewProject = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(project)).
-                setValue("title", "My New Project " + System.currentTimeMillis());
+        EntityInstance myNewProject = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(project).withField("title", "My New Project " + System.currentTimeMillis()));
 
 
-        myNewProject.getRelationships().connect("tasks", paperwork);
+        todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).connectRelationship(myNewProject, "tasks", paperwork);
 
         // DELETE the todo
         // DELETE todo/_guid_
-        int numberOfTasks = myNewProject.getRelationships().getConnectedItems("tasks").size();
+        int numberOfTasks = myNewProject.getRelatedItems("tasks").size();
         Assertions.assertEquals(1, numberOfTasks);
 
         apiresponse = todoManager.api().delete(String.format("todo/%s", paperwork.getPrimaryKeyValue()), new HttpHeadersBlock());
@@ -175,12 +169,12 @@ public class RelationshipApiNonHttpTest {
         Assertions.assertTrue(apiresponse.getErrorMessages().size()==0);
 
 
-        Assertions.assertEquals(numberOfTasks - 1, myNewProject.getRelationships().getConnectedItems("tasks").size());
+        Assertions.assertEquals(numberOfTasks - 1, myNewProject.getRelatedItems("tasks").size());
         Assertions.assertNull(
-                ThingifierRepositoryTestSupport.repository(todoManager).findInstanceByFieldNameAndValue(todo, "guid", paperwork.getPrimaryKeyValue()),
+                todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).findInstanceByFieldNameAndValue(todo, "guid", paperwork.getPrimaryKeyValue()),
                 "Task should not exist");
-        Assertions.assertEquals(0, ThingifierRepositoryTestSupport.repository(todoManager).countInstances(todo));
-        Assertions.assertEquals(1, ThingifierRepositoryTestSupport.repository(todoManager).countInstances(project));
+        Assertions.assertEquals(0, todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(todo));
+        Assertions.assertEquals(1, todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(project));
 
 
         System.out.println(todoManager);
@@ -196,11 +190,9 @@ public class RelationshipApiNonHttpTest {
         ApiResponse apiresponse;
 
 
-        EntityInstance paperwork = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(todo)).
-                setValue("title", "Todo for amending");
+        EntityInstance paperwork = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(todo).withField("title", "Todo for amending"));
 
-        EntityInstance myNewProject = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(project)).
-                setValue("title", "My New Project " + System.currentTimeMillis());
+        EntityInstance myNewProject = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(project).withField("title", "My New Project " + System.currentTimeMillis()));
 
 
         // Create a relationship with POST
@@ -211,7 +203,7 @@ public class RelationshipApiNonHttpTest {
         // Create a relationship with POST and just a GUID
         //myNewProject
 
-        int numberOfTasks = myNewProject.getRelationships().getConnectedItems("tasks").size();
+        int numberOfTasks = myNewProject.getRelatedItems("tasks").size();
 
         requestBody = new HashMap<String, String>();
         requestBody.put("guid", paperwork.getPrimaryKeyValue());
@@ -222,10 +214,10 @@ public class RelationshipApiNonHttpTest {
 
         Assertions.assertEquals(201, apiresponse.getStatusCode());
 
-        Assertions.assertEquals(numberOfTasks + 1, myNewProject.getRelationships().getConnectedItems("tasks").size());
+        Assertions.assertEquals(numberOfTasks + 1, myNewProject.getRelatedItems("tasks").size());
 
         // todo should also be connected to project via the associated task-of relationship vector
-        Collection<EntityInstance> projects = paperwork.getRelationships().getConnectedItems("task-of");
+        Collection<EntityInstance> projects = paperwork.getRelatedItems("task-of");
 
         Assertions.assertEquals(1, projects.size());
         List<EntityInstance> listOfProjects = new ArrayList<EntityInstance>(projects);
@@ -245,11 +237,9 @@ public class RelationshipApiNonHttpTest {
     public void postCanCreateARelationshipUsingAPI() {
 
 
-        EntityInstance myNewProject = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(project)).
-                setValue("title", "Project For Relationships");
+        EntityInstance myNewProject = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(project).withField("title", "Project For Relationships"));
 
-        EntityInstance relTodo = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(todo)).
-                setValue("title", "Todo for relationship testing");
+        EntityInstance relTodo = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(todo).withField("title", "Todo for relationship testing"));
 
 
         // Create a relationship with POST
@@ -262,13 +252,13 @@ public class RelationshipApiNonHttpTest {
         HashMap<String, String> requestBody = new HashMap<String, String>();
         requestBody.put("guid", relTodo.getPrimaryKeyValue());
 
-        int numberOfTasks = myNewProject.getRelationships().getConnectedItems("tasks").size();
+        int numberOfTasks = myNewProject.getRelatedItems("tasks").size();
 
         ApiResponse apiresponse = todoManager.api().post(String.format("project/%s/tasks", myNewProject.getPrimaryKeyValue()), getSimpleParser(requestBody), new HttpHeadersBlock());
 
         Assertions.assertEquals(201, apiresponse.getStatusCode());
 
-        Assertions.assertEquals(numberOfTasks + 1, myNewProject.getRelationships().getConnectedItems("tasks").size());
+        Assertions.assertEquals(numberOfTasks + 1, myNewProject.getRelatedItems("tasks").size());
 
         Assertions.assertTrue(apiresponse.getErrorMessages().size()==0);
         Assertions.assertEquals( "", new ApiResponseAsXml(apiresponse, jsonThing).getXml().trim(),"Should have no body");
@@ -282,12 +272,10 @@ public class RelationshipApiNonHttpTest {
     public void postCanCreateARelationshipUsingReversalRelationshipAPI() {
 
 
-        EntityInstance myNewProject = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(project)).
-                setValue("title", "Project For Relationships " + System.currentTimeMillis());
+        EntityInstance myNewProject = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(project).withField("title", "Project For Relationships " + System.currentTimeMillis()));
 
 
-        EntityInstance relTodo = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(todo)).
-                setValue("title", "Todo for relationship testing " + System.currentTimeMillis());
+        EntityInstance relTodo = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(todo).withField("title", "Todo for relationship testing " + System.currentTimeMillis()));
 
         // Create a relationship with POST
         // POST todo/_GUID_/task-of
@@ -299,7 +287,7 @@ public class RelationshipApiNonHttpTest {
         HashMap<String, String> requestBody = new HashMap<String, String>();
         requestBody.put("guid", myNewProject.getPrimaryKeyValue());
 
-        int numberOfProjects = relTodo.getRelationships().getConnectedItems("task-of").size();
+        int numberOfProjects = relTodo.getRelatedItems("task-of").size();
         Assertions.assertEquals(0, numberOfProjects);
 
         // get current related projects through api
@@ -322,7 +310,7 @@ public class RelationshipApiNonHttpTest {
         apiresponse = todoManager.api().post(String.format("todo/%s/task-of", relTodo.getPrimaryKeyValue()), getSimpleParser(requestBody), new HttpHeadersBlock());
         Assertions.assertEquals(201, apiresponse.getStatusCode());
 
-        Assertions.assertEquals(1, relTodo.getRelationships().getConnectedItems("task-of").size());
+        Assertions.assertEquals(1, relTodo.getRelatedItems("task-of").size());
         Assertions.assertTrue(apiresponse.getErrorMessages().size()==0);
         Assertions.assertEquals( "", new ApiResponseAsXml(apiresponse, jsonThing).getXml().trim(),"Should have no body");
         Assertions.assertEquals( "", new ApiResponseAsJson(apiresponse, jsonThing).getJson().trim(),"Should have no body");
@@ -353,11 +341,9 @@ public class RelationshipApiNonHttpTest {
     public void deleteARelationshipUsingReversalRelationshipAPI() {
 
 
-        EntityInstance myNewProject = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(project)).
-                setValue("title", "Project For Relationships " + System.currentTimeMillis());
+        EntityInstance myNewProject = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(project).withField("title", "Project For Relationships " + System.currentTimeMillis()));
 
-        EntityInstance relTodo = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(todo)).
-                setValue("title", "Todo for relationship testing " + System.currentTimeMillis());
+        EntityInstance relTodo = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(todo).withField("title", "Todo for relationship testing " + System.currentTimeMillis()));
 
         // Create a relationship with POST
         // POST todo/_GUID_/task-of
@@ -369,14 +355,14 @@ public class RelationshipApiNonHttpTest {
         HashMap<String, String> requestBody = new HashMap<String, String>();
         requestBody.put("guid", myNewProject.getPrimaryKeyValue());
 
-        int numberOfProjects = relTodo.getRelationships().getConnectedItems("task-of").size();
+        int numberOfProjects = relTodo.getRelatedItems("task-of").size();
         Assertions.assertEquals(0, numberOfProjects);
 
         // Create a relationship
         ApiResponse apiresponse = todoManager.api().post(String.format("todo/%s/task-of", relTodo.getPrimaryKeyValue()),getSimpleParser(requestBody), new HttpHeadersBlock());
         Assertions.assertEquals(201, apiresponse.getStatusCode());
 
-        Assertions.assertEquals(1, relTodo.getRelationships().getConnectedItems("task-of").size());
+        Assertions.assertEquals(1, relTodo.getRelatedItems("task-of").size());
 
         Assertions.assertTrue(apiresponse.getErrorMessages().size()==0);
         Assertions.assertFalse(apiresponse.hasABody());
@@ -389,11 +375,11 @@ public class RelationshipApiNonHttpTest {
         Assertions.assertEquals(200, apiresponse.getStatusCode());
 
         // project should be related to nothing
-        Collection<EntityInstance> items = myNewProject.getRelationships().getConnectedItems("tasks");
+        Collection<EntityInstance> items = myNewProject.getRelatedItems("tasks");
         Assertions.assertEquals(0, items.size());
 
         // todo should be related to nothing
-        items = relTodo.getRelationships().getConnectedItems("task-of");
+        items = relTodo.getRelatedItems("task-of");
         Assertions.assertEquals(0, items.size());
 
         Assertions.assertTrue(apiresponse.getErrorMessages().size()==0);
@@ -411,11 +397,9 @@ public class RelationshipApiNonHttpTest {
     public void deleteAThingInAReversalRelationship() {
 
 
-        EntityInstance myNewProject = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(project)).
-                setValue("title", "Project For Relationships " + System.currentTimeMillis());
+        EntityInstance myNewProject = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(project).withField("title", "Project For Relationships " + System.currentTimeMillis()));
 
-        EntityInstance relTodo = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(todo)).
-                setValue("title", "Todo for relationship testing " + System.currentTimeMillis());
+        EntityInstance relTodo = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(todo).withField("title", "Todo for relationship testing " + System.currentTimeMillis()));
 
         // Create a relationship with POST
         // POST todo/_GUID_/task-of
@@ -427,14 +411,14 @@ public class RelationshipApiNonHttpTest {
         HashMap<String, String> requestBody = new HashMap<String, String>();
         requestBody.put("guid", myNewProject.getPrimaryKeyValue());
 
-        int numberOfProjects = relTodo.getRelationships().getConnectedItems("task-of").size();
+        int numberOfProjects = relTodo.getRelatedItems("task-of").size();
         Assertions.assertEquals(0, numberOfProjects);
 
         // Create relationship
         ApiResponse apiresponse = todoManager.api().post(String.format("todo/%s/task-of", relTodo.getPrimaryKeyValue()), getSimpleParser(requestBody), new HttpHeadersBlock());
         Assertions.assertEquals(201, apiresponse.getStatusCode());
 
-        Assertions.assertEquals(1, relTodo.getRelationships().getConnectedItems("task-of").size());
+        Assertions.assertEquals(1, relTodo.getRelatedItems("task-of").size());
         Assertions.assertTrue(apiresponse.getErrorMessages().size()==0);
         Assertions.assertFalse(apiresponse.hasABody());
         Assertions.assertEquals( "", new ApiResponseAsXml(apiresponse, jsonThing).getXml().trim(), "Should have no body");
@@ -445,7 +429,7 @@ public class RelationshipApiNonHttpTest {
         apiresponse = todoManager.api().delete(String.format("todo/%s", relTodo.getPrimaryKeyValue()), new HttpHeadersBlock());
         Assertions.assertEquals(200, apiresponse.getStatusCode());
 
-        Assertions.assertEquals(0, ThingifierRepositoryTestSupport.repository(todoManager).listInstances(todo).size(),"Should be no stored todos");
+        Assertions.assertEquals(0, todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).listInstances(todo).size(),"Should be no stored todos");
         Assertions.assertTrue(apiresponse.getErrorMessages().size()==0);
         Assertions.assertFalse(apiresponse.hasABody());
         Assertions.assertEquals( "", new ApiResponseAsXml(apiresponse, jsonThing).getXml().trim(), "Should have no body");
@@ -454,11 +438,11 @@ public class RelationshipApiNonHttpTest {
 
 
         // project should be related to nothing
-        Collection<EntityInstance> items = myNewProject.getRelationships().getConnectedItems("tasks");
+        Collection<EntityInstance> items = myNewProject.getRelatedItems("tasks");
         Assertions.assertEquals(0, items.size());
 
         // todo should be related to nothing
-        items = relTodo.getRelationships().getConnectedItems("task-of");
+        items = relTodo.getRelatedItems("task-of");
         Assertions.assertEquals(0, items.size());
 
 
@@ -471,8 +455,7 @@ public class RelationshipApiNonHttpTest {
     public void postCanCreateARelationshipAndTodoAtSameTimeUsingAPI() {
 
 
-        EntityInstance myNewProject = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(project)).
-                setValue("title", "Project For Relationships");
+        EntityInstance myNewProject = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(project).withField("title", "Project For Relationships"));
 
 
         // Createa a relationship and a thing with a POST and no GUID
@@ -483,7 +466,7 @@ public class RelationshipApiNonHttpTest {
 
         requestBody.put("title", expectedTitle);
 
-        int numberOfTasks = myNewProject.getRelationships().getConnectedItems("tasks").size();
+        int numberOfTasks = myNewProject.getRelatedItems("tasks").size();
 
         ApiResponse apiresponse = todoManager.api().post(String.format("project/%s/tasks", myNewProject.getPrimaryKeyValue()), getSimpleParser(requestBody), new HttpHeadersBlock());
         Assertions.assertEquals(201, apiresponse.getStatusCode());
@@ -495,7 +478,7 @@ public class RelationshipApiNonHttpTest {
                 "Expected location header to contain the same GUID as the X- GUID header");
 
         Assertions.assertEquals(
-                numberOfTasks + 1, myNewProject.getRelationships().getConnectedItems("tasks").size(),
+                numberOfTasks + 1, myNewProject.getRelatedItems("tasks").size(),
                 "Expected number of tasks in project to increase by 1");
 
         Assertions.assertTrue(apiresponse.hasABody());
@@ -507,11 +490,11 @@ public class RelationshipApiNonHttpTest {
 
 
         // check todo exists
-        EntityInstance myCreatedTodo = ThingifierRepositoryTestSupport.repository(todoManager).findInstanceByPrimaryKey(todo, locationGuid);
+        EntityInstance myCreatedTodo = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).findInstanceByPrimaryKey(todo, locationGuid);
         Assertions.assertEquals(expectedTitle, myCreatedTodo.getFieldValue("title").asString());
 
         // check todo is also related to the project since relationship is two way
-        Collection<EntityInstance> items = myCreatedTodo.getRelationships().getConnectedItems("task-of");
+        Collection<EntityInstance> items = myCreatedTodo.getRelatedItems("task-of");
         Assertions.assertEquals(1, items.size(),
                 "Expected task be connected to only 1 project");
 
@@ -528,8 +511,7 @@ public class RelationshipApiNonHttpTest {
 
         // Create a thing and relate through a reverse relationship e.g. POST todo/GUID/task-of
 
-        EntityInstance relTodo = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(todo)).
-                setValue("title", "Todo for relationship testing " + System.currentTimeMillis());
+        EntityInstance relTodo = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(todo).withField("title", "Todo for relationship testing " + System.currentTimeMillis()));
 
 
         // Createa a relationship and a thing with a POST and no GUID
@@ -541,30 +523,30 @@ public class RelationshipApiNonHttpTest {
         requestBody.put("title", expectedTitle);
 
 
-        int numberOfProjects = relTodo.getRelationships().getConnectedItems("task-of").size();
+        int numberOfProjects = relTodo.getRelatedItems("task-of").size();
         Assertions.assertEquals(0, numberOfProjects);
 
         // Create it
         ApiResponse apiresponse = todoManager.api().post(String.format("todo/%s/task-of", relTodo.getPrimaryKeyValue()), getSimpleParser(requestBody), new HttpHeadersBlock());
         Assertions.assertEquals(201, apiresponse.getStatusCode());
         Assertions.assertTrue(apiresponse.getErrorMessages().size()==0);
-        Assertions.assertEquals(1, relTodo.getRelationships().getConnectedItems("task-of").size());
+        Assertions.assertEquals(1, relTodo.getRelatedItems("task-of").size());
 
         Assertions.assertTrue(apiresponse.hasABody());
         Assertions.assertNotEquals("Should have a body", "", new ApiResponseAsXml(apiresponse, jsonThing).getXml().trim());
         Assertions.assertNotEquals("Should have a body", "", new ApiResponseAsJson(apiresponse, jsonThing).getJson().trim());
         Assertions.assertFalse(apiresponse.isCollection());
 
-        EntityInstance myNewProject = ThingifierRepositoryTestSupport.repository(todoManager).findInstanceByPrimaryKey(project, apiresponse.getHeaderValue(ApiResponse.PRIMARY_KEY_HEADER));
+        EntityInstance myNewProject = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).findInstanceByPrimaryKey(project, apiresponse.getHeaderValue(ApiResponse.PRIMARY_KEY_HEADER));
         Assertions.assertNotNull(myNewProject);
 
 
         // project should be related to task
-        Collection<EntityInstance> items = myNewProject.getRelationships().getConnectedItems("tasks");
+        Collection<EntityInstance> items = myNewProject.getRelatedItems("tasks");
         Assertions.assertEquals(1, items.size());
 
         // a todo instance should be related to project
-        items = relTodo.getRelationships().getConnectedItems("task-of");
+        items = relTodo.getRelatedItems("task-of");
         Assertions.assertEquals(1, items.size());
 
 
@@ -586,11 +568,10 @@ public class RelationshipApiNonHttpTest {
     public void postCanCreateAMandatoryRelationshipFromEstimateAndTodoAtSameTimeUsingAPI() {
 
 
-        EntityInstance myTodo = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(todo)).
-                setValue("title", "an estimated todo");
+        EntityInstance myTodo = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(todo).withField("title", "an estimated todo"));
 
-        final EntityDefinition estimates = ThingifierRepositoryTestSupport.entity(todoManager, "estimate");
-        int numberOfEstimates = ThingifierRepositoryTestSupport.repository(todoManager).countInstances(estimates);
+        final EntityDefinition estimates = todoManager.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("estimate");
+        int numberOfEstimates = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(estimates);
         Assertions.assertEquals(0, numberOfEstimates );
 
 
@@ -614,7 +595,7 @@ public class RelationshipApiNonHttpTest {
                 "Expected location header to contain the same GUID as the X- GUID header");
 
         Assertions.assertEquals(
-                numberOfEstimates + 1, ThingifierRepositoryTestSupport.repository(todoManager).countInstances(estimates),
+                numberOfEstimates + 1, todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(estimates),
                 "Expected number of estimates in project to increase by 1");
 
         Assertions.assertTrue(apiresponse.hasABody());
@@ -626,17 +607,17 @@ public class RelationshipApiNonHttpTest {
 
 
         // check estimate exists
-        EntityInstance myCreatedItem = ThingifierRepositoryTestSupport.repository(todoManager).findInstanceByPrimaryKey(estimates, locationGuid);
+        EntityInstance myCreatedItem = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).findInstanceByPrimaryKey(estimates, locationGuid);
         Assertions.assertEquals(expectedDescription, myCreatedItem.getFieldValue("description").asString());
         Assertions.assertEquals("3", myCreatedItem.getFieldValue("duration").asString());
 
         // check estimate is related to the todo since relationship is two way
-        Collection<EntityInstance> items = myCreatedItem.getRelationships().getConnectedItems("estimate");
+        Collection<EntityInstance> items = myCreatedItem.getRelatedItems("estimate");
         Assertions.assertEquals( 1, items.size(), "Expected estimate to be connected to only 1 todo");
         Assertions.assertTrue(items.contains(myTodo));
 
         // check todo also recognises the relationship
-        items = myTodo.getRelationships().getConnectedItems("estimates");
+        items = myTodo.getRelatedItems("estimates");
         Assertions.assertEquals( 1, items.size(), "Expected todo to be connected to only 1 estimate");
         Assertions.assertTrue(items.contains(myCreatedItem));
 
@@ -645,11 +626,10 @@ public class RelationshipApiNonHttpTest {
     @Test
     public void postCanNotCreateEstimateWithoutAMandatoryRelationshipUsingAPI() {
 
-        EntityInstance myTodo = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(todo)).
-                setValue("title", "an estimated todo");
+        EntityInstance myTodo = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(todo).withField("title", "an estimated todo"));
 
-        final EntityDefinition estimates = ThingifierRepositoryTestSupport.entity(todoManager, "estimate");
-        int numberOfEstimates = ThingifierRepositoryTestSupport.repository(todoManager).countInstances(estimates);
+        final EntityDefinition estimates = todoManager.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("estimate");
+        int numberOfEstimates = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(estimates);
         Assertions.assertEquals(0, numberOfEstimates );
 
 
@@ -663,7 +643,7 @@ public class RelationshipApiNonHttpTest {
         Assertions.assertEquals(400, apiresponse.getStatusCode());
 
         Assertions.assertEquals(
-                numberOfEstimates, ThingifierRepositoryTestSupport.repository(todoManager).countInstances(estimates),
+                numberOfEstimates, todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(estimates),
                 "Expected number of estimates in project to not increase");
 
     }
@@ -671,17 +651,15 @@ public class RelationshipApiNonHttpTest {
     @Test
     public void postCanCreateEstimateAMandatoryRelationshipUsingAPI() {
 
-        EntityInstance myTodo = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(todo)).
-                setValue("title",
-                                    "an estimated todo");
+        EntityInstance myTodo = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(todo).withField("title", "an estimated todo"));
 
         // todo has no estimates
         Assertions.assertEquals(
-                0, myTodo.getRelationships().getConnectedItems("estimates").size());
+                0, myTodo.getRelatedItems("estimates").size());
 
         // there are no estimates at all
-        final EntityDefinition estimates = ThingifierRepositoryTestSupport.entity(todoManager, "estimate");
-        int numberOfEstimates = ThingifierRepositoryTestSupport.repository(todoManager).countInstances(estimates);
+        final EntityDefinition estimates = todoManager.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("estimate");
+        int numberOfEstimates = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(estimates);
         Assertions.assertEquals(0, numberOfEstimates );
 
 
@@ -703,16 +681,16 @@ public class RelationshipApiNonHttpTest {
         Assertions.assertEquals(201, apiresponse.getStatusCode());
 
         Assertions.assertEquals(
-                numberOfEstimates+1, ThingifierRepositoryTestSupport.repository(todoManager).countInstances(estimates),
+                numberOfEstimates+1, todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(estimates),
                 "Expected number of estimates in project to increase");
 
         // todo now has an estimate
         Assertions.assertEquals(
-                1, myTodo.getRelationships().getConnectedItems("estimates").size());
+                1, myTodo.getRelatedItems("estimates").size());
 
         // and it is the estimate we expected
         final ArrayList<EntityInstance> estimatesList = new ArrayList();
-        estimatesList.addAll(myTodo.getRelationships().getConnectedItems("estimates"));
+        estimatesList.addAll(myTodo.getRelatedItems("estimates"));
         Assertions.assertEquals(expectedDescription, estimatesList.get(0).getFieldValue("description").asString());
 
     }

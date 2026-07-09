@@ -32,6 +32,12 @@ public class EntityInstanceRelationships {
     }
 
     public void connect(final String relationshipName, final EntityInstance thing) {
+        forThis.ensureWritable();
+        thing.ensureWritable();
+        connectFromRepository(relationshipName, thing);
+    }
+
+    void connectFromRepository(final String relationshipName, final EntityInstance thing) {
         // TODO: enforce cardinality
 
         final EntityDefinition entityDefinition = forThis.getEntity();
@@ -60,15 +66,20 @@ public class EntityInstanceRelationships {
                                                 relationship,
                                                 forThis, thing);
 
-        add(related);
+        addFromRepository(related);
 
         if (relationship.getRelationshipDefinition().isTwoWay()) {
-            thing.getRelationships().add(related);
+            thing.getRelationships().addFromRepository(related);
         }
 
     }
 
     private void add(final RelationshipVectorInstance relationship) {
+        forThis.ensureWritable();
+        addFromRepository(relationship);
+    }
+
+    private void addFromRepository(final RelationshipVectorInstance relationship) {
 
         String instanceIdentification = "";
 
@@ -142,6 +153,14 @@ public class EntityInstanceRelationships {
 
     public List<EntityInstance> removeRelationshipsInvolving(final EntityInstance thing,
                                                              final String relationshipName) {
+        forThis.ensureWritable();
+        thing.ensureWritable();
+        return removeRelationshipsInvolvingFromRepository(thing, relationshipName);
+    }
+
+    List<EntityInstance> removeRelationshipsInvolvingFromRepository(
+            final EntityInstance thing,
+            final String relationshipName) {
 
         List<EntityInstance> thingsToDelete = new ArrayList<>();
         List<RelationshipVectorInstance> toDelete = new ArrayList<>();
@@ -152,7 +171,7 @@ public class EntityInstanceRelationships {
                     toDelete.add(relationship);
                     thingsToDelete.addAll(relationship.instancesSubjectToMandatoryRelationship());
                     // delete any relationship to or from
-                    thing.getRelationships().remove(relationship);
+                    thing.getRelationships().removeFromRepository(relationship);
                 }
             }
         }
@@ -167,6 +186,11 @@ public class EntityInstanceRelationships {
         'things' that are no longer valid since they were involved in a mandatory relationship.
      */
     public List<EntityInstance> removeAllRelationships() {
+        forThis.ensureWritable();
+        return removeAllRelationshipsFromRepository();
+    }
+
+    List<EntityInstance> removeAllRelationshipsFromRepository() {
         List<EntityInstance> deleteThese = new ArrayList<>();
 
         final EntityInstance me = forThis;
@@ -181,7 +205,7 @@ public class EntityInstanceRelationships {
                 them = relationship.getFrom();
             }
 
-            them.getRelationships().removeAllRelationshipsInvolving(me);
+            them.getRelationships().removeAllRelationshipsInvolvingFromRepository(me);
             deleteThese.addAll(relationship.instancesSubjectToMandatoryRelationship());
         }
 
@@ -191,10 +215,21 @@ public class EntityInstanceRelationships {
     }
 
     private void remove(final RelationshipVectorInstance relationship) {
+        forThis.ensureWritable();
+        removeFromRepository(relationship);
+    }
+
+    private void removeFromRepository(final RelationshipVectorInstance relationship) {
         relationships.remove(relationship);
     }
 
     public List<EntityInstance> removeAllRelationshipsInvolving(final EntityInstance thing) {
+        forThis.ensureWritable();
+        thing.ensureWritable();
+        return removeAllRelationshipsInvolvingFromRepository(thing);
+    }
+
+    List<EntityInstance> removeAllRelationshipsInvolvingFromRepository(final EntityInstance thing) {
 
         List<EntityInstance> instancesToDelete = new ArrayList<>();
 

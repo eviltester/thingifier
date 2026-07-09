@@ -1,5 +1,6 @@
 package uk.co.compendiumdev.casestudy.todomanager.api_non_http;
 
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 import com.google.gson.Gson;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -7,7 +8,6 @@ import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.casestudy.todomanager.TodoManagerModel;
 import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
-import uk.co.compendiumdev.thingifier.testsupport.ThingifierRepositoryTestSupport;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
@@ -36,8 +36,8 @@ public class VerbPostEntityInstanceApiNonHttpTest {
 
         todoManager = TodoManagerModel.definedAsThingifier();
 
-        todo = ThingifierRepositoryTestSupport.entity(todoManager, "todo");
-        project = ThingifierRepositoryTestSupport.entity(todoManager, "project");
+        todo = todoManager.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("todo");
+        project = todoManager.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("project");
 
     }
     
@@ -89,7 +89,7 @@ public class VerbPostEntityInstanceApiNonHttpTest {
 
         // check that it is created in the model
 
-        EntityInstance createdProject = ThingifierRepositoryTestSupport.repository(todoManager).findInstanceByPrimaryKey(todo, headerGUID);
+        EntityInstance createdProject = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).findInstanceByPrimaryKey(todo, headerGUID);
 
         Assertions.assertEquals(createdProject, createdInstance);
 
@@ -135,7 +135,7 @@ public class VerbPostEntityInstanceApiNonHttpTest {
 
         // check that it is created in the model
 
-        EntityInstance createdProject = ThingifierRepositoryTestSupport.repository(todoManager).findInstanceByPrimaryKey(todo, headerGUID);
+        EntityInstance createdProject = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).findInstanceByPrimaryKey(todo, headerGUID);
 
         Assertions.assertEquals(createdProject, createdInstance);
 
@@ -145,8 +145,7 @@ public class VerbPostEntityInstanceApiNonHttpTest {
     @Test
     public void postCanAmendAnExistingEntity() {
 
-        EntityInstance relTodo = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(todo)).
-                setValue("title", "Todo for amending");
+        EntityInstance relTodo = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(todo).withField("title", "Todo for amending"));
 
 
         // POST project
@@ -180,7 +179,7 @@ public class VerbPostEntityInstanceApiNonHttpTest {
     @Test
     public void postFailCannotCreateProjectWithGuidInUrl() {
 
-        int currentProjects = ThingifierRepositoryTestSupport.repository(todoManager).countInstances(project);
+        int currentProjects = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(project);
 
         Map<String, String> requestBody = new HashMap<>();
         requestBody.put("title", "My Office Work");
@@ -193,7 +192,7 @@ public class VerbPostEntityInstanceApiNonHttpTest {
         Assertions.assertTrue(apiresponse.hasABody());
 
 
-        Assertions.assertEquals(currentProjects, ThingifierRepositoryTestSupport.repository(todoManager).countInstances(project));
+        Assertions.assertEquals(currentProjects, todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(project));
 
     }
 
@@ -206,8 +205,7 @@ public class VerbPostEntityInstanceApiNonHttpTest {
         String originalTitle = "Todo for amending " + System.currentTimeMillis();
         String originalDescription = "my description " + System.currentTimeMillis();
 
-        EntityInstance amendTodo = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(todo)).
-                setValue("title", originalTitle).setValue("description", originalDescription);
+        EntityInstance amendTodo = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(todo).withField("title", originalTitle).withField("description", originalDescription));
 
 
         // Mandatory field validation
@@ -254,8 +252,7 @@ public class VerbPostEntityInstanceApiNonHttpTest {
         requestBody = new HashMap<>();
         requestBody.put("title", "My Office Work");
 
-        EntityInstance officeWork = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(project)).
-                setValue("title", "An Existing Project");
+        EntityInstance officeWork = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(project).withField("title", "An Existing Project"));
 
         String officeWorkGuid = officeWork.getPrimaryKeyValue();
         Assertions.assertNotNull(officeWorkGuid);
@@ -265,7 +262,7 @@ public class VerbPostEntityInstanceApiNonHttpTest {
         Assertions.assertEquals(200, apiresponse.getStatusCode());
         Assertions.assertEquals("My Office Work", officeWork.getFieldValue("title").asString());
 
-        officeWork.setValue("title", "office");
+        officeWork = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).patchInstance(officeWork, EntityInstanceDraft.forEntity(officeWork.getEntity()).withField("title", "office"));
         Assertions.assertEquals("office", officeWork.getFieldValue("title").asString());
         Assertions.assertNotNull(officeWorkGuid);
 
@@ -289,6 +286,7 @@ public class VerbPostEntityInstanceApiNonHttpTest {
         apiresponse = todoManager.api().post(String.format("todo"),  getSimpleParser(requestBody), new HttpHeadersBlock());
         Assertions.assertEquals(400, apiresponse.getStatusCode());
         Assertions.assertFalse(apiresponse.getErrorMessages().isEmpty());
+        Assertions.assertEquals("title : field is mandatory", apiresponse.getErrorMessages().iterator().next());
         Assertions.assertTrue(apiresponse.hasABody());
 
         // Field validation on boolean for Create with POST
@@ -306,8 +304,7 @@ public class VerbPostEntityInstanceApiNonHttpTest {
         requestBody.put("title", "A new TODO Item");
         requestBody.put("doneStatus", "FALSEY");
 
-        EntityInstance paperwork = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(todo)).
-                setValue("title", "Todo for amending");
+        EntityInstance paperwork = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(todo).withField("title", "Todo for amending"));
 
         apiresponse = todoManager.api().post(String.format("todo/%s", paperwork.getPrimaryKeyValue()), getSimpleParser(requestBody), new HttpHeadersBlock());
         Assertions.assertEquals(400, apiresponse.getStatusCode());

@@ -8,6 +8,7 @@ import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 
 import java.util.List;
 
@@ -32,10 +33,10 @@ public class QueryFiltersBooleanTest {
                 .addFields( Field.is("truefalse", FieldType.BOOLEAN)
                 );
 
-        RepositoryUrlQueryTestSupport.add(erModel, "thing", "truefalse", "true");
-        RepositoryUrlQueryTestSupport.add(erModel, "thing", "truefalse", "true");
-        RepositoryUrlQueryTestSupport.add(erModel, "thing", "truefalse", "true");
-        RepositoryUrlQueryTestSupport.add(erModel, "thing", "truefalse", "false");
+        erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(erModel.getSchema().getEntityDefinitionNamed("thing")).withField("truefalse", "true"));
+        erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(erModel.getSchema().getEntityDefinitionNamed("thing")).withField("truefalse", "true"));
+        erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(erModel.getSchema().getEntityDefinitionNamed("thing")).withField("truefalse", "true"));
+        erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(erModel.getSchema().getEntityDefinitionNamed("thing")).withField("truefalse", "false"));
 
     }
 
@@ -45,7 +46,7 @@ public class QueryFiltersBooleanTest {
         QueryFilterParams params = new QueryFilterParams();
         params.put("truefalse", "true");
 
-        RepositoryUrlQuery queryResults = RepositoryUrlQueryTestSupport.query(erModel, "things").
+        RepositoryUrlQuery queryResults = new RepositoryUrlQuery(erModel.getSchema(), erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME), "things").
                 performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
@@ -59,7 +60,7 @@ public class QueryFiltersBooleanTest {
         QueryFilterParams params = new QueryFilterParams();
         params.put("truefalse", "false");
 
-        RepositoryUrlQuery queryResults = RepositoryUrlQueryTestSupport.query(erModel, "things").
+        RepositoryUrlQuery queryResults = new RepositoryUrlQuery(erModel.getSchema(), erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME), "things").
                 performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
@@ -72,7 +73,7 @@ public class QueryFiltersBooleanTest {
         QueryFilterParams params = new QueryFilterParams();
         params.put("truefalse", "!false");
 
-        RepositoryUrlQuery queryResults = RepositoryUrlQueryTestSupport.query(erModel, "things").
+        RepositoryUrlQuery queryResults = new RepositoryUrlQuery(erModel.getSchema(), erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME), "things").
                 performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
@@ -85,7 +86,7 @@ public class QueryFiltersBooleanTest {
         QueryFilterParams params = new QueryFilterParams();
         params.put("truefalse", "!true");
 
-        RepositoryUrlQuery queryResults = RepositoryUrlQueryTestSupport.query(erModel, "things").
+        RepositoryUrlQuery queryResults = new RepositoryUrlQuery(erModel.getSchema(), erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME), "things").
                 performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
@@ -98,7 +99,7 @@ public class QueryFiltersBooleanTest {
         QueryFilterParams params = new QueryFilterParams();
         params.put("sortBy", "+truefalse");
 
-        RepositoryUrlQuery queryResults = RepositoryUrlQueryTestSupport.query(erModel, "things").
+        RepositoryUrlQuery queryResults = new RepositoryUrlQuery(erModel.getSchema(), erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME), "things").
                 performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
@@ -116,7 +117,7 @@ public class QueryFiltersBooleanTest {
         QueryFilterParams params = new QueryFilterParams();
         params.put("sortBy", "-truefalse");
 
-        RepositoryUrlQuery queryResults = RepositoryUrlQueryTestSupport.query(erModel, "things").
+        RepositoryUrlQuery queryResults = new RepositoryUrlQuery(erModel.getSchema(), erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME), "things").
                 performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");

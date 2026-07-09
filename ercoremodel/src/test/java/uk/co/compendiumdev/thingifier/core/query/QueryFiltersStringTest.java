@@ -8,6 +8,7 @@ import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 
 import java.util.List;
 
@@ -25,10 +26,10 @@ public class QueryFiltersStringTest {
                 .addFields( Field.is("string", FieldType.STRING)
                 );
 
-        RepositoryUrlQueryTestSupport.add(erModel, "thing", "string", "one");
-        RepositoryUrlQueryTestSupport.add(erModel, "thing", "string", "two");
-        RepositoryUrlQueryTestSupport.add(erModel, "thing", "string", "three");
-        RepositoryUrlQueryTestSupport.add(erModel, "thing", "string", "four");
+        erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(erModel.getSchema().getEntityDefinitionNamed("thing")).withField("string", "one"));
+        erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(erModel.getSchema().getEntityDefinitionNamed("thing")).withField("string", "two"));
+        erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(erModel.getSchema().getEntityDefinitionNamed("thing")).withField("string", "three"));
+        erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(erModel.getSchema().getEntityDefinitionNamed("thing")).withField("string", "four"));
 
     }
 
@@ -38,7 +39,7 @@ public class QueryFiltersStringTest {
         QueryFilterParams params = new QueryFilterParams();
         params.put("sortBy", "+string");
 
-        RepositoryUrlQuery queryResults = RepositoryUrlQueryTestSupport.query(erModel, "things").
+        RepositoryUrlQuery queryResults = new RepositoryUrlQuery(erModel.getSchema(), erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME), "things").
                 performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
@@ -56,7 +57,7 @@ public class QueryFiltersStringTest {
         QueryFilterParams params = new QueryFilterParams();
         params.put("sortBy", "-string");
 
-        RepositoryUrlQuery queryResults = RepositoryUrlQueryTestSupport.query(erModel, "things").
+        RepositoryUrlQuery queryResults = new RepositoryUrlQuery(erModel.getSchema(), erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME), "things").
                 performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
@@ -75,7 +76,7 @@ public class QueryFiltersStringTest {
         QueryFilterParams params = new QueryFilterParams();
         params.put("string", "=one");
 
-        RepositoryUrlQuery queryResults = RepositoryUrlQueryTestSupport.query(erModel, "things").
+        RepositoryUrlQuery queryResults = new RepositoryUrlQuery(erModel.getSchema(), erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME), "things").
                 performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
@@ -91,7 +92,7 @@ public class QueryFiltersStringTest {
         params.put("string", "~=.*o.*");
         params.put("sortBy", "+string");
 
-        RepositoryUrlQuery queryResults = RepositoryUrlQueryTestSupport.query(erModel, "things").
+        RepositoryUrlQuery queryResults = new RepositoryUrlQuery(erModel.getSchema(), erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME), "things").
                 performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
@@ -110,7 +111,7 @@ public class QueryFiltersStringTest {
         params.put("string", "~=.*o.*");
         params.put("sortBy", "-string");
 
-        RepositoryUrlQuery queryResults = RepositoryUrlQueryTestSupport.query(erModel, "things").
+        RepositoryUrlQuery queryResults = new RepositoryUrlQuery(erModel.getSchema(), erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME), "things").
                 performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
@@ -130,7 +131,7 @@ public class QueryFiltersStringTest {
         params.put("string", "*=*e");
         params.put("sortBy", "+string");
 
-        RepositoryUrlQuery queryResults = RepositoryUrlQueryTestSupport.query(erModel, "things").
+        RepositoryUrlQuery queryResults = new RepositoryUrlQuery(erModel.getSchema(), erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME), "things").
                 performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
@@ -148,7 +149,7 @@ public class QueryFiltersStringTest {
         params.put("string", "*=t*");
         params.put("sortBy", "+string");
 
-        RepositoryUrlQuery queryResults = RepositoryUrlQueryTestSupport.query(erModel, "things").
+        RepositoryUrlQuery queryResults = new RepositoryUrlQuery(erModel.getSchema(), erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME), "things").
                 performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
@@ -166,7 +167,7 @@ public class QueryFiltersStringTest {
         params.put("string", "*=t?*");
         params.put("sortBy", "+string");
 
-        RepositoryUrlQuery queryResults = RepositoryUrlQueryTestSupport.query(erModel, "things").
+        RepositoryUrlQuery queryResults = new RepositoryUrlQuery(erModel.getSchema(), erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME), "things").
                 performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
@@ -184,7 +185,7 @@ public class QueryFiltersStringTest {
         params.put("string", "*=t?o");
         params.put("sortBy", "+string");
 
-        RepositoryUrlQuery queryResults = RepositoryUrlQueryTestSupport.query(erModel, "things").
+        RepositoryUrlQuery queryResults = new RepositoryUrlQuery(erModel.getSchema(), erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME), "things").
                 performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");

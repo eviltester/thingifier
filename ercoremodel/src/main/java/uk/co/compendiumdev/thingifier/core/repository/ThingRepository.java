@@ -5,6 +5,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.NamedValue;
 import uk.co.compendiumdev.thingifier.core.domain.instances.AutoIncrement;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
 import uk.co.compendiumdev.thingifier.core.reporting.ERModelReport;
 import uk.co.compendiumdev.thingifier.core.reporting.RepositoryJsonExporter;
@@ -52,9 +53,11 @@ public interface ThingRepository extends AutoCloseable {
     List<EntityInstance> listRelatedInstances(
             EntityInstance instance, String relationshipName, QueryFilterParams queryParams);
 
-    EntityInstance addInstance(EntityInstance instance);
+    EntityInstance createInstance(EntityInstanceDraft draft);
 
-    EntityInstance updateInstance(EntityInstance instance);
+    EntityInstance patchInstance(EntityInstance instance, EntityInstanceDraft draft);
+
+    EntityInstance replaceInstance(EntityInstance instance, EntityInstanceDraft draft);
 
     void deleteEntityInstance(EntityInstance instance);
 

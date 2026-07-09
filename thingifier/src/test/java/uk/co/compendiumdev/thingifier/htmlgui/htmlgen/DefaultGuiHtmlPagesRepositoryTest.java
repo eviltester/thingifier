@@ -9,6 +9,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 import uk.co.compendiumdev.thingifier.core.repository.sqlite.SqliteThingRepositoryProvider;
 import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
 
@@ -35,10 +36,8 @@ public class DefaultGuiHtmlPagesRepositoryTest {
             ThingRepository repository =
                     thingifier.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME);
 
-            EntityInstance projectInstance = repository.addInstance(new EntityInstance(project).
-                    setValue("title", "Repository Project"));
-            EntityInstance todoInstance = repository.addInstance(new EntityInstance(todo).
-                    setValue("title", "Repository Todo"));
+            EntityInstance projectInstance = repository.createInstance(EntityInstanceDraft.forEntity(project).withField("title", "Repository Project"));
+            EntityInstance todoInstance = repository.createInstance(EntityInstanceDraft.forEntity(todo).withField("title", "Repository Todo"));
 
             repository.connectRelationship(projectInstance, "tasks", todoInstance);
 

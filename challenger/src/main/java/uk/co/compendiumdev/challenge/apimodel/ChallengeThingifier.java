@@ -9,6 +9,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
 
 public class ChallengeThingifier {
@@ -51,11 +52,11 @@ public class ChallengeThingifier {
         // set all the status codes to the specific challenger status
         ThingRepository repository = challengeThingifier.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME);
         for (ChallengeDefinitionData challenge : challengeDefinitions.getChallenges()) {
-            EntityInstance instance = new EntityInstance(challengeDefn).
-                    overrideValue("id", challenge.id).
-                    setValue("name", challenge.name).
-                    setValue("description", challenge.description);
-            repository.addInstance(instance);
+            repository.createInstance(
+                    EntityInstanceDraft.forEntity(challengeDefn).
+                            withProtectedField("id", challenge.id).
+                            withField("name", challenge.name).
+                            withField("description", challenge.description));
         }
     }
 
@@ -72,13 +73,14 @@ public class ChallengeThingifier {
         for (ChallengeDefinitionData challenge : challengeDefinitions.getChallenges()) {
             final EntityInstance instance =
                     repository.findInstanceByFieldNameAndValue(challengeDefn, "id", challenge.id);
-            instance.setValue("status",
-                                        challengerToUse.statusOfChallenge(
-                                                challengeDefinitions.
-                                                        getChallenge(challenge.name)
-                                ).toString()
-            );
-            repository.updateInstance(instance);
+            repository.patchInstance(
+                    instance,
+                    EntityInstanceDraft.forEntity(challengeDefn).
+                            withField(
+                                    "status",
+                                    challengerToUse.statusOfChallenge(
+                                                    challengeDefinitions.getChallenge(challenge.name)).
+                                            toString()));
         }
     }
 }

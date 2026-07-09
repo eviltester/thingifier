@@ -14,6 +14,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
 import uk.co.compendiumdev.thingifier.core.repository.sqlite.SqliteThingRepositoryProvider;
 import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
@@ -42,10 +43,8 @@ public class RelationshipApiSqliteRepositoryTest {
             ThingRepository repository =
                     todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME);
 
-            EntityInstance task = repository.addInstance(new EntityInstance(todo).
-                    setValue("title", "SQLite relationship task"));
-            EntityInstance projectInstance = repository.addInstance(new EntityInstance(project).
-                    setValue("title", "SQLite relationship project"));
+            EntityInstance task = repository.createInstance(EntityInstanceDraft.forEntity(todo).withField("title", "SQLite relationship task"));
+            EntityInstance projectInstance = repository.createInstance(EntityInstanceDraft.forEntity(project).withField("title", "SQLite relationship project"));
 
             repository.connectRelationship(projectInstance, "tasks", task);
 
@@ -81,10 +80,8 @@ public class RelationshipApiSqliteRepositoryTest {
             EntityDefinition todo = todoManager.getDefinitionNamed("todo");
             EntityDefinition project = todoManager.getDefinitionNamed("project");
 
-            EntityInstance task = repository.addInstance(new EntityInstance(todo).
-                    setValue("title", "SQLite relationship task"));
-            EntityInstance projectInstance = repository.addInstance(new EntityInstance(project).
-                    setValue("title", "SQLite relationship project"));
+            EntityInstance task = repository.createInstance(EntityInstanceDraft.forEntity(todo).withField("title", "SQLite relationship task"));
+            EntityInstance projectInstance = repository.createInstance(EntityInstanceDraft.forEntity(project).withField("title", "SQLite relationship project"));
             repository.connectRelationship(projectInstance, "tasks", task);
 
             ApiResponse response = todoManager.api().get(
@@ -104,10 +101,8 @@ public class RelationshipApiSqliteRepositoryTest {
             EntityDefinition todo = todoManager.getDefinitionNamed("todo");
             EntityDefinition project = todoManager.getDefinitionNamed("project");
 
-            EntityInstance task = repository.addInstance(new EntityInstance(todo).
-                    setValue("title", "SQLite relationship task"));
-            EntityInstance projectInstance = repository.addInstance(new EntityInstance(project).
-                    setValue("title", "SQLite relationship project"));
+            EntityInstance task = repository.createInstance(EntityInstanceDraft.forEntity(todo).withField("title", "SQLite relationship task"));
+            EntityInstance projectInstance = repository.createInstance(EntityInstanceDraft.forEntity(project).withField("title", "SQLite relationship project"));
 
             Map<String, String> body = new HashMap<>();
             body.put("guid", task.getPrimaryKeyValue());
@@ -136,10 +131,8 @@ public class RelationshipApiSqliteRepositoryTest {
             EntityDefinition todo = todoManager.getDefinitionNamed("todo");
             EntityDefinition project = todoManager.getDefinitionNamed("project");
 
-            EntityInstance task = repository.addInstance(new EntityInstance(todo).
-                    setValue("title", "SQLite relationship task"));
-            EntityInstance projectInstance = repository.addInstance(new EntityInstance(project).
-                    setValue("title", "SQLite relationship project"));
+            EntityInstance task = repository.createInstance(EntityInstanceDraft.forEntity(todo).withField("title", "SQLite relationship task"));
+            EntityInstance projectInstance = repository.createInstance(EntityInstanceDraft.forEntity(project).withField("title", "SQLite relationship project"));
 
             Map<String, String> body = new HashMap<>();
             body.put("guid", projectInstance.getPrimaryKeyValue());
@@ -168,8 +161,7 @@ public class RelationshipApiSqliteRepositoryTest {
             EntityDefinition todo = todoManager.getDefinitionNamed("todo");
             EntityDefinition project = todoManager.getDefinitionNamed("project");
 
-            EntityInstance projectInstance = repository.addInstance(new EntityInstance(project).
-                    setValue("title", "SQLite relationship project"));
+            EntityInstance projectInstance = repository.createInstance(EntityInstanceDraft.forEntity(project).withField("title", "SQLite relationship project"));
 
             Map<String, String> body = new HashMap<>();
             body.put("title", "created through relationship path");
@@ -198,10 +190,8 @@ public class RelationshipApiSqliteRepositoryTest {
             EntityDefinition todo = todoManager.getDefinitionNamed("todo");
             EntityDefinition project = todoManager.getDefinitionNamed("project");
 
-            EntityInstance task = repository.addInstance(new EntityInstance(todo).
-                    setValue("title", "SQLite relationship task"));
-            EntityInstance projectInstance = repository.addInstance(new EntityInstance(project).
-                    setValue("title", "SQLite relationship project"));
+            EntityInstance task = repository.createInstance(EntityInstanceDraft.forEntity(todo).withField("title", "SQLite relationship task"));
+            EntityInstance projectInstance = repository.createInstance(EntityInstanceDraft.forEntity(project).withField("title", "SQLite relationship project"));
             repository.connectRelationship(projectInstance, "tasks", task);
 
             ApiResponse response = todoManager.api().delete(
@@ -227,10 +217,8 @@ public class RelationshipApiSqliteRepositoryTest {
             EntityDefinition todo = todoManager.getDefinitionNamed("todo");
             EntityDefinition project = todoManager.getDefinitionNamed("project");
 
-            EntityInstance task = repository.addInstance(new EntityInstance(todo).
-                    setValue("title", "SQLite relationship task"));
-            EntityInstance projectInstance = repository.addInstance(new EntityInstance(project).
-                    setValue("title", "SQLite relationship project"));
+            EntityInstance task = repository.createInstance(EntityInstanceDraft.forEntity(todo).withField("title", "SQLite relationship task"));
+            EntityInstance projectInstance = repository.createInstance(EntityInstanceDraft.forEntity(project).withField("title", "SQLite relationship project"));
 
             ApiResponse response = todoManager.api().delete(
                     String.format(

@@ -3,7 +3,7 @@ package uk.co.compendiumdev.thingifier.swaggerizer;
 import uk.co.compendiumdev.thingifier.core.domain.datapopulator.RepositoryDataPopulator;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.ERSchema;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
 
 public class TodoAPITestDataPopulator implements RepositoryDataPopulator {
@@ -24,7 +24,8 @@ public class TodoAPITestDataPopulator implements RepositoryDataPopulator {
         EntityDefinition todo = schema.getEntityDefinitionNamed("todo");
 
         for(String todoItem : todos){
-            repository.addInstance(new EntityInstance(todo).setValue("title", todoItem));
+            repository.createInstance(
+                    EntityInstanceDraft.forEntity(todo).withField("title", todoItem));
         }
     }
 }

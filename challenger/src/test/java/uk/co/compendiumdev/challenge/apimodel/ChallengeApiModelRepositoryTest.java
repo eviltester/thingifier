@@ -1,7 +1,6 @@
 package uk.co.compendiumdev.challenge.apimodel;
 
 
-import uk.co.compendiumdev.challenge.testsupport.ThingifierRepositoryTestSupport;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.Thingifier;
@@ -15,6 +14,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
 import uk.co.compendiumdev.thingifier.core.repository.sqlite.SqliteThingRepository;
 import uk.co.compendiumdev.thingifier.core.repository.sqlite.SqliteThingRepositoryProvider;
@@ -32,13 +32,8 @@ public class ChallengeApiModelRepositoryTest {
                             instanceof SqliteThingRepository);
             Assertions.assertEquals(
                     10,
-                    ThingifierRepositoryTestSupport.repository(
-                            thingifier,
-                            EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(
-                                    ThingifierRepositoryTestSupport.entity(
-                                            thingifier,
-                                            EntityRelModel.DEFAULT_DATABASE_NAME,
-                                            "todo")));
+                    thingifier.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(
+                                    thingifier.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("todo")));
         }
     }
 
@@ -50,8 +45,9 @@ public class ChallengeApiModelRepositoryTest {
             EntityDefinition todo = thingifier.getDefinitionNamed("todo");
 
             EntityInstance firstTodo = repository.findInstanceByQueryIdentifier(todo, "1");
-            firstTodo.setValue("doneStatus", "true");
-            repository.updateInstance(firstTodo);
+            repository.patchInstance(
+                    firstTodo,
+                    EntityInstanceDraft.forEntity(todo).withField("doneStatus", "true"));
 
             ApiResponse allTodos = thingifier.api().get(
                     "/todos", new QueryFilterParams(), new HttpHeadersBlock());
@@ -108,10 +104,10 @@ public class ChallengeApiModelRepositoryTest {
                     whenReversed(Cardinality.ONE_TO_ONE(), "task-of");
 
             ThingRepository repository = thingifier.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME);
-            EntityInstance projectInstance = new EntityInstance(project).setValue("title", "Office");
-            EntityInstance taskInstance = new EntityInstance(task).setValue("title", "File paperwork");
-            repository.addInstance(projectInstance);
-            repository.addInstance(taskInstance);
+            EntityInstance projectInstance = repository.createInstance(
+                    EntityInstanceDraft.forEntity(project).withField("title", "Office"));
+            EntityInstance taskInstance = repository.createInstance(
+                    EntityInstanceDraft.forEntity(task).withField("title", "File paperwork"));
             repository.connectRelationship(projectInstance, "tasks", taskInstance);
 
             ApiResponse response = thingifier.api().get(
@@ -191,8 +187,8 @@ public class ChallengeApiModelRepositoryTest {
             secondNote.addAsPrimaryKeyField(Field.is("id", FieldType.AUTO_INCREMENT));
             secondNote.addField(Field.is("title", FieldType.STRING));
 
-            firstModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).
-                    addInstance(new EntityInstance(firstNote).setValue("title", "first"));
+            firstModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(
+                    EntityInstanceDraft.forEntity(firstNote).withField("title", "first"));
 
             Assertions.assertEquals(
                     1,

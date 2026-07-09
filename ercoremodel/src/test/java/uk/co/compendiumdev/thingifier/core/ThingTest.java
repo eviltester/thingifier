@@ -7,6 +7,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.F
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 
 import java.util.Collection;
 
@@ -24,13 +25,15 @@ public class ThingTest {
         person.definition().
                 addFields(Field.is("name", STRING), Field.is("age", INTEGER));
 
-        EntityInstance bob = person.addInstance(new EntityInstance(person.definition())).
-                setValue("name","Bob");
+        EntityInstance bob = person.addInstance(
+                EntityInstance.fromDraft(EntityInstanceDraft.forEntity(person.definition()).
+                        withField("name", "Bob").
+                        withField("age", "56")));
 
-        bob.setValue("age", "56");
-
-        EntityInstance eris = person.addInstance(new EntityInstance(person.definition())).
-                setValue("name","Eris").setValue("age", "1000");
+        EntityInstance eris = person.addInstance(
+                EntityInstance.fromDraft(EntityInstanceDraft.forEntity(person.definition()).
+                        withField("name", "Eris").
+                        withField("age", "1000")));
 
         Assertions.assertEquals(2, person.countInstances());
         Assertions.assertEquals("Bob", bob.getFieldValue("name").asString());
@@ -52,14 +55,16 @@ public class ThingTest {
         Assertions.assertTrue(url.definition().hasFieldNameDefined("visited"));
 
 
-        url.addInstance(new EntityInstance(url.definition())).
-           setValue("name","EvilTester.com").
-            setValue("url", "http://eviltester.com");
+        url.addInstance(
+                EntityInstance.fromDraft(EntityInstanceDraft.forEntity(url.definition()).
+                        withField("name", "EvilTester.com").
+                        withField("url", "http://eviltester.com")));
 
 
-        url.addInstance(new EntityInstance(url.definition())).
-            setValue("name","JavaForTesters.com").
-            setValue("url", "http://javaForTesters.com");
+        url.addInstance(
+                EntityInstance.fromDraft(EntityInstanceDraft.forEntity(url.definition()).
+                        withField("name", "JavaForTesters.com").
+                        withField("url", "http://javaForTesters.com")));
 
 
         Collection<EntityInstance> instances = url.getInstances();

@@ -1,12 +1,12 @@
 package uk.co.compendiumdev.thingifier.api.non_http;
 
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi;
 import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
-import uk.co.compendiumdev.thingifier.testsupport.ThingifierRepositoryTestSupport;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
@@ -41,9 +41,8 @@ public class IdBasedInstanceNonHttpTest {
 
         Thingifier model = getThingifier();
 
-        final EntityDefinition thing = ThingifierRepositoryTestSupport.entity(model, "thing");
-        final EntityInstance existingInstance = ThingifierRepositoryTestSupport.repository(model).addInstance(new EntityInstance(thing)).setValue("title",
-                "My Title" + System.nanoTime());
+        final EntityDefinition thing = model.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("thing");
+        final EntityInstance existingInstance = model.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(thing).withField("title", "My Title" + System.nanoTime()));
 
         // no session header so use default session
         final ApiResponse apiResponse = model.api().get("/thing/" + existingInstance.getPrimaryKeyValue(), new QueryFilterParams(), new HttpHeadersBlock());
@@ -56,9 +55,8 @@ public class IdBasedInstanceNonHttpTest {
 
         Thingifier model = getThingifier();
 
-        final EntityDefinition thing = ThingifierRepositoryTestSupport.entity(model, "thing");
-        final EntityInstance existingInstance = ThingifierRepositoryTestSupport.repository(model).addInstance(new EntityInstance(thing)).setValue("title",
-                "My Title" + System.nanoTime());
+        final EntityDefinition thing = model.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("thing");
+        final EntityInstance existingInstance = model.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(thing).withField("title", "My Title" + System.nanoTime()));
 
         // no session header so use default session
         final ApiResponse idApiResponse = model.api().get("/thing/" + existingInstance.getFieldValue("id").asString(), new QueryFilterParams(), new HttpHeadersBlock());
@@ -82,8 +80,8 @@ public class IdBasedInstanceNonHttpTest {
         Assertions.assertEquals(404, idApiResponse.getStatusCode());
 
         // add instance to custom session
-        final EntityDefinition thing = ThingifierRepositoryTestSupport.entity(model, "other_things", "thing");
-        final EntityInstance existingInstance = ThingifierRepositoryTestSupport.repository(model, "other_things").addInstance(new EntityInstance(thing)).setValue("title", "My Title" + System.nanoTime());
+        final EntityDefinition thing = model.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("thing");
+        final EntityInstance existingInstance = model.getRepository("other_things").createInstance(EntityInstanceDraft.forEntity(thing).withField("title", "My Title" + System.nanoTime()));
 
         final ApiResponse idApiResponse2 = model.api().get("/thing/" + existingInstance.getPrimaryKeyValue(), new QueryFilterParams(), headers);
         Assertions.assertEquals(200, idApiResponse2.getStatusCode());
@@ -105,8 +103,8 @@ public class IdBasedInstanceNonHttpTest {
         Assertions.assertEquals(404, idApiResponse.getStatusCode());
 
         // add instance to custom session
-        final EntityDefinition thing = ThingifierRepositoryTestSupport.entity(model, "other_things", "thing");
-        final EntityInstance existingInstance = ThingifierRepositoryTestSupport.repository(model, "other_things").addInstance(new EntityInstance(thing)).setValue("title", "My Title" + System.nanoTime());
+        final EntityDefinition thing = model.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("thing");
+        final EntityInstance existingInstance = model.getRepository("other_things").createInstance(EntityInstanceDraft.forEntity(thing).withField("title", "My Title" + System.nanoTime()));
 
         final ApiResponse idApiResponse2 = model.api().get("/thing/" + existingInstance.getFieldValue("id").asString(), new QueryFilterParams(), headers);
         Assertions.assertEquals(200, idApiResponse2.getStatusCode());

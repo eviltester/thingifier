@@ -10,6 +10,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
 
 public class RepositoryBackedRelationshipUrlResolverTest {
@@ -40,10 +41,12 @@ public class RepositoryBackedRelationshipUrlResolverTest {
                 whenReversed(Cardinality.ONE_TO_MANY(), "task-of");
 
         repository = thingifier.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME);
-        task = repository.addInstance(new EntityInstance(todo).
-                setValue("title", "relationship task"));
-        projectInstance = repository.addInstance(new EntityInstance(project).
-                setValue("title", "relationship project"));
+        task = repository.createInstance(
+                EntityInstanceDraft.forEntity(todo).
+                        withField("title", "relationship task"));
+        projectInstance = repository.createInstance(
+                EntityInstanceDraft.forEntity(project).
+                        withField("title", "relationship project"));
         repository.connectRelationship(projectInstance, "tasks", task);
 
         resolver = new RepositoryBackedRelationshipUrlResolver(
@@ -139,8 +142,9 @@ public class RepositoryBackedRelationshipUrlResolverTest {
 
     @Test
     public void relationshipInstancePathRequiresChildToBeConnected() {
-        EntityInstance unconnectedTask = repository.addInstance(new EntityInstance(todo).
-                setValue("title", "unconnected task"));
+        EntityInstance unconnectedTask = repository.createInstance(
+                EntityInstanceDraft.forEntity(todo).
+                        withField("title", "unconnected task"));
 
         RepositoryBackedRelationshipUrlResolver.RelationshipUrlResolution resolution =
                 resolver.resolveRelationshipInstance(

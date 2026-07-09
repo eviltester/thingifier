@@ -17,6 +17,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.F
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.validation.MaximumLengthValidationRule;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 import uk.co.compendiumdev.thingifier.core.query.FilterBy;
 import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
 import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
@@ -131,9 +132,8 @@ public class SimulationRoutes {
     }
 
     private EntityInstance createManagedEntityNamed(final String name) {
-        EntityInstance instance = new EntityInstance(entityDefn).setValue("name", name);
-        entityRepository.addInstance(instance);
-        return instance;
+        return entityRepository.createInstance(
+                EntityInstanceDraft.forEntity(entityDefn).withField("name", name));
     }
 
     public void configure() {
@@ -204,8 +204,9 @@ public class SimulationRoutes {
 
             if (id.equals("10")) {
                 // 10 is the entity we amend to name:eris
-                EntityInstance fake = new EntityInstance(entityDefn).
-                        overrideValue("id", "10").setValue("name", "eris");
+                EntityInstance fake = EntityInstance.fromDraft(EntityInstanceDraft.forEntity(entityDefn).
+                        withProtectedField("id", "10").
+                        withField("name", "eris"));
                 instance = fake;
                 response = ApiResponse.success().returnSingleInstance(instance);
             }
@@ -258,8 +259,9 @@ public class SimulationRoutes {
             } else {
                 if (id.equals("10")) {
                     // 10 is the entity we amend to name:eris
-                    EntityInstance fake = new EntityInstance(entityDefn).
-                            overrideValue("id", "10").setValue("name", "eris");
+                    EntityInstance fake = EntityInstance.fromDraft(EntityInstanceDraft.forEntity(entityDefn).
+                            withProtectedField("id", "10").
+                            withField("name", "eris"));
                     response = ApiResponse.success().returnSingleInstance(fake);
                 } else {
                     final EntityInstance instance = entityRepository.findInstanceByPrimaryKey(entityDefn, id);

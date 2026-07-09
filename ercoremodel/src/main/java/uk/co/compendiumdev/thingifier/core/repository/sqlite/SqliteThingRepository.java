@@ -11,12 +11,15 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.Relat
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVectorDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.AutoIncrement;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceRepositoryAccess;
 import uk.co.compendiumdev.thingifier.core.query.EntityInstanceListSorter;
 import uk.co.compendiumdev.thingifier.core.query.EntityListSortParamParser;
 import uk.co.compendiumdev.thingifier.core.query.FilterBy;
 import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
 import uk.co.compendiumdev.thingifier.core.query.SortByFieldName;
 import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
+import uk.co.compendiumdev.thingifier.core.repository.validation.EntityInstanceWriteValidator;
 import uk.co.compendiumdev.thingifier.core.reporting.RepositoryJsonExporter;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 
@@ -50,6 +53,7 @@ public class SqliteThingRepository implements ThingRepository {
     private final String jdbcUrl;
     private final Map<String, EntityInstance> materializedInstances;
     private final Map<String, Map<String, AutoIncrement>> countersByEntity;
+    private final EntityInstanceWriteValidator writeValidator;
     private ERSchema schema;
     private Connection connection;
     private boolean closed;
@@ -59,6 +63,7 @@ public class SqliteThingRepository implements ThingRepository {
         this.jdbcUrl = jdbcUrl;
         this.materializedInstances = new HashMap<>();
         this.countersByEntity = new HashMap<>();
+        this.writeValidator = new EntityInstanceWriteValidator(this);
     }
 
     public static SqliteThingRepository inMemory(final String databaseKey) {
@@ -226,11 +231,14 @@ public class SqliteThingRepository implements ThingRepository {
     }
 
     @Override
-    public EntityInstance addInstance(final EntityInstance instance) {
+    public EntityInstance createInstance(final EntityInstanceDraft draft) {
         ensureSchemaReady();
+        EntityInstance instance = EntityInstance.fromDraft(draft);
         runInTransaction(() -> {
             prepareInstanceForInsert(instance);
+            writeValidator.assertValidForCreate(instance);
             persistInstance(instance);
+            EntityInstanceRepositoryAccess.lock(instance);
             materializedInstances.put(instance.getInternalId(), instance);
             persistCountersFor(instance.getEntity());
         });
@@ -238,14 +246,35 @@ public class SqliteThingRepository implements ThingRepository {
     }
 
     @Override
-    public EntityInstance updateInstance(final EntityInstance instance) {
+    public EntityInstance patchInstance(
+            final EntityInstance instance,
+            final EntityInstanceDraft draft) {
         ensureSchemaReady();
+        EntityInstance updated = EntityInstanceRepositoryAccess.patch(instance, draft);
+        writeValidator.assertValidForAmendment(updated);
         runInTransaction(() -> {
-            persistInstance(instance);
-            materializedInstances.put(instance.getInternalId(), instance);
-            persistCountersFor(instance.getEntity());
+            persistInstance(updated);
+            EntityInstanceRepositoryAccess.lock(updated);
+            materializedInstances.put(updated.getInternalId(), updated);
+            persistCountersFor(updated.getEntity());
         });
-        return instance;
+        return updated;
+    }
+
+    @Override
+    public EntityInstance replaceInstance(
+            final EntityInstance instance,
+            final EntityInstanceDraft draft) {
+        ensureSchemaReady();
+        EntityInstance updated = EntityInstanceRepositoryAccess.replace(instance, draft);
+        writeValidator.assertValidForAmendment(updated);
+        runInTransaction(() -> {
+            persistInstance(updated);
+            EntityInstanceRepositoryAccess.lock(updated);
+            materializedInstances.put(updated.getInternalId(), updated);
+            persistCountersFor(updated.getEntity());
+        });
+        return updated;
     }
 
     @Override
@@ -290,7 +319,7 @@ public class SqliteThingRepository implements ThingRepository {
     public void connectRelationship(
             final EntityInstance from, final String relationshipName, final EntityInstance to) {
         ensureSchemaReady();
-        from.getRelationships().connect(relationshipName, to);
+        EntityInstanceRepositoryAccess.connectRelationship(from, relationshipName, to);
         runInTransaction(() -> persistRelationship(from, relationshipName, to));
     }
 
@@ -301,8 +330,8 @@ public class SqliteThingRepository implements ThingRepository {
             final String relationshipName) {
         ensureSchemaReady();
         materializeRelationshipsInvolving(parent, child, relationshipName);
-        List<EntityInstance> removed = parent.getRelationships().
-                removeRelationshipsInvolving(child, relationshipName);
+        List<EntityInstance> removed = EntityInstanceRepositoryAccess.removeRelationshipsInvolving(
+                parent, child, relationshipName);
         runInTransaction(() -> deleteRelationshipRowsInvolving(parent, child, relationshipName));
         return removed;
     }
@@ -311,7 +340,8 @@ public class SqliteThingRepository implements ThingRepository {
     public List<EntityInstance> removeAllRelationships(final EntityInstance instance) {
         ensureSchemaReady();
         materializeRelationshipsFor(instance);
-        List<EntityInstance> removed = instance.getRelationships().removeAllRelationships();
+        List<EntityInstance> removed =
+                EntityInstanceRepositoryAccess.removeAllRelationships(instance);
         runInTransaction(() -> deleteRelationshipRowsInvolving(instance));
         return removed;
     }
@@ -447,10 +477,12 @@ public class SqliteThingRepository implements ThingRepository {
         for (Field field : entity.getFieldsOfType(FieldType.AUTO_GUID, FieldType.AUTO_INCREMENT)) {
             if (!instance.hasInstantiatedFieldNamed(field.getName())) {
                 if (field.getType() == FieldType.AUTO_GUID) {
-                    instance.setValue(field.getName(), UUID.randomUUID().toString());
+                    EntityInstanceRepositoryAccess.setValue(
+                            instance, field.getName(), UUID.randomUUID().toString());
                 }
                 if (field.getType() == FieldType.AUTO_INCREMENT) {
-                    instance.overrideValue(
+                    EntityInstanceRepositoryAccess.overrideValue(
+                            instance,
                             field.getName(),
                             String.valueOf(counterFor(entity, field).getNextValueAndUpdate()));
                 }
@@ -528,7 +560,7 @@ public class SqliteThingRepository implements ThingRepository {
 
         materializeRelationshipsFor(instance);
         List<EntityInstance> alsoDelete =
-                instance.getRelationships().removeAllRelationships();
+                EntityInstanceRepositoryAccess.removeAllRelationships(instance);
         deletePersistedInstance(instance.getInternalId());
         materializedInstances.remove(instance.getInternalId());
 
@@ -552,8 +584,8 @@ public class SqliteThingRepository implements ThingRepository {
             }
             EntityInstance from = parent.getEntity() == vector.getFrom() ? parent : child;
             EntityInstance to = from == parent ? child : parent;
-            if (!from.getRelationships().getConnectedItems(vector.getName()).contains(to)) {
-                from.getRelationships().connect(vector.getName(), to);
+            if (!EntityInstanceRepositoryAccess.connectedItems(from, vector.getName()).contains(to)) {
+                EntityInstanceRepositoryAccess.connectRelationship(from, vector.getName(), to);
             }
         }
     }
@@ -575,8 +607,10 @@ public class SqliteThingRepository implements ThingRepository {
                                 vector.getTo(),
                                 resultSet.getString("to_internal_id"));
                         if (from != null && to != null &&
-                                !from.getRelationships().getConnectedItems(vector.getName()).contains(to)) {
-                            from.getRelationships().connect(vector.getName(), to);
+                                !EntityInstanceRepositoryAccess.connectedItems(
+                                        from, vector.getName()).contains(to)) {
+                            EntityInstanceRepositoryAccess.connectRelationship(
+                                    from, vector.getName(), to);
                         }
                     }
                 }
@@ -1001,9 +1035,10 @@ public class SqliteThingRepository implements ThingRepository {
             return existing;
         }
 
-        EntityInstance instance = new EntityInstance(
+        EntityInstance instance = EntityInstanceRepositoryAccess.empty(
                 entity, UUID.fromString(internalId));
         hydrateInstanceFromRow(instance, resultSet);
+        EntityInstanceRepositoryAccess.lock(instance);
         materializedInstances.put(internalId, instance);
         return instance;
     }
@@ -1015,7 +1050,7 @@ public class SqliteThingRepository implements ThingRepository {
         for (String fieldName : entity.getFieldNames()) {
             String value = resultSet.getString(fieldName);
             if (value != null) {
-                instance.overrideValue(fieldName, value);
+                EntityInstanceRepositoryAccess.overrideValue(instance, fieldName, value);
             }
         }
     }

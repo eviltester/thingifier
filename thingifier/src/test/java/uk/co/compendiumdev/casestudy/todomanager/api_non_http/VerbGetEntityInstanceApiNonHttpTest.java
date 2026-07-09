@@ -1,12 +1,12 @@
 package uk.co.compendiumdev.casestudy.todomanager.api_non_http;
 
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.casestudy.todomanager.TodoManagerModel;
 import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
-import uk.co.compendiumdev.thingifier.testsupport.ThingifierRepositoryTestSupport;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
@@ -36,8 +36,8 @@ public class VerbGetEntityInstanceApiNonHttpTest {
 
         todoManager = TodoManagerModel.definedAsThingifier();
 
-        todo = ThingifierRepositoryTestSupport.entity(todoManager, "todo");
-        project = ThingifierRepositoryTestSupport.entity(todoManager, "project");
+        todo = todoManager.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("todo");
+        project = todoManager.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("project");
 
     }
     
@@ -56,14 +56,13 @@ public class VerbGetEntityInstanceApiNonHttpTest {
         todoManager.apiConfig().setReturnSingleGetItemsAsCollection(false);
 
         // add some data
-        ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(todo)).setValue("title", "My Title" + System.nanoTime());
-        ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(todo)).setValue("title", "My Title" + System.nanoTime());
+        todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(todo).withField("title", "My Title" + System.nanoTime()));
+        todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(todo).withField("title", "My Title" + System.nanoTime()));
 
 
-        EntityInstance findThis = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(todo)).
-                setValue("title", "My Title" + System.nanoTime());
+        EntityInstance findThis = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(todo).withField("title", "My Title" + System.nanoTime()));
 
-        ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(todo)).setValue("title", "My Title" + System.nanoTime());
+        todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(todo).withField("title", "My Title" + System.nanoTime()));
 
 
         ApiResponse apiResponse = todoManager.api().get("/todo/" + findThis.getPrimaryKeyValue(), new QueryFilterParams(), new HttpHeadersBlock());
@@ -87,14 +86,13 @@ public class VerbGetEntityInstanceApiNonHttpTest {
         todoManager.apiConfig().setReturnSingleGetItemsAsCollection(true);
 
         // add some data
-        ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(todo)).setValue("title", "My Title" + System.nanoTime());
-        ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(todo)).setValue("title", "My Title" + System.nanoTime());
+        todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(todo).withField("title", "My Title" + System.nanoTime()));
+        todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(todo).withField("title", "My Title" + System.nanoTime()));
 
 
-        EntityInstance findThis = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(todo)).
-                setValue("title", "My Title" + System.nanoTime());
+        EntityInstance findThis = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(todo).withField("title", "My Title" + System.nanoTime()));
 
-        ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(todo)).setValue("title", "My Title" + System.nanoTime());
+        todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(todo).withField("title", "My Title" + System.nanoTime()));
 
 
         ApiResponse apiResponse = todoManager.api().get("/todo/" + findThis.getPrimaryKeyValue(), new QueryFilterParams(), new HttpHeadersBlock());
@@ -118,10 +116,10 @@ public class VerbGetEntityInstanceApiNonHttpTest {
         todoManager.apiConfig().setReturnSingleGetItemsAsCollection(false);
 
         // add some data
-        ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(todo)).setValue("title", "My Title" + System.nanoTime());
-        ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(todo)).setValue("title", "My Title" + System.nanoTime());
-        ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(todo)).setValue("title", "My Title" + System.nanoTime());
-        ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(todo)).setValue("title", "My Title" + System.nanoTime());
+        todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(todo).withField("title", "My Title" + System.nanoTime()));
+        todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(todo).withField("title", "My Title" + System.nanoTime()));
+        todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(todo).withField("title", "My Title" + System.nanoTime()));
+        todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(todo).withField("title", "My Title" + System.nanoTime()));
 
 
         ApiResponse apiResponse = todoManager.api().get("/todo", new QueryFilterParams(), new HttpHeadersBlock());
@@ -131,16 +129,16 @@ public class VerbGetEntityInstanceApiNonHttpTest {
                 "Should be a collection");
         Assertions.assertTrue(apiResponse.hasABody());
 
-        Assertions.assertEquals(ThingifierRepositoryTestSupport.repository(todoManager).countInstances(todo), apiResponse.getReturnedInstanceCollection().size());
+        Assertions.assertEquals(todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(todo), apiResponse.getReturnedInstanceCollection().size());
 
         Set<String> guidSet = new HashSet<>();
 
         for (EntityInstance item : apiResponse.getReturnedInstanceCollection()) {
             guidSet.add(item.getPrimaryKeyValue());
-            Assertions.assertNotNull(ThingifierRepositoryTestSupport.repository(todoManager).findInstanceByPrimaryKey(todo, item.getPrimaryKeyValue()));
+            Assertions.assertNotNull(todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).findInstanceByPrimaryKey(todo, item.getPrimaryKeyValue()));
         }
 
-        Assertions.assertEquals(guidSet.size(), ThingifierRepositoryTestSupport.repository(todoManager).countInstances(todo));
+        Assertions.assertEquals(guidSet.size(), todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(todo));
         Assertions.assertEquals(guidSet.size(), apiResponse.getReturnedInstanceCollection().size());
 
         Assertions.assertEquals(0, apiResponse.getErrorMessages().size());
@@ -153,10 +151,10 @@ public class VerbGetEntityInstanceApiNonHttpTest {
         todoManager.apiConfig().setReturnSingleGetItemsAsCollection(true);
 
         // add some data
-        ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(todo)).setValue("title", "My Title" + System.nanoTime());
-        ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(todo)).setValue("title", "My Title" + System.nanoTime());
-        ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(todo)).setValue("title", "My Title" + System.nanoTime());
-        ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(todo)).setValue("title", "My Title" + System.nanoTime());
+        todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(todo).withField("title", "My Title" + System.nanoTime()));
+        todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(todo).withField("title", "My Title" + System.nanoTime()));
+        todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(todo).withField("title", "My Title" + System.nanoTime()));
+        todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(todo).withField("title", "My Title" + System.nanoTime()));
 
 
         ApiResponse apiResponse = todoManager.api().get("/todo", new QueryFilterParams(), new HttpHeadersBlock());
@@ -166,16 +164,16 @@ public class VerbGetEntityInstanceApiNonHttpTest {
                 "Should be a collection");
         Assertions.assertTrue(apiResponse.hasABody());
 
-        Assertions.assertEquals(ThingifierRepositoryTestSupport.repository(todoManager).countInstances(todo), apiResponse.getReturnedInstanceCollection().size());
+        Assertions.assertEquals(todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(todo), apiResponse.getReturnedInstanceCollection().size());
 
         Set<String> guidSet = new HashSet<>();
 
         for (EntityInstance item : apiResponse.getReturnedInstanceCollection()) {
             guidSet.add(item.getPrimaryKeyValue());
-            Assertions.assertNotNull(ThingifierRepositoryTestSupport.repository(todoManager).findInstanceByPrimaryKey(todo, item.getPrimaryKeyValue()));
+            Assertions.assertNotNull(todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).findInstanceByPrimaryKey(todo, item.getPrimaryKeyValue()));
         }
 
-        Assertions.assertEquals(guidSet.size(), ThingifierRepositoryTestSupport.repository(todoManager).countInstances(todo));
+        Assertions.assertEquals(guidSet.size(), todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(todo));
         Assertions.assertEquals(guidSet.size(), apiResponse.getReturnedInstanceCollection().size());
 
         Assertions.assertEquals(0, apiResponse.getErrorMessages().size());

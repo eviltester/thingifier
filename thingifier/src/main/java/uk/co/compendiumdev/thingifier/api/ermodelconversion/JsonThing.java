@@ -137,6 +137,62 @@ public class JsonThing {
         return jsonobj;
     }
 
+    private JsonObject asFieldJsonObject(final EntityInstance instance){
+        final JsonObject jsonobj = new JsonObject();
+
+        if (instance == null) {
+            return jsonobj;
+        }
+
+        for (String fieldName : instance.getFieldNames()) {
+            Field theField = instance.getEntity().getField(fieldName);
+
+            String fieldValue = "";
+
+            try {
+                fieldValue = instance.getFieldValue(theField.getName()).asString();
+
+                if(apiConfig.willRenderFieldsAsDefinedTypes()) {
+                    switch (theField.getType()) {
+                        case BOOLEAN:
+                            jsonobj.addProperty(fieldName, Boolean.valueOf(fieldValue));
+                            break;
+                        case INTEGER:
+                        case AUTO_INCREMENT:
+                            jsonobj.addProperty(fieldName, Integer.valueOf(fieldValue));
+                            break;
+                        case FLOAT:
+                            jsonobj.addProperty(fieldName, Float.valueOf(fieldValue));
+                            break;
+                        case OBJECT:
+                            final FieldValue objectFieldValue = instance.getFieldValue(fieldName);
+                            if(objectFieldValue!=null) {
+                                jsonobj.add(fieldName, asJsonObject(
+                                        objectFieldValue.asObject()));
+                            }
+                            break;
+                        default:
+                            jsonobj.addProperty(fieldName, fieldValue);
+                    }
+                }else {
+                    if(theField.getType()==FieldType.OBJECT){
+                        final FieldValue objectFieldValue = instance.getFieldValue(fieldName);
+                        if(objectFieldValue!=null) {
+                            jsonobj.add(fieldName, asJsonObject(
+                                    objectFieldValue.asObject()));
+                        }
+                    }else {
+                        jsonobj.addProperty(fieldName, fieldValue);
+                    }
+                }
+            }catch(Exception e){
+                // ignore missing optional/default fields
+            }
+        }
+
+        return jsonobj;
+    }
+
     /**
      * Suitable for JSON Output as it is just the object
      * @param thingInstance
@@ -153,7 +209,7 @@ public class JsonThing {
             return new JsonObject();
         }
 
-        final JsonObject jsonobj = asJsonObject(thingInstance.getFields());
+        final JsonObject jsonobj = asFieldJsonObject(thingInstance);
 
 
         /*
@@ -181,12 +237,13 @@ public class JsonThing {
         Boolean allowCompressedRelationships = apiConfig.willRenderRelationshipsAsCompressed();
 
         // "relationships" : [
-        if(relationships.size()>0 && thingInstance.getRelationships().hasAnyRelationshipInstances()){
+        if(relationships.size()>0 && thingInstance.hasRelationshipInstances()){
             final JsonArray relationshipsArray = new JsonArray();
 
             // fill the array "relationship_name" : [
             for(RelationshipVectorDefinition relationship : relationships){
-                final Collection<EntityInstance> relatedItems = thingInstance.getRelationships().getConnectedItems(relationship.getName());
+                final Collection<EntityInstance> relatedItems =
+                        thingInstance.getRelatedItems(relationship.getName());
 
                 boolean isCompressedRelationship=true;
                 if(thingInstance.getEntity().hasFieldNameDefined(relationship.getName())){

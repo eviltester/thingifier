@@ -8,6 +8,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonThing;
 import uk.co.compendiumdev.thingifier.api.ermodelconversion.XmlThing;
 
@@ -30,9 +31,9 @@ public class XmlThingTest {
                         ));
 
 
-        instance = new EntityInstance(defn);
-        instance.setValue("person.firstname", "Connie");
-        instance.setValue("person.surname", "Dobbs");
+        instance = EntityInstance.fromDraft(EntityInstanceDraft.forEntity(defn).
+                withField("person.firstname", "Connie").
+                withField("person.surname", "Dobbs"));
     }
 
     @Test

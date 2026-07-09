@@ -1,11 +1,11 @@
 package uk.co.compendiumdev.casestudy.todomanager.http_api;
 
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.casestudy.todomanager.TodoManagerModel;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
-import uk.co.compendiumdev.thingifier.testsupport.ThingifierRepositoryTestSupport;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiResponse;
@@ -31,8 +31,8 @@ public class XmlRequestResponseTest {
 
         todoManager = TodoManagerModel.definedAsThingifier();
 
-        todo = ThingifierRepositoryTestSupport.entity(todoManager, "todo");
-        project = ThingifierRepositoryTestSupport.entity(todoManager, "project");
+        todo = todoManager.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("todo");
+        project = todoManager.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("project");
 
 
     }
@@ -57,7 +57,7 @@ public class XmlRequestResponseTest {
     public void canGetXmlItemsWhenAskedForXml(){
 
 
-        ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(todo)).setValue("title", "my title");
+        todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(todo).withField("title", "my title"));
 
         HttpApiRequest request = new HttpApiRequest("todos");
         request.getHeaders().putAll(HeadersSupport.acceptXml());
@@ -73,7 +73,7 @@ public class XmlRequestResponseTest {
     public void canGetXmlErrorMessagesWhenAskedForXml(){
 
 
-        ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(todo)).setValue("title", "my title");
+        todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(todo).withField("title", "my title"));
 
         HttpApiRequest request = new HttpApiRequest("todosyoohoo");
         request.getHeaders().putAll(HeadersSupport.acceptXml());
@@ -108,19 +108,19 @@ public class XmlRequestResponseTest {
 
         request.setBody("<todo><title>test title</title></todo>");
 
-        Assertions.assertEquals(0, ThingifierRepositoryTestSupport.repository(todoManager).countInstances(todo));
+        Assertions.assertEquals(0, todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(todo));
 
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).post(request);
 
         Assertions.assertEquals(201, response.getStatusCode());
         System.out.println(response.getBody());
 
-        Assertions.assertEquals(1, ThingifierRepositoryTestSupport.repository(todoManager).countInstances(todo));
+        Assertions.assertEquals(1, todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(todo));
 
         // header should give me the guid
         String guid = response.getHeaders().get(ApiResponse.PRIMARY_KEY_HEADER);
 
-        final EntityInstance aTodo = ThingifierRepositoryTestSupport.repository(todoManager).findInstanceByPrimaryKey(todo, guid);
+        final EntityInstance aTodo = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).findInstanceByPrimaryKey(todo, guid);
 
         Assertions.assertEquals("test title", aTodo.getFieldValue("title").asString());
 
@@ -132,9 +132,9 @@ public class XmlRequestResponseTest {
     @Test
     public void canPostAndAmendAnItemWithXml(){
 
-        final EntityInstance atodo = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(todo)).setValue("title", "my title");
+        final EntityInstance atodo = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(todo).withField("title", "my title"));
 
-        Assertions.assertEquals(1, ThingifierRepositoryTestSupport.repository(todoManager).countInstances(todo));
+        Assertions.assertEquals(1, todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(todo));
 
         HttpApiRequest request = new HttpApiRequest("todos/" + atodo.getPrimaryKeyValue());
         request.getHeaders().putAll(HeadersSupport.acceptXml());
@@ -150,7 +150,7 @@ public class XmlRequestResponseTest {
 
         System.out.println(response.getBody());
 
-        Assertions.assertEquals(1, ThingifierRepositoryTestSupport.repository(todoManager).countInstances(todo));
+        Assertions.assertEquals(1, todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(todo));
 
         Assertions.assertEquals("test title", atodo.getFieldValue("title").asString());
 
@@ -173,7 +173,7 @@ public class XmlRequestResponseTest {
 
         request.setBody("<todo><title>test title</title></todo>");
 
-        Assertions.assertEquals(0, ThingifierRepositoryTestSupport.repository(todoManager).countInstances(todo));
+        Assertions.assertEquals(0, todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(todo));
 
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).post(request);
 
@@ -182,12 +182,12 @@ public class XmlRequestResponseTest {
         Assertions.assertEquals(201, response.getStatusCode());
 
 
-        Assertions.assertEquals(1, ThingifierRepositoryTestSupport.repository(todoManager).countInstances(todo));
+        Assertions.assertEquals(1, todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(todo));
 
         // header should give me the guid
         String guid = response.getHeaders().get(ApiResponse.PRIMARY_KEY_HEADER);
 
-        final EntityInstance aTodo = ThingifierRepositoryTestSupport.repository(todoManager).findInstanceByPrimaryKey(todo, guid);
+        final EntityInstance aTodo = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).findInstanceByPrimaryKey(todo, guid);
 
         Assertions.assertEquals("test title", aTodo.getFieldValue("title").asString());
 
@@ -209,9 +209,9 @@ public class XmlRequestResponseTest {
     @Test
     public void canPutToAmendAnItemWithJson(){
 
-        final EntityInstance atodo = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(todo)).setValue("title", "my title");
+        final EntityInstance atodo = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(todo).withField("title", "my title"));
 
-        Assertions.assertEquals(1, ThingifierRepositoryTestSupport.repository(todoManager).countInstances(todo));
+        Assertions.assertEquals(1, todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(todo));
 
         HttpApiRequest request = new HttpApiRequest("todos/"+atodo.getPrimaryKeyValue());
         request.getHeaders().putAll(HeadersSupport.acceptXml());
@@ -227,7 +227,7 @@ public class XmlRequestResponseTest {
 
         Assertions.assertEquals(200, response.getStatusCode());
 
-        Assertions.assertEquals(1, ThingifierRepositoryTestSupport.repository(todoManager).countInstances(todo));
+        Assertions.assertEquals(1, todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(todo));
 
         Assertions.assertEquals("test title", atodo.getFieldValue("title").asString());
 

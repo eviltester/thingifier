@@ -10,6 +10,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.F
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.Optionality;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 import uk.co.compendiumdev.thingifier.core.repository.sqlite.SqliteThingRepositoryProvider;
 import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
 
@@ -35,7 +36,8 @@ public class EntityRelModelTest {
     public void nothingHappensWhenTryToDeleteThingThatDoesNotExist() {
         EntityRelModel erm = new EntityRelModel();
 
-        EntityInstance missing = new EntityInstance(new EntityDefinition("no", "nos"));
+        EntityInstance missing = EntityInstance.fromDraft(EntityInstanceDraft.forEntity(
+                new EntityDefinition("no", "nos")));
 
         Assertions.assertDoesNotThrow(() ->
                 erm.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).deleteEntityInstance(missing));
@@ -64,11 +66,10 @@ public class EntityRelModelTest {
         defn.addAsPrimaryKeyField(Field.is("id", FieldType.AUTO_INCREMENT));
 
         ThingRepository repository = erm.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME);
-        EntityInstance explicitId = new EntityInstance(defn).overrideValue("id", "12");
-        repository.addInstance(explicitId);
+        EntityInstance explicitId = repository.createInstance(
+                EntityInstanceDraft.forEntity(defn).withProtectedField("id", "12"));
 
-        EntityInstance nextId = new EntityInstance(defn);
-        repository.addInstance(nextId);
+        EntityInstance nextId = repository.createInstance(EntityInstanceDraft.forEntity(defn));
 
         Assertions.assertEquals("12", explicitId.getPrimaryKeyValue());
         Assertions.assertEquals("13", nextId.getPrimaryKeyValue());
@@ -81,7 +82,7 @@ public class EntityRelModelTest {
         defn.addAsPrimaryKeyField(Field.is("guid", FieldType.AUTO_GUID));
 
         ThingRepository repository = erm.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME);
-        EntityInstance instance = repository.addInstance(new EntityInstance(defn));
+        EntityInstance instance = repository.createInstance(EntityInstanceDraft.forEntity(defn));
 
         String thingGuid = instance.getPrimaryKeyValue();
 
@@ -95,7 +96,7 @@ public class EntityRelModelTest {
         defn.addAsPrimaryKeyField(Field.is("guid", FieldType.AUTO_GUID));
 
         ThingRepository repository = erm.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME);
-        EntityInstance instance = repository.addInstance(new EntityInstance(defn));
+        EntityInstance instance = repository.createInstance(EntityInstanceDraft.forEntity(defn));
         String thingGuid = instance.getPrimaryKeyValue();
 
         repository.deleteEntityInstance(instance);
@@ -111,11 +112,11 @@ public class EntityRelModelTest {
         EntityDefinition thing2 = erm.createEntityDefinition("thing2", "thing2");
         ThingRepository repository = erm.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME);
 
-        repository.addInstance(new EntityInstance(thing));
-        repository.addInstance(new EntityInstance(thing));
-        repository.addInstance(new EntityInstance(thing2));
-        repository.addInstance(new EntityInstance(thing2));
-        repository.addInstance(new EntityInstance(thing2));
+        repository.createInstance(EntityInstanceDraft.forEntity(thing));
+        repository.createInstance(EntityInstanceDraft.forEntity(thing));
+        repository.createInstance(EntityInstanceDraft.forEntity(thing2));
+        repository.createInstance(EntityInstanceDraft.forEntity(thing2));
+        repository.createInstance(EntityInstanceDraft.forEntity(thing2));
 
         Assertions.assertEquals(2, repository.countInstances(thing));
         Assertions.assertEquals(3, repository.countInstances(thing2));
@@ -174,10 +175,10 @@ public class EntityRelModelTest {
                 setOptionality(Optionality.MANDATORY_RELATIONSHIP);
 
         ThingRepository repository = erm.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME);
-        EntityInstance mainThing = repository.addInstance(new EntityInstance(thing));
-        EntityInstance first = repository.addInstance(new EntityInstance(dependant));
-        EntityInstance second = repository.addInstance(new EntityInstance(dependant));
-        EntityInstance third = repository.addInstance(new EntityInstance(dependant));
+        EntityInstance mainThing = repository.createInstance(EntityInstanceDraft.forEntity(thing));
+        EntityInstance first = repository.createInstance(EntityInstanceDraft.forEntity(dependant));
+        EntityInstance second = repository.createInstance(EntityInstanceDraft.forEntity(dependant));
+        EntityInstance third = repository.createInstance(EntityInstanceDraft.forEntity(dependant));
 
         repository.connectRelationship(mainThing, "things", first);
         repository.connectRelationship(mainThing, "things", second);
@@ -207,7 +208,8 @@ public class EntityRelModelTest {
         EntityDefinition thing = erm.createEntityDefinition("thing", "things");
 
         RepositoryDataPopulator dataPopulator = (ERSchema schema, ThingRepository repository) ->
-                repository.addInstance(new EntityInstance(schema.getEntityDefinitionNamed("thing")));
+                repository.createInstance(
+                        EntityInstanceDraft.forEntity(schema.getEntityDefinitionNamed("thing")));
 
         erm.setDataGenerator(dataPopulator);
 
@@ -224,9 +226,9 @@ public class EntityRelModelTest {
             thing.addField(Field.is("name", FieldType.STRING));
 
             RepositoryDataPopulator dataPopulator = (ERSchema schema, ThingRepository repository) ->
-                    repository.addInstance(new EntityInstance(
-                            schema.getEntityDefinitionNamed("thing")).
-                            setValue("name", "repository"));
+                    repository.createInstance(
+                            EntityInstanceDraft.forEntity(schema.getEntityDefinitionNamed("thing")).
+                                    withField("name", "repository"));
 
             erm.setDataGenerator(dataPopulator);
 

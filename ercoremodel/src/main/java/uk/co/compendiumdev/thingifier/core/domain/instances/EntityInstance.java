@@ -1,6 +1,6 @@
 package uk.co.compendiumdev.thingifier.core.domain.instances;
 
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.NamedValue;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
@@ -18,38 +18,42 @@ public class EntityInstance {
 
     // used internally to reference the instance, is not exposed to the world
     private final UUID internalId;
+    private boolean repositoryOwned;
 
-    public EntityInstance(EntityDefinition eDefn) {
+    EntityInstance(EntityDefinition eDefn) {
         this(eDefn, UUID.randomUUID());
     }
 
-    public EntityInstance(EntityDefinition eDefn, UUID internalId) {
+    EntityInstance(EntityDefinition eDefn, UUID internalId) {
         this.entityDefinition = eDefn;
         this.instanceFields = eDefn.instantiateFields();
         this.relationships = new EntityInstanceRelationships(this);
         this.internalId = internalId;
+        this.repositoryOwned = false;
     }
 
-    public EntityInstance addAutoGUIDstoInstance(){
-        // allow GUIDs to be defined as being 'auto' in which case we will auto generate them
-        List<Field> autoGuids = entityDefinition.getFieldsOfType(FieldType.AUTO_GUID);
-        for(Field autoGuid : autoGuids){
-            instanceFields.addValue(entityDefinition.getField(autoGuid.getName()).valueFor( UUID.randomUUID().toString()));
-        }
+    public static EntityInstance fromDraft(final EntityInstanceDraft draft) {
+        return fromDraft(draft, UUID.randomUUID().toString());
+    }
 
+    private static EntityInstance fromDraft(
+            final EntityInstanceDraft draft,
+            final String internalId) {
+        EntityInstance instance = new EntityInstance(
+                draft.getEntity(),
+                UUID.fromString(internalId));
+        return instance.applyDraftFromRepository(draft);
+    }
+
+    EntityInstance applyDraftFromRepository(final EntityInstanceDraft draft) {
+        draft.validate();
+        for (NamedValue value : draft.getFieldValues()) {
+            setValueFromRepository(value.getName(), value.asString());
+        }
+        for (NamedValue value : draft.getProtectedFieldValues()) {
+            overrideValueFromRepository(value.getName(), value.asString());
+        }
         return this;
-    }
-
-
-    public void addAutoIncrementIdsToInstance(Map<String,AutoIncrement> autos) {
-
-        for(Field autoIncrementedField : entityDefinition.getFieldsOfType(FieldType.AUTO_INCREMENT)){
-            AutoIncrement auto = autos.get(autoIncrementedField.getName());
-            if(!instanceFields.hasAssignedValue(autoIncrementedField.getName())){
-                instanceFields.putValue(autoIncrementedField.getName(),
-                        String.valueOf(auto.getNextValueAndUpdate()));
-            }
-        }
     }
 
     public String toString() {
@@ -92,13 +96,23 @@ public class EntityInstance {
         return this.entityDefinition.getFieldNames();
     }
 
-    public EntityInstance setValue(String fieldName, String value) {
+    EntityInstance setValue(String fieldName, String value) {
+        ensureWritable();
+        return setValueFromRepository(fieldName, value);
+    }
+
+    EntityInstance setValueFromRepository(String fieldName, String value) {
         instanceFields.setValue(fieldName, value);
         return this;
     }
 
 
-    public EntityInstance overrideValue(final String key, final String value) {
+    EntityInstance overrideValue(final String key, final String value) {
+        ensureWritable();
+        return overrideValueFromRepository(key, value);
+    }
+
+    EntityInstance overrideValueFromRepository(final String key, final String value) {
         // bypass all validation - except, field must exist
         this.instanceFields.putValue(key, value);
         return this;
@@ -116,7 +130,7 @@ public class EntityInstance {
     /**
      * connect this thing to another thing using the relationship relationshipName
      */
-    public EntityInstanceRelationships getRelationships(){
+    EntityInstanceRelationships getRelationships(){
         return relationships;
     }
 
@@ -147,9 +161,22 @@ public class EntityInstance {
         return report;
     }
 
+    public boolean hasRelationshipInstances() {
+        return relationships.hasAnyRelationshipInstances();
+    }
+
+    public Collection<EntityInstance> getRelatedItems(final String relationshipName) {
+        return relationships.getConnectedItems(relationshipName);
+    }
+
     // Cloning and documentation
 
-    public void clearAllFields() {
+    void clearAllFields() {
+        ensureWritable();
+        clearAllFieldsFromRepository();
+    }
+
+    void clearAllFieldsFromRepository() {
         List<String>ignoreFields = new ArrayList<>();
 
         ignoreFields.addAll(getEntity().
@@ -160,8 +187,8 @@ public class EntityInstance {
         instanceFields.deleteAllFieldValuesExcept(ignoreFields);
     }
 
-    public EntityInstance createDuplicateWithoutRelationships() {
-        EntityInstance cloneInstance = new EntityInstance(entityDefinition);
+    EntityInstance createDuplicateWithoutRelationships(final String internalId) {
+        EntityInstance cloneInstance = new EntityInstance(entityDefinition, UUID.fromString(internalId));
 
         for(String fieldName : instanceFields.getDefinition().getFieldNames()){
             FieldValue value = instanceFields.getAssignedValue(fieldName);
@@ -174,8 +201,19 @@ public class EntityInstance {
     }
 
 
-    public InstanceFields getFields() {
+    InstanceFields getFields() {
         return instanceFields;
+    }
+
+    void lockForRepository() {
+        repositoryOwned = true;
+    }
+
+    void ensureWritable() {
+        if (repositoryOwned) {
+            throw new IllegalStateException(
+                    "EntityInstance is repository-owned and read-only; use ThingRepository write APIs");
+        }
     }
 
 

@@ -1,12 +1,12 @@
 package uk.co.compendiumdev.casestudy.todomanager.http_api;
 
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 import com.google.gson.Gson;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.casestudy.todomanager.TodoManagerModel;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
-import uk.co.compendiumdev.thingifier.testsupport.ThingifierRepositoryTestSupport;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiResponse;
@@ -29,8 +29,8 @@ public class DeleteRequestTest {
 
         todoManager = TodoManagerModel.definedAsThingifier();
 
-        todo = ThingifierRepositoryTestSupport.entity(todoManager, "todo");
-        project = ThingifierRepositoryTestSupport.entity(todoManager, "project");
+        todo = todoManager.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("todo");
+        project = todoManager.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("project");
 
 
     }
@@ -39,9 +39,9 @@ public class DeleteRequestTest {
     public void canDeleteItem(){
 
 
-        final EntityInstance instance = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(todo)).setValue("title", "my title");
+        final EntityInstance instance = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(todo).withField("title", "my title"));
 
-        Assertions.assertEquals(1, ThingifierRepositoryTestSupport.repository(todoManager).countInstances(todo));
+        Assertions.assertEquals(1, todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(todo));
 
         HttpApiRequest request = new HttpApiRequest("/todos/" + instance.getPrimaryKeyValue());
 
@@ -49,7 +49,7 @@ public class DeleteRequestTest {
         Assertions.assertEquals(200, response.getStatusCode());
         System.out.println(response.getBody());
 
-        Assertions.assertEquals(0, ThingifierRepositoryTestSupport.repository(todoManager).countInstances(todo));
+        Assertions.assertEquals(0, todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(todo));
 
     }
 
@@ -57,9 +57,9 @@ public class DeleteRequestTest {
     public void cannotDeleteItemThatDoesNotExist(){
 
 
-        final EntityInstance instance = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(todo)).setValue("title", "my title");
+        final EntityInstance instance = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(todo).withField("title", "my title"));
 
-        Assertions.assertEquals(1, ThingifierRepositoryTestSupport.repository(todoManager).countInstances(todo));
+        Assertions.assertEquals(1, todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(todo));
 
         HttpApiRequest request = new HttpApiRequest("/todos/" + instance.getPrimaryKeyValue()+"bob");
 
@@ -67,7 +67,7 @@ public class DeleteRequestTest {
         Assertions.assertEquals(404, response.getStatusCode());
         System.out.println(response.getBody());
 
-        Assertions.assertEquals(1, ThingifierRepositoryTestSupport.repository(todoManager).countInstances(todo));
+        Assertions.assertEquals(1, todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(todo));
 
     }
 
@@ -75,9 +75,9 @@ public class DeleteRequestTest {
     public void cannotDeleteRootItem(){
 
 
-        final EntityInstance instance = ThingifierRepositoryTestSupport.repository(todoManager).addInstance(new EntityInstance(todo)).setValue("title", "my title");
+        final EntityInstance instance = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).createInstance(EntityInstanceDraft.forEntity(todo).withField("title", "my title"));
 
-        Assertions.assertEquals(1, ThingifierRepositoryTestSupport.repository(todoManager).countInstances(todo));
+        Assertions.assertEquals(1, todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(todo));
 
         HttpApiRequest request = new HttpApiRequest("/todos");
 
@@ -85,7 +85,7 @@ public class DeleteRequestTest {
         Assertions.assertEquals(405, response.getStatusCode());
         System.out.println(response.getBody());
 
-        Assertions.assertEquals(1, ThingifierRepositoryTestSupport.repository(todoManager).countInstances(todo));
+        Assertions.assertEquals(1, todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(todo));
 
         final ErrorMessages errors = new Gson().fromJson(response.getBody(), ErrorMessages.class);
 

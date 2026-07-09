@@ -6,6 +6,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.F
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 
 public class IntegerFieldTest {
 
@@ -16,7 +17,7 @@ public class IntegerFieldTest {
         enumFieldEntity.addFields(Field.is("integer", FieldType.INTEGER));
 
         // TODO: allow nullable optional integers
-        EntityInstance instance = new EntityInstance(enumFieldEntity);
+        EntityInstance instance = EntityInstance.fromDraft(EntityInstanceDraft.forEntity(enumFieldEntity));
         Assertions.assertEquals("0", instance.getFieldValue("integer").asString());
     }
 
@@ -29,14 +30,12 @@ public class IntegerFieldTest {
                 withMinMaxValues(50,100)
         );
 
-        EntityInstance instance = new EntityInstance(stringFieldEntity);
-
         Assertions.assertThrows(IllegalArgumentException.class, ()->{
-                instance.setValue("integer", "101");
+                EntityInstanceDraft.forEntity(stringFieldEntity).withField("integer", "101");
         });
 
         Assertions.assertThrows(IllegalArgumentException.class, ()->{
-            instance.setValue("integer", "49");
+            EntityInstanceDraft.forEntity(stringFieldEntity).withField("integer", "49");
         });
     }
 
@@ -48,9 +47,8 @@ public class IntegerFieldTest {
                 withMinMaxValues(50,100)
         );
 
-        EntityInstance instance = new EntityInstance(stringFieldEntity);
-
-        instance.setValue("integer", "75");
+        EntityInstance instance = EntityInstance.fromDraft(EntityInstanceDraft.forEntity(stringFieldEntity).
+                withField("integer", "75"));
 
         Assertions.assertEquals(instance.getFieldValue("integer").asString(),"75");
     }

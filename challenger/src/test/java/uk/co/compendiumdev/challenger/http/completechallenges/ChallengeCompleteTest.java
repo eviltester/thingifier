@@ -1,5 +1,6 @@
 package uk.co.compendiumdev.challenger.http.completechallenges;
 
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 import com.google.gson.Gson;
 import org.junit.jupiter.api.*;
 import org.slf4j.Logger;
@@ -13,8 +14,8 @@ import uk.co.compendiumdev.challenger.http.httpclient.HttpMessageSender;
 import uk.co.compendiumdev.challenger.payloads.Todo;
 import uk.co.compendiumdev.challenger.payloads.Todos;
 import uk.co.compendiumdev.sparkstart.Environment;
-import uk.co.compendiumdev.challenge.testsupport.ThingifierRepositoryTestSupport;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -241,7 +242,7 @@ public abstract class ChallengeCompleteTest{
     @Test
     public void canPutTodosFull200AmendPass() {
 
-        final EntityDefinition todos = ThingifierRepositoryTestSupport.entity(ChallengeMain.getChallenger().getThingifier(), challenger.getXChallenger(), "todo");
+        final EntityDefinition todos = ChallengeMain.getChallenger().getThingifier().getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("todo");
 
         Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
 
@@ -249,7 +250,9 @@ public abstract class ChallengeCompleteTest{
         headers.putAll(x_challenger_header);
         headers.put("Content-Type", "application/json");
 
-        EntityInstance aTodo = new ArrayList<>(ThingifierRepositoryTestSupport.repository(ChallengeMain.getChallenger().getThingifier(), challenger.getXChallenger()).listInstances(todos)).get(0);
+        ThingRepository repository = ChallengeMain.getChallenger().
+                getThingifier().getRepository(challenger.getXChallenger());
+        EntityInstance aTodo = new ArrayList<>(repository.listInstances(todos)).get(0);
 
         // amend a to do successfully
         final HttpResponseDetails response =
@@ -267,7 +270,7 @@ public abstract class ChallengeCompleteTest{
     @Test
     public void canPutTodosPartial200AmendPass() {
 
-        final EntityDefinition todos = ThingifierRepositoryTestSupport.entity(ChallengeMain.getChallenger().getThingifier(), challenger.getXChallenger(), "todo");
+        final EntityDefinition todos = ChallengeMain.getChallenger().getThingifier().getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("todo");
 
         Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
 
@@ -275,7 +278,9 @@ public abstract class ChallengeCompleteTest{
         headers.putAll(x_challenger_header);
         headers.put("Content-Type", "application/json");
 
-        EntityInstance aTodo = new ArrayList<>(ThingifierRepositoryTestSupport.repository(ChallengeMain.getChallenger().getThingifier(), challenger.getXChallenger()).listInstances(todos)).get(0);
+        ThingRepository repository = ChallengeMain.getChallenger().
+                getThingifier().getRepository(challenger.getXChallenger());
+        EntityInstance aTodo = new ArrayList<>(repository.listInstances(todos)).get(0);
 
         // amend a to do successfully
         final HttpResponseDetails response =
@@ -291,7 +296,7 @@ public abstract class ChallengeCompleteTest{
     @Test
     public void canPutTodos200MissingTitleAmendPass() {
 
-        final EntityDefinition todos = ThingifierRepositoryTestSupport.entity(ChallengeMain.getChallenger().getThingifier(), challenger.getXChallenger(), "todo");
+        final EntityDefinition todos = ChallengeMain.getChallenger().getThingifier().getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("todo");
 
         Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
 
@@ -299,7 +304,9 @@ public abstract class ChallengeCompleteTest{
         headers.putAll(x_challenger_header);
         headers.put("Content-Type", "application/json");
 
-        EntityInstance aTodo = new ArrayList<>(ThingifierRepositoryTestSupport.repository(ChallengeMain.getChallenger().getThingifier(), challenger.getXChallenger()).listInstances(todos)).get(0);
+        ThingRepository repository = ChallengeMain.getChallenger().
+                getThingifier().getRepository(challenger.getXChallenger());
+        EntityInstance aTodo = new ArrayList<>(repository.listInstances(todos)).get(0);
 
         // amend a to do unsuccessfully
         final HttpResponseDetails response =
@@ -315,7 +322,7 @@ public abstract class ChallengeCompleteTest{
     @Test
     public void canNotPutTodos400ChangeIdAmendPass() {
 
-        final EntityDefinition todos = ThingifierRepositoryTestSupport.entity(ChallengeMain.getChallenger().getThingifier(), challenger.getXChallenger(), "todo");
+        final EntityDefinition todos = ChallengeMain.getChallenger().getThingifier().getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("todo");
 
         Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
 
@@ -323,7 +330,9 @@ public abstract class ChallengeCompleteTest{
         headers.putAll(x_challenger_header);
         headers.put("Content-Type", "application/json");
 
-        EntityInstance aTodo = new ArrayList<>(ThingifierRepositoryTestSupport.repository(ChallengeMain.getChallenger().getThingifier(), challenger.getXChallenger()).listInstances(todos)).get(0);
+        ThingRepository repository = ChallengeMain.getChallenger().
+                getThingifier().getRepository(challenger.getXChallenger());
+        EntityInstance aTodo = new ArrayList<>(repository.listInstances(todos)).get(0);
 
         // amend a to do unsuccessfully
         final HttpResponseDetails response =
@@ -482,13 +491,24 @@ public abstract class ChallengeCompleteTest{
         return ofLength;
     }
 
+    private EntityInstance createTodo(final EntityDefinition todos, final String title) {
+        return createTodo(todos, title, "false");
+    }
+
+    private EntityInstance createTodo(
+            final EntityDefinition todos,
+            final String title,
+            final String doneStatus) {
+        return ChallengeMain.getChallenger().getThingifier().getRepository(challenger.getXChallenger()).createInstance(EntityInstanceDraft.forEntity(todos).withField("title", title).withField("doneStatus", doneStatus));
+    }
+
     @Test
     public void canPostTodosUpdatePass() {
 
         ensureAtMostXTodoAvailable(10);
 
-        final EntityDefinition todos = ThingifierRepositoryTestSupport.entity(ChallengeMain.getChallenger().getThingifier(), challenger.getXChallenger(), "todo");
-        final EntityInstance todo = ThingifierRepositoryTestSupport.repository(ChallengeMain.getChallenger().getThingifier(), challenger.getXChallenger()).addInstance( new EntityInstance(todos));
+        final EntityDefinition todos = ChallengeMain.getChallenger().getThingifier().getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("todo");
+        final EntityInstance todo = createTodo(todos, "post update fixture");
 
         Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
 
@@ -621,10 +641,12 @@ public abstract class ChallengeCompleteTest{
     }
 
     public void ensureAtMostXTodoAvailable(int x){
-        final EntityDefinition todos = ThingifierRepositoryTestSupport.entity(ChallengeMain.getChallenger().getThingifier(), challenger.getXChallenger(), "todo");
-        if(ThingifierRepositoryTestSupport.repository(ChallengeMain.getChallenger().getThingifier(), challenger.getXChallenger()).countInstances(todos)>x){
-            for(int delCount = ThingifierRepositoryTestSupport.repository(ChallengeMain.getChallenger().getThingifier(), challenger.getXChallenger()).countInstances(todos)-x; delCount > 0; delCount--) {
-                ThingifierRepositoryTestSupport.repository(ChallengeMain.getChallenger().getThingifier(), challenger.getXChallenger()).deleteEntityInstance((EntityInstance) (ThingifierRepositoryTestSupport.repository(ChallengeMain.getChallenger().getThingifier(), challenger.getXChallenger()).listInstances(todos).toArray()[0]));
+        final EntityDefinition todos = ChallengeMain.getChallenger().getThingifier().getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("todo");
+        ThingRepository repository = ChallengeMain.getChallenger().
+                getThingifier().getRepository(challenger.getXChallenger());
+        if(repository.countInstances(todos)>x){
+            for(int delCount = repository.countInstances(todos)-x; delCount > 0; delCount--) {
+                repository.deleteEntityInstance((EntityInstance) (repository.listInstances(todos).toArray()[0]));
             }
         }
     }
@@ -634,8 +656,8 @@ public abstract class ChallengeCompleteTest{
 
         ensureAtMostXTodoAvailable(10);
 
-        final EntityDefinition todos = ThingifierRepositoryTestSupport.entity(ChallengeMain.getChallenger().getThingifier(), challenger.getXChallenger(), "todo");
-        final EntityInstance todo = ThingifierRepositoryTestSupport.repository(ChallengeMain.getChallenger().getThingifier(), challenger.getXChallenger()).addInstance( new EntityInstance(todos));
+        final EntityDefinition todos = ChallengeMain.getChallenger().getThingifier().getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("todo");
+        final EntityInstance todo = createTodo(todos, "delete fixture");
 
         Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
 
@@ -653,8 +675,8 @@ public abstract class ChallengeCompleteTest{
     @Test
     public void canGetSpecificTodoPass() {
 
-        final EntityDefinition todos = ThingifierRepositoryTestSupport.entity(ChallengeMain.getChallenger().getThingifier(), challenger.getXChallenger(), "todo");
-        final EntityInstance todo = ThingifierRepositoryTestSupport.repository(ChallengeMain.getChallenger().getThingifier(), challenger.getXChallenger()).addInstance(new EntityInstance(todos));
+        final EntityDefinition todos = ChallengeMain.getChallenger().getThingifier().getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("todo");
+        final EntityInstance todo = createTodo(todos, "specific todo fixture");
 
         Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
 
@@ -768,10 +790,10 @@ public abstract class ChallengeCompleteTest{
 
         Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
 
-        final EntityDefinition todos = ThingifierRepositoryTestSupport.entity(ChallengeMain.getChallenger().getThingifier(), challenger.getXChallenger(), "todo");
+        final EntityDefinition todos = ChallengeMain.getChallenger().getThingifier().getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("todo");
 
-        ThingifierRepositoryTestSupport.repository(ChallengeMain.getChallenger().getThingifier(), challenger.getXChallenger()).addInstance(new EntityInstance(todos)).setValue("doneStatus", "true");
-        ThingifierRepositoryTestSupport.repository(ChallengeMain.getChallenger().getThingifier(), challenger.getXChallenger()).addInstance(new EntityInstance(todos)).setValue("doneStatus", "false");
+        createTodo(todos, "done filter fixture", "true");
+        createTodo(todos, "not done filter fixture", "false");
 
         final HttpResponseDetails response =
                 http.send("/todos?doneStatus=true", "GET", x_challenger_header, "");
@@ -1108,9 +1130,11 @@ public abstract class ChallengeCompleteTest{
         Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
 
 
-        final EntityDefinition todos = ThingifierRepositoryTestSupport.entity(ChallengeMain.getChallenger().getThingifier(), challenger.getXChallenger(), "todo");
+        final EntityDefinition todos = ChallengeMain.getChallenger().getThingifier().getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("todo");
 
-        for(EntityInstance instance : ThingifierRepositoryTestSupport.repository(ChallengeMain.getChallenger().getThingifier(), challenger.getXChallenger()).listInstances(todos)){
+        ThingRepository repository = ChallengeMain.getChallenger().
+                getThingifier().getRepository(challenger.getXChallenger());
+        for(EntityInstance instance : repository.listInstances(todos)){
             final HttpResponseDetails response =
                     http.send("/todos/" + instance.getFieldValue("id").asString(),
                             "DELETE",
@@ -1122,10 +1146,10 @@ public abstract class ChallengeCompleteTest{
 
         // add some todos in case this is not the last test
 
-        ThingifierRepositoryTestSupport.repository(ChallengeMain.getChallenger().getThingifier(), challenger.getXChallenger()).addInstance(new EntityInstance(todos));
-        ThingifierRepositoryTestSupport.repository(ChallengeMain.getChallenger().getThingifier(), challenger.getXChallenger()).addInstance(new EntityInstance(todos));
-        ThingifierRepositoryTestSupport.repository(ChallengeMain.getChallenger().getThingifier(), challenger.getXChallenger()).addInstance(new EntityInstance(todos));
-        ThingifierRepositoryTestSupport.repository(ChallengeMain.getChallenger().getThingifier(), challenger.getXChallenger()).addInstance(new EntityInstance(todos));
+        createTodo(todos, "restored fixture 1");
+        createTodo(todos, "restored fixture 2");
+        createTodo(todos, "restored fixture 3");
+        createTodo(todos, "restored fixture 4");
 
     }
 

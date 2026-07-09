@@ -9,6 +9,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.F
 import uk.co.compendiumdev.thingifier.core.domain.definitions.Cardinality;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
 
 import java.util.List;
@@ -56,18 +57,19 @@ public class TodoManagerQueryEngineTest {
 
         ThingRepository repository = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME);
 
-        paperwork = repository.addInstance(
-                new EntityInstance(todo).setValue("title", "scan paperwork"));
+        paperwork = repository.createInstance(
+                EntityInstanceDraft.forEntity(todo).withField("title", "scan paperwork"));
 
         //System.out.println(new Gson().toJson(JsonThing.asJsonObject(paperwork)));
 
-        filework = repository.addInstance(
-                new EntityInstance(todo).setValue("title", "file paperwork"));
+        filework = repository.createInstance(
+                EntityInstanceDraft.forEntity(todo).withField("title", "file paperwork"));
 
-        officeCategory = repository.addInstance(
-                new EntityInstance(category).setValue("title", "Office"));
+        officeCategory = repository.createInstance(
+                EntityInstanceDraft.forEntity(category).withField("title", "Office"));
 
-        repository.addInstance(new EntityInstance(category).setValue("title", "Home"));
+        repository.createInstance(
+                EntityInstanceDraft.forEntity(category).withField("title", "Home"));
 
         repository.connectRelationship(paperwork, "categories", officeCategory);
 
@@ -82,7 +84,10 @@ public class TodoManagerQueryEngineTest {
     public void canGetListOfEntityInstancesViaName(){
         // to do
 
-        final RepositoryUrlQuery query = RepositoryUrlQueryTestSupport.query(todoManager, "todo");
+        final RepositoryUrlQuery query = new RepositoryUrlQuery(
+                todoManager.getSchema(),
+                todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME),
+                "todo");
 
         List<EntityInstance> queryResults = query.performQuery().getListEntityInstances();
 
@@ -97,7 +102,10 @@ public class TodoManagerQueryEngineTest {
     @Test
     public void canGetListOfEntityInstancesViaPluralName(){
         // todos
-        final RepositoryUrlQuery query = RepositoryUrlQueryTestSupport.query(todoManager, "todos");
+        final RepositoryUrlQuery query = new RepositoryUrlQuery(
+                todoManager.getSchema(),
+                todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME),
+                "todos");
 
         List<EntityInstance> queryResults = query.performQuery().getListEntityInstances();
 
@@ -115,7 +123,10 @@ public class TodoManagerQueryEngineTest {
 
         // to do/_GUID_
 
-        final RepositoryUrlQuery query = RepositoryUrlQueryTestSupport.query(todoManager, "todo/" + paperwork.getPrimaryKeyValue());
+        final RepositoryUrlQuery query = new RepositoryUrlQuery(
+                todoManager.getSchema(),
+                todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME),
+                "todo/" + paperwork.getPrimaryKeyValue());
 
         queryResults = query.performQuery().getListEntityInstances();
 
@@ -134,7 +145,10 @@ public class TodoManagerQueryEngineTest {
 
         // to do/_GUID_
 
-        final RepositoryUrlQuery query = RepositoryUrlQueryTestSupport.query(todoManager, "todos/" + paperwork.getPrimaryKeyValue());
+        final RepositoryUrlQuery query = new RepositoryUrlQuery(
+                todoManager.getSchema(),
+                todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME),
+                "todos/" + paperwork.getPrimaryKeyValue());
 
         queryResults = query.performQuery().getListEntityInstances();
 
@@ -155,7 +169,10 @@ public class TodoManagerQueryEngineTest {
 
         // to do/_GUID_
 
-        final RepositoryUrlQuery query = RepositoryUrlQueryTestSupport.query(todoManager, "todo/" + paperwork.getPrimaryKeyValue() + "bob");
+        final RepositoryUrlQuery query = new RepositoryUrlQuery(
+                todoManager.getSchema(),
+                todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME),
+                "todo/" + paperwork.getPrimaryKeyValue() + "bob");
 
         queryResults = query.performQuery().getListEntityInstances();
 
@@ -174,7 +191,10 @@ public class TodoManagerQueryEngineTest {
 
         // to do/_GUID_
 
-        final RepositoryUrlQuery query = RepositoryUrlQueryTestSupport.query(todoManager, "todos/" + paperwork.getPrimaryKeyValue() + "bob");
+        final RepositoryUrlQuery query = new RepositoryUrlQuery(
+                todoManager.getSchema(),
+                todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME),
+                "todos/" + paperwork.getPrimaryKeyValue() + "bob");
 
         queryResults = query.performQuery().getListEntityInstances();
 
@@ -199,8 +219,8 @@ public class TodoManagerQueryEngineTest {
 
         //
         ThingRepository repository = todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME);
-        EntityInstance officeWork = repository.addInstance(
-                new EntityInstance(project).setValue("title", "Office Work"));
+        EntityInstance officeWork = repository.createInstance(
+                EntityInstanceDraft.forEntity(project).withField("title", "Office Work"));
 
         repository.connectRelationship(officeWork, "tasks", paperwork);
         repository.connectRelationship(officeWork, "tasks", filework);
@@ -209,7 +229,11 @@ public class TodoManagerQueryEngineTest {
         // match on relationships
         // project/_GUID_/tasks
 
-        queryResults = RepositoryUrlQueryTestSupport.query(todoManager, String.format("project/%s/tasks", officeWork.getPrimaryKeyValue())).performQuery().getListEntityInstances();
+        queryResults = new RepositoryUrlQuery(
+                todoManager.getSchema(),
+                todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME),
+                String.format("project/%s/tasks", officeWork.getPrimaryKeyValue())).
+                performQuery().getListEntityInstances();
 
         Assertions.assertEquals(2, queryResults.size());
         Assertions.assertTrue(queryResults.contains(paperwork));
@@ -218,7 +242,11 @@ public class TodoManagerQueryEngineTest {
 
         // should be able to get projects for a task
 
-        queryResults = RepositoryUrlQueryTestSupport.query(todoManager, String.format("todo/%s/task-of", paperwork.getPrimaryKeyValue())).performQuery().getListEntityInstances();
+        queryResults = new RepositoryUrlQuery(
+                todoManager.getSchema(),
+                todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME),
+                String.format("todo/%s/task-of", paperwork.getPrimaryKeyValue())).
+                performQuery().getListEntityInstances();
         Assertions.assertEquals(1, queryResults.size());
         Assertions.assertTrue(queryResults.contains(officeWork));
 
@@ -241,6 +269,5 @@ public class TodoManagerQueryEngineTest {
                 String.format("project/%s/task", officeWork.getPrimaryKeyValue())));
 
     }
-
 
 }
