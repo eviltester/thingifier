@@ -44,6 +44,16 @@ class EntityInstanceDraftTest {
     }
 
     @Test
+    void normalBooleanFieldsValidateSuppliedValuesAgainstFieldTypeWhenAddedToDraft() {
+        IllegalArgumentException error =
+                assertDraftFailure(
+                        () -> EntityInstanceDraft.forEntity(entity()).withField("review", "BOB"));
+
+        Assertions.assertTrue(
+                error.getMessage().contains("review : BOB does not match type BOOLEAN"));
+    }
+
+    @Test
     void nestedObjectFieldPathsCanBeSetWhenTheyExist() {
         EntityInstance instance =
                 uk.co.compendiumdev.thingifier.core.repository.MutableEntityInstance
@@ -167,6 +177,7 @@ class EntityInstanceDraftTest {
         entity.addField(Field.is("guid", FieldType.AUTO_GUID));
         entity.addField(Field.is("name", FieldType.STRING));
         entity.addField(Field.is("estimate", FieldType.INTEGER));
+        entity.addField(Field.is("review", FieldType.BOOLEAN));
         entity.addField(
                 Field.is("person", FieldType.OBJECT)
                         .withField(Field.is("name", FieldType.STRING))

@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.DefinedFields;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
@@ -144,6 +146,53 @@ class InstanceFieldsTest {
 
         Assertions.assertTrue(
                 e.getMessage().contains("bob does not match type INTEGER"), e.getMessage());
+    }
+
+    @ParameterizedTest
+    @CsvSource({"false,false", "faLSE,false", "true,true", "TRUE,true"})
+    void canSetAndNormaliseBooleanValues(final String value, final String expected) {
+
+        DefinedFields fieldsDefn = new DefinedFields();
+        fieldsDefn.addField(Field.is("review", FieldType.BOOLEAN));
+
+        InstanceFields instance = new InstanceFields(fieldsDefn);
+
+        instance.setValue("review", value);
+
+        Assertions.assertEquals(expected, instance.getFieldValue("review").asString());
+    }
+
+    @Test
+    void cannotSetBooleanFieldThatFailsValidation() {
+
+        DefinedFields fieldsDefn = new DefinedFields();
+        fieldsDefn.addField(Field.is("review", FieldType.BOOLEAN));
+
+        InstanceFields instance = new InstanceFields(fieldsDefn);
+
+        final RuntimeException e =
+                Assertions.assertThrows(
+                        RuntimeException.class, () -> instance.setValue("review", "BOB"));
+
+        Assertions.assertTrue(
+                e.getMessage().contains("BOB does not match type BOOLEAN"), e.getMessage());
+    }
+
+    @Test
+    void booleanFieldsUseConfiguredAndTypeDefaults() {
+
+        DefinedFields fieldsDefn = new DefinedFields();
+        fieldsDefn.addFields(
+                Field.is("review", FieldType.BOOLEAN).withDefaultValue("true"),
+                Field.is("falsey", FieldType.BOOLEAN));
+
+        InstanceFields instance = new InstanceFields(fieldsDefn);
+
+        Assertions.assertEquals(
+                List.of("true", "false"),
+                List.of(
+                        instance.getFieldValue("review").asString(),
+                        instance.getFieldValue("falsey").asString()));
     }
 
     @Test

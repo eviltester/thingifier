@@ -4,6 +4,9 @@ import java.util.HashSet;
 import java.util.Set;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
 
 class BooleanFieldTest {
@@ -24,18 +27,22 @@ class BooleanFieldTest {
         Assertions.assertEquals("true", field.getDefaultValue().asString());
     }
 
-    @Test
-    void booleanCanOnlyBeFalseOrTrue() {
+    @ParameterizedTest
+    @ValueSource(strings = {"false", "true", "TRUE", "faLSE"})
+    void booleanAcceptsTrueOrFalseValues(final String value) {
 
         final Field field = Field.is("boolean", FieldType.BOOLEAN);
 
-        Assertions.assertTrue(field.validate(FieldValue.is(field, "false")).isValid());
+        Assertions.assertTrue(field.validate(FieldValue.is(field, value)).isValid());
+    }
 
-        Assertions.assertTrue(field.validate(FieldValue.is(field, "true")).isValid());
+    @ParameterizedTest
+    @ValueSource(strings = {"bob", "", "yes", "1"})
+    void booleanRejectsNonBooleanValues(final String value) {
 
-        Assertions.assertTrue(field.validate(FieldValue.is(field, "TRUE")).isValid());
+        final Field field = Field.is("boolean", FieldType.BOOLEAN);
 
-        Assertions.assertFalse(field.validate(FieldValue.is(field, "bob")).isValid());
+        Assertions.assertFalse(field.validate(FieldValue.is(field, value)).isValid());
     }
 
     @Test
@@ -49,19 +56,14 @@ class BooleanFieldTest {
             bools.add(field.getRandomExampleValue());
         }
 
-        Assertions.assertEquals(2, bools.size());
-        Assertions.assertTrue(bools.contains("true"));
-        Assertions.assertTrue(bools.contains("false"));
+        Assertions.assertEquals(Set.of("true", "false"), bools);
     }
 
-    @Test
-    void canConvertFromString() {
+    @ParameterizedTest
+    @CsvSource({"true,true", "True,true", "FALSE,false", "faLSE,false"})
+    void canConvertFromString(final String value, final String expected) {
         final Field field = Field.is("boolean", FieldType.BOOLEAN);
 
-        Assertions.assertEquals("true", field.getActualValueToAdd(FieldValue.is(field, "true")));
-
-        Assertions.assertEquals("true", field.getActualValueToAdd(FieldValue.is(field, "True")));
-
-        Assertions.assertEquals("false", field.getActualValueToAdd(FieldValue.is(field, "FALSE")));
+        Assertions.assertEquals(expected, field.getActualValueToAdd(FieldValue.is(field, value)));
     }
 }
