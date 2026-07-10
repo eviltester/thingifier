@@ -206,13 +206,12 @@ public class SimulationRoutes {
 
                     if (id.equals("10")) {
                         // 10 is the entity we amend to name:eris
-                        EntityInstance fake =
-                                EntityInstance.fromDraft(
-                                        EntityInstanceDraft.forEntity(entityDefn)
-                                                .withProtectedField("id", "10")
-                                                .withField("name", "eris"));
-                        instance = fake;
-                        response = ApiResponse.success().returnSingleInstance(instance);
+                        response =
+                                ApiResponse.success()
+                                        .returnSingleDraft(
+                                                EntityInstanceDraft.forEntity(entityDefn)
+                                                        .withProtectedField("id", "10")
+                                                        .withField("name", "eris"));
                     }
 
                     if (id.equals("9")) {
@@ -271,12 +270,12 @@ public class SimulationRoutes {
                     } else {
                         if (id.equals("10")) {
                             // 10 is the entity we amend to name:eris
-                            EntityInstance fake =
-                                    EntityInstance.fromDraft(
-                                            EntityInstanceDraft.forEntity(entityDefn)
-                                                    .withProtectedField("id", "10")
-                                                    .withField("name", "eris"));
-                            response = ApiResponse.success().returnSingleInstance(fake);
+                            response =
+                                    ApiResponse.success()
+                                            .returnSingleDraft(
+                                                    EntityInstanceDraft.forEntity(entityDefn)
+                                                            .withProtectedField("id", "10")
+                                                            .withField("name", "eris"));
                         } else {
                             final EntityInstance instance =
                                     entityRepository.findInstanceByPrimaryKey(entityDefn, id);

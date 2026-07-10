@@ -20,7 +20,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.F
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVectorDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.validation.ValidationRule;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 
 public class RestApiDocumentationGenerator {
     private static final String DEFAULT_CANONICAL_HOST = "https://apichallenges.eviltester.com";
@@ -244,17 +244,16 @@ public class RestApiDocumentationGenerator {
                                         .setPrettyPrinting()
                                         .create()
                                         .toJson(
-                                                jsonThing.asJsonObjectTypedArrayWithContentsUntyped(
-                                                        List.of(exampleThing.getInstance()),
-                                                        aThingDefinition.getPlural())));
+                                                jsonThing
+                                                        .asJsonObjectTypedDraftArrayWithContentsUntyped(
+                                                                List.of(exampleThing.getDraft()),
+                                                                aThingDefinition.getPlural())));
                     } else {
                         output.append(
                                 new GsonBuilder()
                                         .setPrettyPrinting()
                                         .create()
-                                        .toJson(
-                                                jsonThing.asJsonObject(
-                                                        exampleThing.getInstance())));
+                                        .toJson(jsonThing.asJsonObject(exampleThing.getDraft())));
                     }
                     output.append("</code>\n");
                     output.append("</pre>\n");
@@ -267,20 +266,20 @@ public class RestApiDocumentationGenerator {
                     if (thingifier.apiConfig().willReturnSingleGetItemsAsCollection()) {
                         output.append(
                                 this.XMLPrettyPrinter.prettyPrintHtml(
-                                        xmlThing.getCollectionOfThings(
-                                                List.of(exampleThing.getInstance()),
+                                        xmlThing.getCollectionOfDrafts(
+                                                List.of(exampleThing.getDraft()),
                                                 aThingDefinition)));
                     } else {
                         output.append(
                                 this.XMLPrettyPrinter.prettyPrintHtml(
-                                        xmlThing.getSingleObjectXml(exampleThing.getInstance())));
+                                        xmlThing.getSingleObjectXml(exampleThing.getDraft())));
                     }
                     output.append("</code>\n");
                     output.append("</pre>\n");
                 }
 
                 output.append("<p>Example JSON Input to API calls</p>\n");
-                EntityInstance createableExampleThing = exampleThing.withoutIDsOrGUIDs();
+                EntityInstanceDraft createableExampleThing = exampleThing.withoutIDsOrGUIDs();
                 output.append("<pre class='json'>\n");
                 output.append("<code class='json'>\n");
                 output.append(

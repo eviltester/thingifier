@@ -308,7 +308,12 @@ public class JsonRequestResponseTest {
                         .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
                         .countInstances(todo));
 
-        Assertions.assertEquals("title from json", atodo.getFieldValue("title").asString());
+        final EntityInstance updatedTodo =
+                todoManager
+                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .findInstanceByPrimaryKey(todo, atodo.getPrimaryKeyValue());
+
+        Assertions.assertEquals("title from json", updatedTodo.getFieldValue("title").asString());
     }
 
     /*
@@ -357,7 +362,12 @@ public class JsonRequestResponseTest {
                         .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
                         .countInstances(todo));
 
-        Assertions.assertEquals("title from json", atodo.getFieldValue("title").asString());
+        final EntityInstance updatedTodo =
+                todoManager
+                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .findInstanceByPrimaryKey(todo, atodo.getPrimaryKeyValue());
+
+        Assertions.assertEquals("title from json", updatedTodo.getFieldValue("title").asString());
     }
 
     private class TodoCollectionResponse {

@@ -22,7 +22,8 @@ public class StringFieldTest {
         stringFieldEntity.addFields(Field.is("defaultString", FieldType.STRING));
 
         EntityInstance instance =
-                EntityInstance.fromDraft(EntityInstanceDraft.forEntity(stringFieldEntity));
+                uk.co.compendiumdev.thingifier.core.repository.MutableEntityInstance
+                        .snapshotFromDraft(EntityInstanceDraft.forEntity(stringFieldEntity));
 
         Assertions.assertEquals("", instance.getFieldValue("defaultString").asString());
     }
@@ -35,7 +36,8 @@ public class StringFieldTest {
                 Field.is("defaultString", FieldType.STRING).withDefaultValue("bob"));
 
         EntityInstance instance =
-                EntityInstance.fromDraft(EntityInstanceDraft.forEntity(stringFieldEntity));
+                uk.co.compendiumdev.thingifier.core.repository.MutableEntityInstance
+                        .snapshotFromDraft(EntityInstanceDraft.forEntity(stringFieldEntity));
 
         Assertions.assertEquals("bob", instance.getFieldValue("defaultString").asString());
     }
@@ -51,15 +53,17 @@ public class StringFieldTest {
                         .withValidation(VRule.notEmpty()));
 
         EntityInstance instance =
-                EntityInstance.fromDraft(EntityInstanceDraft.forEntity(stringFieldEntity));
+                uk.co.compendiumdev.thingifier.core.repository.MutableEntityInstance
+                        .snapshotFromDraft(EntityInstanceDraft.forEntity(stringFieldEntity));
 
         // defaultString is not valid because it has an empty string
         Assertions.assertFalse(instance.validate().isValid());
 
         instance =
-                EntityInstance.fromDraft(
-                        EntityInstanceDraft.forEntity(stringFieldEntity)
-                                .withField("defaultString", "Eris"));
+                uk.co.compendiumdev.thingifier.core.repository.MutableEntityInstance
+                        .snapshotFromDraft(
+                                EntityInstanceDraft.forEntity(stringFieldEntity)
+                                        .withField("defaultString", "Eris"));
         Assertions.assertTrue(instance.validate().isValid());
         Assertions.assertEquals("Eris", instance.getFieldValue("defaultString").asString());
     }
@@ -76,9 +80,10 @@ public class StringFieldTest {
                         .truncateStringTo(10));
 
         EntityInstance instance =
-                EntityInstance.fromDraft(
-                        EntityInstanceDraft.forEntity(stringFieldEntity)
-                                .withField("field", "This is too long"));
+                uk.co.compendiumdev.thingifier.core.repository.MutableEntityInstance
+                        .snapshotFromDraft(
+                                EntityInstanceDraft.forEntity(stringFieldEntity)
+                                        .withField("field", "This is too long"));
         String fieldValue = instance.getFieldValue("field").asString();
 
         Assertions.assertEquals(10, fieldValue.length());

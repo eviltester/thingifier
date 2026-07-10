@@ -8,8 +8,10 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.NamedValue;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVectorDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 import uk.co.compendiumdev.thingifier.core.domain.instances.InstanceFields;
 import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
 
@@ -64,6 +66,17 @@ public class JsonThing {
             final List<EntityInstance> things, String typeName, final ThingRepository repository) {
         final JsonObject arrayObj = new JsonObject();
         arrayObj.add(typeName, asJsonArray(things, repository));
+        return arrayObj;
+    }
+
+    public JsonObject asJsonObjectTypedDraftArrayWithContentsUntyped(
+            final List<EntityInstanceDraft> things, String typeName) {
+        final JsonObject arrayObj = new JsonObject();
+        JsonArray drafts = new JsonArray();
+        for (EntityInstanceDraft draft : things) {
+            drafts.add(asJsonObject(draft));
+        }
+        arrayObj.add(typeName, drafts);
         return arrayObj;
     }
 
@@ -200,6 +213,71 @@ public class JsonThing {
         }
 
         return jsonobj;
+    }
+
+    public JsonObject asJsonObject(final EntityInstanceDraft draft) {
+        final JsonObject jsonobj = new JsonObject();
+
+        if (draft == null) {
+            return jsonobj;
+        }
+
+        EntityDefinition entity = draft.getEntity();
+        Map<String, String> values = new HashMap<>();
+        for (NamedValue value : draft.getFieldValues()) {
+            values.put(value.getName().toLowerCase(), value.asString());
+        }
+        for (NamedValue value : draft.getProtectedFieldValues()) {
+            values.put(value.getName().toLowerCase(), value.asString());
+        }
+
+        for (String fieldName : entity.getFieldNames()) {
+            Field field = entity.getField(fieldName);
+            String fieldValue = draftValueFor(field, values.get(fieldName.toLowerCase()));
+            if (fieldValue == null) {
+                continue;
+            }
+
+            try {
+                addJsonProperty(jsonobj, field, fieldValue);
+            } catch (Exception e) {
+                // ignore values that cannot be rendered as their defined type
+            }
+        }
+
+        return jsonobj;
+    }
+
+    private String draftValueFor(final Field field, final String explicitValue) {
+        if (explicitValue != null) {
+            return explicitValue;
+        }
+        if (field.hasDefaultValue()) {
+            return field.getDefaultValue().asString();
+        }
+        return field.getType().getDefault();
+    }
+
+    private void addJsonProperty(
+            final JsonObject jsonobj, final Field field, final String fieldValue) {
+        if (apiConfig.willRenderFieldsAsDefinedTypes()) {
+            switch (field.getType()) {
+                case BOOLEAN:
+                    jsonobj.addProperty(field.getName(), Boolean.valueOf(fieldValue));
+                    break;
+                case INTEGER:
+                case AUTO_INCREMENT:
+                    jsonobj.addProperty(field.getName(), Integer.valueOf(fieldValue));
+                    break;
+                case FLOAT:
+                    jsonobj.addProperty(field.getName(), Float.valueOf(fieldValue));
+                    break;
+                default:
+                    jsonobj.addProperty(field.getName(), fieldValue);
+            }
+        } else {
+            jsonobj.addProperty(field.getName(), fieldValue);
+        }
     }
 
     /**
@@ -382,6 +460,12 @@ public class JsonThing {
 
         final JsonObject retObj = new JsonObject();
         retObj.add(instance.getEntity().getName(), asJsonObject(instance, repository));
+        return retObj;
+    }
+
+    public JsonObject asNamedJsonObject(final EntityInstanceDraft draft) {
+        final JsonObject retObj = new JsonObject();
+        retObj.add(draft.getEntity().getName(), asJsonObject(draft));
         return retObj;
     }
 }

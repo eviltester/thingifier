@@ -171,7 +171,12 @@ public class XmlRequestResponseTest {
                         .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
                         .countInstances(todo));
 
-        Assertions.assertEquals("test title", atodo.getFieldValue("title").asString());
+        final EntityInstance updatedTodo =
+                todoManager
+                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .findInstanceByPrimaryKey(todo, atodo.getPrimaryKeyValue());
+
+        Assertions.assertEquals("test title", updatedTodo.getFieldValue("title").asString());
     }
 
     /*
@@ -266,7 +271,12 @@ public class XmlRequestResponseTest {
                         .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
                         .countInstances(todo));
 
-        Assertions.assertEquals("test title", atodo.getFieldValue("title").asString());
+        final EntityInstance updatedTodo =
+                todoManager
+                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .findInstanceByPrimaryKey(todo, atodo.getPrimaryKeyValue());
+
+        Assertions.assertEquals("test title", updatedTodo.getFieldValue("title").asString());
     }
 
     private class TodoCollectionResponse {

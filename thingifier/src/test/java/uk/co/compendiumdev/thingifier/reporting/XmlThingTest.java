@@ -28,10 +28,11 @@ public class XmlThingTest {
                         .withField(Field.is("surname", FieldType.STRING).withExample("D'obbs")));
 
         instance =
-                EntityInstance.fromDraft(
-                        EntityInstanceDraft.forEntity(defn)
-                                .withField("person.firstname", "Connie")
-                                .withField("person.surname", "Dobbs"));
+                uk.co.compendiumdev.thingifier.core.repository.MutableEntityInstance
+                        .snapshotFromDraft(
+                                EntityInstanceDraft.forEntity(defn)
+                                        .withField("person.firstname", "Connie")
+                                        .withField("person.surname", "Dobbs"));
     }
 
     @Test

@@ -9,6 +9,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.F
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
+import uk.co.compendiumdev.thingifier.core.repository.MutableEntityInstance;
 
 public class ThingInstanceCardinalityCreationTest {
 
@@ -156,7 +157,7 @@ public class ThingInstanceCardinalityCreationTest {
     }
 
     private EntityInstance instance(final EntityDefinition entityDefn, final String title) {
-        return EntityInstance.fromDraft(
+        return MutableEntityInstance.snapshotFromDraft(
                 EntityInstanceDraft.forEntity(entityDefn).withField("Title", title));
     }
 }

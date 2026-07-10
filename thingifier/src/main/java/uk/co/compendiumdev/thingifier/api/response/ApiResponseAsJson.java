@@ -59,6 +59,9 @@ public final class ApiResponseAsJson {
             return output;
 
         } else {
+            if (apiResponse.hasReturnedDraft()) {
+                return jsonThing.asJsonObject(apiResponse.getReturnedDraft()).toString();
+            }
             EntityInstance instance = apiResponse.getReturnedInstance();
 
             // return JsonThing.asNamedJsonObject(instance).toString();

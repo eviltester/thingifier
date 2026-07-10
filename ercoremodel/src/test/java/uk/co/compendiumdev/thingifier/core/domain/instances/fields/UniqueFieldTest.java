@@ -17,7 +17,8 @@ public class UniqueFieldTest {
         stringFieldEntity.addFields(Field.is("field", FieldType.STRING));
 
         EntityInstance instance =
-                EntityInstance.fromDraft(EntityInstanceDraft.forEntity(stringFieldEntity));
+                uk.co.compendiumdev.thingifier.core.repository.MutableEntityInstance
+                        .snapshotFromDraft(EntityInstanceDraft.forEntity(stringFieldEntity));
 
         Assertions.assertFalse(instance.getEntity().getField("field").mustBeUnique());
     }
@@ -29,7 +30,8 @@ public class UniqueFieldTest {
         stringFieldEntity.addFields(Field.is("field", FieldType.STRING).setMustBeUnique(true));
 
         EntityInstance instance =
-                EntityInstance.fromDraft(EntityInstanceDraft.forEntity(stringFieldEntity));
+                uk.co.compendiumdev.thingifier.core.repository.MutableEntityInstance
+                        .snapshotFromDraft(EntityInstanceDraft.forEntity(stringFieldEntity));
 
         Assertions.assertTrue(instance.getEntity().getField("field").mustBeUnique());
     }
@@ -44,9 +46,10 @@ public class UniqueFieldTest {
                         .setUniqueAfterTransform((s) -> s.replace("-", "")));
 
         EntityInstance instance =
-                EntityInstance.fromDraft(
-                        EntityInstanceDraft.forEntity(stringFieldEntity)
-                                .withField("field", "1-2-3"));
+                uk.co.compendiumdev.thingifier.core.repository.MutableEntityInstance
+                        .snapshotFromDraft(
+                                EntityInstanceDraft.forEntity(stringFieldEntity)
+                                        .withField("field", "1-2-3"));
 
         Assertions.assertTrue(instance.getEntity().getField("field").mustBeUnique());
         Assertions.assertEquals("1-2-3", instance.getFieldValue("field").asString());
@@ -60,9 +63,10 @@ public class UniqueFieldTest {
         stringFieldEntity.addFields(Field.is("field", FieldType.STRING).setMustBeUnique(true));
 
         EntityInstance instance =
-                EntityInstance.fromDraft(
-                        EntityInstanceDraft.forEntity(stringFieldEntity)
-                                .withField("field", "1-2-3"));
+                uk.co.compendiumdev.thingifier.core.repository.MutableEntityInstance
+                        .snapshotFromDraft(
+                                EntityInstanceDraft.forEntity(stringFieldEntity)
+                                        .withField("field", "1-2-3"));
 
         Assertions.assertTrue(instance.getEntity().getField("field").mustBeUnique());
         Assertions.assertEquals("1-2-3", instance.getFieldValue("field").asString());
@@ -83,9 +87,10 @@ public class UniqueFieldTest {
                                 }));
 
         EntityInstance instance =
-                EntityInstance.fromDraft(
-                        EntityInstanceDraft.forEntity(stringFieldEntity)
-                                .withField("field", "1-2-3"));
+                uk.co.compendiumdev.thingifier.core.repository.MutableEntityInstance
+                        .snapshotFromDraft(
+                                EntityInstanceDraft.forEntity(stringFieldEntity)
+                                        .withField("field", "1-2-3"));
 
         Assertions.assertTrue(instance.getEntity().getField("field").mustBeUnique());
         Assertions.assertEquals("1-2-3", instance.getFieldValue("field").asString());

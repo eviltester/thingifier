@@ -69,6 +69,9 @@ public final class ApiResponseAsXml {
 
             return output;
         } else {
+            if (apiResponse.hasReturnedDraft()) {
+                return xmlThing.getSingleObjectXml(apiResponse.getReturnedDraft());
+            }
             EntityInstance instance = apiResponse.getReturnedInstance();
 
             String output;

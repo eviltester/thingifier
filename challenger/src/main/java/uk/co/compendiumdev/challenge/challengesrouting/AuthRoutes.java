@@ -180,11 +180,11 @@ public class AuthRoutes {
 
                     final HttpApiRequest myRequest = SparkToHttpApiRequest.convert(request);
 
-                    EntityInstance note =
-                            EntityInstance.fromDraft(
-                                    EntityInstanceDraft.forEntity(secretNote)
-                                            .withField("note", challenger.getNote()));
-                    final ApiResponse response = ApiResponse.success().returnSingleInstance(note);
+                    final ApiResponse response =
+                            ApiResponse.success()
+                                    .returnSingleDraft(
+                                            EntityInstanceDraft.forEntity(secretNote)
+                                                    .withField("note", challenger.getNote()));
 
                     final HttpApiResponse httpApiResponse =
                             new HttpApiResponse(

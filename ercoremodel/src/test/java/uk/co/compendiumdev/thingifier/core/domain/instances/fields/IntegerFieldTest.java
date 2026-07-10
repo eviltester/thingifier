@@ -18,7 +18,8 @@ public class IntegerFieldTest {
 
         // TODO: allow nullable optional integers
         EntityInstance instance =
-                EntityInstance.fromDraft(EntityInstanceDraft.forEntity(enumFieldEntity));
+                uk.co.compendiumdev.thingifier.core.repository.MutableEntityInstance
+                        .snapshotFromDraft(EntityInstanceDraft.forEntity(enumFieldEntity));
         Assertions.assertEquals("0", instance.getFieldValue("integer").asString());
     }
 
@@ -50,9 +51,10 @@ public class IntegerFieldTest {
                 Field.is("integer", FieldType.INTEGER).withMinMaxValues(50, 100));
 
         EntityInstance instance =
-                EntityInstance.fromDraft(
-                        EntityInstanceDraft.forEntity(stringFieldEntity)
-                                .withField("integer", "75"));
+                uk.co.compendiumdev.thingifier.core.repository.MutableEntityInstance
+                        .snapshotFromDraft(
+                                EntityInstanceDraft.forEntity(stringFieldEntity)
+                                        .withField("integer", "75"));
 
         Assertions.assertEquals(instance.getFieldValue("integer").asString(), "75");
     }

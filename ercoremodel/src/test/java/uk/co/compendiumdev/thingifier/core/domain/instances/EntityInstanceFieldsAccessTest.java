@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
+import uk.co.compendiumdev.thingifier.core.repository.MutableEntityInstance;
 
 public class EntityInstanceFieldsAccessTest {
 
@@ -22,7 +23,9 @@ public class EntityInstanceFieldsAccessTest {
     @Test
     public void defaultValuesAreReturnedByGetValue() {
 
-        EntityInstance session = new EntityInstance(entityTestSession);
+        EntityInstance session =
+                MutableEntityInstance.snapshotFromDraft(
+                        EntityInstanceDraft.forEntity(entityTestSession));
         Assertions.assertEquals(
                 "Not Completed", session.getFieldValue("CompletedStatus").asString());
     }
@@ -30,7 +33,9 @@ public class EntityInstanceFieldsAccessTest {
     @Test
     public void fieldValueAccessIsCaseInsensitive() {
 
-        EntityInstance session = new EntityInstance(entityTestSession);
+        EntityInstance session =
+                MutableEntityInstance.snapshotFromDraft(
+                        EntityInstanceDraft.forEntity(entityTestSession));
 
         Assertions.assertEquals(
                 "Not Completed", session.getFieldValue("CompletedStatus").asString());
@@ -45,7 +50,7 @@ public class EntityInstanceFieldsAccessTest {
     @Test
     public void fieldNameSettingIsCaseInsensitive() {
 
-        EntityInstance session = new EntityInstance(entityTestSession);
+        MutableEntityInstance session = MutableEntityInstance.forEntity(entityTestSession);
 
         session.setValue("CompletedStatus", "in progress");
         Assertions.assertEquals("in progress", session.getFieldValue("CompletedStatus").asString());
@@ -64,7 +69,7 @@ public class EntityInstanceFieldsAccessTest {
     @Test
     public void fieldNameSettingIsReallyCaseInsensitive() {
 
-        EntityInstance session = new EntityInstance(entityTestSession);
+        MutableEntityInstance session = MutableEntityInstance.forEntity(entityTestSession);
 
         for (int x = 0; x < 100; x++) {
             String setAs = randomCaseSwitcher("CompletedStatus");

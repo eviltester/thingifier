@@ -315,6 +315,10 @@ public class VerbPostEntityInstanceApiNonHttpTest {
                                 getSimpleParser(requestBody),
                                 new HttpHeadersBlock());
         Assertions.assertEquals(200, apiresponse.getStatusCode());
+        officeWork =
+                todoManager
+                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .findInstanceByPrimaryKey(project, officeWorkGuid);
         Assertions.assertEquals("My Office Work", officeWork.getFieldValue("title").asString());
 
         officeWork =

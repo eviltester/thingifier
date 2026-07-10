@@ -12,11 +12,11 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.Nam
 import uk.co.compendiumdev.thingifier.core.domain.instances.AutoIncrement;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceRepositoryAccess;
 import uk.co.compendiumdev.thingifier.core.query.EntityInstanceListFilter;
 import uk.co.compendiumdev.thingifier.core.query.EntityInstanceListSorter;
 import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
+import uk.co.compendiumdev.thingifier.core.repository.MutableEntityInstance;
 import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
 import uk.co.compendiumdev.thingifier.core.repository.validation.EntityInstanceWriteValidator;
 
@@ -150,29 +150,32 @@ public class InMemoryThingRepository implements ThingRepository {
 
     @Override
     public EntityInstance createInstance(final EntityInstanceDraft draft) {
-        EntityInstance instance = EntityInstance.fromDraft(draft);
+        MutableEntityInstance mutableInstance = MutableEntityInstance.fromDraft(draft);
+        InMemoryEntityInstanceCollection collection =
+                getInstanceCollectionForEntityNamed(mutableInstance.getEntity().getName());
+        EntityInstance instance = collection.prepareInstanceForInsert(mutableInstance);
         writeValidator.assertValidForCreate(instance);
-        getInstanceCollectionForEntityNamed(instance.getEntity().getName()).addInstance(instance);
-        return EntityInstanceRepositoryAccess.lock(instance);
+        return collection.addInstance(instance);
     }
 
     @Override
     public EntityInstance patchInstance(
             final EntityInstance instance, final EntityInstanceDraft draft) {
-        EntityInstance candidate = EntityInstanceRepositoryAccess.patch(instance, draft);
+        EntityInstance candidate =
+                MutableEntityInstance.fromExisting(instance).patch(draft).toEntityInstance();
         writeValidator.assertValidForAmendment(candidate);
-        return EntityInstanceRepositoryAccess.lock(
-                EntityInstanceRepositoryAccess.apply(instance, draft));
+        return getInstanceCollectionForEntityNamed(instance.getEntity().getName())
+                .replaceInstance(candidate);
     }
 
     @Override
     public EntityInstance replaceInstance(
             final EntityInstance instance, final EntityInstanceDraft draft) {
-        EntityInstance candidate = EntityInstanceRepositoryAccess.replace(instance, draft);
+        EntityInstance candidate =
+                MutableEntityInstance.fromExisting(instance).replace(draft).toEntityInstance();
         writeValidator.assertValidForAmendment(candidate);
-        EntityInstanceRepositoryAccess.clearAllFields(instance);
-        return EntityInstanceRepositoryAccess.lock(
-                EntityInstanceRepositoryAccess.apply(instance, draft));
+        return getInstanceCollectionForEntityNamed(instance.getEntity().getName())
+                .replaceInstance(candidate);
     }
 
     @Override

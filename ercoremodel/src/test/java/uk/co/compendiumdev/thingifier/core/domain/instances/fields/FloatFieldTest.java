@@ -18,7 +18,8 @@ public class FloatFieldTest {
 
         // TODO: allow nullable optional floats
         EntityInstance instance =
-                EntityInstance.fromDraft(EntityInstanceDraft.forEntity(enumFieldEntity));
+                uk.co.compendiumdev.thingifier.core.repository.MutableEntityInstance
+                        .snapshotFromDraft(EntityInstanceDraft.forEntity(enumFieldEntity));
         Assertions.assertEquals("0.0", instance.getFieldValue("float").asString());
     }
 
@@ -47,8 +48,10 @@ public class FloatFieldTest {
         enumFieldEntity.addFields(Field.is("float", FieldType.FLOAT));
 
         EntityInstance instance =
-                EntityInstance.fromDraft(
-                        EntityInstanceDraft.forEntity(enumFieldEntity).withField("float", "4.3"));
+                uk.co.compendiumdev.thingifier.core.repository.MutableEntityInstance
+                        .snapshotFromDraft(
+                                EntityInstanceDraft.forEntity(enumFieldEntity)
+                                        .withField("float", "4.3"));
 
         Assertions.assertEquals("4.3", instance.getFieldValue("float").asString());
     }

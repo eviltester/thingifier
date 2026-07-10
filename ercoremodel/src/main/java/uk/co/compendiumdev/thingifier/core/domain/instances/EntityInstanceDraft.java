@@ -59,7 +59,7 @@ public final class EntityInstanceDraft {
         return Collections.unmodifiableList(protectedFieldValues);
     }
 
-    void validate() {
+    public void validate() {
         VALIDATOR.assertValid(this);
     }
 }

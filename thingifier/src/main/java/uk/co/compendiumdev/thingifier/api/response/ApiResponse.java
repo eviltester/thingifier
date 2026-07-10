@@ -6,6 +6,7 @@ import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
 
 public final class ApiResponse {
@@ -18,6 +19,7 @@ public final class ApiResponse {
     // instead of storing a json as the body, store the things to return
     // let getBody do the conversion to json or xml
     private List<EntityInstance> thingsToReturn;
+    private EntityInstanceDraft draftToReturn;
     // isCollection true, return as collection, false, return as instance
     private boolean isCollection;
     // isErrorResponse true, return the stored collection of error messages
@@ -33,6 +35,7 @@ public final class ApiResponse {
         this.statusCode = aStatusCode;
         headers = new HttpHeadersBlock();
         thingsToReturn = new ArrayList();
+        draftToReturn = null;
         isCollection = false;
         isErrorResponse = false;
         errorMessages = new ArrayList<>();
@@ -63,6 +66,7 @@ public final class ApiResponse {
 
     public ApiResponse returnSingleInstance(final EntityInstance instance) {
         this.isCollection = false;
+        draftToReturn = null;
         thingsToReturn.clear();
         thingsToReturn.add(instance);
         typeOfResults = instance.getEntity();
@@ -72,11 +76,21 @@ public final class ApiResponse {
 
     public ApiResponse returnInstanceCollection(final List<EntityInstance> items) {
         thingsToReturn.clear();
+        draftToReturn = null;
         thingsToReturn.addAll(items);
         isCollection = true;
         if (items.size() > 0) {
             typeOfResults = items.get(0).getEntity();
         }
+        this.hasBody = true;
+        return this;
+    }
+
+    public ApiResponse returnSingleDraft(final EntityInstanceDraft draft) {
+        this.isCollection = false;
+        thingsToReturn.clear();
+        draftToReturn = draft;
+        typeOfResults = draft.getEntity();
         this.hasBody = true;
         return this;
     }
@@ -156,8 +170,23 @@ public final class ApiResponse {
         if (isCollection) {
             throw new IllegalStateException("response contains a collection, not an instance");
         }
+        if (draftToReturn != null) {
+            throw new IllegalStateException(
+                    "response contains a draft instance, not a persisted instance");
+        }
 
         return thingsToReturn.get(0);
+    }
+
+    public boolean hasReturnedDraft() {
+        return draftToReturn != null;
+    }
+
+    public EntityInstanceDraft getReturnedDraft() {
+        if (isCollection || draftToReturn == null) {
+            throw new IllegalStateException("response does not contain a draft instance");
+        }
+        return draftToReturn;
     }
 
     public List<EntityInstance> getReturnedInstanceCollection() {

@@ -19,7 +19,8 @@ public class EnumFieldTest {
         // TODO: have a validation process for the definition and make it a syntax error for Enum
         // fields to have no values
         EntityInstance instance =
-                EntityInstance.fromDraft(EntityInstanceDraft.forEntity(enumFieldEntity));
+                uk.co.compendiumdev.thingifier.core.repository.MutableEntityInstance
+                        .snapshotFromDraft(EntityInstanceDraft.forEntity(enumFieldEntity));
         Assertions.assertEquals("", instance.getFieldValue("enum").asString());
     }
 
@@ -35,15 +36,18 @@ public class EnumFieldTest {
 
         // use example
         EntityInstance instance =
-                EntityInstance.fromDraft(
-                        EntityInstanceDraft.forEntity(stringFieldEntity)
-                                .withField("enum", "dukes"));
+                uk.co.compendiumdev.thingifier.core.repository.MutableEntityInstance
+                        .snapshotFromDraft(
+                                EntityInstanceDraft.forEntity(stringFieldEntity)
+                                        .withField("enum", "dukes"));
         Assertions.assertEquals("dukes", instance.getFieldValue("enum").asString());
 
         // use default
         instance =
-                EntityInstance.fromDraft(
-                        EntityInstanceDraft.forEntity(stringFieldEntity).withField("enum", "bob"));
+                uk.co.compendiumdev.thingifier.core.repository.MutableEntityInstance
+                        .snapshotFromDraft(
+                                EntityInstanceDraft.forEntity(stringFieldEntity)
+                                        .withField("enum", "bob"));
         Assertions.assertEquals("bob", instance.getFieldValue("enum").asString());
     }
 

@@ -86,6 +86,10 @@ public class SimpleVerbPutEntityInstanceApiNonHttpTest {
                                 getSimpleParser(requestBody, thingifier),
                                 new HttpHeadersBlock());
         Assertions.assertEquals(200, apiresponse.getStatusCode());
+        officeWork =
+                thingifier
+                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .findInstanceByPrimaryKey(instances, officeWorkGuid);
         Assertions.assertEquals("My Office Work", officeWork.getFieldValue("title").asString());
 
         officeWork =
@@ -144,6 +148,10 @@ public class SimpleVerbPutEntityInstanceApiNonHttpTest {
                                 getSimpleParser(requestBody, thingifier),
                                 new HttpHeadersBlock());
         Assertions.assertEquals(200, apiresponse.getStatusCode());
+        officeWork =
+                thingifier
+                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .findInstanceByPrimaryKey(instances, officeWorkGuid);
         Assertions.assertEquals("My Office Work", officeWork.getFieldValue("title").asString());
         Assertions.assertEquals("", officeWork.getFieldValue("description").asString());
     }

@@ -37,8 +37,9 @@ public class EntityRelModelTest {
         EntityRelModel erm = new EntityRelModel();
 
         EntityInstance missing =
-                EntityInstance.fromDraft(
-                        EntityInstanceDraft.forEntity(new EntityDefinition("no", "nos")));
+                uk.co.compendiumdev.thingifier.core.repository.MutableEntityInstance
+                        .snapshotFromDraft(
+                                EntityInstanceDraft.forEntity(new EntityDefinition("no", "nos")));
 
         Assertions.assertDoesNotThrow(
                 () ->

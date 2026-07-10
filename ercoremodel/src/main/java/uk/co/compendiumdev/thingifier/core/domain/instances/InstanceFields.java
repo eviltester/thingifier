@@ -5,7 +5,6 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.DefinedFields;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.NamedValue;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 
 /*
@@ -96,6 +95,14 @@ public class InstanceFields {
             clone.addValue(value.cloned());
         }
         return clone;
+    }
+
+    public List<FieldValue> assignedValues() {
+        List<FieldValue> assignedValues = new ArrayList<>();
+        for (FieldValue value : values.values()) {
+            assignedValues.add(value.cloned());
+        }
+        return Collections.unmodifiableList(assignedValues);
     }
 
     public DefinedFields getDefinition() {
@@ -231,49 +238,6 @@ public class InstanceFields {
         }
 
         return report;
-    }
-
-    /**
-     * Given a list of field values look at all the GUIDs and IDs referenced if they have different
-     * values to current then report the differences as errormessages
-     *
-     * @return a List of error messages about the GUIDs and IDs mentioned
-     */
-    public List<String> findAnyGuidOrIdDifferences(final List<NamedValue> args) {
-
-        List<String> errorMessages = new ArrayList<>();
-
-        List<Field> idOrGuidFields =
-                objectDefinition.getFieldsOfType(FieldType.AUTO_GUID, FieldType.AUTO_INCREMENT);
-
-        for (NamedValue entry : args) {
-
-            // Handle attempt to amend a protected field
-            Field field = objectDefinition.getField(entry.name);
-            if (idOrGuidFields.contains(field)) {
-                // if editing it then throw error, ignore if same value
-                String existingValue = getFieldValue(entry.name).asString();
-                String entryValue = entry.value;
-                if (field.getType() == FieldType.AUTO_INCREMENT) {
-                    // the potential value will be a Float, so amend it to an integer for comparison
-                    try {
-                        entryValue = String.valueOf((int) Float.parseFloat(entryValue));
-                    } catch (Exception e) {
-
-                    }
-                }
-                if (existingValue != null && !existingValue.trim().isEmpty()) {
-                    // if value is different then it is an attempt to amend it
-                    if (!existingValue.equalsIgnoreCase(entryValue)) {
-                        errorMessages.add(
-                                String.format(
-                                        "Can not amend %s from %s to %s",
-                                        entry.name, existingValue, entryValue));
-                    }
-                }
-            }
-        }
-        return errorMessages;
     }
 
     public boolean hasAssignedValue(String fieldName) {

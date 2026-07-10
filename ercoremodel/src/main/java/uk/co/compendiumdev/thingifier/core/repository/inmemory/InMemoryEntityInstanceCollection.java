@@ -8,8 +8,8 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.F
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
 import uk.co.compendiumdev.thingifier.core.domain.instances.AutoIncrement;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceRepositoryAccess;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
+import uk.co.compendiumdev.thingifier.core.repository.MutableEntityInstance;
 
 final class InMemoryEntityInstanceCollection {
 
@@ -68,7 +68,77 @@ final class InMemoryEntityInstanceCollection {
         return this;
     }
 
-    public EntityInstance addInstance(EntityInstance instance) {
+    EntityInstance addInstance(final MutableEntityInstance mutableInstance) {
+        EntityInstance prepared = prepareInstanceForInsert(mutableInstance);
+        return addInstance(prepared);
+    }
+
+    EntityInstance prepareInstanceForInsert(final MutableEntityInstance mutableInstance) {
+        ensureCountersInitialized();
+
+        if (mutableInstance.getEntity() != definition) {
+            throw new RuntimeException(
+                    String.format(
+                            "ERROR: Tried to add a %s instance to the %s",
+                            mutableInstance.getEntity().getName(), definition.getName()));
+        }
+
+        if (definition.hasMaxInstanceLimit()
+                && instances.size() >= definition.getMaxInstanceLimit()) {
+            throw new RuntimeException(
+                    String.format(
+                            "ERROR: Cannot add instance, maximum limit of %d reached",
+                            definition.getMaxInstanceLimit()));
+        }
+
+        // if there are any AUTO_GUIDs or AUTO-INCREMENTs not set in the instance, then set them now
+        for (Field fieldDefn :
+                definition.getFieldsOfType(FieldType.AUTO_GUID, FieldType.AUTO_INCREMENT)) {
+            if (!mutableInstance.hasInstantiatedFieldNamed(fieldDefn.getName())) {
+                // set it here using the counter for the field
+                if (fieldDefn.getType() == FieldType.AUTO_GUID) {
+                    mutableInstance.setValue(fieldDefn.getName(), UUID.randomUUID().toString());
+                }
+                if (fieldDefn.getType() == FieldType.AUTO_INCREMENT) {
+                    AutoIncrement counter = counters.get(fieldDefn.getName());
+                    if (counter == null) {
+                        counter = createCounterFor(fieldDefn);
+                    }
+                    mutableInstance.overrideValue(
+                            fieldDefn.getName(), String.valueOf(counter.getNextValueAndUpdate()));
+                }
+            }
+        }
+
+        if (definition.hasPrimaryKeyField()) {
+            // check value of primary key exists and is unique
+            Field primaryField = definition.getPrimaryKeyField();
+            if (!mutableInstance.hasInstantiatedFieldNamed(primaryField.getName())) {
+                throw new RuntimeException(
+                        String.format(
+                                "ERROR: Cannot add instance, primary key field %s not set",
+                                primaryField.getName()));
+            }
+        }
+
+        EntityInstance instance = mutableInstance.toEntityInstance();
+
+        if (definition.hasPrimaryKeyField()) {
+
+            for (EntityInstance existingInstance : instances.values()) {
+                if (existingInstance.getPrimaryKeyValue().equals(instance.getPrimaryKeyValue())) {
+                    throw new RuntimeException(
+                            String.format(
+                                    "ERROR: Cannot add instance, another instance with primary key value exists: %s",
+                                    existingInstance.getPrimaryKeyValue()));
+                }
+            }
+        }
+
+        return instance;
+    }
+
+    EntityInstance addInstance(EntityInstance instance) {
 
         ensureCountersInitialized();
 
@@ -87,57 +157,10 @@ final class InMemoryEntityInstanceCollection {
                             definition.getMaxInstanceLimit()));
         }
 
-        List<String> autoIncrementFieldsSet = new ArrayList<>();
-
-        // if there are any AUTO_GUIDs or AUTO-INCREMENTs not set in the instance, then set them now
-        for (Field fieldDefn :
-                definition.getFieldsOfType(FieldType.AUTO_GUID, FieldType.AUTO_INCREMENT)) {
-            if (!instance.hasInstantiatedFieldNamed(fieldDefn.getName())) {
-                // set it here using the counter for the field
-                if (fieldDefn.getType() == FieldType.AUTO_GUID) {
-                    EntityInstanceRepositoryAccess.setValue(
-                            instance, fieldDefn.getName(), UUID.randomUUID().toString());
-                }
-                if (fieldDefn.getType() == FieldType.AUTO_INCREMENT) {
-                    AutoIncrement counter = counters.get(fieldDefn.getName());
-                    if (counter == null) {
-                        counter = createCounterFor(fieldDefn);
-                    }
-                    EntityInstanceRepositoryAccess.overrideValue(
-                            instance,
-                            fieldDefn.getName(),
-                            String.valueOf(counter.getNextValueAndUpdate()));
-                }
-            } else {
-                if (fieldDefn.getType() == FieldType.AUTO_INCREMENT) {
-                    autoIncrementFieldsSet.add(fieldDefn.getName());
-                }
-            }
-        }
-
-        if (definition.hasPrimaryKeyField()) {
-            // check value of primary key exists and is unique
-            Field primaryField = definition.getPrimaryKeyField();
-            if (!instance.hasInstantiatedFieldNamed(primaryField.getName())) {
-                throw new RuntimeException(
-                        String.format(
-                                "ERROR: Cannot add instance, primary key field %s not set",
-                                primaryField.getName()));
-            }
-
-            for (EntityInstance existingInstance : instances.values()) {
-                if (existingInstance.getPrimaryKeyValue().equals(instance.getPrimaryKeyValue())) {
-                    throw new RuntimeException(
-                            String.format(
-                                    "ERROR: Cannot add instance, another instance with primary key value exists: %s",
-                                    existingInstance.getPrimaryKeyValue()));
-                }
-            }
-        }
-
         instances.put(instance.getInternalId(), instance);
 
-        for (String autoIncrementFieldSet : autoIncrementFieldsSet) {
+        for (String autoIncrementFieldSet :
+                instance.getEntity().getFieldNamesOfType(FieldType.AUTO_INCREMENT)) {
             // auto increment auto increments to above the value
             // should only do this if we actually add the item
             AutoIncrement counter = counters.get(autoIncrementFieldSet);
@@ -148,6 +171,17 @@ final class InMemoryEntityInstanceCollection {
             }
         }
 
+        return instance;
+    }
+
+    EntityInstance replaceInstance(final EntityInstance instance) {
+        if (!instances.containsKey(instance.getInternalId())) {
+            throw new IndexOutOfBoundsException(
+                    String.format(
+                            "Unable to replace, could not find a %s with internal id %s",
+                            definition.getName(), instance.getInternalId()));
+        }
+        instances.put(instance.getInternalId(), instance);
         return instance;
     }
 

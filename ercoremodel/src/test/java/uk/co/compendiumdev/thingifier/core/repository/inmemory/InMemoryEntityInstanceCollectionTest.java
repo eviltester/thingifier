@@ -9,6 +9,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.F
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
+import uk.co.compendiumdev.thingifier.core.repository.MutableEntityInstance;
 
 public class InMemoryEntityInstanceCollectionTest {
 
@@ -29,8 +30,8 @@ public class InMemoryEntityInstanceCollectionTest {
         InMemoryEntityInstanceCollection collection =
                 new InMemoryEntityInstanceCollection(entityDefn);
 
-        EntityInstance instance1 =
-                EntityInstance.fromDraft(EntityInstanceDraft.forEntity(entityDefn));
+        MutableEntityInstance instance1 =
+                MutableEntityInstance.fromDraft(EntityInstanceDraft.forEntity(entityDefn));
 
         Exception exception =
                 Assertions.assertThrows(
@@ -48,14 +49,14 @@ public class InMemoryEntityInstanceCollectionTest {
         InMemoryEntityInstanceCollection collection =
                 new InMemoryEntityInstanceCollection(entityDefn);
 
-        EntityInstance instance1 =
-                EntityInstance.fromDraft(
+        MutableEntityInstance candidate1 =
+                MutableEntityInstance.fromDraft(
                         EntityInstanceDraft.forEntity(entityDefn).withField("pk", "instance1"));
 
-        collection.addInstance(instance1);
+        EntityInstance instance1 = collection.addInstance(candidate1);
 
-        EntityInstance instance2 =
-                EntityInstance.fromDraft(
+        MutableEntityInstance instance2 =
+                MutableEntityInstance.fromDraft(
                         EntityInstanceDraft.forEntity(entityDefn)
                                 .withField("pk", instance1.getPrimaryKeyValue()));
 
@@ -77,15 +78,15 @@ public class InMemoryEntityInstanceCollectionTest {
 
         InMemoryEntityInstanceCollection col = new InMemoryEntityInstanceCollection(defn);
 
-        EntityInstance instance1 =
-                EntityInstance.fromDraft(
+        MutableEntityInstance candidate1 =
+                MutableEntityInstance.fromDraft(
                         EntityInstanceDraft.forEntity(defn).withField("name", "bob"));
-        EntityInstance instance2 =
-                EntityInstance.fromDraft(
+        MutableEntityInstance candidate2 =
+                MutableEntityInstance.fromDraft(
                         EntityInstanceDraft.forEntity(defn).withField("name", "connie"));
 
-        col.addInstance(instance1);
-        col.addInstance(instance2);
+        EntityInstance instance1 = col.addInstance(candidate1);
+        EntityInstance instance2 = col.addInstance(candidate2);
 
         Assertions.assertEquals(1, instance1.getFieldValue("id").asInteger());
         Assertions.assertEquals(2, instance2.getFieldValue("id").asInteger());
@@ -101,15 +102,15 @@ public class InMemoryEntityInstanceCollectionTest {
 
         InMemoryEntityInstanceCollection col = new InMemoryEntityInstanceCollection(defn);
 
-        EntityInstance instance1 =
-                EntityInstance.fromDraft(
+        MutableEntityInstance candidate1 =
+                MutableEntityInstance.fromDraft(
                         EntityInstanceDraft.forEntity(defn).withField("name", "bob"));
-        EntityInstance instance2 =
-                EntityInstance.fromDraft(
+        MutableEntityInstance candidate2 =
+                MutableEntityInstance.fromDraft(
                         EntityInstanceDraft.forEntity(defn).withField("name", "connie"));
 
-        col.addInstance(instance1);
-        col.addInstance(instance2);
+        EntityInstance instance1 = col.addInstance(candidate1);
+        EntityInstance instance2 = col.addInstance(candidate2);
 
         Assertions.assertEquals(
                 instance1.getFieldValue("id").asString(),
@@ -130,15 +131,15 @@ public class InMemoryEntityInstanceCollectionTest {
 
         InMemoryEntityInstanceCollection col = new InMemoryEntityInstanceCollection(defn);
 
-        EntityInstance instance1 =
-                EntityInstance.fromDraft(
+        MutableEntityInstance candidate1 =
+                MutableEntityInstance.fromDraft(
                         EntityInstanceDraft.forEntity(defn).withField("name", "bob"));
-        EntityInstance instance2 =
-                EntityInstance.fromDraft(
+        MutableEntityInstance candidate2 =
+                MutableEntityInstance.fromDraft(
                         EntityInstanceDraft.forEntity(defn).withField("name", "connie"));
 
-        col.addInstance(instance1);
-        col.addInstance(instance2);
+        EntityInstance instance1 = col.addInstance(candidate1);
+        EntityInstance instance2 = col.addInstance(candidate2);
 
         Assertions.assertNotEquals(
                 instance1.getFieldValue("guid").asString(),

@@ -27,27 +27,31 @@ public class BooleanFieldTest {
     public void booleanFieldsCanOnlyBeSetAsTrueOrFalse() {
 
         EntityInstance session =
-                EntityInstance.fromDraft(
-                        EntityInstanceDraft.forEntity(entityTestSession)
-                                .withField("review", "false"));
+                uk.co.compendiumdev.thingifier.core.repository.MutableEntityInstance
+                        .snapshotFromDraft(
+                                EntityInstanceDraft.forEntity(entityTestSession)
+                                        .withField("review", "false"));
         Assertions.assertEquals("false", session.getFieldValue("review").asString());
 
         session =
-                EntityInstance.fromDraft(
-                        EntityInstanceDraft.forEntity(entityTestSession)
-                                .withField("review", "faLSE"));
+                uk.co.compendiumdev.thingifier.core.repository.MutableEntityInstance
+                        .snapshotFromDraft(
+                                EntityInstanceDraft.forEntity(entityTestSession)
+                                        .withField("review", "faLSE"));
         Assertions.assertEquals("false", session.getFieldValue("review").asString());
 
         session =
-                EntityInstance.fromDraft(
-                        EntityInstanceDraft.forEntity(entityTestSession)
-                                .withField("review", "true"));
+                uk.co.compendiumdev.thingifier.core.repository.MutableEntityInstance
+                        .snapshotFromDraft(
+                                EntityInstanceDraft.forEntity(entityTestSession)
+                                        .withField("review", "true"));
         Assertions.assertEquals("true", session.getFieldValue("review").asString());
 
         session =
-                EntityInstance.fromDraft(
-                        EntityInstanceDraft.forEntity(entityTestSession)
-                                .withField("review", "TRUE"));
+                uk.co.compendiumdev.thingifier.core.repository.MutableEntityInstance
+                        .snapshotFromDraft(
+                                EntityInstanceDraft.forEntity(entityTestSession)
+                                        .withField("review", "TRUE"));
         Assertions.assertEquals("true", session.getFieldValue("review").asString());
     }
 
@@ -62,7 +66,8 @@ public class BooleanFieldTest {
 
         // unchanged from default
         EntityInstance session =
-                EntityInstance.fromDraft(EntityInstanceDraft.forEntity(entityTestSession));
+                uk.co.compendiumdev.thingifier.core.repository.MutableEntityInstance
+                        .snapshotFromDraft(EntityInstanceDraft.forEntity(entityTestSession));
         Assertions.assertEquals("true", session.getFieldValue("review").asString());
     }
 
@@ -70,7 +75,8 @@ public class BooleanFieldTest {
     public void booleanFieldsByDefaultAreFalse() {
 
         EntityInstance session =
-                EntityInstance.fromDraft(EntityInstanceDraft.forEntity(entityTestSession));
+                uk.co.compendiumdev.thingifier.core.repository.MutableEntityInstance
+                        .snapshotFromDraft(EntityInstanceDraft.forEntity(entityTestSession));
 
         // false by default
         Assertions.assertEquals("false", session.getFieldValue("falsey").asString());
@@ -80,7 +86,8 @@ public class BooleanFieldTest {
     public void booleanFieldsDefaultCanBeConfigured() {
 
         EntityInstance session =
-                EntityInstance.fromDraft(EntityInstanceDraft.forEntity(entityTestSession));
+                uk.co.compendiumdev.thingifier.core.repository.MutableEntityInstance
+                        .snapshotFromDraft(EntityInstanceDraft.forEntity(entityTestSession));
 
         // false by default
         Assertions.assertEquals("true", session.getFieldValue("review").asString());

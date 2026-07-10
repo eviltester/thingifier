@@ -32,7 +32,6 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.Relat
 import uk.co.compendiumdev.thingifier.core.domain.instances.AutoIncrement;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceRepositoryAccess;
 import uk.co.compendiumdev.thingifier.core.query.EntityInstanceListSorter;
 import uk.co.compendiumdev.thingifier.core.query.EntityListSortParamParser;
 import uk.co.compendiumdev.thingifier.core.query.FilterBy;
@@ -40,6 +39,7 @@ import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
 import uk.co.compendiumdev.thingifier.core.query.SortByFieldName;
 import uk.co.compendiumdev.thingifier.core.reporting.RepositoryJsonExporter;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
+import uk.co.compendiumdev.thingifier.core.repository.MutableEntityInstance;
 import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
 import uk.co.compendiumdev.thingifier.core.repository.validation.EntityInstanceWriteValidator;
 
@@ -241,29 +241,31 @@ public class SqliteThingRepository implements ThingRepository {
     @Override
     public EntityInstance createInstance(final EntityInstanceDraft draft) {
         ensureSchemaReady();
-        EntityInstance instance = EntityInstance.fromDraft(draft);
+        MutableEntityInstance mutableInstance = MutableEntityInstance.fromDraft(draft);
+        EntityInstance[] created = new EntityInstance[1];
         runInTransaction(
                 () -> {
-                    prepareInstanceForInsert(instance);
+                    prepareInstanceForInsert(mutableInstance);
+                    EntityInstance instance = mutableInstance.toEntityInstance();
                     writeValidator.assertValidForCreate(instance);
                     persistInstance(instance);
-                    EntityInstanceRepositoryAccess.lock(instance);
                     materializedInstances.put(instance.getInternalId(), instance);
                     persistCountersFor(instance.getEntity());
+                    created[0] = instance;
                 });
-        return instance;
+        return created[0];
     }
 
     @Override
     public EntityInstance patchInstance(
             final EntityInstance instance, final EntityInstanceDraft draft) {
         ensureSchemaReady();
-        EntityInstance updated = EntityInstanceRepositoryAccess.patch(instance, draft);
+        EntityInstance updated =
+                MutableEntityInstance.fromExisting(instance).patch(draft).toEntityInstance();
         writeValidator.assertValidForAmendment(updated);
         runInTransaction(
                 () -> {
                     persistInstance(updated);
-                    EntityInstanceRepositoryAccess.lock(updated);
                     materializedInstances.put(updated.getInternalId(), updated);
                     persistCountersFor(updated.getEntity());
                 });
@@ -274,12 +276,12 @@ public class SqliteThingRepository implements ThingRepository {
     public EntityInstance replaceInstance(
             final EntityInstance instance, final EntityInstanceDraft draft) {
         ensureSchemaReady();
-        EntityInstance updated = EntityInstanceRepositoryAccess.replace(instance, draft);
+        EntityInstance updated =
+                MutableEntityInstance.fromExisting(instance).replace(draft).toEntityInstance();
         writeValidator.assertValidForAmendment(updated);
         runInTransaction(
                 () -> {
                     persistInstance(updated);
-                    EntityInstanceRepositoryAccess.lock(updated);
                     materializedInstances.put(updated.getInternalId(), updated);
                     persistCountersFor(updated.getEntity());
                 });
@@ -536,7 +538,7 @@ public class SqliteThingRepository implements ThingRepository {
         }
     }
 
-    private void prepareInstanceForInsert(final EntityInstance instance) {
+    private void prepareInstanceForInsert(final MutableEntityInstance instance) {
         EntityDefinition entity = instance.getEntity();
         initializeCountersFor(entity);
 
@@ -552,12 +554,10 @@ public class SqliteThingRepository implements ThingRepository {
         for (Field field : entity.getFieldsOfType(FieldType.AUTO_GUID, FieldType.AUTO_INCREMENT)) {
             if (!instance.hasInstantiatedFieldNamed(field.getName())) {
                 if (field.getType() == FieldType.AUTO_GUID) {
-                    EntityInstanceRepositoryAccess.setValue(
-                            instance, field.getName(), UUID.randomUUID().toString());
+                    instance.setValue(field.getName(), UUID.randomUUID().toString());
                 }
                 if (field.getType() == FieldType.AUTO_INCREMENT) {
-                    EntityInstanceRepositoryAccess.overrideValue(
-                            instance,
+                    instance.overrideValue(
                             field.getName(),
                             String.valueOf(counterFor(entity, field).getNextValueAndUpdate()));
                 }
@@ -1342,25 +1342,24 @@ public class SqliteThingRepository implements ThingRepository {
         String internalId = resultSet.getString(INTERNAL_ID_COLUMN);
         EntityInstance existing = materializedInstances.get(internalId);
         if (existing != null) {
-            hydrateInstanceFromRow(existing, resultSet);
             return existing;
         }
 
-        EntityInstance instance =
-                EntityInstanceRepositoryAccess.empty(entity, UUID.fromString(internalId));
-        hydrateInstanceFromRow(instance, resultSet);
-        EntityInstanceRepositoryAccess.lock(instance);
+        MutableEntityInstance mutableInstance =
+                MutableEntityInstance.forEntity(entity, UUID.fromString(internalId));
+        hydrateInstanceFromRow(mutableInstance, resultSet);
+        EntityInstance instance = mutableInstance.toEntityInstance();
         materializedInstances.put(internalId, instance);
         return instance;
     }
 
-    private void hydrateInstanceFromRow(final EntityInstance instance, final ResultSet resultSet)
-            throws SQLException {
+    private void hydrateInstanceFromRow(
+            final MutableEntityInstance instance, final ResultSet resultSet) throws SQLException {
         EntityDefinition entity = instance.getEntity();
         for (String fieldName : entity.getFieldNames()) {
             String value = resultSet.getString(fieldName);
             if (value != null) {
-                EntityInstanceRepositoryAccess.overrideValue(instance, fieldName, value);
+                instance.overrideValue(fieldName, value);
             }
         }
     }

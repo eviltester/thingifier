@@ -46,10 +46,11 @@ class EntityInstanceDraftTest {
     @Test
     void nestedObjectFieldPathsCanBeSetWhenTheyExist() {
         EntityInstance instance =
-                EntityInstance.fromDraft(
-                        EntityInstanceDraft.forEntity(entity())
-                                .withField("person.age", "42")
-                                .withField("person.name", "Connie"));
+                uk.co.compendiumdev.thingifier.core.repository.MutableEntityInstance
+                        .snapshotFromDraft(
+                                EntityInstanceDraft.forEntity(entity())
+                                        .withField("person.age", "42")
+                                        .withField("person.name", "Connie"));
 
         Assertions.assertEquals(
                 "42", instance.getFieldValue("person").asObject().getFieldValue("age").asString());
@@ -148,8 +149,10 @@ class EntityInstanceDraftTest {
     @Test
     void protectedFieldsCanBeNullForDocumentationSnapshots() {
         EntityInstance instance =
-                EntityInstance.fromDraft(
-                        EntityInstanceDraft.forEntity(entity()).withProtectedField("id", null));
+                uk.co.compendiumdev.thingifier.core.repository.MutableEntityInstance
+                        .snapshotFromDraft(
+                                EntityInstanceDraft.forEntity(entity())
+                                        .withProtectedField("id", null));
 
         Assertions.assertNull(instance.getFieldValue("id").asString());
     }

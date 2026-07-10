@@ -3,7 +3,6 @@ package uk.co.compendiumdev.thingifier.htmlgui.htmlgen;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 
 public class DocumentationThingInstance {
@@ -16,16 +15,16 @@ public class DocumentationThingInstance {
         this.draft = EntityInstanceDraft.forEntity(eDefn);
     }
 
-    public EntityInstance getInstance() {
-        return EntityInstance.fromDraft(this.draft);
+    public EntityInstanceDraft getDraft() {
+        return this.draft;
     }
 
-    public EntityInstance withoutIDsOrGUIDs() {
+    public EntityInstanceDraft withoutIDsOrGUIDs() {
         for (String name :
                 definition.getFieldNamesOfType(FieldType.AUTO_INCREMENT, FieldType.AUTO_GUID)) {
             overrideValue(name, null);
         }
-        return getInstance();
+        return getDraft();
     }
 
     public void overrideValue(final String name, final String exampleValue) {

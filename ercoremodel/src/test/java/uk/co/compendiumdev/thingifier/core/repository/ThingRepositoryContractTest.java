@@ -506,7 +506,7 @@ public class ThingRepositoryContractTest {
         Assertions.assertEquals(0, repository.countInstances(taskDefinition));
 
         EntityInstance duplicate =
-                EntityInstance.fromDraft(
+                MutableEntityInstance.snapshotFromDraft(
                         EntityInstanceDraft.forEntity(projectDefinition)
                                 .withField("title", "Repository project"));
         Assertions.assertFalse(repository.checkFieldsForUniqueNess(duplicate, false).isValid());

@@ -5,6 +5,7 @@ import org.json.JSONObject;
 import org.json.XML;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
 
 public class XmlThing {
@@ -23,6 +24,11 @@ public class XmlThing {
             final EntityInstance instance, final ThingRepository repository) {
         String parseForXMLOutput = jsonConvertor.asNamedJsonObject(instance, repository).toString();
         // System.out.println(parseForXMLOutput);
+        return XML.toString(new JSONObject(parseForXMLOutput));
+    }
+
+    public String getSingleObjectXml(final EntityInstanceDraft draft) {
+        String parseForXMLOutput = jsonConvertor.asNamedJsonObject(draft).toString();
         return XML.toString(new JSONObject(parseForXMLOutput));
     }
 
@@ -49,6 +55,21 @@ public class XmlThing {
                         String.format(
                                 "</%1$s><%1$s>", thingsToReturn.get(0).getEntity().getPlural()),
                         "");
+        return output;
+    }
+
+    public String getCollectionOfDrafts(
+            final List<EntityInstanceDraft> thingsToReturn,
+            final EntityDefinition typeOfThingReturned) {
+        String parseForXMLOutput =
+                jsonConvertor
+                        .asJsonObjectTypedDraftArrayWithContentsUntyped(
+                                thingsToReturn, typeOfThingReturned.getPlural())
+                        .toString();
+
+        String output = XML.toString(new JSONObject(parseForXMLOutput));
+        output =
+                output.replace(String.format("</%1$s><%1$s>", typeOfThingReturned.getPlural()), "");
         return output;
     }
 }

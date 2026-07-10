@@ -4,7 +4,6 @@ import java.util.*;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.NamedValue;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 
 public class EntityInstance {
@@ -16,39 +15,27 @@ public class EntityInstance {
 
     // used internally to reference the instance, is not exposed to the world
     private final UUID internalId;
-    private boolean repositoryOwned;
 
     EntityInstance(EntityDefinition eDefn) {
         this(eDefn, UUID.randomUUID());
     }
 
     EntityInstance(EntityDefinition eDefn, UUID internalId) {
+        this(eDefn, internalId, eDefn.instantiateFields());
+    }
+
+    private EntityInstance(
+            final EntityDefinition eDefn, final UUID internalId, final InstanceFields fields) {
         this.entityDefinition = eDefn;
-        this.instanceFields = eDefn.instantiateFields();
+        this.instanceFields = fields.cloned();
         this.internalId = internalId;
-        this.repositoryOwned = false;
     }
 
-    public static EntityInstance fromDraft(final EntityInstanceDraft draft) {
-        return fromDraft(draft, UUID.randomUUID().toString());
-    }
-
-    private static EntityInstance fromDraft(
-            final EntityInstanceDraft draft, final String internalId) {
-        EntityInstance instance =
-                new EntityInstance(draft.getEntity(), UUID.fromString(internalId));
-        return instance.applyDraftFromRepository(draft);
-    }
-
-    EntityInstance applyDraftFromRepository(final EntityInstanceDraft draft) {
-        draft.validate();
-        for (NamedValue value : draft.getFieldValues()) {
-            setValueFromRepository(value.getName(), value.asString());
-        }
-        for (NamedValue value : draft.getProtectedFieldValues()) {
-            overrideValueFromRepository(value.getName(), value.asString());
-        }
-        return this;
+    public static EntityInstance repositorySnapshot(
+            final EntityDefinition entityDefinition,
+            final UUID internalId,
+            final InstanceFields fields) {
+        return new EntityInstance(entityDefinition, internalId, fields);
     }
 
     public String toString() {
@@ -92,27 +79,6 @@ public class EntityInstance {
         return this.entityDefinition.getFieldNames();
     }
 
-    EntityInstance setValue(String fieldName, String value) {
-        ensureWritable();
-        return setValueFromRepository(fieldName, value);
-    }
-
-    EntityInstance setValueFromRepository(String fieldName, String value) {
-        instanceFields.setValue(fieldName, value);
-        return this;
-    }
-
-    EntityInstance overrideValue(final String key, final String value) {
-        ensureWritable();
-        return overrideValueFromRepository(key, value);
-    }
-
-    EntityInstance overrideValueFromRepository(final String key, final String value) {
-        // bypass all validation - except, field must exist
-        this.instanceFields.putValue(key, value);
-        return this;
-    }
-
     public FieldValue getFieldValue(String fieldName) {
         return instanceFields.getFieldValue(fieldName);
     }
@@ -137,49 +103,8 @@ public class EntityInstance {
         return validateFields();
     }
 
-    // Cloning and documentation
-
-    void clearAllFields() {
-        ensureWritable();
-        clearAllFieldsFromRepository();
-    }
-
-    void clearAllFieldsFromRepository() {
-        List<String> ignoreFields = new ArrayList<>();
-
-        ignoreFields.addAll(
-                getEntity().getFieldNamesOfType(FieldType.AUTO_INCREMENT, FieldType.AUTO_GUID));
-
-        instanceFields.deleteAllFieldValuesExcept(ignoreFields);
-    }
-
-    EntityInstance createDuplicateWithoutRelationships(final String internalId) {
-        EntityInstance cloneInstance =
-                new EntityInstance(entityDefinition, UUID.fromString(internalId));
-
-        for (String fieldName : instanceFields.getDefinition().getFieldNames()) {
-            FieldValue value = instanceFields.getAssignedValue(fieldName);
-            if (value != null) {
-                cloneInstance.instanceFields.addValue(value.cloned());
-            }
-        }
-
-        return cloneInstance;
-    }
-
-    InstanceFields getFields() {
-        return instanceFields;
-    }
-
-    void lockForRepository() {
-        repositoryOwned = true;
-    }
-
-    void ensureWritable() {
-        if (repositoryOwned) {
-            throw new IllegalStateException(
-                    "EntityInstance is repository-owned and read-only; use ThingRepository write APIs");
-        }
+    public List<FieldValue> getAssignedFieldValues() {
+        return instanceFields.assignedValues();
     }
 
     public boolean hasInstantiatedFieldNamed(String fieldName) {

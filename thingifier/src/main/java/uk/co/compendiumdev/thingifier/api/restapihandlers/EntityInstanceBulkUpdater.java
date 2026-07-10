@@ -7,7 +7,6 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.F
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.NamedValue;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceRepositoryAccess;
 
 public class EntityInstanceBulkUpdater {
 
@@ -27,9 +26,7 @@ public class EntityInstanceBulkUpdater {
     public EntityInstanceDraft setFieldValuesFrom(List<NamedValue> fieldValues) {
 
         if (instance != null) {
-            final List<String> anyErrors =
-                    EntityInstanceRepositoryAccess.findAnyGuidOrIdDifferences(
-                            instance, fieldValues);
+            final List<String> anyErrors = findAnyGuidOrIdDifferences(instance, fieldValues);
             if (anyErrors.size() > 0) {
                 throw new RuntimeException(anyErrors.get(0));
             }
@@ -78,5 +75,39 @@ public class EntityInstanceBulkUpdater {
         return field != null
                 && (field.getType() == FieldType.AUTO_INCREMENT
                         || field.getType() == FieldType.AUTO_GUID);
+    }
+
+    private List<String> findAnyGuidOrIdDifferences(
+            final EntityInstance instance, final List<NamedValue> fieldValues) {
+        List<String> errorMessages = new java.util.ArrayList<>();
+
+        for (NamedValue entry : fieldValues) {
+            Field field = instance.getEntity().getField(entry.name);
+            if (field == null
+                    || (field.getType() != FieldType.AUTO_INCREMENT
+                            && field.getType() != FieldType.AUTO_GUID)) {
+                continue;
+            }
+
+            String existingValue = instance.getFieldValue(entry.name).asString();
+            String entryValue = entry.value;
+            if (field.getType() == FieldType.AUTO_INCREMENT) {
+                try {
+                    entryValue = String.valueOf((int) Float.parseFloat(entryValue));
+                } catch (Exception e) {
+                    // keep the original value for comparison
+                }
+            }
+            if (existingValue != null
+                    && !existingValue.trim().isEmpty()
+                    && !existingValue.equalsIgnoreCase(entryValue)) {
+                errorMessages.add(
+                        String.format(
+                                "Can not amend %s from %s to %s",
+                                entry.name, existingValue, entryValue));
+            }
+        }
+
+        return errorMessages;
     }
 }

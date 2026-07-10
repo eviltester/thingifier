@@ -2,15 +2,14 @@ package uk.co.compendiumdev.thingifier.core.domain.instances;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.DefinedFields;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.NamedValue;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
+import uk.co.compendiumdev.thingifier.core.repository.MutableEntityInstance;
 
 class InstanceFieldsTest {
 
@@ -259,62 +258,13 @@ class InstanceFieldsTest {
     }
 
     @Test
-    void canReportOnGuidAndIdDifferences() {
-
-        DefinedFields fieldsDefn = new DefinedFields();
-        fieldsDefn.addFields(
-                Field.is("id", FieldType.AUTO_INCREMENT), Field.is("guid", FieldType.AUTO_GUID));
-
-        InstanceFields instance = new InstanceFields(fieldsDefn);
-        instance.putValue("id", "1");
-        instance.putValue("guid", UUID.randomUUID().toString());
-
-        List<NamedValue> values = new ArrayList<>();
-        values.add(new NamedValue("id", "4567"));
-        List<String> errors = instance.findAnyGuidOrIdDifferences(values);
-        Assertions.assertEquals(1, errors.size());
-        Assertions.assertTrue(errors.get(0).contains(" id "), errors.get(0));
-
-        values = new ArrayList<>();
-        values.add(new NamedValue("guid", "4567"));
-        errors = instance.findAnyGuidOrIdDifferences(values);
-        Assertions.assertEquals(1, errors.size());
-        Assertions.assertTrue(errors.get(0).contains(" guid "), errors.get(0));
-
-        values.add(new NamedValue("id", "999999"));
-        errors = instance.findAnyGuidOrIdDifferences(values);
-        Assertions.assertEquals(2, errors.size());
-        Assertions.assertTrue(errors.get(1).contains(" 999999"), errors.get(1));
-    }
-
-    @Test
-    void noErrorsWhenNoGuidAndIdDifferences() {
-
-        DefinedFields fieldsDefn = new DefinedFields();
-        fieldsDefn.addFields(
-                Field.is("id", FieldType.AUTO_INCREMENT), Field.is("guid", FieldType.AUTO_GUID));
-
-        InstanceFields instance = new InstanceFields(fieldsDefn);
-        instance.putValue("id", "1");
-        String aGUID = UUID.randomUUID().toString();
-        instance.putValue("guid", aGUID);
-        instance.putValue("id", "2344");
-
-        List<NamedValue> values = new ArrayList<>();
-        values.add(new NamedValue("id", "2344"));
-        values.add(new NamedValue("guid", aGUID));
-        List<String> errors = instance.findAnyGuidOrIdDifferences(values);
-        Assertions.assertEquals(0, errors.size());
-    }
-
-    @Test
     public void canClearFields() {
 
         EntityDefinition entity = new EntityDefinition("entity", "entities");
         entity.addFields(
                 Field.is("Title", FieldType.STRING), Field.is("falsey", FieldType.BOOLEAN));
 
-        final EntityInstance session = new EntityInstance(entity);
+        final MutableEntityInstance session = MutableEntityInstance.forEntity(entity);
 
         session.setValue("Title", "set Title");
         session.setValue("falsey", "true");

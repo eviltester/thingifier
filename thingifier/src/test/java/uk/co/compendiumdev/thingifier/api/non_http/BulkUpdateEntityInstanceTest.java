@@ -34,14 +34,17 @@ public class BulkUpdateEntityInstanceTest {
     public void canSetByList() {
 
         final EntityInstance session =
-                EntityInstance.fromDraft(EntityInstanceDraft.forEntity(entityTestSession));
+                uk.co.compendiumdev.thingifier.core.repository.MutableEntityInstance
+                        .snapshotFromDraft(EntityInstanceDraft.forEntity(entityTestSession));
 
         List<NamedValue> someFields = new ArrayList<>();
         someFields.add(new NamedValue("Title", "my title"));
         someFields.add(new NamedValue("falsey", "true"));
         EntityInstanceDraft draft =
                 new EntityInstanceBulkUpdater(session).setFieldValuesFrom(someFields);
-        EntityInstance updated = EntityInstance.fromDraft(draft);
+        EntityInstance updated =
+                uk.co.compendiumdev.thingifier.core.repository.MutableEntityInstance
+                        .snapshotFromDraft(draft);
 
         Assertions.assertEquals("my title", updated.getFieldValue("Title").asString());
         Assertions.assertEquals("true", updated.getFieldValue("falsey").asString());
@@ -51,9 +54,10 @@ public class BulkUpdateEntityInstanceTest {
     public void canNotSetSomeFieldsByList() {
 
         final EntityInstance session =
-                EntityInstance.fromDraft(
-                        EntityInstanceDraft.forEntity(entityTestSession)
-                                .withProtectedField("anid", "1"));
+                uk.co.compendiumdev.thingifier.core.repository.MutableEntityInstance
+                        .snapshotFromDraft(
+                                EntityInstanceDraft.forEntity(entityTestSession)
+                                        .withProtectedField("anid", "1"));
 
         List<NamedValue> someFields = new ArrayList<>();
         someFields.add(new NamedValue("anid", "12"));
@@ -71,7 +75,8 @@ public class BulkUpdateEntityInstanceTest {
     public void canIgnoreSomeSetSomeFieldsByListToAvoidTriggeringValidation() {
 
         final EntityInstance session =
-                EntityInstance.fromDraft(EntityInstanceDraft.forEntity(entityTestSession));
+                uk.co.compendiumdev.thingifier.core.repository.MutableEntityInstance
+                        .snapshotFromDraft(EntityInstanceDraft.forEntity(entityTestSession));
 
         List<NamedValue> someFields = new ArrayList<>();
         someFields.add(new NamedValue("anid", "12"));
@@ -83,7 +88,9 @@ public class BulkUpdateEntityInstanceTest {
         EntityInstanceDraft draft =
                 new EntityInstanceBulkUpdater(session)
                         .setFieldValuesFromArgsIgnoring(someFields, ignoring);
-        EntityInstance updated = EntityInstance.fromDraft(draft);
+        EntityInstance updated =
+                uk.co.compendiumdev.thingifier.core.repository.MutableEntityInstance
+                        .snapshotFromDraft(draft);
 
         Assertions.assertEquals("set Title", updated.getFieldValue("Title").asString());
     }
@@ -92,7 +99,8 @@ public class BulkUpdateEntityInstanceTest {
     public void canIgnoreSomeOverrideFieldsWithListToAIgnore() {
 
         final EntityInstance session =
-                EntityInstance.fromDraft(EntityInstanceDraft.forEntity(entityTestSession));
+                uk.co.compendiumdev.thingifier.core.repository.MutableEntityInstance
+                        .snapshotFromDraft(EntityInstanceDraft.forEntity(entityTestSession));
 
         List<NamedValue> someFields = new ArrayList<>();
         someFields.add(new NamedValue("anid", "12"));
@@ -105,7 +113,9 @@ public class BulkUpdateEntityInstanceTest {
         EntityInstanceDraft draft =
                 new EntityInstanceBulkUpdater(session)
                         .overrideFieldValuesFromArgsIgnoring(someFields, ignoring);
-        EntityInstance updated = EntityInstance.fromDraft(draft);
+        EntityInstance updated =
+                uk.co.compendiumdev.thingifier.core.repository.MutableEntityInstance
+                        .snapshotFromDraft(draft);
 
         Assertions.assertEquals("set Title", updated.getFieldValue("Title").asString());
         Assertions.assertEquals("12", updated.getFieldValue("anId").asString());

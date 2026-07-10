@@ -44,6 +44,30 @@
         <property name="id" value="repositoryEntityInstanceRelationshipsType"/>
         <property name="files" value=".*[/\\]ercoremodel[/\\]src[/\\]test[/\\]java[/\\]uk[/\\]co[/\\]compendiumdev[/\\]thingifier[/\\]core[/\\]domain[/\\]instances[/\\].*"/>
     </module>
+    <module name="SuppressionSingleFilter">
+        <property name="id" value="entityInstanceDraftMaterialization"/>
+        <property name="files" value=".*[/\\]ercoremodel[/\\]src[/\\]main[/\\]java[/\\]uk[/\\]co[/\\]compendiumdev[/\\]thingifier[/\\]core[/\\]repository[/\\].*"/>
+    </module>
+    <module name="SuppressionSingleFilter">
+        <property name="id" value="entityInstanceDraftMaterialization"/>
+        <property name="files" value=".*[/\\]ercoremodel[/\\]src[/\\]test[/\\]java[/\\].*"/>
+    </module>
+    <module name="SuppressionSingleFilter">
+        <property name="id" value="repositoryMutableEntityInstanceUse"/>
+        <property name="files" value=".*[/\\]ercoremodel[/\\]src[/\\]main[/\\]java[/\\]uk[/\\]co[/\\]compendiumdev[/\\]thingifier[/\\]core[/\\]repository[/\\].*"/>
+    </module>
+    <module name="SuppressionSingleFilter">
+        <property name="id" value="repositoryMutableEntityInstanceUse"/>
+        <property name="files" value=".*[/\\].*[/\\]src[/\\]test[/\\]java[/\\].*"/>
+    </module>
+    <module name="SuppressionSingleFilter">
+        <property name="id" value="repositorySnapshotMaterialization"/>
+        <property name="files" value=".*[/\\]ercoremodel[/\\]src[/\\]main[/\\]java[/\\]uk[/\\]co[/\\]compendiumdev[/\\]thingifier[/\\]core[/\\]repository[/\\]MutableEntityInstance\.java"/>
+    </module>
+    <module name="SuppressionSingleFilter">
+        <property name="id" value="repositorySnapshotMaterialization"/>
+        <property name="files" value=".*[/\\]ercoremodel[/\\]src[/\\]main[/\\]java[/\\]uk[/\\]co[/\\]compendiumdev[/\\]thingifier[/\\]core[/\\]domain[/\\]instances[/\\]EntityInstance\.java"/>
+    </module>
     <module name="TreeWalker">
         <module name="RegexpSinglelineJava">
             <property name="id" value="hiddenRepositoryTestSupport"/>
@@ -61,7 +85,31 @@
             <property name="id" value="entityInstanceDraftMaterialization"/>
             <property name="format" value="\btoEntityInstance\s*\("/>
             <property name="ignoreComments" value="true"/>
-            <property name="message" value="EntityInstanceDraft should describe changes only; materialize explicit snapshots with EntityInstance.fromDraft or persist through ThingRepository."/>
+            <property name="message" value="EntityInstanceDraft should describe changes only; materialize snapshots through MutableEntityInstance inside repository code or tests."/>
+        </module>
+        <module name="RegexpSinglelineJava">
+            <property name="id" value="entityInstanceRepositoryAccessUse"/>
+            <property name="format" value="\bEntityInstanceRepositoryAccess\b"/>
+            <property name="ignoreComments" value="true"/>
+            <property name="message" value="EntityInstanceRepositoryAccess is removed; use MutableEntityInstance in repository code or ThingRepository APIs."/>
+        </module>
+        <module name="RegexpSinglelineJava">
+            <property name="id" value="entityInstanceFromDraftUse"/>
+            <property name="format" value="\bEntityInstance\.fromDraft\s*\("/>
+            <property name="ignoreComments" value="true"/>
+            <property name="message" value="EntityInstance is a read-only snapshot; create persisted instances through ThingRepository or repository-owned MutableEntityInstance."/>
+        </module>
+        <module name="RegexpSinglelineJava">
+            <property name="id" value="repositorySnapshotMaterialization"/>
+            <property name="format" value="\bEntityInstance\.repositorySnapshot\s*\("/>
+            <property name="ignoreComments" value="true"/>
+            <property name="message" value="EntityInstance.repositorySnapshot is a narrow materialization hook used only by MutableEntityInstance."/>
+        </module>
+        <module name="RegexpSinglelineJava">
+            <property name="id" value="repositoryMutableEntityInstanceUse"/>
+            <property name="format" value="\bMutableEntityInstance\b"/>
+            <property name="ignoreComments" value="true"/>
+            <property name="message" value="MutableEntityInstance is guarded for repository implementations; normal production code should use ThingRepository APIs."/>
         </module>
         <module name="RegexpSinglelineJava">
             <property name="id" value="entityInstanceTestOnlyAutoIdHelpers"/>

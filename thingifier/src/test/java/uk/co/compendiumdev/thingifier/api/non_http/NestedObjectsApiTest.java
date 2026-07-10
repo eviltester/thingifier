@@ -65,9 +65,17 @@ public class NestedObjectsApiTest {
         final HttpApiResponse response = api.post(amendConnieRequest);
 
         Assertions.assertEquals(200, response.getStatusCode());
+        EntityInstance updatedInstance =
+                thingifier
+                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .findInstanceByPrimaryKey(thing, instance.getPrimaryKeyValue());
         Assertions.assertEquals(
                 "bob",
-                instance.getFieldValue("person").asObject().getFieldValue("firstname").asString());
+                updatedInstance
+                        .getFieldValue("person")
+                        .asObject()
+                        .getFieldValue("firstname")
+                        .asString());
     }
 
     @Test
