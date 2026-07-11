@@ -166,6 +166,12 @@
             <property name="message" value="Relationship writes and validation are repository-owned; do not mutate EntityInstance relationships through repository access bridges."/>
         </module>
         <module name="RegexpSinglelineJava">
+            <property name="id" value="repositoryRelationshipRuleDuplication"/>
+            <property name="format" value="\b(private|protected)\s+[\w&lt;&gt;\[\], ?]+\s+(assertRelationshipCardinalityAllows|validateRelationshipRow|instancesSubjectToMandatoryRelationship|rowRepresentsVectorForInstance|relationshipExistsBetween|countRowsForVector)\s*\("/>
+            <property name="ignoreComments" value="true"/>
+            <property name="message" value="Relationship rule decisions belong in repository.relationship.RelationshipRules; repositories should call the shared policy instead of duplicating private helpers."/>
+        </module>
+        <module name="RegexpSinglelineJava">
             <property name="id" value="productionDeprecatedApi"/>
             <property name="format" value="@Deprecated\b"/>
             <property name="ignoreComments" value="true"/>

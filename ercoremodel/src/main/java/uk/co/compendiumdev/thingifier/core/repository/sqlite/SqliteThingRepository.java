@@ -1,7 +1,5 @@
 package uk.co.compendiumdev.thingifier.core.repository.sqlite;
 
-import static uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.Optionality.MANDATORY_RELATIONSHIP;
-
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -41,6 +39,9 @@ import uk.co.compendiumdev.thingifier.core.reporting.RepositoryJsonExporter;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 import uk.co.compendiumdev.thingifier.core.repository.MutableEntityInstance;
 import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
+import uk.co.compendiumdev.thingifier.core.repository.relationship.RelationshipEndpoint;
+import uk.co.compendiumdev.thingifier.core.repository.relationship.RelationshipRow;
+import uk.co.compendiumdev.thingifier.core.repository.relationship.RelationshipRules;
 import uk.co.compendiumdev.thingifier.core.repository.validation.EntityInstanceWriteValidator;
 
 public class SqliteThingRepository implements ThingRepository {
@@ -54,6 +55,7 @@ public class SqliteThingRepository implements ThingRepository {
     private final Map<String, EntityInstance> materializedInstances;
     private final Map<String, Map<String, AutoIncrement>> countersByEntity;
     private final EntityInstanceWriteValidator writeValidator;
+    private final RelationshipRules relationshipRules;
     private ERSchema schema;
     private Connection connection;
     private boolean closed;
@@ -64,6 +66,7 @@ public class SqliteThingRepository implements ThingRepository {
         this.materializedInstances = new HashMap<>();
         this.countersByEntity = new HashMap<>();
         this.writeValidator = new EntityInstanceWriteValidator(this);
+        this.relationshipRules = new RelationshipRules();
     }
 
     public static SqliteThingRepository inMemory(final String databaseKey) {
@@ -334,11 +337,12 @@ public class SqliteThingRepository implements ThingRepository {
             final EntityInstance from, final String relationshipName, final EntityInstance to) {
         ensureSchemaReady();
         RelationshipVectorDefinition vector =
-                relationshipVectorForConnection(from, relationshipName, to);
-        if (relationshipExistsBetween(from, to, relationshipName)) {
+                relationshipRules.relationshipVectorForConnection(from, relationshipName, to);
+        if (relationshipRules.relationshipExistsBetween(
+                relationshipVectors(), from, to, relationshipName, this::relationshipRowExists)) {
             return;
         }
-        assertRelationshipCardinalityAllows(vector, from, to);
+        relationshipRules.assertCardinalityAllows(vector, from, to, this::countRowsForEndpoint);
         runInTransaction(() -> persistRelationship(from, vector, to));
     }
 
@@ -388,41 +392,11 @@ public class SqliteThingRepository implements ThingRepository {
     @Override
     public ValidationReport validateRelationships(final EntityInstance instance) {
         ensureSchemaReady();
-        ValidationReport report = new ValidationReport();
-
-        for (RelationshipVectorDefinition vector :
-                instance.getEntity().related().getRelationships()) {
-            int count = countRowsForVector(instance, vector);
-            if (vector.getOptionality() == MANDATORY_RELATIONSHIP && count == 0) {
-                report.setValid(false)
-                        .addErrorMessage(
-                                String.format(
-                                        "Mandatory Relationship not found %s", vector.getName()));
-            }
-            if (vector.getCardinality().hasMaximumLimit()
-                    && count > vector.getCardinality().maximumLimit()) {
-                report.setValid(false)
-                        .addErrorMessage(
-                                String.format(
-                                        "Maximum related instances exceeded for %s at %d",
-                                        vector.getName(), vector.getCardinality().maximumLimit()));
-            }
-        }
-
-        for (RelationshipRow row : relationshipRowsInvolving(instance)) {
-            ValidationReport rowReport = validateRelationshipRow(row);
-            if (!rowReport.isValid()) {
-                for (String errorMessage : rowReport.getErrorMessages()) {
-                    report.setValid(false)
-                            .addErrorMessage(
-                                    String.format(
-                                            "Error with EntityInstance relationship %s - %s",
-                                            instance.getInternalId(), errorMessage));
-                }
-            }
-        }
-
-        return report;
+        return relationshipRules.validateRelationships(
+                instance,
+                relationshipRowsInvolving(instance),
+                this::findInstanceByInternalId,
+                this::countRowsForEndpoint);
     }
 
     @Override
@@ -652,68 +626,6 @@ public class SqliteThingRepository implements ThingRepository {
         }
     }
 
-    private RelationshipVectorDefinition relationshipVectorForConnection(
-            final EntityInstance from, final String relationshipName, final EntityInstance to) {
-        RelationshipVectorDefinition vector =
-                from.getEntity().getNamedRelationshipTo(relationshipName, to.getEntity());
-        if (vector == null) {
-            throw new IllegalArgumentException(
-                    "Unknown relationship "
-                            + relationshipName
-                            + " between "
-                            + from.getEntity().getName()
-                            + " and "
-                            + to.getEntity().getName());
-        }
-        return vector;
-    }
-
-    private void assertRelationshipCardinalityAllows(
-            final RelationshipVectorDefinition vector,
-            final EntityInstance from,
-            final EntityInstance to) {
-        if (vector.getCardinality().hasMaximumLimit()
-                && countRowsForVector(from, vector) >= vector.getCardinality().maximumLimit()) {
-            throw new RuntimeException(
-                    String.format(
-                            "Cannot add relationship type %s, exceeds maximum %d",
-                            vector.getName(), vector.getCardinality().maximumLimit()));
-        }
-
-        if (!vector.getRelationshipDefinition().isTwoWay()) {
-            return;
-        }
-
-        RelationshipVectorDefinition reverse =
-                vector.getRelationshipDefinition().otherVectorOf(vector);
-        if (reverse != null
-                && reverse.getCardinality().hasMaximumLimit()
-                && countRowsForVector(to, reverse) >= reverse.getCardinality().maximumLimit()) {
-            throw new RuntimeException(
-                    String.format(
-                            "Cannot add relationship type %s, exceeds maximum %d",
-                            reverse.getName(), reverse.getCardinality().maximumLimit()));
-        }
-    }
-
-    private boolean relationshipExistsBetween(
-            final EntityInstance first,
-            final EntityInstance second,
-            final String relationshipName) {
-        for (RelationshipVectorDefinition vector : relationshipVectors()) {
-            if (!vector.getRelationshipDefinition().isKnownAs(relationshipName)) {
-                continue;
-            }
-            if (relationshipRowExists(vector, first.getInternalId(), second.getInternalId())) {
-                return true;
-            }
-            if (relationshipRowExists(vector, second.getInternalId(), first.getInternalId())) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     private boolean relationshipRowExists(
             final RelationshipVectorDefinition vector,
             final String fromInternalId,
@@ -733,20 +645,13 @@ public class SqliteThingRepository implements ThingRepository {
         }
     }
 
-    private int countRowsForVector(
-            final EntityInstance instance, final RelationshipVectorDefinition vector) {
-        int count = countRowsInVectorTable(vector, "from_internal_id", instance.getInternalId());
-
-        if (vector.getRelationshipDefinition().isTwoWay()) {
-            RelationshipVectorDefinition reverse =
-                    vector.getRelationshipDefinition().otherVectorOf(vector);
-            if (reverse != null) {
-                count +=
-                        countRowsInVectorTable(reverse, "to_internal_id", instance.getInternalId());
-            }
-        }
-
-        return count;
+    private int countRowsForEndpoint(
+            final RelationshipVectorDefinition vector,
+            final RelationshipEndpoint endpoint,
+            final String internalId) {
+        String columnName =
+                endpoint == RelationshipEndpoint.FROM ? "from_internal_id" : "to_internal_id";
+        return countRowsInVectorTable(vector, columnName, internalId);
     }
 
     private int countRowsInVectorTable(
@@ -778,7 +683,9 @@ public class SqliteThingRepository implements ThingRepository {
             final String relationshipName) {
         List<EntityInstance> instances = new ArrayList<>();
         for (RelationshipRow row : relationshipRowsConnecting(parent, child, relationshipName)) {
-            instances.addAll(instancesSubjectToMandatoryRelationship(row));
+            instances.addAll(
+                    relationshipRules.instancesSubjectToMandatoryRelationship(
+                            row, this::findInstanceByInternalId));
         }
         return instances;
     }
@@ -787,7 +694,9 @@ public class SqliteThingRepository implements ThingRepository {
             final EntityInstance instance) {
         List<EntityInstance> instances = new ArrayList<>();
         for (RelationshipRow row : relationshipRowsInvolving(instance)) {
-            instances.addAll(instancesSubjectToMandatoryRelationship(row));
+            instances.addAll(
+                    relationshipRules.instancesSubjectToMandatoryRelationship(
+                            row, this::findInstanceByInternalId));
         }
         return instances;
     }
@@ -853,63 +762,6 @@ public class SqliteThingRepository implements ThingRepository {
             throw new IllegalStateException("Could not query SQLite relationship row", e);
         }
         return rows;
-    }
-
-    private List<EntityInstance> instancesSubjectToMandatoryRelationship(
-            final RelationshipRow row) {
-        List<EntityInstance> deleteThese = new ArrayList<>();
-
-        if (row.vector.getOptionality() == MANDATORY_RELATIONSHIP) {
-            EntityInstance from =
-                    findInstanceByInternalId(row.vector.getFrom(), row.fromInternalId);
-            if (from != null) {
-                deleteThese.add(from);
-            }
-        }
-
-        if (row.vector.getRelationshipDefinition().isTwoWay()) {
-            RelationshipVectorDefinition otherVector =
-                    row.vector.getRelationshipDefinition().otherVectorOf(row.vector);
-            if (otherVector != null && otherVector.getOptionality() == MANDATORY_RELATIONSHIP) {
-                EntityInstance to = findInstanceByInternalId(row.vector.getTo(), row.toInternalId);
-                if (to != null) {
-                    deleteThese.add(to);
-                }
-            }
-        }
-
-        return deleteThese;
-    }
-
-    private ValidationReport validateRelationshipRow(final RelationshipRow row) {
-        ValidationReport report = new ValidationReport();
-        EntityInstance from = findInstanceByInternalId(row.vector.getFrom(), row.fromInternalId);
-        EntityInstance to = findInstanceByInternalId(row.vector.getTo(), row.toInternalId);
-
-        if (from == null) {
-            report.setValid(false).addErrorMessage("No From Instance found");
-        }
-        if (to == null) {
-            report.setValid(false).addErrorMessage("No To Instance found");
-        }
-        if (!report.isValid()) {
-            return report;
-        }
-        if (from.getEntity() != row.vector.getFrom()) {
-            report.setValid(false)
-                    .addErrorMessage(
-                            String.format(
-                                    "Found from EntityInstance types %s but expected of type %s",
-                                    from.getEntity().getName(), row.vector.getFrom().getName()));
-        }
-        if (to.getEntity() != row.vector.getTo()) {
-            report.setValid(false)
-                    .addErrorMessage(
-                            String.format(
-                                    "Found to EntityInstance types %s but expected of type %s",
-                                    to.getEntity().getName(), row.vector.getTo().getName()));
-        }
-        return report;
     }
 
     private EntityInstance findInstanceByInternalId(
@@ -1708,21 +1560,6 @@ public class SqliteThingRepository implements ThingRepository {
             this.entity = entity;
             this.sql = sql;
             this.parameters = parameters;
-        }
-    }
-
-    private static class RelationshipRow {
-        private final RelationshipVectorDefinition vector;
-        private final String fromInternalId;
-        private final String toInternalId;
-
-        private RelationshipRow(
-                final RelationshipVectorDefinition vector,
-                final String fromInternalId,
-                final String toInternalId) {
-            this.vector = vector;
-            this.fromInternalId = fromInternalId;
-            this.toInternalId = toInternalId;
         }
     }
 }
