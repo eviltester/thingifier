@@ -287,16 +287,27 @@ public class InMemoryThingStore implements ThingStore {
         relationships.connect(from, relationshipName, to, this::findByInternalId);
     }
 
-    List<EntityInstance> removeRelationshipsInvolving(
+    void removeRelationshipsInvolving(
             final EntityInstance parent,
             final EntityInstance child,
             final String relationshipName) {
-        return relationships.removeRelationshipsInvolving(
-                parent, child, relationshipName, this::findByInternalId);
+        List<EntityInstance> alsoDelete =
+                relationships.removeRelationshipsInvolving(
+                        parent, child, relationshipName, this::findByInternalId);
+        deleteMandatoryDependents(alsoDelete);
     }
 
-    List<EntityInstance> removeAllRelationships(final EntityInstance instance) {
-        return relationships.removeAllRelationships(instance, this::findByInternalId);
+    void removeAllRelationships(final EntityInstance instance) {
+        List<EntityInstance> alsoDelete =
+                relationships.removeAllRelationships(instance, this::findByInternalId);
+        deleteMandatoryDependents(alsoDelete);
+    }
+
+    private void deleteMandatoryDependents(final List<EntityInstance> alsoDelete) {
+        List<String> alreadyDeleting = new ArrayList<>();
+        for (EntityInstance deleteMe : alsoDelete) {
+            deleteEntityInstanceAndMandatoryRelated(deleteMe, alreadyDeleting);
+        }
     }
 
     List<EntityInstance> listRelatedInstances(

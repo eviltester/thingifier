@@ -17,10 +17,9 @@ public interface RelationshipRepository {
     List<EntityInstance> listRelated(
             EntityInstance instance, String relationshipName, QueryFilterParams queryParams);
 
-    List<EntityInstance> removeBetween(
-            EntityInstance parent, EntityInstance child, String relationshipName);
+    void removeBetween(EntityInstance parent, EntityInstance child, String relationshipName);
 
-    List<EntityInstance> removeAll(EntityInstance instance);
+    void removeAll(EntityInstance instance);
 
     boolean hasRelationships(EntityInstance instance);
 

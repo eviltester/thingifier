@@ -67,7 +67,6 @@ public class ThingAmendment {
                 if (clearFieldsBeforeSettingFromArgs) {
                     updated = thingifier.getStore(database).entities().replace(instance, draft);
                     // Reset repository-owned relationships for idempotent amend.
-                    // TODO: handle mandatory dependents returned by relationship removal.
                     thingifier.getStore(database).relationships().removeAll(updated);
                 } else {
                     updated = thingifier.getStore(database).entities().patch(instance, draft);
@@ -78,8 +77,6 @@ public class ThingAmendment {
 
             // todo: should we check that this was actually a success?
             new RelationshipCreator(thingifier).createRelationships(bodyargs, updated, database);
-            // TODO: relationship removal can return mandatory dependents that may also need
-            // deletion.
             return ApiResponse.success().returnSingleInstance(updated);
         } else {
             // do not add it, report the errors

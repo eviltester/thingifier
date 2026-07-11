@@ -29,16 +29,16 @@ final class InMemoryRelationshipRepository implements RelationshipRepository {
     }
 
     @Override
-    public List<EntityInstance> removeBetween(
+    public void removeBetween(
             final EntityInstance parent,
             final EntityInstance child,
             final String relationshipName) {
-        return store.removeRelationshipsInvolving(parent, child, relationshipName);
+        store.removeRelationshipsInvolving(parent, child, relationshipName);
     }
 
     @Override
-    public List<EntityInstance> removeAll(final EntityInstance instance) {
-        return store.removeAllRelationships(instance);
+    public void removeAll(final EntityInstance instance) {
+        store.removeAllRelationships(instance);
     }
 
     @Override

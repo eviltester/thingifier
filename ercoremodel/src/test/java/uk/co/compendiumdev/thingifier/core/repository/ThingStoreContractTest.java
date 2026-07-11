@@ -718,6 +718,28 @@ public class ThingStoreContractTest {
 
         Assertions.assertEquals(0, repository.entityQueries().count(parentDefinition));
         Assertions.assertEquals(0, repository.entityQueries().count(childDefinition));
+
+        EntityInstance relationshipParent =
+                create(repository, parentDefinition, "Relationship parent");
+        EntityInstance relationshipChild =
+                create(repository, childDefinition, "Relationship child");
+        repository.relationships().connect(relationshipChild, "parent", relationshipParent);
+
+        repository.relationships().removeBetween(relationshipParent, relationshipChild, "children");
+
+        Assertions.assertEquals(1, repository.entityQueries().count(parentDefinition));
+        Assertions.assertEquals(0, repository.entityQueries().count(childDefinition));
+        Assertions.assertFalse(repository.relationships().hasRelationships(relationshipParent));
+
+        EntityInstance resetParent = create(repository, parentDefinition, "Reset parent");
+        EntityInstance resetChild = create(repository, childDefinition, "Reset child");
+        repository.relationships().connect(resetChild, "parent", resetParent);
+
+        repository.relationships().removeAll(resetParent);
+
+        Assertions.assertEquals(2, repository.entityQueries().count(parentDefinition));
+        Assertions.assertEquals(0, repository.entityQueries().count(childDefinition));
+        Assertions.assertFalse(repository.relationships().hasRelationships(resetParent));
     }
 
     private void addProjectAndTask(final ThingStore repository, final ERSchema schema) {

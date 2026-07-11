@@ -357,22 +357,29 @@ public class SqliteThingStore implements ThingStore {
         runInTransaction(() -> persistRelationship(from, vector, to));
     }
 
-    List<EntityInstance> removeRelationshipsInvolving(
+    void removeRelationshipsInvolving(
             final EntityInstance parent,
             final EntityInstance child,
             final String relationshipName) {
         ensureSchemaReady();
-        List<EntityInstance> removed =
-                mandatoryInstancesForRelationship(parent, child, relationshipName);
-        runInTransaction(() -> deleteRelationshipRowsInvolving(parent, child, relationshipName));
-        return removed;
+        runInTransaction(
+                () -> {
+                    List<EntityInstance> alsoDelete =
+                            mandatoryInstancesForRelationship(parent, child, relationshipName);
+                    deleteRelationshipRowsInvolving(parent, child, relationshipName);
+                    deleteMandatoryDependents(alsoDelete);
+                });
     }
 
-    List<EntityInstance> removeAllRelationships(final EntityInstance instance) {
+    void removeAllRelationships(final EntityInstance instance) {
         ensureSchemaReady();
-        List<EntityInstance> removed = mandatoryInstancesForRelationshipsInvolving(instance);
-        runInTransaction(() -> deleteRelationshipRowsInvolving(instance));
-        return removed;
+        runInTransaction(
+                () -> {
+                    List<EntityInstance> alsoDelete =
+                            mandatoryInstancesForRelationshipsInvolving(instance);
+                    deleteRelationshipRowsInvolving(instance);
+                    deleteMandatoryDependents(alsoDelete);
+                });
     }
 
     boolean hasRelationshipInstances(final EntityInstance instance) {
@@ -635,6 +642,13 @@ public class SqliteThingStore implements ThingStore {
             if (!deleteMe.getInternalId().equals(instance.getInternalId())) {
                 deleteEntityInstanceAndMandatoryRelated(deleteMe, alreadyDeleting);
             }
+        }
+    }
+
+    private void deleteMandatoryDependents(final List<EntityInstance> alsoDelete) {
+        Set<String> alreadyDeleting = new HashSet<>();
+        for (EntityInstance deleteMe : alsoDelete) {
+            deleteEntityInstanceAndMandatoryRelated(deleteMe, alreadyDeleting);
         }
     }
 

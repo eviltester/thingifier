@@ -166,6 +166,12 @@
             <property name="message" value="Relationship writes and validation are repository-owned; do not mutate EntityInstance relationships through repository access bridges."/>
         </module>
         <module name="RegexpSinglelineJava">
+            <property name="id" value="relationshipRemovalCascadeLeak"/>
+            <property name="format" value="List&lt;EntityInstance&gt;\s+remove(Between|All)\s*\("/>
+            <property name="ignoreComments" value="true"/>
+            <property name="message" value="Public relationship removal must not expose cascade-delete EntityInstance lists; execute cascades inside the repository/store."/>
+        </module>
+        <module name="RegexpSinglelineJava">
             <property name="id" value="repositoryRelationshipRuleDuplication"/>
             <property name="format" value="\b(private|protected)\s+[\w&lt;&gt;\[\], ?]+\s+(assertRelationshipCardinalityAllows|validateRelationshipRow|instancesSubjectToMandatoryRelationship|rowRepresentsVectorForInstance|relationshipExistsBetween|countRowsForVector)\s*\("/>
             <property name="ignoreComments" value="true"/>
