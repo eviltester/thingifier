@@ -9,13 +9,13 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.F
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
-import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
-import uk.co.compendiumdev.thingifier.core.repository.inmemory.InMemoryThingRepository;
+import uk.co.compendiumdev.thingifier.core.repository.ThingStore;
+import uk.co.compendiumdev.thingifier.core.repository.inmemory.InMemoryThingStore;
 
 public class AutoGuidTest {
 
     EntityDefinition entityTestSession;
-    ThingRepository repository;
+    ThingStore repository;
 
     @BeforeEach
     public void createEntity() {
@@ -24,15 +24,15 @@ public class AutoGuidTest {
         entityTestSession = schema.defineEntity("Test Session", "Test Sessions", -1);
         entityTestSession.addAsPrimaryKeyField(Field.is("guid", FieldType.AUTO_GUID));
         entityTestSession.addField(Field.is("Title", FieldType.STRING));
-        repository = new InMemoryThingRepository("test");
-        repository.initializeFrom(schema);
+        repository = new InMemoryThingStore("test");
+        repository.administration().initializeFrom(schema);
     }
 
     @Test
     public void anInstanceHasAGuid() {
 
         EntityInstance session;
-        session = repository.createInstance(EntityInstanceDraft.forEntity(entityTestSession));
+        session = repository.entities().create(EntityInstanceDraft.forEntity(entityTestSession));
 
         Assertions.assertNotNull(session.getPrimaryKeyValue());
         Assertions.assertTrue(
@@ -47,7 +47,7 @@ public class AutoGuidTest {
     public void anInstanceCanAccessGuidAsFieldOrMethod() {
 
         EntityInstance session;
-        session = repository.createInstance(EntityInstanceDraft.forEntity(entityTestSession));
+        session = repository.entities().create(EntityInstanceDraft.forEntity(entityTestSession));
 
         Assertions.assertEquals(
                 session.getPrimaryKeyValue(), session.getFieldValue("guid").asString());

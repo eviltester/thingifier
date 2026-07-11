@@ -68,8 +68,9 @@ public class SimpleVerbPutEntityInstanceApiNonHttpTest {
 
         EntityInstance officeWork =
                 thingifier
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .createInstance(
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
                                 EntityInstanceDraft.forEntity(instances)
                                         .withField("title", "An Existing instances"));
 
@@ -88,14 +89,16 @@ public class SimpleVerbPutEntityInstanceApiNonHttpTest {
         Assertions.assertEquals(200, apiresponse.getStatusCode());
         officeWork =
                 thingifier
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .findInstanceByPrimaryKey(instances, officeWorkGuid);
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .findByPrimaryKey(instances, officeWorkGuid);
         Assertions.assertEquals("My Office Work", officeWork.getFieldValue("title").asString());
 
         officeWork =
                 thingifier
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .patchInstance(
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .patch(
                                 officeWork,
                                 EntityInstanceDraft.forEntity(officeWork.getEntity())
                                         .withField("title", "office"));
@@ -124,8 +127,9 @@ public class SimpleVerbPutEntityInstanceApiNonHttpTest {
         // create something to amend with PUT
         EntityInstance officeWork =
                 thingifier
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .createInstance(
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
                                 EntityInstanceDraft.forEntity(instances)
                                         .withField("title", "An Existing instances")
                                         .withField("description", "Existing Description"));
@@ -150,8 +154,9 @@ public class SimpleVerbPutEntityInstanceApiNonHttpTest {
         Assertions.assertEquals(200, apiresponse.getStatusCode());
         officeWork =
                 thingifier
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .findInstanceByPrimaryKey(instances, officeWorkGuid);
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .findByPrimaryKey(instances, officeWorkGuid);
         Assertions.assertEquals("My Office Work", officeWork.getFieldValue("title").asString());
         Assertions.assertEquals("", officeWork.getFieldValue("description").asString());
     }
@@ -172,8 +177,9 @@ public class SimpleVerbPutEntityInstanceApiNonHttpTest {
         // create something to amend with PUT
         EntityInstance officeWork =
                 thingifier
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .createInstance(
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
                                 EntityInstanceDraft.forEntity(instances)
                                         .withField("title", "An Existing instance")
                                         .withField("description", "An Existing instance title"));
@@ -220,8 +226,9 @@ public class SimpleVerbPutEntityInstanceApiNonHttpTest {
 
         EntityInstance officeWork =
                 thingifier
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .createInstance(
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
                                 EntityInstanceDraft.forEntity(instances)
                                         .withField("title", "An Existing instances")
                                         .withField("description", "my original description"));
@@ -279,8 +286,9 @@ public class SimpleVerbPutEntityInstanceApiNonHttpTest {
 
         int currentinstances =
                 thingifier
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .countInstances(instances);
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(instances);
         Assertions.assertEquals(0, currentinstances);
 
         // create with a PUT and a given ID
@@ -298,8 +306,9 @@ public class SimpleVerbPutEntityInstanceApiNonHttpTest {
         Assertions.assertEquals(
                 currentinstances,
                 thingifier
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .countInstances(instances));
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(instances));
 
         Assertions.assertTrue(apiresponse.hasABody());
         Assertions.assertFalse(apiresponse.isCollection());
@@ -335,8 +344,9 @@ public class SimpleVerbPutEntityInstanceApiNonHttpTest {
 
         EntityInstance officeWork =
                 myThingifier
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .createInstance(
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
                                 EntityInstanceDraft.forEntity(myInstances)
                                         .withField("title", "An Existing instance"));
 
@@ -402,8 +412,9 @@ public class SimpleVerbPutEntityInstanceApiNonHttpTest {
 
         EntityInstance officeWork =
                 myThingifier
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .createInstance(
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
                                 EntityInstanceDraft.forEntity(entityDefn)
                                         .withField("id", "one")
                                         .withField("title", "An Existing instance"));
@@ -436,8 +447,9 @@ public class SimpleVerbPutEntityInstanceApiNonHttpTest {
 
         EntityInstance newInstance =
                 myThingifier
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .findInstanceByPrimaryKey(myInstances, newGuid);
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .findByPrimaryKey(myInstances, newGuid);
         Assertions.assertEquals("My Office Work", newInstance.getFieldValue("title").asString());
         Assertions.assertEquals(newGuid, newInstance.getFieldValue("id").asString());
     }
@@ -465,8 +477,9 @@ public class SimpleVerbPutEntityInstanceApiNonHttpTest {
 
         EntityInstance officeWork =
                 myThingifier
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .createInstance(
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
                                 EntityInstanceDraft.forEntity(entityDefn)
                                         .withField("id", "one")
                                         .withField("title", "An Existing instance"));
@@ -500,8 +513,9 @@ public class SimpleVerbPutEntityInstanceApiNonHttpTest {
 
         EntityInstance newInstance =
                 myThingifier
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .findInstanceByPrimaryKey(myInstances, newGuid);
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .findByPrimaryKey(myInstances, newGuid);
         Assertions.assertEquals("My Office Work", newInstance.getFieldValue("title").asString());
         Assertions.assertEquals(newGuid, newInstance.getFieldValue("id").asString());
     }
@@ -523,8 +537,9 @@ public class SimpleVerbPutEntityInstanceApiNonHttpTest {
 
         EntityInstance officeWork =
                 myThingifier
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .createInstance(
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
                                 EntityInstanceDraft.forEntity(entityDefn)
                                         .withField("id", "one")
                                         .withField("title", "An Existing instance"));

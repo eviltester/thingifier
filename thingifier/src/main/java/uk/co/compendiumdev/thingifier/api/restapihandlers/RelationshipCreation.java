@@ -67,9 +67,9 @@ public class RelationshipCreation {
                 }
                 relatedItem =
                         thingifier
-                                .getRepository(database)
-                                .findInstanceByFieldNameAndValue(
-                                        thingTo, fieldName, args.get(fieldName));
+                                .getStore(database)
+                                .entityQueries()
+                                .findByField(thingTo, fieldName, args.get(fieldName));
                 if (relatedItem != null) {
                     // found something
                     break;
@@ -152,12 +152,13 @@ public class RelationshipCreation {
             }
 
             thingifier
-                    .getRepository(database)
-                    .connectRelationship(connectThis, relationshipToUse.getName(), relatedItem);
+                    .getStore(database)
+                    .relationships()
+                    .connect(connectThis, relationshipToUse.getName(), relatedItem);
 
             // Repository connect enforces cardinality; validate the resulting relationship state.
             ValidationReport validNow =
-                    thingifier.getRepository(database).validateRelationships(relatedItem);
+                    thingifier.getStore(database).relationships().validate(relatedItem);
             if (!validNow.isValid()) {
                 response = ApiResponse.error(400, validNow.getErrorMessages());
                 thingifier.deleteThing(relatedItem, database);

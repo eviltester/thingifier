@@ -6,9 +6,11 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.Cardinality;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.ERSchema;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipDefinition;
-import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
-import uk.co.compendiumdev.thingifier.core.repository.ThingRepositoryProvider;
-import uk.co.compendiumdev.thingifier.core.repository.inmemory.InMemoryThingRepositoryProvider;
+import uk.co.compendiumdev.thingifier.core.reporting.ERModelReport;
+import uk.co.compendiumdev.thingifier.core.reporting.RepositoryJsonExporter;
+import uk.co.compendiumdev.thingifier.core.repository.ThingStore;
+import uk.co.compendiumdev.thingifier.core.repository.ThingStoreProvider;
+import uk.co.compendiumdev.thingifier.core.repository.inmemory.InMemoryThingStoreProvider;
 
 /*
    The ERM has the 'model' (ERSchema) and the 'instances' (things).
@@ -21,26 +23,26 @@ public class EntityRelModel implements AutoCloseable {
 
     // a provider so that key, database can be backed by memory, files, SQLite, etc.
     private final ERSchema schema; // all the definitions
-    private final ThingRepositoryProvider repositories;
+    private final ThingStoreProvider stores;
     private RepositoryDataPopulator dataPopulator;
 
     public EntityRelModel() {
         schema = new ERSchema();
-        repositories = new InMemoryThingRepositoryProvider();
+        stores = new InMemoryThingStoreProvider();
         dataPopulator = null;
     }
 
-    public EntityRelModel(final ThingRepositoryProvider repositories) {
+    public EntityRelModel(final ThingStoreProvider stores) {
         this.schema = new ERSchema();
-        this.repositories = repositories;
-        this.repositories.getDefaultRepository().initializeFrom(schema);
+        this.stores = stores;
+        this.stores.getDefaultStore().administration().initializeFrom(schema);
         dataPopulator = null;
     }
 
-    public EntityRelModel(final ERSchema schema, final ThingRepositoryProvider repositories) {
+    public EntityRelModel(final ERSchema schema, final ThingStoreProvider stores) {
         this.schema = schema;
-        this.repositories = repositories;
-        this.repositories.getDefaultRepository().initializeFrom(schema);
+        this.stores = stores;
+        this.stores.getDefaultStore().administration().initializeFrom(schema);
         dataPopulator = null;
     }
 
@@ -62,36 +64,36 @@ public class EntityRelModel implements AutoCloseable {
     }
 
     public String exportInstanceDataAsJson(final String databaseKey) {
-        ThingRepository repository = repositories.getRepository(databaseKey);
-        if (repository == null) {
+        ThingStore store = stores.getStore(databaseKey);
+        if (store == null) {
             return "{}";
         }
-        return repository.exportDataAsJson(schema);
+        return new RepositoryJsonExporter(schema, store.entityQueries()).asJson();
     }
 
     public String reportAsMarkdown(final String databaseKey) {
-        ThingRepository repository = repositories.getRepository(databaseKey);
-        if (repository == null) {
+        ThingStore store = stores.getStore(databaseKey);
+        if (store == null) {
             return "";
         }
-        return repository.reportAsMarkdown(schema);
+        return new ERModelReport(schema, store.entityQueries()).asMarkdown();
     }
 
     public Set<String> getDatabaseNames() {
-        return repositories.getRepositoryNames();
+        return stores.getStoreNames();
     }
 
-    public ThingRepository getRepository(String databaseKey) {
-        return repositories.getRepository(databaseKey);
+    public ThingStore getStore(String databaseKey) {
+        return stores.getStore(databaseKey);
     }
 
-    public ThingRepositoryProvider getRepositoryProvider() {
-        return repositories;
+    public ThingStoreProvider getStoreProvider() {
+        return stores;
     }
 
     @Override
     public void close() {
-        repositories.close();
+        stores.close();
     }
 
     // Schema methods
@@ -138,7 +140,7 @@ public class EntityRelModel implements AutoCloseable {
     // Multiple Databases
     public void createInstanceDatabase(String databaseKey) {
 
-        if (repositories.getRepository(databaseKey) != null) {
+        if (stores.getStore(databaseKey) != null) {
             throw new IllegalStateException("ERM Database Already Exists with name " + databaseKey);
         }
 
@@ -149,16 +151,16 @@ public class EntityRelModel implements AutoCloseable {
         if (databaseKey.equals(DEFAULT_DATABASE_NAME)) {
             throw new IllegalStateException("Cannot delete default database");
         }
-        repositories.deleteRepository(databaseKey);
+        stores.deleteStore(databaseKey);
     }
 
     public boolean createInstanceDatabaseIfNotExisting(String databaseKey) {
-        return repositories.createRepositoryIfNotExisting(databaseKey, this.schema);
+        return stores.createStoreIfNotExisting(databaseKey, this.schema);
     }
 
     public boolean populateDatabase(String databaseKey) {
-        ThingRepository repository = repositories.getRepository(databaseKey);
-        if (repository == null) {
+        ThingStore store = stores.getStore(databaseKey);
+        if (store == null) {
             return false;
         }
 
@@ -166,8 +168,8 @@ public class EntityRelModel implements AutoCloseable {
             return false;
         }
 
-        repository.refreshSchema(getSchema());
-        populateRepository(repository);
+        store.administration().refreshSchema(getSchema());
+        populateStore(store);
 
         return true;
     }
@@ -177,12 +179,12 @@ public class EntityRelModel implements AutoCloseable {
     }
 
     private void refreshRepositorySchemas() {
-        for (String databaseKey : repositories.getRepositoryNames()) {
-            repositories.getRepository(databaseKey).refreshSchema(schema);
+        for (String databaseKey : stores.getStoreNames()) {
+            stores.getStore(databaseKey).administration().refreshSchema(schema);
         }
     }
 
-    private void populateRepository(final ThingRepository repository) {
-        dataPopulator.populate(getSchema(), repository);
+    private void populateStore(final ThingStore store) {
+        dataPopulator.populate(getSchema(), store);
     }
 }

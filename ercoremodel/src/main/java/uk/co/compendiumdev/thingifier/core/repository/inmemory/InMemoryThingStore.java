@@ -1,7 +1,6 @@
 package uk.co.compendiumdev.thingifier.core.repository.inmemory;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.ERSchema;
@@ -16,27 +15,38 @@ import uk.co.compendiumdev.thingifier.core.query.EntityInstanceListFilter;
 import uk.co.compendiumdev.thingifier.core.query.EntityInstanceListSorter;
 import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
+import uk.co.compendiumdev.thingifier.core.repository.EntityInstanceQuery;
+import uk.co.compendiumdev.thingifier.core.repository.EntityInstanceRepository;
 import uk.co.compendiumdev.thingifier.core.repository.MutableEntityInstance;
-import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
+import uk.co.compendiumdev.thingifier.core.repository.RelationshipRepository;
+import uk.co.compendiumdev.thingifier.core.repository.RepositoryAdministration;
+import uk.co.compendiumdev.thingifier.core.repository.ThingStore;
 import uk.co.compendiumdev.thingifier.core.repository.validation.EntityInstanceWriteValidator;
 
-public class InMemoryThingRepository implements ThingRepository {
+public class InMemoryThingStore implements ThingStore {
 
     private final String databaseKey;
     private final InMemoryEntityInstanceStore instanceData;
     private final InMemoryRelationshipStore relationships;
     private final EntityInstanceWriteValidator writeValidator;
+    private final EntityInstanceRepository entityRepository;
+    private final EntityInstanceQuery entityQuery;
+    private final RelationshipRepository relationshipRepository;
+    private final RepositoryAdministration administration;
 
-    public InMemoryThingRepository(final String databaseKey) {
+    public InMemoryThingStore(final String databaseKey) {
         this(databaseKey, new InMemoryEntityInstanceStore());
     }
 
-    InMemoryThingRepository(
-            final String databaseKey, final InMemoryEntityInstanceStore instanceData) {
+    InMemoryThingStore(final String databaseKey, final InMemoryEntityInstanceStore instanceData) {
         this.databaseKey = databaseKey;
         this.instanceData = instanceData;
         this.relationships = new InMemoryRelationshipStore();
-        this.writeValidator = new EntityInstanceWriteValidator(this);
+        this.writeValidator = new EntityInstanceWriteValidator(this::checkFieldsForUniqueNess);
+        this.entityRepository = new InMemoryEntityInstanceRepository(this);
+        this.entityQuery = new InMemoryEntityInstanceQuery(this);
+        this.relationshipRepository = new InMemoryRelationshipRepository(this);
+        this.administration = new InMemoryRepositoryAdministration(this);
     }
 
     @Override
@@ -45,12 +55,30 @@ public class InMemoryThingRepository implements ThingRepository {
     }
 
     @Override
-    public void initializeFrom(final ERSchema schema) {
-        refreshSchema(schema);
+    public EntityInstanceRepository entities() {
+        return entityRepository;
     }
 
     @Override
-    public void refreshSchema(final ERSchema schema) {
+    public EntityInstanceQuery entityQueries() {
+        return entityQuery;
+    }
+
+    @Override
+    public RelationshipRepository relationships() {
+        return relationshipRepository;
+    }
+
+    @Override
+    public RepositoryAdministration administration() {
+        return administration;
+    }
+
+    void initializeFrom(final ERSchema schema) {
+        refreshSchema(schema);
+    }
+
+    void refreshSchema(final ERSchema schema) {
         createInstanceCollectionsFrom(schema);
     }
 
@@ -75,13 +103,11 @@ public class InMemoryThingRepository implements ThingRepository {
         return instanceData.getInstanceCollectionForEntityNamed(entityName);
     }
 
-    @Override
-    public EntityInstance findEntityInstanceByGUID(final String thingGUID) {
+    EntityInstance findEntityInstanceByGUID(final String thingGUID) {
         return instanceData.findEntityInstanceByGUID(thingGUID);
     }
 
-    @Override
-    public EntityInstance findInstanceByPrimaryKey(
+    EntityInstance findInstanceByPrimaryKey(
             final EntityDefinition entity, final String primaryKeyValue) {
         InMemoryEntityInstanceCollection collection =
                 getInstanceCollectionForEntityNamed(entity.getName());
@@ -91,8 +117,7 @@ public class InMemoryThingRepository implements ThingRepository {
         return collection.findInstanceByPrimaryKey(primaryKeyValue);
     }
 
-    @Override
-    public EntityInstance findInstanceByFieldNameAndValue(
+    EntityInstance findInstanceByFieldNameAndValue(
             final EntityDefinition entity, final String fieldName, final String fieldValue) {
         InMemoryEntityInstanceCollection collection =
                 getInstanceCollectionForEntityNamed(entity.getName());
@@ -102,18 +127,16 @@ public class InMemoryThingRepository implements ThingRepository {
         return collection.findInstanceByFieldNameAndValue(fieldName, fieldValue);
     }
 
-    @Override
-    public Collection<EntityInstance> listInstances(final EntityDefinition entity) {
+    List<EntityInstance> listInstances(final EntityDefinition entity) {
         InMemoryEntityInstanceCollection collection =
                 getInstanceCollectionForEntityNamed(entity.getName());
         if (collection == null) {
             return List.of();
         }
-        return collection.getInstances();
+        return new ArrayList<>(collection.getInstances());
     }
 
-    @Override
-    public List<EntityInstance> listInstances(
+    List<EntityInstance> listInstances(
             final EntityDefinition entity, final QueryFilterParams queryParams) {
         List<EntityInstance> instances = new ArrayList<>(listInstances(entity));
         QueryFilterParams params = queryParams == null ? new QueryFilterParams() : queryParams;
@@ -121,8 +144,7 @@ public class InMemoryThingRepository implements ThingRepository {
         return new EntityInstanceListSorter(params).sort(instances);
     }
 
-    @Override
-    public int countInstances(final EntityDefinition entity) {
+    int countInstances(final EntityDefinition entity) {
         InMemoryEntityInstanceCollection collection =
                 getInstanceCollectionForEntityNamed(entity.getName());
         if (collection == null) {
@@ -131,8 +153,7 @@ public class InMemoryThingRepository implements ThingRepository {
         return collection.countInstances();
     }
 
-    @Override
-    public EntityInstance findInstanceByQueryIdentifier(
+    EntityInstance findInstanceByQueryIdentifier(
             final EntityDefinition entity, final String identifier) {
         InMemoryEntityInstanceCollection collection =
                 getInstanceCollectionForEntityNamed(entity.getName());
@@ -148,8 +169,7 @@ public class InMemoryThingRepository implements ThingRepository {
         return null;
     }
 
-    @Override
-    public EntityInstance createInstance(final EntityInstanceDraft draft) {
+    EntityInstance createInstance(final EntityInstanceDraft draft) {
         MutableEntityInstance mutableInstance = MutableEntityInstance.fromDraft(draft);
         InMemoryEntityInstanceCollection collection =
                 getInstanceCollectionForEntityNamed(mutableInstance.getEntity().getName());
@@ -158,9 +178,7 @@ public class InMemoryThingRepository implements ThingRepository {
         return collection.addInstance(instance);
     }
 
-    @Override
-    public EntityInstance patchInstance(
-            final EntityInstance instance, final EntityInstanceDraft draft) {
+    EntityInstance patchInstance(final EntityInstance instance, final EntityInstanceDraft draft) {
         EntityInstance candidate =
                 MutableEntityInstance.fromExisting(instance).patch(draft).toEntityInstance();
         writeValidator.assertValidForAmendment(candidate);
@@ -168,9 +186,7 @@ public class InMemoryThingRepository implements ThingRepository {
                 .replaceInstance(candidate);
     }
 
-    @Override
-    public EntityInstance replaceInstance(
-            final EntityInstance instance, final EntityInstanceDraft draft) {
+    EntityInstance replaceInstance(final EntityInstance instance, final EntityInstanceDraft draft) {
         EntityInstance candidate =
                 MutableEntityInstance.fromExisting(instance).replace(draft).toEntityInstance();
         writeValidator.assertValidForAmendment(candidate);
@@ -178,8 +194,7 @@ public class InMemoryThingRepository implements ThingRepository {
                 .replaceInstance(candidate);
     }
 
-    @Override
-    public void deleteEntityInstance(final EntityInstance instance) {
+    void deleteEntityInstance(final EntityInstance instance) {
         if (instance == null) {
             throw new IllegalArgumentException("Cannot delete a null entity instance");
         }
@@ -203,14 +218,12 @@ public class InMemoryThingRepository implements ThingRepository {
         }
     }
 
-    @Override
-    public void clearAllData() {
+    void clearAllData() {
         relationships.clear();
         instanceData.clearAllData();
     }
 
-    @Override
-    public void clearInstanceDataFor(final String entityName) {
+    void clearInstanceDataFor(final String entityName) {
         InMemoryEntityInstanceCollection collection =
                 getInstanceCollectionForEntityNamed(entityName);
         if (collection == null) {
@@ -221,20 +234,17 @@ public class InMemoryThingRepository implements ThingRepository {
         }
     }
 
-    @Override
-    public ValidationReport checkFieldsForUniqueNess(
+    ValidationReport checkFieldsForUniqueNess(
             final EntityInstance instance, final boolean isAmendment) {
         return getInstanceCollectionForEntityNamed(instance.getEntity().getName())
                 .checkFieldsForUniqueNess(instance, isAmendment);
     }
 
-    @Override
-    public Map<String, AutoIncrement> countersFor(final EntityDefinition entity) {
+    Map<String, AutoIncrement> countersFor(final EntityDefinition entity) {
         return getInstanceCollectionForEntityNamed(entity.getName()).getCounters();
     }
 
-    @Override
-    public void resetAutoIncrementCounter(final EntityDefinition entity, final String fieldName) {
+    void resetAutoIncrementCounter(final EntityDefinition entity, final String fieldName) {
         Field field = entity.getField(fieldName);
         if (field == null || field.getType() != FieldType.AUTO_INCREMENT) {
             throw new IllegalArgumentException(
@@ -249,8 +259,17 @@ public class InMemoryThingRepository implements ThingRepository {
         }
     }
 
-    @Override
-    public void setNextIdCountersToAccomodate(
+    boolean resetAutoIncrementCounterWhenNextValueAbove(
+            final EntityDefinition entity, final String fieldName, final int ceiling) {
+        AutoIncrement counter = countersFor(entity).get(fieldName);
+        if (counter != null && counter.peekNextValue() > ceiling) {
+            resetAutoIncrementCounter(entity, fieldName);
+            return true;
+        }
+        return false;
+    }
+
+    void setNextIdCountersToAccomodate(
             final EntityDefinition entity, final List<NamedValue> fieldValues) {
         for (NamedValue fieldNameValue : fieldValues) {
             Field field = entity.getField(fieldNameValue.getName());
@@ -263,14 +282,12 @@ public class InMemoryThingRepository implements ThingRepository {
         }
     }
 
-    @Override
-    public void connectRelationship(
+    void connectRelationship(
             final EntityInstance from, final String relationshipName, final EntityInstance to) {
         relationships.connect(from, relationshipName, to, this::findByInternalId);
     }
 
-    @Override
-    public List<EntityInstance> removeRelationshipsInvolving(
+    List<EntityInstance> removeRelationshipsInvolving(
             final EntityInstance parent,
             final EntityInstance child,
             final String relationshipName) {
@@ -278,13 +295,11 @@ public class InMemoryThingRepository implements ThingRepository {
                 parent, child, relationshipName, this::findByInternalId);
     }
 
-    @Override
-    public List<EntityInstance> removeAllRelationships(final EntityInstance instance) {
+    List<EntityInstance> removeAllRelationships(final EntityInstance instance) {
         return relationships.removeAllRelationships(instance, this::findByInternalId);
     }
 
-    @Override
-    public List<EntityInstance> listRelatedInstances(
+    List<EntityInstance> listRelatedInstances(
             final EntityInstance instance,
             final String relationshipName,
             final QueryFilterParams queryParams) {
@@ -297,13 +312,11 @@ public class InMemoryThingRepository implements ThingRepository {
         return new EntityInstanceListSorter(params).sort(instances);
     }
 
-    @Override
-    public boolean hasRelationshipInstances(final EntityInstance instance) {
+    boolean hasRelationshipInstances(final EntityInstance instance) {
         return relationships.hasRelationshipInstances(instance);
     }
 
-    @Override
-    public ValidationReport validateRelationships(final EntityInstance instance) {
+    ValidationReport validateRelationships(final EntityInstance instance) {
         return relationships.validateRelationships(instance, this::findByInternalId);
     }
 

@@ -48,8 +48,9 @@ public class RestApiDeleteHandler {
                         String.format("Could not find any instances with %s", url));
             }
             thingifier
-                    .getRepository(instanceDatabaseName)
-                    .removeRelationshipsInvolving(
+                    .getStore(instanceDatabaseName)
+                    .relationships()
+                    .removeBetween(
                             relationship.parentInstance(),
                             relationship.childInstance(),
                             relationship.relationshipName());

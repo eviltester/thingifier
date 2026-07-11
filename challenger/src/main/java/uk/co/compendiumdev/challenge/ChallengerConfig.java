@@ -3,7 +3,7 @@ package uk.co.compendiumdev.challenge;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import uk.co.compendiumdev.challenge.persistence.PersistenceLayer;
-import uk.co.compendiumdev.thingifier.core.repository.ThingRepositoryProviderConfig;
+import uk.co.compendiumdev.thingifier.core.repository.ThingStoreProviderConfig;
 
 public class ChallengerConfig {
 
@@ -17,17 +17,17 @@ public class ChallengerConfig {
     public boolean guiStayAlive = false;
     public PersistenceLayer persistenceLayer =
             new PersistenceLayer(PersistenceLayer.StorageType.LOCAL);
-    private ThingRepositoryProviderConfig simulationRepositoryConfig =
+    private ThingStoreProviderConfig simulationRepositoryConfig =
             defaultSimulationRepositoryConfig();
 
-    public static ThingRepositoryProviderConfig defaultSimulationRepositoryConfig() {
-        return new ThingRepositoryProviderConfig(
-                ThingRepositoryProviderConfig.DEFAULT_REPOSITORY_MODE,
+    public static ThingStoreProviderConfig defaultSimulationRepositoryConfig() {
+        return new ThingStoreProviderConfig(
+                ThingStoreProviderConfig.DEFAULT_REPOSITORY_MODE,
                 Paths.get(DEFAULT_SIM_SQLITE_DIRECTORY));
     }
 
     public void setSimulationRepositoryFromArgs(final String[] args) {
-        String repositoryMode = ThingRepositoryProviderConfig.DEFAULT_REPOSITORY_MODE;
+        String repositoryMode = ThingStoreProviderConfig.DEFAULT_REPOSITORY_MODE;
         if (hasArg(args, ARG_SIM_SQLITE_MEMORY)) {
             repositoryMode = "sqlite-memory";
         } else {
@@ -43,10 +43,10 @@ public class ChallengerConfig {
         }
 
         simulationRepositoryConfig =
-                new ThingRepositoryProviderConfig(repositoryMode, Path.of(sqliteDirectory));
+                new ThingStoreProviderConfig(repositoryMode, Path.of(sqliteDirectory));
     }
 
-    public ThingRepositoryProviderConfig getSimulationRepositoryConfig() {
+    public ThingStoreProviderConfig getSimulationRepositoryConfig() {
         return simulationRepositoryConfig;
     }
 

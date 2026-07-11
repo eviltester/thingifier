@@ -73,8 +73,9 @@ public class VerbPutEntityInstanceApiNonHttpTest {
 
         EntityInstance officeWork =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .createInstance(
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
                                 EntityInstanceDraft.forEntity(project)
                                         .withField("title", "An Existing Project"));
 
@@ -93,14 +94,16 @@ public class VerbPutEntityInstanceApiNonHttpTest {
         Assertions.assertEquals(200, apiresponse.getStatusCode());
         officeWork =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .findInstanceByPrimaryKey(project, officeWorkGuid);
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .findByPrimaryKey(project, officeWorkGuid);
         Assertions.assertEquals("My Office Work", officeWork.getFieldValue("title").asString());
 
         officeWork =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .patchInstance(
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .patch(
                                 officeWork,
                                 EntityInstanceDraft.forEntity(officeWork.getEntity())
                                         .withField("title", "office"));
@@ -123,8 +126,9 @@ public class VerbPutEntityInstanceApiNonHttpTest {
 
         EntityInstance officeWork =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .createInstance(
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
                                 EntityInstanceDraft.forEntity(project)
                                         .withField("title", "An Existing Project")
                                         .withField("description", "my original description"));
@@ -149,8 +153,9 @@ public class VerbPutEntityInstanceApiNonHttpTest {
         Assertions.assertEquals(200, apiresponse.getStatusCode());
         officeWork =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .findInstanceByPrimaryKey(project, officeWorkGuid);
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .findByPrimaryKey(project, officeWorkGuid);
         Assertions.assertEquals("My Office Work", officeWork.getFieldValue("title").asString());
         Assertions.assertEquals("", officeWork.getFieldValue("description").asString());
 
@@ -170,8 +175,9 @@ public class VerbPutEntityInstanceApiNonHttpTest {
 
         EntityInstance officeWork =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .createInstance(
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
                                 EntityInstanceDraft.forEntity(project)
                                         .withField("title", "An Existing Project")
                                         .withField("description", "my original description"));
@@ -221,7 +227,7 @@ public class VerbPutEntityInstanceApiNonHttpTest {
     //
     //
     //        int currentProjects =
-    // todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(project);
+    // todoManager.getStore(EntityRelModel.DEFAULT_DATABASE_NAME).entityQueries().count(project);
     //        Assertions.assertEquals(0, currentProjects);
     //
     //        // create with a PUT and a given GUID
@@ -238,11 +244,11 @@ public class VerbPutEntityInstanceApiNonHttpTest {
     //        Assertions.assertTrue(apiresponse.getHeaderValue("Location").endsWith(guid));
     //
     //        Assertions.assertEquals(currentProjects + 1,
-    // todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(project));
+    // todoManager.getStore(EntityRelModel.DEFAULT_DATABASE_NAME).entityQueries().count(project));
     //
     //
     //        EntityInstance newProject =
-    // todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).findInstanceByFieldNameAndValue(project, "guid", guid);
+    // todoManager.getStore(EntityRelModel.DEFAULT_DATABASE_NAME).entityQueries().findByField(project, "guid", guid);
     //
     //        Assertions.assertEquals(title, newProject.getFieldValue("title").asString());
     //        Assertions.assertEquals(guid, newProject.getFieldValue("guid").asString());
@@ -272,7 +278,7 @@ public class VerbPutEntityInstanceApiNonHttpTest {
     //
     //
     //        int currentProjects =
-    // todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(project);
+    // todoManager.getStore(EntityRelModel.DEFAULT_DATABASE_NAME).entityQueries().count(project);
     //        Assertions.assertEquals(0, currentProjects);
     //
     //        // create with a PUT and a given GUID
@@ -285,7 +291,7 @@ public class VerbPutEntityInstanceApiNonHttpTest {
     //
     //
     //        EntityInstance newProject =
-    // todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).findInstanceByFieldNameAndValue(project, "guid", guid);
+    // todoManager.getStore(EntityRelModel.DEFAULT_DATABASE_NAME).entityQueries().findByField(project, "guid", guid);
     //        Assertions.assertEquals("12", newProject.getFieldValue("id").asString());
     //
     //    }
@@ -306,8 +312,9 @@ public class VerbPutEntityInstanceApiNonHttpTest {
 
         final EntityInstance instance =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .createInstance(
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
                                 EntityInstanceDraft.forEntity(project)
                                         .withField("title", "Existing project"));
 
@@ -321,8 +328,9 @@ public class VerbPutEntityInstanceApiNonHttpTest {
         Assertions.assertEquals(
                 1,
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .countInstances(project));
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(project));
 
         // create with a PUT and a given GUID
         String guid = UUID.randomUUID().toString();
@@ -339,8 +347,9 @@ public class VerbPutEntityInstanceApiNonHttpTest {
         Assertions.assertEquals(
                 1,
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .countInstances(project));
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(project));
     }
 
     @Test
@@ -367,8 +376,9 @@ public class VerbPutEntityInstanceApiNonHttpTest {
 
         EntityInstance paperwork =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .createInstance(
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
                                 EntityInstanceDraft.forEntity(todo)
                                         .withField("title", "Todo for amending"));
 
@@ -436,8 +446,9 @@ public class VerbPutEntityInstanceApiNonHttpTest {
 
         EntityInstance paperwork =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .createInstance(
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
                                 EntityInstanceDraft.forEntity(todo)
                                         .withField("title", "Todo for amending"));
 

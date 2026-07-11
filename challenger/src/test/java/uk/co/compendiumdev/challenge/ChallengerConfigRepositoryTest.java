@@ -3,9 +3,9 @@ package uk.co.compendiumdev.challenge;
 import java.nio.file.Path;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import uk.co.compendiumdev.thingifier.core.repository.ThingRepositoryProvider;
-import uk.co.compendiumdev.thingifier.core.repository.inmemory.InMemoryThingRepositoryProvider;
-import uk.co.compendiumdev.thingifier.core.repository.sqlite.SqliteThingRepositoryProvider;
+import uk.co.compendiumdev.thingifier.core.repository.ThingStoreProvider;
+import uk.co.compendiumdev.thingifier.core.repository.inmemory.InMemoryThingStoreProvider;
+import uk.co.compendiumdev.thingifier.core.repository.sqlite.SqliteThingStoreProvider;
 
 public class ChallengerConfigRepositoryTest {
 
@@ -17,9 +17,9 @@ public class ChallengerConfigRepositoryTest {
         Assertions.assertEquals(
                 "memory", config.getSimulationRepositoryConfig().getRepositoryMode());
 
-        try (ThingRepositoryProvider provider =
+        try (ThingStoreProvider provider =
                 config.getSimulationRepositoryConfig().createProvider()) {
-            Assertions.assertTrue(provider instanceof InMemoryThingRepositoryProvider);
+            Assertions.assertTrue(provider instanceof InMemoryThingStoreProvider);
         }
     }
 
@@ -31,9 +31,9 @@ public class ChallengerConfigRepositoryTest {
         Assertions.assertEquals(
                 "sqlite-memory", config.getSimulationRepositoryConfig().getRepositoryMode());
 
-        try (ThingRepositoryProvider provider =
+        try (ThingStoreProvider provider =
                 config.getSimulationRepositoryConfig().createProvider()) {
-            Assertions.assertTrue(provider instanceof SqliteThingRepositoryProvider);
+            Assertions.assertTrue(provider instanceof SqliteThingStoreProvider);
         }
     }
 
@@ -45,9 +45,9 @@ public class ChallengerConfigRepositoryTest {
         Assertions.assertEquals(
                 "sqlite-memory", config.getSimulationRepositoryConfig().getRepositoryMode());
 
-        try (ThingRepositoryProvider provider =
+        try (ThingStoreProvider provider =
                 config.getSimulationRepositoryConfig().createProvider()) {
-            Assertions.assertTrue(provider instanceof SqliteThingRepositoryProvider);
+            Assertions.assertTrue(provider instanceof SqliteThingStoreProvider);
         }
     }
 

@@ -6,7 +6,7 @@ import org.json.XML;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
-import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
+import uk.co.compendiumdev.thingifier.core.repository.RelationshipRepository;
 
 public class XmlThing {
 
@@ -21,8 +21,9 @@ public class XmlThing {
     }
 
     public String getSingleObjectXml(
-            final EntityInstance instance, final ThingRepository repository) {
-        String parseForXMLOutput = jsonConvertor.asNamedJsonObject(instance, repository).toString();
+            final EntityInstance instance, final RelationshipRepository relationships) {
+        String parseForXMLOutput =
+                jsonConvertor.asNamedJsonObject(instance, relationships).toString();
         // System.out.println(parseForXMLOutput);
         return XML.toString(new JSONObject(parseForXMLOutput));
     }
@@ -40,10 +41,10 @@ public class XmlThing {
     public String getCollectionOfThings(
             final List<EntityInstance> thingsToReturn,
             final EntityDefinition typeOfThingReturned,
-            final ThingRepository repository) {
+            final RelationshipRepository relationships) {
         String parseForXMLOutput =
                 jsonConvertor.asJsonTypedArrayWithContentsTyped(
-                        thingsToReturn, typeOfThingReturned, repository);
+                        thingsToReturn, typeOfThingReturned, relationships);
 
         String output = XML.toString(new JSONObject(parseForXMLOutput));
 

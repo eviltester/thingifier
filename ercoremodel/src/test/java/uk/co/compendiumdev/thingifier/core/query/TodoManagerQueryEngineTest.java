@@ -13,7 +13,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.F
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
-import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
+import uk.co.compendiumdev.thingifier.core.repository.ThingStore;
 
 /** Repository-backed URL query coverage for API-style entity reads. */
 public class TodoManagerQueryEngineTest {
@@ -60,27 +60,36 @@ public class TodoManagerQueryEngineTest {
         todoManager.createRelationshipDefinition(
                 todo, category, "categories", Cardinality.ONE_TO_MANY());
 
-        ThingRepository repository =
-                todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME);
+        ThingStore repository = todoManager.getStore(EntityRelModel.DEFAULT_DATABASE_NAME);
 
         paperwork =
-                repository.createInstance(
-                        EntityInstanceDraft.forEntity(todo).withField("title", "scan paperwork"));
+                repository
+                        .entities()
+                        .create(
+                                EntityInstanceDraft.forEntity(todo)
+                                        .withField("title", "scan paperwork"));
 
         // System.out.println(new Gson().toJson(JsonThing.asJsonObject(paperwork)));
 
         filework =
-                repository.createInstance(
-                        EntityInstanceDraft.forEntity(todo).withField("title", "file paperwork"));
+                repository
+                        .entities()
+                        .create(
+                                EntityInstanceDraft.forEntity(todo)
+                                        .withField("title", "file paperwork"));
 
         officeCategory =
-                repository.createInstance(
-                        EntityInstanceDraft.forEntity(category).withField("title", "Office"));
+                repository
+                        .entities()
+                        .create(
+                                EntityInstanceDraft.forEntity(category)
+                                        .withField("title", "Office"));
 
-        repository.createInstance(
-                EntityInstanceDraft.forEntity(category).withField("title", "Home"));
+        repository
+                .entities()
+                .create(EntityInstanceDraft.forEntity(category).withField("title", "Home"));
 
-        repository.connectRelationship(paperwork, "categories", officeCategory);
+        repository.relationships().connect(paperwork, "categories", officeCategory);
     }
 
     /*
@@ -94,7 +103,7 @@ public class TodoManagerQueryEngineTest {
         final RepositoryUrlQuery query =
                 new RepositoryUrlQuery(
                         todoManager.getSchema(),
-                        todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME),
+                        todoManager.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
                         "todo");
 
         List<EntityInstance> queryResults = query.performQuery().getListEntityInstances();
@@ -112,7 +121,7 @@ public class TodoManagerQueryEngineTest {
         final RepositoryUrlQuery query =
                 new RepositoryUrlQuery(
                         todoManager.getSchema(),
-                        todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME),
+                        todoManager.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
                         "todos");
 
         List<EntityInstance> queryResults = query.performQuery().getListEntityInstances();
@@ -134,7 +143,7 @@ public class TodoManagerQueryEngineTest {
         final RepositoryUrlQuery query =
                 new RepositoryUrlQuery(
                         todoManager.getSchema(),
-                        todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME),
+                        todoManager.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
                         "todo/" + paperwork.getPrimaryKeyValue());
 
         queryResults = query.performQuery().getListEntityInstances();
@@ -158,7 +167,7 @@ public class TodoManagerQueryEngineTest {
         final RepositoryUrlQuery query =
                 new RepositoryUrlQuery(
                         todoManager.getSchema(),
-                        todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME),
+                        todoManager.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
                         "todos/" + paperwork.getPrimaryKeyValue());
 
         queryResults = query.performQuery().getListEntityInstances();
@@ -181,7 +190,7 @@ public class TodoManagerQueryEngineTest {
         final RepositoryUrlQuery query =
                 new RepositoryUrlQuery(
                         todoManager.getSchema(),
-                        todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME),
+                        todoManager.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
                         "todo/" + paperwork.getPrimaryKeyValue() + "bob");
 
         queryResults = query.performQuery().getListEntityInstances();
@@ -207,7 +216,7 @@ public class TodoManagerQueryEngineTest {
         final RepositoryUrlQuery query =
                 new RepositoryUrlQuery(
                         todoManager.getSchema(),
-                        todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME),
+                        todoManager.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
                         "todos/" + paperwork.getPrimaryKeyValue() + "bob");
 
         queryResults = query.performQuery().getListEntityInstances();
@@ -231,14 +240,16 @@ public class TodoManagerQueryEngineTest {
         List<EntityInstance> queryResults;
 
         //
-        ThingRepository repository =
-                todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME);
+        ThingStore repository = todoManager.getStore(EntityRelModel.DEFAULT_DATABASE_NAME);
         EntityInstance officeWork =
-                repository.createInstance(
-                        EntityInstanceDraft.forEntity(project).withField("title", "Office Work"));
+                repository
+                        .entities()
+                        .create(
+                                EntityInstanceDraft.forEntity(project)
+                                        .withField("title", "Office Work"));
 
-        repository.connectRelationship(officeWork, "tasks", paperwork);
-        repository.connectRelationship(officeWork, "tasks", filework);
+        repository.relationships().connect(officeWork, "tasks", paperwork);
+        repository.relationships().connect(officeWork, "tasks", filework);
 
         // match on relationships
         // project/_GUID_/tasks
@@ -246,7 +257,7 @@ public class TodoManagerQueryEngineTest {
         queryResults =
                 new RepositoryUrlQuery(
                                 todoManager.getSchema(),
-                                todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                todoManager.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
                                 String.format("project/%s/tasks", officeWork.getPrimaryKeyValue()))
                         .performQuery()
                         .getListEntityInstances();
@@ -260,7 +271,7 @@ public class TodoManagerQueryEngineTest {
         queryResults =
                 new RepositoryUrlQuery(
                                 todoManager.getSchema(),
-                                todoManager.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                todoManager.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
                                 String.format("todo/%s/task-of", paperwork.getPrimaryKeyValue()))
                         .performQuery()
                         .getListEntityInstances();

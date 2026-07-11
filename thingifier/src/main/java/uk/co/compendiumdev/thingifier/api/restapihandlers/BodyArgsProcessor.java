@@ -88,8 +88,9 @@ public class BodyArgsProcessor {
                                     final EntityDefinition typeOfThing = relate.getTo();
                                     instanceToRelateTo =
                                             thingifier
-                                                    .getRepository(database)
-                                                    .findInstanceByFieldNameAndValue(
+                                                    .getStore(database)
+                                                    .entityQueries()
+                                                    .findByField(
                                                             typeOfThing,
                                                             relationshipFieldName,
                                                             complexKeyValue.getValue());

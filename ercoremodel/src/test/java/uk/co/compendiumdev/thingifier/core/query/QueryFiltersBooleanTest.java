@@ -30,23 +30,27 @@ public class QueryFiltersBooleanTest {
         erModel.createEntityDefinition("thing", "things")
                 .addFields(Field.is("truefalse", FieldType.BOOLEAN));
 
-        erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                .createInstance(
+        erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                .entities()
+                .create(
                         EntityInstanceDraft.forEntity(
                                         erModel.getSchema().getEntityDefinitionNamed("thing"))
                                 .withField("truefalse", "true"));
-        erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                .createInstance(
+        erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                .entities()
+                .create(
                         EntityInstanceDraft.forEntity(
                                         erModel.getSchema().getEntityDefinitionNamed("thing"))
                                 .withField("truefalse", "true"));
-        erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                .createInstance(
+        erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                .entities()
+                .create(
                         EntityInstanceDraft.forEntity(
                                         erModel.getSchema().getEntityDefinitionNamed("thing"))
                                 .withField("truefalse", "true"));
-        erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                .createInstance(
+        erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                .entities()
+                .create(
                         EntityInstanceDraft.forEntity(
                                         erModel.getSchema().getEntityDefinitionNamed("thing"))
                                 .withField("truefalse", "false"));
@@ -61,7 +65,7 @@ public class QueryFiltersBooleanTest {
         RepositoryUrlQuery queryResults =
                 new RepositoryUrlQuery(
                                 erModel.getSchema(),
-                                erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
                                 "things")
                         .performQuery(params);
 
@@ -79,7 +83,7 @@ public class QueryFiltersBooleanTest {
         RepositoryUrlQuery queryResults =
                 new RepositoryUrlQuery(
                                 erModel.getSchema(),
-                                erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
                                 "things")
                         .performQuery(params);
 
@@ -96,7 +100,7 @@ public class QueryFiltersBooleanTest {
         RepositoryUrlQuery queryResults =
                 new RepositoryUrlQuery(
                                 erModel.getSchema(),
-                                erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
                                 "things")
                         .performQuery(params);
 
@@ -113,7 +117,7 @@ public class QueryFiltersBooleanTest {
         RepositoryUrlQuery queryResults =
                 new RepositoryUrlQuery(
                                 erModel.getSchema(),
-                                erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
                                 "things")
                         .performQuery(params);
 
@@ -130,7 +134,7 @@ public class QueryFiltersBooleanTest {
         RepositoryUrlQuery queryResults =
                 new RepositoryUrlQuery(
                                 erModel.getSchema(),
-                                erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
                                 "things")
                         .performQuery(params);
 
@@ -152,7 +156,7 @@ public class QueryFiltersBooleanTest {
         RepositoryUrlQuery queryResults =
                 new RepositoryUrlQuery(
                                 erModel.getSchema(),
-                                erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
                                 "things")
                         .performQuery(params);
 

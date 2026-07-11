@@ -41,15 +41,16 @@ public class DeleteRequestTest {
 
         final EntityInstance instance =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .createInstance(
-                                EntityInstanceDraft.forEntity(todo).withField("title", "my title"));
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(EntityInstanceDraft.forEntity(todo).withField("title", "my title"));
 
         Assertions.assertEquals(
                 1,
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .countInstances(todo));
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(todo));
 
         HttpApiRequest request = new HttpApiRequest("/todos/" + instance.getPrimaryKeyValue());
 
@@ -60,8 +61,9 @@ public class DeleteRequestTest {
         Assertions.assertEquals(
                 0,
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .countInstances(todo));
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(todo));
     }
 
     @Test
@@ -69,15 +71,16 @@ public class DeleteRequestTest {
 
         final EntityInstance instance =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .createInstance(
-                                EntityInstanceDraft.forEntity(todo).withField("title", "my title"));
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(EntityInstanceDraft.forEntity(todo).withField("title", "my title"));
 
         Assertions.assertEquals(
                 1,
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .countInstances(todo));
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(todo));
 
         HttpApiRequest request =
                 new HttpApiRequest("/todos/" + instance.getPrimaryKeyValue() + "bob");
@@ -89,22 +92,25 @@ public class DeleteRequestTest {
         Assertions.assertEquals(
                 1,
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .countInstances(todo));
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(todo));
     }
 
     @Test
     public void cannotDeleteRootItem() {
 
         todoManager
-                .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                .createInstance(EntityInstanceDraft.forEntity(todo).withField("title", "my title"));
+                .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                .entities()
+                .create(EntityInstanceDraft.forEntity(todo).withField("title", "my title"));
 
         Assertions.assertEquals(
                 1,
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .countInstances(todo));
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(todo));
 
         HttpApiRequest request = new HttpApiRequest("/todos");
 
@@ -115,8 +121,9 @@ public class DeleteRequestTest {
         Assertions.assertEquals(
                 1,
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .countInstances(todo));
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(todo));
 
         final ErrorMessages errors = new Gson().fromJson(response.getBody(), ErrorMessages.class);
 

@@ -7,7 +7,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.F
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
-import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
+import uk.co.compendiumdev.thingifier.core.repository.ThingStore;
 
 public class MultipleEntityInstancesDatabasesTest {
 
@@ -16,10 +16,11 @@ public class MultipleEntityInstancesDatabasesTest {
         EntityRelModel erm = new EntityRelModel();
         EntityDefinition thingDefn = defineThing(erm);
 
-        ThingRepository repository = erm.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME);
+        ThingStore repository = erm.getStore(EntityRelModel.DEFAULT_DATABASE_NAME);
         EntityInstance thing = create(repository, thingDefn);
 
-        EntityInstance foundThing = repository.findEntityInstanceByGUID(thing.getPrimaryKeyValue());
+        EntityInstance foundThing =
+                repository.entityQueries().findByGuid(thing.getPrimaryKeyValue());
 
         Assertions.assertEquals("Thing 1", foundThing.getFieldValue("Title").asString());
         Assertions.assertEquals(foundThing, thing);
@@ -32,17 +33,19 @@ public class MultipleEntityInstancesDatabasesTest {
 
         erm.createInstanceDatabase("other_things");
 
-        ThingRepository otherRepository = erm.getRepository("other_things");
+        ThingStore otherRepository = erm.getStore("other_things");
         EntityInstance thing = create(otherRepository, thingDefn);
 
         EntityInstance foundThing =
-                otherRepository.findEntityInstanceByGUID(thing.getPrimaryKeyValue());
+                otherRepository.entityQueries().findByGuid(thing.getPrimaryKeyValue());
 
         Assertions.assertEquals("Thing 1", foundThing.getFieldValue("Title").asString());
         Assertions.assertEquals(foundThing, thing);
         Assertions.assertEquals(
                 0,
-                erm.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME).countInstances(thingDefn));
+                erm.getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(thingDefn));
     }
 
     @Test
@@ -68,15 +71,15 @@ public class MultipleEntityInstancesDatabasesTest {
 
         erm.createInstanceDatabase("other_things");
 
-        ThingRepository otherRepository = erm.getRepository("other_things");
+        ThingStore otherRepository = erm.getStore("other_things");
         EntityInstance thing = create(otherRepository, thingDefn);
 
         Assertions.assertNotNull(
-                otherRepository.findEntityInstanceByGUID(thing.getPrimaryKeyValue()));
+                otherRepository.entityQueries().findByGuid(thing.getPrimaryKeyValue()));
 
         erm.deleteInstanceDatabase("other_things");
 
-        Assertions.assertNull(erm.getRepository("other_things"));
+        Assertions.assertNull(erm.getStore("other_things"));
     }
 
     @Test
@@ -90,7 +93,7 @@ public class MultipleEntityInstancesDatabasesTest {
                         () -> erm.deleteInstanceDatabase(EntityRelModel.DEFAULT_DATABASE_NAME));
 
         Assertions.assertEquals("Cannot delete default database", e.getMessage());
-        Assertions.assertNotNull(erm.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME));
+        Assertions.assertNotNull(erm.getStore(EntityRelModel.DEFAULT_DATABASE_NAME));
     }
 
     private EntityDefinition defineThing(final EntityRelModel erm) {
@@ -100,9 +103,9 @@ public class MultipleEntityInstancesDatabasesTest {
         return thingDefn;
     }
 
-    private EntityInstance create(
-            final ThingRepository repository, final EntityDefinition thingDefn) {
-        return repository.createInstance(
-                EntityInstanceDraft.forEntity(thingDefn).withField("Title", "Thing 1"));
+    private EntityInstance create(final ThingStore repository, final EntityDefinition thingDefn) {
+        return repository
+                .entities()
+                .create(EntityInstanceDraft.forEntity(thingDefn).withField("Title", "Thing 1"));
     }
 }

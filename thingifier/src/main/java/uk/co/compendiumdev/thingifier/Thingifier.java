@@ -12,7 +12,7 @@ import uk.co.compendiumdev.thingifier.core.domain.datapopulator.RepositoryDataPo
 import uk.co.compendiumdev.thingifier.core.domain.definitions.*;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
+import uk.co.compendiumdev.thingifier.core.repository.ThingStore;
 import uk.co.compendiumdev.thingifier.reporting.ThingReporter;
 
 /* Thingifier
@@ -124,16 +124,16 @@ public final class Thingifier implements AutoCloseable {
     // Instances
 
     public EntityInstance findThingInstanceByGuid(final String thingGUID, final String database) {
-        return erm.getRepository(database).findEntityInstanceByGUID(thingGUID);
+        return erm.getStore(database).entityQueries().findByGuid(thingGUID);
     }
 
     public List<EntityInstance> listThingInstancesNamed(final String aName, final String database) {
         EntityDefinition definition = erm.getSchema().getDefinitionWithSingularOrPluralNamed(aName);
-        ThingRepository repository = erm.getRepository(database);
-        if (definition == null || repository == null) {
+        ThingStore store = erm.getStore(database);
+        if (definition == null || store == null) {
             return Collections.emptyList();
         }
-        return new ArrayList<>(repository.listInstances(definition));
+        return new ArrayList<>(store.entityQueries().list(definition));
     }
 
     public EntityInstance findThingInstanceByFieldNameAndValue(
@@ -143,11 +143,11 @@ public final class Thingifier implements AutoCloseable {
             final String database) {
         EntityDefinition definition =
                 erm.getSchema().getDefinitionWithSingularOrPluralNamed(entityName);
-        ThingRepository repository = erm.getRepository(database);
-        if (definition == null || repository == null) {
+        ThingStore store = erm.getStore(database);
+        if (definition == null || store == null) {
             return null;
         }
-        return repository.findInstanceByFieldNameAndValue(definition, fieldName, fieldValue);
+        return store.entityQueries().findByField(definition, fieldName, fieldValue);
     }
 
     public void clearAllData() {
@@ -162,22 +162,22 @@ public final class Thingifier implements AutoCloseable {
     }
 
     public void clearAllData(final String database) {
-        erm.getRepository(database).clearAllData();
+        erm.getStore(database).administration().clearAllData();
     }
 
     public void deleteThing(final EntityInstance aThingInstance, final String database) {
-        erm.getRepository(database).deleteEntityInstance(aThingInstance);
+        erm.getStore(database).entities().delete(aThingInstance);
     }
 
     // data generation
     public void generateData(final String database) {
         if (dataPopulator != null) {
-            ThingRepository repository = erm.getRepository(database);
-            if (repository == null) {
+            ThingStore store = erm.getStore(database);
+            if (store == null) {
                 return;
             }
-            repository.refreshSchema(erm.getSchema());
-            populateRepository(repository);
+            store.administration().refreshSchema(erm.getSchema());
+            populateStore(store);
         }
     }
 
@@ -220,8 +220,8 @@ public final class Thingifier implements AutoCloseable {
         return erm;
     }
 
-    public ThingRepository getRepository(final String database) {
-        return erm.getRepository(database);
+    public ThingStore getStore(final String database) {
+        return erm.getStore(database);
     }
 
     public String exportDataAsJson(final String database) {
@@ -266,9 +266,9 @@ public final class Thingifier implements AutoCloseable {
             // if we created it then populate it
             if (getDefaultDataPopulator() != null) {
                 // Use any default data populator to populate the new database
-                ThingRepository repository = getERmodel().getRepository(databaseName);
-                repository.refreshSchema(getERmodel().getSchema());
-                populateRepository(repository);
+                ThingStore store = getERmodel().getStore(databaseName);
+                store.administration().refreshSchema(getERmodel().getSchema());
+                populateStore(store);
             }
         }
     }
@@ -278,14 +278,14 @@ public final class Thingifier implements AutoCloseable {
         getERmodel().createInstanceDatabaseIfNotExisting(databaseName);
 
         new JsonPopulator(jsonDatabaseContents)
-                .populate(getERmodel().getSchema(), getERmodel().getRepository(databaseName));
+                .populate(getERmodel().getSchema(), getERmodel().getStore(databaseName));
     }
 
     public ApiDocsConfig apidocsconfig() {
         return apiDocsConfig;
     }
 
-    private void populateRepository(final ThingRepository repository) {
-        dataPopulator.populate(erm.getSchema(), repository);
+    private void populateStore(final ThingStore store) {
+        dataPopulator.populate(erm.getSchema(), store);
     }
 }

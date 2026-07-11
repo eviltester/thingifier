@@ -53,10 +53,12 @@ public class SparkApiRequestResponseHandler {
 
         if (httpApiResponse == null) {
             ApiResponse apiResponse = handler.handle(myRequest);
-            apiResponse.usingRepository(
-                    thingifier.getRepository(
-                            SessionHeaderParser.getDatabaseNameFromHeaderValue(
-                                    myRequest.getHeaders())));
+            apiResponse.usingRelationships(
+                    thingifier
+                            .getStore(
+                                    SessionHeaderParser.getDatabaseNameFromHeaderValue(
+                                            myRequest.getHeaders()))
+                            .relationships());
 
             httpApiResponse =
                     new HttpApiResponse(

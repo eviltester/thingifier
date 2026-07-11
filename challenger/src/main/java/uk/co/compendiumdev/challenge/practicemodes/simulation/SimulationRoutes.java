@@ -21,8 +21,10 @@ import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 import uk.co.compendiumdev.thingifier.core.query.FilterBy;
 import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
-import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
-import uk.co.compendiumdev.thingifier.core.repository.ThingRepositoryProviderConfig;
+import uk.co.compendiumdev.thingifier.core.repository.EntityInstanceQuery;
+import uk.co.compendiumdev.thingifier.core.repository.EntityInstanceRepository;
+import uk.co.compendiumdev.thingifier.core.repository.ThingStore;
+import uk.co.compendiumdev.thingifier.core.repository.ThingStoreProviderConfig;
 import uk.co.compendiumdev.thingifier.htmlgui.htmlgen.DefaultGUIHTML;
 import uk.co.compendiumdev.thingifier.spark.SimpleSparkRouteCreator;
 
@@ -30,11 +32,12 @@ public class SimulationRoutes {
 
     public Thingifier simulation;
     public EntityDefinition entityDefn;
-    private ThingRepository entityRepository;
+    private EntityInstanceRepository entityRepository;
+    private EntityInstanceQuery entityQuery;
 
     private ThingifierApiDocumentationDefn apiDocDefn;
     private DefaultGUIHTML guiTemplates;
-    private final ThingRepositoryProviderConfig simulationRepositoryConfig;
+    private final ThingStoreProviderConfig simulationRepositoryConfig;
 
     public SimulationRoutes(DefaultGUIHTML guiTemplates) {
         this(guiTemplates, ChallengerConfig.defaultSimulationRepositoryConfig());
@@ -42,7 +45,7 @@ public class SimulationRoutes {
 
     public SimulationRoutes(
             final DefaultGUIHTML guiTemplates,
-            final ThingRepositoryProviderConfig simulationRepositoryConfig) {
+            final ThingStoreProviderConfig simulationRepositoryConfig) {
         this.guiTemplates = guiTemplates;
         this.simulationRepositoryConfig = simulationRepositoryConfig;
     }
@@ -72,7 +75,9 @@ public class SimulationRoutes {
                         .withDefaultValue("")
                         .withValidation(new MaximumLengthValidationRule(200)));
 
-        entityRepository = simulation.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME);
+        ThingStore store = simulation.getStore(EntityRelModel.DEFAULT_DATABASE_NAME);
+        entityRepository = store.entities();
+        entityQuery = store.entityQueries();
 
         for (int id = 1; id <= 10; id++) {
 
@@ -122,7 +127,7 @@ public class SimulationRoutes {
     }
 
     private EntityInstance createManagedEntityNamed(final String name) {
-        return entityRepository.createInstance(
+        return entityRepository.create(
                 EntityInstanceDraft.forEntity(entityDefn).withField("name", name));
     }
 
@@ -166,8 +171,7 @@ public class SimulationRoutes {
                     // GET.
                     queryParams.add(new FilterBy("id", "!=11"));
 
-                    List<EntityInstance> instances =
-                            entityRepository.listInstances(entityDefn, queryParams);
+                    List<EntityInstance> instances = entityQuery.list(entityDefn, queryParams);
                     return ApiResponse.success()
                             .returnInstanceCollection(instances)
                             .resultContainsType(entityDefn);
@@ -196,8 +200,7 @@ public class SimulationRoutes {
 
                     // process it because the request validated
                     String id = anHttpApiRequest.getUrlParam(":id");
-                    EntityInstance instance =
-                            entityRepository.findInstanceByPrimaryKey(entityDefn, id);
+                    EntityInstance instance = entityQuery.findByPrimaryKey(entityDefn, id);
                     if (instance == null) {
                         response = ApiResponse.error404("Could not find Entity with ID " + id);
                     } else {
@@ -249,8 +252,7 @@ public class SimulationRoutes {
                             .usingHandler(
                                     (anHttpApiRequest) -> {
                                         return ApiResponse.created(
-                                                entityRepository.findInstanceByPrimaryKey(
-                                                        entityDefn, "11"),
+                                                entityQuery.findByPrimaryKey(entityDefn, "11"),
                                                 simulation.apiConfig());
                                     })
                             .handle();
@@ -265,7 +267,7 @@ public class SimulationRoutes {
                         // we can create id 11
                         response =
                                 ApiResponse.created(
-                                        entityRepository.findInstanceByPrimaryKey(entityDefn, "11"),
+                                        entityQuery.findByPrimaryKey(entityDefn, "11"),
                                         simulation.apiConfig());
                     } else {
                         if (id.equals("10")) {
@@ -278,7 +280,7 @@ public class SimulationRoutes {
                                                             .withField("name", "eris"));
                         } else {
                             final EntityInstance instance =
-                                    entityRepository.findInstanceByPrimaryKey(entityDefn, id);
+                                    entityQuery.findByPrimaryKey(entityDefn, id);
                             if (instance == null) {
                                 if (anHttpApiRequest.getVerb() == HttpApiRequest.VERB.POST) {
                                     response =
@@ -332,8 +334,7 @@ public class SimulationRoutes {
                                             response = new ApiResponse(204);
                                         } else {
                                             final EntityInstance instance =
-                                                    entityRepository.findInstanceByPrimaryKey(
-                                                            entityDefn, id);
+                                                    entityQuery.findByPrimaryKey(entityDefn, id);
                                             if (instance == null) {
                                                 response =
                                                         ApiResponse.error404(

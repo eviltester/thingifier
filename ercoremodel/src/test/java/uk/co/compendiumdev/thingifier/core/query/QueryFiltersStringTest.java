@@ -21,23 +21,27 @@ public class QueryFiltersStringTest {
         erModel.createEntityDefinition("thing", "things")
                 .addFields(Field.is("string", FieldType.STRING));
 
-        erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                .createInstance(
+        erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                .entities()
+                .create(
                         EntityInstanceDraft.forEntity(
                                         erModel.getSchema().getEntityDefinitionNamed("thing"))
                                 .withField("string", "one"));
-        erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                .createInstance(
+        erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                .entities()
+                .create(
                         EntityInstanceDraft.forEntity(
                                         erModel.getSchema().getEntityDefinitionNamed("thing"))
                                 .withField("string", "two"));
-        erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                .createInstance(
+        erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                .entities()
+                .create(
                         EntityInstanceDraft.forEntity(
                                         erModel.getSchema().getEntityDefinitionNamed("thing"))
                                 .withField("string", "three"));
-        erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                .createInstance(
+        erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                .entities()
+                .create(
                         EntityInstanceDraft.forEntity(
                                         erModel.getSchema().getEntityDefinitionNamed("thing"))
                                 .withField("string", "four"));
@@ -52,7 +56,7 @@ public class QueryFiltersStringTest {
         RepositoryUrlQuery queryResults =
                 new RepositoryUrlQuery(
                                 erModel.getSchema(),
-                                erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
                                 "things")
                         .performQuery(params);
 
@@ -74,7 +78,7 @@ public class QueryFiltersStringTest {
         RepositoryUrlQuery queryResults =
                 new RepositoryUrlQuery(
                                 erModel.getSchema(),
-                                erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
                                 "things")
                         .performQuery(params);
 
@@ -97,7 +101,7 @@ public class QueryFiltersStringTest {
         RepositoryUrlQuery queryResults =
                 new RepositoryUrlQuery(
                                 erModel.getSchema(),
-                                erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
                                 "things")
                         .performQuery(params);
 
@@ -117,7 +121,7 @@ public class QueryFiltersStringTest {
         RepositoryUrlQuery queryResults =
                 new RepositoryUrlQuery(
                                 erModel.getSchema(),
-                                erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
                                 "things")
                         .performQuery(params);
 
@@ -140,7 +144,7 @@ public class QueryFiltersStringTest {
         RepositoryUrlQuery queryResults =
                 new RepositoryUrlQuery(
                                 erModel.getSchema(),
-                                erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
                                 "things")
                         .performQuery(params);
 
@@ -163,7 +167,7 @@ public class QueryFiltersStringTest {
         RepositoryUrlQuery queryResults =
                 new RepositoryUrlQuery(
                                 erModel.getSchema(),
-                                erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
                                 "things")
                         .performQuery(params);
 
@@ -185,7 +189,7 @@ public class QueryFiltersStringTest {
         RepositoryUrlQuery queryResults =
                 new RepositoryUrlQuery(
                                 erModel.getSchema(),
-                                erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
                                 "things")
                         .performQuery(params);
 
@@ -207,7 +211,7 @@ public class QueryFiltersStringTest {
         RepositoryUrlQuery queryResults =
                 new RepositoryUrlQuery(
                                 erModel.getSchema(),
-                                erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
                                 "things")
                         .performQuery(params);
 
@@ -229,7 +233,7 @@ public class QueryFiltersStringTest {
         RepositoryUrlQuery queryResults =
                 new RepositoryUrlQuery(
                                 erModel.getSchema(),
-                                erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
                                 "things")
                         .performQuery(params);
 

@@ -13,7 +13,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.Relat
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 import uk.co.compendiumdev.thingifier.core.domain.instances.InstanceFields;
-import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
+import uk.co.compendiumdev.thingifier.core.repository.RelationshipRepository;
 
 public class JsonThing {
 
@@ -36,8 +36,11 @@ public class JsonThing {
     }
 
     public String asJsonTypedArrayWithContentsUntyped(
-            final List<EntityInstance> things, String typeName, final ThingRepository repository) {
-        return asJsonObjectTypedArrayWithContentsUntyped(things, typeName, repository).toString();
+            final List<EntityInstance> things,
+            String typeName,
+            final RelationshipRepository relationships) {
+        return asJsonObjectTypedArrayWithContentsUntyped(things, typeName, relationships)
+                .toString();
     }
 
     /*
@@ -63,9 +66,11 @@ public class JsonThing {
     }
 
     public JsonObject asJsonObjectTypedArrayWithContentsUntyped(
-            final List<EntityInstance> things, String typeName, final ThingRepository repository) {
+            final List<EntityInstance> things,
+            String typeName,
+            final RelationshipRepository relationships) {
         final JsonObject arrayObj = new JsonObject();
-        arrayObj.add(typeName, asJsonArray(things, repository));
+        arrayObj.add(typeName, asJsonArray(things, relationships));
         return arrayObj;
     }
 
@@ -92,14 +97,14 @@ public class JsonThing {
     }
 
     private JsonArray asJsonArray(
-            final Collection<EntityInstance> things, final ThingRepository repository) {
+            final Collection<EntityInstance> things, final RelationshipRepository relationships) {
 
         // [{"guid":"bob"}, {"guid":"bob2"}]
 
         final JsonArray jsonArray = new JsonArray();
 
         for (EntityInstance thing : things) {
-            jsonArray.add(asJsonObject(thing, repository));
+            jsonArray.add(asJsonObject(thing, relationships));
         }
 
         // System.out.println(jsonArray.toString());
@@ -291,7 +296,7 @@ public class JsonThing {
     }
 
     public JsonObject asJsonObject(
-            final EntityInstance thingInstance, final ThingRepository repository) {
+            final EntityInstance thingInstance, final RelationshipRepository relationshipsPort) {
 
         // todo: I swallowed exception generation in here because I was passing in the 'input'
         // representations
@@ -333,15 +338,15 @@ public class JsonThing {
         Boolean allowCompressedRelationships = apiConfig.willRenderRelationshipsAsCompressed();
 
         // "relationships" : [
-        if (repository != null
+        if (relationshipsPort != null
                 && relationships.size() > 0
-                && repository.hasRelationshipInstances(thingInstance)) {
+                && relationshipsPort.hasRelationships(thingInstance)) {
             final JsonArray relationshipsArray = new JsonArray();
 
             // fill the array "relationship_name" : [
             for (RelationshipVectorDefinition relationship : relationships) {
                 final Collection<EntityInstance> relatedItems =
-                        repository.listRelatedInstances(thingInstance, relationship.getName());
+                        relationshipsPort.listRelated(thingInstance, relationship.getName());
 
                 boolean isCompressedRelationship = true;
                 if (thingInstance.getEntity().hasFieldNameDefined(relationship.getName())) {
@@ -418,10 +423,10 @@ public class JsonThing {
     public String asJsonTypedArrayWithContentsTyped(
             final List<EntityInstance> things,
             EntityDefinition defn,
-            final ThingRepository repository) {
+            final RelationshipRepository relationships) {
 
         final JsonObject arrayObj = new JsonObject();
-        arrayObj.add(defn.getPlural(), asJsonArrayInstanceWrapped(things, repository));
+        arrayObj.add(defn.getPlural(), asJsonArrayInstanceWrapped(things, relationships));
         return arrayObj.toString();
     }
 
@@ -433,7 +438,7 @@ public class JsonThing {
      * @return
      */
     private JsonArray asJsonArrayInstanceWrapped(
-            Collection<EntityInstance> things, final ThingRepository repository) {
+            Collection<EntityInstance> things, final RelationshipRepository relationships) {
 
         // [{"item":{"guid":"bob"}}, {"item":{"guid":"bob2"}}]
 
@@ -442,7 +447,7 @@ public class JsonThing {
         for (EntityInstance thing : things) {
 
             JsonObject jsonObj = new JsonObject();
-            jsonObj.add(thing.getEntity().getName(), asJsonObject(thing, repository));
+            jsonObj.add(thing.getEntity().getName(), asJsonObject(thing, relationships));
             jsonArray.add(jsonObj);
         }
 
@@ -456,10 +461,10 @@ public class JsonThing {
     }
 
     public JsonObject asNamedJsonObject(
-            final EntityInstance instance, final ThingRepository repository) {
+            final EntityInstance instance, final RelationshipRepository relationships) {
 
         final JsonObject retObj = new JsonObject();
-        retObj.add(instance.getEntity().getName(), asJsonObject(instance, repository));
+        retObj.add(instance.getEntity().getName(), asJsonObject(instance, relationships));
         return retObj;
     }
 

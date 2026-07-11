@@ -4,16 +4,16 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.ERSchema;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
+import uk.co.compendiumdev.thingifier.core.repository.EntityInstanceQuery;
 
 public class RepositoryJsonExporter {
 
     private final ERSchema schema;
-    private final ThingRepository repository;
+    private final EntityInstanceQuery query;
 
-    public RepositoryJsonExporter(final ERSchema schema, final ThingRepository repository) {
+    public RepositoryJsonExporter(final ERSchema schema, final EntityInstanceQuery query) {
         this.schema = schema;
-        this.repository = repository;
+        this.query = query;
     }
 
     public String asJson() {
@@ -25,7 +25,7 @@ public class RepositoryJsonExporter {
             json.append(entitySeparator).append(quoted(entity.getPlural())).append(" : [");
 
             String instanceSeparator = "";
-            for (EntityInstance instance : repository.listInstances(entity)) {
+            for (EntityInstance instance : query.list(entity)) {
                 json.append(instanceSeparator);
                 appendInstanceJson(json, entity, instance);
                 instanceSeparator = ", ";

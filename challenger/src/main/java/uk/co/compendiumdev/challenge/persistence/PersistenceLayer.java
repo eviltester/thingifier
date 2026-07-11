@@ -48,7 +48,7 @@ public class PersistenceLayer {
                 new JsonPopulator(response.getDatabaseContents())
                         .populate(
                                 challengers.getErModel().getSchema(),
-                                challengers.getErModel().getRepository(databaseName));
+                                challengers.getErModel().getStore(databaseName));
             } else {
                 // set the database to default values
                 challengers.getErModel().populateDatabase(databaseName);

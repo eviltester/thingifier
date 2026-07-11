@@ -15,7 +15,7 @@ import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.application.httpapimessagehooks.HttpApiResponseHook;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
+import uk.co.compendiumdev.thingifier.core.repository.EntityInstanceQuery;
 
 public class ChallengerApiResponseHook implements HttpApiResponseHook {
 
@@ -293,34 +293,34 @@ public class ChallengerApiResponseHook implements HttpApiResponseHook {
     private EntityInstance findTodoByField(
             final ChallengerAuthData challenger, final String fieldName, final String fieldValue) {
         EntityDefinition todo = todoDefinition();
-        ThingRepository repository = repositoryFor(challenger);
-        if (todo == null || repository == null) {
+        EntityInstanceQuery query = queryFor(challenger);
+        if (todo == null || query == null) {
             return null;
         }
-        return repository.findInstanceByFieldNameAndValue(todo, fieldName, fieldValue);
+        return query.findByField(todo, fieldName, fieldValue);
     }
 
     private EntityInstance findTodoByIdentifier(
             final ChallengerAuthData challenger, final String identifier) {
         EntityDefinition todo = todoDefinition();
-        ThingRepository repository = repositoryFor(challenger);
-        if (todo == null || repository == null) {
+        EntityInstanceQuery query = queryFor(challenger);
+        if (todo == null || query == null) {
             return null;
         }
-        return repository.findInstanceByQueryIdentifier(todo, identifier);
+        return query.findByQueryIdentifier(todo, identifier);
     }
 
     private int countTodos(final ChallengerAuthData challenger) {
         EntityDefinition todo = todoDefinition();
-        ThingRepository repository = repositoryFor(challenger);
-        if (todo == null || repository == null) {
+        EntityInstanceQuery query = queryFor(challenger);
+        if (todo == null || query == null) {
             return -1;
         }
-        return repository.countInstances(todo);
+        return query.count(todo);
     }
 
-    private ThingRepository repositoryFor(final ChallengerAuthData challenger) {
-        return thingifier.getRepository(challenger.getXChallenger());
+    private EntityInstanceQuery queryFor(final ChallengerAuthData challenger) {
+        return thingifier.getStore(challenger.getXChallenger()).entityQueries();
     }
 
     private EntityDefinition todoDefinition() {

@@ -51,7 +51,10 @@ final class EntityUrlMatcher {
         if (entity == null || identifier == null) {
             return null;
         }
-        return thingifier.getRepository(database).findInstanceByQueryIdentifier(entity, identifier);
+        return thingifier
+                .getStore(database)
+                .entityQueries()
+                .findByQueryIdentifier(entity, identifier);
     }
 
     static String[] parts(final String url) {

@@ -8,8 +8,8 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.F
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
-import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
-import uk.co.compendiumdev.thingifier.core.repository.inmemory.InMemoryThingRepository;
+import uk.co.compendiumdev.thingifier.core.repository.ThingStore;
+import uk.co.compendiumdev.thingifier.core.repository.inmemory.InMemoryThingStore;
 
 public class AutoIncrementIdFieldTest {
 
@@ -19,9 +19,10 @@ public class AutoIncrementIdFieldTest {
         ERSchema schema = new ERSchema();
         EntityDefinition entity = schema.defineEntity("thing", "things", -1);
         entity.addFields(Field.is("id", FieldType.AUTO_INCREMENT));
-        ThingRepository repository = new InMemoryThingRepository("test");
-        repository.initializeFrom(schema);
-        EntityInstance instance = repository.createInstance(EntityInstanceDraft.forEntity(entity));
+        ThingStore repository = new InMemoryThingStore("test");
+        repository.administration().initializeFrom(schema);
+        EntityInstance instance =
+                repository.entities().create(EntityInstanceDraft.forEntity(entity));
 
         Assertions.assertEquals("1", instance.getFieldValue("id").asString());
     }
@@ -32,13 +33,15 @@ public class AutoIncrementIdFieldTest {
         ERSchema schema = new ERSchema();
         EntityDefinition entity = schema.defineEntity("thing", "things", -1);
         entity.addFields(Field.is("id", FieldType.AUTO_INCREMENT));
-        ThingRepository repository = new InMemoryThingRepository("test");
-        repository.initializeFrom(schema);
+        ThingStore repository = new InMemoryThingStore("test");
+        repository.administration().initializeFrom(schema);
 
-        EntityInstance instance = repository.createInstance(EntityInstanceDraft.forEntity(entity));
+        EntityInstance instance =
+                repository.entities().create(EntityInstanceDraft.forEntity(entity));
         Assertions.assertEquals("1", instance.getFieldValue("id").asString());
 
-        EntityInstance instance2 = repository.createInstance(EntityInstanceDraft.forEntity(entity));
+        EntityInstance instance2 =
+                repository.entities().create(EntityInstanceDraft.forEntity(entity));
         Assertions.assertEquals("2", instance2.getFieldValue("id").asString());
     }
 
@@ -48,16 +51,20 @@ public class AutoIncrementIdFieldTest {
         ERSchema schema = new ERSchema();
         EntityDefinition entity = schema.defineEntity("thing", "things", -1);
         entity.addFields(Field.is("id", FieldType.AUTO_INCREMENT));
-        ThingRepository repository = new InMemoryThingRepository("test");
-        repository.initializeFrom(schema);
+        ThingStore repository = new InMemoryThingStore("test");
+        repository.administration().initializeFrom(schema);
 
-        EntityInstance instance = repository.createInstance(EntityInstanceDraft.forEntity(entity));
+        EntityInstance instance =
+                repository.entities().create(EntityInstanceDraft.forEntity(entity));
         Assertions.assertEquals("1", instance.getFieldValue("id").asString());
         Assertions.assertThrows(
                 IllegalArgumentException.class,
                 () -> {
-                    repository.patchInstance(
-                            instance, EntityInstanceDraft.forEntity(entity).withField("id", "2"));
+                    repository
+                            .entities()
+                            .patch(
+                                    instance,
+                                    EntityInstanceDraft.forEntity(entity).withField("id", "2"));
                 });
     }
 }

@@ -51,8 +51,9 @@ public class RestApiPutHandler {
 
         EntityInstance instance =
                 thingifier
-                        .getRepository(instanceDatabaseName)
-                        .findInstanceByQueryIdentifier(thing, instanceGuid);
+                        .getStore(instanceDatabaseName)
+                        .entityQueries()
+                        .findByQueryIdentifier(thing, instanceGuid);
 
         if (instance == null) {
 

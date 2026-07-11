@@ -76,28 +76,32 @@ public class RelationshipApiNonHttpTest {
 
         EntityInstance paperwork =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .createInstance(
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
                                 EntityInstanceDraft.forEntity(todo)
                                         .withField("title", "Todo for relating"));
 
         EntityInstance myNewProject =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .createInstance(
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
                                 EntityInstanceDraft.forEntity(project)
                                         .withField(
                                                 "title",
                                                 "My New Project " + System.currentTimeMillis()));
 
         todoManager
-                .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                .connectRelationship(myNewProject, "tasks", paperwork);
+                .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                .relationships()
+                .connect(myNewProject, "tasks", paperwork);
 
         int numberOfTasks =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .listRelatedInstances(myNewProject, "tasks")
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .relationships()
+                        .listRelated(myNewProject, "tasks")
                         .size();
         Assertions.assertEquals(1, numberOfTasks);
 
@@ -117,9 +121,9 @@ public class RelationshipApiNonHttpTest {
 
         EntityInstance foundInstance =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .findInstanceByFieldNameAndValue(
-                                todo, "guid", paperwork.getPrimaryKeyValue());
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .findByField(todo, "guid", paperwork.getPrimaryKeyValue());
         Assertions.assertNotNull(
                 foundInstance, "Task should exist, only the relationship should be deleted");
 
@@ -136,30 +140,34 @@ public class RelationshipApiNonHttpTest {
 
         EntityInstance paperwork =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .createInstance(
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
                                 EntityInstanceDraft.forEntity(todo)
                                         .withField("title", "Todo for amending"));
 
         EntityInstance myNewProject =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .createInstance(
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
                                 EntityInstanceDraft.forEntity(project)
                                         .withField(
                                                 "title",
                                                 "My New Project " + System.currentTimeMillis()));
 
         todoManager
-                .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                .connectRelationship(myNewProject, "tasks", paperwork);
+                .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                .relationships()
+                .connect(myNewProject, "tasks", paperwork);
 
         // DELETE a Relationship
         // DELETE project/_GUID_/tasks/_GUID_
         int numberOfTasks =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .listRelatedInstances(myNewProject, "tasks")
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .relationships()
+                        .listRelated(myNewProject, "tasks")
                         .size();
         Assertions.assertEquals(1, numberOfTasks);
 
@@ -178,14 +186,15 @@ public class RelationshipApiNonHttpTest {
         Assertions.assertEquals(
                 numberOfTasks - 1,
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .listRelatedInstances(myNewProject, "tasks")
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .relationships()
+                        .listRelated(myNewProject, "tasks")
                         .size());
         Assertions.assertNotNull(
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .findInstanceByFieldNameAndValue(
-                                todo, "guid", paperwork.getPrimaryKeyValue()),
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .findByField(todo, "guid", paperwork.getPrimaryKeyValue()),
                 "Task should exist, only the relationship should be deleted");
 
         Assertions.assertTrue(apiresponse.getErrorMessages().size() == 0);
@@ -208,30 +217,34 @@ public class RelationshipApiNonHttpTest {
 
         EntityInstance paperwork =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .createInstance(
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
                                 EntityInstanceDraft.forEntity(todo)
                                         .withField("title", "Todo for amending"));
 
         EntityInstance myNewProject =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .createInstance(
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
                                 EntityInstanceDraft.forEntity(project)
                                         .withField(
                                                 "title",
                                                 "My New Project " + System.currentTimeMillis()));
 
         todoManager
-                .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                .connectRelationship(myNewProject, "tasks", paperwork);
+                .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                .relationships()
+                .connect(myNewProject, "tasks", paperwork);
 
         // DELETE the todo
         // DELETE todo/_guid_
         int numberOfTasks =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .listRelatedInstances(myNewProject, "tasks")
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .relationships()
+                        .listRelated(myNewProject, "tasks")
                         .size();
         Assertions.assertEquals(1, numberOfTasks);
 
@@ -249,25 +262,28 @@ public class RelationshipApiNonHttpTest {
         Assertions.assertEquals(
                 numberOfTasks - 1,
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .listRelatedInstances(myNewProject, "tasks")
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .relationships()
+                        .listRelated(myNewProject, "tasks")
                         .size());
         Assertions.assertNull(
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .findInstanceByFieldNameAndValue(
-                                todo, "guid", paperwork.getPrimaryKeyValue()),
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .findByField(todo, "guid", paperwork.getPrimaryKeyValue()),
                 "Task should not exist");
         Assertions.assertEquals(
                 0,
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .countInstances(todo));
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(todo));
         Assertions.assertEquals(
                 1,
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .countInstances(project));
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(project));
 
         System.out.println(todoManager);
     }
@@ -279,15 +295,17 @@ public class RelationshipApiNonHttpTest {
 
         EntityInstance paperwork =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .createInstance(
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
                                 EntityInstanceDraft.forEntity(todo)
                                         .withField("title", "Todo for amending"));
 
         EntityInstance myNewProject =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .createInstance(
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
                                 EntityInstanceDraft.forEntity(project)
                                         .withField(
                                                 "title",
@@ -302,8 +320,9 @@ public class RelationshipApiNonHttpTest {
 
         int numberOfTasks =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .listRelatedInstances(myNewProject, "tasks")
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .relationships()
+                        .listRelated(myNewProject, "tasks")
                         .size();
 
         requestBody = new HashMap<String, String>();
@@ -323,15 +342,17 @@ public class RelationshipApiNonHttpTest {
         Assertions.assertEquals(
                 numberOfTasks + 1,
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .listRelatedInstances(myNewProject, "tasks")
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .relationships()
+                        .listRelated(myNewProject, "tasks")
                         .size());
 
         // todo should also be connected to project via the associated task-of relationship vector
         Collection<EntityInstance> projects =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .listRelatedInstances(paperwork, "task-of");
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .relationships()
+                        .listRelated(paperwork, "task-of");
 
         Assertions.assertEquals(1, projects.size());
         List<EntityInstance> listOfProjects = new ArrayList<EntityInstance>(projects);
@@ -357,15 +378,17 @@ public class RelationshipApiNonHttpTest {
 
         EntityInstance myNewProject =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .createInstance(
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
                                 EntityInstanceDraft.forEntity(project)
                                         .withField("title", "Project For Relationships"));
 
         EntityInstance relTodo =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .createInstance(
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
                                 EntityInstanceDraft.forEntity(todo)
                                         .withField("title", "Todo for relationship testing"));
 
@@ -380,8 +403,9 @@ public class RelationshipApiNonHttpTest {
 
         int numberOfTasks =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .listRelatedInstances(myNewProject, "tasks")
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .relationships()
+                        .listRelated(myNewProject, "tasks")
                         .size();
 
         ApiResponse apiresponse =
@@ -398,8 +422,9 @@ public class RelationshipApiNonHttpTest {
         Assertions.assertEquals(
                 numberOfTasks + 1,
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .listRelatedInstances(myNewProject, "tasks")
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .relationships()
+                        .listRelated(myNewProject, "tasks")
                         .size());
 
         Assertions.assertTrue(apiresponse.getErrorMessages().size() == 0);
@@ -420,8 +445,9 @@ public class RelationshipApiNonHttpTest {
 
         EntityInstance myNewProject =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .createInstance(
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
                                 EntityInstanceDraft.forEntity(project)
                                         .withField(
                                                 "title",
@@ -430,8 +456,9 @@ public class RelationshipApiNonHttpTest {
 
         EntityInstance relTodo =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .createInstance(
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
                                 EntityInstanceDraft.forEntity(todo)
                                         .withField(
                                                 "title",
@@ -449,8 +476,9 @@ public class RelationshipApiNonHttpTest {
 
         int numberOfProjects =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .listRelatedInstances(relTodo, "task-of")
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .relationships()
+                        .listRelated(relTodo, "task-of")
                         .size();
         Assertions.assertEquals(0, numberOfProjects);
 
@@ -489,8 +517,9 @@ public class RelationshipApiNonHttpTest {
         Assertions.assertEquals(
                 1,
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .listRelatedInstances(relTodo, "task-of")
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .relationships()
+                        .listRelated(relTodo, "task-of")
                         .size());
         Assertions.assertTrue(apiresponse.getErrorMessages().size() == 0);
         Assertions.assertEquals(
@@ -528,8 +557,9 @@ public class RelationshipApiNonHttpTest {
 
         EntityInstance myNewProject =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .createInstance(
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
                                 EntityInstanceDraft.forEntity(project)
                                         .withField(
                                                 "title",
@@ -538,8 +568,9 @@ public class RelationshipApiNonHttpTest {
 
         EntityInstance relTodo =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .createInstance(
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
                                 EntityInstanceDraft.forEntity(todo)
                                         .withField(
                                                 "title",
@@ -557,8 +588,9 @@ public class RelationshipApiNonHttpTest {
 
         int numberOfProjects =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .listRelatedInstances(relTodo, "task-of")
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .relationships()
+                        .listRelated(relTodo, "task-of")
                         .size();
         Assertions.assertEquals(0, numberOfProjects);
 
@@ -575,8 +607,9 @@ public class RelationshipApiNonHttpTest {
         Assertions.assertEquals(
                 1,
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .listRelatedInstances(relTodo, "task-of")
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .relationships()
+                        .listRelated(relTodo, "task-of")
                         .size());
 
         Assertions.assertTrue(apiresponse.getErrorMessages().size() == 0);
@@ -602,15 +635,17 @@ public class RelationshipApiNonHttpTest {
         // project should be related to nothing
         Collection<EntityInstance> items =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .listRelatedInstances(myNewProject, "tasks");
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .relationships()
+                        .listRelated(myNewProject, "tasks");
         Assertions.assertEquals(0, items.size());
 
         // todo should be related to nothing
         items =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .listRelatedInstances(relTodo, "task-of");
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .relationships()
+                        .listRelated(relTodo, "task-of");
         Assertions.assertEquals(0, items.size());
 
         Assertions.assertTrue(apiresponse.getErrorMessages().size() == 0);
@@ -633,8 +668,9 @@ public class RelationshipApiNonHttpTest {
 
         EntityInstance myNewProject =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .createInstance(
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
                                 EntityInstanceDraft.forEntity(project)
                                         .withField(
                                                 "title",
@@ -643,8 +679,9 @@ public class RelationshipApiNonHttpTest {
 
         EntityInstance relTodo =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .createInstance(
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
                                 EntityInstanceDraft.forEntity(todo)
                                         .withField(
                                                 "title",
@@ -662,8 +699,9 @@ public class RelationshipApiNonHttpTest {
 
         int numberOfProjects =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .listRelatedInstances(relTodo, "task-of")
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .relationships()
+                        .listRelated(relTodo, "task-of")
                         .size();
         Assertions.assertEquals(0, numberOfProjects);
 
@@ -680,8 +718,9 @@ public class RelationshipApiNonHttpTest {
         Assertions.assertEquals(
                 1,
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .listRelatedInstances(relTodo, "task-of")
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .relationships()
+                        .listRelated(relTodo, "task-of")
                         .size());
         Assertions.assertTrue(apiresponse.getErrorMessages().size() == 0);
         Assertions.assertFalse(apiresponse.hasABody());
@@ -706,8 +745,9 @@ public class RelationshipApiNonHttpTest {
         Assertions.assertEquals(
                 0,
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .listInstances(todo)
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .list(todo)
                         .size(),
                 "Should be no stored todos");
         Assertions.assertTrue(apiresponse.getErrorMessages().size() == 0);
@@ -724,15 +764,17 @@ public class RelationshipApiNonHttpTest {
         // project should be related to nothing
         Collection<EntityInstance> items =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .listRelatedInstances(myNewProject, "tasks");
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .relationships()
+                        .listRelated(myNewProject, "tasks");
         Assertions.assertEquals(0, items.size());
 
         // todo should be related to nothing
         items =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .listRelatedInstances(relTodo, "task-of");
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .relationships()
+                        .listRelated(relTodo, "task-of");
         Assertions.assertEquals(0, items.size());
 
         System.out.println(todoManager);
@@ -743,8 +785,9 @@ public class RelationshipApiNonHttpTest {
 
         EntityInstance myNewProject =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .createInstance(
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
                                 EntityInstanceDraft.forEntity(project)
                                         .withField("title", "Project For Relationships"));
 
@@ -758,8 +801,9 @@ public class RelationshipApiNonHttpTest {
 
         int numberOfTasks =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .listRelatedInstances(myNewProject, "tasks")
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .relationships()
+                        .listRelated(myNewProject, "tasks")
                         .size();
 
         ApiResponse apiresponse =
@@ -781,8 +825,9 @@ public class RelationshipApiNonHttpTest {
         Assertions.assertEquals(
                 numberOfTasks + 1,
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .listRelatedInstances(myNewProject, "tasks")
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .relationships()
+                        .listRelated(myNewProject, "tasks")
                         .size(),
                 "Expected number of tasks in project to increase by 1");
 
@@ -801,15 +846,17 @@ public class RelationshipApiNonHttpTest {
         // check todo exists
         EntityInstance myCreatedTodo =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .findInstanceByPrimaryKey(todo, locationGuid);
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .findByPrimaryKey(todo, locationGuid);
         Assertions.assertEquals(expectedTitle, myCreatedTodo.getFieldValue("title").asString());
 
         // check todo is also related to the project since relationship is two way
         Collection<EntityInstance> items =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .listRelatedInstances(myCreatedTodo, "task-of");
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .relationships()
+                        .listRelated(myCreatedTodo, "task-of");
         Assertions.assertEquals(1, items.size(), "Expected task be connected to only 1 project");
 
         List<EntityInstance> itemList = new ArrayList<>(items);
@@ -828,8 +875,9 @@ public class RelationshipApiNonHttpTest {
 
         EntityInstance relTodo =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .createInstance(
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
                                 EntityInstanceDraft.forEntity(todo)
                                         .withField(
                                                 "title",
@@ -846,8 +894,9 @@ public class RelationshipApiNonHttpTest {
 
         int numberOfProjects =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .listRelatedInstances(relTodo, "task-of")
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .relationships()
+                        .listRelated(relTodo, "task-of")
                         .size();
         Assertions.assertEquals(0, numberOfProjects);
 
@@ -864,8 +913,9 @@ public class RelationshipApiNonHttpTest {
         Assertions.assertEquals(
                 1,
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .listRelatedInstances(relTodo, "task-of")
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .relationships()
+                        .listRelated(relTodo, "task-of")
                         .size());
 
         Assertions.assertTrue(apiresponse.hasABody());
@@ -881,8 +931,9 @@ public class RelationshipApiNonHttpTest {
 
         EntityInstance myNewProject =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .findInstanceByPrimaryKey(
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .findByPrimaryKey(
                                 project,
                                 apiresponse.getHeaderValue(ApiResponse.PRIMARY_KEY_HEADER));
         Assertions.assertNotNull(myNewProject);
@@ -890,15 +941,17 @@ public class RelationshipApiNonHttpTest {
         // project should be related to task
         Collection<EntityInstance> items =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .listRelatedInstances(myNewProject, "tasks");
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .relationships()
+                        .listRelated(myNewProject, "tasks");
         Assertions.assertEquals(1, items.size());
 
         // a todo instance should be related to project
         items =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .listRelatedInstances(relTodo, "task-of");
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .relationships()
+                        .listRelated(relTodo, "task-of");
         Assertions.assertEquals(1, items.size());
     }
 
@@ -918,8 +971,9 @@ public class RelationshipApiNonHttpTest {
 
         EntityInstance myTodo =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .createInstance(
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
                                 EntityInstanceDraft.forEntity(todo)
                                         .withField("title", "an estimated todo"));
         Assertions.assertNotNull(myTodo);
@@ -931,8 +985,9 @@ public class RelationshipApiNonHttpTest {
                         .getDefinitionWithSingularOrPluralNamed("estimate");
         int numberOfEstimates =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .countInstances(estimates);
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(estimates);
         Assertions.assertEquals(0, numberOfEstimates);
 
         // Createa a relationship and a thing with a POST and no GUID
@@ -962,8 +1017,9 @@ public class RelationshipApiNonHttpTest {
         Assertions.assertEquals(
                 numberOfEstimates + 1,
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .countInstances(estimates),
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(estimates),
                 "Expected number of estimates in project to increase by 1");
 
         Assertions.assertTrue(apiresponse.hasABody());
@@ -981,8 +1037,9 @@ public class RelationshipApiNonHttpTest {
         // check estimate exists
         EntityInstance myCreatedItem =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .findInstanceByPrimaryKey(estimates, locationGuid);
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .findByPrimaryKey(estimates, locationGuid);
         Assertions.assertEquals(
                 expectedDescription, myCreatedItem.getFieldValue("description").asString());
         Assertions.assertEquals("3", myCreatedItem.getFieldValue("duration").asString());
@@ -990,8 +1047,9 @@ public class RelationshipApiNonHttpTest {
         // check estimate is related to the todo since relationship is two way
         Collection<EntityInstance> items =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .listRelatedInstances(myCreatedItem, "estimate");
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .relationships()
+                        .listRelated(myCreatedItem, "estimate");
         Assertions.assertEquals(
                 1, items.size(), "Expected estimate to be connected to only 1 todo");
         Assertions.assertTrue(items.contains(myTodo));
@@ -999,8 +1057,9 @@ public class RelationshipApiNonHttpTest {
         // check todo also recognises the relationship
         items =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .listRelatedInstances(myTodo, "estimates");
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .relationships()
+                        .listRelated(myTodo, "estimates");
         Assertions.assertEquals(
                 1, items.size(), "Expected todo to be connected to only 1 estimate");
         Assertions.assertTrue(items.contains(myCreatedItem));
@@ -1010,8 +1069,9 @@ public class RelationshipApiNonHttpTest {
     public void postCanNotCreateEstimateWithoutAMandatoryRelationshipUsingAPI() {
 
         todoManager
-                .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                .createInstance(
+                .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                .entities()
+                .create(
                         EntityInstanceDraft.forEntity(todo)
                                 .withField("title", "an estimated todo"));
 
@@ -1022,8 +1082,9 @@ public class RelationshipApiNonHttpTest {
                         .getDefinitionWithSingularOrPluralNamed("estimate");
         int numberOfEstimates =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .countInstances(estimates);
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(estimates);
         Assertions.assertEquals(0, numberOfEstimates);
 
         HashMap<String, String> requestBody = new HashMap<String, String>();
@@ -1041,8 +1102,9 @@ public class RelationshipApiNonHttpTest {
         Assertions.assertEquals(
                 numberOfEstimates,
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .countInstances(estimates),
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(estimates),
                 "Expected number of estimates in project to not increase");
     }
 
@@ -1051,8 +1113,9 @@ public class RelationshipApiNonHttpTest {
 
         EntityInstance myTodo =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .createInstance(
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
                                 EntityInstanceDraft.forEntity(todo)
                                         .withField("title", "an estimated todo"));
 
@@ -1060,8 +1123,9 @@ public class RelationshipApiNonHttpTest {
         Assertions.assertEquals(
                 0,
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .listRelatedInstances(myTodo, "estimates")
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .relationships()
+                        .listRelated(myTodo, "estimates")
                         .size());
 
         // there are no estimates at all
@@ -1072,8 +1136,9 @@ public class RelationshipApiNonHttpTest {
                         .getDefinitionWithSingularOrPluralNamed("estimate");
         int numberOfEstimates =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .countInstances(estimates);
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(estimates);
         Assertions.assertEquals(0, numberOfEstimates);
 
         HashMap<String, Object> requestBody = new HashMap<String, Object>();
@@ -1099,24 +1164,27 @@ public class RelationshipApiNonHttpTest {
         Assertions.assertEquals(
                 numberOfEstimates + 1,
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .countInstances(estimates),
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(estimates),
                 "Expected number of estimates in project to increase");
 
         // todo now has an estimate
         Assertions.assertEquals(
                 1,
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .listRelatedInstances(myTodo, "estimates")
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .relationships()
+                        .listRelated(myTodo, "estimates")
                         .size());
 
         // and it is the estimate we expected
         final ArrayList<EntityInstance> estimatesList = new ArrayList();
         estimatesList.addAll(
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .listRelatedInstances(myTodo, "estimates"));
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .relationships()
+                        .listRelated(myTodo, "estimates"));
         Assertions.assertEquals(
                 expectedDescription, estimatesList.get(0).getFieldValue("description").asString());
     }

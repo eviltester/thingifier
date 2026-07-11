@@ -4,8 +4,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.challenge.ChallengerConfig;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
-import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
-import uk.co.compendiumdev.thingifier.core.repository.sqlite.SqliteThingRepository;
+import uk.co.compendiumdev.thingifier.core.repository.ThingStore;
+import uk.co.compendiumdev.thingifier.core.repository.sqlite.SqliteThingStore;
 import uk.co.compendiumdev.thingifier.htmlgui.htmlgen.DefaultGUIHTML;
 
 public class SimulationRoutesRepositoryTest {
@@ -21,10 +21,10 @@ public class SimulationRoutesRepositoryTest {
         try {
             routes.setUpRepositoryBackedData();
 
-            ThingRepository repository =
-                    routes.simulation.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME);
-            Assertions.assertTrue(repository instanceof SqliteThingRepository);
-            Assertions.assertEquals(11, repository.countInstances(routes.entityDefn));
+            ThingStore repository =
+                    routes.simulation.getStore(EntityRelModel.DEFAULT_DATABASE_NAME);
+            Assertions.assertTrue(repository instanceof SqliteThingStore);
+            Assertions.assertEquals(11, repository.entityQueries().count(routes.entityDefn));
         } finally {
             routes.close();
         }

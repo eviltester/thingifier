@@ -11,15 +11,15 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.F
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
-import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
-import uk.co.compendiumdev.thingifier.core.repository.sqlite.SqliteThingRepositoryProvider;
+import uk.co.compendiumdev.thingifier.core.repository.ThingStore;
+import uk.co.compendiumdev.thingifier.core.repository.sqlite.SqliteThingStoreProvider;
 
 public class DefaultGuiHtmlPagesRepositoryTest {
 
     @Test
     public void guiInstancePagesReadFromRepositoryWithoutLoadingCompatibilitySnapshot() {
         try (Thingifier thingifier =
-                new Thingifier(new EntityRelModel(SqliteThingRepositoryProvider.inMemory()))) {
+                new Thingifier(new EntityRelModel(SqliteThingStoreProvider.inMemory()))) {
 
             EntityDefinition project = thingifier.defineThing("project", "projects");
             project.addAsPrimaryKeyField(Field.is("id", FieldType.AUTO_INCREMENT));
@@ -33,19 +33,22 @@ public class DefaultGuiHtmlPagesRepositoryTest {
                     .defineRelationship(project, todo, "tasks", Cardinality.ONE_TO_MANY())
                     .whenReversed(Cardinality.ONE_TO_MANY(), "tasksof");
 
-            ThingRepository repository =
-                    thingifier.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME);
+            ThingStore repository = thingifier.getStore(EntityRelModel.DEFAULT_DATABASE_NAME);
 
             EntityInstance projectInstance =
-                    repository.createInstance(
-                            EntityInstanceDraft.forEntity(project)
-                                    .withField("title", "Repository Project"));
+                    repository
+                            .entities()
+                            .create(
+                                    EntityInstanceDraft.forEntity(project)
+                                            .withField("title", "Repository Project"));
             EntityInstance todoInstance =
-                    repository.createInstance(
-                            EntityInstanceDraft.forEntity(todo)
-                                    .withField("title", "Repository Todo"));
+                    repository
+                            .entities()
+                            .create(
+                                    EntityInstanceDraft.forEntity(todo)
+                                            .withField("title", "Repository Todo"));
 
-            repository.connectRelationship(projectInstance, "tasks", todoInstance);
+            repository.relationships().connect(projectInstance, "tasks", todoInstance);
 
             DefaultGuiHtmlPages pages =
                     new DefaultGuiHtmlPages(new DefaultGUIHTML(), thingifier, "/gui");

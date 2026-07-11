@@ -65,12 +65,12 @@ public class ThingAmendment {
             final EntityInstance updated;
             try {
                 if (clearFieldsBeforeSettingFromArgs) {
-                    updated = thingifier.getRepository(database).replaceInstance(instance, draft);
+                    updated = thingifier.getStore(database).entities().replace(instance, draft);
                     // Reset repository-owned relationships for idempotent amend.
                     // TODO: handle mandatory dependents returned by relationship removal.
-                    thingifier.getRepository(database).removeAllRelationships(updated);
+                    thingifier.getStore(database).relationships().removeAll(updated);
                 } else {
-                    updated = thingifier.getRepository(database).patchInstance(instance, draft);
+                    updated = thingifier.getStore(database).entities().patch(instance, draft);
                 }
             } catch (Exception e) {
                 return ApiResponse.error(400, e.getMessage());

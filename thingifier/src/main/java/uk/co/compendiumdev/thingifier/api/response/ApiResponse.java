@@ -7,7 +7,7 @@ import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
-import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
+import uk.co.compendiumdev.thingifier.core.repository.RelationshipRepository;
 
 public final class ApiResponse {
 
@@ -29,7 +29,7 @@ public final class ApiResponse {
     private HttpHeadersBlock headers;
     private EntityDefinition typeOfResults;
     private String body;
-    private ThingRepository relationshipRepository;
+    private RelationshipRepository relationshipRepository;
 
     public ApiResponse(final int aStatusCode) {
         this.statusCode = aStatusCode;
@@ -207,12 +207,12 @@ public final class ApiResponse {
         return this;
     }
 
-    public ApiResponse usingRepository(final ThingRepository repository) {
-        this.relationshipRepository = repository;
+    public ApiResponse usingRelationships(final RelationshipRepository relationships) {
+        this.relationshipRepository = relationships;
         return this;
     }
 
-    public ThingRepository getRelationshipRepository() {
+    public RelationshipRepository getRelationshipRepository() {
         return relationshipRepository;
     }
 

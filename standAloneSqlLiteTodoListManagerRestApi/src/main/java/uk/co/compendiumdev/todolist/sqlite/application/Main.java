@@ -4,7 +4,7 @@ import static spark.Spark.get;
 
 import uk.co.compendiumdev.thingifier.application.MainImplementation;
 import uk.co.compendiumdev.thingifier.application.examples.TodoManagerThingifier;
-import uk.co.compendiumdev.thingifier.core.repository.sqlite.SqliteThingRepositoryProvider;
+import uk.co.compendiumdev.thingifier.core.repository.sqlite.SqliteThingStoreProvider;
 
 public class Main {
 
@@ -13,7 +13,7 @@ public class Main {
         MainImplementation app = new MainImplementation();
         app.registerModel(
                 "todoManager",
-                new TodoManagerThingifier().get(SqliteThingRepositoryProvider.inMemory()));
+                new TodoManagerThingifier().get(SqliteThingStoreProvider.inMemory()));
 
         app.setDefaultsFromArgs(args);
 

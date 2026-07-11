@@ -19,7 +19,7 @@ import uk.co.compendiumdev.sparkstart.Environment;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
-import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
+import uk.co.compendiumdev.thingifier.core.repository.ThingStore;
 
 public abstract class ChallengeCompleteTest {
 
@@ -263,11 +263,9 @@ public abstract class ChallengeCompleteTest {
         headers.putAll(x_challenger_header);
         headers.put("Content-Type", "application/json");
 
-        ThingRepository repository =
-                ChallengeMain.getChallenger()
-                        .getThingifier()
-                        .getRepository(challenger.getXChallenger());
-        EntityInstance aTodo = new ArrayList<>(repository.listInstances(todos)).get(0);
+        ThingStore repository =
+                ChallengeMain.getChallenger().getThingifier().getStore(challenger.getXChallenger());
+        EntityInstance aTodo = new ArrayList<>(repository.entityQueries().list(todos)).get(0);
 
         // amend a to do successfully
         final HttpResponseDetails response =
@@ -298,11 +296,9 @@ public abstract class ChallengeCompleteTest {
         headers.putAll(x_challenger_header);
         headers.put("Content-Type", "application/json");
 
-        ThingRepository repository =
-                ChallengeMain.getChallenger()
-                        .getThingifier()
-                        .getRepository(challenger.getXChallenger());
-        EntityInstance aTodo = new ArrayList<>(repository.listInstances(todos)).get(0);
+        ThingStore repository =
+                ChallengeMain.getChallenger().getThingifier().getStore(challenger.getXChallenger());
+        EntityInstance aTodo = new ArrayList<>(repository.entityQueries().list(todos)).get(0);
 
         // amend a to do successfully
         final HttpResponseDetails response =
@@ -333,11 +329,9 @@ public abstract class ChallengeCompleteTest {
         headers.putAll(x_challenger_header);
         headers.put("Content-Type", "application/json");
 
-        ThingRepository repository =
-                ChallengeMain.getChallenger()
-                        .getThingifier()
-                        .getRepository(challenger.getXChallenger());
-        EntityInstance aTodo = new ArrayList<>(repository.listInstances(todos)).get(0);
+        ThingStore repository =
+                ChallengeMain.getChallenger().getThingifier().getStore(challenger.getXChallenger());
+        EntityInstance aTodo = new ArrayList<>(repository.entityQueries().list(todos)).get(0);
 
         // amend a to do unsuccessfully
         final HttpResponseDetails response =
@@ -368,11 +362,9 @@ public abstract class ChallengeCompleteTest {
         headers.putAll(x_challenger_header);
         headers.put("Content-Type", "application/json");
 
-        ThingRepository repository =
-                ChallengeMain.getChallenger()
-                        .getThingifier()
-                        .getRepository(challenger.getXChallenger());
-        EntityInstance aTodo = new ArrayList<>(repository.listInstances(todos)).get(0);
+        ThingStore repository =
+                ChallengeMain.getChallenger().getThingifier().getStore(challenger.getXChallenger());
+        EntityInstance aTodo = new ArrayList<>(repository.entityQueries().list(todos)).get(0);
 
         // amend a to do unsuccessfully
         final HttpResponseDetails response =
@@ -584,8 +576,9 @@ public abstract class ChallengeCompleteTest {
             final EntityDefinition todos, final String title, final String doneStatus) {
         return ChallengeMain.getChallenger()
                 .getThingifier()
-                .getRepository(challenger.getXChallenger())
-                .createInstance(
+                .getStore(challenger.getXChallenger())
+                .entities()
+                .create(
                         EntityInstanceDraft.forEntity(todos)
                                 .withField("title", title)
                                 .withField("doneStatus", doneStatus));
@@ -760,14 +753,17 @@ public abstract class ChallengeCompleteTest {
                         .getERmodel()
                         .getSchema()
                         .getDefinitionWithSingularOrPluralNamed("todo");
-        ThingRepository repository =
-                ChallengeMain.getChallenger()
-                        .getThingifier()
-                        .getRepository(challenger.getXChallenger());
-        if (repository.countInstances(todos) > x) {
-            for (int delCount = repository.countInstances(todos) - x; delCount > 0; delCount--) {
-                repository.deleteEntityInstance(
-                        (EntityInstance) (repository.listInstances(todos).toArray()[0]));
+        ThingStore repository =
+                ChallengeMain.getChallenger().getThingifier().getStore(challenger.getXChallenger());
+        if (repository.entityQueries().count(todos) > x) {
+            for (int delCount = repository.entityQueries().count(todos) - x;
+                    delCount > 0;
+                    delCount--) {
+                repository
+                        .entities()
+                        .delete(
+                                (EntityInstance)
+                                        (repository.entityQueries().list(todos).toArray()[0]));
             }
         }
     }
@@ -1228,11 +1224,9 @@ public abstract class ChallengeCompleteTest {
                         .getSchema()
                         .getDefinitionWithSingularOrPluralNamed("todo");
 
-        ThingRepository repository =
-                ChallengeMain.getChallenger()
-                        .getThingifier()
-                        .getRepository(challenger.getXChallenger());
-        for (EntityInstance instance : repository.listInstances(todos)) {
+        ThingStore repository =
+                ChallengeMain.getChallenger().getThingifier().getStore(challenger.getXChallenger());
+        for (EntityInstance instance : repository.entityQueries().list(todos)) {
             final HttpResponseDetails response =
                     http.send(
                             "/todos/" + instance.getFieldValue("id").asString(),

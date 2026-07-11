@@ -103,8 +103,9 @@ public class BodyRelationshipValidator {
             for (RelationshipVectorDefinition vector : relationshipsNamed) {
                 thingToRelateTo =
                         thingifier
-                                .getRepository(database)
-                                .findInstanceByQueryIdentifier(vector.getTo(), guidValue);
+                                .getStore(database)
+                                .entityQueries()
+                                .findByQueryIdentifier(vector.getTo(), guidValue);
                 if (thingToRelateTo != null) {
                     break;
                 }
@@ -171,8 +172,9 @@ public class BodyRelationshipValidator {
         if (things != null) {
             thingToRelateTo =
                     thingifier
-                            .getRepository(database)
-                            .findInstanceByQueryIdentifier(things, uniqueId);
+                            .getStore(database)
+                            .entityQueries()
+                            .findByQueryIdentifier(things, uniqueId);
         }
 
         // haven't found it yet
@@ -186,9 +188,9 @@ public class BodyRelationshipValidator {
             if (things != null) {
                 thingToRelateTo =
                         thingifier
-                                .getRepository(database)
-                                .findInstanceByFieldNameAndValue(
-                                        things, relationshipFieldPart, uniqueId);
+                                .getStore(database)
+                                .entityQueries()
+                                .findByField(things, relationshipFieldPart, uniqueId);
             }
         }
 

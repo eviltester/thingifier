@@ -4,14 +4,13 @@ import java.util.List;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
-import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
 
 public final class EntityInstanceWriteValidator {
 
-    private final ThingRepository repository;
+    private final EntityUniquenessChecker uniquenessChecker;
 
-    public EntityInstanceWriteValidator(final ThingRepository repository) {
-        this.repository = repository;
+    public EntityInstanceWriteValidator(final EntityUniquenessChecker uniquenessChecker) {
+        this.uniquenessChecker = uniquenessChecker;
     }
 
     public void assertValidForCreate(final EntityInstance instance) {
@@ -36,7 +35,7 @@ public final class EntityInstanceWriteValidator {
                 instance.getEntity()
                         .getFieldNamesOfType(FieldType.AUTO_INCREMENT, FieldType.AUTO_GUID);
         ValidationReport validation = instance.validateFieldValues(protectedFields, false);
-        validation.combine(repository.checkFieldsForUniqueNess(instance, isAmendment));
+        validation.combine(uniquenessChecker.checkFieldsForUniqueness(instance, isAmendment));
         return validation;
     }
 

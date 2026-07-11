@@ -54,16 +54,18 @@ public class VerbDeleteEntityInstanceApiNonHttpTest {
 
         EntityInstance officeWork =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .createInstance(
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
                                 EntityInstanceDraft.forEntity(project)
                                         .withField("title", "An Existing Project"));
 
         Assertions.assertEquals(
                 1,
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .countInstances(project));
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(project));
 
         apiresponse =
                 todoManager
@@ -79,8 +81,9 @@ public class VerbDeleteEntityInstanceApiNonHttpTest {
         Assertions.assertEquals(
                 0,
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .countInstances(project));
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(project));
 
         apiresponse =
                 todoManager

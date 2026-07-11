@@ -122,9 +122,9 @@ public class ApiResponseAsXmlTest {
 
         EntityInstance aTodo =
                 thingifier
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .createInstance(
-                                EntityInstanceDraft.forEntity(todos).withField("title", "a todo"));
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(EntityInstanceDraft.forEntity(todos).withField("title", "a todo"));
 
         ApiResponse response = ApiResponse.success().returnSingleInstance(aTodo);
 
@@ -154,13 +154,14 @@ public class ApiResponseAsXmlTest {
 
         EntityInstance aTodo =
                 thingifier
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .createInstance(
-                                EntityInstanceDraft.forEntity(todos).withField("title", "a todo"));
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(EntityInstanceDraft.forEntity(todos).withField("title", "a todo"));
         EntityInstance anotherTodo =
                 thingifier
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .createInstance(
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
                                 EntityInstanceDraft.forEntity(todos)
                                         .withField("title", "another todo"));
 
@@ -169,8 +170,9 @@ public class ApiResponseAsXmlTest {
                         .returnInstanceCollection(
                                 new ArrayList(
                                         thingifier
-                                                .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                                                .listInstances(todos)));
+                                                .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                                                .entityQueries()
+                                                .list(todos)));
 
         Assertions.assertEquals(200, response.getStatusCode());
         Assertions.assertEquals(true, response.hasABody());

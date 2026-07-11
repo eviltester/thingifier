@@ -94,8 +94,9 @@ public class VerbPostEntityInstanceApiNonHttpTest {
 
         EntityInstance createdProject =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .findInstanceByPrimaryKey(todo, headerGUID);
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .findByPrimaryKey(todo, headerGUID);
 
         Assertions.assertEquals(createdProject, createdInstance);
     }
@@ -145,8 +146,9 @@ public class VerbPostEntityInstanceApiNonHttpTest {
 
         EntityInstance createdProject =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .findInstanceByPrimaryKey(todo, headerGUID);
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .findByPrimaryKey(todo, headerGUID);
 
         Assertions.assertEquals(createdProject, createdInstance);
     }
@@ -156,8 +158,9 @@ public class VerbPostEntityInstanceApiNonHttpTest {
 
         EntityInstance relTodo =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .createInstance(
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
                                 EntityInstanceDraft.forEntity(todo)
                                         .withField("title", "Todo for amending"));
 
@@ -200,8 +203,9 @@ public class VerbPostEntityInstanceApiNonHttpTest {
 
         int currentProjects =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .countInstances(project);
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(project);
 
         Map<String, String> requestBody = new HashMap<>();
         requestBody.put("title", "My Office Work");
@@ -222,8 +226,9 @@ public class VerbPostEntityInstanceApiNonHttpTest {
         Assertions.assertEquals(
                 currentProjects,
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .countInstances(project));
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(project));
     }
 
     @Test
@@ -237,8 +242,9 @@ public class VerbPostEntityInstanceApiNonHttpTest {
 
         EntityInstance amendTodo =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .createInstance(
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
                                 EntityInstanceDraft.forEntity(todo)
                                         .withField("title", originalTitle)
                                         .withField("description", originalDescription));
@@ -297,8 +303,9 @@ public class VerbPostEntityInstanceApiNonHttpTest {
 
         EntityInstance officeWork =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .createInstance(
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
                                 EntityInstanceDraft.forEntity(project)
                                         .withField("title", "An Existing Project"));
 
@@ -317,14 +324,16 @@ public class VerbPostEntityInstanceApiNonHttpTest {
         Assertions.assertEquals(200, apiresponse.getStatusCode());
         officeWork =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .findInstanceByPrimaryKey(project, officeWorkGuid);
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .findByPrimaryKey(project, officeWorkGuid);
         Assertions.assertEquals("My Office Work", officeWork.getFieldValue("title").asString());
 
         officeWork =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .patchInstance(
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .patch(
                                 officeWork,
                                 EntityInstanceDraft.forEntity(officeWork.getEntity())
                                         .withField("title", "office"));
@@ -383,8 +392,9 @@ public class VerbPostEntityInstanceApiNonHttpTest {
 
         EntityInstance paperwork =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .createInstance(
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
                                 EntityInstanceDraft.forEntity(todo)
                                         .withField("title", "Todo for amending"));
 

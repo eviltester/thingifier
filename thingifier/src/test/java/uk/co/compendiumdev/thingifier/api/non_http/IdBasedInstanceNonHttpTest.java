@@ -39,8 +39,9 @@ public class IdBasedInstanceNonHttpTest {
         final EntityDefinition thing =
                 model.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("thing");
         final EntityInstance existingInstance =
-                model.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .createInstance(
+                model.getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
                                 EntityInstanceDraft.forEntity(thing)
                                         .withField("title", "My Title" + System.nanoTime()));
 
@@ -63,8 +64,9 @@ public class IdBasedInstanceNonHttpTest {
         final EntityDefinition thing =
                 model.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("thing");
         final EntityInstance existingInstance =
-                model.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .createInstance(
+                model.getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
                                 EntityInstanceDraft.forEntity(thing)
                                         .withField("title", "My Title" + System.nanoTime()));
 
@@ -98,8 +100,9 @@ public class IdBasedInstanceNonHttpTest {
         final EntityDefinition thing =
                 model.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("thing");
         final EntityInstance existingInstance =
-                model.getRepository("other_things")
-                        .createInstance(
+                model.getStore("other_things")
+                        .entities()
+                        .create(
                                 EntityInstanceDraft.forEntity(thing)
                                         .withField("title", "My Title" + System.nanoTime()));
 
@@ -132,8 +135,9 @@ public class IdBasedInstanceNonHttpTest {
         final EntityDefinition thing =
                 model.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("thing");
         final EntityInstance existingInstance =
-                model.getRepository("other_things")
-                        .createInstance(
+                model.getStore("other_things")
+                        .entities()
+                        .create(
                                 EntityInstanceDraft.forEntity(thing)
                                         .withField("title", "My Title" + System.nanoTime()));
 

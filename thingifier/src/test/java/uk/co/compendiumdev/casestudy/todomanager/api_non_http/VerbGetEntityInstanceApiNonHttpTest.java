@@ -57,26 +57,30 @@ public class VerbGetEntityInstanceApiNonHttpTest {
 
         // add some data
         todoManager
-                .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                .createInstance(
+                .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                .entities()
+                .create(
                         EntityInstanceDraft.forEntity(todo)
                                 .withField("title", "My Title" + System.nanoTime()));
         todoManager
-                .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                .createInstance(
+                .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                .entities()
+                .create(
                         EntityInstanceDraft.forEntity(todo)
                                 .withField("title", "My Title" + System.nanoTime()));
 
         EntityInstance findThis =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .createInstance(
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
                                 EntityInstanceDraft.forEntity(todo)
                                         .withField("title", "My Title" + System.nanoTime()));
 
         todoManager
-                .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                .createInstance(
+                .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                .entities()
+                .create(
                         EntityInstanceDraft.forEntity(todo)
                                 .withField("title", "My Title" + System.nanoTime()));
 
@@ -111,26 +115,30 @@ public class VerbGetEntityInstanceApiNonHttpTest {
 
         // add some data
         todoManager
-                .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                .createInstance(
+                .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                .entities()
+                .create(
                         EntityInstanceDraft.forEntity(todo)
                                 .withField("title", "My Title" + System.nanoTime()));
         todoManager
-                .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                .createInstance(
+                .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                .entities()
+                .create(
                         EntityInstanceDraft.forEntity(todo)
                                 .withField("title", "My Title" + System.nanoTime()));
 
         EntityInstance findThis =
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .createInstance(
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
                                 EntityInstanceDraft.forEntity(todo)
                                         .withField("title", "My Title" + System.nanoTime()));
 
         todoManager
-                .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                .createInstance(
+                .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                .entities()
+                .create(
                         EntityInstanceDraft.forEntity(todo)
                                 .withField("title", "My Title" + System.nanoTime()));
 
@@ -166,23 +174,27 @@ public class VerbGetEntityInstanceApiNonHttpTest {
 
         // add some data
         todoManager
-                .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                .createInstance(
+                .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                .entities()
+                .create(
                         EntityInstanceDraft.forEntity(todo)
                                 .withField("title", "My Title" + System.nanoTime()));
         todoManager
-                .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                .createInstance(
+                .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                .entities()
+                .create(
                         EntityInstanceDraft.forEntity(todo)
                                 .withField("title", "My Title" + System.nanoTime()));
         todoManager
-                .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                .createInstance(
+                .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                .entities()
+                .create(
                         EntityInstanceDraft.forEntity(todo)
                                 .withField("title", "My Title" + System.nanoTime()));
         todoManager
-                .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                .createInstance(
+                .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                .entities()
+                .create(
                         EntityInstanceDraft.forEntity(todo)
                                 .withField("title", "My Title" + System.nanoTime()));
 
@@ -195,8 +207,9 @@ public class VerbGetEntityInstanceApiNonHttpTest {
 
         Assertions.assertEquals(
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .countInstances(todo),
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(todo),
                 apiResponse.getReturnedInstanceCollection().size());
 
         Set<String> guidSet = new HashSet<>();
@@ -205,15 +218,17 @@ public class VerbGetEntityInstanceApiNonHttpTest {
             guidSet.add(item.getPrimaryKeyValue());
             Assertions.assertNotNull(
                     todoManager
-                            .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                            .findInstanceByPrimaryKey(todo, item.getPrimaryKeyValue()));
+                            .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                            .entityQueries()
+                            .findByPrimaryKey(todo, item.getPrimaryKeyValue()));
         }
 
         Assertions.assertEquals(
                 guidSet.size(),
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .countInstances(todo));
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(todo));
         Assertions.assertEquals(guidSet.size(), apiResponse.getReturnedInstanceCollection().size());
 
         Assertions.assertEquals(0, apiResponse.getErrorMessages().size());
@@ -226,23 +241,27 @@ public class VerbGetEntityInstanceApiNonHttpTest {
 
         // add some data
         todoManager
-                .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                .createInstance(
+                .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                .entities()
+                .create(
                         EntityInstanceDraft.forEntity(todo)
                                 .withField("title", "My Title" + System.nanoTime()));
         todoManager
-                .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                .createInstance(
+                .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                .entities()
+                .create(
                         EntityInstanceDraft.forEntity(todo)
                                 .withField("title", "My Title" + System.nanoTime()));
         todoManager
-                .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                .createInstance(
+                .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                .entities()
+                .create(
                         EntityInstanceDraft.forEntity(todo)
                                 .withField("title", "My Title" + System.nanoTime()));
         todoManager
-                .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                .createInstance(
+                .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                .entities()
+                .create(
                         EntityInstanceDraft.forEntity(todo)
                                 .withField("title", "My Title" + System.nanoTime()));
 
@@ -255,8 +274,9 @@ public class VerbGetEntityInstanceApiNonHttpTest {
 
         Assertions.assertEquals(
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .countInstances(todo),
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(todo),
                 apiResponse.getReturnedInstanceCollection().size());
 
         Set<String> guidSet = new HashSet<>();
@@ -265,15 +285,17 @@ public class VerbGetEntityInstanceApiNonHttpTest {
             guidSet.add(item.getPrimaryKeyValue());
             Assertions.assertNotNull(
                     todoManager
-                            .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                            .findInstanceByPrimaryKey(todo, item.getPrimaryKeyValue()));
+                            .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                            .entityQueries()
+                            .findByPrimaryKey(todo, item.getPrimaryKeyValue()));
         }
 
         Assertions.assertEquals(
                 guidSet.size(),
                 todoManager
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .countInstances(todo));
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(todo));
         Assertions.assertEquals(guidSet.size(), apiResponse.getReturnedInstanceCollection().size());
 
         Assertions.assertEquals(0, apiResponse.getErrorMessages().size());

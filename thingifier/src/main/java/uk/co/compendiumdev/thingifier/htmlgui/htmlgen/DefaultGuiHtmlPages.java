@@ -15,7 +15,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.F
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVectorDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
+import uk.co.compendiumdev.thingifier.core.repository.ThingStore;
 
 public class DefaultGuiHtmlPages {
 
@@ -149,8 +149,8 @@ public class DefaultGuiHtmlPages {
 
             if (htmlErrorMessage.isEmpty()) {
                 try {
-                    ThingRepository repository = thingifier.getRepository(database);
-                    instances = new ArrayList<>(repository.listInstances(definition));
+                    ThingStore store = thingifier.getStore(database);
+                    instances = new ArrayList<>(store.entityQueries().list(definition));
                 } catch (Exception e) {
                     // htmlErrorMessage = htmlErrorMessage + "<p>Database Access Error: " +
                     // e.getMessage() + ".</p>";
@@ -345,17 +345,17 @@ public class DefaultGuiHtmlPages {
                         .getERmodel()
                         .getSchema()
                         .getDefinitionWithSingularOrPluralNamed(entityName);
-        ThingRepository repository = null;
+        ThingStore store = null;
 
         if (htmlErrorMessage.isEmpty()) {
             try {
-                repository = thingifier.getRepository(database);
+                store = thingifier.getStore(database);
             } catch (Exception e) {
                 // htmlErrorMessage = htmlErrorMessage + "<p>Database Access Error: " +
                 // e.getMessage() + ".</p>";
             }
 
-            if (definition == null || repository == null) {
+            if (definition == null || store == null) {
                 htmlErrorMessage =
                         htmlErrorMessage
                                 + "<p>Entity instances not found in database, have you made any API calls?"
@@ -384,8 +384,7 @@ public class DefaultGuiHtmlPages {
             }
 
             try {
-                instance =
-                        repository.findInstanceByFieldNameAndValue(definition, keyName, keyValue);
+                instance = store.entityQueries().findByField(definition, keyName, keyValue);
             } catch (Exception e) {
                 htmlErrorMessage =
                         htmlErrorMessage
@@ -428,7 +427,7 @@ public class DefaultGuiHtmlPages {
                     for (RelationshipVectorDefinition relationship :
                             definition.related().getRelationships()) {
                         final List<EntityInstance> relatedItems =
-                                repository.listRelatedInstances(instance, relationship.getName());
+                                store.relationships().listRelated(instance, relationship.getName());
                         html.append("<h3>" + relationship.getName() + "</h3>");
                         if (!relatedItems.isEmpty()) {
                             boolean header = true;

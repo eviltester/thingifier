@@ -5,12 +5,15 @@ import java.util.List;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.ERSchema;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
+import uk.co.compendiumdev.thingifier.core.repository.EntityInstanceQuery;
+import uk.co.compendiumdev.thingifier.core.repository.RelationshipRepository;
+import uk.co.compendiumdev.thingifier.core.repository.ThingStore;
 
 public class RepositoryUrlQuery implements UrlQueryResult {
 
     private final ERSchema schema;
-    private final ThingRepository repository;
+    private final EntityInstanceQuery entityQuery;
+    private final RelationshipRepository relationshipRepository;
     private final String query;
 
     private boolean isCollection;
@@ -21,10 +24,18 @@ public class RepositoryUrlQuery implements UrlQueryResult {
     private EntityInstance currentInstance;
     private List<EntityInstance> foundItems = new ArrayList<>();
 
+    public RepositoryUrlQuery(final ERSchema schema, final ThingStore store, final String query) {
+        this(schema, store.entityQueries(), store.relationships(), query);
+    }
+
     public RepositoryUrlQuery(
-            final ERSchema schema, final ThingRepository repository, final String query) {
+            final ERSchema schema,
+            final EntityInstanceQuery entityQuery,
+            final RelationshipRepository relationshipRepository,
+            final String query) {
         this.schema = schema;
-        this.repository = repository;
+        this.entityQuery = entityQuery;
+        this.relationshipRepository = relationshipRepository;
         if (query.startsWith("/")) {
             this.query = query.substring(1);
         } else {
@@ -71,13 +82,13 @@ public class RepositoryUrlQuery implements UrlQueryResult {
 
         if (terms.length == 1) {
             isCollection = true;
-            foundItems = new ArrayList<>(repository.listInstances(entity, queryParams));
+            foundItems = new ArrayList<>(entityQuery.list(entity, queryParams));
             lastMatchWasNothing = false;
             return this;
         }
 
         wasIntentToMatchInstance = true;
-        currentInstance = repository.findInstanceByQueryIdentifier(entity, terms[1]);
+        currentInstance = entityQuery.findByQueryIdentifier(entity, terms[1]);
         if (currentInstance == null) {
             foundItems = new ArrayList<>();
             lastMatchWasNothing = true;
@@ -90,7 +101,7 @@ public class RepositoryUrlQuery implements UrlQueryResult {
             isCollection = true;
             foundItems =
                     new ArrayList<>(
-                            repository.listRelatedInstances(
+                            relationshipRepository.listRelated(
                                     currentInstance, terms[2], queryParams));
             resultContainsDefinition = relatedEntityFor(currentInstance, terms[2]);
             lastMatchWasNothing = false;

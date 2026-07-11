@@ -47,8 +47,9 @@ public class NestedObjectsApiTest {
 
         instance =
                 thingifier
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .createInstance(
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
                                 EntityInstanceDraft.forEntity(defn)
                                         .withField("person.firstname", "Connie")
                                         .withField("person.surname", "Dobbs"));
@@ -67,8 +68,9 @@ public class NestedObjectsApiTest {
         Assertions.assertEquals(200, response.getStatusCode());
         EntityInstance updatedInstance =
                 thingifier
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .findInstanceByPrimaryKey(thing, instance.getPrimaryKeyValue());
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .findByPrimaryKey(thing, instance.getPrimaryKeyValue());
         Assertions.assertEquals(
                 "bob",
                 updatedInstance
@@ -86,8 +88,9 @@ public class NestedObjectsApiTest {
         Assertions.assertEquals(
                 0,
                 thingifier
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .countInstances(thing));
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(thing));
 
         final HttpApiRequest createBobRequest = new HttpApiRequest("/things");
         createBobRequest.setHeaders(Map.of("content-type", "application/json"));
@@ -102,13 +105,15 @@ public class NestedObjectsApiTest {
         Assertions.assertEquals(
                 1,
                 thingifier
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .countInstances(thing));
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(thing));
 
         for (EntityInstance bob :
                 thingifier
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .listInstances(thing)) {
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .list(thing)) {
             FieldValue fv = bob.getFieldValue("person");
             InstanceFields obj = fv.asObject();
             FieldValue fn = obj.getFieldValue("firstname");
@@ -128,8 +133,9 @@ public class NestedObjectsApiTest {
         Assertions.assertEquals(
                 0,
                 thingifier
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .countInstances(thing));
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(thing));
 
         final HttpApiRequest failToCreateBobRequest = new HttpApiRequest("/things");
         failToCreateBobRequest.setVerb(HttpApiRequest.VERB.POST);
@@ -143,8 +149,9 @@ public class NestedObjectsApiTest {
         Assertions.assertEquals(
                 0,
                 thingifier
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .countInstances(thing));
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(thing));
 
         Assertions.assertTrue(
                 response.apiResponse().getErrorMessages().stream()

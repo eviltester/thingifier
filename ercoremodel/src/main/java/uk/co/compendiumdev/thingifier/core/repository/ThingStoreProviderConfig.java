@@ -2,10 +2,10 @@ package uk.co.compendiumdev.thingifier.core.repository;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import uk.co.compendiumdev.thingifier.core.repository.inmemory.InMemoryThingRepositoryProvider;
-import uk.co.compendiumdev.thingifier.core.repository.sqlite.SqliteThingRepositoryProvider;
+import uk.co.compendiumdev.thingifier.core.repository.inmemory.InMemoryThingStoreProvider;
+import uk.co.compendiumdev.thingifier.core.repository.sqlite.SqliteThingStoreProvider;
 
-public class ThingRepositoryProviderConfig {
+public class ThingStoreProviderConfig {
 
     public static final String DEFAULT_REPOSITORY_MODE = "memory";
     public static final String ARG_REPOSITORY_MODE = "-thingifier-repository";
@@ -19,12 +19,12 @@ public class ThingRepositoryProviderConfig {
     private final String repositoryMode;
     private final Path sqliteDirectory;
 
-    public ThingRepositoryProviderConfig(final String repositoryMode, final Path sqliteDirectory) {
+    public ThingStoreProviderConfig(final String repositoryMode, final Path sqliteDirectory) {
         this.repositoryMode = normalize(repositoryMode);
         this.sqliteDirectory = sqliteDirectory;
     }
 
-    public static ThingRepositoryProviderConfig fromArgs(final String[] args) {
+    public static ThingStoreProviderConfig fromArgs(final String[] args) {
         String repositoryMode;
         if (hasArg(args, ARG_SQLITE_MEMORY)) {
             repositoryMode = "sqlite-memory";
@@ -44,23 +44,23 @@ public class ThingRepositoryProviderConfig {
                         System.getenv(ENV_SQLITE_DIRECTORY),
                         "thingifier-sqlite");
 
-        return new ThingRepositoryProviderConfig(repositoryMode, Paths.get(sqliteDirectory));
+        return new ThingStoreProviderConfig(repositoryMode, Paths.get(sqliteDirectory));
     }
 
-    public ThingRepositoryProvider createProvider() {
+    public ThingStoreProvider createProvider() {
         switch (repositoryMode) {
             case "memory":
             case "in-memory":
             case "custom-memory":
-                return new InMemoryThingRepositoryProvider();
+                return new InMemoryThingStoreProvider();
             case "sqlite":
             case "sqlite-memory":
             case "sqlite-in-memory":
-                return SqliteThingRepositoryProvider.inMemory();
+                return SqliteThingStoreProvider.inMemory();
             case "sqlite-file":
             case "sqlite-disk":
             case "file":
-                return SqliteThingRepositoryProvider.fileBacked(sqliteDirectory);
+                return SqliteThingStoreProvider.fileBacked(sqliteDirectory);
             default:
                 throw new IllegalArgumentException(
                         "Unknown Thingifier repository mode "

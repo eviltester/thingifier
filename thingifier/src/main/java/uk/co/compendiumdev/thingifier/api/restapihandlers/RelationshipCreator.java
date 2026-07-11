@@ -7,6 +7,7 @@ import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import uk.co.compendiumdev.thingifier.core.repository.ThingStore;
 
 public class RelationshipCreator {
     private final Thingifier thingifier;
@@ -26,14 +27,13 @@ public class RelationshipCreator {
                                 .getERmodel()
                                 .getSchema()
                                 .getDefinitionWithSingularOrPluralNamed(relationship.toType);
-                thingifier
-                        .getRepository(database)
-                        .connectRelationship(
+                ThingStore store = thingifier.getStore(database);
+                store.relationships()
+                        .connect(
                                 instance,
                                 relationship.relationshipName,
-                                thingifier
-                                        .getRepository(database)
-                                        .findInstanceByFieldNameAndValue(
+                                store.entityQueries()
+                                        .findByField(
                                                 relatedEntity,
                                                 relationship.guidName,
                                                 relationship.guidValue));

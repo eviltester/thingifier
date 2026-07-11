@@ -331,7 +331,7 @@ public class ChallengerTrackingRoutes {
                         challenger.touch();
                         result.header("content-type", "application/json");
 
-                        if (challengers.getErModel().getRepository(xChallengerGuid) == null) {
+                        if (challengers.getErModel().getStore(xChallengerGuid) == null) {
                             result.status(404);
                             return ApiResponseAsJson.getErrorMessageJson(
                                     "Challenger database not instantiated " + xChallengerGuid);

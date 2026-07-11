@@ -12,8 +12,8 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.F
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
-import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
-import uk.co.compendiumdev.thingifier.core.repository.inmemory.InMemoryThingRepository;
+import uk.co.compendiumdev.thingifier.core.repository.ThingStore;
+import uk.co.compendiumdev.thingifier.core.repository.inmemory.InMemoryThingStore;
 
 public class ThingTest {
 
@@ -23,27 +23,32 @@ public class ThingTest {
         ERSchema schema = new ERSchema();
         EntityDefinition person = schema.defineEntity("person", "people", -1);
         person.addFields(Field.is("name", STRING), Field.is("age", INTEGER));
-        ThingRepository repository = new InMemoryThingRepository("example");
-        repository.initializeFrom(schema);
+        ThingStore repository = new InMemoryThingStore("example");
+        repository.administration().initializeFrom(schema);
 
         EntityInstance bob =
-                repository.createInstance(
+                repository
+                        .entities()
+                        .create(
+                                EntityInstanceDraft.forEntity(person)
+                                        .withField("name", "Bob")
+                                        .withField("age", "56"));
+
+        repository
+                .entities()
+                .create(
                         EntityInstanceDraft.forEntity(person)
-                                .withField("name", "Bob")
-                                .withField("age", "56"));
+                                .withField("name", "Eris")
+                                .withField("age", "1000"));
 
-        repository.createInstance(
-                EntityInstanceDraft.forEntity(person)
-                        .withField("name", "Eris")
-                        .withField("age", "1000"));
-
-        Assertions.assertEquals(2, repository.countInstances(person));
+        Assertions.assertEquals(2, repository.entityQueries().count(person));
         Assertions.assertEquals("Bob", bob.getFieldValue("name").asString());
         Assertions.assertEquals("56", bob.getFieldValue("age").asString());
         Assertions.assertEquals(
                 "1000",
                 repository
-                        .findInstanceByFieldNameAndValue(person, "name", "Eris")
+                        .entityQueries()
+                        .findByField(person, "name", "Eris")
                         .getFieldValue("age")
                         .asString());
     }
@@ -55,24 +60,28 @@ public class ThingTest {
         EntityDefinition url = schema.defineEntity("URL", "URLs", -1);
         url.addFields(
                 Field.is("url", STRING), Field.is("visited", INTEGER), Field.is("name", STRING));
-        ThingRepository repository = new InMemoryThingRepository("example");
-        repository.initializeFrom(schema);
+        ThingStore repository = new InMemoryThingStore("example");
+        repository.administration().initializeFrom(schema);
 
         Assertions.assertTrue(url.hasFieldNameDefined("url"));
         Assertions.assertTrue(url.hasFieldNameDefined("name"));
         Assertions.assertTrue(url.hasFieldNameDefined("visited"));
 
-        repository.createInstance(
-                EntityInstanceDraft.forEntity(url)
-                        .withField("name", "EvilTester.com")
-                        .withField("url", "http://eviltester.com"));
+        repository
+                .entities()
+                .create(
+                        EntityInstanceDraft.forEntity(url)
+                                .withField("name", "EvilTester.com")
+                                .withField("url", "http://eviltester.com"));
 
-        repository.createInstance(
-                EntityInstanceDraft.forEntity(url)
-                        .withField("name", "JavaForTesters.com")
-                        .withField("url", "http://javaForTesters.com"));
+        repository
+                .entities()
+                .create(
+                        EntityInstanceDraft.forEntity(url)
+                                .withField("name", "JavaForTesters.com")
+                                .withField("url", "http://javaForTesters.com"));
 
-        Collection<EntityInstance> instances = repository.listInstances(url);
+        Collection<EntityInstance> instances = repository.entityQueries().list(url);
 
         System.out.println("NAME\tURL");
         System.out.println("==========");

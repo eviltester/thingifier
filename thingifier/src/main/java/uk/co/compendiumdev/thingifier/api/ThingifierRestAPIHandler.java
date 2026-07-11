@@ -64,6 +64,6 @@ public class ThingifierRestAPIHandler {
         }
         HttpHeadersBlock safeHeaders = headers == null ? new HttpHeadersBlock() : headers;
         String databaseName = SessionHeaderParser.getDatabaseNameFromHeaderValue(safeHeaders);
-        return response.usingRepository(thingifier.getRepository(databaseName));
+        return response.usingRelationships(thingifier.getStore(databaseName).relationships());
     }
 }

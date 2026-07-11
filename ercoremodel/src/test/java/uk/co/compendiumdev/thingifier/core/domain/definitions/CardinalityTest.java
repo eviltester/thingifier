@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
-import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
+import uk.co.compendiumdev.thingifier.core.repository.ThingStore;
 
 class CardinalityTest {
 
@@ -24,26 +24,26 @@ class CardinalityTest {
         final EntityDefinition thing2 = model.createEntityDefinition("thing2", "thing2");
 
         model.createRelationshipDefinition(thing1, thing2, "bob", new Cardinality(0, 2));
-        ThingRepository repository = model.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME);
+        ThingStore repository = model.getStore(EntityRelModel.DEFAULT_DATABASE_NAME);
 
         final EntityInstance instance1 =
-                repository.createInstance(EntityInstanceDraft.forEntity(thing1));
+                repository.entities().create(EntityInstanceDraft.forEntity(thing1));
         final EntityInstance instance2 =
-                repository.createInstance(EntityInstanceDraft.forEntity(thing2));
+                repository.entities().create(EntityInstanceDraft.forEntity(thing2));
         final EntityInstance instance3 =
-                repository.createInstance(EntityInstanceDraft.forEntity(thing2));
+                repository.entities().create(EntityInstanceDraft.forEntity(thing2));
         final EntityInstance instance4 =
-                repository.createInstance(EntityInstanceDraft.forEntity(thing2));
+                repository.entities().create(EntityInstanceDraft.forEntity(thing2));
 
-        repository.connectRelationship(instance1, "bob", instance2);
-        repository.connectRelationship(instance1, "bob", instance3);
+        repository.relationships().connect(instance1, "bob", instance2);
+        repository.relationships().connect(instance1, "bob", instance3);
 
         Assertions.assertEquals(true, instance1.validate().isValid());
 
         // this should fail
         boolean failed = false;
         try {
-            repository.connectRelationship(instance1, "bob", instance4);
+            repository.relationships().connect(instance1, "bob", instance4);
         } catch (RuntimeException e) {
             System.out.println(e.getMessage());
             failed = true;

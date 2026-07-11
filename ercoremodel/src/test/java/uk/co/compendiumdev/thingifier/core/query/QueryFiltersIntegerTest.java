@@ -26,23 +26,27 @@ public class QueryFiltersIntegerTest {
         erModel.createEntityDefinition("thing", "things")
                 .addFields(Field.is("int", FieldType.INTEGER));
 
-        erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                .createInstance(
+        erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                .entities()
+                .create(
                         EntityInstanceDraft.forEntity(
                                         erModel.getSchema().getEntityDefinitionNamed("thing"))
                                 .withField("int", "3"));
-        erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                .createInstance(
+        erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                .entities()
+                .create(
                         EntityInstanceDraft.forEntity(
                                         erModel.getSchema().getEntityDefinitionNamed("thing"))
                                 .withField("int", "1"));
-        erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                .createInstance(
+        erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                .entities()
+                .create(
                         EntityInstanceDraft.forEntity(
                                         erModel.getSchema().getEntityDefinitionNamed("thing"))
                                 .withField("int", "4"));
-        erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                .createInstance(
+        erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                .entities()
+                .create(
                         EntityInstanceDraft.forEntity(
                                         erModel.getSchema().getEntityDefinitionNamed("thing"))
                                 .withField("int", "2"));
@@ -57,7 +61,7 @@ public class QueryFiltersIntegerTest {
         RepositoryUrlQuery queryResults =
                 new RepositoryUrlQuery(
                                 erModel.getSchema(),
-                                erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
                                 "things")
                         .performQuery(params);
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
@@ -76,7 +80,7 @@ public class QueryFiltersIntegerTest {
         RepositoryUrlQuery queryResults =
                 new RepositoryUrlQuery(
                                 erModel.getSchema(),
-                                erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
                                 "things")
                         .performQuery(params);
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
@@ -98,7 +102,7 @@ public class QueryFiltersIntegerTest {
         RepositoryUrlQuery queryResults =
                 new RepositoryUrlQuery(
                                 erModel.getSchema(),
-                                erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
                                 "things")
                         .performQuery(params);
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
@@ -117,7 +121,7 @@ public class QueryFiltersIntegerTest {
         RepositoryUrlQuery queryResults =
                 new RepositoryUrlQuery(
                                 erModel.getSchema(),
-                                erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
                                 "things")
                         .performQuery(params);
 
@@ -138,7 +142,7 @@ public class QueryFiltersIntegerTest {
         RepositoryUrlQuery queryResults =
                 new RepositoryUrlQuery(
                                 erModel.getSchema(),
-                                erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
                                 "things")
                         .performQuery(params);
 
@@ -157,7 +161,7 @@ public class QueryFiltersIntegerTest {
         RepositoryUrlQuery queryResults =
                 new RepositoryUrlQuery(
                                 erModel.getSchema(),
-                                erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
                                 "things")
                         .performQuery(params);
 
@@ -175,7 +179,7 @@ public class QueryFiltersIntegerTest {
         RepositoryUrlQuery queryResults =
                 new RepositoryUrlQuery(
                                 erModel.getSchema(),
-                                erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
                                 "things")
                         .performQuery(params);
 
@@ -195,7 +199,7 @@ public class QueryFiltersIntegerTest {
         RepositoryUrlQuery queryResults =
                 new RepositoryUrlQuery(
                                 erModel.getSchema(),
-                                erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
                                 "things")
                         .performQuery(params);
 
@@ -216,7 +220,7 @@ public class QueryFiltersIntegerTest {
         RepositoryUrlQuery queryResults =
                 new RepositoryUrlQuery(
                                 erModel.getSchema(),
-                                erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
                                 "things")
                         .performQuery(params);
 
@@ -235,7 +239,7 @@ public class QueryFiltersIntegerTest {
         RepositoryUrlQuery queryResults =
                 new RepositoryUrlQuery(
                                 erModel.getSchema(),
-                                erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
                                 "things")
                         .performQuery(params);
 
@@ -256,7 +260,7 @@ public class QueryFiltersIntegerTest {
         RepositoryUrlQuery queryResults =
                 new RepositoryUrlQuery(
                                 erModel.getSchema(),
-                                erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
                                 "things")
                         .performQuery(params);
 
@@ -278,7 +282,7 @@ public class QueryFiltersIntegerTest {
         RepositoryUrlQuery queryResults =
                 new RepositoryUrlQuery(
                                 erModel.getSchema(),
-                                erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
                                 "things")
                         .performQuery(params);
 

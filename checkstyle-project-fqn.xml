@@ -10,7 +10,7 @@
     </module>
     <module name="SuppressionSingleFilter">
         <property name="id" value="repositoryLegacySnapshotEscape"/>
-        <property name="files" value=".*[/\\]ercoremodel[/\\]src[/\\]main[/\\]java[/\\]uk[/\\]co[/\\]compendiumdev[/\\]thingifier[/\\]core[/\\]repository[/\\]inmemory[/\\]InMemoryThingRepository\.java"/>
+        <property name="files" value=".*[/\\]ercoremodel[/\\]src[/\\]main[/\\]java[/\\]uk[/\\]co[/\\]compendiumdev[/\\]thingifier[/\\]core[/\\]repository[/\\]inmemory[/\\]InMemoryThingStore\.java"/>
     </module>
     <module name="SuppressionSingleFilter">
         <property name="id" value="repositoryEntityInstanceCollectionUse"/>
@@ -73,7 +73,7 @@
             <property name="id" value="hiddenRepositoryTestSupport"/>
             <property name="format" value="\b(ThingifierRepositoryTestSupport|EntityInstanceTestSupport|MutableEntityInstanceTestSupport|RepositoryUrlQueryTestSupport)\b"/>
             <property name="ignoreComments" value="true"/>
-            <property name="message" value="Do not hide repository/draft access behind broad test-support helpers; use EntityInstanceDraft and ThingRepository directly."/>
+            <property name="message" value="Do not hide store/draft access behind broad test-support helpers; use EntityInstanceDraft and ThingStore ports directly."/>
         </module>
         <module name="RegexpSinglelineJava">
             <property name="id" value="repositoryWriteTestSupportClass"/>
@@ -91,13 +91,13 @@
             <property name="id" value="entityInstanceRepositoryAccessUse"/>
             <property name="format" value="\bEntityInstanceRepositoryAccess\b"/>
             <property name="ignoreComments" value="true"/>
-            <property name="message" value="EntityInstanceRepositoryAccess is removed; use MutableEntityInstance in repository code or ThingRepository APIs."/>
+            <property name="message" value="EntityInstanceRepositoryAccess is removed; use MutableEntityInstance in repository code or ThingStore ports."/>
         </module>
         <module name="RegexpSinglelineJava">
             <property name="id" value="entityInstanceFromDraftUse"/>
             <property name="format" value="\bEntityInstance\.fromDraft\s*\("/>
             <property name="ignoreComments" value="true"/>
-            <property name="message" value="EntityInstance is a read-only snapshot; create persisted instances through ThingRepository or repository-owned MutableEntityInstance."/>
+            <property name="message" value="EntityInstance is a read-only snapshot; create persisted instances through ThingStore entity ports or repository-owned MutableEntityInstance."/>
         </module>
         <module name="RegexpSinglelineJava">
             <property name="id" value="repositorySnapshotMaterialization"/>
@@ -109,13 +109,13 @@
             <property name="id" value="repositoryMutableEntityInstanceUse"/>
             <property name="format" value="\bMutableEntityInstance\b"/>
             <property name="ignoreComments" value="true"/>
-            <property name="message" value="MutableEntityInstance is guarded for repository implementations; normal production code should use ThingRepository APIs."/>
+            <property name="message" value="MutableEntityInstance is guarded for repository implementations; normal production code should use ThingStore ports."/>
         </module>
         <module name="RegexpSinglelineJava">
             <property name="id" value="entityInstanceTestOnlyAutoIdHelpers"/>
             <property name="format" value="\b(addAutoGUIDstoInstance|addAutoIncrementIdsToInstance)\b"/>
             <property name="ignoreComments" value="true"/>
-            <property name="message" value="Auto ID generation belongs in ThingRepository tests and APIs, not EntityInstance test-only mutation helpers."/>
+            <property name="message" value="Auto ID generation belongs in ThingStore port tests and APIs, not EntityInstance test-only mutation helpers."/>
         </module>
         <module name="RegexpSinglelineJava">
             <property name="id" value="repositoryLegacySnapshotEscape"/>
@@ -127,7 +127,7 @@
             <property name="id" value="repositoryEntityInstanceCollectionUse"/>
             <property name="format" value="\b(EntityInstanceCollection|InMemoryEntityInstanceCollection)\b"/>
             <property name="ignoreComments" value="true"/>
-            <property name="message" value="Thingifier and Challenger runtime code should use ThingRepository instead of in-memory entity collections."/>
+            <property name="message" value="Thingifier and Challenger runtime code should use ThingStore ports instead of in-memory entity collections."/>
         </module>
         <module name="RegexpSinglelineJava">
             <property name="id" value="repositorySimpleQueryUse"/>
@@ -139,7 +139,7 @@
             <property name="id" value="repositoryEntityInstanceConstruction"/>
             <property name="format" value="\bnew\s+EntityInstance\s*\("/>
             <property name="ignoreComments" value="true"/>
-            <property name="message" value="Persisted EntityInstance creation must go through EntityInstanceDraft and ThingRepository."/>
+            <property name="message" value="Persisted EntityInstance creation must go through EntityInstanceDraft and a ThingStore entity port."/>
         </module>
         <module name="RegexpSinglelineJava">
             <property name="id" value="repositoryEntityInstanceMutableFields"/>
@@ -151,13 +151,13 @@
             <property name="id" value="repositoryEntityInstanceRelationshipsType"/>
             <property name="format" value="\b(EntityInstanceRelationships|RelationshipVectorInstance)\b"/>
             <property name="ignoreComments" value="true"/>
-            <property name="message" value="Relationship state must be repository-owned; use ThingRepository relationship APIs instead of EntityInstance relationship internals."/>
+            <property name="message" value="Relationship state must be repository-owned; use ThingStore relationship ports instead of EntityInstance relationship internals."/>
         </module>
         <module name="RegexpSinglelineJava">
             <property name="id" value="repositoryRelationshipEscape"/>
             <property name="format" value="\b(getConnectedItems|getRelatedItems|materializeRelationshipsFor|materializeRelationshipsInvolving)\s*\("/>
             <property name="ignoreComments" value="true"/>
-            <property name="message" value="Relationship traversal and materialization must go through ThingRepository listRelatedInstances/validation APIs."/>
+            <property name="message" value="Relationship traversal and materialization must go through ThingStore relationship ports."/>
         </module>
         <module name="RegexpSinglelineJava">
             <property name="id" value="repositoryRelationshipMutationEscape"/>
@@ -170,6 +170,12 @@
             <property name="format" value="\b(private|protected)\s+[\w&lt;&gt;\[\], ?]+\s+(assertRelationshipCardinalityAllows|validateRelationshipRow|instancesSubjectToMandatoryRelationship|rowRepresentsVectorForInstance|relationshipExistsBetween|countRowsForVector)\s*\("/>
             <property name="ignoreComments" value="true"/>
             <property name="message" value="Relationship rule decisions belong in repository.relationship.RelationshipRules; repositories should call the shared policy instead of duplicating private helpers."/>
+        </module>
+        <module name="RegexpSinglelineJava">
+            <property name="id" value="removedBroadThingRepositoryTypes"/>
+            <property name="format" value="\b(ThingRepository|ThingRepositoryProvider|ThingRepositoryProviderConfig|InMemoryThingRepository|SqliteThingRepository)\b"/>
+            <property name="ignoreComments" value="true"/>
+            <property name="message" value="The broad ThingRepository API has been split; use ThingStore, ThingStoreProvider, or focused store ports."/>
         </module>
         <module name="RegexpSinglelineJava">
             <property name="id" value="productionDeprecatedApi"/>

@@ -5,19 +5,21 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.ERSchema;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
+import uk.co.compendiumdev.thingifier.core.repository.EntityInstanceQuery;
 
 public class ERModelReport {
     private final ERSchema schema;
-    private final ThingRepository repository;
+    private final EntityInstanceQuery query;
 
     public ERModelReport(final EntityRelModel erModel) {
-        this(erModel.getSchema(), erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME));
+        this(
+                erModel.getSchema(),
+                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME).entityQueries());
     }
 
-    public ERModelReport(final ERSchema schema, final ThingRepository repository) {
+    public ERModelReport(final ERSchema schema, final EntityInstanceQuery query) {
         this.schema = schema;
-        this.repository = repository;
+        this.query = query;
     }
 
     public String asMarkdown() {
@@ -31,7 +33,7 @@ public class ERModelReport {
 
             output.append("## Of " + entity.getName() + "\n");
 
-            for (EntityInstance anInstance : repository.listInstances(entity)) {
+            for (EntityInstance anInstance : query.list(entity)) {
                 output.append(anInstance);
             }
         }

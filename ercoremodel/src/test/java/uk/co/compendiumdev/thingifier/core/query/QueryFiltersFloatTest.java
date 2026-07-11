@@ -21,23 +21,27 @@ public class QueryFiltersFloatTest {
         erModel.createEntityDefinition("thing", "things")
                 .addFields(Field.is("float", FieldType.FLOAT));
 
-        erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                .createInstance(
+        erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                .entities()
+                .create(
                         EntityInstanceDraft.forEntity(
                                         erModel.getSchema().getEntityDefinitionNamed("thing"))
                                 .withField("float", "4.4"));
-        erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                .createInstance(
+        erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                .entities()
+                .create(
                         EntityInstanceDraft.forEntity(
                                         erModel.getSchema().getEntityDefinitionNamed("thing"))
                                 .withField("float", "1.1"));
-        erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                .createInstance(
+        erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                .entities()
+                .create(
                         EntityInstanceDraft.forEntity(
                                         erModel.getSchema().getEntityDefinitionNamed("thing"))
                                 .withField("float", "3.3"));
-        erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                .createInstance(
+        erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                .entities()
+                .create(
                         EntityInstanceDraft.forEntity(
                                         erModel.getSchema().getEntityDefinitionNamed("thing"))
                                 .withField("float", "2.2"));
@@ -52,7 +56,7 @@ public class QueryFiltersFloatTest {
         RepositoryUrlQuery queryResults =
                 new RepositoryUrlQuery(
                                 erModel.getSchema(),
-                                erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
                                 "things")
                         .performQuery(params);
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
@@ -71,7 +75,7 @@ public class QueryFiltersFloatTest {
         RepositoryUrlQuery queryResults =
                 new RepositoryUrlQuery(
                                 erModel.getSchema(),
-                                erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
                                 "things")
                         .performQuery(params);
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
@@ -94,7 +98,7 @@ public class QueryFiltersFloatTest {
         RepositoryUrlQuery queryResults =
                 new RepositoryUrlQuery(
                                 erModel.getSchema(),
-                                erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
                                 "things")
                         .performQuery(params);
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
@@ -113,7 +117,7 @@ public class QueryFiltersFloatTest {
         RepositoryUrlQuery queryResults =
                 new RepositoryUrlQuery(
                                 erModel.getSchema(),
-                                erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
                                 "things")
                         .performQuery(params);
 
@@ -134,7 +138,7 @@ public class QueryFiltersFloatTest {
         RepositoryUrlQuery queryResults =
                 new RepositoryUrlQuery(
                                 erModel.getSchema(),
-                                erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
                                 "things")
                         .performQuery(params);
 
@@ -153,7 +157,7 @@ public class QueryFiltersFloatTest {
         RepositoryUrlQuery queryResults =
                 new RepositoryUrlQuery(
                                 erModel.getSchema(),
-                                erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
                                 "things")
                         .performQuery(params);
 
@@ -171,7 +175,7 @@ public class QueryFiltersFloatTest {
         RepositoryUrlQuery queryResults =
                 new RepositoryUrlQuery(
                                 erModel.getSchema(),
-                                erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
                                 "things")
                         .performQuery(params);
 
@@ -191,7 +195,7 @@ public class QueryFiltersFloatTest {
         RepositoryUrlQuery queryResults =
                 new RepositoryUrlQuery(
                                 erModel.getSchema(),
-                                erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
                                 "things")
                         .performQuery(params);
 
@@ -212,7 +216,7 @@ public class QueryFiltersFloatTest {
         RepositoryUrlQuery queryResults =
                 new RepositoryUrlQuery(
                                 erModel.getSchema(),
-                                erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
                                 "things")
                         .performQuery(params);
 

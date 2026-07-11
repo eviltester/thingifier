@@ -42,7 +42,7 @@ public class RestApiGetHandler {
             queryResults =
                     new RepositoryUrlQuery(
                                     thingifier.getERmodel().getSchema(),
-                                    thingifier.getRepository(instanceDatabaseName),
+                                    thingifier.getStore(instanceDatabaseName),
                                     url)
                             .performQuery(effectiveQueryParams);
         } else {

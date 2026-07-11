@@ -12,7 +12,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.validation.VRule;
-import uk.co.compendiumdev.thingifier.core.repository.ThingRepositoryProvider;
+import uk.co.compendiumdev.thingifier.core.repository.ThingStoreProvider;
 
 public class TodoManagerThingifier {
 
@@ -23,8 +23,8 @@ public class TodoManagerThingifier {
         return get(new EntityRelModel());
     }
 
-    public Thingifier get(final ThingRepositoryProvider repositoryProvider) {
-        return get(new EntityRelModel(repositoryProvider));
+    public Thingifier get(final ThingStoreProvider storeProvider) {
+        return get(new EntityRelModel(storeProvider));
     }
 
     public Thingifier get(final EntityRelModel entityRelModel) {

@@ -23,23 +23,27 @@ public class QueryFiltersIdTest {
                 .addFields(Field.is("fakeid", FieldType.INTEGER));
 
         // fakeid is a proxy for the actual id which always starts at 1 and auto increments
-        erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                .createInstance(
+        erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                .entities()
+                .create(
                         EntityInstanceDraft.forEntity(
                                         erModel.getSchema().getEntityDefinitionNamed("thing"))
                                 .withField("fakeid", "1"));
-        erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                .createInstance(
+        erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                .entities()
+                .create(
                         EntityInstanceDraft.forEntity(
                                         erModel.getSchema().getEntityDefinitionNamed("thing"))
                                 .withField("fakeid", "2"));
-        erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                .createInstance(
+        erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                .entities()
+                .create(
                         EntityInstanceDraft.forEntity(
                                         erModel.getSchema().getEntityDefinitionNamed("thing"))
                                 .withField("fakeid", "3"));
-        erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                .createInstance(
+        erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                .entities()
+                .create(
                         EntityInstanceDraft.forEntity(
                                         erModel.getSchema().getEntityDefinitionNamed("thing"))
                                 .withField("fakeid", "4"));
@@ -55,7 +59,7 @@ public class QueryFiltersIdTest {
         RepositoryUrlQuery queryResults =
                 new RepositoryUrlQuery(
                                 erModel.getSchema(),
-                                erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
                                 "things")
                         .performQuery(params);
 
@@ -76,7 +80,7 @@ public class QueryFiltersIdTest {
         RepositoryUrlQuery queryResults =
                 new RepositoryUrlQuery(
                                 erModel.getSchema(),
-                                erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
                                 "things")
                         .performQuery(params);
 

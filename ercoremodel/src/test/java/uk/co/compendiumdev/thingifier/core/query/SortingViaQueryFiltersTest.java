@@ -34,16 +34,19 @@ public class SortingViaQueryFiltersTest {
     public void canSortIntViaAQuery() {
 
         final EntityInstance thing1 =
-                erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .createInstance(EntityInstanceDraft.forEntity(thing).withField("int", "1"));
+                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(EntityInstanceDraft.forEntity(thing).withField("int", "1"));
 
         final EntityInstance thing2 =
-                erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .createInstance(EntityInstanceDraft.forEntity(thing).withField("int", "2"));
+                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(EntityInstanceDraft.forEntity(thing).withField("int", "2"));
 
         final EntityInstance thing3 =
-                erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .createInstance(EntityInstanceDraft.forEntity(thing).withField("int", "3"));
+                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(EntityInstanceDraft.forEntity(thing).withField("int", "3"));
 
         QueryFilterParams params = new QueryFilterParams();
         params.put("sortBy", "-int");
@@ -51,7 +54,7 @@ public class SortingViaQueryFiltersTest {
         RepositoryUrlQuery ascSortedResults =
                 new RepositoryUrlQuery(
                                 erModel.getSchema(),
-                                erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
                                 "things")
                         .performQuery(params);
 
@@ -70,7 +73,7 @@ public class SortingViaQueryFiltersTest {
         RepositoryUrlQuery descSortedResults =
                 new RepositoryUrlQuery(
                                 erModel.getSchema(),
-                                erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
                                 "things")
                         .performQuery(params);
 
@@ -87,7 +90,7 @@ public class SortingViaQueryFiltersTest {
         RepositoryUrlQuery defaultSortedResults =
                 new RepositoryUrlQuery(
                                 erModel.getSchema(),
-                                erModel.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
                                 "things")
                         .performQuery(params);
 
@@ -108,15 +111,17 @@ public class SortingViaQueryFiltersTest {
 
         final EntityInstance trueThing =
                 aThingifier
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .createInstance(
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
                                 EntityInstanceDraft.forEntity(thing)
                                         .withField("truefalse", "true"));
 
         final EntityInstance falseThing =
                 aThingifier
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .createInstance(
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
                                 EntityInstanceDraft.forEntity(thing)
                                         .withField("truefalse", "false"));
 
@@ -126,7 +131,7 @@ public class SortingViaQueryFiltersTest {
         RepositoryUrlQuery ascSortedResults =
                 new RepositoryUrlQuery(
                                 aThingifier.getSchema(),
-                                aThingifier.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                aThingifier.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
                                 "things")
                         .performQuery(params);
 
@@ -145,7 +150,7 @@ public class SortingViaQueryFiltersTest {
         RepositoryUrlQuery descSortedResults =
                 new RepositoryUrlQuery(
                                 aThingifier.getSchema(),
-                                aThingifier.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                aThingifier.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
                                 "things")
                         .performQuery(params);
 
@@ -161,7 +166,7 @@ public class SortingViaQueryFiltersTest {
         RepositoryUrlQuery defaultSortedResults =
                 new RepositoryUrlQuery(
                                 aThingifier.getSchema(),
-                                aThingifier.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                aThingifier.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
                                 "things")
                         .performQuery(params);
 

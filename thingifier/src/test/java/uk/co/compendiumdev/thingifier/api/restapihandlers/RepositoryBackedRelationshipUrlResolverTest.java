@@ -11,12 +11,12 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.F
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
-import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
+import uk.co.compendiumdev.thingifier.core.repository.ThingStore;
 
 public class RepositoryBackedRelationshipUrlResolverTest {
 
     private Thingifier thingifier;
-    private ThingRepository repository;
+    private ThingStore repository;
     private EntityDefinition todo;
     private EntityDefinition project;
     private EntityInstance task;
@@ -41,16 +41,20 @@ public class RepositoryBackedRelationshipUrlResolverTest {
                 .defineRelationship(project, todo, "tasks", Cardinality.ONE_TO_MANY())
                 .whenReversed(Cardinality.ONE_TO_MANY(), "task-of");
 
-        repository = thingifier.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME);
+        repository = thingifier.getStore(EntityRelModel.DEFAULT_DATABASE_NAME);
         task =
-                repository.createInstance(
-                        EntityInstanceDraft.forEntity(todo)
-                                .withField("title", "relationship task"));
+                repository
+                        .entities()
+                        .create(
+                                EntityInstanceDraft.forEntity(todo)
+                                        .withField("title", "relationship task"));
         projectInstance =
-                repository.createInstance(
-                        EntityInstanceDraft.forEntity(project)
-                                .withField("title", "relationship project"));
-        repository.connectRelationship(projectInstance, "tasks", task);
+                repository
+                        .entities()
+                        .create(
+                                EntityInstanceDraft.forEntity(project)
+                                        .withField("title", "relationship project"));
+        repository.relationships().connect(projectInstance, "tasks", task);
 
         resolver =
                 new RepositoryBackedRelationshipUrlResolver(
@@ -146,8 +150,11 @@ public class RepositoryBackedRelationshipUrlResolverTest {
     @Test
     public void relationshipInstancePathRequiresChildToBeConnected() {
         EntityInstance unconnectedTask =
-                repository.createInstance(
-                        EntityInstanceDraft.forEntity(todo).withField("title", "unconnected task"));
+                repository
+                        .entities()
+                        .create(
+                                EntityInstanceDraft.forEntity(todo)
+                                        .withField("title", "unconnected task"));
 
         RepositoryBackedRelationshipUrlResolver.RelationshipUrlResolution resolution =
                 resolver.resolveRelationshipInstance(

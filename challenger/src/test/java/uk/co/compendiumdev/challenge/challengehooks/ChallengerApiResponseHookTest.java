@@ -27,17 +27,17 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.F
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
-import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
-import uk.co.compendiumdev.thingifier.core.repository.ThingRepositoryProvider;
-import uk.co.compendiumdev.thingifier.core.repository.inmemory.InMemoryThingRepositoryProvider;
-import uk.co.compendiumdev.thingifier.core.repository.sqlite.SqliteThingRepositoryProvider;
+import uk.co.compendiumdev.thingifier.core.repository.ThingStore;
+import uk.co.compendiumdev.thingifier.core.repository.ThingStoreProvider;
+import uk.co.compendiumdev.thingifier.core.repository.inmemory.InMemoryThingStoreProvider;
+import uk.co.compendiumdev.thingifier.core.repository.sqlite.SqliteThingStoreProvider;
 
 public class ChallengerApiResponseHookTest {
 
     @ParameterizedTest(name = "{0}")
     @MethodSource("repositoryProviders")
     public void filteredTodosChallengeCompletesWhenDoneAndNotDoneTodosExist(
-            final String repositoryName, final Supplier<ThingRepositoryProvider> providerFactory) {
+            final String repositoryName, final Supplier<ThingStoreProvider> providerFactory) {
 
         try (HookFixture fixture = new HookFixture(providerFactory.get())) {
             fixture.addTodo("done", "true");
@@ -56,7 +56,7 @@ public class ChallengerApiResponseHookTest {
     @ParameterizedTest(name = "{0}")
     @MethodSource("repositoryProviders")
     public void filteredTodosChallengeDoesNotCompleteWithoutMixedDoneStatusTodos(
-            final String repositoryName, final Supplier<ThingRepositoryProvider> providerFactory) {
+            final String repositoryName, final Supplier<ThingStoreProvider> providerFactory) {
 
         try (HookFixture fixture = new HookFixture(providerFactory.get())) {
             fixture.addTodo("done", "true");
@@ -74,7 +74,7 @@ public class ChallengerApiResponseHookTest {
     @ParameterizedTest(name = "{0}")
     @MethodSource("repositoryProviders")
     public void postMaxContentChallengeReadsCreatedTodoThroughRepository(
-            final String repositoryName, final Supplier<ThingRepositoryProvider> providerFactory) {
+            final String repositoryName, final Supplier<ThingStoreProvider> providerFactory) {
 
         try (HookFixture fixture = new HookFixture(providerFactory.get())) {
             EntityInstance todo =
@@ -103,11 +103,11 @@ public class ChallengerApiResponseHookTest {
     @ParameterizedTest(name = "{0}")
     @MethodSource("repositoryProviders")
     public void deleteAllTodosChallengeCompletesWhenRepositoryIsEmpty(
-            final String repositoryName, final Supplier<ThingRepositoryProvider> providerFactory) {
+            final String repositoryName, final Supplier<ThingStoreProvider> providerFactory) {
 
         try (HookFixture fixture = new HookFixture(providerFactory.get())) {
             EntityInstance todo = fixture.addTodo("delete me", "false");
-            fixture.repository.deleteEntityInstance(todo);
+            fixture.repository.entities().delete(todo);
 
             fixture.hook.run(
                     fixture.request("todos/" + todo.getPrimaryKeyValue(), DELETE),
@@ -121,12 +121,12 @@ public class ChallengerApiResponseHookTest {
     @ParameterizedTest(name = "{0}")
     @MethodSource("repositoryProviders")
     public void deleteAllTodosChallengeDoesNotCompleteWhenRepositoryStillHasTodos(
-            final String repositoryName, final Supplier<ThingRepositoryProvider> providerFactory) {
+            final String repositoryName, final Supplier<ThingStoreProvider> providerFactory) {
 
         try (HookFixture fixture = new HookFixture(providerFactory.get())) {
             EntityInstance deletedTodo = fixture.addTodo("delete me", "false");
             fixture.addTodo("keep me", "false");
-            fixture.repository.deleteEntityInstance(deletedTodo);
+            fixture.repository.entities().delete(deletedTodo);
 
             fixture.hook.run(
                     fixture.request("todos/" + deletedTodo.getPrimaryKeyValue(), DELETE),
@@ -142,11 +142,10 @@ public class ChallengerApiResponseHookTest {
         return Stream.of(
                 Arguments.of(
                         "in-memory",
-                        (Supplier<ThingRepositoryProvider>) InMemoryThingRepositoryProvider::new),
+                        (Supplier<ThingStoreProvider>) InMemoryThingStoreProvider::new),
                 Arguments.of(
                         "sqlite-memory",
-                        (Supplier<ThingRepositoryProvider>)
-                                SqliteThingRepositoryProvider::inMemory));
+                        (Supplier<ThingStoreProvider>) SqliteThingStoreProvider::inMemory));
     }
 
     private static class HookFixture implements AutoCloseable {
@@ -155,9 +154,9 @@ public class ChallengerApiResponseHookTest {
         private final ChallengerAuthData challenger;
         private final ChallengerApiResponseHook hook;
         private final EntityDefinition todo;
-        private final ThingRepository repository;
+        private final ThingStore repository;
 
-        HookFixture(final ThingRepositoryProvider provider) {
+        HookFixture(final ThingStoreProvider provider) {
             thingifier = new Thingifier(new EntityRelModel(provider));
             todo = thingifier.defineThing("todo", "todos");
             todo.addAsPrimaryKeyField(Field.is("id", FieldType.AUTO_INCREMENT));
@@ -171,7 +170,7 @@ public class ChallengerApiResponseHookTest {
             challengers.setMultiPlayerMode();
             challenger = challengers.createNewChallenger();
             thingifier.ensureCreatedAndPopulatedInstanceDatabaseNamed(challenger.getXChallenger());
-            repository = thingifier.getRepository(challenger.getXChallenger());
+            repository = thingifier.getStore(challenger.getXChallenger());
             hook = new ChallengerApiResponseHook(challengers, thingifier);
         }
 
@@ -181,11 +180,13 @@ public class ChallengerApiResponseHookTest {
 
         EntityInstance addTodo(
                 final String title, final String doneStatus, final String description) {
-            return repository.createInstance(
-                    EntityInstanceDraft.forEntity(todo)
-                            .withField("title", title)
-                            .withField("doneStatus", doneStatus)
-                            .withField("description", description));
+            return repository
+                    .entities()
+                    .create(
+                            EntityInstanceDraft.forEntity(todo)
+                                    .withField("title", title)
+                                    .withField("doneStatus", doneStatus)
+                                    .withField("description", description));
         }
 
         HttpApiRequest request(final String path, final HttpApiRequest.VERB verb) {

@@ -11,24 +11,24 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.ERSchema;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
-import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
+import uk.co.compendiumdev.thingifier.core.repository.ThingStore;
 
 public class JsonPopulator implements RepositoryDataPopulator {
 
     private final String jsonData;
     private ERSchema schema;
-    private ThingRepository repository;
+    private ThingStore store;
 
     public JsonPopulator(String jsonDatabaseContents) {
         this.jsonData = jsonDatabaseContents;
     }
 
     @Override
-    public void populate(ERSchema schema, ThingRepository repository) {
+    public void populate(ERSchema schema, ThingStore store) {
 
         this.schema = schema;
-        this.repository = repository;
-        this.repository.refreshSchema(schema);
+        this.store = store;
+        this.store.administration().refreshSchema(schema);
 
         JsonElement data = JsonParser.parseString(jsonData);
 
@@ -39,7 +39,7 @@ public class JsonPopulator implements RepositoryDataPopulator {
         }
 
         JsonObject entities = data.getAsJsonObject();
-        repository.clearAllData();
+        store.administration().clearAllData();
         entities.entrySet()
                 .forEach(
                         property -> {
@@ -112,6 +112,6 @@ public class JsonPopulator implements RepositoryDataPopulator {
                         });
 
         // instance is valid, so add it
-        repository.createInstance(draft);
+        store.entities().create(draft);
     }
 }

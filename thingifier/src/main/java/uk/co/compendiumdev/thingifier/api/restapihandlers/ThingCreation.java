@@ -57,7 +57,7 @@ public class ThingCreation {
                         .areFieldsUnique(
                                 bodyargs,
                                 thing,
-                                thingifier.getRepository(database),
+                                thingifier.getStore(database).entityQueries(),
                                 thing.getFieldNamesOfType(
                                         FieldType.AUTO_INCREMENT, FieldType.AUTO_GUID));
         if (!validated.isValid()) {
@@ -86,7 +86,7 @@ public class ThingCreation {
         List<NamedValue> fieldValues =
                 FieldValues.fromListMapEntryStringString(bodyargs.getFlattenedStringMap());
 
-        thingifier.getRepository(database).setNextIdCountersToAccomodate(thing, fieldValues);
+        thingifier.getStore(database).administration().accommodateProtectedIds(thing, fieldValues);
 
         return insertNewThingWithFields(bodyargs, draft, thing, database);
     }
@@ -162,7 +162,7 @@ public class ThingCreation {
             BodyParser bodyargs, EntityInstanceDraft draft, String database) {
 
         try {
-            EntityInstance instance = thingifier.getRepository(database).createInstance(draft);
+            EntityInstance instance = thingifier.getStore(database).entities().create(draft);
             return new RelationshipCreator(thingifier)
                     .createRelationships(bodyargs, instance, database);
         } catch (Exception e) {

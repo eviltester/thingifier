@@ -11,27 +11,27 @@ import java.util.UUID;
 import java.util.function.Function;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.ERSchema;
-import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
-import uk.co.compendiumdev.thingifier.core.repository.ThingRepositoryProvider;
+import uk.co.compendiumdev.thingifier.core.repository.ThingStore;
+import uk.co.compendiumdev.thingifier.core.repository.ThingStoreProvider;
 
-public class SqliteThingRepositoryProvider implements ThingRepositoryProvider {
+public class SqliteThingStoreProvider implements ThingStoreProvider {
 
-    private final Map<String, ThingRepository> repositories;
+    private final Map<String, ThingStore> repositories;
     private final Function<String, String> jdbcUrlFactory;
 
-    private SqliteThingRepositoryProvider(final Function<String, String> jdbcUrlFactory) {
+    private SqliteThingStoreProvider(final Function<String, String> jdbcUrlFactory) {
         this.repositories = new HashMap<>();
         this.jdbcUrlFactory = jdbcUrlFactory;
         repositories.put(
                 EntityRelModel.DEFAULT_DATABASE_NAME,
-                new SqliteThingRepository(
+                new SqliteThingStore(
                         EntityRelModel.DEFAULT_DATABASE_NAME,
                         jdbcUrlFactory.apply(EntityRelModel.DEFAULT_DATABASE_NAME)));
     }
 
-    public static SqliteThingRepositoryProvider inMemory() {
+    public static SqliteThingStoreProvider inMemory() {
         String providerName = "thingifier_" + UUID.randomUUID().toString().replace("-", "");
-        return new SqliteThingRepositoryProvider(
+        return new SqliteThingStoreProvider(
                 databaseKey ->
                         "jdbc:sqlite:file:"
                                 + providerName
@@ -40,7 +40,7 @@ public class SqliteThingRepositoryProvider implements ThingRepositoryProvider {
                                 + "?mode=memory&cache=shared");
     }
 
-    public static SqliteThingRepositoryProvider fileBacked(final Path directory) {
+    public static SqliteThingStoreProvider fileBacked(final Path directory) {
         try {
             Files.createDirectories(directory);
         } catch (IOException e) {
@@ -48,7 +48,7 @@ public class SqliteThingRepositoryProvider implements ThingRepositoryProvider {
                     "Could not create SQLite repository directory " + directory, e);
         }
 
-        return new SqliteThingRepositoryProvider(
+        return new SqliteThingStoreProvider(
                 databaseKey -> {
                     Path databasePath = directory.resolve(safeName(databaseKey) + ".sqlite");
                     return "jdbc:sqlite:"
@@ -57,51 +57,49 @@ public class SqliteThingRepositoryProvider implements ThingRepositoryProvider {
     }
 
     @Override
-    public ThingRepository getDefaultRepository() {
+    public ThingStore getDefaultStore() {
         return repositories.get(EntityRelModel.DEFAULT_DATABASE_NAME);
     }
 
     @Override
-    public ThingRepository getRepository(final String databaseKey) {
+    public ThingStore getStore(final String databaseKey) {
         return repositories.get(databaseKey);
     }
 
     @Override
-    public Set<String> getRepositoryNames() {
+    public Set<String> getStoreNames() {
         return new HashSet<>(repositories.keySet());
     }
 
     @Override
-    public ThingRepository createRepository(final String databaseKey, final ERSchema schema) {
+    public ThingStore createStore(final String databaseKey, final ERSchema schema) {
         if (repositories.containsKey(databaseKey)) {
             throw new IllegalStateException("ERM Database Already Exists with name " + databaseKey);
         }
 
-        ThingRepository repository =
-                new SqliteThingRepository(databaseKey, jdbcUrlFactory.apply(databaseKey));
-        repository.initializeFrom(schema);
-        repositories.put(databaseKey, repository);
-        return repository;
+        ThingStore store = new SqliteThingStore(databaseKey, jdbcUrlFactory.apply(databaseKey));
+        store.administration().initializeFrom(schema);
+        repositories.put(databaseKey, store);
+        return store;
     }
 
     @Override
-    public boolean createRepositoryIfNotExisting(final String databaseKey, final ERSchema schema) {
+    public boolean createStoreIfNotExisting(final String databaseKey, final ERSchema schema) {
         if (repositories.containsKey(databaseKey)) {
             return false;
         }
 
-        ThingRepository repository =
-                new SqliteThingRepository(databaseKey, jdbcUrlFactory.apply(databaseKey));
-        repository.initializeFrom(schema);
-        repositories.put(databaseKey, repository);
+        ThingStore store = new SqliteThingStore(databaseKey, jdbcUrlFactory.apply(databaseKey));
+        store.administration().initializeFrom(schema);
+        repositories.put(databaseKey, store);
         return true;
     }
 
     @Override
-    public void deleteRepository(final String databaseKey) {
-        ThingRepository repository = repositories.remove(databaseKey);
-        if (repository != null) {
-            repository.close();
+    public void deleteStore(final String databaseKey) {
+        ThingStore store = repositories.remove(databaseKey);
+        if (store != null) {
+            store.close();
         }
     }
 

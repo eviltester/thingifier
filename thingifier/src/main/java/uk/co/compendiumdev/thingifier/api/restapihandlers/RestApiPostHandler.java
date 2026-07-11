@@ -54,8 +54,9 @@ public class RestApiPostHandler {
                     stateValidator.validateFields(returnedInstance, protectedFieldNames, false);
             validity.combine(
                     thingifier
-                            .getRepository(instanceDatabaseName)
-                            .validateRelationships(returnedInstance));
+                            .getStore(instanceDatabaseName)
+                            .relationships()
+                            .validate(returnedInstance));
 
             if (validity.isValid()) {
                 return response;
@@ -79,8 +80,9 @@ public class RestApiPostHandler {
             if (entityDefinition.hasPrimaryKeyField()) {
                 EntityInstance instance =
                         thingifier
-                                .getRepository(instanceDatabaseName)
-                                .findInstanceByQueryIdentifier(entityDefinition, primaryKey);
+                                .getStore(instanceDatabaseName)
+                                .entityQueries()
+                                .findByQueryIdentifier(entityDefinition, primaryKey);
 
                 if (instance == null) {
                     // cannot amend something that does not exist

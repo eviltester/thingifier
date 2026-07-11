@@ -46,8 +46,9 @@ public class ThingifierHttpApiRequestHandlingTest {
                 thingifier.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("thing");
         final EntityInstance existingInstance =
                 thingifier
-                        .getRepository("other_things")
-                        .createInstance(
+                        .getStore("other_things")
+                        .entities()
+                        .create(
                                 EntityInstanceDraft.forEntity(thing)
                                         .withField("title", "My Title" + System.nanoTime()));
 
@@ -71,9 +72,11 @@ public class ThingifierHttpApiRequestHandlingTest {
                     EntityDefinition thing = schema.getEntityDefinitionNamed("thing");
 
                     for (String thingTitle : titles) {
-                        repository.createInstance(
-                                EntityInstanceDraft.forEntity(thing)
-                                        .withField("title", thingTitle));
+                        repository
+                                .entities()
+                                .create(
+                                        EntityInstanceDraft.forEntity(thing)
+                                                .withField("title", thingTitle));
                     }
                 };
         thingifier.setDataGenerator(dataPopulator);
@@ -81,7 +84,7 @@ public class ThingifierHttpApiRequestHandlingTest {
         // populate default database
         dataPopulator.populate(
                 thingifier.getERmodel().getSchema(),
-                thingifier.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME));
+                thingifier.getStore(EntityRelModel.DEFAULT_DATABASE_NAME));
 
         final ThingifierHttpApi api = new ThingifierHttpApi(thingifier, null, null);
 
@@ -96,7 +99,7 @@ public class ThingifierHttpApiRequestHandlingTest {
                 thingifier.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("thing");
 
         Assertions.assertEquals(
-                3, thingifier.getRepository("other_things").countInstances(thingInstances));
+                3, thingifier.getStore("other_things").entityQueries().count(thingInstances));
     }
 
     @Test
@@ -123,13 +126,14 @@ public class ThingifierHttpApiRequestHandlingTest {
                 thingifier.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("thing");
 
         Assertions.assertEquals(
-                1, thingifier.getRepository("other_things").countInstances(thingInstances));
+                1, thingifier.getStore("other_things").entityQueries().count(thingInstances));
 
         Assertions.assertEquals(
                 0,
                 thingifier
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .countInstances(
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(
                                 thingifier
                                         .getERmodel()
                                         .getSchema()
@@ -157,11 +161,12 @@ public class ThingifierHttpApiRequestHandlingTest {
 
         EntityInstance anInstance =
                 thingifier
-                        .getRepository("other_things")
-                        .createInstance(EntityInstanceDraft.forEntity(thingInstances));
+                        .getStore("other_things")
+                        .entities()
+                        .create(EntityInstanceDraft.forEntity(thingInstances));
 
         Assertions.assertEquals(
-                1, thingifier.getRepository("other_things").countInstances(thingInstances));
+                1, thingifier.getStore("other_things").entityQueries().count(thingInstances));
 
         final HttpApiResponse actualDeleteResponse =
                 api.delete(
@@ -170,13 +175,14 @@ public class ThingifierHttpApiRequestHandlingTest {
         Assertions.assertEquals(200, actualDeleteResponse.getStatusCode());
 
         Assertions.assertEquals(
-                0, thingifier.getRepository("other_things").countInstances(thingInstances));
+                0, thingifier.getStore("other_things").entityQueries().count(thingInstances));
 
         Assertions.assertEquals(
                 0,
                 thingifier
-                        .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                        .countInstances(
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(
                                 thingifier
                                         .getERmodel()
                                         .getSchema()

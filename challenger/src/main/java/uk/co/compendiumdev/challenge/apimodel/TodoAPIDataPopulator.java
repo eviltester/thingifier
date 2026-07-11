@@ -4,12 +4,12 @@ import uk.co.compendiumdev.thingifier.core.domain.datapopulator.RepositoryDataPo
 import uk.co.compendiumdev.thingifier.core.domain.definitions.ERSchema;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
-import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
+import uk.co.compendiumdev.thingifier.core.repository.ThingStore;
 
 public class TodoAPIDataPopulator implements RepositoryDataPopulator {
 
     @Override
-    public void populate(final ERSchema schema, final ThingRepository repository) {
+    public void populate(final ERSchema schema, final ThingStore store) {
         String[] todos = {
             "scan paperwork",
             "file paperwork",
@@ -26,8 +26,8 @@ public class TodoAPIDataPopulator implements RepositoryDataPopulator {
         EntityDefinition todo = schema.getEntityDefinitionNamed("todo");
 
         for (String todoItem : todos) {
-            repository.createInstance(
-                    EntityInstanceDraft.forEntity(todo).withField("title", todoItem));
+            store.entities()
+                    .create(EntityInstanceDraft.forEntity(todo).withField("title", todoItem));
         }
     }
 }

@@ -6,17 +6,22 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
+import uk.co.compendiumdev.thingifier.core.repository.EntityInstanceQuery;
+import uk.co.compendiumdev.thingifier.core.repository.RelationshipRepository;
+import uk.co.compendiumdev.thingifier.core.repository.ThingStore;
 
 final class RepositoryBackedRelationshipUrlResolver {
 
     private final Thingifier thingifier;
-    private final ThingRepository repository;
+    private final EntityInstanceQuery query;
+    private final RelationshipRepository relationships;
 
     RepositoryBackedRelationshipUrlResolver(
             final Thingifier thingifier, final String databaseName) {
         this.thingifier = thingifier;
-        this.repository = thingifier.getRepository(databaseName);
+        ThingStore store = thingifier.getStore(databaseName);
+        this.query = store.entityQueries();
+        this.relationships = store.relationships();
     }
 
     RelationshipUrlResolution resolveCollection(final String url) {
@@ -30,7 +35,7 @@ final class RepositoryBackedRelationshipUrlResolver {
             return RelationshipUrlResolution.notMatched();
         }
 
-        EntityInstance parent = repository.findInstanceByQueryIdentifier(parentEntity, parts[1]);
+        EntityInstance parent = query.findByQueryIdentifier(parentEntity, parts[1]);
 
         return RelationshipUrlResolution.collection(parentEntity, parent, parts[2]);
     }
@@ -49,7 +54,7 @@ final class RepositoryBackedRelationshipUrlResolver {
 
         EntityInstance child = null;
         List<EntityInstance> relatedInstances =
-                repository.listRelatedInstances(
+                relationships.listRelated(
                         collection.parentInstance(), collection.relationshipName());
         for (EntityInstance relatedInstance : relatedInstances) {
             if (matchesQueryIdentifier(relatedInstance, parts[3])) {

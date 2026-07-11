@@ -316,8 +316,9 @@ public class AuthRoutes {
                                             returnedInstance, protectedFieldNames, false);
                             validity.combine(
                                     secretNoteStore
-                                            .getRepository(EntityRelModel.DEFAULT_DATABASE_NAME)
-                                            .validateRelationships(returnedInstance));
+                                            .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                                            .relationships()
+                                            .validate(returnedInstance));
 
                             this.secretNoteStore.deleteThing(
                                     response.getReturnedInstance(),

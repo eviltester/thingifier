@@ -7,7 +7,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
-import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
+import uk.co.compendiumdev.thingifier.core.repository.EntityInstanceQuery;
 
 public class BodyCreationValidator {
 
@@ -33,7 +33,7 @@ public class BodyCreationValidator {
     public ValidationReport areFieldsUnique(
             final BodyParser bodyargs,
             final EntityDefinition thingDefinition,
-            final ThingRepository repository,
+            final EntityInstanceQuery query,
             final List<String> uniqueFields) {
 
         final ValidationReport report = new ValidationReport();
@@ -46,11 +46,11 @@ public class BodyCreationValidator {
                 if (existingValue != null && existingValue.trim().length() > 0) {
                     // not unique if we can find something by that field value
                     final EntityInstance foundInstance;
-                    if (repository == null) {
+                    if (query == null) {
                         foundInstance = null;
                     } else {
                         foundInstance =
-                                repository.findInstanceByFieldNameAndValue(
+                                query.findByField(
                                         thingDefinition, entry.getKey(), entry.getValue());
                     }
 

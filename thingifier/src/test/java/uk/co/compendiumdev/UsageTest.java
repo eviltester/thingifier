@@ -10,7 +10,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
-import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
+import uk.co.compendiumdev.thingifier.core.repository.ThingStore;
 
 public class UsageTest {
 
@@ -39,15 +39,17 @@ public class UsageTest {
 
         EntityDefinition urls =
                 things.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("URL");
-        ThingRepository repository = things.getRepository(EntityRelModel.DEFAULT_DATABASE_NAME);
+        ThingStore repository = things.getStore(EntityRelModel.DEFAULT_DATABASE_NAME);
 
         Assertions.assertTrue(urls.hasFieldNameDefined("url"));
         Assertions.assertTrue(urls.hasFieldNameDefined("name"));
 
-        repository.createInstance(
-                EntityInstanceDraft.forEntity(urls)
-                        .withField("name", "EvilTester.com")
-                        .withField("url", "http://eviltester.com"));
+        repository
+                .entities()
+                .create(
+                        EntityInstanceDraft.forEntity(urls)
+                                .withField("name", "EvilTester.com")
+                                .withField("url", "http://eviltester.com"));
 
         EntityDefinition user = things.defineThing("USER", "users");
 
@@ -56,8 +58,9 @@ public class UsageTest {
         EntityDefinition users =
                 things.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("USER");
         EntityInstance alan =
-                repository.createInstance(
-                        EntityInstanceDraft.forEntity(users).withField("name", "alan"));
+                repository
+                        .entities()
+                        .create(EntityInstanceDraft.forEntity(users).withField("name", "alan"));
         Assertions.assertEquals("alan", alan.getFieldValue("name").asString());
 
         // TODO fix relationshps so that they have values

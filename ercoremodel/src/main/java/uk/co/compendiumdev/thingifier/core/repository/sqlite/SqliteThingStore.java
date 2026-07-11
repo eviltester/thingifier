@@ -8,7 +8,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -37,16 +36,20 @@ import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
 import uk.co.compendiumdev.thingifier.core.query.SortByFieldName;
 import uk.co.compendiumdev.thingifier.core.reporting.RepositoryJsonExporter;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
+import uk.co.compendiumdev.thingifier.core.repository.EntityInstanceQuery;
+import uk.co.compendiumdev.thingifier.core.repository.EntityInstanceRepository;
 import uk.co.compendiumdev.thingifier.core.repository.MutableEntityInstance;
-import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
+import uk.co.compendiumdev.thingifier.core.repository.RelationshipRepository;
+import uk.co.compendiumdev.thingifier.core.repository.RepositoryAdministration;
+import uk.co.compendiumdev.thingifier.core.repository.ThingStore;
 import uk.co.compendiumdev.thingifier.core.repository.relationship.RelationshipEndpoint;
 import uk.co.compendiumdev.thingifier.core.repository.relationship.RelationshipRow;
 import uk.co.compendiumdev.thingifier.core.repository.relationship.RelationshipRules;
 import uk.co.compendiumdev.thingifier.core.repository.validation.EntityInstanceWriteValidator;
 
-public class SqliteThingRepository implements ThingRepository {
+public class SqliteThingStore implements ThingStore {
 
-    private static final Logger LOGGER = Logger.getLogger(SqliteThingRepository.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(SqliteThingStore.class.getName());
     private static final String INTERNAL_ID_COLUMN = "__internal_id";
     private static final String COUNTERS_TABLE = "__thingifier_counters";
 
@@ -56,27 +59,34 @@ public class SqliteThingRepository implements ThingRepository {
     private final Map<String, Map<String, AutoIncrement>> countersByEntity;
     private final EntityInstanceWriteValidator writeValidator;
     private final RelationshipRules relationshipRules;
+    private final EntityInstanceRepository entityRepository;
+    private final EntityInstanceQuery entityQuery;
+    private final RelationshipRepository relationshipRepository;
+    private final RepositoryAdministration administration;
     private ERSchema schema;
     private Connection connection;
     private boolean closed;
 
-    public SqliteThingRepository(final String databaseKey, final String jdbcUrl) {
+    public SqliteThingStore(final String databaseKey, final String jdbcUrl) {
         this.databaseKey = databaseKey;
         this.jdbcUrl = jdbcUrl;
         this.materializedInstances = new HashMap<>();
         this.countersByEntity = new HashMap<>();
-        this.writeValidator = new EntityInstanceWriteValidator(this);
+        this.writeValidator = new EntityInstanceWriteValidator(this::checkFieldsForUniqueNess);
         this.relationshipRules = new RelationshipRules();
+        this.entityRepository = new SqliteEntityInstanceRepository(this);
+        this.entityQuery = new SqliteEntityInstanceQuery(this);
+        this.relationshipRepository = new SqliteRelationshipRepository(this);
+        this.administration = new SqliteRepositoryAdministration(this);
     }
 
-    public static SqliteThingRepository inMemory(final String databaseKey) {
-        return new SqliteThingRepository(databaseKey, "jdbc:sqlite::memory:");
+    public static SqliteThingStore inMemory(final String databaseKey) {
+        return new SqliteThingStore(databaseKey, "jdbc:sqlite::memory:");
     }
 
-    public static SqliteThingRepository fileBacked(
-            final String databaseKey, final Path databasePath) {
+    public static SqliteThingStore fileBacked(final String databaseKey, final Path databasePath) {
         String path = databasePath.toAbsolutePath().toString().replace("\\", "/");
-        return new SqliteThingRepository(databaseKey, "jdbc:sqlite:" + path);
+        return new SqliteThingStore(databaseKey, "jdbc:sqlite:" + path);
     }
 
     @Override
@@ -85,15 +95,33 @@ public class SqliteThingRepository implements ThingRepository {
     }
 
     @Override
-    public void initializeFrom(final ERSchema schema) {
+    public EntityInstanceRepository entities() {
+        return entityRepository;
+    }
+
+    @Override
+    public EntityInstanceQuery entityQueries() {
+        return entityQuery;
+    }
+
+    @Override
+    public RelationshipRepository relationships() {
+        return relationshipRepository;
+    }
+
+    @Override
+    public RepositoryAdministration administration() {
+        return administration;
+    }
+
+    void initializeFrom(final ERSchema schema) {
         this.schema = schema;
         openConnection();
         createMetadataTables();
         refreshSchema(schema);
     }
 
-    @Override
-    public String exportDataAsJson(final ERSchema schema) {
+    String exportDataAsJson(final ERSchema schema) {
         ensureSchemaReady();
 
         StringBuilder json = new StringBuilder();
@@ -115,8 +143,7 @@ public class SqliteThingRepository implements ThingRepository {
         return json.toString();
     }
 
-    @Override
-    public void refreshSchema(final ERSchema schema) {
+    void refreshSchema(final ERSchema schema) {
         this.schema = schema;
         openConnection();
         for (EntityDefinition entity : schema.getEntityDefinitions()) {
@@ -129,8 +156,7 @@ public class SqliteThingRepository implements ThingRepository {
         }
     }
 
-    @Override
-    public EntityInstance findEntityInstanceByGUID(final String thingGUID) {
+    EntityInstance findEntityInstanceByGUID(final String thingGUID) {
         ensureSchemaReady();
         for (EntityDefinition entity : schema.getEntityDefinitions()) {
             for (Field guidField : entity.getFieldsOfType(FieldType.AUTO_GUID)) {
@@ -144,8 +170,7 @@ public class SqliteThingRepository implements ThingRepository {
         return null;
     }
 
-    @Override
-    public EntityInstance findInstanceByPrimaryKey(
+    EntityInstance findInstanceByPrimaryKey(
             final EntityDefinition entity, final String primaryKeyValue) {
         if (!entity.hasPrimaryKeyField()) {
             return null;
@@ -154,8 +179,7 @@ public class SqliteThingRepository implements ThingRepository {
                 entity, entity.getPrimaryKeyField().getName(), primaryKeyValue);
     }
 
-    @Override
-    public EntityInstance findInstanceByFieldNameAndValue(
+    EntityInstance findInstanceByFieldNameAndValue(
             final EntityDefinition entity, final String fieldName, final String fieldValue) {
         ensureSchemaReady();
         if (!entity.hasFieldNameDefined(fieldName)) {
@@ -175,13 +199,11 @@ public class SqliteThingRepository implements ThingRepository {
         return instances.get(0);
     }
 
-    @Override
-    public Collection<EntityInstance> listInstances(final EntityDefinition entity) {
+    List<EntityInstance> listInstances(final EntityDefinition entity) {
         return listInstances(entity, new QueryFilterParams());
     }
 
-    @Override
-    public List<EntityInstance> listInstances(
+    List<EntityInstance> listInstances(
             final EntityDefinition entity, final QueryFilterParams queryParams) {
         ensureSchemaReady();
         QueryFilterParams params = queryParams == null ? new QueryFilterParams() : queryParams;
@@ -190,8 +212,7 @@ public class SqliteThingRepository implements ThingRepository {
         return queryEntityRows(entity, sqlQuery.sql, sqlQuery.parameters);
     }
 
-    @Override
-    public int countInstances(final EntityDefinition entity) {
+    int countInstances(final EntityDefinition entity) {
         ensureSchemaReady();
         String sql = "SELECT COUNT(*) FROM " + table(entity);
         try (PreparedStatement statement = connection.prepareStatement(sql);
@@ -206,8 +227,7 @@ public class SqliteThingRepository implements ThingRepository {
         }
     }
 
-    @Override
-    public EntityInstance findInstanceByQueryIdentifier(
+    EntityInstance findInstanceByQueryIdentifier(
             final EntityDefinition entity, final String identifierValue) {
         ensureSchemaReady();
         List<String> clauses = new ArrayList<>();
@@ -241,8 +261,7 @@ public class SqliteThingRepository implements ThingRepository {
         return instances.get(0);
     }
 
-    @Override
-    public EntityInstance createInstance(final EntityInstanceDraft draft) {
+    EntityInstance createInstance(final EntityInstanceDraft draft) {
         ensureSchemaReady();
         MutableEntityInstance mutableInstance = MutableEntityInstance.fromDraft(draft);
         EntityInstance[] created = new EntityInstance[1];
@@ -259,9 +278,7 @@ public class SqliteThingRepository implements ThingRepository {
         return created[0];
     }
 
-    @Override
-    public EntityInstance patchInstance(
-            final EntityInstance instance, final EntityInstanceDraft draft) {
+    EntityInstance patchInstance(final EntityInstance instance, final EntityInstanceDraft draft) {
         ensureSchemaReady();
         EntityInstance updated =
                 MutableEntityInstance.fromExisting(instance).patch(draft).toEntityInstance();
@@ -275,9 +292,7 @@ public class SqliteThingRepository implements ThingRepository {
         return updated;
     }
 
-    @Override
-    public EntityInstance replaceInstance(
-            final EntityInstance instance, final EntityInstanceDraft draft) {
+    EntityInstance replaceInstance(final EntityInstance instance, final EntityInstanceDraft draft) {
         ensureSchemaReady();
         EntityInstance updated =
                 MutableEntityInstance.fromExisting(instance).replace(draft).toEntityInstance();
@@ -291,14 +306,12 @@ public class SqliteThingRepository implements ThingRepository {
         return updated;
     }
 
-    @Override
-    public void deleteEntityInstance(final EntityInstance instance) {
+    void deleteEntityInstance(final EntityInstance instance) {
         ensureSchemaReady();
         runInTransaction(() -> deleteEntityInstanceAndMandatoryRelated(instance, new HashSet<>()));
     }
 
-    @Override
-    public void clearAllData() {
+    void clearAllData() {
         ensureSchemaReady();
         runInTransaction(
                 () -> {
@@ -312,8 +325,7 @@ public class SqliteThingRepository implements ThingRepository {
                 });
     }
 
-    @Override
-    public void clearInstanceDataFor(final String entityName) {
+    void clearInstanceDataFor(final String entityName) {
         ensureSchemaReady();
         EntityDefinition entity = schema.getEntityDefinitionNamed(entityName);
         if (entity == null) {
@@ -332,8 +344,7 @@ public class SqliteThingRepository implements ThingRepository {
                 });
     }
 
-    @Override
-    public void connectRelationship(
+    void connectRelationship(
             final EntityInstance from, final String relationshipName, final EntityInstance to) {
         ensureSchemaReady();
         RelationshipVectorDefinition vector =
@@ -346,8 +357,7 @@ public class SqliteThingRepository implements ThingRepository {
         runInTransaction(() -> persistRelationship(from, vector, to));
     }
 
-    @Override
-    public List<EntityInstance> removeRelationshipsInvolving(
+    List<EntityInstance> removeRelationshipsInvolving(
             final EntityInstance parent,
             final EntityInstance child,
             final String relationshipName) {
@@ -358,16 +368,14 @@ public class SqliteThingRepository implements ThingRepository {
         return removed;
     }
 
-    @Override
-    public List<EntityInstance> removeAllRelationships(final EntityInstance instance) {
+    List<EntityInstance> removeAllRelationships(final EntityInstance instance) {
         ensureSchemaReady();
         List<EntityInstance> removed = mandatoryInstancesForRelationshipsInvolving(instance);
         runInTransaction(() -> deleteRelationshipRowsInvolving(instance));
         return removed;
     }
 
-    @Override
-    public boolean hasRelationshipInstances(final EntityInstance instance) {
+    boolean hasRelationshipInstances(final EntityInstance instance) {
         ensureSchemaReady();
         for (RelationshipVectorDefinition vector : relationshipVectors()) {
             String sql =
@@ -389,8 +397,7 @@ public class SqliteThingRepository implements ThingRepository {
         return false;
     }
 
-    @Override
-    public ValidationReport validateRelationships(final EntityInstance instance) {
+    ValidationReport validateRelationships(final EntityInstance instance) {
         ensureSchemaReady();
         return relationshipRules.validateRelationships(
                 instance,
@@ -399,8 +406,7 @@ public class SqliteThingRepository implements ThingRepository {
                 this::countRowsForEndpoint);
     }
 
-    @Override
-    public List<EntityInstance> listRelatedInstances(
+    List<EntityInstance> listRelatedInstances(
             final EntityInstance instance,
             final String relationshipName,
             final QueryFilterParams queryParams) {
@@ -422,8 +428,7 @@ public class SqliteThingRepository implements ThingRepository {
         return new EntityInstanceListSorter(params).sort(new ArrayList<>(related.values()));
     }
 
-    @Override
-    public ValidationReport checkFieldsForUniqueNess(
+    ValidationReport checkFieldsForUniqueNess(
             final EntityInstance instance, final boolean isAmendment) {
         ensureSchemaReady();
 
@@ -467,14 +472,12 @@ public class SqliteThingRepository implements ThingRepository {
         return report;
     }
 
-    @Override
-    public Map<String, AutoIncrement> countersFor(final EntityDefinition entity) {
+    Map<String, AutoIncrement> countersFor(final EntityDefinition entity) {
         initializeCountersFor(entity);
         return countersByEntity.get(entity.getName());
     }
 
-    @Override
-    public void setNextIdCountersToAccomodate(
+    void setNextIdCountersToAccomodate(
             final EntityDefinition entity, final List<NamedValue> fieldValues) {
         initializeCountersFor(entity);
         for (NamedValue fieldNameValue : fieldValues) {
@@ -488,14 +491,23 @@ public class SqliteThingRepository implements ThingRepository {
         persistCountersFor(entity);
     }
 
-    @Override
-    public void resetAutoIncrementCounter(final EntityDefinition entity, final String fieldName) {
+    void resetAutoIncrementCounter(final EntityDefinition entity, final String fieldName) {
         ensureSchemaReady();
         runInTransaction(
                 () -> {
                     resetAutoIncrementCounterInCache(entity, fieldName);
                     persistCountersFor(entity);
                 });
+    }
+
+    boolean resetAutoIncrementCounterWhenNextValueAbove(
+            final EntityDefinition entity, final String fieldName, final int ceiling) {
+        AutoIncrement counter = countersFor(entity).get(fieldName);
+        if (counter != null && counter.peekNextValue() > ceiling) {
+            resetAutoIncrementCounter(entity, fieldName);
+            return true;
+        }
+        return false;
     }
 
     @Override
