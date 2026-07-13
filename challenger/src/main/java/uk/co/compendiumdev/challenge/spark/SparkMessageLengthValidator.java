@@ -7,8 +7,11 @@ import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiResponse;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
-import uk.co.compendiumdev.thingifier.application.internalhttpconversion.HttpApiResponseToSpark;
-import uk.co.compendiumdev.thingifier.application.internalhttpconversion.SparkToHttpApiRequest;
+import uk.co.compendiumdev.thingifier.application.internalhttp.InternalHttpRequest;
+import uk.co.compendiumdev.thingifier.application.internalhttpconversion.HttpApiResponseToInternalHttpResponse;
+import uk.co.compendiumdev.thingifier.application.internalhttpconversion.InternalHttpRequestToHttpApiRequest;
+import uk.co.compendiumdev.thingifier.application.internalhttpconversion.InternalHttpResponseToSpark;
+import uk.co.compendiumdev.thingifier.application.internalhttpconversion.SparkToInternalHttpRequest;
 
 public class SparkMessageLengthValidator {
 
@@ -42,11 +45,14 @@ public class SparkMessageLengthValidator {
                                 "Error: Request too large, max allowed is %d bytes",
                                 this.maxLength));
 
-        final HttpApiRequest myRequest = SparkToHttpApiRequest.convert(request);
+        final InternalHttpRequest internalRequest = SparkToInternalHttpRequest.convert(request);
+        final HttpApiRequest myRequest =
+                InternalHttpRequestToHttpApiRequest.convert(internalRequest);
         JsonThing jsonThing = new JsonThing(apiConfig.jsonOutput());
         final HttpApiResponse httpApiResponse =
                 new HttpApiResponse(myRequest.getHeaders(), response, jsonThing, apiConfig);
 
-        return HttpApiResponseToSpark.convert(httpApiResponse, result);
+        return InternalHttpResponseToSpark.convert(
+                HttpApiResponseToInternalHttpResponse.convert(httpApiResponse), result);
     }
 }

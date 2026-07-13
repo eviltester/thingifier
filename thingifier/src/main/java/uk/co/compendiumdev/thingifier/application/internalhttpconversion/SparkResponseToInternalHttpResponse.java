@@ -1,7 +1,7 @@
 package uk.co.compendiumdev.thingifier.application.internalhttpconversion;
 
-import java.util.Set;
 import spark.Response;
+import uk.co.compendiumdev.thingifier.application.internalhttp.InternalHttpResponse;
 
 public class SparkResponseToInternalHttpResponse {
 
@@ -21,18 +21,6 @@ public class SparkResponseToInternalHttpResponse {
 
     public static void updateResponseFromInternal(
             final Response response, final InternalHttpResponse httpResponse) {
-
-        response.status(httpResponse.getStatusCode());
-
-        if (httpResponse.hasType()) {
-            response.type(httpResponse.getType());
-        }
-
-        final Set<String> keys = httpResponse.getHeaders().asMap().keySet();
-        for (String headerKey : keys) {
-            response.raw().setHeader(headerKey, httpResponse.getHeaders().get(headerKey));
-        }
-
-        response.body(httpResponse.getBody());
+        InternalHttpResponseToSpark.updateResponseFromInternal(response, httpResponse);
     }
 }

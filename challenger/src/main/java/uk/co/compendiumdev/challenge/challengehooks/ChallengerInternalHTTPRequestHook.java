@@ -6,8 +6,9 @@ import java.util.List;
 import uk.co.compendiumdev.challenge.CHALLENGE;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
-import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
-import uk.co.compendiumdev.thingifier.api.http.HttpApiResponse;
+import uk.co.compendiumdev.thingifier.application.internalhttp.InternalHttpMethod;
+import uk.co.compendiumdev.thingifier.application.internalhttp.InternalHttpRequest;
+import uk.co.compendiumdev.thingifier.application.internalhttp.InternalHttpResponse;
 import uk.co.compendiumdev.thingifier.application.sparkhttpmessageHooks.InternalHttpRequestHook;
 
 /*
@@ -22,7 +23,7 @@ public class ChallengerInternalHTTPRequestHook implements InternalHttpRequestHoo
     }
 
     @Override
-    public HttpApiResponse run(final HttpApiRequest request) {
+    public InternalHttpResponse run(final InternalHttpRequest request) {
 
         // TODO: fix hooks so that they only run on a specific thingifier basis.
         // Until fixed so hooks only run on specific thingifiers, restrict this to Challenges API
@@ -47,48 +48,48 @@ public class ChallengerInternalHTTPRequestHook implements InternalHttpRequestHoo
         // add challenger guid as session id to request
         request.addHeader(HTTP_SESSION_HEADER_NAME, challenger.getXChallenger());
 
-        HttpApiRequest.VERB method = request.getVerb();
+        InternalHttpMethod method = request.getVerb();
         String path = request.getPath();
 
-        if (method == HttpApiRequest.VERB.GET && path.equals("challenges")) {
+        if (method == InternalHttpMethod.GET && path.equals("challenges")) {
             challengers.pass(challenger, CHALLENGE.GET_CHALLENGES);
         }
 
-        if (method == HttpApiRequest.VERB.GET && path.equals("heartbeat")) {
+        if (method == InternalHttpMethod.GET && path.equals("heartbeat")) {
             challengers.pass(challenger, CHALLENGE.GET_HEARTBEAT_204);
         }
 
-        if (method == HttpApiRequest.VERB.DELETE && path.equals("heartbeat")) {
+        if (method == InternalHttpMethod.DELETE && path.equals("heartbeat")) {
             challengers.pass(challenger, CHALLENGE.DELETE_HEARTBEAT_405);
         }
 
-        if (method == HttpApiRequest.VERB.PATCH && path.equals("heartbeat")) {
+        if (method == InternalHttpMethod.PATCH && path.equals("heartbeat")) {
             challengers.pass(challenger, CHALLENGE.PATCH_HEARTBEAT_500);
         }
 
-        if (method == HttpApiRequest.VERB.TRACE && path.equals("heartbeat")) {
+        if (method == InternalHttpMethod.TRACE && path.equals("heartbeat")) {
             challengers.pass(challenger, CHALLENGE.TRACE_HEARTBEAT_501);
         }
 
-        if (method == HttpApiRequest.VERB.POST
+        if (method == InternalHttpMethod.POST
                 && path.equals("heartbeat")
-                && request.getHeader("x-http-method-override").equals("patch")) {
+                && request.getHeader("x-http-method-override").equalsIgnoreCase("patch")) {
             challengers.pass(challenger, CHALLENGE.OVERRIDE_PATCH_HEARTBEAT_500);
         }
 
-        if (method == HttpApiRequest.VERB.POST
+        if (method == InternalHttpMethod.POST
                 && path.equals("heartbeat")
-                && request.getHeader("x-http-method-override").equals("delete")) {
+                && request.getHeader("x-http-method-override").equalsIgnoreCase("delete")) {
             challengers.pass(challenger, CHALLENGE.OVERRIDE_DELETE_HEARTBEAT_405);
         }
 
-        if (method == HttpApiRequest.VERB.POST
+        if (method == InternalHttpMethod.POST
                 && path.equals("heartbeat")
-                && request.getHeader("x-http-method-override").equals("trace")) {
+                && request.getHeader("x-http-method-override").equalsIgnoreCase("trace")) {
             challengers.pass(challenger, CHALLENGE.OVERRIDE_TRACE_HEARTBEAT_501);
         }
 
-        if (method == HttpApiRequest.VERB.GET
+        if (method == InternalHttpMethod.GET
                 && path.equals("challenger/" + challenger.getXChallenger())) {
             challengers.pass(challenger, CHALLENGE.GET_RESTORABLE_CHALLENGER_PROGRESS_STATUS);
         }

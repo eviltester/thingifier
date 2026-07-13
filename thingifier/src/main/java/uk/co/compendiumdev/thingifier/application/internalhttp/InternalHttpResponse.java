@@ -1,23 +1,15 @@
-package uk.co.compendiumdev.thingifier.application.internalhttpconversion;
+package uk.co.compendiumdev.thingifier.application.internalhttp;
 
-import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
+public final class InternalHttpResponse {
 
-/*
-   The HttpApiResponse is too complicated to re-use and is tied to the ApiResponse
-
-   This is just a cleaner bridge for pure Http access.
-
-*/
-public class InternalHttpResponse {
     private int status;
     private String contentType;
     private String body;
-
-    private HttpHeadersBlock headers;
+    private final InternalHttpHeaders headers;
 
     public InternalHttpResponse() {
-
-        headers = new HttpHeadersBlock();
+        headers = new InternalHttpHeaders();
+        body = "";
     }
 
     public InternalHttpResponse setStatus(final int status) {
@@ -31,7 +23,7 @@ public class InternalHttpResponse {
     }
 
     public InternalHttpResponse setBody(final String body) {
-        this.body = body;
+        this.body = body == null ? "" : body;
         return this;
     }
 
@@ -52,8 +44,10 @@ public class InternalHttpResponse {
         return contentType;
     }
 
-    public HttpHeadersBlock getHeaders() {
-        return headers;
+    public InternalHttpHeaders getHeaders() {
+        InternalHttpHeaders copy = new InternalHttpHeaders();
+        copy.putAll(headers);
+        return copy;
     }
 
     public String getBody() {
@@ -62,5 +56,9 @@ public class InternalHttpResponse {
 
     public String getHeader(final String headerName) {
         return headers.get(headerName);
+    }
+
+    public boolean hasHeader(final String headerName) {
+        return headers.headerExists(headerName);
     }
 }

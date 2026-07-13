@@ -7,7 +7,8 @@ import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.challenge.CHALLENGE;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
-import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
+import uk.co.compendiumdev.thingifier.application.internalhttp.InternalHttpMethod;
+import uk.co.compendiumdev.thingifier.application.internalhttp.InternalHttpRequest;
 
 public class ChallengerInternalHttpRequestHookTest {
 
@@ -20,8 +21,8 @@ public class ChallengerInternalHttpRequestHookTest {
         final ChallengerInternalHTTPRequestHook hook =
                 new ChallengerInternalHTTPRequestHook(challengers);
 
-        final HttpApiRequest request =
-                new HttpApiRequest("/challenges").setVerb(HttpApiRequest.VERB.GET);
+        final InternalHttpRequest request =
+                new InternalHttpRequest("/challenges").setVerb(InternalHttpMethod.GET);
 
         hook.run(request);
 
@@ -55,8 +56,8 @@ public class ChallengerInternalHttpRequestHookTest {
         final ChallengerInternalHTTPRequestHook hook =
                 new ChallengerInternalHTTPRequestHook(challengers);
 
-        final HttpApiRequest request =
-                new HttpApiRequest("/challenges").setVerb(HttpApiRequest.VERB.GET);
+        final InternalHttpRequest request =
+                new InternalHttpRequest("/challenges").setVerb(InternalHttpMethod.GET);
         request.addHeader("X-CHALLENGER", challenger.getXChallenger());
 
         hook.run(request);
@@ -78,9 +79,9 @@ public class ChallengerInternalHttpRequestHookTest {
         final ChallengerInternalHTTPRequestHook hook =
                 new ChallengerInternalHTTPRequestHook(challengers);
 
-        final HttpApiRequest request =
-                new HttpApiRequest("/challenges")
-                        .setVerb(HttpApiRequest.VERB.GET)
+        final InternalHttpRequest request =
+                new InternalHttpRequest("/challenges")
+                        .setVerb(InternalHttpMethod.GET)
                         .addHeader("X-CHALLENGER", "bobobobobobobobobobo");
 
         hook.run(request);
@@ -99,8 +100,8 @@ public class ChallengerInternalHttpRequestHookTest {
         final ChallengerInternalHTTPRequestHook hook =
                 new ChallengerInternalHTTPRequestHook(challengers);
 
-        final HttpApiRequest request =
-                new HttpApiRequest("/challenges").setVerb(HttpApiRequest.VERB.GET);
+        final InternalHttpRequest request =
+                new InternalHttpRequest("/challenges").setVerb(InternalHttpMethod.GET);
 
         hook.run(request);
 
@@ -119,7 +120,7 @@ public class ChallengerInternalHttpRequestHookTest {
 
         ChallengerInternalHTTPRequestHook hook = new ChallengerInternalHTTPRequestHook(challengers);
 
-        HttpApiRequest request = new HttpApiRequest("/heartbeat").setVerb("GET");
+        InternalHttpRequest request = new InternalHttpRequest("/heartbeat").setVerb("GET");
         request.addHeader("X-CHALLENGER", challenger.getXChallenger());
         hook.run(request);
 
@@ -138,7 +139,7 @@ public class ChallengerInternalHttpRequestHookTest {
 
         Assertions.assertFalse(challenger.statusOfChallenge(CHALLENGE.TRACE_HEARTBEAT_501));
 
-        HttpApiRequest request = new HttpApiRequest("/heartbeat").setVerb("TRACE");
+        InternalHttpRequest request = new InternalHttpRequest("/heartbeat").setVerb("TRACE");
         request.addHeader("X-CHALLENGER", challenger.getXChallenger());
         hook.run(request);
 
@@ -157,7 +158,7 @@ public class ChallengerInternalHttpRequestHookTest {
 
         Assertions.assertFalse(challenger.statusOfChallenge(CHALLENGE.DELETE_HEARTBEAT_405));
 
-        HttpApiRequest request = new HttpApiRequest("/heartbeat").setVerb("DELETE");
+        InternalHttpRequest request = new InternalHttpRequest("/heartbeat").setVerb("DELETE");
         request.addHeader("X-CHALLENGER", challenger.getXChallenger());
         hook.run(request);
 
@@ -176,7 +177,7 @@ public class ChallengerInternalHttpRequestHookTest {
 
         Assertions.assertFalse(challenger.statusOfChallenge(CHALLENGE.PATCH_HEARTBEAT_500));
 
-        HttpApiRequest request = new HttpApiRequest("/heartbeat").setVerb("PATCH");
+        InternalHttpRequest request = new InternalHttpRequest("/heartbeat").setVerb("PATCH");
         request.addHeader("X-CHALLENGER", challenger.getXChallenger());
         hook.run(request);
 

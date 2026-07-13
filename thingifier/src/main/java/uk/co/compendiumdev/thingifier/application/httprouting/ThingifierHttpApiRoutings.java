@@ -4,15 +4,16 @@ import static spark.Spark.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import spark.Request;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.docgen.ApiRoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.docgen.ApiRoutingDefinitionDocGenerator;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.docgen.ThingifierApiDocumentationDefn;
-import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
-import uk.co.compendiumdev.thingifier.api.http.HttpApiResponse;
 import uk.co.compendiumdev.thingifier.application.httpapimessagehooks.HttpApiRequestHook;
 import uk.co.compendiumdev.thingifier.application.httpapimessagehooks.HttpApiResponseHook;
+import uk.co.compendiumdev.thingifier.application.internalhttp.InternalHttpRequest;
+import uk.co.compendiumdev.thingifier.application.internalhttp.InternalHttpResponse;
 import uk.co.compendiumdev.thingifier.application.internalhttpconversion.*;
 import uk.co.compendiumdev.thingifier.application.sparkhttpmessageHooks.InternalHttpRequestHook;
 import uk.co.compendiumdev.thingifier.application.sparkhttpmessageHooks.InternalHttpResponseHook;
@@ -20,6 +21,8 @@ import uk.co.compendiumdev.thingifier.application.sparkhttpmessageHooks.SparkReq
 import uk.co.compendiumdev.thingifier.spark.SimpleSparkRouteCreator;
 
 public class ThingifierHttpApiRoutings {
+
+    private static final String INTERNAL_HTTP_REQUEST_ATTRIBUTE = "thingifier.internalHttpRequest";
 
     //    private String urlPath;
     private List<SparkRequestResponseHook> preSparkHttpRequestHooks;
@@ -74,12 +77,16 @@ public class ThingifierHttpApiRoutings {
                         }
                     }
 
-                    HttpApiRequest iRequest = SparkToHttpApiRequest.convert(request);
+                    InternalHttpRequest iRequest = internalRequestFrom(request);
                     // now run the HttpApiRequestHook hooks on this iRequest
                     if (preInternalHttpRequestHooks != null) {
                         for (InternalHttpRequestHook hook : preInternalHttpRequestHooks) {
                             // todo: catch exceptions and `halt`
-                            hook.run(iRequest);
+                            InternalHttpResponse hookResponse = hook.run(iRequest);
+                            if (hookResponse != null) {
+                                InternalHttpResponseToSpark.convert(hookResponse, response);
+                                halt(hookResponse.getStatusCode(), hookResponse.getBody());
+                            }
                         }
                     }
                 });
@@ -89,7 +96,7 @@ public class ThingifierHttpApiRoutings {
 
                     // now run the HttpApiResponseHook hooks
                     // on this iRequest and iResponse
-                    HttpApiRequest iRequest = SparkToHttpApiRequest.convert(request);
+                    InternalHttpRequest iRequest = internalRequestFrom(request);
                     InternalHttpResponse iResponse =
                             SparkResponseToInternalHttpResponse.convert(response);
 
@@ -124,8 +131,8 @@ public class ThingifierHttpApiRoutings {
                                 defn.url(),
                                 (request, response) -> {
                                     // return apiBridge.get(request, response);
-                                    final HttpApiRequest theRequest =
-                                            SparkToHttpApiRequest.convert(request);
+                                    final InternalHttpRequest theRequest =
+                                            internalRequestFrom(request);
                                     // TODO: allow amending the request and the response at a
                                     // request level from framework
                                     // .e.g
@@ -135,9 +142,11 @@ public class ThingifierHttpApiRoutings {
                                     // request.addHeader(HTTP_SESSION_HEADER_NAME,
                                     // challenger.getXChallenger());
                                     // runAnyCustomHttpApiRequestAmendmentHooks(theRequest)
-                                    final HttpApiResponse theResponse = apiBridge.get(theRequest);
+                                    final InternalHttpResponse theResponse =
+                                            apiBridge.get(theRequest);
                                     // TODO: similarly allow amending the response from the API
-                                    return HttpApiResponseToSpark.convert(theResponse, response);
+                                    return InternalHttpResponseToSpark.convert(
+                                            theResponse, response);
                                 });
                     }
                     break;
@@ -147,10 +156,12 @@ public class ThingifierHttpApiRoutings {
                                 defn.url(),
                                 (request, response) -> {
                                     // return apiBridge.post(request, response);
-                                    final HttpApiRequest theRequest =
-                                            SparkToHttpApiRequest.convert(request);
-                                    final HttpApiResponse theResponse = apiBridge.post(theRequest);
-                                    return HttpApiResponseToSpark.convert(theResponse, response);
+                                    final InternalHttpRequest theRequest =
+                                            internalRequestFrom(request);
+                                    final InternalHttpResponse theResponse =
+                                            apiBridge.post(theRequest);
+                                    return InternalHttpResponseToSpark.convert(
+                                            theResponse, response);
                                 });
                     }
                     break;
@@ -162,10 +173,12 @@ public class ThingifierHttpApiRoutings {
                                 defn.url(),
                                 (request, response) -> {
                                     // return apiBridge.head(request, response);
-                                    final HttpApiRequest theRequest =
-                                            SparkToHttpApiRequest.convert(request);
-                                    final HttpApiResponse theResponse = apiBridge.head(theRequest);
-                                    return HttpApiResponseToSpark.convert(theResponse, response);
+                                    final InternalHttpRequest theRequest =
+                                            internalRequestFrom(request);
+                                    final InternalHttpResponse theResponse =
+                                            apiBridge.head(theRequest);
+                                    return InternalHttpResponseToSpark.convert(
+                                            theResponse, response);
                                 });
                     }
                     break;
@@ -182,11 +195,12 @@ public class ThingifierHttpApiRoutings {
                                 defn.url(),
                                 (request, response) -> {
                                     // return apiBridge.delete(request, response);
-                                    final HttpApiRequest theRequest =
-                                            SparkToHttpApiRequest.convert(request);
-                                    final HttpApiResponse theResponse =
+                                    final InternalHttpRequest theRequest =
+                                            internalRequestFrom(request);
+                                    final InternalHttpResponse theResponse =
                                             apiBridge.delete(theRequest);
-                                    return HttpApiResponseToSpark.convert(theResponse, response);
+                                    return InternalHttpResponseToSpark.convert(
+                                            theResponse, response);
                                 });
                     }
                     break;
@@ -213,10 +227,12 @@ public class ThingifierHttpApiRoutings {
                                 defn.url(),
                                 (request, response) -> {
                                     // return apiBridge.put(request, response);
-                                    final HttpApiRequest theRequest =
-                                            SparkToHttpApiRequest.convert(request);
-                                    final HttpApiResponse theResponse = apiBridge.put(theRequest);
-                                    return HttpApiResponseToSpark.convert(theResponse, response);
+                                    final InternalHttpRequest theRequest =
+                                            internalRequestFrom(request);
+                                    final InternalHttpResponse theResponse =
+                                            apiBridge.put(theRequest);
+                                    return InternalHttpResponseToSpark.convert(
+                                            theResponse, response);
                                 });
                     }
                     break;
@@ -250,10 +266,10 @@ public class ThingifierHttpApiRoutings {
                     thingifier.apiConfig().adminConfig().getAdminSearchUrl(),
                     (request, response) -> {
                         // return apiBridge.query(request, response, request.splat()[0]);
-                        final HttpApiRequest theRequest = SparkToHttpApiRequest.convert(request);
-                        final HttpApiResponse theResponse =
+                        final InternalHttpRequest theRequest = internalRequestFrom(request);
+                        final InternalHttpResponse theResponse =
                                 apiBridge.query(theRequest, request.splat()[0]);
-                        return HttpApiResponseToSpark.convert(theResponse, response);
+                        return InternalHttpResponseToSpark.convert(theResponse, response);
                     });
         }
 
@@ -314,5 +330,17 @@ public class ThingifierHttpApiRoutings {
     public void registerInternalHttpRequestHook(final InternalHttpRequestHook hook) {
         // pre-request hooks run pre api routing on an internal http representation
         preInternalHttpRequestHooks.add(hook);
+    }
+
+    private InternalHttpRequest internalRequestFrom(final Request request) {
+        Object existingRequest = request.attribute(INTERNAL_HTTP_REQUEST_ATTRIBUTE);
+
+        if (existingRequest instanceof InternalHttpRequest) {
+            return (InternalHttpRequest) existingRequest;
+        }
+
+        InternalHttpRequest internalRequest = SparkToInternalHttpRequest.convert(request);
+        request.attribute(INTERNAL_HTTP_REQUEST_ATTRIBUTE, internalRequest);
+        return internalRequest;
     }
 }

@@ -2,7 +2,7 @@ package uk.co.compendiumdev.challenge.challengesrouting;
 
 import spark.Response;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
-import uk.co.compendiumdev.thingifier.application.internalhttpconversion.InternalHttpResponse;
+import uk.co.compendiumdev.thingifier.application.internalhttp.InternalHttpResponse;
 
 public class XChallengerHeader {
 

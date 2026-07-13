@@ -1,6 +1,6 @@
 package uk.co.compendiumdev.challenge.challengehooks;
 
-import static uk.co.compendiumdev.thingifier.api.http.HttpApiRequest.VERB.*;
+import static uk.co.compendiumdev.thingifier.application.internalhttp.InternalHttpMethod.*;
 
 import java.util.List;
 import uk.co.compendiumdev.challenge.CHALLENGE;
@@ -8,9 +8,9 @@ import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.ChallengerState;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
 import uk.co.compendiumdev.challenge.challengesrouting.XChallengerHeader;
-import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.http.headers.headerparser.BearerAuthHeaderParser;
-import uk.co.compendiumdev.thingifier.application.internalhttpconversion.InternalHttpResponse;
+import uk.co.compendiumdev.thingifier.application.internalhttp.InternalHttpRequest;
+import uk.co.compendiumdev.thingifier.application.internalhttp.InternalHttpResponse;
 import uk.co.compendiumdev.thingifier.application.sparkhttpmessageHooks.InternalHttpResponseHook;
 
 public class ChallengerInternalHTTPResponseHook implements InternalHttpResponseHook {
@@ -22,7 +22,7 @@ public class ChallengerInternalHTTPResponseHook implements InternalHttpResponseH
     }
 
     @Override
-    public void run(final HttpApiRequest request, final InternalHttpResponse response) {
+    public void run(final InternalHttpRequest request, final InternalHttpResponse response) {
 
         // allow cross origin requests
         // and swagger
@@ -321,7 +321,7 @@ public class ChallengerInternalHTTPResponseHook implements InternalHttpResponseH
         }
     }
 
-    private void setResponseAs404(HttpApiRequest request, InternalHttpResponse response) {
+    private void setResponseAs404(InternalHttpRequest request, InternalHttpResponse response) {
 
         if (request.getAcceptHeader() != null && !request.getAcceptHeader().isEmpty()) {
             if (request.getAcceptHeader().contains("html")) {

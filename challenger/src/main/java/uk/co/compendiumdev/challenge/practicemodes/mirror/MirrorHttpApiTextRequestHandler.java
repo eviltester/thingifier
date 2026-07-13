@@ -1,8 +1,8 @@
 package uk.co.compendiumdev.challenge.practicemodes.mirror;
 
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
+import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeaderPair;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
-import uk.co.compendiumdev.thingifier.application.internalhttpconversion.StringPair;
 import uk.co.compendiumdev.thingifier.application.routehandlers.HttpApiRequestHandler;
 import uk.co.compendiumdev.thingifier.core.query.FilterBy;
 
@@ -65,7 +65,7 @@ public class MirrorHttpApiTextRequestHandler implements HttpApiRequestHandler {
         output.append("\n");
         output.append("=======");
         output.append("\n");
-        for (StringPair header : myRequest.getHeadersList()) {
+        for (HttpHeaderPair header : myRequest.getHeadersList()) {
             output.append(String.format("%s: %s", header.key, header.value));
             output.append("\n");
         }

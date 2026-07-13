@@ -1,8 +1,8 @@
 package uk.co.compendiumdev.thingifier.api.http;
 
 import java.util.*;
+import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeaderPair;
 import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
-import uk.co.compendiumdev.thingifier.application.internalhttpconversion.StringPair;
 import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
 import uk.co.compendiumdev.thingifier.core.query.fromurl.UrlParamParser;
 
@@ -23,7 +23,7 @@ public final class HttpApiRequest {
     private Map<String, String> urlParams;
 
     // a storage for the raw headers, which might include duplicates
-    private ArrayList<StringPair> headersList;
+    private ArrayList<HttpHeaderPair> headersList;
 
     public void removePrefixFromPath(String prefix) {
         if (path.startsWith(prefix)) {
@@ -98,12 +98,12 @@ public final class HttpApiRequest {
         return filterableQueryParams;
     }
 
-    public HttpApiRequest setRawHeaders(List<StringPair> rawHeadersList) {
-        headersList = new ArrayList<StringPair>(rawHeadersList);
+    public HttpApiRequest setRawHeaders(List<HttpHeaderPair> rawHeadersList) {
+        headersList = new ArrayList<HttpHeaderPair>(rawHeadersList);
         return this;
     }
 
-    public List<StringPair> getHeadersList() {
+    public List<HttpHeaderPair> getHeadersList() {
         return new ArrayList<>(headersList);
     }
 

@@ -9,8 +9,11 @@ import uk.co.compendiumdev.thingifier.api.http.HttpApiResponse;
 import uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.api.restapihandlers.SessionHeaderParser;
-import uk.co.compendiumdev.thingifier.application.internalhttpconversion.HttpApiResponseToSpark;
-import uk.co.compendiumdev.thingifier.application.internalhttpconversion.SparkToHttpApiRequest;
+import uk.co.compendiumdev.thingifier.application.internalhttp.InternalHttpRequest;
+import uk.co.compendiumdev.thingifier.application.internalhttpconversion.HttpApiResponseToInternalHttpResponse;
+import uk.co.compendiumdev.thingifier.application.internalhttpconversion.InternalHttpRequestToHttpApiRequest;
+import uk.co.compendiumdev.thingifier.application.internalhttpconversion.InternalHttpResponseToSpark;
+import uk.co.compendiumdev.thingifier.application.internalhttpconversion.SparkToInternalHttpRequest;
 
 public class SparkApiRequestResponseHandler {
     private final Request request;
@@ -40,7 +43,9 @@ public class SparkApiRequestResponseHandler {
 
     public String handle() {
 
-        final HttpApiRequest myRequest = SparkToHttpApiRequest.convert(request);
+        final InternalHttpRequest internalRequest = SparkToInternalHttpRequest.convert(request);
+        final HttpApiRequest myRequest =
+                InternalHttpRequestToHttpApiRequest.convert(internalRequest);
 
         final JsonThing jsonThing = new JsonThing(thingifier.apiConfig().jsonOutput());
 
@@ -65,6 +70,7 @@ public class SparkApiRequestResponseHandler {
                             myRequest.getHeaders(), apiResponse, jsonThing, thingifier.apiConfig());
         }
 
-        return HttpApiResponseToSpark.convert(httpApiResponse, response);
+        return InternalHttpResponseToSpark.convert(
+                HttpApiResponseToInternalHttpResponse.convert(httpApiResponse), response);
     }
 }

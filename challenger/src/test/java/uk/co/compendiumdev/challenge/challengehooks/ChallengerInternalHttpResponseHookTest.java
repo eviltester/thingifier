@@ -6,8 +6,9 @@ import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.challenge.CHALLENGE;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
-import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
-import uk.co.compendiumdev.thingifier.application.internalhttpconversion.InternalHttpResponse;
+import uk.co.compendiumdev.thingifier.application.internalhttp.InternalHttpMethod;
+import uk.co.compendiumdev.thingifier.application.internalhttp.InternalHttpRequest;
+import uk.co.compendiumdev.thingifier.application.internalhttp.InternalHttpResponse;
 
 public class ChallengerInternalHttpResponseHookTest {
 
@@ -20,8 +21,8 @@ public class ChallengerInternalHttpResponseHookTest {
         final ChallengerInternalHTTPResponseHook hook =
                 new ChallengerInternalHTTPResponseHook(challengers);
 
-        final HttpApiRequest request =
-                new HttpApiRequest("/challenges").setVerb(HttpApiRequest.VERB.GET);
+        final InternalHttpRequest request =
+                new InternalHttpRequest("/challenges").setVerb(InternalHttpMethod.GET);
 
         final InternalHttpResponse response = new InternalHttpResponse();
 
@@ -39,9 +40,9 @@ public class ChallengerInternalHttpResponseHookTest {
         final ChallengerInternalHTTPResponseHook hook =
                 new ChallengerInternalHTTPResponseHook(challengers);
 
-        final HttpApiRequest request =
-                new HttpApiRequest("/challenges")
-                        .setVerb(HttpApiRequest.VERB.GET)
+        final InternalHttpRequest request =
+                new InternalHttpRequest("/challenges")
+                        .setVerb(InternalHttpMethod.GET)
                         .addHeader("X-CHALLENGER", "bob");
 
         final InternalHttpResponse response = new InternalHttpResponse();
@@ -60,7 +61,7 @@ public class ChallengerInternalHttpResponseHookTest {
         ChallengerInternalHTTPResponseHook hook =
                 new ChallengerInternalHTTPResponseHook(challengers);
 
-        HttpApiRequest request = new HttpApiRequest("/challenger").setVerb("POST");
+        InternalHttpRequest request = new InternalHttpRequest("/challenger").setVerb("POST");
 
         final ChallengerAuthData challenger = challengers.createNewChallenger();
 
@@ -90,8 +91,8 @@ public class ChallengerInternalHttpResponseHookTest {
 
         final ChallengerAuthData challenger = challengers.createNewChallenger();
 
-        HttpApiRequest request =
-                new HttpApiRequest("/challenger")
+        InternalHttpRequest request =
+                new InternalHttpRequest("/challenger")
                         .setVerb("GET")
                         .addHeader("X-CHALLENGER", challenger.getXChallenger());
 
@@ -118,8 +119,8 @@ public class ChallengerInternalHttpResponseHookTest {
 
         final ChallengerAuthData challenger = challengers.createNewChallenger();
 
-        HttpApiRequest request =
-                new HttpApiRequest("/todo")
+        InternalHttpRequest request =
+                new InternalHttpRequest("/todo")
                         .setVerb("GET")
                         .addHeader("X-CHALLENGER", challenger.getXChallenger());
 
@@ -141,8 +142,8 @@ public class ChallengerInternalHttpResponseHookTest {
 
         final ChallengerAuthData challenger = challengers.createNewChallenger();
 
-        HttpApiRequest request =
-                new HttpApiRequest("/todos")
+        InternalHttpRequest request =
+                new InternalHttpRequest("/todos")
                         .setVerb("OPTIONS")
                         .addHeader("X-CHALLENGER", challenger.getXChallenger());
 
@@ -164,8 +165,8 @@ public class ChallengerInternalHttpResponseHookTest {
 
         final ChallengerAuthData challenger = challengers.createNewChallenger();
 
-        HttpApiRequest request =
-                new HttpApiRequest("/secret/token")
+        InternalHttpRequest request =
+                new InternalHttpRequest("/secret/token")
                         .setVerb("POST")
                         .addHeader("Authorization", "ididntcheck")
                         .addHeader("X-CHALLENGER", challenger.getXChallenger());
@@ -188,8 +189,8 @@ public class ChallengerInternalHttpResponseHookTest {
 
         final ChallengerAuthData challenger = challengers.createNewChallenger();
 
-        HttpApiRequest request =
-                new HttpApiRequest("/secret/token")
+        InternalHttpRequest request =
+                new InternalHttpRequest("/secret/token")
                         .setVerb("POST")
                         .addHeader("Authorization", "ididntcheck")
                         .addHeader("X-CHALLENGER", challenger.getXChallenger());
@@ -212,8 +213,8 @@ public class ChallengerInternalHttpResponseHookTest {
 
         final ChallengerAuthData challenger = challengers.createNewChallenger();
 
-        HttpApiRequest request =
-                new HttpApiRequest("/secret/note")
+        InternalHttpRequest request =
+                new InternalHttpRequest("/secret/note")
                         .setVerb("GET")
                         .addHeader("X-AUTH-TOKEN", "nocheck")
                         .addHeader("X-CHALLENGER", challenger.getXChallenger());
@@ -236,8 +237,8 @@ public class ChallengerInternalHttpResponseHookTest {
 
         final ChallengerAuthData challenger = challengers.createNewChallenger();
 
-        HttpApiRequest request =
-                new HttpApiRequest("/secret/note")
+        InternalHttpRequest request =
+                new InternalHttpRequest("/secret/note")
                         .setVerb("GET")
                         .addHeader("X-CHALLENGER", challenger.getXChallenger());
 
@@ -259,8 +260,8 @@ public class ChallengerInternalHttpResponseHookTest {
 
         final ChallengerAuthData challenger = challengers.createNewChallenger();
 
-        HttpApiRequest request =
-                new HttpApiRequest("/secret/note")
+        InternalHttpRequest request =
+                new InternalHttpRequest("/secret/note")
                         .setVerb("POST")
                         .addHeader("X-AUTH-TOKEN", "nocheck")
                         .addHeader("X-CHALLENGER", challenger.getXChallenger())
@@ -284,8 +285,8 @@ public class ChallengerInternalHttpResponseHookTest {
 
         final ChallengerAuthData challenger = challengers.createNewChallenger();
 
-        HttpApiRequest request =
-                new HttpApiRequest("/secret/note")
+        InternalHttpRequest request =
+                new InternalHttpRequest("/secret/note")
                         .setVerb("POST")
                         .addHeader("X-CHALLENGER", challenger.getXChallenger())
                         .setBody("{\"note\":\"bob\"");
@@ -308,8 +309,8 @@ public class ChallengerInternalHttpResponseHookTest {
 
         final ChallengerAuthData challenger = challengers.createNewChallenger();
 
-        HttpApiRequest request =
-                new HttpApiRequest("/secret/note")
+        InternalHttpRequest request =
+                new InternalHttpRequest("/secret/note")
                         .setVerb("POST")
                         .addHeader("X-AUTH-TOKEN", "validtoken")
                         .addHeader("X-CHALLENGER", challenger.getXChallenger())
@@ -333,8 +334,8 @@ public class ChallengerInternalHttpResponseHookTest {
 
         final ChallengerAuthData challenger = challengers.createNewChallenger();
 
-        HttpApiRequest request =
-                new HttpApiRequest("/secret/note")
+        InternalHttpRequest request =
+                new InternalHttpRequest("/secret/note")
                         .setVerb("GET")
                         .addHeader("X-AUTH-TOKEN", "validtoken")
                         .addHeader("X-CHALLENGER", challenger.getXChallenger());

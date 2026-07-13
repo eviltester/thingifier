@@ -1,16 +1,16 @@
 package uk.co.compendiumdev.challenge.practicemodes.simpleapi;
 
-import static uk.co.compendiumdev.thingifier.api.http.HttpApiRequest.VERB.OPTIONS;
+import static uk.co.compendiumdev.thingifier.application.internalhttp.InternalHttpMethod.OPTIONS;
 
 import java.util.List;
-import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
-import uk.co.compendiumdev.thingifier.application.internalhttpconversion.InternalHttpResponse;
+import uk.co.compendiumdev.thingifier.application.internalhttp.InternalHttpRequest;
+import uk.co.compendiumdev.thingifier.application.internalhttp.InternalHttpResponse;
 import uk.co.compendiumdev.thingifier.application.sparkhttpmessageHooks.InternalHttpResponseHook;
 
 public class SimpleApiCorsHeadersResponseHook implements InternalHttpResponseHook {
 
     @Override
-    public void run(final HttpApiRequest request, final InternalHttpResponse response) {
+    public void run(final InternalHttpRequest request, final InternalHttpResponse response) {
 
         // TODO: hooks should only apply to a specific routing set and this should not be necessary
         List<String> validEndpointPrefixesToRunAgainst = List.of("simpleapi");

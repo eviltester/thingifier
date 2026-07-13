@@ -20,8 +20,11 @@ import uk.co.compendiumdev.thingifier.api.http.headers.headerparser.BearerAuthHe
 import uk.co.compendiumdev.thingifier.api.http.headers.headerparser.ContentTypeHeaderParser;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.api.restapihandlers.ThingCreation;
-import uk.co.compendiumdev.thingifier.application.internalhttpconversion.HttpApiResponseToSpark;
-import uk.co.compendiumdev.thingifier.application.internalhttpconversion.SparkToHttpApiRequest;
+import uk.co.compendiumdev.thingifier.application.internalhttp.InternalHttpRequest;
+import uk.co.compendiumdev.thingifier.application.internalhttpconversion.HttpApiResponseToInternalHttpResponse;
+import uk.co.compendiumdev.thingifier.application.internalhttpconversion.InternalHttpRequestToHttpApiRequest;
+import uk.co.compendiumdev.thingifier.application.internalhttpconversion.InternalHttpResponseToSpark;
+import uk.co.compendiumdev.thingifier.application.internalhttpconversion.SparkToInternalHttpRequest;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
@@ -178,7 +181,10 @@ public class AuthRoutes {
                         return "";
                     }
 
-                    final HttpApiRequest myRequest = SparkToHttpApiRequest.convert(request);
+                    final InternalHttpRequest internalRequest =
+                            SparkToInternalHttpRequest.convert(request);
+                    final HttpApiRequest myRequest =
+                            InternalHttpRequestToHttpApiRequest.convert(internalRequest);
 
                     final ApiResponse response =
                             ApiResponse.success()
@@ -193,7 +199,8 @@ public class AuthRoutes {
                                     jsonThing,
                                     this.secretNoteStore.apiConfig());
 
-                    return HttpApiResponseToSpark.convert(httpApiResponse, result);
+                    return InternalHttpResponseToSpark.convert(
+                            HttpApiResponseToInternalHttpResponse.convert(httpApiResponse), result);
 
                     // return resultBasedOnAcceptHeader(result, request.headers("ACCEPT"),
                     // challenger.getNote());
@@ -289,7 +296,10 @@ public class AuthRoutes {
                         return "";
                     }
 
-                    final HttpApiRequest myRequest = SparkToHttpApiRequest.convert(request);
+                    final InternalHttpRequest internalRequest =
+                            SparkToInternalHttpRequest.convert(request);
+                    final HttpApiRequest myRequest =
+                            InternalHttpRequestToHttpApiRequest.convert(internalRequest);
                     HttpApiResponse httpApiResponse =
                             this.httpApi.validateRequestSyntax(
                                     myRequest, ThingifierHttpApi.HttpVerb.POST);
@@ -345,7 +355,8 @@ public class AuthRoutes {
                                         this.secretNoteStore.apiConfig());
                     }
 
-                    return HttpApiResponseToSpark.convert(httpApiResponse, result);
+                    return InternalHttpResponseToSpark.convert(
+                            HttpApiResponseToInternalHttpResponse.convert(httpApiResponse), result);
                 });
 
         SimpleSparkRouteCreator.routeStatusWhenNot(
