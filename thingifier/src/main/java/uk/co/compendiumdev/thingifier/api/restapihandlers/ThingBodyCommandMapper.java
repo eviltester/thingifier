@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
-import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
+import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.application.command.AmendThingCommand;
 import uk.co.compendiumdev.thingifier.application.command.CreateAndConnectRelationshipCommand;
 import uk.co.compendiumdev.thingifier.application.command.CreateThingCommand;
@@ -15,15 +15,29 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.Nam
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
+import uk.co.compendiumdev.thingifier.core.repository.ThingStore;
 
 public final class ThingBodyCommandMapper {
 
-    private final Thingifier thingifier;
-    private final String database;
+    private final SchemaCatalog schema;
+    private final ThingifierApiConfig apiConfig;
+    private final ThingStore store;
 
     public ThingBodyCommandMapper(final Thingifier thingifier, final String database) {
-        this.thingifier = thingifier;
-        this.database = database;
+        this(thingifier, thingifier.getStore(database));
+    }
+
+    ThingBodyCommandMapper(final Thingifier thingifier, final ThingStore store) {
+        this(new ThingifierSchemaCatalog(thingifier), thingifier.apiConfig(), store);
+    }
+
+    ThingBodyCommandMapper(
+            final SchemaCatalog schema,
+            final ThingifierApiConfig apiConfig,
+            final ThingStore store) {
+        this.schema = schema;
+        this.apiConfig = apiConfig;
+        this.store = store;
     }
 
     public ThingWriteRequestMapping mapCreate(
@@ -38,7 +52,7 @@ public final class ThingBodyCommandMapper {
         ValidationReport validated = new BodyCreationValidator().validate(bodyargs, entity);
         if (!validated.isValid()) {
             return ThingWriteRequestMapping.error(
-                    ApiResponse.error(
+                    ApiMappingError.withMessage(
                             400,
                             String.format(
                                     "Invalid Creation: %s", validated.getCombinedErrorMessages())));
@@ -59,12 +73,12 @@ public final class ThingBodyCommandMapper {
                         .areFieldsUnique(
                                 bodyargs,
                                 entity,
-                                thingifier.getStore(database).entityQueries(),
+                                store.entityQueries(),
                                 entity.getFieldNamesOfType(
                                         FieldType.AUTO_INCREMENT, FieldType.AUTO_GUID));
         if (!validated.isValid()) {
             return ThingWriteRequestMapping.error(
-                    ApiResponse.error(
+                    ApiMappingError.withMessage(
                             409,
                             "Cannot Create with duplicate values: "
                                     + validated.getCombinedErrorMessages()));
@@ -84,13 +98,14 @@ public final class ThingBodyCommandMapper {
 
         List<NamedValue> fieldValues =
                 FieldValues.fromListMapEntryStringString(bodyargs.getFlattenedStringMap());
-        thingifier.getStore(database).administration().accommodateProtectedIds(entity, fieldValues);
+        store.administration().accommodateProtectedIds(entity, fieldValues);
 
-        if (thingifier.apiConfig().willApiEnforceDeclaredTypesInInput()) {
+        if (apiConfig.willApiEnforceDeclaredTypesInInput()) {
             ValidationReport validatedTypes = bodyargs.validateAgainstType(entity);
             if (!validatedTypes.isValid()) {
                 return ThingWriteRequestMapping.error(
-                        ApiResponse.error(400, validatedTypes.getCombinedErrorMessages()));
+                        ApiMappingError.withMessage(
+                                400, validatedTypes.getCombinedErrorMessages()));
             }
         }
 
@@ -105,9 +120,9 @@ public final class ThingBodyCommandMapper {
                                     ignoreFields);
             copyBaseDraftValues(baseDraft, draft);
             return ThingWriteRequestMapping.command(
-                    new CreateThingCommand(draft, relationships.connections(), true));
+                    new CreateThingCommand(draft, relationships.references(), true));
         } catch (Exception e) {
-            return ThingWriteRequestMapping.error(ApiResponse.error(400, e.getMessage()));
+            return ThingWriteRequestMapping.error(ApiMappingError.withMessage(400, e.getMessage()));
         }
     }
 
@@ -117,7 +132,7 @@ public final class ThingBodyCommandMapper {
             final boolean replaceExistingFieldsAndRelationships) {
         bodyargs.getMap();
 
-        if (thingifier.apiConfig().willApiEnforceDeclaredTypesInInput()) {
+        if (apiConfig.willApiEnforceDeclaredTypesInInput()) {
             List<String> doNotValidateFields =
                     instance.getEntity()
                             .getFieldNamesOfType(FieldType.AUTO_INCREMENT, FieldType.AUTO_GUID);
@@ -125,7 +140,8 @@ public final class ThingBodyCommandMapper {
                     bodyargs.validateAgainstTypeIgnoring(instance.getEntity(), doNotValidateFields);
             if (!validatedTypes.isValid()) {
                 return ThingWriteRequestMapping.error(
-                        ApiResponse.error(400, validatedTypes.getCombinedErrorMessages()));
+                        ApiMappingError.withMessage(
+                                400, validatedTypes.getCombinedErrorMessages()));
             }
         }
 
@@ -137,12 +153,13 @@ public final class ThingBodyCommandMapper {
                             fieldValuesExcludingRelationships(bodyargs, relationships));
             draft = new EntityInstanceBulkUpdater(instance).setFieldValuesFrom(fieldValues);
         } catch (Exception e) {
-            return ThingWriteRequestMapping.error(ApiResponse.error(400, e.getMessage()));
+            return ThingWriteRequestMapping.error(ApiMappingError.withMessage(400, e.getMessage()));
         }
 
         if (!relationships.validationReport().isValid()) {
             return ThingWriteRequestMapping.error(
-                    ApiResponse.error(400, relationships.validationReport().getErrorMessages()));
+                    ApiMappingError.withMessages(
+                            400, relationships.validationReport().getErrorMessages()));
         }
 
         return ThingWriteRequestMapping.command(
@@ -150,7 +167,7 @@ public final class ThingBodyCommandMapper {
                         instance,
                         draft,
                         replaceExistingFieldsAndRelationships,
-                        relationships.connections()));
+                        relationships.references()));
     }
 
     public ThingWriteRequestMapping mapCreateAndConnect(
@@ -175,11 +192,12 @@ public final class ThingBodyCommandMapper {
             final EntityInstanceDraft baseDraft,
             final RelationshipBodyCommands relationships,
             final boolean validateFinalRelationships) {
-        if (thingifier.apiConfig().willApiEnforceDeclaredTypesInInput()) {
+        if (apiConfig.willApiEnforceDeclaredTypesInInput()) {
             ValidationReport validatedTypes = bodyargs.validateAgainstType(entity);
             if (!validatedTypes.isValid()) {
                 return ThingWriteRequestMapping.error(
-                        ApiResponse.error(400, validatedTypes.getCombinedErrorMessages()));
+                        ApiMappingError.withMessage(
+                                400, validatedTypes.getCombinedErrorMessages()));
             }
         }
 
@@ -192,20 +210,20 @@ public final class ThingBodyCommandMapper {
             copyBaseDraftValues(baseDraft, draft);
             return ThingWriteRequestMapping.command(
                     new CreateThingCommand(
-                            draft, relationships.connections(), validateFinalRelationships));
+                            draft, relationships.references(), validateFinalRelationships));
         } catch (Exception e) {
-            return ThingWriteRequestMapping.error(ApiResponse.error(400, e.getMessage()));
+            return ThingWriteRequestMapping.error(ApiMappingError.withMessage(400, e.getMessage()));
         }
     }
 
     private RelationshipBodyCommands parseRelationships(
             final BodyParser bodyargs, final EntityDefinition entity) {
-        return new RelationshipBodyCommandParser(thingifier).parse(bodyargs, entity, database);
+        return new RelationshipBodyCommandParser(schema).parse(bodyargs, entity);
     }
 
     private ThingWriteRequestMapping invalidRelationships(final ValidationReport validation) {
         return ThingWriteRequestMapping.error(
-                ApiResponse.error(
+                ApiMappingError.withMessage(
                         400,
                         String.format(
                                 "Invalid relationships: %s",

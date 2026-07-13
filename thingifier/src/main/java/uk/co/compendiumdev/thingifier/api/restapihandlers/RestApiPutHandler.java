@@ -1,6 +1,7 @@
 package uk.co.compendiumdev.thingifier.api.restapihandlers;
 
 import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.api.http.ThingifierRequestContext;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
@@ -16,20 +17,21 @@ public class RestApiPutHandler {
 
     public ApiResponse handle(
             final String url, final BodyParser args, final HttpHeadersBlock requestHeaders) {
+        return handle(url, args, ThingifierRequestContext.from(thingifier, requestHeaders));
+    }
 
-        String instanceDatabaseName =
-                SessionHeaderParser.getDatabaseNameFromHeaderValue(requestHeaders);
-
+    public ApiResponse handle(
+            final String url, final BodyParser args, final ThingifierRequestContext context) {
         ThingWriteRequestMapping mapping =
-                new ThingWriteRequestMapper(thingifier, instanceDatabaseName).mapPut(url, args);
+                new ThingWriteRequestMapper(thingifier, context.store()).mapPut(url, args);
+        ThingCommandResultApiMapper apiMapper =
+                new ThingCommandResultApiMapper(thingifier.apiConfig());
         if (mapping.isError()) {
-            return mapping.getErrorResponse();
+            return apiMapper.map(mapping.getError());
         }
 
         ThingCommandResult result =
-                new ThingCommandService(thingifier.getStore(instanceDatabaseName))
-                        .execute(mapping.getCommand());
-        return new ThingCommandResultApiMapper(thingifier.apiConfig())
-                .map(mapping.getCommand(), result);
+                new ThingCommandService(context.store()).execute(mapping.getCommand());
+        return apiMapper.map(mapping.getCommand(), result);
     }
 }

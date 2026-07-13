@@ -5,59 +5,58 @@ import java.util.List;
 import java.util.Map;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
-import uk.co.compendiumdev.thingifier.application.RelationshipConnection;
+import uk.co.compendiumdev.thingifier.application.command.RelationshipReference;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVectorDefinition;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
-import uk.co.compendiumdev.thingifier.core.repository.ThingStore;
 
 public final class RelationshipBodyCommandParser {
 
-    private final Thingifier thingifier;
+    private final SchemaCatalog schema;
 
     public RelationshipBodyCommandParser(final Thingifier thingifier) {
-        this.thingifier = thingifier;
+        this(new ThingifierSchemaCatalog(thingifier));
+    }
+
+    RelationshipBodyCommandParser(final SchemaCatalog schema) {
+        this.schema = schema;
     }
 
     public RelationshipBodyCommands parse(
-            final BodyParser bodyargs, final EntityDefinition entity, final String database) {
-        return parse(bodyargs.getFlattenedStringMap(), entity, database);
+            final BodyParser bodyargs, final EntityDefinition entity) {
+        return parse(bodyargs.getFlattenedStringMap(), entity);
     }
 
     public RelationshipBodyCommands parse(
-            final List<Map.Entry<String, String>> flattenedArgs,
-            final EntityDefinition entity,
-            final String database) {
+            final List<Map.Entry<String, String>> flattenedArgs, final EntityDefinition entity) {
         List<Map.Entry<String, String>> relationshipEntries = new ArrayList<>();
-        List<RelationshipConnection> connections = new ArrayList<>();
+        List<RelationshipReference> references = new ArrayList<>();
         ValidationReport report = new ValidationReport();
 
         for (Map.Entry<String, String> keyValue : flattenedArgs) {
             String key = keyValue.getKey();
             if (key.startsWith("relationships.")) {
                 relationshipEntries.add(keyValue);
-                parseComplexRelationship(entity, keyValue, database, report, connections);
+                parseComplexRelationship(entity, keyValue, report, references);
             } else if (key.contains(".")) {
                 String[] parts = key.split("\\.");
                 if (parts.length > 0 && entity.related().hasRelationship(parts[0])) {
                     relationshipEntries.add(keyValue);
-                    parseCompressedRelationship(entity, keyValue, database, report, connections);
+                    parseCompressedRelationship(entity, keyValue, report, references);
                 }
             }
         }
 
         report.setValid(report.getErrorMessages().isEmpty());
-        return new RelationshipBodyCommands(relationshipEntries, connections, report);
+        return new RelationshipBodyCommands(relationshipEntries, references, report);
     }
 
     private void parseCompressedRelationship(
             final EntityDefinition entity,
             final Map.Entry<String, String> keyValue,
-            final String database,
             final ValidationReport report,
-            final List<RelationshipConnection> connections) {
+            final List<RelationshipReference> references) {
         String[] parts = keyValue.getKey().split("\\.");
         if (parts.length != 2) {
             reportIsNotValidRelationship(keyValue.getKey(), report);
@@ -76,31 +75,15 @@ public final class RelationshipBodyCommandParser {
             return;
         }
 
-        EntityInstance related =
-                resolveRelatedForCompressed(
-                        entity, relationshipName, fieldName, keyValue.getValue(), database);
-        if (related == null) {
-            report.addErrorMessage(
-                    String.format(
-                            "cannot find %s to relate to with %s %s",
-                            relationshipName, fieldName, keyValue.getValue()));
-            return;
-        }
-
-        if (!validRelationshipBetweenThings(
-                entity, relationshipName, related.getEntity(), report)) {
-            return;
-        }
-
-        connections.add(new RelationshipConnection(relationshipName, related));
+        references.add(
+                RelationshipReference.compressed(relationshipName, fieldName, keyValue.getValue()));
     }
 
     private void parseComplexRelationship(
             final EntityDefinition entity,
             final Map.Entry<String, String> keyValue,
-            final String database,
             final ValidationReport report,
-            final List<RelationshipConnection> connections) {
+            final List<RelationshipReference> references) {
         String[] parts = keyValue.getKey().split("\\.");
         if (parts.length != 4) {
             reportIsNotValidRelationship(keyValue.getKey(), report);
@@ -116,59 +99,20 @@ public final class RelationshipBodyCommandParser {
         }
 
         EntityDefinition relationshipTo =
-                thingifier
-                        .getERmodel()
-                        .getSchema()
-                        .getDefinitionWithSingularOrPluralNamed(relationshipToTerm);
+                schema.definitionWithSingularOrPluralNamed(relationshipToTerm);
         if (relationshipTo == null
                 || !validRelationshipBetweenThings(
                         entity, relationshipName, relationshipTo, report)) {
             return;
         }
 
-        ThingStore store = thingifier.getStore(database);
-        EntityInstance related =
-                store.entityQueries().findByQueryIdentifier(relationshipTo, keyValue.getValue());
-        if (related == null) {
-            related =
-                    store.entityQueries()
-                            .findByField(relationshipTo, relationshipField, keyValue.getValue());
-        }
-
-        if (related == null) {
-            report.addErrorMessage(
-                    String.format(
-                            "cannot find %s of %s to relate to with %s %s",
-                            relationshipField,
-                            relationshipToTerm,
-                            relationshipField,
-                            keyValue.getValue()));
-            return;
-        }
-
-        connections.add(new RelationshipConnection(relationshipName, related));
-    }
-
-    private EntityInstance resolveRelatedForCompressed(
-            final EntityDefinition entity,
-            final String relationshipName,
-            final String fieldName,
-            final String fieldValue,
-            final String database) {
-        ThingStore store = thingifier.getStore(database);
-        for (RelationshipVectorDefinition vector :
-                entity.related().getRelationships(relationshipName)) {
-            EntityDefinition relatedEntity = vector.getTo();
-            EntityInstance related =
-                    store.entityQueries().findByField(relatedEntity, fieldName, fieldValue);
-            if (related == null) {
-                related = store.entityQueries().findByQueryIdentifier(relatedEntity, fieldValue);
-            }
-            if (related != null) {
-                return related;
-            }
-        }
-        return null;
+        references.add(
+                RelationshipReference.explicit(
+                        relationshipName,
+                        relationshipTo,
+                        relationshipToTerm,
+                        relationshipField,
+                        keyValue.getValue()));
     }
 
     private boolean supportsReferenceField(

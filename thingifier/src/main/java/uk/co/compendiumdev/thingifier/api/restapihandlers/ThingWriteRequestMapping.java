@@ -1,36 +1,34 @@
 package uk.co.compendiumdev.thingifier.api.restapihandlers;
 
-import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.application.command.ThingWriteCommand;
 
 public final class ThingWriteRequestMapping {
 
     private final ThingWriteCommand command;
-    private final ApiResponse errorResponse;
+    private final ApiMappingError error;
 
-    private ThingWriteRequestMapping(
-            final ThingWriteCommand command, final ApiResponse errorResponse) {
+    private ThingWriteRequestMapping(final ThingWriteCommand command, final ApiMappingError error) {
         this.command = command;
-        this.errorResponse = errorResponse;
+        this.error = error;
     }
 
     public static ThingWriteRequestMapping command(final ThingWriteCommand command) {
         return new ThingWriteRequestMapping(command, null);
     }
 
-    public static ThingWriteRequestMapping error(final ApiResponse errorResponse) {
-        return new ThingWriteRequestMapping(null, errorResponse);
+    public static ThingWriteRequestMapping error(final ApiMappingError error) {
+        return new ThingWriteRequestMapping(null, error);
     }
 
     public boolean isError() {
-        return errorResponse != null;
+        return error != null;
     }
 
     public ThingWriteCommand getCommand() {
         return command;
     }
 
-    public ApiResponse getErrorResponse() {
-        return errorResponse;
+    public ApiMappingError getError() {
+        return error;
     }
 }

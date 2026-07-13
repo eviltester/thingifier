@@ -1,9 +1,9 @@
 package uk.co.compendiumdev.challenge.challengesrouting;
 
 import java.util.List;
+import uk.co.compendiumdev.thingifier.adapter.spark.AdhocDocumentedSparkRouteConfigurer;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
 import uk.co.compendiumdev.thingifier.api.docgen.ThingifierApiDocumentationDefn;
-import uk.co.compendiumdev.thingifier.application.AdhocDocumentedSparkRouteConfigurer;
 import uk.co.compendiumdev.thingifier.spark.SimpleSparkRouteCreator;
 
 public class HeartBeatRoutes {

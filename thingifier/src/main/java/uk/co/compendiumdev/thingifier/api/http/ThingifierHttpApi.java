@@ -3,12 +3,11 @@ package uk.co.compendiumdev.thingifier.api.http;
 import java.util.ArrayList;
 import java.util.List;
 import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.adapter.http.messagehooks.HttpApiRequestHook;
+import uk.co.compendiumdev.thingifier.adapter.http.messagehooks.HttpApiResponseHook;
 import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonThing;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
-import uk.co.compendiumdev.thingifier.api.restapihandlers.SessionHeaderParser;
-import uk.co.compendiumdev.thingifier.application.httpapimessagehooks.HttpApiRequestHook;
-import uk.co.compendiumdev.thingifier.application.httpapimessagehooks.HttpApiResponseHook;
 
 public final class ThingifierHttpApi {
 
@@ -121,21 +120,9 @@ public final class ThingifierHttpApi {
         return httpResponse;
     }
 
-    private void createDatabaseBasedOnSessionHeaderUIfNecessary(final String sessionHeaderValue) {
-        if (sessionHeaderValue != null) {
-            // make sure database exists
-            thingifier.ensureCreatedAndPopulatedInstanceDatabaseNamed(sessionHeaderValue);
-        }
-    }
-
     public ApiResponse routeAndProcessRequest(final HttpApiRequest request, HttpVerb verb) {
 
         ApiResponse apiResponse = null;
-
-        // if there is a session id and we have not created the erm yet, then do that now
-        String databaseToUse =
-                SessionHeaderParser.getDatabaseNameFromHeaderValue(request.getHeaders());
-        createDatabaseBasedOnSessionHeaderUIfNecessary(databaseToUse);
 
         switch (verb) {
             case GET:
@@ -207,11 +194,6 @@ public final class ThingifierHttpApi {
     public HttpApiResponse query(final HttpApiRequest request, final String query) {
 
         HttpApiResponse httpResponse = runTheHttpApiRequestHooksOn(request);
-
-        // if there is a session id and we have not created the erm yet, then do that
-        String databaseToUse =
-                SessionHeaderParser.getDatabaseNameFromHeaderValue(request.getHeaders());
-        createDatabaseBasedOnSessionHeaderUIfNecessary(databaseToUse);
 
         if (httpResponse == null) {
             ApiResponse apiResponse =

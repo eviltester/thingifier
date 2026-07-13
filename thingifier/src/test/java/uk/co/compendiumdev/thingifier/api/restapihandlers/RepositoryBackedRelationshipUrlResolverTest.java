@@ -58,7 +58,7 @@ public class RepositoryBackedRelationshipUrlResolverTest {
 
         resolver =
                 new RepositoryBackedRelationshipUrlResolver(
-                        thingifier, EntityRelModel.DEFAULT_DATABASE_NAME);
+                        new ThingifierSchemaCatalog(thingifier), repository);
     }
 
     @Test

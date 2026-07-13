@@ -10,6 +10,7 @@ import uk.co.compendiumdev.thingifier.application.command.CreateAndConnectRelati
 import uk.co.compendiumdev.thingifier.application.command.CreateThingCommand;
 import uk.co.compendiumdev.thingifier.application.command.DeleteThingCommand;
 import uk.co.compendiumdev.thingifier.application.command.DisconnectRelationshipCommand;
+import uk.co.compendiumdev.thingifier.application.command.RelationshipReference;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.Cardinality;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
@@ -42,8 +43,10 @@ public class ThingCommandServiceTest {
                                         EntityInstanceDraft.forEntity(task)
                                                 .withField("title", "Task"),
                                         List.of(
-                                                new RelationshipConnection(
-                                                        "task-of", projectInstance)),
+                                                RelationshipReference.compressed(
+                                                        "task-of",
+                                                        "guid",
+                                                        projectInstance.getPrimaryKeyValue())),
                                         true));
 
         Assertions.assertTrue(result.isSuccessful());
@@ -51,6 +54,98 @@ public class ThingCommandServiceTest {
         Assertions.assertEquals(
                 projectInstance,
                 store.relationships().listRelated(result.getInstance(), "task-of").get(0));
+    }
+
+    @Test
+    public void createCommandCanResolveExplicitRelationshipReferenceByTargetField() {
+        Thingifier thingifier = taskProjectThingifier();
+        ThingStore store = storeFor(thingifier);
+        EntityDefinition task = thingifier.getDefinitionNamed("task");
+        EntityDefinition project = thingifier.getDefinitionNamed("project");
+        EntityInstance projectInstance =
+                store.entities()
+                        .create(
+                                EntityInstanceDraft.forEntity(project)
+                                        .withField("title", "Project"));
+
+        ThingCommandResult result =
+                new ThingCommandService(store)
+                        .execute(
+                                new CreateThingCommand(
+                                        EntityInstanceDraft.forEntity(task)
+                                                .withField("title", "Task"),
+                                        List.of(
+                                                RelationshipReference.explicit(
+                                                        "task-of",
+                                                        project,
+                                                        "projects",
+                                                        "title",
+                                                        "Project")),
+                                        true));
+
+        Assertions.assertTrue(result.isSuccessful());
+        Assertions.assertEquals(
+                projectInstance,
+                store.relationships().listRelated(result.getInstance(), "task-of").get(0));
+    }
+
+    @Test
+    public void createCommandRollsBackWhenRelationshipReferenceCannotBeResolved() {
+        Thingifier thingifier = taskProjectThingifier();
+        ThingStore store = storeFor(thingifier);
+        EntityDefinition task = thingifier.getDefinitionNamed("task");
+        int taskCount = store.entityQueries().count(task);
+
+        ThingCommandResult result =
+                new ThingCommandService(store)
+                        .execute(
+                                new CreateThingCommand(
+                                        EntityInstanceDraft.forEntity(task)
+                                                .withField("title", "Task"),
+                                        List.of(
+                                                RelationshipReference.compressed(
+                                                        "task-of", "guid", "missing")),
+                                        true));
+
+        Assertions.assertTrue(result.isError());
+        Assertions.assertEquals(taskCount, store.entityQueries().count(task));
+        Assertions.assertEquals(
+                List.of(
+                        "Invalid relationships: cannot find task-of to relate to with guid missing"),
+                result.getErrorMessages());
+    }
+
+    @Test
+    public void createCommandDoesNotDeleteExistingRelatedItemWhenFinalValidationFails() {
+        Thingifier thingifier = taskProjectThingifierWithMandatoryCategory();
+        ThingStore store = storeFor(thingifier);
+        EntityDefinition task = thingifier.getDefinitionNamed("task");
+        EntityDefinition project = thingifier.getDefinitionNamed("project");
+        EntityInstance projectInstance =
+                store.entities()
+                        .create(
+                                EntityInstanceDraft.forEntity(project)
+                                        .withField("title", "Project"));
+        int taskCount = store.entityQueries().count(task);
+
+        ThingCommandResult result =
+                new ThingCommandService(store)
+                        .execute(
+                                new CreateThingCommand(
+                                        EntityInstanceDraft.forEntity(task)
+                                                .withField("title", "Task"),
+                                        List.of(
+                                                RelationshipReference.compressed(
+                                                        "task-of",
+                                                        "guid",
+                                                        projectInstance.getPrimaryKeyValue())),
+                                        true));
+
+        Assertions.assertTrue(result.isError());
+        Assertions.assertEquals(taskCount, store.entityQueries().count(task));
+        Assertions.assertNotNull(
+                store.entityQueries()
+                        .findByQueryIdentifier(project, projectInstance.getPrimaryKeyValue()));
     }
 
     @Test
@@ -86,6 +181,48 @@ public class ThingCommandServiceTest {
                         .findByQueryIdentifier(task, taskInstance.getPrimaryKeyValue());
         Assertions.assertTrue(result.isError());
         Assertions.assertEquals("Original title", restored.getFieldValue("title").asString());
+        Assertions.assertEquals(
+                projectInstance, store.relationships().listRelated(restored, "task-of").get(0));
+    }
+
+    @Test
+    public void amendCommandRollsBackWhenRelationshipReferenceCannotBeResolved() {
+        Thingifier thingifier = taskProjectThingifier();
+        ThingStore store = storeFor(thingifier);
+        EntityDefinition task = thingifier.getDefinitionNamed("task");
+        EntityDefinition project = thingifier.getDefinitionNamed("project");
+        EntityInstance taskInstance =
+                store.entities()
+                        .create(
+                                EntityInstanceDraft.forEntity(task)
+                                        .withField("title", "Original title"));
+        EntityInstance projectInstance =
+                store.entities()
+                        .create(
+                                EntityInstanceDraft.forEntity(project)
+                                        .withField("title", "Project"));
+        store.relationships().connect(taskInstance, "task-of", projectInstance);
+
+        ThingCommandResult result =
+                new ThingCommandService(store)
+                        .execute(
+                                new AmendThingCommand(
+                                        taskInstance,
+                                        EntityInstanceDraft.forEntity(task)
+                                                .withField("title", "Rejected title"),
+                                        false,
+                                        List.of(
+                                                RelationshipReference.compressed(
+                                                        "task-of", "guid", "missing"))));
+
+        EntityInstance restored =
+                store.entityQueries()
+                        .findByQueryIdentifier(task, taskInstance.getPrimaryKeyValue());
+        Assertions.assertTrue(result.isError());
+        Assertions.assertEquals("Original title", restored.getFieldValue("title").asString());
+        Assertions.assertEquals(
+                List.of("cannot find task-of to relate to with guid missing"),
+                result.getErrorMessages());
         Assertions.assertEquals(
                 projectInstance, store.relationships().listRelated(restored, "task-of").get(0));
     }
@@ -196,6 +333,37 @@ public class ThingCommandServiceTest {
 
         Assertions.assertTrue(result.isError());
         Assertions.assertTrue(result.rolledBackCreatedInstance());
+        Assertions.assertEquals(taskCount, store.entityQueries().count(task));
+        Assertions.assertTrue(
+                store.relationships().listRelated(projectInstance, "tasks").isEmpty());
+    }
+
+    @Test
+    public void failedCreateAndConnectRelationshipRollsBackOnUnresolvedChildRelationship() {
+        Thingifier thingifier = taskProjectThingifierWithMandatoryCategory();
+        ThingStore store = storeFor(thingifier);
+        EntityDefinition task = thingifier.getDefinitionNamed("task");
+        EntityDefinition project = thingifier.getDefinitionNamed("project");
+        EntityInstance projectInstance =
+                store.entities()
+                        .create(
+                                EntityInstanceDraft.forEntity(project)
+                                        .withField("title", "Project"));
+        int taskCount = store.entityQueries().count(task);
+
+        ThingCommandResult result =
+                new ThingCommandService(store)
+                        .execute(
+                                new CreateAndConnectRelationshipCommand(
+                                        projectInstance,
+                                        "tasks",
+                                        EntityInstanceDraft.forEntity(task)
+                                                .withField("title", "Rolled back"),
+                                        List.of(
+                                                RelationshipReference.compressed(
+                                                        "category", "guid", "missing"))));
+
+        Assertions.assertTrue(result.isError());
         Assertions.assertEquals(taskCount, store.entityQueries().count(task));
         Assertions.assertTrue(
                 store.relationships().listRelated(projectInstance, "tasks").isEmpty());

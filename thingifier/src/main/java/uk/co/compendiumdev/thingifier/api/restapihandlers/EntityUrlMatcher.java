@@ -1,27 +1,27 @@
 package uk.co.compendiumdev.thingifier.api.restapihandlers;
 
-import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import uk.co.compendiumdev.thingifier.core.repository.ThingStore;
 
 final class EntityUrlMatcher {
 
     private EntityUrlMatcher() {}
 
-    static EntityDefinition entityFromCollectionUrl(final Thingifier thingifier, final String url) {
+    static EntityDefinition entityFromCollectionUrl(final SchemaCatalog schema, final String url) {
         String[] parts = parts(url);
         if (parts.length != 1) {
             return null;
         }
-        return thingifier.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed(parts[0]);
+        return schema.definitionWithSingularOrPluralNamed(parts[0]);
     }
 
-    static EntityDefinition entityFromInstanceUrl(final Thingifier thingifier, final String url) {
+    static EntityDefinition entityFromInstanceUrl(final SchemaCatalog schema, final String url) {
         String[] parts = parts(url);
         if (parts.length != 2) {
             return null;
         }
-        return thingifier.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed(parts[0]);
+        return schema.definitionWithSingularOrPluralNamed(parts[0]);
     }
 
     static String identifierFromInstanceUrl(final String url) {
@@ -45,16 +45,13 @@ final class EntityUrlMatcher {
     }
 
     static EntityInstance findInstanceFromUrl(
-            final Thingifier thingifier, final String url, final String database) {
-        EntityDefinition entity = entityFromInstanceUrl(thingifier, url);
+            final SchemaCatalog schema, final ThingStore store, final String url) {
+        EntityDefinition entity = entityFromInstanceUrl(schema, url);
         String identifier = identifierFromInstanceUrl(url);
         if (entity == null || identifier == null) {
             return null;
         }
-        return thingifier
-                .getStore(database)
-                .entityQueries()
-                .findByQueryIdentifier(entity, identifier);
+        return store.entityQueries().findByQueryIdentifier(entity, identifier);
     }
 
     static String[] parts(final String url) {

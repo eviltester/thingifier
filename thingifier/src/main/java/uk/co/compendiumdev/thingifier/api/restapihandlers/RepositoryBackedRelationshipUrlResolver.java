@@ -1,7 +1,6 @@
 package uk.co.compendiumdev.thingifier.api.restapihandlers;
 
 import java.util.List;
-import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
@@ -12,14 +11,12 @@ import uk.co.compendiumdev.thingifier.core.repository.ThingStore;
 
 final class RepositoryBackedRelationshipUrlResolver {
 
-    private final Thingifier thingifier;
+    private final SchemaCatalog schema;
     private final EntityInstanceQuery query;
     private final RelationshipRepository relationships;
 
-    RepositoryBackedRelationshipUrlResolver(
-            final Thingifier thingifier, final String databaseName) {
-        this.thingifier = thingifier;
-        ThingStore store = thingifier.getStore(databaseName);
+    RepositoryBackedRelationshipUrlResolver(final SchemaCatalog schema, final ThingStore store) {
+        this.schema = schema;
         this.query = store.entityQueries();
         this.relationships = store.relationships();
     }
@@ -71,7 +68,7 @@ final class RepositoryBackedRelationshipUrlResolver {
     }
 
     private EntityDefinition entityFor(final String term) {
-        return thingifier.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed(term);
+        return schema.definitionWithSingularOrPluralNamed(term);
     }
 
     private boolean matchesQueryIdentifier(final EntityInstance instance, final String identifier) {

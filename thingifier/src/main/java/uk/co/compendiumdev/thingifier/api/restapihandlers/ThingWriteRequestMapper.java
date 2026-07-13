@@ -4,8 +4,8 @@ import java.util.List;
 import java.util.Map;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
-import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.api.restapihandlers.commonerrorresponse.NoSuchEntity;
+import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.application.command.ConnectExistingRelationshipCommand;
 import uk.co.compendiumdev.thingifier.application.command.DeleteThingCommand;
 import uk.co.compendiumdev.thingifier.application.command.DisconnectRelationshipCommand;
@@ -15,72 +15,78 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.F
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.NamedValue;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVectorDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import uk.co.compendiumdev.thingifier.core.repository.ThingStore;
 
 public final class ThingWriteRequestMapper {
 
-    private final Thingifier thingifier;
-    private final String database;
+    private final SchemaCatalog schema;
+    private final ThingStore store;
     private final ThingBodyCommandMapper bodyCommandMapper;
 
     public ThingWriteRequestMapper(final Thingifier thingifier, final String database) {
-        this.thingifier = thingifier;
-        this.database = database;
-        this.bodyCommandMapper = new ThingBodyCommandMapper(thingifier, database);
+        this(thingifier, thingifier.getStore(database));
+    }
+
+    public ThingWriteRequestMapper(final Thingifier thingifier, final ThingStore store) {
+        this(new ThingifierSchemaCatalog(thingifier), thingifier.apiConfig(), store);
+    }
+
+    ThingWriteRequestMapper(
+            final SchemaCatalog schema,
+            final ThingifierApiConfig apiConfig,
+            final ThingStore store) {
+        this.schema = schema;
+        this.store = store;
+        this.bodyCommandMapper = new ThingBodyCommandMapper(schema, apiConfig, store);
     }
 
     public ThingWriteRequestMapping mapPost(final String url, final BodyParser args) {
-        EntityDefinition entityDefinition =
-                EntityUrlMatcher.entityFromCollectionUrl(thingifier, url);
+        EntityDefinition entityDefinition = EntityUrlMatcher.entityFromCollectionUrl(schema, url);
         if (entityDefinition != null) {
             return bodyCommandMapper.mapCreate(args, entityDefinition, true);
         }
 
-        entityDefinition = EntityUrlMatcher.entityFromInstanceUrl(thingifier, url);
+        entityDefinition = EntityUrlMatcher.entityFromInstanceUrl(schema, url);
         if (entityDefinition != null) {
             return mapPostToInstance(url, args, entityDefinition);
         }
 
         String thingName = EntityUrlMatcher.entityTermFromUrl(url);
         if (!thingName.isEmpty() && EntityUrlMatcher.hasPartCount(url, 2)) {
-            return ThingWriteRequestMapping.error(NoSuchEntity.response(thingName));
+            return ThingWriteRequestMapping.error(NoSuchEntity.error(thingName));
         }
 
         RepositoryBackedRelationshipUrlResolver.RelationshipUrlResolution relationship =
-                new RepositoryBackedRelationshipUrlResolver(thingifier, database)
-                        .resolveCollection(url);
+                new RepositoryBackedRelationshipUrlResolver(schema, store).resolveCollection(url);
         if (relationship.matchedRelationshipPath()) {
             return mapPostToRelationship(url, args, relationship);
         }
 
         return ThingWriteRequestMapping.error(
-                ApiResponse.error(400, "Your request was not understood"));
+                ApiMappingError.withMessage(400, "Your request was not understood"));
     }
 
     public ThingWriteRequestMapping mapPut(final String url, final BodyParser args) {
-        EntityDefinition thing = EntityUrlMatcher.entityFromCollectionUrl(thingifier, url);
+        EntityDefinition thing = EntityUrlMatcher.entityFromCollectionUrl(schema, url);
         if (thing != null) {
             return ThingWriteRequestMapping.error(
-                    ApiResponse.error(405, "Cannot create root level entity with a PUT"));
+                    ApiMappingError.withMessage(405, "Cannot create root level entity with a PUT"));
         }
 
-        thing = EntityUrlMatcher.entityFromInstanceUrl(thingifier, url);
+        thing = EntityUrlMatcher.entityFromInstanceUrl(schema, url);
         if (thing == null) {
             if (EntityUrlMatcher.hasPartCount(url, 2)) {
                 String thingName = EntityUrlMatcher.entityTermFromUrl(url);
                 if (!thingName.isEmpty()) {
-                    return ThingWriteRequestMapping.error(NoSuchEntity.response(thingName));
+                    return ThingWriteRequestMapping.error(NoSuchEntity.error(thingName));
                 }
             }
             return ThingWriteRequestMapping.error(
-                    ApiResponse.error(400, "Your request was not understood"));
+                    ApiMappingError.withMessage(400, "Your request was not understood"));
         }
 
         String instanceGuid = EntityUrlMatcher.identifierFromInstanceUrl(url);
-        EntityInstance instance =
-                thingifier
-                        .getStore(database)
-                        .entityQueries()
-                        .findByQueryIdentifier(thing, instanceGuid);
+        EntityInstance instance = store.entityQueries().findByQueryIdentifier(thing, instanceGuid);
 
         if (instance == null) {
             return mapPutCreate(args, thing, instanceGuid);
@@ -90,34 +96,33 @@ public final class ThingWriteRequestMapper {
     }
 
     public ThingWriteRequestMapping mapDelete(final String url) {
-        EntityDefinition thing = EntityUrlMatcher.entityFromCollectionUrl(thingifier, url);
+        EntityDefinition thing = EntityUrlMatcher.entityFromCollectionUrl(schema, url);
         if (thing != null) {
             return ThingWriteRequestMapping.error(
-                    ApiResponse.error(405, "Cannot delete root level entity"));
+                    ApiMappingError.withMessage(405, "Cannot delete root level entity"));
         }
 
-        EntityDefinition entity = EntityUrlMatcher.entityFromInstanceUrl(thingifier, url);
+        EntityDefinition entity = EntityUrlMatcher.entityFromInstanceUrl(schema, url);
         if (entity != null) {
-            EntityInstance instance =
-                    EntityUrlMatcher.findInstanceFromUrl(thingifier, url, database);
+            EntityInstance instance = EntityUrlMatcher.findInstanceFromUrl(schema, store, url);
             if (instance == null) {
                 return ThingWriteRequestMapping.error(
-                        ApiResponse.error404(
-                                String.format("Could not find any instances with %s", url)));
+                        ApiMappingError.withMessage(
+                                404, String.format("Could not find any instances with %s", url)));
             }
             return ThingWriteRequestMapping.command(new DeleteThingCommand(instance));
         }
 
         RepositoryBackedRelationshipUrlResolver.RelationshipUrlResolution relationship =
-                new RepositoryBackedRelationshipUrlResolver(thingifier, database)
+                new RepositoryBackedRelationshipUrlResolver(schema, store)
                         .resolveRelationshipInstance(url);
         if (relationship.matchedRelationshipPath()) {
             if (!relationship.relationshipInstancePath()
                     || relationship.parentInstance() == null
                     || relationship.childInstance() == null) {
                 return ThingWriteRequestMapping.error(
-                        ApiResponse.error404(
-                                String.format("Could not find any instances with %s", url)));
+                        ApiMappingError.withMessage(
+                                404, String.format("Could not find any instances with %s", url)));
             }
             return ThingWriteRequestMapping.command(
                     new DisconnectRelationshipCommand(
@@ -127,7 +132,8 @@ public final class ThingWriteRequestMapper {
         }
 
         return ThingWriteRequestMapping.error(
-                ApiResponse.error404(String.format("Could not find any instances with %s", url)));
+                ApiMappingError.withMessage(
+                        404, String.format("Could not find any instances with %s", url)));
     }
 
     private ThingWriteRequestMapping mapPostToInstance(
@@ -136,14 +142,12 @@ public final class ThingWriteRequestMapper {
 
         if (entityDefinition.hasPrimaryKeyField()) {
             EntityInstance instance =
-                    thingifier
-                            .getStore(database)
-                            .entityQueries()
-                            .findByQueryIdentifier(entityDefinition, primaryKey);
+                    store.entityQueries().findByQueryIdentifier(entityDefinition, primaryKey);
 
             if (instance == null) {
                 return ThingWriteRequestMapping.error(
-                        ApiResponse.error404(
+                        ApiMappingError.withMessage(
+                                404,
                                 String.format(
                                         "No such %s entity instance with %s == %s found",
                                         entityDefinition.getName(),
@@ -155,7 +159,8 @@ public final class ThingWriteRequestMapper {
         }
 
         return ThingWriteRequestMapping.error(
-                ApiResponse.error404(
+                ApiMappingError.withMessage(
+                        404,
                         String.format(
                                 "Entity %s does not have a primary key defined",
                                 entityDefinition.getName())));
@@ -167,7 +172,7 @@ public final class ThingWriteRequestMapper {
                 thing.getFieldsOfType(FieldType.AUTO_INCREMENT, FieldType.AUTO_GUID);
         if (!forbiddenPutCreationFields.isEmpty()) {
             return ThingWriteRequestMapping.error(
-                    ApiResponse.error(
+                    ApiMappingError.withMessage(
                             400,
                             String.format(
                                     "Cannot create %s with PUT due to Auto fields %s",
@@ -180,7 +185,7 @@ public final class ThingWriteRequestMapper {
             if (namedValue.name.equals(thing.getPrimaryKeyField().getName())
                     && !namedValue.value.equals(instanceGuid)) {
                 return ThingWriteRequestMapping.error(
-                        ApiResponse.error(
+                        ApiMappingError.withMessage(
                                 400,
                                 String.format(
                                         "Cannot create %s with PUT as key does not match body value %s != %s",
@@ -201,7 +206,8 @@ public final class ThingWriteRequestMapper {
         EntityInstance connectThis = relationship.parentInstance();
         if (connectThis == null) {
             return ThingWriteRequestMapping.error(
-                    ApiResponse.error404(
+                    ApiMappingError.withMessage(
+                            404,
                             String.format("Could not find parent thing for relationship %s", url)));
         }
 
@@ -225,10 +231,7 @@ public final class ThingWriteRequestMapper {
                     matchingFieldNames = matchingFieldNames + fieldName + " ";
                 }
                 relatedItem =
-                        thingifier
-                                .getStore(database)
-                                .entityQueries()
-                                .findByField(thingTo, fieldName, args.get(fieldName));
+                        store.entityQueries().findByField(thingTo, fieldName, args.get(fieldName));
                 if (relatedItem != null) {
                     break;
                 }
@@ -237,7 +240,8 @@ public final class ThingWriteRequestMapper {
         if (amExpectingARelatedItem && relatedItem == null) {
             matchingFieldNames = matchingFieldNames.trim().replace(" ", ", ");
             return ThingWriteRequestMapping.error(
-                    ApiResponse.error404(
+                    ApiMappingError.withMessage(
+                            404,
                             String.format(
                                     "Could not find thing matching value for %s",
                                     matchingFieldNames)));
@@ -252,7 +256,7 @@ public final class ThingWriteRequestMapper {
                 connectThis
                         .getEntity()
                         .getNamedRelationshipTo(relationshipName, relatedItem.getEntity());
-        ApiResponse relationshipError =
+        ApiMappingError relationshipError =
                 relationshipErrorIfInvalid(
                         connectThis, relatedItem, relationshipToUse, relationshipName);
         if (relationshipError != null) {
@@ -264,13 +268,13 @@ public final class ThingWriteRequestMapper {
                         connectThis, relationshipToUse.getName(), relatedItem));
     }
 
-    private ApiResponse relationshipErrorIfInvalid(
+    private ApiMappingError relationshipErrorIfInvalid(
             final EntityInstance connectThis,
             final EntityInstance relatedItem,
             final RelationshipVectorDefinition relationshipToUse,
             final String relationshipName) {
         if (relationshipToUse == null) {
-            return ApiResponse.error(
+            return ApiMappingError.withMessage(
                     400,
                     String.format(
                             "Could not find a relationship named %s between %s and a %s",
@@ -280,7 +284,7 @@ public final class ThingWriteRequestMapper {
         }
 
         if (relationshipToUse.getTo() != relatedItem.getEntity()) {
-            return ApiResponse.error(
+            return ApiMappingError.withMessage(
                     400,
                     String.format(
                             "Could not connect %s (%s) to %s (%s) via relationship %s because it is a %s instead of a %s",

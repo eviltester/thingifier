@@ -14,6 +14,10 @@ public final class ThingReadResultApiMapper {
         this.apiConfig = apiConfig;
     }
 
+    public ApiResponse map(final ApiMappingError error) {
+        return ApiResponse.error(error.statusCode(), error.messages());
+    }
+
     public ApiResponse map(final String url, final RepositoryQueryResult queryResults) {
         List<EntityInstance> queryItems = queryResults.getListEntityInstances();
 

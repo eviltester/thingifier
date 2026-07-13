@@ -2,7 +2,7 @@ package uk.co.compendiumdev.todolist.sqlite.application;
 
 import static spark.Spark.get;
 
-import uk.co.compendiumdev.thingifier.application.MainImplementation;
+import uk.co.compendiumdev.thingifier.adapter.spark.MainImplementation;
 import uk.co.compendiumdev.thingifier.application.examples.TodoManagerThingifier;
 import uk.co.compendiumdev.thingifier.core.repository.sqlite.SqliteThingStoreProvider;
 

@@ -1,7 +1,6 @@
 package uk.co.compendiumdev.thingifier.api.restapihandlers;
 
 import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.application.query.ReadCollectionQuery;
 import uk.co.compendiumdev.thingifier.application.query.ReadInstanceQuery;
 import uk.co.compendiumdev.thingifier.application.query.ReadRelationshipQuery;
@@ -10,10 +9,14 @@ import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
 
 public final class ThingReadRequestMapper {
 
-    private final Thingifier thingifier;
+    private final SchemaCatalog schema;
 
     public ThingReadRequestMapper(final Thingifier thingifier) {
-        this.thingifier = thingifier;
+        this(new ThingifierSchemaCatalog(thingifier));
+    }
+
+    ThingReadRequestMapper(final SchemaCatalog schema) {
+        this.schema = schema;
     }
 
     public ThingReadRequestMapping map(final String url, final QueryFilterParams queryParams) {
@@ -32,7 +35,7 @@ public final class ThingReadRequestMapper {
         }
 
         String identifierCandidate = terms[1];
-        if (thingifier.getERmodel().getSchema().hasRelationshipNamed(identifierCandidate)
+        if (schema.hasRelationshipNamed(identifierCandidate)
                 || entityForTerm(identifierCandidate) != null) {
             return notFound(url);
         }
@@ -52,10 +55,11 @@ public final class ThingReadRequestMapper {
 
     private ThingReadRequestMapping notFound(final String url) {
         return ThingReadRequestMapping.error(
-                ApiResponse.error404(String.format("Could not find an instance with %s", url)));
+                ApiMappingError.withMessage(
+                        404, String.format("Could not find an instance with %s", url)));
     }
 
     private EntityDefinition entityForTerm(final String term) {
-        return thingifier.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed(term);
+        return schema.definitionWithSingularOrPluralNamed(term);
     }
 }

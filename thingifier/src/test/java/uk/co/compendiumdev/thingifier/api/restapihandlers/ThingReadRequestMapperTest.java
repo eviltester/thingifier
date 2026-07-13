@@ -1,5 +1,6 @@
 package uk.co.compendiumdev.thingifier.api.restapihandlers;
 
+import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.Thingifier;
@@ -67,7 +68,9 @@ public class ThingReadRequestMapperTest {
                 mapperFor(taskProjectThingifier()).map("missing", params());
 
         Assertions.assertTrue(mapping.isError());
-        Assertions.assertEquals(404, mapping.getErrorResponse().getStatusCode());
+        Assertions.assertEquals(404, mapping.getError().statusCode());
+        Assertions.assertEquals(
+                List.of("Could not find an instance with missing"), mapping.getError().messages());
     }
 
     @Test
@@ -76,7 +79,7 @@ public class ThingReadRequestMapperTest {
                 mapperFor(taskProjectThingifier()).map("project/tasks", params());
 
         Assertions.assertTrue(mapping.isError());
-        Assertions.assertEquals(404, mapping.getErrorResponse().getStatusCode());
+        Assertions.assertEquals(404, mapping.getError().statusCode());
     }
 
     @Test
@@ -85,7 +88,7 @@ public class ThingReadRequestMapperTest {
                 mapperFor(taskProjectThingifier()).map("project/task", params());
 
         Assertions.assertTrue(mapping.isError());
-        Assertions.assertEquals(404, mapping.getErrorResponse().getStatusCode());
+        Assertions.assertEquals(404, mapping.getError().statusCode());
     }
 
     @Test
@@ -93,7 +96,7 @@ public class ThingReadRequestMapperTest {
         ThingReadRequestMapping mapping = mapperFor(taskProjectThingifier()).map("", params());
 
         Assertions.assertTrue(mapping.isError());
-        Assertions.assertEquals(404, mapping.getErrorResponse().getStatusCode());
+        Assertions.assertEquals(404, mapping.getError().statusCode());
     }
 
     @Test
@@ -102,7 +105,7 @@ public class ThingReadRequestMapperTest {
                 mapperFor(taskProjectThingifier()).map("project/p1/tasks/t1", params());
 
         Assertions.assertTrue(mapping.isError());
-        Assertions.assertEquals(404, mapping.getErrorResponse().getStatusCode());
+        Assertions.assertEquals(404, mapping.getError().statusCode());
     }
 
     @Test

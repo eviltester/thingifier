@@ -1,6 +1,7 @@
 package uk.co.compendiumdev.thingifier.api;
 
 import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.api.http.ThingifierRequestContext;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
@@ -36,34 +37,42 @@ public class ThingifierRestAPIHandler {
 
     public ApiResponse get(
             final String url, final QueryFilterParams queryParams, HttpHeadersBlock headers) {
-        return withRepository(get.handle(url, queryParams, headers), headers);
+        ThingifierRequestContext context = contextFrom(headers);
+        return withRepository(get.handle(url, queryParams, context), context);
     }
 
     public ApiResponse head(
             final String url, final QueryFilterParams queryParams, HttpHeadersBlock headers) {
-        final ApiResponse response = get.handle(url, queryParams, headers);
+        ThingifierRequestContext context = contextFrom(headers);
+        final ApiResponse response = get.handle(url, queryParams, context);
         response.clearBody();
-        return withRepository(response, headers);
+        return withRepository(response, context);
     }
 
     public ApiResponse delete(final String url, HttpHeadersBlock headers) {
-        return withRepository(delete.handle(url, headers), headers);
+        ThingifierRequestContext context = contextFrom(headers);
+        return withRepository(delete.handle(url, context), context);
     }
 
     public ApiResponse post(final String url, final BodyParser args, HttpHeadersBlock headers) {
-        return withRepository(post.handle(url, args, headers), headers);
+        ThingifierRequestContext context = contextFrom(headers);
+        return withRepository(post.handle(url, args, context), context);
     }
 
     public ApiResponse put(final String url, final BodyParser args, HttpHeadersBlock headers) {
-        return withRepository(put.handle(url, args, headers), headers);
+        ThingifierRequestContext context = contextFrom(headers);
+        return withRepository(put.handle(url, args, context), context);
     }
 
-    private ApiResponse withRepository(final ApiResponse response, final HttpHeadersBlock headers) {
+    private ThingifierRequestContext contextFrom(final HttpHeadersBlock headers) {
+        return ThingifierRequestContext.from(thingifier, headers);
+    }
+
+    private ApiResponse withRepository(
+            final ApiResponse response, final ThingifierRequestContext context) {
         if (response == null) {
             return null;
         }
-        HttpHeadersBlock safeHeaders = headers == null ? new HttpHeadersBlock() : headers;
-        String databaseName = SessionHeaderParser.getDatabaseNameFromHeaderValue(safeHeaders);
-        return response.usingRelationships(thingifier.getStore(databaseName).relationships());
+        return response.usingRelationships(context.store().relationships());
     }
 }
