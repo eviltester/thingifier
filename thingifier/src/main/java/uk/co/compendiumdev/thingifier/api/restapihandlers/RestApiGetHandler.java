@@ -1,18 +1,19 @@
 package uk.co.compendiumdev.thingifier.api.restapihandlers;
 
-import java.util.List;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import uk.co.compendiumdev.thingifier.application.ThingQueryService;
 import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
 import uk.co.compendiumdev.thingifier.core.query.RepositoryQueryResult;
 
 public class RestApiGetHandler {
     private final Thingifier thingifier;
+    private final ThingQueryService queryService;
 
     public RestApiGetHandler(final Thingifier aThingifier) {
         this.thingifier = aThingifier;
+        this.queryService = new ThingQueryService();
     }
 
     public ApiResponse handle(
@@ -37,59 +38,15 @@ public class RestApiGetHandler {
         QueryFilterParams effectiveQueryParams =
                 allowFiltering ? queryParams : new QueryFilterParams();
 
-        if (RepositoryRouteQuery.canHandle(thingifier.getERmodel().getSchema(), url)) {
-            queryResults =
-                    new RepositoryRouteQuery(
-                                    thingifier.getERmodel().getSchema(),
-                                    thingifier.getStore(instanceDatabaseName),
-                                    url)
-                            .performQuery(effectiveQueryParams);
-        } else {
-            return ApiResponse.error404(String.format("Could not find an instance with %s", url));
+        ThingReadRequestMapping mapping =
+                new ThingReadRequestMapper(thingifier).map(url, effectiveQueryParams);
+        if (mapping.isError()) {
+            return mapping.getErrorResponse();
         }
 
-        // TODO: we should support pagination through query params
-        // TODO: api config should also support defining sorting for specific end points
-        List<EntityInstance> queryItems = queryResults.getListEntityInstances();
+        queryResults =
+                queryService.execute(mapping.getQuery(), thingifier.getStore(instanceDatabaseName));
 
-        // return a 404 if it doesn't match anything
-        if (queryResults.lastMatchWasNothing()
-                || (queryResults.lastMatchWasInstance() && queryItems.isEmpty())) {
-            // if query list was empty then return a 404
-            return ApiResponse.error404(String.format("Could not find an instance with %s", url));
-        }
-
-        if (queryResults.lastMatchWasInstance()) {
-
-            boolean asCollection = false;
-            //            if(queryResults.wasQueryIntendedToMatchAnInstance() &&
-            // !thingifier.apiConfig().willReturnSingleGetItemsAsCollection()){
-            //                asCollection = false;
-            //            }
-
-            if (queryResults.wasQueryIntendedToMatchAnInstance()
-                    && thingifier.apiConfig().willReturnSingleGetItemsAsCollection()) {
-                asCollection = true;
-            }
-
-            if (queryResults.isResultACollection()
-                    && !queryResults.wasQueryIntendedToMatchAnInstance()) {
-                asCollection = true;
-            }
-
-            if (asCollection) {
-                // if we asked for /projects then we should always return a collection
-                return ApiResponse.success()
-                        .returnInstanceCollection(queryResults.getListEntityInstances());
-            } else {
-                return ApiResponse.success().returnSingleInstance(queryResults.getLastInstance());
-            }
-
-        } else {
-
-            return ApiResponse.success()
-                    .returnInstanceCollection(queryItems)
-                    .resultContainsType(queryResults.resultContainsDefn());
-        }
+        return new ThingReadResultApiMapper(thingifier.apiConfig()).map(url, queryResults);
     }
 }

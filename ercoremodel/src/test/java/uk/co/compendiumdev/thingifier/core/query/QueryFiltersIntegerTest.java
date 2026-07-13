@@ -58,12 +58,7 @@ public class QueryFiltersIntegerTest {
         QueryFilterParams params = new QueryFilterParams();
         params.put("int", "1");
 
-        RepositoryUrlQuery queryResults =
-                new RepositoryUrlQuery(
-                                erModel.getSchema(),
-                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
-                                "things")
-                        .performQuery(params);
+        RepositoryQuery queryResults = queryThings(params);
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
         List<EntityInstance> instances = queryResults.getListEntityInstances();
         Assertions.assertEquals(1, instances.size(), "expected 1 value");
@@ -77,12 +72,7 @@ public class QueryFiltersIntegerTest {
         params.put("int", "!1");
         params.put("sortby", "+int");
 
-        RepositoryUrlQuery queryResults =
-                new RepositoryUrlQuery(
-                                erModel.getSchema(),
-                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
-                                "things")
-                        .performQuery(params);
+        RepositoryQuery queryResults = queryThings(params);
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
         List<EntityInstance> instances = queryResults.getListEntityInstances();
         Assertions.assertEquals(3, instances.size(), "expected 3 value");
@@ -99,12 +89,7 @@ public class QueryFiltersIntegerTest {
         params.put("int", "!3"); // and not equal to 3
         params.put("sortby", "+int");
 
-        RepositoryUrlQuery queryResults =
-                new RepositoryUrlQuery(
-                                erModel.getSchema(),
-                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
-                                "things")
-                        .performQuery(params);
+        RepositoryQuery queryResults = queryThings(params);
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
         List<EntityInstance> instances = queryResults.getListEntityInstances();
         Assertions.assertEquals(2, instances.size(), "expected 2 value");
@@ -118,12 +103,7 @@ public class QueryFiltersIntegerTest {
         params.put("int", ">1");
         params.put("sortby", "+int");
 
-        RepositoryUrlQuery queryResults =
-                new RepositoryUrlQuery(
-                                erModel.getSchema(),
-                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
-                                "things")
-                        .performQuery(params);
+        RepositoryQuery queryResults = queryThings(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
         List<EntityInstance> instances = queryResults.getListEntityInstances();
@@ -139,12 +119,7 @@ public class QueryFiltersIntegerTest {
         params.put("int", "<2");
         params.put("sortby", "+int");
 
-        RepositoryUrlQuery queryResults =
-                new RepositoryUrlQuery(
-                                erModel.getSchema(),
-                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
-                                "things")
-                        .performQuery(params);
+        RepositoryQuery queryResults = queryThings(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
         List<EntityInstance> instances = queryResults.getListEntityInstances();
@@ -158,12 +133,7 @@ public class QueryFiltersIntegerTest {
         params.put("int", "<1");
         params.put("sortby", "+int");
 
-        RepositoryUrlQuery queryResults =
-                new RepositoryUrlQuery(
-                                erModel.getSchema(),
-                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
-                                "things")
-                        .performQuery(params);
+        RepositoryQuery queryResults = queryThings(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
         List<EntityInstance> instances = queryResults.getListEntityInstances();
@@ -176,12 +146,7 @@ public class QueryFiltersIntegerTest {
         params.put("int", ">=3");
         params.put("sortby", "+int");
 
-        RepositoryUrlQuery queryResults =
-                new RepositoryUrlQuery(
-                                erModel.getSchema(),
-                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
-                                "things")
-                        .performQuery(params);
+        RepositoryQuery queryResults = queryThings(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
         List<EntityInstance> instances = queryResults.getListEntityInstances();
@@ -196,12 +161,7 @@ public class QueryFiltersIntegerTest {
         params.put("int", "<=3");
         params.put("sortby", "+int");
 
-        RepositoryUrlQuery queryResults =
-                new RepositoryUrlQuery(
-                                erModel.getSchema(),
-                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
-                                "things")
-                        .performQuery(params);
+        RepositoryQuery queryResults = queryThings(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
         List<EntityInstance> instances = queryResults.getListEntityInstances();
@@ -217,12 +177,7 @@ public class QueryFiltersIntegerTest {
         params.put("int", "<3");
         params.put("sortby", "-int");
 
-        RepositoryUrlQuery queryResults =
-                new RepositoryUrlQuery(
-                                erModel.getSchema(),
-                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
-                                "things")
-                        .performQuery(params);
+        RepositoryQuery queryResults = queryThings(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
         List<EntityInstance> instances = queryResults.getListEntityInstances();
@@ -236,12 +191,7 @@ public class QueryFiltersIntegerTest {
         QueryFilterParams params = new QueryFilterParams();
         params.put("sortby", "-int");
 
-        RepositoryUrlQuery queryResults =
-                new RepositoryUrlQuery(
-                                erModel.getSchema(),
-                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
-                                "things")
-                        .performQuery(params);
+        RepositoryQuery queryResults = queryThings(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
         List<EntityInstance> instances = queryResults.getListEntityInstances();
@@ -257,12 +207,7 @@ public class QueryFiltersIntegerTest {
         QueryFilterParams params = new QueryFilterParams();
         params.put("sortby", "+int");
 
-        RepositoryUrlQuery queryResults =
-                new RepositoryUrlQuery(
-                                erModel.getSchema(),
-                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
-                                "things")
-                        .performQuery(params);
+        RepositoryQuery queryResults = queryThings(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
         List<EntityInstance> instances = queryResults.getListEntityInstances();
@@ -279,17 +224,20 @@ public class QueryFiltersIntegerTest {
         params.put("int", "~=[1,2]");
         params.put("sortby", "+int");
 
-        RepositoryUrlQuery queryResults =
-                new RepositoryUrlQuery(
-                                erModel.getSchema(),
-                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
-                                "things")
-                        .performQuery(params);
+        RepositoryQuery queryResults = queryThings(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
         List<EntityInstance> instances = queryResults.getListEntityInstances();
         Assertions.assertEquals(2, instances.size(), "expected 3 values");
         Assertions.assertEquals(1, instances.get(0).getFieldValue("int").asInteger());
         Assertions.assertEquals(2, instances.get(1).getFieldValue("int").asInteger());
+    }
+
+    private RepositoryQuery queryThings(final QueryFilterParams params) {
+        return new RepositoryQuery(
+                        erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
+                        RepositoryQuerySpec.collection(
+                                erModel.getSchema().getEntityDefinitionNamed("thing")))
+                .performQuery(params);
     }
 }

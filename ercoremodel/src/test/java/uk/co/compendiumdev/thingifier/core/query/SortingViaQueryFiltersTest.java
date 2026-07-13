@@ -51,12 +51,7 @@ public class SortingViaQueryFiltersTest {
         QueryFilterParams params = new QueryFilterParams();
         params.put("sortBy", "-int");
 
-        RepositoryUrlQuery ascSortedResults =
-                new RepositoryUrlQuery(
-                                erModel.getSchema(),
-                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
-                                "things")
-                        .performQuery(params);
+        RepositoryQuery ascSortedResults = queryCollection(erModel, thing, params);
 
         Assertions.assertTrue(
                 ascSortedResults.isResultACollection(), "result should be a collection");
@@ -70,12 +65,7 @@ public class SortingViaQueryFiltersTest {
         params = new QueryFilterParams();
         params.put("sortBy", "+int");
 
-        RepositoryUrlQuery descSortedResults =
-                new RepositoryUrlQuery(
-                                erModel.getSchema(),
-                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
-                                "things")
-                        .performQuery(params);
+        RepositoryQuery descSortedResults = queryCollection(erModel, thing, params);
 
         final List<EntityInstance> descInstances = descSortedResults.getListEntityInstances();
         Assertions.assertEquals(3, descInstances.size(), "expected 3 values");
@@ -87,12 +77,7 @@ public class SortingViaQueryFiltersTest {
         params = new QueryFilterParams();
         params.put("sortBy", "int");
 
-        RepositoryUrlQuery defaultSortedResults =
-                new RepositoryUrlQuery(
-                                erModel.getSchema(),
-                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
-                                "things")
-                        .performQuery(params);
+        RepositoryQuery defaultSortedResults = queryCollection(erModel, thing, params);
 
         final List<EntityInstance> defaultSortedInstances =
                 defaultSortedResults.getListEntityInstances();
@@ -128,12 +113,7 @@ public class SortingViaQueryFiltersTest {
         QueryFilterParams params = new QueryFilterParams();
         params.put("sortBy", "-truefalse");
 
-        RepositoryUrlQuery ascSortedResults =
-                new RepositoryUrlQuery(
-                                aThingifier.getSchema(),
-                                aThingifier.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
-                                "things")
-                        .performQuery(params);
+        RepositoryQuery ascSortedResults = queryCollection(aThingifier, thing, params);
 
         Assertions.assertTrue(
                 ascSortedResults.isResultACollection(), "result should be a collection");
@@ -147,12 +127,7 @@ public class SortingViaQueryFiltersTest {
         params = new QueryFilterParams();
         params.put("sortBy", "+truefalse");
 
-        RepositoryUrlQuery descSortedResults =
-                new RepositoryUrlQuery(
-                                aThingifier.getSchema(),
-                                aThingifier.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
-                                "things")
-                        .performQuery(params);
+        RepositoryQuery descSortedResults = queryCollection(aThingifier, thing, params);
 
         final List<EntityInstance> descInstances = descSortedResults.getListEntityInstances();
         Assertions.assertEquals(2, descInstances.size(), "expected 2 values");
@@ -163,17 +138,22 @@ public class SortingViaQueryFiltersTest {
         params = new QueryFilterParams();
         params.put("sortBy", "truefalse");
 
-        RepositoryUrlQuery defaultSortedResults =
-                new RepositoryUrlQuery(
-                                aThingifier.getSchema(),
-                                aThingifier.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
-                                "things")
-                        .performQuery(params);
+        RepositoryQuery defaultSortedResults = queryCollection(aThingifier, thing, params);
 
         final List<EntityInstance> defaultSortedInstances =
                 defaultSortedResults.getListEntityInstances();
         Assertions.assertEquals(2, defaultSortedInstances.size(), "expected 2 values");
         Assertions.assertEquals(falseThing, defaultSortedInstances.get(0));
         Assertions.assertEquals(trueThing, defaultSortedInstances.get(1));
+    }
+
+    private RepositoryQuery queryCollection(
+            final EntityRelModel model,
+            final EntityDefinition entity,
+            final QueryFilterParams params) {
+        return new RepositoryQuery(
+                        model.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
+                        RepositoryQuerySpec.collection(entity))
+                .performQuery(params);
     }
 }

@@ -17,6 +17,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.F
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
+import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
 
 public class RelationshipBodyCommandParserTest {
 
@@ -65,14 +66,20 @@ public class RelationshipBodyCommandParserTest {
                                 EntityInstanceDraft.forEntity(project)
                                         .withField("title", "Project"));
 
-        Assertions.assertTrue(
-                RepositoryRouteQuery.canHandle(
-                        thingifier.getERmodel().getSchema(),
-                        String.format("project/%s/tasks", projectInstance.getPrimaryKeyValue())));
+        ThingReadRequestMapper mapper = new ThingReadRequestMapper(thingifier);
+
         Assertions.assertFalse(
-                RepositoryRouteQuery.canHandle(
-                        thingifier.getERmodel().getSchema(),
-                        String.format("project/%s/task", projectInstance.getPrimaryKeyValue())));
+                mapper.map(
+                                String.format(
+                                        "project/%s/tasks", projectInstance.getPrimaryKeyValue()),
+                                new QueryFilterParams())
+                        .isError());
+        Assertions.assertTrue(
+                mapper.map(
+                                String.format(
+                                        "project/%s/task", projectInstance.getPrimaryKeyValue()),
+                                new QueryFilterParams())
+                        .isError());
     }
 
     private Thingifier taskProjectThingifier() {
