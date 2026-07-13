@@ -19,7 +19,6 @@ import uk.co.compendiumdev.thingifier.api.http.headers.headerparser.BasicAuthHea
 import uk.co.compendiumdev.thingifier.api.http.headers.headerparser.BearerAuthHeaderParser;
 import uk.co.compendiumdev.thingifier.api.http.headers.headerparser.ContentTypeHeaderParser;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
-import uk.co.compendiumdev.thingifier.api.restapihandlers.ThingCreation;
 import uk.co.compendiumdev.thingifier.application.internalhttp.InternalHttpRequest;
 import uk.co.compendiumdev.thingifier.application.internalhttpconversion.HttpApiResponseToInternalHttpResponse;
 import uk.co.compendiumdev.thingifier.application.internalhttpconversion.InternalHttpRequestToHttpApiRequest;
@@ -308,11 +307,14 @@ public class AuthRoutes {
                     if (httpApiResponse == null) {
 
                         ApiResponse response =
-                                new ThingCreation(this.secretNoteStore)
-                                        .with(
-                                                new BodyParser(myRequest, List.of("secretnote")),
-                                                this.secretNote,
-                                                EntityRelModel.DEFAULT_DATABASE_NAME);
+                                this.secretNoteStore
+                                        .api()
+                                        .post(
+                                                "secretnote",
+                                                new BodyParser(
+                                                        myRequest,
+                                                        this.secretNoteStore.getThingNames()),
+                                                myRequest.getHeaders());
                         if (!response.isErrorResponse()) {
 
                             EntityInstance returnedInstance = response.getReturnedInstance();

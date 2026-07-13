@@ -4,6 +4,13 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import uk.co.compendiumdev.thingifier.application.command.AmendThingCommand;
+import uk.co.compendiumdev.thingifier.application.command.ConnectExistingRelationshipCommand;
+import uk.co.compendiumdev.thingifier.application.command.CreateAndConnectRelationshipCommand;
+import uk.co.compendiumdev.thingifier.application.command.CreateThingCommand;
+import uk.co.compendiumdev.thingifier.application.command.DeleteThingCommand;
+import uk.co.compendiumdev.thingifier.application.command.DisconnectRelationshipCommand;
+import uk.co.compendiumdev.thingifier.application.command.ThingWriteCommand;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
@@ -19,6 +26,51 @@ public final class ThingCommandService {
 
     public ThingCommandService(final ThingStore store) {
         this.store = store;
+    }
+
+    public ThingCommandResult execute(final ThingWriteCommand command) {
+        if (command instanceof CreateThingCommand) {
+            CreateThingCommand create = (CreateThingCommand) command;
+            return create(
+                    create.getDraft(),
+                    create.getRelationships(),
+                    create.shouldValidateFinalRelationships());
+        }
+
+        if (command instanceof AmendThingCommand) {
+            AmendThingCommand amend = (AmendThingCommand) command;
+            return amend(
+                    amend.getInstance(),
+                    amend.getDraft(),
+                    amend.shouldReplaceExistingFieldsAndRelationships(),
+                    amend.getRelationships());
+        }
+
+        if (command instanceof DeleteThingCommand) {
+            return delete(((DeleteThingCommand) command).getInstance());
+        }
+
+        if (command instanceof ConnectExistingRelationshipCommand) {
+            ConnectExistingRelationshipCommand connect =
+                    (ConnectExistingRelationshipCommand) command;
+            return connectRelationship(
+                    connect.getParent(), connect.getRelationshipName(), connect.getChild(), false);
+        }
+
+        if (command instanceof CreateAndConnectRelationshipCommand) {
+            return createAndConnect((CreateAndConnectRelationshipCommand) command);
+        }
+
+        if (command instanceof DisconnectRelationshipCommand) {
+            DisconnectRelationshipCommand disconnect = (DisconnectRelationshipCommand) command;
+            return disconnectRelationship(
+                    disconnect.getParent(),
+                    disconnect.getChild(),
+                    disconnect.getRelationshipName());
+        }
+
+        return ThingCommandResult.error(
+                String.format("Unsupported command %s", command.getClass().getSimpleName()));
     }
 
     public ThingCommandResult create(
@@ -137,6 +189,26 @@ public final class ThingCommandService {
     public ThingCommandResult connectRelationships(
             final EntityInstance instance, final List<RelationshipConnection> relationships) {
         return connectRelationships(instance, relationships, true);
+    }
+
+    private ThingCommandResult createAndConnect(final CreateAndConnectRelationshipCommand command) {
+        ThingCommandResult createResult =
+                create(command.getChildDraft(), command.getChildRelationships(), false);
+        if (createResult.isError()) {
+            return createResult;
+        }
+
+        ThingCommandResult connectResult =
+                connectRelationship(
+                        command.getParent(),
+                        command.getRelationshipName(),
+                        createResult.getInstance(),
+                        true);
+        if (connectResult.isError()) {
+            return connectResult.withRolledBackCreatedInstance();
+        }
+
+        return ThingCommandResult.success(createResult.getInstance());
     }
 
     private ThingCommandResult connectRelationships(

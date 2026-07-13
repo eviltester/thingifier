@@ -62,12 +62,7 @@ public class QueryFiltersBooleanTest {
         QueryFilterParams params = new QueryFilterParams();
         params.put("truefalse", "true");
 
-        RepositoryUrlQuery queryResults =
-                new RepositoryUrlQuery(
-                                erModel.getSchema(),
-                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
-                                "things")
-                        .performQuery(params);
+        RepositoryQuery queryResults = queryThings(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
         List<EntityInstance> instances = queryResults.getListEntityInstances();
@@ -80,12 +75,7 @@ public class QueryFiltersBooleanTest {
         QueryFilterParams params = new QueryFilterParams();
         params.put("truefalse", "false");
 
-        RepositoryUrlQuery queryResults =
-                new RepositoryUrlQuery(
-                                erModel.getSchema(),
-                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
-                                "things")
-                        .performQuery(params);
+        RepositoryQuery queryResults = queryThings(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
         List<EntityInstance> instances = queryResults.getListEntityInstances();
@@ -97,12 +87,7 @@ public class QueryFiltersBooleanTest {
         QueryFilterParams params = new QueryFilterParams();
         params.put("truefalse", "!false");
 
-        RepositoryUrlQuery queryResults =
-                new RepositoryUrlQuery(
-                                erModel.getSchema(),
-                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
-                                "things")
-                        .performQuery(params);
+        RepositoryQuery queryResults = queryThings(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
         List<EntityInstance> instances = queryResults.getListEntityInstances();
@@ -114,12 +99,7 @@ public class QueryFiltersBooleanTest {
         QueryFilterParams params = new QueryFilterParams();
         params.put("truefalse", "!true");
 
-        RepositoryUrlQuery queryResults =
-                new RepositoryUrlQuery(
-                                erModel.getSchema(),
-                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
-                                "things")
-                        .performQuery(params);
+        RepositoryQuery queryResults = queryThings(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
         List<EntityInstance> instances = queryResults.getListEntityInstances();
@@ -131,12 +111,7 @@ public class QueryFiltersBooleanTest {
         QueryFilterParams params = new QueryFilterParams();
         params.put("sortBy", "+truefalse");
 
-        RepositoryUrlQuery queryResults =
-                new RepositoryUrlQuery(
-                                erModel.getSchema(),
-                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
-                                "things")
-                        .performQuery(params);
+        RepositoryQuery queryResults = queryThings(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
         List<EntityInstance> instances = queryResults.getListEntityInstances();
@@ -153,12 +128,7 @@ public class QueryFiltersBooleanTest {
         QueryFilterParams params = new QueryFilterParams();
         params.put("sortBy", "-truefalse");
 
-        RepositoryUrlQuery queryResults =
-                new RepositoryUrlQuery(
-                                erModel.getSchema(),
-                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
-                                "things")
-                        .performQuery(params);
+        RepositoryQuery queryResults = queryThings(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
         List<EntityInstance> instances = queryResults.getListEntityInstances();
@@ -168,5 +138,13 @@ public class QueryFiltersBooleanTest {
         Assertions.assertEquals(true, instances.get(1).getFieldValue("truefalse").asBoolean());
         Assertions.assertEquals(true, instances.get(2).getFieldValue("truefalse").asBoolean());
         Assertions.assertEquals(false, instances.get(3).getFieldValue("truefalse").asBoolean());
+    }
+
+    private RepositoryQuery queryThings(final QueryFilterParams params) {
+        return new RepositoryQuery(
+                        erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
+                        RepositoryQuerySpec.collection(
+                                erModel.getSchema().getEntityDefinitionNamed("thing")))
+                .performQuery(params);
     }
 }

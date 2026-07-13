@@ -16,7 +16,8 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.Optio
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
-import uk.co.compendiumdev.thingifier.core.query.RepositoryUrlQuery;
+import uk.co.compendiumdev.thingifier.core.query.RepositoryQuery;
+import uk.co.compendiumdev.thingifier.core.query.RepositoryQuerySpec;
 import uk.co.compendiumdev.thingifier.core.reporting.ERModelReport;
 import uk.co.compendiumdev.thingifier.core.reporting.RepositoryJsonExporter;
 import uk.co.compendiumdev.thingifier.core.repository.inmemory.InMemoryThingStore;
@@ -331,8 +332,11 @@ public class ThingStoreContractTest {
             Assertions.assertEquals(
                     2, reopened.relationships().listRelated(project, "tasks").size());
 
-            RepositoryUrlQuery query =
-                    new RepositoryUrlQuery(schema, reopened, "project/1/tasks")
+            RepositoryQuery query =
+                    new RepositoryQuery(
+                                    reopened,
+                                    RepositoryQuerySpec.relationship(
+                                            projectDefinition, "1", "tasks"))
                             .performQuery(params);
 
             Assertions.assertTrue(query.isResultACollection());

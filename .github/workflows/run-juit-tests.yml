@@ -8,9 +8,24 @@ on:
 
 
 jobs:
+  format:
+    runs-on: ubuntu-latest
+    name: Java formatting
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: maven
+      - name: Check Java formatting
+        run: mvn -B spotless:check
+
   build:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         # list of Java versions
         #java: [ 8, 8.0.192, 9.0.x, 10, 11.0.x, 11.0.3, 12, 13 ]
@@ -24,7 +39,5 @@ jobs:
           distribution: temurin
           java-version: ${{ matrix.java }}
           cache: maven
-      - name: Check Java formatting
-        run: mvn -B spotless:check
       - name: Build with Maven
         run: mvn -B clean test
