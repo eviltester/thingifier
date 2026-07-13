@@ -13,28 +13,33 @@ import uk.co.compendiumdev.challenger.restassured.api.RestAssuredBaseTest;
 public class C034GetChallengerSessionForRestoringTest extends RestAssuredBaseTest {
 
     @Test
-    public void canGetChallengerSession(){
+    public void canGetChallengerSession() {
 
         Assertions.assertNotNull(xChallenger);
-        Assertions.assertTrue(xChallenger.length()>5);
+        Assertions.assertTrue(xChallenger.length() > 5);
 
-        Response cResponse = RestAssured.
-                given().
-                header("X-CHALLENGER", xChallenger).
-                accept("application/json").
-                get(apiPath("/challenger/" + xChallenger)).
-                then().
-                statusCode(200).
-                contentType(ContentType.JSON).and().extract().response();
+        Response cResponse =
+                RestAssured.given()
+                        .header("X-CHALLENGER", xChallenger)
+                        .accept("application/json")
+                        .get(apiPath("/challenger/" + xChallenger))
+                        .then()
+                        .statusCode(200)
+                        .contentType(ContentType.JSON)
+                        .and()
+                        .extract()
+                        .response();
 
-        Challenger challengerResponse = new Gson().fromJson(cResponse.body().asString(), Challenger.class);
+        Challenger challengerResponse =
+                new Gson().fromJson(cResponse.body().asString(), Challenger.class);
 
-        Assertions.assertTrue(challengerResponse.challengeStatus.GET_RESTORABLE_CHALLENGER_PROGRESS_STATUS);
+        Assertions.assertTrue(
+                challengerResponse.challengeStatus.GET_RESTORABLE_CHALLENGER_PROGRESS_STATUS);
 
         ChallengesStatus statuses = new ChallengesStatus();
         statuses.get();
-        Assertions.assertTrue(statuses.getChallengeNamed("GET /challenger/guid (existing X-CHALLENGER)").status,
+        Assertions.assertTrue(
+                statuses.getChallengeNamed("GET /challenger/guid (existing X-CHALLENGER)").status,
                 "challenge not passed");
-
     }
 }

@@ -8,7 +8,7 @@ public class SparkAsText {
 
         StringBuilder output = new StringBuilder();
 
-        output.append(String.format("%s %s",request.requestMethod(), request.url()));
+        output.append(String.format("%s %s", request.requestMethod(), request.url()));
         output.append("\n");
 
         output.append("\n");
@@ -16,8 +16,8 @@ public class SparkAsText {
         output.append("\n");
         output.append("============");
         output.append("\n");
-        for(String queryParam : request.queryParams()){
-            output.append(String.format("%s: %s",queryParam, request.queryParams(queryParam)));
+        for (String queryParam : request.queryParams()) {
+            output.append(String.format("%s: %s", queryParam, request.queryParams(queryParam)));
             output.append("\n");
         }
 
@@ -34,8 +34,8 @@ public class SparkAsText {
         output.append("\n");
         output.append("=======");
         output.append("\n");
-        for(String header : request.headers()){
-            output.append(String.format("%s: %s",header, request.headers(header)));
+        for (String header : request.headers()) {
+            output.append(String.format("%s: %s", header, request.headers(header)));
             output.append("\n");
         }
         output.append("\n");

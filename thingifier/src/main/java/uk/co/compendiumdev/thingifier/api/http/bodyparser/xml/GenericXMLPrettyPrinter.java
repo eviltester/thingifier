@@ -3,10 +3,10 @@ package uk.co.compendiumdev.thingifier.api.http.bodyparser.xml;
 public class GenericXMLPrettyPrinter {
 
     /*
-        a very basic and crude 'pretty printer
-        for html or xml - assumes valid xml
-        XMLParserFactory.create(someXml, new ArrayList<>()).prettyPrint();
-     */
+       a very basic and crude 'pretty printer
+       for html or xml - assumes valid xml
+       XMLParserFactory.create(someXml, new ArrayList<>()).prettyPrint();
+    */
     public String prettyPrint(final String someXml) {
 
         int indentLevel = 0;
@@ -17,18 +17,17 @@ public class GenericXMLPrettyPrinter {
             char c = process.charAt(i);
             switch (c) {
                 case '<':
-                    if(process.charAt(i+1)=='/'){
+                    if (process.charAt(i + 1) == '/') {
                         indentLevel--;
-                        if(endTag){
+                        if (endTag) {
                             // this is wrapping end tag
                             sb.append(String.format("%n"));
                             indent(sb, indentLevel);
-
                         }
-                        endTag=true;
-                    }else{
-                        endTag=false;
-                        if(i!=0){
+                        endTag = true;
+                    } else {
+                        endTag = false;
+                        if (i != 0) {
                             indentLevel++;
                             sb.append(String.format("%n"));
                         }
@@ -40,9 +39,9 @@ public class GenericXMLPrettyPrinter {
                     sb.append("&gt;");
                     break;
                 case '/':
-                    if(process.charAt(i+1)=='>'){
+                    if (process.charAt(i + 1) == '>') {
                         // handle self closing empty tags
-                        endTag=true;
+                        endTag = true;
                         indentLevel--;
                     }
                     sb.append("/");
@@ -60,7 +59,7 @@ public class GenericXMLPrettyPrinter {
 
     private void indent(final StringBuilder sb, final int indentLevel) {
         String indentAs = "  ";
-        for(int spaceCount=0;spaceCount<indentLevel;spaceCount++){
+        for (int spaceCount = 0; spaceCount < indentLevel; spaceCount++) {
             sb.append(indentAs);
         }
     }

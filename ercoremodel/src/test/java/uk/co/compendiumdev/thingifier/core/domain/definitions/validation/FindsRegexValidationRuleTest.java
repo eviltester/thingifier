@@ -9,77 +9,62 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.Fie
 class FindsRegexValidationRuleTest {
 
     @Test
-    void ruleFailsWhenNotSatisfied(){
+    void ruleFailsWhenNotSatisfied() {
 
         Field field = Field.is("name", FieldType.STRING);
 
         final ValidationRule rule;
         rule = new FindsRegexValidationRule("rules");
 
-        Assertions.assertFalse(
-                rule.validates(
-                        FieldValue.is(field,"bob rooles init"))
-        );
+        Assertions.assertFalse(rule.validates(FieldValue.is(field, "bob rooles init")));
     }
 
     @Test
-    void canFindAStringInAText(){
+    void canFindAStringInAText() {
 
         Field field = Field.is("name", FieldType.STRING);
 
         final ValidationRule rule;
         rule = new FindsRegexValidationRule("rules");
 
-        Assertions.assertTrue(
-                rule.validates(
-                        FieldValue.is(field,"bob rules init"))
-        );
+        Assertions.assertTrue(rule.validates(FieldValue.is(field, "bob rules init")));
     }
 
     @Test
-    void canFindAStringAtStartOfText(){
+    void canFindAStringAtStartOfText() {
 
         Field field = Field.is("name", FieldType.STRING);
 
         final ValidationRule rule;
         rule = new FindsRegexValidationRule("bob");
 
-        Assertions.assertTrue(
-                rule.validates(
-                        FieldValue.is(field ,"bob rules init"))
-        );
+        Assertions.assertTrue(rule.validates(FieldValue.is(field, "bob rules init")));
     }
 
     @Test
-    void canFindAStringAtEndOfText(){
+    void canFindAStringAtEndOfText() {
 
         Field field = Field.is("name", FieldType.STRING);
 
         final ValidationRule rule;
         rule = new FindsRegexValidationRule("init");
 
-        Assertions.assertTrue(
-                rule.validates(
-                        FieldValue.is(field,"bob rules init"))
-        );
+        Assertions.assertTrue(rule.validates(FieldValue.is(field, "bob rules init")));
     }
 
     @Test
-    void canFindARegexInText(){
+    void canFindARegexInText() {
 
         Field field = Field.is("name", FieldType.STRING);
 
         final ValidationRule rule;
         rule = new FindsRegexValidationRule(".n[ieo]t");
 
-        Assertions.assertTrue(
-                rule.validates(
-                        FieldValue.is(field,"bob rules init"))
-        );
+        Assertions.assertTrue(rule.validates(FieldValue.is(field, "bob rules init")));
     }
 
     @Test
-    void validationMessageReturnsText(){
+    void validationMessageReturnsText() {
 
         Field field = Field.is("name", FieldType.STRING);
 
@@ -88,22 +73,19 @@ class FindsRegexValidationRuleTest {
         final String msg = rule.getErrorMessage(FieldValue.is(field, "bob"));
 
         Assertions.assertNotNull(msg);
-        Assertions.assertTrue(msg.trim().length()>0);
+        Assertions.assertTrue(msg.trim().length() > 0);
         Assertions.assertTrue(msg.contains(" ob"));
         Assertions.assertTrue(msg.contains("name"));
     }
 
     @Test
-    void canCreateRuleUsingVRule(){
+    void canCreateRuleUsingVRule() {
 
         Field field = Field.is("name", FieldType.STRING);
 
         final ValidationRule rule;
         rule = VRule.satisfiesRegex("rules");
 
-        Assertions.assertTrue(
-                rule.validates(
-                        FieldValue.is(field,"bob rules init"))
-        );
+        Assertions.assertTrue(rule.validates(FieldValue.is(field, "bob rules init")));
     }
 }

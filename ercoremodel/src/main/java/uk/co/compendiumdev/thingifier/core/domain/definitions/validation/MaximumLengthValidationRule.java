@@ -14,11 +14,11 @@ public class MaximumLengthValidationRule implements ValidationRule {
 
         final String stringValue = value.asString();
 
-        if(stringValue==null){
+        if (stringValue == null) {
             return true;
         }
 
-        if(stringValue.length()>maxLength){
+        if (stringValue.length() > maxLength) {
             return false;
         }
 

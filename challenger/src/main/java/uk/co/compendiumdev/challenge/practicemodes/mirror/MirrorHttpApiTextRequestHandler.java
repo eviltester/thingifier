@@ -1,8 +1,8 @@
 package uk.co.compendiumdev.challenge.practicemodes.mirror;
 
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
+import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeaderPair;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
-import uk.co.compendiumdev.thingifier.application.internalhttpconversion.StringPair;
 import uk.co.compendiumdev.thingifier.application.routehandlers.HttpApiRequestHandler;
 import uk.co.compendiumdev.thingifier.core.query.FilterBy;
 
@@ -23,7 +23,7 @@ public class MirrorHttpApiTextRequestHandler implements HttpApiRequestHandler {
     public String getRequestDetails(final HttpApiRequest myRequest) {
         StringBuilder output = new StringBuilder();
 
-        output.append(String.format("%s %s",myRequest.getVerb(), myRequest.getUrl()));
+        output.append(String.format("%s %s", myRequest.getVerb(), myRequest.getUrl()));
         output.append("\n");
 
         output.append("\n");
@@ -31,8 +31,9 @@ public class MirrorHttpApiTextRequestHandler implements HttpApiRequestHandler {
         output.append("\n");
         output.append("============");
         output.append("\n");
-        for(String queryParam : myRequest.getQueryParamNames()){
-            output.append(String.format("%s: %s",queryParam, myRequest.rawQueryParamsValue(queryParam)));
+        for (String queryParam : myRequest.getQueryParamNames()) {
+            output.append(
+                    String.format("%s: %s", queryParam, myRequest.rawQueryParamsValue(queryParam)));
             output.append("\n");
         }
 
@@ -41,8 +42,13 @@ public class MirrorHttpApiTextRequestHandler implements HttpApiRequestHandler {
         output.append("\n");
         output.append("============");
         output.append("\n");
-        for(FilterBy queryParam : myRequest.getFilterableQueryParams().toList()){
-            output.append(String.format("%s %s %s",queryParam.fieldName, queryParam.filterOperation, queryParam.fieldValue));
+        for (FilterBy queryParam : myRequest.getFilterableQueryParams().toList()) {
+            output.append(
+                    String.format(
+                            "%s %s %s",
+                            queryParam.fieldName,
+                            queryParam.filterOperation,
+                            queryParam.fieldValue));
             output.append("\n");
         }
 
@@ -59,8 +65,8 @@ public class MirrorHttpApiTextRequestHandler implements HttpApiRequestHandler {
         output.append("\n");
         output.append("=======");
         output.append("\n");
-        for(StringPair header : myRequest.getHeadersList()){
-            output.append(String.format("%s: %s",header.key, header.value));
+        for (HttpHeaderPair header : myRequest.getHeadersList()) {
+            output.append(String.format("%s: %s", header.key, header.value));
             output.append("\n");
         }
 
@@ -69,8 +75,8 @@ public class MirrorHttpApiTextRequestHandler implements HttpApiRequestHandler {
         output.append("\n");
         output.append("=======");
         output.append("\n");
-        for(String header : myRequest.getHeaders().asMap().keySet()){
-            output.append(String.format("%s: %s",header, myRequest.getHeader(header)));
+        for (String header : myRequest.getHeaders().asMap().keySet()) {
+            output.append(String.format("%s: %s", header, myRequest.getHeader(header)));
             output.append("\n");
         }
         output.append("\n");
@@ -83,5 +89,4 @@ public class MirrorHttpApiTextRequestHandler implements HttpApiRequestHandler {
         output.append("\n");
         return output.toString();
     }
-
 }

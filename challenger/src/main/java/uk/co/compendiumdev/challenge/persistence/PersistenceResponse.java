@@ -9,14 +9,15 @@ public class PersistenceResponse {
     private String errorMessage;
     private String databaseContents;
 
-    public PersistenceResponse(){
-        this.errorMessage="";
-        this.success=true;
-        this.authData=null;
-        this.databaseContents="";
+    public PersistenceResponse() {
+        this.errorMessage = "";
+        this.success = true;
+        this.authData = null;
+        this.databaseContents = "";
     }
+
     public PersistenceResponse withSuccess(final boolean successStatus) {
-        this.success=successStatus;
+        this.success = successStatus;
         return this;
     }
 
@@ -26,7 +27,7 @@ public class PersistenceResponse {
     }
 
     public PersistenceResponse withChallengerAuthData(final ChallengerAuthData authData) {
-        this.authData=authData;
+        this.authData = authData;
         return this;
     }
 

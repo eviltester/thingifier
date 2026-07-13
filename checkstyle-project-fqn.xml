@@ -1,0 +1,193 @@
+<?xml version="1.0"?>
+<!DOCTYPE module PUBLIC
+        "-//Checkstyle//DTD Checkstyle Configuration 1.3//EN"
+        "https://checkstyle.org/dtds/configuration_1_3.dtd">
+
+<module name="Checker">
+    <module name="SuppressionSingleFilter">
+        <property name="id" value="repositoryLegacySnapshotEscape"/>
+        <property name="files" value=".*[/\\]ercoremodel[/\\]src[/\\]main[/\\]java[/\\]uk[/\\]co[/\\]compendiumdev[/\\]thingifier[/\\]core[/\\]repository[/\\]inmemory[/\\]InMemoryEntityInstanceStore\.java"/>
+    </module>
+    <module name="SuppressionSingleFilter">
+        <property name="id" value="repositoryLegacySnapshotEscape"/>
+        <property name="files" value=".*[/\\]ercoremodel[/\\]src[/\\]main[/\\]java[/\\]uk[/\\]co[/\\]compendiumdev[/\\]thingifier[/\\]core[/\\]repository[/\\]inmemory[/\\]InMemoryThingStore\.java"/>
+    </module>
+    <module name="SuppressionSingleFilter">
+        <property name="id" value="repositoryEntityInstanceCollectionUse"/>
+        <property name="files" value=".*[/\\]ercoremodel[/\\]src[/\\]main[/\\]java[/\\]uk[/\\]co[/\\]compendiumdev[/\\]thingifier[/\\]core[/\\]repository[/\\]inmemory[/\\].*"/>
+    </module>
+    <module name="SuppressionSingleFilter">
+        <property name="id" value="repositoryEntityInstanceCollectionUse"/>
+        <property name="files" value=".*[/\\]ercoremodel[/\\]src[/\\]test[/\\]java[/\\]uk[/\\]co[/\\]compendiumdev[/\\]thingifier[/\\]core[/\\]repository[/\\]inmemory[/\\].*"/>
+    </module>
+    <module name="SuppressionSingleFilter">
+        <property name="id" value="repositoryEntityInstanceConstruction"/>
+        <property name="files" value=".*[/\\]ercoremodel[/\\]src[/\\]main[/\\]java[/\\]uk[/\\]co[/\\]compendiumdev[/\\]thingifier[/\\]core[/\\]domain[/\\]instances[/\\].*"/>
+    </module>
+    <module name="SuppressionSingleFilter">
+        <property name="id" value="repositoryEntityInstanceConstruction"/>
+        <property name="files" value=".*[/\\]ercoremodel[/\\]src[/\\]test[/\\]java[/\\]uk[/\\]co[/\\]compendiumdev[/\\]thingifier[/\\]core[/\\]domain[/\\]instances[/\\].*"/>
+    </module>
+    <module name="SuppressionSingleFilter">
+        <property name="id" value="repositoryEntityInstanceMutableFields"/>
+        <property name="files" value=".*[/\\]ercoremodel[/\\]src[/\\]main[/\\]java[/\\]uk[/\\]co[/\\]compendiumdev[/\\]thingifier[/\\]core[/\\]domain[/\\]instances[/\\].*"/>
+    </module>
+    <module name="SuppressionSingleFilter">
+        <property name="id" value="repositoryEntityInstanceMutableFields"/>
+        <property name="files" value=".*[/\\]ercoremodel[/\\]src[/\\]test[/\\]java[/\\]uk[/\\]co[/\\]compendiumdev[/\\]thingifier[/\\]core[/\\]domain[/\\]instances[/\\].*"/>
+    </module>
+    <module name="SuppressionSingleFilter">
+        <property name="id" value="repositoryEntityInstanceRelationshipsType"/>
+        <property name="files" value=".*[/\\]ercoremodel[/\\]src[/\\]main[/\\]java[/\\]uk[/\\]co[/\\]compendiumdev[/\\]thingifier[/\\]core[/\\]domain[/\\]instances[/\\].*"/>
+    </module>
+    <module name="SuppressionSingleFilter">
+        <property name="id" value="repositoryEntityInstanceRelationshipsType"/>
+        <property name="files" value=".*[/\\]ercoremodel[/\\]src[/\\]test[/\\]java[/\\]uk[/\\]co[/\\]compendiumdev[/\\]thingifier[/\\]core[/\\]domain[/\\]instances[/\\].*"/>
+    </module>
+    <module name="SuppressionSingleFilter">
+        <property name="id" value="entityInstanceDraftMaterialization"/>
+        <property name="files" value=".*[/\\]ercoremodel[/\\]src[/\\]main[/\\]java[/\\]uk[/\\]co[/\\]compendiumdev[/\\]thingifier[/\\]core[/\\]repository[/\\].*"/>
+    </module>
+    <module name="SuppressionSingleFilter">
+        <property name="id" value="entityInstanceDraftMaterialization"/>
+        <property name="files" value=".*[/\\]ercoremodel[/\\]src[/\\]test[/\\]java[/\\].*"/>
+    </module>
+    <module name="SuppressionSingleFilter">
+        <property name="id" value="repositoryMutableEntityInstanceUse"/>
+        <property name="files" value=".*[/\\]ercoremodel[/\\]src[/\\]main[/\\]java[/\\]uk[/\\]co[/\\]compendiumdev[/\\]thingifier[/\\]core[/\\]repository[/\\].*"/>
+    </module>
+    <module name="SuppressionSingleFilter">
+        <property name="id" value="repositoryMutableEntityInstanceUse"/>
+        <property name="files" value=".*[/\\].*[/\\]src[/\\]test[/\\]java[/\\].*"/>
+    </module>
+    <module name="SuppressionSingleFilter">
+        <property name="id" value="repositorySnapshotMaterialization"/>
+        <property name="files" value=".*[/\\]ercoremodel[/\\]src[/\\]main[/\\]java[/\\]uk[/\\]co[/\\]compendiumdev[/\\]thingifier[/\\]core[/\\]repository[/\\]MutableEntityInstance\.java"/>
+    </module>
+    <module name="SuppressionSingleFilter">
+        <property name="id" value="repositorySnapshotMaterialization"/>
+        <property name="files" value=".*[/\\]ercoremodel[/\\]src[/\\]main[/\\]java[/\\]uk[/\\]co[/\\]compendiumdev[/\\]thingifier[/\\]core[/\\]domain[/\\]instances[/\\]EntityInstance\.java"/>
+    </module>
+    <module name="TreeWalker">
+        <module name="RegexpSinglelineJava">
+            <property name="id" value="hiddenRepositoryTestSupport"/>
+            <property name="format" value="\b(ThingifierRepositoryTestSupport|EntityInstanceTestSupport|MutableEntityInstanceTestSupport|RepositoryUrlQueryTestSupport)\b"/>
+            <property name="ignoreComments" value="true"/>
+            <property name="message" value="Do not hide store/draft access behind broad test-support helpers; use EntityInstanceDraft and ThingStore ports directly."/>
+        </module>
+        <module name="RegexpSinglelineJava">
+            <property name="id" value="repositoryWriteTestSupportClass"/>
+            <property name="format" value="\bclass\s+\w*(Repository|Instance)\w*TestSupport\b"/>
+            <property name="ignoreComments" value="true"/>
+            <property name="message" value="Shared test support classes must not hide repository writes or mutable EntityInstance internals."/>
+        </module>
+        <module name="RegexpSinglelineJava">
+            <property name="id" value="entityInstanceDraftMaterialization"/>
+            <property name="format" value="\btoEntityInstance\s*\("/>
+            <property name="ignoreComments" value="true"/>
+            <property name="message" value="EntityInstanceDraft should describe changes only; materialize snapshots through MutableEntityInstance inside repository code or tests."/>
+        </module>
+        <module name="RegexpSinglelineJava">
+            <property name="id" value="entityInstanceRepositoryAccessUse"/>
+            <property name="format" value="\bEntityInstanceRepositoryAccess\b"/>
+            <property name="ignoreComments" value="true"/>
+            <property name="message" value="EntityInstanceRepositoryAccess is removed; use MutableEntityInstance in repository code or ThingStore ports."/>
+        </module>
+        <module name="RegexpSinglelineJava">
+            <property name="id" value="entityInstanceFromDraftUse"/>
+            <property name="format" value="\bEntityInstance\.fromDraft\s*\("/>
+            <property name="ignoreComments" value="true"/>
+            <property name="message" value="EntityInstance is a read-only snapshot; create persisted instances through ThingStore entity ports or repository-owned MutableEntityInstance."/>
+        </module>
+        <module name="RegexpSinglelineJava">
+            <property name="id" value="repositorySnapshotMaterialization"/>
+            <property name="format" value="\bEntityInstance\.repositorySnapshot\s*\("/>
+            <property name="ignoreComments" value="true"/>
+            <property name="message" value="EntityInstance.repositorySnapshot is a narrow materialization hook used only by MutableEntityInstance."/>
+        </module>
+        <module name="RegexpSinglelineJava">
+            <property name="id" value="repositoryMutableEntityInstanceUse"/>
+            <property name="format" value="\bMutableEntityInstance\b"/>
+            <property name="ignoreComments" value="true"/>
+            <property name="message" value="MutableEntityInstance is guarded for repository implementations; normal production code should use ThingStore ports."/>
+        </module>
+        <module name="RegexpSinglelineJava">
+            <property name="id" value="entityInstanceTestOnlyAutoIdHelpers"/>
+            <property name="format" value="\b(addAutoGUIDstoInstance|addAutoIncrementIdsToInstance)\b"/>
+            <property name="ignoreComments" value="true"/>
+            <property name="message" value="Auto ID generation belongs in ThingStore port tests and APIs, not EntityInstance test-only mutation helpers."/>
+        </module>
+        <module name="RegexpSinglelineJava">
+            <property name="id" value="repositoryLegacySnapshotEscape"/>
+            <property name="format" value="\b(getInstanceData|getThingInstancesNamed|getInstancesForSingularOrPluralNamedEntity|getThings|cloneWithDifferentData|createInstanceCollectionFor|getAllInstanceCollections|getInstanceCollectionForEntityNamed)\s*\("/>
+            <property name="ignoreComments" value="true"/>
+            <property name="message" value="Use repository-native APIs instead of legacy snapshot escape methods."/>
+        </module>
+        <module name="RegexpSinglelineJava">
+            <property name="id" value="repositoryEntityInstanceCollectionUse"/>
+            <property name="format" value="\b(EntityInstanceCollection|InMemoryEntityInstanceCollection)\b"/>
+            <property name="ignoreComments" value="true"/>
+            <property name="message" value="Thingifier and Challenger runtime code should use ThingStore ports instead of in-memory entity collections."/>
+        </module>
+        <module name="RegexpSinglelineJava">
+            <property name="id" value="repositorySimpleQueryUse"/>
+            <property name="format" value="\bSimpleQuery\b"/>
+            <property name="ignoreComments" value="true"/>
+            <property name="message" value="SimpleQuery is removed; use RepositoryQuery or repository APIs."/>
+        </module>
+        <module name="RegexpSinglelineJava">
+            <property name="id" value="repositoryEntityInstanceConstruction"/>
+            <property name="format" value="\bnew\s+EntityInstance\s*\("/>
+            <property name="ignoreComments" value="true"/>
+            <property name="message" value="Persisted EntityInstance creation must go through EntityInstanceDraft and a ThingStore entity port."/>
+        </module>
+        <module name="RegexpSinglelineJava">
+            <property name="id" value="repositoryEntityInstanceMutableFields"/>
+            <property name="format" value="\.getFields\s*\("/>
+            <property name="ignoreComments" value="true"/>
+            <property name="message" value="EntityInstance fields are mutable internals; use read-only field APIs or repository access."/>
+        </module>
+        <module name="RegexpSinglelineJava">
+            <property name="id" value="repositoryEntityInstanceRelationshipsType"/>
+            <property name="format" value="\b(EntityInstanceRelationships|RelationshipVectorInstance)\b"/>
+            <property name="ignoreComments" value="true"/>
+            <property name="message" value="Relationship state must be repository-owned; use ThingStore relationship ports instead of EntityInstance relationship internals."/>
+        </module>
+        <module name="RegexpSinglelineJava">
+            <property name="id" value="repositoryRelationshipEscape"/>
+            <property name="format" value="\b(getConnectedItems|getRelatedItems|materializeRelationshipsFor|materializeRelationshipsInvolving)\s*\("/>
+            <property name="ignoreComments" value="true"/>
+            <property name="message" value="Relationship traversal and materialization must go through ThingStore relationship ports."/>
+        </module>
+        <module name="RegexpSinglelineJava">
+            <property name="id" value="repositoryRelationshipMutationEscape"/>
+            <property name="format" value="EntityInstanceRepositoryAccess\.(connectRelationship|removeRelationshipsInvolving|removeAllRelationships|connectedItems|validateRelationships)\s*\("/>
+            <property name="ignoreComments" value="true"/>
+            <property name="message" value="Relationship writes and validation are repository-owned; do not mutate EntityInstance relationships through repository access bridges."/>
+        </module>
+        <module name="RegexpSinglelineJava">
+            <property name="id" value="relationshipRemovalCascadeLeak"/>
+            <property name="format" value="List&lt;EntityInstance&gt;\s+remove(Between|All)\s*\("/>
+            <property name="ignoreComments" value="true"/>
+            <property name="message" value="Public relationship removal must not expose cascade-delete EntityInstance lists; execute cascades inside the repository/store."/>
+        </module>
+        <module name="RegexpSinglelineJava">
+            <property name="id" value="repositoryRelationshipRuleDuplication"/>
+            <property name="format" value="\b(private|protected)\s+[\w&lt;&gt;\[\], ?]+\s+(assertRelationshipCardinalityAllows|validateRelationshipRow|instancesSubjectToMandatoryRelationship|rowRepresentsVectorForInstance|relationshipExistsBetween|countRowsForVector)\s*\("/>
+            <property name="ignoreComments" value="true"/>
+            <property name="message" value="Relationship rule decisions belong in repository.relationship.RelationshipRules; repositories should call the shared policy instead of duplicating private helpers."/>
+        </module>
+        <module name="RegexpSinglelineJava">
+            <property name="id" value="removedBroadThingRepositoryTypes"/>
+            <property name="format" value="\b(ThingRepository|ThingRepositoryProvider|ThingRepositoryProviderConfig|InMemoryThingRepository|SqliteThingRepository)\b"/>
+            <property name="ignoreComments" value="true"/>
+            <property name="message" value="The broad ThingRepository API has been split; use ThingStore, ThingStoreProvider, or focused store ports."/>
+        </module>
+        <module name="RegexpSinglelineJava">
+            <property name="id" value="productionDeprecatedApi"/>
+            <property name="format" value="@Deprecated\b"/>
+            <property name="ignoreComments" value="true"/>
+            <property name="message" value="Production code should not add @Deprecated APIs without an explicit static-analysis suppression."/>
+        </module>
+    </module>
+</module>

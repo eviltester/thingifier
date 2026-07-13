@@ -14,20 +14,17 @@ class RelationshipVectorTest {
     // vector is pretty much a data class
 
     @BeforeEach
-    void createDefaultTestVector(){
+    void createDefaultTestVector() {
         task = new EntityDefinition("task", "tasks");
         estimate = new EntityDefinition("estimate", "estimates");
 
         vector =
                 new RelationshipVectorDefinition(
-                        estimate,
-                        "estimate-of",
-                        task,
-                        Cardinality.ONE_TO_MANY());
+                        estimate, "estimate-of", task, Cardinality.ONE_TO_MANY());
     }
 
     @Test
-    void canCreateADefaultRelationshipVector(){
+    void canCreateADefaultRelationshipVector() {
 
         Assertions.assertEquals("*", vector.getCardinality().right());
         Assertions.assertEquals("estimate-of", vector.getName());
@@ -41,7 +38,6 @@ class RelationshipVectorTest {
 
         // at this point the vector hasn't been associated with a relationship definition yet
         Assertions.assertNull(vector.getRelationshipDefinition());
-
     }
 
     @Test
@@ -49,11 +45,10 @@ class RelationshipVectorTest {
 
         vector.setOptionality(Optionality.MANDATORY_RELATIONSHIP);
         Assertions.assertEquals(Optionality.MANDATORY_RELATIONSHIP, vector.getOptionality());
-
     }
 
     @Test
-    void canCreateAFullRelationshipVector(){
+    void canCreateAFullRelationshipVector() {
 
         final RelationshipDefinition rel = RelationshipDefinition.create(vector);
         Assertions.assertEquals(rel, vector.getRelationshipDefinition());

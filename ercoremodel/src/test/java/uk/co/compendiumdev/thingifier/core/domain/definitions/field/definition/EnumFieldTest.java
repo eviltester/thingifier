@@ -1,15 +1,14 @@
 package uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition;
 
+import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
 
-import java.util.List;
-
 class EnumFieldTest {
 
     @Test
-    void byDefaultAnEnumFieldIsEmpty(){
+    void byDefaultAnEnumFieldIsEmpty() {
 
         final Field field = Field.is("enum", FieldType.ENUM);
 
@@ -17,23 +16,23 @@ class EnumFieldTest {
     }
 
     @Test
-    void enumFieldCanHaveADefault(){
+    void enumFieldCanHaveADefault() {
         // todo: currently an enum is constructed by default and examples
         //  should it be withValue(), withDefaultValue()? and example is drawn from values
-        final Field field = Field.is("enum", FieldType.ENUM).
-                withDefaultValue("bob").
-                withExample("connie");
+        final Field field =
+                Field.is("enum", FieldType.ENUM).withDefaultValue("bob").withExample("connie");
 
         Assertions.assertEquals("bob", field.getDefaultValue().asString());
     }
 
     @Test
-    void examplesAreAllEnumValues(){
+    void examplesAreAllEnumValues() {
 
-        final Field field = Field.is("enum", FieldType.ENUM).
-                withDefaultValue("bob").
-                withExample("connie").
-                withExample("eris");
+        final Field field =
+                Field.is("enum", FieldType.ENUM)
+                        .withDefaultValue("bob")
+                        .withExample("connie")
+                        .withExample("eris");
 
         final List<String> examples = field.getExamples();
 
@@ -45,64 +44,47 @@ class EnumFieldTest {
     }
 
     @Test
-    void randomExampleIsOneOfTheEnumValues(){
+    void randomExampleIsOneOfTheEnumValues() {
 
-        final Field field = Field.is("enum", FieldType.ENUM).
-                withDefaultValue("bob").
-                withExample("connie").
-                withExample("eris");
+        final Field field =
+                Field.is("enum", FieldType.ENUM)
+                        .withDefaultValue("bob")
+                        .withExample("connie")
+                        .withExample("eris");
 
         final String validValues = "bob,connie,eris,";
-        for(int x=0; x<100;x++){
+        for (int x = 0; x < 100; x++) {
             String randomValue = field.getRandomExampleValue();
             Assertions.assertTrue(
-                    validValues.contains( randomValue + ","),
-                        "Did not expect example: " + randomValue);
+                    validValues.contains(randomValue + ","),
+                    "Did not expect example: " + randomValue);
         }
     }
 
     // todo: we should have a model verification stage that reports this as an error
     @Test
-    void whenNoExamplesSetupRandomIsEmpty(){
+    void whenNoExamplesSetupRandomIsEmpty() {
 
         final Field field = Field.is("enum", FieldType.ENUM);
 
-        Assertions.assertEquals("",
-                field.getRandomExampleValue());
+        Assertions.assertEquals("", field.getRandomExampleValue());
     }
 
     @Test
-    void canValidateAgainstDefaultAndExamples(){
+    void canValidateAgainstDefaultAndExamples() {
 
-        final Field field = Field.is("enum", FieldType.ENUM).
-                withDefaultValue("bob").
-                withExample("connie").
-                withExample("eris");
+        final Field field =
+                Field.is("enum", FieldType.ENUM)
+                        .withDefaultValue("bob")
+                        .withExample("connie")
+                        .withExample("eris");
 
-        Assertions.assertTrue(
-                field.validate(
-                        FieldValue.is(field, "bob"))
-                        .isValid()
-        );
+        Assertions.assertTrue(field.validate(FieldValue.is(field, "bob")).isValid());
 
-        Assertions.assertTrue(
-                field.validate(
-                        FieldValue.is(field, "connie"))
-                        .isValid()
-        );
+        Assertions.assertTrue(field.validate(FieldValue.is(field, "connie")).isValid());
 
-        Assertions.assertTrue(
-                field.validate(
-                        FieldValue.is(field, "eris"))
-                        .isValid()
-        );
+        Assertions.assertTrue(field.validate(FieldValue.is(field, "eris")).isValid());
 
-        Assertions.assertFalse(
-                field.validate(
-                        FieldValue.is(field, "dobbs"))
-                        .isValid()
-        );
-
-
+        Assertions.assertFalse(field.validate(FieldValue.is(field, "dobbs")).isValid());
     }
 }

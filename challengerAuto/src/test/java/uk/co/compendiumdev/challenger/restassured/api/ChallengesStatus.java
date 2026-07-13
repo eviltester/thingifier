@@ -1,49 +1,50 @@
 package uk.co.compendiumdev.challenger.restassured.api;
 
+import static uk.co.compendiumdev.challenger.restassured.api.RestAssuredBaseTest.xChallenger;
+
 import io.restassured.RestAssured;
+import java.util.ArrayList;
+import java.util.List;
 import uk.co.compendiumdev.challenger.payloads.Challenge;
 import uk.co.compendiumdev.challenger.payloads.Challenges;
 import uk.co.compendiumdev.sparkstart.Environment;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static uk.co.compendiumdev.challenger.restassured.api.RestAssuredBaseTest.xChallenger;
-
 public class ChallengesStatus {
-
 
     private Challenges challengeStatuses;
 
-    public ChallengesStatus(){
+    public ChallengesStatus() {
         challengeStatuses = new Challenges();
         challengeStatuses.challenges = new ArrayList<>();
     }
 
-    public List<Challenge> get(){
+    public List<Challenge> get() {
 
         getFor(xChallenger);
 
         return challengeStatuses.challenges;
     }
 
-    public List<Challenge> getFor(String aChallenger){
+    public List<Challenge> getFor(String aChallenger) {
 
-        challengeStatuses = RestAssured.
-                given().
-                header("X-CHALLENGER", aChallenger).
-                accept("application/json").
-                get(Environment.getEnv("/challenges")).
-                then().
-                statusCode(200).
-                and().extract().response().as(Challenges.class);
+        challengeStatuses =
+                RestAssured.given()
+                        .header("X-CHALLENGER", aChallenger)
+                        .accept("application/json")
+                        .get(Environment.getEnv("/challenges"))
+                        .then()
+                        .statusCode(200)
+                        .and()
+                        .extract()
+                        .response()
+                        .as(Challenges.class);
 
         return challengeStatuses.challenges;
     }
 
-    public Challenge getChallengeNamed(String name){
-        for(Challenge challenge : challengeStatuses.challenges){
-            if(challenge.name.equals(name)){
+    public Challenge getChallengeNamed(String name) {
+        for (Challenge challenge : challengeStatuses.challenges) {
+            if (challenge.name.equals(name)) {
                 return challenge;
             }
         }

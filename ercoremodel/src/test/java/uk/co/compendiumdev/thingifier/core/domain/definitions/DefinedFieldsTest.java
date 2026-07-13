@@ -1,21 +1,19 @@
 package uk.co.compendiumdev.thingifier.core.domain.definitions;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 
-import java.util.ArrayList;
-import java.util.List;
-
 class DefinedFieldsTest {
-
 
     private DefinedFields multipleFields;
 
     @Test
-    void initiallyNoFields(){
+    void initiallyNoFields() {
         DefinedFields fields = new DefinedFields();
 
         final List<String> orderedFieldNames = fields.getFieldNames();
@@ -23,7 +21,7 @@ class DefinedFieldsTest {
     }
 
     @Test
-    void fieldNamesAreAddedInOrder(){
+    void fieldNamesAreAddedInOrder() {
 
         DefinedFields fields = new DefinedFields();
         fields.addField(Field.is("zacharay", FieldType.STRING));
@@ -41,7 +39,7 @@ class DefinedFieldsTest {
     }
 
     @Test
-    void canAddFieldsInBulk(){
+    void canAddFieldsInBulk() {
 
         DefinedFields fields = new DefinedFields();
         fields.addField(Field.is("zacharay", FieldType.STRING));
@@ -57,7 +55,7 @@ class DefinedFieldsTest {
     }
 
     @Test
-    void canReportOnFieldExistence(){
+    void canReportOnFieldExistence() {
 
         DefinedFields fields = new DefinedFields();
         fields.addField(Field.is("zacharay", FieldType.STRING));
@@ -67,7 +65,7 @@ class DefinedFieldsTest {
     }
 
     @Test
-    void canGetExistingFields(){
+    void canGetExistingFields() {
 
         DefinedFields fields = new DefinedFields();
         fields.addField(Field.is("zacharay", FieldType.STRING));
@@ -81,9 +79,8 @@ class DefinedFieldsTest {
         Assertions.assertNull(fields.getField("bob"));
     }
 
-
     @BeforeEach
-    public void multipleFieldsDefined(){
+    public void multipleFieldsDefined() {
         multipleFields = new DefinedFields();
         multipleFields.addField(Field.is("string1", FieldType.STRING));
         multipleFields.addField(Field.is("bob", FieldType.AUTO_GUID));
@@ -93,7 +90,7 @@ class DefinedFieldsTest {
     }
 
     @Test
-    void canGetSpecificFieldTypes(){
+    void canGetSpecificFieldTypes() {
 
         final List<Field> strings = multipleFields.getFieldsOfType(FieldType.STRING);
 
@@ -101,17 +98,16 @@ class DefinedFieldsTest {
 
         // names are not guaranteed to be in order
         List<String> stringNames = new ArrayList<>();
-        for(Field string : strings){
+        for (Field string : strings) {
             stringNames.add(string.getName());
         }
         Assertions.assertTrue(stringNames.contains("string1"));
         Assertions.assertTrue(stringNames.contains("string2"));
         Assertions.assertTrue(stringNames.contains("string3"));
-
     }
 
     @Test
-    void canGetNamesOfSpecificFieldTypes(){
+    void canGetNamesOfSpecificFieldTypes() {
 
         final List<String> strings = multipleFields.getFieldNamesOfType(FieldType.STRING);
 
@@ -123,14 +119,13 @@ class DefinedFieldsTest {
     }
 
     @Test
-    void canGetMultipleFieldTypes(){
+    void canGetMultipleFieldTypes() {
 
-        final List<Field> others = multipleFields.getFieldsOfType(
-                                                FieldType.AUTO_GUID,
-                                                FieldType.AUTO_INCREMENT);
+        final List<Field> others =
+                multipleFields.getFieldsOfType(FieldType.AUTO_GUID, FieldType.AUTO_INCREMENT);
 
         List<String> othersNames = new ArrayList<>();
-        for(Field field : others){
+        for (Field field : others) {
             othersNames.add(field.getName());
         }
         Assertions.assertTrue(othersNames.contains("bob"));
@@ -138,16 +133,17 @@ class DefinedFieldsTest {
     }
 
     @Test
-    void noFieldsReturnsNoAdditionalResults(){
+    void noFieldsReturnsNoAdditionalResults() {
 
-        final List<Field> others = multipleFields.getFieldsOfType(
-                FieldType.AUTO_GUID,
-                FieldType.AUTO_INCREMENT,
-                FieldType.FLOAT,
-                FieldType.INTEGER);
+        final List<Field> others =
+                multipleFields.getFieldsOfType(
+                        FieldType.AUTO_GUID,
+                        FieldType.AUTO_INCREMENT,
+                        FieldType.FLOAT,
+                        FieldType.INTEGER);
 
         List<String> othersNames = new ArrayList<>();
-        for(Field field : others){
+        for (Field field : others) {
             othersNames.add(field.getName());
         }
         Assertions.assertTrue(othersNames.contains("bob"));
@@ -155,17 +151,13 @@ class DefinedFieldsTest {
     }
 
     @Test
-    void noFieldsReturnsNoResults(){
+    void noFieldsReturnsNoResults() {
 
-        final List<Field> none = multipleFields.getFieldsOfType(
-                FieldType.FLOAT,
-                FieldType.INTEGER,
-                FieldType.DATE,
-                FieldType.OBJECT);
+        final List<Field> none =
+                multipleFields.getFieldsOfType(
+                        FieldType.FLOAT, FieldType.INTEGER, FieldType.DATE, FieldType.OBJECT);
 
         Assertions.assertNotNull(none);
         Assertions.assertEquals(0, none.size());
-
     }
-
 }

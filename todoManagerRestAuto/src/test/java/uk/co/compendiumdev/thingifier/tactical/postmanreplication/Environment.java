@@ -4,38 +4,36 @@ import io.restassured.RestAssured;
 import io.restassured.filter.log.RequestLoggingFilter;
 import io.restassured.filter.log.ResponseLoggingFilter;
 import spark.Spark;
+import uk.co.compendiumdev.sparkstart.Port;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.docgen.ThingifierApiDocumentationDefn;
-import uk.co.compendiumdev.thingifier.application.httprouting.ThingifierHttpApiRoutings;
 import uk.co.compendiumdev.thingifier.application.examples.TodoManagerThingifier;
 import uk.co.compendiumdev.thingifier.application.httprouting.ThingifierAutoDocGenRouting;
+import uk.co.compendiumdev.thingifier.application.httprouting.ThingifierHttpApiRoutings;
 import uk.co.compendiumdev.thingifier.htmlgui.htmlgen.DefaultGUIHTML;
-import uk.co.compendiumdev.sparkstart.Port;
 
 public class Environment {
 
-    /**
-     *  could just use `RestAssured.baseURI = Environment.getBaseUri();` instead
-     */
-
-    public static String getEnv(String urlPath){
-        return  getBaseUri() + urlPath;
+    /** could just use `RestAssured.baseURI = Environment.getBaseUri();` instead */
+    public static String getEnv(String urlPath) {
+        return getBaseUri() + urlPath;
     }
 
     // todo instead of setting up the Thingifier instantiate the Main with different version numbers
-    // todo move these tests into the appropriate version package for the standAloneTodoListManagerRestAuto project
+    // todo move these tests into the appropriate version package for the
+    // standAloneTodoListManagerRestAuto project
     public static String getBaseUri() {
 
         // setup rest assured logging
         RestAssured.filters(new RequestLoggingFilter(), new ResponseLoggingFilter());
 
         // if not running then start the spark
-        if(Port.inUse("localhost", 4567)) {
+        if (Port.inUse("localhost", 4567)) {
             return "http://localhost:4567";
-        }else{
-            //start it up
+        } else {
+            // start it up
             Spark.port(4567);
-            String [] args = {};
+            String[] args = {};
             final Thingifier thingifier = new TodoManagerThingifier().get();
             thingifier.apiConfig().adminConfig().enableAdminDataClear();
             thingifier.apiConfig().adminConfig().enableAdminSearch();
@@ -44,13 +42,12 @@ public class Environment {
             thingifier.apiConfig().jsonOutput().setShowPrimaryKeyInResponse(true);
             thingifier.apiConfig().jsonOutput().setConvertFieldsToDefinedTypes(false);
 
-            ThingifierApiDocumentationDefn apiDefn = new ThingifierApiDocumentationDefn().setThingifier(thingifier);
+            ThingifierApiDocumentationDefn apiDefn =
+                    new ThingifierApiDocumentationDefn().setThingifier(thingifier);
             new ThingifierAutoDocGenRouting(thingifier, apiDefn, new DefaultGUIHTML());
             new ThingifierHttpApiRoutings(thingifier, apiDefn);
             return "http://localhost:4567";
         }
-
-
 
         // TODO: incorporate browsermob proxy and allow configuration of all
         //  requests through a proxy file to output a HAR file of all requests for later review
@@ -66,13 +63,13 @@ public class Environment {
             } catch (InterruptedException e) {
                 System.out.println("Interruption during running check " + e.getMessage());
             }
-            if(maxtries<=0){
+            if (maxtries <= 0) {
                 return;
             }
         }
     }
 
-    public static void stop(){
+    public static void stop() {
         Spark.stop();
         Spark.awaitStop();
         waitTillRunningStatus(false);

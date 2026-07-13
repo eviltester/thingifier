@@ -7,7 +7,7 @@ public class HeadersTest {
 
     // move from a HashMap to an actual class for headers
     @Test
-    public void canManageHeadersWithAClassRatherThanAHashMap(){
+    public void canManageHeadersWithAClassRatherThanAHashMap() {
         HttpHeadersBlock headers = new HttpHeadersBlock();
 
         // put for easier backwards compatibility with hashmap

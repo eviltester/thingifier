@@ -12,52 +12,41 @@ class FieldObjectValueTest {
     private Field field;
 
     @BeforeEach
-    void defineObjectField(){
+    void defineObjectField() {
 
-        field = Field.is("person", FieldType.OBJECT)
-                .withField(
-                        Field.is("firstname", FieldType.STRING).
-                                withExample("Bob")).
-                        withField(
-                                Field.is("surname", FieldType.STRING).withExample("D'obbs")
-                        );
-
+        field =
+                Field.is("person", FieldType.OBJECT)
+                        .withField(Field.is("firstname", FieldType.STRING).withExample("Bob"))
+                        .withField(Field.is("surname", FieldType.STRING).withExample("D'obbs"));
     }
 
     @Test
     void canCreateObjectField() {
 
         final FieldValue person =
-                            FieldValue.is(field,
-                                    new InstanceFields(
-                                            field.getObjectDefinition()));
+                FieldValue.is(field, new InstanceFields(field.getObjectDefinition()));
 
         person.asObject().setValue("firstname", "Connie");
         person.asObject().setValue("surname", "dobbs");
 
         System.out.println(person);
 
-        Assertions.assertEquals("Connie",
-                person.asObject().getFieldValue("firstname")
-                        .asString());
+        Assertions.assertEquals("Connie", person.asObject().getFieldValue("firstname").asString());
     }
 
     @Test
     void canCloneObjectField() {
 
         final FieldValue person =
-                FieldValue.is(field,
-                        new InstanceFields(
-                                field.getObjectDefinition()));
+                FieldValue.is(field, new InstanceFields(field.getObjectDefinition()));
 
         person.asObject().setValue("firstname", "Connie");
         person.asObject().setValue("surname", "dobbs");
 
         final FieldValue connieClone = person.cloned();
 
-        Assertions.assertEquals("Connie",
-                connieClone.asObject().getFieldValue("firstname")
-                        .asString());
+        Assertions.assertEquals(
+                "Connie", connieClone.asObject().getFieldValue("firstname").asString());
 
         Assertions.assertNotSame(person, connieClone);
     }

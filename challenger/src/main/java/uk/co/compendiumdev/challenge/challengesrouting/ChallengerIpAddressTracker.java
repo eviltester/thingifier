@@ -17,12 +17,12 @@ public class ChallengerIpAddressTracker {
     public ChallengerIpAddressTracker(int maxChallengersPerIp, boolean addressLimitingOn) {
         maxChallengers = maxChallengersPerIp;
         ipaddresses = new ConcurrentHashMap<>();
-        this.addressLimitingOn=addressLimitingOn;
+        this.addressLimitingOn = addressLimitingOn;
     }
 
     public void purgeEmptyIpAddresses(Set<String> existingChallengerGuids) {
 
-        for(String anIp : ipaddresses.keySet()) {
+        for (String anIp : ipaddresses.keySet()) {
             ConcurrentSkipListSet<String> challengerGuids = ipaddresses.get(anIp);
             List<String> challengersToRemove = new ArrayList<>();
 
@@ -37,8 +37,8 @@ public class ChallengerIpAddressTracker {
         }
 
         // purge any empty ip addresses
-        for(String anIp : ipaddresses.keySet()){
-            if(ipaddresses.get(anIp).isEmpty()){
+        for (String anIp : ipaddresses.keySet()) {
+            if (ipaddresses.get(anIp).isEmpty()) {
                 ipaddresses.remove(anIp);
             }
         }
@@ -46,9 +46,9 @@ public class ChallengerIpAddressTracker {
 
     public boolean hasLimitBeenReachedFor(String ip) {
 
-        if(!addressLimitingOn) return false;
+        if (!addressLimitingOn) return false;
 
-        if(countFor(ip)<maxChallengers){
+        if (countFor(ip) < maxChallengers) {
             return false;
         }
 
@@ -57,17 +57,17 @@ public class ChallengerIpAddressTracker {
 
     public boolean trackAgainstThisIp(String ip, String xChallengerGuid) {
 
-        if(!addressLimitingOn){
+        if (!addressLimitingOn) {
             return false;
         }
 
-        if(hasLimitBeenReachedFor(ip)){
+        if (hasLimitBeenReachedFor(ip)) {
             return false;
         }
 
-        if(isTrackingIp(ip)){
+        if (isTrackingIp(ip)) {
             ipaddresses.get(ip).add(xChallengerGuid);
-        }else{
+        } else {
             ConcurrentSkipListSet<String> guids = new ConcurrentSkipListSet<>();
             guids.add(xChallengerGuid);
             ipaddresses.put(ip, guids);
@@ -80,7 +80,7 @@ public class ChallengerIpAddressTracker {
     }
 
     public int countFor(String ip) {
-        if(isTrackingIp(ip)){
+        if (isTrackingIp(ip)) {
             return ipaddresses.get(ip).size();
         }
         return 0;

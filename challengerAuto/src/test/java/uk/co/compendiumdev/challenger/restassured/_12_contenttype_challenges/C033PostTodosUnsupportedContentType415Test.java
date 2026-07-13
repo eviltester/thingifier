@@ -12,7 +12,7 @@ import uk.co.compendiumdev.challenger.restassured.api.RestAssuredBaseTest;
 public class C033PostTodosUnsupportedContentType415Test extends RestAssuredBaseTest {
 
     @Test
-    void can415CreateATodoWithInvalidContentType(){
+    void can415CreateATodoWithInvalidContentType() {
 
         Todo todo = new Todo();
         todo.doneStatus = true;
@@ -21,20 +21,18 @@ public class C033PostTodosUnsupportedContentType415Test extends RestAssuredBaseT
 
         String payload = new Gson().toJson(todo);
 
-        RestAssured.
-                given().
-                header("X-CHALLENGER", xChallenger).
-                accept("application/json").
-                contentType(ContentType.BINARY).
-                body(payload.getBytes()).
-                post(apiPath( "/todos")).
-                then().
-                statusCode(415).
-                contentType(ContentType.JSON);
+        RestAssured.given()
+                .header("X-CHALLENGER", xChallenger)
+                .accept("application/json")
+                .contentType(ContentType.BINARY)
+                .body(payload.getBytes())
+                .post(apiPath("/todos"))
+                .then()
+                .statusCode(415)
+                .contentType(ContentType.JSON);
 
         ChallengesStatus statuses = new ChallengesStatus();
         statuses.get();
         Assertions.assertTrue(statuses.getChallengeNamed("POST /todos (415)").status);
-
     }
 }

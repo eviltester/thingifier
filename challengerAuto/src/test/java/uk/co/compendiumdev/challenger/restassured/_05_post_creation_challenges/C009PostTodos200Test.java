@@ -12,24 +12,25 @@ import uk.co.compendiumdev.challenger.restassured.api.RestAssuredBaseTest;
 public class C009PostTodos200Test extends RestAssuredBaseTest {
 
     @Test
-    void canCreateATodoWithPost(){
+    void canCreateATodoWithPost() {
 
         Todo createMe = new Todo();
         createMe.title = "my name " + System.currentTimeMillis();
         createMe.description = "my description " + System.currentTimeMillis();
         createMe.doneStatus = true;
 
-        final Response response = RestAssured.
-                given().
-                header("X-CHALLENGER", xChallenger).
-                accept("application/json").
-                contentType("application/json").
-                body(createMe).
-                post(apiPath("/todos")).
-                then().
-                statusCode(201).
-                contentType(ContentType.JSON).
-                extract().response();
+        final Response response =
+                RestAssured.given()
+                        .header("X-CHALLENGER", xChallenger)
+                        .accept("application/json")
+                        .contentType("application/json")
+                        .body(createMe)
+                        .post(apiPath("/todos"))
+                        .then()
+                        .statusCode(201)
+                        .contentType(ContentType.JSON)
+                        .extract()
+                        .response();
 
         Todo createdTodo = response.body().as(Todo.class);
 
@@ -40,17 +41,13 @@ public class C009PostTodos200Test extends RestAssuredBaseTest {
 
         // not much I can check on the id
         Assertions.assertNotNull(createdTodo.id);
-        Assertions.assertTrue(createdTodo.id>0);
+        Assertions.assertTrue(createdTodo.id > 0);
 
         // GET on Location header should return the to do location but just check the format
-        Assertions.assertEquals(
-                "/todos/" + createdTodo.id,
-                response.header("Location"));
+        Assertions.assertEquals("/todos/" + createdTodo.id, response.header("Location"));
 
         ChallengesStatus statuses = new ChallengesStatus();
         statuses.get();
         Assertions.assertTrue(statuses.getChallengeNamed("POST /todos (201)").status);
-
     }
-
 }

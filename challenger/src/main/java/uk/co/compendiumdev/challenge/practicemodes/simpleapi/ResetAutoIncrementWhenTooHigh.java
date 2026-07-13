@@ -5,34 +5,29 @@ import uk.co.compendiumdev.thingifier.api.http.HttpApiResponse;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.application.httpapimessagehooks.HttpApiRequestHook;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
-import uk.co.compendiumdev.thingifier.core.domain.instances.AutoIncrement;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ERInstanceData;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
+import uk.co.compendiumdev.thingifier.core.repository.ThingStore;
 
 public class ResetAutoIncrementWhenTooHigh implements HttpApiRequestHook {
 
     private final EntityRelModel erModel;
 
-    public ResetAutoIncrementWhenTooHigh(EntityRelModel eRmodel){
+    public ResetAutoIncrementWhenTooHigh(EntityRelModel eRmodel) {
         this.erModel = eRmodel;
     }
 
     @Override
     public HttpApiResponse run(HttpApiRequest request, ThingifierApiConfig config) {
 
-        ERInstanceData instanceData = erModel.getInstanceData(EntityRelModel.DEFAULT_DATABASE_NAME);
-        if(instanceData!=null){
-            EntityInstanceCollection collection = instanceData.
-                    getInstanceCollectionForEntityNamed("item");
-            AutoIncrement idCounter = collection.getCounters().get("id");
-            //if(idCounter.getCurrentValue()>2140000000){
-            if(idCounter.getCurrentValue()>99999){
-                // reset it
-                idCounter.incrementToNextAbove(0);
-            }
-            if(collection != null && collection.countInstances()<5) {
-                erModel.populateDatabase(EntityRelModel.DEFAULT_DATABASE_NAME);
-            }
+        EntityDefinition item = erModel.getSchema().getEntityDefinitionNamed("item");
+        ThingStore store = erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME);
+        if (store == null || item == null) {
+            return null;
+        }
+
+        store.administration().resetAutoIncrementCounterWhenNextValueAbove(item, "id", 99999);
+        if (store.entityQueries().count(item) < 5) {
+            erModel.populateDatabase(EntityRelModel.DEFAULT_DATABASE_NAME);
         }
         return null;
     }

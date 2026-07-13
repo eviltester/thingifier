@@ -43,6 +43,39 @@ We reserve the right to remove the cloud deploy or change the reset time if we d
 ## Usage
 
 Currently Thingifier is suitable for using as a Practice Test App for API Testing.
+
+## Code Formatting
+
+Java source formatting is enforced with Spotless and google-java-format using
+the AOSP four-space style.
+
+To format the code:
+
+```shell
+mvn spotless:apply
+```
+
+To check formatting without changing files:
+
+```shell
+mvn spotless:check
+```
+
+The repository includes a pre-commit hook that runs the Spotless check before
+each commit. Enable the versioned hooks in a clone with:
+
+```shell
+git config core.hooksPath .githooks
+```
+
+On Unix-like systems, if Git reports that the hook is not executable, run:
+
+```shell
+chmod +x .githooks/pre-commit
+```
+
+GitHub Actions also runs `mvn -B spotless:check` in both Java 17 and Java 21
+matrix builds before running the Maven tests.
     
 ## Details
 
@@ -73,4 +106,3 @@ Current TODO List:
 - test clear down internal challenger databases after time
 - add additional challenges about instance limits e.g. try to exceed 20
 - add additional challenges around field validation values and limits
-  

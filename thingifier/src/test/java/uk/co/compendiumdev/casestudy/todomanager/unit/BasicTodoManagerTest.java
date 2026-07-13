@@ -1,172 +1,220 @@
 package uk.co.compendiumdev.casestudy.todomanager.unit;
 
+import java.util.Collection;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.casestudy.todomanager.TodoManagerModel;
-import uk.co.compendiumdev.thingifier.core.EntityRelModel;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.core.EntityRelModel;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-import java.util.Collection;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
+import uk.co.compendiumdev.thingifier.core.repository.ThingStore;
 
 public class BasicTodoManagerTest {
 
     private Thingifier todoManager;
+    private ThingStore repository;
 
     @BeforeEach
-    public void createDefinitions(){
+    public void createDefinitions() {
 
         todoManager = TodoManagerModel.definedAsThingifier();
-
+        repository = todoManager.getStore(EntityRelModel.DEFAULT_DATABASE_NAME);
     }
 
     @Test
-    public void todoModelDefinitionCheck(){
+    public void todoModelDefinitionCheck() {
 
+        EntityDefinition todo =
+                todoManager.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("todo");
 
-        EntityInstanceCollection todo = todoManager.getThingInstancesNamed("todo", EntityRelModel.DEFAULT_DATABASE_NAME);
+        Assertions.assertTrue(todo.hasFieldNameDefined("title"));
+        Assertions.assertTrue(todo.hasFieldNameDefined("description"));
+        Assertions.assertTrue(todo.hasFieldNameDefined("doneStatus"));
 
-        Assertions.assertTrue(todo.definition().hasFieldNameDefined("title"));
-        Assertions.assertTrue(todo.definition().hasFieldNameDefined("description"));
-        Assertions.assertTrue(todo.definition().hasFieldNameDefined("doneStatus"));
-
-        Assertions.assertEquals("false", todo.definition().
-                                                    getField("doneStatus").
-                                                    getDefaultValue().asString());
-
+        Assertions.assertEquals("false", todo.getField("doneStatus").getDefaultValue().asString());
     }
 
-
     @Test
-    public void relationshipDefinitionCheck(){
+    public void relationshipDefinitionCheck() {
 
+        EntityDefinition todo =
+                todoManager.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("todo");
+        EntityDefinition project =
+                todoManager
+                        .getERmodel()
+                        .getSchema()
+                        .getDefinitionWithSingularOrPluralNamed("project");
 
-        EntityInstanceCollection todo = todoManager.getThingInstancesNamed("todo", EntityRelModel.DEFAULT_DATABASE_NAME);
-        EntityInstanceCollection project = todoManager.getThingInstancesNamed("project", EntityRelModel.DEFAULT_DATABASE_NAME);
+        EntityInstance paperwork =
+                repository
+                        .entities()
+                        .create(
+                                EntityInstanceDraft.forEntity(todo)
+                                        .withField("title", "scan paperwork"));
+        EntityInstance filework =
+                repository
+                        .entities()
+                        .create(
+                                EntityInstanceDraft.forEntity(todo)
+                                        .withField("title", "file paperwork"));
 
-        EntityInstance paperwork = todo.addInstance(new EntityInstance(todo.definition())).setValue("title", "scan paperwork");
-        EntityInstance filework = todo.addInstance(new EntityInstance(todo.definition())).setValue("title", "file paperwork");
+        EntityInstance officeWork =
+                repository
+                        .entities()
+                        .create(
+                                EntityInstanceDraft.forEntity(project)
+                                        .withField("title", "Office Work"));
 
-        EntityInstance officeWork = project.addInstance(new EntityInstance(project.definition())).setValue("title", "Office Work");
+        repository.relationships().connect(officeWork, "tasks", paperwork);
+        repository.relationships().connect(officeWork, "tasks", filework);
 
-        officeWork.getRelationships().connect("tasks", paperwork);
-        officeWork.getRelationships().connect("tasks", filework);
-
-        Collection<EntityInstance> relatedItems = officeWork.getRelationships().getConnectedItems("tasks");
+        Collection<EntityInstance> relatedItems =
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .relationships()
+                        .listRelated(officeWork, "tasks");
 
         Assertions.assertTrue(relatedItems.contains(paperwork));
         Assertions.assertTrue(relatedItems.contains(filework));
 
-
-        relatedItems = officeWork.getRelationships().getConnectedItems("tasks");
+        relatedItems =
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .relationships()
+                        .listRelated(officeWork, "tasks");
         Assertions.assertTrue(relatedItems.contains(paperwork));
         Assertions.assertTrue(relatedItems.contains(filework));
 
         todoManager.deleteThing(paperwork, EntityRelModel.DEFAULT_DATABASE_NAME);
 
-
-        relatedItems = officeWork.getRelationships().getConnectedItems("tasks");
+        relatedItems =
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .relationships()
+                        .listRelated(officeWork, "tasks");
         Assertions.assertFalse(relatedItems.contains(paperwork));
         Assertions.assertTrue(relatedItems.contains(filework));
     }
 
-
     @Test
-    public void createAndAmendSomeTodos(){
+    public void createAndAmendSomeTodos() {
 
-        EntityInstanceCollection todos = todoManager.getThingInstancesNamed("todo", EntityRelModel.DEFAULT_DATABASE_NAME);
+        EntityDefinition todos =
+                todoManager.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("todo");
 
-        EntityInstance tidy = todos.addInstance(new EntityInstance(todos.definition())).
-                setValue("title", "Tidy up my room").
-                setValue("description", "I need to tidy up my room because it is a mess");
+        EntityInstance tidy =
+                repository
+                        .entities()
+                        .create(
+                                EntityInstanceDraft.forEntity(todos)
+                                        .withField("title", "Tidy up my room")
+                                        .withField(
+                                                "description",
+                                                "I need to tidy up my room because it is a mess"));
 
-        EntityInstance paperwork = todos.addInstance(new EntityInstance(todos.definition())).
-                setValue("title","Do Paperwork").
-                setValue("description", "Scan everything in, upload to document management system and file paperwork");
+        EntityInstance paperwork =
+                repository
+                        .entities()
+                        .create(
+                                EntityInstanceDraft.forEntity(todos)
+                                        .withField("title", "Do Paperwork")
+                                        .withField(
+                                                "description",
+                                                "Scan everything in, upload to document management system and file paperwork"));
 
         Assertions.assertEquals("false", paperwork.getFieldValue("doneStatus").asString());
 
         System.out.println(todoManager.toString());
 
-        tidy.setValue("doneStatus", "true");
+        tidy =
+                repository
+                        .entities()
+                        .patch(
+                                tidy,
+                                EntityInstanceDraft.forEntity(todos)
+                                        .withField("doneStatus", "true"));
         Assertions.assertEquals("true", tidy.getFieldValue("doneStatus").asString());
         System.out.println(todoManager.toString());
-
     }
 
     @Test
-    public void createAndDeleteTodos(){
+    public void createAndDeleteTodos() {
 
-        EntityInstanceCollection todos = todoManager.getThingInstancesNamed("todo", EntityRelModel.DEFAULT_DATABASE_NAME);
+        EntityDefinition todos =
+                todoManager.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("todo");
 
-        int originalTodosCount = todos.countInstances();
+        int originalTodosCount = repository.entityQueries().count(todos);
 
-        EntityInstance tidy = todos.addInstance(new EntityInstance(todos.definition())).
-                setValue("title","Delete this todo").
-                setValue("description", "I need to be deleted");
+        EntityInstance tidy =
+                repository
+                        .entities()
+                        .create(
+                                EntityInstanceDraft.forEntity(todos)
+                                        .withField("title", "Delete this todo")
+                                        .withField("description", "I need to be deleted"));
 
-        EntityInstance foundit = todos.findInstanceByPrimaryKey(tidy.getPrimaryKeyValue());
+        EntityInstance foundit =
+                repository.entityQueries().findByPrimaryKey(todos, tidy.getPrimaryKeyValue());
 
         Assertions.assertEquals("Delete this todo", foundit.getFieldValue("title").asString());
 
         todoManager.deleteThing(foundit, EntityRelModel.DEFAULT_DATABASE_NAME);
-        Assertions.assertEquals(originalTodosCount, todos.countInstances());
+        Assertions.assertEquals(originalTodosCount, repository.entityQueries().count(todos));
 
-
-        foundit = todos.findInstanceByPrimaryKey(tidy.getPrimaryKeyValue());
+        foundit = repository.entityQueries().findByPrimaryKey(todos, tidy.getPrimaryKeyValue());
 
         Assertions.assertNull(foundit);
 
-
-        try{
+        try {
             todoManager.deleteThing(foundit, EntityRelModel.DEFAULT_DATABASE_NAME);
             Assertions.fail("Item already deleted, exception should have been thrown");
-        }catch(Exception e){
+        } catch (Exception e) {
 
         }
-
     }
 
     @Test
-    public void createAmendAndDeleteATodoWithAGivenGUID(){
+    public void createAmendAndDeleteATodoWithAGivenGUID() {
 
-        EntityInstanceCollection todos = todoManager.getThingInstancesNamed("todo", EntityRelModel.DEFAULT_DATABASE_NAME);
+        EntityDefinition todos =
+                todoManager.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("todo");
 
-        int originalTodosCount = todos.countInstances();
+        int originalTodosCount = repository.entityQueries().count(todos);
 
-        String guid="6fd86e2d-7c52-4dea-85bb-34760ef66d9d";
+        String guid = "6fd86e2d-7c52-4dea-85bb-34760ef66d9d";
 
-        EntityInstance tidy = new EntityInstance(todos.definition());
-        tidy.overrideValue("guid", guid);
+        EntityInstance tidy =
+                repository
+                        .entities()
+                        .create(
+                                EntityInstanceDraft.forEntity(todos)
+                                        .withProtectedField("guid", guid)
+                                        .withField("title", "Delete this todo")
+                                        .withField("description", "I need to be deleted"));
+        Assertions.assertEquals(guid, tidy.getPrimaryKeyValue());
 
-        tidy.setValue("title", "Delete this todo").
-        setValue("description", "I need to be deleted");
-
-        todos.addInstance(tidy);
-
-        EntityInstance foundit = todos.findInstanceByFieldNameAndValue("guid", guid);
+        EntityInstance foundit = repository.entityQueries().findByField(todos, "guid", guid);
 
         Assertions.assertEquals("Delete this todo", foundit.getFieldValue("title").asString());
 
         todoManager.deleteThing(foundit, EntityRelModel.DEFAULT_DATABASE_NAME);
 
-        Assertions.assertEquals(originalTodosCount, todos.countInstances());
+        Assertions.assertEquals(originalTodosCount, repository.entityQueries().count(todos));
 
-
-        foundit = todos.findInstanceByFieldNameAndValue("guid", guid);
+        foundit = repository.entityQueries().findByField(todos, "guid", guid);
 
         Assertions.assertNull(foundit);
 
-
-        try{
+        try {
             todoManager.deleteThing(foundit, EntityRelModel.DEFAULT_DATABASE_NAME);
 
             Assertions.fail("Item already deleted, exception should have been thrown");
 
-        }catch(Exception e){
+        } catch (Exception e) {
 
         }
-
     }
 }

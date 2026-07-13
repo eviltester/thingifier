@@ -1,12 +1,11 @@
 package uk.co.compendiumdev.practicemodes.simpleapi.testabstractions;
 
 import com.google.gson.Gson;
+import java.util.HashMap;
+import java.util.Map;
 import org.junit.jupiter.api.Assertions;
 import uk.co.compendiumdev.challenger.http.httpclient.HttpMessageSender;
 import uk.co.compendiumdev.challenger.http.httpclient.HttpResponseDetails;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class SimpleAPIApi {
     private final HttpMessageSender http;
@@ -41,8 +40,7 @@ public class SimpleAPIApi {
         headers.put("Content-Type", "application/json");
         headers.put("Accept", "application/json");
 
-        return http.send("/simpleapi/items", "POST", headers,
-                new Gson().toJson(itemToCreate));
+        return http.send("/simpleapi/items", "POST", headers, new Gson().toJson(itemToCreate));
     }
 
     public Item apiCreateItem(Item itemToCreate) {
@@ -68,14 +66,17 @@ public class SimpleAPIApi {
         headers.put("Accept", "application/json");
 
         final HttpResponseDetails response =
-                http.send("/simpleapi/items", "GET", headers,
+                http.send(
+                        "/simpleapi/items",
+                        "GET",
+                        headers,
                         """
-                                """.stripIndent());
+                                """
+                                .stripIndent());
 
         Assertions.assertEquals(200, response.statusCode);
         Assertions.assertEquals("application/json", response.getHeader("content-type"));
 
         return new Gson().fromJson(response.body, Items.class);
     }
-
 }

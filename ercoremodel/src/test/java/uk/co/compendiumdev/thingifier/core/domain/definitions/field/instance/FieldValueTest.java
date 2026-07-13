@@ -8,14 +8,15 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.F
 class FieldValueTest {
 
     @Test
-    void canCreateAndAccessName(){
+    void canCreateAndAccessName() {
         final Field field = Field.is("generic", FieldType.STRING);
 
         final FieldValue value = FieldValue.is(field, "value");
         Assertions.assertEquals("generic", value.getName());
     }
+
     @Test
-    void canCreateAndGetValue(){
+    void canCreateAndGetValue() {
 
         final Field field = Field.is("generic", FieldType.STRING);
         final FieldValue value = FieldValue.is(field, "value");
@@ -23,7 +24,7 @@ class FieldValueTest {
     }
 
     @Test
-    void canSetGetFloatValue(){
+    void canSetGetFloatValue() {
 
         final Field field = Field.is("generic", FieldType.STRING);
 
@@ -33,7 +34,7 @@ class FieldValueTest {
     }
 
     @Test
-    void canCloneSimpleValue(){
+    void canCloneSimpleValue() {
 
         final Field field = Field.is("simple", FieldType.STRING);
 
@@ -46,13 +47,16 @@ class FieldValueTest {
     }
 
     @Test
-    void floatValueShouldBeSetAsValid_NoConversionPerformed(){
+    void floatValueShouldBeSetAsValid_NoConversionPerformed() {
 
         final Field field = Field.is("aFloat", FieldType.STRING);
 
         final FieldValue value = FieldValue.is(field, "");
 
-        Assertions.assertThrows(NumberFormatException.class,
-                ()-> {value.asFloat();});
+        Assertions.assertThrows(
+                NumberFormatException.class,
+                () -> {
+                    value.asFloat();
+                });
     }
 }

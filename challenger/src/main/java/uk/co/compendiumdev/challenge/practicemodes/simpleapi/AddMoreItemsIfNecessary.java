@@ -5,27 +5,24 @@ import uk.co.compendiumdev.thingifier.api.http.HttpApiResponse;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.application.httpapimessagehooks.HttpApiRequestHook;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ERInstanceData;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
+import uk.co.compendiumdev.thingifier.core.repository.ThingStore;
 
 public class AddMoreItemsIfNecessary implements HttpApiRequestHook {
 
     private final EntityRelModel erModel;
 
-    public AddMoreItemsIfNecessary(EntityRelModel eRmodel){
+    public AddMoreItemsIfNecessary(EntityRelModel eRmodel) {
         this.erModel = eRmodel;
     }
 
     @Override
     public HttpApiResponse run(HttpApiRequest request, ThingifierApiConfig config) {
 
-        ERInstanceData instanceData = erModel.getInstanceData(EntityRelModel.DEFAULT_DATABASE_NAME);
-        if(instanceData!=null){
-            EntityInstanceCollection collection = instanceData.
-                    getInstanceCollectionForEntityNamed("item");
-            if(collection != null && collection.countInstances()<5) {
-                erModel.populateDatabase(EntityRelModel.DEFAULT_DATABASE_NAME);
-            }
+        EntityDefinition item = erModel.getSchema().getEntityDefinitionNamed("item");
+        ThingStore store = erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME);
+        if (store != null && item != null && store.entityQueries().count(item) < 5) {
+            erModel.populateDatabase(EntityRelModel.DEFAULT_DATABASE_NAME);
         }
         return null;
     }

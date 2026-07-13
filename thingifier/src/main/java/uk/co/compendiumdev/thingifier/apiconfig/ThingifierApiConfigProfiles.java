@@ -8,25 +8,26 @@ public class ThingifierApiConfigProfiles {
     List<ThingifierApiConfigProfile> profiles;
     ThingifierApiConfigProfile defaultProfile;
 
-    public ThingifierApiConfigProfiles(){
+    public ThingifierApiConfigProfiles() {
         profiles = new ArrayList<>();
     }
 
-    public ThingifierApiConfigProfile create(final String profileName,
-                                             final String profileDescription) {
+    public ThingifierApiConfigProfile create(
+            final String profileName, final String profileDescription) {
 
-        final ThingifierApiConfigProfile profile = new ThingifierApiConfigProfile(
-                                                            profileName, profileDescription);
+        final ThingifierApiConfigProfile profile =
+                new ThingifierApiConfigProfile(profileName, profileDescription);
         profiles.add(profile);
         return profile;
     }
 
-    public ThingifierApiConfigProfile create(final String profileName,
-                                             final String profileDescription,
-                                             final String apiEndPointPrefix) {
+    public ThingifierApiConfigProfile create(
+            final String profileName,
+            final String profileDescription,
+            final String apiEndPointPrefix) {
 
-        final ThingifierApiConfigProfile profile = new ThingifierApiConfigProfile(
-                profileName, profileDescription, apiEndPointPrefix);
+        final ThingifierApiConfigProfile profile =
+                new ThingifierApiConfigProfile(profileName, profileDescription, apiEndPointPrefix);
         profiles.add(profile);
         return profile;
     }
@@ -39,27 +40,27 @@ public class ThingifierApiConfigProfiles {
 
     public ThingifierApiConfigProfile getDefault() {
 
-        ThingifierApiConfigProfile profile=null;
+        ThingifierApiConfigProfile profile = null;
 
-        if(defaultProfile==null){
-            if(!profiles.isEmpty()) {
+        if (defaultProfile == null) {
+            if (!profiles.isEmpty()) {
                 profile = profiles.get(profiles.size() - 1);
             }
-        }else{
-            profile=defaultProfile;
+        } else {
+            profile = defaultProfile;
         }
 
         return profile;
     }
 
-    public ThingifierApiConfigProfile createDefaultProfile(final String name, final String description) {
+    public ThingifierApiConfigProfile createDefaultProfile(
+            final String name, final String description) {
         final ThingifierApiConfigProfile profile = create(name, description);
-        if(defaultProfile!=null){
+        if (defaultProfile != null) {
             System.out.println(
-                String.format(
-                    "WARNING: overriding default profile from %s to %s",
-                    defaultProfile.getName(), name
-                ));
+                    String.format(
+                            "WARNING: overriding default profile from %s to %s",
+                            defaultProfile.getName(), name));
         }
         defaultProfile = profile;
         return profile;
@@ -70,8 +71,8 @@ public class ThingifierApiConfigProfiles {
     }
 
     public ThingifierApiConfigProfile getProfile(final String name) {
-        for(ThingifierApiConfigProfile profile : profiles){
-            if(profile.getName().equals(name)){
+        for (ThingifierApiConfigProfile profile : profiles) {
+            if (profile.getName().equals(name)) {
                 return profile;
             }
         }

@@ -4,25 +4,25 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.casestudy.todomanager.TodoManagerModel;
-import uk.co.compendiumdev.thingifier.core.EntityRelModel;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiResponse;
 import uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
+import uk.co.compendiumdev.thingifier.core.EntityRelModel;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 
 public class XmlRequestResponseTest {
 
     private Thingifier todoManager;
 
-    EntityInstanceCollection todo;
-    EntityInstanceCollection project;
+    EntityDefinition todo;
+    EntityDefinition project;
 
-
-    // todo: Too complicated any test that uses the TodoManagerModel in thingifier needs to be simplified
+    // todo: Too complicated any test that uses the TodoManagerModel in thingifier needs to be
+    // simplified
     // todo: move this to a case study test
 
     @BeforeEach
@@ -30,16 +30,16 @@ public class XmlRequestResponseTest {
 
         todoManager = TodoManagerModel.definedAsThingifier();
 
-        todo = todoManager.getThingInstancesNamed("todo", EntityRelModel.DEFAULT_DATABASE_NAME);
-        project = todoManager.getThingInstancesNamed("project", EntityRelModel.DEFAULT_DATABASE_NAME);
-
-
+        todo = todoManager.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("todo");
+        project =
+                todoManager
+                        .getERmodel()
+                        .getSchema()
+                        .getDefinitionWithSingularOrPluralNamed("project");
     }
 
     @Test
-    public void canGetAnEmptyXmlItemsCollection(){
-
-
+    public void canGetAnEmptyXmlItemsCollection() {
 
         HttpApiRequest request = new HttpApiRequest("todos");
         request.getHeaders().putAll(HeadersSupport.acceptXml());
@@ -51,12 +51,13 @@ public class XmlRequestResponseTest {
         Assertions.assertTrue(response.getBody().equalsIgnoreCase("<todos></todos>"));
     }
 
-
     @Test
-    public void canGetXmlItemsWhenAskedForXml(){
+    public void canGetXmlItemsWhenAskedForXml() {
 
-
-        todo.addInstance(new EntityInstance(todo.definition())).setValue("title", "my title");
+        todoManager
+                .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                .entities()
+                .create(EntityInstanceDraft.forEntity(todo).withField("title", "my title"));
 
         HttpApiRequest request = new HttpApiRequest("todos");
         request.getHeaders().putAll(HeadersSupport.acceptXml());
@@ -69,10 +70,12 @@ public class XmlRequestResponseTest {
     }
 
     @Test
-    public void canGetXmlErrorMessagesWhenAskedForXml(){
+    public void canGetXmlErrorMessagesWhenAskedForXml() {
 
-
-        todo.addInstance(new EntityInstance(todo.definition())).setValue("title", "my title");
+        todoManager
+                .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                .entities()
+                .create(EntityInstanceDraft.forEntity(todo).withField("title", "my title"));
 
         HttpApiRequest request = new HttpApiRequest("todosyoohoo");
         request.getHeaders().putAll(HeadersSupport.acceptXml());
@@ -82,24 +85,22 @@ public class XmlRequestResponseTest {
         System.out.println(response.getBody());
 
         Assertions.assertEquals(
-                "<errorMessages><errorMessage>" +
-                        "Could not find an instance with todosyoohoo"+
-                        "</errorMessage></errorMessages>",
-                        response.getBody());
+                "<errorMessages><errorMessage>"
+                        + "Could not find an instance with todosyoohoo"
+                        + "</errorMessage></errorMessages>",
+                response.getBody());
     }
-
-
 
     /*
 
 
-        POST to create
+       POST to create
 
 
-     */
+    */
 
     @Test
-    public void canPostAndCreateAnItemWithXml(){
+    public void canPostAndCreateAnItemWithXml() {
 
         HttpApiRequest request = new HttpApiRequest("todos");
         request.getHeaders().putAll(HeadersSupport.acceptXml());
@@ -107,41 +108,62 @@ public class XmlRequestResponseTest {
 
         request.setBody("<todo><title>test title</title></todo>");
 
-        Assertions.assertEquals(0, todo.countInstances());
+        Assertions.assertEquals(
+                0,
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(todo));
 
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).post(request);
 
         Assertions.assertEquals(201, response.getStatusCode());
         System.out.println(response.getBody());
 
-        Assertions.assertEquals(1, todo.countInstances());
+        Assertions.assertEquals(
+                1,
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(todo));
 
         // header should give me the guid
         String guid = response.getHeaders().get(ApiResponse.PRIMARY_KEY_HEADER);
 
-        final EntityInstance aTodo = todo.findInstanceByPrimaryKey(guid);
+        final EntityInstance aTodo =
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .findByPrimaryKey(todo, guid);
 
         Assertions.assertEquals("test title", aTodo.getFieldValue("title").asString());
 
-        Assertions.assertTrue(response.getBody().startsWith("<todo><doneStatus>false</doneStatus>"),
+        Assertions.assertTrue(
+                response.getBody().startsWith("<todo><doneStatus>false</doneStatus>"),
                 "Should have returned xml as body: " + response.getBody());
-
     }
 
     @Test
-    public void canPostAndAmendAnItemWithXml(){
+    public void canPostAndAmendAnItemWithXml() {
 
-        final EntityInstance atodo = todo.addInstance(new EntityInstance(todo.definition())).setValue("title", "my title");
+        final EntityInstance atodo =
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(EntityInstanceDraft.forEntity(todo).withField("title", "my title"));
 
-        Assertions.assertEquals(1, todo.countInstances());
+        Assertions.assertEquals(
+                1,
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(todo));
 
         HttpApiRequest request = new HttpApiRequest("todos/" + atodo.getPrimaryKeyValue());
         request.getHeaders().putAll(HeadersSupport.acceptXml());
         request.getHeaders().putAll(HeadersSupport.containsXml());
 
-
         request.setBody("<todo><title>test title</title></todo>");
-
 
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).post(request);
 
@@ -149,22 +171,32 @@ public class XmlRequestResponseTest {
 
         System.out.println(response.getBody());
 
-        Assertions.assertEquals(1, todo.countInstances());
+        Assertions.assertEquals(
+                1,
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(todo));
 
-        Assertions.assertEquals("test title", atodo.getFieldValue("title").asString());
+        final EntityInstance updatedTodo =
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .findByPrimaryKey(todo, atodo.getPrimaryKeyValue());
 
+        Assertions.assertEquals("test title", updatedTodo.getFieldValue("title").asString());
     }
 
-        /*
+    /*
 
 
-        PUT to create
+       PUT to create
 
 
-     */
+    */
 
     @Test
-    public void canPutAndCreateAnItemWithXmlAndReceiveJson(){
+    public void canPutAndCreateAnItemWithXmlAndReceiveJson() {
 
         HttpApiRequest request = new HttpApiRequest("todos");
         request.getHeaders().putAll(HeadersSupport.acceptJson());
@@ -172,7 +204,12 @@ public class XmlRequestResponseTest {
 
         request.setBody("<todo><title>test title</title></todo>");
 
-        Assertions.assertEquals(0, todo.countInstances());
+        Assertions.assertEquals(
+                0,
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(todo));
 
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).post(request);
 
@@ -180,45 +217,59 @@ public class XmlRequestResponseTest {
 
         Assertions.assertEquals(201, response.getStatusCode());
 
-
-        Assertions.assertEquals(1, todo.countInstances());
+        Assertions.assertEquals(
+                1,
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(todo));
 
         // header should give me the guid
         String guid = response.getHeaders().get(ApiResponse.PRIMARY_KEY_HEADER);
 
-        final EntityInstance aTodo = todo.findInstanceByPrimaryKey(guid);
+        final EntityInstance aTodo =
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .findByPrimaryKey(todo, guid);
 
         Assertions.assertEquals("test title", aTodo.getFieldValue("title").asString());
 
-        //{"doneStatus":"FALSE","guid":
-        Assertions.assertTrue(response.getBody().startsWith("{\"guid\":"),
+        // {"doneStatus":"FALSE","guid":
+        Assertions.assertTrue(
+                response.getBody().startsWith("{\"guid\":"),
                 "Should have returned json as body " + response.getBody());
-
     }
 
-
-     /*
-
-
-        PUT to amend
+    /*
 
 
-     */
+       PUT to amend
+
+
+    */
 
     @Test
-    public void canPutToAmendAnItemWithJson(){
+    public void canPutToAmendAnItemWithJson() {
 
-        final EntityInstance atodo = todo.addInstance(new EntityInstance(todo.definition())).setValue("title", "my title");
+        final EntityInstance atodo =
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(EntityInstanceDraft.forEntity(todo).withField("title", "my title"));
 
-        Assertions.assertEquals(1, todo.countInstances());
+        Assertions.assertEquals(
+                1,
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(todo));
 
-        HttpApiRequest request = new HttpApiRequest("todos/"+atodo.getPrimaryKeyValue());
+        HttpApiRequest request = new HttpApiRequest("todos/" + atodo.getPrimaryKeyValue());
         request.getHeaders().putAll(HeadersSupport.acceptXml());
         request.getHeaders().putAll(HeadersSupport.containsXml());
 
-
         request.setBody("<todo><title>test title</title></todo>");
-
 
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).put(request);
 
@@ -226,25 +277,34 @@ public class XmlRequestResponseTest {
 
         Assertions.assertEquals(200, response.getStatusCode());
 
-        Assertions.assertEquals(1, todo.countInstances());
+        Assertions.assertEquals(
+                1,
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(todo));
 
-        Assertions.assertEquals("test title", atodo.getFieldValue("title").asString());
+        final EntityInstance updatedTodo =
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .findByPrimaryKey(todo, atodo.getPrimaryKeyValue());
 
+        Assertions.assertEquals("test title", updatedTodo.getFieldValue("title").asString());
     }
 
-    private class TodoCollectionResponse{
+    private class TodoCollectionResponse {
 
         Todo[] todos;
-
     }
 
-    private class Todo{
+    private class Todo {
 
         String guid;
         String title;
     }
 
-    private class ErrorMessages{
+    private class ErrorMessages {
 
         String[] errorMessages;
     }

@@ -1,42 +1,59 @@
 package uk.co.compendiumdev.thingifier.core.query;
 
-
+import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 
-import java.util.List;
-
+/** Repository-backed URL query coverage for API-style entity reads. */
 public class QueryFiltersBooleanTest {
 
     // todo: advanced filtering i.e. < > partial text match, etc.
-    // e.g https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/
+    // e.g
+    // https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/
     // https://softwareengineering.stackexchange.com/questions/233164/how-do-searches-fit-into-a-restful-interface
 
-    // TODO: risk that Spark does not pass in args in a way that flow through to simple query
+    // TODO: risk that Spark does not pass in args in a way that flow through to repository URL
+    // query
     //       so test this at an HTTP level as well
 
     EntityRelModel erModel;
 
     @BeforeEach
-    public void setupCollectionTestData(){
+    public void setupCollectionTestData() {
         erModel = new EntityRelModel();
         erModel.createEntityDefinition("thing", "things")
-                .addFields( Field.is("truefalse", FieldType.BOOLEAN)
-                );
+                .addFields(Field.is("truefalse", FieldType.BOOLEAN));
 
-        EntityInstanceCollection thing = erModel.getInstanceData().getInstanceCollectionForEntityNamed("thing");
-
-        thing.addInstance( new EntityInstance(thing.definition())).setValue("truefalse", "true");
-        thing.addInstance( new EntityInstance(thing.definition())).setValue("truefalse", "true");
-        thing.addInstance( new EntityInstance(thing.definition())).setValue("truefalse", "true");
-        thing.addInstance(new EntityInstance(thing.definition())).setValue("truefalse", "false");
-
+        erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                .entities()
+                .create(
+                        EntityInstanceDraft.forEntity(
+                                        erModel.getSchema().getEntityDefinitionNamed("thing"))
+                                .withField("truefalse", "true"));
+        erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                .entities()
+                .create(
+                        EntityInstanceDraft.forEntity(
+                                        erModel.getSchema().getEntityDefinitionNamed("thing"))
+                                .withField("truefalse", "true"));
+        erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                .entities()
+                .create(
+                        EntityInstanceDraft.forEntity(
+                                        erModel.getSchema().getEntityDefinitionNamed("thing"))
+                                .withField("truefalse", "true"));
+        erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                .entities()
+                .create(
+                        EntityInstanceDraft.forEntity(
+                                        erModel.getSchema().getEntityDefinitionNamed("thing"))
+                                .withField("truefalse", "false"));
     }
 
     @Test
@@ -45,8 +62,12 @@ public class QueryFiltersBooleanTest {
         QueryFilterParams params = new QueryFilterParams();
         params.put("truefalse", "true");
 
-        SimpleQuery queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
-                performQuery(params);
+        RepositoryUrlQuery queryResults =
+                new RepositoryUrlQuery(
+                                erModel.getSchema(),
+                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                "things")
+                        .performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
         List<EntityInstance> instances = queryResults.getListEntityInstances();
@@ -59,8 +80,12 @@ public class QueryFiltersBooleanTest {
         QueryFilterParams params = new QueryFilterParams();
         params.put("truefalse", "false");
 
-        SimpleQuery queryResults = queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
-                performQuery(params);
+        RepositoryUrlQuery queryResults =
+                new RepositoryUrlQuery(
+                                erModel.getSchema(),
+                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                "things")
+                        .performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
         List<EntityInstance> instances = queryResults.getListEntityInstances();
@@ -72,8 +97,12 @@ public class QueryFiltersBooleanTest {
         QueryFilterParams params = new QueryFilterParams();
         params.put("truefalse", "!false");
 
-        SimpleQuery queryResults = queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
-                performQuery(params);
+        RepositoryUrlQuery queryResults =
+                new RepositoryUrlQuery(
+                                erModel.getSchema(),
+                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                "things")
+                        .performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
         List<EntityInstance> instances = queryResults.getListEntityInstances();
@@ -81,12 +110,16 @@ public class QueryFiltersBooleanTest {
     }
 
     @Test
-    public void canFilterBooleanMatchesNotTrue(){
+    public void canFilterBooleanMatchesNotTrue() {
         QueryFilterParams params = new QueryFilterParams();
         params.put("truefalse", "!true");
 
-        SimpleQuery queryResults = queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
-                performQuery(params);
+        RepositoryUrlQuery queryResults =
+                new RepositoryUrlQuery(
+                                erModel.getSchema(),
+                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                "things")
+                        .performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
         List<EntityInstance> instances = queryResults.getListEntityInstances();
@@ -94,12 +127,16 @@ public class QueryFiltersBooleanTest {
     }
 
     @Test
-    public void canSortBooleanMatchesAsc(){
+    public void canSortBooleanMatchesAsc() {
         QueryFilterParams params = new QueryFilterParams();
         params.put("sortBy", "+truefalse");
 
-        SimpleQuery queryResults = queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
-                performQuery(params);
+        RepositoryUrlQuery queryResults =
+                new RepositoryUrlQuery(
+                                erModel.getSchema(),
+                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                "things")
+                        .performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
         List<EntityInstance> instances = queryResults.getListEntityInstances();
@@ -112,12 +149,16 @@ public class QueryFiltersBooleanTest {
     }
 
     @Test
-    public void canSortBooleanMatchesDesc(){
+    public void canSortBooleanMatchesDesc() {
         QueryFilterParams params = new QueryFilterParams();
         params.put("sortBy", "-truefalse");
 
-        SimpleQuery queryResults = queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
-                performQuery(params);
+        RepositoryUrlQuery queryResults =
+                new RepositoryUrlQuery(
+                                erModel.getSchema(),
+                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                "things")
+                        .performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
         List<EntityInstance> instances = queryResults.getListEntityInstances();

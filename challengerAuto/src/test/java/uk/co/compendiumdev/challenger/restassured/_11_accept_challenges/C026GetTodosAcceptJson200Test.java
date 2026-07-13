@@ -1,6 +1,5 @@
 package uk.co.compendiumdev.challenger.restassured._11_accept_challenges;
 
-
 import com.google.gson.Gson;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
@@ -13,20 +12,19 @@ import uk.co.compendiumdev.challenger.restassured.api.RestAssuredBaseTest;
 
 public class C026GetTodosAcceptJson200Test extends RestAssuredBaseTest {
 
-
     @Test
-    void canGetTodosAsJSON(){
+    void canGetTodosAsJSON() {
 
-        final Response response = RestAssured.
-                given().
-                header("X-CHALLENGER", xChallenger).
-                accept("application/json").
-                get(apiPath("/todos")).
-                then().
-                statusCode(200).
-                contentType(ContentType.JSON).
-                extract().response();
-
+        final Response response =
+                RestAssured.given()
+                        .header("X-CHALLENGER", xChallenger)
+                        .accept("application/json")
+                        .get(apiPath("/todos"))
+                        .then()
+                        .statusCode(200)
+                        .contentType(ContentType.JSON)
+                        .extract()
+                        .response();
 
         ChallengesStatus statuses = new ChallengesStatus();
         statuses.get();
@@ -34,7 +32,5 @@ public class C026GetTodosAcceptJson200Test extends RestAssuredBaseTest {
 
         // should be able to parse with GSON if JSON response
         new Gson().fromJson(response.body().asString(), Todos.class);
-
     }
-
 }

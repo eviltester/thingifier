@@ -7,9 +7,10 @@ public class QueryFilterParams {
 
     List<FilterBy> filterBys;
 
-    public QueryFilterParams(){
+    public QueryFilterParams() {
         filterBys = new ArrayList<>();
     }
+
     public void put(String fieldName, String fieldValue) {
         filterBys.add(new FilterBy(fieldName, fieldValue));
     }
@@ -19,10 +20,10 @@ public class QueryFilterParams {
     }
 
     public List<FilterBy> sortBys() {
-       List<FilterBy> sortCriteria = new ArrayList<>();
+        List<FilterBy> sortCriteria = new ArrayList<>();
 
-        for(FilterBy by : filterBys){
-            if(SortByFieldName.isSortByParam(by.fieldName)){
+        for (FilterBy by : filterBys) {
+            if (SortByFieldName.isSortByParam(by.fieldName)) {
                 sortCriteria.add(by);
             }
         }
@@ -43,8 +44,8 @@ public class QueryFilterParams {
     }
 
     public boolean hasSortBy() {
-        for(FilterBy filterBy : filterBys){
-            if(filterBy.fieldName.equals("sortBy") || filterBy.fieldName.equals("sort_by")){
+        for (FilterBy filterBy : filterBys) {
+            if (filterBy.fieldName.equals("sortBy") || filterBy.fieldName.equals("sort_by")) {
                 return true;
             }
         }

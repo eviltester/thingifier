@@ -9,92 +9,73 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.Fie
 class MaximumLengthValidationRuleTest {
 
     @Test
-    void ruleFailsWhenNotSatisfied(){
+    void ruleFailsWhenNotSatisfied() {
 
         Field field = Field.is("name", FieldType.STRING);
 
         final ValidationRule rule;
         rule = new MaximumLengthValidationRule(10);
 
-        Assertions.assertFalse(
-                rule.validates(
-                        FieldValue.is(field,"1234567890 Too Long"))
-        );
+        Assertions.assertFalse(rule.validates(FieldValue.is(field, "1234567890 Too Long")));
     }
 
     @Test
-    void maxLengthExceedsBoundaryTesting(){
+    void maxLengthExceedsBoundaryTesting() {
 
         Field field = Field.is("name", FieldType.STRING);
 
         final ValidationRule rule;
         rule = new MaximumLengthValidationRule(10);
 
-        Assertions.assertFalse(
-                rule.validates(
-                        FieldValue.is(field,"12345678901"))
-        );
+        Assertions.assertFalse(rule.validates(FieldValue.is(field, "12345678901")));
     }
 
     @Test
-    void canPassExactLength(){
+    void canPassExactLength() {
 
         Field field = Field.is("name", FieldType.STRING);
 
         final ValidationRule rule;
         rule = new MaximumLengthValidationRule(10);
 
-        Assertions.assertTrue(
-                rule.validates(
-                        FieldValue.is(field,"1234567890"))
-        );
+        Assertions.assertTrue(rule.validates(FieldValue.is(field, "1234567890")));
     }
 
     @Test
-    void canPassOneLess(){
+    void canPassOneLess() {
 
         Field field = Field.is("name", FieldType.STRING);
 
         final ValidationRule rule;
         rule = new MaximumLengthValidationRule(10);
 
-        Assertions.assertTrue(
-                rule.validates(
-                        FieldValue.is(field,"123456789"))
-        );
+        Assertions.assertTrue(rule.validates(FieldValue.is(field, "123456789")));
     }
 
     @Test
-    void emptyStringIsFine(){
+    void emptyStringIsFine() {
 
         Field field = Field.is("name", FieldType.STRING);
 
         final ValidationRule rule;
         rule = new MaximumLengthValidationRule(10);
 
-        Assertions.assertTrue(
-                rule.validates(
-                        FieldValue.is(field,""))
-        );
+        Assertions.assertTrue(rule.validates(FieldValue.is(field, "")));
     }
 
     @Test
-    void nullStringIsFine(){
+    void nullStringIsFine() {
 
         Field field = Field.is("name", FieldType.STRING);
 
         final ValidationRule rule;
         rule = new MaximumLengthValidationRule(10);
 
-        Assertions.assertTrue(
-                rule.validates(
-                        FieldValue.is(field,(String)null))
-        );
+        Assertions.assertTrue(rule.validates(FieldValue.is(field, (String) null)));
     }
 
-
     @Test
-    void validationMessageReturnsText(){
+    void validationMessageReturnsText() {
 
         Field field = Field.is("name", FieldType.STRING);
 
@@ -103,26 +84,20 @@ class MaximumLengthValidationRuleTest {
         final String msg = rule.getErrorMessage(FieldValue.is(field, "bob"));
 
         Assertions.assertNotNull(msg);
-        Assertions.assertTrue(msg.trim().length()>0);
+        Assertions.assertTrue(msg.trim().length() > 0);
         Assertions.assertTrue(msg.contains("10"));
     }
 
     @Test
-    void canCreateRuleUsingVRule(){
+    void canCreateRuleUsingVRule() {
 
         Field field = Field.is("name", FieldType.STRING);
 
         final ValidationRule rule;
         rule = VRule.maximumLength(10);
 
-        Assertions.assertTrue(
-                rule.validates(
-                        FieldValue.is(field,"12345"))
-        );
+        Assertions.assertTrue(rule.validates(FieldValue.is(field, "12345")));
 
-        Assertions.assertFalse(
-                rule.validates(
-                        FieldValue.is(field,"12345678901"))
-        );
+        Assertions.assertFalse(rule.validates(FieldValue.is(field, "12345678901")));
     }
 }

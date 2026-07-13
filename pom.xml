@@ -22,11 +22,80 @@
         <rest-assured-version>5.5.0</rest-assured-version>
         <jaxbi-version>2.3.1</jaxbi-version>
         <slf4j-version>2.0.10</slf4j-version>
+        <maven-pmd-plugin.version>3.28.0</maven-pmd-plugin.version>
+        <spotless.version>3.8.0</spotless.version>
+        <google-java-format.version>1.35.0</google-java-format.version>
     </properties>
 
       <build>
+        <plugins>
+          <plugin>
+            <groupId>com.diffplug.spotless</groupId>
+            <artifactId>spotless-maven-plugin</artifactId>
+            <version>${spotless.version}</version>
+            <configuration>
+              <java>
+                <googleJavaFormat>
+                  <version>${google-java-format.version}</version>
+                  <style>AOSP</style>
+                </googleJavaFormat>
+                <removeUnusedImports/>
+                <trimTrailingWhitespace/>
+                <endWithNewline/>
+              </java>
+            </configuration>
+            <executions>
+              <execution>
+                <id>spotless-check</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>check</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-checkstyle-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>project-fqn-check</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>check</goal>
+                </goals>
+                <configuration>
+                  <configLocation>${maven.multiModuleProjectDirectory}/checkstyle-project-fqn.xml</configLocation>
+                  <includeTestSourceDirectory>true</includeTestSourceDirectory>
+                  <consoleOutput>true</consoleOutput>
+                  <failsOnError>true</failsOnError>
+                  <failOnViolation>true</failOnViolation>
+                  <violationSeverity>warning</violationSeverity>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-pmd-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>pmd-check</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>check</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
         <pluginManagement>
           <plugins>
+            <plugin>
+              <groupId>com.diffplug.spotless</groupId>
+              <artifactId>spotless-maven-plugin</artifactId>
+              <version>${spotless.version}</version>
+            </plugin>
             <plugin>
               <groupId>org.jacoco</groupId>
               <artifactId>jacoco-maven-plugin</artifactId>
@@ -42,6 +111,19 @@
                 <failsOnError>false</failsOnError>
                 <failOnViolation>false</failOnViolation>
                 <violationSeverity>warning</violationSeverity>
+              </configuration>
+            </plugin>
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-pmd-plugin</artifactId>
+              <version>${maven-pmd-plugin.version}</version>
+              <configuration>
+                <rulesets>
+                  <ruleset>${maven.multiModuleProjectDirectory}/pmd-ruleset.xml</ruleset>
+                </rulesets>
+                <includeTests>true</includeTests>
+                <printFailingErrors>true</printFailingErrors>
+                <targetJdk>${java.version}</targetJdk>
               </configuration>
             </plugin>
           </plugins>

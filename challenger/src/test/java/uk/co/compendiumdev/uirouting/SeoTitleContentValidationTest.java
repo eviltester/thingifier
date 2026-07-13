@@ -1,8 +1,5 @@
 package uk.co.compendiumdev.uirouting;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -16,6 +13,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class SeoTitleContentValidationTest {
 
@@ -30,28 +29,30 @@ public class SeoTitleContentValidationTest {
                     .forEach(markdownFiles::add);
         }
 
-        Assertions.assertFalse(markdownFiles.isEmpty(), "No markdown files found in content directory");
+        Assertions.assertFalse(
+                markdownFiles.isEmpty(), "No markdown files found in content directory");
 
         final Map<String, List<String>> seoTitlesToPaths = new HashMap<>();
-        final Set<String> allowedMetadataKeys = new HashSet<>(Arrays.asList(
-                "seo_title",
-                "seo_description",
-                "meta_robots",
-                "og_image",
-                "og_image_alt",
-                "og_type",
-                "twitter_card",
-                "twitter_site",
-                "schema_type",
-                "schema_author",
-                "schema_publisher",
-                "schema_image",
-                "schema_breadcrumb_enabled",
-                "schema_howto_enabled",
-                "schema_howto_steps",
-                "schema_video_enabled",
-                "schema_video_id"
-        ));
+        final Set<String> allowedMetadataKeys =
+                new HashSet<>(
+                        Arrays.asList(
+                                "seo_title",
+                                "seo_description",
+                                "meta_robots",
+                                "og_image",
+                                "og_image_alt",
+                                "og_type",
+                                "twitter_card",
+                                "twitter_site",
+                                "schema_type",
+                                "schema_author",
+                                "schema_publisher",
+                                "schema_image",
+                                "schema_breadcrumb_enabled",
+                                "schema_howto_enabled",
+                                "schema_howto_steps",
+                                "schema_video_enabled",
+                                "schema_video_id"));
         final List<String> missingSeoTitle = new ArrayList<>();
         final List<String> emptySeoTitle = new ArrayList<>();
         final List<String> outOfRangeSeoTitle = new ArrayList<>();
@@ -68,7 +69,8 @@ public class SeoTitleContentValidationTest {
         final Path publicRoot = resolvePublicRoot();
 
         for (Path markdownFile : markdownFiles) {
-            final String relativePath = contentRoot.relativize(markdownFile).toString().replace("\\", "/");
+            final String relativePath =
+                    contentRoot.relativize(markdownFile).toString().replace("\\", "/");
             final List<String> lines = Files.readAllLines(markdownFile, StandardCharsets.UTF_8);
             final String seoTitle = extractHeaderValue(lines, "seo_title");
             final String description = extractHeaderValue(lines, "description");
@@ -108,30 +110,35 @@ public class SeoTitleContentValidationTest {
                 emptySeoDescription.add(relativePath);
             } else {
                 // keep explicit fixture override free for escaping/special-char assertions
-                if (!relativePath.equals("seo-metadata-test-page.md") &&
-                        (seoDescription.length() < 110 || seoDescription.length() > 170)) {
-                    outOfRangeSeoDescription.add(relativePath + " (" + seoDescription.length() + "): " + seoDescription);
+                if (!relativePath.equals("seo-metadata-test-page.md")
+                        && (seoDescription.length() < 110 || seoDescription.length() > 170)) {
+                    outOfRangeSeoDescription.add(
+                            relativePath + " (" + seoDescription.length() + "): " + seoDescription);
                 }
             }
 
-            final boolean indexable = metaRobots == null || !metaRobots.toLowerCase().contains("noindex");
+            final boolean indexable =
+                    metaRobots == null || !metaRobots.toLowerCase().contains("noindex");
             if (indexable && (description == null || description.trim().isEmpty())) {
                 missingDescriptionForIndexablePage.add(relativePath);
             }
 
             for (String key : headerKeys) {
-                final boolean isMetadataKey = key.startsWith("seo_") ||
-                        key.startsWith("og_") ||
-                        key.startsWith("twitter_") ||
-                        key.startsWith("schema_") ||
-                        key.equals("meta_robots");
+                final boolean isMetadataKey =
+                        key.startsWith("seo_")
+                                || key.startsWith("og_")
+                                || key.startsWith("twitter_")
+                                || key.startsWith("schema_")
+                                || key.equals("meta_robots");
                 if (isMetadataKey && !allowedMetadataKeys.contains(key)) {
                     malformedMetadataKeys.add(relativePath + " -> " + key);
                 }
             }
 
             if (ogImage != null && !ogImage.trim().isEmpty() && ogImage.startsWith("/")) {
-                final Path ogImagePath = publicRoot.resolve(ogImage.substring(1).replace("/", java.io.File.separator));
+                final Path ogImagePath =
+                        publicRoot.resolve(
+                                ogImage.substring(1).replace("/", java.io.File.separator));
                 if (!Files.exists(ogImagePath)) {
                     invalidOgImageOverrides.add(relativePath + " -> " + ogImage);
                 }
@@ -141,36 +148,53 @@ public class SeoTitleContentValidationTest {
         final List<String> duplicateSeoTitles = new ArrayList<>();
         for (Map.Entry<String, List<String>> entry : seoTitlesToPaths.entrySet()) {
             if (entry.getValue().size() > 1) {
-                duplicateSeoTitles.add(entry.getKey() + " -> " + String.join(", ", entry.getValue()));
+                duplicateSeoTitles.add(
+                        entry.getKey() + " -> " + String.join(", ", entry.getValue()));
             }
         }
 
-        Assertions.assertTrue(missingSeoTitle.isEmpty(),
+        Assertions.assertTrue(
+                missingSeoTitle.isEmpty(),
                 "Missing seo_title in: " + String.join("; ", missingSeoTitle));
-        Assertions.assertTrue(emptySeoTitle.isEmpty(),
-                "Empty seo_title in: " + String.join("; ", emptySeoTitle));
-        Assertions.assertTrue(outOfRangeSeoTitle.isEmpty(),
+        Assertions.assertTrue(
+                emptySeoTitle.isEmpty(), "Empty seo_title in: " + String.join("; ", emptySeoTitle));
+        Assertions.assertTrue(
+                outOfRangeSeoTitle.isEmpty(),
                 "seo_title out of range (45-70 chars): " + String.join("; ", outOfRangeSeoTitle));
-        Assertions.assertTrue(missingSeoDescription.isEmpty(),
+        Assertions.assertTrue(
+                missingSeoDescription.isEmpty(),
                 "Missing seo_description in: " + String.join("; ", missingSeoDescription));
-        Assertions.assertTrue(emptySeoDescription.isEmpty(),
+        Assertions.assertTrue(
+                emptySeoDescription.isEmpty(),
                 "Empty seo_description in: " + String.join("; ", emptySeoDescription));
-        Assertions.assertTrue(outOfRangeSeoDescription.isEmpty(),
-                "seo_description out of range (110-170 chars): " + String.join("; ", outOfRangeSeoDescription));
-        Assertions.assertTrue(missingLastmod.isEmpty(),
+        Assertions.assertTrue(
+                outOfRangeSeoDescription.isEmpty(),
+                "seo_description out of range (110-170 chars): "
+                        + String.join("; ", outOfRangeSeoDescription));
+        Assertions.assertTrue(
+                missingLastmod.isEmpty(),
                 "Missing lastmod in: " + String.join("; ", missingLastmod));
-        Assertions.assertTrue(emptyLastmod.isEmpty(),
-                "Empty lastmod in: " + String.join("; ", emptyLastmod));
-        Assertions.assertTrue(invalidLastmodFormat.isEmpty(),
-                "Invalid lastmod format (expected YYYY-MM-DD): " + String.join("; ", invalidLastmodFormat));
-        Assertions.assertTrue(duplicateSeoTitles.isEmpty(),
+        Assertions.assertTrue(
+                emptyLastmod.isEmpty(), "Empty lastmod in: " + String.join("; ", emptyLastmod));
+        Assertions.assertTrue(
+                invalidLastmodFormat.isEmpty(),
+                "Invalid lastmod format (expected YYYY-MM-DD): "
+                        + String.join("; ", invalidLastmodFormat));
+        Assertions.assertTrue(
+                duplicateSeoTitles.isEmpty(),
                 "Duplicate seo_title values found: " + String.join("; ", duplicateSeoTitles));
-        Assertions.assertTrue(missingDescriptionForIndexablePage.isEmpty(),
-                "Indexable pages missing description: " + String.join("; ", missingDescriptionForIndexablePage));
-        Assertions.assertTrue(malformedMetadataKeys.isEmpty(),
-                "Malformed SEO/OG/Twitter metadata keys: " + String.join("; ", malformedMetadataKeys));
-        Assertions.assertTrue(invalidOgImageOverrides.isEmpty(),
-                "og_image override paths not found in public assets: " + String.join("; ", invalidOgImageOverrides));
+        Assertions.assertTrue(
+                missingDescriptionForIndexablePage.isEmpty(),
+                "Indexable pages missing description: "
+                        + String.join("; ", missingDescriptionForIndexablePage));
+        Assertions.assertTrue(
+                malformedMetadataKeys.isEmpty(),
+                "Malformed SEO/OG/Twitter metadata keys: "
+                        + String.join("; ", malformedMetadataKeys));
+        Assertions.assertTrue(
+                invalidOgImageOverrides.isEmpty(),
+                "og_image override paths not found in public assets: "
+                        + String.join("; ", invalidOgImageOverrides));
     }
 
     private Path resolveContentRoot() {

@@ -1,21 +1,20 @@
 package uk.co.compendiumdev.challenge;
 
+import java.util.Arrays;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import java.util.Arrays;
 
 public class ChallengeAuthDataTest {
 
     @Test
-    void canCreateAuthData(){
+    void canCreateAuthData() {
 
         final long timeNow = System.currentTimeMillis();
 
         ChallengerAuthData authData = new ChallengerAuthData(Arrays.asList(CHALLENGE.values()));
 
-        Assertions.assertTrue(authData.getLastAccessed()>=timeNow);
-        Assertions.assertTrue(authData.expiresAt()>=timeNow+30000);
+        Assertions.assertTrue(authData.getLastAccessed() >= timeNow);
+        Assertions.assertTrue(authData.expiresAt() >= timeNow + 30000);
         Assertions.assertNotNull(authData.getXChallenger());
         Assertions.assertNotNull(authData.getXAuthToken());
         Assertions.assertNotNull(authData.getNote());
@@ -24,14 +23,14 @@ public class ChallengeAuthDataTest {
     }
 
     @Test
-    void canOverrideGuid(){
+    void canOverrideGuid() {
         ChallengerAuthData authData = new ChallengerAuthData(Arrays.asList(CHALLENGE.values()));
         authData.setXChallengerGUID("bob");
         Assertions.assertEquals("bob", authData.getXChallenger());
     }
 
     @Test
-    void canCreatePassAChallenge(){
+    void canCreatePassAChallenge() {
 
         ChallengerAuthData authData = new ChallengerAuthData(Arrays.asList(CHALLENGE.values()));
 
@@ -41,32 +40,31 @@ public class ChallengeAuthDataTest {
     }
 
     @Test
-    void canPassAllChallenges(){
+    void canPassAllChallenges() {
 
         ChallengerAuthData authData = new ChallengerAuthData(Arrays.asList(CHALLENGE.values()));
 
-        for(CHALLENGE challenge : CHALLENGE.values()){
+        for (CHALLENGE challenge : CHALLENGE.values()) {
             authData.pass(challenge);
         }
 
         Assertions.assertTrue(authData.statusOfChallenge(CHALLENGE.GET_CHALLENGES));
         Assertions.assertTrue(authData.statusOfChallenge(CHALLENGE.GET_HEARTBEAT_204));
 
-        for(CHALLENGE challenge : CHALLENGE.values()){
+        for (CHALLENGE challenge : CHALLENGE.values()) {
             Assertions.assertTrue(authData.statusOfChallenge(challenge));
         }
     }
 
     @Test
-    void canNotSetNullNote(){
+    void canNotSetNullNote() {
         ChallengerAuthData authData = new ChallengerAuthData(Arrays.asList(CHALLENGE.values()));
 
-        Assertions.assertThrows(RuntimeException.class,
-                ()-> authData.setNote(null));
+        Assertions.assertThrows(RuntimeException.class, () -> authData.setNote(null));
     }
 
     @Test
-    void canSetEmptyNote(){
+    void canSetEmptyNote() {
         ChallengerAuthData authData = new ChallengerAuthData(Arrays.asList(CHALLENGE.values()));
 
         authData.setNote("");
@@ -74,9 +72,8 @@ public class ChallengeAuthDataTest {
     }
 
     @Test
-    void noteTruncatedTo100Chars(){
+    void noteTruncatedTo100Chars() {
         ChallengerAuthData authData = new ChallengerAuthData(Arrays.asList(CHALLENGE.values()));
-
 
         String morethanonehundred = stringOfLength(101);
         Assertions.assertEquals(101, morethanonehundred.length());
@@ -90,7 +87,7 @@ public class ChallengeAuthDataTest {
 
     private String stringOfLength(final int desiredLength) {
         String ofLength = "";
-        while(ofLength.length()<desiredLength){
+        while (ofLength.length() < desiredLength) {
             ofLength = ofLength + "a";
         }
 
@@ -98,7 +95,7 @@ public class ChallengeAuthDataTest {
     }
 
     @Test
-    void noteAcceptedAt100CharsOrLess(){
+    void noteAcceptedAt100CharsOrLess() {
         ChallengerAuthData authData = new ChallengerAuthData(Arrays.asList(CHALLENGE.values()));
 
         authData.setNote(stringOfLength(100));
@@ -110,5 +107,4 @@ public class ChallengeAuthDataTest {
         authData.setNote(stringOfLength(1));
         Assertions.assertEquals(1, authData.getNote().length());
     }
-
 }

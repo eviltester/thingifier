@@ -1,105 +1,169 @@
 package uk.co.compendiumdev.casestudy.todomanager.http_api;
 
 import com.google.gson.Gson;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.casestudy.todomanager.TodoManagerModel;
-import uk.co.compendiumdev.thingifier.core.EntityRelModel;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiResponse;
 import uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
+import uk.co.compendiumdev.thingifier.core.EntityRelModel;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 
 public class RelationshipHttpTest {
 
     private Thingifier todoManager;
 
-    EntityInstanceCollection todo;
-    EntityInstanceCollection project;
-    EntityInstanceCollection categories;
+    EntityDefinition todo;
+    EntityDefinition project;
+    EntityDefinition categories;
 
     @BeforeEach
     public void createDefinitions() {
 
         todoManager = TodoManagerModel.definedAsThingifier();
 
-        todo = todoManager.getThingInstancesNamed("todo", EntityRelModel.DEFAULT_DATABASE_NAME);
-        project = todoManager.getThingInstancesNamed("project", EntityRelModel.DEFAULT_DATABASE_NAME);
-        categories = todoManager.getThingInstancesNamed("category", EntityRelModel.DEFAULT_DATABASE_NAME);
-
-
+        todo = todoManager.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("todo");
+        project =
+                todoManager
+                        .getERmodel()
+                        .getSchema()
+                        .getDefinitionWithSingularOrPluralNamed("project");
+        categories =
+                todoManager
+                        .getERmodel()
+                        .getSchema()
+                        .getDefinitionWithSingularOrPluralNamed("category");
     }
 
     @Test
-    public void canCreateARelationshipBetweenProjectAndTodoViaTasks(){
+    public void canCreateARelationshipBetweenProjectAndTodoViaTasks() {
 
-        final EntityInstance atodo = todo.addInstance(new EntityInstance(todo.definition())).setValue("title", "a TODO");
+        final EntityInstance atodo =
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(EntityInstanceDraft.forEntity(todo).withField("title", "a TODO"));
 
-        final EntityInstance aproject = project.addInstance(new EntityInstance(project.definition())).setValue("title", "a Project");
+        final EntityInstance aproject =
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
+                                EntityInstanceDraft.forEntity(project)
+                                        .withField("title", "a Project"));
 
-        Assertions.assertEquals(0, aproject.getRelationships().getConnectedItems("tasks").size());
+        Assertions.assertEquals(
+                0,
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .relationships()
+                        .listRelated(aproject, "tasks")
+                        .size());
 
-        HttpApiRequest request = new HttpApiRequest("projects/" + aproject.getPrimaryKeyValue() + "/tasks");
+        HttpApiRequest request =
+                new HttpApiRequest("projects/" + aproject.getPrimaryKeyValue() + "/tasks");
         request.getHeaders().putAll(HeadersSupport.acceptJson());
         request.getHeaders().putAll(HeadersSupport.containsJson());
 
-        //{"guid":"%s"}
+        // {"guid":"%s"}
         String body = String.format("{\"guid\":\"%s\"}", atodo.getPrimaryKeyValue());
         request.setBody(body);
 
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).post(request);
         Assertions.assertEquals(201, response.getStatusCode());
 
-        Assertions.assertEquals(1, aproject.getRelationships().getConnectedItems("tasks").size());
-
+        Assertions.assertEquals(
+                1,
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .relationships()
+                        .listRelated(aproject, "tasks")
+                        .size());
     }
 
     @Test
-    public void canCreateARelationshipBetweenProjectAndTodoViaTasksUsingID(){
+    public void canCreateARelationshipBetweenProjectAndTodoViaTasksUsingID() {
 
-        final EntityInstance atodo = todo.addInstance(new EntityInstance(todo.definition())).setValue("title", "a TODO");
+        final EntityInstance atodo =
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(EntityInstanceDraft.forEntity(todo).withField("title", "a TODO"));
 
-        final EntityInstance aproject = project.addInstance(new EntityInstance(project.definition())).setValue("title", "a Project");
+        final EntityInstance aproject =
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
+                                EntityInstanceDraft.forEntity(project)
+                                        .withField("title", "a Project"));
 
-        Assertions.assertEquals(0, aproject.getRelationships().getConnectedItems("tasks").size());
+        Assertions.assertEquals(
+                0,
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .relationships()
+                        .listRelated(aproject, "tasks")
+                        .size());
 
-        HttpApiRequest request = new HttpApiRequest("projects/" + aproject.getPrimaryKeyValue() + "/tasks");
+        HttpApiRequest request =
+                new HttpApiRequest("projects/" + aproject.getPrimaryKeyValue() + "/tasks");
         request.getHeaders().putAll(HeadersSupport.acceptJson());
         request.getHeaders().putAll(HeadersSupport.containsJson());
 
-        //{"guid":"%s"}
+        // {"guid":"%s"}
         String body = String.format("{\"id\":\"%s\"}", atodo.getFieldValue("id").asString());
         request.setBody(body);
 
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).post(request);
         Assertions.assertEquals(201, response.getStatusCode());
 
-        Assertions.assertEquals(1, aproject.getRelationships().getConnectedItems("tasks").size());
-
+        Assertions.assertEquals(
+                1,
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .relationships()
+                        .listRelated(aproject, "tasks")
+                        .size());
     }
 
-
-
-
     @Test
-    public void canCreateARelationshipAndTodoBetweenProjectAndTodoViaTasks(){
+    public void canCreateARelationshipAndTodoBetweenProjectAndTodoViaTasks() {
 
-        final EntityInstance aproject = project.addInstance(new EntityInstance(project.definition())).setValue("title", "a Project");
+        final EntityInstance aproject =
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
+                                EntityInstanceDraft.forEntity(project)
+                                        .withField("title", "a Project"));
 
-        Assertions.assertEquals(0, aproject.getRelationships().getConnectedItems("tasks").size());
-        Assertions.assertEquals(0,todo.countInstances());
+        Assertions.assertEquals(
+                0,
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .relationships()
+                        .listRelated(aproject, "tasks")
+                        .size());
+        Assertions.assertEquals(
+                0,
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(todo));
 
-        HttpApiRequest request = new HttpApiRequest("projects/" + aproject.getPrimaryKeyValue() + "/tasks");
+        HttpApiRequest request =
+                new HttpApiRequest("projects/" + aproject.getPrimaryKeyValue() + "/tasks");
         request.getHeaders().putAll(HeadersSupport.acceptJson());
         request.getHeaders().putAll(HeadersSupport.containsJson());
 
-        //{"title":"My New To do"}
+        // {"title":"My New To do"}
         String body = "{\"title\":\"My New To do\"}";
         request.setBody(body);
 
@@ -107,60 +171,116 @@ public class RelationshipHttpTest {
 
         Assertions.assertEquals(201, response.getStatusCode());
 
-        Assertions.assertEquals(1, aproject.getRelationships().getConnectedItems("tasks").size());
-        Assertions.assertEquals(1,todo.countInstances());
+        Assertions.assertEquals(
+                1,
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .relationships()
+                        .listRelated(aproject, "tasks")
+                        .size());
+        Assertions.assertEquals(
+                1,
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(todo));
 
-        final EntityInstance inMemoryTodo = todo.findInstanceByPrimaryKey(response.getHeaders().get(ApiResponse.PRIMARY_KEY_HEADER));
-        Assertions.assertTrue(response.getBody().contains(inMemoryTodo.getPrimaryKeyValue()),
-                response.getBody());
-
+        final EntityInstance inMemoryTodo =
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .findByPrimaryKey(
+                                todo, response.getHeaders().get(ApiResponse.PRIMARY_KEY_HEADER));
+        Assertions.assertTrue(
+                response.getBody().contains(inMemoryTodo.getPrimaryKeyValue()), response.getBody());
     }
 
     @Test
-    public void cannotCreateARelationshipBetweenProjectAndCategoryViaTasks(){
+    public void cannotCreateARelationshipBetweenProjectAndCategoryViaTasks() {
 
+        final EntityInstance acategory =
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
+                                EntityInstanceDraft.forEntity(categories)
+                                        .withField("title", "a Category"));
 
-        final EntityInstance acategory = categories.addInstance(new EntityInstance(categories.definition())).setValue("title", "a Category");
+        final EntityInstance aproject =
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
+                                EntityInstanceDraft.forEntity(project)
+                                        .withField("title", "a Project"));
 
-        final EntityInstance aproject = project.addInstance(new EntityInstance(project.definition())).setValue("title", "a Project");
+        Assertions.assertEquals(
+                0,
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .relationships()
+                        .listRelated(aproject, "tasks")
+                        .size());
 
-        Assertions.assertEquals(0, aproject.getRelationships().getConnectedItems("tasks").size());
-
-        HttpApiRequest request = new HttpApiRequest("projects/" + aproject.getPrimaryKeyValue() + "/tasks");
+        HttpApiRequest request =
+                new HttpApiRequest("projects/" + aproject.getPrimaryKeyValue() + "/tasks");
         request.getHeaders().putAll(HeadersSupport.acceptJson());
         request.getHeaders().putAll(HeadersSupport.containsJson());
 
-        //{"guid":"%s"}
+        // {"guid":"%s"}
         String body = String.format("{\"guid\":\"%s\"}", acategory.getPrimaryKeyValue());
         request.setBody(body);
 
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).post(request);
         Assertions.assertEquals(404, response.getStatusCode());
 
-        Assertions.assertEquals(0, aproject.getRelationships().getConnectedItems("tasks").size());
+        Assertions.assertEquals(
+                0,
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .relationships()
+                        .listRelated(aproject, "tasks")
+                        .size());
 
         final ErrorMessages errors = new Gson().fromJson(response.getBody(), ErrorMessages.class);
 
-        Assertions.assertEquals(1,errors.errorMessages.length);
+        Assertions.assertEquals(1, errors.errorMessages.length);
 
-        Assertions.assertEquals("Could not find thing matching value for guid", errors.errorMessages[0]);
+        Assertions.assertEquals(
+                "Could not find thing matching value for guid", errors.errorMessages[0]);
     }
 
     @Test
-    public void cannotCreateARelationshipWhenGivenGuidDoesNotExist(){
+    public void cannotCreateARelationshipWhenGivenGuidDoesNotExist() {
 
+        final EntityInstance atodo =
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(EntityInstanceDraft.forEntity(todo).withField("title", "a TODO"));
 
-        final EntityInstance atodo = todo.addInstance(new EntityInstance(todo.definition())).setValue("title", "a TODO");
+        final EntityInstance aproject =
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
+                                EntityInstanceDraft.forEntity(project)
+                                        .withField("title", "a Project"));
 
-        final EntityInstance aproject = project.addInstance(new EntityInstance(project.definition())).setValue("title", "a Project");
+        Assertions.assertEquals(
+                0,
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .relationships()
+                        .listRelated(aproject, "tasks")
+                        .size());
 
-        Assertions.assertEquals(0, aproject.getRelationships().getConnectedItems("tasks").size());
-
-        HttpApiRequest request = new HttpApiRequest("projects/" + aproject.getPrimaryKeyValue() + "/tasks");
+        HttpApiRequest request =
+                new HttpApiRequest("projects/" + aproject.getPrimaryKeyValue() + "/tasks");
         request.getHeaders().putAll(HeadersSupport.acceptJson());
         request.getHeaders().putAll(HeadersSupport.containsJson());
 
-        //{"guid":"%s"}
+        // {"guid":"%s"}
         String body = String.format("{\"guid\":\"%s\"}", atodo.getPrimaryKeyValue() + "bob");
         request.setBody(body);
 
@@ -168,52 +288,91 @@ public class RelationshipHttpTest {
         Assertions.assertEquals(404, response.getStatusCode());
 
         final ErrorMessages errors = new Gson().fromJson(response.getBody(), ErrorMessages.class);
-        Assertions.assertEquals(1,errors.errorMessages.length);
+        Assertions.assertEquals(1, errors.errorMessages.length);
 
-        Assertions.assertTrue(errors.errorMessages[0].startsWith("Could not find thing"),
+        Assertions.assertTrue(
+                errors.errorMessages[0].startsWith("Could not find thing"),
                 errors.errorMessages[0]);
     }
 
     // need to see if I can create where a relationship name is the same as a plural entity
     @Test
-    public void canCreateARelationshipBetweenCategoryAndTodoViaTodos(){
+    public void canCreateARelationshipBetweenCategoryAndTodoViaTodos() {
 
+        final EntityInstance acategory =
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
+                                EntityInstanceDraft.forEntity(categories)
+                                        .withField("title", "a Category"));
 
-        final EntityInstance acategory = categories.addInstance(new EntityInstance(categories.definition())).setValue("title", "a Category");
+        final EntityInstance atodo =
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(EntityInstanceDraft.forEntity(todo).withField("title", "a TODO"));
 
-        final EntityInstance atodo = todo.addInstance(new EntityInstance(todo.definition())).setValue("title", "a TODO");
+        Assertions.assertEquals(
+                0,
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .relationships()
+                        .listRelated(acategory, "todos")
+                        .size());
 
-        Assertions.assertEquals(0, acategory.getRelationships().getConnectedItems("todos").size());
-
-        HttpApiRequest request = new HttpApiRequest("categories/" + acategory.getPrimaryKeyValue() + "/todos");
+        HttpApiRequest request =
+                new HttpApiRequest("categories/" + acategory.getPrimaryKeyValue() + "/todos");
         request.getHeaders().putAll(HeadersSupport.acceptJson());
         request.getHeaders().putAll(HeadersSupport.containsJson());
 
-        //{"guid":"%s"}
+        // {"guid":"%s"}
         String body = String.format("{\"guid\":\"%s\"}", atodo.getPrimaryKeyValue());
         request.setBody(body);
 
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).post(request);
         Assertions.assertEquals(201, response.getStatusCode());
 
-        Assertions.assertEquals(1, acategory.getRelationships().getConnectedItems("todos").size());
-
+        Assertions.assertEquals(
+                1,
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .relationships()
+                        .listRelated(acategory, "todos")
+                        .size());
     }
 
     @Test
-    public void canCreateARelationshipAndTodoBetweenCategoryAndTodoViaTodos(){
+    public void canCreateARelationshipAndTodoBetweenCategoryAndTodoViaTodos() {
 
-        final EntityInstance acategory = categories.addInstance(new EntityInstance(categories.definition())).setValue("title", "a Category");
+        final EntityInstance acategory =
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
+                                EntityInstanceDraft.forEntity(categories)
+                                        .withField("title", "a Category"));
 
-        Assertions.assertEquals(0, acategory.getRelationships().getConnectedItems("todos").size());
-        Assertions.assertEquals(0,todo.countInstances());
+        Assertions.assertEquals(
+                0,
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .relationships()
+                        .listRelated(acategory, "todos")
+                        .size());
+        Assertions.assertEquals(
+                0,
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(todo));
 
-        HttpApiRequest request = new HttpApiRequest("categories/" + acategory.getPrimaryKeyValue() + "/todos");
+        HttpApiRequest request =
+                new HttpApiRequest("categories/" + acategory.getPrimaryKeyValue() + "/todos");
         request.getHeaders().putAll(HeadersSupport.acceptJson());
         request.getHeaders().putAll(HeadersSupport.containsJson());
 
-
-        //{"title":"My New To do"}
+        // {"title":"My New To do"}
         String body = "{\"title\":\"My New To do\"}";
         request.setBody(body);
 
@@ -221,25 +380,57 @@ public class RelationshipHttpTest {
 
         Assertions.assertEquals(201, response.getStatusCode());
 
-        Assertions.assertEquals(1, acategory.getRelationships().getConnectedItems("todos").size());
-        Assertions.assertEquals(1,todo.countInstances());
+        Assertions.assertEquals(
+                1,
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .relationships()
+                        .listRelated(acategory, "todos")
+                        .size());
+        Assertions.assertEquals(
+                1,
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(todo));
 
-        final EntityInstance inMemoryTodo = todo.findInstanceByPrimaryKey(response.getHeaders().get(ApiResponse.PRIMARY_KEY_HEADER));
-        Assertions.assertTrue(response.getBody().contains(inMemoryTodo.getPrimaryKeyValue()),
-                response.getBody());
-
+        final EntityInstance inMemoryTodo =
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .findByPrimaryKey(
+                                todo, response.getHeaders().get(ApiResponse.PRIMARY_KEY_HEADER));
+        Assertions.assertTrue(
+                response.getBody().contains(inMemoryTodo.getPrimaryKeyValue()), response.getBody());
     }
 
     @Test
-    public void canCreateARelationshipBetweenProjectAndTodoViaTasksUsingXml(){
+    public void canCreateARelationshipBetweenProjectAndTodoViaTasksUsingXml() {
 
-        final EntityInstance atodo = todo.addInstance(new EntityInstance(todo.definition())).setValue("title", "a TODO");
+        final EntityInstance atodo =
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(EntityInstanceDraft.forEntity(todo).withField("title", "a TODO"));
 
-        final EntityInstance aproject = project.addInstance(new EntityInstance(project.definition())).setValue("title", "a Project");
+        final EntityInstance aproject =
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
+                                EntityInstanceDraft.forEntity(project)
+                                        .withField("title", "a Project"));
 
-        Assertions.assertEquals(0, aproject.getRelationships().getConnectedItems("tasks").size());
+        Assertions.assertEquals(
+                0,
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .relationships()
+                        .listRelated(aproject, "tasks")
+                        .size());
 
-        HttpApiRequest request = new HttpApiRequest("projects/" + aproject.getPrimaryKeyValue() + "/tasks");
+        HttpApiRequest request =
+                new HttpApiRequest("projects/" + aproject.getPrimaryKeyValue() + "/tasks");
         request.getHeaders().putAll(HeadersSupport.containsXml());
 
         String body = String.format("<todo><guid>%s</guid></todo>", atodo.getPrimaryKeyValue());
@@ -248,86 +439,201 @@ public class RelationshipHttpTest {
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).post(request);
         Assertions.assertEquals(201, response.getStatusCode());
 
-        Assertions.assertEquals(1, aproject.getRelationships().getConnectedItems("tasks").size());
-
+        Assertions.assertEquals(
+                1,
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .relationships()
+                        .listRelated(aproject, "tasks")
+                        .size());
     }
 
     @Test
-    public void canDeleteARelationshipBetweenProjectAndTodoViaTasks(){
+    public void canDeleteARelationshipBetweenProjectAndTodoViaTasks() {
 
-        final EntityInstance atodo = todo.addInstance(new EntityInstance(todo.definition())).setValue("title", "a TODO");
+        final EntityInstance atodo =
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(EntityInstanceDraft.forEntity(todo).withField("title", "a TODO"));
 
-        final EntityInstance aproject = project.addInstance(new EntityInstance(project.definition())).setValue("title", "a Project");
+        final EntityInstance aproject =
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
+                                EntityInstanceDraft.forEntity(project)
+                                        .withField("title", "a Project"));
 
-        aproject.getRelationships().connect("tasks", atodo);
+        todoManager
+                .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                .relationships()
+                .connect(aproject, "tasks", atodo);
 
-        Assertions.assertEquals(1, aproject.getRelationships().getConnectedItems("tasks").size());
-        Assertions.assertEquals(1, todo.countInstances());
-        Assertions.assertEquals(1, project.countInstances());
+        Assertions.assertEquals(
+                1,
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .relationships()
+                        .listRelated(aproject, "tasks")
+                        .size());
+        Assertions.assertEquals(
+                1,
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(todo));
+        Assertions.assertEquals(
+                1,
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(project));
 
-
-        HttpApiRequest request = new HttpApiRequest("projects/" + aproject.getPrimaryKeyValue() + "/tasks/" + atodo.getPrimaryKeyValue());
+        HttpApiRequest request =
+                new HttpApiRequest(
+                        "projects/"
+                                + aproject.getPrimaryKeyValue()
+                                + "/tasks/"
+                                + atodo.getPrimaryKeyValue());
 
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).delete(request);
         Assertions.assertEquals(200, response.getStatusCode());
 
-        Assertions.assertEquals(0, aproject.getRelationships().getConnectedItems("tasks").size());
-        Assertions.assertEquals(1, todo.countInstances());
-        Assertions.assertEquals(1, project.countInstances());
-
+        Assertions.assertEquals(
+                0,
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .relationships()
+                        .listRelated(aproject, "tasks")
+                        .size());
+        Assertions.assertEquals(
+                1,
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(todo));
+        Assertions.assertEquals(
+                1,
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(project));
     }
 
     // need to see if I can delete where a relationship name is the same as a plural entity
     @Test
-    public void canDeleteARelationshipBetweenCategoryAndTodoViaTodos(){
+    public void canDeleteARelationshipBetweenCategoryAndTodoViaTodos() {
 
+        final EntityInstance acategory =
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
+                                EntityInstanceDraft.forEntity(categories)
+                                        .withField("title", "a Category"));
 
-        final EntityInstance acategory = categories.addInstance(new EntityInstance(categories.definition())).setValue("title", "a Category");
+        final EntityInstance atodo =
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(EntityInstanceDraft.forEntity(todo).withField("title", "a TODO"));
 
-        final EntityInstance atodo = todo.addInstance(new EntityInstance(todo.definition())).setValue("title", "a TODO");
+        todoManager
+                .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                .relationships()
+                .connect(acategory, "todos", atodo);
 
-        acategory.getRelationships().connect("todos", atodo);
+        Assertions.assertEquals(
+                1,
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .relationships()
+                        .listRelated(acategory, "todos")
+                        .size());
+        Assertions.assertEquals(
+                1,
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(todo));
+        Assertions.assertEquals(
+                1,
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(categories));
 
-        Assertions.assertEquals(1, acategory.getRelationships().getConnectedItems("todos").size());
-        Assertions.assertEquals(1, todo.countInstances());
-        Assertions.assertEquals(1, categories.countInstances());
-
-        final HttpApiRequest request = new HttpApiRequest("categories/" + acategory.getPrimaryKeyValue() + "/todos/" + atodo.getPrimaryKeyValue());
+        final HttpApiRequest request =
+                new HttpApiRequest(
+                        "categories/"
+                                + acategory.getPrimaryKeyValue()
+                                + "/todos/"
+                                + atodo.getPrimaryKeyValue());
 
         HttpApiResponse response = new ThingifierHttpApi(todoManager).delete(request);
         Assertions.assertEquals(200, response.getStatusCode());
 
-        Assertions.assertEquals(0, acategory.getRelationships().getConnectedItems("todos").size());
-        Assertions.assertEquals(1, todo.countInstances());
-        Assertions.assertEquals(1, categories.countInstances());
+        Assertions.assertEquals(
+                0,
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .relationships()
+                        .listRelated(acategory, "todos")
+                        .size());
+        Assertions.assertEquals(
+                1,
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(todo));
+        Assertions.assertEquals(
+                1,
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(categories));
 
         // if relationship doesn't exist, I should get a 404 if I reissue therequest
         response = new ThingifierHttpApi(todoManager).delete(request);
         Assertions.assertEquals(404, response.getStatusCode());
 
-        Assertions.assertEquals(0, acategory.getRelationships().getConnectedItems("todos").size());
-        Assertions.assertEquals(1, todo.countInstances());
-        Assertions.assertEquals(1, categories.countInstances());
+        Assertions.assertEquals(
+                0,
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .relationships()
+                        .listRelated(acategory, "todos")
+                        .size());
+        Assertions.assertEquals(
+                1,
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(todo));
+        Assertions.assertEquals(
+                1,
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(categories));
     }
 
     /**
      * Optional Relationships - Mandatory
      *
-     * can not create an estimate without a to do
-     * can create an estimate when added to a to do directly because relationship is created
-     * when delete a to do the estimate is also deleted
-     * GET estimates for a to do
-     * GET to dos for an estimate
-     * TODO: amend relationship to move estimate to another todo (implement with relationships as fields in the object e.g. "todos" : [{"guid": "xxx-xxx-xxx-xxx"}])
-     * TODO: cardinality validation on relationship fields e.g. max of 2 etc.
-     * TODO: create 'proposed objects' and validate those rather than create and delete (will support amend validation as well)
-
+     * <p>can not create an estimate without a to do can create an estimate when added to a to do
+     * directly because relationship is created when delete a to do the estimate is also deleted GET
+     * estimates for a to do GET to dos for an estimate TODO: amend relationship to move estimate to
+     * another todo (implement with relationships as fields in the object e.g. "todos" : [{"guid":
+     * "xxx-xxx-xxx-xxx"}]) TODO: cardinality validation on relationship fields e.g. max of 2 etc.
+     * TODO: create 'proposed objects' and validate those rather than create and delete (will
+     * support amend validation as well)
      */
 
     // can not create an estimate on its own, without a todo
     @Test
-    public void canNotCreateEstimateWithoutMandatoryRelationship(){
-
+    public void canNotCreateEstimateWithoutMandatoryRelationship() {
 
         HttpApiRequest request = new HttpApiRequest("estimate");
         request.getHeaders().putAll(HeadersSupport.acceptJson());
@@ -338,16 +644,31 @@ public class RelationshipHttpTest {
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).post(request);
         Assertions.assertEquals(400, response.getStatusCode());
 
-        Assertions.assertEquals(0, todoManager.getThingInstancesNamed("estimate", EntityRelModel.DEFAULT_DATABASE_NAME).countInstances());
+        Assertions.assertEquals(
+                0,
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(
+                                todoManager
+                                        .getERmodel()
+                                        .getSchema()
+                                        .getDefinitionWithSingularOrPluralNamed("estimate")));
     }
 
     @Test
-    public void canCreateAnEstimateForTodoMandatoryRelationship(){
+    public void canCreateAnEstimateForTodoMandatoryRelationship() {
 
-        final EntityInstance atodo = todo.addInstance(new EntityInstance(todo.definition())).setValue("title", "a TODO for estimating");
+        final EntityInstance atodo =
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
+                                EntityInstanceDraft.forEntity(todo)
+                                        .withField("title", "a TODO for estimating"));
 
-
-        HttpApiRequest request = new HttpApiRequest("todos/" + atodo.getPrimaryKeyValue() + "/estimates" );
+        HttpApiRequest request =
+                new HttpApiRequest("todos/" + atodo.getPrimaryKeyValue() + "/estimates");
         request.getHeaders().putAll(HeadersSupport.acceptJson());
         request.getHeaders().putAll(HeadersSupport.containsJson());
 
@@ -357,68 +678,157 @@ public class RelationshipHttpTest {
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).post(request);
         Assertions.assertEquals(201, response.getStatusCode());
 
-        Assertions.assertEquals(1, todoManager.getThingInstancesNamed("estimate", EntityRelModel.DEFAULT_DATABASE_NAME).countInstances());
-        Assertions.assertEquals(1, atodo.getRelationships().getConnectedItems("estimates").size());
-
+        Assertions.assertEquals(
+                1,
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(
+                                todoManager
+                                        .getERmodel()
+                                        .getSchema()
+                                        .getDefinitionWithSingularOrPluralNamed("estimate")));
+        Assertions.assertEquals(
+                1,
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .relationships()
+                        .listRelated(atodo, "estimates")
+                        .size());
     }
 
-
     @Test
-    public void canDeleteAnEstimateWhenTodoDeletedBecauseOfMandatoryRelationship(){
+    public void canDeleteAnEstimateWhenTodoDeletedBecauseOfMandatoryRelationship() {
 
+        final EntityInstance atodo =
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
+                                EntityInstanceDraft.forEntity(todo)
+                                        .withField("title", "a TODO for estimating"));
 
-        final EntityInstance atodo = todo.addInstance(new EntityInstance(todo.definition())).setValue("title", "a TODO for estimating");
+        final EntityDefinition estimates =
+                todoManager
+                        .getERmodel()
+                        .getSchema()
+                        .getDefinitionWithSingularOrPluralNamed("estimate");
+        final EntityInstance anEstimate =
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
+                                EntityInstanceDraft.forEntity(estimates)
+                                        .withField("duration", "7"));
 
-        final EntityInstanceCollection estimates = todoManager.getThingInstancesNamed("estimate", EntityRelModel.DEFAULT_DATABASE_NAME);
-        final EntityInstance anEstimate = estimates.addInstance(new EntityInstance(estimates.definition())).setValue("duration", "7");
+        todoManager
+                .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                .relationships()
+                .connect(anEstimate, "estimate", atodo);
 
-        anEstimate.getRelationships().connect("estimate", atodo);
-
-        Assertions.assertEquals(1, atodo.getRelationships().getConnectedItems("estimates").size());
-        Assertions.assertEquals(1, estimates.countInstances());
-        Assertions.assertEquals(1, todo.countInstances());
-
+        Assertions.assertEquals(
+                1,
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .relationships()
+                        .listRelated(atodo, "estimates")
+                        .size());
+        Assertions.assertEquals(
+                1,
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(estimates));
+        Assertions.assertEquals(
+                1,
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(todo));
 
         final HttpApiRequest request = new HttpApiRequest("todos/" + atodo.getPrimaryKeyValue());
 
         HttpApiResponse response = new ThingifierHttpApi(todoManager).delete(request);
         Assertions.assertEquals(200, response.getStatusCode());
 
-
-        Assertions.assertEquals(0, todo.countInstances());
-        Assertions.assertEquals(0, estimates.countInstances());
-
+        Assertions.assertEquals(
+                0,
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(todo));
+        Assertions.assertEquals(
+                0,
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(estimates));
     }
 
     @Test
-    public void canGetEstimatesViaRelationship(){
+    public void canGetEstimatesViaRelationship() {
 
+        final EntityInstance atodo =
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
+                                EntityInstanceDraft.forEntity(todo)
+                                        .withField("title", "a TODO for estimating"));
 
-        final EntityInstance atodo = todo.addInstance(new EntityInstance(todo.definition())).setValue("title", "a TODO for estimating");
+        final EntityDefinition estimates =
+                todoManager
+                        .getERmodel()
+                        .getSchema()
+                        .getDefinitionWithSingularOrPluralNamed("estimate");
+        final EntityInstance anEstimate =
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
+                                EntityInstanceDraft.forEntity(estimates)
+                                        .withField("duration", "7")
+                                        .withField("description", "an estimate"));
 
-        final EntityInstanceCollection estimates = todoManager.getThingInstancesNamed("estimate", EntityRelModel.DEFAULT_DATABASE_NAME);
-        final EntityInstance anEstimate = estimates.addInstance(new EntityInstance(estimates.definition())).setValue("duration", "7").setValue("description", "an estimate");
+        todoManager
+                .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                .relationships()
+                .connect(anEstimate, "estimate", atodo);
 
-        anEstimate.getRelationships().connect("estimate", atodo);
+        Assertions.assertEquals(
+                1,
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .relationships()
+                        .listRelated(atodo, "estimates")
+                        .size());
+        Assertions.assertEquals(
+                1,
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(estimates));
+        Assertions.assertEquals(
+                1,
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(todo));
 
-        Assertions.assertEquals(1, atodo.getRelationships().getConnectedItems("estimates").size());
-        Assertions.assertEquals(1, estimates.countInstances());
-        Assertions.assertEquals(1, todo.countInstances());
-
-
-        HttpApiRequest request = new HttpApiRequest("todos/" + atodo.getPrimaryKeyValue() + "/estimates");
+        HttpApiRequest request =
+                new HttpApiRequest("todos/" + atodo.getPrimaryKeyValue() + "/estimates");
 
         HttpApiResponse response = new ThingifierHttpApi(todoManager).get(request);
         Assertions.assertEquals(200, response.getStatusCode());
 
         System.out.println(response.getBody());
 
-        final EstimateCollectionResponse estimatesfound = new Gson().fromJson(response.getBody(), EstimateCollectionResponse.class);
+        final EstimateCollectionResponse estimatesfound =
+                new Gson().fromJson(response.getBody(), EstimateCollectionResponse.class);
 
         Assertions.assertEquals(1, estimatesfound.estimates.length);
         Assertions.assertEquals("7", estimatesfound.estimates[0].duration);
         Assertions.assertEquals("an estimate", estimatesfound.estimates[0].description);
-
 
         request = new HttpApiRequest("estimates/" + anEstimate.getPrimaryKeyValue() + "/estimate");
 
@@ -427,25 +837,21 @@ public class RelationshipHttpTest {
 
         System.out.println(response.getBody());
 
-        final TodoCollectionResponse todosfound = new Gson().fromJson(response.getBody(), TodoCollectionResponse.class);
+        final TodoCollectionResponse todosfound =
+                new Gson().fromJson(response.getBody(), TodoCollectionResponse.class);
 
         Assertions.assertEquals(1, todosfound.todos.length);
         Assertions.assertEquals("a TODO for estimating", todosfound.todos[0].title);
-
-
     }
-
 
     private class TodoCollectionResponse {
 
         Todo[] todos;
-
     }
 
     private class EstimateCollectionResponse {
 
         Estimate[] estimates;
-
     }
 
     private class Estimate {

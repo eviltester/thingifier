@@ -5,126 +5,107 @@ import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ERInstanceData;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
+import uk.co.compendiumdev.thingifier.core.repository.ThingStore;
 
 public class MultipleEntityInstancesDatabasesTest {
 
-
     @Test
-    public void byDefaultASingleDatabaseModelIsCreatedAndUsed(){
-
+    public void byDefaultASingleDatabaseModelIsCreatedAndUsed() {
         EntityRelModel erm = new EntityRelModel();
-        EntityDefinition thingDefn = erm.createEntityDefinition("thing", "things");
-        thingDefn.addField(Field.is("Title", FieldType.STRING));
-        thingDefn.addAsPrimaryKeyField(Field.is("guid", FieldType.AUTO_GUID));
+        EntityDefinition thingDefn = defineThing(erm);
 
-        EntityInstance thing1 = new EntityInstance(thingDefn);
-        thing1.addAutoGUIDstoInstance();
-        thing1.setValue("Title", "Thing 1");
+        ThingStore repository = erm.getStore(EntityRelModel.DEFAULT_DATABASE_NAME);
+        EntityInstance thing = create(repository, thingDefn);
 
-        EntityInstanceCollection thing = erm.getInstanceData().getInstanceCollectionForEntityNamed("thing");
-        thing.addInstance(thing1);
-
-        final String thingGUID = thing1.getPrimaryKeyValue();
-        EntityInstance foundThing = erm.getInstanceData().findEntityInstanceByGUID(thingGUID);
+        EntityInstance foundThing =
+                repository.entityQueries().findByGuid(thing.getPrimaryKeyValue());
 
         Assertions.assertEquals("Thing 1", foundThing.getFieldValue("Title").asString());
-        Assertions.assertEquals(foundThing, thing1);
+        Assertions.assertEquals(foundThing, thing);
     }
 
     @Test
-    public void weCanAddANewNamedDatabaseToTheErm(){
-
+    public void weCanAddANewNamedDatabaseToTheErm() {
         EntityRelModel erm = new EntityRelModel();
-        EntityDefinition thingDefn = erm.createEntityDefinition("thing", "things");
-        thingDefn.addField(Field.is("Title", FieldType.STRING));
-        thingDefn.addAsPrimaryKeyField(Field.is("guid", FieldType.AUTO_GUID));
+        EntityDefinition thingDefn = defineThing(erm);
 
         erm.createInstanceDatabase("other_things");
 
-        EntityInstance thing1 = new EntityInstance(thingDefn);
-        thing1.addAutoGUIDstoInstance();
-        thing1.setValue("Title", "Thing 1");
+        ThingStore otherRepository = erm.getStore("other_things");
+        EntityInstance thing = create(otherRepository, thingDefn);
 
-        EntityInstanceCollection thing = erm.getInstanceData("other_things").getInstanceCollectionForEntityNamed("thing");
-        thing.addInstance(thing1);
-
-        String guid = thing1.getPrimaryKeyValue();
-        EntityInstance foundThing = erm.getInstanceData("other_things").findEntityInstanceByGUID(guid);
+        EntityInstance foundThing =
+                otherRepository.entityQueries().findByGuid(thing.getPrimaryKeyValue());
 
         Assertions.assertEquals("Thing 1", foundThing.getFieldValue("Title").asString());
-        Assertions.assertEquals(foundThing, thing1);
-
-        Assertions.assertEquals(0,  erm.getInstanceData().getInstanceCollectionForEntityNamed("thing").countInstances());
+        Assertions.assertEquals(foundThing, thing);
+        Assertions.assertEquals(
+                0,
+                erm.getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(thingDefn));
     }
 
     @Test
-    public void cannotCreateDuplicateNamedDatabases(){
-
+    public void cannotCreateDuplicateNamedDatabases() {
         EntityRelModel erm = new EntityRelModel();
-        EntityDefinition thingDefn = erm.createEntityDefinition("thing", "things");
-        thingDefn.addField(Field.is("Title", FieldType.STRING));
+        defineThing(erm);
 
         erm.createInstanceDatabase("other_things");
 
-        Exception e = Assertions.assertThrows(IllegalStateException.class, ()->{
-            erm.createInstanceDatabase("other_things");
-        });
+        Exception e =
+                Assertions.assertThrows(
+                        IllegalStateException.class,
+                        () -> erm.createInstanceDatabase("other_things"));
 
-        Assertions.assertEquals("ERM Database Already Exists with name other_things",  e.getMessage());
+        Assertions.assertEquals(
+                "ERM Database Already Exists with name other_things", e.getMessage());
     }
 
     @Test
-    public void canDeleteNamedDatabaseFromTheErm(){
-
-        // Given an ERM with a Model
+    public void canDeleteNamedDatabaseFromTheErm() {
         EntityRelModel erm = new EntityRelModel();
-        EntityDefinition thingDefn = erm.createEntityDefinition("thing", "things");
-        thingDefn.addField(Field.is("Title", FieldType.STRING));
-        thingDefn.addAsPrimaryKeyField(Field.is("guid", FieldType.AUTO_GUID));
+        EntityDefinition thingDefn = defineThing(erm);
 
         erm.createInstanceDatabase("other_things");
 
-        EntityInstance thing1 = new EntityInstance(thingDefn);
-        thing1.addAutoGUIDstoInstance();
-        thing1.setValue("Title", "Thing 1");
+        ThingStore otherRepository = erm.getStore("other_things");
+        EntityInstance thing = create(otherRepository, thingDefn);
 
-        EntityInstanceCollection thing = erm.getInstanceData("other_things").getInstanceCollectionForEntityNamed("thing");
-        thing.addInstance(thing1);
-
-        String guid = thing1.getPrimaryKeyValue();
-        EntityInstance foundThing = erm.getInstanceData("other_things").findEntityInstanceByGUID(guid);
-
-        Assertions.assertEquals("Thing 1", foundThing.getFieldValue("Title").asString());
-
-        // WHEN we delete the database
+        Assertions.assertNotNull(
+                otherRepository.entityQueries().findByGuid(thing.getPrimaryKeyValue()));
 
         erm.deleteInstanceDatabase("other_things");
 
-        // There is no such database
-        ERInstanceData noDatabase = erm.getInstanceData("other_things");
-        Assertions.assertNull(noDatabase);
+        Assertions.assertNull(erm.getStore("other_things"));
     }
 
     @Test
-    public void cannotDeletDefaultDatabaseFromTheErm(){
-
-        // Given an ERM with a Model
+    public void cannotDeleteDefaultDatabaseFromTheErm() {
         EntityRelModel erm = new EntityRelModel();
-        EntityDefinition thingDefn = erm.createEntityDefinition("thing", "things");
-        thingDefn.addField(Field.is("Title", FieldType.STRING));
+        defineThing(erm);
 
-
-        // WE cannot delete default database
-        Exception e = Assertions.assertThrows(IllegalStateException.class, ()->{
-            erm.deleteInstanceDatabase(EntityRelModel.DEFAULT_DATABASE_NAME);
-        });
+        Exception e =
+                Assertions.assertThrows(
+                        IllegalStateException.class,
+                        () -> erm.deleteInstanceDatabase(EntityRelModel.DEFAULT_DATABASE_NAME));
 
         Assertions.assertEquals("Cannot delete default database", e.getMessage());
-        // There is no such database
-        ERInstanceData isDatabase = erm.getInstanceData(EntityRelModel.DEFAULT_DATABASE_NAME);
-        Assertions.assertNotNull(isDatabase);
+        Assertions.assertNotNull(erm.getStore(EntityRelModel.DEFAULT_DATABASE_NAME));
+    }
+
+    private EntityDefinition defineThing(final EntityRelModel erm) {
+        EntityDefinition thingDefn = erm.createEntityDefinition("thing", "things");
+        thingDefn.addField(Field.is("Title", FieldType.STRING));
+        thingDefn.addAsPrimaryKeyField(Field.is("guid", FieldType.AUTO_GUID));
+        return thingDefn;
+    }
+
+    private EntityInstance create(final ThingStore repository, final EntityDefinition thingDefn) {
+        return repository
+                .entities()
+                .create(EntityInstanceDraft.forEntity(thingDefn).withField("Title", "Thing 1"));
     }
 }

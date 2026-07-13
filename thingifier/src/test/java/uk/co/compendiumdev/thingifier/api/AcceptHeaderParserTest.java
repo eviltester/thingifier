@@ -7,7 +7,7 @@ import uk.co.compendiumdev.thingifier.api.http.headers.headerparser.AcceptHeader
 public class AcceptHeaderParserTest {
 
     @Test
-    public void xmlPriorityIdentified(){
+    public void xmlPriorityIdentified() {
 
         final AcceptHeaderParser accept =
                 new AcceptHeaderParser("*/*, application/xml, application/json");
@@ -16,11 +16,12 @@ public class AcceptHeaderParserTest {
         Assertions.assertTrue(accept.hasAPreferenceFor(AcceptHeaderParser.ACCEPT_TYPE.XML));
         Assertions.assertFalse(accept.hasAPreferenceForJson());
         Assertions.assertFalse(accept.hasAPreferenceFor(AcceptHeaderParser.ACCEPT_TYPE.ANYTHING));
-        Assertions.assertFalse(accept.hasAPreferenceFor(AcceptHeaderParser.ACCEPT_TYPE.NO_MATCHING_TYPE));
+        Assertions.assertFalse(
+                accept.hasAPreferenceFor(AcceptHeaderParser.ACCEPT_TYPE.NO_MATCHING_TYPE));
     }
 
     @Test
-    public void jsonPriorityIdentified(){
+    public void jsonPriorityIdentified() {
 
         final AcceptHeaderParser accept =
                 new AcceptHeaderParser("*/*, application/json, application/xml");
@@ -29,11 +30,12 @@ public class AcceptHeaderParserTest {
         Assertions.assertTrue(accept.hasAPreferenceFor(AcceptHeaderParser.ACCEPT_TYPE.JSON));
         Assertions.assertFalse(accept.hasAPreferenceForXml());
         Assertions.assertFalse(accept.hasAPreferenceFor(AcceptHeaderParser.ACCEPT_TYPE.ANYTHING));
-        Assertions.assertFalse(accept.hasAPreferenceFor(AcceptHeaderParser.ACCEPT_TYPE.NO_MATCHING_TYPE));
+        Assertions.assertFalse(
+                accept.hasAPreferenceFor(AcceptHeaderParser.ACCEPT_TYPE.NO_MATCHING_TYPE));
     }
 
     @Test
-    public void anythingIsNeverPriorityIdentified(){
+    public void anythingIsNeverPriorityIdentified() {
 
         final AcceptHeaderParser accept =
                 new AcceptHeaderParser("*/*, application/json, application/xml");
@@ -42,7 +44,7 @@ public class AcceptHeaderParserTest {
     }
 
     @Test
-    public void willAcceptEverything(){
+    public void willAcceptEverything() {
 
         final AcceptHeaderParser accept =
                 new AcceptHeaderParser("*/*, application/json, application/xml");
@@ -53,10 +55,9 @@ public class AcceptHeaderParserTest {
     }
 
     @Test
-    public void willAcceptJson(){
+    public void willAcceptJson() {
 
-        final AcceptHeaderParser accept =
-                new AcceptHeaderParser("application/json");
+        final AcceptHeaderParser accept = new AcceptHeaderParser("application/json");
 
         Assertions.assertTrue(accept.willAcceptJson());
         Assertions.assertTrue(accept.willAccept(AcceptHeaderParser.ACCEPT_TYPE.JSON));
@@ -65,10 +66,9 @@ public class AcceptHeaderParserTest {
     }
 
     @Test
-    public void willAcceptXml(){
+    public void willAcceptXml() {
 
-        final AcceptHeaderParser accept =
-                new AcceptHeaderParser("application/xml");
+        final AcceptHeaderParser accept = new AcceptHeaderParser("application/xml");
 
         Assertions.assertTrue(accept.willAcceptXml());
         Assertions.assertTrue(accept.willAccept(AcceptHeaderParser.ACCEPT_TYPE.XML));
@@ -77,10 +77,9 @@ public class AcceptHeaderParserTest {
     }
 
     @Test
-    public void willAcceptAnything(){
+    public void willAcceptAnything() {
 
-        final AcceptHeaderParser accept =
-                new AcceptHeaderParser("*/*");
+        final AcceptHeaderParser accept = new AcceptHeaderParser("*/*");
 
         Assertions.assertTrue(accept.willAccept(AcceptHeaderParser.ACCEPT_TYPE.ANYTHING));
         Assertions.assertTrue(accept.willAcceptJson());
@@ -88,23 +87,21 @@ public class AcceptHeaderParserTest {
     }
 
     @Test
-    public void willAcceptAnythingAtAll(){
+    public void willAcceptAnythingAtAll() {
 
-        final AcceptHeaderParser accept =
-                new AcceptHeaderParser("");
+        final AcceptHeaderParser accept = new AcceptHeaderParser("");
 
         Assertions.assertTrue(accept.willAccept(AcceptHeaderParser.ACCEPT_TYPE.ANYTHING));
         Assertions.assertTrue(accept.willAcceptJson());
         Assertions.assertTrue(accept.willAcceptXml());
     }
-
 
     /*
     Check has asked for
      */
 
     @Test
-    public void hasAskedForEverything(){
+    public void hasAskedForEverything() {
 
         final AcceptHeaderParser accept =
                 new AcceptHeaderParser("*/*, application/json, application/xml");
@@ -115,10 +112,9 @@ public class AcceptHeaderParserTest {
     }
 
     @Test
-    public void hasAskedForJson(){
+    public void hasAskedForJson() {
 
-        final AcceptHeaderParser accept =
-                new AcceptHeaderParser("application/json");
+        final AcceptHeaderParser accept = new AcceptHeaderParser("application/json");
 
         Assertions.assertTrue(accept.hasAskedFor(AcceptHeaderParser.ACCEPT_TYPE.JSON));
         Assertions.assertFalse(accept.hasAskedFor(AcceptHeaderParser.ACCEPT_TYPE.ANYTHING));
@@ -126,10 +122,9 @@ public class AcceptHeaderParserTest {
     }
 
     @Test
-    public void hasAskedForXml(){
+    public void hasAskedForXml() {
 
-        final AcceptHeaderParser accept =
-                new AcceptHeaderParser("application/xml");
+        final AcceptHeaderParser accept = new AcceptHeaderParser("application/xml");
 
         Assertions.assertTrue(accept.hasAskedFor(AcceptHeaderParser.ACCEPT_TYPE.XML));
         Assertions.assertFalse(accept.hasAskedFor(AcceptHeaderParser.ACCEPT_TYPE.ANYTHING));
@@ -137,10 +132,9 @@ public class AcceptHeaderParserTest {
     }
 
     @Test
-    public void hasAskedForAnything(){
+    public void hasAskedForAnything() {
 
-        final AcceptHeaderParser accept =
-                new AcceptHeaderParser("*/*");
+        final AcceptHeaderParser accept = new AcceptHeaderParser("*/*");
 
         Assertions.assertTrue(accept.hasAskedFor(AcceptHeaderParser.ACCEPT_TYPE.ANYTHING));
         Assertions.assertFalse(accept.hasAskedFor(AcceptHeaderParser.ACCEPT_TYPE.XML));
@@ -148,10 +142,9 @@ public class AcceptHeaderParserTest {
     }
 
     @Test
-    public void hasNotAskedForAnythingWillAcceptDefault(){
+    public void hasNotAskedForAnythingWillAcceptDefault() {
 
-        final AcceptHeaderParser accept =
-                new AcceptHeaderParser("");
+        final AcceptHeaderParser accept = new AcceptHeaderParser("");
 
         Assertions.assertFalse(accept.hasAskedFor(AcceptHeaderParser.ACCEPT_TYPE.ANYTHING));
         Assertions.assertFalse(accept.hasAskedFor(AcceptHeaderParser.ACCEPT_TYPE.XML));

@@ -1,99 +1,96 @@
 package uk.co.compendiumdev.thingifier.core.domain.instances;
 
-
+import java.util.Random;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-
-import java.util.Random;
+import uk.co.compendiumdev.thingifier.core.repository.MutableEntityInstance;
 
 public class EntityInstanceFieldsAccessTest {
 
     EntityDefinition entityTestSession;
 
     @BeforeEach
-    public void createDefinition(){
-        entityTestSession =
-                new EntityDefinition("Test Session", "Test Sessions");
-        entityTestSession.addField(Field.is("CompletedStatus", FieldType.STRING).withDefaultValue("Not Completed"));
+    public void createDefinition() {
+        entityTestSession = new EntityDefinition("Test Session", "Test Sessions");
+        entityTestSession.addField(
+                Field.is("CompletedStatus", FieldType.STRING).withDefaultValue("Not Completed"));
     }
 
     @Test
-    public void defaultValuesAreReturnedByGetValue(){
+    public void defaultValuesAreReturnedByGetValue() {
 
-        EntityInstance session = new EntityInstance(entityTestSession);
-        Assertions.assertEquals("Not Completed",
-                session.getFieldValue("CompletedStatus").asString());
-    }
-
-
-    @Test
-    public void fieldValueAccessIsCaseInsensitive(){
-
-        EntityInstance session = new EntityInstance(entityTestSession);
-
-        Assertions.assertEquals("Not Completed",
-                session.getFieldValue("CompletedStatus").asString());
-        Assertions.assertEquals("Not Completed",
-                session.getFieldValue("CoMpletedStatus").asString());
-        Assertions.assertEquals("Not Completed",
-                session.getFieldValue("CompletedSTATUS").asString());
-        Assertions.assertEquals("Not Completed",
-                session.getFieldValue("completedstatus").asString());
+        EntityInstance session =
+                MutableEntityInstance.snapshotFromDraft(
+                        EntityInstanceDraft.forEntity(entityTestSession));
+        Assertions.assertEquals(
+                "Not Completed", session.getFieldValue("CompletedStatus").asString());
     }
 
     @Test
-    public void fieldNameSettingIsCaseInsensitive(){
+    public void fieldValueAccessIsCaseInsensitive() {
 
-        EntityInstance session = new EntityInstance(entityTestSession);
+        EntityInstance session =
+                MutableEntityInstance.snapshotFromDraft(
+                        EntityInstanceDraft.forEntity(entityTestSession));
+
+        Assertions.assertEquals(
+                "Not Completed", session.getFieldValue("CompletedStatus").asString());
+        Assertions.assertEquals(
+                "Not Completed", session.getFieldValue("CoMpletedStatus").asString());
+        Assertions.assertEquals(
+                "Not Completed", session.getFieldValue("CompletedSTATUS").asString());
+        Assertions.assertEquals(
+                "Not Completed", session.getFieldValue("completedstatus").asString());
+    }
+
+    @Test
+    public void fieldNameSettingIsCaseInsensitive() {
+
+        MutableEntityInstance session = MutableEntityInstance.forEntity(entityTestSession);
 
         session.setValue("CompletedStatus", "in progress");
-        Assertions.assertEquals("in progress",
-                session.getFieldValue("CompletedStatus").asString());
+        Assertions.assertEquals("in progress", session.getFieldValue("CompletedStatus").asString());
 
         session.setValue("completedStatus", "blame George");
-        Assertions.assertEquals("blame George",
-                session.getFieldValue("CompletedStatus").asString());
+        Assertions.assertEquals(
+                "blame George", session.getFieldValue("CompletedStatus").asString());
 
         session.setValue("compLetedstatus", "done");
-        Assertions.assertEquals("done",
-                session.getFieldValue("CompletedSTATUS").asString());
+        Assertions.assertEquals("done", session.getFieldValue("CompletedSTATUS").asString());
 
         session.setValue("completedstatus", "done done");
-        Assertions.assertEquals("done done",
-                session.getFieldValue("completedstatus").asString());
+        Assertions.assertEquals("done done", session.getFieldValue("completedstatus").asString());
     }
 
     @Test
     public void fieldNameSettingIsReallyCaseInsensitive() {
 
-        EntityInstance session = new EntityInstance(entityTestSession);
+        MutableEntityInstance session = MutableEntityInstance.forEntity(entityTestSession);
 
-        for(int x=0; x<100; x++) {
+        for (int x = 0; x < 100; x++) {
             String setAs = randomCaseSwitcher("CompletedStatus");
             String getAs = randomCaseSwitcher("CompletedStatus");
             String value = "in progress " + x;
-            //System.out.println(setAs + " " + getAs + " " + value);
+            // System.out.println(setAs + " " + getAs + " " + value);
 
             session.setValue(setAs, value);
-            Assertions.assertEquals(value,
-                    session.getFieldValue(getAs).asString(),
-                    setAs + " " + getAs);
+            Assertions.assertEquals(
+                    value, session.getFieldValue(getAs).asString(), setAs + " " + getAs);
         }
     }
 
-    private String randomCaseSwitcher(String string){
+    private String randomCaseSwitcher(String string) {
 
         final Random rnd = new Random();
         StringBuilder ret = new StringBuilder();
 
-        for(int ch=0; ch<string.length(); ch++){
+        for (int ch = 0; ch < string.length(); ch++) {
             String nextChar = String.valueOf(string.charAt(ch));
-            if(rnd.nextBoolean()){
+            if (rnd.nextBoolean()) {
                 nextChar = nextChar.toUpperCase();
             }
             ret.append(nextChar);

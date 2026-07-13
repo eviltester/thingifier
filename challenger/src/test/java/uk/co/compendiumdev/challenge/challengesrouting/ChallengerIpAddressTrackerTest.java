@@ -1,15 +1,14 @@
 package uk.co.compendiumdev.challenge.challengesrouting;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import java.util.HashSet;
 import java.util.UUID;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class ChallengerIpAddressTrackerTest {
 
     @Test
-    public void canPurgeOldIps(){
+    public void canPurgeOldIps() {
 
         ChallengerIpAddressTracker tracker = new ChallengerIpAddressTracker(2, true);
 
@@ -25,7 +24,7 @@ public class ChallengerIpAddressTrackerTest {
     }
 
     @Test
-    public void canPurgeOldChallengers(){
+    public void canPurgeOldChallengers() {
 
         ChallengerIpAddressTracker tracker = new ChallengerIpAddressTracker(2, true);
 
@@ -43,7 +42,7 @@ public class ChallengerIpAddressTrackerTest {
     }
 
     @Test
-    public void willOnlyTrackACertainNumber(){
+    public void willOnlyTrackACertainNumber() {
 
         ChallengerIpAddressTracker tracker = new ChallengerIpAddressTracker(2, true);
 
@@ -57,7 +56,7 @@ public class ChallengerIpAddressTrackerTest {
     }
 
     @Test
-    public void canSwitchOffIPAddressTracking(){
+    public void canSwitchOffIPAddressTracking() {
 
         ChallengerIpAddressTracker tracker = new ChallengerIpAddressTracker(2, false);
 

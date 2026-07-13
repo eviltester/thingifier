@@ -1,9 +1,8 @@
 package uk.co.compendiumdev.simpleapi.payloads;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-
-import javax.xml.bind.annotation.XmlRootElement;
 import java.math.BigDecimal;
+import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement(name = "item") // for RestAssuredXML Serialisation using Jaxb
 @JsonInclude(JsonInclude.Include.NON_NULL)

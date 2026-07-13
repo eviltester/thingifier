@@ -5,27 +5,35 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.ERSchema;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
+import uk.co.compendiumdev.thingifier.core.repository.EntityInstanceQuery;
 
 public class ERModelReport {
-    private final EntityRelModel erModel;
+    private final ERSchema schema;
+    private final EntityInstanceQuery query;
 
     public ERModelReport(final EntityRelModel erModel) {
-        this.erModel = erModel;
+        this(
+                erModel.getSchema(),
+                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME).entityQueries());
+    }
+
+    public ERModelReport(final ERSchema schema, final EntityInstanceQuery query) {
+        this.schema = schema;
+        this.query = query;
     }
 
     public String asMarkdown() {
         StringBuilder output = new StringBuilder();
 
-        output.append(schemaAsMarkdown(erModel.getSchema()));
+        output.append(schemaAsMarkdown(schema));
 
         output.append("\n# Instances\n");
 
-        for (EntityInstanceCollection instances : erModel.getInstanceData().getAllInstanceCollections()) {
+        for (EntityDefinition entity : schema.getEntityDefinitions()) {
 
-            output.append("## Of " + instances.definition().getName() + "\n");
+            output.append("## Of " + entity.getName() + "\n");
 
-            for (EntityInstance anInstance : instances.getInstances()) {
+            for (EntityInstance anInstance : query.list(entity)) {
                 output.append(anInstance);
             }
         }
@@ -42,7 +50,6 @@ public class ERModelReport {
         for (EntityDefinition entityDefn : schema.getEntityDefinitions()) {
             output.append(entityDefn);
         }
-
 
         output.append("\n# Relationship Definitions\n");
 

@@ -1,24 +1,20 @@
 package uk.co.compendiumdev.challenger.http.httpclient;
 
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
-
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class HttpMessageSender {
-
 
     static Logger logger = LoggerFactory.getLogger(HttpMessageSender.class);
 
     private CanSendHttpRequests sender;
     private URL baseUrl;
-    public String DEFAULT_USER_AGENT="Mozilla/5.0";
+    public String DEFAULT_USER_AGENT = "Mozilla/5.0";
 
     public final String HEADER_USER_AGENT = "User-Agent";
     public final String HEADER_CONTENT_TYPE = "Content-Type";
@@ -28,14 +24,14 @@ public class HttpMessageSender {
     public final String CONTENT_XML = "application/xml";
     public final String CONTENT_JSON = "application/json";
 
-    public Map<String, String> headers = new HashMap<>();
+    public Map<String, String> headers;
     private String proxyHost;
     private int proxyPort;
 
     public HttpMessageSender(String baseUrl) {
         try {
             this.baseUrl = new URL(baseUrl);
-        }catch(MalformedURLException e){
+        } catch (MalformedURLException e) {
             logger.error("*** BASE URL is wrong!! {}", baseUrl, e);
         }
 
@@ -44,85 +40,86 @@ public class HttpMessageSender {
         sender = new HttpClientRequestSender(null, 0);
     }
 
-    public HttpRequestDetails getLastRequest(){
+    public HttpRequestDetails getLastRequest() {
         return sender.getLastRequest();
     }
-    public HttpResponseDetails getLastResponse(){
+
+    public HttpResponseDetails getLastResponse() {
         return sender.getLastResponse();
     }
 
-    public void setProxy(String ip, int port){
+    public void setProxy(String ip, int port) {
         proxyHost = ip;
         proxyPort = port;
-        //sender = new HttpRequestSender(proxyHost, proxyPort);
+        // sender = new HttpRequestSender(proxyHost, proxyPort);
         sender = new HttpClientRequestSender(proxyHost, proxyPort);
     }
 
-    public void setUserAgent(){
+    public void setUserAgent() {
         headers.put(HEADER_USER_AGENT, DEFAULT_USER_AGENT);
     }
 
-
     // https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods
     public HttpResponseDetails get(String url) {
-        return sender.send( getUrl(url), "GET", headers, "");
+        return sender.send(getUrl(url), "GET", headers, "");
     }
 
     public HttpResponseDetails head(String url) {
-        return sender.send( getUrl(url), "HEAD", headers, "");
+        return sender.send(getUrl(url), "HEAD", headers, "");
     }
-    
+
     public HttpResponseDetails post(String url, String body) {
-        return sender.send( getUrl(url), "POST", headers, body);
+        return sender.send(getUrl(url), "POST", headers, body);
     }
 
     public HttpResponseDetails put(String url, String body) {
-        return sender.send( getUrl(url), "PUT", headers, body);
+        return sender.send(getUrl(url), "PUT", headers, body);
     }
 
     public HttpResponseDetails delete(String url) {
-        return sender.send( getUrl(url), "DELETE", headers, "");
+        return sender.send(getUrl(url), "DELETE", headers, "");
     }
 
     public HttpResponseDetails connect(String url) {
-        return sender.send( getUrl(url), "CONNECT", headers, "");
+        return sender.send(getUrl(url), "CONNECT", headers, "");
     }
-    
+
     public HttpResponseDetails options(String url) {
-        return sender.send( getUrl(url), "OPTIONS", headers, "");
+        return sender.send(getUrl(url), "OPTIONS", headers, "");
     }
 
     public HttpResponseDetails trace(String url) {
-        return sender.send( getUrl(url), "TRACE", headers, "");
+        return sender.send(getUrl(url), "TRACE", headers, "");
     }
 
     public HttpResponseDetails patch(String url, String body) {
-        return sender.send( getUrl(url), "PATCH", headers, body);
+        return sender.send(getUrl(url), "PATCH", headers, body);
     }
 
     public HttpResponseDetails send(String url, String verb) {
-        return sender.send( getUrl(url), verb, headers, "");
+        return sender.send(getUrl(url), verb, headers, "");
     }
 
-    public HttpResponseDetails send(String url, String verb, Map<String,String> myheaders, String body) {
+    public HttpResponseDetails send(
+            String url, String verb, Map<String, String> myheaders, String body) {
         headers.clear();
         headers.putAll(myheaders);
-        return sender.send( getUrl(url), verb, headers, body);
+        return sender.send(getUrl(url), verb, headers, body);
     }
 
     private URL getUrl(String url) {
         URL thisUrl;
 
-        try{
+        try {
             thisUrl = new URL(url);
             return thisUrl;
-        }catch(MalformedURLException e){
+        } catch (MalformedURLException e) {
         }
 
-        try{
+        try {
             thisUrl = new URL(this.baseUrl, url);
             return thisUrl;
-        }catch(MalformedURLException e){
+        } catch (MalformedURLException e) {
             logger.error("What url are you trying to build? {}", this.baseUrl.toString() + url, e);
         }
 

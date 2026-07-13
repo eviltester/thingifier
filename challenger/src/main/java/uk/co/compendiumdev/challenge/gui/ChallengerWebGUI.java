@@ -1,5 +1,9 @@
 package uk.co.compendiumdev.challenge.gui;
 
+import static spark.Spark.*;
+
+import java.time.LocalDate;
+import java.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spark.Request;
@@ -11,11 +15,6 @@ import uk.co.compendiumdev.challenge.persistence.PersistenceLayer;
 import uk.co.compendiumdev.challenge.persistence.PersistenceResponse;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.htmlgui.htmlgen.DefaultGUIHTML;
-
-import java.time.LocalDate;
-import java.util.*;
-
-import static spark.Spark.*;
 
 public class ChallengerWebGUI {
     private static final LocalDate SEO_FIXED_LASTMOD = LocalDate.parse("2026-02-18");
@@ -31,16 +30,17 @@ public class ChallengerWebGUI {
         this.pageNotFoundHtmlResponse = new PageNotFoundResponse(guiManagement);
     }
 
-    String getChallengesPageHtmlHeader(){
+    String getChallengesPageHtmlHeader() {
         return guiManagement.getPageStart(
                 "API Challenges - Improve your API Skills",
-                "<script src='/js/challengerui.js'></script>" +
-                "<meta name='description' content='A free online set of gamified REST API Challenges to practice and improve your API Testing Skills'>",
+                "<script src='/js/challengerui.js'></script>"
+                        + "<meta name='description' content='A free online set of gamified REST API Challenges to practice and improve your API Testing Skills'>",
                 "/gui/challenges");
     }
 
-    String getSponsorMessage(){
-        String sponsorMessage = """
+    String getSponsorMessage() {
+        String sponsorMessage =
+                """
             <div class='sponsor-top'>
             <p>
                 Support this site by joining our Patreon.
@@ -54,18 +54,20 @@ public class ChallengerWebGUI {
         return sponsorMessage;
     }
 
-    public void setup(final Challengers challengers, 
-                      final ChallengeDefinitions challengeDefinitions, 
-                      final PersistenceLayer persistenceLayer, 
-                      final boolean single_player_mode) {
+    public void setup(
+            final Challengers challengers,
+            final ChallengeDefinitions challengeDefinitions,
+            final PersistenceLayer persistenceLayer,
+            final boolean single_player_mode) {
 
         guiManagement.appendMenuItem("Home", "/");
         guiManagement.appendMenuItem("Entities Explorer", "/gui/entities");
         guiManagement.appendMenuItem("Challenges", "/gui/challenges");
-        guiManagement.appendMenuItem("API documentation","/docs");
+        guiManagement.appendMenuItem("API documentation", "/docs");
         guiManagement.appendMenuItem("Learning", "/learning");
 
-        String actualMenu = """
+        String actualMenu =
+                """
                 <script>
                     function setMenuNavBasedOnUrl(){
                         const pathToCheck = window.location.pathname;
@@ -108,7 +110,7 @@ public class ChallengerWebGUI {
                             <li id='learning-root-menu'><a href="/learning">Learning Zone</a>
                                 <!-- TODO include a sample of learning information -->
                             </li>
-                            
+
                             <li id='simple-api-root-menu'><a href="/practice-modes/simpleapi">Simple API</a>
                                 <ul>
                                     <li><a href="/practice-modes/simpleapi">About Simple API</a>
@@ -117,7 +119,7 @@ public class ChallengerWebGUI {
                                     <li><a href="/practice-modes/simpleapi-openapi">OpenAPI File</a>
                                 </ul>
                             </li>
-                        
+
                             <li id='api-challenges-root-menu'><a href="/gui/challenges">API Challenges</a>
                                 <ul>
                                     <li><a href="/apichallenges">About API Challenges</a></li>
@@ -128,363 +130,430 @@ public class ChallengerWebGUI {
                                     <li><a href="/apichallenges/openapi">OpenAPI File</a>
                                 </ul>
                             </li>
-                       
+
                             <li id='sim-api-root-menu'><a href="/practice-modes/simulation">API Simulator</a>
                                 <ul>
                                     <li><a href="/practice-modes/simulation">About API Simulator</a></li>
                                     <li><a href="/sim/docs">API Docs</a></li>
                                     <li><a href="/sim/docs/swagger">[Download Open API File]</a></li>
-                                    
+
                                 </ul>
                             </li>
-                        
+
                             <li id='mirror-api-root-menu'><a href="/practice-modes/mirror">HTTP Mirror</a>
                                 <ul>
                                     <li><a href="/practice-modes/mirror">About HTTP Mirror</a></li>
                                     <li><a href="/mirror/docs">Mirror API Docs</a></li>
                                     <li><a href="/mirror/docs/swagger">[Download Open API File]</a></li>
-                                    
+
                                 </ul>
                             </li>
                         </ul>
                     </div>
                 </nav>
                 </div>
-        """.stripIndent();
+        """
+                        .stripIndent();
 
         guiManagement.setActualMenuHtml(getSponsorMessage() + actualMenu);
 
         // Add the Default GUI Endpoiints for entity exploration
 
-
-        guiManagement.setHomePageContent("""
+        guiManagement.setHomePageContent(
+                """
                     <h2 id="challenges">Challenges</h2>
                     <p>The challenges can be completed by issuing API requests to the API.</p>
                     <p>e.g. <code>GET http://localhost:4567/todos</code> would complete the challenge to &quot;GET the list of todos&quot;</p>
                     <p>You can also <code>GET http://localhost:4567/challenges</code> to get the list of challenges and their status as an API call. </p>
-                """
-        );
+                """);
 
         guiManagement.setFooter(getSponsorMessage() + getChallengesFooter());
 
-
-
-        // could redirect to eviltester.com if the canonical doesn't change the search indexing from heroku to eviltester
-//        before((request, response) -> {
-//
-//                    if (request.requestMethod().equals("GET")) {
-//                        if (request.url().startsWith("http://apichallenges.herokuapp.com") ||
-//                                request.url().startsWith("https://apichallenges.herokuapp.com")
-//                        ) {
-//                            // and it is a browser request
-//                            if (request.headers("accept").contains("text/html")) {
-//                                // then redirect
-//                                response.header("location", "https://apichallenges.eviltester.com" + request.uri());
-//                                halt(301);
-//                            }
-//                        } else {
-//                            System.out.println("nothing to see here");
-//                        }
-//                    }
-//                }
-//        );
+        // could redirect to eviltester.com if the canonical doesn't change the search indexing from
+        // heroku to eviltester
+        //        before((request, response) -> {
+        //
+        //                    if (request.requestMethod().equals("GET")) {
+        //                        if (request.url().startsWith("http://apichallenges.herokuapp.com")
+        // ||
+        //
+        // request.url().startsWith("https://apichallenges.herokuapp.com")
+        //                        ) {
+        //                            // and it is a browser request
+        //                            if (request.headers("accept").contains("text/html")) {
+        //                                // then redirect
+        //                                response.header("location",
+        // "https://apichallenges.eviltester.com" + request.uri());
+        //                                halt(301);
+        //                            }
+        //                        } else {
+        //                            System.out.println("nothing to see here");
+        //                        }
+        //                    }
+        //                }
+        //        );
 
         ResourceContentScanner contentScanner = new ResourceContentScanner();
-        List<String> pathsToFileContent = contentScanner.scanForFullPathsOfExtensionsIn("content/", "md");
+        List<String> pathsToFileContent =
+                contentScanner.scanForFullPathsOfExtensionsIn("content/", "md");
         contentScanner.addPathsToAvailableContent(pathsToFileContent);
 
         // add an endpoint for each markdown content file
-        MarkdownContentManager contentManager = new MarkdownContentManager(pathsToFileContent, guiManagement);
-        for(String pathToMarkdownFile : pathsToFileContent){
-            String endPointForMarkdownFile = pathToMarkdownFile.replaceFirst("content/","/").replace(".md","");
-            get(endPointForMarkdownFile, ((request, response) -> {
-                try {
-                    String responseBody = contentManager.getResourceMarkdownFileAsHtml(
-                                        "content", request.pathInfo(),
-                                                    getMarkdownParamsFromRequest(request));
-                    response.body(responseBody);
-                    response.type("text/html");
-                    if(response.raw().containsHeader("x-robots-tag")){
-                        // we want it indexed because it is content
-                        response.raw().setHeader("x-robots-tag", "all");
-                    }
-                    response.status(200);
-                }catch (IllegalArgumentException e){
-                    // in theory this will never happen because we are only creating endpoints for existing resources
-                    pageNotFoundHtmlResponse.amendResponse(response,"");
-                }
-                return "";
-            }));
-            head(endPointForMarkdownFile, ((request, response) -> {
-                try {
-                    contentManager.getResourceMarkdownFileAsHtml(
-                                        "content", request.pathInfo(),
-                                                    getMarkdownParamsFromRequest(request));
-                    response.type("text/html");
-                    if(response.raw().containsHeader("x-robots-tag")){
-                        // we want it indexed because it is content
-                        response.raw().setHeader("x-robots-tag", "all");
-                    }
-                    response.status(200);
-                }catch (IllegalArgumentException e){
-                    // in theory this will never happen because we are only creating endpoints for existing resources
-                    pageNotFoundHtmlResponse.amendResponse(response,"");
-                }
-                return "";
-            }));
+        MarkdownContentManager contentManager =
+                new MarkdownContentManager(pathsToFileContent, guiManagement);
+        for (String pathToMarkdownFile : pathsToFileContent) {
+            String endPointForMarkdownFile =
+                    pathToMarkdownFile.replaceFirst("content/", "/").replace(".md", "");
+            get(
+                    endPointForMarkdownFile,
+                    ((request, response) -> {
+                        try {
+                            String responseBody =
+                                    contentManager.getResourceMarkdownFileAsHtml(
+                                            "content",
+                                            request.pathInfo(),
+                                            getMarkdownParamsFromRequest(request));
+                            response.body(responseBody);
+                            response.type("text/html");
+                            if (response.raw().containsHeader("x-robots-tag")) {
+                                // we want it indexed because it is content
+                                response.raw().setHeader("x-robots-tag", "all");
+                            }
+                            response.status(200);
+                        } catch (IllegalArgumentException e) {
+                            // in theory this will never happen because we are only creating
+                            // endpoints for existing resources
+                            pageNotFoundHtmlResponse.amendResponse(response, "");
+                        }
+                        return "";
+                    }));
+            head(
+                    endPointForMarkdownFile,
+                    ((request, response) -> {
+                        try {
+                            contentManager.getResourceMarkdownFileAsHtml(
+                                    "content",
+                                    request.pathInfo(),
+                                    getMarkdownParamsFromRequest(request));
+                            response.type("text/html");
+                            if (response.raw().containsHeader("x-robots-tag")) {
+                                // we want it indexed because it is content
+                                response.raw().setHeader("x-robots-tag", "all");
+                            }
+                            response.status(200);
+                        } catch (IllegalArgumentException e) {
+                            // in theory this will never happen because we are only creating
+                            // endpoints for existing resources
+                            pageNotFoundHtmlResponse.amendResponse(response, "");
+                        }
+                        return "";
+                    }));
         }
 
         // using the ResourceContentScanner, we can build the sitemap.xml automatically
         SiteMapXml siteMap = new SiteMapXml();
         Map<String, LocalDate> contentUrls = contentScanner.scanForUrlsWithDates("content/", "md");
-        for(String pathToMarkdownFile : contentUrls.keySet()){
-            siteMap.addUrl("https://apichallenges.eviltester.com/"+pathToMarkdownFile,contentUrls.get(pathToMarkdownFile).toString());
+        for (String pathToMarkdownFile : contentUrls.keySet()) {
+            siteMap.addUrl(
+                    "https://apichallenges.eviltester.com/" + pathToMarkdownFile,
+                    contentUrls.get(pathToMarkdownFile).toString());
         }
         siteMap.addUrl("https://apichallenges.eviltester.com", SEO_FIXED_LASTMOD.toString());
         siteMap.addUrl("https://apichallenges.eviltester.com/docs", SEO_FIXED_LASTMOD.toString());
-        siteMap.addUrl("https://apichallenges.eviltester.com/gui/challenges", SEO_FIXED_LASTMOD.toString());
+        siteMap.addUrl(
+                "https://apichallenges.eviltester.com/gui/challenges",
+                SEO_FIXED_LASTMOD.toString());
 
-        get("/sitemap.xml",(request, response) -> {
-            response.type("application/xml");
-            response.status(200);
-            return siteMap.asSitemapXml();
-        });
+        get(
+                "/sitemap.xml",
+                (request, response) -> {
+                    response.type("application/xml");
+                    response.status(200);
+                    return siteMap.asSitemapXml();
+                });
 
         // Redirect legacy URLs to avoid SEO penalties from old inbound links.
-        get("/apichallenges/solutions/method-overrides/all-method-overrides", (request, response) -> {
-            response.redirect("/apichallenges/solutions/method-override/all-method-overrides", 301);
-            return "";
-        });
+        get(
+                "/apichallenges/solutions/method-overrides/all-method-overrides",
+                (request, response) -> {
+                    response.redirect(
+                            "/apichallenges/solutions/method-override/all-method-overrides", 301);
+                    return "";
+                });
 
-        get("/tools/clients/soapyi", (request, response) -> {
-            response.redirect("/tools/clients/soapui", 301);
-            return "";
-        });
+        get(
+                "/tools/clients/soapyi",
+                (request, response) -> {
+                    response.redirect("/tools/clients/soapui", 301);
+                    return "";
+                });
 
-        
-        // use the site/index.md to allow easier creation of landing page, rather than public/index.html
-        get("/", (request, response) -> {
-            String responseBody = contentManager.getHtmlVersionOfMarkdownContent("site", "/index", getMarkdownParamsFromRequest(request));
-            response.body(responseBody);
-            response.type("text/html");
-            if(response.raw().containsHeader("x-robots-tag")){
-                // we want it indexed because it is content
-                response.raw().setHeader("x-robots-tag", "all");
-            }
-            response.status(200);
-            return "";
-        });
-        head("/", (request, response) -> {
-            contentManager.getHtmlVersionOfMarkdownContent("site", "/index", getMarkdownParamsFromRequest(request));
-            response.type("text/html");
-            if(response.raw().containsHeader("x-robots-tag")){
-                // we want it indexed because it is content
-                response.raw().setHeader("x-robots-tag", "all");
-            }
-            response.status(200);
-            return "";
-        });
+        // use the site/index.md to allow easier creation of landing page, rather than
+        // public/index.html
+        get(
+                "/",
+                (request, response) -> {
+                    String responseBody =
+                            contentManager.getHtmlVersionOfMarkdownContent(
+                                    "site", "/index", getMarkdownParamsFromRequest(request));
+                    response.body(responseBody);
+                    response.type("text/html");
+                    if (response.raw().containsHeader("x-robots-tag")) {
+                        // we want it indexed because it is content
+                        response.raw().setHeader("x-robots-tag", "all");
+                    }
+                    response.status(200);
+                    return "";
+                });
+        head(
+                "/",
+                (request, response) -> {
+                    contentManager.getHtmlVersionOfMarkdownContent(
+                            "site", "/index", getMarkdownParamsFromRequest(request));
+                    response.type("text/html");
+                    if (response.raw().containsHeader("x-robots-tag")) {
+                        // we want it indexed because it is content
+                        response.raw().setHeader("x-robots-tag", "all");
+                    }
+                    response.status(200);
+                    return "";
+                });
 
         // single user / default session
-        get("/gui/challenges", (request, result) -> {
+        get(
+                "/gui/challenges",
+                (request, result) -> {
+                    if (request.cookie("X-THINGIFIER-DATABASE-NAME") != null) {
+                        // we didn't add a challenger in the URL but we do have one in the cookie
+                        result.header(
+                                "location",
+                                "/gui/challenges/" + request.cookie("X-THINGIFIER-DATABASE-NAME"));
+                        result.status(302);
+                        return "";
+                    }
 
-            if (request.cookie("X-THINGIFIER-DATABASE-NAME") != null) {
-                // we didn't add a challenger in the URL but we do have one in the cookie
-                result.header("location", "/gui/challenges/" + request.cookie("X-THINGIFIER-DATABASE-NAME"));
-                result.status(302);
-                return "";
-            }
+                    result.type("text/html");
+                    result.status(200);
 
-            result.type("text/html");
-            result.status(200);
+                    StringBuilder html = new StringBuilder();
+                    html.append(getChallengesPageHtmlHeader());
+                    html.append(guiManagement.getMenuAsHTML());
+                    html.append("<h1>API Challenges Progress</h1>");
+                    html.append(guiManagement.getStartOfMainContentMarker());
 
-            StringBuilder html = new StringBuilder();
-            html.append(getChallengesPageHtmlHeader());
-            html.append(guiManagement.getMenuAsHTML());
-            html.append("<h1>API Challenges Progress</h1>");
-            html.append(guiManagement.getStartOfMainContentMarker());
+                    // todo explain challenges - single user mode
 
-            // todo explain challenges - single user mode
+                    // List<ChallengeData> reportOn = new ArrayList<>();
 
+                    if (single_player_mode) {
+                        html.append(playerChallengesIntro());
+                        // reportOn = new ChallengesPayload(challengeDefinitions,
+                        // challengers.SINGLE_PLAYER).getAsChallenges();
+                        String json = "{}";
+                        if (challengers
+                                .getErModel()
+                                .getDatabaseNames()
+                                .contains(EntityRelModel.DEFAULT_DATABASE_NAME)) {
+                            json =
+                                    challengers
+                                            .getErModel()
+                                            .exportInstanceDataAsJson(
+                                                    EntityRelModel.DEFAULT_DATABASE_NAME);
+                        }
+                        html.append(outputChallengeDataAsJS(challengers.SINGLE_PLAYER, json));
+                        html.append(
+                                renderChallengeData(
+                                        challengeDefinitions, challengers.SINGLE_PLAYER));
+                        html.append(injectCookieFunctions());
+                        html.append(
+                                storeThingifierDatabaseNameCookie(
+                                        challengers.SINGLE_PLAYER.getXChallenger()));
+                    } else {
+                        html.append(
+                                "<div style='clear:both'><p><strong>Unknown Challenger ID</strong></p></div>");
+                        html.append(outputChallengeDataAsJS(challengers.SINGLE_PLAYER, "{}"));
+                        html.append(
+                                multiUserShortHelp(
+                                        persistenceLayer
+                                                .willAutoSaveChallengerStatusToPersistenceLayer(),
+                                        persistenceLayer
+                                                .willAutoLoadChallengerStatusFromPersistenceLayer()));
+                        html.append(injectCookieFunctions());
+                        html.append(showPreviousGuids());
+                        html.append(inputAChallengeGuidScript());
 
-            //List<ChallengeData> reportOn = new ArrayList<>();
+                        // reportOn = new ChallengesPayload(challengeDefinitions,
+                        // challengers.DEFAULT_PLAYER_DATA).getAsChallenges();
+                        html.append(
+                                renderChallengeData(
+                                        challengeDefinitions, challengers.DEFAULT_PLAYER_DATA));
+                    }
 
-            if (single_player_mode) {
-                html.append(playerChallengesIntro());
-                //reportOn = new ChallengesPayload(challengeDefinitions, challengers.SINGLE_PLAYER).getAsChallenges();
-                String json = "{}";
-                if(challengers.getErModel().getDatabaseNames().contains(EntityRelModel.DEFAULT_DATABASE_NAME)){
-                    json = challengers.getErModel().getInstanceData(EntityRelModel.DEFAULT_DATABASE_NAME).asJson();
-                }
-                html.append(outputChallengeDataAsJS(challengers.SINGLE_PLAYER, json));
-                html.append(renderChallengeData(challengeDefinitions, challengers.SINGLE_PLAYER));
-                html.append(injectCookieFunctions());
-                html.append(storeThingifierDatabaseNameCookie(challengers.SINGLE_PLAYER.getXChallenger()));
-            } else {
-                html.append("<div style='clear:both'><p><strong>Unknown Challenger ID</strong></p></div>");
-                html.append(outputChallengeDataAsJS(challengers.SINGLE_PLAYER, "{}"));
-                html.append(
-                        multiUserShortHelp(
-                                persistenceLayer.willAutoSaveChallengerStatusToPersistenceLayer(),
-                                persistenceLayer.willAutoLoadChallengerStatusFromPersistenceLayer()
-                    )
-                );
-                html.append(injectCookieFunctions());
-                html.append(showPreviousGuids());
-                html.append(inputAChallengeGuidScript());
+                    // html.append(renderChallengeData(reportOn));
 
-                //reportOn = new ChallengesPayload(challengeDefinitions, challengers.DEFAULT_PLAYER_DATA).getAsChallenges();
-                html.append(renderChallengeData(challengeDefinitions, challengers.DEFAULT_PLAYER_DATA));
-            }
-
-            //html.append(renderChallengeData(reportOn));
-
-            html.append(guiManagement.getEndOfMainContentMarker());
-            html.append(guiManagement.getPageFooter());
-            html.append(guiManagement.getPageEnd());
-            return html.toString();
-        });
+                    html.append(guiManagement.getEndOfMainContentMarker());
+                    html.append(guiManagement.getPageFooter());
+                    html.append(guiManagement.getPageEnd());
+                    return html.toString();
+                });
 
         // multi user
-        get("/gui/challenges/*", (request, result) -> {
+        get(
+                "/gui/challenges/*",
+                (request, result) -> {
+                    result.type("text/html");
+                    result.status(200);
 
-            result.type("text/html");
-            result.status(200);
+                    StringBuilder html = new StringBuilder();
+                    html.append(getChallengesPageHtmlHeader());
+                    html.append(guiManagement.getMenuAsHTML());
+                    html.append("<h1>API Challenges Progress</h1>");
+                    html.append(guiManagement.getStartOfMainContentMarker());
+                    html.append(playerChallengesIntro());
 
-            StringBuilder html = new StringBuilder();
-            html.append(getChallengesPageHtmlHeader());
-            html.append(guiManagement.getMenuAsHTML());
-            html.append("<h1>API Challenges Progress</h1>");
-            html.append(guiManagement.getStartOfMainContentMarker());
-            html.append(playerChallengesIntro());
+                    // List<ChallengeData> reportOn = null;
 
+                    String xChallenger = null;
 
-            //List<ChallengeData> reportOn = null;
+                    try {
+                        xChallenger = request.splat()[0];
+                    } catch (Exception e) {
+                        logger.warn("No challenger id to render");
+                    }
 
-            String xChallenger = null;
+                    // is there an in memory challenger with this id?
+                    ChallengerAuthData challenger = null;
+                    PersistenceResponse persistence = null;
 
-            try {
-                xChallenger = request.splat()[0];
-            } catch (Exception e) {
-                logger.warn("No challenger id to render");
-            }
+                    // only check if an xchallenger was passed in
+                    if (xChallenger != null && !xChallenger.trim().isEmpty()) {
+                        xChallenger = santitizeChallengerGuid(xChallenger);
+                        challenger = challengers.getChallenger(xChallenger);
 
+                        persistence = new PersistenceResponse();
 
-            // is there an in memory challenger with this id?
-            ChallengerAuthData challenger = null;
-            PersistenceResponse persistence = null;
+                        // if no inmemory challenger then ask the persistence layer
+                        if (challenger == null) {
+                            persistence =
+                                    persistenceLayer.tryToLoadChallenger(challengers, xChallenger);
+                        }
+                    }
 
-            // only check if an xchallenger was passed in
-            if (xChallenger != null && !xChallenger.trim().isEmpty()) {
-                xChallenger = santitizeChallengerGuid(xChallenger);
-                challenger = challengers.getChallenger(xChallenger);
+                    if (challenger == null) {
+                        String persistenceReason = "";
+                        if (persistence != null) {
+                            persistenceReason = persistence.getErrorMessage();
+                        }
+                        html.append("<div class='standoutblock'>");
+                        html.append(
+                                String.format(
+                                        "<p><strong>Unknown Challenger ID %s</strong></p>",
+                                        persistenceReason));
+                        html.append(showCurrentStatus());
+                        html.append("</div>");
+                        html.append(
+                                multiUserShortHelp(
+                                        persistenceLayer
+                                                .willAutoSaveChallengerStatusToPersistenceLayer(),
+                                        persistenceLayer
+                                                .willAutoLoadChallengerStatusFromPersistenceLayer()));
+                        html.append(injectCookieFunctions());
+                        html.append(showPreviousGuids());
+                        html.append(inputAChallengeGuidScript());
+                        html.append(outputChallengeDataAsJS(challengers.DEFAULT_PLAYER_DATA, "{}"));
+                        html.append(
+                                renderChallengeData(
+                                        challengeDefinitions, challengers.DEFAULT_PLAYER_DATA));
+                    } else {
+                        html.append(injectCookieFunctions());
 
-                persistence = new PersistenceResponse();
+                        String json = "{}";
+                        if (challengers.getErModel().getDatabaseNames().contains(xChallenger)) {
+                            json = challengers.getErModel().exportInstanceDataAsJson(xChallenger);
+                        }
+                        html.append(outputChallengeDataAsJS(challenger, json));
 
-                // if no inmemory challenger then ask the persistence layer
-                if (challenger == null) {
-                    persistence = persistenceLayer.tryToLoadChallenger(challengers, xChallenger);
-                }
-            }
+                        if (!single_player_mode) {
+                            html.append(storeThingifierDatabaseNameCookie(xChallenger));
+                            html.append(storeCurrentGuidInLocalStorage(xChallenger));
 
-            if (challenger == null) {
-                String persistenceReason = "";
-                if (persistence != null) {
-                    persistenceReason = persistence.getErrorMessage();
-                }
-                html.append("<div class='standoutblock'>");
-                html.append(String.format("<p><strong>Unknown Challenger ID %s</strong></p>",
-                        persistenceReason));
-                html.append(showCurrentStatus());
-                html.append("</div>");
-                html.append(
-                    multiUserShortHelp(
-                        persistenceLayer.willAutoSaveChallengerStatusToPersistenceLayer(),
-                        persistenceLayer.willAutoLoadChallengerStatusFromPersistenceLayer()
-                    )
-                );
-                html.append(injectCookieFunctions());
-                html.append(showPreviousGuids());
-                html.append(inputAChallengeGuidScript());
-                html.append(outputChallengeDataAsJS(challengers.DEFAULT_PLAYER_DATA, "{}"));
-                html.append(renderChallengeData(challengeDefinitions, challengers.DEFAULT_PLAYER_DATA));
-            } else {
-                html.append(injectCookieFunctions());
+                            html.append("<div class='standoutblock'>");
+                            html.append(
+                                    String.format(
+                                            "<p><strong>Progress For Challenger ID %s</strong></p>",
+                                            xChallenger));
+                            // keep challenge session alive when refresh
+                            challenger.touch();
+                            html.append(showCurrentStatus());
+                            html.append(showPreviousGuids());
+                            html.append(inputAChallengeGuidScript());
+                            html.append("</div>");
+                        } else {
+                            html.append(storeThingifierDatabaseNameCookie(xChallenger));
+                            html.append(storeCurrentGuidInLocalStorage(xChallenger));
+                            html.append("<div class='standoutblock'>");
+                            html.append(showCurrentStatus());
+                            html.append("</div>");
+                        }
 
-                String json = "{}";
-                if(challengers.getErModel().getDatabaseNames().contains(xChallenger)){
-                    json = challengers.getErModel().getInstanceData(xChallenger).asJson();
-                }
-                html.append(outputChallengeDataAsJS(challenger, json));
+                        html.append(renderChallengeData(challengeDefinitions, challenger));
 
-                if (!single_player_mode) {
-                    html.append(storeThingifierDatabaseNameCookie(xChallenger));
-                    html.append(storeCurrentGuidInLocalStorage(xChallenger));
+                        html.append(refreshScriptFor(challenger.getXChallenger()));
+                    }
 
-                    html.append("<div class='standoutblock'>");
-                    html.append(String.format("<p><strong>Progress For Challenger ID %s</strong></p>", xChallenger));
-                    // keep challenge session alive when refresh
-                    challenger.touch();
-                    html.append(showCurrentStatus());
-                    html.append(showPreviousGuids());
-                    html.append(inputAChallengeGuidScript());
-                    html.append("</div>");
-                }else {
-                    html.append(storeThingifierDatabaseNameCookie(xChallenger));
-                    html.append(storeCurrentGuidInLocalStorage(xChallenger));
-                    html.append("<div class='standoutblock'>");
-                    html.append(showCurrentStatus());
-                    html.append("</div>");
-                }
+                    // html.append(renderChallengeData(reportOn));
 
-                html.append(renderChallengeData(challengeDefinitions, challenger));
+                    html.append(guiManagement.getEndOfMainContentMarker());
+                    html.append(guiManagement.getPageFooter());
+                    html.append(guiManagement.getPageEnd());
+                    return html.toString();
+                });
 
-                html.append(refreshScriptFor(challenger.getXChallenger()));
-            }
+        get(
+                "/gui/404",
+                (request, result) -> {
+                    pageNotFoundHtmlResponse.amendResponse(result, "");
+                    return "";
+                });
 
-            //html.append(renderChallengeData(reportOn));
+        get(
+                "/gui/404/*",
+                (request, result) -> {
+                    result.status(404);
+                    result.type("text/html");
 
-            html.append(guiManagement.getEndOfMainContentMarker());
-            html.append(guiManagement.getPageFooter());
-            html.append(guiManagement.getPageEnd());
-            return html.toString();
-        });
+                    String urltoshow = "";
 
-        get("/gui/404", (request, result) -> {
-            pageNotFoundHtmlResponse.amendResponse(result, "");
-            return "";
-        });
+                    try {
+                        urltoshow = request.splat()[0];
+                    } catch (Exception e) {
+                        logger.error("No url to pretend to be on 404", e);
+                    }
 
-        get("/gui/404/*", (request, result) -> {
-            result.status(404);
-            result.type("text/html");
+                    pageNotFoundHtmlResponse.amendResponse(
+                            result,
+                            "<script>window.history.pushState({id:\"404sim\"},\"\",\"/"
+                                    + urltoshow
+                                    + "\");</script>");
+                    return "";
+                });
 
-            String urltoshow = "";
+        after(
+                (request, response) -> {
 
-            try {
-                urltoshow = request.splat()[0];
-            } catch (Exception e) {
-               logger.error("No url to pretend to be on 404", e);
-            }
+                    // Since we already scanned for static content we can just htmlise a 404 if
+                    // necessary
+                    if (response.status() == 404
+                            && request.headers("accept") != null
+                            && request.headers("accept").contains("html")) {
 
-            pageNotFoundHtmlResponse.amendResponse(result, "<script>window.history.pushState({id:\"404sim\"},\"\",\"/" + urltoshow + "\");</script>");
-            return "";
-        });
-
-        after((request, response)->{
-
-
-            // Since we already scanned for static content we can just htmlise a 404 if necessary
-            if(response.status()==404 && request.headers("accept")!=null && request.headers("accept").contains("html")){
-
-                logger.info("An HTML 404");
-                pageNotFoundHtmlResponse.amendResponse(response, "");
-            }
-        });
-
+                        logger.info("An HTML 404");
+                        pageNotFoundHtmlResponse.amendResponse(response, "");
+                    }
+                });
     }
 
-    private Map<String, String> getMarkdownParamsFromRequest(Request request){
+    private Map<String, String> getMarkdownParamsFromRequest(Request request) {
         String originUrl = request.scheme() + "://" + request.host();
         Map<String, String> params = new HashMap<>();
         params.put("ORIGIN_URL", originUrl);
@@ -497,26 +566,29 @@ public class ChallengerWebGUI {
     }
 
     private String santitizeChallengerGuid(String xChallenger) {
-        return xChallenger.replaceAll("[^\\-a-zA-Z0-9]","");
+        return xChallenger.replaceAll("[^\\-a-zA-Z0-9]", "");
     }
 
-    private String injectCookieFunctions(){
+    private String injectCookieFunctions() {
         return "";
     }
+
     private String storeThingifierDatabaseNameCookie(String xChallenger) {
-        return "<script>" +
-                "setCookie('X-THINGIFIER-DATABASE-NAME','" + xChallenger +"',365);"+
-                "</script>";
+        return "<script>"
+                + "setCookie('X-THINGIFIER-DATABASE-NAME','"
+                + xChallenger
+                + "',365);"
+                + "</script>";
     }
 
-
     private String storeCurrentGuidInLocalStorage(final String xChallenger) {
-        return "<script>" +
-                "var guids = localStorage.getItem('challenges-guids') || '';" +
-                String.format("if(guids==null || !guids.includes('|%s|')){", xChallenger) +
-                String.format("localStorage.setItem('challenges-guids',guids + '|%s|');",xChallenger) +
-                "}" +
-                "</script>";
+        return "<script>"
+                + "var guids = localStorage.getItem('challenges-guids') || '';"
+                + String.format("if(guids==null || !guids.includes('|%s|')){", xChallenger)
+                + String.format(
+                        "localStorage.setItem('challenges-guids',guids + '|%s|');", xChallenger)
+                + "}"
+                + "</script>";
     }
 
     private String inputAChallengeGuidScript() {
@@ -524,7 +596,7 @@ public class ChallengerWebGUI {
     }
 
     private String showPreviousGuids() {
-        return "<script>displayLocalGuids()</script>";// +
+        return "<script>displayLocalGuids()</script>"; // +
     }
 
     private String getChallengesFooter() {
@@ -540,52 +612,62 @@ public class ChallengerWebGUI {
     private String playerChallengesIntro() {
         final StringBuilder html = new StringBuilder();
         html.append("<div style='clear:both'>");
-        html.append("<p>Use the Descriptions of the challenges below to explore the API and solve the challenges." +
-                    " Remember to use the API documentation to see the format of POST requests.</p>" +
-                    "<p>Progress, and the TODOs database content can be saved to, and restored from, LocalStorage in the browser - or managed via the API." +
-                    "</p>");
+        html.append(
+                "<p>Use the Descriptions of the challenges below to explore the API and solve the challenges."
+                        + " Remember to use the API documentation to see the format of POST requests.</p>"
+                        + "<p>Progress, and the TODOs database content can be saved to, and restored from, LocalStorage in the browser - or managed via the API."
+                        + "</p>");
         html.append("</div>");
         return html.toString();
     }
 
-    private String multiUserShortHelp(Boolean canSaveToPersistence, boolean canRestoreFromPersistence) {
+    private String multiUserShortHelp(
+            Boolean canSaveToPersistence, boolean canRestoreFromPersistence) {
         final StringBuilder html = new StringBuilder();
         html.append("<div style='clear:both' class='headertextblock'>");
-        html.append("<p>To view your challenges status in multi-user mode, make sure you have registered as a challenger using a `POST` request to `/challenger` and are including an `X-CHALLENGER` header in all your requests.</p>");
-        html.append("<p>Then view the challenges in the GUI by visiting `/gui/challenges/{GUID}`, where `{GUID}` is the value in the `X-CHALLENGER` header.<p>");
-        html.append("<p>Challenger sessions are purged from the server memory after 10 minutes of inactivity.</p>");
-        if(canSaveToPersistence) {
+        html.append(
+                "<p>To view your challenges status in multi-user mode, make sure you have registered as a challenger using a `POST` request to `/challenger` and are including an `X-CHALLENGER` header in all your requests.</p>");
+        html.append(
+                "<p>Then view the challenges in the GUI by visiting `/gui/challenges/{GUID}`, where `{GUID}` is the value in the `X-CHALLENGER` header.<p>");
+        html.append(
+                "<p>Challenger sessions are purged from the server memory after 10 minutes of inactivity.</p>");
+        if (canSaveToPersistence) {
             html.append("Challenger progress is configured to saved on the server.<p>");
-        }else{
-            html.append("Challenger progress is not configured to automatically save on the server. Use the GUI or UI to save progress locally.<p>");
+        } else {
+            html.append(
+                    "Challenger progress is not configured to automatically save on the server. Use the GUI or UI to save progress locally.<p>");
         }
-        if(canRestoreFromPersistence) {
-            html.append("To restore a previously saved session progress from the server, issue an API request with the X-CHALLENGER header (note this will restore the completion state of challenges, but not the data you were using).<p>");
+        if (canRestoreFromPersistence) {
+            html.append(
+                    "To restore a previously saved session progress from the server, issue an API request with the X-CHALLENGER header (note this will restore the completion state of challenges, but not the data you were using).<p>");
         }
-        html.append("<p>Session state and current todo list can be stored to local storage, and later restored using the GUI buttons or via API.</p>");
-        html.append("<p>You can find more information about this on the <a href='/gui/multiuser'>Multi User Help Page</a><p>");
+        html.append(
+                "<p>Session state and current todo list can be stored to local storage, and later restored using the GUI buttons or via API.</p>");
+        html.append(
+                "<p>You can find more information about this on the <a href='/gui/multiuser'>Multi User Help Page</a><p>");
         html.append("</div>");
         return html.toString();
     }
 
     private String refreshScriptFor(final String xChallenger) {
 
-        if(!guiStayAlive)
-            return "";
+        if (!guiStayAlive) return "";
 
         StringBuilder html = new StringBuilder();
 
         html.append("<script>");
         html.append("/* keep session alive */");
         html.append("setInterval(function(){");
-        html.append("var oReq = new XMLHttpRequest();\n" +
-                "oReq.open('GET', '/challenger/" + xChallenger +"');\n" +
-                "oReq.send();");
+        html.append(
+                "var oReq = new XMLHttpRequest();\n"
+                        + "oReq.open('GET', '/challenger/"
+                        + xChallenger
+                        + "');\n"
+                        + "oReq.send();");
         html.append("},300000);");
         html.append("</script>");
         return html.toString();
     }
-
 
     private String renderChallengeData(final List<ChallengeDefinitionData> reportOn) {
         StringBuilder html = new StringBuilder();
@@ -601,42 +683,44 @@ public class ChallengerWebGUI {
         html.append("</thead>");
         html.append("<tbody>");
 
-        for(ChallengeDefinitionData challenge : reportOn){
+        for (ChallengeDefinitionData challenge : reportOn) {
             html.append(String.format("<tr class='status%b'>", challenge.status));
             html.append(String.format("<td>%s</td>", challenge.id));
             html.append(String.format("<td>%s</td>", challenge.name));
             html.append(String.format("<td>%b</td>", challenge.status));
 
-            String descriptionHTML = String.format("<p>%s</p>",challenge.description);
-            if(challenge.hasHints() || challenge.hasSolutionLinks()){
+            String descriptionHTML = String.format("<p>%s</p>", challenge.description);
+            if (challenge.hasHints() || challenge.hasSolutionLinks()) {
                 descriptionHTML = descriptionHTML + "<br/>";
             }
-            if(challenge.hasHints()){
+            if (challenge.hasHints()) {
                 descriptionHTML = descriptionHTML + "<details><summary>Hints</summary>";
                 descriptionHTML = descriptionHTML + "<ul>";
                 String hintHtml = "";
-                for(ChallengeHint hint : challenge.hints){
+                for (ChallengeHint hint : challenge.hints) {
                     hintHtml = hintHtml + "<li>" + hint.hintText;
-                    if(hint.hintLink!=null && !hint.hintLink.isEmpty()){
-                        String target="target='_blank'";
-                        if(!hint.hintLink.startsWith("http")){
-                            target="";
+                    if (hint.hintLink != null && !hint.hintLink.isEmpty()) {
+                        String target = "target='_blank'";
+                        if (!hint.hintLink.startsWith("http")) {
+                            target = "";
                         }
-                        hintHtml = hintHtml +
-                                String.format(" <a href='%s' %s>Learn More</a>",
-                                        hint.hintLink, target);
+                        hintHtml =
+                                hintHtml
+                                        + String.format(
+                                                " <a href='%s' %s>Learn More</a>",
+                                                hint.hintLink, target);
                     }
                     hintHtml = hintHtml + "</li>";
                 }
                 descriptionHTML = descriptionHTML + hintHtml + "</ul>";
                 descriptionHTML = descriptionHTML + "</details>";
             }
-            if(challenge.hasSolutionLinks()){
+            if (challenge.hasSolutionLinks()) {
 
                 descriptionHTML = descriptionHTML + "<details><summary>Solution</summary>";
                 descriptionHTML = descriptionHTML + "<ul>";
                 String solutionsHtml = "";
-                for(ChallengeSolutionLink solution : challenge.solutions){
+                for (ChallengeSolutionLink solution : challenge.solutions) {
                     solutionsHtml = solutionsHtml + "<li>" + solution.asHtmlAHref() + "</li>";
                 }
                 descriptionHTML = descriptionHTML + solutionsHtml + "</ul>";
@@ -653,7 +737,7 @@ public class ChallengerWebGUI {
         return html.toString();
     }
 
-    private String outputChallengeDataAsJS(final ChallengerAuthData challenger, String json){
+    private String outputChallengeDataAsJS(final ChallengerAuthData challenger, String json) {
 
         StringBuilder html = new StringBuilder();
 
@@ -664,34 +748,44 @@ public class ChallengerWebGUI {
         html.append("<script>document.databaseData=" + json + ";</script>");
 
         return html.toString();
-
     }
 
-    private String renderChallengeData(final ChallengeDefinitions challengeDefinitions, final ChallengerAuthData challenger) {
+    private String renderChallengeData(
+            final ChallengeDefinitions challengeDefinitions, final ChallengerAuthData challenger) {
         StringBuilder html = new StringBuilder();
-
-
 
         final Collection<ChallengeSection> sections = challengeDefinitions.getChallengeSections();
 
         // add a toc
         html.append("<h2 id='toc'>Challenge Sections</h2>");
         html.append("<ul>");
-        for(ChallengeSection section : sections){
-            html.append(String.format("<li><a href='#%s'>%s</a></li>", section.getTitle().replaceAll(" ", "").toLowerCase(), section.getTitle()));
+        for (ChallengeSection section : sections) {
+            html.append(
+                    String.format(
+                            "<li><a href='#%s'>%s</a></li>",
+                            section.getTitle().replaceAll(" ", "").toLowerCase(),
+                            section.getTitle()));
         }
         html.append("</ul>");
 
-        for(ChallengeSection section : sections){
+        for (ChallengeSection section : sections) {
 
-            html.append(String.format("<h2 id='%s'>", section.getTitle().replaceAll(" ", "").toLowerCase()) + section.getTitle() + "</h2>");
-            html.append("<p class='challengesectiondescription'>" + section.getDescription() + "</p>");
+            html.append(
+                    String.format(
+                                    "<h2 id='%s'>",
+                                    section.getTitle().replaceAll(" ", "").toLowerCase())
+                            + section.getTitle()
+                            + "</h2>");
+            html.append(
+                    "<p class='challengesectiondescription'>" + section.getDescription() + "</p>");
 
             List<ChallengeDefinitionData> sectionData = new ArrayList<>();
-            for(ChallengeDefinitionData challenge : section.getChallenges()){
-                final ChallengeDefinitionData data = new ChallengeDefinitionData(challenge.id, challenge.name, challenge.description);
+            for (ChallengeDefinitionData challenge : section.getChallenges()) {
+                final ChallengeDefinitionData data =
+                        new ChallengeDefinitionData(
+                                challenge.id, challenge.name, challenge.description);
                 CHALLENGE challengeKey = challengeDefinitions.getChallenge(challenge.name);
-                if(challenge!=null) {
+                if (challenge != null) {
                     data.status = challenger.statusOfChallenge(challengeKey);
                     data.addHints(challenge.hints);
                     data.addSolutions(challenge.solutions);
@@ -705,5 +799,4 @@ public class ChallengerWebGUI {
 
         return html.toString();
     }
-
 }

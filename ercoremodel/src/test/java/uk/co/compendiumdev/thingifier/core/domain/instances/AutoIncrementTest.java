@@ -2,29 +2,26 @@ package uk.co.compendiumdev.thingifier.core.domain.instances;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 
 public class AutoIncrementTest {
 
     @Test
-    public void canAutoIncrement(){
+    public void canAutoIncrement() {
         AutoIncrement auto = new AutoIncrement("afield", 1);
 
         Assertions.assertEquals("afield", auto.getName());
-        Assertions.assertEquals(1, auto.getCurrentValue());
+        Assertions.assertEquals(1, auto.peekNextValue());
     }
 
     @Test
-    public void canUpdateAutoIncrement(){
+    public void canUpdateAutoIncrement() {
         AutoIncrement auto = new AutoIncrement("afield", 1);
         Assertions.assertEquals(1, auto.getNextValueAndUpdate());
         Assertions.assertEquals(2, auto.getNextValueAndUpdate());
     }
 
     @Test
-    public void canUpdateAutoIncrementMultipleTimes(){
+    public void canUpdateAutoIncrementMultipleTimes() {
         AutoIncrement auto = new AutoIncrement("afield", 1);
 
         Assertions.assertEquals(1, auto.getNextValueAndUpdate());
@@ -34,7 +31,7 @@ public class AutoIncrementTest {
     }
 
     @Test
-    public void canUpdateAutoIncrementInJumps(){
+    public void canUpdateAutoIncrementInJumps() {
         AutoIncrement auto = new AutoIncrement("afield", 1);
         auto.by(10);
 
@@ -43,7 +40,7 @@ public class AutoIncrementTest {
     }
 
     @Test
-    public void canUpdateAutoIncrementInMultipleJumps(){
+    public void canUpdateAutoIncrementInMultipleJumps() {
         AutoIncrement auto = new AutoIncrement("afield", 1);
         auto.by(5);
 

@@ -1,10 +1,10 @@
 package uk.co.compendiumdev.thingifier.apiconfig;
 
 /* configurable because different apis return different codes under different situations
-    e.g. some APIs are 400 for every client error
+   e.g. some APIs are 400 for every client error
 
-    //todo: have some high level methods e.g. set400ForAllClientErrors()
- */
+   //todo: have some high level methods e.g. set400ForAllClientErrors()
+*/
 public class StatusCodeConfig {
 
     // making setting public at the moment
@@ -14,16 +14,16 @@ public class StatusCodeConfig {
     public int acceptTypeNotSupportedValue; // 406
     public int contentTypeNotSupportedValue; // 415
 
-    private int maxRequestBodyLengthBytes =-1; // by default no limit on request size, if set then generate 413 when exceeded
-    private int maxRequestContentLengthBytes = -1; // by default no limit on content size, this includes headers and generates 413 when exceeded
+    private int maxRequestBodyLengthBytes =
+            -1; // by default no limit on request size, if set then generate 413 when exceeded
 
-    public StatusCodeConfig(){
+    public StatusCodeConfig() {
         resetClientSideErrorStatusCodes();
     }
 
-    public void resetClientSideErrorStatusCodes(){
-        acceptTypeNotSupportedValue=406;
-        contentTypeNotSupportedValue=415;
+    public void resetClientSideErrorStatusCodes() {
+        acceptTypeNotSupportedValue = 406;
+        contentTypeNotSupportedValue = 415;
     }
 
     public int acceptTypeNotSupported() {
@@ -48,6 +48,6 @@ public class StatusCodeConfig {
     }
 
     public boolean hasMaxContentLength() {
-        return maxRequestBodyLengthBytes>-1;
+        return maxRequestBodyLengthBytes > -1;
     }
 }

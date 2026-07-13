@@ -1,6 +1,9 @@
 package uk.co.compendiumdev.api_non_http;
 
 import com.google.gson.Gson;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.Thingifier;
@@ -13,15 +16,9 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 
 public class SimpleVerbPutEntityInstanceApiNonHttpTest {
-
-
 
     private Thingifier thingifierWithAutoFields() {
 
@@ -34,11 +31,9 @@ public class SimpleVerbPutEntityInstanceApiNonHttpTest {
         entityDefn.addField(Field.is("description", FieldType.STRING));
 
         return thingifier;
-
-
     }
-    
-       /*
+
+    /*
 
 
     Non HTTP API Based Tests
@@ -48,10 +43,10 @@ public class SimpleVerbPutEntityInstanceApiNonHttpTest {
 
     private BodyParser getSimpleParser(final Map requestBody, Thingifier thingifier) {
 
-        final HttpApiRequest arequest = new HttpApiRequest("/path").setBody(new Gson().toJson(requestBody));
+        final HttpApiRequest arequest =
+                new HttpApiRequest("/path").setBody(new Gson().toJson(requestBody));
         return new BodyParser(arequest, thingifier.getThingNames());
     }
-
 
     @Test
     public void putCanAmendExistingInstance() {
@@ -60,32 +55,60 @@ public class SimpleVerbPutEntityInstanceApiNonHttpTest {
         ApiResponse apiresponse;
 
         Thingifier thingifier = thingifierWithAutoFields();
-        EntityInstanceCollection instances = thingifier.getThingInstancesNamed("entity", EntityRelModel.DEFAULT_DATABASE_NAME);
+        EntityDefinition instances =
+                thingifier
+                        .getERmodel()
+                        .getSchema()
+                        .getDefinitionWithSingularOrPluralNamed("entity");
 
         // PUT
 
         requestBody = new HashMap<String, String>();
         requestBody.put("title", "My Office Work");
 
-        EntityInstance officeWork = instances.addInstance(new EntityInstance(instances.definition())).
-                setValue("title", "An Existing instances");
+        EntityInstance officeWork =
+                thingifier
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
+                                EntityInstanceDraft.forEntity(instances)
+                                        .withField("title", "An Existing instances"));
 
         String officeWorkGuid = officeWork.getPrimaryKeyValue();
         Assertions.assertNotNull(officeWorkGuid);
 
-        // amend existing instances with PUT - this should validate that all required fields are present
-        apiresponse = thingifier.api().put(String.format("entities/%s", officeWork.getPrimaryKeyValue()),  getSimpleParser(requestBody, thingifier), new HttpHeadersBlock());
+        // amend existing instances with PUT - this should validate that all required fields are
+        // present
+        apiresponse =
+                thingifier
+                        .api()
+                        .put(
+                                String.format("entities/%s", officeWork.getPrimaryKeyValue()),
+                                getSimpleParser(requestBody, thingifier),
+                                new HttpHeadersBlock());
         Assertions.assertEquals(200, apiresponse.getStatusCode());
+        officeWork =
+                thingifier
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .findByPrimaryKey(instances, officeWorkGuid);
         Assertions.assertEquals("My Office Work", officeWork.getFieldValue("title").asString());
 
-        officeWork.setValue("title", "office");
+        officeWork =
+                thingifier
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .patch(
+                                officeWork,
+                                EntityInstanceDraft.forEntity(officeWork.getEntity())
+                                        .withField("title", "office"));
         Assertions.assertEquals("office", officeWork.getFieldValue("title").asString());
         Assertions.assertNotNull(officeWorkGuid);
 
         Assertions.assertTrue(apiresponse.hasABody());
         Assertions.assertFalse(apiresponse.isCollection());
-        Assertions.assertEquals(officeWorkGuid, apiresponse.getReturnedInstance().getPrimaryKeyValue());
-
+        Assertions.assertEquals(
+                officeWorkGuid, apiresponse.getReturnedInstance().getPrimaryKeyValue());
     }
 
     @Test
@@ -95,26 +118,47 @@ public class SimpleVerbPutEntityInstanceApiNonHttpTest {
         ApiResponse apiresponse;
 
         Thingifier thingifier = thingifierWithAutoFields();
-        EntityInstanceCollection instances = thingifier.getThingInstancesNamed("entity", EntityRelModel.DEFAULT_DATABASE_NAME);
+        EntityDefinition instances =
+                thingifier
+                        .getERmodel()
+                        .getSchema()
+                        .getDefinitionWithSingularOrPluralNamed("entity");
 
         // create something to amend with PUT
-        EntityInstance officeWork = instances.addInstance(new EntityInstance(instances.definition())).
-                setValue("title", "An Existing instances").
-                setValue("description", "Existing Description");
+        EntityInstance officeWork =
+                thingifier
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
+                                EntityInstanceDraft.forEntity(instances)
+                                        .withField("title", "An Existing instances")
+                                        .withField("description", "Existing Description"));
 
         String officeWorkGuid = officeWork.getPrimaryKeyValue();
         Assertions.assertNotNull(officeWorkGuid);
 
-        // amend existing instances with PUT - this should validate that all required fields are present
+        // amend existing instances with PUT - this should validate that all required fields are
+        // present
 
         requestBody = new HashMap<String, String>();
         requestBody.put("title", "My Office Work");
         // note, I haven't added a description - description is optional
 
-        apiresponse = thingifier.api().put(String.format("entities/%s", officeWork.getPrimaryKeyValue()),  getSimpleParser(requestBody, thingifier), new HttpHeadersBlock());
+        apiresponse =
+                thingifier
+                        .api()
+                        .put(
+                                String.format("entities/%s", officeWork.getPrimaryKeyValue()),
+                                getSimpleParser(requestBody, thingifier),
+                                new HttpHeadersBlock());
         Assertions.assertEquals(200, apiresponse.getStatusCode());
-        Assertions.assertEquals("My Office Work",officeWork.getFieldValue("title").asString());
-        Assertions.assertEquals("",officeWork.getFieldValue("description").asString());
+        officeWork =
+                thingifier
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .findByPrimaryKey(instances, officeWorkGuid);
+        Assertions.assertEquals("My Office Work", officeWork.getFieldValue("title").asString());
+        Assertions.assertEquals("", officeWork.getFieldValue("description").asString());
     }
 
     @Test
@@ -124,27 +168,46 @@ public class SimpleVerbPutEntityInstanceApiNonHttpTest {
         ApiResponse apiresponse;
 
         Thingifier thingifier = thingifierWithAutoFields();
-        EntityInstanceCollection instances = thingifier.getThingInstancesNamed("entity", EntityRelModel.DEFAULT_DATABASE_NAME);
+        EntityDefinition instances =
+                thingifier
+                        .getERmodel()
+                        .getSchema()
+                        .getDefinitionWithSingularOrPluralNamed("entity");
 
         // create something to amend with PUT
-        EntityInstance officeWork = instances.addInstance(new EntityInstance(instances.definition())).
-                setValue("description", "An Existing instance title");
+        EntityInstance officeWork =
+                thingifier
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
+                                EntityInstanceDraft.forEntity(instances)
+                                        .withField("title", "An Existing instance")
+                                        .withField("description", "An Existing instance title"));
 
         String officeWorkGuid = officeWork.getPrimaryKeyValue();
         Assertions.assertNotNull(officeWorkGuid);
 
-        // amend existing instances with PUT - this should validate that all required fields are present
+        // amend existing instances with PUT - this should validate that all required fields are
+        // present
 
         requestBody = new HashMap<String, String>();
         requestBody.put("description", "My Office Work");
         // note, I haven't added a title - title is mandatory
 
-        apiresponse = thingifier.api().put(String.format("entities/%s", officeWork.getPrimaryKeyValue()),  getSimpleParser(requestBody, thingifier), new HttpHeadersBlock());
+        apiresponse =
+                thingifier
+                        .api()
+                        .put(
+                                String.format("entities/%s", officeWork.getPrimaryKeyValue()),
+                                getSimpleParser(requestBody, thingifier),
+                                new HttpHeadersBlock());
         Assertions.assertEquals(400, apiresponse.getStatusCode());
-        Assertions.assertTrue(apiresponse.getErrorMessages().contains("title : field is mandatory"));
-        Assertions.assertEquals("An Existing instance title",officeWork.getFieldValue("description").asString());
+        Assertions.assertTrue(
+                apiresponse.getErrorMessages().stream()
+                        .anyMatch(error -> error.contains("title : field is mandatory")));
+        Assertions.assertEquals(
+                "An Existing instance title", officeWork.getFieldValue("description").asString());
     }
-
 
     @Test
     public void putFailCanNotAmendPrimaryKey() {
@@ -153,39 +216,54 @@ public class SimpleVerbPutEntityInstanceApiNonHttpTest {
         ApiResponse apiresponse;
 
         Thingifier thingifier = thingifierWithAutoFields();
-        EntityInstanceCollection instances = thingifier.getThingInstancesNamed("entity", EntityRelModel.DEFAULT_DATABASE_NAME);
+        EntityDefinition instances =
+                thingifier
+                        .getERmodel()
+                        .getSchema()
+                        .getDefinitionWithSingularOrPluralNamed("entity");
 
         // PUT
 
-
-        EntityInstance officeWork = instances.addInstance(new EntityInstance(instances.definition())).
-                setValue("title", "An Existing instances").
-                setValue("description", "my original description");
+        EntityInstance officeWork =
+                thingifier
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
+                                EntityInstanceDraft.forEntity(instances)
+                                        .withField("title", "An Existing instances")
+                                        .withField("description", "my original description"));
 
         String originalID = officeWork.getPrimaryKeyValue();
         Assertions.assertNotNull(originalID);
 
-        // amend existing instances with PUT - this should validate that all required fields are present
+        // amend existing instances with PUT - this should validate that all required fields are
+        // present
 
         requestBody = new HashMap<String, String>();
         requestBody.put("title", "My Office Work");
         String newId = "22";
         requestBody.put("id", newId);
 
-
-
-        apiresponse = thingifier.api().put(String.format("entities/%s", originalID),  getSimpleParser(requestBody, thingifier), new HttpHeadersBlock());
+        apiresponse =
+                thingifier
+                        .api()
+                        .put(
+                                String.format("entities/%s", originalID),
+                                getSimpleParser(requestBody, thingifier),
+                                new HttpHeadersBlock());
 
         Assertions.assertEquals(400, apiresponse.getStatusCode());
-        Assertions.assertTrue(apiresponse.getErrorMessages().contains("Can not amend id from 1 to 22"));
-        Assertions.assertEquals("An Existing instances", officeWork.getFieldValue("title").asString());
-        Assertions.assertEquals("my original description", officeWork.getFieldValue("description").asString());
+        Assertions.assertTrue(
+                apiresponse.getErrorMessages().contains("Can not amend id from 1 to 22"));
+        Assertions.assertEquals(
+                "An Existing instances", officeWork.getFieldValue("title").asString());
+        Assertions.assertEquals(
+                "my original description", officeWork.getFieldValue("description").asString());
         Assertions.assertEquals(originalID, officeWork.getFieldValue("id").asString());
 
         Assertions.assertTrue(apiresponse.hasABody());
         Assertions.assertTrue(apiresponse.isErrorResponse());
     }
-
 
     @Test
     public void putFailCanNotCreateAnEntityInstanceWithAutoFields() {
@@ -194,7 +272,11 @@ public class SimpleVerbPutEntityInstanceApiNonHttpTest {
         ApiResponse apiresponse;
 
         Thingifier thingifier = thingifierWithAutoFields();
-        EntityInstanceCollection instances = thingifier.getThingInstancesNamed("entity", EntityRelModel.DEFAULT_DATABASE_NAME);
+        EntityDefinition instances =
+                thingifier
+                        .getERmodel()
+                        .getSchema()
+                        .getDefinitionWithSingularOrPluralNamed("entity");
 
         // PUT
 
@@ -202,27 +284,41 @@ public class SimpleVerbPutEntityInstanceApiNonHttpTest {
         String title = "My Office Work " + System.currentTimeMillis();
         requestBody.put("title", title);
 
-
-        int currentinstances = instances.countInstances();
+        int currentinstances =
+                thingifier
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(instances);
         Assertions.assertEquals(0, currentinstances);
 
         // create with a PUT and a given ID
         String id = "200";
 
-        apiresponse = thingifier.api().put(String.format("entities/%s", id),  getSimpleParser(requestBody, thingifier), new HttpHeadersBlock());
+        apiresponse =
+                thingifier
+                        .api()
+                        .put(
+                                String.format("entities/%s", id),
+                                getSimpleParser(requestBody, thingifier),
+                                new HttpHeadersBlock());
         Assertions.assertEquals(400, apiresponse.getStatusCode());
 
-
-        Assertions.assertEquals(currentinstances, instances.countInstances());
-
+        Assertions.assertEquals(
+                currentinstances,
+                thingifier
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(instances));
 
         Assertions.assertTrue(apiresponse.hasABody());
         Assertions.assertFalse(apiresponse.isCollection());
         Assertions.assertTrue(apiresponse.getErrorMessages().size() > 0);
 
-        Assertions.assertTrue(apiresponse.getErrorMessages().contains("Cannot create entity with PUT due to Auto fields id"));
+        Assertions.assertTrue(
+                apiresponse
+                        .getErrorMessages()
+                        .contains("Cannot create entity with PUT due to Auto fields id"));
     }
-
 
     @Test
     public void putFailCanNotAmendAutoGuid() {
@@ -238,34 +334,54 @@ public class SimpleVerbPutEntityInstanceApiNonHttpTest {
         entityDefn.addField(Field.is("title", FieldType.STRING).makeMandatory());
         entityDefn.addField(Field.is("guid", FieldType.AUTO_GUID));
 
-        EntityInstanceCollection myInstances = myThingifier.getThingInstancesNamed("entity", EntityRelModel.DEFAULT_DATABASE_NAME);
+        EntityDefinition myInstances =
+                myThingifier
+                        .getERmodel()
+                        .getSchema()
+                        .getDefinitionWithSingularOrPluralNamed("entity");
 
         // PUT
 
-
-        EntityInstance officeWork = myInstances.addInstance(new EntityInstance(myInstances.definition())).
-                setValue("title", "An Existing instance");
+        EntityInstance officeWork =
+                myThingifier
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
+                                EntityInstanceDraft.forEntity(myInstances)
+                                        .withField("title", "An Existing instance"));
 
         String originalID = officeWork.getPrimaryKeyValue();
         String originalGuid = officeWork.getFieldValue("guid").asString();
         Assertions.assertNotNull(originalID);
 
-        // amend existing instances with PUT - this should validate that all required fields are present
+        // amend existing instances with PUT - this should validate that all required fields are
+        // present
 
         requestBody = new HashMap<String, String>();
         requestBody.put("title", "My Office Work");
         String newGuid = UUID.randomUUID().toString();
         requestBody.put("guid", newGuid);
 
-
-
-        apiresponse = myThingifier.api().put(String.format("entities/%s", originalID),  getSimpleParser(requestBody, myThingifier), new HttpHeadersBlock());
+        apiresponse =
+                myThingifier
+                        .api()
+                        .put(
+                                String.format("entities/%s", originalID),
+                                getSimpleParser(requestBody, myThingifier),
+                                new HttpHeadersBlock());
 
         Assertions.assertEquals(400, apiresponse.getStatusCode());
-        Assertions.assertTrue(apiresponse.getErrorMessages().contains(String.format("Can not amend guid from %s to %s", originalGuid, newGuid)));
+        Assertions.assertTrue(
+                apiresponse
+                        .getErrorMessages()
+                        .contains(
+                                String.format(
+                                        "Can not amend guid from %s to %s",
+                                        originalGuid, newGuid)));
 
         // no change to instance
-        Assertions.assertEquals("An Existing instance", officeWork.getFieldValue("title").asString());
+        Assertions.assertEquals(
+                "An Existing instance", officeWork.getFieldValue("title").asString());
         Assertions.assertEquals(originalID, officeWork.getFieldValue("id").asString());
         Assertions.assertEquals(originalGuid, officeWork.getFieldValue("guid").asString());
 
@@ -286,37 +402,54 @@ public class SimpleVerbPutEntityInstanceApiNonHttpTest {
         entityDefn.addAsPrimaryKeyField(Field.is("id", FieldType.STRING));
         entityDefn.addField(Field.is("title", FieldType.STRING).makeMandatory());
 
-        EntityInstanceCollection myInstances = myThingifier.getThingInstancesNamed("entity", EntityRelModel.DEFAULT_DATABASE_NAME);
+        EntityDefinition myInstances =
+                myThingifier
+                        .getERmodel()
+                        .getSchema()
+                        .getDefinitionWithSingularOrPluralNamed("entity");
 
         // PUT
 
-        EntityInstance officeWork = new EntityInstance(entityDefn).setValue("id", "one").
-                setValue("title", "An Existing instance");
-
-        myInstances.addInstance(officeWork);
+        EntityInstance officeWork =
+                myThingifier
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
+                                EntityInstanceDraft.forEntity(entityDefn)
+                                        .withField("id", "one")
+                                        .withField("title", "An Existing instance"));
 
         String originalID = officeWork.getPrimaryKeyValue();
-        String originalGuid = officeWork.getFieldValue("id").asString();
         Assertions.assertNotNull(originalID);
 
-        // amend existing instances with PUT - this should validate that all required fields are present
+        // amend existing instances with PUT - this should validate that all required fields are
+        // present
 
         requestBody = new HashMap<String, String>();
         requestBody.put("title", "My Office Work");
         String newGuid = UUID.randomUUID().toString();
         requestBody.put("id", newGuid);
 
-
-
-        apiresponse = myThingifier.api().put(String.format("entities/%s", newGuid),  getSimpleParser(requestBody, myThingifier), new HttpHeadersBlock());
+        apiresponse =
+                myThingifier
+                        .api()
+                        .put(
+                                String.format("entities/%s", newGuid),
+                                getSimpleParser(requestBody, myThingifier),
+                                new HttpHeadersBlock());
 
         Assertions.assertEquals(201, apiresponse.getStatusCode());
 
         // no change to original instance
-        Assertions.assertEquals("An Existing instance", officeWork.getFieldValue("title").asString());
+        Assertions.assertEquals(
+                "An Existing instance", officeWork.getFieldValue("title").asString());
         Assertions.assertEquals(originalID, officeWork.getFieldValue("id").asString());
 
-        EntityInstance newInstance = myInstances.findInstanceByPrimaryKey(newGuid);
+        EntityInstance newInstance =
+                myThingifier
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .findByPrimaryKey(myInstances, newGuid);
         Assertions.assertEquals("My Office Work", newInstance.getFieldValue("title").asString());
         Assertions.assertEquals(newGuid, newInstance.getFieldValue("id").asString());
     }
@@ -334,38 +467,55 @@ public class SimpleVerbPutEntityInstanceApiNonHttpTest {
         entityDefn.addAsPrimaryKeyField(Field.is("id", FieldType.STRING));
         entityDefn.addField(Field.is("title", FieldType.STRING).makeMandatory());
 
-        EntityInstanceCollection myInstances = myThingifier.getThingInstancesNamed("entity", EntityRelModel.DEFAULT_DATABASE_NAME);
+        EntityDefinition myInstances =
+                myThingifier
+                        .getERmodel()
+                        .getSchema()
+                        .getDefinitionWithSingularOrPluralNamed("entity");
 
         // PUT
 
-        EntityInstance officeWork = new EntityInstance(entityDefn).setValue("id", "one").
-                setValue("title", "An Existing instance");
-
-        myInstances.addInstance(officeWork);
+        EntityInstance officeWork =
+                myThingifier
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
+                                EntityInstanceDraft.forEntity(entityDefn)
+                                        .withField("id", "one")
+                                        .withField("title", "An Existing instance"));
 
         String originalID = officeWork.getPrimaryKeyValue();
-        String originalGuid = officeWork.getFieldValue("id").asString();
         Assertions.assertNotNull(originalID);
 
-        // amend existing instances with PUT - this should validate that all required fields are present
+        // amend existing instances with PUT - this should validate that all required fields are
+        // present
 
         requestBody = new HashMap<String, String>();
         requestBody.put("title", "My Office Work");
         String newGuid = UUID.randomUUID().toString();
         // body does not contain id, only the url does
-        //requestBody.put("id", newGuid);
+        // requestBody.put("id", newGuid);
 
-
-
-        apiresponse = myThingifier.api().put(String.format("entities/%s", newGuid),  getSimpleParser(requestBody, myThingifier), new HttpHeadersBlock());
+        apiresponse =
+                myThingifier
+                        .api()
+                        .put(
+                                String.format("entities/%s", newGuid),
+                                getSimpleParser(requestBody, myThingifier),
+                                new HttpHeadersBlock());
 
         Assertions.assertEquals(201, apiresponse.getStatusCode());
 
         // no change to original instance
-        Assertions.assertEquals("An Existing instance", officeWork.getFieldValue("title").asString());
+        Assertions.assertEquals(
+                "An Existing instance", officeWork.getFieldValue("title").asString());
         Assertions.assertEquals(originalID, officeWork.getFieldValue("id").asString());
 
-        EntityInstance newInstance = myInstances.findInstanceByPrimaryKey(newGuid);
+        EntityInstance newInstance =
+                myThingifier
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .findByPrimaryKey(myInstances, newGuid);
         Assertions.assertEquals("My Office Work", newInstance.getFieldValue("title").asString());
         Assertions.assertEquals(newGuid, newInstance.getFieldValue("id").asString());
     }
@@ -383,36 +533,44 @@ public class SimpleVerbPutEntityInstanceApiNonHttpTest {
         entityDefn.addAsPrimaryKeyField(Field.is("id", FieldType.STRING));
         entityDefn.addField(Field.is("title", FieldType.STRING).makeMandatory());
 
-        EntityInstanceCollection myInstances = myThingifier.getThingInstancesNamed("entity", EntityRelModel.DEFAULT_DATABASE_NAME);
-
         // PUT
 
-        EntityInstance officeWork = new EntityInstance(entityDefn).setValue("id", "one").
-                setValue("title", "An Existing instance");
-
-        myInstances.addInstance(officeWork);
+        EntityInstance officeWork =
+                myThingifier
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
+                                EntityInstanceDraft.forEntity(entityDefn)
+                                        .withField("id", "one")
+                                        .withField("title", "An Existing instance"));
 
         String originalID = officeWork.getPrimaryKeyValue();
-        String originalGuid = officeWork.getFieldValue("id").asString();
         Assertions.assertNotNull(originalID);
 
-        // amend existing instances with PUT - this should validate that all required fields are present
+        // amend existing instances with PUT - this should validate that all required fields are
+        // present
 
         requestBody = new HashMap<String, String>();
         requestBody.put("title", "My Office Work");
         String newGuid = "newkey";
         requestBody.put("id", "innerkey");
 
-
-
-        apiresponse = myThingifier.api().put(String.format("entities/%s", newGuid),  getSimpleParser(requestBody, myThingifier), new HttpHeadersBlock());
+        apiresponse =
+                myThingifier
+                        .api()
+                        .put(
+                                String.format("entities/%s", newGuid),
+                                getSimpleParser(requestBody, myThingifier),
+                                new HttpHeadersBlock());
 
         Assertions.assertEquals(400, apiresponse.getStatusCode());
-        Assertions.assertEquals("Cannot create entity with PUT as key does not match body value newkey != innerkey", apiresponse.getErrorMessages().toArray()[0]);
+        Assertions.assertEquals(
+                "Cannot create entity with PUT as key does not match body value newkey != innerkey",
+                apiresponse.getErrorMessages().toArray()[0]);
 
         // no change to original instance
-        Assertions.assertEquals("An Existing instance", officeWork.getFieldValue("title").asString());
+        Assertions.assertEquals(
+                "An Existing instance", officeWork.getFieldValue("title").asString());
         Assertions.assertEquals(originalID, officeWork.getFieldValue("id").asString());
-
     }
 }

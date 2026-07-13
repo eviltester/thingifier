@@ -12,35 +12,29 @@ import uk.co.compendiumdev.challenger.restassured.api.TodosApi;
 public class C023DeleteExistingTodo200Test extends RestAssuredBaseTest {
 
     @Test
-    void canDeleteATodoItem(){
+    void canDeleteATodoItem() {
 
         TodosApi api = new TodosApi();
 
-        Todo created = api.createTodo("my new todo",
-                    "my description",
-                    true);
+        Todo created = api.createTodo("my new todo", "my description", true);
 
-        RestAssured.
-            given().
-                header("X-CHALLENGER", xChallenger).
-                accept("application/json").
-                delete(apiPath( "/todos/" + created.id)).
-            then().
-                statusCode(200).
-                contentType(ContentType.JSON);
-
+        RestAssured.given()
+                .header("X-CHALLENGER", xChallenger)
+                .accept("application/json")
+                .delete(apiPath("/todos/" + created.id))
+                .then()
+                .statusCode(200)
+                .contentType(ContentType.JSON);
 
         ChallengesStatus statuses = new ChallengesStatus();
         statuses.get();
         Assertions.assertTrue(statuses.getChallengeNamed("DELETE /todos/{id} (200)").status);
 
         // check it was actually deleted
-        RestAssured.
-                given().
-                accept("application/json").
-                get(apiPath( "/todos/" + created.id)).
-                then().
-                statusCode(404);
+        RestAssured.given()
+                .accept("application/json")
+                .get(apiPath("/todos/" + created.id))
+                .then()
+                .statusCode(404);
     }
-
 }

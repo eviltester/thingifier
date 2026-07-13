@@ -1,13 +1,12 @@
 package uk.co.compendiumdev.version4.api;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-
 import java.util.List;
 
 public class Payloads {
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    public static class ProjectPayload{
+    public static class ProjectPayload {
         public String id;
         public String title;
         public Boolean completed;
@@ -20,20 +19,20 @@ public class Payloads {
         public String id;
     }
 
-    public static class ProjectsPayload{
+    public static class ProjectsPayload {
         public List<ProjectPayload> projects;
     }
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    public static class TodoPayload{
+    public static class TodoPayload {
         public String id;
         public String title;
         public Boolean doneStatus;
         public String description;
-        public List<IdValues>tasksof;
+        public List<IdValues> tasksof;
     }
 
-    public static class TodosPayload{
+    public static class TodosPayload {
         public List<TodoPayload> todos;
     }
 
@@ -41,4 +40,3 @@ public class Payloads {
         public List<String> errorMessages;
     }
 }
-

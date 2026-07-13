@@ -1,13 +1,12 @@
 package uk.co.compendiumdev.thingifier.api.docgen;
 
-import uk.co.compendiumdev.thingifier.api.response.ResponseHeader;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import uk.co.compendiumdev.thingifier.api.response.ResponseHeader;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 
 public class RoutingDefinition {
     private final RoutingVerb verb;
@@ -18,29 +17,30 @@ public class RoutingDefinition {
     private boolean isFilterable;
     private EntityDefinition filterableEntityDefn;
     private List<RoutingStatus> possibleStatusResponses;
-    private HashMap<Integer,String> returnPayload;
+    private HashMap<Integer, String> returnPayload;
     private String requestPayload;
     private List<Field> requestUrlParams;
-    private HashMap<String,String> customHeaders;
+    private HashMap<String, String> customHeaders;
     private boolean usesBasicAuth = false;
 
-    public RoutingDefinition(RoutingVerb verb, String url, RoutingStatus routingStatus, ResponseHeader header) {
+    public RoutingDefinition(
+            RoutingVerb verb, String url, RoutingStatus routingStatus, ResponseHeader header) {
         this.verb = verb;
-        if(url.startsWith("/")){
+        if (url.startsWith("/")) {
             this.url = url.substring(1);
-        }else{
+        } else {
             this.url = url;
         }
         this.routingStatus = routingStatus;
         this.header = header;
 
         // defaults
-        isFilterable=false;
-        filterableEntityDefn=null;
-        possibleStatusResponses= new ArrayList<>();
+        isFilterable = false;
+        filterableEntityDefn = null;
+        possibleStatusResponses = new ArrayList<>();
         requestUrlParams = new ArrayList<>();
-        returnPayload=new HashMap<>();
-        requestPayload=null;
+        returnPayload = new HashMap<>();
+        requestPayload = null;
         customHeaders = new HashMap<>();
     }
 
@@ -91,7 +91,7 @@ public class RoutingDefinition {
     }
 
     public RoutingDefinition setAsFilterableFrom(final EntityDefinition definition) {
-        isFilterable=true;
+        isFilterable = true;
         filterableEntityDefn = definition;
         return this;
     }
@@ -111,7 +111,7 @@ public class RoutingDefinition {
 
     // quick hack method to allow creating a bunch of default rendered possible status codes
     public RoutingDefinition addPossibleStatuses(final Integer... statusCodes) {
-        for(Integer statusCode : statusCodes){
+        for (Integer statusCode : statusCodes) {
             addPossibleStatus(RoutingStatus.returnValue(statusCode));
         }
         return this;
@@ -135,11 +135,11 @@ public class RoutingDefinition {
         return this;
     }
 
-    public Boolean hasRequestPayload(){
-        return requestPayload!=null;
+    public Boolean hasRequestPayload() {
+        return requestPayload != null;
     }
 
-    public String getRequestPayload(){
+    public String getRequestPayload() {
         return requestPayload;
     }
 
@@ -148,16 +148,16 @@ public class RoutingDefinition {
         return this;
     }
 
-    public Boolean hasRequestUrlParams(){
+    public Boolean hasRequestUrlParams() {
         return !requestUrlParams.isEmpty();
     }
 
-    public List<Field> getRequestUrlParams(){
+    public List<Field> getRequestUrlParams() {
         return new ArrayList<>(requestUrlParams);
     }
 
     public RoutingDefinition addCustomHeader(String headerName, String headerType) {
-        customHeaders.put(headerName,headerType);
+        customHeaders.put(headerName, headerType);
         return this;
     }
 
@@ -182,7 +182,7 @@ public class RoutingDefinition {
         return this;
     }
 
-    public boolean isSecuredByBasicAuth(){
+    public boolean isSecuredByBasicAuth() {
         return usesBasicAuth;
     }
 }

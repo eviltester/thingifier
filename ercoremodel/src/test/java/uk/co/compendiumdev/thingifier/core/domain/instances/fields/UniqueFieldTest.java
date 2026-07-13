@@ -6,83 +6,95 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 
 public class UniqueFieldTest {
 
     @Test
-    public void byDefaultAFieldIsNotUnique(){
+    public void byDefaultAFieldIsNotUnique() {
 
         EntityDefinition stringFieldEntity = new EntityDefinition("Entity", "Entities");
         stringFieldEntity.addFields(Field.is("field", FieldType.STRING));
 
-        EntityInstance instance = new EntityInstance(stringFieldEntity);
+        EntityInstance instance =
+                uk.co.compendiumdev.thingifier.core.repository.MutableEntityInstance
+                        .snapshotFromDraft(EntityInstanceDraft.forEntity(stringFieldEntity));
 
         Assertions.assertFalse(instance.getEntity().getField("field").mustBeUnique());
     }
 
     @Test
-    public void aFieldCanBeSetToBeUnique(){
+    public void aFieldCanBeSetToBeUnique() {
 
         EntityDefinition stringFieldEntity = new EntityDefinition("Entity", "Entities");
         stringFieldEntity.addFields(Field.is("field", FieldType.STRING).setMustBeUnique(true));
 
-        EntityInstance instance = new EntityInstance(stringFieldEntity);
+        EntityInstance instance =
+                uk.co.compendiumdev.thingifier.core.repository.MutableEntityInstance
+                        .snapshotFromDraft(EntityInstanceDraft.forEntity(stringFieldEntity));
 
         Assertions.assertTrue(instance.getEntity().getField("field").mustBeUnique());
     }
 
     @Test
-    public void aUniqueFieldCanBeUniqueAfterATransform(){
+    public void aUniqueFieldCanBeUniqueAfterATransform() {
 
         EntityDefinition stringFieldEntity = new EntityDefinition("Entity", "Entities");
         stringFieldEntity.addFields(
-                Field.is("field", FieldType.STRING).
-                setMustBeUnique(true).
-                setUniqueAfterTransform(
-                        (s) -> s.replace("-", "")
-                ));
+                Field.is("field", FieldType.STRING)
+                        .setMustBeUnique(true)
+                        .setUniqueAfterTransform((s) -> s.replace("-", "")));
 
-        EntityInstance instance = new EntityInstance(stringFieldEntity);
-        instance.setValue("field", "1-2-3");
+        EntityInstance instance =
+                uk.co.compendiumdev.thingifier.core.repository.MutableEntityInstance
+                        .snapshotFromDraft(
+                                EntityInstanceDraft.forEntity(stringFieldEntity)
+                                        .withField("field", "1-2-3"));
 
         Assertions.assertTrue(instance.getEntity().getField("field").mustBeUnique());
-        Assertions.assertEquals("1-2-3",instance.getFieldValue("field").asString());
-        Assertions.assertEquals("123",instance.getFieldValue("field").asUniqueComparisonString());
+        Assertions.assertEquals("1-2-3", instance.getFieldValue("field").asString());
+        Assertions.assertEquals("123", instance.getFieldValue("field").asUniqueComparisonString());
     }
 
     @Test
-    public void aUniqueFieldDoesNotNeedAUniqueTransformFunction(){
+    public void aUniqueFieldDoesNotNeedAUniqueTransformFunction() {
 
         EntityDefinition stringFieldEntity = new EntityDefinition("Entity", "Entities");
-        stringFieldEntity.addFields(
-                Field.is("field", FieldType.STRING).
-                        setMustBeUnique(true));
+        stringFieldEntity.addFields(Field.is("field", FieldType.STRING).setMustBeUnique(true));
 
-        EntityInstance instance = new EntityInstance(stringFieldEntity);
-        instance.setValue("field", "1-2-3");
+        EntityInstance instance =
+                uk.co.compendiumdev.thingifier.core.repository.MutableEntityInstance
+                        .snapshotFromDraft(
+                                EntityInstanceDraft.forEntity(stringFieldEntity)
+                                        .withField("field", "1-2-3"));
 
         Assertions.assertTrue(instance.getEntity().getField("field").mustBeUnique());
-        Assertions.assertEquals("1-2-3",instance.getFieldValue("field").asString());
-        Assertions.assertEquals("1-2-3",instance.getFieldValue("field").asUniqueComparisonString());
+        Assertions.assertEquals("1-2-3", instance.getFieldValue("field").asString());
+        Assertions.assertEquals(
+                "1-2-3", instance.getFieldValue("field").asUniqueComparisonString());
     }
 
     @Test
-    public void reportErrorsInTransformationFunctionResult(){
+    public void reportErrorsInTransformationFunctionResult() {
 
         EntityDefinition stringFieldEntity = new EntityDefinition("Entity", "Entities");
         stringFieldEntity.addFields(
-                Field.is("field", FieldType.STRING).
-                        setMustBeUnique(true).
-                        setUniqueAfterTransform(
-                                (s) -> {throw new RuntimeException("bob");}
-                        ));
+                Field.is("field", FieldType.STRING)
+                        .setMustBeUnique(true)
+                        .setUniqueAfterTransform(
+                                (s) -> {
+                                    throw new RuntimeException("bob");
+                                }));
 
-        EntityInstance instance = new EntityInstance(stringFieldEntity);
-        instance.setValue("field", "1-2-3");
+        EntityInstance instance =
+                uk.co.compendiumdev.thingifier.core.repository.MutableEntityInstance
+                        .snapshotFromDraft(
+                                EntityInstanceDraft.forEntity(stringFieldEntity)
+                                        .withField("field", "1-2-3"));
 
         Assertions.assertTrue(instance.getEntity().getField("field").mustBeUnique());
-        Assertions.assertEquals("1-2-3",instance.getFieldValue("field").asString());
-        Assertions.assertEquals("ERROR: 1-2-3 bob",instance.getFieldValue("field").asUniqueComparisonString());
+        Assertions.assertEquals("1-2-3", instance.getFieldValue("field").asString());
+        Assertions.assertEquals(
+                "ERROR: 1-2-3 bob", instance.getFieldValue("field").asUniqueComparisonString());
     }
-
 }

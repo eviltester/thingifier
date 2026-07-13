@@ -1,8 +1,7 @@
 package uk.co.compendiumdev.thingifier.reporting;
 
 import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.core.reporting.ERModelReport;
-
+import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 
 public class ThingReporter {
 
@@ -14,7 +13,6 @@ public class ThingReporter {
 
     public String basicReport() {
 
-        return new ERModelReport(thingifier.getERmodel()).
-                        asMarkdown();
+        return thingifier.reportAsMarkdown(EntityRelModel.DEFAULT_DATABASE_NAME);
     }
 }

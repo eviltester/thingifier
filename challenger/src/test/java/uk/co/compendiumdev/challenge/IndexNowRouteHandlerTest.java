@@ -1,11 +1,10 @@
 package uk.co.compendiumdev.challenge;
 
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiConsumer;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import spark.Route;
-
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.BiConsumer;
 
 public class IndexNowRouteHandlerTest {
 
@@ -15,10 +14,11 @@ public class IndexNowRouteHandlerTest {
         AtomicReference<String> capturedPath = new AtomicReference<>(null);
         AtomicReference<Route> capturedRoute = new AtomicReference<>(null);
 
-        BiConsumer<String, Route> registrar = (path, route) -> {
-            capturedPath.set(path);
-            capturedRoute.set(route);
-        };
+        BiConsumer<String, Route> registrar =
+                (path, route) -> {
+                    capturedPath.set(path);
+                    capturedRoute.set(route);
+                };
 
         IndexNowRouteHandler handler =
                 new IndexNowRouteHandler("/myIndexNowKey63638.txt", "abc123", registrar);
@@ -34,7 +34,9 @@ public class IndexNowRouteHandlerTest {
         AtomicReference<Route> capturedRoute = new AtomicReference<>(null);
 
         IndexNowRouteHandler handler =
-                new IndexNowRouteHandler("/myIndexNowKey63638.txt", "abc123",
+                new IndexNowRouteHandler(
+                        "/myIndexNowKey63638.txt",
+                        "abc123",
                         (path, route) -> capturedRoute.set(route));
 
         handler.configureRoutes();
@@ -49,8 +51,8 @@ public class IndexNowRouteHandlerTest {
         AtomicReference<Route> capturedRoute = new AtomicReference<>(null);
 
         IndexNowRouteHandler handler =
-                new IndexNowRouteHandler("/myIndexNowKey63638.txt", " ",
-                        (path, route) -> capturedRoute.set(route));
+                new IndexNowRouteHandler(
+                        "/myIndexNowKey63638.txt", " ", (path, route) -> capturedRoute.set(route));
 
         Assertions.assertFalse(handler.configureRoutes());
         Assertions.assertNull(capturedRoute.get());
@@ -62,8 +64,7 @@ public class IndexNowRouteHandlerTest {
         AtomicReference<Route> capturedRoute = new AtomicReference<>(null);
 
         IndexNowRouteHandler handler =
-                new IndexNowRouteHandler(" ", "abc123",
-                        (path, route) -> capturedRoute.set(route));
+                new IndexNowRouteHandler(" ", "abc123", (path, route) -> capturedRoute.set(route));
 
         Assertions.assertFalse(handler.configureRoutes());
         Assertions.assertNull(capturedRoute.get());
@@ -80,7 +81,8 @@ public class IndexNowRouteHandlerTest {
     public void locationMustNotContainUnsafeCharacters() {
         Assertions.assertFalse(IndexNowRouteHandler.isValidLocation("/my*IndexNowKey63638.txt"));
         Assertions.assertFalse(IndexNowRouteHandler.isValidLocation("/myIndexNowKey63638.txt?x=1"));
-        Assertions.assertFalse(IndexNowRouteHandler.isValidLocation("/myIndexNowKey63638.txt#hash"));
+        Assertions.assertFalse(
+                IndexNowRouteHandler.isValidLocation("/myIndexNowKey63638.txt#hash"));
         Assertions.assertFalse(IndexNowRouteHandler.isValidLocation("/my IndexNowKey63638.txt"));
         Assertions.assertFalse(IndexNowRouteHandler.isValidLocation("/my\\IndexNowKey63638.txt"));
     }

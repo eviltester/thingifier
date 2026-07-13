@@ -8,17 +8,17 @@ public class ThingifierApiConfigProfile {
     // todo: allow a profile to inherit from other profiles and only change the
     // parts that they want to change e.g bug fix in the next profile
 
-    public ThingifierApiConfigProfile(final String profileName,
-                                      final String profileDescription) {
+    public ThingifierApiConfigProfile(final String profileName, final String profileDescription) {
 
         this.profileName = profileName;
         this.profileDescription = profileDescription;
         apiConfig = new ThingifierApiConfig("");
     }
 
-    public ThingifierApiConfigProfile(final String profileName,
-                                      final String profileDescription,
-                                      final String apiEndPointPrefix) {
+    public ThingifierApiConfigProfile(
+            final String profileName,
+            final String profileDescription,
+            final String apiEndPointPrefix) {
 
         this.profileName = profileName;
         this.profileDescription = profileDescription;

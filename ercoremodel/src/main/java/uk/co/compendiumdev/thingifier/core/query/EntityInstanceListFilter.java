@@ -1,18 +1,17 @@
 package uk.co.compendiumdev.thingifier.core.query;
 
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-
 import java.util.*;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
 public class EntityInstanceListFilter {
     EntityListFilterParamParser instanceFilter;
 
     /*
-        Given a Map of
-        FieldName,Value
-        sort_by,+-FieldName
+       Given a Map of
+       FieldName,Value
+       sort_by,+-FieldName
 
-     */
+    */
     public EntityInstanceListFilter(QueryFilterParams queryParams) {
         instanceFilter = new EntityListFilterParamParser(queryParams);
     }
@@ -25,14 +24,13 @@ public class EntityInstanceListFilter {
 
         List<EntityInstance> filtered = new ArrayList<>();
 
-        for(EntityInstance instance : foundItems){
+        for (EntityInstance instance : foundItems) {
             // does it match the filter?
-            if(instanceFilter.matches(instance)){
+            if (instanceFilter.matches(instance)) {
                 filtered.add(instance);
             }
         }
 
         return filtered;
     }
-
 }

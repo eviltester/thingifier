@@ -1,16 +1,16 @@
 package uk.co.compendiumdev.thingifier.api.http;
 
+import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonThing;
 import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
 import uk.co.compendiumdev.thingifier.api.http.headers.headerparser.AcceptHeaderParser;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponseAsJson;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponseAsXml;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
-import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonThing;
 
 /**
- * Given an internal ApiResponse create an HTTP abstraction response
- * The requestHeaders are used to configure the content type using the Accept header
+ * Given an internal ApiResponse create an HTTP abstraction response The requestHeaders are used to
+ * configure the content type using the Accept header
  */
 public final class HttpApiResponse {
 
@@ -22,37 +22,41 @@ public final class HttpApiResponse {
     private String type;
     private boolean asJson;
 
-    public HttpApiResponse(final HttpHeadersBlock requestHeaders,
-                           final ApiResponse anApiResponse,
-                           JsonThing jsonThing,
-                           ThingifierApiConfig apiConfig
-                           ) {
+    public HttpApiResponse(
+            final HttpHeadersBlock requestHeaders,
+            final ApiResponse anApiResponse,
+            JsonThing jsonThing,
+            ThingifierApiConfig apiConfig) {
         this.apiResponse = anApiResponse;
         this.apiResponseHeaders = new HttpHeadersBlock();
         this.jsonThing = jsonThing;
         this.apiConfig = apiConfig;
-        asJson=true;
+        asJson = true;
 
-        HttpHeadersBlock useRequestHeaders = requestHeaders==null ? new HttpHeadersBlock() : requestHeaders;
-        HttpHeadersBlock useApiResponseHeaders = anApiResponse==null ? new HttpHeadersBlock() : anApiResponse.getHeaders();
+        HttpHeadersBlock useRequestHeaders =
+                requestHeaders == null ? new HttpHeadersBlock() : requestHeaders;
+        HttpHeadersBlock useApiResponseHeaders =
+                anApiResponse == null ? new HttpHeadersBlock() : anApiResponse.getHeaders();
 
         configureFrom(useRequestHeaders, useApiResponseHeaders);
     }
 
-    private void configureFrom(final HttpHeadersBlock requestHeaders, final HttpHeadersBlock originalApiResponseHeaders) {
+    private void configureFrom(
+            final HttpHeadersBlock requestHeaders,
+            final HttpHeadersBlock originalApiResponseHeaders) {
 
         String acceptHeader = requestHeaders.get("accept");
 
         AcceptHeaderParser accept = new AcceptHeaderParser(acceptHeader);
 
-        if(accept.hasAPreferenceForXml()){
-            if(apiConfig.willApiAllowXmlForResponses()) {
+        if (accept.hasAPreferenceForXml()) {
+            if (apiConfig.willApiAllowXmlForResponses()) {
                 asJson = false;
             }
         }
 
-        if(!apiConfig.willApiAllowJsonForResponses()){
-            asJson=false;
+        if (!apiConfig.willApiAllowJsonForResponses()) {
+            asJson = false;
         }
 
         // TODO: handle text/plain, text/html
@@ -65,31 +69,22 @@ public final class HttpApiResponse {
         apiResponseHeaders.putAll(originalApiResponseHeaders);
         apiResponseHeaders.put("Content-Type", type);
 
-
-        if(apiConfig.willPreventRobotsFromIndexingResponse()) {
+        if (apiConfig.willPreventRobotsFromIndexingResponse()) {
             apiResponseHeaders.put("x-robots-tag", "noindex");
         }
-
     }
 
     // TODO: handle text/plain, text/html
     public String getBody() {
-
-        String returnBody = "";
-
-        if(apiResponse.hasABodyOverride()){
+        if (apiResponse.hasABodyOverride()) {
             return apiResponse.getBody();
         }
         if (asJson) {
-            returnBody = new ApiResponseAsJson(apiResponse, jsonThing).getJson();
-        } else {
-            returnBody = new ApiResponseAsXml(apiResponse, jsonThing).getXml();
+            return new ApiResponseAsJson(apiResponse, jsonThing).getJson();
         }
 
-        return returnBody;
+        return new ApiResponseAsXml(apiResponse, jsonThing).getXml();
     }
-
-
 
     public boolean hasType() {
         return this.type != null;

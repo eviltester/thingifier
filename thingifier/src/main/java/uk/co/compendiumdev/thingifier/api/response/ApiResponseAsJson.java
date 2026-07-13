@@ -1,10 +1,9 @@
 package uk.co.compendiumdev.thingifier.api.response;
 
 import com.google.gson.Gson;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonThing;
-
 import java.util.*;
+import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonThing;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
 public final class ApiResponseAsJson {
     private final ApiResponse apiResponse;
@@ -46,7 +45,11 @@ public final class ApiResponseAsJson {
             }
 
             if (typeName.length() > 0) {
-                output = jsonThing.asJsonTypedArrayWithContentsUntyped(apiResponse.getReturnedInstanceCollection(), typeName);
+                output =
+                        jsonThing.asJsonTypedArrayWithContentsUntyped(
+                                apiResponse.getReturnedInstanceCollection(),
+                                typeName,
+                                apiResponse.getRelationshipRepository());
             } else {
                 if (things.size() == 0) {
                     output = "{}";
@@ -56,10 +59,15 @@ public final class ApiResponseAsJson {
             return output;
 
         } else {
+            if (apiResponse.hasReturnedDraft()) {
+                return jsonThing.asJsonObject(apiResponse.getReturnedDraft()).toString();
+            }
             EntityInstance instance = apiResponse.getReturnedInstance();
 
-            //return JsonThing.asNamedJsonObject(instance).toString();
-            return jsonThing.asJsonObject(instance).toString();
+            // return JsonThing.asNamedJsonObject(instance).toString();
+            return jsonThing
+                    .asJsonObject(instance, apiResponse.getRelationshipRepository())
+                    .toString();
         }
     }
 

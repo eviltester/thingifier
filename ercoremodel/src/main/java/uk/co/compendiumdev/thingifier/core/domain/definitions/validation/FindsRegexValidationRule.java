@@ -1,12 +1,11 @@
 package uk.co.compendiumdev.thingifier.core.domain.definitions.validation;
 
+import java.util.regex.Pattern;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
 
-import java.util.regex.Pattern;
-
 /*
-    Does the regex appear anywhere in the text?
- */
+   Does the regex appear anywhere in the text?
+*/
 public class FindsRegexValidationRule implements ValidationRule {
     private final String regexToMatch;
     private final Pattern pattern;
@@ -25,13 +24,13 @@ public class FindsRegexValidationRule implements ValidationRule {
 
     @Override
     public String getErrorMessage(final FieldValue value) {
-        return String.format("%s does not satisfy the regex %s",value.getName(), this.regexToMatch);
+        return String.format(
+                "%s does not satisfy the regex %s", value.getName(), this.regexToMatch);
     }
 
     @Override
     public String getExplanation() {
-        return String.format("Value must contain text that matches the regex %s", this.regexToMatch);
+        return String.format(
+                "Value must contain text that matches the regex %s", this.regexToMatch);
     }
-
-
 }

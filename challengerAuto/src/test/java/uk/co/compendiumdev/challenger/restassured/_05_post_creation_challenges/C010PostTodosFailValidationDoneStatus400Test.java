@@ -13,7 +13,7 @@ import uk.co.compendiumdev.challenger.restassured.api.RestAssuredBaseTest;
 public class C010PostTodosFailValidationDoneStatus400Test extends RestAssuredBaseTest {
 
     @Test
-    void can400NotCreateATodoWithInvalidDoneStatusPost(){
+    void can400NotCreateATodoWithInvalidDoneStatusPost() {
 
         Todo createMe = new Todo();
         createMe.title = "my name " + System.currentTimeMillis();
@@ -24,24 +24,20 @@ public class C010PostTodosFailValidationDoneStatus400Test extends RestAssuredBas
         // work with the JSON to create a 'bad' payload
 
         final JsonElement createMeJson = new Gson().toJsonTree(createMe);
-        createMeJson.getAsJsonObject().
-                addProperty("doneStatus", "truthy");
+        createMeJson.getAsJsonObject().addProperty("doneStatus", "truthy");
 
-        RestAssured.
-                given().
-                header("X-CHALLENGER", xChallenger).
-                accept("application/json").
-                contentType("application/json").
-                body(createMeJson.toString()).
-                post(apiPath( "/todos")).
-                then().
-                statusCode(400).
-                contentType(ContentType.JSON);
+        RestAssured.given()
+                .header("X-CHALLENGER", xChallenger)
+                .accept("application/json")
+                .contentType("application/json")
+                .body(createMeJson.toString())
+                .post(apiPath("/todos"))
+                .then()
+                .statusCode(400)
+                .contentType(ContentType.JSON);
 
         ChallengesStatus statuses = new ChallengesStatus();
         statuses.get();
         Assertions.assertTrue(statuses.getChallengeNamed("POST /todos (400) doneStatus").status);
-
     }
-
 }

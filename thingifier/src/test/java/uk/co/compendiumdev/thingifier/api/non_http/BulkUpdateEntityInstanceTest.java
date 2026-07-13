@@ -1,5 +1,7 @@
 package uk.co.compendiumdev.thingifier.api.non_http;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -8,13 +10,8 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.NamedValue;
-import uk.co.compendiumdev.thingifier.core.domain.instances.AutoIncrement;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 
 public class BulkUpdateEntityInstanceTest {
 
@@ -26,7 +23,8 @@ public class BulkUpdateEntityInstanceTest {
         entityTestSession = new EntityDefinition("Test Session", "Test Sessions");
 
         entityTestSession.addField(Field.is("Title", FieldType.STRING));
-        entityTestSession.addFields(Field.is("CompletedStatus", FieldType.STRING).withDefaultValue("Not Completed"));
+        entityTestSession.addFields(
+                Field.is("CompletedStatus", FieldType.STRING).withDefaultValue("Not Completed"));
         entityTestSession.addFields(Field.is("review", FieldType.BOOLEAN).withDefaultValue("TRUE"));
         entityTestSession.addFields(Field.is("falsey", FieldType.BOOLEAN));
         entityTestSession.addFields(Field.is("anid", FieldType.AUTO_INCREMENT));
@@ -35,76 +33,92 @@ public class BulkUpdateEntityInstanceTest {
     @Test
     public void canSetByList() {
 
-        final EntityInstance session = new EntityInstance(entityTestSession);
+        final EntityInstance session =
+                uk.co.compendiumdev.thingifier.core.repository.MutableEntityInstance
+                        .snapshotFromDraft(EntityInstanceDraft.forEntity(entityTestSession));
 
         List<NamedValue> someFields = new ArrayList<>();
-        someFields.add(new NamedValue("Title",  "my title"));
-        someFields.add(new NamedValue("falsey",  "true"));
-        new EntityInstanceBulkUpdater(session).setFieldValuesFrom(someFields);
+        someFields.add(new NamedValue("Title", "my title"));
+        someFields.add(new NamedValue("falsey", "true"));
+        EntityInstanceDraft draft =
+                new EntityInstanceBulkUpdater(session).setFieldValuesFrom(someFields);
+        EntityInstance updated =
+                uk.co.compendiumdev.thingifier.core.repository.MutableEntityInstance
+                        .snapshotFromDraft(draft);
 
-        Assertions.assertEquals("my title",
-                session.getFieldValue("Title").asString());
-        Assertions.assertEquals("true",
-                session.getFieldValue("falsey").asString());
+        Assertions.assertEquals("my title", updated.getFieldValue("Title").asString());
+        Assertions.assertEquals("true", updated.getFieldValue("falsey").asString());
     }
 
     @Test
     public void canNotSetSomeFieldsByList() {
 
-        final EntityInstance session = new EntityInstance(entityTestSession);
-        session.addAutoGUIDstoInstance();
-        Map<String, AutoIncrement> autos = new HashMap<>();
-        autos.put("anid", new AutoIncrement("anid", 1));
-        session.addAutoIncrementIdsToInstance(autos);
+        final EntityInstance session =
+                uk.co.compendiumdev.thingifier.core.repository.MutableEntityInstance
+                        .snapshotFromDraft(
+                                EntityInstanceDraft.forEntity(entityTestSession)
+                                        .withProtectedField("anid", "1"));
 
         List<NamedValue> someFields = new ArrayList<>();
-        someFields.add(new NamedValue("anid",  "12"));
-        final RuntimeException e = Assertions.assertThrows(RuntimeException.class,
-                () ->  new EntityInstanceBulkUpdater(session).setFieldValuesFrom(someFields));
+        someFields.add(new NamedValue("anid", "12"));
+        final RuntimeException e =
+                Assertions.assertThrows(
+                        RuntimeException.class,
+                        () ->
+                                new EntityInstanceBulkUpdater(session)
+                                        .setFieldValuesFrom(someFields));
 
-        Assertions.assertEquals("Can not amend anid from 1 to 12",
-                e.getMessage());
+        Assertions.assertEquals("Can not amend anid from 1 to 12", e.getMessage());
     }
 
     @Test
     public void canIgnoreSomeSetSomeFieldsByListToAvoidTriggeringValidation() {
 
-        final EntityInstance session = new EntityInstance(entityTestSession);
+        final EntityInstance session =
+                uk.co.compendiumdev.thingifier.core.repository.MutableEntityInstance
+                        .snapshotFromDraft(EntityInstanceDraft.forEntity(entityTestSession));
 
         List<NamedValue> someFields = new ArrayList<>();
-        someFields.add(new NamedValue("anid",  "12"));
+        someFields.add(new NamedValue("anid", "12"));
         someFields.add(new NamedValue("Title", "set Title"));
 
         List<String> ignoring = new ArrayList<>();
         ignoring.add("anid");
 
-        new EntityInstanceBulkUpdater(session).setFieldValuesFromArgsIgnoring(someFields, ignoring);
+        EntityInstanceDraft draft =
+                new EntityInstanceBulkUpdater(session)
+                        .setFieldValuesFromArgsIgnoring(someFields, ignoring);
+        EntityInstance updated =
+                uk.co.compendiumdev.thingifier.core.repository.MutableEntityInstance
+                        .snapshotFromDraft(draft);
 
-        Assertions.assertEquals("set Title",
-                session.getFieldValue("Title").asString());
+        Assertions.assertEquals("set Title", updated.getFieldValue("Title").asString());
     }
 
     @Test
     public void canIgnoreSomeOverrideFieldsWithListToAIgnore() {
 
-        final EntityInstance session = new EntityInstance(entityTestSession);
+        final EntityInstance session =
+                uk.co.compendiumdev.thingifier.core.repository.MutableEntityInstance
+                        .snapshotFromDraft(EntityInstanceDraft.forEntity(entityTestSession));
 
         List<NamedValue> someFields = new ArrayList<>();
-        someFields.add(new NamedValue("anid",  "12"));
+        someFields.add(new NamedValue("anid", "12"));
         someFields.add(new NamedValue("Title", "set Title"));
-        someFields.add(new NamedValue("falsey",  "true"));
+        someFields.add(new NamedValue("falsey", "true"));
 
         List<String> ignoring = new ArrayList<>();
         ignoring.add("falsey");
 
-        new EntityInstanceBulkUpdater(session).overrideFieldValuesFromArgsIgnoring(someFields, ignoring);
+        EntityInstanceDraft draft =
+                new EntityInstanceBulkUpdater(session)
+                        .overrideFieldValuesFromArgsIgnoring(someFields, ignoring);
+        EntityInstance updated =
+                uk.co.compendiumdev.thingifier.core.repository.MutableEntityInstance
+                        .snapshotFromDraft(draft);
 
-        Assertions.assertEquals("set Title",
-                session.getFieldValue("Title").asString());
-        Assertions.assertEquals("12",
-                session.getFieldValue("anId").asString());
-        Assertions.assertEquals("false",
-                session.getFieldValue("falsey").asString());
+        Assertions.assertEquals("set Title", updated.getFieldValue("Title").asString());
+        Assertions.assertEquals("12", updated.getFieldValue("anId").asString());
+        Assertions.assertEquals("false", updated.getFieldValue("falsey").asString());
     }
-
 }

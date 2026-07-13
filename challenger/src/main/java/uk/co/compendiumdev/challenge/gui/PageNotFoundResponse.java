@@ -14,7 +14,7 @@ public class PageNotFoundResponse {
         response.status(404);
         response.type("text/html");
         StringBuilder html = new StringBuilder();
-        html.append(guiManagement.getPageStart("404 Not Found","", ""));
+        html.append(guiManagement.getPageStart("404 Not Found", "", ""));
         html.append(guiManagement.getMenuAsHTML());
         html.append(guiManagement.getStartOfMainContentMarker());
         html.append("<h1>Page Not Found</h1>");

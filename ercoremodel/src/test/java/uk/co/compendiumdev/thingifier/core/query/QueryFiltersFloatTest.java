@@ -1,6 +1,6 @@
 package uk.co.compendiumdev.thingifier.core.query;
 
-
+import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -8,29 +8,43 @@ import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 
-import java.util.List;
-
+/** Repository-backed URL query coverage for API-style entity reads. */
 public class QueryFiltersFloatTest {
 
     EntityRelModel erModel;
 
     @BeforeEach
-    public void setupCollectionTestData(){
+    public void setupCollectionTestData() {
         erModel = new EntityRelModel();
         erModel.createEntityDefinition("thing", "things")
-                .addFields(
-                        Field.is("float", FieldType.FLOAT)
-                );
+                .addFields(Field.is("float", FieldType.FLOAT));
 
-        EntityInstanceCollection thing = erModel.getInstanceData().getInstanceCollectionForEntityNamed("thing");
-
-        thing.addInstance(new EntityInstance(thing.definition())).setValue("float", "4.4");
-        thing.addInstance(new EntityInstance(thing.definition())).setValue("float", "1.1");
-        thing.addInstance(new EntityInstance(thing.definition())).setValue("float", "3.3");
-        thing.addInstance(new EntityInstance(thing.definition())).setValue("float", "2.2");
-
+        erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                .entities()
+                .create(
+                        EntityInstanceDraft.forEntity(
+                                        erModel.getSchema().getEntityDefinitionNamed("thing"))
+                                .withField("float", "4.4"));
+        erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                .entities()
+                .create(
+                        EntityInstanceDraft.forEntity(
+                                        erModel.getSchema().getEntityDefinitionNamed("thing"))
+                                .withField("float", "1.1"));
+        erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                .entities()
+                .create(
+                        EntityInstanceDraft.forEntity(
+                                        erModel.getSchema().getEntityDefinitionNamed("thing"))
+                                .withField("float", "3.3"));
+        erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                .entities()
+                .create(
+                        EntityInstanceDraft.forEntity(
+                                        erModel.getSchema().getEntityDefinitionNamed("thing"))
+                                .withField("float", "2.2"));
     }
 
     @Test
@@ -39,7 +53,12 @@ public class QueryFiltersFloatTest {
         QueryFilterParams params = new QueryFilterParams();
         params.put("float", "1.1");
 
-        SimpleQuery queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").performQuery(params);
+        RepositoryUrlQuery queryResults =
+                new RepositoryUrlQuery(
+                                erModel.getSchema(),
+                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                "things")
+                        .performQuery(params);
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
         List<EntityInstance> instances = queryResults.getListEntityInstances();
         Assertions.assertEquals(1, instances.size(), "expected 1 value");
@@ -53,7 +72,12 @@ public class QueryFiltersFloatTest {
         params.put("float", "!1.1");
         params.put("sortby", "+float");
 
-        SimpleQuery queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").performQuery(params);
+        RepositoryUrlQuery queryResults =
+                new RepositoryUrlQuery(
+                                erModel.getSchema(),
+                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                "things")
+                        .performQuery(params);
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
         List<EntityInstance> instances = queryResults.getListEntityInstances();
         Assertions.assertEquals(3, instances.size(), "expected 3 value");
@@ -62,17 +86,21 @@ public class QueryFiltersFloatTest {
         Assertions.assertEquals(4.4F, instances.get(2).getFieldValue("float").asFloat());
     }
 
-
     @Test
     public void canFilterFloatCombinationOfConditions() {
 
         // TODO: handle multiple conditions
         QueryFilterParams params = new QueryFilterParams();
-        params.put("float", ">1.1");   // greater than 1
-        params.put("float", "!3.3");    // and not equal to 3
+        params.put("float", ">1.1"); // greater than 1
+        params.put("float", "!3.3"); // and not equal to 3
         params.put("sortby", "+float");
 
-        SimpleQuery queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").performQuery(params);
+        RepositoryUrlQuery queryResults =
+                new RepositoryUrlQuery(
+                                erModel.getSchema(),
+                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                "things")
+                        .performQuery(params);
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
         List<EntityInstance> instances = queryResults.getListEntityInstances();
         Assertions.assertEquals(2, instances.size(), "expected 2 value");
@@ -86,7 +114,12 @@ public class QueryFiltersFloatTest {
         params.put("float", ">1.1");
         params.put("sortby", "+float");
 
-        SimpleQuery queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").performQuery(params);
+        RepositoryUrlQuery queryResults =
+                new RepositoryUrlQuery(
+                                erModel.getSchema(),
+                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                "things")
+                        .performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
         List<EntityInstance> instances = queryResults.getListEntityInstances();
@@ -102,7 +135,12 @@ public class QueryFiltersFloatTest {
         params.put("float", "<2.0");
         params.put("sortby", "+float");
 
-        SimpleQuery queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").performQuery(params);
+        RepositoryUrlQuery queryResults =
+                new RepositoryUrlQuery(
+                                erModel.getSchema(),
+                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                "things")
+                        .performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
         List<EntityInstance> instances = queryResults.getListEntityInstances();
@@ -116,7 +154,12 @@ public class QueryFiltersFloatTest {
         params.put("float", "<1.1");
         params.put("sortby", "+float");
 
-        SimpleQuery queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").performQuery(params);
+        RepositoryUrlQuery queryResults =
+                new RepositoryUrlQuery(
+                                erModel.getSchema(),
+                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                "things")
+                        .performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
         List<EntityInstance> instances = queryResults.getListEntityInstances();
@@ -124,13 +167,17 @@ public class QueryFiltersFloatTest {
     }
 
     @Test
-    public void canFilterFloatGreaterThanEquals(){
+    public void canFilterFloatGreaterThanEquals() {
         QueryFilterParams params = new QueryFilterParams();
         params.put("float", ">=3.3");
         params.put("sortby", "+float");
 
-        SimpleQuery queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
-                performQuery(params);
+        RepositoryUrlQuery queryResults =
+                new RepositoryUrlQuery(
+                                erModel.getSchema(),
+                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                "things")
+                        .performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
         List<EntityInstance> instances = queryResults.getListEntityInstances();
@@ -140,13 +187,17 @@ public class QueryFiltersFloatTest {
     }
 
     @Test
-    public void canFilterFloatLessThanEquals(){
+    public void canFilterFloatLessThanEquals() {
         QueryFilterParams params = new QueryFilterParams();
         params.put("float", "<=3.3");
         params.put("sortby", "+float");
 
-        SimpleQuery queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
-                performQuery(params);
+        RepositoryUrlQuery queryResults =
+                new RepositoryUrlQuery(
+                                erModel.getSchema(),
+                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                "things")
+                        .performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
         List<EntityInstance> instances = queryResults.getListEntityInstances();
@@ -157,13 +208,17 @@ public class QueryFiltersFloatTest {
     }
 
     @Test
-    public void canFilterFloatLessThanEqualsSortDesc(){
+    public void canFilterFloatLessThanEqualsSortDesc() {
         QueryFilterParams params = new QueryFilterParams();
         params.put("float", "<=3.3");
         params.put("sortby", "-float");
 
-        SimpleQuery queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
-                performQuery(params);
+        RepositoryUrlQuery queryResults =
+                new RepositoryUrlQuery(
+                                erModel.getSchema(),
+                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                "things")
+                        .performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
         List<EntityInstance> instances = queryResults.getListEntityInstances();
@@ -172,5 +227,4 @@ public class QueryFiltersFloatTest {
         Assertions.assertEquals(2.2F, instances.get(1).getFieldValue("float").asFloat());
         Assertions.assertEquals(1.1F, instances.get(2).getFieldValue("float").asFloat());
     }
-
 }

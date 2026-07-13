@@ -1,6 +1,6 @@
 package uk.co.compendiumdev.thingifier.core.query;
 
-
+import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -8,28 +8,43 @@ import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 
-import java.util.List;
-
+/** Repository-backed URL query coverage for API-style entity reads. */
 public class QueryFiltersStringTest {
 
     EntityRelModel erModel;
 
     @BeforeEach
-    public void setupCollectionTestData(){
+    public void setupCollectionTestData() {
         erModel = new EntityRelModel();
         erModel.createEntityDefinition("thing", "things")
-                .addFields( Field.is("string", FieldType.STRING)
-                );
+                .addFields(Field.is("string", FieldType.STRING));
 
-        EntityInstanceCollection thing = erModel.getInstanceData().getInstanceCollectionForEntityNamed("thing");
-
-        thing.addInstance(new EntityInstance(thing.definition())).setValue("string", "one");
-        thing.addInstance(new EntityInstance(thing.definition())).setValue("string", "two");
-        thing.addInstance(new EntityInstance(thing.definition())).setValue("string", "three");
-        thing.addInstance(new EntityInstance(thing.definition())).setValue("string", "four");
-
+        erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                .entities()
+                .create(
+                        EntityInstanceDraft.forEntity(
+                                        erModel.getSchema().getEntityDefinitionNamed("thing"))
+                                .withField("string", "one"));
+        erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                .entities()
+                .create(
+                        EntityInstanceDraft.forEntity(
+                                        erModel.getSchema().getEntityDefinitionNamed("thing"))
+                                .withField("string", "two"));
+        erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                .entities()
+                .create(
+                        EntityInstanceDraft.forEntity(
+                                        erModel.getSchema().getEntityDefinitionNamed("thing"))
+                                .withField("string", "three"));
+        erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                .entities()
+                .create(
+                        EntityInstanceDraft.forEntity(
+                                        erModel.getSchema().getEntityDefinitionNamed("thing"))
+                                .withField("string", "four"));
     }
 
     @Test
@@ -38,8 +53,12 @@ public class QueryFiltersStringTest {
         QueryFilterParams params = new QueryFilterParams();
         params.put("sortBy", "+string");
 
-        SimpleQuery queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
-                performQuery(params);
+        RepositoryUrlQuery queryResults =
+                new RepositoryUrlQuery(
+                                erModel.getSchema(),
+                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                "things")
+                        .performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
         List<EntityInstance> instances = queryResults.getListEntityInstances();
@@ -56,8 +75,12 @@ public class QueryFiltersStringTest {
         QueryFilterParams params = new QueryFilterParams();
         params.put("sortBy", "-string");
 
-        SimpleQuery queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
-                performQuery(params);
+        RepositoryUrlQuery queryResults =
+                new RepositoryUrlQuery(
+                                erModel.getSchema(),
+                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                "things")
+                        .performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
         List<EntityInstance> instances = queryResults.getListEntityInstances();
@@ -75,8 +98,12 @@ public class QueryFiltersStringTest {
         QueryFilterParams params = new QueryFilterParams();
         params.put("string", "=one");
 
-        SimpleQuery queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
-                performQuery(params);
+        RepositoryUrlQuery queryResults =
+                new RepositoryUrlQuery(
+                                erModel.getSchema(),
+                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                "things")
+                        .performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
         List<EntityInstance> instances = queryResults.getListEntityInstances();
@@ -91,8 +118,12 @@ public class QueryFiltersStringTest {
         params.put("string", "~=.*o.*");
         params.put("sortBy", "+string");
 
-        SimpleQuery queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
-                performQuery(params);
+        RepositoryUrlQuery queryResults =
+                new RepositoryUrlQuery(
+                                erModel.getSchema(),
+                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                "things")
+                        .performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
         List<EntityInstance> instances = queryResults.getListEntityInstances();
@@ -110,8 +141,12 @@ public class QueryFiltersStringTest {
         params.put("string", "~=.*o.*");
         params.put("sortBy", "-string");
 
-        SimpleQuery queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
-                performQuery(params);
+        RepositoryUrlQuery queryResults =
+                new RepositoryUrlQuery(
+                                erModel.getSchema(),
+                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                "things")
+                        .performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
         List<EntityInstance> instances = queryResults.getListEntityInstances();
@@ -122,7 +157,6 @@ public class QueryFiltersStringTest {
         Assertions.assertEquals("two", instances.get(0).getFieldValue("string").asString());
     }
 
-
     @Test
     public void canFilterAndSortStringUsingWildcardAsc() {
 
@@ -130,8 +164,12 @@ public class QueryFiltersStringTest {
         params.put("string", "*=*e");
         params.put("sortBy", "+string");
 
-        SimpleQuery queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
-                performQuery(params);
+        RepositoryUrlQuery queryResults =
+                new RepositoryUrlQuery(
+                                erModel.getSchema(),
+                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                "things")
+                        .performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
         List<EntityInstance> instances = queryResults.getListEntityInstances();
@@ -148,8 +186,12 @@ public class QueryFiltersStringTest {
         params.put("string", "*=t*");
         params.put("sortBy", "+string");
 
-        SimpleQuery queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
-                performQuery(params);
+        RepositoryUrlQuery queryResults =
+                new RepositoryUrlQuery(
+                                erModel.getSchema(),
+                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                "things")
+                        .performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
         List<EntityInstance> instances = queryResults.getListEntityInstances();
@@ -166,8 +208,12 @@ public class QueryFiltersStringTest {
         params.put("string", "*=t?*");
         params.put("sortBy", "+string");
 
-        SimpleQuery queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
-                performQuery(params);
+        RepositoryUrlQuery queryResults =
+                new RepositoryUrlQuery(
+                                erModel.getSchema(),
+                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                "things")
+                        .performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
         List<EntityInstance> instances = queryResults.getListEntityInstances();
@@ -184,8 +230,12 @@ public class QueryFiltersStringTest {
         params.put("string", "*=t?o");
         params.put("sortBy", "+string");
 
-        SimpleQuery queryResults = new SimpleQuery(erModel.getSchema(), erModel.getInstanceData(), "things").
-                performQuery(params);
+        RepositoryUrlQuery queryResults =
+                new RepositoryUrlQuery(
+                                erModel.getSchema(),
+                                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME),
+                                "things")
+                        .performQuery(params);
 
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
         List<EntityInstance> instances = queryResults.getListEntityInstances();
@@ -193,5 +243,4 @@ public class QueryFiltersStringTest {
 
         Assertions.assertEquals("two", instances.get(0).getFieldValue("string").asString());
     }
-
 }

@@ -15,9 +15,8 @@ import uk.co.compendiumdev.challenger.restassured.api.TodosApi;
 
 public class C021PutTodosFailUpdateNoTitle400Test extends RestAssuredBaseTest {
 
-
     @Test
-    void canFailToAmendATodoDueToMissingTitle(){
+    void canFailToAmendATodoDueToMissingTitle() {
 
         Todo amendMe = new TodosApi().getOrCreateAnyExistingTodo();
 
@@ -25,20 +24,20 @@ public class C021PutTodosFailUpdateNoTitle400Test extends RestAssuredBaseTest {
         // title is mandatory and must be in the message
 
         final JsonElement amendTodoJson = new Gson().toJsonTree(amendMe);
-        amendTodoJson.getAsJsonObject().
-                remove("title");
+        amendTodoJson.getAsJsonObject().remove("title");
 
-        final Response response = RestAssured.
-                given().
-                header("X-CHALLENGER", xChallenger).
-                accept("application/json").
-                contentType("application/json").
-                body(amendTodoJson.toString()).
-                put(apiPath("/todos/" + amendMe.id)).
-                then().
-                statusCode(400).
-                contentType(ContentType.JSON).
-                extract().response();
+        final Response response =
+                RestAssured.given()
+                        .header("X-CHALLENGER", xChallenger)
+                        .accept("application/json")
+                        .contentType("application/json")
+                        .body(amendTodoJson.toString())
+                        .put(apiPath("/todos/" + amendMe.id))
+                        .then()
+                        .statusCode(400)
+                        .contentType(ContentType.JSON)
+                        .extract()
+                        .response();
 
         ErrorMessages error = response.body().as(ErrorMessages.class);
         Assertions.assertTrue(error.errorMessages.get(0).contains("title : field is mandatory"));
@@ -47,5 +46,4 @@ public class C021PutTodosFailUpdateNoTitle400Test extends RestAssuredBaseTest {
         statuses.get();
         Assertions.assertTrue(statuses.getChallengeNamed("PUT /todos/{id} no title (400)").status);
     }
-
 }

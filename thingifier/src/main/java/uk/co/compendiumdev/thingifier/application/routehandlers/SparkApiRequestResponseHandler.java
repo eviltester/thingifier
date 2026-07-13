@@ -3,13 +3,17 @@ package uk.co.compendiumdev.thingifier.application.routehandlers;
 import spark.Request;
 import spark.Response;
 import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonThing;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiResponse;
 import uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
-import uk.co.compendiumdev.thingifier.application.internalhttpconversion.HttpApiResponseToSpark;
-import uk.co.compendiumdev.thingifier.application.internalhttpconversion.SparkToHttpApiRequest;
-import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonThing;
+import uk.co.compendiumdev.thingifier.api.restapihandlers.SessionHeaderParser;
+import uk.co.compendiumdev.thingifier.application.internalhttp.InternalHttpRequest;
+import uk.co.compendiumdev.thingifier.application.internalhttpconversion.HttpApiResponseToInternalHttpResponse;
+import uk.co.compendiumdev.thingifier.application.internalhttpconversion.InternalHttpRequestToHttpApiRequest;
+import uk.co.compendiumdev.thingifier.application.internalhttpconversion.InternalHttpResponseToSpark;
+import uk.co.compendiumdev.thingifier.application.internalhttpconversion.SparkToInternalHttpRequest;
 
 public class SparkApiRequestResponseHandler {
     private final Request request;
@@ -17,11 +21,10 @@ public class SparkApiRequestResponseHandler {
     private final Thingifier thingifier;
     private final ThingifierHttpApi httpApi;
     private HttpApiRequestHandler handler;
-    private boolean validate=true; // validate message by default
+    private boolean validate = true; // validate message by default
 
-    public SparkApiRequestResponseHandler(final Request request,
-                                          final Response result,
-                                          final Thingifier thingifier) {
+    public SparkApiRequestResponseHandler(
+            final Request request, final Response result, final Thingifier thingifier) {
         this.request = request;
         this.response = result;
         this.thingifier = thingifier;
@@ -33,33 +36,41 @@ public class SparkApiRequestResponseHandler {
         return this;
     }
 
-    public SparkApiRequestResponseHandler validateRequestSyntax(boolean shouldValidate){
+    public SparkApiRequestResponseHandler validateRequestSyntax(boolean shouldValidate) {
         this.validate = shouldValidate;
         return this;
     }
 
-    public String handle(){
+    public String handle() {
 
-        final HttpApiRequest myRequest = SparkToHttpApiRequest.convert(request);
+        final InternalHttpRequest internalRequest = SparkToInternalHttpRequest.convert(request);
+        final HttpApiRequest myRequest =
+                InternalHttpRequestToHttpApiRequest.convert(internalRequest);
 
         final JsonThing jsonThing = new JsonThing(thingifier.apiConfig().jsonOutput());
 
-        ApiResponse apiResponse = null;
-
         // handle input validation - e.g. mirror/raw should not validate request
         HttpApiResponse httpApiResponse = null;
-        if(validate) {
-            httpApiResponse = httpApi.validateRequestSyntax(myRequest,
-                    ThingifierHttpApi.HttpVerb.GET);
+        if (validate) {
+            httpApiResponse =
+                    httpApi.validateRequestSyntax(myRequest, ThingifierHttpApi.HttpVerb.GET);
         }
 
-        if(httpApiResponse == null) {
-            apiResponse = handler.handle(myRequest);
+        if (httpApiResponse == null) {
+            ApiResponse apiResponse = handler.handle(myRequest);
+            apiResponse.usingRelationships(
+                    thingifier
+                            .getStore(
+                                    SessionHeaderParser.getDatabaseNameFromHeaderValue(
+                                            myRequest.getHeaders()))
+                            .relationships());
 
-            httpApiResponse = new HttpApiResponse(myRequest.getHeaders(), apiResponse,
-                    jsonThing, thingifier.apiConfig());
+            httpApiResponse =
+                    new HttpApiResponse(
+                            myRequest.getHeaders(), apiResponse, jsonThing, thingifier.apiConfig());
         }
 
-        return HttpApiResponseToSpark.convert(httpApiResponse, response);
+        return InternalHttpResponseToSpark.convert(
+                HttpApiResponseToInternalHttpResponse.convert(httpApiResponse), response);
     }
 }

@@ -1,49 +1,37 @@
 package uk.co.compendiumdev.challenge.practicemodes.simpleapi;
 
-import uk.co.compendiumdev.thingifier.core.domain.datapopulator.DataPopulator;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.ERSchema;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ERInstanceData;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
-
 import java.util.Random;
+import uk.co.compendiumdev.thingifier.core.domain.datapopulator.RepositoryDataPopulator;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.ERSchema;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
+import uk.co.compendiumdev.thingifier.core.repository.ThingStore;
 
-public class SimpleAPITestDataPopulator implements DataPopulator {
+public class SimpleAPITestDataPopulator implements RepositoryDataPopulator {
 
     @Override
-    public void populate(final ERSchema schema, final ERInstanceData database) {
+    public void populate(final ERSchema schema, final ThingStore store) {
+        String[] types = {"book", "book", "dvd", "blu-ray", "cd", "cd", "dvd", "blu-ray"};
 
-        String [] types={
-                        "book",
-                        "book",
-                        "dvd",
-                        "blu-ray",
-                        "cd",
-                        "cd",
-                        "dvd",
-                        "blu-ray"};
-
-        EntityInstanceCollection items = database.getInstanceCollectionForEntityNamed("item");
+        EntityDefinition item = schema.getEntityDefinitionNamed("item");
 
         Random random = new Random();
-        for(String type : types){
-            createManagedInstance(items).
-                    setValue("type", type).
-                    setValue("numberinstock", String.valueOf(random.nextInt(20))).
-                    setValue("isbn13", randomIsbn(random)).
-                    setValue("price", String.valueOf(random.nextInt(99)) + "." + String.valueOf(random.nextInt(99)) )
-            ;
+        for (String type : types) {
+            store.entities()
+                    .create(
+                            EntityInstanceDraft.forEntity(item)
+                                    .withField("type", type)
+                                    .withField("numberinstock", String.valueOf(random.nextInt(20)))
+                                    .withField("isbn13", randomIsbn(random))
+                                    .withField(
+                                            "price",
+                                            String.valueOf(random.nextInt(99))
+                                                    + "."
+                                                    + random.nextInt(99)));
         }
     }
 
-
-    private EntityInstance createManagedInstance(EntityInstanceCollection entityStorage) {
-        EntityInstance instance = new EntityInstance(entityStorage.definition());
-        entityStorage.addInstance(instance);
-        return instance;
-    }
-
-    private String randomIsbn(Random random){
+    private String randomIsbn(Random random) {
         return RandomIsbnGenerator.generate(random);
     }
 }

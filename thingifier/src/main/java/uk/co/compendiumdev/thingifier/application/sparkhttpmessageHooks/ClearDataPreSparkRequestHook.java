@@ -13,16 +13,16 @@ public class ClearDataPreSparkRequestHook implements SparkRequestResponseHook {
     public ClearDataPreSparkRequestHook(final int minutes, Thingifier thingifier) {
         this.lastReset = System.currentTimeMillis();
         this.thingifier = thingifier;
-        this.maxgap = minutes*60*1000;
+        this.maxgap = minutes * 60 * 1000;
     }
 
     @Override
     public void run(final Request request, final Response response) {
         long currentTime = System.currentTimeMillis();
-        long gap = currentTime-lastReset;
-        if(gap>maxgap){
+        long gap = currentTime - lastReset;
+        if (gap > maxgap) {
             // reset the thingifier data
-            this.lastReset=currentTime;
+            this.lastReset = currentTime;
             System.out.println("Clearing all data");
             thingifier.clearAllData();
             System.out.println("Cleared all data");

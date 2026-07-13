@@ -21,26 +21,26 @@ public class RequestMirror {
 
         entityDefn = mirrorThingifier.defineThing("messageDetails", "messagesDetails");
 
-        entityDefn.addFields(
-                Field.is("details", FieldType.STRING));
+        entityDefn.addFields(Field.is("details", FieldType.STRING));
 
         // reject large requests
         SparkMessageLengthValidator lengthValidator = new SparkMessageLengthValidator();
 
-        if(lengthValidator.rejectRequestTooLong(request, result)){
+        if (lengthValidator.rejectRequestTooLong(request, result)) {
             return lengthValidator.messageTooLongErrorResponse(
                     mirrorThingifier.apiConfig(), request, result);
         }
 
-        String returnValue =  new SparkApiRequestResponseHandler(request, result, mirrorThingifier).
-                usingHandler(
-                        new MirrorHttpApiRequestHandler(this.entityDefn)
-                ).validateRequestSyntax(false).handle();
+        String returnValue =
+                new SparkApiRequestResponseHandler(request, result, mirrorThingifier)
+                        .usingHandler(new MirrorHttpApiRequestHandler(this.entityDefn))
+                        .validateRequestSyntax(false)
+                        .handle();
 
         final AcceptHeaderParser parser = new AcceptHeaderParser(request.headers("accept"));
 
         // handle text separately as the main api does not 'do' text
-        if(parser.hasAskedForTEXT()){
+        if (parser.hasAskedForTEXT()) {
             result.header("Content-Type", "text/plain");
         }
 
@@ -56,19 +56,19 @@ public class RequestMirror {
         // reject large requests
         SparkMessageLengthValidator lengthValidator = new SparkMessageLengthValidator();
 
-        if(lengthValidator.rejectRequestTooLong(request, result)){
+        if (lengthValidator.rejectRequestTooLong(request, result)) {
             return lengthValidator.messageTooLongErrorResponse(
                     mirrorThingifier.apiConfig(), request, result);
         }
 
-        String returnValue =  new SparkApiRequestResponseHandler(request, result, mirrorThingifier).
-                usingHandler(
-                        new MirrorHttpApiTextRequestHandler()
-                ).validateRequestSyntax(false).handle();
+        String returnValue =
+                new SparkApiRequestResponseHandler(request, result, mirrorThingifier)
+                        .usingHandler(new MirrorHttpApiTextRequestHandler())
+                        .validateRequestSyntax(false)
+                        .handle();
 
         result.header("Content-Type", "text/plain");
 
         return returnValue;
     }
-
 }

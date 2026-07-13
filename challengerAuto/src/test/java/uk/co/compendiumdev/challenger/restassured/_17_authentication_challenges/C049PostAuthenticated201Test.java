@@ -9,26 +9,28 @@ import uk.co.compendiumdev.challenger.restassured.api.RestAssuredBaseTest;
 public class C049PostAuthenticated201Test extends RestAssuredBaseTest {
 
     @Test
-    public void canGetASecretTokenWithCorrectAuth(){
+    public void canGetASecretTokenWithCorrectAuth() {
 
-        String token = RestAssured.
-                given().
-                    header("X-CHALLENGER", xChallenger).
-                    accept("application/json").
-                    contentType("application/json").
-                auth().preemptive().basic("admin","password").
-                when().
-                    post(apiPath("/secret/token")).
-                then().
-                    statusCode(201).
-                    extract().
-                    header("X-AUTH-TOKEN");
+        String token =
+                RestAssured.given()
+                        .header("X-CHALLENGER", xChallenger)
+                        .accept("application/json")
+                        .contentType("application/json")
+                        .auth()
+                        .preemptive()
+                        .basic("admin", "password")
+                        .when()
+                        .post(apiPath("/secret/token"))
+                        .then()
+                        .statusCode(201)
+                        .extract()
+                        .header("X-AUTH-TOKEN");
 
         ChallengesStatus statuses = new ChallengesStatus();
         statuses.get();
         Assertions.assertTrue(statuses.getChallengeNamed("POST /secret/token (201)").status);
 
         Assertions.assertNotNull(token);
-        Assertions.assertTrue(token.length()>10);
+        Assertions.assertTrue(token.length() > 10);
     }
 }

@@ -1,8 +1,5 @@
 package uk.co.compendiumdev.challenger.http.httpclient;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
@@ -10,10 +7,12 @@ import java.net.Proxy;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * Limitations HttpURLConnection does not sent PATCH or CONNECT verbs
- * these need to use the X-HTTP-Method-Override header which not every server honours
+ * Limitations HttpURLConnection does not sent PATCH or CONNECT verbs these need to use the
+ * X-HTTP-Method-Override header which not every server honours
  */
 public class HttpRequestSender implements CanSendHttpRequests {
 
@@ -27,24 +26,25 @@ public class HttpRequestSender implements CanSendHttpRequests {
     private HttpResponseDetails lastResponse;
 
     public HttpRequestSender(String proxyHost, int proxyPort) {
-        if(proxyHost!=null){
+        if (proxyHost != null) {
             proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));
         }
     }
 
-//    public static void setProxy(String ip, int port){
-//        proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(ip, port));
-//    }
+    //    public static void setProxy(String ip, int port){
+    //        proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(ip, port));
+    //    }
 
-    public HttpRequestDetails getLastRequest(){
+    public HttpRequestDetails getLastRequest() {
         return this.lastRequest;
     }
 
-    public HttpResponseDetails getLastResponse(){
+    public HttpResponseDetails getLastResponse() {
         return this.lastResponse;
     }
 
-    public HttpResponseDetails send(URL url, String verb, Map<String, String> headers, String body) {
+    public HttpResponseDetails send(
+            URL url, String verb, Map<String, String> headers, String body) {
 
         HttpResponseDetails response = new HttpResponseDetails();
 
@@ -52,45 +52,45 @@ public class HttpRequestSender implements CanSendHttpRequests {
 
             HttpURLConnection con;
 
-            if(proxy == null) {
+            if (proxy == null) {
                 con = (HttpURLConnection) url.openConnection();
-            }else{
+            } else {
                 con = (HttpURLConnection) url.openConnection(proxy);
             }
 
             // HTTP VERB
-            switch (verb.toLowerCase()){
+            switch (verb.toLowerCase()) {
                 case "patch":
                     headers.put("X-HTTP-Method-Override", "PATCH");
-                    //con.setRequestProperty("X-HTTP-Method-Override", "PATCH");
+                    // con.setRequestProperty("X-HTTP-Method-Override", "PATCH");
                     con.setRequestMethod("POST");
                     break;
                 case "connect":
                     headers.put("X-HTTP-Method-Override", "CONNECT");
-                    //con.setRequestProperty("X-HTTP-Method-Override", "PATCH");
+                    // con.setRequestProperty("X-HTTP-Method-Override", "PATCH");
                     con.setRequestMethod("POST");
-                    break;    
+                    break;
                 default:
-                    headers.remove("X-HTTP-Method-Override"); // make sure we do not override the verb
+                    headers.remove(
+                            "X-HTTP-Method-Override"); // make sure we do not override the verb
                     con.setRequestMethod(verb);
                     break;
             }
 
-
             lastRequest = new HttpRequestDetails();
 
             // SET HEADERS
-            for(String headerName : headers.keySet()){
+            for (String headerName : headers.keySet()) {
                 con.setRequestProperty(headerName, headers.get(headerName));
-                logger.info("Header - " + headerName + " : " +  headers.get(headerName) );
+                logger.info("Header - " + headerName + " : " + headers.get(headerName));
                 lastRequest.addHeader(headerName, headers.get(headerName));
             }
 
             String payload = body;
 
-            logger.info("\nSending '" + verb +"' request to URL : " + url);
+            logger.info("\nSending '" + verb + "' request to URL : " + url);
 
-            if(body.length()>0) {
+            if (body.length() > 0) {
                 // Send post request
                 logger.info(verb + " Body : " + payload);
                 con.setDoOutput(true);
@@ -104,38 +104,36 @@ public class HttpRequestSender implements CanSendHttpRequests {
             int statusCode = con.getResponseCode();
             response.statusCode = statusCode;
 
-
             logger.info("Response Code : " + statusCode);
 
-
             String responseBody = getResponseBody(con);
-
 
             logger.info("Response Body: " + responseBody);
             response.body = responseBody.toString();
 
-
             // add the headers to readable response
             Map<String, String> responseHeaders = new HashMap<>();
-            for(String headerKey : con.getHeaderFields().keySet()){
-                String headerValue =  con.getHeaderField(headerKey);
-                responseHeaders.put(headerKey,headerValue);
+            for (String headerKey : con.getHeaderFields().keySet()) {
+                String headerValue = con.getHeaderField(headerKey);
+                responseHeaders.put(headerKey, headerValue);
                 logger.info("Header: " + headerKey + " - " + headerValue);
             }
             response.setHeaders(responseHeaders);
 
-
             lastResponse = response;
 
-            for(String sentHeader : lastRequest.getHeaders().keySet()){
-                logger.info(String.format("Request Header - %s:%s", sentHeader, lastRequest.getHeaders().get(sentHeader)));
+            for (String sentHeader : lastRequest.getHeaders().keySet()) {
+                logger.info(
+                        String.format(
+                                "Request Header - %s:%s",
+                                sentHeader, lastRequest.getHeaders().get(sentHeader)));
             }
 
-            if(body.length()>0) {
+            if (body.length() > 0) {
                 lastRequest.body = body;
             }
 
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException(e);
         }
@@ -144,32 +142,30 @@ public class HttpRequestSender implements CanSendHttpRequests {
     }
 
     private String getResponseBody(HttpURLConnection con) {
-        BufferedReader in=null;
+        BufferedReader in = null;
 
         // https://stackoverflow.com/questions/24707506/httpurlconnection-how-to-read-payload-of-400-response
         try {
-            in = new BufferedReader(
-                    new InputStreamReader(con.getInputStream()));
-        }catch(Exception e){
+            in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+        } catch (Exception e) {
             // handle 400 exception messages
             InputStream stream = con.getErrorStream();
-            if(stream!=null) {
-                in = new BufferedReader(
-                        new InputStreamReader(stream));
+            if (stream != null) {
+                in = new BufferedReader(new InputStreamReader(stream));
             }
         }
 
         String inputLine;
         StringBuffer responseBody = new StringBuffer();
 
-        try{
-            if(in!=null) {
+        try {
+            if (in != null) {
                 while ((inputLine = in.readLine()) != null) {
                     responseBody.append(inputLine);
                 }
                 in.close();
             }
-        }catch(IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
         }
 

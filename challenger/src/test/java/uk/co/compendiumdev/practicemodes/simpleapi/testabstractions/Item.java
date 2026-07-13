@@ -10,12 +10,11 @@ public class Item {
     public String isbn13;
     public String type;
 
-
-    public static String randomIsbn(Random random){
+    public static String randomIsbn(Random random) {
 
         String isbn13 = "xxx-x-xx-xxxxxx-x";
 
-        while(isbn13.contains("x")){
+        while (isbn13.contains("x")) {
             isbn13 = isbn13.replaceFirst("x", String.valueOf(random.nextInt(9)));
         }
 

@@ -9,51 +9,40 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.Fie
 class NotEmptyValidationRuleTest {
 
     @Test
-    void ruleFailsWhenNotSatisfied(){
+    void ruleFailsWhenNotSatisfied() {
 
         Field field = Field.is("name", FieldType.STRING);
 
         final ValidationRule rule;
         rule = new NotEmptyValidationRule();
 
-        Assertions.assertFalse(
-                rule.validates(
-                        FieldValue.is(field,""))
-        );
+        Assertions.assertFalse(rule.validates(FieldValue.is(field, "")));
     }
 
     @Test
-    void ruleFailsWhenNull(){
+    void ruleFailsWhenNull() {
 
         Field field = Field.is("name", FieldType.STRING);
 
         final ValidationRule rule;
         rule = new NotEmptyValidationRule();
 
-        Assertions.assertFalse(
-                rule.validates(
-                        FieldValue.is(field,(String)null))
-        );
+        Assertions.assertFalse(rule.validates(FieldValue.is(field, (String) null)));
     }
 
     @Test
-    void rulePassesWithText(){
+    void rulePassesWithText() {
 
         Field field = Field.is("name", FieldType.STRING);
 
         final ValidationRule rule;
         rule = new NotEmptyValidationRule();
 
-        Assertions.assertTrue(
-                rule.validates(
-                        FieldValue.is(field,"A name"))
-        );
+        Assertions.assertTrue(rule.validates(FieldValue.is(field, "A name")));
     }
 
-
-
     @Test
-    void validationMessageReturnsText(){
+    void validationMessageReturnsText() {
 
         Field field = Field.is("name", FieldType.STRING);
 
@@ -62,26 +51,20 @@ class NotEmptyValidationRuleTest {
         final String msg = rule.getErrorMessage(FieldValue.is(field, "bob"));
 
         Assertions.assertNotNull(msg);
-        Assertions.assertTrue(msg.trim().length()>0);
+        Assertions.assertTrue(msg.trim().length() > 0);
         Assertions.assertTrue(msg.contains("name"));
     }
 
     @Test
-    void canCreateRuleUsingVRule(){
+    void canCreateRuleUsingVRule() {
 
         Field field = Field.is("name", FieldType.STRING);
 
         final ValidationRule rule;
         rule = VRule.notEmpty();
 
-        Assertions.assertTrue(
-                rule.validates(
-                        FieldValue.is(field,"12345"))
-        );
+        Assertions.assertTrue(rule.validates(FieldValue.is(field, "12345")));
 
-        Assertions.assertFalse(
-                rule.validates(
-                        FieldValue.is(field,""))
-        );
+        Assertions.assertFalse(rule.validates(FieldValue.is(field, "")));
     }
 }

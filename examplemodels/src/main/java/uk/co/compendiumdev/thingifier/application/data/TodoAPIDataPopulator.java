@@ -3,41 +3,29 @@ package uk.co.compendiumdev.thingifier.application.data;
 import uk.co.compendiumdev.thingifier.core.domain.datapopulator.RepositoryDataPopulator;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.ERSchema;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ERInstanceData;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
-import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
+import uk.co.compendiumdev.thingifier.core.repository.ThingStore;
 
 public class TodoAPIDataPopulator implements RepositoryDataPopulator {
 
     private static final String[] TODOS = {
-            "scan paperwork",
-            "file paperwork",
-            "process payments",
-            "escalate late payments",
-            "pay invoices",
-            "process payroll",
-            "train staff",
-            "schedule meeting"};
+        "scan paperwork",
+        "file paperwork",
+        "process payments",
+        "escalate late payments",
+        "pay invoices",
+        "process payroll",
+        "train staff",
+        "schedule meeting"
+    };
 
     @Override
-    public void populate(final ERSchema schema, final ERInstanceData database) {
-
-        EntityInstanceCollection todo = database.getInstanceCollectionForEntityNamed("todo");
-
-        for(String todoItem : TODOS){
-            todo.addInstance(new EntityInstance(todo.definition())).
-                    setValue("title", todoItem);
-        }
-    }
-
-    @Override
-    public void populate(final ERSchema schema, final ThingRepository repository) {
+    public void populate(final ERSchema schema, final ThingStore store) {
         EntityDefinition todo = schema.getEntityDefinitionNamed("todo");
 
         for (String todoItem : TODOS) {
-            repository.addInstance(new EntityInstance(todo).
-                    setValue("title", todoItem));
+            store.entities()
+                    .create(EntityInstanceDraft.forEntity(todo).withField("title", todoItem));
         }
     }
 }

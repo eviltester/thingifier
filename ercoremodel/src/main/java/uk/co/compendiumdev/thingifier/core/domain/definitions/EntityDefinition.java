@@ -1,13 +1,10 @@
 package uk.co.compendiumdev.thingifier.core.domain.definitions;
 
+import java.util.*;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVectorDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.InstanceFields;
-
-import java.util.*;
-
-
 
 public class EntityDefinition {
     private int maxInstanceCount; // use -ve for no limit
@@ -22,12 +19,12 @@ public class EntityDefinition {
     private final DefinedRelationships definedRelationships;
 
     private static final int NO_INSTANCE_LIMIT = -1;
+
     public EntityDefinition(String name, String plural) {
-        this(name,plural,EntityDefinition.NO_INSTANCE_LIMIT);
+        this(name, plural, NO_INSTANCE_LIMIT);
     }
 
     public EntityDefinition(String name, String plural, int maxInstanceCount) {
-
 
         this.name = name;
         this.plural = plural;
@@ -40,7 +37,7 @@ public class EntityDefinition {
         this.primaryKeyField = null;
     }
 
-    public EntityDefinition addAsPrimaryKeyField(Field aField){
+    public EntityDefinition addAsPrimaryKeyField(Field aField) {
         fields.addField(aField);
         primaryKeyField = aField;
         return this;
@@ -50,16 +47,13 @@ public class EntityDefinition {
         return "\t" + name + "\n" + fields.toString();
     }
 
-
     public String getName() {
         return name;
     }
 
-
     public String getPlural() {
         return plural;
     }
-
 
     public void addField(Field aField) {
         fields.addField(aField);
@@ -83,19 +77,19 @@ public class EntityDefinition {
     }
 
     public List<Field> getFieldsOfType(final FieldType... types) {
-        return  fields.getFieldsOfType(types);
+        return fields.getFieldsOfType(types);
     }
 
     public List<String> getFieldNamesOfType(final FieldType... types) {
-        return  fields.getFieldNamesOfType(types);
+        return fields.getFieldNamesOfType(types);
     }
 
-    public DefinedRelationships related(){
+    public DefinedRelationships related() {
         return definedRelationships;
     }
 
-    public RelationshipVectorDefinition getNamedRelationshipTo(final String relationshipName,
-                                                               final EntityDefinition entity) {
+    public RelationshipVectorDefinition getNamedRelationshipTo(
+            final String relationshipName, final EntityDefinition entity) {
 
         List<RelationshipVectorDefinition> relationshipsWithThisName =
                 definedRelationships.getRelationships(relationshipName);
@@ -114,22 +108,20 @@ public class EntityDefinition {
         return new InstanceFields(fields);
     }
 
-
-
     public int getMaxInstanceLimit() {
         return maxInstanceCount;
     }
 
     public boolean hasMaxInstanceLimit() {
-        return maxInstanceCount>=0;
+        return maxInstanceCount >= 0;
     }
 
     public void setNoMaxInstanceLimit() {
-        maxInstanceCount = EntityDefinition.NO_INSTANCE_LIMIT;
+        maxInstanceCount = NO_INSTANCE_LIMIT;
     }
 
     public boolean hasPrimaryKeyField() {
-        return primaryKeyField!=null;
+        return primaryKeyField != null;
     }
 
     public Field getPrimaryKeyField() {
@@ -137,12 +129,11 @@ public class EntityDefinition {
     }
 
     public boolean hasAnyOfFieldNamesDefined(List<String> fieldNames) {
-        for(String aFieldName : fieldNames){
-            if(hasFieldNameDefined(aFieldName)){
+        for (String aFieldName : fieldNames) {
+            if (hasFieldNameDefined(aFieldName)) {
                 return true;
             }
         }
         return false;
     }
-
 }

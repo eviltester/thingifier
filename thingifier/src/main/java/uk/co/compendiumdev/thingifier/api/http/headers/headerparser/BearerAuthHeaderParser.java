@@ -10,10 +10,10 @@ public class BearerAuthHeaderParser {
 
     public BearerAuthHeaderParser(final String header) {
 
-        if(header==null){
+        if (header == null) {
             this.header = "";
-        }else{
-            this.header= header;
+        } else {
+            this.header = header;
         }
 
         this.bearer = "";
@@ -22,14 +22,12 @@ public class BearerAuthHeaderParser {
         splitParts(this.header);
     }
 
-
     public boolean isBearerToken() {
         return bearer.equalsIgnoreCase("bearer");
     }
 
-
     public boolean isValid() {
-        return isBearerToken() && token.length()>0;
+        return isBearerToken() && token.length() > 0;
     }
 
     public String getToken() {
@@ -41,15 +39,15 @@ public class BearerAuthHeaderParser {
         List<String> parts = new ArrayList<>();
 
         String[] theparts = authHeader.split(" ");
-        for(String aPart : theparts){
-            if(aPart.trim().length()>0){
+        for (String aPart : theparts) {
+            if (aPart.trim().length() > 0) {
                 parts.add(aPart);
             }
         }
-        if(parts.size()>=1){
+        if (parts.size() >= 1) {
             bearer = parts.get(0).toLowerCase();
         }
-        if(parts.size()>=2){
+        if (parts.size() >= 2) {
             token = parts.get(1);
         }
     }

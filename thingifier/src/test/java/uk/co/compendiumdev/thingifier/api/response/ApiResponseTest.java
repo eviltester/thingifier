@@ -1,24 +1,22 @@
 package uk.co.compendiumdev.thingifier.api.response;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-import uk.co.compendiumdev.thingifier.core.EntityRelModel;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
-import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import static uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType.STRING;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType.STRING;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.core.EntityRelModel;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 
 public class ApiResponseTest {
 
-
     @Test
-    public void response404HasSingleErrorMessage(){
+    public void response404HasSingleErrorMessage() {
 
         ApiResponse response = ApiResponse.error404("oops");
 
@@ -32,7 +30,7 @@ public class ApiResponseTest {
     }
 
     @Test
-    public void responseError(){
+    public void responseError() {
 
         ApiResponse response = ApiResponse.error(500, "oopsy");
 
@@ -43,11 +41,10 @@ public class ApiResponseTest {
 
         Assertions.assertEquals(1, response.getErrorMessages().size());
         Assertions.assertTrue(response.getErrorMessages().contains("oopsy"));
-
     }
 
     @Test
-    public void responseErrors(){
+    public void responseErrors() {
 
         List<String> errors = new ArrayList();
         errors.add("oopsy");
@@ -65,11 +62,10 @@ public class ApiResponseTest {
         Assertions.assertTrue(response.getErrorMessages().contains("oopsy"));
         Assertions.assertTrue(response.getErrorMessages().contains("doopsy"));
         Assertions.assertTrue(response.getErrorMessages().contains("do"));
-
     }
 
     @Test
-    public void response200(){
+    public void response200() {
 
         ApiResponse response = ApiResponse.success();
 
@@ -77,18 +73,22 @@ public class ApiResponseTest {
         Assertions.assertEquals(false, response.hasABody());
         Assertions.assertEquals(false, response.isErrorResponse());
         Assertions.assertEquals(false, response.isCollection());
-
     }
 
     @Test
-    public void response200WithInstance(){
+    public void response200WithInstance() {
 
         Thingifier thingifier = new Thingifier();
         EntityDefinition todo = thingifier.defineThing("todo", "todos");
-        todo.addFields( Field.is("title", STRING));
-        EntityInstanceCollection todos = thingifier.getThingInstancesNamed("todo", EntityRelModel.DEFAULT_DATABASE_NAME);
+        todo.addFields(Field.is("title", STRING));
+        EntityDefinition todos =
+                thingifier.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("todo");
 
-        EntityInstance aTodo = todos.addInstance(new EntityInstance(todos.definition())).setValue("title", "a todo");
+        EntityInstance aTodo =
+                thingifier
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(EntityInstanceDraft.forEntity(todos).withField("title", "a todo"));
 
         ApiResponse response = ApiResponse.success().returnSingleInstance(aTodo);
 
@@ -98,21 +98,38 @@ public class ApiResponseTest {
         Assertions.assertEquals(false, response.isCollection());
 
         Assertions.assertEquals(aTodo, response.getReturnedInstance());
-
     }
 
     @Test
-    public void response200WithInstances(){
+    public void response200WithInstances() {
 
         Thingifier thingifier = new Thingifier();
         EntityDefinition todo = thingifier.defineThing("todo", "todos");
-        todo.addFields( Field.is("title", STRING));
-        EntityInstanceCollection todos = thingifier.getThingInstancesNamed("todo", EntityRelModel.DEFAULT_DATABASE_NAME);
+        todo.addFields(Field.is("title", STRING));
+        EntityDefinition todos =
+                thingifier.getERmodel().getSchema().getDefinitionWithSingularOrPluralNamed("todo");
 
-        EntityInstance aTodo = todos.addInstance(new EntityInstance(todos.definition())).setValue("title", "a todo");
-        EntityInstance anotherTodo = todos.addInstance(new EntityInstance(todos.definition())).setValue("title", "another todo");
+        EntityInstance aTodo =
+                thingifier
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(EntityInstanceDraft.forEntity(todos).withField("title", "a todo"));
+        EntityInstance anotherTodo =
+                thingifier
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
+                                EntityInstanceDraft.forEntity(todos)
+                                        .withField("title", "another todo"));
 
-        ApiResponse response = ApiResponse.success().returnInstanceCollection(new ArrayList(todos.getInstances()));
+        ApiResponse response =
+                ApiResponse.success()
+                        .returnInstanceCollection(
+                                new ArrayList(
+                                        thingifier
+                                                .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                                                .entityQueries()
+                                                .list(todos)));
 
         Assertions.assertEquals(200, response.getStatusCode());
         Assertions.assertEquals(true, response.hasABody());
@@ -122,11 +139,10 @@ public class ApiResponseTest {
         Assertions.assertEquals(2, response.getReturnedInstanceCollection().size());
         Assertions.assertTrue(response.getReturnedInstanceCollection().contains(aTodo));
         Assertions.assertTrue(response.getReturnedInstanceCollection().contains(anotherTodo));
-
     }
 
     @Test
-    public void response200WithEmptyInstances(){
+    public void response200WithEmptyInstances() {
 
         ApiResponse response = ApiResponse.success().returnInstanceCollection(new ArrayList());
 
@@ -137,5 +153,4 @@ public class ApiResponseTest {
 
         Assertions.assertEquals(0, response.getReturnedInstanceCollection().size());
     }
-
 }

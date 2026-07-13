@@ -1,26 +1,23 @@
 package uk.co.compendiumdev.thingifier.apiconfig;
 
+import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
 
 public class ThingifierApiConfigProfilesTest {
 
     @Test
-    public void initiallyThereAreNoProfiles(){
+    public void initiallyThereAreNoProfiles() {
 
         ThingifierApiConfigProfiles profiles = new ThingifierApiConfigProfiles();
         Assertions.assertEquals(0, profiles.countOfProfiles());
     }
 
     @Test
-    public void canCreateAProfile(){
+    public void canCreateAProfile() {
 
         ThingifierApiConfigProfiles profiles = new ThingifierApiConfigProfiles();
-        final ThingifierApiConfigProfile profile = profiles.create(
-                                                        "aProfile",
-                                                    "this profile desc");
+        final ThingifierApiConfigProfile profile = profiles.create("aProfile", "this profile desc");
 
         Assertions.assertEquals("aProfile", profile.getName());
         Assertions.assertEquals("this profile desc", profile.getDescription());
@@ -30,7 +27,7 @@ public class ThingifierApiConfigProfilesTest {
     }
 
     @Test
-    public void canNotAddAProfileUsingTheList(){
+    public void canNotAddAProfileUsingTheList() {
         ThingifierApiConfigProfiles profiles = new ThingifierApiConfigProfiles();
         final List<ThingifierApiConfigProfile> profileList = profiles.getProfiles();
 
@@ -42,23 +39,21 @@ public class ThingifierApiConfigProfilesTest {
     }
 
     @Test
-    public void theLastProfileAddedIsTheDefaultProfile(){
+    public void theLastProfileAddedIsTheDefaultProfile() {
         ThingifierApiConfigProfiles profiles = new ThingifierApiConfigProfiles();
 
-        Assertions.assertNull(profiles.getDefault(),
-                    "no profile setup, expected null");
+        Assertions.assertNull(profiles.getDefault(), "no profile setup, expected null");
 
         profiles.create("profile1", "1");
         profiles.create("profile2", "2");
         profiles.create("default", "3");
         Assertions.assertEquals(3, profiles.countOfProfiles());
 
-        Assertions.assertEquals("default",
-                    profiles.getDefault().getName());
+        Assertions.assertEquals("default", profiles.getDefault().getName());
     }
 
     @Test
-    public void canConfigureAProfileAsDefaultWhenAdding(){
+    public void canConfigureAProfileAsDefaultWhenAdding() {
         ThingifierApiConfigProfiles profiles = new ThingifierApiConfigProfiles();
 
         profiles.create("profile1", "1");
@@ -66,12 +61,11 @@ public class ThingifierApiConfigProfilesTest {
         profiles.create("profile3", "3");
         Assertions.assertEquals(3, profiles.countOfProfiles());
 
-        Assertions.assertEquals("profile2",
-                profiles.getDefault().getName());
+        Assertions.assertEquals("profile2", profiles.getDefault().getName());
     }
 
     @Test
-    public void canOverrideAsDefaultWhenAdding(){
+    public void canOverrideAsDefaultWhenAdding() {
         ThingifierApiConfigProfiles profiles = new ThingifierApiConfigProfiles();
 
         profiles.create("profile1", "1");
@@ -79,12 +73,11 @@ public class ThingifierApiConfigProfilesTest {
         profiles.createDefaultProfile("default", "3");
         Assertions.assertEquals(3, profiles.countOfProfiles());
 
-        Assertions.assertEquals("default",
-                profiles.getDefault().getName());
+        Assertions.assertEquals("default", profiles.getDefault().getName());
     }
 
     @Test
-    public void profilesAreReturnedInTheOrderAdded(){
+    public void profilesAreReturnedInTheOrderAdded() {
         ThingifierApiConfigProfiles profiles = new ThingifierApiConfigProfiles();
 
         profiles.create("1", "1");
@@ -93,10 +86,8 @@ public class ThingifierApiConfigProfilesTest {
         Assertions.assertEquals(3, profiles.getProfiles().size());
 
         int expectedProfileName = 1;
-        for(ThingifierApiConfigProfile profile : profiles.getProfiles()){
-            Assertions.assertEquals(
-                    String.valueOf(expectedProfileName),
-                    profile.getName());
+        for (ThingifierApiConfigProfile profile : profiles.getProfiles()) {
+            Assertions.assertEquals(String.valueOf(expectedProfileName), profile.getName());
             expectedProfileName++;
         }
 
@@ -104,7 +95,7 @@ public class ThingifierApiConfigProfilesTest {
     }
 
     @Test
-    public void canGetProfileUsingName(){
+    public void canGetProfileUsingName() {
         ThingifierApiConfigProfiles profiles = new ThingifierApiConfigProfiles();
 
         final ThingifierApiConfigProfile v1 = profiles.create("1", "1");

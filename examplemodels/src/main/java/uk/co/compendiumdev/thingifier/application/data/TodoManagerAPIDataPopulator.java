@@ -3,67 +3,46 @@ package uk.co.compendiumdev.thingifier.application.data;
 import uk.co.compendiumdev.thingifier.core.domain.datapopulator.RepositoryDataPopulator;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.ERSchema;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ERInstanceData;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
+import uk.co.compendiumdev.thingifier.core.repository.ThingStore;
 
 public class TodoManagerAPIDataPopulator implements RepositoryDataPopulator {
     @Override
-    public void populate(final ERSchema schema, final ERInstanceData database) {
-
-        EntityInstanceCollection todo = database.getInstanceCollectionForEntityNamed("todo");
-        EntityInstance paperwork = todo.addInstance(new EntityInstance(todo.definition())).
-                setValue("title", "scan paperwork");
-
-        EntityInstance filework = todo.addInstance(new EntityInstance(todo.definition())).
-                setValue("title", "file paperwork");
-
-        EntityInstanceCollection category = database.getInstanceCollectionForEntityNamed("category");
-
-        EntityInstance officeCategory = category.addInstance(new EntityInstance(category.definition())).
-                setValue("title", "Office");
-
-
-        EntityInstance homeCategory = category.addInstance(new EntityInstance(category.definition())).
-                setValue("title", "Home");
-
-        EntityInstanceCollection project = database.getInstanceCollectionForEntityNamed("project");
-
-        EntityInstance officeWork = project.addInstance(new EntityInstance(project.definition())).
-                setValue("title", "Office Work");
-
-        officeWork.getRelationships().connect("tasks", paperwork);
-        officeWork.getRelationships().connect("tasks", filework);
-
-        paperwork.getRelationships().connect("categories", officeCategory);
-
-    }
-
-    @Override
-    public void populate(final ERSchema schema, final ThingRepository repository) {
+    public void populate(final ERSchema schema, final ThingStore store) {
         EntityDefinition todo = schema.getEntityDefinitionNamed("todo");
         EntityDefinition category = schema.getEntityDefinitionNamed("category");
         EntityDefinition project = schema.getEntityDefinitionNamed("project");
 
-        EntityInstance paperwork = repository.addInstance(new EntityInstance(todo).
-                setValue("title", "scan paperwork"));
+        EntityInstance paperwork =
+                store.entities()
+                        .create(
+                                EntityInstanceDraft.forEntity(todo)
+                                        .withField("title", "scan paperwork"));
 
-        EntityInstance filework = repository.addInstance(new EntityInstance(todo).
-                setValue("title", "file paperwork"));
+        EntityInstance filework =
+                store.entities()
+                        .create(
+                                EntityInstanceDraft.forEntity(todo)
+                                        .withField("title", "file paperwork"));
 
-        EntityInstance officeCategory = repository.addInstance(new EntityInstance(category).
-                setValue("title", "Office"));
+        EntityInstance officeCategory =
+                store.entities()
+                        .create(
+                                EntityInstanceDraft.forEntity(category)
+                                        .withField("title", "Office"));
 
-        repository.addInstance(new EntityInstance(category).
-                setValue("title", "Home"));
+        store.entities().create(EntityInstanceDraft.forEntity(category).withField("title", "Home"));
 
-        EntityInstance officeWork = repository.addInstance(new EntityInstance(project).
-                setValue("title", "Office Work"));
+        EntityInstance officeWork =
+                store.entities()
+                        .create(
+                                EntityInstanceDraft.forEntity(project)
+                                        .withField("title", "Office Work"));
 
-        repository.connectRelationship(officeWork, "tasks", paperwork);
-        repository.connectRelationship(officeWork, "tasks", filework);
+        store.relationships().connect(officeWork, "tasks", paperwork);
+        store.relationships().connect(officeWork, "tasks", filework);
 
-        repository.connectRelationship(paperwork, "categories", officeCategory);
+        store.relationships().connect(paperwork, "categories", officeCategory);
     }
 }

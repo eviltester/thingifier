@@ -8,29 +8,29 @@ import uk.co.compendiumdev.sparkstart.Environment;
 public class Api {
 
     /*
-        API
-     */
+       API
+    */
 
-    public static Response createTodo(Payloads.TodoPayload todo){
+    public static Response createTodo(Payloads.TodoPayload todo) {
 
-        final Response response = RestAssured.
-                given().
-                contentType(ContentType.JSON).
-                body(todo).
-                post(Environment.getEnv("/todos")).
-                andReturn();
+        final Response response =
+                RestAssured.given()
+                        .contentType(ContentType.JSON)
+                        .body(todo)
+                        .post(Environment.getEnv("/todos"))
+                        .andReturn();
 
         return response;
     }
 
-    public static Response createProject(Payloads.ProjectPayload project){
+    public static Response createProject(Payloads.ProjectPayload project) {
 
-        final Response response = RestAssured.
-                given().
-                contentType(ContentType.JSON).
-                body(project).
-                post(Environment.getEnv("/projects")).
-                andReturn();
+        final Response response =
+                RestAssured.given()
+                        .contentType(ContentType.JSON)
+                        .body(project)
+                        .post(Environment.getEnv("/projects"))
+                        .andReturn();
 
         return response;
     }

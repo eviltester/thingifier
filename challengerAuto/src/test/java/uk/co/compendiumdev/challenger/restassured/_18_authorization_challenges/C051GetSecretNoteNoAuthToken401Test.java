@@ -9,19 +9,17 @@ import uk.co.compendiumdev.challenger.restassured.api.RestAssuredBaseTest;
 public class C051GetSecretNoteNoAuthToken401Test extends RestAssuredBaseTest {
 
     @Test
-    public void canNotGetSecretNoteWithoutAToken(){
+    public void canNotGetSecretNoteWithoutAToken() {
 
-        RestAssured.
-                given().
-                header("X-CHALLENGER", xChallenger).
-                when().
-                get(apiPath("/secret/note")).
-                then().
-                statusCode(401);
+        RestAssured.given()
+                .header("X-CHALLENGER", xChallenger)
+                .when()
+                .get(apiPath("/secret/note"))
+                .then()
+                .statusCode(401);
 
         ChallengesStatus statuses = new ChallengesStatus();
         statuses.get();
         Assertions.assertTrue(statuses.getChallengeNamed("GET /secret/note (401)").status);
-
     }
 }

@@ -1,5 +1,8 @@
 package uk.co.compendiumdev.practicemodes;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -10,24 +13,18 @@ import uk.co.compendiumdev.challenger.http.httpclient.HttpMessageSender;
 import uk.co.compendiumdev.challenger.http.httpclient.HttpResponseDetails;
 import uk.co.compendiumdev.sparkstart.Environment;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Stream;
-
 public class SmulationModeTest {
     private static HttpMessageSender http;
 
-
     @BeforeAll
-    static void createHttp(){
+    static void createHttp() {
         // this uses the Environment to startup the spark app to
         // issue http tests and test the routing in spark
         http = new HttpMessageSender(Environment.getBaseUri());
     }
 
-    static Stream simpleRoutingStatus(){
+    static Stream simpleRoutingStatus() {
         List<Arguments> args = new ArrayList<>();
-
 
         args.add(Arguments.of(200, "get", "/sim/entities"));
         args.add(Arguments.of(200, "head", "/sim/entities"));
@@ -51,15 +48,14 @@ public class SmulationModeTest {
 
     @ParameterizedTest(name = "simple status routing expected {0} for {1} {2}")
     @MethodSource("simpleRoutingStatus")
-    void simpleRoutingTest(int statusCode, String verb, String url){
-        final HttpResponseDetails response =
-                http.send(url, verb);
+    void simpleRoutingTest(int statusCode, String verb, String url) {
+        final HttpResponseDetails response = http.send(url, verb);
 
         Assertions.assertEquals(statusCode, response.statusCode);
     }
 
     @Test
-    void canSimulateGetOfEntitiesJSON(){
+    void canSimulateGetOfEntitiesJSON() {
 
         http.clearHeaders();
         http.setHeader("Accept", "application/json");
@@ -67,7 +63,7 @@ public class SmulationModeTest {
         HttpResponseDetails response = http.get("/sim/entities");
 
         Assertions.assertEquals(200, response.statusCode);
-        Assertions.assertEquals("application/json",response.getHeader("Content-Type"));
+        Assertions.assertEquals("application/json", response.getHeader("Content-Type"));
         Assertions.assertTrue(response.body.startsWith("{\"entities\":[{"));
         Assertions.assertTrue(response.body.contains("id\":1,"));
         Assertions.assertTrue(response.body.contains("id\":2,"));
@@ -85,7 +81,39 @@ public class SmulationModeTest {
     }
 
     @Test
-    void canSimulateGetOfEntitiesXML(){
+    void canFilterSimulatedEntitiesThroughRepository() {
+
+        http.clearHeaders();
+        http.setHeader("Accept", "application/json");
+
+        HttpResponseDetails response = http.get("/sim/entities?id=11");
+
+        Assertions.assertEquals(200, response.statusCode);
+        Assertions.assertEquals("{\"entities\":[]}", response.body);
+
+        response = http.get("/sim/entities?name*=entity%20number%201");
+
+        Assertions.assertEquals(200, response.statusCode);
+        Assertions.assertTrue(response.body.contains("\"id\":1,"));
+        Assertions.assertFalse(response.body.contains("\"id\":10,"));
+    }
+
+    @Test
+    void canSortSimulatedEntitiesThroughRepository() {
+
+        http.clearHeaders();
+        http.setHeader("Accept", "application/json");
+
+        HttpResponseDetails response = http.get("/sim/entities?sortBy=-id");
+
+        Assertions.assertEquals(200, response.statusCode);
+        Assertions.assertTrue(
+                response.body.indexOf("\"id\":10,") < response.body.indexOf("\"id\":9,"));
+        Assertions.assertFalse(response.body.contains("\"id\":11,"));
+    }
+
+    @Test
+    void canSimulateGetOfEntitiesXML() {
 
         http.clearHeaders();
         http.setHeader("Accept", "application/xml");
@@ -93,7 +121,7 @@ public class SmulationModeTest {
         HttpResponseDetails response = http.get("/sim/entities");
 
         Assertions.assertEquals(200, response.statusCode);
-        Assertions.assertEquals("application/xml",response.getHeader("Content-Type"));
+        Assertions.assertEquals("application/xml", response.getHeader("Content-Type"));
         Assertions.assertTrue(response.body.startsWith("<entities><entity>"));
         Assertions.assertTrue(response.body.contains("<id>1</id>"));
         Assertions.assertTrue(response.body.contains("<id>2</id>"));
@@ -111,7 +139,7 @@ public class SmulationModeTest {
     }
 
     @Test
-    void canSimulateHeadOfEntitiesJSON(){
+    void canSimulateHeadOfEntitiesJSON() {
 
         http.clearHeaders();
         http.setHeader("Accept", "application/json");
@@ -119,13 +147,12 @@ public class SmulationModeTest {
         HttpResponseDetails response = http.head("/sim/entities");
 
         Assertions.assertEquals(200, response.statusCode);
-        Assertions.assertEquals("application/json",response.getHeader("Content-Type"));
+        Assertions.assertEquals("application/json", response.getHeader("Content-Type"));
         Assertions.assertTrue(response.body.equals(""));
-
     }
 
     @Test
-    void canSimulateHeadOfEntitiesXML(){
+    void canSimulateHeadOfEntitiesXML() {
 
         http.clearHeaders();
         http.setHeader("Accept", "application/xml");
@@ -133,13 +160,12 @@ public class SmulationModeTest {
         HttpResponseDetails response = http.head("/sim/entities");
 
         Assertions.assertEquals(200, response.statusCode);
-        Assertions.assertEquals("application/xml",response.getHeader("Content-Type"));
+        Assertions.assertEquals("application/xml", response.getHeader("Content-Type"));
         Assertions.assertTrue(response.body.equals(""));
     }
 
-
     @Test
-    void canSimulatePostCreateAndGetOfEntity11(){
+    void canSimulatePostCreateAndGetOfEntity11() {
 
         http.clearHeaders();
         http.setHeader("Accept", "application/json");
@@ -147,7 +173,7 @@ public class SmulationModeTest {
         HttpResponseDetails response = http.post("/sim/entities", "{\"name\":\"bob\"}");
 
         Assertions.assertEquals(201, response.statusCode);
-        Assertions.assertEquals("application/json",response.getHeader("Content-Type"));
+        Assertions.assertEquals("application/json", response.getHeader("Content-Type"));
         Assertions.assertEquals("/sim/entities/11", response.getHeader("Location"));
         String entity11 = "{\"id\":11,\"name\":\"bob\",\"description\":\"\"}";
         Assertions.assertEquals(entity11, response.body);
@@ -158,7 +184,7 @@ public class SmulationModeTest {
     }
 
     @Test
-    void canSimulatePostCreateOfEntity11(){
+    void canSimulatePostCreateOfEntity11() {
 
         http.clearHeaders();
         http.setHeader("Accept", "application/json");
@@ -166,7 +192,7 @@ public class SmulationModeTest {
         HttpResponseDetails response = http.post("/sim/entities/11", "{\"name\":\"bob\"}");
 
         Assertions.assertEquals(201, response.statusCode);
-        Assertions.assertEquals("application/json",response.getHeader("Content-Type"));
+        Assertions.assertEquals("application/json", response.getHeader("Content-Type"));
         Assertions.assertEquals("/sim/entities/11", response.getHeader("Location"));
         String entity11 = "{\"id\":11,\"name\":\"bob\",\"description\":\"\"}";
         Assertions.assertEquals(entity11, response.body);
@@ -177,7 +203,7 @@ public class SmulationModeTest {
     }
 
     @Test
-    void canSimulatePutCreateOfEntity11(){
+    void canSimulatePutCreateOfEntity11() {
 
         http.clearHeaders();
         http.setHeader("Accept", "application/json");
@@ -185,7 +211,7 @@ public class SmulationModeTest {
         HttpResponseDetails response = http.put("/sim/entities/11", "{\"name\":\"bob\"}");
 
         Assertions.assertEquals(201, response.statusCode);
-        Assertions.assertEquals("application/json",response.getHeader("Content-Type"));
+        Assertions.assertEquals("application/json", response.getHeader("Content-Type"));
         Assertions.assertEquals("/sim/entities/11", response.getHeader("Location"));
         String entity11 = "{\"id\":11,\"name\":\"bob\",\"description\":\"\"}";
         Assertions.assertEquals(entity11, response.body);
@@ -196,7 +222,7 @@ public class SmulationModeTest {
     }
 
     @Test
-    void canSimulatePostAmendOfEntity10(){
+    void canSimulatePostAmendOfEntity10() {
 
         http.clearHeaders();
         http.setHeader("Accept", "application/json");
@@ -204,9 +230,9 @@ public class SmulationModeTest {
         HttpResponseDetails response = http.post("/sim/entities/10", "{\"name\":\"eris\"}");
 
         Assertions.assertEquals(200, response.statusCode);
-        Assertions.assertEquals("application/json",response.getHeader("Content-Type"));
-        Assertions.assertEquals(null, response.getHeader("Location"),
-                "expected no location header on amend");
+        Assertions.assertEquals("application/json", response.getHeader("Content-Type"));
+        Assertions.assertEquals(
+                null, response.getHeader("Location"), "expected no location header on amend");
         String entity11 = "{\"id\":10,\"name\":\"eris\",\"description\":\"\"}";
         Assertions.assertEquals(entity11, response.body);
 
@@ -217,7 +243,7 @@ public class SmulationModeTest {
     }
 
     @Test
-    void canSimulatePutAmendOfEntity10(){
+    void canSimulatePutAmendOfEntity10() {
 
         http.clearHeaders();
         http.setHeader("Accept", "application/json");
@@ -225,9 +251,9 @@ public class SmulationModeTest {
         HttpResponseDetails response = http.put("/sim/entities/10", "{\"name\":\"eris\"}");
 
         Assertions.assertEquals(200, response.statusCode);
-        Assertions.assertEquals("application/json",response.getHeader("Content-Type"));
-        Assertions.assertEquals(null, response.getHeader("Location"),
-                "expected no location header on amend");
+        Assertions.assertEquals("application/json", response.getHeader("Content-Type"));
+        Assertions.assertEquals(
+                null, response.getHeader("Location"), "expected no location header on amend");
         String entity11 = "{\"id\":10,\"name\":\"eris\",\"description\":\"\"}";
         Assertions.assertEquals(entity11, response.body);
 
@@ -238,7 +264,7 @@ public class SmulationModeTest {
     }
 
     @Test
-    void canSimulatePostAmendErrors(){
+    void canSimulatePostAmendErrors() {
 
         http.clearHeaders();
         http.setHeader("Accept", "application/json");
@@ -253,7 +279,7 @@ public class SmulationModeTest {
     }
 
     @Test
-    void canSimulatePutAmendErrors(){
+    void canSimulatePutAmendErrors() {
 
         http.clearHeaders();
         http.setHeader("Accept", "application/json");
@@ -281,7 +307,7 @@ public class SmulationModeTest {
     }
 
     @Test
-    void canSimulateGetEntityId(){
+    void canSimulateGetEntityId() {
         http.clearHeaders();
         http.setHeader("Accept", "application/json");
 
@@ -295,7 +321,7 @@ public class SmulationModeTest {
     }
 
     @Test
-    void canSimulateHeadEntityId(){
+    void canSimulateHeadEntityId() {
         http.clearHeaders();
         http.setHeader("Accept", "application/json");
 
@@ -336,7 +362,8 @@ public class SmulationModeTest {
 
         HttpResponseDetails response = http.options("/sim/entities");
         Assertions.assertEquals(204, response.statusCode);
-        Assertions.assertEquals("GET, POST, PUT, HEAD, OPTIONS", response.getHeader("allow").toUpperCase());
+        Assertions.assertEquals(
+                "GET, POST, PUT, HEAD, OPTIONS", response.getHeader("allow").toUpperCase());
     }
 
     @Test
@@ -347,7 +374,7 @@ public class SmulationModeTest {
 
         HttpResponseDetails response = http.options("/sim/entities/1");
         Assertions.assertEquals(204, response.statusCode);
-        Assertions.assertEquals("GET, POST, PUT, DELETE, HEAD, OPTIONS", response.getHeader("allow").toUpperCase());
+        Assertions.assertEquals(
+                "GET, POST, PUT, DELETE, HEAD, OPTIONS", response.getHeader("allow").toUpperCase());
     }
-
 }

@@ -13,7 +13,7 @@ import uk.co.compendiumdev.challenger.restassured.api.RestAssuredBaseTest;
 public class C015PostTodosExtraFields400Test extends RestAssuredBaseTest {
 
     @Test
-    void can400NotCreateATodoWithAnExtraField(){
+    void can400NotCreateATodoWithAnExtraField() {
 
         Todo createMe = new Todo();
         // max length on title is 50
@@ -21,24 +21,20 @@ public class C015PostTodosExtraFields400Test extends RestAssuredBaseTest {
         createMe.description = "my description " + System.currentTimeMillis();
 
         final JsonElement createMeJson = new Gson().toJsonTree(createMe);
-        createMeJson.getAsJsonObject().
-                addProperty("extrafield", "cannot add");
+        createMeJson.getAsJsonObject().addProperty("extrafield", "cannot add");
 
-        RestAssured.
-                given().
-                header("X-CHALLENGER", xChallenger).
-                accept("application/json").
-                contentType("application/json").
-                body(createMeJson.toString()).
-                post(apiPath( "/todos")).
-                then().
-                statusCode(400).
-                contentType(ContentType.JSON);
+        RestAssured.given()
+                .header("X-CHALLENGER", xChallenger)
+                .accept("application/json")
+                .contentType("application/json")
+                .body(createMeJson.toString())
+                .post(apiPath("/todos"))
+                .then()
+                .statusCode(400)
+                .contentType(ContentType.JSON);
 
         ChallengesStatus statuses = new ChallengesStatus();
         statuses.get();
         Assertions.assertTrue(statuses.getChallengeNamed("POST /todos (400) extra").status);
-
     }
-
 }

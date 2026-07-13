@@ -1,9 +1,8 @@
 package uk.co.compendiumdev.thingifier.htmlgui.htmlgen;
 
-import uk.co.compendiumdev.thingifier.application.ThingifierVersionDetails;
-
 import java.util.ArrayList;
 import java.util.List;
+import uk.co.compendiumdev.thingifier.application.ThingifierVersionDetails;
 
 public class DefaultGUIHTML {
 
@@ -15,7 +14,7 @@ public class DefaultGUIHTML {
     List<GuiMenuItem> menuItems;
     private String canonicalHostHttpUrl;
 
-    public DefaultGUIHTML(){
+    public DefaultGUIHTML() {
         menuItems = new ArrayList<>();
         this.homePageContent = "";
         this.customFooter = "";
@@ -25,8 +24,8 @@ public class DefaultGUIHTML {
     }
 
     public void appendMenuItem(final String title, final String url) {
-        for(GuiMenuItem item : menuItems){
-            if(item.menuTitle.equals(title) || item.url.equals(url)){
+        for (GuiMenuItem item : menuItems) {
+            if (item.menuTitle.equals(title) || item.url.equals(url)) {
                 // avoid adding duplicates
                 return;
             }
@@ -34,7 +33,7 @@ public class DefaultGUIHTML {
         menuItems.add(new GuiMenuItem(title, url));
     }
 
-    public void appendToCustomHeadContent(final String someContent){
+    public void appendToCustomHeadContent(final String someContent) {
         customHeadContent = customHeadContent + "\n" + someContent;
     }
 
@@ -43,14 +42,14 @@ public class DefaultGUIHTML {
     }
 
     public void removeMenuItem(final String title) {
-        GuiMenuItem removeme=null;
-        for(GuiMenuItem item : menuItems){
-            if(item.menuTitle.contentEquals(title)){
+        GuiMenuItem removeme = null;
+        for (GuiMenuItem item : menuItems) {
+            if (item.menuTitle.contentEquals(title)) {
                 removeme = item;
                 break;
             }
         }
-        if(removeme!=null) {
+        if (removeme != null) {
             menuItems.remove(removeme);
         }
     }
@@ -64,7 +63,7 @@ public class DefaultGUIHTML {
     }
 
     public void setFooter(final String footer) {
-        if(footer!=null) {
+        if (footer != null) {
             this.customFooter = footer;
         }
     }
@@ -77,13 +76,14 @@ public class DefaultGUIHTML {
         public String menuTitle;
         public String url;
 
-        GuiMenuItem(String title, String url){
+        GuiMenuItem(String title, String url) {
             this.menuTitle = title;
             this.url = url;
         }
     }
 
-    public String getPageStart(final String title, final String headInject, final String canonical){
+    public String getPageStart(
+            final String title, final String headInject, final String canonical) {
         StringBuilder html = new StringBuilder();
         html.append("<!DOCTYPE html><html lang='en'><head>");
         html.append("<meta charset='UTF-8'>");
@@ -91,24 +91,24 @@ public class DefaultGUIHTML {
         html.append("<title>" + title + "</title>");
         html.append(" <link rel='stylesheet' href='/css/default.css'>");
         String injectFromEnv = System.getenv("HTML_HEAD_INJECT");
-        if(injectFromEnv!=null){
+        if (injectFromEnv != null) {
             html.append(injectFromEnv);
         }
-        if(headInject!=null) {
+        if (headInject != null) {
             html.append(headInject);
         }
-        if(canonical!=null && !canonical.equals("")){
+        if (canonical != null && !canonical.equals("")) {
             String useCanoncial = canonical;
 
-            if(canonicalHostHttpUrl!=null && !canonicalHostHttpUrl.equals("")){
-                if(canonical.startsWith("https:") || canonical.startsWith("http:")){
+            if (canonicalHostHttpUrl != null && !canonicalHostHttpUrl.equals("")) {
+                if (canonical.startsWith("https:") || canonical.startsWith("http:")) {
                     // use the passed in canonical
-                }else{
+                } else {
                     useCanoncial = canonicalHostHttpUrl + canonical;
                 }
             }
 
-            if(useCanoncial!= null && !useCanoncial.equals("")){
+            if (useCanoncial != null && !useCanoncial.equals("")) {
                 html.append(" <link rel='canonical' href='%s'>".formatted(useCanoncial));
             }
         }
@@ -120,26 +120,26 @@ public class DefaultGUIHTML {
 
     public String getMenuAsHTML() {
         StringBuilder html = new StringBuilder();
-        html.append("<div class='accessibilityskiplink'><a href='#maincontentstartshere'>Skip to main content</a></div>");
+        html.append(
+                "<div class='accessibilityskiplink'><a href='#maincontentstartshere'>Skip to main content</a></div>");
         html.append(getActualMenuHtml());
         return html.toString();
     }
 
-    public DefaultGUIHTML setActualMenuHtml(String actual){
+    public DefaultGUIHTML setActualMenuHtml(String actual) {
         customActualMenu = actual;
         return this;
     }
 
-    public String getActualMenuHtml(){
-        if(!customActualMenu.isEmpty()){
+    public String getActualMenuHtml() {
+        if (!customActualMenu.isEmpty()) {
             return customActualMenu;
         }
         StringBuilder html = new StringBuilder();
         html.append("<div class='rootmenu menu'>");
         html.append("<ul>");
-        for(GuiMenuItem menu : menuItems){
-            html.append(String.format("<li><a href='%s'>%s</a></li>",
-                    menu.url, menu.menuTitle));
+        for (GuiMenuItem menu : menuItems) {
+            html.append(String.format("<li><a href='%s'>%s</a></li>", menu.url, menu.menuTitle));
         }
 
         html.append("</ul>");
@@ -147,33 +147,32 @@ public class DefaultGUIHTML {
         return html.toString();
     }
 
-    public String getStartOfMainContentMarker(){
+    public String getStartOfMainContentMarker() {
         return "<main id='maincontentstartshere'>";
     }
 
-    public String getEndOfMainContentMarker(){
+    public String getEndOfMainContentMarker() {
         return "</main>";
         // end the main tag that we are assuming was already added
         // - potential for user created invalid HTML
     }
 
-    public String getPageFooter(){
+    public String getPageFooter() {
 
-        if(!customFooter.isEmpty()){
+        if (!customFooter.isEmpty()) {
             return customFooter;
         }
 
         StringBuilder html = new StringBuilder();
         html.append("<p>&nbsp;</p><hr/>");
 
-
-
         html.append("<div class='footer'>");
-        html.append(paragraph(
-                String.format(
-                        "Thingifier version %s, Copyright Alan Richardson, Compendium Developments Ltd %s ",
-                        ThingifierVersionDetails.VERSION_NUMBER,
-                        ThingifierVersionDetails.COPYRIGHT_YEAR)));
+        html.append(
+                paragraph(
+                        String.format(
+                                "Thingifier version %s, Copyright Alan Richardson, Compendium Developments Ltd %s ",
+                                ThingifierVersionDetails.VERSION_NUMBER,
+                                ThingifierVersionDetails.COPYRIGHT_YEAR)));
         html.append("<ul class='footerlinks'>");
         html.append(li(href("Thingifier", "https://github.com/eviltester/thingifier")));
         html.append(li(href("EvilTester.com", "http://eviltester.com")));
@@ -197,10 +196,5 @@ public class DefaultGUIHTML {
 
     private String li(final String initialParagraph) {
         return String.format("<li>%s</li>%n", initialParagraph);
-    }
-
-    // Template functions
-    private String heading(final int level, final String text) {
-        return String.format("<h%1$d>%2$s</h%1$d>%n", level, text);
     }
 }

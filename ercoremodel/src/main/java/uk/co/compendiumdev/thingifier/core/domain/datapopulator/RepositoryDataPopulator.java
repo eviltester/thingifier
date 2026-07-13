@@ -1,9 +1,9 @@
 package uk.co.compendiumdev.thingifier.core.domain.datapopulator;
 
 import uk.co.compendiumdev.thingifier.core.domain.definitions.ERSchema;
-import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
+import uk.co.compendiumdev.thingifier.core.repository.ThingStore;
 
-public interface RepositoryDataPopulator extends DataPopulator {
+public interface RepositoryDataPopulator {
 
-    void populate(ERSchema schema, ThingRepository repository);
+    void populate(ERSchema schema, ThingStore store);
 }

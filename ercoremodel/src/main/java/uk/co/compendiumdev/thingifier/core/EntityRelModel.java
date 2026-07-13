@@ -1,113 +1,99 @@
 package uk.co.compendiumdev.thingifier.core;
 
-import uk.co.compendiumdev.thingifier.core.domain.datapopulator.DataPopulator;
+import java.util.*;
 import uk.co.compendiumdev.thingifier.core.domain.datapopulator.RepositoryDataPopulator;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.Cardinality;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.ERSchema;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipDefinition;
-import uk.co.compendiumdev.thingifier.core.domain.instances.ERInstanceData;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-import uk.co.compendiumdev.thingifier.core.repository.InMemoryThingRepositoryProvider;
-import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
-import uk.co.compendiumdev.thingifier.core.repository.ThingRepositoryProvider;
-
-import java.util.*;
+import uk.co.compendiumdev.thingifier.core.reporting.ERModelReport;
+import uk.co.compendiumdev.thingifier.core.reporting.RepositoryJsonExporter;
+import uk.co.compendiumdev.thingifier.core.repository.ThingStore;
+import uk.co.compendiumdev.thingifier.core.repository.ThingStoreProvider;
+import uk.co.compendiumdev.thingifier.core.repository.inmemory.InMemoryThingStoreProvider;
 
 /*
-    The ERM has the 'model' (ERSchema) and the 'instances' (things).
-    Schema and instances are separate to allow us to have multiple
-    'databases' in memory at the same time built from the same schema.
- */
+   The ERM has the 'model' (ERSchema) and the 'instances' (things).
+   Schema and instances are separate to allow us to have multiple
+   'databases' in memory at the same time built from the same schema.
+*/
 public class EntityRelModel implements AutoCloseable {
 
     public static final String DEFAULT_DATABASE_NAME = "__default";
 
     // a provider so that key, database can be backed by memory, files, SQLite, etc.
     private final ERSchema schema; // all the definitions
-    private final ThingRepositoryProvider repositories;
-    private DataPopulator dataPopulator;
+    private final ThingStoreProvider stores;
+    private RepositoryDataPopulator dataPopulator;
 
-    public EntityRelModel(){
+    public EntityRelModel() {
         schema = new ERSchema();
-        repositories = new InMemoryThingRepositoryProvider();
+        stores = new InMemoryThingStoreProvider();
         dataPopulator = null;
     }
 
-    public EntityRelModel(final ERSchema schema, final ERInstanceData erInstanceData) {
-        this.schema = schema;
-        this.repositories = new InMemoryThingRepositoryProvider(erInstanceData);
-        dataPopulator = null;
-    }
-
-    public EntityRelModel(final ThingRepositoryProvider repositories) {
+    public EntityRelModel(final ThingStoreProvider stores) {
         this.schema = new ERSchema();
-        this.repositories = repositories;
-        this.repositories.getDefaultRepository().initializeFrom(schema);
+        this.stores = stores;
+        this.stores.getDefaultStore().administration().initializeFrom(schema);
         dataPopulator = null;
     }
 
-    public EntityRelModel(final ERSchema schema, final ThingRepositoryProvider repositories) {
+    public EntityRelModel(final ERSchema schema, final ThingStoreProvider stores) {
         this.schema = schema;
-        this.repositories = repositories;
-        this.repositories.getDefaultRepository().initializeFrom(schema);
+        this.stores = stores;
+        this.stores.getDefaultStore().administration().initializeFrom(schema);
         dataPopulator = null;
     }
 
-    public EntityDefinition createEntityDefinition(final String entityName, final String pluralName) {
+    public EntityDefinition createEntityDefinition(
+            final String entityName, final String pluralName) {
         return createEntityDefinition(entityName, pluralName, -1);
     }
 
-    public EntityDefinition createEntityDefinition(final String entityName, final String pluralName, int maximumNumberOfInstances) {
-        EntityDefinition defn = schema.defineEntity(entityName, pluralName, maximumNumberOfInstances);
-        for(String databaseKey : repositories.getRepositoryNames()){
-            repositories.getRepository(databaseKey).createInstanceCollectionFor(defn);
-        }
+    public EntityDefinition createEntityDefinition(
+            final String entityName, final String pluralName, int maximumNumberOfInstances) {
+        EntityDefinition defn =
+                schema.defineEntity(entityName, pluralName, maximumNumberOfInstances);
+        refreshRepositorySchemas();
         return defn;
     }
 
-    public ERSchema getSchema(){
+    public ERSchema getSchema() {
         return schema;
     }
 
-    // TODO: use of this is basically deprecated since is refers to the default database
-    @Deprecated() // we should use the parameterised version
-    public ERInstanceData getInstanceData(){
-        return getInstanceData(DEFAULT_DATABASE_NAME);
-    }
-
-    public ERInstanceData getInstanceDataAsJson(){
-        return getInstanceData(DEFAULT_DATABASE_NAME);
-    }
-
-    public ERInstanceData getInstanceData(String databaseKey) {
-        ThingRepository repository = repositories.getRepository(databaseKey);
-        if(repository==null){
-            return null;
+    public String exportInstanceDataAsJson(final String databaseKey) {
+        ThingStore store = stores.getStore(databaseKey);
+        if (store == null) {
+            return "{}";
         }
-        return repository.getInstanceData();
+        return new RepositoryJsonExporter(schema, store.entityQueries()).asJson();
     }
 
-    public Set<String> getDatabaseNames(){
-        return repositories.getRepositoryNames();
+    public String reportAsMarkdown(final String databaseKey) {
+        ThingStore store = stores.getStore(databaseKey);
+        if (store == null) {
+            return "";
+        }
+        return new ERModelReport(schema, store.entityQueries()).asMarkdown();
     }
 
-    public ThingRepository getRepository(String databaseKey) {
-        return repositories.getRepository(databaseKey);
+    public Set<String> getDatabaseNames() {
+        return stores.getStoreNames();
     }
 
-    public ThingRepositoryProvider getRepositoryProvider() {
-        return repositories;
+    public ThingStore getStore(String databaseKey) {
+        return stores.getStore(databaseKey);
+    }
+
+    public ThingStoreProvider getStoreProvider() {
+        return stores;
     }
 
     @Override
     public void close() {
-        repositories.close();
-    }
-
-    // ERM Object Level
-    public EntityRelModel cloneWithDifferentData(final List<EntityInstance> instances) {
-        return new EntityRelModel(schema, new ERInstanceData(instances));
+        stores.close();
     }
 
     // Schema methods
@@ -143,70 +129,62 @@ public class EntityRelModel implements AutoCloseable {
         return schema.hasEntityWithPluralNamed(term);
     }
 
-    public EntityDefinition getEntityDefinitionWithPluralNamed(final String pluralName){
+    public EntityDefinition getEntityDefinitionWithPluralNamed(final String pluralName) {
         return schema.getEntityDefinitionWithPluralNamed(pluralName);
     }
 
-    public EntityDefinition getEntityDefinitionNamed(final String term){
+    public EntityDefinition getEntityDefinitionNamed(final String term) {
         return schema.getEntityDefinitionNamed(term);
     }
-
 
     // Multiple Databases
     public void createInstanceDatabase(String databaseKey) {
 
-        if(repositories.getRepository(databaseKey)!=null){
+        if (stores.getStore(databaseKey) != null) {
             throw new IllegalStateException("ERM Database Already Exists with name " + databaseKey);
         }
 
         createInstanceDatabaseIfNotExisting(databaseKey);
     }
 
-
     public void deleteInstanceDatabase(String databaseKey) {
-        if(databaseKey.equals(DEFAULT_DATABASE_NAME)){
+        if (databaseKey.equals(DEFAULT_DATABASE_NAME)) {
             throw new IllegalStateException("Cannot delete default database");
         }
-        repositories.deleteRepository(databaseKey);
+        stores.deleteStore(databaseKey);
     }
 
     public boolean createInstanceDatabaseIfNotExisting(String databaseKey) {
-        return repositories.createRepositoryIfNotExisting(databaseKey, this.schema);
+        return stores.createStoreIfNotExisting(databaseKey, this.schema);
     }
 
-    public boolean populateDatabase(String databaseKey){
-        ThingRepository repository = repositories.getRepository(databaseKey);
-        if(repository==null){
+    public boolean populateDatabase(String databaseKey) {
+        ThingStore store = stores.getStore(databaseKey);
+        if (store == null) {
             return false;
         }
 
-        if(dataPopulator==null){
+        if (dataPopulator == null) {
             return false;
         }
 
-        repository.refreshSchema(getSchema());
-        populateRepository(repository);
+        store.administration().refreshSchema(getSchema());
+        populateStore(store);
 
         return true;
     }
 
-    public void setDataGenerator(DataPopulator dataPopulator) {
+    public void setDataGenerator(RepositoryDataPopulator dataPopulator) {
         this.dataPopulator = dataPopulator;
     }
 
     private void refreshRepositorySchemas() {
-        for(String databaseKey : repositories.getRepositoryNames()){
-            repositories.getRepository(databaseKey).refreshSchema(schema);
+        for (String databaseKey : stores.getStoreNames()) {
+            stores.getStore(databaseKey).administration().refreshSchema(schema);
         }
     }
 
-    private void populateRepository(final ThingRepository repository) {
-        if(dataPopulator instanceof RepositoryDataPopulator) {
-            ((RepositoryDataPopulator) dataPopulator).populate(getSchema(), repository);
-            return;
-        }
-
-        dataPopulator.populate(getSchema(), repository.getInstanceData());
-        repository.flush();
+    private void populateStore(final ThingStore store) {
+        dataPopulator.populate(getSchema(), store);
     }
 }

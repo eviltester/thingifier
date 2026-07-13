@@ -12,28 +12,32 @@ import uk.co.compendiumdev.challenger.restassured.api.TodosApi;
 
 public class C019PutTodosUpdateFullExisting200Test extends RestAssuredBaseTest {
 
-
     @Test
-    void canAmendATodoWithPut(){
+    void canAmendATodoWithPut() {
 
         Todo amendMe = new TodosApi().getOrCreateAnyExistingTodo();
 
         // amendMe.id = - cannot amend the id as it is auto assigned, send in the existing id
-        amendMe.title = "my name " + System.currentTimeMillis(); // title is mandatory and must be in the message
-        amendMe.description = "my description " + System.currentTimeMillis(); // if not present default "" will be set
+        amendMe.title =
+                "my name " + System.currentTimeMillis(); // title is mandatory and must be in the
+        // message
+        amendMe.description =
+                "my description "
+                        + System.currentTimeMillis(); // if not present default "" will be set
         amendMe.doneStatus = true; // if not present then default false will be set
 
-        final Response response = RestAssured.
-                given().
-                header("X-CHALLENGER", xChallenger).
-                accept("application/json").
-                contentType("application/json").
-                body(amendMe).
-                put(apiPath("/todos/" + amendMe.id)).
-                then().
-                statusCode(200).
-                contentType(ContentType.JSON).
-                extract().response();
+        final Response response =
+                RestAssured.given()
+                        .header("X-CHALLENGER", xChallenger)
+                        .accept("application/json")
+                        .contentType("application/json")
+                        .body(amendMe)
+                        .put(apiPath("/todos/" + amendMe.id))
+                        .then()
+                        .statusCode(200)
+                        .contentType(ContentType.JSON)
+                        .extract()
+                        .response();
 
         Todo amendedTodo = response.body().as(Todo.class);
 
@@ -46,5 +50,4 @@ public class C019PutTodosUpdateFullExisting200Test extends RestAssuredBaseTest {
         statuses.get();
         Assertions.assertTrue(statuses.getChallengeNamed("PUT /todos/{id} full (200)").status);
     }
-
 }

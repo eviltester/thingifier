@@ -13,7 +13,7 @@ import uk.co.compendiumdev.challenger.restassured.api.RestAssuredBaseTest;
 public class C014PostTodosContentTooLong413Test extends RestAssuredBaseTest {
 
     @Test
-    void can400NotCreateATodoBecausePayloadIsTooLarge(){
+    void can400NotCreateATodoBecausePayloadIsTooLarge() {
 
         Todo createMe = new Todo();
         createMe.title = "my title";
@@ -21,29 +21,25 @@ public class C014PostTodosContentTooLong413Test extends RestAssuredBaseTest {
 
         // add an extra field which makes payload too large
         final JsonElement createMeJson = new Gson().toJsonTree(createMe);
-        createMeJson.getAsJsonObject().
-                addProperty("blowoutpayload", stringOfLength(5000));
+        createMeJson.getAsJsonObject().addProperty("blowoutpayload", stringOfLength(5000));
 
-        RestAssured.
-                given().
-                header("X-CHALLENGER", xChallenger).
-                accept("application/json").
-                contentType("application/json").
-                body(createMeJson.toString()).
-                post(apiPath( "/todos")).
-                then().
-                statusCode(413).
-                contentType(ContentType.JSON);
+        RestAssured.given()
+                .header("X-CHALLENGER", xChallenger)
+                .accept("application/json")
+                .contentType("application/json")
+                .body(createMeJson.toString())
+                .post(apiPath("/todos"))
+                .then()
+                .statusCode(413)
+                .contentType(ContentType.JSON);
 
         ChallengesStatus statuses = new ChallengesStatus();
         statuses.get();
-        Assertions.assertTrue(statuses.getChallengeNamed("POST /todos (413) content too long").status);
-
+        Assertions.assertTrue(
+                statuses.getChallengeNamed("POST /todos (413) content too long").status);
     }
 
     private String stringOfLength(int length) {
         return "a".repeat(Math.max(0, length));
     }
-
-
 }

@@ -1,5 +1,8 @@
 package uk.co.compendiumdev.challenger.http.completechallenges;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.challenge.CHALLENGE;
@@ -7,19 +10,15 @@ import uk.co.compendiumdev.challenge.ChallengeMain;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenger.http.httpclient.HttpResponseDetails;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-
-public class CompleteAllChallengesMultiUserTest extends ChallengeCompleteTest{
+public class CompleteAllChallengesMultiUserTest extends ChallengeCompleteTest {
 
     @Override
-    public boolean getIsSinglePlayerMode(){
+    public boolean getIsSinglePlayerMode() {
         return false;
     }
 
     @Override
-    public int getNumberOfChallengesToFail(){
+    public int getNumberOfChallengesToFail() {
         // all challenges work in multi-user mode
         return 0;
     }
@@ -43,14 +42,12 @@ public class CompleteAllChallengesMultiUserTest extends ChallengeCompleteTest{
         headers.putAll(x_challenger_header);
         headers.put("Content-Type", "application/json");
 
-        final HttpResponseDetails response =
-                http.send("/challenger",
-                        "POST", headers,
-                        "");
+        final HttpResponseDetails response = http.send("/challenger", "POST", headers, "");
 
         Assertions.assertEquals(200, response.statusCode);
         challenger = ChallengeMain.getChallenger().getChallengers().getChallenger(guid);
-        Assertions.assertTrue(challenger.statusOfChallenge(CHALLENGE.POST_RESTORE_EXISTING_CHALLENGER));
+        Assertions.assertTrue(
+                challenger.statusOfChallenge(CHALLENGE.POST_RESTORE_EXISTING_CHALLENGER));
     }
 
     @Test
@@ -64,20 +61,19 @@ public class CompleteAllChallengesMultiUserTest extends ChallengeCompleteTest{
         // remember x-challenger guid
         String guid = challenger.getXChallenger();
 
-        //Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
+        // Map<String, String> x_challenger_header =
+        // getXChallengerHeader(challenger.getXChallenger());
 
         Map<String, String> headers = new HashMap<>();
-        //headers.putAll(x_challenger_header);
+        // headers.putAll(x_challenger_header);
         headers.put("Content-Type", "application/json");
 
-        final HttpResponseDetails response =
-                http.send("/challenger/" + guid,
-                        "GET", headers,
-                        "");
+        final HttpResponseDetails response = http.send("/challenger/" + guid, "GET", headers, "");
 
         Assertions.assertEquals(200, response.statusCode);
         challenger = ChallengeMain.getChallenger().getChallengers().getChallenger(guid);
-        Assertions.assertTrue(challenger.statusOfChallenge(CHALLENGE.GET_RESTORE_EXISTING_CHALLENGER));
+        Assertions.assertTrue(
+                challenger.statusOfChallenge(CHALLENGE.GET_RESTORE_EXISTING_CHALLENGER));
     }
 
     @Test
@@ -86,7 +82,11 @@ public class CompleteAllChallengesMultiUserTest extends ChallengeCompleteTest{
         Map<String, String> x_challenger_header = getXChallengerHeader(challenger.getXChallenger());
 
         final HttpResponseDetails response =
-                http.send("/challenger/" + challenger.getXChallenger(), "GET", x_challenger_header, "");
+                http.send(
+                        "/challenger/" + challenger.getXChallenger(),
+                        "GET",
+                        x_challenger_header,
+                        "");
 
         String newGuid = UUID.randomUUID().toString();
         String jsonData = response.body.replaceAll(challenger.getXChallenger(), newGuid);
@@ -97,7 +97,9 @@ public class CompleteAllChallengesMultiUserTest extends ChallengeCompleteTest{
 
         Assertions.assertEquals(201, restoreResponse.statusCode);
         ChallengerAuthData newChallenger = challengers.getChallenger(newGuid);
-        Assertions.assertTrue(newChallenger.statusOfChallenge(CHALLENGE.PUT_NEW_RESTORED_CHALLENGER_PROGRESS_STATUS));
+        Assertions.assertTrue(
+                newChallenger.statusOfChallenge(
+                        CHALLENGE.PUT_NEW_RESTORED_CHALLENGER_PROGRESS_STATUS));
 
         // allow count to pass by changing state of normally used challenger
         challenger.pass(CHALLENGE.PUT_NEW_RESTORED_CHALLENGER_PROGRESS_STATUS);

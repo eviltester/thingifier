@@ -1,41 +1,38 @@
 package uk.co.compendiumdev.thingifier;
 
+import java.util.*;
 import uk.co.compendiumdev.thingifier.api.ThingifierRestAPIHandler;
+import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonPopulator;
 import uk.co.compendiumdev.thingifier.apiconfig.ApiDocsConfig;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfigProfile;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfigProfiles;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
-import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonPopulator;
 import uk.co.compendiumdev.thingifier.core.domain.datapopulator.RepositoryDataPopulator;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceCollection;
-import uk.co.compendiumdev.thingifier.core.domain.datapopulator.DataPopulator;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.*;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-import uk.co.compendiumdev.thingifier.core.repository.ThingRepository;
+import uk.co.compendiumdev.thingifier.core.repository.ThingStore;
 import uk.co.compendiumdev.thingifier.reporting.ThingReporter;
 
-import java.util.*;
-
 /* Thingifier
-    is the main class that allows access to:
-    - the ERM Schema
-    - the ERM data
-    - the API Definition and config
-    - TODO: why is the API documentation not in here?
- */
+   is the main class that allows access to:
+   - the ERM Schema
+   - the ERM data
+   - the API Definition and config
+   - TODO: why is the API documentation not in here?
+*/
 public final class Thingifier implements AutoCloseable {
 
     private final EntityRelModel erm;
     private ApiDocsConfig apiDocsConfig;
-    private DataPopulator dataPopulator;
+    private RepositoryDataPopulator dataPopulator;
     private String title;
     private String initialParagraph;
     private final ThingifierApiConfig apiConfig;
     private final ThingifierApiConfigProfiles apiConfigProfiles;
 
-    public Thingifier(){
+    public Thingifier() {
         this(new EntityRelModel());
     }
 
@@ -48,13 +45,13 @@ public final class Thingifier implements AutoCloseable {
         apiDocsConfig = new ApiDocsConfig();
     }
 
-    public Thingifier(final EntityRelModel erm,
-                      final ThingifierApiConfig apiConfig,
-                      final ThingifierApiConfigProfiles apiConfigProfiles,
-                      final String title,
-                      final String initialParagraph,
-                      final ApiDocsConfig apiDocsConfig
-                      ) {
+    public Thingifier(
+            final EntityRelModel erm,
+            final ThingifierApiConfig apiConfig,
+            final ThingifierApiConfigProfiles apiConfigProfiles,
+            final String title,
+            final String initialParagraph,
+            final ApiDocsConfig apiDocsConfig) {
 
         this.erm = erm;
         this.title = title;
@@ -65,20 +62,19 @@ public final class Thingifier implements AutoCloseable {
     }
 
     /*
-        TODO: configure the REST API from the entities and relationship definitions
-        at the moment a default REST API is created, consider an API model as separate
-        e.g
-         - apiConfig.usePluralNouns(), useSingleNouns()
-         - apiConfig.allowQueryParamFilters()
-         - apiConfig.disallowQueryParamFilters("/todos")
-         - apiConfig.routing("/todos").disallow("PATCH,POST.UPDATE")
-         - apiConfig.hideGUIDsWhenIDAvailable()
-         - etc.
-        aliases to entities and relationships to override definitions in the entity etc.
-        create 'queries' to show subsets of data, etc.
-        Do not put this into the entities and relationships make this a separate model
-     */
-
+       TODO: configure the REST API from the entities and relationship definitions
+       at the moment a default REST API is created, consider an API model as separate
+       e.g
+        - apiConfig.usePluralNouns(), useSingleNouns()
+        - apiConfig.allowQueryParamFilters()
+        - apiConfig.disallowQueryParamFilters("/todos")
+        - apiConfig.routing("/todos").disallow("PATCH,POST.UPDATE")
+        - apiConfig.hideGUIDsWhenIDAvailable()
+        - etc.
+       aliases to entities and relationships to override definitions in the entity etc.
+       create 'queries' to show subsets of data, etc.
+       Do not put this into the entities and relationships make this a separate model
+    */
 
     // Entity Definitions
 
@@ -86,7 +82,8 @@ public final class Thingifier implements AutoCloseable {
         return defineThing(thingName, pluralName, -1);
     }
 
-    public EntityDefinition defineThing(final String thingName, final String pluralName, final int maximumNumberOfInstances) {
+    public EntityDefinition defineThing(
+            final String thingName, final String pluralName, final int maximumNumberOfInstances) {
         return erm.createEntityDefinition(thingName, pluralName, maximumNumberOfInstances);
     }
 
@@ -101,6 +98,7 @@ public final class Thingifier implements AutoCloseable {
     public EntityDefinition getDefinitionNamed(final String term) {
         return erm.getSchema().getEntityDefinitionNamed(term);
     }
+
     public EntityDefinition getDefinitionWithPluralNamed(final String term) {
         return erm.getSchema().getEntityDefinitionWithPluralNamed(term);
     }
@@ -114,9 +112,9 @@ public final class Thingifier implements AutoCloseable {
         return erm.getRelationshipDefinitions();
     }
 
-    public RelationshipDefinition defineRelationship(EntityDefinition from, EntityDefinition to,
-                                                     final String named, final Cardinality of) {
-        return erm.createRelationshipDefinition(from,to,named, of);
+    public RelationshipDefinition defineRelationship(
+            EntityDefinition from, EntityDefinition to, final String named, final Cardinality of) {
+        return erm.createRelationshipDefinition(from, to, named, of);
     }
 
     public boolean hasRelationshipNamed(final String relationshipName) {
@@ -125,27 +123,17 @@ public final class Thingifier implements AutoCloseable {
 
     // Instances
 
-    public List<EntityInstanceCollection> getThings(final String database) {
-        return erm.getRepository(database).getAllInstanceCollections();
-    }
-
-
     public EntityInstance findThingInstanceByGuid(final String thingGUID, final String database) {
-        return erm.getRepository(database).findEntityInstanceByGUID(thingGUID);
-    }
-
-    @Deprecated
-    public EntityInstanceCollection getThingInstancesNamed(final String aName, final String database) {
-        return erm.getRepository(database).getInstanceCollectionForEntityNamed(aName);
+        return erm.getStore(database).entityQueries().findByGuid(thingGUID);
     }
 
     public List<EntityInstance> listThingInstancesNamed(final String aName, final String database) {
         EntityDefinition definition = erm.getSchema().getDefinitionWithSingularOrPluralNamed(aName);
-        ThingRepository repository = erm.getRepository(database);
-        if (definition == null || repository == null) {
+        ThingStore store = erm.getStore(database);
+        if (definition == null || store == null) {
             return Collections.emptyList();
         }
-        return new ArrayList<>(repository.listInstances(definition));
+        return new ArrayList<>(store.entityQueries().list(definition));
     }
 
     public EntityInstance findThingInstanceByFieldNameAndValue(
@@ -153,65 +141,50 @@ public final class Thingifier implements AutoCloseable {
             final String fieldName,
             final String fieldValue,
             final String database) {
-        EntityDefinition definition = erm.getSchema().getDefinitionWithSingularOrPluralNamed(entityName);
-        ThingRepository repository = erm.getRepository(database);
-        if (definition == null || repository == null) {
+        EntityDefinition definition =
+                erm.getSchema().getDefinitionWithSingularOrPluralNamed(entityName);
+        ThingStore store = erm.getStore(database);
+        if (definition == null || store == null) {
             return null;
         }
-        return repository.findInstanceByFieldNameAndValue(definition, fieldName, fieldValue);
-    }
-
-    @Deprecated
-    public EntityInstanceCollection getInstancesForSingularOrPluralNamedEntity(final String term, final String database) {
-        final EntityDefinition defn = erm.getSchema().getDefinitionWithSingularOrPluralNamed(term);
-        if(defn!=null){
-            final String entityName = defn.getName();
-            return erm.getRepository(database).getInstanceCollectionForEntityNamed(entityName);
-        }
-
-        return null;
+        return store.entityQueries().findByField(definition, fieldName, fieldValue);
     }
 
     public void clearAllData() {
         // clear data in default database but keep database
         clearAllData(EntityRelModel.DEFAULT_DATABASE_NAME);
         // delete all the other databases
-        for(String databaseName : erm.getDatabaseNames()){
-            if(!databaseName.equals(EntityRelModel.DEFAULT_DATABASE_NAME)){
+        for (String databaseName : erm.getDatabaseNames()) {
+            if (!databaseName.equals(EntityRelModel.DEFAULT_DATABASE_NAME)) {
                 erm.deleteInstanceDatabase(databaseName);
             }
         }
     }
 
     public void clearAllData(final String database) {
-        erm.getRepository(database).clearAllData();
+        erm.getStore(database).administration().clearAllData();
     }
 
     public void deleteThing(final EntityInstance aThingInstance, final String database) {
-        erm.getRepository(database).deleteEntityInstance(aThingInstance);
+        erm.getStore(database).entities().delete(aThingInstance);
     }
-
 
     // data generation
     public void generateData(final String database) {
-        if(dataPopulator!=null){
-            ThingRepository repository = erm.getRepository(database);
-            if (repository == null) {
+        if (dataPopulator != null) {
+            ThingStore store = erm.getStore(database);
+            if (store == null) {
                 return;
             }
-            repository.refreshSchema(erm.getSchema());
-            populateRepository(repository);
+            store.administration().refreshSchema(erm.getSchema());
+            populateStore(store);
         }
     }
 
-    public void setDataGenerator(DataPopulator dataPopulator) {
+    public void setDataGenerator(RepositoryDataPopulator dataPopulator) {
         this.dataPopulator = dataPopulator;
         erm.setDataGenerator(dataPopulator);
     }
-
-
-
-
 
     // Generic
 
@@ -220,13 +193,12 @@ public final class Thingifier implements AutoCloseable {
         return new ThingReporter(this).basicReport();
     }
 
-    //API
+    // API
 
     public ThingifierRestAPIHandler api() {
         // TODO: why is this created each time?
         return new ThingifierRestAPIHandler(this);
     }
-
 
     public ThingifierApiConfig apiConfig() {
         return apiConfig;
@@ -237,20 +209,27 @@ public final class Thingifier implements AutoCloseable {
     }
 
     public void configureWithProfile(final ThingifierApiConfigProfile profileToUse) {
-        if(profileToUse==null){
+        if (profileToUse == null) {
             System.out.println("API System Defaults Used");
-        }else {
+        } else {
             apiConfig.setFrom(profileToUse.apiConfig());
         }
     }
-
 
     public EntityRelModel getERmodel() {
         return erm;
     }
 
-    public ThingRepository getRepository(final String database) {
-        return erm.getRepository(database);
+    public ThingStore getStore(final String database) {
+        return erm.getStore(database);
+    }
+
+    public String exportDataAsJson(final String database) {
+        return erm.exportInstanceDataAsJson(database);
+    }
+
+    public String reportAsMarkdown(final String database) {
+        return erm.reportAsMarkdown(database);
     }
 
     @Override
@@ -258,11 +237,10 @@ public final class Thingifier implements AutoCloseable {
         erm.close();
     }
 
-
     /*
-        TODO: these are documentation methods, why are they not in the
-        documentation classes e.g. ThingifierAPIDefn ?
-     */
+       TODO: these are documentation methods, why are they not in the
+       documentation classes e.g. ThingifierAPIDefn ?
+    */
     public void setDocumentation(final String modelTitle, final String anInitialParagraph) {
         this.title = modelTitle;
         this.initialParagraph = anInitialParagraph;
@@ -276,56 +254,38 @@ public final class Thingifier implements AutoCloseable {
         return this.initialParagraph;
     }
 
-    public Thingifier cloneWithDifferentData(final List<EntityInstance> instances) {
-        return new Thingifier(  this.getERmodel().cloneWithDifferentData(instances),
-                                                    this.apiConfig(),
-                                                    this.apiConfigProfiles(),
-                                                    this.title,
-                                                    this.initialParagraph,
-                                                    this.apiDocsConfig
-                );
-    }
-
-    public DataPopulator getDefaultDataPopulator() {
+    public RepositoryDataPopulator getDefaultDataPopulator() {
         return dataPopulator;
     }
 
     // TODO: this is used in too many places, suggesting something went wrong with coding
-    // decision: when we create a challenger we always create and populate a database, no need to do it any other time - check that this is enforced and cut down on this usage
+    // decision: when we create a challenger we always create and populate a database, no need to do
+    // it any other time - check that this is enforced and cut down on this usage
     public void ensureCreatedAndPopulatedInstanceDatabaseNamed(String databaseName) {
-        if(getERmodel().createInstanceDatabaseIfNotExisting(databaseName)){
+        if (getERmodel().createInstanceDatabaseIfNotExisting(databaseName)) {
             // if we created it then populate it
-            if(getDefaultDataPopulator()!=null){
+            if (getDefaultDataPopulator() != null) {
                 // Use any default data populator to populate the new database
-                ThingRepository repository = getERmodel().getRepository(databaseName);
-                repository.refreshSchema(getERmodel().getSchema());
-                populateRepository(repository);
+                ThingStore store = getERmodel().getStore(databaseName);
+                store.administration().refreshSchema(getERmodel().getSchema());
+                populateStore(store);
             }
         }
     }
 
-    public void ensureCreatedAndPopulatedInstanceDatabaseFromJson(String databaseName, String jsonDatabaseContents) {
+    public void ensureCreatedAndPopulatedInstanceDatabaseFromJson(
+            String databaseName, String jsonDatabaseContents) {
         getERmodel().createInstanceDatabaseIfNotExisting(databaseName);
 
-        new JsonPopulator(jsonDatabaseContents).populate(
-                getERmodel().getSchema(),
-                getERmodel().getRepository(databaseName).getInstanceData()
-        );
-        getERmodel().getRepository(databaseName).flush();
-
+        new JsonPopulator(jsonDatabaseContents)
+                .populate(getERmodel().getSchema(), getERmodel().getStore(databaseName));
     }
 
     public ApiDocsConfig apidocsconfig() {
         return apiDocsConfig;
     }
 
-    private void populateRepository(final ThingRepository repository) {
-        if (dataPopulator instanceof RepositoryDataPopulator) {
-            ((RepositoryDataPopulator) dataPopulator).populate(erm.getSchema(), repository);
-            return;
-        }
-
-        dataPopulator.populate(erm.getSchema(), repository.getInstanceData());
-        repository.flush();
+    private void populateStore(final ThingStore store) {
+        dataPopulator.populate(erm.getSchema(), store);
     }
 }

@@ -6,11 +6,9 @@ import org.junit.jupiter.api.Test;
 public class ThingifierApiConfigProfileTest {
 
     @Test
-    public void canCreateAProfile(){
+    public void canCreateAProfile() {
 
-        final ThingifierApiConfigProfile profile =
-                    new ThingifierApiConfigProfile(
-                            "name", "desc");
+        final ThingifierApiConfigProfile profile = new ThingifierApiConfigProfile("name", "desc");
 
         Assertions.assertEquals("name", profile.getName());
         Assertions.assertEquals("desc", profile.getDescription());

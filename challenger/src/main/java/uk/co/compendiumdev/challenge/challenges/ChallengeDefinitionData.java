@@ -12,19 +12,20 @@ public class ChallengeDefinitionData {
     public List<ChallengeSolutionLink> solutions = new ArrayList<>();
     public List<ChallengeHint> hints = new ArrayList<>();
 
-    public ChallengeDefinitionData(String id, String name, String description){
+    public ChallengeDefinitionData(String id, String name, String description) {
         this.id = id;
-        this.name=name;
+        this.name = name;
         this.description = description;
         this.status = false;
     }
 
-    public void addSolutionLink(final String linkText, final String linkType, final String linkData) {
+    public void addSolutionLink(
+            final String linkText, final String linkType, final String linkData) {
         solutions.add(new ChallengeSolutionLink(linkText, linkType, linkData));
     }
 
     public boolean hasSolutionLinks() {
-        return solutions.size()>0;
+        return solutions.size() > 0;
     }
 
     public void addSolutions(final List<ChallengeSolutionLink> solutions) {
@@ -36,7 +37,7 @@ public class ChallengeDefinitionData {
     }
 
     public boolean hasHints() {
-        return hints.size()>0;
+        return hints.size() > 0;
     }
 
     public void addHints(final List<ChallengeHint> hints) {

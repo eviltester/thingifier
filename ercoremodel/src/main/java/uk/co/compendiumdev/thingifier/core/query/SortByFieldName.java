@@ -13,7 +13,6 @@ public class SortByFieldName {
     }
 
     public static boolean isSortByParam(final String key) {
-        return (key.equalsIgnoreCase("sortby") ||
-                key.equalsIgnoreCase("sort_by"));
+        return (key.equalsIgnoreCase("sortby") || key.equalsIgnoreCase("sort_by"));
     }
 }

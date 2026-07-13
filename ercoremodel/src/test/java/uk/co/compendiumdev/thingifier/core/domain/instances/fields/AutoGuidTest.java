@@ -3,33 +3,40 @@ package uk.co.compendiumdev.thingifier.core.domain.instances.fields;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.ERSchema;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
+import uk.co.compendiumdev.thingifier.core.repository.ThingStore;
+import uk.co.compendiumdev.thingifier.core.repository.inmemory.InMemoryThingStore;
 
 public class AutoGuidTest {
 
     EntityDefinition entityTestSession;
+    ThingStore repository;
 
     @BeforeEach
-    public void createEntity(){
+    public void createEntity() {
 
-        entityTestSession = new EntityDefinition("Test Session", "Test Sessions");
+        ERSchema schema = new ERSchema();
+        entityTestSession = schema.defineEntity("Test Session", "Test Sessions", -1);
         entityTestSession.addAsPrimaryKeyField(Field.is("guid", FieldType.AUTO_GUID));
         entityTestSession.addField(Field.is("Title", FieldType.STRING));
+        repository = new InMemoryThingStore("test");
+        repository.administration().initializeFrom(schema);
     }
 
     @Test
     public void anInstanceHasAGuid() {
 
         EntityInstance session;
-        session = new EntityInstance(entityTestSession);
-        session.addAutoGUIDstoInstance();
+        session = repository.entities().create(EntityInstanceDraft.forEntity(entityTestSession));
 
         Assertions.assertNotNull(session.getPrimaryKeyValue());
         Assertions.assertTrue(
-                session.getPrimaryKeyValue().length()>8,
+                session.getPrimaryKeyValue().length() > 8,
                 "Guid should be longish " + session.getPrimaryKeyValue());
         Assertions.assertTrue(
                 session.getPrimaryKeyValue().contains("-"),
@@ -40,10 +47,9 @@ public class AutoGuidTest {
     public void anInstanceCanAccessGuidAsFieldOrMethod() {
 
         EntityInstance session;
-        session = new EntityInstance(entityTestSession);
-        session.addAutoGUIDstoInstance();
+        session = repository.entities().create(EntityInstanceDraft.forEntity(entityTestSession));
 
-        Assertions.assertEquals(session.getPrimaryKeyValue(), session.getFieldValue("guid").asString());
-
+        Assertions.assertEquals(
+                session.getPrimaryKeyValue(), session.getFieldValue("guid").asString());
     }
 }
