@@ -6,8 +6,7 @@ import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
-import uk.co.compendiumdev.thingifier.core.query.RepositoryUrlQuery;
-import uk.co.compendiumdev.thingifier.core.query.UrlQueryResult;
+import uk.co.compendiumdev.thingifier.core.query.RepositoryQueryResult;
 
 public class RestApiGetHandler {
     private final Thingifier thingifier;
@@ -32,15 +31,15 @@ public class RestApiGetHandler {
         String instanceDatabaseName =
                 SessionHeaderParser.getDatabaseNameFromHeaderValue(requestHeaders);
 
-        UrlQueryResult queryResults;
+        RepositoryQueryResult queryResults;
         boolean allowFiltering =
                 thingifier.apiConfig().forParams().willAllowFilteringThroughUrlParams();
         QueryFilterParams effectiveQueryParams =
                 allowFiltering ? queryParams : new QueryFilterParams();
 
-        if (RepositoryUrlQuery.canHandle(thingifier.getERmodel().getSchema(), url)) {
+        if (RepositoryRouteQuery.canHandle(thingifier.getERmodel().getSchema(), url)) {
             queryResults =
-                    new RepositoryUrlQuery(
+                    new RepositoryRouteQuery(
                                     thingifier.getERmodel().getSchema(),
                                     thingifier.getStore(instanceDatabaseName),
                                     url)

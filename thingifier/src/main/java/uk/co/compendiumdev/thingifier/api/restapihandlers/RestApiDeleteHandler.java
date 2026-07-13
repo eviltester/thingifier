@@ -3,6 +3,8 @@ package uk.co.compendiumdev.thingifier.api.restapihandlers;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
+import uk.co.compendiumdev.thingifier.application.ThingCommandResult;
+import uk.co.compendiumdev.thingifier.application.ThingCommandService;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
@@ -33,8 +35,9 @@ public class RestApiDeleteHandler {
                 return ApiResponse.error404(
                         String.format("Could not find any instances with %s", url));
             }
-            thingifier.deleteThing(instance, instanceDatabaseName);
-            return ApiResponse.success();
+            return responseFrom(
+                    new ThingCommandService(thingifier.getStore(instanceDatabaseName))
+                            .delete(instance));
         }
 
         RepositoryBackedRelationshipUrlResolver.RelationshipUrlResolution relationship =
@@ -47,16 +50,21 @@ public class RestApiDeleteHandler {
                 return ApiResponse.error404(
                         String.format("Could not find any instances with %s", url));
             }
-            thingifier
-                    .getStore(instanceDatabaseName)
-                    .relationships()
-                    .removeBetween(
-                            relationship.parentInstance(),
-                            relationship.childInstance(),
-                            relationship.relationshipName());
-            return ApiResponse.success();
+            return responseFrom(
+                    new ThingCommandService(thingifier.getStore(instanceDatabaseName))
+                            .disconnectRelationship(
+                                    relationship.parentInstance(),
+                                    relationship.childInstance(),
+                                    relationship.relationshipName()));
         }
 
         return ApiResponse.error404(String.format("Could not find any instances with %s", url));
+    }
+
+    private ApiResponse responseFrom(final ThingCommandResult result) {
+        if (result.isError()) {
+            return ApiResponse.error(400, result.getErrorMessages());
+        }
+        return ApiResponse.success();
     }
 }

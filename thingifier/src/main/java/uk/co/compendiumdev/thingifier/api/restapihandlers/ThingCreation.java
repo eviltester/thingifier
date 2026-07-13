@@ -4,10 +4,12 @@ import java.util.List;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
+import uk.co.compendiumdev.thingifier.application.RelationshipConnection;
+import uk.co.compendiumdev.thingifier.application.ThingCommandResult;
+import uk.co.compendiumdev.thingifier.application.ThingCommandService;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.NamedValue;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 
@@ -40,7 +42,31 @@ public class ThingCreation {
         }
 
         return addNewThingWithFields(
-                bodyargs, EntityInstanceDraft.forEntity(thing), thing, database);
+                bodyargs, EntityInstanceDraft.forEntity(thing), thing, database, true);
+    }
+
+    ApiResponse withDeferredRelationshipValidation(
+            final BodyParser bodyargs, final EntityDefinition thing, final String database) {
+
+        ValidationReport validated =
+                new BodyRelationshipValidator(thingifier).validate(bodyargs, thing, database);
+
+        if (!validated.isValid()) {
+            return ApiResponse.error(
+                    400,
+                    String.format(
+                            "Invalid relationships: %s", validated.getCombinedErrorMessages()));
+        }
+
+        validated = new BodyCreationValidator().validate(bodyargs, thing);
+        if (!validated.isValid()) {
+            return ApiResponse.error(
+                    400,
+                    String.format("Invalid Creation: %s", validated.getCombinedErrorMessages()));
+        }
+
+        return addNewThingWithFields(
+                bodyargs, EntityInstanceDraft.forEntity(thing), thing, database, false);
     }
 
     // create with GUID and IDs is normally associated with PUT or 'insert'
@@ -88,14 +114,15 @@ public class ThingCreation {
 
         thingifier.getStore(database).administration().accommodateProtectedIds(thing, fieldValues);
 
-        return insertNewThingWithFields(bodyargs, draft, thing, database);
+        return insertNewThingWithFields(bodyargs, draft, thing, database, true);
     }
 
     private ApiResponse addNewThingWithFields(
             final BodyParser bodyargs,
             final EntityInstanceDraft baseDraft,
             final EntityDefinition thing,
-            final String database) {
+            final String database,
+            final boolean validateFinalRelationships) {
 
         if (thingifier.apiConfig().willApiEnforceDeclaredTypesInInput()) {
             ValidationReport validatedTypes = bodyargs.validateAgainstType(thing);
@@ -121,14 +148,15 @@ public class ThingCreation {
             return ApiResponse.error(400, e.getMessage());
         }
 
-        return addValidatedInstance(bodyargs, draft, database);
+        return addValidatedInstance(bodyargs, draft, database, validateFinalRelationships);
     }
 
     private ApiResponse insertNewThingWithFields(
             final BodyParser bodyargs,
             final EntityInstanceDraft baseDraft,
             final EntityDefinition thing,
-            final String database) {
+            final String database,
+            final boolean validateFinalRelationships) {
 
         if (thingifier.apiConfig().willApiEnforceDeclaredTypesInInput()) {
             ValidationReport validatedTypes = bodyargs.validateAgainstType(thing);
@@ -155,23 +183,44 @@ public class ThingCreation {
             return ApiResponse.error(400, e.getMessage());
         }
 
-        return addValidatedInstance(bodyargs, draft, database);
+        return addValidatedInstance(bodyargs, draft, database, validateFinalRelationships);
     }
 
     private ApiResponse addValidatedInstance(
-            BodyParser bodyargs, EntityInstanceDraft draft, String database) {
+            final BodyParser bodyargs,
+            final EntityInstanceDraft draft,
+            final String database,
+            final boolean validateFinalRelationships) {
 
         try {
-            EntityInstance instance = thingifier.getStore(database).entities().create(draft);
-            return new RelationshipCreator(thingifier)
-                    .createRelationships(bodyargs, instance, database);
+            List<RelationshipConnection> relationships =
+                    new RelationshipCreator(thingifier)
+                            .relationshipConnectionsFromArgs(bodyargs, draft.getEntity(), database);
+            ThingCommandResult result =
+                    new ThingCommandService(thingifier.getStore(database))
+                            .create(draft, relationships, validateFinalRelationships);
+            if (result.isError()) {
+                return creationErrorResponse(result);
+            }
+            return ApiResponse.created(result.getInstance(), thingifier.apiConfig());
         } catch (Exception e) {
             return ApiResponse.error(400, creationErrorMessage(e));
         }
     }
 
+    private ApiResponse creationErrorResponse(final ThingCommandResult result) {
+        if (result.getErrorMessages().size() == 1) {
+            return ApiResponse.error(400, creationErrorMessage(result.getCombinedErrorMessage()));
+        }
+        return ApiResponse.error(400, result.getErrorMessages());
+    }
+
     private String creationErrorMessage(final Exception e) {
-        String message = e.getMessage();
+        return creationErrorMessage(e.getMessage());
+    }
+
+    private String creationErrorMessage(final String rawMessage) {
+        String message = rawMessage;
         if (message == null) {
             return "";
         }

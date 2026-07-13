@@ -1,0 +1,310 @@
+package uk.co.compendiumdev.thingifier.application;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVectorDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
+import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
+import uk.co.compendiumdev.thingifier.core.repository.ThingStore;
+
+public final class ThingCommandService {
+
+    private final ThingStore store;
+
+    public ThingCommandService(final ThingStore store) {
+        this.store = store;
+    }
+
+    public ThingCommandResult create(
+            final EntityInstanceDraft draft, final List<RelationshipConnection> relationships) {
+        return create(draft, relationships, true);
+    }
+
+    public ThingCommandResult create(
+            final EntityInstanceDraft draft,
+            final List<RelationshipConnection> relationships,
+            final boolean validateFinalRelationships) {
+        EntityInstance created = null;
+        try {
+            created = store.entities().create(draft);
+            ThingCommandResult relationshipResult =
+                    connectRelationships(created, relationships, validateFinalRelationships);
+            if (relationshipResult.isError()) {
+                rollbackDelete(created);
+                return relationshipResult;
+            }
+            return ThingCommandResult.success(created);
+        } catch (Exception e) {
+            rollbackDelete(created);
+            return ThingCommandResult.error(messageFrom(e));
+        }
+    }
+
+    public ThingCommandResult amend(
+            final EntityInstance instance,
+            final EntityInstanceDraft draft,
+            final boolean replaceExistingFieldsAndRelationships,
+            final List<RelationshipConnection> relationships) {
+        EntityInstance updated = null;
+        RelationshipSnapshot originalRelationships = RelationshipSnapshot.capture(store, instance);
+        try {
+            if (replaceExistingFieldsAndRelationships) {
+                updated = store.entities().replace(instance, draft);
+                originalRelationships.disconnectFrom(store, updated);
+            } else {
+                updated = store.entities().patch(instance, draft);
+            }
+
+            ThingCommandResult relationshipResult = connectRelationships(updated, relationships);
+            if (relationshipResult.isError()) {
+                rollbackAmendment(updated, instance, originalRelationships);
+                return relationshipResult;
+            }
+
+            if (replaceExistingFieldsAndRelationships) {
+                originalRelationships.deleteFormerDependentsMadeInvalidBy(store, updated);
+            }
+
+            return ThingCommandResult.success(updated);
+        } catch (Exception e) {
+            if (updated != null) {
+                rollbackAmendment(updated, instance, originalRelationships);
+            }
+            return ThingCommandResult.error(messageFrom(e));
+        }
+    }
+
+    public ThingCommandResult delete(final EntityInstance instance) {
+        try {
+            store.entities().delete(instance);
+            return ThingCommandResult.success();
+        } catch (Exception e) {
+            return ThingCommandResult.error(messageFrom(e));
+        }
+    }
+
+    public ThingCommandResult connectRelationship(
+            final EntityInstance parent,
+            final String relationshipName,
+            final EntityInstance child,
+            final boolean deleteChildOnRollback) {
+        boolean alreadyConnected =
+                isRelated(parent, new RelationshipConnection(relationshipName, child));
+        try {
+            store.relationships().connect(parent, relationshipName, child);
+
+            ValidationReport validNow = store.relationships().validate(child);
+            if (!validNow.isValid()) {
+                if (!alreadyConnected) {
+                    store.relationships().disconnectBetween(parent, child, relationshipName);
+                }
+                if (deleteChildOnRollback) {
+                    rollbackDelete(child);
+                }
+                return ThingCommandResult.error(validNow.getErrorMessages());
+            }
+
+            return ThingCommandResult.success(child);
+        } catch (Exception e) {
+            if (!alreadyConnected) {
+                store.relationships().disconnectBetween(parent, child, relationshipName);
+            }
+            if (deleteChildOnRollback) {
+                rollbackDelete(child);
+            }
+            return ThingCommandResult.error(messageFrom(e));
+        }
+    }
+
+    public ThingCommandResult disconnectRelationship(
+            final EntityInstance parent,
+            final EntityInstance child,
+            final String relationshipName) {
+        try {
+            store.relationships().removeBetween(parent, child, relationshipName);
+            return ThingCommandResult.success();
+        } catch (Exception e) {
+            return ThingCommandResult.error(messageFrom(e));
+        }
+    }
+
+    public ThingCommandResult connectRelationships(
+            final EntityInstance instance, final List<RelationshipConnection> relationships) {
+        return connectRelationships(instance, relationships, true);
+    }
+
+    private ThingCommandResult connectRelationships(
+            final EntityInstance instance,
+            final List<RelationshipConnection> relationships,
+            final boolean validateFinalRelationships) {
+        List<RelationshipConnection> connectedByCommand = new ArrayList<>();
+        try {
+            for (RelationshipConnection relationship : relationships) {
+                boolean alreadyConnected = isRelated(instance, relationship);
+                store.relationships()
+                        .connect(
+                                instance,
+                                relationship.relationshipName(),
+                                relationship.relatedInstance());
+                if (!alreadyConnected) {
+                    connectedByCommand.add(relationship);
+                }
+            }
+
+            if (validateFinalRelationships) {
+                ValidationReport finalRelationships = store.relationships().validate(instance);
+                if (!finalRelationships.isValid()) {
+                    disconnectConnections(instance, connectedByCommand);
+                    return ThingCommandResult.error(finalRelationships.getErrorMessages());
+                }
+            }
+
+            return ThingCommandResult.success(instance);
+        } catch (Exception e) {
+            disconnectConnections(instance, connectedByCommand);
+            return ThingCommandResult.error("Error creating relationships " + messageFrom(e));
+        }
+    }
+
+    private void rollbackAmendment(
+            final EntityInstance current,
+            final EntityInstance original,
+            final RelationshipSnapshot originalRelationships) {
+        RelationshipSnapshot.capture(store, current).disconnectFrom(store, current);
+        EntityInstance restored = store.entities().replace(current, draftFrom(original));
+        originalRelationships.restoreTo(store, restored);
+    }
+
+    private void rollbackDelete(final EntityInstance instance) {
+        if (instance != null) {
+            store.entities().delete(instance);
+        }
+    }
+
+    private void disconnectConnections(
+            final EntityInstance instance, final List<RelationshipConnection> relationships) {
+        for (RelationshipConnection relationship : relationships) {
+            store.relationships()
+                    .disconnectBetween(
+                            instance,
+                            relationship.relatedInstance(),
+                            relationship.relationshipName());
+        }
+    }
+
+    private boolean isRelated(
+            final EntityInstance instance, final RelationshipConnection relationship) {
+        for (EntityInstance related :
+                store.relationships().listRelated(instance, relationship.relationshipName())) {
+            if (related.getInternalId().equals(relationship.relatedInstance().getInternalId())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private EntityInstanceDraft draftFrom(final EntityInstance instance) {
+        EntityInstanceDraft draft = EntityInstanceDraft.forEntity(instance.getEntity());
+        for (FieldValue value : instance.getAssignedFieldValues()) {
+            Field field = instance.getEntity().getField(value.getName());
+            if (field.getType() == FieldType.AUTO_INCREMENT
+                    || field.getType() == FieldType.AUTO_GUID) {
+                draft.withProtectedField(value.getName(), value.asString());
+            } else {
+                draft.withField(value.getName(), value.asString());
+            }
+        }
+        return draft;
+    }
+
+    private String messageFrom(final Exception exception) {
+        String message = exception.getMessage();
+        return message == null ? "" : message;
+    }
+
+    private static final class RelationshipSnapshot {
+
+        private final List<RelationshipLink> links;
+
+        private RelationshipSnapshot(final List<RelationshipLink> links) {
+            this.links = links;
+        }
+
+        private static RelationshipSnapshot capture(
+                final ThingStore store, final EntityInstance instance) {
+            List<RelationshipLink> links = new ArrayList<>();
+            Set<String> seenLinks = new HashSet<>();
+            for (RelationshipVectorDefinition vector :
+                    instance.getEntity().related().getRelationships()) {
+                for (EntityInstance related :
+                        store.relationships().listRelated(instance, vector.getName())) {
+                    String key = vector.getName() + "|" + related.getInternalId();
+                    if (seenLinks.add(key)) {
+                        links.add(
+                                new RelationshipLink(
+                                        vector.getName(),
+                                        related,
+                                        store.relationships().validate(related).isValid()));
+                    }
+                }
+            }
+            return new RelationshipSnapshot(links);
+        }
+
+        private void disconnectFrom(final ThingStore store, final EntityInstance instance) {
+            for (RelationshipLink link : links) {
+                store.relationships()
+                        .disconnectBetween(instance, link.related, link.relationshipName);
+            }
+        }
+
+        private void restoreTo(final ThingStore store, final EntityInstance instance) {
+            for (RelationshipLink link : links) {
+                store.relationships().connect(instance, link.relationshipName, link.related);
+            }
+        }
+
+        private void deleteFormerDependentsMadeInvalidBy(
+                final ThingStore store, final EntityInstance instance) {
+            for (RelationshipLink link : links) {
+                if (link.relatedWasValid
+                        && !link.isStillRelatedTo(store, instance)
+                        && !store.relationships().validate(link.related).isValid()) {
+                    store.entities().delete(link.related);
+                }
+            }
+        }
+    }
+
+    private static final class RelationshipLink {
+
+        private final String relationshipName;
+        private final EntityInstance related;
+        private final boolean relatedWasValid;
+
+        private RelationshipLink(
+                final String relationshipName,
+                final EntityInstance related,
+                final boolean relatedWasValid) {
+            this.relationshipName = relationshipName;
+            this.related = related;
+            this.relatedWasValid = relatedWasValid;
+        }
+
+        private boolean isStillRelatedTo(final ThingStore store, final EntityInstance instance) {
+            for (EntityInstance current :
+                    store.relationships().listRelated(instance, relationshipName)) {
+                if (current.getInternalId().equals(related.getInternalId())) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+}

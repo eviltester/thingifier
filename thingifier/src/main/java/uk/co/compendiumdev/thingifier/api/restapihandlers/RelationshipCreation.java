@@ -5,12 +5,13 @@ import java.util.Map;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
+import uk.co.compendiumdev.thingifier.application.ThingCommandResult;
+import uk.co.compendiumdev.thingifier.application.ThingCommandService;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVectorDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 
 public class RelationshipCreation {
 
@@ -94,7 +95,9 @@ public class RelationshipCreation {
 
             thingToCreate = createThing;
 
-            response = new ThingCreation(thingifier).with(bodyargs, thingToCreate, database);
+            response =
+                    new ThingCreation(thingifier)
+                            .withDeferredRelationshipValidation(bodyargs, thingToCreate, database);
             if (response.isErrorResponse()) {
                 return response;
             } else {
@@ -143,7 +146,7 @@ public class RelationshipCreation {
             if (response != null && response.isErrorResponse()) {
                 if (thingToCreate != null) {
                     // we had an error so delete the created thing
-                    thingifier.deleteThing(relatedItem, database);
+                    new ThingCommandService(thingifier.getStore(database)).delete(relatedItem);
                     response.addToErrorMessages(
                             " the newly created item was deleted. No new items have been created.");
                 }
@@ -151,22 +154,18 @@ public class RelationshipCreation {
                 return response;
             }
 
-            thingifier
-                    .getStore(database)
-                    .relationships()
-                    .connect(connectThis, relationshipToUse.getName(), relatedItem);
-
-            // Repository connect enforces cardinality; validate the resulting relationship state.
-            ValidationReport validNow =
-                    thingifier.getStore(database).relationships().validate(relatedItem);
-            if (!validNow.isValid()) {
-                response = ApiResponse.error(400, validNow.getErrorMessages());
-                thingifier
-                        .getStore(database)
-                        .relationships()
-                        .disconnectBetween(connectThis, relatedItem, relationshipToUse.getName());
+            ThingCommandResult connectResult =
+                    new ThingCommandService(thingifier.getStore(database))
+                            .connectRelationship(
+                                    connectThis,
+                                    relationshipToUse.getName(),
+                                    relatedItem,
+                                    thingToCreate != null);
+            if (connectResult.isError()) {
+                response = ApiResponse.error(400, connectResult.getErrorMessages());
                 if (thingToCreate != null) {
-                    thingifier.deleteThing(relatedItem, database);
+                    response.addToErrorMessages(
+                            " the newly created item was deleted. No new items have been created.");
                 }
                 return response;
             }

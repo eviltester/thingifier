@@ -1,24 +1,18 @@
 package uk.co.compendiumdev.thingifier.api.restapihandlers;
 
-import java.util.List;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.api.restapihandlers.commonerrorresponse.NoSuchEntity;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-import uk.co.compendiumdev.thingifier.core.domain.instances.validation.EntityInstanceStateValidator;
-import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 
 public class RestApiPostHandler {
     private final Thingifier thingifier;
-    private final EntityInstanceStateValidator stateValidator;
 
     public RestApiPostHandler(final Thingifier aThingifier) {
         thingifier = aThingifier;
-        stateValidator = new EntityInstanceStateValidator();
     }
 
     public ApiResponse handle(
@@ -36,35 +30,7 @@ public class RestApiPostHandler {
         EntityDefinition entityDefinition =
                 EntityUrlMatcher.entityFromCollectionUrl(thingifier, url);
         if (entityDefinition != null) {
-            // Creation stores field state first; relationship invariants are repository-validated
-            // before the response is accepted.
-            final ApiResponse response =
-                    new ThingCreation(thingifier)
-                            .with(args, entityDefinition, instanceDatabaseName);
-            if (response.isErrorResponse()) {
-                return response;
-            }
-
-            EntityInstance returnedInstance = response.getReturnedInstance();
-            final List<String> protectedFieldNames =
-                    returnedInstance
-                            .getEntity()
-                            .getFieldNamesOfType(FieldType.AUTO_INCREMENT, FieldType.AUTO_GUID);
-            ValidationReport validity =
-                    stateValidator.validateFields(returnedInstance, protectedFieldNames, false);
-            validity.combine(
-                    thingifier
-                            .getStore(instanceDatabaseName)
-                            .relationships()
-                            .validate(returnedInstance));
-
-            if (validity.isValid()) {
-                return response;
-            } else {
-                thingifier.deleteThing(response.getReturnedInstance(), instanceDatabaseName);
-                return ApiResponse.error(400, validity.getErrorMessages())
-                        .addToErrorMessages("No new item created");
-            }
+            return new ThingCreation(thingifier).with(args, entityDefinition, instanceDatabaseName);
         }
 
         /*

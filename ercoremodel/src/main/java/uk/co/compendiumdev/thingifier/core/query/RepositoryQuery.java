@@ -2,19 +2,17 @@ package uk.co.compendiumdev.thingifier.core.query;
 
 import java.util.ArrayList;
 import java.util.List;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.ERSchema;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.repository.EntityInstanceQuery;
 import uk.co.compendiumdev.thingifier.core.repository.RelationshipRepository;
 import uk.co.compendiumdev.thingifier.core.repository.ThingStore;
 
-public class RepositoryUrlQuery implements UrlQueryResult {
+public class RepositoryQuery implements RepositoryQueryResult {
 
-    private final ERSchema schema;
     private final EntityInstanceQuery entityQuery;
     private final RelationshipRepository relationshipRepository;
-    private final String query;
+    private final RepositoryQuerySpec spec;
 
     private boolean isCollection;
     private boolean wasIntentToMatchInstance;
@@ -24,71 +22,35 @@ public class RepositoryUrlQuery implements UrlQueryResult {
     private EntityInstance currentInstance;
     private List<EntityInstance> foundItems = new ArrayList<>();
 
-    public RepositoryUrlQuery(final ERSchema schema, final ThingStore store, final String query) {
-        this(schema, store.entityQueries(), store.relationships(), query);
+    public RepositoryQuery(final ThingStore store, final RepositoryQuerySpec spec) {
+        this(store.entityQueries(), store.relationships(), spec);
     }
 
-    public RepositoryUrlQuery(
-            final ERSchema schema,
+    public RepositoryQuery(
             final EntityInstanceQuery entityQuery,
             final RelationshipRepository relationshipRepository,
-            final String query) {
-        this.schema = schema;
+            final RepositoryQuerySpec spec) {
         this.entityQuery = entityQuery;
         this.relationshipRepository = relationshipRepository;
-        if (query.startsWith("/")) {
-            this.query = query.substring(1);
-        } else {
-            this.query = query;
-        }
+        this.spec = spec;
     }
 
-    public RepositoryUrlQuery performQuery() {
+    public RepositoryQuery performQuery() {
         return performQuery(new QueryFilterParams());
     }
 
-    public static boolean canHandle(final ERSchema schema, final String query) {
-        String[] terms = termsFrom(query);
-        if (terms.length == 0 || terms.length > 3) {
-            return false;
-        }
+    public RepositoryQuery performQuery(final QueryFilterParams queryParams) {
+        resultContainsDefinition = spec.entity();
 
-        EntityDefinition entity = entityForTerm(schema, terms[0]);
-        if (entity == null) {
-            return false;
-        }
-
-        if (terms.length == 1) {
-            return true;
-        }
-
-        String identifierCandidate = terms[1];
-        if (schema.hasRelationshipNamed(identifierCandidate)
-                || entityForTerm(schema, identifierCandidate) != null) {
-            return false;
-        }
-
-        if (terms.length == 2) {
-            return true;
-        }
-
-        return entity.related().hasRelationship(terms[2]);
-    }
-
-    public RepositoryUrlQuery performQuery(final QueryFilterParams queryParams) {
-        String[] terms = termsFrom(query);
-        EntityDefinition entity = entityForTerm(schema, terms[0]);
-        resultContainsDefinition = entity;
-
-        if (terms.length == 1) {
+        if (!spec.hasIdentifier()) {
             isCollection = true;
-            foundItems = new ArrayList<>(entityQuery.list(entity, queryParams));
+            foundItems = new ArrayList<>(entityQuery.list(spec.entity(), queryParams));
             lastMatchWasNothing = false;
             return this;
         }
 
         wasIntentToMatchInstance = true;
-        currentInstance = entityQuery.findByQueryIdentifier(entity, terms[1]);
+        currentInstance = entityQuery.findByQueryIdentifier(spec.entity(), spec.identifier());
         if (currentInstance == null) {
             foundItems = new ArrayList<>();
             lastMatchWasNothing = true;
@@ -96,14 +58,14 @@ public class RepositoryUrlQuery implements UrlQueryResult {
             return this;
         }
 
-        if (terms.length == 3) {
+        if (spec.hasRelationship()) {
             wasIntentToMatchInstance = true;
             isCollection = true;
             foundItems =
                     new ArrayList<>(
                             relationshipRepository.listRelated(
-                                    currentInstance, terms[2], queryParams));
-            resultContainsDefinition = relatedEntityFor(currentInstance, terms[2]);
+                                    currentInstance, spec.relationshipName(), queryParams));
+            resultContainsDefinition = relatedEntityFor(currentInstance, spec.relationshipName());
             lastMatchWasNothing = false;
             lastMatchWasInstance = false;
             return this;
@@ -149,30 +111,6 @@ public class RepositoryUrlQuery implements UrlQueryResult {
     @Override
     public EntityDefinition resultContainsDefn() {
         return resultContainsDefinition;
-    }
-
-    private static EntityDefinition entityForTerm(final ERSchema schema, final String term) {
-        if (schema.hasEntityNamed(term)) {
-            return schema.getEntityDefinitionNamed(term);
-        }
-        if (schema.hasEntityWithPluralNamed(term)) {
-            return schema.getEntityDefinitionWithPluralNamed(term);
-        }
-        return null;
-    }
-
-    private static String[] termsFrom(final String query) {
-        String normalized = query == null ? "" : query.trim();
-        while (normalized.startsWith("/")) {
-            normalized = normalized.substring(1);
-        }
-        while (normalized.endsWith("/")) {
-            normalized = normalized.substring(0, normalized.length() - 1);
-        }
-        if (normalized.isEmpty()) {
-            return new String[0];
-        }
-        return normalized.split("/");
     }
 
     private EntityDefinition relatedEntityFor(

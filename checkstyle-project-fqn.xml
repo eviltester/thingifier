@@ -133,7 +133,7 @@
             <property name="id" value="repositorySimpleQueryUse"/>
             <property name="format" value="\bSimpleQuery\b"/>
             <property name="ignoreComments" value="true"/>
-            <property name="message" value="SimpleQuery is removed; use RepositoryUrlQuery or repository APIs."/>
+            <property name="message" value="SimpleQuery is removed; use RepositoryQuery or repository APIs."/>
         </module>
         <module name="RegexpSinglelineJava">
             <property name="id" value="repositoryEntityInstanceConstruction"/>
