@@ -10,7 +10,9 @@ import uk.co.compendiumdev.thingifier.application.command.CreateAndConnectRelati
 import uk.co.compendiumdev.thingifier.application.command.CreateThingCommand;
 import uk.co.compendiumdev.thingifier.application.command.DeleteThingCommand;
 import uk.co.compendiumdev.thingifier.application.command.DisconnectRelationshipCommand;
+import uk.co.compendiumdev.thingifier.application.command.RelationshipReference;
 import uk.co.compendiumdev.thingifier.application.command.ThingWriteCommand;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
@@ -74,19 +76,20 @@ public final class ThingCommandService {
     }
 
     public ThingCommandResult create(
-            final EntityInstanceDraft draft, final List<RelationshipConnection> relationships) {
+            final EntityInstanceDraft draft, final List<RelationshipReference> relationships) {
         return create(draft, relationships, true);
     }
 
     public ThingCommandResult create(
             final EntityInstanceDraft draft,
-            final List<RelationshipConnection> relationships,
+            final List<RelationshipReference> relationships,
             final boolean validateFinalRelationships) {
         EntityInstance created = null;
         try {
             created = store.entities().create(draft);
             ThingCommandResult relationshipResult =
-                    connectRelationships(created, relationships, validateFinalRelationships);
+                    connectRelationshipReferences(
+                            created, relationships, validateFinalRelationships, true);
             if (relationshipResult.isError()) {
                 rollbackDelete(created);
                 return relationshipResult;
@@ -102,7 +105,7 @@ public final class ThingCommandService {
             final EntityInstance instance,
             final EntityInstanceDraft draft,
             final boolean replaceExistingFieldsAndRelationships,
-            final List<RelationshipConnection> relationships) {
+            final List<RelationshipReference> relationships) {
         EntityInstance updated = null;
         RelationshipSnapshot originalRelationships = RelationshipSnapshot.capture(store, instance);
         try {
@@ -113,7 +116,8 @@ public final class ThingCommandService {
                 updated = store.entities().patch(instance, draft);
             }
 
-            ThingCommandResult relationshipResult = connectRelationships(updated, relationships);
+            ThingCommandResult relationshipResult =
+                    connectRelationshipReferences(updated, relationships, true, false);
             if (relationshipResult.isError()) {
                 rollbackAmendment(updated, instance, originalRelationships);
                 return relationshipResult;
@@ -187,8 +191,8 @@ public final class ThingCommandService {
     }
 
     public ThingCommandResult connectRelationships(
-            final EntityInstance instance, final List<RelationshipConnection> relationships) {
-        return connectRelationships(instance, relationships, true);
+            final EntityInstance instance, final List<RelationshipReference> relationships) {
+        return connectRelationshipReferences(instance, relationships, true, false);
     }
 
     private ThingCommandResult createAndConnect(final CreateAndConnectRelationshipCommand command) {
@@ -242,6 +246,103 @@ public final class ThingCommandService {
             disconnectConnections(instance, connectedByCommand);
             return ThingCommandResult.error("Error creating relationships " + messageFrom(e));
         }
+    }
+
+    private ThingCommandResult connectRelationshipReferences(
+            final EntityInstance instance,
+            final List<RelationshipReference> references,
+            final boolean validateFinalRelationships,
+            final boolean prefixRelationshipErrors) {
+        RelationshipResolution resolution = resolveRelationshipReferences(instance, references);
+        if (resolution.hasErrors()) {
+            if (prefixRelationshipErrors) {
+                return ThingCommandResult.error(
+                        "Invalid relationships: " + String.join(", ", resolution.errors));
+            }
+            return ThingCommandResult.error(resolution.errors);
+        }
+
+        return connectRelationships(instance, resolution.relationships, validateFinalRelationships);
+    }
+
+    private RelationshipResolution resolveRelationshipReferences(
+            final EntityInstance instance, final List<RelationshipReference> references) {
+        List<RelationshipConnection> relationships = new ArrayList<>();
+        List<String> errors = new ArrayList<>();
+
+        for (RelationshipReference reference : references) {
+            EntityInstance related = resolveRelationshipReference(instance, reference);
+            if (related == null) {
+                errors.add(missingRelationshipReferenceMessage(reference));
+            } else {
+                relationships.add(
+                        new RelationshipConnection(reference.relationshipName(), related));
+            }
+        }
+
+        return new RelationshipResolution(relationships, errors);
+    }
+
+    private EntityInstance resolveRelationshipReference(
+            final EntityInstance instance, final RelationshipReference reference) {
+        if (reference.hasExplicitTargetEntity()) {
+            return resolveExplicitRelationshipReference(reference);
+        }
+
+        for (RelationshipVectorDefinition vector :
+                instance.getEntity().related().getRelationships(reference.relationshipName())) {
+            EntityDefinition relatedEntity = vector.getTo();
+            EntityInstance related =
+                    store.entityQueries()
+                            .findByField(
+                                    relatedEntity,
+                                    reference.referenceFieldName(),
+                                    reference.referenceValue());
+            if (related == null) {
+                related =
+                        store.entityQueries()
+                                .findByQueryIdentifier(relatedEntity, reference.referenceValue());
+            }
+            if (related != null) {
+                return related;
+            }
+        }
+
+        return null;
+    }
+
+    private EntityInstance resolveExplicitRelationshipReference(
+            final RelationshipReference reference) {
+        EntityInstance related =
+                store.entityQueries()
+                        .findByQueryIdentifier(
+                                reference.targetEntity(), reference.referenceValue());
+        if (related == null) {
+            related =
+                    store.entityQueries()
+                            .findByField(
+                                    reference.targetEntity(),
+                                    reference.referenceFieldName(),
+                                    reference.referenceValue());
+        }
+        return related;
+    }
+
+    private String missingRelationshipReferenceMessage(final RelationshipReference reference) {
+        if (reference.hasExplicitTargetEntity()) {
+            return String.format(
+                    "cannot find %s of %s to relate to with %s %s",
+                    reference.referenceFieldName(),
+                    reference.targetTerm(),
+                    reference.referenceFieldName(),
+                    reference.referenceValue());
+        }
+
+        return String.format(
+                "cannot find %s to relate to with %s %s",
+                reference.relationshipName(),
+                reference.referenceFieldName(),
+                reference.referenceValue());
     }
 
     private void rollbackAmendment(
@@ -298,6 +399,22 @@ public final class ThingCommandService {
     private String messageFrom(final Exception exception) {
         String message = exception.getMessage();
         return message == null ? "" : message;
+    }
+
+    private static final class RelationshipResolution {
+
+        private final List<RelationshipConnection> relationships;
+        private final List<String> errors;
+
+        private RelationshipResolution(
+                final List<RelationshipConnection> relationships, final List<String> errors) {
+            this.relationships = relationships;
+            this.errors = errors;
+        }
+
+        private boolean hasErrors() {
+            return !errors.isEmpty();
+        }
     }
 
     private static final class RelationshipSnapshot {

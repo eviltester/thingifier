@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
-import uk.co.compendiumdev.thingifier.application.RelationshipConnection;
+import uk.co.compendiumdev.thingifier.application.command.RelationshipReference;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.Cardinality;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
@@ -40,18 +40,17 @@ public class RelationshipBodyCommandParserTest {
 
         RelationshipBodyCommands commands =
                 new RelationshipBodyCommandParser(thingifier)
-                        .parse(
-                                parserFor(thingifier, body),
-                                task,
-                                EntityRelModel.DEFAULT_DATABASE_NAME);
+                        .parse(parserFor(thingifier, body), task);
 
         Assertions.assertTrue(commands.validationReport().isValid());
         Assertions.assertEquals(1, commands.relationshipEntries().size());
 
-        List<RelationshipConnection> connections = commands.connections();
-        Assertions.assertEquals(1, connections.size());
-        Assertions.assertEquals("task-of", connections.get(0).relationshipName());
-        Assertions.assertEquals(projectInstance, connections.get(0).relatedInstance());
+        List<RelationshipReference> references = commands.references();
+        Assertions.assertEquals(1, references.size());
+        Assertions.assertEquals("task-of", references.get(0).relationshipName());
+        Assertions.assertEquals("guid", references.get(0).referenceFieldName());
+        Assertions.assertEquals(
+                projectInstance.getPrimaryKeyValue(), references.get(0).referenceValue());
     }
 
     @Test

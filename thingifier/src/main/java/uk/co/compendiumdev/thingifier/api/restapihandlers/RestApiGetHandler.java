@@ -1,6 +1,7 @@
 package uk.co.compendiumdev.thingifier.api.restapihandlers;
 
 import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.api.http.ThingifierRequestContext;
 import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.application.ThingQueryService;
@@ -20,17 +21,22 @@ public class RestApiGetHandler {
             final String url,
             final QueryFilterParams queryParams,
             final HttpHeadersBlock requestHeaders) {
+        return handle(url, queryParams, ThingifierRequestContext.from(thingifier, requestHeaders));
+    }
 
+    public ApiResponse handle(
+            final String url,
+            final QueryFilterParams queryParams,
+            final ThingifierRequestContext context) {
+        ThingReadResultApiMapper apiMapper = new ThingReadResultApiMapper(thingifier.apiConfig());
         // if there are params, and we are not allowed to filter, and we enforce that
         if (queryParams.size() > 0
                 && thingifier.apiConfig().forParams().willEnforceFilteringThroughUrlParams()
                 && !thingifier.apiConfig().forParams().willAllowFilteringThroughUrlParams()) {
-            return ApiResponse.error(
-                    400, String.format("Can not use query parameters with %s", url));
+            return apiMapper.map(
+                    ApiMappingError.withMessage(
+                            400, String.format("Can not use query parameters with %s", url)));
         }
-
-        String instanceDatabaseName =
-                SessionHeaderParser.getDatabaseNameFromHeaderValue(requestHeaders);
 
         RepositoryQueryResult queryResults;
         boolean allowFiltering =
@@ -41,12 +47,11 @@ public class RestApiGetHandler {
         ThingReadRequestMapping mapping =
                 new ThingReadRequestMapper(thingifier).map(url, effectiveQueryParams);
         if (mapping.isError()) {
-            return mapping.getErrorResponse();
+            return apiMapper.map(mapping.getError());
         }
 
-        queryResults =
-                queryService.execute(mapping.getQuery(), thingifier.getStore(instanceDatabaseName));
+        queryResults = queryService.execute(mapping.getQuery(), context.store());
 
-        return new ThingReadResultApiMapper(thingifier.apiConfig()).map(url, queryResults);
+        return apiMapper.map(url, queryResults);
     }
 }

@@ -1,9 +1,9 @@
 package uk.co.compendiumdev.challenge.practicemodes.mirror;
 
+import uk.co.compendiumdev.thingifier.adapter.http.routehandlers.HttpApiRequestHandler;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.http.headers.headerparser.AcceptHeaderParser;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
-import uk.co.compendiumdev.thingifier.application.routehandlers.HttpApiRequestHandler;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 

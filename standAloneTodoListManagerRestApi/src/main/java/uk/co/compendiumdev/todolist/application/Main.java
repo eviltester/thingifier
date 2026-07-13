@@ -4,7 +4,7 @@ import static spark.Spark.get;
 import static spark.route.HttpMethod.get;
 
 import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.application.MainImplementation;
+import uk.co.compendiumdev.thingifier.adapter.spark.MainImplementation;
 import uk.co.compendiumdev.thingifier.application.examples.TodoManagerThingifier;
 
 public class Main {

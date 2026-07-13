@@ -2,16 +2,16 @@ package uk.co.compendiumdev.challenge.spark;
 
 import spark.Request;
 import spark.Response;
+import uk.co.compendiumdev.thingifier.adapter.internalhttp.InternalHttpRequest;
+import uk.co.compendiumdev.thingifier.adapter.internalhttp.conversion.HttpApiResponseToInternalHttpResponse;
+import uk.co.compendiumdev.thingifier.adapter.internalhttp.conversion.InternalHttpRequestToHttpApiRequest;
+import uk.co.compendiumdev.thingifier.adapter.internalhttp.conversion.InternalHttpResponseToSpark;
+import uk.co.compendiumdev.thingifier.adapter.internalhttp.conversion.SparkToInternalHttpRequest;
 import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonThing;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiResponse;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
-import uk.co.compendiumdev.thingifier.application.internalhttp.InternalHttpRequest;
-import uk.co.compendiumdev.thingifier.application.internalhttpconversion.HttpApiResponseToInternalHttpResponse;
-import uk.co.compendiumdev.thingifier.application.internalhttpconversion.InternalHttpRequestToHttpApiRequest;
-import uk.co.compendiumdev.thingifier.application.internalhttpconversion.InternalHttpResponseToSpark;
-import uk.co.compendiumdev.thingifier.application.internalhttpconversion.SparkToInternalHttpRequest;
 
 public class SparkMessageLengthValidator {
 

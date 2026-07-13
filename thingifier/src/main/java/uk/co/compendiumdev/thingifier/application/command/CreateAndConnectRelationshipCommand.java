@@ -3,7 +3,6 @@ package uk.co.compendiumdev.thingifier.application.command;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import uk.co.compendiumdev.thingifier.application.RelationshipConnection;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 
@@ -12,13 +11,13 @@ public final class CreateAndConnectRelationshipCommand implements ThingWriteComm
     private final EntityInstance parent;
     private final String relationshipName;
     private final EntityInstanceDraft childDraft;
-    private final List<RelationshipConnection> childRelationships;
+    private final List<RelationshipReference> childRelationships;
 
     public CreateAndConnectRelationshipCommand(
             final EntityInstance parent,
             final String relationshipName,
             final EntityInstanceDraft childDraft,
-            final List<RelationshipConnection> childRelationships) {
+            final List<RelationshipReference> childRelationships) {
         this.parent = parent;
         this.relationshipName = relationshipName;
         this.childDraft = childDraft;
@@ -37,7 +36,7 @@ public final class CreateAndConnectRelationshipCommand implements ThingWriteComm
         return childDraft;
     }
 
-    public List<RelationshipConnection> getChildRelationships() {
+    public List<RelationshipReference> getChildRelationships() {
         return childRelationships;
     }
 }

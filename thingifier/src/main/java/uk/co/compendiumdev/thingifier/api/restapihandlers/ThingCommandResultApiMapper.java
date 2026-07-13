@@ -22,6 +22,10 @@ public final class ThingCommandResultApiMapper {
         this.apiConfig = apiConfig;
     }
 
+    public ApiResponse map(final ApiMappingError error) {
+        return ApiResponse.error(error.statusCode(), error.messages());
+    }
+
     public ApiResponse map(final ThingWriteCommand command, final ThingCommandResult result) {
         if (result.isError()) {
             return errorResponseFor(command, result);

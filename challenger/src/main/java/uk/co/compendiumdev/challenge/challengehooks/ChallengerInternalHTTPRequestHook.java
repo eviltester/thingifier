@@ -6,10 +6,10 @@ import java.util.List;
 import uk.co.compendiumdev.challenge.CHALLENGE;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
-import uk.co.compendiumdev.thingifier.application.internalhttp.InternalHttpMethod;
-import uk.co.compendiumdev.thingifier.application.internalhttp.InternalHttpRequest;
-import uk.co.compendiumdev.thingifier.application.internalhttp.InternalHttpResponse;
-import uk.co.compendiumdev.thingifier.application.sparkhttpmessageHooks.InternalHttpRequestHook;
+import uk.co.compendiumdev.thingifier.adapter.internalhttp.InternalHttpMethod;
+import uk.co.compendiumdev.thingifier.adapter.internalhttp.InternalHttpRequest;
+import uk.co.compendiumdev.thingifier.adapter.internalhttp.InternalHttpResponse;
+import uk.co.compendiumdev.thingifier.adapter.spark.messagehooks.InternalHttpRequestHook;
 
 /*
    This is an Internal HTTP Request because it covers functionality for endpoints that do not

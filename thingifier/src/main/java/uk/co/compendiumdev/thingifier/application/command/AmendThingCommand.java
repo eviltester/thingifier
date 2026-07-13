@@ -3,7 +3,6 @@ package uk.co.compendiumdev.thingifier.application.command;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import uk.co.compendiumdev.thingifier.application.RelationshipConnection;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 
@@ -12,13 +11,13 @@ public final class AmendThingCommand implements ThingWriteCommand {
     private final EntityInstance instance;
     private final EntityInstanceDraft draft;
     private final boolean replaceExistingFieldsAndRelationships;
-    private final List<RelationshipConnection> relationships;
+    private final List<RelationshipReference> relationships;
 
     public AmendThingCommand(
             final EntityInstance instance,
             final EntityInstanceDraft draft,
             final boolean replaceExistingFieldsAndRelationships,
-            final List<RelationshipConnection> relationships) {
+            final List<RelationshipReference> relationships) {
         this.instance = instance;
         this.draft = draft;
         this.replaceExistingFieldsAndRelationships = replaceExistingFieldsAndRelationships;
@@ -37,7 +36,7 @@ public final class AmendThingCommand implements ThingWriteCommand {
         return replaceExistingFieldsAndRelationships;
     }
 
-    public List<RelationshipConnection> getRelationships() {
+    public List<RelationshipReference> getRelationships() {
         return relationships;
     }
 }

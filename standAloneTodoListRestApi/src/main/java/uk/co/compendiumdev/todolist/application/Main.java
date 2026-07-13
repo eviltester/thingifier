@@ -2,7 +2,7 @@ package uk.co.compendiumdev.todolist.application;
 
 import static spark.Spark.get;
 
-import uk.co.compendiumdev.thingifier.application.MainImplementation;
+import uk.co.compendiumdev.thingifier.adapter.spark.MainImplementation;
 import uk.co.compendiumdev.thingifier.application.examples.TodoListThingifier;
 
 public class Main {

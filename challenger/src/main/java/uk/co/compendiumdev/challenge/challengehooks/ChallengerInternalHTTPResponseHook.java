@@ -1,6 +1,6 @@
 package uk.co.compendiumdev.challenge.challengehooks;
 
-import static uk.co.compendiumdev.thingifier.application.internalhttp.InternalHttpMethod.*;
+import static uk.co.compendiumdev.thingifier.adapter.internalhttp.InternalHttpMethod.*;
 
 import java.util.List;
 import uk.co.compendiumdev.challenge.CHALLENGE;
@@ -8,10 +8,10 @@ import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.ChallengerState;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
 import uk.co.compendiumdev.challenge.challengesrouting.XChallengerHeader;
+import uk.co.compendiumdev.thingifier.adapter.internalhttp.InternalHttpRequest;
+import uk.co.compendiumdev.thingifier.adapter.internalhttp.InternalHttpResponse;
+import uk.co.compendiumdev.thingifier.adapter.spark.messagehooks.InternalHttpResponseHook;
 import uk.co.compendiumdev.thingifier.api.http.headers.headerparser.BearerAuthHeaderParser;
-import uk.co.compendiumdev.thingifier.application.internalhttp.InternalHttpRequest;
-import uk.co.compendiumdev.thingifier.application.internalhttp.InternalHttpResponse;
-import uk.co.compendiumdev.thingifier.application.sparkhttpmessageHooks.InternalHttpResponseHook;
 
 public class ChallengerInternalHTTPResponseHook implements InternalHttpResponseHook {
 

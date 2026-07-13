@@ -1,9 +1,9 @@
 package uk.co.compendiumdev.challenge.practicemodes.mirror;
 
+import uk.co.compendiumdev.thingifier.adapter.http.routehandlers.HttpApiRequestHandler;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeaderPair;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
-import uk.co.compendiumdev.thingifier.application.routehandlers.HttpApiRequestHandler;
 import uk.co.compendiumdev.thingifier.core.query.FilterBy;
 
 public class MirrorHttpApiTextRequestHandler implements HttpApiRequestHandler {

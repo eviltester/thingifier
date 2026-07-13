@@ -2,6 +2,7 @@ package uk.co.compendiumdev.thingifier.api.restapihandlers;
 
 import com.google.gson.Gson;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -89,7 +90,7 @@ public class ThingWriteRequestMapperTest {
                 mapperFor(thingifier).mapPut("note/n-1", parserFor(thingifier, body));
 
         Assertions.assertTrue(mapping.isError());
-        Assertions.assertEquals(400, mapping.getErrorResponse().getStatusCode());
+        Assertions.assertEquals(400, mapping.getError().statusCode());
     }
 
     @Test
@@ -101,7 +102,7 @@ public class ThingWriteRequestMapperTest {
                         .mapPut("task/manual", parserFor(thingifier, "title", "Created"));
 
         Assertions.assertTrue(mapping.isError());
-        Assertions.assertEquals(400, mapping.getErrorResponse().getStatusCode());
+        Assertions.assertEquals(400, mapping.getError().statusCode());
     }
 
     @Test
@@ -113,7 +114,7 @@ public class ThingWriteRequestMapperTest {
                         .mapPost("task/missing", parserFor(thingifier, "title", "Patched"));
 
         Assertions.assertTrue(mapping.isError());
-        Assertions.assertEquals(404, mapping.getErrorResponse().getStatusCode());
+        Assertions.assertEquals(404, mapping.getError().statusCode());
     }
 
     @Test
@@ -188,7 +189,9 @@ public class ThingWriteRequestMapperTest {
                         .mapPost("not-understood", parserFor(thingifier, "title", "Nope"));
 
         Assertions.assertTrue(mapping.isError());
-        Assertions.assertEquals(400, mapping.getErrorResponse().getStatusCode());
+        Assertions.assertEquals(400, mapping.getError().statusCode());
+        Assertions.assertEquals(
+                List.of("Your request was not understood"), mapping.getError().messages());
     }
 
     private Thingifier taskProjectThingifier() {

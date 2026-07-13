@@ -6,9 +6,9 @@ import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.challenge.CHALLENGE;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
-import uk.co.compendiumdev.thingifier.application.internalhttp.InternalHttpMethod;
-import uk.co.compendiumdev.thingifier.application.internalhttp.InternalHttpRequest;
-import uk.co.compendiumdev.thingifier.application.internalhttp.InternalHttpResponse;
+import uk.co.compendiumdev.thingifier.adapter.internalhttp.InternalHttpMethod;
+import uk.co.compendiumdev.thingifier.adapter.internalhttp.InternalHttpRequest;
+import uk.co.compendiumdev.thingifier.adapter.internalhttp.InternalHttpResponse;
 
 public class ChallengerInternalHttpResponseHookTest {
 
