@@ -297,6 +297,14 @@ public class InMemoryThingStore implements ThingStore {
         deleteMandatoryDependents(alsoDelete);
     }
 
+    void disconnectRelationshipsInvolving(
+            final EntityInstance parent,
+            final EntityInstance child,
+            final String relationshipName) {
+        relationships.removeRelationshipsInvolving(
+                parent, child, relationshipName, this::findByInternalId);
+    }
+
     void removeAllRelationships(final EntityInstance instance) {
         List<EntityInstance> alsoDelete =
                 relationships.removeAllRelationships(instance, this::findByInternalId);

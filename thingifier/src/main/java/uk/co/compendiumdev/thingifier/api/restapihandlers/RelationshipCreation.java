@@ -161,7 +161,13 @@ public class RelationshipCreation {
                     thingifier.getStore(database).relationships().validate(relatedItem);
             if (!validNow.isValid()) {
                 response = ApiResponse.error(400, validNow.getErrorMessages());
-                thingifier.deleteThing(relatedItem, database);
+                thingifier
+                        .getStore(database)
+                        .relationships()
+                        .disconnectBetween(connectThis, relatedItem, relationshipToUse.getName());
+                if (thingToCreate != null) {
+                    thingifier.deleteThing(relatedItem, database);
+                }
                 return response;
             }
 

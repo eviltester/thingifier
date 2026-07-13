@@ -19,6 +19,8 @@ public interface RelationshipRepository {
 
     void removeBetween(EntityInstance parent, EntityInstance child, String relationshipName);
 
+    void disconnectBetween(EntityInstance parent, EntityInstance child, String relationshipName);
+
     void removeAll(EntityInstance instance);
 
     boolean hasRelationships(EntityInstance instance);

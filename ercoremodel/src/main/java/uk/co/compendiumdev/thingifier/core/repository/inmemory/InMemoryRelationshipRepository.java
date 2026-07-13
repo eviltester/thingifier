@@ -37,6 +37,14 @@ final class InMemoryRelationshipRepository implements RelationshipRepository {
     }
 
     @Override
+    public void disconnectBetween(
+            final EntityInstance parent,
+            final EntityInstance child,
+            final String relationshipName) {
+        store.disconnectRelationshipsInvolving(parent, child, relationshipName);
+    }
+
+    @Override
     public void removeAll(final EntityInstance instance) {
         store.removeAllRelationships(instance);
     }

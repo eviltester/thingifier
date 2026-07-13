@@ -371,6 +371,14 @@ public class SqliteThingStore implements ThingStore {
                 });
     }
 
+    void disconnectRelationshipsInvolving(
+            final EntityInstance parent,
+            final EntityInstance child,
+            final String relationshipName) {
+        ensureSchemaReady();
+        runInTransaction(() -> deleteRelationshipRowsInvolving(parent, child, relationshipName));
+    }
+
     void removeAllRelationships(final EntityInstance instance) {
         ensureSchemaReady();
         runInTransaction(
