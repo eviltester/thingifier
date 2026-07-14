@@ -120,6 +120,14 @@
         <property name="id" value="applicationNoHttpStatusOrTypes"/>
         <property name="files" value=".*[/\\]src[/\\]test[/\\]java[/\\].*"/>
     </module>
+    <module name="SuppressionSingleFilter">
+        <property name="id" value="applicationNoRouteDisplayVocabulary"/>
+        <property name="files" value=".*[/\\]src[/\\]test[/\\]java[/\\].*"/>
+    </module>
+    <module name="SuppressionSingleFilter">
+        <property name="id" value="thinThingCommandService"/>
+        <property name="files" value=".*[/\\]src[/\\]test[/\\]java[/\\].*"/>
+    </module>
     <module name="RegexpMultiline">
         <property name="id" value="commandDtosNoMutableDomain"/>
         <property name="format" value="(?s)package uk\.co\.compendiumdev\.thingifier\.application\.command;.*import uk\.co\.compendiumdev\.thingifier\.core\.domain\.(definitions\.EntityDefinition|instances\.(EntityInstance|EntityInstanceDraft));"/>
@@ -144,6 +152,26 @@
         <property name="id" value="applicationNoHttpStatusOrTypes"/>
         <property name="format" value="(?s)package uk\.co\.compendiumdev\.thingifier\.application(\.|;).*\b(statusCode|ApiResponse|HttpApiRequest|HttpApiResponse|HttpHeaders|Header)\b"/>
         <property name="message" value="Application production code must return semantic errors; HTTP statuses, responses, requests, and headers belong at the adapter boundary."/>
+    </module>
+    <module name="RegexpMultiline">
+        <property name="id" value="commandDtosNoRouteDisplay"/>
+        <property name="format" value="(?s)package uk\.co\.compendiumdev\.thingifier\.application\.command;.*\b(routeDisplay|getRouteDisplay|originalPath)\b"/>
+        <property name="message" value="Application command DTOs must carry semantic identifiers, not adapter route-display strings."/>
+    </module>
+    <module name="RegexpMultiline">
+        <property name="id" value="applicationNoRouteDisplayVocabulary"/>
+        <property name="format" value="(?s)package uk\.co\.compendiumdev\.thingifier\.application(\.|;).*\b(routeDisplay|getRouteDisplay|originalPath|Could not find parent thing for relationship|Could not find any instances with)\b"/>
+        <property name="message" value="Route-display and legacy path-shaped error text belong in the HTTP adapter, not application production code."/>
+    </module>
+    <module name="RegexpMultiline">
+        <property name="id" value="coreNoUrlQueryParsing"/>
+        <property name="format" value="(?s)package uk\.co\.compendiumdev\.thingifier\.core(\.|;).*\b(UrlParamParser|core\.query\.fromurl|URLDecoder|urlDecode|rawUrlParams)\b"/>
+        <property name="message" value="Core query code must receive QueryFilterParams; URL query-string parsing belongs at the HTTP/API edge."/>
+    </module>
+    <module name="RegexpMultiline">
+        <property name="id" value="thinThingCommandService"/>
+        <property name="format" value="(?s)class ThingCommandService\b.*(private\s+ThingCommandResult\s+(create|amend|replace|delete|connectExistingRelationship|createAndConnect|relate|disconnectRelationship|connectRelationship|connectRelationshipReferences|connectRelationships)\s*\(|private\s+(EntityInstanceDraft|EntityInstance|RelationshipVectorDefinition|boolean|void)\s+(createDraft|resolveInstance|relationshipErrorIfInvalid|firstRelationshipVector|bodyReferencesExistingRelatedItem|relatedInstanceMatchingIdentifier|matchesQueryIdentifier|disconnectConnections|copyBaseDraftValues)\s*\(|private\s+static\s+final\s+class\s+(RelatedItemResolution|RelationshipSnapshot|RelationshipLink)\b)"/>
+        <property name="message" value="ThingCommandService should stay a thin transaction-wrapped dispatcher; moved use-case helpers belong in focused collaborators."/>
     </module>
     <module name="TreeWalker">
         <module name="RegexpSinglelineJava">
