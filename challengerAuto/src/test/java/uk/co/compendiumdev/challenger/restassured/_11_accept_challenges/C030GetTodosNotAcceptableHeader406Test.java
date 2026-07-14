@@ -2,7 +2,6 @@ package uk.co.compendiumdev.challenger.restassured._11_accept_challenges;
 
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
-import io.restassured.response.Response;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.challenger.restassured.api.ChallengesStatus;
@@ -13,16 +12,13 @@ public class C030GetTodosNotAcceptableHeader406Test extends RestAssuredBaseTest 
     @Test
     void canGet406WhenUnsupportedAcceptHeaderSent() {
 
-        final Response response =
-                RestAssured.given()
-                        .header("X-CHALLENGER", xChallenger)
-                        .accept("application/gzip")
-                        .get(apiPath("/todos"))
-                        .then()
-                        .statusCode(406)
-                        .contentType(ContentType.JSON)
-                        .extract()
-                        .response();
+        RestAssured.given()
+                .header("X-CHALLENGER", xChallenger)
+                .accept("application/gzip")
+                .get(apiPath("/todos"))
+                .then()
+                .statusCode(406)
+                .contentType(ContentType.JSON);
 
         ChallengesStatus statuses = new ChallengesStatus();
         statuses.get();

@@ -4,6 +4,10 @@ import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.ThingReadRequestMapper;
+import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.ThingReadRequestMapping;
+import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.ThingifierSchemaCatalog;
+import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.ThingRouteMapper;
 import uk.co.compendiumdev.thingifier.application.query.ReadCollectionQuery;
 import uk.co.compendiumdev.thingifier.application.query.ReadInstanceQuery;
 import uk.co.compendiumdev.thingifier.application.query.ReadRelationshipQuery;
@@ -19,7 +23,7 @@ public class ThingReadRequestMapperTest {
     public void mapsCollectionRoute() {
         Thingifier thingifier = taskProjectThingifier();
 
-        ThingReadRequestMapping mapping = mapperFor(thingifier).map("task", params());
+        ThingReadRequestMapping mapping = map(thingifier, "task", params());
 
         Assertions.assertFalse(mapping.isError());
         Assertions.assertTrue(mapping.getQuery() instanceof ReadCollectionQuery);
@@ -31,7 +35,7 @@ public class ThingReadRequestMapperTest {
     public void mapsInstanceRoute() {
         Thingifier thingifier = taskProjectThingifier();
 
-        ThingReadRequestMapping mapping = mapperFor(thingifier).map("task/abc", params());
+        ThingReadRequestMapping mapping = map(thingifier, "task/abc", params());
 
         Assertions.assertFalse(mapping.isError());
         ReadInstanceQuery query = (ReadInstanceQuery) mapping.getQuery();
@@ -42,7 +46,7 @@ public class ThingReadRequestMapperTest {
     public void mapsRelationshipRoute() {
         Thingifier thingifier = taskProjectThingifier();
 
-        ThingReadRequestMapping mapping = mapperFor(thingifier).map("project/p1/tasks", params());
+        ThingReadRequestMapping mapping = map(thingifier, "project/p1/tasks", params());
 
         Assertions.assertFalse(mapping.isError());
         ReadRelationshipQuery query = (ReadRelationshipQuery) mapping.getQuery();
@@ -54,7 +58,7 @@ public class ThingReadRequestMapperTest {
     public void mapsPluralEntityNames() {
         Thingifier thingifier = taskProjectThingifier();
 
-        ThingReadRequestMapping mapping = mapperFor(thingifier).map("tasks", params());
+        ThingReadRequestMapping mapping = map(thingifier, "tasks", params());
 
         Assertions.assertFalse(mapping.isError());
         Assertions.assertTrue(mapping.getQuery() instanceof ReadCollectionQuery);
@@ -64,8 +68,7 @@ public class ThingReadRequestMapperTest {
 
     @Test
     public void rejectsInvalidRoot() {
-        ThingReadRequestMapping mapping =
-                mapperFor(taskProjectThingifier()).map("missing", params());
+        ThingReadRequestMapping mapping = map(taskProjectThingifier(), "missing", params());
 
         Assertions.assertTrue(mapping.isError());
         Assertions.assertEquals(404, mapping.getError().statusCode());
@@ -75,8 +78,7 @@ public class ThingReadRequestMapperTest {
 
     @Test
     public void rejectsRelationshipNameInIdentifierPosition() {
-        ThingReadRequestMapping mapping =
-                mapperFor(taskProjectThingifier()).map("project/tasks", params());
+        ThingReadRequestMapping mapping = map(taskProjectThingifier(), "project/tasks", params());
 
         Assertions.assertTrue(mapping.isError());
         Assertions.assertEquals(404, mapping.getError().statusCode());
@@ -84,8 +86,7 @@ public class ThingReadRequestMapperTest {
 
     @Test
     public void rejectsEntityNameInIdentifierPosition() {
-        ThingReadRequestMapping mapping =
-                mapperFor(taskProjectThingifier()).map("project/task", params());
+        ThingReadRequestMapping mapping = map(taskProjectThingifier(), "project/task", params());
 
         Assertions.assertTrue(mapping.isError());
         Assertions.assertEquals(404, mapping.getError().statusCode());
@@ -93,7 +94,7 @@ public class ThingReadRequestMapperTest {
 
     @Test
     public void rejectsEmptyRoute() {
-        ThingReadRequestMapping mapping = mapperFor(taskProjectThingifier()).map("", params());
+        ThingReadRequestMapping mapping = map(taskProjectThingifier(), "", params());
 
         Assertions.assertTrue(mapping.isError());
         Assertions.assertEquals(404, mapping.getError().statusCode());
@@ -102,7 +103,7 @@ public class ThingReadRequestMapperTest {
     @Test
     public void rejectsTooDeepRoute() {
         ThingReadRequestMapping mapping =
-                mapperFor(taskProjectThingifier()).map("project/p1/tasks/t1", params());
+                map(taskProjectThingifier(), "project/p1/tasks/t1", params());
 
         Assertions.assertTrue(mapping.isError());
         Assertions.assertEquals(404, mapping.getError().statusCode());
@@ -112,7 +113,7 @@ public class ThingReadRequestMapperTest {
     public void normalizesLeadingAndTrailingSlashes() {
         Thingifier thingifier = taskProjectThingifier();
 
-        ThingReadRequestMapping mapping = mapperFor(thingifier).map("/projects/", params());
+        ThingReadRequestMapping mapping = map(thingifier, "/projects/", params());
 
         Assertions.assertFalse(mapping.isError());
         Assertions.assertTrue(mapping.getQuery() instanceof ReadCollectionQuery);
@@ -126,7 +127,7 @@ public class ThingReadRequestMapperTest {
         QueryFilterParams params = new QueryFilterParams();
         params.put("title", "=Task");
 
-        ThingReadRequestMapping mapping = mapperFor(thingifier).map("tasks", params);
+        ThingReadRequestMapping mapping = map(thingifier, "tasks", params);
 
         Assertions.assertFalse(mapping.isError());
         Assertions.assertEquals(1, mapping.getQuery().getQueryParams().size());
@@ -149,7 +150,13 @@ public class ThingReadRequestMapperTest {
     }
 
     private ThingReadRequestMapper mapperFor(final Thingifier thingifier) {
-        return new ThingReadRequestMapper(thingifier);
+        return new ThingReadRequestMapper(new ThingifierSchemaCatalog(thingifier));
+    }
+
+    private ThingReadRequestMapping map(
+            final Thingifier thingifier, final String url, final QueryFilterParams queryParams) {
+        ThingifierSchemaCatalog schema = new ThingifierSchemaCatalog(thingifier);
+        return mapperFor(thingifier).map(new ThingRouteMapper(schema).map(url), queryParams);
     }
 
     private QueryFilterParams params() {

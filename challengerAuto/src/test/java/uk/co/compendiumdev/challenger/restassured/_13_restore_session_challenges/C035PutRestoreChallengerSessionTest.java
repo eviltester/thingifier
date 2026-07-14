@@ -80,18 +80,14 @@ public class C035PutRestoreChallengerSessionTest extends RestAssuredBaseTest {
 
         challengerResponse.challengeStatus.CREATE_NEW_CHALLENGER = true;
 
-        nResponse =
-                RestAssured.given()
-                        .header("X-CHALLENGER", xChallenger)
-                        .accept("application/json")
-                        .body(challengerResponse)
-                        .put(apiPath("/challenger/" + xChallenger))
-                        .then()
-                        .statusCode(200)
-                        . // updated existing
-                        contentType(ContentType.JSON)
-                        .and()
-                        .extract()
-                        .response();
+        RestAssured.given()
+                .header("X-CHALLENGER", xChallenger)
+                .accept("application/json")
+                .body(challengerResponse)
+                .put(apiPath("/challenger/" + xChallenger))
+                .then()
+                .statusCode(200)
+                . // updated existing
+                contentType(ContentType.JSON);
     }
 }

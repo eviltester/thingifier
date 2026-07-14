@@ -1,14 +1,17 @@
 package uk.co.compendiumdev.thingifier.api.restapihandlers;
 
-import com.google.gson.Gson;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
-import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
+import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.RelationshipBodyCommandParser;
+import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.RelationshipBodyCommands;
+import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.ThingReadRequestMapper;
+import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.ThingifierSchemaCatalog;
+import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.ThingRouteMapper;
+import uk.co.compendiumdev.thingifier.api.http.bodyparser.ApiBodyFields;
 import uk.co.compendiumdev.thingifier.application.command.RelationshipReference;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.Cardinality;
@@ -39,8 +42,8 @@ public class RelationshipBodyCommandParserTest {
         body.put("task-of.guid", projectInstance.getPrimaryKeyValue());
 
         RelationshipBodyCommands commands =
-                new RelationshipBodyCommandParser(thingifier)
-                        .parse(parserFor(thingifier, body), task);
+                new RelationshipBodyCommandParser(new ThingifierSchemaCatalog(thingifier))
+                        .parse(bodyFieldsFor(body).asFlattenedStringMap(), task);
 
         Assertions.assertTrue(commands.validationReport().isValid());
         Assertions.assertEquals(1, commands.relationshipEntries().size());
@@ -65,18 +68,26 @@ public class RelationshipBodyCommandParserTest {
                                 EntityInstanceDraft.forEntity(project)
                                         .withField("title", "Project"));
 
-        ThingReadRequestMapper mapper = new ThingReadRequestMapper(thingifier);
+        ThingReadRequestMapper mapper =
+                new ThingReadRequestMapper(new ThingifierSchemaCatalog(thingifier));
+        ThingifierSchemaCatalog schema = new ThingifierSchemaCatalog(thingifier);
 
         Assertions.assertFalse(
                 mapper.map(
-                                String.format(
-                                        "project/%s/tasks", projectInstance.getPrimaryKeyValue()),
+                                new ThingRouteMapper(schema)
+                                        .map(
+                                                String.format(
+                                                        "project/%s/tasks",
+                                                        projectInstance.getPrimaryKeyValue())),
                                 new QueryFilterParams())
                         .isError());
         Assertions.assertTrue(
                 mapper.map(
-                                String.format(
-                                        "project/%s/task", projectInstance.getPrimaryKeyValue()),
+                                new ThingRouteMapper(schema)
+                                        .map(
+                                                String.format(
+                                                        "project/%s/task",
+                                                        projectInstance.getPrimaryKeyValue())),
                                 new QueryFilterParams())
                         .isError());
     }
@@ -97,8 +108,7 @@ public class RelationshipBodyCommandParserTest {
         return thingifier;
     }
 
-    private BodyParser parserFor(final Thingifier thingifier, final Map<String, String> body) {
-        HttpApiRequest request = new HttpApiRequest("/path").setBody(new Gson().toJson(body));
-        return new BodyParser(request, thingifier.getThingNames());
+    private ApiBodyFields bodyFieldsFor(final Map<String, String> body) {
+        return ApiBodyFields.fromMap(new HashMap<>(body));
     }
 }

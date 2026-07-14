@@ -6,8 +6,8 @@ import io.restassured.filter.log.ResponseLoggingFilter;
 import spark.Spark;
 import uk.co.compendiumdev.sparkstart.Port;
 import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.adapter.http.ThingifierAutoDocGenRouting;
-import uk.co.compendiumdev.thingifier.adapter.http.ThingifierHttpApiRoutings;
+import uk.co.compendiumdev.thingifier.adapter.spark.ThingifierAutoDocGenRouting;
+import uk.co.compendiumdev.thingifier.adapter.spark.ThingifierHttpApiRoutings;
 import uk.co.compendiumdev.thingifier.api.docgen.ThingifierApiDocumentationDefn;
 import uk.co.compendiumdev.thingifier.application.examples.TodoManagerThingifier;
 import uk.co.compendiumdev.thingifier.htmlgui.htmlgen.DefaultGUIHTML;
@@ -33,7 +33,6 @@ public class Environment {
         } else {
             // start it up
             Spark.port(4567);
-            String[] args = {};
             final Thingifier thingifier = new TodoManagerThingifier().get();
             thingifier.apiConfig().adminConfig().enableAdminDataClear();
             thingifier.apiConfig().adminConfig().enableAdminSearch();

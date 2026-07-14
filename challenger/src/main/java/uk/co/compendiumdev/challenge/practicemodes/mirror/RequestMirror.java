@@ -4,7 +4,7 @@ import spark.Request;
 import spark.Response;
 import uk.co.compendiumdev.challenge.spark.SparkMessageLengthValidator;
 import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.adapter.http.routehandlers.SparkApiRequestResponseHandler;
+import uk.co.compendiumdev.thingifier.adapter.spark.routehandlers.SparkApiRequestResponseHandler;
 import uk.co.compendiumdev.thingifier.api.http.headers.headerparser.AcceptHeaderParser;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;

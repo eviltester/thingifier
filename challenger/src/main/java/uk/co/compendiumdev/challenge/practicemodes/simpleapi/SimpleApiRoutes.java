@@ -4,8 +4,9 @@ import static spark.Spark.*;
 
 import java.util.List;
 import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.adapter.http.ThingifierAutoDocGenRouting;
-import uk.co.compendiumdev.thingifier.adapter.http.ThingifierHttpApiRoutings;
+import uk.co.compendiumdev.thingifier.adapter.spark.SimpleSparkRouteCreator;
+import uk.co.compendiumdev.thingifier.adapter.spark.ThingifierAutoDocGenRouting;
+import uk.co.compendiumdev.thingifier.adapter.spark.ThingifierHttpApiRoutings;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingStatus;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
@@ -19,7 +20,6 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.validation.Matches
 import uk.co.compendiumdev.thingifier.core.domain.definitions.validation.MaximumLengthValidationRule;
 import uk.co.compendiumdev.thingifier.htmlgui.htmlgen.DefaultGUIHTML;
 import uk.co.compendiumdev.thingifier.htmlgui.routing.DefaultGuiRoutings;
-import uk.co.compendiumdev.thingifier.spark.SimpleSparkRouteCreator;
 
 /*
    The simple API is a no-auth API where anyone can amend, create, delete items.

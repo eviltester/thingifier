@@ -1,9 +1,7 @@
 package uk.co.compendiumdev.todolist.application;
 
 import static spark.Spark.get;
-import static spark.route.HttpMethod.get;
 
-import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.adapter.spark.MainImplementation;
 import uk.co.compendiumdev.thingifier.application.examples.TodoManagerThingifier;
 
@@ -19,7 +17,7 @@ public class Main {
         app.configurePortAndDefaultRoutes();
         app.setupBuiltInConfigurableRoutes();
 
-        Thingifier thingifier = app.chooseThingifier();
+        app.chooseThingifier();
         app.configureThingifierWithProfile();
 
         app.setupDefaultGui();

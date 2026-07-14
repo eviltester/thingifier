@@ -10,7 +10,7 @@ import uk.co.compendiumdev.challenge.practicemodes.mirror.MirrorRoutes;
 import uk.co.compendiumdev.challenge.practicemodes.simpleapi.SimpleApiRoutes;
 import uk.co.compendiumdev.challenge.practicemodes.simulation.SimulationRoutes;
 import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.adapter.http.ThingifierHttpApiRoutings;
+import uk.co.compendiumdev.thingifier.adapter.spark.ThingifierHttpApiRoutings;
 import uk.co.compendiumdev.thingifier.api.docgen.ThingifierApiDocumentationDefn;
 import uk.co.compendiumdev.thingifier.htmlgui.htmlgen.DefaultGUIHTML;
 

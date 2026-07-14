@@ -6,7 +6,6 @@ import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.adapter.http.messagehooks.HttpApiRequestHook;
 import uk.co.compendiumdev.thingifier.adapter.http.messagehooks.HttpApiResponseHook;
 import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonThing;
-import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 
 public final class ThingifierHttpApi {
@@ -123,46 +122,24 @@ public final class ThingifierHttpApi {
     public ApiResponse routeAndProcessRequest(final HttpApiRequest request, HttpVerb verb) {
 
         ApiResponse apiResponse = null;
+        ApiRequestEnvelope envelope =
+                ApiRequestEnvelope.from(request, verb, thingifier.getThingNames());
 
         switch (verb) {
             case GET:
-                apiResponse =
-                        thingifier
-                                .api()
-                                .get(
-                                        request.getPath(),
-                                        request.getFilterableQueryParams(),
-                                        request.getHeaders());
+                apiResponse = thingifier.api().get(envelope);
                 break;
             case HEAD:
-                apiResponse =
-                        thingifier
-                                .api()
-                                .head(
-                                        request.getPath(),
-                                        request.getFilterableQueryParams(),
-                                        request.getHeaders());
+                apiResponse = thingifier.api().head(envelope);
                 break;
             case DELETE:
-                apiResponse = thingifier.api().delete(request.getPath(), request.getHeaders());
+                apiResponse = thingifier.api().delete(envelope);
                 break;
             case POST:
-                apiResponse =
-                        thingifier
-                                .api()
-                                .post(
-                                        request.getPath(),
-                                        new BodyParser(request, thingifier.getThingNames()),
-                                        request.getHeaders());
+                apiResponse = thingifier.api().post(envelope);
                 break;
             case PUT:
-                apiResponse =
-                        thingifier
-                                .api()
-                                .put(
-                                        request.getPath(),
-                                        new BodyParser(request, thingifier.getThingNames()),
-                                        request.getHeaders());
+                apiResponse = thingifier.api().put(envelope);
                 break;
             default:
                 break;

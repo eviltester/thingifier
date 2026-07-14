@@ -5,9 +5,10 @@ import static spark.Spark.*;
 import java.util.List;
 import uk.co.compendiumdev.challenge.ChallengerConfig;
 import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.adapter.http.ThingifierAutoDocGenRouting;
 import uk.co.compendiumdev.thingifier.adapter.http.routehandlers.HttpApiRequestHandler;
-import uk.co.compendiumdev.thingifier.adapter.http.routehandlers.SparkApiRequestResponseHandler;
+import uk.co.compendiumdev.thingifier.adapter.spark.SimpleSparkRouteCreator;
+import uk.co.compendiumdev.thingifier.adapter.spark.ThingifierAutoDocGenRouting;
+import uk.co.compendiumdev.thingifier.adapter.spark.routehandlers.SparkApiRequestResponseHandler;
 import uk.co.compendiumdev.thingifier.api.docgen.ThingifierApiDocumentationDefn;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
@@ -26,7 +27,6 @@ import uk.co.compendiumdev.thingifier.core.repository.EntityInstanceRepository;
 import uk.co.compendiumdev.thingifier.core.repository.ThingStore;
 import uk.co.compendiumdev.thingifier.core.repository.ThingStoreProviderConfig;
 import uk.co.compendiumdev.thingifier.htmlgui.htmlgen.DefaultGUIHTML;
-import uk.co.compendiumdev.thingifier.spark.SimpleSparkRouteCreator;
 
 public class SimulationRoutes {
 

@@ -5,8 +5,8 @@ import org.slf4j.LoggerFactory;
 import uk.co.compendiumdev.challenge.apimodel.ChallengeApiModel;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
 import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.adapter.http.ThingifierHttpApiRoutings;
 import uk.co.compendiumdev.thingifier.adapter.spark.MainImplementation;
+import uk.co.compendiumdev.thingifier.adapter.spark.ThingifierHttpApiRoutings;
 import uk.co.compendiumdev.thingifier.core.repository.ThingStoreProviderConfig;
 
 public class ChallengeMain {

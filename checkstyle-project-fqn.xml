@@ -68,7 +68,71 @@
         <property name="id" value="repositorySnapshotMaterialization"/>
         <property name="files" value=".*[/\\]ercoremodel[/\\]src[/\\]main[/\\]java[/\\]uk[/\\]co[/\\]compendiumdev[/\\]thingifier[/\\]core[/\\]domain[/\\]instances[/\\]EntityInstance\.java"/>
     </module>
+    <module name="SuppressionSingleFilter">
+        <property name="id" value="sparkImportsAtSparkEdge"/>
+        <property name="files" value=".*[/\\]src[/\\]test[/\\]java[/\\].*"/>
+    </module>
+    <module name="SuppressionSingleFilter">
+        <property name="id" value="sparkImportsAtSparkEdge"/>
+        <property name="files" value=".*[/\\]thingifier[/\\]src[/\\]main[/\\]java[/\\]uk[/\\]co[/\\]compendiumdev[/\\]thingifier[/\\]adapter[/\\]spark[/\\].*"/>
+    </module>
+    <module name="SuppressionSingleFilter">
+        <property name="id" value="sparkImportsAtSparkEdge"/>
+        <property name="files" value=".*[/\\]thingifier[/\\]src[/\\]main[/\\]java[/\\]uk[/\\]co[/\\]compendiumdev[/\\]thingifier[/\\]adapter[/\\]bootstrap[/\\].*"/>
+    </module>
+    <module name="SuppressionSingleFilter">
+        <property name="id" value="sparkImportsAtSparkEdge"/>
+        <property name="files" value=".*[/\\]thingifier[/\\]src[/\\]main[/\\]java[/\\]uk[/\\]co[/\\]compendiumdev[/\\]thingifier[/\\]htmlgui[/\\]routing[/\\].*"/>
+    </module>
+    <module name="SuppressionSingleFilter">
+        <property name="id" value="sparkImportsAtSparkEdge"/>
+        <property name="files" value=".*[/\\]challenger[/\\]src[/\\]main[/\\]java[/\\].*"/>
+    </module>
+    <module name="SuppressionSingleFilter">
+        <property name="id" value="bodyParserOnlyAtHttpEdge"/>
+        <property name="files" value=".*[/\\]src[/\\]test[/\\]java[/\\].*"/>
+    </module>
+    <module name="SuppressionSingleFilter">
+        <property name="id" value="bodyParserOnlyAtHttpEdge"/>
+        <property name="files" value=".*[/\\]thingifier[/\\]src[/\\]main[/\\]java[/\\]uk[/\\]co[/\\]compendiumdev[/\\]thingifier[/\\]api[/\\]http[/\\](ApiRequestEnvelope|HttpApiRequestValidator)\.java"/>
+    </module>
+    <module name="SuppressionSingleFilter">
+        <property name="id" value="bodyParserOnlyAtHttpEdge"/>
+        <property name="files" value=".*[/\\]thingifier[/\\]src[/\\]main[/\\]java[/\\]uk[/\\]co[/\\]compendiumdev[/\\]thingifier[/\\]api[/\\]ThingifierRestAPIHandler\.java"/>
+    </module>
+    <module name="SuppressionSingleFilter">
+        <property name="id" value="bodyParserOnlyAtHttpEdge"/>
+        <property name="files" value=".*[/\\]thingifier[/\\]src[/\\]main[/\\]java[/\\]uk[/\\]co[/\\]compendiumdev[/\\]thingifier[/\\]api[/\\]restapihandlers[/\\]RestApi(Post|Put)Handler\.java"/>
+    </module>
+    <module name="SuppressionSingleFilter">
+        <property name="id" value="bodyParserOnlyAtHttpEdge"/>
+        <property name="files" value=".*[/\\]challenger[/\\]src[/\\]main[/\\]java[/\\]uk[/\\]co[/\\]compendiumdev[/\\]challenge[/\\]challengesrouting[/\\]AuthRoutes\.java"/>
+    </module>
     <module name="TreeWalker">
+        <module name="RegexpSinglelineJava">
+            <property name="id" value="sparkImportsAtSparkEdge"/>
+            <property name="format" value="^import spark\."/>
+            <property name="ignoreComments" value="true"/>
+            <property name="message" value="Spark imports belong at the Spark adapter edge or an explicit bootstrap/legacy route suppression."/>
+        </module>
+        <module name="RegexpSinglelineJava">
+            <property name="id" value="bodyParserOnlyAtHttpEdge"/>
+            <property name="format" value="^import uk\.co\.compendiumdev\.thingifier\.api\.http\.bodyparser\.BodyParser;"/>
+            <property name="ignoreComments" value="true"/>
+            <property name="message" value="BodyParser is an HTTP-edge compatibility type; mappers and application services should consume ApiBodyFields or commands."/>
+        </module>
+        <module name="RegexpSinglelineJava">
+            <property name="id" value="removedUrlRouteHelpers"/>
+            <property name="format" value="\b(EntityUrlMatcher|RepositoryBackedRelationshipUrlResolver|RepositoryUrlQuery)\b"/>
+            <property name="ignoreComments" value="true"/>
+            <property name="message" value="URL grammar belongs in ThingRouteMapper; core and API mappers must not reintroduce URL route helper parsers."/>
+        </module>
+        <module name="RegexpSinglelineJava">
+            <property name="id" value="apiMappersNoThingifierConstructor"/>
+            <property name="format" value="public\s+Thing(ReadRequestMapper|WriteRequestMapper|BodyCommandMapper)\s*\(\s*final\s+Thingifier"/>
+            <property name="ignoreComments" value="true"/>
+            <property name="message" value="API mappers must depend on narrow runtime ports, not the full Thingifier object."/>
+        </module>
         <module name="RegexpSinglelineJava">
             <property name="id" value="hiddenRepositoryTestSupport"/>
             <property name="format" value="\b(ThingifierRepositoryTestSupport|EntityInstanceTestSupport|MutableEntityInstanceTestSupport|RepositoryUrlQueryTestSupport)\b"/>

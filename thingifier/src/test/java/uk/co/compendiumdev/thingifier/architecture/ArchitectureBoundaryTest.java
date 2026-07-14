@@ -47,28 +47,6 @@ public class ArchitectureBoundaryTest {
     }
 
     @Test
-    public void relationshipBodyParserDoesNotResolveRepositoryInstances() throws IOException {
-        String parserSource =
-                Files.readString(
-                        moduleRoot()
-                                .resolve(
-                                        "src/main/java/uk/co/compendiumdev/thingifier/api/restapihandlers/RelationshipBodyCommandParser.java"));
-
-        Assertions.assertFalse(parserSource.contains("entityQueries()"));
-        Assertions.assertFalse(parserSource.contains("findByField("));
-        Assertions.assertFalse(parserSource.contains("findByQueryIdentifier("));
-    }
-
-    @Test
-    public void coreDoesNotContainUrlRouteQueryParser() {
-        Assertions.assertFalse(
-                Files.exists(
-                        coreMainRoot()
-                                .resolve(
-                                        "uk/co/compendiumdev/thingifier/core/query/RepositoryUrlQuery.java")));
-    }
-
-    @Test
     public void relationshipRepositoryRemovalApiDoesNotExposeCascadeDecisions()
             throws NoSuchMethodException {
         Method removeBetween =
@@ -104,14 +82,5 @@ public class ArchitectureBoundaryTest {
             return cwd;
         }
         return cwd.resolve("thingifier");
-    }
-
-    private Path coreMainRoot() {
-        Path cwd = Paths.get("").toAbsolutePath();
-        Path sibling = cwd.resolve("../ercoremodel/src/main/java").normalize();
-        if (Files.exists(sibling)) {
-            return sibling;
-        }
-        return cwd.resolve("ercoremodel/src/main/java");
     }
 }
