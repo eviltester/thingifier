@@ -1,12 +1,11 @@
 package uk.co.compendiumdev.thingifier.application.query;
 
-import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.query.FilterBy;
 import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
 
 public interface ThingReadQuery {
 
-    EntityDefinition getEntity();
+    String getEntityName();
 
     QueryFilterParams getQueryParams();
 

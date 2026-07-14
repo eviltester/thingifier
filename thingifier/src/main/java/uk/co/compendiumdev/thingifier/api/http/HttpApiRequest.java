@@ -4,7 +4,6 @@ import java.util.*;
 import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeaderPair;
 import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
 import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
-import uk.co.compendiumdev.thingifier.core.query.fromurl.UrlParamParser;
 
 public final class HttpApiRequest {
 
@@ -90,7 +89,7 @@ public final class HttpApiRequest {
     }
 
     public HttpApiRequest setFilterableQueryParams(String queryString) {
-        filterableQueryParams = new UrlParamParser().parse(queryString);
+        filterableQueryParams = new UrlQueryParamParser().parse(queryString);
         return this;
     }
 

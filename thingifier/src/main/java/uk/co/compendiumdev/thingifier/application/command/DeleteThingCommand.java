@@ -1,16 +1,20 @@
 package uk.co.compendiumdev.thingifier.application.command;
 
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-
 public final class DeleteThingCommand implements ThingWriteCommand {
 
-    private final EntityInstance instance;
+    private final String entityName;
+    private final String identifier;
 
-    public DeleteThingCommand(final EntityInstance instance) {
-        this.instance = instance;
+    public DeleteThingCommand(final String entityName, final String identifier) {
+        this.entityName = entityName;
+        this.identifier = identifier;
     }
 
-    public EntityInstance getInstance() {
-        return instance;
+    public String getEntityName() {
+        return entityName;
+    }
+
+    public String getIdentifier() {
+        return identifier;
     }
 }

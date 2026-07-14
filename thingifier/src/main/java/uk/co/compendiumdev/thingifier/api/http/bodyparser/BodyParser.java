@@ -117,6 +117,10 @@ public class BodyParser {
         return args;
     }
 
+    public ApiBodyFields bodyFields() {
+        return ApiBodyFields.fromMap(getMap());
+    }
+
     /*
        valid if error message returned is empty
     */

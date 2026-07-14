@@ -7,8 +7,9 @@ import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.apimodel.ChallengeThingifier;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
 import uk.co.compendiumdev.challenge.challenges.ChallengeDefinitions;
-import uk.co.compendiumdev.thingifier.adapter.http.routehandlers.SparkApiRequestResponseHandler;
 import uk.co.compendiumdev.thingifier.adapter.spark.AdhocDocumentedSparkRouteConfigurer;
+import uk.co.compendiumdev.thingifier.adapter.spark.SimpleSparkRouteCreator;
+import uk.co.compendiumdev.thingifier.adapter.spark.routehandlers.SparkApiRequestResponseHandler;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingStatus;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
@@ -17,7 +18,6 @@ import uk.co.compendiumdev.thingifier.api.restapihandlers.RestApiGetHandler;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.query.FilterBy;
 import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
-import uk.co.compendiumdev.thingifier.spark.SimpleSparkRouteCreator;
 
 public class ChallengesRoutes {
 

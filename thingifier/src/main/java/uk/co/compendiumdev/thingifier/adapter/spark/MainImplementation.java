@@ -5,13 +5,11 @@ import java.util.List;
 import java.util.Map;
 import spark.Spark;
 import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.adapter.http.SparkHttpGenericExceptionRoutings;
-import uk.co.compendiumdev.thingifier.adapter.http.ThingifierAutoDocGenRouting;
-import uk.co.compendiumdev.thingifier.adapter.http.ThingifierHttpApiRoutings;
-import uk.co.compendiumdev.thingifier.adapter.http.routehandlers.ShutdownRouteHandler;
+import uk.co.compendiumdev.thingifier.adapter.bootstrap.ThingifierServerBootstrap;
 import uk.co.compendiumdev.thingifier.adapter.spark.messagehooks.ClearDataPreSparkRequestHook;
 import uk.co.compendiumdev.thingifier.adapter.spark.messagehooks.LogTheResponseHook;
 import uk.co.compendiumdev.thingifier.adapter.spark.messagehooks.LogTheSparkRequestHook;
+import uk.co.compendiumdev.thingifier.adapter.spark.routehandlers.ShutdownRouteHandler;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.docgen.ThingifierApiDocumentationDefn;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfigProfile;
@@ -279,15 +277,8 @@ public class MainImplementation implements AutoCloseable {
             throw new RuntimeException("No Thingifier Model Setup");
         }
 
-        apiDefn.setThingifier(thingifier);
-
-        // start the docs and swagger endpoints
-        new ThingifierAutoDocGenRouting(thingifier, apiDefn, guiManagement);
-
-        restServer = new ThingifierHttpApiRoutings(thingifier, apiDefn);
-
-        // sets up the wide * based generic 404s so no routings created after this will work
-        new SparkHttpGenericExceptionRoutings();
+        restServer =
+                new ThingifierServerBootstrap().startRestServer(thingifier, apiDefn, guiManagement);
 
         System.out.println("Running on " + Spark.port());
         System.out.println(" e.g. http://localhost:" + Spark.port());

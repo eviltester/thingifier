@@ -18,18 +18,13 @@ public class C038PutRestoreChallengerTodosTest extends RestAssuredBaseTest {
         Assertions.assertNotNull(xChallenger);
         Assertions.assertTrue(xChallenger.length() > 5);
 
-        Todos todosResponse =
-                RestAssured.given()
-                        .header("X-CHALLENGER", xChallenger)
-                        .accept("application/json")
-                        .get(apiPath("/challenger/database/" + xChallenger))
-                        .then()
-                        .statusCode(200)
-                        .contentType(ContentType.JSON)
-                        .and()
-                        .extract()
-                        .response()
-                        .as(Todos.class);
+        RestAssured.given()
+                .header("X-CHALLENGER", xChallenger)
+                .accept("application/json")
+                .get(apiPath("/challenger/database/" + xChallenger))
+                .then()
+                .statusCode(200)
+                .contentType(ContentType.JSON);
 
         ChallengesStatus statuses = new ChallengesStatus();
         statuses.get();

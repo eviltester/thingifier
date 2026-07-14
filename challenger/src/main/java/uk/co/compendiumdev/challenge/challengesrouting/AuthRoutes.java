@@ -10,8 +10,9 @@ import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.adapter.internalhttp.InternalHttpRequest;
 import uk.co.compendiumdev.thingifier.adapter.internalhttp.conversion.HttpApiResponseToInternalHttpResponse;
 import uk.co.compendiumdev.thingifier.adapter.internalhttp.conversion.InternalHttpRequestToHttpApiRequest;
-import uk.co.compendiumdev.thingifier.adapter.internalhttp.conversion.InternalHttpResponseToSpark;
-import uk.co.compendiumdev.thingifier.adapter.internalhttp.conversion.SparkToInternalHttpRequest;
+import uk.co.compendiumdev.thingifier.adapter.spark.SimpleSparkRouteCreator;
+import uk.co.compendiumdev.thingifier.adapter.spark.conversion.InternalHttpResponseToSpark;
+import uk.co.compendiumdev.thingifier.adapter.spark.conversion.SparkToInternalHttpRequest;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingStatus;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
@@ -33,7 +34,6 @@ import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 import uk.co.compendiumdev.thingifier.core.domain.instances.validation.EntityInstanceStateValidator;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
-import uk.co.compendiumdev.thingifier.spark.SimpleSparkRouteCreator;
 
 // TODO: This should be using a Thingifier to do the work of XML JSON etc... like the simulation
 public class AuthRoutes {

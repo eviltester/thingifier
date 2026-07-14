@@ -1,29 +1,28 @@
 package uk.co.compendiumdev.thingifier.application.query;
 
-import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
 
 public final class ReadRelationshipQuery implements ThingReadQuery {
 
-    private final EntityDefinition entity;
+    private final String entityName;
     private final String identifier;
     private final String relationshipName;
     private final QueryFilterParams queryParams;
 
     public ReadRelationshipQuery(
-            final EntityDefinition entity,
+            final String entityName,
             final String identifier,
             final String relationshipName,
             final QueryFilterParams queryParams) {
-        this.entity = entity;
+        this.entityName = entityName;
         this.identifier = identifier;
         this.relationshipName = relationshipName;
         this.queryParams = ThingReadQuery.copyOf(queryParams);
     }
 
     @Override
-    public EntityDefinition getEntity() {
-        return entity;
+    public String getEntityName() {
+        return entityName;
     }
 
     public String getIdentifier() {

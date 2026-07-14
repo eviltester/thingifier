@@ -1,8 +1,8 @@
 package uk.co.compendiumdev.thingifier.application;
 
 import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.adapter.http.ThingifierHttpApiRoutings;
 import uk.co.compendiumdev.thingifier.adapter.spark.MainImplementation;
+import uk.co.compendiumdev.thingifier.adapter.spark.ThingifierHttpApiRoutings;
 import uk.co.compendiumdev.thingifier.application.examples.TodoListThingifier;
 import uk.co.compendiumdev.thingifier.application.examples.TodoManagerThingifier;
 

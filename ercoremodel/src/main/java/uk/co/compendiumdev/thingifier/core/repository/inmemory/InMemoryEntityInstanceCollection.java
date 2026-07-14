@@ -282,6 +282,27 @@ final class InMemoryEntityInstanceCollection {
         return counters;
     }
 
+    Snapshot snapshot() {
+        Map<String, Integer> counterValues = new HashMap<>();
+        ensureCountersInitialized();
+        for (Map.Entry<String, AutoIncrement> counter : counters.entrySet()) {
+            counterValues.put(counter.getKey(), counter.getValue().peekNextValue());
+        }
+        return new Snapshot(definition, new ArrayList<>(instances.values()), counterValues);
+    }
+
+    void restore(final Snapshot snapshot) {
+        instances.clear();
+        for (EntityInstance instance : snapshot.instances) {
+            instances.put(instance.getInternalId(), instance);
+        }
+
+        counters.clear();
+        for (Map.Entry<String, Integer> counter : snapshot.counterValues.entrySet()) {
+            counters.put(counter.getKey(), new AutoIncrement(counter.getKey(), counter.getValue()));
+        }
+    }
+
     public ValidationReport checkFieldsForUniqueNess(EntityInstance instance, boolean isAmendment) {
 
         ValidationReport report = new ValidationReport();
@@ -318,5 +339,21 @@ final class InMemoryEntityInstanceCollection {
         }
 
         return report;
+    }
+
+    static final class Snapshot {
+
+        final EntityDefinition definition;
+        private final List<EntityInstance> instances;
+        private final Map<String, Integer> counterValues;
+
+        private Snapshot(
+                final EntityDefinition definition,
+                final List<EntityInstance> instances,
+                final Map<String, Integer> counterValues) {
+            this.definition = definition;
+            this.instances = instances;
+            this.counterValues = counterValues;
+        }
     }
 }

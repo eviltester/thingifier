@@ -1,31 +1,36 @@
 package uk.co.compendiumdev.thingifier.application.command;
 
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
-
 public final class DisconnectRelationshipCommand implements ThingWriteCommand {
 
-    private final EntityInstance parent;
-    private final EntityInstance child;
+    private final String parentEntityName;
+    private final String parentIdentifier;
     private final String relationshipName;
+    private final String childIdentifier;
 
     public DisconnectRelationshipCommand(
-            final EntityInstance parent,
-            final EntityInstance child,
-            final String relationshipName) {
-        this.parent = parent;
-        this.child = child;
+            final String parentEntityName,
+            final String parentIdentifier,
+            final String relationshipName,
+            final String childIdentifier) {
+        this.parentEntityName = parentEntityName;
+        this.parentIdentifier = parentIdentifier;
         this.relationshipName = relationshipName;
+        this.childIdentifier = childIdentifier;
     }
 
-    public EntityInstance getParent() {
-        return parent;
+    public String getParentEntityName() {
+        return parentEntityName;
     }
 
-    public EntityInstance getChild() {
-        return child;
+    public String getParentIdentifier() {
+        return parentIdentifier;
     }
 
     public String getRelationshipName() {
         return relationshipName;
+    }
+
+    public String getChildIdentifier() {
+        return childIdentifier;
     }
 }

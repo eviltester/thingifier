@@ -1,7 +1,11 @@
 package uk.co.compendiumdev.thingifier.api;
 
 import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.DefaultThingifierApiRuntime;
+import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.ThingifierApiRuntime;
+import uk.co.compendiumdev.thingifier.api.http.ApiRequestEnvelope;
 import uk.co.compendiumdev.thingifier.api.http.ThingifierRequestContext;
+import uk.co.compendiumdev.thingifier.api.http.bodyparser.ApiBodyFields;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
@@ -9,18 +13,22 @@ import uk.co.compendiumdev.thingifier.api.restapihandlers.*;
 import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
 
 public class ThingifierRestAPIHandler {
-    private final Thingifier thingifier;
+    private final ThingifierApiRuntime runtime;
     private final RestApiDeleteHandler delete;
     private final RestApiPostHandler post;
     private final RestApiPutHandler put;
     private final RestApiGetHandler get;
 
     public ThingifierRestAPIHandler(final Thingifier aThingifier) {
-        this.thingifier = aThingifier;
-        this.get = new RestApiGetHandler(aThingifier);
-        this.delete = new RestApiDeleteHandler(aThingifier);
-        this.post = new RestApiPostHandler(aThingifier);
-        this.put = new RestApiPutHandler(aThingifier);
+        this(new DefaultThingifierApiRuntime(aThingifier));
+    }
+
+    public ThingifierRestAPIHandler(final ThingifierApiRuntime runtime) {
+        this.runtime = runtime;
+        this.get = new RestApiGetHandler(runtime);
+        this.delete = new RestApiDeleteHandler(runtime);
+        this.post = new RestApiPostHandler(runtime);
+        this.put = new RestApiPutHandler(runtime);
     }
 
     // TODO: we should be able to accept xml with correct content type
@@ -41,10 +49,22 @@ public class ThingifierRestAPIHandler {
         return withRepository(get.handle(url, queryParams, context), context);
     }
 
+    public ApiResponse get(final ApiRequestEnvelope request) {
+        ThingifierRequestContext context = contextFrom(request.headers());
+        return withRepository(get.handle(request.path(), request.queryParams(), context), context);
+    }
+
     public ApiResponse head(
             final String url, final QueryFilterParams queryParams, HttpHeadersBlock headers) {
         ThingifierRequestContext context = contextFrom(headers);
         final ApiResponse response = get.handle(url, queryParams, context);
+        response.clearBody();
+        return withRepository(response, context);
+    }
+
+    public ApiResponse head(final ApiRequestEnvelope request) {
+        ThingifierRequestContext context = contextFrom(request.headers());
+        final ApiResponse response = get.handle(request.path(), request.queryParams(), context);
         response.clearBody();
         return withRepository(response, context);
     }
@@ -54,18 +74,47 @@ public class ThingifierRestAPIHandler {
         return withRepository(delete.handle(url, context), context);
     }
 
+    public ApiResponse delete(final ApiRequestEnvelope request) {
+        ThingifierRequestContext context = contextFrom(request.headers());
+        return withRepository(delete.handle(request.path(), context), context);
+    }
+
     public ApiResponse post(final String url, final BodyParser args, HttpHeadersBlock headers) {
         ThingifierRequestContext context = contextFrom(headers);
-        return withRepository(post.handle(url, args, context), context);
+        return post(url, args.bodyFields(), context);
+    }
+
+    public ApiResponse post(final ApiRequestEnvelope request) {
+        ThingifierRequestContext context = contextFrom(request.headers());
+        return post(request.path(), request.bodyFields(), context);
+    }
+
+    public ApiResponse post(
+            final String url,
+            final ApiBodyFields bodyFields,
+            final ThingifierRequestContext context) {
+        return withRepository(post.handle(url, bodyFields, context), context);
     }
 
     public ApiResponse put(final String url, final BodyParser args, HttpHeadersBlock headers) {
         ThingifierRequestContext context = contextFrom(headers);
-        return withRepository(put.handle(url, args, context), context);
+        return put(url, args.bodyFields(), context);
+    }
+
+    public ApiResponse put(final ApiRequestEnvelope request) {
+        ThingifierRequestContext context = contextFrom(request.headers());
+        return put(request.path(), request.bodyFields(), context);
+    }
+
+    public ApiResponse put(
+            final String url,
+            final ApiBodyFields bodyFields,
+            final ThingifierRequestContext context) {
+        return withRepository(put.handle(url, bodyFields, context), context);
     }
 
     private ThingifierRequestContext contextFrom(final HttpHeadersBlock headers) {
-        return ThingifierRequestContext.from(thingifier, headers);
+        return runtime.contextFrom(headers);
     }
 
     private ApiResponse withRepository(

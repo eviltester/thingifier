@@ -1,20 +1,23 @@
 package uk.co.compendiumdev.thingifier.api.restapihandlers;
 
-import com.google.gson.Gson;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
-import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
+import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.ThingWriteRequestMapper;
+import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.ThingWriteRequestMapping;
+import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.ThingifierSchemaCatalog;
+import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.ThingRoute;
+import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.ThingRouteMapper;
+import uk.co.compendiumdev.thingifier.api.http.bodyparser.ApiBodyFields;
 import uk.co.compendiumdev.thingifier.application.command.AmendThingCommand;
-import uk.co.compendiumdev.thingifier.application.command.ConnectExistingRelationshipCommand;
-import uk.co.compendiumdev.thingifier.application.command.CreateAndConnectRelationshipCommand;
 import uk.co.compendiumdev.thingifier.application.command.CreateThingCommand;
 import uk.co.compendiumdev.thingifier.application.command.DeleteThingCommand;
 import uk.co.compendiumdev.thingifier.application.command.DisconnectRelationshipCommand;
+import uk.co.compendiumdev.thingifier.application.command.RelateThingCommand;
+import uk.co.compendiumdev.thingifier.application.command.ReplaceThingCommand;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.Cardinality;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
@@ -30,7 +33,8 @@ public class ThingWriteRequestMapperTest {
     public void mapsPostCollectionToCreateCommand() {
         Thingifier thingifier = taskProjectThingifier();
         ThingWriteRequestMapping mapping =
-                mapperFor(thingifier).mapPost("task", parserFor(thingifier, "title", "Task"));
+                mapperFor(thingifier)
+                        .mapPost(routeFor(thingifier, "task"), parserFor("title", "Task"));
 
         Assertions.assertFalse(mapping.isError());
         Assertions.assertTrue(mapping.getCommand() instanceof CreateThingCommand);
@@ -44,8 +48,10 @@ public class ThingWriteRequestMapperTest {
         ThingWriteRequestMapping mapping =
                 mapperFor(thingifier)
                         .mapPost(
-                                String.format("task/%s", task.getPrimaryKeyValue()),
-                                parserFor(thingifier, "title", "Patched"));
+                                routeFor(
+                                        thingifier,
+                                        String.format("task/%s", task.getPrimaryKeyValue())),
+                                parserFor("title", "Patched"));
 
         Assertions.assertFalse(mapping.isError());
         AmendThingCommand command = (AmendThingCommand) mapping.getCommand();
@@ -60,65 +66,43 @@ public class ThingWriteRequestMapperTest {
         ThingWriteRequestMapping mapping =
                 mapperFor(thingifier)
                         .mapPut(
-                                String.format("task/%s", task.getPrimaryKeyValue()),
-                                parserFor(thingifier, "title", "Replaced"));
+                                routeFor(
+                                        thingifier,
+                                        String.format("task/%s", task.getPrimaryKeyValue())),
+                                parserFor("title", "Replaced"));
 
         Assertions.assertFalse(mapping.isError());
-        AmendThingCommand command = (AmendThingCommand) mapping.getCommand();
-        Assertions.assertTrue(command.shouldReplaceExistingFieldsAndRelationships());
+        Assertions.assertTrue(mapping.getCommand() instanceof ReplaceThingCommand);
     }
 
     @Test
-    public void mapsPutMissingStringKeyInstanceToCreateCommand() {
+    public void mapsPutInstanceToPutCommand() {
         Thingifier thingifier = stringKeyThingifier();
 
         ThingWriteRequestMapping mapping =
-                mapperFor(thingifier).mapPut("note/n-1", parserFor(thingifier, "title", "Created"));
+                mapperFor(thingifier)
+                        .mapPut(routeFor(thingifier, "note/n-1"), parserFor("title", "Created"));
 
         Assertions.assertFalse(mapping.isError());
-        Assertions.assertTrue(mapping.getCommand() instanceof CreateThingCommand);
+        Assertions.assertTrue(mapping.getCommand() instanceof ReplaceThingCommand);
     }
 
     @Test
-    public void rejectsPutCreateWhenBodyPrimaryKeyDoesNotMatchUrlKey() {
-        Thingifier thingifier = stringKeyThingifier();
-        Map<String, String> body = new HashMap<>();
-        body.put("key", "other");
-        body.put("title", "Created");
-
-        ThingWriteRequestMapping mapping =
-                mapperFor(thingifier).mapPut("note/n-1", parserFor(thingifier, body));
-
-        Assertions.assertTrue(mapping.isError());
-        Assertions.assertEquals(400, mapping.getError().statusCode());
-    }
-
-    @Test
-    public void rejectsPutCreateWhenEntityHasAutoFields() {
+    public void postInstanceMapsToUnresolvedAmendCommand() {
         Thingifier thingifier = taskProjectThingifier();
 
         ThingWriteRequestMapping mapping =
                 mapperFor(thingifier)
-                        .mapPut("task/manual", parserFor(thingifier, "title", "Created"));
+                        .mapPost(
+                                routeFor(thingifier, "task/missing"),
+                                parserFor("title", "Patched"));
 
-        Assertions.assertTrue(mapping.isError());
-        Assertions.assertEquals(400, mapping.getError().statusCode());
+        Assertions.assertFalse(mapping.isError());
+        Assertions.assertTrue(mapping.getCommand() instanceof AmendThingCommand);
     }
 
     @Test
-    public void postMissingInstanceMapsToNotFound() {
-        Thingifier thingifier = taskProjectThingifier();
-
-        ThingWriteRequestMapping mapping =
-                mapperFor(thingifier)
-                        .mapPost("task/missing", parserFor(thingifier, "title", "Patched"));
-
-        Assertions.assertTrue(mapping.isError());
-        Assertions.assertEquals(404, mapping.getError().statusCode());
-    }
-
-    @Test
-    public void mapsRelationshipPostWithExistingChildToConnectCommand() {
+    public void mapsRelationshipPostWithExistingChildToRelateCommand() {
         Thingifier thingifier = taskProjectThingifier();
         EntityInstance task = createTask(thingifier, "Task");
         EntityInstance project = createProject(thingifier, "Project");
@@ -126,26 +110,32 @@ public class ThingWriteRequestMapperTest {
         ThingWriteRequestMapping mapping =
                 mapperFor(thingifier)
                         .mapPost(
-                                String.format("project/%s/tasks", project.getPrimaryKeyValue()),
-                                parserFor(thingifier, "guid", task.getPrimaryKeyValue()));
+                                routeFor(
+                                        thingifier,
+                                        String.format(
+                                                "project/%s/tasks", project.getPrimaryKeyValue())),
+                                parserFor("guid", task.getPrimaryKeyValue()));
 
         Assertions.assertFalse(mapping.isError());
-        Assertions.assertTrue(mapping.getCommand() instanceof ConnectExistingRelationshipCommand);
+        Assertions.assertTrue(mapping.getCommand() instanceof RelateThingCommand);
     }
 
     @Test
-    public void mapsRelationshipPostWithoutChildKeyToCreateAndConnectCommand() {
+    public void mapsRelationshipPostWithoutChildKeyToRelateCommand() {
         Thingifier thingifier = taskProjectThingifier();
         EntityInstance project = createProject(thingifier, "Project");
 
         ThingWriteRequestMapping mapping =
                 mapperFor(thingifier)
                         .mapPost(
-                                String.format("project/%s/tasks", project.getPrimaryKeyValue()),
-                                parserFor(thingifier, "title", "New task"));
+                                routeFor(
+                                        thingifier,
+                                        String.format(
+                                                "project/%s/tasks", project.getPrimaryKeyValue())),
+                                parserFor("title", "New task"));
 
         Assertions.assertFalse(mapping.isError());
-        Assertions.assertTrue(mapping.getCommand() instanceof CreateAndConnectRelationshipCommand);
+        Assertions.assertTrue(mapping.getCommand() instanceof RelateThingCommand);
     }
 
     @Test
@@ -155,7 +145,10 @@ public class ThingWriteRequestMapperTest {
 
         ThingWriteRequestMapping mapping =
                 mapperFor(thingifier)
-                        .mapDelete(String.format("task/%s", task.getPrimaryKeyValue()));
+                        .mapDelete(
+                                routeFor(
+                                        thingifier,
+                                        String.format("task/%s", task.getPrimaryKeyValue())));
 
         Assertions.assertFalse(mapping.isError());
         Assertions.assertTrue(mapping.getCommand() instanceof DeleteThingCommand);
@@ -172,9 +165,12 @@ public class ThingWriteRequestMapperTest {
         ThingWriteRequestMapping mapping =
                 mapperFor(thingifier)
                         .mapDelete(
-                                String.format(
-                                        "project/%s/tasks/%s",
-                                        project.getPrimaryKeyValue(), task.getPrimaryKeyValue()));
+                                routeFor(
+                                        thingifier,
+                                        String.format(
+                                                "project/%s/tasks/%s",
+                                                project.getPrimaryKeyValue(),
+                                                task.getPrimaryKeyValue())));
 
         Assertions.assertFalse(mapping.isError());
         Assertions.assertTrue(mapping.getCommand() instanceof DisconnectRelationshipCommand);
@@ -186,7 +182,8 @@ public class ThingWriteRequestMapperTest {
 
         ThingWriteRequestMapping mapping =
                 mapperFor(thingifier)
-                        .mapPost("not-understood", parserFor(thingifier, "title", "Nope"));
+                        .mapPost(
+                                routeFor(thingifier, "not-understood"), parserFor("title", "Nope"));
 
         Assertions.assertTrue(mapping.isError());
         Assertions.assertEquals(400, mapping.getError().statusCode());
@@ -233,22 +230,24 @@ public class ThingWriteRequestMapperTest {
     }
 
     private ThingWriteRequestMapper mapperFor(final Thingifier thingifier) {
-        return new ThingWriteRequestMapper(thingifier, EntityRelModel.DEFAULT_DATABASE_NAME);
+        return new ThingWriteRequestMapper(new ThingifierSchemaCatalog(thingifier));
     }
 
     private ThingStore storeFor(final Thingifier thingifier) {
         return thingifier.getStore(EntityRelModel.DEFAULT_DATABASE_NAME);
     }
 
-    private BodyParser parserFor(
-            final Thingifier thingifier, final String fieldName, final String fieldValue) {
-        Map<String, String> body = new HashMap<>();
-        body.put(fieldName, fieldValue);
-        return parserFor(thingifier, body);
+    private ThingRoute routeFor(final Thingifier thingifier, final String url) {
+        return new ThingRouteMapper(new ThingifierSchemaCatalog(thingifier)).map(url);
     }
 
-    private BodyParser parserFor(final Thingifier thingifier, final Map<String, String> body) {
-        HttpApiRequest request = new HttpApiRequest("/path").setBody(new Gson().toJson(body));
-        return new BodyParser(request, thingifier.getThingNames());
+    private ApiBodyFields parserFor(final String fieldName, final String fieldValue) {
+        Map<String, Object> body = new HashMap<>();
+        body.put(fieldName, fieldValue);
+        return parserFor(body);
+    }
+
+    private ApiBodyFields parserFor(final Map<String, Object> body) {
+        return ApiBodyFields.fromMap(body);
     }
 }

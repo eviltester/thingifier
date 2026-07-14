@@ -1,31 +1,42 @@
 package uk.co.compendiumdev.thingifier.application.command;
 
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.NamedValue;
 
 public final class ConnectExistingRelationshipCommand implements ThingWriteCommand {
 
-    private final EntityInstance parent;
+    private final String parentEntityName;
+    private final String parentIdentifier;
     private final String relationshipName;
-    private final EntityInstance child;
+    private final List<NamedValue> childReferenceFields;
 
     public ConnectExistingRelationshipCommand(
-            final EntityInstance parent,
+            final String parentEntityName,
+            final String parentIdentifier,
             final String relationshipName,
-            final EntityInstance child) {
-        this.parent = parent;
+            final List<NamedValue> childReferenceFields) {
+        this.parentEntityName = parentEntityName;
+        this.parentIdentifier = parentIdentifier;
         this.relationshipName = relationshipName;
-        this.child = child;
+        this.childReferenceFields =
+                Collections.unmodifiableList(new ArrayList<>(childReferenceFields));
     }
 
-    public EntityInstance getParent() {
-        return parent;
+    public String getParentEntityName() {
+        return parentEntityName;
+    }
+
+    public String getParentIdentifier() {
+        return parentIdentifier;
     }
 
     public String getRelationshipName() {
         return relationshipName;
     }
 
-    public EntityInstance getChild() {
-        return child;
+    public List<NamedValue> getChildReferenceFields() {
+        return childReferenceFields;
     }
 }

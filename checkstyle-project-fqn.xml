@@ -68,7 +68,136 @@
         <property name="id" value="repositorySnapshotMaterialization"/>
         <property name="files" value=".*[/\\]ercoremodel[/\\]src[/\\]main[/\\]java[/\\]uk[/\\]co[/\\]compendiumdev[/\\]thingifier[/\\]core[/\\]domain[/\\]instances[/\\]EntityInstance\.java"/>
     </module>
+    <module name="SuppressionSingleFilter">
+        <property name="id" value="sparkImportsAtSparkEdge"/>
+        <property name="files" value=".*[/\\]src[/\\]test[/\\]java[/\\].*"/>
+    </module>
+    <module name="SuppressionSingleFilter">
+        <property name="id" value="sparkImportsAtSparkEdge"/>
+        <property name="files" value=".*[/\\]thingifier[/\\]src[/\\]main[/\\]java[/\\]uk[/\\]co[/\\]compendiumdev[/\\]thingifier[/\\]adapter[/\\]spark[/\\].*"/>
+    </module>
+    <module name="SuppressionSingleFilter">
+        <property name="id" value="sparkImportsAtSparkEdge"/>
+        <property name="files" value=".*[/\\]thingifier[/\\]src[/\\]main[/\\]java[/\\]uk[/\\]co[/\\]compendiumdev[/\\]thingifier[/\\]adapter[/\\]bootstrap[/\\].*"/>
+    </module>
+    <module name="SuppressionSingleFilter">
+        <property name="id" value="sparkImportsAtSparkEdge"/>
+        <property name="files" value=".*[/\\]thingifier[/\\]src[/\\]main[/\\]java[/\\]uk[/\\]co[/\\]compendiumdev[/\\]thingifier[/\\]htmlgui[/\\]routing[/\\].*"/>
+    </module>
+    <module name="SuppressionSingleFilter">
+        <property name="id" value="sparkImportsAtSparkEdge"/>
+        <property name="files" value=".*[/\\]challenger[/\\]src[/\\]main[/\\]java[/\\].*"/>
+    </module>
+    <module name="SuppressionSingleFilter">
+        <property name="id" value="bodyParserOnlyAtHttpEdge"/>
+        <property name="files" value=".*[/\\]src[/\\]test[/\\]java[/\\].*"/>
+    </module>
+    <module name="SuppressionSingleFilter">
+        <property name="id" value="bodyParserOnlyAtHttpEdge"/>
+        <property name="files" value=".*[/\\]thingifier[/\\]src[/\\]main[/\\]java[/\\]uk[/\\]co[/\\]compendiumdev[/\\]thingifier[/\\]api[/\\]http[/\\](ApiRequestEnvelope|HttpApiRequestValidator)\.java"/>
+    </module>
+    <module name="SuppressionSingleFilter">
+        <property name="id" value="bodyParserOnlyAtHttpEdge"/>
+        <property name="files" value=".*[/\\]thingifier[/\\]src[/\\]main[/\\]java[/\\]uk[/\\]co[/\\]compendiumdev[/\\]thingifier[/\\]api[/\\]ThingifierRestAPIHandler\.java"/>
+    </module>
+    <module name="SuppressionSingleFilter">
+        <property name="id" value="bodyParserOnlyAtHttpEdge"/>
+        <property name="files" value=".*[/\\]thingifier[/\\]src[/\\]main[/\\]java[/\\]uk[/\\]co[/\\]compendiumdev[/\\]thingifier[/\\]api[/\\]restapihandlers[/\\]RestApi(Post|Put)Handler\.java"/>
+    </module>
+    <module name="SuppressionSingleFilter">
+        <property name="id" value="bodyParserOnlyAtHttpEdge"/>
+        <property name="files" value=".*[/\\]challenger[/\\]src[/\\]main[/\\]java[/\\]uk[/\\]co[/\\]compendiumdev[/\\]challenge[/\\]challengesrouting[/\\]AuthRoutes\.java"/>
+    </module>
+    <module name="SuppressionSingleFilter">
+        <property name="id" value="routeClassesNoMutableSchema"/>
+        <property name="files" value=".*[/\\]src[/\\]test[/\\]java[/\\].*"/>
+    </module>
+    <module name="SuppressionSingleFilter">
+        <property name="id" value="applicationNoHttpVerbVocabulary"/>
+        <property name="files" value=".*[/\\]src[/\\]test[/\\]java[/\\].*"/>
+    </module>
+    <module name="SuppressionSingleFilter">
+        <property name="id" value="applicationNoHttpStatusOrTypes"/>
+        <property name="files" value=".*[/\\]src[/\\]test[/\\]java[/\\].*"/>
+    </module>
+    <module name="SuppressionSingleFilter">
+        <property name="id" value="applicationNoRouteDisplayVocabulary"/>
+        <property name="files" value=".*[/\\]src[/\\]test[/\\]java[/\\].*"/>
+    </module>
+    <module name="SuppressionSingleFilter">
+        <property name="id" value="thinThingCommandService"/>
+        <property name="files" value=".*[/\\]src[/\\]test[/\\]java[/\\].*"/>
+    </module>
+    <module name="RegexpMultiline">
+        <property name="id" value="commandDtosNoMutableDomain"/>
+        <property name="format" value="(?s)package uk\.co\.compendiumdev\.thingifier\.application\.command;.*import uk\.co\.compendiumdev\.thingifier\.core\.domain\.(definitions\.EntityDefinition|instances\.(EntityInstance|EntityInstanceDraft));"/>
+        <property name="message" value="Application command DTOs must carry stable names and values, not mutable schema definitions or live entity instances."/>
+    </module>
+    <module name="RegexpMultiline">
+        <property name="id" value="routeClassesNoMutableSchema"/>
+        <property name="format" value="(?s)package uk\.co\.compendiumdev\.thingifier\.adapter\.http\.apihandlers\.route;.*import uk\.co\.compendiumdev\.thingifier\.core\.domain\.definitions\.(EntityDefinition|field\.definition\.Field);"/>
+        <property name="message" value="Typed route classes must carry schema refs or stable names, not mutable schema definitions or fields."/>
+    </module>
+    <module name="RegexpMultiline">
+        <property name="id" value="apiMappersNoRepositoryLookup"/>
+        <property name="format" value="(?s)package uk\.co\.compendiumdev\.thingifier\.adapter\.http\.apihandlers;.*(\.entityQueries\s*\(|\.findByField\s*\(|\.findByGuid\s*\(|\.findByQueryIdentifier\s*\()"/>
+        <property name="message" value="API HTTP mappers must not resolve instances through repositories; application services own store lookups."/>
+    </module>
+    <module name="RegexpMultiline">
+        <property name="id" value="applicationNoHttpVerbVocabulary"/>
+        <property name="format" value="(?s)package uk\.co\.compendiumdev\.thingifier\.application(\.|;).*(\b(GET|POST|PUT|DELETE|PATCH|HEAD)\b|\bPutThingCommand\b|\bvalidatePut[A-Za-z0-9_]*\b)"/>
+        <property name="message" value="Application production code must use semantic command vocabulary, not HTTP verb names."/>
+    </module>
+    <module name="RegexpMultiline">
+        <property name="id" value="applicationNoHttpStatusOrTypes"/>
+        <property name="format" value="(?s)package uk\.co\.compendiumdev\.thingifier\.application(\.|;).*\b(statusCode|ApiResponse|HttpApiRequest|HttpApiResponse|HttpHeaders|Header)\b"/>
+        <property name="message" value="Application production code must return semantic errors; HTTP statuses, responses, requests, and headers belong at the adapter boundary."/>
+    </module>
+    <module name="RegexpMultiline">
+        <property name="id" value="commandDtosNoRouteDisplay"/>
+        <property name="format" value="(?s)package uk\.co\.compendiumdev\.thingifier\.application\.command;.*\b(routeDisplay|getRouteDisplay|originalPath)\b"/>
+        <property name="message" value="Application command DTOs must carry semantic identifiers, not adapter route-display strings."/>
+    </module>
+    <module name="RegexpMultiline">
+        <property name="id" value="applicationNoRouteDisplayVocabulary"/>
+        <property name="format" value="(?s)package uk\.co\.compendiumdev\.thingifier\.application(\.|;).*\b(routeDisplay|getRouteDisplay|originalPath|Could not find parent thing for relationship|Could not find any instances with)\b"/>
+        <property name="message" value="Route-display and legacy path-shaped error text belong in the HTTP adapter, not application production code."/>
+    </module>
+    <module name="RegexpMultiline">
+        <property name="id" value="coreNoUrlQueryParsing"/>
+        <property name="format" value="(?s)package uk\.co\.compendiumdev\.thingifier\.core(\.|;).*\b(UrlParamParser|core\.query\.fromurl|URLDecoder|urlDecode|rawUrlParams)\b"/>
+        <property name="message" value="Core query code must receive QueryFilterParams; URL query-string parsing belongs at the HTTP/API edge."/>
+    </module>
+    <module name="RegexpMultiline">
+        <property name="id" value="thinThingCommandService"/>
+        <property name="format" value="(?s)class ThingCommandService\b.*(private\s+ThingCommandResult\s+(create|amend|replace|delete|connectExistingRelationship|createAndConnect|relate|disconnectRelationship|connectRelationship|connectRelationshipReferences|connectRelationships)\s*\(|private\s+(EntityInstanceDraft|EntityInstance|RelationshipVectorDefinition|boolean|void)\s+(createDraft|resolveInstance|relationshipErrorIfInvalid|firstRelationshipVector|bodyReferencesExistingRelatedItem|relatedInstanceMatchingIdentifier|matchesQueryIdentifier|disconnectConnections|copyBaseDraftValues)\s*\(|private\s+static\s+final\s+class\s+(RelatedItemResolution|RelationshipSnapshot|RelationshipLink)\b)"/>
+        <property name="message" value="ThingCommandService should stay a thin transaction-wrapped dispatcher; moved use-case helpers belong in focused collaborators."/>
+    </module>
     <module name="TreeWalker">
+        <module name="RegexpSinglelineJava">
+            <property name="id" value="sparkImportsAtSparkEdge"/>
+            <property name="format" value="^import spark\."/>
+            <property name="ignoreComments" value="true"/>
+            <property name="message" value="Spark imports belong at the Spark adapter edge or an explicit bootstrap/legacy route suppression."/>
+        </module>
+        <module name="RegexpSinglelineJava">
+            <property name="id" value="bodyParserOnlyAtHttpEdge"/>
+            <property name="format" value="^import uk\.co\.compendiumdev\.thingifier\.api\.http\.bodyparser\.BodyParser;"/>
+            <property name="ignoreComments" value="true"/>
+            <property name="message" value="BodyParser is an HTTP-edge compatibility type; mappers and application services should consume ApiBodyFields or commands."/>
+        </module>
+        <module name="RegexpSinglelineJava">
+            <property name="id" value="removedUrlRouteHelpers"/>
+            <property name="format" value="\b(EntityUrlMatcher|RepositoryBackedRelationshipUrlResolver|RepositoryUrlQuery)\b"/>
+            <property name="ignoreComments" value="true"/>
+            <property name="message" value="URL grammar belongs in ThingRouteMapper; core and API mappers must not reintroduce URL route helper parsers."/>
+        </module>
+        <module name="RegexpSinglelineJava">
+            <property name="id" value="apiMappersNoThingifierConstructor"/>
+            <property name="format" value="public\s+Thing(ReadRequestMapper|WriteRequestMapper|BodyCommandMapper)\s*\(\s*final\s+Thingifier"/>
+            <property name="ignoreComments" value="true"/>
+            <property name="message" value="API mappers must depend on narrow runtime ports, not the full Thingifier object."/>
+        </module>
         <module name="RegexpSinglelineJava">
             <property name="id" value="hiddenRepositoryTestSupport"/>
             <property name="format" value="\b(ThingifierRepositoryTestSupport|EntityInstanceTestSupport|MutableEntityInstanceTestSupport|RepositoryUrlQueryTestSupport)\b"/>

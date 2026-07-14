@@ -6,12 +6,12 @@ import java.util.ArrayList;
 import java.util.List;
 import spark.Route;
 import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.adapter.http.ThingifierAutoDocGenRouting;
 import uk.co.compendiumdev.thingifier.adapter.spark.AdhocDocumentedSparkRouteConfigurer;
+import uk.co.compendiumdev.thingifier.adapter.spark.SimpleSparkRouteCreator;
+import uk.co.compendiumdev.thingifier.adapter.spark.ThingifierAutoDocGenRouting;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
 import uk.co.compendiumdev.thingifier.api.docgen.ThingifierApiDocumentationDefn;
 import uk.co.compendiumdev.thingifier.htmlgui.htmlgen.DefaultGUIHTML;
-import uk.co.compendiumdev.thingifier.spark.SimpleSparkRouteCreator;
 
 /*
    Create a set of custom end points that do not use a thingifier, but

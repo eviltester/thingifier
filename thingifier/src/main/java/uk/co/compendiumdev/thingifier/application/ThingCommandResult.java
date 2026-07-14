@@ -12,39 +12,54 @@ public final class ThingCommandResult {
     private final EntityInstance instance;
     private final List<String> errorMessages;
     private final boolean rolledBackCreatedInstance;
+    private final ApplicationError error;
+    private final boolean createdInstance;
 
     private ThingCommandResult(
             final boolean successful,
             final EntityInstance instance,
             final List<String> errorMessages,
-            final boolean rolledBackCreatedInstance) {
+            final boolean rolledBackCreatedInstance,
+            final ApplicationError error,
+            final boolean createdInstance) {
         this.successful = successful;
         this.instance = instance;
         this.errorMessages = Collections.unmodifiableList(new ArrayList<>(errorMessages));
         this.rolledBackCreatedInstance = rolledBackCreatedInstance;
+        this.error = error;
+        this.createdInstance = createdInstance;
     }
 
     public static ThingCommandResult success() {
-        return new ThingCommandResult(true, null, List.of(), false);
+        return new ThingCommandResult(true, null, List.of(), false, null, false);
     }
 
     public static ThingCommandResult success(final EntityInstance instance) {
-        return new ThingCommandResult(true, instance, List.of(), false);
+        return new ThingCommandResult(true, instance, List.of(), false, null, false);
+    }
+
+    public static ThingCommandResult created(final EntityInstance instance) {
+        return new ThingCommandResult(true, instance, List.of(), false, null, true);
     }
 
     public static ThingCommandResult error(final String message) {
         if (message == null || message.isEmpty()) {
-            return new ThingCommandResult(false, null, List.of(""), false);
+            return error(ApplicationError.validation(""));
         }
-        return new ThingCommandResult(false, null, List.of(message), false);
+        return error(ApplicationError.validation(message));
     }
 
     public static ThingCommandResult error(final Collection<String> messages) {
-        return new ThingCommandResult(false, null, new ArrayList<>(messages), false);
+        return error(ApplicationError.validation(messages));
+    }
+
+    public static ThingCommandResult error(final ApplicationError error) {
+        return new ThingCommandResult(false, null, error.messages(), false, error, false);
     }
 
     public ThingCommandResult withRolledBackCreatedInstance() {
-        return new ThingCommandResult(successful, instance, errorMessages, true);
+        return new ThingCommandResult(
+                successful, instance, errorMessages, true, error, createdInstance);
     }
 
     public boolean isSuccessful() {
@@ -69,5 +84,13 @@ public final class ThingCommandResult {
 
     public boolean rolledBackCreatedInstance() {
         return rolledBackCreatedInstance;
+    }
+
+    public ApplicationError getError() {
+        return error;
+    }
+
+    public boolean createdInstance() {
+        return createdInstance;
     }
 }
