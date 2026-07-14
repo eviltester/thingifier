@@ -31,9 +31,21 @@ public final class ThingCommandResultApiMapper {
         return ApiResponse.error(error.statusCode(), error.messages());
     }
 
+    public ApiResponse map(
+            final ThingWriteRequestMapping mapping, final ThingCommandResult result) {
+        return map(mapping.getCommand(), result, mapping.getRouteDisplay());
+    }
+
     public ApiResponse map(final ThingWriteCommand command, final ThingCommandResult result) {
+        return map(command, result, ApiRouteDisplay.empty());
+    }
+
+    private ApiResponse map(
+            final ThingWriteCommand command,
+            final ThingCommandResult result,
+            final ApiRouteDisplay routeDisplay) {
         if (result.isError()) {
-            return errorResponseFor(command, result);
+            return errorResponseFor(command, result, routeDisplay);
         }
 
         if (command instanceof RelateThingCommand) {
@@ -70,8 +82,10 @@ public final class ThingCommandResultApiMapper {
     }
 
     private ApiResponse errorResponseFor(
-            final ThingWriteCommand command, final ThingCommandResult result) {
-        List<String> messages = errorMessagesFor(result);
+            final ThingWriteCommand command,
+            final ThingCommandResult result,
+            final ApiRouteDisplay routeDisplay) {
+        List<String> messages = errorMessagesFor(result, routeDisplay);
         int statusCode = statusFor(result.getError());
         ApiResponse response;
         if (command instanceof CreateThingCommand && messages.size() == 1) {
@@ -101,7 +115,8 @@ public final class ThingCommandResultApiMapper {
         return 400;
     }
 
-    private List<String> errorMessagesFor(final ThingCommandResult result) {
+    private List<String> errorMessagesFor(
+            final ThingCommandResult result, final ApiRouteDisplay routeDisplay) {
         ApplicationError error = result.getError();
         if (error == null) {
             return result.getErrorMessages();
@@ -123,7 +138,43 @@ public final class ThingCommandResultApiMapper {
                             error.detail("bodyIdentifier")));
         }
 
+        if (error.code() == ApplicationError.Code.INSTANCE_NOT_FOUND) {
+            if (routeDisplay.hasMissingInstanceMessage()) {
+                return List.of(routeDisplay.missingInstanceMessage());
+            }
+            return List.of(
+                    String.format(
+                            "Could not find any instances with %s",
+                            displayPathOrIdentifier(routeDisplay, error.detail("identifier"))));
+        }
+
+        if (error.code() == ApplicationError.Code.PARENT_INSTANCE_NOT_FOUND) {
+            if (routeDisplay.hasOriginalPath()) {
+                return List.of(
+                        String.format(
+                                "Could not find parent thing for relationship %s",
+                                routeDisplay.originalPath()));
+            }
+            return result.getErrorMessages();
+        }
+
+        if (error.code() == ApplicationError.Code.RELATIONSHIP_SOURCE_NOT_FOUND
+                || error.code() == ApplicationError.Code.RELATIONSHIP_TARGET_NOT_FOUND) {
+            return List.of(
+                    String.format(
+                            "Could not find any instances with %s",
+                            displayPathOrIdentifier(routeDisplay, error.detail("identifier"))));
+        }
+
         return result.getErrorMessages();
+    }
+
+    private String displayPathOrIdentifier(
+            final ApiRouteDisplay routeDisplay, final String identifier) {
+        if (routeDisplay.hasOriginalPath()) {
+            return routeDisplay.originalPath();
+        }
+        return identifier == null ? "" : identifier;
     }
 
     private String creationErrorMessage(final String rawMessage) {

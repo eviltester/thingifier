@@ -13,7 +13,6 @@ public final class AmendThingCommand implements ThingWriteCommand {
     private final List<BodyFieldValue> bodyFields;
     private final boolean replaceExistingFieldsAndRelationships;
     private final List<RelationshipReference> relationships;
-    private final String missingInstanceMessage;
 
     public AmendThingCommand(
             final String entityName,
@@ -27,25 +26,7 @@ public final class AmendThingCommand implements ThingWriteCommand {
                 fieldValues,
                 BodyFieldValue.fromNamedValues(fieldValues),
                 replaceExistingFieldsAndRelationships,
-                relationships,
-                "");
-    }
-
-    public AmendThingCommand(
-            final String entityName,
-            final String identifier,
-            final List<NamedValue> fieldValues,
-            final boolean replaceExistingFieldsAndRelationships,
-            final List<RelationshipReference> relationships,
-            final String missingInstanceMessage) {
-        this(
-                entityName,
-                identifier,
-                fieldValues,
-                BodyFieldValue.fromNamedValues(fieldValues),
-                replaceExistingFieldsAndRelationships,
-                relationships,
-                missingInstanceMessage);
+                relationships);
     }
 
     public AmendThingCommand(
@@ -54,15 +35,13 @@ public final class AmendThingCommand implements ThingWriteCommand {
             final List<NamedValue> fieldValues,
             final List<BodyFieldValue> bodyFields,
             final boolean replaceExistingFieldsAndRelationships,
-            final List<RelationshipReference> relationships,
-            final String missingInstanceMessage) {
+            final List<RelationshipReference> relationships) {
         this.entityName = entityName;
         this.identifier = identifier;
         this.fieldValues = Collections.unmodifiableList(new ArrayList<>(fieldValues));
         this.bodyFields = Collections.unmodifiableList(new ArrayList<>(bodyFields));
         this.replaceExistingFieldsAndRelationships = replaceExistingFieldsAndRelationships;
         this.relationships = Collections.unmodifiableList(new ArrayList<>(relationships));
-        this.missingInstanceMessage = missingInstanceMessage == null ? "" : missingInstanceMessage;
     }
 
     public String getEntityName() {
@@ -87,9 +66,5 @@ public final class AmendThingCommand implements ThingWriteCommand {
 
     public List<RelationshipReference> getRelationships() {
         return relationships;
-    }
-
-    public String getMissingInstanceMessage() {
-        return missingInstanceMessage;
     }
 }

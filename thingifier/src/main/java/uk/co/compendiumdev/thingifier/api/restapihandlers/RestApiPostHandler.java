@@ -49,6 +49,6 @@ public class RestApiPostHandler {
         }
 
         ThingCommandResult result = runtime.commandService(context).execute(mapping.getCommand());
-        return apiMapper.map(mapping.getCommand(), result);
+        return apiMapper.map(mapping, result);
     }
 }

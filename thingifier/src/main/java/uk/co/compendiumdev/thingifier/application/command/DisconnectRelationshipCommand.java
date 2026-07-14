@@ -6,19 +6,16 @@ public final class DisconnectRelationshipCommand implements ThingWriteCommand {
     private final String parentIdentifier;
     private final String relationshipName;
     private final String childIdentifier;
-    private final String routeDisplay;
 
     public DisconnectRelationshipCommand(
             final String parentEntityName,
             final String parentIdentifier,
             final String relationshipName,
-            final String childIdentifier,
-            final String routeDisplay) {
+            final String childIdentifier) {
         this.parentEntityName = parentEntityName;
         this.parentIdentifier = parentIdentifier;
         this.relationshipName = relationshipName;
         this.childIdentifier = childIdentifier;
-        this.routeDisplay = routeDisplay == null ? "" : routeDisplay;
     }
 
     public String getParentEntityName() {
@@ -35,9 +32,5 @@ public final class DisconnectRelationshipCommand implements ThingWriteCommand {
 
     public String getChildIdentifier() {
         return childIdentifier;
-    }
-
-    public String getRouteDisplay() {
-        return routeDisplay;
     }
 }

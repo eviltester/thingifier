@@ -13,23 +13,20 @@ public final class RelateThingCommand implements ThingWriteCommand {
     private final List<NamedValue> bodyFieldValues;
     private final List<BodyFieldValue> bodyFields;
     private final List<RelationshipReference> bodyRelationships;
-    private final String routeDisplay;
 
     public RelateThingCommand(
             final String parentEntityName,
             final String parentIdentifier,
             final String relationshipName,
             final List<NamedValue> bodyFieldValues,
-            final List<RelationshipReference> bodyRelationships,
-            final String routeDisplay) {
+            final List<RelationshipReference> bodyRelationships) {
         this(
                 parentEntityName,
                 parentIdentifier,
                 relationshipName,
                 bodyFieldValues,
                 BodyFieldValue.fromNamedValues(bodyFieldValues),
-                bodyRelationships,
-                routeDisplay);
+                bodyRelationships);
     }
 
     public RelateThingCommand(
@@ -38,15 +35,13 @@ public final class RelateThingCommand implements ThingWriteCommand {
             final String relationshipName,
             final List<NamedValue> bodyFieldValues,
             final List<BodyFieldValue> bodyFields,
-            final List<RelationshipReference> bodyRelationships,
-            final String routeDisplay) {
+            final List<RelationshipReference> bodyRelationships) {
         this.parentEntityName = parentEntityName;
         this.parentIdentifier = parentIdentifier;
         this.relationshipName = relationshipName;
         this.bodyFieldValues = Collections.unmodifiableList(new ArrayList<>(bodyFieldValues));
         this.bodyFields = Collections.unmodifiableList(new ArrayList<>(bodyFields));
         this.bodyRelationships = Collections.unmodifiableList(new ArrayList<>(bodyRelationships));
-        this.routeDisplay = routeDisplay == null ? "" : routeDisplay;
     }
 
     public String getParentEntityName() {
@@ -71,9 +66,5 @@ public final class RelateThingCommand implements ThingWriteCommand {
 
     public List<RelationshipReference> getBodyRelationships() {
         return bodyRelationships;
-    }
-
-    public String getRouteDisplay() {
-        return routeDisplay;
     }
 }

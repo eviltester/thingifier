@@ -84,8 +84,8 @@ public final class ThingWriteRequestMapper {
         if (route instanceof InstanceRoute) {
             InstanceRoute instance = (InstanceRoute) route;
             return ThingWriteRequestMapping.command(
-                    new DeleteThingCommand(
-                            instance.entity().name(), instance.identifier(), route.originalPath()));
+                    new DeleteThingCommand(instance.entity().name(), instance.identifier()),
+                    ApiRouteDisplay.originalPath(route.originalPath()));
         }
 
         if (route instanceof RelationshipInstanceRoute) {
@@ -95,8 +95,8 @@ public final class ThingWriteRequestMapper {
                             relationship.parentEntity().name(),
                             relationship.parentIdentifier(),
                             relationship.relationshipName(),
-                            relationship.childIdentifier(),
-                            route.originalPath()));
+                            relationship.childIdentifier()),
+                    ApiRouteDisplay.originalPath(route.originalPath()));
         }
 
         return ThingWriteRequestMapping.error(
@@ -109,16 +109,16 @@ public final class ThingWriteRequestMapper {
     private ThingWriteRequestMapping mapPostToInstance(
             final InstanceRoute route, final ApiBodyFields bodyFields) {
         if (route.entity().hasPrimaryKeyField()) {
-            return bodyCommandMapper.mapAmend(
-                    bodyFields,
-                    route.entity(),
-                    route.identifier(),
-                    false,
-                    String.format(
-                            "No such %s entity instance with %s == %s found",
-                            route.entity().name(),
-                            route.entity().primaryKeyFieldName(),
-                            route.identifier()));
+            ThingWriteRequestMapping mapping =
+                    bodyCommandMapper.mapAmend(
+                            bodyFields, route.entity(), route.identifier(), false);
+            return mapping.withRouteDisplay(
+                    ApiRouteDisplay.missingInstanceMessage(
+                            String.format(
+                                    "No such %s entity instance with %s == %s found",
+                                    route.entity().name(),
+                                    route.entity().primaryKeyFieldName(),
+                                    route.identifier())));
         }
 
         return ThingWriteRequestMapping.error(
@@ -156,8 +156,8 @@ public final class ThingWriteRequestMapper {
                         bodyCommandMapper.fieldValuesExcludingRelationships(
                                 bodyFields, relationships),
                         bodyCommandMapper.bodyFieldValues(bodyFields),
-                        relationships.references(),
-                        route.originalPath()));
+                        relationships.references()),
+                ApiRouteDisplay.originalPath(route.originalPath()));
     }
 
     private EntityTypeRef firstRelationshipTarget(final RelationshipCollectionRoute route) {

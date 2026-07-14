@@ -381,14 +381,28 @@ public class ThingCommandServiceTest {
                 serviceFor(thingifier, store)
                         .execute(
                                 new DeleteThingCommand(
-                                        task.getName(),
-                                        taskInstance.getPrimaryKeyValue(),
-                                        taskInstance.getPrimaryKeyValue()));
+                                        task.getName(), taskInstance.getPrimaryKeyValue()));
 
         Assertions.assertTrue(result.isSuccessful());
         Assertions.assertNull(
                 store.entityQueries()
                         .findByQueryIdentifier(task, taskInstance.getPrimaryKeyValue()));
+    }
+
+    @Test
+    public void deleteMissingInstanceReturnsSemanticNotFoundDetails() {
+        Thingifier thingifier = taskProjectThingifier();
+        ThingStore store = storeFor(thingifier);
+
+        ThingCommandResult result =
+                serviceFor(thingifier, store).execute(new DeleteThingCommand("task", "missing"));
+
+        Assertions.assertTrue(result.isError());
+        Assertions.assertEquals(ApplicationError.Code.INSTANCE_NOT_FOUND, result.getError().code());
+        Assertions.assertEquals("task", result.getError().detail("entityName"));
+        Assertions.assertEquals("missing", result.getError().detail("identifier"));
+        Assertions.assertFalse(
+                result.getCombinedErrorMessage().contains("Could not find any instances with"));
     }
 
     @Test
@@ -414,8 +428,7 @@ public class ThingCommandServiceTest {
                                         project.getName(),
                                         projectInstance.getPrimaryKeyValue(),
                                         "tasks",
-                                        taskInstance.getPrimaryKeyValue(),
-                                        ""));
+                                        taskInstance.getPrimaryKeyValue()));
 
         Assertions.assertTrue(result.isSuccessful());
         Assertions.assertTrue(
@@ -423,6 +436,50 @@ public class ThingCommandServiceTest {
         Assertions.assertNotNull(
                 store.entityQueries()
                         .findByQueryIdentifier(task, taskInstance.getPrimaryKeyValue()));
+    }
+
+    @Test
+    public void disconnectRelationshipMissingSourceReturnsSemanticNotFoundDetails() {
+        Thingifier thingifier = taskProjectThingifier();
+        ThingStore store = storeFor(thingifier);
+
+        ThingCommandResult result =
+                serviceFor(thingifier, store)
+                        .execute(
+                                new DisconnectRelationshipCommand(
+                                        "project", "missing-project", "tasks", "missing-task"));
+
+        Assertions.assertTrue(result.isError());
+        Assertions.assertEquals(
+                ApplicationError.Code.RELATIONSHIP_SOURCE_NOT_FOUND, result.getError().code());
+        Assertions.assertEquals("project", result.getError().detail("entityName"));
+        Assertions.assertEquals("missing-project", result.getError().detail("identifier"));
+        Assertions.assertEquals("tasks", result.getError().detail("relationshipName"));
+    }
+
+    @Test
+    public void disconnectRelationshipMissingTargetReturnsSemanticNotFoundDetails() {
+        Thingifier thingifier = taskProjectThingifier();
+        ThingStore store = storeFor(thingifier);
+        EntityInstance project = createProject(thingifier, "Project");
+
+        ThingCommandResult result =
+                serviceFor(thingifier, store)
+                        .execute(
+                                new DisconnectRelationshipCommand(
+                                        "project",
+                                        project.getPrimaryKeyValue(),
+                                        "tasks",
+                                        "missing-task"));
+
+        Assertions.assertTrue(result.isError());
+        Assertions.assertEquals(
+                ApplicationError.Code.RELATIONSHIP_TARGET_NOT_FOUND, result.getError().code());
+        Assertions.assertEquals("project", result.getError().detail("entityName"));
+        Assertions.assertEquals(
+                project.getPrimaryKeyValue(), result.getError().detail("identifier"));
+        Assertions.assertEquals("tasks", result.getError().detail("relationshipName"));
+        Assertions.assertEquals("missing-task", result.getError().detail("childIdentifier"));
     }
 
     @Test
@@ -449,8 +506,7 @@ public class ThingCommandServiceTest {
                                         project.getName(),
                                         projectInstance.getPrimaryKeyValue(),
                                         "tasks",
-                                        fields("guid", taskInstance.getPrimaryKeyValue()),
-                                        ""));
+                                        fields("guid", taskInstance.getPrimaryKeyValue())));
 
         Assertions.assertTrue(result.isError());
         Assertions.assertNotNull(
@@ -482,8 +538,7 @@ public class ThingCommandServiceTest {
                                         "tasks",
                                         task.getName(),
                                         fields("title", "Rolled back"),
-                                        List.of(),
-                                        ""));
+                                        List.of()));
 
         Assertions.assertTrue(result.isError());
         Assertions.assertTrue(result.rolledBackCreatedInstance());
@@ -516,8 +571,7 @@ public class ThingCommandServiceTest {
                                         fields("title", "Rolled back"),
                                         List.of(
                                                 RelationshipReference.compressed(
-                                                        "category", "guid", "missing")),
-                                        ""));
+                                                        "category", "guid", "missing"))));
 
         Assertions.assertTrue(result.isError());
         Assertions.assertEquals(taskCount, store.entityQueries().count(task));
@@ -548,14 +602,36 @@ public class ThingCommandServiceTest {
                                         projectInstance.getPrimaryKeyValue(),
                                         "tasks",
                                         fields("guid", taskInstance.getPrimaryKeyValue()),
-                                        List.of(),
-                                        ""));
+                                        List.of()));
 
         Assertions.assertTrue(result.isSuccessful());
         Assertions.assertFalse(result.createdInstance());
         Assertions.assertEquals(1, store.entityQueries().count(task));
         Assertions.assertEquals(
                 taskInstance, store.relationships().listRelated(projectInstance, "tasks").get(0));
+    }
+
+    @Test
+    public void relateMissingParentReturnsSemanticNotFoundDetails() {
+        Thingifier thingifier = taskProjectThingifier();
+        ThingStore store = storeFor(thingifier);
+
+        ThingCommandResult result =
+                serviceFor(thingifier, store)
+                        .execute(
+                                new RelateThingCommand(
+                                        "project",
+                                        "missing-project",
+                                        "tasks",
+                                        fields("title", "Task"),
+                                        List.of()));
+
+        Assertions.assertTrue(result.isError());
+        Assertions.assertEquals(
+                ApplicationError.Code.PARENT_INSTANCE_NOT_FOUND, result.getError().code());
+        Assertions.assertEquals("project", result.getError().detail("entityName"));
+        Assertions.assertEquals("missing-project", result.getError().detail("identifier"));
+        Assertions.assertEquals("tasks", result.getError().detail("relationshipName"));
     }
 
     @Test
@@ -586,8 +662,7 @@ public class ThingCommandServiceTest {
                                                         "id",
                                                         taskInstance.getPrimaryKeyValue(),
                                                         BodyFieldValue.SourceType.STRING)),
-                                        List.of(),
-                                        ""));
+                                        List.of()));
 
         Assertions.assertTrue(result.isSuccessful());
         Assertions.assertFalse(result.createdInstance());
@@ -616,8 +691,7 @@ public class ThingCommandServiceTest {
                                         projectInstance.getPrimaryKeyValue(),
                                         "tasks",
                                         fields("title", "Created task"),
-                                        List.of(),
-                                        ""));
+                                        List.of()));
 
         Assertions.assertTrue(result.isSuccessful());
         Assertions.assertTrue(result.createdInstance());
@@ -707,6 +781,13 @@ public class ThingCommandServiceTest {
 
     private ThingStore storeFor(final Thingifier thingifier) {
         return thingifier.getStore(EntityRelModel.DEFAULT_DATABASE_NAME);
+    }
+
+    private EntityInstance createProject(final Thingifier thingifier, final String title) {
+        EntityDefinition project = thingifier.getDefinitionNamed("project");
+        return storeFor(thingifier)
+                .entities()
+                .create(EntityInstanceDraft.forEntity(project).withField("title", title));
     }
 
     private ThingCommandService serviceFor(final Thingifier thingifier, final ThingStore store) {

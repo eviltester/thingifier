@@ -11,20 +11,17 @@ public final class ConnectExistingRelationshipCommand implements ThingWriteComma
     private final String parentIdentifier;
     private final String relationshipName;
     private final List<NamedValue> childReferenceFields;
-    private final String routeDisplay;
 
     public ConnectExistingRelationshipCommand(
             final String parentEntityName,
             final String parentIdentifier,
             final String relationshipName,
-            final List<NamedValue> childReferenceFields,
-            final String routeDisplay) {
+            final List<NamedValue> childReferenceFields) {
         this.parentEntityName = parentEntityName;
         this.parentIdentifier = parentIdentifier;
         this.relationshipName = relationshipName;
         this.childReferenceFields =
                 Collections.unmodifiableList(new ArrayList<>(childReferenceFields));
-        this.routeDisplay = routeDisplay == null ? "" : routeDisplay;
     }
 
     public String getParentEntityName() {
@@ -41,9 +38,5 @@ public final class ConnectExistingRelationshipCommand implements ThingWriteComma
 
     public List<NamedValue> getChildReferenceFields() {
         return childReferenceFields;
-    }
-
-    public String getRouteDisplay() {
-        return routeDisplay;
     }
 }

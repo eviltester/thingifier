@@ -19,6 +19,10 @@ public final class ApplicationError {
     public enum Code {
         VALIDATION_FAILED,
         NOT_FOUND,
+        INSTANCE_NOT_FOUND,
+        PARENT_INSTANCE_NOT_FOUND,
+        RELATIONSHIP_SOURCE_NOT_FOUND,
+        RELATIONSHIP_TARGET_NOT_FOUND,
         CONFLICT,
         UNSUPPORTED_COMMAND,
         REPLACE_CREATE_AUTO_FIELDS_NOT_ALLOWED,
@@ -52,6 +56,65 @@ public final class ApplicationError {
 
     public static ApplicationError notFound(final String message) {
         return new ApplicationError(Category.NOT_FOUND, Code.NOT_FOUND, List.of(message), Map.of());
+    }
+
+    public static ApplicationError instanceNotFound(
+            final String entityName, final String identifier) {
+        return new ApplicationError(
+                Category.NOT_FOUND,
+                Code.INSTANCE_NOT_FOUND,
+                List.of("Could not find instance"),
+                Map.of("entityName", entityName, "identifier", identifier));
+    }
+
+    public static ApplicationError parentInstanceNotFound(
+            final String entityName, final String identifier, final String relationshipName) {
+        return new ApplicationError(
+                Category.NOT_FOUND,
+                Code.PARENT_INSTANCE_NOT_FOUND,
+                List.of("Could not find relationship parent instance"),
+                Map.of(
+                        "entityName",
+                        entityName,
+                        "identifier",
+                        identifier,
+                        "relationshipName",
+                        relationshipName));
+    }
+
+    public static ApplicationError relationshipSourceNotFound(
+            final String entityName, final String identifier, final String relationshipName) {
+        return new ApplicationError(
+                Category.NOT_FOUND,
+                Code.RELATIONSHIP_SOURCE_NOT_FOUND,
+                List.of("Could not find relationship source instance"),
+                Map.of(
+                        "entityName",
+                        entityName,
+                        "identifier",
+                        identifier,
+                        "relationshipName",
+                        relationshipName));
+    }
+
+    public static ApplicationError relationshipTargetNotFound(
+            final String entityName,
+            final String identifier,
+            final String relationshipName,
+            final String childIdentifier) {
+        return new ApplicationError(
+                Category.NOT_FOUND,
+                Code.RELATIONSHIP_TARGET_NOT_FOUND,
+                List.of("Could not find related target instance"),
+                Map.of(
+                        "entityName",
+                        entityName,
+                        "identifier",
+                        identifier,
+                        "relationshipName",
+                        relationshipName,
+                        "childIdentifier",
+                        childIdentifier));
     }
 
     public static ApplicationError conflict(final String message) {

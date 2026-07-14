@@ -14,7 +14,6 @@ public final class CreateAndConnectRelationshipCommand implements ThingWriteComm
     private final List<NamedValue> childFieldValues;
     private final List<BodyFieldValue> childBodyFields;
     private final List<RelationshipReference> childRelationships;
-    private final String routeDisplay;
 
     public CreateAndConnectRelationshipCommand(
             final String parentEntityName,
@@ -22,8 +21,7 @@ public final class CreateAndConnectRelationshipCommand implements ThingWriteComm
             final String relationshipName,
             final String childEntityName,
             final List<NamedValue> childFieldValues,
-            final List<RelationshipReference> childRelationships,
-            final String routeDisplay) {
+            final List<RelationshipReference> childRelationships) {
         this(
                 parentEntityName,
                 parentIdentifier,
@@ -31,8 +29,7 @@ public final class CreateAndConnectRelationshipCommand implements ThingWriteComm
                 childEntityName,
                 childFieldValues,
                 BodyFieldValue.fromNamedValues(childFieldValues),
-                childRelationships,
-                routeDisplay);
+                childRelationships);
     }
 
     public CreateAndConnectRelationshipCommand(
@@ -42,8 +39,7 @@ public final class CreateAndConnectRelationshipCommand implements ThingWriteComm
             final String childEntityName,
             final List<NamedValue> childFieldValues,
             final List<BodyFieldValue> childBodyFields,
-            final List<RelationshipReference> childRelationships,
-            final String routeDisplay) {
+            final List<RelationshipReference> childRelationships) {
         this.parentEntityName = parentEntityName;
         this.parentIdentifier = parentIdentifier;
         this.relationshipName = relationshipName;
@@ -51,7 +47,6 @@ public final class CreateAndConnectRelationshipCommand implements ThingWriteComm
         this.childFieldValues = Collections.unmodifiableList(new ArrayList<>(childFieldValues));
         this.childBodyFields = Collections.unmodifiableList(new ArrayList<>(childBodyFields));
         this.childRelationships = Collections.unmodifiableList(new ArrayList<>(childRelationships));
-        this.routeDisplay = routeDisplay == null ? "" : routeDisplay;
     }
 
     public String getParentEntityName() {
@@ -80,9 +75,5 @@ public final class CreateAndConnectRelationshipCommand implements ThingWriteComm
 
     public List<RelationshipReference> getChildRelationships() {
         return childRelationships;
-    }
-
-    public String getRouteDisplay() {
-        return routeDisplay;
     }
 }

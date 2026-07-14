@@ -64,15 +64,6 @@ public final class ThingBodyCommandMapper {
             final EntityTypeRef entity,
             final String identifier,
             final boolean replaceExistingFieldsAndRelationships) {
-        return mapAmend(bodyFields, entity, identifier, replaceExistingFieldsAndRelationships, "");
-    }
-
-    public ThingWriteRequestMapping mapAmend(
-            final ApiBodyFields bodyFields,
-            final EntityTypeRef entity,
-            final String identifier,
-            final boolean replaceExistingFieldsAndRelationships,
-            final String missingInstanceMessage) {
         RelationshipBodyCommands relationships = parseRelationships(bodyFields, entity);
         if (!relationships.validationReport().isValid()) {
             return ThingWriteRequestMapping.error(
@@ -87,8 +78,7 @@ public final class ThingBodyCommandMapper {
                         fieldValuesExcludingRelationships(bodyFields, relationships),
                         bodyFieldValues(bodyFields),
                         replaceExistingFieldsAndRelationships,
-                        relationships.references(),
-                        missingInstanceMessage));
+                        relationships.references()));
     }
 
     public ThingWriteRequestMapping mapPut(
@@ -114,8 +104,7 @@ public final class ThingBodyCommandMapper {
             final EntityTypeRef parentEntity,
             final String parentIdentifier,
             final String relationshipName,
-            final EntityTypeRef childEntity,
-            final String routeDisplay) {
+            final EntityTypeRef childEntity) {
         RelationshipBodyCommands relationships = parseRelationships(bodyFields, childEntity);
         if (!relationships.validationReport().isValid()) {
             return invalidRelationships(relationships.validationReport());
@@ -129,8 +118,7 @@ public final class ThingBodyCommandMapper {
                         childEntity.name(),
                         fieldValuesExcludingRelationships(bodyFields, relationships),
                         bodyFieldValues(bodyFields),
-                        relationships.references(),
-                        routeDisplay));
+                        relationships.references()));
     }
 
     public RelationshipBodyCommands parseRelationships(
