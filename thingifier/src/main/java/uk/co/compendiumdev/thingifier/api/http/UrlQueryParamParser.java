@@ -1,11 +1,11 @@
-package uk.co.compendiumdev.thingifier.core.query.fromurl;
+package uk.co.compendiumdev.thingifier.api.http;
 
 import java.net.URLDecoder;
 import uk.co.compendiumdev.thingifier.core.query.FilterBy;
 import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
 
-public class UrlParamParser {
-    public String urlDecode(String possiblyUrlEncodedString) {
+public final class UrlQueryParamParser {
+    public String urlDecode(final String possiblyUrlEncodedString) {
         String decoded = possiblyUrlEncodedString;
 
         try {
@@ -18,7 +18,7 @@ public class UrlParamParser {
         return decoded;
     }
 
-    public QueryFilterParams parse(String rawUrlParams) {
+    public QueryFilterParams parse(final String rawUrlParams) {
 
         QueryFilterParams filters = new QueryFilterParams();
 
@@ -47,7 +47,7 @@ public class UrlParamParser {
         return filters;
     }
 
-    private FilterBy parseToFilterBy(String rawParam) {
+    private FilterBy parseToFilterBy(final String rawParam) {
         String param = rawParam.trim();
         String fieldName = getFieldNameFrom(param);
 
@@ -56,7 +56,7 @@ public class UrlParamParser {
         return new FilterBy(fieldName, opAndValue);
     }
 
-    private String getFieldNameFrom(String param) {
+    private String getFieldNameFrom(final String param) {
 
         // for each FilterBy operator, try to find it in the string
         // if present, split the string there and the fieldname is to the
