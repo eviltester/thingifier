@@ -17,7 +17,7 @@ public final class DefaultThingifierApiRuntime implements ThingifierApiRuntime {
     public DefaultThingifierApiRuntime(final Thingifier thingifier) {
         this.thingifier = thingifier;
         this.schema = new ThingifierSchemaCatalog(thingifier);
-        this.queryService = new ThingQueryService();
+        this.queryService = new ThingQueryService(schema);
     }
 
     @Override
@@ -42,7 +42,10 @@ public final class DefaultThingifierApiRuntime implements ThingifierApiRuntime {
 
     @Override
     public ThingCommandService commandService(final ThingifierRequestContext context) {
-        return new ThingCommandService(context.store());
+        return new ThingCommandService(
+                context.store(),
+                schema,
+                thingifier.apiConfig().willApiEnforceDeclaredTypesInInput());
     }
 
     @Override

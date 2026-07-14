@@ -6,10 +6,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
-import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 
 public final class ApiBodyFields {
 
@@ -66,6 +62,18 @@ public final class ApiBodyFields {
         return Collections.unmodifiableList(flattened);
     }
 
+    public List<ApiBodyField> topLevelFields() {
+        List<ApiBodyField> topLevel = new ArrayList<>();
+        for (Map.Entry<String, Object> entry : fields.entrySet()) {
+            topLevel.add(
+                    new ApiBodyField(
+                            entry.getKey(),
+                            stringValue(entry.getValue()),
+                            sourceTypeName(entry.getValue())));
+        }
+        return Collections.unmodifiableList(topLevel);
+    }
+
     private List<Map.Entry<String, String>> flattenToStringMap(
             final String prefixKey, final Object value) {
         List<Map.Entry<String, String>> stringsInMap = new ArrayList<>();
@@ -104,65 +112,29 @@ public final class ApiBodyFields {
         return stringsInMap;
     }
 
-    public ValidationReport validateAgainstType(final EntityDefinition entity) {
-        return validateAgainstTypeIgnoring(entity, new ArrayList<>());
+    private String stringValue(final Object value) {
+        if (value instanceof String) {
+            return (String) value;
+        }
+        if (value instanceof Boolean || value instanceof Double || value instanceof Integer) {
+            return String.valueOf(value);
+        }
+        return "";
     }
 
-    public ValidationReport validateAgainstTypeIgnoring(
-            final EntityDefinition entity, final List<String> doNotValidateFields) {
-        ValidationReport report = new ValidationReport();
-        for (Map.Entry<String, Object> fieldValue : fields.entrySet()) {
-
-            if (entity.hasAnyOfFieldNamesDefined(doNotValidateFields)) {
-                continue;
-            }
-
-            Field field = entity.getField(fieldValue.getKey());
-            if (field == null) {
-                continue;
-            }
-
-            Object value = fieldValue.getValue();
-            String instanceType = "Something Else";
-            if (value instanceof String) {
-                instanceType = "STRING";
-            }
-            if (value instanceof Boolean) {
-                instanceType = "BOOLEAN";
-            }
-            if (value instanceof Integer) {
-                instanceType = "INTEGER";
-            }
-            if (value instanceof Float) {
-                instanceType = "NUMERIC";
-            }
-            if (value instanceof Double) {
-                instanceType = "NUMERIC";
-            }
-
-            String errorMessage =
-                    String.format(
-                            "%s should be %s but was %s",
-                            field.getName(), field.getType(), instanceType);
-
-            if (field.getType() == FieldType.BOOLEAN && !(value instanceof Boolean)) {
-                report.setValid(false);
-                report.addErrorMessage(errorMessage);
-            }
-            if (field.getType() == FieldType.INTEGER
-                    || field.getType() == FieldType.AUTO_INCREMENT) {
-                if (!(value instanceof Double)) {
-                    report.setValid(false);
-                    report.addErrorMessage(errorMessage);
-                } else {
-                    fieldValue.setValue(((Double) value).intValue());
-                }
-            }
-            if (field.getType() == FieldType.FLOAT && !(value instanceof Double)) {
-                report.setValid(false);
-                report.addErrorMessage(errorMessage);
-            }
+    private String sourceTypeName(final Object value) {
+        if (value instanceof String) {
+            return "STRING";
         }
-        return report;
+        if (value instanceof Boolean) {
+            return "BOOLEAN";
+        }
+        if (value instanceof Integer) {
+            return "INTEGER";
+        }
+        if (value instanceof Float || value instanceof Double) {
+            return "NUMERIC";
+        }
+        return "Something Else";
     }
 }

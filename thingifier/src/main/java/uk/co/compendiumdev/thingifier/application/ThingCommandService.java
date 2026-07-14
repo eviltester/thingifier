@@ -11,12 +11,13 @@ import uk.co.compendiumdev.thingifier.application.command.CreateThingCommand;
 import uk.co.compendiumdev.thingifier.application.command.DeleteThingCommand;
 import uk.co.compendiumdev.thingifier.application.command.DisconnectRelationshipCommand;
 import uk.co.compendiumdev.thingifier.application.command.PutThingCommand;
+import uk.co.compendiumdev.thingifier.application.command.RelateThingCommand;
 import uk.co.compendiumdev.thingifier.application.command.RelationshipReference;
 import uk.co.compendiumdev.thingifier.application.command.ThingWriteCommand;
+import uk.co.compendiumdev.thingifier.application.schema.SchemaDefinitionResolver;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.NamedValue;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVectorDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
@@ -27,23 +28,43 @@ import uk.co.compendiumdev.thingifier.core.repository.ThingStore;
 public final class ThingCommandService {
 
     private final ThingStore store;
+    private final SchemaDefinitionResolver schema;
+    private final WriteValidationPolicy validation;
+    private final RelationshipReferenceResolver relationshipResolver;
+    private final WriteTransactionRunner transactionRunner;
+    private final CreateThingHandler createHandler;
+    private final AmendThingHandler amendHandler;
+    private final RelationshipCommandHandler relationshipHandler;
 
-    public ThingCommandService(final ThingStore store) {
+    public ThingCommandService(final ThingStore store, final SchemaDefinitionResolver schema) {
+        this(store, schema, false);
+    }
+
+    public ThingCommandService(
+            final ThingStore store,
+            final SchemaDefinitionResolver schema,
+            final boolean enforceDeclaredTypes) {
         this.store = store;
+        this.schema = schema;
+        this.validation = new WriteValidationPolicy(store, enforceDeclaredTypes);
+        this.relationshipResolver = new RelationshipReferenceResolver(store, schema);
+        this.transactionRunner = new WriteTransactionRunner(store);
+        this.createHandler = new CreateThingHandler(this);
+        this.amendHandler = new AmendThingHandler(this);
+        this.relationshipHandler = new RelationshipCommandHandler(this);
     }
 
     public ThingCommandResult execute(final ThingWriteCommand command) {
+        return transactionRunner.run(() -> executeInsideTransaction(command));
+    }
+
+    private ThingCommandResult executeInsideTransaction(final ThingWriteCommand command) {
         if (command instanceof CreateThingCommand) {
-            CreateThingCommand create = (CreateThingCommand) command;
-            return create(
-                    create.getDraft(),
-                    create.getRelationships(),
-                    create.shouldValidateFinalRelationships());
+            return createHandler.handle((CreateThingCommand) command);
         }
 
         if (command instanceof AmendThingCommand) {
-            AmendThingCommand amend = (AmendThingCommand) command;
-            return amend(amend);
+            return amendHandler.handle((AmendThingCommand) command);
         }
 
         if (command instanceof DeleteThingCommand) {
@@ -51,22 +72,23 @@ public final class ThingCommandService {
         }
 
         if (command instanceof PutThingCommand) {
-            return put((PutThingCommand) command);
+            return amendHandler.handle((PutThingCommand) command);
         }
 
         if (command instanceof ConnectExistingRelationshipCommand) {
-            ConnectExistingRelationshipCommand connect =
-                    (ConnectExistingRelationshipCommand) command;
-            return connectExistingRelationship(connect);
+            return relationshipHandler.handle((ConnectExistingRelationshipCommand) command);
         }
 
         if (command instanceof CreateAndConnectRelationshipCommand) {
-            return createAndConnect((CreateAndConnectRelationshipCommand) command);
+            return relationshipHandler.handle((CreateAndConnectRelationshipCommand) command);
+        }
+
+        if (command instanceof RelateThingCommand) {
+            return relationshipHandler.handle((RelateThingCommand) command);
         }
 
         if (command instanceof DisconnectRelationshipCommand) {
-            DisconnectRelationshipCommand disconnect = (DisconnectRelationshipCommand) command;
-            return disconnectRelationship(disconnect);
+            return relationshipHandler.handle((DisconnectRelationshipCommand) command);
         }
 
         return ThingCommandResult.error(
@@ -75,77 +97,71 @@ public final class ThingCommandService {
                                 "Unsupported command %s", command.getClass().getSimpleName())));
     }
 
-    public ThingCommandResult create(
-            final EntityInstanceDraft draft, final List<RelationshipReference> relationships) {
-        return create(draft, relationships, true);
+    ThingCommandResult create(final CreateThingCommand command) {
+        EntityDefinition entity = entityNamed(command.getEntityName());
+        if (entity == null) {
+            return ThingCommandResult.error(
+                    ApplicationError.notFound(
+                            String.format("Could not find entity %s", command.getEntityName())));
+        }
+
+        ThingCommandResult typeValidation =
+                validation.validateDeclaredFieldTypes(entity, command.getBodyFields());
+        if (typeValidation != null) {
+            return typeValidation;
+        }
+
+        List<NamedValue> fieldValues =
+                validation.normalizedFieldValues(
+                        entity, command.getFieldValues(), command.getBodyFields());
+        ThingCommandResult validationResult =
+                validation.validateCreate(
+                        entity,
+                        fieldValues,
+                        command.hasRequestedPrimaryKey(),
+                        command.getRequestedPrimaryKey());
+        if (validationResult != null) {
+            return validationResult;
+        }
+
+        try {
+            EntityInstanceDraft draft =
+                    createDraft(entity, command.getRequestedPrimaryKey(), fieldValues);
+            return create(
+                    draft, command.getRelationships(), command.shouldValidateFinalRelationships());
+        } catch (Exception e) {
+            return ThingCommandResult.error(messageFrom(e));
+        }
     }
 
-    public ThingCommandResult create(
+    ThingCommandResult create(
             final EntityInstanceDraft draft,
             final List<RelationshipReference> relationships,
             final boolean validateFinalRelationships) {
-        EntityInstance created = null;
         try {
-            created = store.entities().create(draft);
+            EntityInstance created = store.entities().create(draft);
             ThingCommandResult relationshipResult =
                     connectRelationshipReferences(
                             created, relationships, validateFinalRelationships, true);
             if (relationshipResult.isError()) {
-                rollbackDelete(created);
                 return relationshipResult;
             }
             return ThingCommandResult.success(created);
         } catch (Exception e) {
-            rollbackDelete(created);
             return ThingCommandResult.error(messageFrom(e));
         }
     }
 
-    public ThingCommandResult amend(
-            final EntityInstance instance,
-            final EntityInstanceDraft draft,
-            final boolean replaceExistingFieldsAndRelationships,
-            final List<RelationshipReference> relationships) {
-        EntityInstance updated = null;
-        RelationshipSnapshot originalRelationships = RelationshipSnapshot.capture(store, instance);
-        try {
-            if (replaceExistingFieldsAndRelationships) {
-                updated = store.entities().replace(instance, draft);
-                originalRelationships.disconnectFrom(store, updated);
-            } else {
-                updated = store.entities().patch(instance, draft);
-            }
-
-            ThingCommandResult relationshipResult =
-                    connectRelationshipReferences(updated, relationships, true, false);
-            if (relationshipResult.isError()) {
-                rollbackAmendment(updated, instance, originalRelationships);
-                return relationshipResult;
-            }
-
-            if (replaceExistingFieldsAndRelationships) {
-                originalRelationships.deleteFormerDependentsMadeInvalidBy(store, updated);
-            }
-
-            return ThingCommandResult.success(updated);
-        } catch (Exception e) {
-            if (updated != null) {
-                rollbackAmendment(updated, instance, originalRelationships);
-            }
-            return ThingCommandResult.error(messageFrom(e));
-        }
-    }
-
-    private ThingCommandResult amend(final AmendThingCommand command) {
-        if (command.hasResolvedInstance()) {
-            return amend(
-                    command.getInstance(),
-                    command.getDraft(),
-                    command.shouldReplaceExistingFieldsAndRelationships(),
-                    command.getRelationships());
+    ThingCommandResult amend(final AmendThingCommand command) {
+        EntityDefinition entity = entityNamed(command.getEntityName());
+        ThingCommandResult typeValidation =
+                validation.validateDeclaredFieldTypesIgnoringProtected(
+                        entity, command.getBodyFields());
+        if (typeValidation != null) {
+            return typeValidation;
         }
 
-        EntityInstance instance = resolveInstance(command.getEntity(), command.getIdentifier());
+        EntityInstance instance = resolveInstance(entity, command.getIdentifier());
         if (instance == null) {
             String message = command.getMissingInstanceMessage();
             if (message == null || message.isEmpty()) {
@@ -157,9 +173,11 @@ public final class ThingCommandService {
         }
 
         try {
+            List<NamedValue> fieldValues =
+                    validation.normalizedFieldValues(
+                            entity, command.getFieldValues(), command.getBodyFields());
             EntityInstanceDraft draft =
-                    new EntityInstanceDraftBuilder(instance)
-                            .setFieldValuesFrom(command.getFieldValues());
+                    new EntityInstanceDraftBuilder(instance).setFieldValuesFrom(fieldValues);
             return amend(
                     instance,
                     draft,
@@ -170,25 +188,68 @@ public final class ThingCommandService {
         }
     }
 
-    private ThingCommandResult put(final PutThingCommand command) {
-        EntityInstance instance = resolveInstance(command.getEntity(), command.getIdentifier());
+    ThingCommandResult amend(
+            final EntityInstance instance,
+            final EntityInstanceDraft draft,
+            final boolean replaceExistingFieldsAndRelationships,
+            final List<RelationshipReference> relationships) {
+        RelationshipSnapshot originalRelationships = RelationshipSnapshot.capture(store, instance);
+        try {
+            EntityInstance updated;
+            if (replaceExistingFieldsAndRelationships) {
+                updated = store.entities().replace(instance, draft);
+                originalRelationships.disconnectFrom(store, updated);
+            } else {
+                updated = store.entities().patch(instance, draft);
+            }
+
+            ThingCommandResult relationshipResult =
+                    connectRelationshipReferences(updated, relationships, true, false);
+            if (relationshipResult.isError()) {
+                return relationshipResult;
+            }
+
+            if (replaceExistingFieldsAndRelationships) {
+                originalRelationships.deleteFormerDependentsMadeInvalidBy(store, updated);
+            }
+
+            return ThingCommandResult.success(updated);
+        } catch (Exception e) {
+            return ThingCommandResult.error(messageFrom(e));
+        }
+    }
+
+    ThingCommandResult put(final PutThingCommand command) {
+        EntityDefinition entity = entityNamed(command.getEntityName());
+        ThingCommandResult typeValidation =
+                validation.validateDeclaredFieldTypesIgnoringProtected(
+                        entity, command.getBodyFields());
+        if (typeValidation != null) {
+            return typeValidation;
+        }
+
+        List<NamedValue> fieldValues =
+                validation.normalizedFieldValues(
+                        entity, command.getFieldValues(), command.getBodyFields());
+        EntityInstance instance = resolveInstance(entity, command.getIdentifier());
         if (instance != null) {
             try {
                 EntityInstanceDraft draft =
-                        new EntityInstanceDraftBuilder(instance)
-                                .setFieldValuesFrom(command.getFieldValues());
+                        new EntityInstanceDraftBuilder(instance).setFieldValuesFrom(fieldValues);
                 return amend(instance, draft, true, command.getRelationships());
             } catch (Exception e) {
                 return ThingCommandResult.error(messageFrom(e));
             }
         }
 
+        ThingCommandResult creationAllowed =
+                validation.validatePutCreate(entity, command.getIdentifier(), fieldValues);
+        if (creationAllowed != null) {
+            return creationAllowed;
+        }
+
         try {
-            ThingCommandResult creationAllowed = validatePutCreate(command);
-            if (creationAllowed != null) {
-                return creationAllowed;
-            }
-            EntityInstanceDraft draft = createDraftWithPrimaryKey(command);
+            EntityInstanceDraft draft = createDraft(entity, command.getIdentifier(), fieldValues);
             ThingCommandResult created = create(draft, command.getRelationships(), true);
             if (created.isError()) {
                 return created;
@@ -199,54 +260,17 @@ public final class ThingCommandService {
         }
     }
 
-    private ThingCommandResult validatePutCreate(final PutThingCommand command) {
-        List<Field> forbiddenPutCreationFields =
-                command.getEntity().getFieldsOfType(FieldType.AUTO_INCREMENT, FieldType.AUTO_GUID);
-        if (!forbiddenPutCreationFields.isEmpty()) {
+    private ThingCommandResult delete(final DeleteThingCommand command) {
+        EntityDefinition entity = entityNamed(command.getEntityName());
+        EntityInstance instance = resolveInstance(entity, command.getIdentifier());
+        if (instance == null) {
             return ThingCommandResult.error(
-                    String.format(
-                            "Cannot create %s with PUT due to Auto fields %s",
-                            command.getEntity().getName(), fieldNames(forbiddenPutCreationFields)));
+                    ApplicationError.notFound(
+                            String.format(
+                                    "Could not find any instances with %s",
+                                    command.getRouteDisplay())));
         }
 
-        Field primaryKey = command.getEntity().getPrimaryKeyField();
-        for (NamedValue namedValue : command.getFieldValues()) {
-            if (namedValue.name.equals(primaryKey.getName())
-                    && !namedValue.value.equals(command.getIdentifier())) {
-                return ThingCommandResult.error(
-                        String.format(
-                                "Cannot create %s with PUT as key does not match body value %s != %s",
-                                command.getEntity().getName(),
-                                command.getIdentifier(),
-                                namedValue.value));
-            }
-        }
-
-        return null;
-    }
-
-    private EntityInstanceDraft createDraftWithPrimaryKey(final PutThingCommand command) {
-        EntityInstanceDraft baseDraft = EntityInstanceDraft.forEntity(command.getEntity());
-        Field primaryKeyField = command.getEntity().getPrimaryKeyField();
-        if (primaryKeyField.getType() == FieldType.AUTO_INCREMENT
-                || primaryKeyField.getType() == FieldType.AUTO_GUID) {
-            baseDraft.withProtectedField(primaryKeyField.getName(), command.getIdentifier());
-        } else {
-            baseDraft.withField(primaryKeyField.getName(), command.getIdentifier());
-        }
-
-        List<NamedValue> fieldValues = new ArrayList<>(command.getFieldValues());
-        store.administration().accommodateProtectedIds(command.getEntity(), fieldValues);
-        EntityInstanceDraft draft =
-                new EntityInstanceDraftBuilder(command.getEntity())
-                        .overrideFieldValuesFromArgsIgnoring(
-                                fieldValues,
-                                command.getEntity().getFieldNamesOfType(FieldType.AUTO_GUID));
-        copyBaseDraftValues(baseDraft, draft);
-        return draft;
-    }
-
-    public ThingCommandResult delete(final EntityInstance instance) {
         try {
             store.entities().delete(instance);
             return ThingCommandResult.success();
@@ -255,138 +279,12 @@ public final class ThingCommandService {
         }
     }
 
-    private ThingCommandResult delete(final DeleteThingCommand command) {
-        if (command.hasResolvedInstance()) {
-            return delete(command.getInstance());
-        }
-
-        EntityInstance instance = resolveInstance(command.getEntity(), command.getIdentifier());
-        if (instance == null) {
-            return ThingCommandResult.error(
-                    ApplicationError.notFound(
-                            String.format(
-                                    "Could not find any instances with %s",
-                                    command.getRouteDisplay())));
-        }
-        return delete(instance);
-    }
-
-    public ThingCommandResult connectRelationship(
-            final EntityInstance parent,
-            final String relationshipName,
-            final EntityInstance child,
-            final boolean deleteChildOnRollback) {
-        boolean alreadyConnected =
-                isRelated(parent, new RelationshipConnection(relationshipName, child));
-        try {
-            store.relationships().connect(parent, relationshipName, child);
-
-            ValidationReport validNow = store.relationships().validate(child);
-            if (!validNow.isValid()) {
-                if (!alreadyConnected) {
-                    store.relationships().disconnectBetween(parent, child, relationshipName);
-                }
-                if (deleteChildOnRollback) {
-                    rollbackDelete(child);
-                }
-                return ThingCommandResult.error(validNow.getErrorMessages());
-            }
-
-            return ThingCommandResult.success(child);
-        } catch (Exception e) {
-            if (!alreadyConnected) {
-                store.relationships().disconnectBetween(parent, child, relationshipName);
-            }
-            if (deleteChildOnRollback) {
-                rollbackDelete(child);
-            }
-            return ThingCommandResult.error(messageFrom(e));
-        }
-    }
-
-    public ThingCommandResult disconnectRelationship(
-            final EntityInstance parent,
-            final EntityInstance child,
-            final String relationshipName) {
-        try {
-            store.relationships().removeBetween(parent, child, relationshipName);
-            return ThingCommandResult.success();
-        } catch (Exception e) {
-            return ThingCommandResult.error(messageFrom(e));
-        }
-    }
-
-    private ThingCommandResult disconnectRelationship(final DisconnectRelationshipCommand command) {
-        if (command.hasResolvedRelationship()) {
-            return disconnectRelationship(
-                    command.getParent(), command.getChild(), command.getRelationshipName());
-        }
-
-        EntityInstance parent =
-                resolveInstance(command.getParentEntity(), command.getParentIdentifier());
-        if (parent == null) {
-            return relationshipRouteNotFound(command.getRouteDisplay());
-        }
-
-        EntityInstance child =
-                relatedInstanceMatchingIdentifier(
-                        parent, command.getRelationshipName(), command.getChildIdentifier());
-        if (child == null) {
-            return relationshipRouteNotFound(command.getRouteDisplay());
-        }
-
-        return disconnectRelationship(parent, child, command.getRelationshipName());
-    }
-
-    public ThingCommandResult connectRelationships(
-            final EntityInstance instance, final List<RelationshipReference> relationships) {
-        return connectRelationshipReferences(instance, relationships, true, false);
-    }
-
-    private ThingCommandResult createAndConnect(final CreateAndConnectRelationshipCommand command) {
-        EntityInstance parent = command.getParent();
-        if (!command.hasResolvedParent()) {
-            parent = resolveInstance(command.getParentEntity(), command.getParentIdentifier());
-            if (parent == null) {
-                return ThingCommandResult.error(
-                        ApplicationError.notFound(
-                                String.format(
-                                        "Could not find parent thing for relationship %s",
-                                        command.getRouteDisplay())));
-            }
-        }
-
-        ThingCommandResult createResult =
-                create(command.getChildDraft(), command.getChildRelationships(), false);
-        if (createResult.isError()) {
-            return createResult;
-        }
-
-        ThingCommandResult connectResult =
-                connectRelationship(
-                        parent, command.getRelationshipName(), createResult.getInstance(), true);
-        if (connectResult.isError()) {
-            return connectResult.withRolledBackCreatedInstance();
-        }
-
-        return ThingCommandResult.success(createResult.getInstance());
-    }
-
-    private ThingCommandResult connectExistingRelationship(
+    ThingCommandResult connectExistingRelationship(
             final ConnectExistingRelationshipCommand command) {
-        if (command.hasResolvedRelationship()) {
-            return connectRelationship(
-                    command.getParent(), command.getRelationshipName(), command.getChild(), false);
-        }
-
-        EntityInstance parent =
-                resolveInstance(command.getParentEntity(), command.getParentIdentifier());
+        EntityDefinition parentEntity = entityNamed(command.getParentEntityName());
+        EntityInstance parent = resolveInstance(parentEntity, command.getParentIdentifier());
         if (parent == null) {
-            return ThingCommandResult.error(
-                    ApplicationError.notFound(
-                            String.format(
-                                    "Could not find parent thing for relationship %s",
-                                    command.getRouteDisplay())));
+            return parentNotFound(command.getRouteDisplay());
         }
 
         RelatedItemResolution related =
@@ -408,6 +306,191 @@ public final class ThingCommandService {
         }
 
         return connectRelationship(parent, relationshipToUse.getName(), related.instance, false);
+    }
+
+    ThingCommandResult createAndConnect(final CreateAndConnectRelationshipCommand command) {
+        EntityDefinition parentEntity = entityNamed(command.getParentEntityName());
+        EntityInstance parent = resolveInstance(parentEntity, command.getParentIdentifier());
+        if (parent == null) {
+            return parentNotFound(command.getRouteDisplay());
+        }
+
+        EntityDefinition childEntity = entityNamed(command.getChildEntityName());
+        ThingCommandResult typeValidation =
+                validation.validateDeclaredFieldTypes(childEntity, command.getChildBodyFields());
+        if (typeValidation != null) {
+            return typeValidation;
+        }
+
+        List<NamedValue> childFieldValues =
+                validation.normalizedFieldValues(
+                        childEntity, command.getChildFieldValues(), command.getChildBodyFields());
+        ThingCommandResult validationResult =
+                validation.validateCreate(childEntity, childFieldValues, false, "");
+        if (validationResult != null) {
+            return validationResult;
+        }
+
+        try {
+            EntityInstanceDraft childDraft = createDraft(childEntity, "", childFieldValues);
+            ThingCommandResult createResult =
+                    create(childDraft, command.getChildRelationships(), false);
+            if (createResult.isError()) {
+                return createResult;
+            }
+
+            ThingCommandResult connectResult =
+                    connectRelationship(
+                            parent,
+                            command.getRelationshipName(),
+                            createResult.getInstance(),
+                            true);
+            if (connectResult.isError()) {
+                return connectResult.withRolledBackCreatedInstance();
+            }
+
+            return ThingCommandResult.success(createResult.getInstance());
+        } catch (Exception e) {
+            return ThingCommandResult.error(messageFrom(e));
+        }
+    }
+
+    ThingCommandResult relate(final RelateThingCommand command) {
+        EntityDefinition parentEntity = entityNamed(command.getParentEntityName());
+        if (parentEntity == null) {
+            return parentNotFound(command.getRouteDisplay());
+        }
+
+        RelationshipVectorDefinition vector =
+                firstRelationshipVector(parentEntity, command.getRelationshipName());
+        if (vector == null) {
+            return ThingCommandResult.error(
+                    String.format(
+                            "Could not find a relationship named %s for %s",
+                            command.getRelationshipName(), parentEntity.getName()));
+        }
+
+        List<NamedValue> bodyFieldValues =
+                validation.normalizedFieldValues(
+                        vector.getTo(), command.getBodyFieldValues(), command.getBodyFields());
+        boolean referencesExistingRelatedItem =
+                bodyReferencesExistingRelatedItem(vector.getTo(), bodyFieldValues);
+
+        ThingCommandResult typeValidation =
+                referencesExistingRelatedItem
+                        ? validation.validateDeclaredFieldTypesIgnoringProtected(
+                                vector.getTo(), command.getBodyFields())
+                        : validation.validateDeclaredFieldTypes(
+                                vector.getTo(), command.getBodyFields());
+        if (typeValidation != null) {
+            return typeValidation;
+        }
+
+        EntityInstance parent = resolveInstance(parentEntity, command.getParentIdentifier());
+        if (parent == null) {
+            return parentNotFound(command.getRouteDisplay());
+        }
+
+        if (referencesExistingRelatedItem) {
+            ConnectExistingRelationshipCommand connect =
+                    new ConnectExistingRelationshipCommand(
+                            command.getParentEntityName(),
+                            command.getParentIdentifier(),
+                            command.getRelationshipName(),
+                            bodyFieldValues,
+                            command.getRouteDisplay());
+            return connectExistingRelationship(connect);
+        }
+
+        CreateAndConnectRelationshipCommand create =
+                new CreateAndConnectRelationshipCommand(
+                        command.getParentEntityName(),
+                        command.getParentIdentifier(),
+                        command.getRelationshipName(),
+                        vector.getTo().getName(),
+                        bodyFieldValues,
+                        command.getBodyFields(),
+                        command.getBodyRelationships(),
+                        command.getRouteDisplay());
+        ThingCommandResult result = createAndConnect(create);
+        if (result.isSuccessful()) {
+            return ThingCommandResult.created(result.getInstance());
+        }
+        return result;
+    }
+
+    ThingCommandResult disconnectRelationship(final DisconnectRelationshipCommand command) {
+        EntityDefinition parentEntity = entityNamed(command.getParentEntityName());
+        EntityInstance parent = resolveInstance(parentEntity, command.getParentIdentifier());
+        if (parent == null) {
+            return relationshipRouteNotFound(command.getRouteDisplay());
+        }
+
+        EntityInstance child =
+                relatedInstanceMatchingIdentifier(
+                        parent, command.getRelationshipName(), command.getChildIdentifier());
+        if (child == null) {
+            return relationshipRouteNotFound(command.getRouteDisplay());
+        }
+
+        try {
+            store.relationships().removeBetween(parent, child, command.getRelationshipName());
+            return ThingCommandResult.success();
+        } catch (Exception e) {
+            return ThingCommandResult.error(messageFrom(e));
+        }
+    }
+
+    ThingCommandResult connectRelationship(
+            final EntityInstance parent,
+            final String relationshipName,
+            final EntityInstance child,
+            final boolean deleteChildOnRollback) {
+        boolean alreadyConnected =
+                isRelated(parent, new RelationshipConnection(relationshipName, child));
+        try {
+            store.relationships().connect(parent, relationshipName, child);
+
+            ValidationReport validNow = store.relationships().validate(child);
+            if (!validNow.isValid()) {
+                if (!alreadyConnected) {
+                    store.relationships().disconnectBetween(parent, child, relationshipName);
+                }
+                if (deleteChildOnRollback) {
+                    store.entities().delete(child);
+                }
+                return ThingCommandResult.error(validNow.getErrorMessages());
+            }
+
+            return ThingCommandResult.success(child);
+        } catch (Exception e) {
+            if (!alreadyConnected) {
+                store.relationships().disconnectBetween(parent, child, relationshipName);
+            }
+            if (deleteChildOnRollback) {
+                store.entities().delete(child);
+            }
+            return ThingCommandResult.error(messageFrom(e));
+        }
+    }
+
+    private ThingCommandResult connectRelationshipReferences(
+            final EntityInstance instance,
+            final List<RelationshipReference> references,
+            final boolean validateFinalRelationships,
+            final boolean prefixRelationshipErrors) {
+        RelationshipReferenceResolver.Resolution resolution =
+                relationshipResolver.resolve(instance, references);
+        if (resolution.hasErrors()) {
+            if (prefixRelationshipErrors) {
+                return ThingCommandResult.error(
+                        "Invalid relationships: " + String.join(", ", resolution.errors()));
+            }
+            return ThingCommandResult.error(resolution.errors());
+        }
+
+        return connectRelationships(
+                instance, resolution.relationships(), validateFinalRelationships);
     }
 
     private ThingCommandResult connectRelationships(
@@ -443,44 +526,61 @@ public final class ThingCommandService {
         }
     }
 
-    private ThingCommandResult connectRelationshipReferences(
-            final EntityInstance instance,
-            final List<RelationshipReference> references,
-            final boolean validateFinalRelationships,
-            final boolean prefixRelationshipErrors) {
-        RelationshipResolution resolution = resolveRelationshipReferences(instance, references);
-        if (resolution.hasErrors()) {
-            if (prefixRelationshipErrors) {
-                return ThingCommandResult.error(
-                        "Invalid relationships: " + String.join(", ", resolution.errors));
+    private EntityInstanceDraft createDraft(
+            final EntityDefinition entity,
+            final String requestedPrimaryKey,
+            final List<NamedValue> fieldValues) {
+        EntityInstanceDraft baseDraft = EntityInstanceDraft.forEntity(entity);
+        if (requestedPrimaryKey != null
+                && !requestedPrimaryKey.isEmpty()
+                && entity.hasPrimaryKeyField()) {
+            Field primaryKeyField = entity.getPrimaryKeyField();
+            if (primaryKeyField.getType() == FieldType.AUTO_INCREMENT
+                    || primaryKeyField.getType() == FieldType.AUTO_GUID) {
+                baseDraft.withProtectedField(primaryKeyField.getName(), requestedPrimaryKey);
+            } else {
+                baseDraft.withField(primaryKeyField.getName(), requestedPrimaryKey);
             }
-            return ThingCommandResult.error(resolution.errors);
         }
 
-        return connectRelationships(instance, resolution.relationships, validateFinalRelationships);
+        List<NamedValue> values = new ArrayList<>(fieldValues);
+        if (requestedPrimaryKey != null && !requestedPrimaryKey.isEmpty()) {
+            store.administration().accommodateProtectedIds(entity, values);
+            EntityInstanceDraft draft =
+                    new EntityInstanceDraftBuilder(entity)
+                            .overrideFieldValuesFromArgsIgnoring(
+                                    values, entity.getFieldNamesOfType(FieldType.AUTO_GUID));
+            copyBaseDraftValues(baseDraft, draft);
+            return draft;
+        }
+
+        return new EntityInstanceDraftBuilder(entity).setFieldValuesFrom(values);
     }
 
-    private RelationshipResolution resolveRelationshipReferences(
-            final EntityInstance instance, final List<RelationshipReference> references) {
-        List<RelationshipConnection> relationships = new ArrayList<>();
-        List<String> errors = new ArrayList<>();
-
-        for (RelationshipReference reference : references) {
-            EntityInstance related = resolveRelationshipReference(instance, reference);
-            if (related == null) {
-                errors.add(missingRelationshipReferenceMessage(reference));
-            } else {
-                relationships.add(
-                        new RelationshipConnection(reference.relationshipName(), related));
-            }
+    private EntityDefinition entityNamed(final String entityName) {
+        if (entityName == null || entityName.isEmpty()) {
+            return null;
         }
-
-        return new RelationshipResolution(relationships, errors);
+        EntityDefinition entity = schema.entityNamed(entityName);
+        if (entity != null) {
+            return entity;
+        }
+        return schema.definitionWithSingularOrPluralName(entityName);
     }
 
     private EntityInstance resolveInstance(
             final EntityDefinition entity, final String queryIdentifier) {
+        if (entity == null) {
+            return null;
+        }
         return store.entityQueries().findByQueryIdentifier(entity, queryIdentifier);
+    }
+
+    private ThingCommandResult parentNotFound(final String routeDisplay) {
+        return ThingCommandResult.error(
+                ApplicationError.notFound(
+                        String.format(
+                                "Could not find parent thing for relationship %s", routeDisplay)));
     }
 
     private ThingCommandResult relationshipRouteNotFound(final String routeDisplay) {
@@ -570,6 +670,31 @@ public final class ThingCommandService {
         return null;
     }
 
+    private RelationshipVectorDefinition firstRelationshipVector(
+            final EntityDefinition entity, final String relationshipName) {
+        List<RelationshipVectorDefinition> vectors =
+                entity.related().getRelationships(relationshipName);
+        if (vectors.isEmpty()) {
+            return null;
+        }
+        return vectors.get(0);
+    }
+
+    private boolean bodyReferencesExistingRelatedItem(
+            final EntityDefinition targetEntity, final List<NamedValue> bodyFields) {
+        for (NamedValue fieldValue : bodyFields) {
+            Field field = targetEntity.getField(fieldValue.getName());
+            if (field == null) {
+                continue;
+            }
+            if (field.getType() == FieldType.AUTO_GUID
+                    || field.getType() == FieldType.AUTO_INCREMENT) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private EntityInstance relatedInstanceMatchingIdentifier(
             final EntityInstance parent, final String relationshipName, final String identifier) {
         for (EntityInstance related : store.relationships().listRelated(parent, relationshipName)) {
@@ -594,83 +719,6 @@ public final class ThingCommandService {
         return primaryKeyValue != null && primaryKeyValue.contentEquals(identifier);
     }
 
-    private EntityInstance resolveRelationshipReference(
-            final EntityInstance instance, final RelationshipReference reference) {
-        if (reference.hasExplicitTargetEntity()) {
-            return resolveExplicitRelationshipReference(reference);
-        }
-
-        for (RelationshipVectorDefinition vector :
-                instance.getEntity().related().getRelationships(reference.relationshipName())) {
-            EntityDefinition relatedEntity = vector.getTo();
-            EntityInstance related =
-                    store.entityQueries()
-                            .findByField(
-                                    relatedEntity,
-                                    reference.referenceFieldName(),
-                                    reference.referenceValue());
-            if (related == null) {
-                related =
-                        store.entityQueries()
-                                .findByQueryIdentifier(relatedEntity, reference.referenceValue());
-            }
-            if (related != null) {
-                return related;
-            }
-        }
-
-        return null;
-    }
-
-    private EntityInstance resolveExplicitRelationshipReference(
-            final RelationshipReference reference) {
-        EntityInstance related =
-                store.entityQueries()
-                        .findByQueryIdentifier(
-                                reference.targetEntity(), reference.referenceValue());
-        if (related == null) {
-            related =
-                    store.entityQueries()
-                            .findByField(
-                                    reference.targetEntity(),
-                                    reference.referenceFieldName(),
-                                    reference.referenceValue());
-        }
-        return related;
-    }
-
-    private String missingRelationshipReferenceMessage(final RelationshipReference reference) {
-        if (reference.hasExplicitTargetEntity()) {
-            return String.format(
-                    "cannot find %s of %s to relate to with %s %s",
-                    reference.referenceFieldName(),
-                    reference.targetTerm(),
-                    reference.referenceFieldName(),
-                    reference.referenceValue());
-        }
-
-        return String.format(
-                "cannot find %s to relate to with %s %s",
-                reference.relationshipName(),
-                reference.referenceFieldName(),
-                reference.referenceValue());
-    }
-
-    private void rollbackAmendment(
-            final EntityInstance current,
-            final EntityInstance original,
-            final RelationshipSnapshot originalRelationships) {
-        RelationshipSnapshot.capture(store, current).disconnectFrom(store, current);
-        EntityInstance restored = store.entities().replace(current, draftFrom(original));
-        originalRelationships.restoreTo(store, restored);
-    }
-
-    private void rollbackDelete(final EntityInstance instance) {
-        if (instance != null) {
-            store.entities().delete(instance);
-        }
-    }
-
     private void disconnectConnections(
             final EntityInstance instance, final List<RelationshipConnection> relationships) {
         for (RelationshipConnection relationship : relationships) {
@@ -693,20 +741,6 @@ public final class ThingCommandService {
         return false;
     }
 
-    private EntityInstanceDraft draftFrom(final EntityInstance instance) {
-        EntityInstanceDraft draft = EntityInstanceDraft.forEntity(instance.getEntity());
-        for (FieldValue value : instance.getAssignedFieldValues()) {
-            Field field = instance.getEntity().getField(value.getName());
-            if (field.getType() == FieldType.AUTO_INCREMENT
-                    || field.getType() == FieldType.AUTO_GUID) {
-                draft.withProtectedField(value.getName(), value.asString());
-            } else {
-                draft.withField(value.getName(), value.asString());
-            }
-        }
-        return draft;
-    }
-
     private void copyBaseDraftValues(
             final EntityInstanceDraft baseDraft, final EntityInstanceDraft draft) {
         for (NamedValue value : baseDraft.getFieldValues()) {
@@ -717,36 +751,9 @@ public final class ThingCommandService {
         }
     }
 
-    private String fieldNames(final List<Field> fields) {
-        String names = "";
-        for (Field field : fields) {
-            if (!names.isEmpty()) {
-                names = names + ", ";
-            }
-            names = names + field.getName();
-        }
-        return names;
-    }
-
-    private String messageFrom(final Exception exception) {
+    private static String messageFrom(final Exception exception) {
         String message = exception.getMessage();
         return message == null ? "" : message;
-    }
-
-    private static final class RelationshipResolution {
-
-        private final List<RelationshipConnection> relationships;
-        private final List<String> errors;
-
-        private RelationshipResolution(
-                final List<RelationshipConnection> relationships, final List<String> errors) {
-            this.relationships = relationships;
-            this.errors = errors;
-        }
-
-        private boolean hasErrors() {
-            return !errors.isEmpty();
-        }
     }
 
     private static final class RelatedItemResolution {
@@ -801,12 +808,6 @@ public final class ThingCommandService {
             for (RelationshipLink link : links) {
                 store.relationships()
                         .disconnectBetween(instance, link.related, link.relationshipName);
-            }
-        }
-
-        private void restoreTo(final ThingStore store, final EntityInstance instance) {
-            for (RelationshipLink link : links) {
-                store.relationships().connect(instance, link.relationshipName, link.related);
             }
         }
 

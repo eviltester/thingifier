@@ -1,24 +1,22 @@
 package uk.co.compendiumdev.thingifier.application.command;
 
-import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
-
 public final class RelationshipReference {
 
     private final String relationshipName;
-    private final EntityDefinition targetEntity;
+    private final String targetEntityName;
     private final String targetTerm;
     private final String referenceFieldName;
     private final String referenceValue;
 
     private RelationshipReference(
             final String relationshipName,
-            final EntityDefinition targetEntity,
+            final String targetEntityName,
             final String targetTerm,
             final String referenceFieldName,
             final String referenceValue) {
         this.relationshipName = relationshipName;
-        this.targetEntity = targetEntity;
-        this.targetTerm = targetTerm;
+        this.targetEntityName = targetEntityName == null ? "" : targetEntityName;
+        this.targetTerm = targetTerm == null ? "" : targetTerm;
         this.referenceFieldName = referenceFieldName;
         this.referenceValue = referenceValue;
     }
@@ -28,17 +26,17 @@ public final class RelationshipReference {
             final String referenceFieldName,
             final String referenceValue) {
         return new RelationshipReference(
-                relationshipName, null, "", referenceFieldName, referenceValue);
+                relationshipName, "", "", referenceFieldName, referenceValue);
     }
 
     public static RelationshipReference explicit(
             final String relationshipName,
-            final EntityDefinition targetEntity,
+            final String targetEntityName,
             final String targetTerm,
             final String referenceFieldName,
             final String referenceValue) {
         return new RelationshipReference(
-                relationshipName, targetEntity, targetTerm, referenceFieldName, referenceValue);
+                relationshipName, targetEntityName, targetTerm, referenceFieldName, referenceValue);
     }
 
     public String relationshipName() {
@@ -46,11 +44,11 @@ public final class RelationshipReference {
     }
 
     public boolean hasExplicitTargetEntity() {
-        return targetEntity != null;
+        return !targetEntityName.isEmpty();
     }
 
-    public EntityDefinition targetEntity() {
-        return targetEntity;
+    public String targetEntityName() {
+        return targetEntityName;
     }
 
     public String targetTerm() {

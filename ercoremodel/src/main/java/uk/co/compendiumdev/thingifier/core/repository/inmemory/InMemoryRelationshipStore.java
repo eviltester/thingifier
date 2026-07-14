@@ -126,6 +126,15 @@ final class InMemoryRelationshipStore {
         rows.clear();
     }
 
+    Snapshot snapshot() {
+        return new Snapshot(new LinkedHashMap<>(rows));
+    }
+
+    void restore(final Snapshot snapshot) {
+        rows.clear();
+        rows.putAll(snapshot.rows);
+    }
+
     private List<RelationshipRow> rowsInvolving(final EntityInstance instance) {
         List<RelationshipRow> involving = new ArrayList<>();
         for (RelationshipRow row : rows.values()) {
@@ -169,5 +178,14 @@ final class InMemoryRelationshipStore {
                 + fromInternalId
                 + "|"
                 + toInternalId;
+    }
+
+    static final class Snapshot {
+
+        private final Map<String, RelationshipRow> rows;
+
+        private Snapshot(final Map<String, RelationshipRow> rows) {
+            this.rows = rows;
+        }
     }
 }

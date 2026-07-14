@@ -59,6 +59,36 @@ public class ThingStoreContractTest {
     }
 
     @Test
+    public void inMemoryTransactionCommitPersistsChanges() {
+        ThingStore repository = new InMemoryThingStore(EntityRelModel.DEFAULT_DATABASE_NAME);
+
+        exerciseTransactionCommit(repository);
+    }
+
+    @Test
+    public void sqliteTransactionCommitPersistsChanges() {
+        try (ThingStore repository =
+                SqliteThingStore.inMemory(EntityRelModel.DEFAULT_DATABASE_NAME)) {
+            exerciseTransactionCommit(repository);
+        }
+    }
+
+    @Test
+    public void inMemoryTransactionRollbackRestoresEntitiesRelationshipsAndCounters() {
+        ThingStore repository = new InMemoryThingStore(EntityRelModel.DEFAULT_DATABASE_NAME);
+
+        exerciseTransactionRollback(repository);
+    }
+
+    @Test
+    public void sqliteTransactionRollbackRestoresEntitiesRelationshipsAndCounters() {
+        try (ThingStore repository =
+                SqliteThingStore.inMemory(EntityRelModel.DEFAULT_DATABASE_NAME)) {
+            exerciseTransactionRollback(repository);
+        }
+    }
+
+    @Test
     public void sqliteRepositoryCannotBeUsedAfterClose() {
         ERSchema schema = todoSchema();
         ThingStore repository = SqliteThingStore.inMemory(EntityRelModel.DEFAULT_DATABASE_NAME);
@@ -753,6 +783,39 @@ public class ThingStoreContractTest {
         EntityInstance project = create(repository, projectDefinition, "Repository project");
         EntityInstance task = create(repository, taskDefinition, "Wire repository");
         repository.relationships().connect(project, "tasks", task);
+    }
+
+    private void exerciseTransactionCommit(final ThingStore repository) {
+        ERSchema schema = todoSchema();
+        repository.administration().initializeFrom(schema);
+        EntityDefinition project = schema.getEntityDefinitionNamed("project");
+
+        try (ThingStoreTransaction transaction = repository.beginTransaction()) {
+            create(repository, project, "Committed project");
+            transaction.commit();
+        }
+
+        Assertions.assertEquals(1, repository.entityQueries().count(project));
+    }
+
+    private void exerciseTransactionRollback(final ThingStore repository) {
+        ERSchema schema = todoSchema();
+        repository.administration().initializeFrom(schema);
+        EntityDefinition project = schema.getEntityDefinitionNamed("project");
+        EntityDefinition task = schema.getEntityDefinitionNamed("task");
+
+        try (ThingStoreTransaction transaction = repository.beginTransaction()) {
+            EntityInstance projectInstance = create(repository, project, "Rolled back project");
+            EntityInstance taskInstance = create(repository, task, "Rolled back task");
+            repository.relationships().connect(projectInstance, "tasks", taskInstance);
+            transaction.rollback();
+        }
+
+        Assertions.assertEquals(0, repository.entityQueries().count(project));
+        Assertions.assertEquals(0, repository.entityQueries().count(task));
+
+        EntityInstance taskAfterRollback = create(repository, task, "Counter starts again");
+        Assertions.assertEquals("1", taskAfterRollback.getPrimaryKeyValue());
     }
 
     private EntityInstance create(

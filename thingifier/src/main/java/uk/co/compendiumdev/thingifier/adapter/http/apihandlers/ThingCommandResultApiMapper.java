@@ -10,12 +10,14 @@ import uk.co.compendiumdev.thingifier.application.command.CreateThingCommand;
 import uk.co.compendiumdev.thingifier.application.command.DeleteThingCommand;
 import uk.co.compendiumdev.thingifier.application.command.DisconnectRelationshipCommand;
 import uk.co.compendiumdev.thingifier.application.command.PutThingCommand;
+import uk.co.compendiumdev.thingifier.application.command.RelateThingCommand;
 import uk.co.compendiumdev.thingifier.application.command.ThingWriteCommand;
 
 public final class ThingCommandResultApiMapper {
 
     private static final String CREATED_ITEM_ROLLED_BACK_MESSAGE =
             " the newly created item was deleted. No new items have been created.";
+    private static final String VALIDATION_PREFIX = "Failed Validation: ";
 
     private final ThingifierApiConfig apiConfig;
 
@@ -30,6 +32,11 @@ public final class ThingCommandResultApiMapper {
     public ApiResponse map(final ThingWriteCommand command, final ThingCommandResult result) {
         if (result.isError()) {
             return errorResponseFor(command, result);
+        }
+
+        if (command instanceof RelateThingCommand) {
+            return ApiResponse.created(
+                    result.createdInstance() ? result.getInstance() : null, apiConfig);
         }
 
         if (command instanceof CreateThingCommand
@@ -84,12 +91,20 @@ public final class ThingCommandResultApiMapper {
             return "";
         }
 
-        String validationPrefix = "Failed Validation: ";
-        if (message.startsWith(validationPrefix)
-                && message.substring(validationPrefix.length()).endsWith(" : field is mandatory")
-                && !message.substring(validationPrefix.length()).contains(", ")) {
-            return message.substring(validationPrefix.length());
+        if (message.startsWith(VALIDATION_PREFIX)
+                && message.substring(VALIDATION_PREFIX.length()).endsWith(" : field is mandatory")
+                && !message.substring(VALIDATION_PREFIX.length()).contains(", ")) {
+            return message.substring(VALIDATION_PREFIX.length());
+        }
+        if (isPlainValidationMessage(message)) {
+            return VALIDATION_PREFIX + message;
         }
         return message;
+    }
+
+    private boolean isPlainValidationMessage(final String message) {
+        return message != null
+                && !message.startsWith(VALIDATION_PREFIX)
+                && !message.startsWith("ERROR:");
     }
 }

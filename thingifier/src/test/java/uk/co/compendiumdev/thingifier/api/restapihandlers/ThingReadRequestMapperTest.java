@@ -27,8 +27,7 @@ public class ThingReadRequestMapperTest {
 
         Assertions.assertFalse(mapping.isError());
         Assertions.assertTrue(mapping.getQuery() instanceof ReadCollectionQuery);
-        Assertions.assertEquals(
-                thingifier.getDefinitionNamed("task"), mapping.getQuery().getEntity());
+        Assertions.assertEquals("task", mapping.getQuery().getEntityName());
     }
 
     @Test
@@ -62,8 +61,7 @@ public class ThingReadRequestMapperTest {
 
         Assertions.assertFalse(mapping.isError());
         Assertions.assertTrue(mapping.getQuery() instanceof ReadCollectionQuery);
-        Assertions.assertEquals(
-                thingifier.getDefinitionNamed("task"), mapping.getQuery().getEntity());
+        Assertions.assertEquals("task", mapping.getQuery().getEntityName());
     }
 
     @Test
@@ -117,8 +115,7 @@ public class ThingReadRequestMapperTest {
 
         Assertions.assertFalse(mapping.isError());
         Assertions.assertTrue(mapping.getQuery() instanceof ReadCollectionQuery);
-        Assertions.assertEquals(
-                thingifier.getDefinitionNamed("project"), mapping.getQuery().getEntity());
+        Assertions.assertEquals("project", mapping.getQuery().getEntityName());
     }
 
     @Test

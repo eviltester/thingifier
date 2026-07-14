@@ -7,7 +7,7 @@ import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.ThingRoute;
 import uk.co.compendiumdev.thingifier.application.query.ReadCollectionQuery;
 import uk.co.compendiumdev.thingifier.application.query.ReadInstanceQuery;
 import uk.co.compendiumdev.thingifier.application.query.ReadRelationshipQuery;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
+import uk.co.compendiumdev.thingifier.application.schema.EntityTypeRef;
 import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
 
 public final class ThingReadRequestMapper {
@@ -23,7 +23,7 @@ public final class ThingReadRequestMapper {
         if (route instanceof CollectionRoute) {
             CollectionRoute collection = (CollectionRoute) route;
             return ThingReadRequestMapping.query(
-                    new ReadCollectionQuery(collection.entity(), queryParams));
+                    new ReadCollectionQuery(collection.entity().name(), queryParams));
         }
 
         if (route instanceof InstanceRoute) {
@@ -35,14 +35,15 @@ public final class ThingReadRequestMapper {
             }
 
             return ThingReadRequestMapping.query(
-                    new ReadInstanceQuery(instance.entity(), identifierCandidate, queryParams));
+                    new ReadInstanceQuery(
+                            instance.entity().name(), identifierCandidate, queryParams));
         }
 
         if (route instanceof RelationshipCollectionRoute) {
             RelationshipCollectionRoute relationship = (RelationshipCollectionRoute) route;
             return ThingReadRequestMapping.query(
                     new ReadRelationshipQuery(
-                            relationship.parentEntity(),
+                            relationship.parentEntity().name(),
                             relationship.parentIdentifier(),
                             relationship.relationshipName(),
                             queryParams));
@@ -57,7 +58,7 @@ public final class ThingReadRequestMapper {
                         404, String.format("Could not find an instance with %s", url)));
     }
 
-    private EntityDefinition entityForTerm(final String term) {
-        return schema.definitionWithSingularOrPluralNamed(term);
+    private EntityTypeRef entityForTerm(final String term) {
+        return schema.entityWithSingularOrPluralName(term);
     }
 }

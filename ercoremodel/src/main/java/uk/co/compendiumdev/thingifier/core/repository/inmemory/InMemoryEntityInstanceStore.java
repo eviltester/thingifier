@@ -2,6 +2,7 @@ package uk.co.compendiumdev.thingifier.core.repository.inmemory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.ERSchema;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
@@ -94,6 +95,39 @@ final class InMemoryEntityInstanceStore {
 
         for (EntityInstance instance : new ArrayList<>(instanceCollection.getInstances())) {
             deleteEntityInstance(instance);
+        }
+    }
+
+    Snapshot snapshot() {
+        ConcurrentHashMap<String, InMemoryEntityInstanceCollection.Snapshot> snapshots =
+                new ConcurrentHashMap<>();
+        for (Map.Entry<String, InMemoryEntityInstanceCollection> collection :
+                instanceCollections.entrySet()) {
+            snapshots.put(collection.getKey(), collection.getValue().snapshot());
+        }
+        return new Snapshot(snapshots);
+    }
+
+    void restore(final Snapshot snapshot) {
+        instanceCollections.clear();
+        for (Map.Entry<String, InMemoryEntityInstanceCollection.Snapshot> entry :
+                snapshot.collections.entrySet()) {
+            InMemoryEntityInstanceCollection collection =
+                    new InMemoryEntityInstanceCollection(entry.getValue().definition);
+            collection.restore(entry.getValue());
+            instanceCollections.put(entry.getKey(), collection);
+        }
+    }
+
+    static final class Snapshot {
+
+        private final ConcurrentHashMap<String, InMemoryEntityInstanceCollection.Snapshot>
+                collections;
+
+        private Snapshot(
+                final ConcurrentHashMap<String, InMemoryEntityInstanceCollection.Snapshot>
+                        collections) {
+            this.collections = collections;
         }
     }
 }

@@ -108,6 +108,25 @@
         <property name="id" value="bodyParserOnlyAtHttpEdge"/>
         <property name="files" value=".*[/\\]challenger[/\\]src[/\\]main[/\\]java[/\\]uk[/\\]co[/\\]compendiumdev[/\\]challenge[/\\]challengesrouting[/\\]AuthRoutes\.java"/>
     </module>
+    <module name="SuppressionSingleFilter">
+        <property name="id" value="routeClassesNoMutableSchema"/>
+        <property name="files" value=".*[/\\]src[/\\]test[/\\]java[/\\].*"/>
+    </module>
+    <module name="RegexpMultiline">
+        <property name="id" value="commandDtosNoMutableDomain"/>
+        <property name="format" value="(?s)package uk\.co\.compendiumdev\.thingifier\.application\.command;.*import uk\.co\.compendiumdev\.thingifier\.core\.domain\.(definitions\.EntityDefinition|instances\.(EntityInstance|EntityInstanceDraft));"/>
+        <property name="message" value="Application command DTOs must carry stable names and values, not mutable schema definitions or live entity instances."/>
+    </module>
+    <module name="RegexpMultiline">
+        <property name="id" value="routeClassesNoMutableSchema"/>
+        <property name="format" value="(?s)package uk\.co\.compendiumdev\.thingifier\.adapter\.http\.apihandlers\.route;.*import uk\.co\.compendiumdev\.thingifier\.core\.domain\.definitions\.(EntityDefinition|field\.definition\.Field);"/>
+        <property name="message" value="Typed route classes must carry schema refs or stable names, not mutable schema definitions or fields."/>
+    </module>
+    <module name="RegexpMultiline">
+        <property name="id" value="apiMappersNoRepositoryLookup"/>
+        <property name="format" value="(?s)package uk\.co\.compendiumdev\.thingifier\.adapter\.http\.apihandlers;.*(\.entityQueries\s*\(|\.findByField\s*\(|\.findByGuid\s*\(|\.findByQueryIdentifier\s*\()"/>
+        <property name="message" value="API HTTP mappers must not resolve instances through repositories; application services own store lookups."/>
+    </module>
     <module name="TreeWalker">
         <module name="RegexpSinglelineJava">
             <property name="id" value="sparkImportsAtSparkEdge"/>

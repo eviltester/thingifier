@@ -4,6 +4,7 @@ import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.ThingifierSchemaCatalog;
 import uk.co.compendiumdev.thingifier.application.query.ReadCollectionQuery;
 import uk.co.compendiumdev.thingifier.application.query.ReadInstanceQuery;
 import uk.co.compendiumdev.thingifier.application.query.ReadRelationshipQuery;
@@ -29,9 +30,9 @@ public class ThingQueryServiceTest {
         EntityInstance second = createTask(storeFor(thingifier), task, "Second", "1");
 
         RepositoryQueryResult result =
-                new ThingQueryService()
+                queryServiceFor(thingifier)
                         .execute(
-                                new ReadCollectionQuery(task, new QueryFilterParams()),
+                                new ReadCollectionQuery(task.getName(), new QueryFilterParams()),
                                 storeFor(thingifier));
 
         Assertions.assertTrue(result.isResultACollection());
@@ -47,10 +48,10 @@ public class ThingQueryServiceTest {
         EntityInstance instance = createTask(storeFor(thingifier), task, "Only", "1");
 
         RepositoryQueryResult result =
-                new ThingQueryService()
+                queryServiceFor(thingifier)
                         .execute(
                                 new ReadInstanceQuery(
-                                        task,
+                                        task.getName(),
                                         instance.getPrimaryKeyValue(),
                                         new QueryFilterParams()),
                                 storeFor(thingifier));
@@ -66,9 +67,10 @@ public class ThingQueryServiceTest {
         EntityDefinition task = thingifier.getDefinitionNamed("task");
 
         RepositoryQueryResult result =
-                new ThingQueryService()
+                queryServiceFor(thingifier)
                         .execute(
-                                new ReadInstanceQuery(task, "missing", new QueryFilterParams()),
+                                new ReadInstanceQuery(
+                                        task.getName(), "missing", new QueryFilterParams()),
                                 storeFor(thingifier));
 
         Assertions.assertTrue(result.wasQueryIntendedToMatchAnInstance());
@@ -91,10 +93,10 @@ public class ThingQueryServiceTest {
         store.relationships().connect(projectInstance, "tasks", taskInstance);
 
         RepositoryQueryResult result =
-                new ThingQueryService()
+                queryServiceFor(thingifier)
                         .execute(
                                 new ReadRelationshipQuery(
-                                        project,
+                                        project.getName(),
                                         projectInstance.getPrimaryKeyValue(),
                                         "tasks",
                                         new QueryFilterParams()),
@@ -111,10 +113,13 @@ public class ThingQueryServiceTest {
         EntityDefinition project = thingifier.getDefinitionNamed("project");
 
         RepositoryQueryResult result =
-                new ThingQueryService()
+                queryServiceFor(thingifier)
                         .execute(
                                 new ReadRelationshipQuery(
-                                        project, "missing", "tasks", new QueryFilterParams()),
+                                        project.getName(),
+                                        "missing",
+                                        "tasks",
+                                        new QueryFilterParams()),
                                 storeFor(thingifier));
 
         Assertions.assertTrue(result.lastMatchWasNothing());
@@ -131,8 +136,10 @@ public class ThingQueryServiceTest {
         params.put("title", "=Keep");
 
         RepositoryQueryResult result =
-                new ThingQueryService()
-                        .execute(new ReadCollectionQuery(task, params), storeFor(thingifier));
+                queryServiceFor(thingifier)
+                        .execute(
+                                new ReadCollectionQuery(task.getName(), params),
+                                storeFor(thingifier));
 
         Assertions.assertEquals(1, result.getListEntityInstances().size());
         Assertions.assertEquals(
@@ -149,8 +156,10 @@ public class ThingQueryServiceTest {
         params.put("sortBy", "+priority");
 
         RepositoryQueryResult result =
-                new ThingQueryService()
-                        .execute(new ReadCollectionQuery(task, params), storeFor(thingifier));
+                queryServiceFor(thingifier)
+                        .execute(
+                                new ReadCollectionQuery(task.getName(), params),
+                                storeFor(thingifier));
 
         Assertions.assertEquals(
                 "First", result.getListEntityInstances().get(0).getFieldValue("title").asString());
@@ -168,8 +177,11 @@ public class ThingQueryServiceTest {
             EntityInstance instance = createTask(store, task, "SQLite", "1");
 
             RepositoryQueryResult result =
-                    new ThingQueryService()
-                            .execute(new ReadCollectionQuery(task, new QueryFilterParams()), store);
+                    queryServiceFor(thingifier)
+                            .execute(
+                                    new ReadCollectionQuery(
+                                            task.getName(), new QueryFilterParams()),
+                                    store);
 
             Assertions.assertEquals(List.of(instance), result.getListEntityInstances());
         }
@@ -206,5 +218,9 @@ public class ThingQueryServiceTest {
 
     private ThingStore storeFor(final Thingifier thingifier) {
         return thingifier.getStore(EntityRelModel.DEFAULT_DATABASE_NAME);
+    }
+
+    private ThingQueryService queryServiceFor(final Thingifier thingifier) {
+        return new ThingQueryService(new ThingifierSchemaCatalog(thingifier));
     }
 }

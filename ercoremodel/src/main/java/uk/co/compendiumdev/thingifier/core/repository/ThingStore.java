@@ -12,6 +12,8 @@ public interface ThingStore extends AutoCloseable {
 
     RepositoryAdministration administration();
 
+    ThingStoreTransaction beginTransaction();
+
     @Override
     default void close() {
         // Most store implementations do not own closeable resources.

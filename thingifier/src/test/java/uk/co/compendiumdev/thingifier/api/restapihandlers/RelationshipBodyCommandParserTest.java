@@ -27,7 +27,7 @@ public class RelationshipBodyCommandParserTest {
     @Test
     public void parsesCompressedRelationshipAsValidationAndExecutionCommand() {
         Thingifier thingifier = taskProjectThingifier();
-        EntityDefinition task = thingifier.getDefinitionNamed("task");
+        ThingifierSchemaCatalog schema = new ThingifierSchemaCatalog(thingifier);
         EntityDefinition project = thingifier.getDefinitionNamed("project");
         EntityInstance projectInstance =
                 thingifier
@@ -42,8 +42,10 @@ public class RelationshipBodyCommandParserTest {
         body.put("task-of.guid", projectInstance.getPrimaryKeyValue());
 
         RelationshipBodyCommands commands =
-                new RelationshipBodyCommandParser(new ThingifierSchemaCatalog(thingifier))
-                        .parse(bodyFieldsFor(body).asFlattenedStringMap(), task);
+                new RelationshipBodyCommandParser(schema)
+                        .parse(
+                                bodyFieldsFor(body).asFlattenedStringMap(),
+                                schema.entityWithSingularOrPluralName("task"));
 
         Assertions.assertTrue(commands.validationReport().isValid());
         Assertions.assertEquals(1, commands.relationshipEntries().size());

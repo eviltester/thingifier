@@ -40,7 +40,7 @@ public class RestApiPostHandler {
             final ApiBodyFields bodyFields,
             final ThingifierRequestContext context) {
         ThingWriteRequestMapping mapping =
-                new ThingWriteRequestMapper(runtime.schema(), runtime.apiConfig(), context.store())
+                new ThingWriteRequestMapper(runtime.schema())
                         .mapPost(new ThingRouteMapper(runtime.schema()).map(url), bodyFields);
         ThingCommandResultApiMapper apiMapper =
                 new ThingCommandResultApiMapper(runtime.apiConfig());

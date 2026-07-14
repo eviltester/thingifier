@@ -29,7 +29,7 @@ public class RestApiDeleteHandler {
 
     public ApiResponse handle(final String url, final ThingifierRequestContext context) {
         ThingWriteRequestMapping mapping =
-                new ThingWriteRequestMapper(runtime.schema(), runtime.apiConfig(), context.store())
+                new ThingWriteRequestMapper(runtime.schema())
                         .mapDelete(new ThingRouteMapper(runtime.schema()).map(url));
         ThingCommandResultApiMapper apiMapper =
                 new ThingCommandResultApiMapper(runtime.apiConfig());

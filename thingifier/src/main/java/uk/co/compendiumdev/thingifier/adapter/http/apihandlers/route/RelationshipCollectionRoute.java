@@ -1,16 +1,16 @@
 package uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route;
 
-import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
+import uk.co.compendiumdev.thingifier.application.schema.EntityTypeRef;
 
 public final class RelationshipCollectionRoute extends ThingRoute {
 
-    private final EntityDefinition parentEntity;
+    private final EntityTypeRef parentEntity;
     private final String parentIdentifier;
     private final String relationshipName;
 
     RelationshipCollectionRoute(
             final String originalPath,
-            final EntityDefinition parentEntity,
+            final EntityTypeRef parentEntity,
             final String parentIdentifier,
             final String relationshipName) {
         super(originalPath);
@@ -19,7 +19,7 @@ public final class RelationshipCollectionRoute extends ThingRoute {
         this.relationshipName = relationshipName;
     }
 
-    public EntityDefinition parentEntity() {
+    public EntityTypeRef parentEntity() {
         return parentEntity;
     }
 

@@ -16,7 +16,7 @@ class ThingRouteMapperTest {
         ThingRoute route = mapper().map("/tasks/");
 
         Assertions.assertTrue(route instanceof CollectionRoute);
-        Assertions.assertEquals("task", ((CollectionRoute) route).entity().getName());
+        Assertions.assertEquals("task", ((CollectionRoute) route).entity().name());
     }
 
     @Test
@@ -33,7 +33,7 @@ class ThingRouteMapperTest {
 
         Assertions.assertTrue(route instanceof RelationshipCollectionRoute);
         RelationshipCollectionRoute relationship = (RelationshipCollectionRoute) route;
-        Assertions.assertEquals("project", relationship.parentEntity().getName());
+        Assertions.assertEquals("project", relationship.parentEntity().name());
         Assertions.assertEquals("p1", relationship.parentIdentifier());
         Assertions.assertEquals("tasks", relationship.relationshipName());
     }

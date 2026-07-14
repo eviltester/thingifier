@@ -1,6 +1,5 @@
 package uk.co.compendiumdev.thingifier.adapter.http.apihandlers;
 
-import java.util.List;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.commonerrorresponse.NoSuchEntity;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.CollectionRoute;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.InstanceRoute;
@@ -9,26 +8,21 @@ import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.Relationshi
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.ThingRoute;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.UnmatchedRoute;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.ApiBodyFields;
-import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
-import uk.co.compendiumdev.thingifier.application.command.ConnectExistingRelationshipCommand;
 import uk.co.compendiumdev.thingifier.application.command.DeleteThingCommand;
 import uk.co.compendiumdev.thingifier.application.command.DisconnectRelationshipCommand;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.NamedValue;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVectorDefinition;
-import uk.co.compendiumdev.thingifier.core.repository.ThingStore;
+import uk.co.compendiumdev.thingifier.application.command.RelateThingCommand;
+import uk.co.compendiumdev.thingifier.application.schema.EntityTypeRef;
+import uk.co.compendiumdev.thingifier.application.schema.RelationshipSpec;
+import uk.co.compendiumdev.thingifier.application.schema.SchemaViewCatalog;
 
 public final class ThingWriteRequestMapper {
 
+    private final SchemaViewCatalog schema;
     private final ThingBodyCommandMapper bodyCommandMapper;
 
-    public ThingWriteRequestMapper(
-            final SchemaCatalog schema,
-            final ThingifierApiConfig apiConfig,
-            final ThingStore store) {
-        this.bodyCommandMapper = new ThingBodyCommandMapper(schema, apiConfig, store);
+    public ThingWriteRequestMapper(final SchemaViewCatalog schema) {
+        this.schema = schema;
+        this.bodyCommandMapper = new ThingBodyCommandMapper(schema);
     }
 
     public ThingWriteRequestMapping mapPost(
@@ -91,14 +85,14 @@ public final class ThingWriteRequestMapper {
             InstanceRoute instance = (InstanceRoute) route;
             return ThingWriteRequestMapping.command(
                     new DeleteThingCommand(
-                            instance.entity(), instance.identifier(), route.originalPath()));
+                            instance.entity().name(), instance.identifier(), route.originalPath()));
         }
 
         if (route instanceof RelationshipInstanceRoute) {
             RelationshipInstanceRoute relationship = (RelationshipInstanceRoute) route;
             return ThingWriteRequestMapping.command(
                     new DisconnectRelationshipCommand(
-                            relationship.parentEntity(),
+                            relationship.parentEntity().name(),
                             relationship.parentIdentifier(),
                             relationship.relationshipName(),
                             relationship.childIdentifier(),
@@ -122,8 +116,8 @@ public final class ThingWriteRequestMapper {
                     false,
                     String.format(
                             "No such %s entity instance with %s == %s found",
-                            route.entity().getName(),
-                            route.entity().getPrimaryKeyField().getName(),
+                            route.entity().name(),
+                            route.entity().primaryKeyFieldName(),
                             route.identifier()));
         }
 
@@ -132,49 +126,46 @@ public final class ThingWriteRequestMapper {
                         404,
                         String.format(
                                 "Entity %s does not have a primary key defined",
-                                route.entity().getName())));
+                                route.entity().name())));
     }
 
     private ThingWriteRequestMapping mapPostToRelationship(
             final RelationshipCollectionRoute route, final ApiBodyFields bodyFields) {
-        List<RelationshipVectorDefinition> possibleRelationships =
-                route.parentEntity().related().getRelationships(route.relationshipName());
-        RelationshipVectorDefinition relationshipToUse = possibleRelationships.get(0);
-        EntityDefinition thingTo = relationshipToUse.getTo();
-
-        List<NamedValue> childReferenceFields =
-                FieldValues.fromListMapEntryStringString(bodyFields.asFlattenedStringMap());
-        if (bodyReferencesExistingRelatedItem(thingTo, childReferenceFields)) {
-            return ThingWriteRequestMapping.command(
-                    new ConnectExistingRelationshipCommand(
-                            route.parentEntity(),
-                            route.parentIdentifier(),
-                            route.relationshipName(),
-                            childReferenceFields,
-                            route.originalPath()));
+        EntityTypeRef childEntity = firstRelationshipTarget(route);
+        if (childEntity == null) {
+            return ThingWriteRequestMapping.error(
+                    ApiMappingError.withMessage(400, "Your request was not understood"));
         }
 
-        return bodyCommandMapper.mapCreateAndConnect(
-                bodyFields,
-                route.parentEntity(),
-                route.parentIdentifier(),
-                route.relationshipName(),
-                relationshipToUse.getTo(),
-                route.originalPath());
+        RelationshipBodyCommands relationships =
+                bodyCommandMapper.parseRelationships(bodyFields, childEntity);
+        if (!relationships.validationReport().isValid()) {
+            return ThingWriteRequestMapping.error(
+                    ApiMappingError.withMessage(
+                            400,
+                            String.format(
+                                    "Invalid relationships: %s",
+                                    relationships.validationReport().getCombinedErrorMessages())));
+        }
+
+        return ThingWriteRequestMapping.command(
+                new RelateThingCommand(
+                        route.parentEntity().name(),
+                        route.parentIdentifier(),
+                        route.relationshipName(),
+                        bodyCommandMapper.fieldValuesExcludingRelationships(
+                                bodyFields, relationships),
+                        bodyCommandMapper.bodyFieldValues(bodyFields),
+                        relationships.references(),
+                        route.originalPath()));
     }
 
-    private boolean bodyReferencesExistingRelatedItem(
-            final EntityDefinition targetEntity, final List<NamedValue> bodyFields) {
-        for (NamedValue fieldValue : bodyFields) {
-            Field field = targetEntity.getField(fieldValue.getName());
-            if (field == null) {
-                continue;
-            }
-            if (field.getType() == FieldType.AUTO_GUID
-                    || field.getType() == FieldType.AUTO_INCREMENT) {
-                return true;
+    private EntityTypeRef firstRelationshipTarget(final RelationshipCollectionRoute route) {
+        for (RelationshipSpec relationship : route.parentEntity().relationships()) {
+            if (relationship.name().equals(route.relationshipName())) {
+                return schema.entityWithSingularOrPluralName(relationship.toEntityName());
             }
         }
-        return false;
+        return null;
     }
 }

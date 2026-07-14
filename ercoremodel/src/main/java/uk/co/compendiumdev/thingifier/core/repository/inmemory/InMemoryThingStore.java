@@ -21,6 +21,7 @@ import uk.co.compendiumdev.thingifier.core.repository.MutableEntityInstance;
 import uk.co.compendiumdev.thingifier.core.repository.RelationshipRepository;
 import uk.co.compendiumdev.thingifier.core.repository.RepositoryAdministration;
 import uk.co.compendiumdev.thingifier.core.repository.ThingStore;
+import uk.co.compendiumdev.thingifier.core.repository.ThingStoreTransaction;
 import uk.co.compendiumdev.thingifier.core.repository.validation.EntityInstanceWriteValidator;
 
 public class InMemoryThingStore implements ThingStore {
@@ -72,6 +73,11 @@ public class InMemoryThingStore implements ThingStore {
     @Override
     public RepositoryAdministration administration() {
         return administration;
+    }
+
+    @Override
+    public ThingStoreTransaction beginTransaction() {
+        return new InMemoryThingStoreTransaction(instanceData.snapshot(), relationships.snapshot());
     }
 
     void initializeFrom(final ERSchema schema) {
@@ -361,5 +367,41 @@ public class InMemoryThingStore implements ThingStore {
             return null;
         }
         return collection.findInstanceByInternalID(internalId);
+    }
+
+    private final class InMemoryThingStoreTransaction implements ThingStoreTransaction {
+
+        private final InMemoryEntityInstanceStore.Snapshot instanceSnapshot;
+        private final InMemoryRelationshipStore.Snapshot relationshipSnapshot;
+        private boolean completed;
+
+        private InMemoryThingStoreTransaction(
+                final InMemoryEntityInstanceStore.Snapshot instanceSnapshot,
+                final InMemoryRelationshipStore.Snapshot relationshipSnapshot) {
+            this.instanceSnapshot = instanceSnapshot;
+            this.relationshipSnapshot = relationshipSnapshot;
+        }
+
+        @Override
+        public void commit() {
+            completed = true;
+        }
+
+        @Override
+        public void rollback() {
+            if (completed) {
+                return;
+            }
+            relationships.restore(relationshipSnapshot);
+            instanceData.restore(instanceSnapshot);
+            completed = true;
+        }
+
+        @Override
+        public void close() {
+            if (!completed) {
+                rollback();
+            }
+        }
     }
 }

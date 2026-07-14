@@ -42,6 +42,7 @@ import uk.co.compendiumdev.thingifier.core.repository.MutableEntityInstance;
 import uk.co.compendiumdev.thingifier.core.repository.RelationshipRepository;
 import uk.co.compendiumdev.thingifier.core.repository.RepositoryAdministration;
 import uk.co.compendiumdev.thingifier.core.repository.ThingStore;
+import uk.co.compendiumdev.thingifier.core.repository.ThingStoreTransaction;
 import uk.co.compendiumdev.thingifier.core.repository.relationship.RelationshipEndpoint;
 import uk.co.compendiumdev.thingifier.core.repository.relationship.RelationshipRow;
 import uk.co.compendiumdev.thingifier.core.repository.relationship.RelationshipRules;
@@ -112,6 +113,23 @@ public class SqliteThingStore implements ThingStore {
     @Override
     public RepositoryAdministration administration() {
         return administration;
+    }
+
+    @Override
+    public ThingStoreTransaction beginTransaction() {
+        openConnection();
+        try {
+            boolean originalAutoCommit = connection.getAutoCommit();
+            Map<String, EntityInstance> materializedSnapshot = new HashMap<>(materializedInstances);
+            Map<String, Map<String, Integer>> counterSnapshot = snapshotCounters();
+            if (originalAutoCommit) {
+                connection.setAutoCommit(false);
+            }
+            return new SqliteThingStoreTransaction(
+                    originalAutoCommit, materializedSnapshot, counterSnapshot);
+        } catch (SQLException e) {
+            throw new IllegalStateException("Could not begin SQLite transaction", e);
+        }
     }
 
     void initializeFrom(final ERSchema schema) {
@@ -1488,6 +1506,10 @@ public class SqliteThingStore implements ThingStore {
     private void runInTransaction(final Runnable operation) {
         try {
             boolean originalAutoCommit = connection.getAutoCommit();
+            if (!originalAutoCommit) {
+                operation.run();
+                return;
+            }
             connection.setAutoCommit(false);
             try {
                 operation.run();
@@ -1503,6 +1525,101 @@ public class SqliteThingStore implements ThingStore {
             }
         } catch (SQLException e) {
             throw new IllegalStateException("Could not run SQLite transaction", e);
+        }
+    }
+
+    private Map<String, Map<String, Integer>> snapshotCounters() {
+        Map<String, Map<String, Integer>> snapshot = new HashMap<>();
+        for (Map.Entry<String, Map<String, AutoIncrement>> entityCounters :
+                countersByEntity.entrySet()) {
+            Map<String, Integer> fieldCounters = new HashMap<>();
+            for (Map.Entry<String, AutoIncrement> counter : entityCounters.getValue().entrySet()) {
+                fieldCounters.put(counter.getKey(), counter.getValue().peekNextValue());
+            }
+            snapshot.put(entityCounters.getKey(), fieldCounters);
+        }
+        return snapshot;
+    }
+
+    private void restoreCounters(final Map<String, Map<String, Integer>> snapshot) {
+        countersByEntity.clear();
+        for (Map.Entry<String, Map<String, Integer>> entityCounters : snapshot.entrySet()) {
+            Map<String, AutoIncrement> fieldCounters = new HashMap<>();
+            for (Map.Entry<String, Integer> counter : entityCounters.getValue().entrySet()) {
+                fieldCounters.put(
+                        counter.getKey(), new AutoIncrement(counter.getKey(), counter.getValue()));
+            }
+            countersByEntity.put(entityCounters.getKey(), fieldCounters);
+        }
+    }
+
+    private final class SqliteThingStoreTransaction implements ThingStoreTransaction {
+
+        private final boolean restoreAutoCommitOnClose;
+        private final Map<String, EntityInstance> materializedSnapshot;
+        private final Map<String, Map<String, Integer>> counterSnapshot;
+        private boolean completed;
+
+        private SqliteThingStoreTransaction(
+                final boolean restoreAutoCommitOnClose,
+                final Map<String, EntityInstance> materializedSnapshot,
+                final Map<String, Map<String, Integer>> counterSnapshot) {
+            this.restoreAutoCommitOnClose = restoreAutoCommitOnClose;
+            this.materializedSnapshot = materializedSnapshot;
+            this.counterSnapshot = counterSnapshot;
+        }
+
+        @Override
+        public void commit() {
+            if (completed) {
+                return;
+            }
+            try {
+                if (restoreAutoCommitOnClose) {
+                    connection.commit();
+                }
+                completed = true;
+            } catch (SQLException e) {
+                throw new IllegalStateException("Could not commit SQLite transaction", e);
+            } finally {
+                restoreAutoCommit();
+            }
+        }
+
+        @Override
+        public void rollback() {
+            if (completed) {
+                return;
+            }
+            try {
+                connection.rollback();
+                materializedInstances.clear();
+                materializedInstances.putAll(materializedSnapshot);
+                restoreCounters(counterSnapshot);
+                completed = true;
+            } catch (SQLException e) {
+                throw new IllegalStateException("Could not rollback SQLite transaction", e);
+            } finally {
+                restoreAutoCommit();
+            }
+        }
+
+        @Override
+        public void close() {
+            if (!completed) {
+                rollback();
+            }
+        }
+
+        private void restoreAutoCommit() {
+            if (!restoreAutoCommitOnClose) {
+                return;
+            }
+            try {
+                connection.setAutoCommit(true);
+            } catch (SQLException e) {
+                throw new IllegalStateException("Could not restore SQLite auto commit", e);
+            }
         }
     }
 

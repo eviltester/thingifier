@@ -13,12 +13,11 @@ import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.ThingRoute;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.ThingRouteMapper;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.ApiBodyFields;
 import uk.co.compendiumdev.thingifier.application.command.AmendThingCommand;
-import uk.co.compendiumdev.thingifier.application.command.ConnectExistingRelationshipCommand;
-import uk.co.compendiumdev.thingifier.application.command.CreateAndConnectRelationshipCommand;
 import uk.co.compendiumdev.thingifier.application.command.CreateThingCommand;
 import uk.co.compendiumdev.thingifier.application.command.DeleteThingCommand;
 import uk.co.compendiumdev.thingifier.application.command.DisconnectRelationshipCommand;
 import uk.co.compendiumdev.thingifier.application.command.PutThingCommand;
+import uk.co.compendiumdev.thingifier.application.command.RelateThingCommand;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.Cardinality;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
@@ -103,7 +102,7 @@ public class ThingWriteRequestMapperTest {
     }
 
     @Test
-    public void mapsRelationshipPostWithExistingChildToConnectCommand() {
+    public void mapsRelationshipPostWithExistingChildToRelateCommand() {
         Thingifier thingifier = taskProjectThingifier();
         EntityInstance task = createTask(thingifier, "Task");
         EntityInstance project = createProject(thingifier, "Project");
@@ -118,11 +117,11 @@ public class ThingWriteRequestMapperTest {
                                 parserFor("guid", task.getPrimaryKeyValue()));
 
         Assertions.assertFalse(mapping.isError());
-        Assertions.assertTrue(mapping.getCommand() instanceof ConnectExistingRelationshipCommand);
+        Assertions.assertTrue(mapping.getCommand() instanceof RelateThingCommand);
     }
 
     @Test
-    public void mapsRelationshipPostWithoutChildKeyToCreateAndConnectCommand() {
+    public void mapsRelationshipPostWithoutChildKeyToRelateCommand() {
         Thingifier thingifier = taskProjectThingifier();
         EntityInstance project = createProject(thingifier, "Project");
 
@@ -136,7 +135,7 @@ public class ThingWriteRequestMapperTest {
                                 parserFor("title", "New task"));
 
         Assertions.assertFalse(mapping.isError());
-        Assertions.assertTrue(mapping.getCommand() instanceof CreateAndConnectRelationshipCommand);
+        Assertions.assertTrue(mapping.getCommand() instanceof RelateThingCommand);
     }
 
     @Test
@@ -231,10 +230,7 @@ public class ThingWriteRequestMapperTest {
     }
 
     private ThingWriteRequestMapper mapperFor(final Thingifier thingifier) {
-        return new ThingWriteRequestMapper(
-                new ThingifierSchemaCatalog(thingifier),
-                thingifier.apiConfig(),
-                storeFor(thingifier));
+        return new ThingWriteRequestMapper(new ThingifierSchemaCatalog(thingifier));
     }
 
     private ThingStore storeFor(final Thingifier thingifier) {

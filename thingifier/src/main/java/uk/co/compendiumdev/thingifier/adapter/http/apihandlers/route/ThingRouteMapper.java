@@ -1,13 +1,13 @@
 package uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route;
 
-import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.SchemaCatalog;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
+import uk.co.compendiumdev.thingifier.application.schema.EntityTypeRef;
+import uk.co.compendiumdev.thingifier.application.schema.SchemaViewCatalog;
 
 public final class ThingRouteMapper {
 
-    private final SchemaCatalog schema;
+    private final SchemaViewCatalog schema;
 
-    public ThingRouteMapper(final SchemaCatalog schema) {
+    public ThingRouteMapper(final SchemaViewCatalog schema) {
         this.schema = schema;
     }
 
@@ -17,7 +17,7 @@ public final class ThingRouteMapper {
             return new UnmatchedRoute(path, parts);
         }
 
-        EntityDefinition entity = schema.definitionWithSingularOrPluralNamed(parts[0]);
+        EntityTypeRef entity = schema.entityWithSingularOrPluralName(parts[0]);
         if (entity == null) {
             return new UnmatchedRoute(path, parts);
         }
@@ -30,7 +30,7 @@ public final class ThingRouteMapper {
             return new InstanceRoute(path, entity, parts[1]);
         }
 
-        if (!entity.related().hasRelationship(parts[2])) {
+        if (!entity.hasRelationship(parts[2])) {
             return new UnmatchedRoute(path, parts);
         }
 

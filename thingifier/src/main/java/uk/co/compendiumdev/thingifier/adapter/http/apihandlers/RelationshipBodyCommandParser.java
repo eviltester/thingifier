@@ -4,21 +4,22 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import uk.co.compendiumdev.thingifier.application.command.RelationshipReference;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVectorDefinition;
+import uk.co.compendiumdev.thingifier.application.schema.EntityTypeRef;
+import uk.co.compendiumdev.thingifier.application.schema.FieldSpec;
+import uk.co.compendiumdev.thingifier.application.schema.RelationshipSpec;
+import uk.co.compendiumdev.thingifier.application.schema.SchemaViewCatalog;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 
 public final class RelationshipBodyCommandParser {
 
-    private final SchemaCatalog schema;
+    private final SchemaViewCatalog schema;
 
-    public RelationshipBodyCommandParser(final SchemaCatalog schema) {
+    public RelationshipBodyCommandParser(final SchemaViewCatalog schema) {
         this.schema = schema;
     }
 
     public RelationshipBodyCommands parse(
-            final List<Map.Entry<String, String>> flattenedArgs, final EntityDefinition entity) {
+            final List<Map.Entry<String, String>> flattenedArgs, final EntityTypeRef entity) {
         List<Map.Entry<String, String>> relationshipEntries = new ArrayList<>();
         List<RelationshipReference> references = new ArrayList<>();
         ValidationReport report = new ValidationReport();
@@ -30,7 +31,7 @@ public final class RelationshipBodyCommandParser {
                 parseComplexRelationship(entity, keyValue, report, references);
             } else if (key.contains(".")) {
                 String[] parts = key.split("\\.");
-                if (parts.length > 0 && entity.related().hasRelationship(parts[0])) {
+                if (parts.length > 0 && entity.hasRelationship(parts[0])) {
                     relationshipEntries.add(keyValue);
                     parseCompressedRelationship(entity, keyValue, report, references);
                 }
@@ -42,7 +43,7 @@ public final class RelationshipBodyCommandParser {
     }
 
     private void parseCompressedRelationship(
-            final EntityDefinition entity,
+            final EntityTypeRef entity,
             final Map.Entry<String, String> keyValue,
             final ValidationReport report,
             final List<RelationshipReference> references) {
@@ -69,7 +70,7 @@ public final class RelationshipBodyCommandParser {
     }
 
     private void parseComplexRelationship(
-            final EntityDefinition entity,
+            final EntityTypeRef entity,
             final Map.Entry<String, String> keyValue,
             final ValidationReport report,
             final List<RelationshipReference> references) {
@@ -87,8 +88,7 @@ public final class RelationshipBodyCommandParser {
             return;
         }
 
-        EntityDefinition relationshipTo =
-                schema.definitionWithSingularOrPluralNamed(relationshipToTerm);
+        EntityTypeRef relationshipTo = schema.entityWithSingularOrPluralName(relationshipToTerm);
         if (relationshipTo == null
                 || !validRelationshipBetweenThings(
                         entity, relationshipName, relationshipTo, report)) {
@@ -98,20 +98,22 @@ public final class RelationshipBodyCommandParser {
         references.add(
                 RelationshipReference.explicit(
                         relationshipName,
-                        relationshipTo,
+                        relationshipTo.name(),
                         relationshipToTerm,
                         relationshipField,
                         keyValue.getValue()));
     }
 
     private boolean supportsReferenceField(
-            final EntityDefinition entity, final String relationshipName, final String fieldName) {
-        for (RelationshipVectorDefinition vector :
-                entity.related().getRelationships(relationshipName)) {
-            List<String> linkingFields =
-                    vector.getTo()
-                            .getFieldNamesOfType(FieldType.AUTO_INCREMENT, FieldType.AUTO_GUID);
-            if (linkingFields.contains(fieldName)) {
+            final EntityTypeRef entity, final String relationshipName, final String fieldName) {
+        for (RelationshipSpec relationship : entity.relationships()) {
+            if (!relationship.name().equals(relationshipName)) {
+                continue;
+            }
+            EntityTypeRef target =
+                    schema.entityWithSingularOrPluralName(relationship.toEntityName());
+            FieldSpec field = target == null ? null : target.fieldNamed(fieldName);
+            if (field != null && field.isProtectedField()) {
                 return true;
             }
         }
@@ -119,14 +121,14 @@ public final class RelationshipBodyCommandParser {
     }
 
     private boolean isValidRelationship(
-            final EntityDefinition entity,
+            final EntityTypeRef entity,
             final String relationshipName,
             final ValidationReport report) {
-        if (!entity.related().hasRelationship(relationshipName)) {
+        if (!entity.hasRelationship(relationshipName)) {
             report.addErrorMessage(
                     String.format(
                             "%s is not a valid relationship for %s",
-                            relationshipName, entity.getName()));
+                            relationshipName, entity.name()));
             return false;
         }
         return true;
@@ -139,13 +141,13 @@ public final class RelationshipBodyCommandParser {
     }
 
     private boolean validRelationshipBetweenThings(
-            final EntityDefinition entity,
+            final EntityTypeRef entity,
             final String relationshipName,
-            final EntityDefinition relatedEntity,
+            final EntityTypeRef relatedEntity,
             final ValidationReport report) {
-        for (RelationshipVectorDefinition relationship :
-                entity.related().getRelationships(relationshipName)) {
-            if (relationship.getTo() == relatedEntity) {
+        for (RelationshipSpec relationship : entity.relationships()) {
+            if (relationship.name().equals(relationshipName)
+                    && relationship.toEntityName().equals(relatedEntity.name())) {
                 return true;
             }
         }
@@ -153,7 +155,7 @@ public final class RelationshipBodyCommandParser {
         report.addErrorMessage(
                 String.format(
                         "%s to %s is not a valid relationship for %s",
-                        relationshipName, relatedEntity.getPlural(), entity.getName()));
+                        relationshipName, relatedEntity.pluralName(), entity.name()));
         return false;
     }
 }
