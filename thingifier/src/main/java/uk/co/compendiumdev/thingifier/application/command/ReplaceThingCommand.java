@@ -5,7 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.NamedValue;
 
-public final class PutThingCommand implements ThingWriteCommand {
+public final class ReplaceThingCommand implements ThingWriteCommand {
 
     private final String entityName;
     private final String identifier;
@@ -13,7 +13,7 @@ public final class PutThingCommand implements ThingWriteCommand {
     private final List<BodyFieldValue> bodyFields;
     private final List<RelationshipReference> relationships;
 
-    public PutThingCommand(
+    public ReplaceThingCommand(
             final String entityName,
             final String identifier,
             final List<NamedValue> fieldValues,
@@ -26,7 +26,7 @@ public final class PutThingCommand implements ThingWriteCommand {
                 relationships);
     }
 
-    public PutThingCommand(
+    public ReplaceThingCommand(
             final String entityName,
             final String identifier,
             final List<NamedValue> fieldValues,

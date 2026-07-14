@@ -1,7 +1,7 @@
 package uk.co.compendiumdev.thingifier.application;
 
 import uk.co.compendiumdev.thingifier.application.command.AmendThingCommand;
-import uk.co.compendiumdev.thingifier.application.command.PutThingCommand;
+import uk.co.compendiumdev.thingifier.application.command.ReplaceThingCommand;
 
 final class AmendThingHandler {
 
@@ -15,7 +15,7 @@ final class AmendThingHandler {
         return service.amend(command);
     }
 
-    ThingCommandResult handle(final PutThingCommand command) {
-        return service.put(command);
+    ThingCommandResult handle(final ReplaceThingCommand command) {
+        return service.replace(command);
     }
 }

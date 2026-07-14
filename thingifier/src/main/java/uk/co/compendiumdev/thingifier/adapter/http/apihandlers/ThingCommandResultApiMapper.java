@@ -1,7 +1,9 @@
 package uk.co.compendiumdev.thingifier.adapter.http.apihandlers;
 
+import java.util.List;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
+import uk.co.compendiumdev.thingifier.application.ApplicationError;
 import uk.co.compendiumdev.thingifier.application.ThingCommandResult;
 import uk.co.compendiumdev.thingifier.application.command.AmendThingCommand;
 import uk.co.compendiumdev.thingifier.application.command.ConnectExistingRelationshipCommand;
@@ -9,8 +11,8 @@ import uk.co.compendiumdev.thingifier.application.command.CreateAndConnectRelati
 import uk.co.compendiumdev.thingifier.application.command.CreateThingCommand;
 import uk.co.compendiumdev.thingifier.application.command.DeleteThingCommand;
 import uk.co.compendiumdev.thingifier.application.command.DisconnectRelationshipCommand;
-import uk.co.compendiumdev.thingifier.application.command.PutThingCommand;
 import uk.co.compendiumdev.thingifier.application.command.RelateThingCommand;
+import uk.co.compendiumdev.thingifier.application.command.ReplaceThingCommand;
 import uk.co.compendiumdev.thingifier.application.command.ThingWriteCommand;
 
 public final class ThingCommandResultApiMapper {
@@ -48,7 +50,7 @@ public final class ThingCommandResultApiMapper {
             return ApiResponse.created(null, apiConfig);
         }
 
-        if (command instanceof PutThingCommand) {
+        if (command instanceof ReplaceThingCommand) {
             if (result.createdInstance()) {
                 return ApiResponse.created(result.getInstance(), apiConfig);
             }
@@ -69,20 +71,59 @@ public final class ThingCommandResultApiMapper {
 
     private ApiResponse errorResponseFor(
             final ThingWriteCommand command, final ThingCommandResult result) {
+        List<String> messages = errorMessagesFor(result);
+        int statusCode = statusFor(result.getError());
         ApiResponse response;
-        if (command instanceof CreateThingCommand && result.getErrorMessages().size() == 1) {
+        if (command instanceof CreateThingCommand && messages.size() == 1) {
             response =
                     ApiResponse.error(
-                            result.statusCode(),
-                            creationErrorMessage(result.getCombinedErrorMessage()));
+                            statusCode, creationErrorMessage(String.join(", ", messages)));
         } else {
-            response = ApiResponse.error(result.statusCode(), result.getErrorMessages());
+            response = ApiResponse.error(statusCode, messages);
         }
 
         if (result.rolledBackCreatedInstance()) {
             response.addToErrorMessages(CREATED_ITEM_ROLLED_BACK_MESSAGE);
         }
         return response;
+    }
+
+    public static int statusFor(final ApplicationError error) {
+        if (error == null) {
+            return 400;
+        }
+        if (error.category() == ApplicationError.Category.NOT_FOUND) {
+            return 404;
+        }
+        if (error.category() == ApplicationError.Category.CONFLICT) {
+            return 409;
+        }
+        return 400;
+    }
+
+    private List<String> errorMessagesFor(final ThingCommandResult result) {
+        ApplicationError error = result.getError();
+        if (error == null) {
+            return result.getErrorMessages();
+        }
+
+        if (error.code() == ApplicationError.Code.REPLACE_CREATE_AUTO_FIELDS_NOT_ALLOWED) {
+            return List.of(
+                    String.format(
+                            "Cannot create %s with PUT due to Auto fields %s",
+                            error.detail("entityName"), error.detail("fieldNames")));
+        }
+
+        if (error.code() == ApplicationError.Code.REPLACE_CREATE_KEY_MISMATCH) {
+            return List.of(
+                    String.format(
+                            "Cannot create %s with PUT as key does not match body value %s != %s",
+                            error.detail("entityName"),
+                            error.detail("routeIdentifier"),
+                            error.detail("bodyIdentifier")));
+        }
+
+        return result.getErrorMessages();
     }
 
     private String creationErrorMessage(final String rawMessage) {
@@ -105,6 +146,7 @@ public final class ThingCommandResultApiMapper {
     private boolean isPlainValidationMessage(final String message) {
         return message != null
                 && !message.startsWith(VALIDATION_PREFIX)
-                && !message.startsWith("ERROR:");
+                && !message.startsWith("ERROR:")
+                && !message.startsWith("Cannot Create");
     }
 }

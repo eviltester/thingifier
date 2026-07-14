@@ -9,7 +9,7 @@ import uk.co.compendiumdev.thingifier.application.command.AmendThingCommand;
 import uk.co.compendiumdev.thingifier.application.command.BodyFieldValue;
 import uk.co.compendiumdev.thingifier.application.command.CreateAndConnectRelationshipCommand;
 import uk.co.compendiumdev.thingifier.application.command.CreateThingCommand;
-import uk.co.compendiumdev.thingifier.application.command.PutThingCommand;
+import uk.co.compendiumdev.thingifier.application.command.ReplaceThingCommand;
 import uk.co.compendiumdev.thingifier.application.schema.EntityTypeRef;
 import uk.co.compendiumdev.thingifier.application.schema.SchemaViewCatalog;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.NamedValue;
@@ -101,7 +101,7 @@ public final class ThingBodyCommandMapper {
         }
 
         return ThingWriteRequestMapping.command(
-                new PutThingCommand(
+                new ReplaceThingCommand(
                         entity.name(),
                         identifier,
                         fieldValuesExcludingRelationships(bodyFields, relationships),

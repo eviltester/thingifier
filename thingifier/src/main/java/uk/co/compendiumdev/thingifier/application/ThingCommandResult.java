@@ -90,13 +90,6 @@ public final class ThingCommandResult {
         return error;
     }
 
-    public int statusCode() {
-        if (error == null) {
-            return 200;
-        }
-        return error.statusCode();
-    }
-
     public boolean createdInstance() {
         return createdInstance;
     }

@@ -10,9 +10,9 @@ import uk.co.compendiumdev.thingifier.application.command.CreateAndConnectRelati
 import uk.co.compendiumdev.thingifier.application.command.CreateThingCommand;
 import uk.co.compendiumdev.thingifier.application.command.DeleteThingCommand;
 import uk.co.compendiumdev.thingifier.application.command.DisconnectRelationshipCommand;
-import uk.co.compendiumdev.thingifier.application.command.PutThingCommand;
 import uk.co.compendiumdev.thingifier.application.command.RelateThingCommand;
 import uk.co.compendiumdev.thingifier.application.command.RelationshipReference;
+import uk.co.compendiumdev.thingifier.application.command.ReplaceThingCommand;
 import uk.co.compendiumdev.thingifier.application.command.ThingWriteCommand;
 import uk.co.compendiumdev.thingifier.application.schema.SchemaDefinitionResolver;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
@@ -71,8 +71,8 @@ public final class ThingCommandService {
             return delete((DeleteThingCommand) command);
         }
 
-        if (command instanceof PutThingCommand) {
-            return amendHandler.handle((PutThingCommand) command);
+        if (command instanceof ReplaceThingCommand) {
+            return amendHandler.handle((ReplaceThingCommand) command);
         }
 
         if (command instanceof ConnectExistingRelationshipCommand) {
@@ -219,7 +219,7 @@ public final class ThingCommandService {
         }
     }
 
-    ThingCommandResult put(final PutThingCommand command) {
+    ThingCommandResult replace(final ReplaceThingCommand command) {
         EntityDefinition entity = entityNamed(command.getEntityName());
         ThingCommandResult typeValidation =
                 validation.validateDeclaredFieldTypesIgnoringProtected(
@@ -243,7 +243,7 @@ public final class ThingCommandService {
         }
 
         ThingCommandResult creationAllowed =
-                validation.validatePutCreate(entity, command.getIdentifier(), fieldValues);
+                validation.validateReplaceCreate(entity, command.getIdentifier(), fieldValues);
         if (creationAllowed != null) {
             return creationAllowed;
         }

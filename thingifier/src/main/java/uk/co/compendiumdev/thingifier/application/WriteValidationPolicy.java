@@ -90,17 +90,16 @@ final class WriteValidationPolicy {
         return null;
     }
 
-    ThingCommandResult validatePutCreate(
+    ThingCommandResult validateReplaceCreate(
             final EntityDefinition entity,
             final String identifier,
             final List<NamedValue> fieldValues) {
-        List<Field> forbiddenPutCreationFields =
+        List<Field> generatedCreationFields =
                 entity.getFieldsOfType(FieldType.AUTO_INCREMENT, FieldType.AUTO_GUID);
-        if (!forbiddenPutCreationFields.isEmpty()) {
+        if (!generatedCreationFields.isEmpty()) {
             return ThingCommandResult.error(
-                    String.format(
-                            "Cannot create %s with PUT due to Auto fields %s",
-                            entity.getName(), fieldNames(forbiddenPutCreationFields)));
+                    ApplicationError.replaceCreateAutoFieldsNotAllowed(
+                            entity.getName(), fieldNames(generatedCreationFields)));
         }
 
         Field primaryKey = entity.getPrimaryKeyField();
@@ -108,8 +107,7 @@ final class WriteValidationPolicy {
             if (namedValue.name.equals(primaryKey.getName())
                     && !namedValue.value.equals(identifier)) {
                 return ThingCommandResult.error(
-                        String.format(
-                                "Cannot create %s with PUT as key does not match body value %s != %s",
+                        ApplicationError.replaceCreateKeyMismatch(
                                 entity.getName(), identifier, namedValue.value));
             }
         }

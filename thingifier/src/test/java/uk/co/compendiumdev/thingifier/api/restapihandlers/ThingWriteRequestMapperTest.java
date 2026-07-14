@@ -16,8 +16,8 @@ import uk.co.compendiumdev.thingifier.application.command.AmendThingCommand;
 import uk.co.compendiumdev.thingifier.application.command.CreateThingCommand;
 import uk.co.compendiumdev.thingifier.application.command.DeleteThingCommand;
 import uk.co.compendiumdev.thingifier.application.command.DisconnectRelationshipCommand;
-import uk.co.compendiumdev.thingifier.application.command.PutThingCommand;
 import uk.co.compendiumdev.thingifier.application.command.RelateThingCommand;
+import uk.co.compendiumdev.thingifier.application.command.ReplaceThingCommand;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.Cardinality;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
@@ -72,7 +72,7 @@ public class ThingWriteRequestMapperTest {
                                 parserFor("title", "Replaced"));
 
         Assertions.assertFalse(mapping.isError());
-        Assertions.assertTrue(mapping.getCommand() instanceof PutThingCommand);
+        Assertions.assertTrue(mapping.getCommand() instanceof ReplaceThingCommand);
     }
 
     @Test
@@ -84,7 +84,7 @@ public class ThingWriteRequestMapperTest {
                         .mapPut(routeFor(thingifier, "note/n-1"), parserFor("title", "Created"));
 
         Assertions.assertFalse(mapping.isError());
-        Assertions.assertTrue(mapping.getCommand() instanceof PutThingCommand);
+        Assertions.assertTrue(mapping.getCommand() instanceof ReplaceThingCommand);
     }
 
     @Test

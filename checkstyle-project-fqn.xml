@@ -112,6 +112,14 @@
         <property name="id" value="routeClassesNoMutableSchema"/>
         <property name="files" value=".*[/\\]src[/\\]test[/\\]java[/\\].*"/>
     </module>
+    <module name="SuppressionSingleFilter">
+        <property name="id" value="applicationNoHttpVerbVocabulary"/>
+        <property name="files" value=".*[/\\]src[/\\]test[/\\]java[/\\].*"/>
+    </module>
+    <module name="SuppressionSingleFilter">
+        <property name="id" value="applicationNoHttpStatusOrTypes"/>
+        <property name="files" value=".*[/\\]src[/\\]test[/\\]java[/\\].*"/>
+    </module>
     <module name="RegexpMultiline">
         <property name="id" value="commandDtosNoMutableDomain"/>
         <property name="format" value="(?s)package uk\.co\.compendiumdev\.thingifier\.application\.command;.*import uk\.co\.compendiumdev\.thingifier\.core\.domain\.(definitions\.EntityDefinition|instances\.(EntityInstance|EntityInstanceDraft));"/>
@@ -126,6 +134,16 @@
         <property name="id" value="apiMappersNoRepositoryLookup"/>
         <property name="format" value="(?s)package uk\.co\.compendiumdev\.thingifier\.adapter\.http\.apihandlers;.*(\.entityQueries\s*\(|\.findByField\s*\(|\.findByGuid\s*\(|\.findByQueryIdentifier\s*\()"/>
         <property name="message" value="API HTTP mappers must not resolve instances through repositories; application services own store lookups."/>
+    </module>
+    <module name="RegexpMultiline">
+        <property name="id" value="applicationNoHttpVerbVocabulary"/>
+        <property name="format" value="(?s)package uk\.co\.compendiumdev\.thingifier\.application(\.|;).*(\b(GET|POST|PUT|DELETE|PATCH|HEAD)\b|\bPutThingCommand\b|\bvalidatePut[A-Za-z0-9_]*\b)"/>
+        <property name="message" value="Application production code must use semantic command vocabulary, not HTTP verb names."/>
+    </module>
+    <module name="RegexpMultiline">
+        <property name="id" value="applicationNoHttpStatusOrTypes"/>
+        <property name="format" value="(?s)package uk\.co\.compendiumdev\.thingifier\.application(\.|;).*\b(statusCode|ApiResponse|HttpApiRequest|HttpApiResponse|HttpHeaders|Header)\b"/>
+        <property name="message" value="Application production code must return semantic errors; HTTP statuses, responses, requests, and headers belong at the adapter boundary."/>
     </module>
     <module name="TreeWalker">
         <module name="RegexpSinglelineJava">

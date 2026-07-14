@@ -12,9 +12,10 @@ import uk.co.compendiumdev.thingifier.application.command.CreateAndConnectRelati
 import uk.co.compendiumdev.thingifier.application.command.CreateThingCommand;
 import uk.co.compendiumdev.thingifier.application.command.DeleteThingCommand;
 import uk.co.compendiumdev.thingifier.application.command.DisconnectRelationshipCommand;
-import uk.co.compendiumdev.thingifier.application.command.PutThingCommand;
 import uk.co.compendiumdev.thingifier.application.command.RelateThingCommand;
 import uk.co.compendiumdev.thingifier.application.command.RelationshipReference;
+import uk.co.compendiumdev.thingifier.application.command.ReplaceThingCommand;
+import uk.co.compendiumdev.thingifier.application.command.ThingWriteCommand;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.Cardinality;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
@@ -175,25 +176,64 @@ public class ThingCommandServiceTest {
                                         true));
 
         Assertions.assertTrue(result.isError());
-        Assertions.assertEquals(409, result.statusCode());
+        Assertions.assertEquals(ApplicationError.Category.CONFLICT, result.getError().category());
+        Assertions.assertEquals(ApplicationError.Code.CONFLICT, result.getError().code());
         Assertions.assertEquals(1, store.entityQueries().count(project));
     }
 
     @Test
-    public void putCreateRejectsAutoFieldDefinitions() {
+    public void replaceCreateRejectsAutoFieldDefinitions() {
         Thingifier thingifier = taskProjectThingifier();
         ThingStore store = storeFor(thingifier);
 
         ThingCommandResult result =
                 serviceFor(thingifier, store)
                         .execute(
-                                new PutThingCommand(
+                                new ReplaceThingCommand(
                                         "task", "123", fields("title", "Nope"), List.of()));
 
         Assertions.assertTrue(result.isError());
         Assertions.assertEquals(
-                List.of("Cannot create task with PUT due to Auto fields guid"),
-                result.getErrorMessages());
+                ApplicationError.Code.REPLACE_CREATE_AUTO_FIELDS_NOT_ALLOWED,
+                result.getError().code());
+        Assertions.assertEquals("task", result.getError().detail("entityName"));
+        Assertions.assertEquals("guid", result.getError().detail("fieldNames"));
+        Assertions.assertFalse(result.getCombinedErrorMessage().contains("PUT"));
+    }
+
+    @Test
+    public void replaceCreateRejectsMismatchedIdentityField() {
+        Thingifier thingifier = thingifierWithStringPrimaryKey();
+        ThingStore store = storeFor(thingifier);
+
+        ThingCommandResult result =
+                serviceFor(thingifier, store)
+                        .execute(
+                                new ReplaceThingCommand(
+                                        "task", "route-key", fields("ref", "body-key"), List.of()));
+
+        Assertions.assertTrue(result.isError());
+        Assertions.assertEquals(
+                ApplicationError.Code.REPLACE_CREATE_KEY_MISMATCH, result.getError().code());
+        Assertions.assertEquals("task", result.getError().detail("entityName"));
+        Assertions.assertEquals("route-key", result.getError().detail("routeIdentifier"));
+        Assertions.assertEquals("body-key", result.getError().detail("bodyIdentifier"));
+        Assertions.assertFalse(result.getCombinedErrorMessage().contains("PUT"));
+    }
+
+    @Test
+    public void unsupportedCommandReturnsSemanticErrorCode() {
+        Thingifier thingifier = taskProjectThingifier();
+        ThingStore store = storeFor(thingifier);
+
+        ThingCommandResult result =
+                serviceFor(thingifier, store).execute(new UnsupportedThingWriteCommand());
+
+        Assertions.assertTrue(result.isError());
+        Assertions.assertEquals(
+                ApplicationError.Category.UNSUPPORTED, result.getError().category());
+        Assertions.assertEquals(
+                ApplicationError.Code.UNSUPPORTED_COMMAND, result.getError().code());
     }
 
     @Test
@@ -641,6 +681,14 @@ public class ThingCommandServiceTest {
         return thingifier;
     }
 
+    private Thingifier thingifierWithStringPrimaryKey() {
+        Thingifier thingifier = new Thingifier();
+        EntityDefinition task = thingifier.defineThing("task", "tasks");
+        task.addAsPrimaryKeyField(Field.is("ref", FieldType.STRING));
+        task.addField(Field.is("title", FieldType.STRING));
+        return thingifier;
+    }
+
     private Thingifier numericIdTaskProjectThingifier() {
         Thingifier thingifier = new Thingifier();
         EntityDefinition task = thingifier.defineThing("task", "tasks");
@@ -679,4 +727,6 @@ public class ThingCommandServiceTest {
             final String name, final String value, final BodyFieldValue.SourceType sourceType) {
         return new BodyFieldValue(name, value, sourceType);
     }
+
+    private static final class UnsupportedThingWriteCommand implements ThingWriteCommand {}
 }
