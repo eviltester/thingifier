@@ -18,9 +18,16 @@ const state = {
     schemaExportsVisible: false,
     schemaDirty: false,
     schemaDiagramZoom: 1,
-    schemaDiagramDirection: "TB",
+    schemaDiagramDirection: "LR",
     schemaDiagramHeight: 280,
-    schemaDiagramResizeStart: null
+    schemaDiagramResizeStart: null,
+    schemaUpgradeDialogOpen: false,
+    schemaUpgradePreview: null,
+    schemaUpgradeMappings: {
+        entityMappings: {},
+        fieldMappings: {},
+        relationshipMappings: []
+    }
 };
 
 const els = {
@@ -63,6 +70,12 @@ const els = {
     schemaYamlInput: document.getElementById("schema-yaml-input"),
     schemaParseYaml: document.getElementById("schema-parse-yaml-button"),
     schemaValidate: document.getElementById("schema-validate-button"),
+    schemaUpgradeDialog: document.getElementById("schema-upgrade-dialog"),
+    schemaUpgradePreview: document.getElementById("schema-upgrade-preview-button"),
+    schemaUpgradeConfirm: document.getElementById("schema-upgrade-confirm-button"),
+    schemaUpgradeCancel: document.getElementById("schema-upgrade-cancel-button"),
+    schemaApplyWorkspace: document.getElementById("schema-apply-workspace-button"),
+    schemaUpgradeHost: document.getElementById("schema-upgrade-host"),
     schemaValidation: document.getElementById("schema-validation"),
     schemaDownloadYaml: document.getElementById("schema-download-yaml"),
     schemaDownloadMermaid: document.getElementById("schema-download-mermaid"),
@@ -1049,7 +1062,9 @@ function markSchemaDirty() {
         return;
     }
     state.schemaDirty = true;
+    state.schemaUpgradePreview = null;
     renderSchemaDirtyStatus();
+    renderSchemaUpgradePanel();
 }
 
 function markSchemaClean() {
@@ -1105,6 +1120,8 @@ async function initializeSchemaEditor(force) {
 async function parseSchemaYaml(yamlText, updateInput) {
     const preview = await requestJson("/ui/schema/from-yaml", {method: "POST", body: yamlText});
     state.schemaSelection = {type: "model"};
+    state.schemaUpgradePreview = null;
+    state.schemaUpgradeMappings = {entityMappings: {}, fieldMappings: {}, relationshipMappings: []};
     applySchemaPreview(preview);
     if (updateInput) {
         els.schemaYamlInput.value = preview.yaml || yamlText;
@@ -1138,6 +1155,7 @@ function applySchemaPreview(preview) {
     state.schemaPreview = preview;
     state.schemaDraft = preview.draft || state.schemaDraft;
     renderSchemaPreview();
+    renderSchemaUpgradePanel();
 }
 
 function renderSchemaEditor() {
@@ -1153,6 +1171,7 @@ function renderSchemaEditor() {
     renderSchemaTree();
     renderSchemaDetail();
     renderSchemaPanelVisibility();
+    renderSchemaUpgradePanel();
     initializeSchemaHelp();
 }
 
@@ -1655,6 +1674,381 @@ function renderSchemaValidation(preview) {
     }
 }
 
+async function previewSchemaUpgrade() {
+    if (!state.schemaDraft) {
+        return;
+    }
+    if (!state.schemaUpgradeDialogOpen) {
+        openSchemaUpgradeDialog();
+    }
+    const preview = await requestJson("/ui/schema/upgrade/preview", {
+        method: "POST",
+        body: JSON.stringify(schemaUpgradeRequest(true))
+    });
+    state.schemaUpgradePreview = preview;
+    if (preview.mappings) {
+        mergeEffectiveUpgradeMappings(preview.mappings);
+    }
+    renderSchemaUpgradePanel();
+}
+
+async function startSchemaUpgradeWorkflow() {
+    if (!state.schemaDraft || !state.workspace) {
+        showMessage("Load a schema draft before applying it to the workspace.", true);
+        return;
+    }
+    if (!state.schemaPreview || state.schemaPreview.valid !== true) {
+        await previewSchemaDraft();
+    }
+    if (!state.schemaPreview || state.schemaPreview.valid !== true) {
+        showMessage("Fix schema validation errors before applying to the workspace.", true);
+        return;
+    }
+    openSchemaUpgradeDialog();
+    await previewSchemaUpgrade();
+}
+
+function openSchemaUpgradeDialog() {
+    state.schemaUpgradeDialogOpen = true;
+    if (els.schemaUpgradeDialog) {
+        els.schemaUpgradeDialog.hidden = false;
+    }
+    renderSchemaUpgradePanel();
+}
+
+function closeSchemaUpgradeDialog() {
+    state.schemaUpgradeDialogOpen = false;
+    if (els.schemaUpgradeDialog) {
+        els.schemaUpgradeDialog.hidden = true;
+    }
+    renderSchemaUpgradePanel();
+}
+
+async function applySchemaUpgrade() {
+    if (!state.schemaUpgradePreview || !state.schemaUpgradePreview.canApply) {
+        await previewSchemaUpgrade();
+    }
+    if (!state.schemaUpgradePreview || !state.schemaUpgradePreview.canApply) {
+        showMessage("Schema upgrade preview has blocking errors.", true);
+        return;
+    }
+    const response = await requestJson("/ui/schema/upgrade/apply", {
+        method: "POST",
+        body: JSON.stringify(schemaUpgradeRequest(true))
+    });
+    state.schemaUpgradePreview = response;
+    if (response.workspace) {
+        state.workspace = response.workspace;
+    } else {
+        await loadWorkspace();
+    }
+    markSchemaClean();
+    renderHeader();
+    renderSchemaUpgradePanel();
+    closeSchemaUpgradeDialog();
+    showMessage("Schema upgrade applied to workspace.");
+}
+
+function schemaUpgradeRequest(includeExpectedVersion) {
+    const request = {
+        draft: state.schemaDraft,
+        mappings: state.schemaUpgradeMappings
+    };
+    if (includeExpectedVersion && state.workspace) {
+        request.expectedWorkspaceVersion = state.workspace.workspaceVersion;
+    }
+    return request;
+}
+
+function mergeEffectiveUpgradeMappings(mappings) {
+    state.schemaUpgradeMappings.entityMappings = {
+        ...(mappings.entityMappings || {}),
+        ...(state.schemaUpgradeMappings.entityMappings || {})
+    };
+    state.schemaUpgradeMappings.fieldMappings = {
+        ...(mappings.fieldMappings || {}),
+        ...(state.schemaUpgradeMappings.fieldMappings || {})
+    };
+    state.schemaUpgradeMappings.relationshipMappings =
+        state.schemaUpgradeMappings.relationshipMappings.length > 0
+            ? state.schemaUpgradeMappings.relationshipMappings
+            : (mappings.relationshipMappings || []);
+}
+
+function renderSchemaUpgradePanel() {
+    setApplyWorkspaceEnabled(Boolean(state.schemaDraft && state.workspace
+        && state.schemaPreview && state.schemaPreview.valid === true));
+    if (!els.schemaUpgradeHost || !state.schemaUpgradeDialogOpen) {
+        setConfirmWorkspaceEnabled(false);
+        return;
+    }
+    els.schemaUpgradeHost.innerHTML = "";
+    if (!state.schemaDraft || !state.workspace) {
+        els.schemaUpgradeHost.innerHTML = `<div class="empty-state">Load a schema draft before previewing an upgrade.</div>`;
+        setConfirmWorkspaceEnabled(false);
+        return;
+    }
+    const layout = document.createElement("div");
+    layout.className = "schema-upgrade-layout";
+    layout.appendChild(upgradeMappingPanel());
+    layout.appendChild(upgradeReportPanel());
+    els.schemaUpgradeHost.appendChild(layout);
+    const canApply = Boolean(state.schemaUpgradePreview && state.schemaUpgradePreview.canApply)
+        && state.schemaUpgradePreview.workspaceVersion === state.workspace.workspaceVersion;
+    setConfirmWorkspaceEnabled(canApply);
+    initializeSchemaHelp();
+}
+
+function upgradeMappingPanel() {
+    const panel = document.createElement("div");
+    panel.className = "schema-upgrade-card";
+    panel.appendChild(sectionHeading("Migration Mappings"));
+    panel.appendChild(upgradeEntityMappings());
+    panel.appendChild(upgradeFieldMappings());
+    panel.appendChild(upgradeRelationshipMappings());
+    return panel;
+}
+
+function upgradeReportPanel() {
+    const panel = document.createElement("div");
+    panel.className = "schema-upgrade-card";
+    panel.appendChild(sectionHeading("Upgrade Preview"));
+    const preview = state.schemaUpgradePreview;
+    if (!preview) {
+        const empty = document.createElement("div");
+        empty.className = "empty-state";
+        empty.textContent = "Refresh Preview to see added, dropped, mapped, and coerced data.";
+        panel.appendChild(empty);
+        return panel;
+    }
+    const status = document.createElement("div");
+    status.className = preview.canApply ? "schema-valid" : "schema-invalid";
+    status.textContent = preview.canApply
+        ? "Upgrade can be applied."
+        : "Upgrade has blocking errors or stale workspace data.";
+    panel.appendChild(status);
+    panel.appendChild(upgradeSummary(preview.summary || {}));
+    panel.appendChild(upgradeList("Warnings", preview.warnings || [], "warning"));
+    panel.appendChild(upgradeObjectList("Errors", preview.errors || [], item => `${item.path || "migration"}: ${item.message}`));
+    panel.appendChild(upgradeObjectList("Value assignments", preview.valueAssignments || [], item =>
+        `${item.entity || ""} ${item.identifier || ""} ${item.field || ""}: ${item.to || ""} (${item.reason || ""})`));
+    panel.appendChild(upgradeObjectList("Coercions", preview.coercions || [], item =>
+        `${item.entity || ""} ${item.identifier || ""} ${item.field || ""}: ${item.from || ""} -> ${item.to || ""} (${item.reason || ""})`));
+    return panel;
+}
+
+function upgradeEntityMappings() {
+    const group = document.createElement("div");
+    group.className = "schema-upgrade-group";
+    group.appendChild(sectionHeading("Entities", "Map a target entity to an existing source entity when it was renamed."));
+    (state.schemaDraft.entities || []).forEach(targetEntity => {
+        group.appendChild(upgradeSelectRow(
+            targetEntity.name,
+            currentEntityMapping(targetEntity.name),
+            ["", ...state.workspace.entities.map(entity => entity.name)],
+            "(new entity)",
+            value => {
+                if (value) {
+                    state.schemaUpgradeMappings.entityMappings[targetEntity.name] = value;
+                } else {
+                    delete state.schemaUpgradeMappings.entityMappings[targetEntity.name];
+                }
+                state.schemaUpgradePreview = null;
+                renderSchemaUpgradePanel();
+            }));
+    });
+    return group;
+}
+
+function upgradeFieldMappings() {
+    const group = document.createElement("div");
+    group.className = "schema-upgrade-group";
+    group.appendChild(sectionHeading("Fields", "Top-level field mappings preserve data when a field was renamed."));
+    (state.schemaDraft.entities || []).forEach(targetEntity => {
+        const sourceEntity = workspaceEntityByName(currentEntityMapping(targetEntity.name));
+        if (!sourceEntity) {
+            return;
+        }
+        const title = document.createElement("h4");
+        title.textContent = targetEntity.name;
+        group.appendChild(title);
+        (targetEntity.fields || []).forEach(targetField => {
+            const fieldMappings = state.schemaUpgradeMappings.fieldMappings[targetEntity.name] || {};
+            const exact = sourceEntity.fields.some(field => field.name === targetField.name) ? targetField.name : "";
+            const current = fieldMappings[targetField.name] || exact;
+            group.appendChild(upgradeSelectRow(
+                targetField.name,
+                current,
+                ["", ...sourceEntity.fields.map(field => field.name)],
+                "(new field: use default/fallback)",
+                value => {
+                    if (!state.schemaUpgradeMappings.fieldMappings[targetEntity.name]) {
+                        state.schemaUpgradeMappings.fieldMappings[targetEntity.name] = {};
+                    }
+                    if (value) {
+                        state.schemaUpgradeMappings.fieldMappings[targetEntity.name][targetField.name] = value;
+                    } else {
+                        delete state.schemaUpgradeMappings.fieldMappings[targetEntity.name][targetField.name];
+                    }
+                    state.schemaUpgradePreview = null;
+                    renderSchemaUpgradePanel();
+                }));
+        });
+    });
+    return group;
+}
+
+function upgradeRelationshipMappings() {
+    const group = document.createElement("div");
+    group.className = "schema-upgrade-group";
+    group.appendChild(sectionHeading("Relationships", "Map target relationships to existing relationship edges."));
+    const sourceRelationships = state.workspace.relationships || [];
+    (state.schemaDraft.relationships || []).forEach(targetRelationship => {
+        const current = currentRelationshipMapping(targetRelationship);
+        group.appendChild(upgradeSelectRow(
+            `${targetRelationship.from}.${targetRelationship.name}`,
+            current ? `${current.sourceFromEntity}|${current.sourceName}` : "",
+            ["", ...sourceRelationships.map(relationship => `${relationship.fromEntity}|${relationship.name}`)],
+            "(new relationship)",
+            value => {
+                setRelationshipMapping(targetRelationship, value);
+                state.schemaUpgradePreview = null;
+                renderSchemaUpgradePanel();
+            }));
+    });
+    return group;
+}
+
+function upgradeSelectRow(labelText, value, options, emptyLabel, onChange) {
+    const row = document.createElement("label");
+    row.className = "schema-upgrade-row";
+    const label = document.createElement("span");
+    label.textContent = labelText;
+    row.appendChild(label);
+    const select = document.createElement("select");
+    options.forEach(optionValue => {
+        const option = document.createElement("option");
+        option.value = optionValue;
+        option.textContent = optionValue || emptyLabel;
+        option.selected = optionValue === value;
+        select.appendChild(option);
+    });
+    select.addEventListener("change", () => onChange(select.value));
+    row.appendChild(select);
+    return row;
+}
+
+function upgradeSummary(summary) {
+    const list = document.createElement("dl");
+    list.className = "schema-upgrade-summary";
+    ["sourceEntities", "targetEntities", "migratedInstances", "preservedEdges", "droppedEdges"].forEach(key => {
+        const term = document.createElement("dt");
+        term.textContent = key;
+        const value = document.createElement("dd");
+        value.textContent = valueText(summary[key] || 0);
+        list.appendChild(term);
+        list.appendChild(value);
+    });
+    return list;
+}
+
+function upgradeList(title, items) {
+    const section = document.createElement("div");
+    section.className = "schema-upgrade-list";
+    section.appendChild(sectionHeading(title));
+    if (items.length === 0) {
+        const empty = document.createElement("p");
+        empty.textContent = "None.";
+        section.appendChild(empty);
+        return section;
+    }
+    const list = document.createElement("ul");
+    items.forEach(text => {
+        const item = document.createElement("li");
+        item.textContent = text;
+        list.appendChild(item);
+    });
+    section.appendChild(list);
+    return section;
+}
+
+function upgradeObjectList(title, items, renderer) {
+    return upgradeList(title, items.map(renderer));
+}
+
+function sectionHeading(text, helpText = "") {
+    const heading = document.createElement("h3");
+    heading.textContent = text;
+    if (helpText) {
+        heading.appendChild(helpIcon(helpText));
+    }
+    return heading;
+}
+
+function currentEntityMapping(targetEntityName) {
+    if (state.schemaUpgradeMappings.entityMappings[targetEntityName]) {
+        return state.schemaUpgradeMappings.entityMappings[targetEntityName];
+    }
+    return workspaceEntityByName(targetEntityName) ? targetEntityName : "";
+}
+
+function currentRelationshipMapping(targetRelationship) {
+    const manual = state.schemaUpgradeMappings.relationshipMappings.find(relationship =>
+        relationship.targetFromEntity === targetRelationship.from
+        && relationship.targetName === targetRelationship.name);
+    if (manual) {
+        return manual;
+    }
+    const sourceFrom = currentEntityMapping(targetRelationship.from);
+    const exact = (state.workspace.relationships || []).find(relationship =>
+        relationship.fromEntity === sourceFrom && relationship.name === targetRelationship.name);
+    if (!exact) {
+        return null;
+    }
+    return {
+        targetFromEntity: targetRelationship.from,
+        targetName: targetRelationship.name,
+        sourceFromEntity: sourceFrom,
+        sourceName: exact.name
+    };
+}
+
+function setRelationshipMapping(targetRelationship, value) {
+    state.schemaUpgradeMappings.relationshipMappings =
+        state.schemaUpgradeMappings.relationshipMappings.filter(relationship =>
+            relationship.targetFromEntity !== targetRelationship.from
+            || relationship.targetName !== targetRelationship.name);
+    if (!value) {
+        return;
+    }
+    const [sourceFromEntity, sourceName] = value.split("|");
+    state.schemaUpgradeMappings.relationshipMappings.push({
+        targetFromEntity: targetRelationship.from,
+        targetName: targetRelationship.name,
+        sourceFromEntity,
+        sourceName
+    });
+}
+
+function workspaceEntityByName(name) {
+    if (!state.workspace) {
+        return null;
+    }
+    return state.workspace.entities.find(entity => entity.name === name);
+}
+
+function setApplyWorkspaceEnabled(enabled) {
+    if (els.schemaApplyWorkspace) {
+        els.schemaApplyWorkspace.disabled = !enabled;
+    }
+}
+
+function setConfirmWorkspaceEnabled(enabled) {
+    if (els.schemaUpgradeConfirm) {
+        els.schemaUpgradeConfirm.disabled = !enabled;
+    }
+}
+
 async function renderMermaidDiagram(source) {
     if (!els.schemaMermaidDiagram) {
         return;
@@ -2123,6 +2517,22 @@ if (els.schemaYamlInput) {
 if (els.schemaValidate) {
     els.schemaValidate.setAttribute("data-tippy-content", "Validate the current draft and refresh generated previews.");
     els.schemaValidate.addEventListener("click", () => previewSchemaDraft().catch(error => showMessage(error.message, true)));
+}
+if (els.schemaUpgradePreview) {
+    els.schemaUpgradePreview.setAttribute("data-tippy-content", "Refresh the schema upgrade migration preview.");
+    els.schemaUpgradePreview.addEventListener("click", () => previewSchemaUpgrade().catch(error => showMessage(error.message, true)));
+}
+if (els.schemaUpgradeConfirm) {
+    els.schemaUpgradeConfirm.setAttribute("data-tippy-content", "Confirm and replace the live workspace with the migrated schema and data.");
+    els.schemaUpgradeConfirm.addEventListener("click", () => applySchemaUpgrade().catch(error => showMessage(error.message, true)));
+}
+if (els.schemaUpgradeCancel) {
+    els.schemaUpgradeCancel.setAttribute("data-tippy-content", "Cancel applying the schema draft and return to editing.");
+    els.schemaUpgradeCancel.addEventListener("click", closeSchemaUpgradeDialog);
+}
+if (els.schemaApplyWorkspace) {
+    els.schemaApplyWorkspace.setAttribute("data-tippy-content", "Preview and confirm applying the draft schema to the live workspace.");
+    els.schemaApplyWorkspace.addEventListener("click", () => startSchemaUpgradeWorkflow().catch(error => showMessage(error.message, true)));
 }
 if (els.schemaDownloadYaml) {
     els.schemaDownloadYaml.addEventListener("click", () => {

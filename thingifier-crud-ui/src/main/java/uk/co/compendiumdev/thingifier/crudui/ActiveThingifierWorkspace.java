@@ -57,6 +57,21 @@ public final class ActiveThingifierWorkspace implements AutoCloseable {
         return replaceWithYaml(Files.readString(path));
     }
 
+    public synchronized WorkspaceSnapshot replaceWithMigratedThingifier(
+            final Thingifier newThingifier, final long expectedVersion) {
+        if (version != expectedVersion) {
+            throw new IllegalStateException(
+                    "Workspace changed; refresh schema preview before applying");
+        }
+        Thingifier oldThingifier = thingifier;
+        replaceWith(newThingifier);
+        version++;
+        if (oldThingifier != null) {
+            oldThingifier.close();
+        }
+        return snapshot();
+    }
+
     private void replaceWith(final Thingifier newThingifier) {
         thingifier = newThingifier;
         definition = modelExporter.export(newThingifier);
