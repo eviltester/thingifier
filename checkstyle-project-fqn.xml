@@ -128,6 +128,22 @@
         <property name="id" value="thinThingCommandService"/>
         <property name="files" value=".*[/\\]src[/\\]test[/\\]java[/\\].*"/>
     </module>
+    <module name="SuppressionSingleFilter">
+        <property name="id" value="snakeYamlOnlyInYamlAdapter"/>
+        <property name="files" value=".*[/\\]thingifier-yaml[/\\]src[/\\](main|test)[/\\]java[/\\].*"/>
+    </module>
+    <module name="SuppressionSingleFilter">
+        <property name="id" value="yamlAdapterTypesStayInYamlModule"/>
+        <property name="files" value=".*[/\\]thingifier-yaml[/\\]src[/\\](main|test)[/\\]java[/\\].*"/>
+    </module>
+    <module name="SuppressionSingleFilter">
+        <property name="id" value="schemaDefinitionSpecsNoMutableRuntimeSchema"/>
+        <property name="files" value=".*[/\\]src[/\\]test[/\\]java[/\\].*"/>
+    </module>
+    <module name="SuppressionSingleFilter">
+        <property name="id" value="schemaDefinitionSpecsNoMutableRuntimeSchema"/>
+        <property name="files" value=".*[/\\]thingifier[/\\]src[/\\]main[/\\]java[/\\]uk[/\\]co[/\\]compendiumdev[/\\]thingifier[/\\]application[/\\]schema[/\\]definition[/\\]ThingifierModel(Assembler|Exporter)\.java"/>
+    </module>
     <module name="RegexpMultiline">
         <property name="id" value="commandDtosNoMutableDomain"/>
         <property name="format" value="(?s)package uk\.co\.compendiumdev\.thingifier\.application\.command;.*import uk\.co\.compendiumdev\.thingifier\.core\.domain\.(definitions\.EntityDefinition|instances\.(EntityInstance|EntityInstanceDraft));"/>
@@ -173,7 +189,29 @@
         <property name="format" value="(?s)class ThingCommandService\b.*(private\s+ThingCommandResult\s+(create|amend|replace|delete|connectExistingRelationship|createAndConnect|relate|disconnectRelationship|connectRelationship|connectRelationshipReferences|connectRelationships)\s*\(|private\s+(EntityInstanceDraft|EntityInstance|RelationshipVectorDefinition|boolean|void)\s+(createDraft|resolveInstance|relationshipErrorIfInvalid|firstRelationshipVector|bodyReferencesExistingRelatedItem|relatedInstanceMatchingIdentifier|matchesQueryIdentifier|disconnectConnections|copyBaseDraftValues)\s*\(|private\s+static\s+final\s+class\s+(RelatedItemResolution|RelationshipSnapshot|RelationshipLink)\b)"/>
         <property name="message" value="ThingCommandService should stay a thin transaction-wrapped dispatcher; moved use-case helpers belong in focused collaborators."/>
     </module>
+    <module name="RegexpMultiline">
+        <property name="id" value="schemaDefinitionSpecsNoMutableRuntimeSchema"/>
+        <property name="format" value="(?s)package uk\.co\.compendiumdev\.thingifier\.application\.schema\.definition;.*import uk\.co\.compendiumdev\.thingifier\.core\.domain\.definitions\.(Cardinality|DefinedFields|EntityDefinition|field\.definition\.Field|relationship\.(RelationshipDefinition|RelationshipVectorDefinition));"/>
+        <property name="message" value="Schema definition specs must stay YAML-agnostic and runtime-schema neutral; only the assembler/exporter boundary may touch mutable schema objects."/>
+    </module>
+    <module name="RegexpMultiline">
+        <property name="id" value="coreNoYamlOrSchemaAdapter"/>
+        <property name="format" value="(?s)package uk\.co\.compendiumdev\.thingifier\.core(\.|;).*import uk\.co\.compendiumdev\.thingifier\.(yaml|application\.schema\.definition)\."/>
+        <property name="message" value="Core must not depend on YAML adapters or schema import-definition adapter types."/>
+    </module>
     <module name="TreeWalker">
+        <module name="RegexpSinglelineJava">
+            <property name="id" value="snakeYamlOnlyInYamlAdapter"/>
+            <property name="format" value="^import org\.yaml\.snakeyaml\."/>
+            <property name="ignoreComments" value="true"/>
+            <property name="message" value="SnakeYAML imports belong only in the optional thingifier-yaml adapter module."/>
+        </module>
+        <module name="RegexpSinglelineJava">
+            <property name="id" value="yamlAdapterTypesStayInYamlModule"/>
+            <property name="format" value="^import uk\.co\.compendiumdev\.thingifier\.yaml\."/>
+            <property name="ignoreComments" value="true"/>
+            <property name="message" value="YAML adapter DTOs and API types must not leak into thingifier or ercoremodel."/>
+        </module>
         <module name="RegexpSinglelineJava">
             <property name="id" value="sparkImportsAtSparkEdge"/>
             <property name="format" value="^import spark\."/>

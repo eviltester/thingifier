@@ -1,0 +1,30 @@
+formatVersion: 1
+model:
+  title: Validations
+  description: Covers validation rule mapping.
+entities:
+  item:
+    plural: items
+    fields:
+      title:
+        type: string
+        required: true
+        unique: true
+        description: Item title
+        examples:
+          - A title
+        truncateTo: 20
+        validations:
+          - notEmpty
+          - maximumLength: 50
+          - matchesRegex: ".+"
+          - satisfiesRegex: "[A-Z]"
+      priority:
+        type: integer
+        min: 1
+        max: 5
+      score:
+        type: float
+        min: 0.5
+        max: 10.5
+relationships: []

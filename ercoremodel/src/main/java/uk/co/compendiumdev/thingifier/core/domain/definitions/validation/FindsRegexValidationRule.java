@@ -33,4 +33,8 @@ public class FindsRegexValidationRule implements ValidationRule {
         return String.format(
                 "Value must contain text that matches the regex %s", this.regexToMatch);
     }
+
+    public String getRegexToFind() {
+        return regexToMatch;
+    }
 }

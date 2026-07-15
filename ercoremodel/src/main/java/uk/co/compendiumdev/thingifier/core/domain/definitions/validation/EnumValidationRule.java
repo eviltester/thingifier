@@ -1,5 +1,6 @@
 package uk.co.compendiumdev.thingifier.core.domain.definitions.validation;
 
+import java.util.ArrayList;
 import java.util.List;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
@@ -35,5 +36,9 @@ public class EnumValidationRule implements ValidationRule {
 
     public String getExplanation() {
         return String.format("Value must be an Enum (%s) value", valuesAsCsv());
+    }
+
+    public List<String> getValidValues() {
+        return new ArrayList<>(validValues);
     }
 }

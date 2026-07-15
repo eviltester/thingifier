@@ -31,4 +31,8 @@ public class MatchesRegexValidationRule implements ValidationRule {
     public String getExplanation() {
         return String.format("Value must match the regex %s", this.regexToMatch);
     }
+
+    public String getRegexToMatch() {
+        return regexToMatch;
+    }
 }

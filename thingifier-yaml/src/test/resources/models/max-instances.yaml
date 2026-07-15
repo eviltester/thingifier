@@ -1,0 +1,12 @@
+formatVersion: 1
+model:
+  title: Max Instances
+  description: Entity with an instance cap.
+entities:
+  singleton:
+    plural: singletons
+    maxInstances: 1
+    fields:
+      name:
+        type: string
+relationships: []
