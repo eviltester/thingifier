@@ -24,6 +24,7 @@
             <button id="schema-reset-button" type="button">Reset Draft</button>
             <button id="schema-save-yaml-button" class="primary" type="button">Save as YAML</button>
             <button id="schema-validate-button" type="button">Validate</button>
+            <button id="schema-apply-workspace-button" class="primary" type="button" disabled>Apply to Workspace</button>
             <button id="schema-toggle-yaml-button" type="button">YAML Draft</button>
             <button id="schema-toggle-exports-button" type="button">Exports</button>
         </div>
@@ -42,7 +43,7 @@
                     <button id="schema-zoom-out-button" type="button" aria-label="Zoom out ER diagram">-</button>
                     <button id="schema-zoom-reset-button" type="button">100%</button>
                     <button id="schema-zoom-in-button" type="button" aria-label="Zoom in ER diagram">+</button>
-                    <button id="schema-layout-toggle-button" type="button">Horizontal Layout</button>
+                    <button id="schema-layout-toggle-button" type="button">Vertical Layout</button>
                     <button id="schema-toggle-diagram-button" type="button">Hide Diagram</button>
                 </div>
             </div>
@@ -156,6 +157,22 @@
             </div>
         </section>
     </main>
+</div>
+<div id="schema-upgrade-dialog" class="schema-dialog-backdrop" hidden>
+    <section class="schema-dialog" role="dialog" aria-modal="true" aria-labelledby="schema-upgrade-dialog-title">
+        <div class="schema-dialog-header">
+            <div>
+                <h2 id="schema-upgrade-dialog-title">Apply to Workspace</h2>
+                <p>Preview how current data will migrate before replacing the live workspace.</p>
+            </div>
+            <button id="schema-upgrade-cancel-button" type="button" aria-label="Cancel schema workspace apply">Cancel</button>
+        </div>
+        <div id="schema-upgrade-host" class="schema-upgrade-host"></div>
+        <div class="schema-dialog-footer">
+            <button id="schema-upgrade-preview-button" type="button">Refresh Preview</button>
+            <button id="schema-upgrade-confirm-button" class="primary" type="button" disabled>Confirm Apply</button>
+        </div>
+    </section>
 </div>
 <script src="https://unpkg.com/@popperjs/core@2"></script>
 <script src="https://unpkg.com/tippy.js@6"></script>

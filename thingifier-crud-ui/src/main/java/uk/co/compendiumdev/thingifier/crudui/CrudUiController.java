@@ -11,6 +11,7 @@ public final class CrudUiController {
     private final WorkspaceDataExporter exporter;
     private final WorkspaceDataImporter importer;
     private final SchemaPreviewService schemaPreviewService;
+    private final WorkspaceSchemaUpgradeService schemaUpgradeService;
 
     public CrudUiController(final ActiveThingifierWorkspace workspace) {
         this.workspace = workspace;
@@ -19,6 +20,7 @@ public final class CrudUiController {
         exporter = new WorkspaceDataExporter(workspace, apiProxy);
         importer = new WorkspaceDataImporter(workspace, apiProxy, metadataJson);
         schemaPreviewService = new SchemaPreviewService();
+        schemaUpgradeService = new WorkspaceSchemaUpgradeService(workspace, metadataJson);
     }
 
     public UiHttpResponse workspace() {
@@ -46,6 +48,26 @@ public final class CrudUiController {
         try {
             return schemaPreviewService.previewDraft(schemaDraftJson);
         } catch (CrudUiException | IllegalArgumentException e) {
+            return JsonSupport.error(400, e.getMessage());
+        }
+    }
+
+    public UiHttpResponse previewSchemaUpgrade(final String upgradeRequestJson) {
+        try {
+            return schemaUpgradeService.preview(upgradeRequestJson);
+        } catch (CrudUiException e) {
+            return JsonSupport.error(e.statusCode(), e.getMessage());
+        } catch (IllegalArgumentException e) {
+            return JsonSupport.error(400, e.getMessage());
+        }
+    }
+
+    public UiHttpResponse applySchemaUpgrade(final String upgradeRequestJson) {
+        try {
+            return schemaUpgradeService.apply(upgradeRequestJson);
+        } catch (CrudUiException e) {
+            return JsonSupport.error(e.statusCode(), e.getMessage());
+        } catch (IllegalArgumentException e) {
             return JsonSupport.error(400, e.getMessage());
         }
     }

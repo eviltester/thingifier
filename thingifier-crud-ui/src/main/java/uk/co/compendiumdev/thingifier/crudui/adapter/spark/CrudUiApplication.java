@@ -48,6 +48,14 @@ public final class CrudUiApplication implements AutoCloseable {
         Spark.post(
                 "/ui/schema/preview",
                 (request, response) -> write(response, controller.previewSchema(request.body())));
+        Spark.post(
+                "/ui/schema/upgrade/preview",
+                (request, response) ->
+                        write(response, controller.previewSchemaUpgrade(request.body())));
+        Spark.post(
+                "/ui/schema/upgrade/apply",
+                (request, response) ->
+                        write(response, controller.applySchemaUpgrade(request.body())));
         Spark.get("/ui/export", (request, response) -> write(response, controller.exportData()));
         Spark.post(
                 "/ui/import",
