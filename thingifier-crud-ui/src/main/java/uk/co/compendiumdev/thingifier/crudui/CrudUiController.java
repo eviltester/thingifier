@@ -10,6 +10,7 @@ public final class CrudUiController {
     private final WorkspaceMetadataJson metadataJson;
     private final WorkspaceDataExporter exporter;
     private final WorkspaceDataImporter importer;
+    private final SchemaPreviewService schemaPreviewService;
 
     public CrudUiController(final ActiveThingifierWorkspace workspace) {
         this.workspace = workspace;
@@ -17,6 +18,7 @@ public final class CrudUiController {
         metadataJson = new WorkspaceMetadataJson();
         exporter = new WorkspaceDataExporter(workspace, apiProxy);
         importer = new WorkspaceDataImporter(workspace, apiProxy, metadataJson);
+        schemaPreviewService = new SchemaPreviewService();
     }
 
     public UiHttpResponse workspace() {
@@ -28,6 +30,22 @@ public final class CrudUiController {
             workspace.replaceWithYaml(yamlText);
             return workspace();
         } catch (ThingifierYamlException | IllegalArgumentException e) {
+            return JsonSupport.error(400, e.getMessage());
+        }
+    }
+
+    public UiHttpResponse schemaFromYaml(final String yamlText) {
+        try {
+            return schemaPreviewService.fromYaml(yamlText);
+        } catch (ThingifierYamlException | IllegalArgumentException e) {
+            return JsonSupport.error(400, e.getMessage());
+        }
+    }
+
+    public UiHttpResponse previewSchema(final String schemaDraftJson) {
+        try {
+            return schemaPreviewService.previewDraft(schemaDraftJson);
+        } catch (CrudUiException | IllegalArgumentException e) {
             return JsonSupport.error(400, e.getMessage());
         }
     }

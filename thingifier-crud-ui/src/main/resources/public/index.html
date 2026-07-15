@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Thingifier CRUD UI</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="/assets/styles.css">
 </head>
 <body>
@@ -14,6 +15,10 @@
             <p id="model-description"></p>
         </div>
         <div class="toolbar">
+            <nav class="view-nav" aria-label="Application views">
+                <a class="button-link active" href="/">Workspace</a>
+                <a class="button-link" href="/schema">Schema Edit</a>
+            </nav>
             <button id="refresh-button" type="button">Refresh</button>
             <label class="file-action">
                 Load YAML

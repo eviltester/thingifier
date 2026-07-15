@@ -1,0 +1,21 @@
+formatVersion: 1
+model:
+  title: One Way Relationships
+  description: Project tasks relationship.
+entities:
+  project:
+    plural: projects
+    fields:
+      title:
+        type: string
+  task:
+    plural: tasks
+    fields:
+      title:
+        type: string
+relationships:
+  - from: project
+    name: tasks
+    to: task
+    cardinality: one-to-many
+    optionality: optional

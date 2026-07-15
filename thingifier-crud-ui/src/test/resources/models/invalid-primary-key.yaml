@@ -1,0 +1,12 @@
+formatVersion: 1
+model:
+  title: Invalid Primary Key
+  description: Primary key references a missing field.
+entities:
+  task:
+    plural: tasks
+    primaryKey: missing
+    fields:
+      title:
+        type: string
+relationships: []
