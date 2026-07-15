@@ -1,0 +1,16 @@
+formatVersion: 1
+model:
+  title: Object Fields
+  description: Nested object field schema.
+entities:
+  audit:
+    plural: audits
+    fields:
+      payload:
+        type: object
+        fields:
+          source:
+            type: string
+          count:
+            type: integer
+relationships: []

@@ -14,6 +14,7 @@ public final class Field {
     private final String name;
     private final FieldType type;
     private final Set<String> fieldExamples;
+    private final Set<String> configuredExamples;
     private boolean fieldIsOptional;
 
     // default value for the field
@@ -50,6 +51,7 @@ public final class Field {
         truncateStringIfTooLong = false;
         truncatedStringLength = -1;
         fieldExamples = new HashSet<>();
+        configuredExamples = new HashSet<>();
 
         if (type == FieldType.INTEGER) {
             typeValidationRule = new IntegerValidationRule();
@@ -270,6 +272,7 @@ public final class Field {
     }
 
     public Field withExample(final String anExample) {
+        configuredExamples.add(anExample);
         fieldExamples.add(anExample);
         if (type == FieldType.ENUM) {
             typeValidationRule = new EnumValidationRule(getExamples());
@@ -334,6 +337,22 @@ public final class Field {
 
         // return as a list
         return new ArrayList<>(buildExamples);
+    }
+
+    public List<String> getConfiguredExamples() {
+        return new ArrayList<>(configuredExamples);
+    }
+
+    public String getConfiguredDefaultValue() {
+        return defaultValue;
+    }
+
+    public int getTruncatedStringLength() {
+        return truncatedStringLength;
+    }
+
+    public ValidationRule getTypeValidationRule() {
+        return typeValidationRule;
     }
 
     public String getRandomExampleValue() {

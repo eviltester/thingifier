@@ -1,0 +1,25 @@
+formatVersion: 1
+model:
+  title: Two Way Relationships
+  description: Project tasks relationship with reverse lookup.
+entities:
+  project:
+    plural: projects
+    fields:
+      title:
+        type: string
+  task:
+    plural: tasks
+    fields:
+      title:
+        type: string
+relationships:
+  - from: project
+    name: tasks
+    to: task
+    cardinality: one-to-many
+    optionality: optional
+    reverse:
+      name: taskof
+      cardinality: one-to-one
+      optionality: mandatory

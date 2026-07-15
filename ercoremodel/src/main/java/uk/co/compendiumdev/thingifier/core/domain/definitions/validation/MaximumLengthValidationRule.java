@@ -36,4 +36,8 @@ public class MaximumLengthValidationRule implements ValidationRule {
     public String getExplanation() {
         return "Maximum length allowed is %d".formatted(maxLength);
     }
+
+    public int getMaximumLength() {
+        return maxLength;
+    }
 }

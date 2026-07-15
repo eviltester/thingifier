@@ -1,0 +1,6 @@
+formatVersion: 1
+model:
+  title: Invalid Missing Entity
+  description: No entities are defined.
+entities: {}
+relationships: []

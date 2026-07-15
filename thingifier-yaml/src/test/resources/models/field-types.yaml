@@ -1,0 +1,34 @@
+formatVersion: 1
+model:
+  title: Field Types
+  description: Covers supported field types.
+entities:
+  sample:
+    plural: samples
+    primaryKey: guid
+    fields:
+      guid:
+        type: auto-guid
+      autoNumber:
+        type: auto-increment
+      text:
+        type: string
+      count:
+        type: integer
+      price:
+        type: float
+      active:
+        type: boolean
+      state:
+        type: enum
+        examples:
+          - new
+          - done
+      dueDate:
+        type: date
+      metadata:
+        type: object
+        fields:
+          source:
+            type: string
+relationships: []

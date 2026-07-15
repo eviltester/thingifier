@@ -1,0 +1,16 @@
+formatVersion: 1
+model:
+  title: Invalid Relationship Target
+  description: Relationship target does not exist.
+entities:
+  project:
+    plural: projects
+    fields:
+      title:
+        type: string
+relationships:
+  - from: project
+    name: tasks
+    to: task
+    cardinality: one-to-many
+    optionality: optional
