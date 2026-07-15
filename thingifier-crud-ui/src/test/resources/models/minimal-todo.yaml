@@ -1,0 +1,18 @@
+formatVersion: 1
+model:
+  title: Minimal Todo
+  description: A tiny todo schema.
+entities:
+  todo:
+    plural: todos
+    maxInstances: -1
+    primaryKey: id
+    fields:
+      id:
+        type: auto-increment
+      title:
+        type: string
+        required: true
+        validations:
+          - notEmpty
+relationships: []

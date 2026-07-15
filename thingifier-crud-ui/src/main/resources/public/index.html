@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Thingifier CRUD UI</title>
+    <link rel="stylesheet" href="/assets/styles.css">
+</head>
+<body>
+<div class="app-shell">
+    <header class="topbar">
+        <div>
+            <h1 id="model-title">Thingifier</h1>
+            <p id="model-description"></p>
+        </div>
+        <div class="toolbar">
+            <button id="refresh-button" type="button">Refresh</button>
+            <label class="file-action">
+                Load YAML
+                <input id="yaml-file" type="file" accept=".yaml,.yml,text/yaml">
+            </label>
+            <label class="file-action">
+                Import
+                <input id="import-file" type="file" accept="application/json,.json">
+            </label>
+            <button id="export-button" type="button">Export</button>
+            <a class="button-link" href="/docs">API Docs</a>
+            <a class="button-link" href="/swagger">Swagger UI</a>
+            <a class="button-link" href="/docs/swagger">Download OpenAPI</a>
+        </div>
+    </header>
+
+    <main class="workspace">
+        <aside class="outline-panel">
+            <div class="panel-heading">
+                <span>Outline</span>
+            </div>
+            <nav id="outline-tree" class="outline-tree"></nav>
+        </aside>
+
+        <section class="data-panel">
+            <div class="grid-toolbar">
+                <div>
+                    <h2 id="grid-title">Select an entity</h2>
+                    <p id="grid-context"></p>
+                </div>
+                <div class="grid-actions">
+                    <input id="search-input" type="search" placeholder="Search">
+                    <button id="new-button" type="button">New</button>
+                </div>
+            </div>
+            <div id="message-bar" class="message-bar" hidden></div>
+            <div id="grid-host" class="grid-host"></div>
+            <section id="editor-panel" class="editor-panel"></section>
+        </section>
+    </main>
+</div>
+<script src="/assets/app.js"></script>
+</body>
+</html>
