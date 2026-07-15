@@ -7,10 +7,25 @@ const state = {
     currentRows: [],
     selectedRow: null,
     relationshipContext: null,
-    filters: {}
+    filters: {},
+    mode: document.body.dataset.page === "schema" ? "schema" : "workspace",
+    schemaDraft: null,
+    schemaPreview: null,
+    schemaPreviewTimer: null,
+    schemaSelection: {type: "model"},
+    schemaDiagramVisible: true,
+    schemaYamlVisible: false,
+    schemaExportsVisible: false,
+    schemaDirty: false,
+    schemaDiagramZoom: 1,
+    schemaDiagramDirection: "TB",
+    schemaDiagramHeight: 280,
+    schemaDiagramResizeStart: null
 };
 
 const els = {
+    workspaceMain: document.querySelector("main.workspace"),
+    schemaEditor: document.getElementById("schema-editor"),
     title: document.getElementById("model-title"),
     description: document.getElementById("model-description"),
     tree: document.getElementById("outline-tree"),
@@ -24,7 +39,41 @@ const els = {
     refreshButton: document.getElementById("refresh-button"),
     exportButton: document.getElementById("export-button"),
     yamlFile: document.getElementById("yaml-file"),
-    importFile: document.getElementById("import-file")
+    importFile: document.getElementById("import-file"),
+    schemaWorkspaceLink: document.getElementById("schema-workspace-link"),
+    schemaDirtyStatus: document.getElementById("schema-dirty-status"),
+    schemaReset: document.getElementById("schema-reset-button"),
+    schemaSaveYaml: document.getElementById("schema-save-yaml-button"),
+    schemaToggleYaml: document.getElementById("schema-toggle-yaml-button"),
+    schemaToggleExports: document.getElementById("schema-toggle-exports-button"),
+    schemaToggleDiagram: document.getElementById("schema-toggle-diagram-button"),
+    schemaZoomOut: document.getElementById("schema-zoom-out-button"),
+    schemaZoomReset: document.getElementById("schema-zoom-reset-button"),
+    schemaZoomIn: document.getElementById("schema-zoom-in-button"),
+    schemaLayoutToggle: document.getElementById("schema-layout-toggle-button"),
+    schemaDiagramContent: document.getElementById("schema-diagram-content"),
+    schemaDiagramResizer: document.getElementById("schema-diagram-resizer"),
+    schemaFormHost: document.getElementById("schema-form-host"),
+    schemaTree: document.getElementById("schema-tree"),
+    schemaAddEntity: document.getElementById("schema-add-entity-button"),
+    schemaDetailTitle: document.getElementById("schema-detail-title"),
+    schemaDetailHost: document.getElementById("schema-detail-host"),
+    schemaYamlSection: document.getElementById("schema-yaml-section"),
+    schemaExportsSection: document.getElementById("schema-exports-section"),
+    schemaYamlInput: document.getElementById("schema-yaml-input"),
+    schemaParseYaml: document.getElementById("schema-parse-yaml-button"),
+    schemaValidate: document.getElementById("schema-validate-button"),
+    schemaValidation: document.getElementById("schema-validation"),
+    schemaDownloadYaml: document.getElementById("schema-download-yaml"),
+    schemaDownloadMermaid: document.getElementById("schema-download-mermaid"),
+    schemaDownloadGraphviz: document.getElementById("schema-download-graphviz"),
+    schemaCopyYaml: document.getElementById("schema-copy-yaml"),
+    schemaCopyMermaid: document.getElementById("schema-copy-mermaid"),
+    schemaCopyGraphviz: document.getElementById("schema-copy-graphviz"),
+    schemaCanonicalYaml: document.getElementById("schema-canonical-yaml"),
+    schemaMermaidOutput: document.getElementById("schema-mermaid-output"),
+    schemaGraphvizOutput: document.getElementById("schema-graphviz-output"),
+    schemaMermaidDiagram: document.getElementById("schema-mermaid-diagram")
 };
 
 async function requestJson(path, options = {}) {
@@ -60,6 +109,10 @@ function errorText(body, status) {
 async function loadWorkspace() {
     clearMessage();
     state.workspace = await requestJson("/ui/workspace");
+    renderHeader();
+    if (!els.tree) {
+        return;
+    }
     const workspaceVersion = activeWorkspaceVersion();
     state.outline = {};
     state.expandedNodes = {};
@@ -126,9 +179,23 @@ async function relationshipsForInstance(entity, row) {
 }
 
 function renderShell() {
+    renderHeader();
+    if (els.tree) {
+        renderTree();
+    }
+}
+
+function renderHeader() {
+    if (!state.workspace) {
+        return;
+    }
+    if (state.mode === "schema") {
+        els.title.textContent = "Schema Edit";
+        els.description.textContent = `Draft for ${state.workspace.model.title || "Thingifier"}`;
+        return;
+    }
     els.title.textContent = state.workspace.model.title || "Thingifier";
     els.description.textContent = state.workspace.model.description || "";
-    renderTree();
 }
 
 function renderTree() {
@@ -961,65 +1028,1203 @@ function entityByName(name) {
 }
 
 function showMessage(text, error = false) {
+    if (!els.message) {
+        return;
+    }
     els.message.textContent = text;
     els.message.className = error ? "message-bar error" : "message-bar";
     els.message.hidden = false;
 }
 
 function clearMessage() {
+    if (!els.message) {
+        return;
+    }
     els.message.textContent = "";
     els.message.hidden = true;
 }
 
-els.search.addEventListener("input", () => renderGrid(state.currentRows));
-els.newButton.addEventListener("click", () => {
-    state.selectedRow = null;
-    state.relationshipContext = null;
-    renderShell();
-    renderGrid(state.currentRows);
-    renderEditor(null);
-});
-els.refreshButton.addEventListener("click", async () => {
-    if (state.currentEntity) {
-        await loadCollection(state.currentEntity);
-    } else {
-        await loadWorkspace();
+function markSchemaDirty() {
+    if (state.mode !== "schema") {
+        return;
     }
-});
-els.exportButton.addEventListener("click", async () => {
-    try {
-        const response = await fetch("/ui/export", {headers: {"Accept": "application/json"}});
-        const blob = await response.blob();
-        if (!response.ok) {
-            throw new Error(await blob.text());
+    state.schemaDirty = true;
+    renderSchemaDirtyStatus();
+}
+
+function markSchemaClean() {
+    state.schemaDirty = false;
+    renderSchemaDirtyStatus();
+}
+
+function renderSchemaDirtyStatus() {
+    if (!els.schemaDirtyStatus) {
+        return;
+    }
+    els.schemaDirtyStatus.hidden = !state.schemaDirty;
+}
+
+function confirmSchemaSaveBefore(actionText) {
+    if (!state.schemaDirty) {
+        return true;
+    }
+    if (!state.schemaPreview || state.schemaPreview.valid !== true) {
+        const discard = window.confirm(
+            `Schema draft has unsaved changes but is not valid enough to save. Continue ${actionText} and discard them?`);
+        if (discard) {
+            markSchemaClean();
         }
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = "thingifier-workspace.json";
-        link.click();
-        URL.revokeObjectURL(url);
-    } catch (error) {
-        showMessage(error.message, true);
+        return discard;
     }
-});
-els.yamlFile.addEventListener("change", async event => {
-    await loadTextFile(event.target.files[0], async text => {
-        const workspace = await requestJson("/ui/model/yaml", {method: "POST", body: text});
-        state.workspace = workspace;
+    if (!window.confirm(`Schema draft has unsaved changes. Save as YAML before ${actionText}?`)) {
+        return false;
+    }
+    if (downloadSchemaOutput("yaml")) {
+        markSchemaClean();
+        return true;
+    }
+    return false;
+}
+
+async function switchMode(mode) {
+    window.location.href = mode === "schema" ? "/schema" : "/";
+}
+
+async function initializeSchemaEditor(force) {
+    if (!state.workspace) {
         await loadWorkspace();
-        showMessage("YAML model loaded.");
+    }
+    if (force || !state.schemaDraft) {
+        await parseSchemaYaml(state.workspace.schemaYaml || "", true);
+    } else {
+        renderSchemaEditor();
+        renderSchemaPreview();
+    }
+}
+
+async function parseSchemaYaml(yamlText, updateInput) {
+    const preview = await requestJson("/ui/schema/from-yaml", {method: "POST", body: yamlText});
+    state.schemaSelection = {type: "model"};
+    applySchemaPreview(preview);
+    if (updateInput) {
+        els.schemaYamlInput.value = preview.yaml || yamlText;
+        markSchemaClean();
+    } else {
+        markSchemaDirty();
+    }
+    renderSchemaEditor();
+}
+
+async function previewSchemaDraft() {
+    if (!state.schemaDraft) {
+        return;
+    }
+    const preview = await requestJson("/ui/schema/preview", {
+        method: "POST",
+        body: JSON.stringify(state.schemaDraft)
     });
-    event.target.value = "";
-});
-els.importFile.addEventListener("change", async event => {
-    await loadTextFile(event.target.files[0], async text => {
-        const workspace = await requestJson("/ui/import", {method: "POST", body: text});
-        state.workspace = workspace;
-        await loadWorkspace();
-        showMessage("Workspace imported.");
+    applySchemaPreview(preview);
+}
+
+function scheduleSchemaPreview() {
+    markSchemaDirty();
+    clearTimeout(state.schemaPreviewTimer);
+    state.schemaPreviewTimer = setTimeout(() => {
+        previewSchemaDraft().catch(error => showMessage(error.message, true));
+    }, 250);
+}
+
+function applySchemaPreview(preview) {
+    state.schemaPreview = preview;
+    state.schemaDraft = preview.draft || state.schemaDraft;
+    renderSchemaPreview();
+}
+
+function renderSchemaEditor() {
+    renderSchemaDirtyStatus();
+    if (!state.schemaDraft) {
+        els.schemaTree.innerHTML = "";
+        els.schemaDetailHost.innerHTML = `<div class="empty-state">No schema draft loaded.</div>`;
+        return;
+    }
+    state.schemaDraft.entities = state.schemaDraft.entities || [];
+    state.schemaDraft.relationships = state.schemaDraft.relationships || [];
+    ensureSchemaSelection();
+    renderSchemaTree();
+    renderSchemaDetail();
+    renderSchemaPanelVisibility();
+    initializeSchemaHelp();
+}
+
+function ensureSchemaSelection() {
+    if (!state.schemaSelection) {
+        state.schemaSelection = {type: "model"};
+    }
+    const selection = state.schemaSelection;
+    if (selection.type === "entity" && !state.schemaDraft.entities[selection.entityIndex]) {
+        state.schemaSelection = {type: "model"};
+    }
+    if (selection.type === "field") {
+        const entity = state.schemaDraft.entities[selection.entityIndex];
+        if (!entity || !fieldAt(entity, selection.path)) {
+            state.schemaSelection = entity ? {type: "entity", entityIndex: selection.entityIndex} : {type: "model"};
+        }
+    }
+    if (selection.type === "relationship" && !state.schemaDraft.relationships[selection.relationshipIndex]) {
+        state.schemaSelection = {type: "model"};
+    }
+}
+
+function renderSchemaTree() {
+    els.schemaTree.innerHTML = "";
+    els.schemaTree.appendChild(schemaTreeNode("Model", {type: "model"}, "title"));
+    const entities = schemaTreeSection("Entities");
+    state.schemaDraft.entities.forEach((entity, entityIndex) => {
+        entities.appendChild(schemaTreeNode(entity.name || `entity ${entityIndex + 1}`, {type: "entity", entityIndex}, entity.plural || ""));
+        const fieldGroup = document.createElement("div");
+        fieldGroup.className = "schema-tree-children";
+        renderSchemaFieldTree(fieldGroup, entityIndex, entity.fields || [], []);
+        entities.appendChild(fieldGroup);
     });
-    event.target.value = "";
+    els.schemaTree.appendChild(entities);
+
+    const relationships = schemaTreeSection("Relationships", () => {
+        const relationship = newRelationshipDraft();
+        state.schemaDraft.relationships.push(relationship);
+        state.schemaSelection = {type: "relationship", relationshipIndex: state.schemaDraft.relationships.length - 1};
+        renderSchemaEditor();
+        scheduleSchemaPreview();
+    });
+    state.schemaDraft.relationships.forEach((relationship, relationshipIndex) => {
+        relationships.appendChild(schemaTreeNode(
+            relationship.name || `relationship ${relationshipIndex + 1}`,
+            {type: "relationship", relationshipIndex},
+            `${relationship.from || "?"} -> ${relationship.to || "?"}`));
+    });
+    els.schemaTree.appendChild(relationships);
+}
+
+function renderSchemaFieldTree(container, entityIndex, fields, parentPath) {
+    fields.forEach((field, fieldIndex) => {
+        const path = [...parentPath, fieldIndex];
+        container.appendChild(schemaTreeNode(
+            field.name || `field ${fieldIndex + 1}`,
+            {type: "field", entityIndex, path},
+            field.type || ""));
+        if (field.type === "object" && Array.isArray(field.objectFields) && field.objectFields.length > 0) {
+            const children = document.createElement("div");
+            children.className = "schema-tree-children";
+            renderSchemaFieldTree(children, entityIndex, field.objectFields, path);
+            container.appendChild(children);
+        }
+    });
+}
+
+function schemaTreeSection(title, addAction) {
+    const section = document.createElement("section");
+    section.className = "schema-tree-section";
+    const heading = document.createElement("div");
+    heading.className = "schema-tree-heading";
+    const text = document.createElement("span");
+    text.textContent = title;
+    heading.appendChild(text);
+    if (addAction) {
+        heading.appendChild(schemaActionButton("Add", addAction, "compact-button", `Add a ${title.toLowerCase().slice(0, -1)} definition.`));
+    }
+    section.appendChild(heading);
+    return section;
+}
+
+function schemaTreeNode(label, selection, meta) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = `schema-tree-node ${schemaSelectionMatches(selection) ? "active" : ""}`;
+    const labelSpan = document.createElement("span");
+    labelSpan.className = "tree-node-label";
+    labelSpan.textContent = label;
+    button.appendChild(labelSpan);
+    const metaSpan = document.createElement("span");
+    metaSpan.className = "tree-count";
+    metaSpan.textContent = meta || "";
+    button.appendChild(metaSpan);
+    button.addEventListener("click", () => {
+        state.schemaSelection = selection;
+        renderSchemaEditor();
+    });
+    return button;
+}
+
+function schemaSelectionMatches(selection) {
+    return schemaSelectionKey(selection) === schemaSelectionKey(state.schemaSelection);
+}
+
+function schemaSelectionKey(selection) {
+    if (!selection) {
+        return "";
+    }
+    if (selection.type === "field") {
+        return `${selection.type}:${selection.entityIndex}:${selection.path.join(".")}`;
+    }
+    if (selection.type === "entity") {
+        return `${selection.type}:${selection.entityIndex}`;
+    }
+    if (selection.type === "relationship") {
+        return `${selection.type}:${selection.relationshipIndex}`;
+    }
+    return selection.type;
+}
+
+function renderSchemaDetail() {
+    els.schemaDetailHost.innerHTML = "";
+    const selection = state.schemaSelection;
+    if (selection.type === "entity") {
+        renderEntityDetail(selection.entityIndex);
+    } else if (selection.type === "field") {
+        renderFieldDetail(selection.entityIndex, selection.path);
+    } else if (selection.type === "relationship") {
+        renderRelationshipDetail(selection.relationshipIndex);
+    } else {
+        renderModelDetail();
+    }
+    initializeSchemaHelp();
+}
+
+function renderModelDetail() {
+    els.schemaDetailTitle.textContent = "Model";
+    const model = state.schemaDraft.model || {title: "", description: ""};
+    state.schemaDraft.model = model;
+    const card = schemaCard("Model Details");
+    card.appendChild(schemaTextControl("Title", model.title, value => {
+        model.title = value;
+        scheduleSchemaPreview();
+    }, "text", "The display name exported in YAML and shown by the workspace."));
+    card.appendChild(schemaTextControl("Description", model.description, value => {
+        model.description = value;
+        scheduleSchemaPreview();
+    }, "textarea", "A short explanation of what this model represents."));
+    els.schemaDetailHost.appendChild(wrapSchemaDetail(card, true));
+}
+
+function renderEntityDetail(entityIndex) {
+    const entity = state.schemaDraft.entities[entityIndex];
+    els.schemaDetailTitle.textContent = `Entity: ${entity.name || entityIndex + 1}`;
+    const details = schemaCard("Entity Details");
+    const actions = schemaInlineActions();
+    actions.appendChild(schemaActionButton("Delete Entity", () => {
+        state.schemaDraft.entities.splice(entityIndex, 1);
+        state.schemaSelection = {type: "model"};
+        renderSchemaEditor();
+        scheduleSchemaPreview();
+    }, "compact-button danger", "Remove this entity from the draft. Relationships that used it will become invalid until updated."));
+    details.appendChild(actions);
+    details.appendChild(schemaTextControl("Name", entity.name, value => {
+        entity.name = value;
+        scheduleSchemaPreview();
+        renderSchemaTree();
+    }, "text", "The singular entity name used in schema definitions."));
+    details.appendChild(schemaTextControl("Plural", entity.plural, value => {
+        entity.plural = value;
+        scheduleSchemaPreview();
+        renderSchemaTree();
+    }, "text", "The collection name used by the API path and generated schema."));
+    details.appendChild(schemaTextControl("Max Instances", entity.maxInstances, value => {
+        entity.maxInstances = numberOrDefault(value, -1);
+        scheduleSchemaPreview();
+    }, "number", "Maximum allowed instances. Use -1 for unlimited."));
+    details.appendChild(schemaTextControl("Primary Key", entity.primaryKey, value => {
+        entity.primaryKey = value;
+        scheduleSchemaPreview();
+    }, "text", "The field used to identify instances in API routes."));
+
+    const fields = schemaCard("Fields");
+    const fieldActions = schemaInlineActions();
+    fieldActions.appendChild(schemaActionButton("Add Field", () => addFieldTo(entityIndex, []), "compact-button", "Add a field to this entity."));
+    fields.appendChild(fieldActions);
+    fields.appendChild(fieldSummaryTable(entityIndex, [], entity.fields || []));
+    els.schemaDetailHost.appendChild(wrapSchemaDetail(details, false, fields));
+}
+
+function fieldSummaryTable(entityIndex, parentPath, fields) {
+    const table = document.createElement("table");
+    table.className = "schema-list-table";
+    table.innerHTML = "<thead><tr><th>Name</th><th>Type</th><th>Required</th><th>Actions</th></tr></thead>";
+    const body = document.createElement("tbody");
+    fields.forEach((field, fieldIndex) => {
+        const path = [...parentPath, fieldIndex];
+        const row = document.createElement("tr");
+        row.appendChild(schemaTableCell(field.name || "(unnamed)"));
+        row.appendChild(schemaTableCell(field.type || ""));
+        row.appendChild(schemaTableCell(field.required ? "yes" : "no"));
+        const actions = document.createElement("td");
+        actions.appendChild(schemaActionButton("Edit", () => {
+            state.schemaSelection = {type: "field", entityIndex, path};
+            renderSchemaEditor();
+        }, "compact-button", "Edit this field in the detail panel."));
+        actions.appendChild(schemaActionButton("Delete", () => deleteField(entityIndex, path), "compact-button danger", "Remove this field from the draft."));
+        row.appendChild(actions);
+        body.appendChild(row);
+    });
+    if (fields.length === 0) {
+        const row = document.createElement("tr");
+        const cell = document.createElement("td");
+        cell.colSpan = 4;
+        cell.className = "empty-state";
+        cell.textContent = "No fields yet.";
+        row.appendChild(cell);
+        body.appendChild(row);
+    }
+    table.appendChild(body);
+    return table;
+}
+
+function schemaTableCell(text) {
+    const cell = document.createElement("td");
+    cell.textContent = text;
+    return cell;
+}
+
+function renderFieldDetail(entityIndex, path) {
+    const entity = state.schemaDraft.entities[entityIndex];
+    const field = fieldAt(entity, path);
+    els.schemaDetailTitle.textContent = `Field: ${field.name || path.join(".")}`;
+    const details = schemaCard("Field Details");
+    const actions = schemaInlineActions();
+    actions.appendChild(schemaActionButton("Back to Entity", () => {
+        state.schemaSelection = {type: "entity", entityIndex};
+        renderSchemaEditor();
+    }, "compact-button", "Return to the entity field list."));
+    actions.appendChild(schemaActionButton("Delete Field", () => deleteField(entityIndex, path), "compact-button danger", "Remove this field from the draft."));
+    details.appendChild(actions);
+    details.appendChild(schemaTextControl("Name", field.name, value => {
+        field.name = value;
+        scheduleSchemaPreview();
+        renderSchemaTree();
+    }, "text", "The field name used in YAML and API payloads."));
+    details.appendChild(schemaSelectControl("Type", field.type, fieldTypes(), value => {
+        field.type = value;
+        if (value === "object") {
+            field.objectFields = field.objectFields || [];
+        }
+        renderSchemaEditor();
+        scheduleSchemaPreview();
+    }, "The field data type."));
+    details.appendChild(schemaCheckboxControl("Required", field.required, value => {
+        field.required = value;
+        scheduleSchemaPreview();
+    }, "Whether API clients must provide this field."));
+    details.appendChild(schemaCheckboxControl("Unique", field.unique, value => {
+        field.unique = value;
+        scheduleSchemaPreview();
+    }, "Whether values must be unique across instances."));
+    details.appendChild(schemaTextControl("Default", field.defaultValue, value => {
+        field.defaultValue = emptyToNull(value);
+        scheduleSchemaPreview();
+    }, "text", "Default value applied when the field is not supplied."));
+    details.appendChild(schemaTextControl("Description", field.description, value => {
+        field.description = emptyToNull(value);
+        scheduleSchemaPreview();
+    }, "textarea", "Documentation text for this field."));
+    details.appendChild(schemaTextControl("Examples", (field.examples || []).join(", "), value => {
+        field.examples = value.split(",").map(item => item.trim()).filter(item => item.length > 0);
+        scheduleSchemaPreview();
+    }, "text", "Comma-separated example values."));
+    details.appendChild(schemaTextControl("Truncate To", field.truncateTo, value => {
+        field.truncateTo = numberOrNull(value);
+        scheduleSchemaPreview();
+    }, "number", "Maximum stored length after truncation."));
+    details.appendChild(schemaTextControl("Min", field.min, value => {
+        field.min = emptyToNull(value);
+        scheduleSchemaPreview();
+    }, "text", "Minimum value or length, depending on field type."));
+    details.appendChild(schemaTextControl("Max", field.max, value => {
+        field.max = emptyToNull(value);
+        scheduleSchemaPreview();
+    }, "text", "Maximum value or length, depending on field type."));
+
+    const supporting = schemaCard("Validation And Object Fields");
+    supporting.appendChild(validationListEditor(field.validations || (field.validations = [])));
+    if (field.type === "object") {
+        const childPath = path;
+        const childFields = field.objectFields || (field.objectFields = []);
+        const childActions = schemaInlineActions();
+        childActions.appendChild(schemaActionButton("Add Object Field", () => addFieldTo(entityIndex, childPath), "compact-button", "Add a child field to this object field."));
+        supporting.appendChild(childActions);
+        supporting.appendChild(fieldSummaryTable(entityIndex, childPath, childFields));
+    }
+    els.schemaDetailHost.appendChild(wrapSchemaDetail(details, false, supporting));
+}
+
+function validationListEditor(validations) {
+    const section = document.createElement("div");
+    section.className = "schema-list";
+    const heading = document.createElement("div");
+    heading.className = "schema-list-heading";
+    heading.textContent = "Validations";
+    section.appendChild(heading);
+    section.appendChild(schemaActionButton("Add Validation", () => {
+        validations.push({type: "notEmpty", value: null});
+        renderSchemaEditor();
+        scheduleSchemaPreview();
+    }, "compact-button", "Add a validation rule to the selected field."));
+    validations.forEach((validation, index) => {
+        const row = document.createElement("div");
+        row.className = "schema-validation-row";
+        row.appendChild(schemaSelectControl("", validation.type, validationTypes(), value => {
+            validation.type = value;
+            validation.value = value === "notEmpty" ? null : (validation.value || "");
+            renderSchemaEditor();
+            scheduleSchemaPreview();
+        }, "The validation rule type."));
+        row.appendChild(schemaTextControl("", validation.value, value => {
+            validation.value = emptyToNull(value);
+            scheduleSchemaPreview();
+        }, "text", "Rule value, such as maximum length or regex text."));
+        row.appendChild(schemaActionButton("Remove", () => {
+            validations.splice(index, 1);
+            renderSchemaEditor();
+            scheduleSchemaPreview();
+        }, "compact-button danger", "Remove this validation rule."));
+        section.appendChild(row);
+    });
+    return section;
+}
+
+function renderRelationshipDetail(relationshipIndex) {
+    const relationship = state.schemaDraft.relationships[relationshipIndex];
+    els.schemaDetailTitle.textContent = `Relationship: ${relationship.name || relationshipIndex + 1}`;
+    const details = schemaCard("Relationship Details");
+    const entityOptions = state.schemaDraft.entities.map(entity => entity.name);
+    const actions = schemaInlineActions();
+    actions.appendChild(schemaActionButton("Delete Relationship", () => {
+        state.schemaDraft.relationships.splice(relationshipIndex, 1);
+        state.schemaSelection = {type: "model"};
+        renderSchemaEditor();
+        scheduleSchemaPreview();
+    }, "compact-button danger", "Remove this relationship from the draft."));
+    details.appendChild(actions);
+    details.appendChild(schemaSelectControl("From", relationship.from, entityOptions, value => {
+        relationship.from = value;
+        scheduleSchemaPreview();
+        renderSchemaTree();
+    }, "The source entity for this relationship."));
+    details.appendChild(schemaTextControl("Name", relationship.name, value => {
+        relationship.name = value;
+        scheduleSchemaPreview();
+        renderSchemaTree();
+    }, "text", "The relationship name exposed under the source entity."));
+    details.appendChild(schemaSelectControl("To", relationship.to, entityOptions, value => {
+        relationship.to = value;
+        scheduleSchemaPreview();
+        renderSchemaTree();
+    }, "The target entity for this relationship."));
+    details.appendChild(schemaSelectControl("Cardinality", relationship.cardinality, cardinalities(), value => {
+        relationship.cardinality = value;
+        scheduleSchemaPreview();
+    }, "How many target instances can be related."));
+    details.appendChild(schemaSelectControl("Optionality", relationship.optionality, optionalities(), value => {
+        relationship.optionality = value;
+        scheduleSchemaPreview();
+    }, "Whether this relationship is optional or mandatory."));
+    details.appendChild(schemaCheckboxControl("Reverse", Boolean(relationship.reverse), value => {
+        relationship.reverse = value ? {name: "", cardinality: "one-to-one", optionality: "optional"} : null;
+        renderSchemaEditor();
+        scheduleSchemaPreview();
+    }, "Generate a reverse relationship from target back to source."));
+    if (relationship.reverse) {
+        details.appendChild(schemaTextControl("Reverse Name", relationship.reverse.name, value => {
+            relationship.reverse.name = value;
+            scheduleSchemaPreview();
+        }, "text", "The reverse relationship name."));
+        details.appendChild(schemaSelectControl("Reverse Cardinality", relationship.reverse.cardinality, cardinalities(), value => {
+            relationship.reverse.cardinality = value;
+            scheduleSchemaPreview();
+        }, "Cardinality for the reverse relationship."));
+        details.appendChild(schemaSelectControl("Reverse Optionality", relationship.reverse.optionality, optionalities(), value => {
+            relationship.reverse.optionality = value;
+            scheduleSchemaPreview();
+        }, "Optionality for the reverse relationship."));
+    }
+    els.schemaDetailHost.appendChild(wrapSchemaDetail(details, true));
+}
+
+function wrapSchemaDetail(primary, single, secondary) {
+    const layout = document.createElement("div");
+    layout.className = `schema-detail-grid ${single ? "single" : ""}`;
+    layout.appendChild(primary);
+    if (secondary) {
+        layout.appendChild(secondary);
+    }
+    return layout;
+}
+
+function schemaCard(title) {
+    const card = document.createElement("section");
+    card.className = "schema-card";
+    const heading = document.createElement("h3");
+    heading.textContent = title;
+    card.appendChild(heading);
+    return card;
+}
+
+function addFieldTo(entityIndex, parentPath) {
+    const entity = state.schemaDraft.entities[entityIndex];
+    const fields = fieldsAt(entity, parentPath);
+    fields.push(newFieldDraft());
+    state.schemaSelection = {type: "field", entityIndex, path: [...parentPath, fields.length - 1]};
+    renderSchemaEditor();
+    scheduleSchemaPreview();
+}
+
+function deleteField(entityIndex, path) {
+    const entity = state.schemaDraft.entities[entityIndex];
+    const parentPath = path.slice(0, -1);
+    const fields = fieldsAt(entity, parentPath);
+    fields.splice(path[path.length - 1], 1);
+    state.schemaSelection = {type: "entity", entityIndex};
+    renderSchemaEditor();
+    scheduleSchemaPreview();
+}
+
+function fieldsAt(entity, parentPath) {
+    if (parentPath.length === 0) {
+        entity.fields = entity.fields || [];
+        return entity.fields;
+    }
+    const parent = fieldAt(entity, parentPath);
+    parent.objectFields = parent.objectFields || [];
+    return parent.objectFields;
+}
+
+function fieldAt(entity, path) {
+    let fields = entity.fields || [];
+    let field = null;
+    for (const index of path) {
+        field = fields[index];
+        if (!field) {
+            return null;
+        }
+        fields = field.objectFields || [];
+    }
+    return field;
+}
+
+function renderSchemaPreview() {
+    const preview = state.schemaPreview;
+    if (!preview) {
+        return;
+    }
+    const mermaidSource = mermaidSourceForCurrentLayout(preview.mermaid || "");
+    renderSchemaValidation(preview);
+    if (els.schemaCanonicalYaml) {
+        els.schemaCanonicalYaml.value = preview.yaml || "";
+    }
+    if (els.schemaMermaidOutput) {
+        els.schemaMermaidOutput.value = mermaidSource;
+    }
+    if (els.schemaGraphvizOutput) {
+        els.schemaGraphvizOutput.value = preview.graphviz || "";
+    }
+    const valid = preview.valid === true;
+    [els.schemaSaveYaml, els.schemaDownloadYaml, els.schemaDownloadMermaid, els.schemaDownloadGraphviz,
+        els.schemaCopyYaml, els.schemaCopyMermaid, els.schemaCopyGraphviz]
+        .filter(Boolean)
+        .forEach(button => {
+            button.disabled = !valid;
+        });
+    renderSchemaDiagramControls();
+    renderMermaidDiagram(mermaidSource);
+}
+
+function renderSchemaValidation(preview) {
+    if (!els.schemaValidation) {
+        return;
+    }
+    els.schemaValidation.innerHTML = "";
+    const status = document.createElement("div");
+    status.className = preview.valid ? "schema-valid" : "schema-invalid";
+    status.textContent = preview.valid ? "Schema is valid." : "Schema has validation errors.";
+    els.schemaValidation.appendChild(status);
+    if (Array.isArray(preview.errors) && preview.errors.length > 0) {
+        const list = document.createElement("ul");
+        preview.errors.forEach(error => {
+            const item = document.createElement("li");
+            item.textContent = `${error.path || "schema"}: ${error.message}`;
+            list.appendChild(item);
+        });
+        els.schemaValidation.appendChild(list);
+    }
+}
+
+async function renderMermaidDiagram(source) {
+    if (!els.schemaMermaidDiagram) {
+        return;
+    }
+    if (!source.trim()) {
+        els.schemaMermaidDiagram.textContent = "";
+        applySchemaDiagramSizing();
+        return;
+    }
+    if (!window.mermaid) {
+        els.schemaMermaidDiagram.textContent = source;
+        applySchemaDiagramSizing();
+        return;
+    }
+    try {
+        window.mermaid.initialize({startOnLoad: false, securityLevel: "strict"});
+        const result = await window.mermaid.render(`schema-diagram-${Date.now()}`, source);
+        els.schemaMermaidDiagram.innerHTML = result.svg || result;
+    } catch (error) {
+        els.schemaMermaidDiagram.textContent = source;
+    }
+    applySchemaDiagramSizing();
+}
+
+function renderSchemaPanelVisibility() {
+    if (els.schemaDiagramContent) {
+        els.schemaDiagramContent.hidden = !state.schemaDiagramVisible;
+    }
+    if (els.schemaYamlSection) {
+        els.schemaYamlSection.hidden = !state.schemaYamlVisible;
+    }
+    if (els.schemaExportsSection) {
+        els.schemaExportsSection.hidden = !state.schemaExportsVisible;
+    }
+    if (els.schemaDiagramResizer) {
+        els.schemaDiagramResizer.hidden = !state.schemaDiagramVisible;
+    }
+    if (els.schemaToggleDiagram) {
+        els.schemaToggleDiagram.textContent = state.schemaDiagramVisible ? "Hide Diagram" : "Show Diagram";
+    }
+    if (els.schemaToggleYaml) {
+        els.schemaToggleYaml.textContent = state.schemaYamlVisible ? "Hide YAML Draft" : "YAML Draft";
+    }
+    if (els.schemaToggleExports) {
+        els.schemaToggleExports.textContent = state.schemaExportsVisible ? "Hide Exports" : "Exports";
+    }
+    renderSchemaDiagramControls();
+}
+
+function renderSchemaDiagramControls() {
+    if (els.schemaZoomReset) {
+        els.schemaZoomReset.textContent = `${Math.round(state.schemaDiagramZoom * 100)}%`;
+    }
+    if (els.schemaLayoutToggle) {
+        els.schemaLayoutToggle.textContent =
+            state.schemaDiagramDirection === "TB" ? "Horizontal Layout" : "Vertical Layout";
+    }
+    if (els.schemaZoomOut) {
+        els.schemaZoomOut.disabled = state.schemaDiagramZoom <= 0.5;
+    }
+    if (els.schemaZoomIn) {
+        els.schemaZoomIn.disabled = state.schemaDiagramZoom >= 2;
+    }
+    applySchemaDiagramSizing();
+}
+
+function setSchemaDiagramZoom(value) {
+    state.schemaDiagramZoom = Math.max(0.5, Math.min(2, Number(value.toFixed(2))));
+    renderSchemaDiagramControls();
+}
+
+function toggleSchemaDiagramDirection() {
+    state.schemaDiagramDirection = state.schemaDiagramDirection === "TB" ? "LR" : "TB";
+    renderSchemaPreview();
+}
+
+function setSchemaDiagramHeight(value) {
+    state.schemaDiagramHeight = Math.max(160, Math.min(640, Math.round(value)));
+    applySchemaDiagramSizing();
+}
+
+function applySchemaDiagramSizing() {
+    if (!els.schemaMermaidDiagram) {
+        return;
+    }
+    els.schemaMermaidDiagram.style.setProperty("--schema-diagram-height", `${state.schemaDiagramHeight}px`);
+    const svg = els.schemaMermaidDiagram.querySelector("svg");
+    if (svg) {
+        svg.style.width = `${Math.round(state.schemaDiagramZoom * 100)}%`;
+        svg.style.maxWidth = "none";
+        svg.style.height = "auto";
+    }
+}
+
+function mermaidSourceForCurrentLayout(source) {
+    if (!source || !source.trim()) {
+        return "";
+    }
+    const lines = source.split(/\r?\n/);
+    const output = [];
+    let inserted = false;
+    lines.forEach(line => {
+        const trimmed = line.trim();
+        if (trimmed.startsWith("direction ")) {
+            return;
+        }
+        output.push(line);
+        if (!inserted && trimmed === "erDiagram") {
+            output.push(`    direction ${state.schemaDiagramDirection}`);
+            inserted = true;
+        }
+    });
+    return output.join("\n");
+}
+
+function beginSchemaDiagramResize(event) {
+    event.preventDefault();
+    state.schemaDiagramResizeStart = {
+        y: event.clientY,
+        height: state.schemaDiagramHeight
+    };
+    document.addEventListener("pointermove", resizeSchemaDiagram);
+    document.addEventListener("pointerup", endSchemaDiagramResize, {once: true});
+}
+
+function resizeSchemaDiagram(event) {
+    if (!state.schemaDiagramResizeStart) {
+        return;
+    }
+    const delta = event.clientY - state.schemaDiagramResizeStart.y;
+    setSchemaDiagramHeight(state.schemaDiagramResizeStart.height + delta);
+}
+
+function endSchemaDiagramResize() {
+    state.schemaDiagramResizeStart = null;
+    document.removeEventListener("pointermove", resizeSchemaDiagram);
+}
+
+function schemaTextControl(labelText, value, onInput, type = "text", helpText = "") {
+    const label = schemaControlLabel(labelText, helpText);
+    const input = type === "textarea" ? document.createElement("textarea") : document.createElement("input");
+    if (type !== "textarea") {
+        input.type = type;
+    }
+    input.value = value === undefined || value === null ? "" : value;
+    input.addEventListener("input", () => onInput(input.value));
+    label.appendChild(input);
+    return label;
+}
+
+function schemaSelectControl(labelText, value, options, onChange, helpText = "") {
+    const label = schemaControlLabel(labelText, helpText);
+    const select = document.createElement("select");
+    const selectedValue = value === undefined || value === null ? "" : String(value);
+    if (!options.includes(selectedValue)) {
+        options = [selectedValue, ...options].filter((item, index, list) => item || index === list.indexOf(item));
+    }
+    options.forEach(optionValue => {
+        const option = document.createElement("option");
+        option.value = optionValue;
+        option.textContent = optionValue || "(blank)";
+        option.selected = optionValue === selectedValue;
+        select.appendChild(option);
+    });
+    select.addEventListener("change", () => onChange(select.value));
+    label.appendChild(select);
+    return label;
+}
+
+function schemaCheckboxControl(labelText, value, onChange, helpText = "") {
+    const label = schemaControlLabel(labelText, helpText);
+    const input = document.createElement("input");
+    input.type = "checkbox";
+    input.checked = Boolean(value);
+    input.addEventListener("change", () => onChange(input.checked));
+    label.appendChild(input);
+    return label;
+}
+
+function schemaControlLabel(labelText, helpText = "") {
+    const label = document.createElement("label");
+    label.className = "schema-control";
+    if (labelText) {
+        const span = document.createElement("span");
+        span.textContent = labelText;
+        if (helpText) {
+            span.appendChild(helpIcon(helpText));
+        }
+        label.appendChild(span);
+    }
+    return label;
+}
+
+function schemaInlineActions() {
+    const actions = document.createElement("div");
+    actions.className = "schema-inline-actions";
+    return actions;
+}
+
+function schemaActionButton(text, onClick, className = "compact-button", helpText = "") {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = className;
+    button.textContent = text;
+    if (helpText) {
+        button.setAttribute("data-tippy-content", helpText);
+    }
+    button.addEventListener("click", onClick);
+    return button;
+}
+
+function helpIcon(helpText) {
+    const icon = document.createElement("span");
+    icon.className = "help-icon";
+    icon.textContent = "?";
+    icon.setAttribute("data-tippy-content", helpText);
+    return icon;
+}
+
+function initializeSchemaHelp() {
+    if (!window.tippy) {
+        return;
+    }
+    document.querySelectorAll("[data-tippy-content]:not([data-tippy-initialized])").forEach(element => {
+        window.tippy(element);
+        element.setAttribute("data-tippy-initialized", "true");
+    });
+}
+
+function newEntityDraft() {
+    const index = state.schemaDraft.entities.length + 1;
+    return {
+        name: `entity${index}`,
+        plural: `entities${index}`,
+        maxInstances: -1,
+        primaryKey: "",
+        fields: []
+    };
+}
+
+function newFieldDraft() {
+    return {
+        name: "field",
+        type: "string",
+        required: false,
+        unique: false,
+        defaultValue: null,
+        description: null,
+        examples: [],
+        truncateTo: null,
+        min: null,
+        max: null,
+        validations: [],
+        objectFields: []
+    };
+}
+
+function newRelationshipDraft() {
+    const first = state.schemaDraft.entities[0] ? state.schemaDraft.entities[0].name : "";
+    const second = state.schemaDraft.entities[1] ? state.schemaDraft.entities[1].name : first;
+    return {
+        from: first,
+        name: "relationship",
+        to: second,
+        cardinality: "one-to-many",
+        optionality: "optional",
+        reverse: null
+    };
+}
+
+function fieldTypes() {
+    return ["string", "integer", "float", "boolean", "enum", "object", "date", "auto-increment", "auto-guid"];
+}
+
+function validationTypes() {
+    return ["notEmpty", "maximumLength", "matchesRegex", "satisfiesRegex"];
+}
+
+function cardinalities() {
+    return ["one-to-many", "one-to-one", "zero-to-one", "zero-to-many"];
+}
+
+function optionalities() {
+    return ["optional", "mandatory"];
+}
+
+function downloadSchemaOutput(kind) {
+    if (!state.schemaPreview || !state.schemaPreview.valid) {
+        showMessage("Schema must be valid before export.", true);
+        return false;
+    }
+    const base = filenameBase();
+    if (kind === "yaml") {
+        downloadText(`${base}.yaml`, schemaOutputText("yaml"), "text/yaml");
+    } else if (kind === "mermaid") {
+        downloadText(`${base}.mmd`, schemaOutputText("mermaid"), "text/plain");
+    } else {
+        downloadText(`${base}.dot`, schemaOutputText("graphviz"), "text/vnd.graphviz");
+    }
+    return true;
+}
+
+function downloadText(filename, text, type) {
+    const blob = new Blob([text || ""], {type});
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    link.click();
+    URL.revokeObjectURL(url);
+}
+
+async function copySchemaOutput(kind) {
+    if (!state.schemaPreview || !state.schemaPreview.valid) {
+        showMessage("Schema must be valid before copying.", true);
+        return;
+    }
+    const text = schemaOutputText(kind);
+    try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(text);
+        } else {
+            fallbackCopyText(text);
+        }
+        showMessage(`${kindDisplayName(kind)} copied to clipboard.`);
+    } catch (error) {
+        fallbackCopyText(text);
+        showMessage(`${kindDisplayName(kind)} copied to clipboard.`);
+    }
+}
+
+function schemaOutputText(kind) {
+    if (kind === "yaml") {
+        return state.schemaPreview.yaml || "";
+    }
+    if (kind === "mermaid") {
+        return mermaidSourceForCurrentLayout(state.schemaPreview.mermaid || "");
+    }
+    return state.schemaPreview.graphviz || "";
+}
+
+function fallbackCopyText(text) {
+    const area = document.createElement("textarea");
+    area.value = text;
+    area.style.position = "fixed";
+    area.style.left = "-9999px";
+    document.body.appendChild(area);
+    area.focus();
+    area.select();
+    document.execCommand("copy");
+    document.body.removeChild(area);
+}
+
+function kindDisplayName(kind) {
+    if (kind === "yaml") {
+        return "YAML";
+    }
+    if (kind === "mermaid") {
+        return "Mermaid";
+    }
+    return "Graphviz";
+}
+
+function filenameBase() {
+    const title = state.schemaDraft && state.schemaDraft.model ? state.schemaDraft.model.title : "";
+    const cleaned = (title || "thingifier-schema").toLowerCase().replace(/[^a-z0-9]+/g, "-");
+    return cleaned.replace(/^-+|-+$/g, "") || "thingifier-schema";
+}
+
+function numberOrNull(value) {
+    return value === "" ? null : Number(value);
+}
+
+function numberOrDefault(value, defaultValue) {
+    return value === "" ? defaultValue : Number(value);
+}
+
+function emptyToNull(value) {
+    return value === "" ? null : value;
+}
+
+if (els.schemaWorkspaceLink) {
+    els.schemaWorkspaceLink.addEventListener("click", event => {
+        if (!confirmSchemaSaveBefore("switching to Workspace")) {
+            event.preventDefault();
+        }
+    });
+}
+if (els.schemaReset) {
+    els.schemaReset.setAttribute("data-tippy-content", "Reload the draft from the current workspace schema YAML.");
+    els.schemaReset.addEventListener("click", () => {
+        if (!confirmSchemaSaveBefore("resetting the draft")) {
+            return;
+        }
+        initializeSchemaEditor(true).catch(error => showMessage(error.message, true));
+    });
+}
+if (els.schemaAddEntity) {
+    els.schemaAddEntity.setAttribute("data-tippy-content", "Add a new entity to the schema draft.");
+    els.schemaAddEntity.addEventListener("click", () => {
+        state.schemaDraft.entities.push(newEntityDraft());
+        state.schemaSelection = {type: "entity", entityIndex: state.schemaDraft.entities.length - 1};
+        renderSchemaEditor();
+        scheduleSchemaPreview();
+    });
+}
+if (els.schemaSaveYaml) {
+    els.schemaSaveYaml.setAttribute("data-tippy-content", "Save the current valid draft as canonical YAML.");
+    els.schemaSaveYaml.addEventListener("click", () => {
+        if (downloadSchemaOutput("yaml")) {
+            markSchemaClean();
+        }
+    });
+}
+if (els.schemaToggleDiagram) {
+    els.schemaToggleDiagram.setAttribute("data-tippy-content", "Show or hide the rendered ER diagram.");
+    els.schemaToggleDiagram.addEventListener("click", () => {
+        state.schemaDiagramVisible = !state.schemaDiagramVisible;
+        renderSchemaPanelVisibility();
+    });
+}
+if (els.schemaZoomOut) {
+    els.schemaZoomOut.setAttribute("data-tippy-content", "Zoom out of the ER diagram.");
+    els.schemaZoomOut.addEventListener("click", () => setSchemaDiagramZoom(state.schemaDiagramZoom - 0.1));
+}
+if (els.schemaZoomReset) {
+    els.schemaZoomReset.setAttribute("data-tippy-content", "Reset ER diagram zoom.");
+    els.schemaZoomReset.addEventListener("click", () => setSchemaDiagramZoom(1));
+}
+if (els.schemaZoomIn) {
+    els.schemaZoomIn.setAttribute("data-tippy-content", "Zoom in to the ER diagram.");
+    els.schemaZoomIn.addEventListener("click", () => setSchemaDiagramZoom(state.schemaDiagramZoom + 0.1));
+}
+if (els.schemaLayoutToggle) {
+    els.schemaLayoutToggle.setAttribute(
+        "data-tippy-content",
+        "Toggle the ER diagram between vertical and horizontal layout.");
+    els.schemaLayoutToggle.addEventListener("click", toggleSchemaDiagramDirection);
+}
+if (els.schemaDiagramResizer) {
+    els.schemaDiagramResizer.addEventListener("pointerdown", beginSchemaDiagramResize);
+}
+if (els.schemaToggleYaml) {
+    els.schemaToggleYaml.setAttribute("data-tippy-content", "Show or hide the raw YAML draft editor.");
+    els.schemaToggleYaml.addEventListener("click", () => {
+        state.schemaYamlVisible = !state.schemaYamlVisible;
+        renderSchemaPanelVisibility();
+    });
+}
+if (els.schemaToggleExports) {
+    els.schemaToggleExports.setAttribute("data-tippy-content", "Show or hide generated export formats.");
+    els.schemaToggleExports.addEventListener("click", () => {
+        state.schemaExportsVisible = !state.schemaExportsVisible;
+        renderSchemaPanelVisibility();
+    });
+}
+if (els.schemaParseYaml) {
+    els.schemaParseYaml.setAttribute("data-tippy-content", "Parse the raw YAML text into the draft editor.");
+    els.schemaParseYaml.addEventListener("click", () => {
+        parseSchemaYaml(els.schemaYamlInput.value, false).catch(error => showMessage(error.message, true));
+    });
+}
+if (els.schemaYamlInput) {
+    els.schemaYamlInput.addEventListener("input", markSchemaDirty);
+}
+if (els.schemaValidate) {
+    els.schemaValidate.setAttribute("data-tippy-content", "Validate the current draft and refresh generated previews.");
+    els.schemaValidate.addEventListener("click", () => previewSchemaDraft().catch(error => showMessage(error.message, true)));
+}
+if (els.schemaDownloadYaml) {
+    els.schemaDownloadYaml.addEventListener("click", () => {
+        if (downloadSchemaOutput("yaml")) {
+            markSchemaClean();
+        }
+    });
+}
+if (els.schemaDownloadMermaid) {
+    els.schemaDownloadMermaid.setAttribute("data-tippy-content", "Save the generated Mermaid diagram source.");
+    els.schemaDownloadMermaid.addEventListener("click", () => downloadSchemaOutput("mermaid"));
+}
+if (els.schemaDownloadGraphviz) {
+    els.schemaDownloadGraphviz.setAttribute("data-tippy-content", "Save the generated Graphviz DOT source.");
+    els.schemaDownloadGraphviz.addEventListener("click", () => downloadSchemaOutput("graphviz"));
+}
+if (els.schemaCopyYaml) {
+    els.schemaCopyYaml.setAttribute("data-tippy-content", "Copy canonical YAML to the clipboard.");
+    els.schemaCopyYaml.addEventListener("click", () => copySchemaOutput("yaml"));
+}
+if (els.schemaCopyMermaid) {
+    els.schemaCopyMermaid.setAttribute("data-tippy-content", "Copy Mermaid ER diagram source to the clipboard.");
+    els.schemaCopyMermaid.addEventListener("click", () => copySchemaOutput("mermaid"));
+}
+if (els.schemaCopyGraphviz) {
+    els.schemaCopyGraphviz.setAttribute("data-tippy-content", "Copy Graphviz DOT source to the clipboard.");
+    els.schemaCopyGraphviz.addEventListener("click", () => copySchemaOutput("graphviz"));
+}
+
+if (els.search) {
+    els.search.addEventListener("input", () => renderGrid(state.currentRows));
+}
+if (els.newButton) {
+    els.newButton.addEventListener("click", () => {
+        state.selectedRow = null;
+        state.relationshipContext = null;
+        renderShell();
+        renderGrid(state.currentRows);
+        renderEditor(null);
+    });
+}
+if (els.refreshButton) {
+    els.refreshButton.addEventListener("click", async () => {
+        if (state.currentEntity) {
+            await loadCollection(state.currentEntity);
+        } else {
+            await loadWorkspace();
+        }
+    });
+}
+if (els.exportButton) {
+    els.exportButton.addEventListener("click", async () => {
+        try {
+            const response = await fetch("/ui/export", {headers: {"Accept": "application/json"}});
+            const blob = await response.blob();
+            if (!response.ok) {
+                throw new Error(await blob.text());
+            }
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = "thingifier-workspace.json";
+            link.click();
+            URL.revokeObjectURL(url);
+        } catch (error) {
+            showMessage(error.message, true);
+        }
+    });
+}
+if (els.yamlFile) {
+    els.yamlFile.addEventListener("change", async event => {
+        await loadTextFile(event.target.files[0], async text => {
+            const workspace = await requestJson("/ui/model/yaml", {method: "POST", body: text});
+            state.workspace = workspace;
+            state.schemaDraft = null;
+            state.schemaPreview = null;
+            await loadWorkspace();
+            showMessage("YAML model loaded.");
+        });
+        event.target.value = "";
+    });
+}
+if (els.importFile) {
+    els.importFile.addEventListener("change", async event => {
+        await loadTextFile(event.target.files[0], async text => {
+            const workspace = await requestJson("/ui/import", {method: "POST", body: text});
+            state.workspace = workspace;
+            state.schemaDraft = null;
+            state.schemaPreview = null;
+            await loadWorkspace();
+            showMessage("Workspace imported.");
+        });
+        event.target.value = "";
+    });
+}
+
+window.addEventListener("beforeunload", event => {
+    if (state.mode !== "schema" || !state.schemaDirty) {
+        return;
+    }
+    event.preventDefault();
+    event.returnValue = "";
 });
 
 async function loadTextFile(file, action) {
@@ -1033,4 +2238,8 @@ async function loadTextFile(file, action) {
     }
 }
 
-loadWorkspace().catch(error => showMessage(error.message, true));
+if (state.mode === "schema") {
+    initializeSchemaEditor(true).catch(error => showMessage(error.message, true));
+} else {
+    loadWorkspace().catch(error => showMessage(error.message, true));
+}

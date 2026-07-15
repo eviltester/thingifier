@@ -37,10 +37,17 @@ public final class CrudUiApplication implements AutoCloseable {
 
     public void configureRoutes() {
         Spark.get("/", (request, response) -> write(response, index()));
+        Spark.get("/schema", (request, response) -> write(response, schema()));
         Spark.get("/ui/workspace", (request, response) -> write(response, controller.workspace()));
         Spark.post(
                 "/ui/model/yaml",
                 (request, response) -> write(response, controller.loadYaml(request.body())));
+        Spark.post(
+                "/ui/schema/from-yaml",
+                (request, response) -> write(response, controller.schemaFromYaml(request.body())));
+        Spark.post(
+                "/ui/schema/preview",
+                (request, response) -> write(response, controller.previewSchema(request.body())));
         Spark.get("/ui/export", (request, response) -> write(response, controller.exportData()));
         Spark.post(
                 "/ui/import",
@@ -72,6 +79,10 @@ public final class CrudUiApplication implements AutoCloseable {
 
     private UiHttpResponse index() {
         return UiHttpResponse.html(resourceReader.read("/public/index.html"));
+    }
+
+    private UiHttpResponse schema() {
+        return UiHttpResponse.html(resourceReader.read("/public/schema.html"));
     }
 
     private String forwardApi(final Request request, final Response response) {

@@ -20,14 +20,20 @@ public final class JsonSupport {
     }
 
     public static Map<?, ?> fromJsonMap(final String jsonText) {
+        return fromJsonMap(
+                jsonText, "Import file must contain a JSON object", "Could not parse import JSON");
+    }
+
+    public static Map<?, ?> fromJsonMap(
+            final String jsonText, final String objectError, final String parseError) {
         try {
             Object parsed = GSON.fromJson(jsonText, Object.class);
             if (parsed instanceof Map) {
                 return (Map<?, ?>) parsed;
             }
-            throw new CrudUiException(400, "Import file must contain a JSON object");
+            throw new CrudUiException(400, objectError);
         } catch (JsonParseException e) {
-            throw new CrudUiException(400, "Could not parse import JSON");
+            throw new CrudUiException(400, parseError);
         }
     }
 

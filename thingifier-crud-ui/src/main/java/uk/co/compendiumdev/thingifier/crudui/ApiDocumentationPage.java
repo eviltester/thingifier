@@ -30,6 +30,7 @@ public final class ApiDocumentationPage {
         html.append("  <meta charset=\"utf-8\">\n");
         html.append("  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n");
         html.append("  <title>").append(escape(title())).append(" API Documentation</title>\n");
+        html.append("  <link rel=\"icon\" href=\"/favicon.svg\" type=\"image/svg+xml\">\n");
         html.append("  <link rel=\"stylesheet\" href=\"/assets/styles.css\">\n");
         html.append("</head>\n");
         html.append("<body class=\"documentation-page\">\n");

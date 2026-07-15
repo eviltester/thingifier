@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Thingifier Schema Edit</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="/assets/styles.css">
+    <link rel="stylesheet" href="https://unpkg.com/tippy.js@6/dist/tippy.css">
+</head>
+<body data-page="schema">
+<div class="app-shell">
+    <header class="topbar">
+        <div>
+            <h1 id="model-title">Schema Edit</h1>
+            <p id="model-description"></p>
+        </div>
+        <div class="toolbar">
+            <nav class="view-nav" aria-label="Application views">
+                <a id="schema-workspace-link" class="button-link" href="/">Workspace</a>
+                <a class="button-link active" href="/schema">Schema Edit</a>
+            </nav>
+            <span id="schema-dirty-status" class="schema-dirty-status" hidden>Unsaved changes</span>
+            <button id="schema-reset-button" type="button">Reset Draft</button>
+            <button id="schema-save-yaml-button" class="primary" type="button">Save as YAML</button>
+            <button id="schema-validate-button" type="button">Validate</button>
+            <button id="schema-toggle-yaml-button" type="button">YAML Draft</button>
+            <button id="schema-toggle-exports-button" type="button">Exports</button>
+        </div>
+    </header>
+
+    <div id="message-bar" class="message-bar" hidden></div>
+
+    <main id="schema-editor" class="schema-editor">
+        <section class="schema-diagram-panel schema-top-panel">
+            <div class="schema-toolbar">
+                <div>
+                    <h2>ER Diagram</h2>
+                    <p>Rendered from the current draft.</p>
+                </div>
+                <div class="schema-diagram-actions">
+                    <button id="schema-zoom-out-button" type="button" aria-label="Zoom out ER diagram">-</button>
+                    <button id="schema-zoom-reset-button" type="button">100%</button>
+                    <button id="schema-zoom-in-button" type="button" aria-label="Zoom in ER diagram">+</button>
+                    <button id="schema-layout-toggle-button" type="button">Horizontal Layout</button>
+                    <button id="schema-toggle-diagram-button" type="button">Hide Diagram</button>
+                </div>
+            </div>
+            <div id="schema-diagram-content">
+                <div id="schema-mermaid-diagram" class="schema-mermaid-diagram"></div>
+                <div class="schema-diagram-key" aria-label="ER relationship symbol key">
+                    <span class="schema-key-title">Relationship Key</span>
+                    <span>
+                        <svg class="er-key-symbol" viewBox="0 0 48 20" aria-hidden="true">
+                            <line x1="3" y1="10" x2="45" y2="10"></line>
+                            <line x1="34" y1="3" x2="34" y2="17"></line>
+                            <line x1="40" y1="3" x2="40" y2="17"></line>
+                        </svg>
+                        exactly one
+                    </span>
+                    <span>
+                        <svg class="er-key-symbol" viewBox="0 0 48 20" aria-hidden="true">
+                            <line x1="3" y1="10" x2="45" y2="10"></line>
+                            <circle cx="32" cy="10" r="5"></circle>
+                            <line x1="40" y1="3" x2="40" y2="17"></line>
+                        </svg>
+                        zero or one
+                    </span>
+                    <span>
+                        <svg class="er-key-symbol" viewBox="0 0 48 20" aria-hidden="true">
+                            <line x1="3" y1="10" x2="45" y2="10"></line>
+                            <line x1="30" y1="3" x2="30" y2="17"></line>
+                            <line x1="30" y1="10" x2="43" y2="3"></line>
+                            <line x1="30" y1="10" x2="43" y2="17"></line>
+                        </svg>
+                        one or more
+                    </span>
+                    <span>
+                        <svg class="er-key-symbol" viewBox="0 0 48 20" aria-hidden="true">
+                            <line x1="3" y1="10" x2="45" y2="10"></line>
+                            <circle cx="28" cy="10" r="5"></circle>
+                            <line x1="33" y1="10" x2="43" y2="3"></line>
+                            <line x1="33" y1="10" x2="43" y2="17"></line>
+                        </svg>
+                        zero or more
+                    </span>
+                </div>
+            </div>
+        </section>
+        <div id="schema-diagram-resizer" class="schema-diagram-resizer" role="separator" aria-orientation="horizontal" aria-label="Resize ER diagram"></div>
+        <div id="schema-validation" class="schema-validation"></div>
+
+        <section class="schema-workbench">
+            <aside class="schema-tree-panel">
+                <div class="panel-heading">
+                    <span>Schema</span>
+                    <button id="schema-add-entity-button" class="compact-button" type="button">Add Entity</button>
+                </div>
+                <nav id="schema-tree" class="schema-tree"></nav>
+            </aside>
+
+            <section class="schema-detail-panel">
+                <div class="panel-heading">
+                    <span id="schema-detail-title">Select schema item</span>
+                </div>
+                <div id="schema-detail-host" class="schema-detail-host"></div>
+            </section>
+        </section>
+
+        <section id="schema-yaml-section" class="schema-yaml-panel" hidden>
+            <div class="schema-toolbar">
+                <div>
+                    <h2>YAML Draft</h2>
+                    <p>Edit raw YAML, then parse it back into the draft.</p>
+                </div>
+                <button id="schema-parse-yaml-button" type="button">Parse YAML</button>
+            </div>
+            <textarea id="schema-yaml-input" class="schema-code-input" spellcheck="false"></textarea>
+        </section>
+
+        <section id="schema-exports-section" class="schema-export-panel" hidden>
+            <div class="schema-toolbar">
+                <div>
+                    <h2>Exports</h2>
+                    <p>Copy generated formats or save Mermaid and Graphviz files.</p>
+                </div>
+            </div>
+            <div class="schema-output-grid">
+                <label>
+                    <span class="schema-output-heading">
+                        Canonical YAML
+                        <button id="schema-copy-yaml" class="icon-button copy-button" type="button" aria-label="Copy YAML">Copy</button>
+                    </span>
+                    <textarea id="schema-canonical-yaml" class="schema-code-output" readonly spellcheck="false"></textarea>
+                </label>
+                <label>
+                    <span class="schema-output-heading">
+                        Mermaid
+                        <span>
+                            <button id="schema-copy-mermaid" class="icon-button copy-button" type="button" aria-label="Copy Mermaid">Copy</button>
+                            <button id="schema-download-mermaid" type="button">Save Mermaid</button>
+                        </span>
+                    </span>
+                    <textarea id="schema-mermaid-output" class="schema-code-output" readonly spellcheck="false"></textarea>
+                </label>
+                <label>
+                    <span class="schema-output-heading">
+                        Graphviz DOT
+                        <span>
+                            <button id="schema-copy-graphviz" class="icon-button copy-button" type="button" aria-label="Copy Graphviz">Copy</button>
+                            <button id="schema-download-graphviz" type="button">Save Graphviz</button>
+                        </span>
+                    </span>
+                    <textarea id="schema-graphviz-output" class="schema-code-output" readonly spellcheck="false"></textarea>
+                </label>
+            </div>
+        </section>
+    </main>
+</div>
+<script src="https://unpkg.com/@popperjs/core@2"></script>
+<script src="https://unpkg.com/tippy.js@6"></script>
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+<script src="/assets/app.js"></script>
+</body>
+</html>

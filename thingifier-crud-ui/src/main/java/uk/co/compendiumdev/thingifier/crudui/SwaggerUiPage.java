@@ -18,6 +18,7 @@ public final class SwaggerUiPage {
                 + "  <title>"
                 + escape(title)
                 + " Swagger UI</title>\n"
+                + "  <link rel=\"icon\" href=\"/favicon.svg\" type=\"image/svg+xml\">\n"
                 + "  <link rel=\"stylesheet\" href=\"https://unpkg.com/swagger-ui-dist/swagger-ui.css\">\n"
                 + "  <style>body{margin:0;background:#fafafa}.swagger-topbar{height:44px;display:flex;align-items:center;gap:12px;padding:0 14px;background:#1f2733;color:#fff;font-family:Arial,Helvetica,sans-serif}.swagger-topbar a{color:#fff}.swagger-title{font-weight:700}</style>\n"
                 + "</head>\n"
