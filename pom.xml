@@ -136,6 +136,7 @@
         <module>thingifier</module>
         <module>thingifier-yaml</module>
         <module>examplemodels</module>
+        <module>thingifier-crud-ui</module>
         <module>todoManagerRestAuto</module>
         <module>challenger</module>
         <module>challengerAuto</module>

@@ -86,6 +86,10 @@
     </module>
     <module name="SuppressionSingleFilter">
         <property name="id" value="sparkImportsAtSparkEdge"/>
+        <property name="files" value=".*[/\\]thingifier-crud-ui[/\\]src[/\\]main[/\\]java[/\\]uk[/\\]co[/\\]compendiumdev[/\\]thingifier[/\\]crudui[/\\]adapter[/\\]spark[/\\].*"/>
+    </module>
+    <module name="SuppressionSingleFilter">
+        <property name="id" value="sparkImportsAtSparkEdge"/>
         <property name="files" value=".*[/\\]challenger[/\\]src[/\\]main[/\\]java[/\\].*"/>
     </module>
     <module name="SuppressionSingleFilter">
@@ -135,6 +139,10 @@
     <module name="SuppressionSingleFilter">
         <property name="id" value="yamlAdapterTypesStayInYamlModule"/>
         <property name="files" value=".*[/\\]thingifier-yaml[/\\]src[/\\](main|test)[/\\]java[/\\].*"/>
+    </module>
+    <module name="SuppressionSingleFilter">
+        <property name="id" value="yamlAdapterTypesStayInYamlModule"/>
+        <property name="files" value=".*[/\\]thingifier-crud-ui[/\\]src[/\\](main|test)[/\\]java[/\\].*"/>
     </module>
     <module name="SuppressionSingleFilter">
         <property name="id" value="schemaDefinitionSpecsNoMutableRuntimeSchema"/>

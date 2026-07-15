@@ -1,0 +1,34 @@
+formatVersion: 1
+model:
+  title: Project Tasks
+  description: Projects and todos with a two-way tasks relationship.
+entities:
+  project:
+    plural: projects
+    primaryKey: id
+    fields:
+      id:
+        type: auto-increment
+      title:
+        type: string
+  todo:
+    plural: todos
+    primaryKey: id
+    fields:
+      id:
+        type: auto-increment
+      title:
+        type: string
+        required: true
+        validations:
+          - notEmpty
+relationships:
+  - from: project
+    name: tasks
+    to: todo
+    cardinality: one-to-many
+    optionality: optional
+    reverse:
+      name: tasksof
+      cardinality: one-to-many
+      optionality: optional
