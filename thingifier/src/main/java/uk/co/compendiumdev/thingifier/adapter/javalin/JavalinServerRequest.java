@@ -139,11 +139,41 @@ final class JavalinServerRequest implements HttpServerRequest {
 
     @Override
     public Map<String, String> urlParams() {
+        String routePath = context.attribute(ROUTE_PATH_ATTRIBUTE);
+        if (routePath != null) {
+            return urlParamsFromRoute(routePath, context.path());
+        }
+
         Map<String, String> params = new LinkedHashMap<>();
         for (Map.Entry<String, String> param : context.pathParamMap().entrySet()) {
             params.put(param.getKey(), param.getValue());
             params.put(":" + param.getKey(), param.getValue());
         }
         return params;
+    }
+
+    private Map<String, String> urlParamsFromRoute(final String routePath, final String path) {
+        Map<String, String> params = new LinkedHashMap<>();
+        String[] routeParts = stripLeadingSlash(routePath).split("/", -1);
+        String[] pathParts = stripLeadingSlash(path).split("/", -1);
+        int max = Math.min(routeParts.length, pathParts.length);
+
+        for (int index = 0; index < max; index++) {
+            String routePart = routeParts[index];
+            if (routePart.matches(":[A-Za-z][A-Za-z0-9_]*")) {
+                String name = routePart.substring(1);
+                params.put(name, pathParts[index]);
+                params.put(":" + name, pathParts[index]);
+            }
+        }
+
+        return params;
+    }
+
+    private String stripLeadingSlash(final String value) {
+        if (value == null || value.isEmpty()) {
+            return "";
+        }
+        return value.startsWith("/") ? value.substring(1) : value;
     }
 }

@@ -5,6 +5,8 @@ import io.javalin.http.Context;
 import io.javalin.http.HandlerType;
 import io.javalin.http.staticfiles.Location;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 import uk.co.compendiumdev.thingifier.adapter.httpserver.HaltRequestException;
 import uk.co.compendiumdev.thingifier.adapter.httpserver.HttpAfterHandler;
 import uk.co.compendiumdev.thingifier.adapter.httpserver.HttpBeforeHandler;
@@ -141,14 +143,24 @@ public final class JavalinHttpServer implements AutoCloseable {
         }
     }
 
-    private String javalinPath(final String routePath) {
+    static String javalinPath(final String routePath) {
         if (routePath == null || routePath.isBlank() || "*".equals(routePath)) {
             return "/*";
         }
 
         String converted = routePath.trim();
-        converted = converted.replaceAll(":([A-Za-z][A-Za-z0-9_]*)", "{$1}");
-        return converted;
+        String[] parts = converted.split("/", -1);
+        Map<String, Integer> nameCounts = new HashMap<>();
+        for (int index = 0; index < parts.length; index++) {
+            String part = parts[index];
+            if (part.matches(":[A-Za-z][A-Za-z0-9_]*")) {
+                String name = part.substring(1);
+                int count = nameCounts.merge(name, 1, Integer::sum);
+                String javalinName = count == 1 ? name : name + "__" + count;
+                parts[index] = "{" + javalinName + "}";
+            }
+        }
+        return String.join("/", parts);
     }
 
     private String exceptionErrorResponse(final Exception e, final Context ctx) {
