@@ -176,10 +176,91 @@ public class UiPagesAreReachableTest {
     }
 
     @Test
+    void canFetchDefaultOpenApiJsonForSwaggerUi() {
+
+        final HttpResponseDetails response = http.send("/docs/openapi.json", "get");
+
+        Assertions.assertEquals(200, response.statusCode);
+        Assertions.assertNotNull(response.getHeader("Content-Type"));
+        Assertions.assertTrue(response.getHeader("Content-Type").contains("application/json"));
+        Assertions.assertTrue(response.body.contains("\"openapi\" : \"3.0.1\","));
+        Assertions.assertTrue(
+                response.body.indexOf("\"url\" : \"http://localhost:4567\"")
+                        < response.body.indexOf(
+                                "\"url\" : \"https://apichallenges.eviltester.com\""));
+    }
+
+    @Test
+    void staticAssetsAreServedBeforeGenericFallbackRoutes() {
+
+        HttpResponseDetails response = http.send("/css/default.css", "get");
+        Assertions.assertEquals(200, response.statusCode);
+        Assertions.assertTrue(response.getHeader("Content-Type").contains("text/css"));
+        Assertions.assertTrue(response.body.contains(".rootmenu"));
+
+        response = http.send("/js/toc.js", "get");
+        Assertions.assertEquals(200, response.statusCode);
+        Assertions.assertTrue(response.getHeader("Content-Type").contains("javascript"));
+        Assertions.assertTrue(response.body.contains("htmlTableOfContents"));
+
+        response = http.send("/favicon/site.webmanifest", "get");
+        Assertions.assertEquals(200, response.statusCode);
+        Assertions.assertTrue(response.getHeader("Content-Type").contains("manifest+json"));
+        Assertions.assertTrue(response.body.contains("icons"));
+    }
+
+    static Stream<Arguments> swaggerUiPageRoutes() {
+        List<Arguments> args = new ArrayList<>();
+        args.add(Arguments.of("/docs/swagger-ui", "/docs/openapi.json"));
+        args.add(Arguments.of("/simpleapi/docs/swagger-ui", "/simpleapi/docs/openapi.json"));
+        args.add(Arguments.of("/sim/docs/swagger-ui", "/sim/docs/openapi.json"));
+        args.add(Arguments.of("/mirror/docs/swagger-ui", "/mirror/docs/openapi.json"));
+        return args.stream();
+    }
+
+    @ParameterizedTest(name = "swagger ui page {0} references {1}")
+    @MethodSource("swaggerUiPageRoutes")
+    void swaggerUiPagesRenderAndReferenceMatchingOpenApiJson(
+            final String swaggerUiPath, final String openApiJsonPath) {
+
+        final HttpResponseDetails response = http.send(swaggerUiPath, "get");
+
+        Assertions.assertEquals(200, response.statusCode);
+        Assertions.assertNotNull(response.getHeader("Content-Type"));
+        Assertions.assertTrue(response.getHeader("Content-Type").contains("text/html"));
+        assertContainsHeaderAndFooter(response);
+        Assertions.assertTrue(
+                response.body.contains("https://unpkg.com/swagger-ui-dist/swagger-ui.css"));
+        Assertions.assertTrue(
+                response.body.contains("https://unpkg.com/swagger-ui-dist/swagger-ui-bundle.js"));
+        Assertions.assertTrue(
+                response.body.contains(
+                        "https://unpkg.com/swagger-ui-dist/swagger-ui-standalone-preset.js"));
+        Assertions.assertTrue(response.body.contains("color-scheme:light"));
+        Assertions.assertTrue(response.body.contains("syntaxHighlight: {activated: false}"));
+        Assertions.assertTrue(response.body.contains("SwaggerUIBundle"));
+        Assertions.assertTrue(response.body.contains("url: \"" + openApiJsonPath + "\""));
+    }
+
+    @Test
+    void challengerMenuContainsSwaggerUiLinks() {
+
+        final HttpResponseDetails response = http.send("/", "get");
+
+        Assertions.assertEquals(200, response.statusCode);
+        Assertions.assertTrue(response.body.contains("href=\"/docs/swagger-ui\""));
+        Assertions.assertTrue(response.body.contains("href=\"/simpleapi/docs/swagger-ui\""));
+        Assertions.assertTrue(response.body.contains("href=\"/sim/docs/swagger-ui\""));
+        Assertions.assertTrue(response.body.contains("href=\"/mirror/docs/swagger-ui\""));
+    }
+
+    @Test
     void docsPagesRenderPerApiSeoMetadata() {
 
         final HttpResponseDetails docsResponse = http.send("/docs", "get");
         Assertions.assertEquals(200, docsResponse.statusCode);
+        Assertions.assertTrue(docsResponse.body.contains("Open Swagger UI"));
+        Assertions.assertTrue(docsResponse.body.contains("href='/docs/swagger-ui'"));
         Assertions.assertTrue(
                 docsResponse.body.contains(
                         "<title>API Challenges API Documentation | API Challenges</title>"));
@@ -381,6 +462,9 @@ public class UiPagesAreReachableTest {
                 response.body.contains("<loc>https://apichallenges.eviltester.com</loc>"));
         Assertions.assertTrue(
                 response.body.contains("<loc>https://apichallenges.eviltester.com/docs</loc>"));
+        Assertions.assertTrue(
+                response.body.contains(
+                        "<loc>https://apichallenges.eviltester.com/docs/swagger-ui</loc>"));
         Assertions.assertTrue(
                 response.body.contains(
                         "<loc>https://apichallenges.eviltester.com/gui/challenges</loc>"));

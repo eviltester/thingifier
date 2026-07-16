@@ -8,6 +8,7 @@ import uk.co.compendiumdev.thingifier.api.docgen.ApiRoutingDefinitionDocGenerato
 import uk.co.compendiumdev.thingifier.api.docgen.ThingifierApiDocumentationDefn;
 import uk.co.compendiumdev.thingifier.htmlgui.htmlgen.DefaultGUIHTML;
 import uk.co.compendiumdev.thingifier.htmlgui.htmlgen.RestApiDocumentationGenerator;
+import uk.co.compendiumdev.thingifier.swaggerizer.SwaggerUiPage;
 import uk.co.compendiumdev.thingifier.swaggerizer.Swaggerizer;
 
 public class ThingifierAutoDocGenRouting {
@@ -20,12 +21,17 @@ public class ThingifierAutoDocGenRouting {
         // configure it based on a thingifier
         ApiRoutingDefinition routingDefinitions =
                 new ApiRoutingDefinitionDocGenerator(thingifier).generate(apiDefn.getPathPrefix());
+        final String pathPrefix = apiDefn.getPathPrefix();
+        final String docsPath = "%s/docs".formatted(pathPrefix);
+        final String swaggerDownloadPath = "%s/docs/swagger".formatted(pathPrefix);
+        final String openApiPath = "%s/docs/openapi.json".formatted(pathPrefix);
+        final String swaggerUiPath = "%s/docs/swagger-ui".formatted(pathPrefix);
 
         // TODO: config to enable docs and configure the URL and add a meta tag for description and
         // additional headers
         // / - default for documentation
         get(
-                "%s/docs".formatted(apiDefn.getPathPrefix()),
+                docsPath,
                 (request, response) -> {
                     response.type("text/html");
                     response.status(200);
@@ -35,16 +41,40 @@ public class ThingifierAutoDocGenRouting {
                                     apiDefn.getAdditionalRoutes(),
                                     apiDefn,
                                     apiDefn.getPathPrefix(),
-                                    "%s/docs".formatted(apiDefn.getPathPrefix()));
+                                    docsPath);
                 });
 
         // guiManagement.appendMenuItem("API documentation","/docs");
+
+        get(
+                openApiPath,
+                (request, response) -> {
+                    response.type("application/json");
+                    response.status(200);
+                    return new Swaggerizer(apiDefn)
+                            .asJsonWithPreferredServer(requestOrigin(request));
+                });
+
+        get(
+                swaggerUiPath,
+                (request, response) -> {
+                    response.type("text/html");
+                    response.status(200);
+                    return new SwaggerUiPage(
+                                    apiDefn,
+                                    guiManagement,
+                                    openApiPath,
+                                    docsPath,
+                                    swaggerDownloadPath,
+                                    swaggerUiPath)
+                            .html();
+                });
 
         // TODO: api config to enable swagger and configure the URL
         // TODO: move into swagger package
         // now that we have an api definition we should be able to generate swagger
         get(
-                "%s/docs/swagger".formatted(apiDefn.getPathPrefix()),
+                swaggerDownloadPath,
                 (request, response) -> {
                     String permissive = request.queryParam("permissive");
 
@@ -68,11 +98,12 @@ public class ThingifierAutoDocGenRouting {
 
                     // TODO: the swaggerizer could be stored at a class level and allow caching to
                     // be used for the output
-                    if (permissive == null) {
-                        return new Swaggerizer(apiDefn).asJson();
-                    } else {
-                        return new Swaggerizer(apiDefn).asJson(true);
-                    }
+                    return new Swaggerizer(apiDefn)
+                            .asJsonWithPreferredServer(permissive != null, requestOrigin(request));
                 });
+    }
+
+    private String requestOrigin(final HttpServerRequest request) {
+        return "%s://%s".formatted(request.scheme(), request.host());
     }
 }

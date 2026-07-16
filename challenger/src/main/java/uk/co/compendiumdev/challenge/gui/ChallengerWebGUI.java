@@ -115,6 +115,7 @@ public class ChallengerWebGUI {
                                 <ul>
                                     <li><a href="/practice-modes/simpleapi">About Simple API</a>
                                     <li><a href="/simpleapi/docs">API Docs</a>
+                                    <li><a href="/simpleapi/docs/swagger-ui">Swagger UI</a>
                                     <li><a href="/simpleapi/gui/entities">Data Explorer</a></li>
                                     <li><a href="/practice-modes/simpleapi-openapi">OpenAPI File</a>
                                 </ul>
@@ -124,6 +125,7 @@ public class ChallengerWebGUI {
                                 <ul>
                                     <li><a href="/apichallenges">About API Challenges</a></li>
                                     <li><a href="/docs">API Docs</a></li>
+                                    <li><a href="/docs/swagger-ui">Swagger UI</a></li>
                                     <li><a href="/gui/challenges">Progress</a></li>
                                     <li><a href="/gui/entities">Data Explorer</a></li>
                                     <li><a href="/apichallenges/solutions">Solutions</a></li>
@@ -135,6 +137,7 @@ public class ChallengerWebGUI {
                                 <ul>
                                     <li><a href="/practice-modes/simulation">About API Simulator</a></li>
                                     <li><a href="/sim/docs">API Docs</a></li>
+                                    <li><a href="/sim/docs/swagger-ui">Swagger UI</a></li>
                                     <li><a href="/sim/docs/swagger">[Download Open API File]</a></li>
 
                                 </ul>
@@ -144,6 +147,7 @@ public class ChallengerWebGUI {
                                 <ul>
                                     <li><a href="/practice-modes/mirror">About HTTP Mirror</a></li>
                                     <li><a href="/mirror/docs">Mirror API Docs</a></li>
+                                    <li><a href="/mirror/docs/swagger-ui">Swagger UI</a></li>
                                     <li><a href="/mirror/docs/swagger">[Download Open API File]</a></li>
 
                                 </ul>
@@ -260,6 +264,9 @@ public class ChallengerWebGUI {
         }
         siteMap.addUrl("https://apichallenges.eviltester.com", SEO_FIXED_LASTMOD.toString());
         siteMap.addUrl("https://apichallenges.eviltester.com/docs", SEO_FIXED_LASTMOD.toString());
+        siteMap.addUrl(
+                "https://apichallenges.eviltester.com/docs/swagger-ui",
+                SEO_FIXED_LASTMOD.toString());
         siteMap.addUrl(
                 "https://apichallenges.eviltester.com/gui/challenges",
                 SEO_FIXED_LASTMOD.toString());

@@ -511,6 +511,17 @@ public class Swaggerizer {
         return asJson(false);
     }
 
+    public String asJsonWithPreferredServer(final String preferredServerUrl) {
+        return asJsonWithPreferredServer(false, preferredServerUrl);
+    }
+
+    public String asJsonWithPreferredServer(
+            final boolean permissive, final String preferredServerUrl) {
+        final OpenAPI api = permissive ? swaggerPermissive() : swagger();
+        preferServer(api, preferredServerUrl);
+        return Json31.pretty(api);
+    }
+
     public String asJson(boolean permissive) {
         if (apiNormal == null) {
             apiNormal = swagger();
@@ -523,5 +534,46 @@ public class Swaggerizer {
         } else {
             return Json31.pretty(apiNormal);
         }
+    }
+
+    private void preferServer(final OpenAPI api, final String preferredServerUrl) {
+        if (preferredServerUrl == null || preferredServerUrl.trim().isEmpty()) {
+            return;
+        }
+
+        final String preferredUrl = preferredServerUrl.trim();
+        final List<Server> existingServers = api.getServers();
+        final List<Server> reorderedServers = new ArrayList<>();
+        Server preferredServer = null;
+
+        if (existingServers != null) {
+            for (Server server : existingServers) {
+                if (sameServerUrl(preferredUrl, server.getUrl())) {
+                    preferredServer = server;
+                } else {
+                    reorderedServers.add(server);
+                }
+            }
+        }
+
+        if (preferredServer == null) {
+            preferredServer = new Server().description("current request").url(preferredUrl);
+        }
+        reorderedServers.add(0, preferredServer);
+        api.setServers(reorderedServers);
+    }
+
+    private boolean sameServerUrl(final String preferredUrl, final String configuredUrl) {
+        if (configuredUrl == null) {
+            return false;
+        }
+        return removeTrailingSlash(preferredUrl).equals(removeTrailingSlash(configuredUrl.trim()));
+    }
+
+    private String removeTrailingSlash(final String url) {
+        if (url.endsWith("/")) {
+            return url.substring(0, url.length() - 1);
+        }
+        return url;
     }
 }
