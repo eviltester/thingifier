@@ -30,7 +30,7 @@ public class ThingStoreProviderConfigTest {
     }
 
     @Test
-    public void canCreateSqliteInMemoryRepositoryFromChallengeMainShortcutArg() {
+    public void canCreateSqliteInMemoryRepositoryFromShortcutArg() {
         ThingStoreProviderConfig config =
                 ThingStoreProviderConfig.fromArgs(new String[] {"-sqlite-memory"});
 

@@ -101,6 +101,10 @@
         <property name="files" value=".*[/\\]src[/\\]test[/\\]java[/\\].*"/>
     </module>
     <module name="SuppressionSingleFilter">
+        <property name="id" value="applicationNoHttpVerbVocabulary"/>
+        <property name="files" value=".*[/\\]thingifierapp[/\\]src[/\\]main[/\\]java[/\\]uk[/\\]co[/\\]compendiumdev[/\\]thingifier[/\\]application[/\\]Main\.java"/>
+    </module>
+    <module name="SuppressionSingleFilter">
         <property name="id" value="applicationNoHttpStatusOrTypes"/>
         <property name="files" value=".*[/\\]src[/\\]test[/\\]java[/\\].*"/>
     </module>

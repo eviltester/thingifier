@@ -1,8 +1,6 @@
 package uk.co.compendiumdev.thingifier.application;
 
-import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.adapter.httpserver.MainImplementation;
-import uk.co.compendiumdev.thingifier.adapter.httpserver.ThingifierHttpApiRoutings;
 import uk.co.compendiumdev.thingifier.application.examples.TodoListThingifier;
 import uk.co.compendiumdev.thingifier.application.examples.TodoManagerThingifier;
 
@@ -117,7 +115,7 @@ public class Main {
         // allows thingifier to be used in additional custom HttpRouteHandler configuration
         // or apiConfig()
         // setup the thingifier
-        Thingifier thingifier = app.chooseThingifier();
+        app.chooseThingifier();
 
         // can set profile by adding more configs, or just
         // app.setProfileToUse(aProfile)
@@ -130,7 +128,7 @@ public class Main {
         app.setupDefaultGui();
 
         // returning the restServer supports adding more 'hooks'
-        ThingifierHttpApiRoutings restServer = app.startRestServer();
+        app.startRestServer();
 
         app.addBuiltInArgConfiguredHooks();
     }

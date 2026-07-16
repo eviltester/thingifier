@@ -24,21 +24,15 @@ Command line options are:
 - `-version=1` to start with a different version.
     - Each api comes preconfigured with multiple versions, by default the 'best' version is used, so if you switch to an earlier version you might find more bugs.
 
-## Cloud Deploy
+## API Challenges
 
-An online version of the application can be found at:
+API Challenges now lives in its own repository:
+
+- https://github.com/eviltester/apichallenges
+
+The hosted API Challenges app is still available at:
 
 - https://apichallenges.eviltester.com
-
-The API Challenges is built on a simple todo thingifier model.
-
-This version will reset all data every 10 minutes.
-
-If you want to practice seriously then I suggest downloading the `.jar` and running it locally.
-
-We are not responsible for any data that you find on the cloud deploy.
-
-We reserve the right to remove the cloud deploy or change the reset time if we discover it is being misused.
 
 ## Usage
 
@@ -103,6 +97,5 @@ If you want to generate test data for an api, investigate:
 
 Current TODO List:
 
-- test clear down internal challenger databases after time
 - add additional challenges about instance limits e.g. try to exceed 20
 - add additional challenges around field validation values and limits
