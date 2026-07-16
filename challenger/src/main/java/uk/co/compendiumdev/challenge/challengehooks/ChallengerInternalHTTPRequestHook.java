@@ -6,13 +6,13 @@ import java.util.List;
 import uk.co.compendiumdev.challenge.CHALLENGE;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
+import uk.co.compendiumdev.thingifier.adapter.httpserver.messagehooks.InternalHttpRequestHook;
 import uk.co.compendiumdev.thingifier.adapter.internalhttp.InternalHttpMethod;
 import uk.co.compendiumdev.thingifier.adapter.internalhttp.InternalHttpRequest;
 import uk.co.compendiumdev.thingifier.adapter.internalhttp.InternalHttpResponse;
-import uk.co.compendiumdev.thingifier.adapter.spark.messagehooks.InternalHttpRequestHook;
 
 /*
-   This is an Internal HTTP Request because it covers functionality for endpoints that do not
+   This is an Internal HTTP request because it covers functionality for endpoints that do not
    go through the normal API process i.e. heartbeat, challenges, challenger
 */
 public class ChallengerInternalHTTPRequestHook implements InternalHttpRequestHook {
@@ -71,20 +71,17 @@ public class ChallengerInternalHTTPRequestHook implements InternalHttpRequestHoo
             challengers.pass(challenger, CHALLENGE.TRACE_HEARTBEAT_501);
         }
 
-        if (method == InternalHttpMethod.POST
-                && path.equals("heartbeat")
+        if (path.equals("heartbeat")
                 && request.getHeader("x-http-method-override").equalsIgnoreCase("patch")) {
             challengers.pass(challenger, CHALLENGE.OVERRIDE_PATCH_HEARTBEAT_500);
         }
 
-        if (method == InternalHttpMethod.POST
-                && path.equals("heartbeat")
+        if (path.equals("heartbeat")
                 && request.getHeader("x-http-method-override").equalsIgnoreCase("delete")) {
             challengers.pass(challenger, CHALLENGE.OVERRIDE_DELETE_HEARTBEAT_405);
         }
 
-        if (method == InternalHttpMethod.POST
-                && path.equals("heartbeat")
+        if (path.equals("heartbeat")
                 && request.getHeader("x-http-method-override").equalsIgnoreCase("trace")) {
             challengers.pass(challenger, CHALLENGE.OVERRIDE_TRACE_HEARTBEAT_501);
         }

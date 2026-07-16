@@ -6,6 +6,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,10 +57,11 @@ public class HttpClientRequestSender implements CanSendHttpRequests {
 
             lastRequest = new HttpRequestDetails();
 
+            String normalizedVerb = verb.toUpperCase(Locale.ROOT);
             final HttpRequest.Builder request =
                     HttpRequest.newBuilder()
                             .uri(url.toURI())
-                            .method(verb, HttpRequest.BodyPublishers.ofString(body));
+                            .method(normalizedVerb, HttpRequest.BodyPublishers.ofString(body));
 
             // SET HEADERS
             for (Map.Entry<String, String> header : headers.entrySet()) {
@@ -67,7 +69,7 @@ public class HttpClientRequestSender implements CanSendHttpRequests {
                 logger.info("Header - " + header.getKey() + " : " + headers.get(header.getValue()));
             }
 
-            logger.info("\nSending '" + verb + "' request to URL : " + url);
+            logger.info("\nSending '" + normalizedVerb + "' request to URL : " + url);
 
             final HttpRequest actualRequest = request.build();
 
@@ -77,7 +79,7 @@ public class HttpClientRequestSender implements CanSendHttpRequests {
                 lastRequest.addHeader(actualHeader.getKey(), actualHeader.getValue().get(0));
                 logger.info(
                         String.format(
-                                "Request Header - %s:%s",
+                                "request Header - %s:%s",
                                 actualHeader.getKey(), actualHeader.getValue().get(0)));
             }
 
@@ -86,12 +88,12 @@ public class HttpClientRequestSender implements CanSendHttpRequests {
 
             response.statusCode = actualResponse.statusCode();
 
-            logger.info("Response Code : " + response.statusCode);
+            logger.info("response Code : " + response.statusCode);
 
             response.body = actualResponse.body();
 
             // print result
-            logger.info("Response Body: " + response.body);
+            logger.info("response Body: " + response.body);
 
             // add the headers
             Map<String, String> responseHeaders = new HashMap<>();

@@ -24,7 +24,7 @@ public class ChallengerAuthData {
         this.xChallenger = UUID.randomUUID().toString();
         this.xAuthToken = UUID.randomUUID().toString();
         this.expiresin = 600000; // 10 * 60 * 1000; // 10 minutes
-        this.extratime = 30000; // 30 * 1000 - extra time on each request
+        this.extratime = 30000; // 30 * 1000 - extra time on each HttpServerRequest
         touch();
         this.secretNote = "";
         resetChallengesStatus(definedChallenges);

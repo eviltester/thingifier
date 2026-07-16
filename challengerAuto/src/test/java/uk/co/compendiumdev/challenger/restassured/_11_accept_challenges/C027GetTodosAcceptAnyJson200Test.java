@@ -30,7 +30,7 @@ public class C027GetTodosAcceptAnyJson200Test extends RestAssuredBaseTest {
         statuses.get();
         Assertions.assertTrue(statuses.getChallengeNamed("GET /todos (200) ANY").status);
 
-        // should be able to parse with GSON if JSON response by default
+        // should be able to parse with GSON if JSON Response by default
         new Gson().fromJson(response.body().asString(), Todos.class);
     }
 }

@@ -1,16 +1,16 @@
 package uk.co.compendiumdev.challenge.challengesrouting;
 
-import static spark.Spark.*;
+import static uk.co.compendiumdev.thingifier.adapter.httpserver.ServerRoutes.*;
 
 import com.google.gson.Gson;
 import java.util.*;
-import spark.Route;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
 import uk.co.compendiumdev.challenge.challenges.ChallengeDefinitions;
 import uk.co.compendiumdev.challenge.persistence.PersistenceLayer;
 import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.adapter.spark.SimpleSparkRouteCreator;
+import uk.co.compendiumdev.thingifier.adapter.httpserver.HttpRouteHandler;
+import uk.co.compendiumdev.thingifier.adapter.httpserver.SimpleHttpRouteCreator;
 import uk.co.compendiumdev.thingifier.api.docgen.*;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponseAsJson;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponseError;
@@ -35,7 +35,7 @@ public class ChallengerTrackingRoutes {
         ChallengerIpAddressTracker ipAddressTracker =
                 new ChallengerIpAddressTracker(MAX_CHALLENGERS_PER_IP, false);
 
-        Route getChallengerId =
+        HttpRouteHandler getChallengerId =
                 (request, result) -> {
                     ChallengerAuthData challenger = null;
                     String xChallengerGuid = request.params("id");
@@ -60,7 +60,7 @@ public class ChallengerTrackingRoutes {
                     return "";
                 };
 
-        SimpleSparkRouteCreator.addHandler(
+        SimpleHttpRouteCreator.addHandler(
                 "/challenger/:id",
                 "options",
                 (request, result) -> {
@@ -70,7 +70,7 @@ public class ChallengerTrackingRoutes {
                     return "";
                 });
 
-        SimpleSparkRouteCreator.routeStatusWhenNot(
+        SimpleHttpRouteCreator.routeStatusWhenNot(
                 405, "/challenger/:id", List.of("get", "put", "head", "options"));
 
         // refresh challenger to avoid purging
@@ -176,7 +176,7 @@ public class ChallengerTrackingRoutes {
                         result.header("content-type", "application/json");
                         result.header("X-CHALLENGER", xChallengerGuid);
                         return ApiResponseError.asAppropriate(
-                                request.headers("accept"),
+                                request.header("accept"),
                                 "Attempted to create too many challengers, wait and try again later.");
                     }
 
@@ -216,7 +216,7 @@ public class ChallengerTrackingRoutes {
 
         */
 
-        SimpleSparkRouteCreator.addHandler(
+        SimpleHttpRouteCreator.addHandler(
                 "/challenger",
                 "options",
                 (request, result) -> {
@@ -233,12 +233,12 @@ public class ChallengerTrackingRoutes {
                     if (single_player_mode) {
                         XChallengerHeader.setResultHeaderBasedOnChallenger(
                                 result, challengers.SINGLE_PLAYER.getXChallenger());
-                        result.raw().setHeader("Location", "/gui/challenges");
+                        result.header("Location", "/gui/challenges");
                         result.status(201);
                         return "";
                     }
 
-                    String xChallengerGuid = request.headers("X-CHALLENGER");
+                    String xChallengerGuid = request.header("X-CHALLENGER");
                     if (xChallengerGuid == null || xChallengerGuid.trim().isEmpty()) {
                         // create a new challenger with a database
                         final ChallengerAuthData challenger = challengers.createNewChallenger();
@@ -246,10 +246,7 @@ public class ChallengerTrackingRoutes {
                         thingifier.ensureCreatedAndPopulatedInstanceDatabaseNamed(
                                 challenger.getXChallenger());
                         XChallengerHeader.setResultHeaderBasedOnChallenger(result, challenger);
-                        result.raw()
-                                .setHeader(
-                                        "Location",
-                                        "/gui/challenges/" + challenger.getXChallenger());
+                        result.header("Location", "/gui/challenges/" + challenger.getXChallenger());
                         result.status(201);
                     } else {
                         ChallengerAuthData challenger = challengers.getChallenger(xChallengerGuid);
@@ -264,10 +261,8 @@ public class ChallengerTrackingRoutes {
                                     challenger.getXChallenger());
                             // if X-CHALLENGER header exists, and has a valid UUID, and UUID exists,
                             // then return 200
-                            result.raw()
-                                    .setHeader(
-                                            "Location",
-                                            "/gui/challenges/" + challenger.getXChallenger());
+                            result.header(
+                                    "Location", "/gui/challenges/" + challenger.getXChallenger());
                             result.status(200);
                         }
                         XChallengerHeader.setResultHeaderBasedOnChallenger(result, challenger);
@@ -284,7 +279,7 @@ public class ChallengerTrackingRoutes {
                         .addDocumentation("Create a challenger using the X-CHALLENGER guid header.")
                         .addPossibleStatuses(200, 400, 405));
 
-        SimpleSparkRouteCreator.routeStatusWhenNot(405, "/challenger", List.of("post", "options"));
+        SimpleHttpRouteCreator.routeStatusWhenNot(405, "/challenger", List.of("post", "options"));
 
         /*
            The todos restore endpoint
@@ -302,7 +297,7 @@ public class ChallengerTrackingRoutes {
                         .addPossibleStatuses(200, 400, 404)
                         .addRequestUrlParam(guidField));
 
-        Route getChallengerDatabaseId =
+        HttpRouteHandler getChallengerDatabaseId =
                 (request, result) -> {
                     ChallengerAuthData challenger;
 
@@ -346,7 +341,7 @@ public class ChallengerTrackingRoutes {
                     }
                 };
 
-        SimpleSparkRouteCreator.addHandler(
+        SimpleHttpRouteCreator.addHandler(
                 "/challenger/database/:id",
                 "options",
                 (request, result) -> {
@@ -356,7 +351,7 @@ public class ChallengerTrackingRoutes {
                     return "";
                 });
 
-        SimpleSparkRouteCreator.routeStatusWhenNot(
+        SimpleHttpRouteCreator.routeStatusWhenNot(
                 405, "/challenger/database/:id", List.of("get", "put", "head", "options"));
 
         // add a GET challenger/database/:id in the proper database format

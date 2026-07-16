@@ -45,7 +45,7 @@ public class ChallengerApiResponseHookTest {
 
             fixture.hook.run(
                     fixture.request("todos", GET).setQueryParams(Map.of("doneStatus", "true")),
-                    fixture.response(200),
+                    fixture.apiResponse(200),
                     fixture.thingifier.apiConfig());
 
             Assertions.assertTrue(
@@ -63,7 +63,7 @@ public class ChallengerApiResponseHookTest {
 
             fixture.hook.run(
                     fixture.request("todos", GET).setQueryParams(Map.of("doneStatus", "true")),
-                    fixture.response(200),
+                    fixture.apiResponse(200),
                     fixture.thingifier.apiConfig());
 
             Assertions.assertFalse(
@@ -91,7 +91,7 @@ public class ChallengerApiResponseHookTest {
 
             fixture.hook.run(
                     fixture.request("todos", POST),
-                    fixture.response(created),
+                    fixture.apiResponse(created),
                     fixture.thingifier.apiConfig());
 
             Assertions.assertTrue(
@@ -111,7 +111,7 @@ public class ChallengerApiResponseHookTest {
 
             fixture.hook.run(
                     fixture.request("todos/" + todo.getPrimaryKeyValue(), DELETE),
-                    fixture.response(200),
+                    fixture.apiResponse(200),
                     fixture.thingifier.apiConfig());
 
             Assertions.assertTrue(fixture.challenger.statusOfChallenge(CHALLENGE.DELETE_ALL_TODOS));
@@ -130,7 +130,7 @@ public class ChallengerApiResponseHookTest {
 
             fixture.hook.run(
                     fixture.request("todos/" + deletedTodo.getPrimaryKeyValue(), DELETE),
-                    fixture.response(200),
+                    fixture.apiResponse(200),
                     fixture.thingifier.apiConfig());
 
             Assertions.assertFalse(
@@ -195,11 +195,11 @@ public class ChallengerApiResponseHookTest {
                     .addHeader("X-CHALLENGER", challenger.getXChallenger());
         }
 
-        HttpApiResponse response(final int statusCode) {
-            return response(new ApiResponse(statusCode));
+        HttpApiResponse apiResponse(final int statusCode) {
+            return apiResponse(new ApiResponse(statusCode));
         }
 
-        HttpApiResponse response(final ApiResponse apiResponse) {
+        HttpApiResponse apiResponse(final ApiResponse apiResponse) {
             return new HttpApiResponse(
                     new HttpHeadersBlock(),
                     apiResponse,

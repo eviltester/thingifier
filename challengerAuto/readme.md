@@ -151,7 +151,7 @@ Environment variables use uppercase names with underscores, for example `CHALLEN
 
 ## IDE Run Profiles
 
-`uk.co.compendiumdev.sparkstart.ChallengerAutoRunProfiles` contains convenience methods that can be right-clicked in IntelliJ:
+`uk.co.compendiumdev.serverstart.ChallengerAutoRunProfiles` contains convenience methods that can be right-clicked in IntelliJ:
 
 - `localMemorySinglePlayer()`
 - `localMemoryMultiPlayer()`

@@ -82,7 +82,7 @@ public final class EntityInstanceDraftValidator {
             report.combine(field.validate(fieldValue, protectedWrite));
             validateProtectedAutoIncrement(field, fieldValue, report);
             validateProtectedAutoGuid(field, fieldValue, report);
-        } catch (RuntimeException e) {
+        } catch (IllegalArgumentException e) {
             report.setValid(false);
             report.addErrorMessage(
                     TypeValidationFailedMessageGenerator.thisValueDoesNotMatchType(
@@ -100,7 +100,7 @@ public final class EntityInstanceDraftValidator {
 
         try {
             fieldValue.asInteger();
-        } catch (RuntimeException e) {
+        } catch (IllegalArgumentException e) {
             report.setValid(false);
             report.addErrorMessage(
                     TypeValidationFailedMessageGenerator.thisValueDoesNotMatchType(
@@ -116,7 +116,7 @@ public final class EntityInstanceDraftValidator {
 
         try {
             UUID.fromString(fieldValue.asString());
-        } catch (RuntimeException e) {
+        } catch (IllegalArgumentException e) {
             report.setValid(false);
             report.addErrorMessage(
                     TypeValidationFailedMessageGenerator.thisValueDoesNotMatchType(

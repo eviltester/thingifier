@@ -289,8 +289,8 @@ public class SimulatorHttpTest extends RestAssuredBaseTest {
                         "Reporting-Endpoints",
                         "Connection",
                         "Date",
-                        "X-Railway-Request-Id",
-                        "x-railway-request-id",
+                        "X-Railway-HttpServerRequest-Id",
+                        "x-railway-HttpServerRequest-id",
                         "x-railway-cdn-edge",
                         "x-served-by",
                         "date");

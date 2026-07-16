@@ -10,7 +10,7 @@ import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
 public class UrlQueryParamParserTest {
 
     /*
-    The default Spark parsing for url params is a split by & and then a split by =
+    The default HTTP edge parsing for url params is a split by & and then a split by =
 
     We want to be able to filter and sort e.g. ?id>=2&sortBy=-id&id<=16
 

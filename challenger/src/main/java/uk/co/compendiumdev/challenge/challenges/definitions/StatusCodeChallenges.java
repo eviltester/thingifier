@@ -79,7 +79,7 @@ public class StatusCodeChallenges {
                         "POST /heartbeat as PATCH (500)",
                         "Issue a POST request on the `/heartbeat` end point and receive 500 when you override the Method Verb to a PATCH");
 
-        aChallenge.addHint("Use a normal POST Request, but add an X-HTTP-Method-Override header");
+        aChallenge.addHint("Use a normal POST request, but add an X-HTTP-Method-Override header");
 
         aChallenge.addSolutionLink(
                 "Add a header 'X-HTTP-Method-Override: PATCH' to a POST /heartbeat request",
@@ -100,7 +100,7 @@ public class StatusCodeChallenges {
                         "POST /heartbeat as DELETE (405)",
                         "Issue a POST request on the `/heartbeat` end point and receive 405 when you override the Method Verb to a DELETE");
 
-        aChallenge.addHint("Use a normal POST Request, but add an X-HTTP-Method-Override header");
+        aChallenge.addHint("Use a normal POST request, but add an X-HTTP-Method-Override header");
 
         aChallenge.addSolutionLink(
                 "Add a header 'X-HTTP-Method-Override: DELETE' to a POST /heartbeat request",
@@ -121,7 +121,7 @@ public class StatusCodeChallenges {
                         ChallengeRenderer.renderChallengeNumber(challengeOrder),
                         "POST /heartbeat as Trace (501)",
                         "Issue a POST request on the `/heartbeat` end point and receive 501 (Not Implemented) when you override the Method Verb to a TRACE");
-        aChallenge.addHint("Use a normal POST Request, but add an X-HTTP-Method-Override header");
+        aChallenge.addHint("Use a normal POST request, but add an X-HTTP-Method-Override header");
 
         aChallenge.addSolutionLink(
                 "Add a header 'X-HTTP-Method-Override: TRACE' to a POST /heartbeat request",

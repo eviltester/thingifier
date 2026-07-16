@@ -3,7 +3,7 @@ package uk.co.compendiumdev.challenger.restassured.api;
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeAll;
-import uk.co.compendiumdev.sparkstart.Environment;
+import uk.co.compendiumdev.serverstart.Environment;
 
 public class RestAssuredBaseTest {
 

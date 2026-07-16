@@ -1,15 +1,15 @@
 package uk.co.compendiumdev.challenge.challengesrouting;
 
-import static spark.Spark.*;
+import static uk.co.compendiumdev.thingifier.adapter.httpserver.ServerRoutes.*;
 
 import java.util.List;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.apimodel.ChallengeThingifier;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
 import uk.co.compendiumdev.challenge.challenges.ChallengeDefinitions;
-import uk.co.compendiumdev.thingifier.adapter.spark.AdhocDocumentedSparkRouteConfigurer;
-import uk.co.compendiumdev.thingifier.adapter.spark.SimpleSparkRouteCreator;
-import uk.co.compendiumdev.thingifier.adapter.spark.routehandlers.SparkApiRequestResponseHandler;
+import uk.co.compendiumdev.thingifier.adapter.httpserver.AdhocDocumentedHttpRouteConfigurer;
+import uk.co.compendiumdev.thingifier.adapter.httpserver.SimpleHttpRouteCreator;
+import uk.co.compendiumdev.thingifier.adapter.httpserver.routehandlers.HttpApiRequestResponseHandler;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingStatus;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
@@ -31,17 +31,15 @@ public class ChallengesRoutes {
                 "/challenges",
                 (request, result) -> {
                     ChallengerAuthData challenger =
-                            challengers.getChallenger(request.headers("X-CHALLENGER"));
+                            challengers.getChallenger(request.header("X-CHALLENGER"));
 
                     if (!single_player_mode) {
                         if (challenger != null) {
-                            result.raw()
-                                    .setHeader(
-                                            "Location",
-                                            "/gui/challenges/" + challenger.getXChallenger());
+                            result.header(
+                                    "Location", "/gui/challenges/" + challenger.getXChallenger());
                         }
                     } else {
-                        result.raw().setHeader("Location", "/gui/challenges");
+                        result.header("Location", "/gui/challenges");
                     }
 
                     // Todo: use the cloneThingifierWithNewData here and simplify the
@@ -50,7 +48,7 @@ public class ChallengesRoutes {
                     final EntityDefinition challengeDefn = challengeThingifier.challengeDefn;
                     challengeThingifier.populateThingifierFrom(challengeDefinitions);
 
-                    return new SparkApiRequestResponseHandler(
+                    return new HttpApiRequestResponseHandler(
                                     request, result, challengeThingifier.challengeThingifier)
                             .usingHandler(
                                     (anHttpApiRequest) -> {
@@ -92,7 +90,7 @@ public class ChallengesRoutes {
 
         // TODO: because these hardcode contentType and ignore Accept there should be a light weight
         // wrapper available
-        new AdhocDocumentedSparkRouteConfigurer(apiDefn)
+        new AdhocDocumentedHttpRouteConfigurer(apiDefn)
                 .add(
                         "/challenges",
                         RoutingVerb.HEAD,
@@ -115,7 +113,7 @@ public class ChallengesRoutes {
                             return "";
                         }));
 
-        SimpleSparkRouteCreator.routeStatusWhenNot(
+        SimpleHttpRouteCreator.routeStatusWhenNot(
                 405, "/challenges", List.of("get", "head", "options"));
     }
 }

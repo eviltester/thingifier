@@ -529,7 +529,9 @@ public class MarkdownContentManager {
     */
     private String processMacrosInContentLine(String line, Map<String, String> params) {
 
-        if (!line.contains("{{<")) return line;
+        if (!line.contains("{{<")) {
+            return line;
+        }
 
         //        String youTubeHtmlBlock = """
         // <div class="video-container">

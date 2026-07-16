@@ -5,13 +5,14 @@ import org.slf4j.LoggerFactory;
 import uk.co.compendiumdev.challenge.apimodel.ChallengeApiModel;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
 import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.adapter.spark.MainImplementation;
-import uk.co.compendiumdev.thingifier.adapter.spark.ThingifierHttpApiRoutings;
+import uk.co.compendiumdev.thingifier.adapter.httpserver.MainImplementation;
+import uk.co.compendiumdev.thingifier.adapter.httpserver.ThingifierHttpApiRoutings;
 import uk.co.compendiumdev.thingifier.core.repository.ThingStoreProviderConfig;
 
 public class ChallengeMain {
 
     static ChallengeRouteHandler challenger;
+    static MainImplementation app;
 
     public static void main(String[] args) {
 
@@ -19,7 +20,7 @@ public class ChallengeMain {
 
         logger.info("Starting Challenger");
 
-        MainImplementation app = new MainImplementation();
+        app = new MainImplementation();
         ThingStoreProviderConfig repositoryConfig = ThingStoreProviderConfig.fromArgs(args);
         logger.info("Using Thingifier repository {}", repositoryConfig.describe());
         Thingifier thingifier = new ChallengeApiModel().get(repositoryConfig.createProvider());
@@ -125,6 +126,10 @@ public class ChallengeMain {
         if (challenger != null) {
             challenger.close();
         }
+        if (app != null) {
+            app.close();
+        }
         challenger = null;
+        app = null;
     }
 }

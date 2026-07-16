@@ -1,11 +1,11 @@
 package uk.co.compendiumdev.thingifier.htmlgui.routing;
 
-import static spark.Spark.get;
+import static uk.co.compendiumdev.thingifier.adapter.httpserver.ServerRoutes.get;
 
 import java.util.HashMap;
 import java.util.Map;
-import spark.Request;
 import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.adapter.httpserver.HttpServerRequest;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.htmlgui.htmlgen.DefaultGUIHTML;
 import uk.co.compendiumdev.thingifier.htmlgui.htmlgen.DefaultGuiHtmlPages;
@@ -62,7 +62,7 @@ public class DefaultGuiRoutings {
 
                     String database = getDatabaseNameFromRequest(request);
 
-                    String entityName = request.queryParams("entity");
+                    String entityName = request.queryParam("entity");
 
                     return htmlPages.getInstancesListPage(database, entityName);
                 });
@@ -76,17 +76,17 @@ public class DefaultGuiRoutings {
                     String database = getDatabaseNameFromRequest(request);
 
                     String entityName = "";
-                    for (String queryParam : request.queryParams()) {
+                    for (String queryParam : request.queryParamNames()) {
                         if (queryParam.contentEquals("entity")) {
-                            entityName = request.queryParams("entity");
+                            entityName = request.queryParam("entity");
                         }
                     }
 
                     Map<String, String> instanceQueryParams = new HashMap<>();
 
-                    for (String queryParam : request.queryParams()) {
+                    for (String queryParam : request.queryParamNames()) {
                         if (!queryParam.equals("entity")) {
-                            instanceQueryParams.put(queryParam, request.queryParams(queryParam));
+                            instanceQueryParams.put(queryParam, request.queryParam(queryParam));
                         }
                     }
 
@@ -102,7 +102,7 @@ public class DefaultGuiRoutings {
     // TODO: multiple thingifiers would require different cookie names - give Thingifier a name and
     // include in cookie
     // e.g. X-APICHALLENGES-THINGIFIER-DATABASE-NAME, X-SIMPLEAPI-THINGIFIER-DATABASE-NAME
-    private String getDatabaseNameFromRequest(Request request) {
+    private String getDatabaseNameFromRequest(HttpServerRequest request) {
 
         if (!thingifier.apiConfig().supportsMultipleDatabases()) {
             return EntityRelModel.DEFAULT_DATABASE_NAME;
@@ -114,8 +114,8 @@ public class DefaultGuiRoutings {
             xdatabasename = request.cookie("X-THINGIFIER-DATABASE-NAME");
         }
 
-        if (request.queryParams("database") != null) {
-            xdatabasename = request.queryParams("database");
+        if (request.queryParam("database") != null) {
+            xdatabasename = request.queryParam("database");
         }
 
         if (xdatabasename.equals("")) {

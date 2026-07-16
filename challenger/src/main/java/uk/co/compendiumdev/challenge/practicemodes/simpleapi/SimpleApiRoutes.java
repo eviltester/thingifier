@@ -1,12 +1,12 @@
 package uk.co.compendiumdev.challenge.practicemodes.simpleapi;
 
-import static spark.Spark.*;
+import static uk.co.compendiumdev.thingifier.adapter.httpserver.ServerRoutes.*;
 
 import java.util.List;
 import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.adapter.spark.SimpleSparkRouteCreator;
-import uk.co.compendiumdev.thingifier.adapter.spark.ThingifierAutoDocGenRouting;
-import uk.co.compendiumdev.thingifier.adapter.spark.ThingifierHttpApiRoutings;
+import uk.co.compendiumdev.thingifier.adapter.httpserver.SimpleHttpRouteCreator;
+import uk.co.compendiumdev.thingifier.adapter.httpserver.ThingifierAutoDocGenRouting;
+import uk.co.compendiumdev.thingifier.adapter.httpserver.ThingifierHttpApiRoutings;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingStatus;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
@@ -102,8 +102,7 @@ public class SimpleApiRoutes {
         apiDocDefn.setOgType("website");
         apiDocDefn.setTwitterCard("summary_large_image");
 
-        new SimpleSparkRouteCreator("/simpleapi/items")
-                .status(501, true, List.of("patch", "trace"));
+        new SimpleHttpRouteCreator("/simpleapi/items").status(501, true, List.of("patch", "trace"));
 
         get(
                 "/simpleapi/randomisbn",
@@ -140,7 +139,7 @@ public class SimpleApiRoutes {
                                 "return a random ISBN that can be used for testing purposes with the Simple API.")
                         .addPossibleStatuses(200));
 
-        new SimpleSparkRouteCreator("/simpleapi/randomisbn")
+        new SimpleHttpRouteCreator("/simpleapi/randomisbn")
                 .status(405, true, List.of("put", "post", "delete", "patch", "trace"));
 
         new ThingifierAutoDocGenRouting(simplethings, apiDocDefn, gui);

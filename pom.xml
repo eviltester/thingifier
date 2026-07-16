@@ -9,8 +9,8 @@
 
 
     <properties>
-        <maven.compiler.source>15</maven.compiler.source>
-        <maven.compiler.target>15</maven.compiler.target>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <thingifier.version>1.5.6-SNAPSHOT</thingifier.version>
@@ -19,7 +19,8 @@
         <sqlite-jdbc-version>3.53.2.0</sqlite-jdbc-version>
         <snakeyaml-version>2.6</snakeyaml-version>
         <junit.jupiter.version>5.6.2</junit.jupiter.version>
-        <java.version>16</java.version>
+        <java.version>17</java.version>
+        <javalin.version>7.2.2</javalin.version>
         <rest-assured-version>5.5.0</rest-assured-version>
         <jaxbi-version>2.3.1</jaxbi-version>
         <slf4j-version>2.0.10</slf4j-version>

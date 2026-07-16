@@ -8,7 +8,7 @@ import io.restassured.response.Response;
 import java.util.List;
 import uk.co.compendiumdev.challenger.payloads.Todo;
 import uk.co.compendiumdev.challenger.payloads.Todos;
-import uk.co.compendiumdev.sparkstart.Environment;
+import uk.co.compendiumdev.serverstart.Environment;
 
 public class TodosApi {
     public Todo createTodo(final String title, final String description, final boolean doneStatus) {

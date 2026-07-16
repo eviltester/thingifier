@@ -45,13 +45,13 @@ public class C017PostUpdateTodosSuccess200Test extends RestAssuredBaseTest {
         statuses.get();
         Assertions.assertTrue(statuses.getChallengeNamed("POST /todos/{id} (200)").status);
 
-        // check it reported as updated in the details of the response
+        // check it reported as updated in the details of the Response
         Assertions.assertEquals(updatedDetails.id, updatedTodo.id);
         Assertions.assertEquals(updatedDetails.title, updatedTodo.title);
         Assertions.assertEquals(updatedDetails.description, updatedTodo.description);
         Assertions.assertEquals(updatedDetails.doneStatus, updatedTodo.doneStatus);
 
-        // issue a get request on the to do, just to double check it updated
+        // issue a get HttpServerRequest on the to do, just to double check it updated
         final Todos getTodo =
                 RestAssured.given()
                         .header("X-CHALLENGER", xChallenger)

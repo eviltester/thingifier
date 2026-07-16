@@ -42,7 +42,7 @@
             <version>${rest-assured-version}</version>
             <scope>test</scope>
         </dependency>
-        <!-- allow using local spark for testing the todomanager -->
+        <!-- allow using local server for testing the todomanager -->
         <dependency>
             <groupId>uk.co.compendiumdev</groupId>
             <artifactId>thingifier</artifactId>

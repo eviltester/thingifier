@@ -23,7 +23,7 @@ public class C024OptionsTodos200Test extends RestAssuredBaseTest {
                         .
                         // this should really be 204, but to keep the challenge docs etc.
                         // backwards compatible there is a hack in the hook to return
-                        // 200 for this option request
+                        // 200 for this option HttpServerRequest
                         statusCode(200)
                         .and()
                         .extract()

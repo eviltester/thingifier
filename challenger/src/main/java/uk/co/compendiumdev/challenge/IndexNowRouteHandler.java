@@ -3,8 +3,8 @@ package uk.co.compendiumdev.challenge;
 import java.util.function.BiConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import spark.Route;
-import spark.Spark;
+import uk.co.compendiumdev.thingifier.adapter.httpserver.HttpRouteHandler;
+import uk.co.compendiumdev.thingifier.adapter.httpserver.ServerRoutes;
 
 public class IndexNowRouteHandler {
 
@@ -15,16 +15,19 @@ public class IndexNowRouteHandler {
 
     private final String keyLocation;
     private final String key;
-    private final BiConsumer<String, Route> getRouteRegistrar;
+    private final BiConsumer<String, HttpRouteHandler> getRouteRegistrar;
 
     public IndexNowRouteHandler() {
-        this(System.getenv(INDEX_NOW_KEY_LOCATION), System.getenv(INDEX_NOW_KEY), Spark::get);
+        this(
+                System.getenv(INDEX_NOW_KEY_LOCATION),
+                System.getenv(INDEX_NOW_KEY),
+                ServerRoutes::get);
     }
 
     IndexNowRouteHandler(
             final String keyLocation,
             final String key,
-            final BiConsumer<String, Route> getRouteRegistrar) {
+            final BiConsumer<String, HttpRouteHandler> getRouteRegistrar) {
         this.keyLocation = normalize(keyLocation);
         this.key = normalize(key);
         this.getRouteRegistrar = getRouteRegistrar;

@@ -10,7 +10,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import uk.co.compendiumdev.challenger.http.httpclient.HttpMessageSender;
 import uk.co.compendiumdev.challenger.http.httpclient.HttpResponseDetails;
-import uk.co.compendiumdev.sparkstart.Environment;
+import uk.co.compendiumdev.serverstart.Environment;
 import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
 
 public class MirrorModeTest {
@@ -19,8 +19,8 @@ public class MirrorModeTest {
 
     @BeforeAll
     static void createHttp() {
-        // this uses the Environment to startup the spark app to
-        // issue http tests and test the routing in spark
+        // this uses the Environment to startup the server app to
+        // issue http tests and test the server routing
         http = new HttpMessageSender(Environment.getBaseUri());
     }
 
@@ -255,7 +255,7 @@ public class MirrorModeTest {
         Assertions.assertEquals(413, response.statusCode);
         Assertions.assertEquals("application/json", response.getHeader("Content-Type"));
         Assertions.assertTrue(
-                response.body.contains("Error: Request too large, max allowed is 24000 bytes"));
+                response.body.contains("Error: request too large, max allowed is 24000 bytes"));
     }
 
     private String stringOfLength(int length) {

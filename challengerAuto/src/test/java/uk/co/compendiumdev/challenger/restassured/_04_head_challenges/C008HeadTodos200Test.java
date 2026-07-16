@@ -33,7 +33,7 @@ public class C008HeadTodos200Test extends RestAssuredBaseTest {
         Assertions.assertTrue(statuses.getChallengeNamed("HEAD /todos (200)").status);
 
         Assertions.assertTrue(
-                headresponse.body().asString().equals(""), "Expected no Body for Head response");
+                headresponse.body().asString().equals(""), "Expected no Body for Head Response");
 
         final Response todosgetresponse =
                 RestAssured.given()
@@ -55,8 +55,8 @@ public class C008HeadTodos200Test extends RestAssuredBaseTest {
                         "Reporting-Endpoints",
                         "Connection",
                         "Date",
-                        "X-Railway-Request-Id",
-                        "x-railway-request-id",
+                        "X-Railway-HttpServerRequest-Id",
+                        "x-railway-HttpServerRequest-id",
                         "x-railway-cdn-edge",
                         "x-served-by",
                         "date");

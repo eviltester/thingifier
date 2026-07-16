@@ -1,18 +1,18 @@
 package uk.co.compendiumdev.challenge.challengesrouting;
 
-import static spark.Spark.*;
+import static uk.co.compendiumdev.thingifier.adapter.httpserver.ServerRoutes.*;
 
 import java.util.List;
-import spark.Route;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
 import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.adapter.httpserver.HttpRouteHandler;
+import uk.co.compendiumdev.thingifier.adapter.httpserver.SimpleHttpRouteCreator;
+import uk.co.compendiumdev.thingifier.adapter.httpserver.conversion.HttpServerRequestToInternalHttpRequest;
+import uk.co.compendiumdev.thingifier.adapter.httpserver.conversion.InternalHttpResponseToHttpServer;
 import uk.co.compendiumdev.thingifier.adapter.internalhttp.InternalHttpRequest;
 import uk.co.compendiumdev.thingifier.adapter.internalhttp.conversion.HttpApiResponseToInternalHttpResponse;
 import uk.co.compendiumdev.thingifier.adapter.internalhttp.conversion.InternalHttpRequestToHttpApiRequest;
-import uk.co.compendiumdev.thingifier.adapter.spark.SimpleSparkRouteCreator;
-import uk.co.compendiumdev.thingifier.adapter.spark.conversion.InternalHttpResponseToSpark;
-import uk.co.compendiumdev.thingifier.adapter.spark.conversion.SparkToInternalHttpRequest;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingStatus;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
@@ -61,7 +61,7 @@ public class AuthRoutes {
         this.httpApi = new ThingifierHttpApi(this.secretNoteStore);
         this.jsonThing = new JsonThing(this.secretNoteStore.apiConfig().jsonOutput());
 
-        SimpleSparkRouteCreator.addHandler(
+        SimpleHttpRouteCreator.addHandler(
                 "/secret/token",
                 "options",
                 (request, result) -> {
@@ -71,8 +71,8 @@ public class AuthRoutes {
                     return "";
                 });
 
-        // TODO: this all feels too tightly coupled to SparkJava we should have our own routing
-        // internally that spark delegates too
+        // TODO: this still feels tightly coupled to HTTP routing; route handling should delegate
+        // to an internal auth use case.
 
         // POST /secret/token with basic auth to get a secret/token to use as X-AUTH-TOKEN header
         // todo: or {username, password} payload
@@ -80,19 +80,17 @@ public class AuthRoutes {
                 "/secret/token",
                 (request, result) -> {
                     BasicAuthHeaderParser basicAuth =
-                            new BasicAuthHeaderParser(request.headers("Authorization"));
+                            new BasicAuthHeaderParser(request.header("Authorization"));
 
                     // admin/password as default username:password
                     if (!basicAuth.matches("admin", "password")) {
-                        result.raw()
-                                .setHeader(
-                                        "WWW-Authenticate", "Basic realm=\"User Visible Realm\"");
+                        result.header("WWW-Authenticate", "Basic realm=\"User Visible Realm\"");
                         result.status(401);
                         return "";
                     }
 
                     ChallengerAuthData challenger =
-                            challengers.getChallenger(request.headers("X-CHALLENGER"));
+                            challengers.getChallenger(request.header("X-CHALLENGER"));
 
                     if (challenger == null) {
                         result.status(401);
@@ -101,13 +99,12 @@ public class AuthRoutes {
                     }
 
                     // if no header X-AUTH-TOKEN then grant one
-                    result.raw().setHeader("X-AUTH-TOKEN", challenger.getXAuthToken());
+                    result.header("X-AUTH-TOKEN", challenger.getXAuthToken());
                     result.status(201);
                     return "";
                 });
 
-        SimpleSparkRouteCreator.routeStatusWhenNot(
-                405, "/secret/token", List.of("post", "options"));
+        SimpleHttpRouteCreator.routeStatusWhenNot(405, "/secret/token", List.of("post", "options"));
 
         apiDefn.addRouteToDocumentation(
                 new RoutingDefinition(
@@ -127,7 +124,7 @@ public class AuthRoutes {
         // auth token which does not match the session will receive a 401
         // header X-AUTH-TOKEN: token given - if token not found (then) 401
 
-        SimpleSparkRouteCreator.addHandler(
+        SimpleHttpRouteCreator.addHandler(
                 "/secret/note",
                 "options",
                 (request, result) -> {
@@ -137,15 +134,15 @@ public class AuthRoutes {
                     return "";
                 });
 
-        Route getSecretNote =
+        HttpRouteHandler getSecretNote =
                 (request, result) -> {
-                    String authToken = request.headers("X-AUTH-TOKEN");
-                    final String authorization = request.headers("Authorization");
+                    String authToken = request.header("X-AUTH-TOKEN");
+                    final String authorization = request.header("Authorization");
 
                     result.header("Content-Type", "application/json");
 
                     ChallengerAuthData challenger =
-                            challengers.getChallenger(request.headers("X-CHALLENGER"));
+                            challengers.getChallenger(request.header("X-CHALLENGER"));
 
                     if (challenger == null) {
                         result.status(401);
@@ -173,7 +170,7 @@ public class AuthRoutes {
                     }
 
                     AcceptHeaderParser acceptHeaderParser =
-                            new AcceptHeaderParser(request.headers("ACCEPT"));
+                            new AcceptHeaderParser(request.header("ACCEPT"));
                     if (!acceptHeaderParser.missingAcceptHeader()
                             && !acceptHeaderParser.isSupportedHeader()) {
                         result.status(406);
@@ -181,7 +178,7 @@ public class AuthRoutes {
                     }
 
                     final InternalHttpRequest internalRequest =
-                            SparkToInternalHttpRequest.convert(request);
+                            HttpServerRequestToInternalHttpRequest.convert(request);
                     final HttpApiRequest myRequest =
                             InternalHttpRequestToHttpApiRequest.convert(internalRequest);
 
@@ -198,10 +195,10 @@ public class AuthRoutes {
                                     jsonThing,
                                     this.secretNoteStore.apiConfig());
 
-                    return InternalHttpResponseToSpark.convert(
+                    return InternalHttpResponseToHttpServer.convert(
                             HttpApiResponseToInternalHttpResponse.convert(httpApiResponse), result);
 
-                    // return resultBasedOnAcceptHeader(result, request.headers("ACCEPT"),
+                    // return resultBasedOnAcceptHeader(result, request.header("ACCEPT"),
                     // challenger.getNote());
                 };
 
@@ -232,11 +229,11 @@ public class AuthRoutes {
         post(
                 "/secret/note",
                 (request, result) -> {
-                    final String authorization = request.headers("Authorization");
-                    String authToken = request.headers("X-AUTH-TOKEN");
+                    final String authorization = request.header("Authorization");
+                    String authToken = request.header("X-AUTH-TOKEN");
 
                     AcceptHeaderParser acceptHeaderParser =
-                            new AcceptHeaderParser(request.headers("ACCEPT"));
+                            new AcceptHeaderParser(request.header("ACCEPT"));
                     if (!acceptHeaderParser.missingAcceptHeader()
                             && !acceptHeaderParser.isSupportedHeader()) {
                         result.status(406);
@@ -244,7 +241,7 @@ public class AuthRoutes {
                     }
 
                     ContentTypeHeaderParser contentTypeParser =
-                            new ContentTypeHeaderParser(request.headers("CONTENT-TYPE"));
+                            new ContentTypeHeaderParser(request.header("CONTENT-TYPE"));
                     if (!contentTypeParser.isJSON() && !contentTypeParser.isXML()) {
                         result.status(415);
                         return "";
@@ -254,7 +251,7 @@ public class AuthRoutes {
                     // associated
                     //       challenger
                     ChallengerAuthData challenger =
-                            challengers.getChallenger(request.headers("X-CHALLENGER"));
+                            challengers.getChallenger(request.header("X-CHALLENGER"));
 
                     if (challenger == null) {
                         result.status(401);
@@ -262,7 +259,7 @@ public class AuthRoutes {
                         return "";
                     }
 
-                    result.raw().setHeader("X-CHALLENGER", challenger.getXChallenger());
+                    result.header("X-CHALLENGER", challenger.getXChallenger());
                     // set content-type header for error responses
                     if (acceptHeaderParser.hasAPreferenceForXml()) {
                         result.header("Content-Type", "application/xml");
@@ -296,7 +293,7 @@ public class AuthRoutes {
                     }
 
                     final InternalHttpRequest internalRequest =
-                            SparkToInternalHttpRequest.convert(request);
+                            HttpServerRequestToInternalHttpRequest.convert(request);
                     final HttpApiRequest myRequest =
                             InternalHttpRequestToHttpApiRequest.convert(internalRequest);
                     HttpApiResponse httpApiResponse =
@@ -357,11 +354,11 @@ public class AuthRoutes {
                                         this.secretNoteStore.apiConfig());
                     }
 
-                    return InternalHttpResponseToSpark.convert(
+                    return InternalHttpResponseToHttpServer.convert(
                             HttpApiResponseToInternalHttpResponse.convert(httpApiResponse), result);
                 });
 
-        SimpleSparkRouteCreator.routeStatusWhenNot(
+        SimpleHttpRouteCreator.routeStatusWhenNot(
                 405, "/secret/note", List.of("get", "post", "head", "options"));
 
         apiDefn.addRouteToDocumentation(

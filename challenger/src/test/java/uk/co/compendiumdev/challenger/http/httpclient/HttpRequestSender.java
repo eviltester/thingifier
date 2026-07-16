@@ -104,11 +104,11 @@ public class HttpRequestSender implements CanSendHttpRequests {
             int statusCode = con.getResponseCode();
             response.statusCode = statusCode;
 
-            logger.info("Response Code : " + statusCode);
+            logger.info("response Code : " + statusCode);
 
             String responseBody = getResponseBody(con);
 
-            logger.info("Response Body: " + responseBody);
+            logger.info("response Body: " + responseBody);
             response.body = responseBody.toString();
 
             // add the headers to readable response
@@ -125,7 +125,7 @@ public class HttpRequestSender implements CanSendHttpRequests {
             for (String sentHeader : lastRequest.getHeaders().keySet()) {
                 logger.info(
                         String.format(
-                                "Request Header - %s:%s",
+                                "request Header - %s:%s",
                                 sentHeader, lastRequest.getHeaders().get(sentHeader)));
             }
 

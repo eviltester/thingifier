@@ -3,16 +3,14 @@ package uk.co.compendiumdev.thingifier.tactical.postmanreplication;
 import io.restassured.RestAssured;
 import io.restassured.filter.log.RequestLoggingFilter;
 import io.restassured.filter.log.ResponseLoggingFilter;
-import spark.Spark;
-import uk.co.compendiumdev.sparkstart.Port;
+import uk.co.compendiumdev.serverstart.Port;
 import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.adapter.spark.ThingifierAutoDocGenRouting;
-import uk.co.compendiumdev.thingifier.adapter.spark.ThingifierHttpApiRoutings;
-import uk.co.compendiumdev.thingifier.api.docgen.ThingifierApiDocumentationDefn;
+import uk.co.compendiumdev.thingifier.adapter.httpserver.MainImplementation;
 import uk.co.compendiumdev.thingifier.application.examples.TodoManagerThingifier;
-import uk.co.compendiumdev.thingifier.htmlgui.htmlgen.DefaultGUIHTML;
 
 public class Environment {
+
+    private static MainImplementation app;
 
     /** could just use `RestAssured.baseURI = Environment.getBaseUri();` instead */
     public static String getEnv(String urlPath) {
@@ -27,12 +25,11 @@ public class Environment {
         // setup rest assured logging
         RestAssured.filters(new RequestLoggingFilter(), new ResponseLoggingFilter());
 
-        // if not running then start the spark
+        // if not running then start the server
         if (Port.inUse("localhost", 4567)) {
             return "http://localhost:4567";
         } else {
             // start it up
-            Spark.port(4567);
             final Thingifier thingifier = new TodoManagerThingifier().get();
             thingifier.apiConfig().adminConfig().enableAdminDataClear();
             thingifier.apiConfig().adminConfig().enableAdminSearch();
@@ -41,10 +38,17 @@ public class Environment {
             thingifier.apiConfig().jsonOutput().setShowPrimaryKeyInResponse(true);
             thingifier.apiConfig().jsonOutput().setConvertFieldsToDefinedTypes(false);
 
-            ThingifierApiDocumentationDefn apiDefn =
-                    new ThingifierApiDocumentationDefn().setThingifier(thingifier);
-            new ThingifierAutoDocGenRouting(thingifier, apiDefn, new DefaultGUIHTML());
-            new ThingifierHttpApiRoutings(thingifier, apiDefn);
+            app = new MainImplementation();
+            app.registerModel("todoManager", thingifier);
+            app.setDefaultsFromArgs(new String[0]);
+            app.configurePortAndDefaultRoutes();
+            app.setupBuiltInConfigurableRoutes();
+            app.chooseThingifier();
+            app.configureThingifierWithProfile();
+            app.setupDefaultGui();
+            app.startRestServer();
+            waitTillRunningStatus(true);
+
             return "http://localhost:4567";
         }
 
@@ -69,8 +73,10 @@ public class Environment {
     }
 
     public static void stop() {
-        Spark.stop();
-        Spark.awaitStop();
+        if (app != null) {
+            app.close();
+            app = null;
+        }
         waitTillRunningStatus(false);
     }
 }

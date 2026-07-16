@@ -1,14 +1,14 @@
 package uk.co.compendiumdev.challenge.practicemodes.simulation;
 
-import static spark.Spark.*;
+import static uk.co.compendiumdev.thingifier.adapter.httpserver.ServerRoutes.*;
 
 import java.util.List;
 import uk.co.compendiumdev.challenge.ChallengerConfig;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.adapter.http.routehandlers.HttpApiRequestHandler;
-import uk.co.compendiumdev.thingifier.adapter.spark.SimpleSparkRouteCreator;
-import uk.co.compendiumdev.thingifier.adapter.spark.ThingifierAutoDocGenRouting;
-import uk.co.compendiumdev.thingifier.adapter.spark.routehandlers.SparkApiRequestResponseHandler;
+import uk.co.compendiumdev.thingifier.adapter.httpserver.SimpleHttpRouteCreator;
+import uk.co.compendiumdev.thingifier.adapter.httpserver.ThingifierAutoDocGenRouting;
+import uk.co.compendiumdev.thingifier.adapter.httpserver.routehandlers.HttpApiRequestResponseHandler;
 import uk.co.compendiumdev.thingifier.api.docgen.ThingifierApiDocumentationDefn;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
@@ -149,11 +149,10 @@ public class SimulationRoutes {
                     return "";
                 });
 
-        new SimpleSparkRouteCreator(apiEndpoint).status(501, true, List.of("patch", "trace"));
-        new SimpleSparkRouteCreator(apiEndpoint).status(405, true, List.of("delete"));
+        new SimpleHttpRouteCreator(apiEndpoint).status(501, true, List.of("patch", "trace"));
+        new SimpleHttpRouteCreator(apiEndpoint).status(405, true, List.of("delete"));
 
-        new SimpleSparkRouteCreator(apiEndpoint + "/*")
-                .status(501, true, List.of("patch", "trace"));
+        new SimpleHttpRouteCreator(apiEndpoint + "/*").status(501, true, List.of("patch", "trace"));
 
         options(
                 apiEndpoint + "/*",
@@ -180,7 +179,7 @@ public class SimulationRoutes {
         get(
                 apiEndpoint,
                 (request, result) -> {
-                    return new SparkApiRequestResponseHandler(request, result, simulation)
+                    return new HttpApiRequestResponseHandler(request, result, simulation)
                             .usingHandler(getEntitiesHandler)
                             .handle();
                 });
@@ -188,7 +187,7 @@ public class SimulationRoutes {
         head(
                 apiEndpoint,
                 (request, result) -> {
-                    new SparkApiRequestResponseHandler(request, result, simulation)
+                    new HttpApiRequestResponseHandler(request, result, simulation)
                             .usingHandler(getEntitiesHandler)
                             .handle();
                     return "";
@@ -229,7 +228,7 @@ public class SimulationRoutes {
         get(
                 apiEndpoint + "/:id",
                 (request, result) -> {
-                    return new SparkApiRequestResponseHandler(request, result, simulation)
+                    return new HttpApiRequestResponseHandler(request, result, simulation)
                             .usingHandler(getEntityHandler)
                             .handle();
                 });
@@ -237,7 +236,7 @@ public class SimulationRoutes {
         head(
                 apiEndpoint + "/:id",
                 (request, result) -> {
-                    new SparkApiRequestResponseHandler(request, result, simulation)
+                    new HttpApiRequestResponseHandler(request, result, simulation)
                             .usingHandler(getEntityHandler)
                             .handle();
 
@@ -248,7 +247,7 @@ public class SimulationRoutes {
         post(
                 apiEndpoint,
                 (request, result) -> {
-                    return new SparkApiRequestResponseHandler(request, result, simulation)
+                    return new HttpApiRequestResponseHandler(request, result, simulation)
                             .usingHandler(
                                     (anHttpApiRequest) -> {
                                         return ApiResponse.created(
@@ -306,7 +305,7 @@ public class SimulationRoutes {
         post(
                 apiEndpoint + "/:id",
                 (request, result) -> {
-                    return new SparkApiRequestResponseHandler(request, result, simulation)
+                    return new HttpApiRequestResponseHandler(request, result, simulation)
                             .usingHandler(putAndPostEntityHandler)
                             .handle();
                 });
@@ -316,7 +315,7 @@ public class SimulationRoutes {
         put(
                 apiEndpoint + "/:id",
                 (request, result) -> {
-                    return new SparkApiRequestResponseHandler(request, result, simulation)
+                    return new HttpApiRequestResponseHandler(request, result, simulation)
                             .usingHandler(putAndPostEntityHandler)
                             .handle();
                 });
@@ -324,7 +323,7 @@ public class SimulationRoutes {
         delete(
                 apiEndpoint + "/:id",
                 (request, result) -> {
-                    return new SparkApiRequestResponseHandler(request, result, simulation)
+                    return new HttpApiRequestResponseHandler(request, result, simulation)
                             .usingHandler(
                                     (anHttpApiRequest) -> {
                                         ApiResponse response;

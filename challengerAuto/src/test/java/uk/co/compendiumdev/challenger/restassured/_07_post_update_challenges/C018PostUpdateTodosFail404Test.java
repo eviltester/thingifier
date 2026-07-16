@@ -54,7 +54,7 @@ public class C018PostUpdateTodosFail404Test extends RestAssuredBaseTest {
         statuses.get();
         Assertions.assertTrue(statuses.getChallengeNamed("POST /todos/{id} (404)").status);
 
-        // check it reported as updated in the details of the response
+        // check it reported as updated in the details of the Response
         Assertions.assertEquals(
                 String.format(
                         "No such todo entity instance with id == %d found", updatedDetails.id),

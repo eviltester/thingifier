@@ -9,7 +9,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import uk.co.compendiumdev.challenger.http.httpclient.HttpMessageSender;
 import uk.co.compendiumdev.challenger.http.httpclient.HttpResponseDetails;
-import uk.co.compendiumdev.sparkstart.Environment;
+import uk.co.compendiumdev.serverstart.Environment;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 
 public class MultiPlayerModeHookTest {

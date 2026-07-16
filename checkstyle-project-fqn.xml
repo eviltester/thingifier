@@ -69,28 +69,8 @@
         <property name="files" value=".*[/\\]ercoremodel[/\\]src[/\\]main[/\\]java[/\\]uk[/\\]co[/\\]compendiumdev[/\\]thingifier[/\\]core[/\\]domain[/\\]instances[/\\]EntityInstance\.java"/>
     </module>
     <module name="SuppressionSingleFilter">
-        <property name="id" value="sparkImportsAtSparkEdge"/>
-        <property name="files" value=".*[/\\]src[/\\]test[/\\]java[/\\].*"/>
-    </module>
-    <module name="SuppressionSingleFilter">
-        <property name="id" value="sparkImportsAtSparkEdge"/>
-        <property name="files" value=".*[/\\]thingifier[/\\]src[/\\]main[/\\]java[/\\]uk[/\\]co[/\\]compendiumdev[/\\]thingifier[/\\]adapter[/\\]spark[/\\].*"/>
-    </module>
-    <module name="SuppressionSingleFilter">
-        <property name="id" value="sparkImportsAtSparkEdge"/>
-        <property name="files" value=".*[/\\]thingifier[/\\]src[/\\]main[/\\]java[/\\]uk[/\\]co[/\\]compendiumdev[/\\]thingifier[/\\]adapter[/\\]bootstrap[/\\].*"/>
-    </module>
-    <module name="SuppressionSingleFilter">
-        <property name="id" value="sparkImportsAtSparkEdge"/>
-        <property name="files" value=".*[/\\]thingifier[/\\]src[/\\]main[/\\]java[/\\]uk[/\\]co[/\\]compendiumdev[/\\]thingifier[/\\]htmlgui[/\\]routing[/\\].*"/>
-    </module>
-    <module name="SuppressionSingleFilter">
-        <property name="id" value="sparkImportsAtSparkEdge"/>
-        <property name="files" value=".*[/\\]thingifier-crud-ui[/\\]src[/\\]main[/\\]java[/\\]uk[/\\]co[/\\]compendiumdev[/\\]thingifier[/\\]crudui[/\\]adapter[/\\]spark[/\\].*"/>
-    </module>
-    <module name="SuppressionSingleFilter">
-        <property name="id" value="sparkImportsAtSparkEdge"/>
-        <property name="files" value=".*[/\\]challenger[/\\]src[/\\]main[/\\]java[/\\].*"/>
+        <property name="id" value="javalinImportsAtJavalinEdge"/>
+        <property name="files" value=".*[/\\]thingifier[/\\]src[/\\]main[/\\]java[/\\]uk[/\\]co[/\\]compendiumdev[/\\]thingifier[/\\]adapter[/\\]javalin[/\\].*"/>
     </module>
     <module name="SuppressionSingleFilter">
         <property name="id" value="bodyParserOnlyAtHttpEdge"/>
@@ -221,10 +201,16 @@
             <property name="message" value="YAML adapter DTOs and API types must not leak into thingifier or ercoremodel."/>
         </module>
         <module name="RegexpSinglelineJava">
-            <property name="id" value="sparkImportsAtSparkEdge"/>
-            <property name="format" value="^import spark\."/>
+            <property name="id" value="noRemovedHttpServerImports"/>
+            <property name="format" value="^import s[p]ark\."/>
             <property name="ignoreComments" value="true"/>
-            <property name="message" value="Spark imports belong at the Spark adapter edge or an explicit bootstrap/legacy route suppression."/>
+            <property name="message" value="The removed HTTP server must not be imported; use the neutral HTTP route surface or the Javalin adapter."/>
+        </module>
+        <module name="RegexpSinglelineJava">
+            <property name="id" value="javalinImportsAtJavalinEdge"/>
+            <property name="format" value="^import io\.javalin\."/>
+            <property name="ignoreComments" value="true"/>
+            <property name="message" value="Javalin imports belong only in the Javalin adapter edge."/>
         </module>
         <module name="RegexpSinglelineJava">
             <property name="id" value="bodyParserOnlyAtHttpEdge"/>

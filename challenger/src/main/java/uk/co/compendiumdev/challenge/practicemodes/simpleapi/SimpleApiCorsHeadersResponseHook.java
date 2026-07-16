@@ -3,9 +3,9 @@ package uk.co.compendiumdev.challenge.practicemodes.simpleapi;
 import static uk.co.compendiumdev.thingifier.adapter.internalhttp.InternalHttpMethod.OPTIONS;
 
 import java.util.List;
+import uk.co.compendiumdev.thingifier.adapter.httpserver.messagehooks.InternalHttpResponseHook;
 import uk.co.compendiumdev.thingifier.adapter.internalhttp.InternalHttpRequest;
 import uk.co.compendiumdev.thingifier.adapter.internalhttp.InternalHttpResponse;
-import uk.co.compendiumdev.thingifier.adapter.spark.messagehooks.InternalHttpResponseHook;
 
 public class SimpleApiCorsHeadersResponseHook implements InternalHttpResponseHook {
 

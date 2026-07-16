@@ -48,7 +48,7 @@ public class ThingifierHttpApiRequestStatusCodeTest {
         Assertions.assertTrue(
                 response413
                         .getBody()
-                        .contains("Error: Request body too large, max allowed is 1000 bytes"));
+                        .contains("Error: request body too large, max allowed is 1000 bytes"));
     }
 
     private String stringOfLength(int length) {

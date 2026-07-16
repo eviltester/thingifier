@@ -126,7 +126,7 @@ public class ChallengeApiModelRepositoryTest {
                                             .withField("title", "File paperwork"));
             repository.relationships().connect(projectInstance, "tasks", taskInstance);
 
-            ApiResponse response =
+            ApiResponse apiResponse =
                     thingifier
                             .api()
                             .get(
@@ -134,11 +134,12 @@ public class ChallengeApiModelRepositoryTest {
                                     new QueryFilterParams(),
                                     new HttpHeadersBlock());
 
-            Assertions.assertEquals(200, response.getStatusCode());
-            Assertions.assertEquals(1, response.getReturnedInstanceCollection().size());
+            Assertions.assertEquals(200, apiResponse.getStatusCode());
+            Assertions.assertEquals(1, apiResponse.getReturnedInstanceCollection().size());
             Assertions.assertEquals(
                     "File paperwork",
-                    response.getReturnedInstanceCollection()
+                    apiResponse
+                            .getReturnedInstanceCollection()
                             .get(0)
                             .getFieldValue("title")
                             .asString());

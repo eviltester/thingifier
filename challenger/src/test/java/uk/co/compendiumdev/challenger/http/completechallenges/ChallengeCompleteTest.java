@@ -15,7 +15,7 @@ import uk.co.compendiumdev.challenger.http.httpclient.HttpMessageSender;
 import uk.co.compendiumdev.challenger.http.httpclient.HttpResponseDetails;
 import uk.co.compendiumdev.challenger.payloads.Todo;
 import uk.co.compendiumdev.challenger.payloads.Todos;
-import uk.co.compendiumdev.sparkstart.Environment;
+import uk.co.compendiumdev.serverstart.Environment;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
@@ -530,7 +530,7 @@ public abstract class ChallengeCompleteTest {
 
         Assertions.assertEquals(413, response.statusCode);
         Assertions.assertTrue(
-                response.body.contains("Request body too large, max allowed is 5000 bytes"));
+                response.body.contains("request body too large, max allowed is 5000 bytes"));
         Assertions.assertTrue(
                 challenger.statusOfChallenge(CHALLENGE.POST_TODOS_TOO_LONG_PAYLOAD_SIZE));
     }

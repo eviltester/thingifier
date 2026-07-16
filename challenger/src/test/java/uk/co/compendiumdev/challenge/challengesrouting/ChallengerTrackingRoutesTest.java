@@ -11,7 +11,7 @@ import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
 import uk.co.compendiumdev.challenger.http.httpclient.HttpMessageSender;
 import uk.co.compendiumdev.challenger.http.httpclient.HttpResponseDetails;
-import uk.co.compendiumdev.sparkstart.Environment;
+import uk.co.compendiumdev.serverstart.Environment;
 
 public class ChallengerTrackingRoutesTest {
 
@@ -22,8 +22,8 @@ public class ChallengerTrackingRoutesTest {
     static void createHttp() {
         Environment.stop();
 
-        // this uses the Environment to startup the spark app to
-        // issue http tests and test the routing in spark
+        // this uses the Environment to startup the server app to
+        // issue http tests and test the server routing
         // test this in multi user mode
         http = new HttpMessageSender(Environment.getBaseUri(false));
         // challenger = Environment.getNewChallenger();

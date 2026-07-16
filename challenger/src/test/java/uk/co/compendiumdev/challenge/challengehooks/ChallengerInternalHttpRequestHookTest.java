@@ -41,7 +41,7 @@ public class ChallengerInternalHttpRequestHookTest {
         // if so could 'wait' in the test, or 'hack the object to have a different last accessed
         // time'
         // set private variable that test will 'touch'
-        // when using mock at spark level, did not need to 'hack' the object
+        // when using mock at HTTP server level, did not need to 'hack' the object
         Field lastAccessedField = ChallengerAuthData.class.getDeclaredField("lastAccessed");
         lastAccessedField.setAccessible(true);
         lastAccessedField.set(challenger, 0L);

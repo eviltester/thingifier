@@ -253,7 +253,8 @@ public class ChallengerApiResponseHook implements HttpApiResponseHook {
                 && request.getPath().matches("todos")
                 && response.getStatusCode() == 413
                 && collate(response.apiResponse().getErrorMessages())
-                        .contains("Error: Request body too large, max allowed is 5000 bytes")) {
+                        .toLowerCase()
+                        .contains("request body too large")) {
             challengers.pass(challenger, CHALLENGE.POST_TODOS_TOO_LONG_PAYLOAD_SIZE);
         }
 

@@ -2,6 +2,7 @@ package uk.co.compendiumdev.thingifier.crudui;
 
 import java.awt.EventQueue;
 import java.awt.GraphicsEnvironment;
+import java.awt.HeadlessException;
 import java.awt.Window;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
@@ -22,7 +23,10 @@ final class SwingProjectPathChooser implements ProjectPathChooser {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             return ProjectPathSelection.unavailable("Native project browsing was interrupted.");
-        } catch (InvocationTargetException | RuntimeException e) {
+        } catch (HeadlessException
+                | IllegalStateException
+                | InvocationTargetException
+                | SecurityException e) {
             return ProjectPathSelection.unavailable(
                     "Native project browsing is unavailable: " + rootMessage(e));
         }

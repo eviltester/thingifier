@@ -46,7 +46,9 @@ public class ChallengerIpAddressTracker {
 
     public boolean hasLimitBeenReachedFor(String ip) {
 
-        if (!addressLimitingOn) return false;
+        if (!addressLimitingOn) {
+            return false;
+        }
 
         if (countFor(ip) < maxChallengers) {
             return false;
