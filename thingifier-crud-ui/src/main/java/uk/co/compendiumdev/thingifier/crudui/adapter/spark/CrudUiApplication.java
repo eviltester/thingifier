@@ -66,6 +66,23 @@ public final class CrudUiApplication implements AutoCloseable {
         Spark.post(
                 "/ui/project/load",
                 (request, response) -> write(response, controller.loadProject(request.body())));
+        Spark.post(
+                "/ui/project/browse",
+                (request, response) -> write(response, controller.browseProject(request.body())));
+        Spark.post(
+                "/ui/project/check",
+                (request, response) -> write(response, controller.checkProject(request.body())));
+        Spark.post(
+                "/ui/project/export-files",
+                (request, response) ->
+                        write(response, controller.exportProjectFiles(request.body())));
+        Spark.post(
+                "/ui/project/load-files",
+                (request, response) ->
+                        write(response, controller.loadProjectFiles(request.body())));
+        Spark.post(
+                "/ui/storage/switch",
+                (request, response) -> write(response, controller.switchStorage(request.body())));
         Spark.get(
                 "/docs", (request, response) -> write(response, controller.apiDocumentationPage()));
         Spark.get(
@@ -116,6 +133,8 @@ public final class CrudUiApplication implements AutoCloseable {
 
     @Override
     public void close() {
+        Spark.stop();
+        Spark.awaitStop();
         workspace.close();
     }
 }

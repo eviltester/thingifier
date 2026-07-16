@@ -25,6 +25,7 @@ public final class WorkspaceMetadataJson {
         body.put("relationships", relationshipMaps(snapshot));
         body.put("schemaYaml", snapshot.schemaYaml());
         body.put("project", projectMap(snapshot));
+        body.put("storage", storageMap(snapshot));
         return body;
     }
 
@@ -48,6 +49,14 @@ public final class WorkspaceMetadataJson {
         project.put("description", snapshot.projectDescription());
         project.put("active", snapshot.hasProjectPath());
         return project;
+    }
+
+    private Map<String, Object> storageMap(final WorkspaceSnapshot snapshot) {
+        Map<String, Object> storage = new LinkedHashMap<>();
+        storage.put("mode", snapshot.storage().mode());
+        storage.put("sqliteFile", snapshot.storage().sqliteFilePath());
+        storage.put("fileBacked", snapshot.storage().isSqliteFile());
+        return storage;
     }
 
     private List<Map<String, Object>> entityMaps(final WorkspaceSnapshot snapshot) {

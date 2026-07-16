@@ -11,7 +11,7 @@ public final class CrudUiMain {
     public static void main(final String[] args) throws IOException {
         CrudUiArguments arguments = CrudUiArguments.parse(args);
         ActiveThingifierWorkspace workspace =
-                ActiveThingifierWorkspace.defaultTodoManagerWorkspace();
+                ActiveThingifierWorkspace.defaultTodoManagerWorkspace(arguments.storage());
         if (arguments.hasProjectPath()) {
             new WorkspaceProjectService(workspace, new WorkspaceMetadataJson())
                     .load(JsonSupport.toJson(Map.of("path", arguments.projectPath().toString())));

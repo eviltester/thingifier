@@ -2,10 +2,15 @@ package uk.co.compendiumdev.thingifier.crudui;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import java.nio.file.Path;
+import java.util.Map;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 public class CrudUiControllerTest {
+
+    @TempDir Path temp;
 
     @Test
     public void workspaceRouteReturnsSchemaMetadata() {
@@ -15,11 +20,107 @@ public class CrudUiControllerTest {
 
             UiHttpResponse response = controller.workspace();
 
-            Assertions.assertEquals(200, response.statusCode());
+            Assertions.assertEquals(200, response.statusCode(), response.body());
             Assertions.assertTrue(response.body().contains("\"entities\""));
             Assertions.assertTrue(response.body().contains("\"relationships\""));
             Assertions.assertTrue(response.body().contains("\"schemaYaml\""));
             Assertions.assertTrue(response.body().contains("\"project\""));
+            Assertions.assertTrue(response.body().contains("\"storage\""));
+        }
+    }
+
+    @Test
+    public void storageSwitchEndpointChangesWorkspaceStorageMode() {
+        try (ActiveThingifierWorkspace workspace =
+                ActiveThingifierWorkspace.defaultTodoManagerWorkspace()) {
+            CrudUiController controller = new CrudUiController(workspace);
+            Path databaseFile = temp.resolve("controller.sqlite");
+
+            UiHttpResponse response =
+                    controller.switchStorage(
+                            JsonSupport.toJson(
+                                    Map.of(
+                                            "mode",
+                                            "sqlite-file",
+                                            "sqliteFile",
+                                            databaseFile.toString())));
+
+            Assertions.assertEquals(200, response.statusCode(), response.body());
+            Assertions.assertEquals("sqlite-file", workspace.snapshot().storage().mode());
+            Assertions.assertTrue(response.body().contains("\"storageStatus\": \"switched\""));
+        }
+    }
+
+    @Test
+    public void projectBrowseEndpointReturnsSelectedPathFromChooser() {
+        try (ActiveThingifierWorkspace workspace =
+                ActiveThingifierWorkspace.defaultTodoManagerWorkspace()) {
+            Path chosen = temp.resolve("chosen-project");
+            CrudUiController controller =
+                    new CrudUiController(
+                            workspace, request -> ProjectPathSelection.selected(chosen.toString()));
+
+            UiHttpResponse response =
+                    controller.browseProject(
+                            JsonSupport.toJson(Map.of("action", "save", "path", "")));
+            JsonObject body = JsonParser.parseString(response.body()).getAsJsonObject();
+
+            Assertions.assertEquals(200, response.statusCode());
+            Assertions.assertTrue(body.get("selected").getAsBoolean());
+            Assertions.assertEquals(chosen.toString(), body.get("path").getAsString());
+        }
+    }
+
+    @Test
+    public void projectBrowseEndpointReturnsCancelledSelection() {
+        try (ActiveThingifierWorkspace workspace =
+                ActiveThingifierWorkspace.defaultTodoManagerWorkspace()) {
+            CrudUiController controller =
+                    new CrudUiController(workspace, request -> ProjectPathSelection.cancelled());
+
+            UiHttpResponse response =
+                    controller.browseProject(
+                            JsonSupport.toJson(Map.of("action", "load", "path", "")));
+            JsonObject body = JsonParser.parseString(response.body()).getAsJsonObject();
+
+            Assertions.assertEquals(200, response.statusCode());
+            Assertions.assertFalse(body.get("selected").getAsBoolean());
+            Assertions.assertEquals(
+                    "Project browsing cancelled.", body.get("message").getAsString());
+        }
+    }
+
+    @Test
+    public void projectBrowseEndpointReportsUnavailableChooserAsBadRequest() {
+        try (ActiveThingifierWorkspace workspace =
+                ActiveThingifierWorkspace.defaultTodoManagerWorkspace()) {
+            CrudUiController controller =
+                    new CrudUiController(
+                            workspace,
+                            request -> ProjectPathSelection.unavailable("Browse unavailable"));
+
+            UiHttpResponse response =
+                    controller.browseProject(
+                            JsonSupport.toJson(Map.of("action", "save", "path", "")));
+
+            Assertions.assertEquals(400, response.statusCode());
+            Assertions.assertTrue(response.body().contains("Browse unavailable"));
+        }
+    }
+
+    @Test
+    public void sqliteFileStorageSwitchRequiresAFilePathAndDoesNotMutateWorkspace() {
+        try (ActiveThingifierWorkspace workspace =
+                ActiveThingifierWorkspace.defaultTodoManagerWorkspace()) {
+            CrudUiController controller = new CrudUiController(workspace);
+            long version = workspace.snapshot().version();
+
+            UiHttpResponse response =
+                    controller.switchStorage(JsonSupport.toJson(Map.of("mode", "sqlite-file")));
+
+            Assertions.assertEquals(400, response.statusCode());
+            Assertions.assertEquals(version, workspace.snapshot().version());
+            Assertions.assertEquals("memory", workspace.snapshot().storage().mode());
         }
     }
 
@@ -109,6 +210,14 @@ public class CrudUiControllerTest {
         Assertions.assertTrue(index.contains("Load Project"));
         Assertions.assertTrue(index.contains("id=\"project-dialog\""));
         Assertions.assertTrue(index.contains("id=\"project-path-input\""));
+        Assertions.assertTrue(index.contains("id=\"project-recent-paths\""));
+        Assertions.assertTrue(index.contains("id=\"project-browse-button\""));
+        Assertions.assertTrue(index.contains("id=\"project-validate-button\""));
+        Assertions.assertTrue(index.contains("id=\"project-browser-save-button\""));
+        Assertions.assertTrue(index.contains("id=\"project-browser-load-button\""));
+        Assertions.assertTrue(index.contains("Browser Save..."));
+        Assertions.assertTrue(index.contains("Browser Load..."));
+        Assertions.assertTrue(index.contains("Validate Path"));
         Assertions.assertTrue(index.contains("Workspace"));
         Assertions.assertTrue(index.contains("Schema Edit"));
         Assertions.assertTrue(index.contains("href=\"/schema\""));
@@ -280,6 +389,20 @@ public class CrudUiControllerTest {
         Assertions.assertTrue(script.contains("/ui/schema/upgrade/apply"));
         Assertions.assertTrue(script.contains("/ui/project/save"));
         Assertions.assertTrue(script.contains("/ui/project/load"));
+        Assertions.assertTrue(script.contains("/ui/project/browse"));
+        Assertions.assertTrue(script.contains("/ui/project/check"));
+        Assertions.assertTrue(script.contains("/ui/project/load-files"));
+        Assertions.assertTrue(script.contains("/ui/project/export-files"));
+        Assertions.assertTrue(script.contains("browserSaveProject"));
+        Assertions.assertTrue(script.contains("browserLoadProject"));
+        Assertions.assertTrue(script.contains("validateProjectPath"));
+        Assertions.assertTrue(script.contains("projectRecentPaths"));
+        Assertions.assertTrue(script.contains("showDirectoryPicker"));
+        Assertions.assertTrue(script.contains("Browser folder picker is not available"));
+        Assertions.assertTrue(script.contains("/ui/storage/switch"));
+        Assertions.assertTrue(script.contains("storageModeSelect"));
+        Assertions.assertTrue(script.contains("storageFileInput"));
+        Assertions.assertTrue(script.contains("Storage switched."));
         Assertions.assertTrue(script.contains("openProjectDialog"));
         Assertions.assertTrue(script.contains("Project saved."));
         Assertions.assertTrue(script.contains("Project loaded."));
@@ -333,6 +456,9 @@ public class CrudUiControllerTest {
         Assertions.assertTrue(styles.contains(".schema-dialog-footer"));
         Assertions.assertTrue(styles.contains(".project-dialog"));
         Assertions.assertTrue(styles.contains(".project-dialog-warning"));
+        Assertions.assertTrue(styles.contains(".project-path-controls"));
+        Assertions.assertTrue(styles.contains(".project-browser-actions"));
+        Assertions.assertTrue(styles.contains(".project-browser-status"));
         Assertions.assertTrue(styles.contains(".schema-upgrade-layout"));
         Assertions.assertTrue(styles.contains(".schema-upgrade-row"));
         Assertions.assertTrue(styles.contains(".schema-upgrade-summary"));

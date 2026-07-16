@@ -12,6 +12,7 @@ import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.application.schema.definition.SchemaDefinitionValidationReport;
 import uk.co.compendiumdev.thingifier.application.schema.definition.ThingifierModelAssembler;
 import uk.co.compendiumdev.thingifier.application.schema.definition.ThingifierModelDefinition;
+import uk.co.compendiumdev.thingifier.core.repository.ThingStoreProvider;
 import uk.co.compendiumdev.thingifier.yaml.internal.YamlThingifierDocument;
 import uk.co.compendiumdev.thingifier.yaml.internal.YamlThingifierDocumentMapper;
 
@@ -43,20 +44,40 @@ public final class ThingifierYamlLoader {
         return assemble(loadDefinition(path));
     }
 
+    public Thingifier loadThingifier(final Path path, final ThingStoreProvider storeProvider)
+            throws IOException {
+        return assemble(loadDefinition(path), storeProvider);
+    }
+
     public Thingifier loadThingifier(final InputStream input) {
         return assemble(loadDefinition(input));
+    }
+
+    public Thingifier loadThingifier(
+            final InputStream input, final ThingStoreProvider storeProvider) {
+        return assemble(loadDefinition(input), storeProvider);
     }
 
     public Thingifier loadThingifier(final String yamlText) {
         return assemble(loadDefinition(yamlText));
     }
 
+    public Thingifier loadThingifier(
+            final String yamlText, final ThingStoreProvider storeProvider) {
+        return assemble(loadDefinition(yamlText), storeProvider);
+    }
+
     private Thingifier assemble(final ThingifierModelDefinition definition) {
+        return assemble(definition, null);
+    }
+
+    private Thingifier assemble(
+            final ThingifierModelDefinition definition, final ThingStoreProvider storeProvider) {
         final SchemaDefinitionValidationReport report = assembler.validate(definition);
         if (!report.isValid()) {
             throw new ThingifierYamlException(report.combinedMessages());
         }
-        return assembler.assemble(definition);
+        return assembler.assemble(definition, storeProvider);
     }
 
     private YamlThingifierDocument loadDocument(final InputStream input) {

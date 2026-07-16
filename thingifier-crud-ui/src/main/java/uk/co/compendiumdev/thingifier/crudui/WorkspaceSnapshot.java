@@ -9,6 +9,7 @@ public final class WorkspaceSnapshot {
     private final Thingifier thingifier;
     private final ThingifierModelDefinition definition;
     private final String schemaYaml;
+    private final WorkspaceStorage storage;
     private final String projectPath;
     private final String projectTitle;
     private final String projectDescription;
@@ -18,7 +19,7 @@ public final class WorkspaceSnapshot {
             final Thingifier thingifier,
             final ThingifierModelDefinition definition,
             final String schemaYaml) {
-        this(version, thingifier, definition, schemaYaml, "", "", "");
+        this(version, thingifier, definition, schemaYaml, WorkspaceStorage.memory(), "", "", "");
     }
 
     public WorkspaceSnapshot(
@@ -26,6 +27,7 @@ public final class WorkspaceSnapshot {
             final Thingifier thingifier,
             final ThingifierModelDefinition definition,
             final String schemaYaml,
+            final WorkspaceStorage storage,
             final String projectPath,
             final String projectTitle,
             final String projectDescription) {
@@ -33,6 +35,7 @@ public final class WorkspaceSnapshot {
         this.thingifier = thingifier;
         this.definition = definition;
         this.schemaYaml = schemaYaml;
+        this.storage = storage == null ? WorkspaceStorage.memory() : storage;
         this.projectPath = nullToEmpty(projectPath);
         this.projectTitle = nullToEmpty(projectTitle);
         this.projectDescription = nullToEmpty(projectDescription);
@@ -52,6 +55,10 @@ public final class WorkspaceSnapshot {
 
     public String schemaYaml() {
         return schemaYaml;
+    }
+
+    public WorkspaceStorage storage() {
+        return storage;
     }
 
     public String projectPath() {

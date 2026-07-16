@@ -23,4 +23,18 @@ public class CrudUiArgumentsTest {
                         CrudUiArguments.parse(
                                 new String[] {"-project=project-folder", "-modelYaml=model.yaml"}));
     }
+
+    @Test
+    public void parsesStorageModeAndSqliteFilePath() {
+        CrudUiArguments arguments =
+                CrudUiArguments.parse(
+                        new String[] {
+                            "-modelYaml=model.yaml",
+                            "-thingifier-repository=sqlite-file",
+                            "-thingifier-sqlite-file=data.sqlite"
+                        });
+
+        Assertions.assertEquals("sqlite-file", arguments.storage().mode());
+        Assertions.assertTrue(arguments.storage().sqliteFilePath().endsWith("data.sqlite"));
+    }
 }

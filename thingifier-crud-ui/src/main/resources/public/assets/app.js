@@ -48,6 +48,9 @@ const els = {
     exportButton: document.getElementById("export-button"),
     saveProjectButton: document.getElementById("save-project-button"),
     loadProjectButton: document.getElementById("load-project-button"),
+    storageModeSelect: document.getElementById("storage-mode-select"),
+    storageFileInput: document.getElementById("storage-file-input"),
+    switchStorageButton: document.getElementById("switch-storage-button"),
     yamlFile: document.getElementById("yaml-file"),
     importFile: document.getElementById("import-file"),
     projectDialog: document.getElementById("project-dialog"),
@@ -55,6 +58,15 @@ const els = {
     projectDialogDescription: document.getElementById("project-dialog-description"),
     projectDialogWarning: document.getElementById("project-dialog-warning"),
     projectPathInput: document.getElementById("project-path-input"),
+    projectRecentPaths: document.getElementById("project-recent-paths"),
+    projectBrowseButton: document.getElementById("project-browse-button"),
+    projectValidateButton: document.getElementById("project-validate-button"),
+    projectBrowserSaveButton: document.getElementById("project-browser-save-button"),
+    projectBrowserLoadButton: document.getElementById("project-browser-load-button"),
+    projectBrowserStatus: document.getElementById("project-browser-status"),
+    projectSaveStorageOptions: document.getElementById("project-save-storage-options"),
+    projectSaveStorageJson: document.getElementById("project-save-storage-json"),
+    projectSaveStorageSqlite: document.getElementById("project-save-storage-sqlite"),
     projectDialogConfirm: document.getElementById("project-dialog-confirm"),
     projectDialogCancel: document.getElementById("project-dialog-cancel"),
     schemaWorkspaceLink: document.getElementById("schema-workspace-link"),
@@ -99,6 +111,8 @@ const els = {
     schemaMermaidDiagram: document.getElementById("schema-mermaid-diagram")
 };
 
+const PROJECT_RECENT_PATHS_KEY = "thingifier-crud-ui.projectPaths";
+
 async function requestJson(path, options = {}) {
     const response = await fetch(path, {
         headers: {
@@ -133,6 +147,7 @@ async function loadWorkspace() {
     clearMessage();
     state.workspace = await requestJson("/ui/workspace");
     renderHeader();
+    syncStorageControlsFromWorkspace();
     if (!els.tree) {
         return;
     }
@@ -222,7 +237,18 @@ function renderHeader() {
     const projectPath = state.workspace.project && state.workspace.project.path
         ? `Project: ${state.workspace.project.path}`
         : "";
-    els.description.textContent = [description, projectPath].filter(Boolean).join(" | ");
+    els.description.textContent = [description, projectPath, storageDescription()].filter(Boolean).join(" | ");
+}
+
+function storageDescription() {
+    const storage = state.workspace && state.workspace.storage ? state.workspace.storage : {};
+    if (storage.mode === "sqlite-file") {
+        return `Storage: SQLite File${storage.sqliteFile ? ` (${storage.sqliteFile})` : ""}`;
+    }
+    if (storage.mode === "sqlite-memory") {
+        return "Storage: SQLite In Memory";
+    }
+    return "Storage: In Memory";
 }
 
 function renderTree() {
@@ -235,6 +261,7 @@ function renderTree() {
             entity.plural,
             state.entityCounts[entity.name] ?? "",
             isExpanded(entityKey));
+        setTestId(button, testIdFor("outline-entity", entity.name));
         button.addEventListener("click", event => {
             if (clickedCaret(event)) {
                 toggleExpanded(entityKey);
@@ -248,6 +275,7 @@ function renderTree() {
         if (isExpanded(entityKey)) {
             const group = document.createElement("div");
             group.className = "tree-children entity-children";
+            setTestId(group, testIdFor("outline-entity-children", entity.name));
             node.instances.forEach(instance => renderInstanceNode(group, entity, instance));
             if (node.instances.length === 0) {
                 group.appendChild(emptyTreeNode("No instances"));
@@ -265,6 +293,7 @@ function renderInstanceNode(container, entity, instanceNode) {
         instanceLabel(entity, row),
         "",
         isExpanded(instanceKey));
+    setTestId(button, testIdFor("outline-instance", entity.name, primaryValue(entity, row)));
     button.addEventListener("click", event => {
         if (clickedCaret(event)) {
             toggleExpanded(instanceKey);
@@ -281,6 +310,7 @@ function renderInstanceNode(container, entity, instanceNode) {
 
     const relationshipGroup = document.createElement("div");
     relationshipGroup.className = "tree-children relationship-group";
+    setTestId(relationshipGroup, testIdFor("outline-relationships", entity.name, primaryValue(entity, row)));
     instanceNode.relationships.forEach(relationshipNode => {
         renderRelationshipNode(relationshipGroup, entity, row, relationshipNode);
     });
@@ -298,6 +328,7 @@ function renderRelationshipNode(container, entity, sourceRow, relationshipNode) 
         relationship.name,
         relationshipNode.rows.length,
         isExpanded(relationshipKey));
+    setTestId(button, testIdFor("outline-relationship", entity.name, primaryValue(entity, sourceRow), relationship.name));
     button.addEventListener("click", event => {
         if (clickedCaret(event)) {
             toggleExpanded(relationshipKey);
@@ -314,12 +345,14 @@ function renderRelationshipNode(container, entity, sourceRow, relationshipNode) 
 
     const relatedGroup = document.createElement("div");
     relatedGroup.className = "tree-children related-instance-group";
+    setTestId(relatedGroup, testIdFor("outline-related-instances", entity.name, primaryValue(entity, sourceRow), relationship.name));
     relationshipNode.rows.forEach(row => {
         const relatedButton = treeButton(
             `relationship-item relationship-instance ${isSelectedRow(relationshipNode.target, row) ? "active" : ""}`,
             instanceLabel(relationshipNode.target, row),
             "",
             null);
+        setTestId(relatedButton, testIdFor("outline-related-instance", relationshipNode.target.name, primaryValue(relationshipNode.target, row)));
         relatedButton.addEventListener(
             "click",
             () => selectRelatedInstance(relationshipNode.target, relationshipNode.rows, row));
@@ -482,6 +515,7 @@ function renderGrid(rows, gridEntity = state.currentEntity) {
     const fields = gridEntity.fields;
     const table = document.createElement("table");
     table.className = "data-grid";
+    setTestId(table, testIdFor("data-grid", gridEntity.name));
     table.appendChild(gridHead(fields, gridEntity, isRelationshipGrid(gridEntity)));
     table.appendChild(gridBody(filteredRows(rows, gridEntity), fields, gridEntity));
     els.gridHost.innerHTML = "";
@@ -508,6 +542,7 @@ function gridHead(fields, entity, hasRelationshipActions = false) {
         input.className = "filter-input";
         input.placeholder = "Filter";
         input.value = state.filters[field.name] || "";
+        setTestId(input, testIdFor("grid-filter", entity.name, field.name));
         input.addEventListener("input", event => {
             state.filters[field.name] = event.target.value;
             renderGrid(state.currentRows, entity);
@@ -528,6 +563,7 @@ function gridBody(rows, fields, entity) {
     const tbody = document.createElement("tbody");
     rows.forEach(rowData => {
         const row = document.createElement("tr");
+        setTestId(row, testIdFor("grid-row", entity.name, primaryValue(entity, rowData)));
         if (isSelectedRow(entity, rowData)) {
             row.className = "selected";
         }
@@ -544,6 +580,7 @@ function gridBody(rows, fields, entity) {
             remove.className = "danger compact-button";
             remove.textContent = "Remove";
             remove.title = "Remove from relationship";
+            setTestId(remove, testIdFor("relationship-row-remove", entity.name, primaryValue(entity, rowData)));
             remove.addEventListener("click", event => {
                 event.stopPropagation();
                 removeRelationship(rowData);
@@ -569,6 +606,7 @@ function relationshipManagementPanel(targetEntity, relatedRows) {
     const context = state.relationshipContext;
     const panel = document.createElement("section");
     panel.className = "relationship-manager";
+    setTestId(panel, "relationship-manager");
 
     const heading = document.createElement("div");
     heading.className = "relationship-manager-heading";
@@ -592,6 +630,7 @@ function relationshipManagementPanel(targetEntity, relatedRows) {
 function connectExistingPanel(targetEntity, relatedRows) {
     const card = document.createElement("form");
     card.className = "relationship-manager-card";
+    setTestId(card, "relationship-connect-existing");
     const title = document.createElement("h4");
     title.textContent = "Connect existing";
     card.appendChild(title);
@@ -600,6 +639,7 @@ function connectExistingPanel(targetEntity, relatedRows) {
     const select = document.createElement("select");
     select.name = "target";
     select.disabled = availableRows.length === 0;
+    setTestId(select, "relationship-connect-select");
     availableRows.forEach(row => {
         const option = document.createElement("option");
         option.value = primaryValue(targetEntity, row);
@@ -620,6 +660,7 @@ function connectExistingPanel(targetEntity, relatedRows) {
     button.className = "primary";
     button.textContent = "Connect existing";
     button.disabled = availableRows.length === 0;
+    setTestId(button, "relationship-connect-submit");
     card.appendChild(button);
     card.addEventListener("submit", event => {
         event.preventDefault();
@@ -631,6 +672,7 @@ function connectExistingPanel(targetEntity, relatedRows) {
 function createAndConnectPanel(targetEntity) {
     const card = document.createElement("form");
     card.className = "relationship-manager-card relationship-create-form";
+    setTestId(card, "relationship-create-and-connect");
     const title = document.createElement("h4");
     title.textContent = "Create and connect";
     card.appendChild(title);
@@ -650,6 +692,7 @@ function createAndConnectPanel(targetEntity) {
     button.type = "submit";
     button.className = "primary";
     button.textContent = "Create and connect";
+    setTestId(button, "relationship-create-submit");
     card.appendChild(button);
     card.addEventListener("submit", event => {
         event.preventDefault();
@@ -697,6 +740,7 @@ function renderEditor(row = state.selectedRow) {
 
     const form = document.createElement("form");
     form.className = "editor-form";
+    setTestId(form, "editor-form");
     entity.fields.forEach(field => form.appendChild(fieldControl(field, row, isCreate)));
     els.editor.appendChild(form);
 
@@ -706,6 +750,7 @@ function renderEditor(row = state.selectedRow) {
     save.type = "button";
     save.className = "primary";
     save.textContent = "Save";
+    setTestId(save, "editor-save-button");
     save.addEventListener("click", () => saveEntity(entity, form, isCreate));
     actions.appendChild(save);
     if (!isCreate) {
@@ -714,6 +759,7 @@ function renderEditor(row = state.selectedRow) {
             disconnect.type = "button";
             disconnect.className = "danger";
             disconnect.textContent = "Remove from relationship";
+            setTestId(disconnect, "editor-remove-relationship-button");
             disconnect.addEventListener("click", () => removeRelationship(row));
             actions.appendChild(disconnect);
         }
@@ -721,6 +767,7 @@ function renderEditor(row = state.selectedRow) {
         remove.type = "button";
         remove.className = "danger";
         remove.textContent = "Delete";
+        setTestId(remove, "editor-delete-button");
         remove.addEventListener("click", () => deleteEntity(entity, row));
         actions.appendChild(remove);
     }
@@ -730,6 +777,7 @@ function renderEditor(row = state.selectedRow) {
 function fieldControl(field, row, isCreate, idPrefix = "editor") {
     const wrap = document.createElement("div");
     wrap.className = "field-control";
+    setTestId(wrap, testIdFor("field-control", idPrefix, field.name));
     const readOnly = field.auto || (!isCreate && field.primary);
     const autoAssigned = isCreate && field.auto;
     if (readOnly) {
@@ -743,6 +791,7 @@ function fieldControl(field, row, isCreate, idPrefix = "editor") {
     const input = inputFor(field, value, autoAssigned);
     input.name = field.name;
     input.id = `${idPrefix}-${field.name}`;
+    setTestId(input, testIdFor("field-input", idPrefix, field.name));
     label.htmlFor = input.id;
     wrap.appendChild(label);
     if (readOnly) {
@@ -804,10 +853,25 @@ function inputFor(field, value, forceText = false) {
         textarea.value = value ? JSON.stringify(value, null, 2) : "";
         return textarea;
     }
+    if (field.type === "string" && !stringFieldHasMaxLength(field)) {
+        const textarea = document.createElement("textarea");
+        textarea.className = "long-text-input";
+        textarea.rows = 4;
+        textarea.value = value ?? "";
+        return textarea;
+    }
     const input = document.createElement("input");
     input.type = field.type === "date" ? "date" : "text";
     input.value = value ?? "";
     return input;
+}
+
+function stringFieldHasMaxLength(field) {
+    if (field.truncateTo !== null && field.truncateTo !== undefined && field.truncateTo !== "") {
+        return true;
+    }
+    return Array.isArray(field.validations)
+        && field.validations.some(validation => validation && validation.type === "maximumLength");
 }
 
 async function saveEntity(entity, form, isCreate) {
@@ -920,7 +984,7 @@ function bodyFromForm(entity, form) {
 
 function valueFromInput(field, input) {
     if (field.type === "boolean") {
-        return input.checked ? "true" : "false";
+        return input.checked;
     }
     if (field.type === "object") {
         try {
@@ -1071,6 +1135,74 @@ function clearMessage() {
     els.message.hidden = true;
 }
 
+function escapeHtml(value) {
+    return String(value).replace(/[&<>"']/g, character => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        "\"": "&quot;",
+        "'": "&#39;"
+    }[character]));
+}
+
+function testIdPart(value) {
+    return String(value ?? "")
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "") || "blank";
+}
+
+function testIdFor(prefix, ...parts) {
+    return [prefix, ...parts.map(testIdPart)].join("-");
+}
+
+function setTestId(element, id) {
+    element.setAttribute("data-testid", id);
+    return element;
+}
+
+function projectRecentPaths() {
+    try {
+        const paths = JSON.parse(localStorage.getItem(PROJECT_RECENT_PATHS_KEY) || "[]");
+        return Array.isArray(paths) ? paths.filter(path => typeof path === "string") : [];
+    } catch (error) {
+        return [];
+    }
+}
+
+function rememberProjectPath(path) {
+    if (!path) {
+        return;
+    }
+    const paths = projectRecentPaths().filter(existing => existing !== path);
+    paths.unshift(path);
+    localStorage.setItem(PROJECT_RECENT_PATHS_KEY, JSON.stringify(paths.slice(0, 8)));
+    renderProjectRecentPaths();
+}
+
+function renderProjectRecentPaths() {
+    if (!els.projectRecentPaths) {
+        return;
+    }
+    els.projectRecentPaths.innerHTML = projectRecentPaths()
+        .map(path => `<option value="${escapeHtml(path)}"></option>`)
+        .join("");
+}
+
+function setProjectDialogStatus(text, error = false) {
+    if (!els.projectBrowserStatus) {
+        return;
+    }
+    els.projectBrowserStatus.textContent = text || "";
+    els.projectBrowserStatus.className = error
+        ? "project-browser-status error"
+        : "project-browser-status";
+}
+
+function browserDirectoryPickerAvailable() {
+    return typeof window.showDirectoryPicker === "function";
+}
+
 function openProjectDialog(action) {
     if (!els.projectDialog) {
         return;
@@ -1085,12 +1217,50 @@ function openProjectDialog(action) {
         ? "Save the active schema and data to a server-side project folder."
         : "Load schema and data from a server-side project folder or projectfile.erproj.";
     els.projectDialogWarning.textContent = isSave
-        ? "Saving overwrites projectfile.erproj, schema.yaml, and data.json in the selected folder. Other files are left alone."
+        ? "Saving overwrites managed project files in the selected folder. Other files are left alone."
         : "Loading a project replaces the current workspace schema and data.";
     els.projectDialogConfirm.textContent = isSave ? "Save Project" : "Load Project";
+    syncProjectSaveStorageOptions(isSave);
+    if (els.projectBrowserSaveButton) {
+        els.projectBrowserSaveButton.hidden = !isSave;
+        els.projectBrowserSaveButton.disabled = !browserDirectoryPickerAvailable();
+    }
+    if (els.projectBrowserLoadButton) {
+        els.projectBrowserLoadButton.hidden = isSave;
+        els.projectBrowserLoadButton.disabled = !browserDirectoryPickerAvailable();
+    }
+    setProjectDialogStatus(
+        browserDirectoryPickerAvailable()
+            ? ""
+            : "Browser folder picker is not available in this browser; use Browse or type a path.");
+    renderProjectRecentPaths();
     els.projectPathInput.value = currentPath;
     els.projectDialog.hidden = false;
     els.projectPathInput.focus();
+}
+
+function syncProjectSaveStorageOptions(isSave) {
+    if (!els.projectSaveStorageOptions) {
+        return;
+    }
+    els.projectSaveStorageOptions.hidden = !isSave;
+    if (!isSave) {
+        return;
+    }
+    const storage = state.workspace && state.workspace.storage ? state.workspace.storage : {};
+    const saveAsSqlite = storage.mode === "sqlite-file";
+    if (els.projectSaveStorageJson) {
+        els.projectSaveStorageJson.checked = !saveAsSqlite;
+    }
+    if (els.projectSaveStorageSqlite) {
+        els.projectSaveStorageSqlite.checked = saveAsSqlite;
+    }
+}
+
+function selectedProjectStorageMode() {
+    return els.projectSaveStorageSqlite && els.projectSaveStorageSqlite.checked
+        ? "sqlite"
+        : "json";
 }
 
 function closeProjectDialog() {
@@ -1099,6 +1269,52 @@ function closeProjectDialog() {
     }
     state.projectDialogAction = null;
     els.projectDialog.hidden = true;
+}
+
+async function browseProjectPath() {
+    if (!state.projectDialogAction || !els.projectPathInput) {
+        return;
+    }
+    if (els.projectBrowseButton) {
+        els.projectBrowseButton.disabled = true;
+    }
+    setProjectDialogStatus("Waiting for native project browser...");
+    try {
+        const selection = await requestJson("/ui/project/browse", {
+            method: "POST",
+            body: JSON.stringify({
+                action: state.projectDialogAction,
+                path: els.projectPathInput.value.trim()
+            })
+        });
+        setProjectDialogStatus(selection.message || "");
+        if (selection.selected && selection.path) {
+            els.projectPathInput.value = selection.path;
+            rememberProjectPath(selection.path);
+            await validateProjectPath();
+        }
+    } finally {
+        if (els.projectBrowseButton) {
+            els.projectBrowseButton.disabled = false;
+        }
+    }
+}
+
+async function validateProjectPath() {
+    if (!state.projectDialogAction || !els.projectPathInput) {
+        return;
+    }
+    const path = els.projectPathInput.value.trim();
+    if (!path) {
+        setProjectDialogStatus("Enter a project folder path.", true);
+        return;
+    }
+    const result = await requestJson("/ui/project/check", {
+        method: "POST",
+        body: JSON.stringify({action: state.projectDialogAction, path})
+    });
+    const text = result.warning || result.message || "Project path checked.";
+    setProjectDialogStatus(text, !result.canProceed);
 }
 
 async function submitProjectDialog() {
@@ -1112,16 +1328,58 @@ async function submitProjectDialog() {
     }
     const action = state.projectDialogAction;
     const endpoint = action === "save" ? "/ui/project/save" : "/ui/project/load";
+    const requestBody = action === "save"
+        ? {path, projectStorageMode: selectedProjectStorageMode()}
+        : {path};
     const workspace = await requestJson(endpoint, {
         method: "POST",
-        body: JSON.stringify({path})
+        body: JSON.stringify(requestBody)
     });
     state.workspace = workspace;
     state.schemaDraft = null;
     state.schemaPreview = null;
+    rememberProjectPath(path);
     closeProjectDialog();
     await loadWorkspace();
     showMessage(action === "save" ? "Project saved." : "Project loaded.");
+}
+
+function syncStorageControlsFromWorkspace() {
+    if (!els.storageModeSelect) {
+        return;
+    }
+    const storage = state.workspace && state.workspace.storage ? state.workspace.storage : {};
+    els.storageModeSelect.value = storage.mode || "memory";
+    if (els.storageFileInput) {
+        els.storageFileInput.value = storage.sqliteFile || "";
+    }
+    updateStorageFileInputAvailability();
+}
+
+function updateStorageFileInputAvailability() {
+    if (!els.storageModeSelect || !els.storageFileInput) {
+        return;
+    }
+    els.storageFileInput.disabled = els.storageModeSelect.value !== "sqlite-file";
+}
+
+async function switchStorage() {
+    if (!els.storageModeSelect) {
+        return;
+    }
+    const mode = els.storageModeSelect.value;
+    const sqliteFile = els.storageFileInput ? els.storageFileInput.value.trim() : "";
+    if (mode === "sqlite-file" && !sqliteFile) {
+        showMessage("Enter a SQLite file path.", true);
+        return;
+    }
+    const workspace = await requestJson("/ui/storage/switch", {
+        method: "POST",
+        body: JSON.stringify({mode, sqliteFile})
+    });
+    state.workspace = workspace;
+    await loadWorkspace();
+    showMessage("Storage switched.");
 }
 
 function markSchemaDirty() {
@@ -1309,6 +1567,7 @@ function renderSchemaFieldTree(container, entityIndex, fields, parentPath) {
 function schemaTreeSection(title, addAction) {
     const section = document.createElement("section");
     section.className = "schema-tree-section";
+    setTestId(section, testIdFor("schema-section", title));
     const heading = document.createElement("div");
     heading.className = "schema-tree-heading";
     const text = document.createElement("span");
@@ -1325,6 +1584,7 @@ function schemaTreeNode(label, selection, meta) {
     const button = document.createElement("button");
     button.type = "button";
     button.className = `schema-tree-node ${schemaSelectionMatches(selection) ? "active" : ""}`;
+    setTestId(button, testIdFor("schema-tree", schemaSelectionKey(selection), label));
     const labelSpan = document.createElement("span");
     labelSpan.className = "tree-node-label";
     labelSpan.textContent = label;
@@ -1646,6 +1906,7 @@ function wrapSchemaDetail(primary, single, secondary) {
 function schemaCard(title) {
     const card = document.createElement("section");
     card.className = "schema-card";
+    setTestId(card, testIdFor("schema-card", title));
     const heading = document.createElement("h3");
     heading.textContent = title;
     card.appendChild(heading);
@@ -1869,6 +2130,7 @@ function renderSchemaUpgradePanel() {
 function upgradeMappingPanel() {
     const panel = document.createElement("div");
     panel.className = "schema-upgrade-card";
+    setTestId(panel, "schema-upgrade-mappings");
     panel.appendChild(sectionHeading("Migration Mappings"));
     panel.appendChild(upgradeEntityMappings());
     panel.appendChild(upgradeFieldMappings());
@@ -1879,6 +2141,7 @@ function upgradeMappingPanel() {
 function upgradeReportPanel() {
     const panel = document.createElement("div");
     panel.className = "schema-upgrade-card";
+    setTestId(panel, "schema-upgrade-report");
     panel.appendChild(sectionHeading("Upgrade Preview"));
     const preview = state.schemaUpgradePreview;
     if (!preview) {
@@ -1989,10 +2252,12 @@ function upgradeRelationshipMappings() {
 function upgradeSelectRow(labelText, value, options, emptyLabel, onChange) {
     const row = document.createElement("label");
     row.className = "schema-upgrade-row";
+    setTestId(row, testIdFor("schema-upgrade-row", labelText));
     const label = document.createElement("span");
     label.textContent = labelText;
     row.appendChild(label);
     const select = document.createElement("select");
+    setTestId(select, testIdFor("schema-upgrade-select", labelText));
     options.forEach(optionValue => {
         const option = document.createElement("option");
         option.value = optionValue;
@@ -2261,6 +2526,8 @@ function schemaTextControl(labelText, value, onInput, type = "text", helpText = 
         input.type = type;
     }
     input.value = value === undefined || value === null ? "" : value;
+    setTestId(label, testIdFor("schema-control", labelText || "blank"));
+    setTestId(input, testIdFor("schema-input", labelText || "blank"));
     input.addEventListener("input", () => onInput(input.value));
     label.appendChild(input);
     return label;
@@ -2269,6 +2536,8 @@ function schemaTextControl(labelText, value, onInput, type = "text", helpText = 
 function schemaSelectControl(labelText, value, options, onChange, helpText = "") {
     const label = schemaControlLabel(labelText, helpText);
     const select = document.createElement("select");
+    setTestId(label, testIdFor("schema-control", labelText || "blank"));
+    setTestId(select, testIdFor("schema-input", labelText || "blank"));
     const selectedValue = value === undefined || value === null ? "" : String(value);
     if (!options.includes(selectedValue)) {
         options = [selectedValue, ...options].filter((item, index, list) => item || index === list.indexOf(item));
@@ -2290,6 +2559,8 @@ function schemaCheckboxControl(labelText, value, onChange, helpText = "") {
     const input = document.createElement("input");
     input.type = "checkbox";
     input.checked = Boolean(value);
+    setTestId(label, testIdFor("schema-control", labelText || "blank"));
+    setTestId(input, testIdFor("schema-input", labelText || "blank"));
     input.addEventListener("change", () => onChange(input.checked));
     label.appendChild(input);
     return label;
@@ -2320,6 +2591,7 @@ function schemaActionButton(text, onClick, className = "compact-button", helpTex
     button.type = "button";
     button.className = className;
     button.textContent = text;
+    setTestId(button, testIdFor("schema-action", text));
     if (helpText) {
         button.setAttribute("data-tippy-content", helpText);
     }
@@ -2426,6 +2698,101 @@ function downloadText(filename, text, type) {
     link.download = filename;
     link.click();
     URL.revokeObjectURL(url);
+}
+
+async function browserSaveProject() {
+    if (!browserDirectoryPickerAvailable()) {
+        setProjectDialogStatus("Browser folder picker is not available in this browser.", true);
+        return;
+    }
+    const directory = await window.showDirectoryPicker({mode: "readwrite"});
+    if (els.projectPathInput) {
+        els.projectPathInput.value = directory.name || "";
+    }
+    const project = await requestJson("/ui/project/export-files", {
+        method: "POST",
+        body: JSON.stringify({projectStorageMode: selectedProjectStorageMode()})
+    });
+    for (const file of project.files || []) {
+        const handle = await directory.getFileHandle(file.name, {create: true});
+        const writable = await handle.createWritable();
+        if (file.type === "base64") {
+            await writable.write(base64ToBytes(file.content || ""));
+        } else {
+            await writable.write(file.content || "");
+        }
+        await writable.close();
+    }
+    setProjectDialogStatus(`Browser project saved: ${directory.name}`);
+    showMessage(`Browser project saved: ${directory.name}`);
+}
+
+async function browserLoadProject() {
+    if (!browserDirectoryPickerAvailable()) {
+        setProjectDialogStatus("Browser folder picker is not available in this browser.", true);
+        return;
+    }
+    const directory = await window.showDirectoryPicker();
+    const files = [];
+    await addTextProjectFile(files, directory, "projectfile.erproj", true);
+    await addTextProjectFile(files, directory, "schema.yaml", true);
+    await addTextProjectFile(files, directory, "data.json", false);
+    await addBinaryProjectFile(files, directory, "data.sqlite", false);
+    const workspace = await requestJson("/ui/project/load-files", {
+        method: "POST",
+        body: JSON.stringify({folderName: directory.name, files})
+    });
+    state.workspace = workspace;
+    state.schemaDraft = null;
+    state.schemaPreview = null;
+    closeProjectDialog();
+    await loadWorkspace();
+    showMessage(`Browser project loaded: ${directory.name}`);
+}
+
+async function addTextProjectFile(files, directory, name, required) {
+    const file = await projectFileFromDirectory(directory, name, required);
+    if (!file) {
+        return;
+    }
+    files.push({name, type: "text", content: await file.text()});
+}
+
+async function addBinaryProjectFile(files, directory, name, required) {
+    const file = await projectFileFromDirectory(directory, name, required);
+    if (!file) {
+        return;
+    }
+    files.push({name, type: "base64", content: bytesToBase64(new Uint8Array(await file.arrayBuffer()))});
+}
+
+async function projectFileFromDirectory(directory, name, required) {
+    try {
+        const handle = await directory.getFileHandle(name);
+        return await handle.getFile();
+    } catch (error) {
+        if (required) {
+            throw new Error(`Browser project folder must contain ${name}.`);
+        }
+        return null;
+    }
+}
+
+function bytesToBase64(bytes) {
+    let binary = "";
+    for (const byte of bytes) {
+        binary += String.fromCharCode(byte);
+    }
+    return btoa(binary);
+}
+
+function base64ToBytes(base64) {
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let index = 0; index < binary.length; index++) {
+        bytes[index] = binary.charCodeAt(index);
+    }
+    return bytes;
 }
 
 async function copySchemaOutput(kind) {
@@ -2675,9 +3042,37 @@ if (els.saveProjectButton) {
 if (els.loadProjectButton) {
     els.loadProjectButton.addEventListener("click", () => openProjectDialog("load"));
 }
+if (els.storageModeSelect) {
+    els.storageModeSelect.addEventListener("change", updateStorageFileInputAvailability);
+}
+if (els.switchStorageButton) {
+    els.switchStorageButton.addEventListener("click", () => {
+        switchStorage().catch(error => showMessage(error.message, true));
+    });
+}
 if (els.projectDialogConfirm) {
     els.projectDialogConfirm.addEventListener("click", () => {
         submitProjectDialog().catch(error => showMessage(error.message, true));
+    });
+}
+if (els.projectBrowseButton) {
+    els.projectBrowseButton.addEventListener("click", () => {
+        browseProjectPath().catch(error => setProjectDialogStatus(error.message, true));
+    });
+}
+if (els.projectValidateButton) {
+    els.projectValidateButton.addEventListener("click", () => {
+        validateProjectPath().catch(error => setProjectDialogStatus(error.message, true));
+    });
+}
+if (els.projectBrowserSaveButton) {
+    els.projectBrowserSaveButton.addEventListener("click", () => {
+        browserSaveProject().catch(error => setProjectDialogStatus(error.message, true));
+    });
+}
+if (els.projectBrowserLoadButton) {
+    els.projectBrowserLoadButton.addEventListener("click", () => {
+        browserLoadProject().catch(error => setProjectDialogStatus(error.message, true));
     });
 }
 if (els.projectDialogCancel) {

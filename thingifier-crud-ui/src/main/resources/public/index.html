@@ -8,54 +8,90 @@
     <link rel="stylesheet" href="/assets/styles.css">
 </head>
 <body>
-<div class="app-shell">
+<div class="app-shell" data-testid="workspace-page">
     <header class="topbar">
         <div>
-            <h1 id="model-title">Thingifier</h1>
-            <p id="model-description"></p>
+            <h1 id="model-title" data-testid="model-title">Thingifier</h1>
+            <p id="model-description" data-testid="model-description"></p>
         </div>
         <div class="toolbar">
             <nav class="view-nav" aria-label="Application views">
-                <a class="button-link active" href="/">Workspace</a>
-                <a class="button-link" href="/schema">Schema Edit</a>
+                <a class="button-link active" href="/" data-testid="workspace-link">Workspace</a>
+                <a class="button-link" href="/schema" data-testid="schema-link">Schema Edit</a>
             </nav>
-            <button id="refresh-button" type="button">Refresh</button>
-            <label class="file-action">
+            <button id="refresh-button" type="button" data-testid="refresh-button">Refresh</button>
+            <label class="file-action" data-testid="yaml-file-label">
                 Load YAML
-                <input id="yaml-file" type="file" accept=".yaml,.yml,text/yaml">
+                <input id="yaml-file" type="file" accept=".yaml,.yml,text/yaml" data-testid="yaml-file">
             </label>
-            <label class="file-action">
+            <label class="file-action" data-testid="import-file-label">
                 Import
-                <input id="import-file" type="file" accept="application/json,.json">
+                <input id="import-file" type="file" accept="application/json,.json" data-testid="import-file">
             </label>
-            <button id="export-button" type="button">Export</button>
-            <button id="save-project-button" type="button">Save Project</button>
-            <button id="load-project-button" type="button">Load Project</button>
-            <a class="button-link" href="/docs">API Docs</a>
-            <a class="button-link" href="/swagger">Swagger UI</a>
-            <a class="button-link" href="/docs/swagger">Download OpenAPI</a>
+            <button id="export-button" type="button" data-testid="export-button">Export</button>
+            <button id="save-project-button" type="button" data-testid="save-project-button">Save Project</button>
+            <button id="load-project-button" type="button" data-testid="load-project-button">Load Project</button>
+            <div class="storage-controls" aria-label="Workspace storage" data-testid="storage-controls">
+                <select id="storage-mode-select" aria-label="Storage mode" data-testid="storage-mode-select">
+                    <option value="memory">In Memory</option>
+                    <option value="sqlite-memory">SQLite In Memory</option>
+                    <option value="sqlite-file">SQLite File</option>
+                </select>
+                <input id="storage-file-input" type="text" placeholder="SQLite file path"
+                       autocomplete="off" data-testid="storage-file-input">
+                <button id="switch-storage-button" type="button" data-testid="switch-storage-button">Switch Storage</button>
+            </div>
+            <a class="button-link" href="/docs" data-testid="docs-link">API Docs</a>
+            <a class="button-link" href="/swagger" data-testid="swagger-link">Swagger UI</a>
+            <a class="button-link" href="/docs/swagger" data-testid="download-openapi-link">Download OpenAPI</a>
         </div>
     </header>
 
-    <div id="project-dialog" class="schema-dialog-backdrop" hidden>
+    <div id="project-dialog" class="schema-dialog-backdrop" hidden data-testid="project-dialog">
         <section class="schema-dialog project-dialog" role="dialog" aria-modal="true"
                  aria-labelledby="project-dialog-title">
             <div class="schema-dialog-header">
                 <div>
-                    <h2 id="project-dialog-title">Project</h2>
-                    <p id="project-dialog-description"></p>
+                    <h2 id="project-dialog-title" data-testid="project-dialog-title">Project</h2>
+                    <p id="project-dialog-description" data-testid="project-dialog-description"></p>
                 </div>
-                <button id="project-dialog-cancel" type="button" aria-label="Cancel project action">Cancel</button>
+                <button id="project-dialog-cancel" type="button" aria-label="Cancel project action"
+                        data-testid="project-dialog-cancel">Cancel</button>
             </div>
             <div class="project-dialog-body">
                 <label class="field-row">
                     <span>Folder path</span>
-                    <input id="project-path-input" type="text" autocomplete="off">
+                    <span class="project-path-controls">
+                        <input id="project-path-input" type="text" autocomplete="off"
+                               list="project-recent-paths" data-testid="project-path-input">
+                        <datalist id="project-recent-paths" data-testid="project-recent-paths"></datalist>
+                        <button id="project-browse-button" type="button" data-testid="project-browse-button">Browse</button>
+                        <button id="project-validate-button" type="button" data-testid="project-validate-button">Validate Path</button>
+                    </span>
                 </label>
-                <p id="project-dialog-warning" class="project-dialog-warning"></p>
+                <fieldset id="project-save-storage-options" class="project-save-storage-options"
+                          data-testid="project-save-storage-options">
+                    <legend>Save project data as</legend>
+                    <label>
+                        <input id="project-save-storage-json" name="project-save-storage"
+                               type="radio" value="json" data-testid="project-save-storage-json">
+                        <span>JSON data file</span>
+                    </label>
+                    <label>
+                        <input id="project-save-storage-sqlite" name="project-save-storage"
+                               type="radio" value="sqlite" data-testid="project-save-storage-sqlite">
+                        <span>SQLite database file</span>
+                    </label>
+                </fieldset>
+                <div class="project-browser-actions">
+                    <button id="project-browser-save-button" type="button" data-testid="project-browser-save-button">Browser Save...</button>
+                    <button id="project-browser-load-button" type="button" data-testid="project-browser-load-button">Browser Load...</button>
+                </div>
+                <p id="project-browser-status" class="project-browser-status" data-testid="project-browser-status"></p>
+                <p id="project-dialog-warning" class="project-dialog-warning" data-testid="project-dialog-warning"></p>
             </div>
             <div class="schema-dialog-footer">
-                <button id="project-dialog-confirm" class="primary" type="button">Confirm</button>
+                <button id="project-dialog-confirm" class="primary" type="button" data-testid="project-dialog-confirm">Confirm</button>
             </div>
         </section>
     </div>
@@ -65,23 +101,23 @@
             <div class="panel-heading">
                 <span>Outline</span>
             </div>
-            <nav id="outline-tree" class="outline-tree"></nav>
+            <nav id="outline-tree" class="outline-tree" data-testid="outline-tree"></nav>
         </aside>
 
         <section class="data-panel">
             <div class="grid-toolbar">
                 <div>
-                    <h2 id="grid-title">Select an entity</h2>
-                    <p id="grid-context"></p>
+                    <h2 id="grid-title" data-testid="grid-title">Select an entity</h2>
+                    <p id="grid-context" data-testid="grid-context"></p>
                 </div>
                 <div class="grid-actions">
-                    <input id="search-input" type="search" placeholder="Search">
-                    <button id="new-button" type="button">New</button>
+                    <input id="search-input" type="search" placeholder="Search" data-testid="search-input">
+                    <button id="new-button" type="button" data-testid="new-button">New</button>
                 </div>
             </div>
-            <div id="message-bar" class="message-bar" hidden></div>
-            <div id="grid-host" class="grid-host"></div>
-            <section id="editor-panel" class="editor-panel"></section>
+            <div id="message-bar" class="message-bar" hidden data-testid="message-bar"></div>
+            <div id="grid-host" class="grid-host" data-testid="grid-host"></div>
+            <section id="editor-panel" class="editor-panel" data-testid="editor-panel"></section>
         </section>
     </main>
 </div>

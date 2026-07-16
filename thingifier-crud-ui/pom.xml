@@ -16,6 +16,12 @@
     <name>thingifier crud ui</name>
     <url>https://compendiumdev.co.uk</url>
 
+    <properties>
+        <playwright.version>1.61.0</playwright.version>
+        <crud.ui.headless>true</crud.ui.headless>
+        <skipITs>false</skipITs>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>uk.co.compendiumdev</groupId>
@@ -54,6 +60,12 @@
             <version>${junit.jupiter.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.microsoft.playwright</groupId>
+            <artifactId>playwright</artifactId>
+            <version>${playwright.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -71,6 +83,62 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.0.0-M4</version>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.5.0</version>
+                <executions>
+                    <execution>
+                        <id>install-playwright-chromium</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${skipITs}</skip>
+                            <executable>${java.home}/bin/java</executable>
+                            <classpathScope>test</classpathScope>
+                            <arguments>
+                                <argument>-cp</argument>
+                                <classpath/>
+                                <argument>com.microsoft.playwright.CLI</argument>
+                                <argument>install</argument>
+                                <argument>chromium</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>3.0.0-M4</version>
+                <configuration>
+                    <skipITs>${skipITs}</skipITs>
+                    <systemPropertyVariables>
+                        <crud.ui.headless>${crud.ui.headless}</crud.ui.headless>
+                    </systemPropertyVariables>
+                    <includes>
+                        <include>**/*IT.java</include>
+                    </includes>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>integration-tests</id>
+                        <phase>integration-test</phase>
+                        <goals>
+                            <goal>integration-test</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>verify-integration-tests</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
