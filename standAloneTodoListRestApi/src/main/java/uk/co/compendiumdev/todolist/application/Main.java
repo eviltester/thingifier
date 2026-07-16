@@ -1,8 +1,8 @@
 package uk.co.compendiumdev.todolist.application;
 
-import static spark.Spark.get;
+import static uk.co.compendiumdev.thingifier.adapter.httpserver.ServerRoutes.get;
 
-import uk.co.compendiumdev.thingifier.adapter.spark.MainImplementation;
+import uk.co.compendiumdev.thingifier.adapter.httpserver.MainImplementation;
 import uk.co.compendiumdev.thingifier.application.examples.TodoListThingifier;
 
 public class Main {

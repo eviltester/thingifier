@@ -134,8 +134,8 @@ In theory it could be split into separate modules, but these are currently repre
 
 - The API definition to model an api on top of an ER Model
 - Generation of a Swagger/Open API file from the API Defn/ER Model  
-- Internal HTTP representations to allow handling of HTTP messages independently of the chosen HTTP Server technology (Spark)
-- The Spark routing generation
+- Internal HTTP representations to allow handling of HTTP messages independently of the chosen HTTP Server technology
+- The HTTP route registration and server adapter
 - The main start point for an application that wires it all together and starts the http server 
 
 The intent is that it does as much as possible from the API Defn and ER Model. While supporting hooks to allow other applications to build on top of it e.g. API Challenges has hooks for tracking challenge completion but should not need to implement much of the API.

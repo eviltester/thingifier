@@ -1,14 +1,14 @@
 package uk.co.compendiumdev.challenge.practicemodes.mirror;
 
-import static spark.Spark.*;
+import static uk.co.compendiumdev.thingifier.adapter.httpserver.ServerRoutes.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import spark.Route;
 import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.adapter.spark.AdhocDocumentedSparkRouteConfigurer;
-import uk.co.compendiumdev.thingifier.adapter.spark.SimpleSparkRouteCreator;
-import uk.co.compendiumdev.thingifier.adapter.spark.ThingifierAutoDocGenRouting;
+import uk.co.compendiumdev.thingifier.adapter.httpserver.AdhocDocumentedHttpRouteConfigurer;
+import uk.co.compendiumdev.thingifier.adapter.httpserver.HttpRouteHandler;
+import uk.co.compendiumdev.thingifier.adapter.httpserver.SimpleHttpRouteCreator;
+import uk.co.compendiumdev.thingifier.adapter.httpserver.ThingifierAutoDocGenRouting;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
 import uk.co.compendiumdev.thingifier.api.docgen.ThingifierApiDocumentationDefn;
 import uk.co.compendiumdev.thingifier.htmlgui.htmlgen.DefaultGUIHTML;
@@ -38,11 +38,11 @@ public class MirrorRoutes {
         verbEndpoints.add(rawEndPoint);
         verbEndpoints.add(rawEndPoint + "/*");
 
-        AdhocDocumentedSparkRouteConfigurer routeCreatorAndDocumentor =
-                new AdhocDocumentedSparkRouteConfigurer(apiDefn);
+        AdhocDocumentedHttpRouteConfigurer routeCreatorAndDocumentor =
+                new AdhocDocumentedHttpRouteConfigurer(apiDefn);
 
         for (String anEndpoint : verbEndpoints) {
-            Route routeHandler =
+            HttpRouteHandler routeHandler =
                     (request, result) -> {
                         result.status(204);
                         result.header(
@@ -51,7 +51,7 @@ public class MirrorRoutes {
                     };
             if (anEndpoint.endsWith("/*")) {
                 // add to routing but not to the api documentation
-                SimpleSparkRouteCreator.addHandler(anEndpoint, "options", routeHandler);
+                SimpleHttpRouteCreator.addHandler(anEndpoint, "options", routeHandler);
             } else {
                 routeCreatorAndDocumentor.add(
                         anEndpoint,
@@ -62,12 +62,12 @@ public class MirrorRoutes {
             }
         }
 
-        Route mirroredRoute =
+        HttpRouteHandler mirroredRoute =
                 (request, result) -> {
                     return requestMirror.mirrorRequest(request, result);
                 };
 
-        Route rawTextMirroredRoute =
+        HttpRouteHandler rawTextMirroredRoute =
                 (request, result) -> {
                     return requestMirror.mirrorRequestAsText(request, result);
                 };
@@ -81,14 +81,14 @@ public class MirrorRoutes {
             for (RoutingVerb routing : verbs200status) {
                 if (anEndpoint.endsWith("/*")) {
                     // add to routing but not to the api documentation
-                    SimpleSparkRouteCreator.addHandler(anEndpoint, routing.name(), mirroredRoute);
+                    SimpleHttpRouteCreator.addHandler(anEndpoint, routing.name(), mirroredRoute);
                 } else {
                     if (anEndpoint.startsWith(endpoint)) {
                         routeCreatorAndDocumentor.add(
                                 anEndpoint,
                                 routing,
                                 200,
-                                "Mirror a " + routing.name().toUpperCase() + " Request",
+                                "Mirror a " + routing.name().toUpperCase() + " request",
                                 mirroredRoute);
                     }
                     if (anEndpoint.startsWith(rawEndPoint)) {
@@ -96,7 +96,7 @@ public class MirrorRoutes {
                                 anEndpoint,
                                 routing,
                                 200,
-                                "Raw Text Mirror of a " + routing.name().toUpperCase() + " Request",
+                                "Raw Text Mirror of a " + routing.name().toUpperCase() + " request",
                                 rawTextMirroredRoute);
                     }
                 }
@@ -107,14 +107,14 @@ public class MirrorRoutes {
            Handle HEAD verb - special handling to only return headers
         */
         for (String anEndpoint : verbEndpoints) {
-            Route routeHAndler =
+            HttpRouteHandler routeHAndler =
                     (request, result) -> {
                         requestMirror.mirrorRequest(request, result);
                         return "";
                     };
             if (anEndpoint.endsWith("/*")) {
                 // add to routing but not to the api documentation
-                SimpleSparkRouteCreator.addHandler(anEndpoint, "head", routeHAndler);
+                SimpleHttpRouteCreator.addHandler(anEndpoint, "head", routeHAndler);
             } else {
                 routeCreatorAndDocumentor.add(
                         anEndpoint,

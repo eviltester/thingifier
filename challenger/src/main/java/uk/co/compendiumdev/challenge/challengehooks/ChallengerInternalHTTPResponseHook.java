@@ -8,9 +8,9 @@ import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.ChallengerState;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
 import uk.co.compendiumdev.challenge.challengesrouting.XChallengerHeader;
+import uk.co.compendiumdev.thingifier.adapter.httpserver.messagehooks.InternalHttpResponseHook;
 import uk.co.compendiumdev.thingifier.adapter.internalhttp.InternalHttpRequest;
 import uk.co.compendiumdev.thingifier.adapter.internalhttp.InternalHttpResponse;
-import uk.co.compendiumdev.thingifier.adapter.spark.messagehooks.InternalHttpResponseHook;
 import uk.co.compendiumdev.thingifier.api.http.headers.headerparser.BearerAuthHeaderParser;
 
 public class ChallengerInternalHTTPResponseHook implements InternalHttpResponseHook {
@@ -178,7 +178,7 @@ public class ChallengerInternalHTTPResponseHook implements InternalHttpResponseH
             }
         }
 
-        // No endpoint defined so this 404 created by Spark routing
+        // No endpoint defined so this 404 created by HTTP server routing
         if (request.getVerb() == GET
                 && request.getPath().contentEquals("todo")
                 && response.getStatusCode() == 404) {

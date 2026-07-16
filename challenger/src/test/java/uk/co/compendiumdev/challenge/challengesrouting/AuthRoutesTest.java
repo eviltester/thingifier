@@ -14,7 +14,7 @@ import uk.co.compendiumdev.challenge.ChallengeMain;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenger.http.httpclient.HttpMessageSender;
 import uk.co.compendiumdev.challenger.http.httpclient.HttpResponseDetails;
-import uk.co.compendiumdev.sparkstart.Environment;
+import uk.co.compendiumdev.serverstart.Environment;
 
 public class AuthRoutesTest {
     private static HttpMessageSender http;
@@ -22,8 +22,8 @@ public class AuthRoutesTest {
 
     @BeforeAll
     static void createHttp() {
-        // this uses the Environment to startup the spark app to
-        // issue http tests and test the routing in spark
+        // this uses the Environment to startup the server app to
+        // issue http tests and test the server routing
         http = new HttpMessageSender(Environment.getBaseUri());
         challenger = ChallengeMain.getChallenger().getChallengers().createNewChallenger();
     }

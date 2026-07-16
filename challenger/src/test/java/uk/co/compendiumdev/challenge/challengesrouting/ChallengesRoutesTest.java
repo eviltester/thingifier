@@ -17,7 +17,7 @@ import uk.co.compendiumdev.challenge.ChallengerConfig;
 import uk.co.compendiumdev.challenge.challenges.ChallengeDefinitions;
 import uk.co.compendiumdev.challenger.http.httpclient.HttpMessageSender;
 import uk.co.compendiumdev.challenger.http.httpclient.HttpResponseDetails;
-import uk.co.compendiumdev.sparkstart.Environment;
+import uk.co.compendiumdev.serverstart.Environment;
 
 public class ChallengesRoutesTest {
 
@@ -26,8 +26,8 @@ public class ChallengesRoutesTest {
 
     @BeforeAll
     static void createHttp() {
-        // this uses the Environment to startup the spark app to
-        // issue http tests and test the routing in spark
+        // this uses the Environment to startup the server app to
+        // issue http tests and test the server routing
         http = new HttpMessageSender(Environment.getBaseUri());
         ChallengerConfig config = new ChallengerConfig();
         config.setToNoPersistenceMode();

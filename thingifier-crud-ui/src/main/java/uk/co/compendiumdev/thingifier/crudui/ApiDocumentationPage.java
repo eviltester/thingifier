@@ -135,15 +135,15 @@ public final class ApiDocumentationPage {
         html.append(
                 "    <thead><tr><th>Method</th><th>Path</th><th>Result</th><th>Description</th></tr></thead>\n");
         html.append("    <tbody>\n");
-        for (RoutingDefinition route : generatedRoutes()) {
+        for (RoutingDefinition HttpRouteHandler : generatedRoutes()) {
             html.append("      <tr><td><code>")
-                    .append(route.verb())
+                    .append(HttpRouteHandler.verb())
                     .append("</code></td><td><code>")
-                    .append(escape(endpointPath(route)))
+                    .append(escape(endpointPath(HttpRouteHandler)))
                     .append("</code></td><td>")
-                    .append(escape(statusesFor(route)))
+                    .append(escape(statusesFor(HttpRouteHandler)))
                     .append("</td><td>")
-                    .append(escape(route.getDocumentation()))
+                    .append(escape(HttpRouteHandler.getDocumentation()))
                     .append("</td></tr>\n");
         }
         html.append("    </tbody>\n");
@@ -157,20 +157,22 @@ public final class ApiDocumentationPage {
         List<RoutingDefinition> definitions = new ArrayList<>(routes.definitions());
         definitions.sort(
                 Comparator.comparing(this::endpointPath)
-                        .thenComparing(route -> route.verb().name()));
+                        .thenComparing(HttpRouteHandler -> HttpRouteHandler.verb().name()));
         return definitions;
     }
 
-    private String endpointPath(final RoutingDefinition route) {
-        return API_PREFIX + "/" + route.urlWithParamFormatter("{", "}");
+    private String endpointPath(final RoutingDefinition HttpRouteHandler) {
+        return API_PREFIX + "/" + HttpRouteHandler.urlWithParamFormatter("{", "}");
     }
 
-    private String statusesFor(final RoutingDefinition route) {
-        if (!route.status().isReturnedFromCall()) {
-            return route.status().value() + " " + route.status().description();
+    private String statusesFor(final RoutingDefinition HttpRouteHandler) {
+        if (!HttpRouteHandler.status().isReturnedFromCall()) {
+            return HttpRouteHandler.status().value()
+                    + " "
+                    + HttpRouteHandler.status().description();
         }
         List<String> statuses = new ArrayList<>();
-        for (RoutingStatus status : route.getPossibleStatusReponses()) {
+        for (RoutingStatus status : HttpRouteHandler.getPossibleStatusReponses()) {
             statuses.add(status.value() + " " + status.description());
         }
         return String.join(", ", statuses);

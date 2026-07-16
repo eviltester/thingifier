@@ -21,7 +21,7 @@ public class ArchitectureBoundaryTest {
                                 .resolve(
                                         "src/main/java/uk/co/compendiumdev/thingifier/application"));
 
-        Assertions.assertFalse(applicationSources.contains("import spark."));
+        Assertions.assertFalse(applicationSources.contains("import HTTP server."));
         Assertions.assertFalse(
                 applicationSources.contains("uk.co.compendiumdev.thingifier.adapter."));
         Assertions.assertFalse(

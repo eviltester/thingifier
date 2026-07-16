@@ -11,7 +11,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import uk.co.compendiumdev.challenger.http.httpclient.HttpMessageSender;
 import uk.co.compendiumdev.challenger.http.httpclient.HttpResponseDetails;
-import uk.co.compendiumdev.sparkstart.Environment;
+import uk.co.compendiumdev.serverstart.Environment;
 
 public class UiPagesAreReachableTest {
 
@@ -23,8 +23,8 @@ public class UiPagesAreReachableTest {
 
     @BeforeAll
     static void createHttp() {
-        // this uses the Environment to startup the spark app to
-        // issue http tests and test the routing in spark
+        // this uses the Environment to startup the server app to
+        // issue http tests and test the server routing
         http = new HttpMessageSender(Environment.getBaseUri());
 
         // Basic Browser Headers

@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import uk.co.compendiumdev.challenger.payloads.Challenge;
 import uk.co.compendiumdev.challenger.payloads.Challenges;
-import uk.co.compendiumdev.sparkstart.Environment;
+import uk.co.compendiumdev.serverstart.Environment;
 
 public class ChallengesStatus {
 

@@ -1,8 +1,8 @@
 package uk.co.compendiumdev.todolist.sqlite.application;
 
-import static spark.Spark.get;
+import static uk.co.compendiumdev.thingifier.adapter.httpserver.ServerRoutes.get;
 
-import uk.co.compendiumdev.thingifier.adapter.spark.MainImplementation;
+import uk.co.compendiumdev.thingifier.adapter.httpserver.MainImplementation;
 import uk.co.compendiumdev.thingifier.application.examples.TodoManagerThingifier;
 import uk.co.compendiumdev.thingifier.core.repository.sqlite.SqliteThingStoreProvider;
 

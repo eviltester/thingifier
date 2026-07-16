@@ -1,7 +1,7 @@
 package uk.co.compendiumdev.challenge.challengesrouting;
 
-import spark.Response;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
+import uk.co.compendiumdev.thingifier.adapter.httpserver.HttpServerResponse;
 import uk.co.compendiumdev.thingifier.adapter.internalhttp.InternalHttpResponse;
 
 public class XChallengerHeader {
@@ -10,32 +10,32 @@ public class XChallengerHeader {
             "UNKNOWN CHALLENGER - Challenger not found";
 
     public static void setResultHeaderBasedOnChallenger(
-            final Response result, final ChallengerAuthData challenger) {
+            final HttpServerResponse result, final ChallengerAuthData challenger) {
 
         if (result == null) {
             return;
         }
 
         if (challenger == null) {
-            result.raw().setHeader("X-CHALLENGER", NOT_FOUND_ERROR_MESSAGE);
-            // result.raw().setHeader("X-CHALLENGER", "Challenger not recognised");
+            result.header("X-CHALLENGER", NOT_FOUND_ERROR_MESSAGE);
+            // result.header("X-CHALLENGER", "Challenger not recognised");
         } else {
-            result.raw().setHeader("X-CHALLENGER", challenger.getXChallenger());
+            result.header("X-CHALLENGER", challenger.getXChallenger());
         }
     }
 
     public static void setResultHeaderBasedOnChallenger(
-            final Response result, final String challengerGUID) {
+            final HttpServerResponse result, final String challengerGUID) {
 
         if (result == null) {
             return;
         }
 
         if (challengerGUID == null || challengerGUID.trim().length() == 0) {
-            result.raw().setHeader("X-CHALLENGER", NOT_FOUND_ERROR_MESSAGE);
-            // result.raw().setHeader("X-CHALLENGER", "Challenger not recognised");
+            result.header("X-CHALLENGER", NOT_FOUND_ERROR_MESSAGE);
+            // result.header("X-CHALLENGER", "Challenger not recognised");
         } else {
-            result.raw().setHeader("X-CHALLENGER", challengerGUID);
+            result.header("X-CHALLENGER", challengerGUID);
         }
     }
 

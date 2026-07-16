@@ -1,5 +1,6 @@
 package uk.co.compendiumdev.thingifier.api.http;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import uk.co.compendiumdev.thingifier.Thingifier;
@@ -91,6 +92,19 @@ public final class ThingifierHttpApi {
             httpResponse =
                     new HttpApiResponse(
                             request.getHeaders(), apiResponse, jsonThing, thingifier.apiConfig());
+
+            if (effectiveVerb == HttpVerb.HEAD) {
+                final int bodyLength =
+                        httpResponse.getBody().getBytes(StandardCharsets.UTF_8).length;
+                apiResponse.clearBody();
+                apiResponse.setHeader("Content-Length", Integer.toString(bodyLength));
+                httpResponse =
+                        new HttpApiResponse(
+                                request.getHeaders(),
+                                apiResponse,
+                                jsonThing,
+                                thingifier.apiConfig());
+            }
         }
 
         // run any post processing response hooks
@@ -130,7 +144,7 @@ public final class ThingifierHttpApi {
                 apiResponse = thingifier.api().get(envelope);
                 break;
             case HEAD:
-                apiResponse = thingifier.api().head(envelope);
+                apiResponse = thingifier.api().get(envelope);
                 break;
             case DELETE:
                 apiResponse = thingifier.api().delete(envelope);

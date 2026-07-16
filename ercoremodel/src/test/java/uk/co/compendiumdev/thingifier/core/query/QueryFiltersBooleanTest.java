@@ -18,7 +18,8 @@ public class QueryFiltersBooleanTest {
     // https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/
     // https://softwareengineering.stackexchange.com/questions/233164/how-do-searches-fit-into-a-restful-interface
 
-    // TODO: risk that Spark does not pass in args in a way that flow through to repository URL
+    // TODO: risk that the HTTP server does not pass in args in a way that flow through to
+    // repository URL
     // query
     //       so test this at an HTTP level as well
 

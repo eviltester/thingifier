@@ -29,7 +29,7 @@ public class C028GetTodosAcceptXmlPref200Test extends RestAssuredBaseTest {
         statuses.get();
         Assertions.assertTrue(statuses.getChallengeNamed("GET /todos (200) XML pref").status);
 
-        // XML in response
+        // XML in Response
         Assertions.assertTrue(response.body().asString().contains("<todos>"));
         Assertions.assertTrue(response.body().asString().contains("</todos>"));
     }

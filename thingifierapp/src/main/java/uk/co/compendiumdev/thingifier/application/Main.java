@@ -1,8 +1,8 @@
 package uk.co.compendiumdev.thingifier.application;
 
 import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.adapter.spark.MainImplementation;
-import uk.co.compendiumdev.thingifier.adapter.spark.ThingifierHttpApiRoutings;
+import uk.co.compendiumdev.thingifier.adapter.httpserver.MainImplementation;
+import uk.co.compendiumdev.thingifier.adapter.httpserver.ThingifierHttpApiRoutings;
 import uk.co.compendiumdev.thingifier.application.examples.TodoListThingifier;
 import uk.co.compendiumdev.thingifier.application.examples.TodoManagerThingifier;
 
@@ -114,7 +114,7 @@ public class Main {
         // code header
         // todo : add some other admin endpoints e.g. show version details of the app etc.
 
-        // allows thingifier to be used in additional custom route configuration
+        // allows thingifier to be used in additional custom HttpRouteHandler configuration
         // or apiConfig()
         // setup the thingifier
         Thingifier thingifier = app.chooseThingifier();

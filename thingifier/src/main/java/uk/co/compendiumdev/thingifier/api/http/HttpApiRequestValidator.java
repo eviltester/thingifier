@@ -35,7 +35,7 @@ public class HttpApiRequestValidator {
                             ApiResponse.error(
                                     413,
                                     String.format(
-                                            "Error: Request body too large, max allowed is %d bytes",
+                                            "Error: request body too large, max allowed is %d bytes",
                                             maxLengthBytesAllowed));
                 }
             }

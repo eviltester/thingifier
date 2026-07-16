@@ -3,7 +3,7 @@ package uk.co.compendiumdev.thingifier.crudui.e2e;
 import java.io.IOException;
 import java.net.ServerSocket;
 import uk.co.compendiumdev.thingifier.crudui.ActiveThingifierWorkspace;
-import uk.co.compendiumdev.thingifier.crudui.adapter.spark.CrudUiApplication;
+import uk.co.compendiumdev.thingifier.crudui.adapter.javalin.CrudUiApplication;
 
 final class CrudUiTestServer implements AutoCloseable {
 

@@ -1,18 +1,18 @@
 package uk.co.compendiumdev.challenge.gui;
 
-import static spark.Spark.*;
+import static uk.co.compendiumdev.thingifier.adapter.httpserver.ServerRoutes.*;
 
 import java.time.LocalDate;
 import java.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import spark.Request;
 import uk.co.compendiumdev.challenge.CHALLENGE;
 import uk.co.compendiumdev.challenge.ChallengerAuthData;
 import uk.co.compendiumdev.challenge.challengers.Challengers;
 import uk.co.compendiumdev.challenge.challenges.*;
 import uk.co.compendiumdev.challenge.persistence.PersistenceLayer;
 import uk.co.compendiumdev.challenge.persistence.PersistenceResponse;
+import uk.co.compendiumdev.thingifier.adapter.httpserver.HttpServerRequest;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.htmlgui.htmlgen.DefaultGUIHTML;
 
@@ -180,7 +180,7 @@ public class ChallengerWebGUI {
         // request.url().startsWith("https://apichallenges.herokuapp.com")
         //                        ) {
         //                            // and it is a browser request
-        //                            if (request.headers("accept").contains("text/html")) {
+        //                            if (request.header("accept").contains("text/html")) {
         //                                // then redirect
         //                                response.header("location",
         // "https://apichallenges.eviltester.com" + request.uri());
@@ -215,9 +215,9 @@ public class ChallengerWebGUI {
                                             getMarkdownParamsFromRequest(request));
                             response.body(responseBody);
                             response.type("text/html");
-                            if (response.raw().containsHeader("x-robots-tag")) {
+                            if (response.containsHeader("x-robots-tag")) {
                                 // we want it indexed because it is content
-                                response.raw().setHeader("x-robots-tag", "all");
+                                response.header("x-robots-tag", "all");
                             }
                             response.status(200);
                         } catch (IllegalArgumentException e) {
@@ -236,9 +236,9 @@ public class ChallengerWebGUI {
                                     request.pathInfo(),
                                     getMarkdownParamsFromRequest(request));
                             response.type("text/html");
-                            if (response.raw().containsHeader("x-robots-tag")) {
+                            if (response.containsHeader("x-robots-tag")) {
                                 // we want it indexed because it is content
-                                response.raw().setHeader("x-robots-tag", "all");
+                                response.header("x-robots-tag", "all");
                             }
                             response.status(200);
                         } catch (IllegalArgumentException e) {
@@ -298,9 +298,9 @@ public class ChallengerWebGUI {
                                     "site", "/index", getMarkdownParamsFromRequest(request));
                     response.body(responseBody);
                     response.type("text/html");
-                    if (response.raw().containsHeader("x-robots-tag")) {
+                    if (response.containsHeader("x-robots-tag")) {
                         // we want it indexed because it is content
-                        response.raw().setHeader("x-robots-tag", "all");
+                        response.header("x-robots-tag", "all");
                     }
                     response.status(200);
                     return "";
@@ -311,9 +311,9 @@ public class ChallengerWebGUI {
                     contentManager.getHtmlVersionOfMarkdownContent(
                             "site", "/index", getMarkdownParamsFromRequest(request));
                     response.type("text/html");
-                    if (response.raw().containsHeader("x-robots-tag")) {
+                    if (response.containsHeader("x-robots-tag")) {
                         // we want it indexed because it is content
-                        response.raw().setHeader("x-robots-tag", "all");
+                        response.header("x-robots-tag", "all");
                     }
                     response.status(200);
                     return "";
@@ -416,7 +416,7 @@ public class ChallengerWebGUI {
                     String xChallenger = null;
 
                     try {
-                        xChallenger = request.splat()[0];
+                        xChallenger = request.splat();
                     } catch (Exception e) {
                         logger.warn("No challenger id to render");
                     }
@@ -525,7 +525,7 @@ public class ChallengerWebGUI {
                     String urltoshow = "";
 
                     try {
-                        urltoshow = request.splat()[0];
+                        urltoshow = request.splat();
                     } catch (Exception e) {
                         logger.error("No url to pretend to be on 404", e);
                     }
@@ -544,8 +544,8 @@ public class ChallengerWebGUI {
                     // Since we already scanned for static content we can just htmlise a 404 if
                     // necessary
                     if (response.status() == 404
-                            && request.headers("accept") != null
-                            && request.headers("accept").contains("html")) {
+                            && request.header("accept") != null
+                            && request.header("accept").contains("html")) {
 
                         logger.info("An HTML 404");
                         pageNotFoundHtmlResponse.amendResponse(response, "");
@@ -553,7 +553,7 @@ public class ChallengerWebGUI {
                 });
     }
 
-    private Map<String, String> getMarkdownParamsFromRequest(Request request) {
+    private Map<String, String> getMarkdownParamsFromRequest(HttpServerRequest request) {
         String originUrl = request.scheme() + "://" + request.host();
         Map<String, String> params = new HashMap<>();
         params.put("ORIGIN_URL", originUrl);
@@ -651,7 +651,9 @@ public class ChallengerWebGUI {
 
     private String refreshScriptFor(final String xChallenger) {
 
-        if (!guiStayAlive) return "";
+        if (!guiStayAlive) {
+            return "";
+        }
 
         StringBuilder html = new StringBuilder();
 

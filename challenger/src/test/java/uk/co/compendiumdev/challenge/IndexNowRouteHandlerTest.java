@@ -4,7 +4,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import spark.Route;
+import uk.co.compendiumdev.thingifier.adapter.httpserver.HttpRouteHandler;
 
 public class IndexNowRouteHandlerTest {
 
@@ -12,12 +12,12 @@ public class IndexNowRouteHandlerTest {
     public void routeCanBeConfiguredWhenValuesAreValid() {
 
         AtomicReference<String> capturedPath = new AtomicReference<>(null);
-        AtomicReference<Route> capturedRoute = new AtomicReference<>(null);
+        AtomicReference<HttpRouteHandler> capturedRoute = new AtomicReference<>(null);
 
-        BiConsumer<String, Route> registrar =
-                (path, route) -> {
+        BiConsumer<String, HttpRouteHandler> registrar =
+                (path, HttpRouteHandler) -> {
                     capturedPath.set(path);
-                    capturedRoute.set(route);
+                    capturedRoute.set(HttpRouteHandler);
                 };
 
         IndexNowRouteHandler handler =
@@ -31,13 +31,13 @@ public class IndexNowRouteHandlerTest {
     @Test
     public void routeReturnsConfiguredKey() throws Exception {
 
-        AtomicReference<Route> capturedRoute = new AtomicReference<>(null);
+        AtomicReference<HttpRouteHandler> capturedRoute = new AtomicReference<>(null);
 
         IndexNowRouteHandler handler =
                 new IndexNowRouteHandler(
                         "/myIndexNowKey63638.txt",
                         "abc123",
-                        (path, route) -> capturedRoute.set(route));
+                        (path, HttpRouteHandler) -> capturedRoute.set(HttpRouteHandler));
 
         handler.configureRoutes();
 
@@ -48,11 +48,13 @@ public class IndexNowRouteHandlerTest {
     @Test
     public void doesNotConfigureRouteWhenKeyMissing() {
 
-        AtomicReference<Route> capturedRoute = new AtomicReference<>(null);
+        AtomicReference<HttpRouteHandler> capturedRoute = new AtomicReference<>(null);
 
         IndexNowRouteHandler handler =
                 new IndexNowRouteHandler(
-                        "/myIndexNowKey63638.txt", " ", (path, route) -> capturedRoute.set(route));
+                        "/myIndexNowKey63638.txt",
+                        " ",
+                        (path, HttpRouteHandler) -> capturedRoute.set(HttpRouteHandler));
 
         Assertions.assertFalse(handler.configureRoutes());
         Assertions.assertNull(capturedRoute.get());
@@ -61,10 +63,13 @@ public class IndexNowRouteHandlerTest {
     @Test
     public void doesNotConfigureRouteWhenLocationMissing() {
 
-        AtomicReference<Route> capturedRoute = new AtomicReference<>(null);
+        AtomicReference<HttpRouteHandler> capturedRoute = new AtomicReference<>(null);
 
         IndexNowRouteHandler handler =
-                new IndexNowRouteHandler(" ", "abc123", (path, route) -> capturedRoute.set(route));
+                new IndexNowRouteHandler(
+                        " ",
+                        "abc123",
+                        (path, HttpRouteHandler) -> capturedRoute.set(HttpRouteHandler));
 
         Assertions.assertFalse(handler.configureRoutes());
         Assertions.assertNull(capturedRoute.get());

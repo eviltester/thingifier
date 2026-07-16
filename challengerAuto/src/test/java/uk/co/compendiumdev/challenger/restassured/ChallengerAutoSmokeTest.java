@@ -3,7 +3,7 @@ package uk.co.compendiumdev.challenger.restassured;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import org.junit.jupiter.api.Test;
-import uk.co.compendiumdev.sparkstart.Environment;
+import uk.co.compendiumdev.serverstart.Environment;
 
 public class ChallengerAutoSmokeTest {
 

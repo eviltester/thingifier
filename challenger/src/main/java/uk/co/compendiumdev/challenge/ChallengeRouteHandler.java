@@ -10,7 +10,7 @@ import uk.co.compendiumdev.challenge.practicemodes.mirror.MirrorRoutes;
 import uk.co.compendiumdev.challenge.practicemodes.simpleapi.SimpleApiRoutes;
 import uk.co.compendiumdev.challenge.practicemodes.simulation.SimulationRoutes;
 import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.adapter.spark.ThingifierHttpApiRoutings;
+import uk.co.compendiumdev.thingifier.adapter.httpserver.ThingifierHttpApiRoutings;
 import uk.co.compendiumdev.thingifier.api.docgen.ThingifierApiDocumentationDefn;
 import uk.co.compendiumdev.thingifier.htmlgui.htmlgen.DefaultGUIHTML;
 
@@ -130,20 +130,21 @@ public class ChallengeRouteHandler {
         return this;
     }
 
-    public void addHooks(final ThingifierHttpApiRoutings restServer) {
+    public void addHooks(final ThingifierHttpApiRoutings apiRoutings) {
 
-        // TODO: this is wrong - rethink this - we need SparkLevel, InternalHttp level (pre-post
-        // these hooks are registered at a spark before and after level so run on every request,
-        // regardless of thingifier used - this is wrong
-        restServer.registerInternalHttpResponseHook(
+        // TODO: these internal HTTP hooks are registered through server-level before/after hooks.
+        // They can run for every HTTP request handled by the server, not just requests for this
+        // Thingifier API routing. Prefer route-scoped internal HTTP hooks or move this behavior
+        // into the API bridge boundary when it only applies to this Thingifier.
+        apiRoutings.registerInternalHttpResponseHook(
                 new ChallengerInternalHTTPResponseHook(challengers));
-        restServer.registerInternalHttpRequestHook(
+        apiRoutings.registerInternalHttpRequestHook(
                 new ChallengerInternalHTTPRequestHook(challengers));
 
-        // add hooks at the API bridge pre and post level so they only work in the specific
-        // thingifier
-        restServer.registerHttpApiRequestHook(new ChallengerApiRequestHook(challengers));
-        restServer.registerHttpApiResponseHook(
+        // These hooks run inside the Thingifier API bridge for this routing instance, so they are
+        // scoped to this Thingifier's API request/response processing.
+        apiRoutings.registerHttpApiRequestHook(new ChallengerApiRequestHook(challengers));
+        apiRoutings.registerHttpApiResponseHook(
                 new ChallengerApiResponseHook(challengers, thingifier));
     }
 

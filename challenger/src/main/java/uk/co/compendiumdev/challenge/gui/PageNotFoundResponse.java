@@ -1,6 +1,6 @@
 package uk.co.compendiumdev.challenge.gui;
 
-import spark.Response;
+import uk.co.compendiumdev.thingifier.adapter.httpserver.HttpServerResponse;
 import uk.co.compendiumdev.thingifier.htmlgui.htmlgen.DefaultGUIHTML;
 
 public class PageNotFoundResponse {
@@ -10,7 +10,7 @@ public class PageNotFoundResponse {
         this.guiManagement = guiManagement;
     }
 
-    public void amendResponse(Response response, String bodyStringAppend) {
+    public void amendResponse(HttpServerResponse response, String bodyStringAppend) {
         response.status(404);
         response.type("text/html");
         StringBuilder html = new StringBuilder();

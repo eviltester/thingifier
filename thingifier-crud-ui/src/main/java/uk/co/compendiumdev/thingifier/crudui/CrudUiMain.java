@@ -2,7 +2,7 @@ package uk.co.compendiumdev.thingifier.crudui;
 
 import java.io.IOException;
 import java.util.Map;
-import uk.co.compendiumdev.thingifier.crudui.adapter.spark.CrudUiApplication;
+import uk.co.compendiumdev.thingifier.crudui.adapter.javalin.CrudUiApplication;
 
 public final class CrudUiMain {
 
