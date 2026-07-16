@@ -438,6 +438,7 @@ public class RestApiDocumentationGenerator {
             }
         }
 
+        output.append(paragraph(href("Open Swagger UI", prependPath + "/docs/swagger-ui")));
         output.append(
                 paragraph(href("[download normal swagger file]", prependPath + "/docs/swagger")));
         output.append(

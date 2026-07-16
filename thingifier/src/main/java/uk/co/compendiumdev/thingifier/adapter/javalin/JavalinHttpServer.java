@@ -4,6 +4,8 @@ import io.javalin.Javalin;
 import io.javalin.http.Context;
 import io.javalin.http.HandlerType;
 import io.javalin.http.staticfiles.Location;
+import java.io.InputStream;
+import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,6 +18,11 @@ import uk.co.compendiumdev.thingifier.adapter.httpserver.HttpRouteVerb;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponseError;
 
 public final class JavalinHttpServer implements AutoCloseable {
+    private static final String[] STATIC_ASSET_PREFIXES = {
+        "/css/", "/js/", "/favicon/", "/images/"
+    };
+    private static final String[] STATIC_ASSET_FILES = {"/robots.txt", "/sitemap.bak"};
+
     private final int port;
     private final String staticFilePath;
     private final HttpRouteRegistry registry;
@@ -39,6 +46,7 @@ public final class JavalinHttpServer implements AutoCloseable {
                                         staticFiles.directory = staticFilePath;
                                         staticFiles.location = Location.CLASSPATH;
                                     });
+                            config.routes.before(this::serveClasspathStaticAsset);
                             for (HttpBeforeHandler beforeHandler : registry.beforeHandlers()) {
                                 config.routes.before(ctx -> runBefore(ctx, beforeHandler));
                             }
@@ -76,6 +84,93 @@ public final class JavalinHttpServer implements AutoCloseable {
                                     });
                         });
         app.start(port);
+    }
+
+    private void serveClasspathStaticAsset(final Context ctx) throws Exception {
+        if (ctx.method() != HandlerType.GET && ctx.method() != HandlerType.HEAD) {
+            return;
+        }
+
+        final String path = ctx.path();
+        if (!isStaticAssetPath(path)) {
+            return;
+        }
+
+        final InputStream resource =
+                Thread.currentThread()
+                        .getContextClassLoader()
+                        .getResourceAsStream(classpathStaticResource(path));
+        if (resource == null) {
+            return;
+        }
+
+        ctx.status(200);
+        ctx.header("Cache-Control", "max-age=0");
+        String contentType = contentTypeFor(path);
+        if (contentType != null) {
+            ctx.contentType(contentType);
+        }
+        if (ctx.method() == HandlerType.HEAD) {
+            resource.close();
+            ctx.result(new byte[0]);
+        } else {
+            ctx.result(resource);
+        }
+        ctx.skipRemainingHandlers();
+    }
+
+    private boolean isStaticAssetPath(final String path) {
+        for (String prefix : STATIC_ASSET_PREFIXES) {
+            if (path.startsWith(prefix)) {
+                return true;
+            }
+        }
+        for (String file : STATIC_ASSET_FILES) {
+            if (path.equals(file)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private String classpathStaticResource(final String path) {
+        String base = staticFilePath == null ? "" : staticFilePath.trim();
+        while (base.startsWith("/")) {
+            base = base.substring(1);
+        }
+        while (base.endsWith("/")) {
+            base = base.substring(0, base.length() - 1);
+        }
+        String resourcePath = path.startsWith("/") ? path.substring(1) : path;
+        if (base.isEmpty()) {
+            return resourcePath;
+        }
+        return base + "/" + resourcePath;
+    }
+
+    private String contentTypeFor(final String path) {
+        if (path.endsWith(".css")) {
+            return "text/css";
+        }
+        if (path.endsWith(".js")) {
+            return "application/javascript";
+        }
+        if (path.endsWith(".webmanifest")) {
+            return "application/manifest+json";
+        }
+        if (path.endsWith(".png")) {
+            return "image/png";
+        }
+        if (path.endsWith(".ico")) {
+            return "image/x-icon";
+        }
+        if (path.endsWith(".svg")) {
+            return "image/svg+xml";
+        }
+        if (path.endsWith(".txt")) {
+            return "text/plain";
+        }
+        return URLConnection.guessContentTypeFromName(path);
     }
 
     public void stop() {
