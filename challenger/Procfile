@@ -1,1 +1,0 @@
-web: java $JAVA_OPTS -cp target/classes:target/dependency/*:target/* uk.co.compendiumdev.challenge.ChallengeMain  -model=challengeapi -noshutdown -multiplayer -cloudstorage

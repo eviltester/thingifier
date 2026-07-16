@@ -37,9 +37,9 @@ public class Environment {
             }
 
             // wait till running
-            int maxtries = 10;
-            while (!Port.inUse("localhost", 4567)) {
-                maxtries--;
+            int attemptsRemaining = 10;
+            while (!Port.inUse("localhost", 4567) && attemptsRemaining > 0) {
+                attemptsRemaining--;
                 try {
                     Thread.sleep(500);
                 } catch (InterruptedException e) {

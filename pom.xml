@@ -139,8 +139,6 @@
         <module>examplemodels</module>
         <module>thingifier-crud-ui</module>
         <module>todoManagerRestAuto</module>
-        <module>challenger</module>
-        <module>challengerAuto</module>
         <module>standAloneTodoListRestApi</module>
         <module>standAloneTodoListManagerRestApi</module>
         <module>standAloneSqlLiteTodoListManagerRestApi</module>
@@ -164,13 +162,6 @@
 
 - internal refactoring to create 'core' that is well covered
 
-Challenger
-- fixed defect where Challenger data was only loaded from AWS when GET /challenger was used, so harder to use between sessions
-    - this mainly only affected the 'secret' token session because challenger was loaded during persistence of 'passing' a challenge
-- fixed defect where, when no Challenger X-CHALLENGER header on /secret the 401 response did not return, and so passed through into null pointer processing
-- surface any aws issues in the message headers and on GUI
-- added some additional challenges, sectioned and ordered
-
 1.5.4
 
 - has automated swagger file generation - for non thingifier api routing then routing definitions should be added using the ThingifierApiDefn
@@ -184,7 +175,6 @@ Challenger
 - added config to control if JSON or XML is allowed in response configured by accept header
 - HEAD method supported where GET methods supported
 - improved Accept header processing
-- added challenger app
 - started checklist doc
 
 1.5.2
