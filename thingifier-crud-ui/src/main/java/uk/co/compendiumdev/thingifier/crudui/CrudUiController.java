@@ -10,6 +10,7 @@ public final class CrudUiController {
     private final WorkspaceMetadataJson metadataJson;
     private final WorkspaceDataExporter exporter;
     private final WorkspaceDataImporter importer;
+    private final WorkspaceProjectService projectService;
     private final SchemaPreviewService schemaPreviewService;
     private final WorkspaceSchemaUpgradeService schemaUpgradeService;
 
@@ -19,6 +20,7 @@ public final class CrudUiController {
         metadataJson = new WorkspaceMetadataJson();
         exporter = new WorkspaceDataExporter(workspace, apiProxy);
         importer = new WorkspaceDataImporter(workspace, apiProxy, metadataJson);
+        projectService = new WorkspaceProjectService(workspace, metadataJson);
         schemaPreviewService = new SchemaPreviewService();
         schemaUpgradeService = new WorkspaceSchemaUpgradeService(workspace, metadataJson);
     }
@@ -83,6 +85,22 @@ public final class CrudUiController {
     public UiHttpResponse importData(final String jsonText) {
         try {
             return importer.importData(jsonText);
+        } catch (ThingifierYamlException | CrudUiException | IllegalArgumentException e) {
+            return JsonSupport.error(400, e.getMessage());
+        }
+    }
+
+    public UiHttpResponse saveProject(final String requestJson) {
+        try {
+            return projectService.save(requestJson);
+        } catch (ThingifierYamlException | CrudUiException | IllegalArgumentException e) {
+            return JsonSupport.error(400, e.getMessage());
+        }
+    }
+
+    public UiHttpResponse loadProject(final String requestJson) {
+        try {
+            return projectService.load(requestJson);
         } catch (ThingifierYamlException | CrudUiException | IllegalArgumentException e) {
             return JsonSupport.error(400, e.getMessage());
         }

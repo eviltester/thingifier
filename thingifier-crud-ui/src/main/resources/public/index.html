@@ -29,11 +29,36 @@
                 <input id="import-file" type="file" accept="application/json,.json">
             </label>
             <button id="export-button" type="button">Export</button>
+            <button id="save-project-button" type="button">Save Project</button>
+            <button id="load-project-button" type="button">Load Project</button>
             <a class="button-link" href="/docs">API Docs</a>
             <a class="button-link" href="/swagger">Swagger UI</a>
             <a class="button-link" href="/docs/swagger">Download OpenAPI</a>
         </div>
     </header>
+
+    <div id="project-dialog" class="schema-dialog-backdrop" hidden>
+        <section class="schema-dialog project-dialog" role="dialog" aria-modal="true"
+                 aria-labelledby="project-dialog-title">
+            <div class="schema-dialog-header">
+                <div>
+                    <h2 id="project-dialog-title">Project</h2>
+                    <p id="project-dialog-description"></p>
+                </div>
+                <button id="project-dialog-cancel" type="button" aria-label="Cancel project action">Cancel</button>
+            </div>
+            <div class="project-dialog-body">
+                <label class="field-row">
+                    <span>Folder path</span>
+                    <input id="project-path-input" type="text" autocomplete="off">
+                </label>
+                <p id="project-dialog-warning" class="project-dialog-warning"></p>
+            </div>
+            <div class="schema-dialog-footer">
+                <button id="project-dialog-confirm" class="primary" type="button">Confirm</button>
+            </div>
+        </section>
+    </div>
 
     <main class="workspace">
         <aside class="outline-panel">

@@ -19,6 +19,7 @@ public class CrudUiControllerTest {
             Assertions.assertTrue(response.body().contains("\"entities\""));
             Assertions.assertTrue(response.body().contains("\"relationships\""));
             Assertions.assertTrue(response.body().contains("\"schemaYaml\""));
+            Assertions.assertTrue(response.body().contains("\"project\""));
         }
     }
 
@@ -104,6 +105,10 @@ public class CrudUiControllerTest {
         Assertions.assertTrue(index.contains("API Docs"));
         Assertions.assertTrue(index.contains("Swagger UI"));
         Assertions.assertTrue(index.contains("Download OpenAPI"));
+        Assertions.assertTrue(index.contains("Save Project"));
+        Assertions.assertTrue(index.contains("Load Project"));
+        Assertions.assertTrue(index.contains("id=\"project-dialog\""));
+        Assertions.assertTrue(index.contains("id=\"project-path-input\""));
         Assertions.assertTrue(index.contains("Workspace"));
         Assertions.assertTrue(index.contains("Schema Edit"));
         Assertions.assertTrue(index.contains("href=\"/schema\""));
@@ -273,6 +278,11 @@ public class CrudUiControllerTest {
         Assertions.assertTrue(script.contains("/ui/schema/preview"));
         Assertions.assertTrue(script.contains("/ui/schema/upgrade/preview"));
         Assertions.assertTrue(script.contains("/ui/schema/upgrade/apply"));
+        Assertions.assertTrue(script.contains("/ui/project/save"));
+        Assertions.assertTrue(script.contains("/ui/project/load"));
+        Assertions.assertTrue(script.contains("openProjectDialog"));
+        Assertions.assertTrue(script.contains("Project saved."));
+        Assertions.assertTrue(script.contains("Project loaded."));
         Assertions.assertTrue(script.contains("schemaUpgradeMappings"));
         Assertions.assertTrue(script.contains("schemaUpgradeDialogOpen"));
         Assertions.assertTrue(script.contains("previewSchemaUpgrade"));
@@ -321,6 +331,8 @@ public class CrudUiControllerTest {
         Assertions.assertTrue(styles.contains(".schema-diagram-resizer"));
         Assertions.assertTrue(styles.contains(".schema-dialog-backdrop"));
         Assertions.assertTrue(styles.contains(".schema-dialog-footer"));
+        Assertions.assertTrue(styles.contains(".project-dialog"));
+        Assertions.assertTrue(styles.contains(".project-dialog-warning"));
         Assertions.assertTrue(styles.contains(".schema-upgrade-layout"));
         Assertions.assertTrue(styles.contains(".schema-upgrade-row"));
         Assertions.assertTrue(styles.contains(".schema-upgrade-summary"));

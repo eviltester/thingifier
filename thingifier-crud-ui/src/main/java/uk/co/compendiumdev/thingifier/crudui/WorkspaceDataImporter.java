@@ -39,6 +39,17 @@ public final class WorkspaceDataImporter {
         return UiHttpResponse.json(200, metadataJson.toJson(workspace.snapshot()));
     }
 
+    void importDataIntoCurrentWorkspace(final String jsonText) {
+        Map<?, ?> document =
+                JsonSupport.fromJsonMap(
+                        jsonText,
+                        "Project data file must contain a JSON object",
+                        "Could not parse project data JSON");
+        WorkspaceSnapshot snapshot = workspace.snapshot();
+        Map<String, String> importedIdentifiers = importEntities(document, snapshot);
+        importRelationships(document, workspace.snapshot(), importedIdentifiers);
+    }
+
     private Map<String, String> importEntities(
             final Map<?, ?> document, final WorkspaceSnapshot snapshot) {
         Map<String, String> importedIdentifiers = new LinkedHashMap<>();

@@ -9,16 +9,33 @@ public final class WorkspaceSnapshot {
     private final Thingifier thingifier;
     private final ThingifierModelDefinition definition;
     private final String schemaYaml;
+    private final String projectPath;
+    private final String projectTitle;
+    private final String projectDescription;
 
     public WorkspaceSnapshot(
             final long version,
             final Thingifier thingifier,
             final ThingifierModelDefinition definition,
             final String schemaYaml) {
+        this(version, thingifier, definition, schemaYaml, "", "", "");
+    }
+
+    public WorkspaceSnapshot(
+            final long version,
+            final Thingifier thingifier,
+            final ThingifierModelDefinition definition,
+            final String schemaYaml,
+            final String projectPath,
+            final String projectTitle,
+            final String projectDescription) {
         this.version = version;
         this.thingifier = thingifier;
         this.definition = definition;
         this.schemaYaml = schemaYaml;
+        this.projectPath = nullToEmpty(projectPath);
+        this.projectTitle = nullToEmpty(projectTitle);
+        this.projectDescription = nullToEmpty(projectDescription);
     }
 
     public long version() {
@@ -35,5 +52,25 @@ public final class WorkspaceSnapshot {
 
     public String schemaYaml() {
         return schemaYaml;
+    }
+
+    public String projectPath() {
+        return projectPath;
+    }
+
+    public String projectTitle() {
+        return projectTitle;
+    }
+
+    public String projectDescription() {
+        return projectDescription;
+    }
+
+    public boolean hasProjectPath() {
+        return !projectPath.isEmpty();
+    }
+
+    private String nullToEmpty(final String value) {
+        return value == null ? "" : value;
     }
 }

@@ -7,15 +7,18 @@ public final class CrudUiArguments {
 
     private final int port;
     private final Path modelYamlPath;
+    private final Path projectPath;
 
-    private CrudUiArguments(final int port, final Path modelYamlPath) {
+    private CrudUiArguments(final int port, final Path modelYamlPath, final Path projectPath) {
         this.port = port;
         this.modelYamlPath = modelYamlPath;
+        this.projectPath = projectPath;
     }
 
     public static CrudUiArguments parse(final String[] args) {
         int configuredPort = 4567;
         Path configuredModelYamlPath = null;
+        Path configuredProjectPath = null;
 
         if (args != null) {
             for (String arg : args) {
@@ -25,10 +28,17 @@ public final class CrudUiArguments {
                 if (arg.startsWith("-modelYaml=")) {
                     configuredModelYamlPath = Paths.get(arg.substring("-modelYaml=".length()));
                 }
+                if (arg.startsWith("-project=")) {
+                    configuredProjectPath = Paths.get(arg.substring("-project=".length()));
+                }
             }
         }
 
-        return new CrudUiArguments(configuredPort, configuredModelYamlPath);
+        if (configuredProjectPath != null && configuredModelYamlPath != null) {
+            throw new IllegalArgumentException("Use either -project or -modelYaml, not both");
+        }
+
+        return new CrudUiArguments(configuredPort, configuredModelYamlPath, configuredProjectPath);
     }
 
     public int port() {
@@ -41,5 +51,13 @@ public final class CrudUiArguments {
 
     public Path modelYamlPath() {
         return modelYamlPath;
+    }
+
+    public boolean hasProjectPath() {
+        return projectPath != null;
+    }
+
+    public Path projectPath() {
+        return projectPath;
     }
 }
