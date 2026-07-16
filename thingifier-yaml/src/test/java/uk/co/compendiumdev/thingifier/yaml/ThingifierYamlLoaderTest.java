@@ -20,8 +20,10 @@ import uk.co.compendiumdev.thingifier.application.examples.TodoManagerThingifier
 import uk.co.compendiumdev.thingifier.application.schema.definition.SchemaDefinitionValidationReport;
 import uk.co.compendiumdev.thingifier.application.schema.definition.ThingifierModelAssembler;
 import uk.co.compendiumdev.thingifier.application.schema.definition.ThingifierModelDefinition;
+import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
+import uk.co.compendiumdev.thingifier.core.repository.sqlite.SqliteThingStoreProvider;
 
 class ThingifierYamlLoaderTest {
 
@@ -57,6 +59,18 @@ class ThingifierYamlLoaderTest {
         Assertions.assertNotNull(thingifier.getDefinitionNamed("todo"));
         Assertions.assertEquals(
                 "id", thingifier.getDefinitionNamed("todo").getPrimaryKeyField().getName());
+    }
+
+    @Test
+    void loaderBuildsThingifierWithSuppliedStoreProvider() {
+        try (SqliteThingStoreProvider provider = SqliteThingStoreProvider.inMemory()) {
+            Thingifier thingifier =
+                    new ThingifierYamlLoader()
+                            .loadThingifier(resource("minimal-todo.yaml"), provider);
+
+            Assertions.assertNotNull(thingifier.getStore(EntityRelModel.DEFAULT_DATABASE_NAME));
+            Assertions.assertNotNull(thingifier.getDefinitionNamed("todo"));
+        }
     }
 
     @Test

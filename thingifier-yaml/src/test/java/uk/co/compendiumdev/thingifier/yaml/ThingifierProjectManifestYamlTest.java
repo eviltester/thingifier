@@ -34,6 +34,61 @@ class ThingifierProjectManifestYamlTest {
     }
 
     @Test
+    void sqliteFileBackedManifestRoundTripsThroughYamlWithDataFile() {
+        ThingifierProjectManifest manifest =
+                ThingifierProjectManifest.sqliteFileBackedFor(
+                        "SQLite Project", "Project data lives in a DB file");
+        ThingifierProjectManifestYaml yaml = new ThingifierProjectManifestYaml();
+
+        String text = yaml.export(manifest);
+        ThingifierProjectManifest loaded = yaml.load(text);
+
+        Assertions.assertTrue(text.contains("dataFile: data.sqlite"));
+        Assertions.assertFalse(text.contains("storage:"));
+        Assertions.assertEquals("sqlite-file", loaded.storageMode());
+        Assertions.assertEquals("data.sqlite", loaded.sqliteFile());
+        Assertions.assertEquals("data.sqlite", loaded.dataFile());
+    }
+
+    @Test
+    void sqliteDataFileWithoutStorageBlockIsDetectedAsSqliteFileStorage() {
+        ThingifierProjectManifest loaded =
+                new ThingifierProjectManifestYaml()
+                        .load(
+                                "formatVersion: 1\n"
+                                        + "schemaFile: schema.yaml\n"
+                                        + "dataFile: todomanager.sqlite\n");
+
+        Assertions.assertEquals("sqlite-file", loaded.storageMode());
+        Assertions.assertEquals("todomanager.sqlite", loaded.sqliteFile());
+        Assertions.assertEquals("todomanager.sqlite", loaded.dataFile());
+    }
+
+    @Test
+    void sqliteFileBackedManifestRejectsEscapingSqliteFile() {
+        ThingifierProjectManifestYaml yaml = new ThingifierProjectManifestYaml();
+
+        Assertions.assertThrows(
+                ThingifierYamlException.class,
+                () ->
+                        yaml.load(
+                                "formatVersion: 1\n"
+                                        + "schemaFile: schema.yaml\n"
+                                        + "storage:\n"
+                                        + "  mode: sqlite-file\n"
+                                        + "  sqliteFile: ../data.sqlite\n"));
+        Assertions.assertThrows(
+                ThingifierYamlException.class,
+                () ->
+                        yaml.load(
+                                "formatVersion: 1\n"
+                                        + "schemaFile: schema.yaml\n"
+                                        + "storage:\n"
+                                        + "  mode: sqlite-file\n"
+                                        + "  sqliteFile: C:\\\\data.sqlite\n"));
+    }
+
+    @Test
     void absoluteAndEscapingPathsAreRejected() {
         ThingifierProjectManifestYaml yaml = new ThingifierProjectManifestYaml();
 

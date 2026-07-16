@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.Cardinality;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
@@ -14,6 +15,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.Optio
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVectorDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.validation.VRule;
+import uk.co.compendiumdev.thingifier.core.repository.ThingStoreProvider;
 
 public final class ThingifierModelAssembler {
 
@@ -33,12 +35,20 @@ public final class ThingifierModelAssembler {
     }
 
     public Thingifier assemble(final ThingifierModelDefinition definition) {
+        return assemble(definition, null);
+    }
+
+    public Thingifier assemble(
+            final ThingifierModelDefinition definition, final ThingStoreProvider storeProvider) {
         final SchemaDefinitionValidationReport report = validate(definition);
         if (!report.isValid()) {
             throw new IllegalArgumentException(report.combinedMessages());
         }
 
-        final Thingifier thingifier = new Thingifier();
+        final Thingifier thingifier =
+                storeProvider == null
+                        ? new Thingifier()
+                        : new Thingifier(new EntityRelModel(storeProvider));
         thingifier.setDocumentation(
                 emptyIfNull(definition.title()), emptyIfNull(definition.description()));
 

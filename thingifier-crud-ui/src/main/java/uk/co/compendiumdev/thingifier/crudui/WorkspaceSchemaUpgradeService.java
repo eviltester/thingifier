@@ -64,7 +64,9 @@ public final class WorkspaceSchemaUpgradeService {
         try {
             WorkspaceSnapshot upgraded =
                     workspace.replaceWithMigratedThingifier(
-                            result.targetThingifier(), request.expectedWorkspaceVersion());
+                            result.targetThingifier(),
+                            result.targetStorage(),
+                            request.expectedWorkspaceVersion());
             result.releaseTargetThingifier();
             result.markApplied(upgraded, metadataJson.toMap(upgraded));
             return UiHttpResponse.json(200, JsonSupport.toJson(result.body()));
@@ -104,17 +106,27 @@ public final class WorkspaceSchemaUpgradeService {
         result.addWarnings(mappings.warnings());
         result.putSummary(mappings.summaryMap(sourceData));
 
-        Thingifier targetThingifier = assembler.assemble(request.definition());
+        WorkspaceStorage targetStorage = targetStorageFor(snapshot.storage());
+        Thingifier targetThingifier =
+                assembler.assemble(request.definition(), targetStorage.provider());
+        targetThingifier.clearAllData();
         try {
             migrate(sourceData, request.definition(), targetThingifier, mappings, result);
             validateFinalData(request.definition(), targetThingifier, result);
-            result.targetThingifier(targetThingifier);
+            result.targetThingifier(targetThingifier, targetStorage);
         } catch (IllegalArgumentException | IllegalStateException | IndexOutOfBoundsException e) {
             targetThingifier.close();
             result.addBlockingError("migration", e.getMessage());
         }
         result.finish();
         return result;
+    }
+
+    private WorkspaceStorage targetStorageFor(final WorkspaceStorage currentStorage) {
+        if (WorkspaceStorage.MODE_SQLITE_MEMORY.equals(currentStorage.mode())) {
+            return WorkspaceStorage.sqliteMemory();
+        }
+        return WorkspaceStorage.memory();
     }
 
     private void migrate(
@@ -1129,6 +1141,7 @@ public final class WorkspaceSchemaUpgradeService {
         private final List<Map<String, Object>> coercions;
         private final List<Map<String, Object>> valueAssignments;
         private Thingifier targetThingifier;
+        private WorkspaceStorage targetStorage;
         private int statusCode;
 
         private MigrationResult(final long workspaceVersion) {
@@ -1245,12 +1258,18 @@ public final class WorkspaceSchemaUpgradeService {
             errors.add(error);
         }
 
-        private void targetThingifier(final Thingifier targetThingifier) {
+        private void targetThingifier(
+                final Thingifier targetThingifier, final WorkspaceStorage targetStorage) {
             this.targetThingifier = targetThingifier;
+            this.targetStorage = targetStorage;
         }
 
         private Thingifier targetThingifier() {
             return targetThingifier;
+        }
+
+        private WorkspaceStorage targetStorage() {
+            return targetStorage == null ? WorkspaceStorage.memory() : targetStorage;
         }
 
         private boolean canApply() {
@@ -1293,12 +1312,14 @@ public final class WorkspaceSchemaUpgradeService {
 
         private void releaseTargetThingifier() {
             targetThingifier = null;
+            targetStorage = null;
         }
 
         private void closeTargetThingifier() {
             if (targetThingifier != null) {
                 targetThingifier.close();
                 targetThingifier = null;
+                targetStorage = null;
             }
         }
     }

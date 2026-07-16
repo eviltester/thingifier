@@ -11,11 +11,19 @@ public final class CrudUiController {
     private final WorkspaceDataExporter exporter;
     private final WorkspaceDataImporter importer;
     private final WorkspaceProjectService projectService;
+    private final ProjectPathChooser projectPathChooser;
     private final SchemaPreviewService schemaPreviewService;
     private final WorkspaceSchemaUpgradeService schemaUpgradeService;
 
     public CrudUiController(final ActiveThingifierWorkspace workspace) {
+        this(workspace, new SwingProjectPathChooser());
+    }
+
+    CrudUiController(
+            final ActiveThingifierWorkspace workspace,
+            final ProjectPathChooser projectPathChooser) {
         this.workspace = workspace;
+        this.projectPathChooser = projectPathChooser;
         DynamicThingifierApiProxy apiProxy = new DynamicThingifierApiProxy(workspace);
         metadataJson = new WorkspaceMetadataJson();
         exporter = new WorkspaceDataExporter(workspace, apiProxy);
@@ -106,6 +114,67 @@ public final class CrudUiController {
         }
     }
 
+    public UiHttpResponse browseProject(final String requestJson) {
+        try {
+            ProjectActionRequest request = ProjectActionRequest.fromJson(requestJson, false);
+            ProjectPathSelection selection = projectPathChooser.choose(request);
+            if (!selection.isAvailable()) {
+                return JsonSupport.error(400, selection.message());
+            }
+            return UiHttpResponse.json(200, JsonSupport.toJson(selection.toMap()));
+        } catch (CrudUiException | IllegalArgumentException e) {
+            return JsonSupport.error(400, e.getMessage());
+        }
+    }
+
+    public UiHttpResponse checkProject(final String requestJson) {
+        try {
+            return projectService.check(requestJson);
+        } catch (ThingifierYamlException | CrudUiException | IllegalArgumentException e) {
+            return JsonSupport.error(400, e.getMessage());
+        }
+    }
+
+    public UiHttpResponse exportProjectFiles() {
+        return exportProjectFiles("{}");
+    }
+
+    public UiHttpResponse exportProjectFiles(final String requestJson) {
+        try {
+            return projectService.exportFiles(requestJson);
+        } catch (ThingifierYamlException | CrudUiException | IllegalArgumentException e) {
+            return JsonSupport.error(400, e.getMessage());
+        }
+    }
+
+    public UiHttpResponse loadProjectFiles(final String requestJson) {
+        try {
+            return projectService.loadFiles(requestJson);
+        } catch (ThingifierYamlException | CrudUiException | IllegalArgumentException e) {
+            return JsonSupport.error(400, e.getMessage());
+        }
+    }
+
+    public UiHttpResponse switchStorage(final String requestJson) {
+        try {
+            Map<?, ?> request =
+                    JsonSupport.fromJsonMap(
+                            requestJson,
+                            "Storage request must contain a JSON object",
+                            "Could not parse storage request JSON");
+            WorkspaceStorage storage =
+                    WorkspaceStorage.fromModeAndPath(
+                            stringValue(request.get("mode")),
+                            stringValue(request.get("sqliteFile")));
+            WorkspaceSnapshot snapshot = workspace.switchStorage(storage);
+            Map<String, Object> body = metadataJson.toMap(snapshot);
+            body.put("storageStatus", "switched");
+            return UiHttpResponse.json(200, JsonSupport.toJson(body));
+        } catch (CrudUiException | IllegalArgumentException | IllegalStateException e) {
+            return JsonSupport.error(400, e.getMessage());
+        }
+    }
+
     public UiHttpResponse apiDocumentationPage() {
         return UiHttpResponse.html(new ApiDocumentationPage(workspace.snapshot()).html());
     }
@@ -128,5 +197,9 @@ public final class CrudUiController {
         headers.put("Cache-Control", "no-store");
         String body = permissive ? openApi.permissiveOpenApiJson() : openApi.openApiJson();
         return new UiHttpResponse(200, "application/json", body, headers);
+    }
+
+    private String stringValue(final Object value) {
+        return value == null ? "" : String.valueOf(value);
     }
 }

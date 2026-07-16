@@ -44,7 +44,17 @@ public final class ThingifierProjectManifestYaml {
         project.put("description", manifest.description());
         root.put("project", project);
         root.put("schemaFile", manifest.schemaFile());
-        root.put("dataFile", manifest.dataFile());
+        if (!manifest.dataFile().isEmpty()) {
+            root.put("dataFile", manifest.dataFile());
+        }
+        if (manifest.hasStorageBlockEquivalent()) {
+            Map<String, Object> storage = new LinkedHashMap<>();
+            storage.put("mode", manifest.storageMode());
+            if (manifest.isSqliteFileStorage()) {
+                storage.put("sqliteFile", manifest.sqliteFile());
+            }
+            root.put("storage", storage);
+        }
         return dumper().dump(root);
     }
 
@@ -54,12 +64,15 @@ public final class ThingifierProjectManifestYaml {
         }
         Map<?, ?> root = (Map<?, ?>) parsed;
         Map<?, ?> project = mapValue(root.get("project"));
+        Map<?, ?> storage = mapValue(root.get("storage"));
         return new ThingifierProjectManifest(
                 intValue(root.get("formatVersion")),
                 stringValue(project.get("title")),
                 stringValue(project.get("description")),
                 stringValue(root.get("schemaFile")),
-                stringValue(root.get("dataFile")));
+                stringValue(root.get("dataFile")),
+                stringValue(storage.get("mode")),
+                stringValue(storage.get("sqliteFile")));
     }
 
     private int intValue(final Object value) {

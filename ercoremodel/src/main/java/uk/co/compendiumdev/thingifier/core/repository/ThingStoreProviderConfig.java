@@ -10,18 +10,28 @@ public class ThingStoreProviderConfig {
     public static final String DEFAULT_REPOSITORY_MODE = "memory";
     public static final String ARG_REPOSITORY_MODE = "-thingifier-repository";
     public static final String ARG_SQLITE_DIRECTORY = "-thingifier-sqlite-directory";
+    public static final String ARG_SQLITE_FILE = "-thingifier-sqlite-file";
     public static final String ARG_SQLITE_MEMORY = "-sqlite-memory";
     public static final String ENV_REPOSITORY_MODE = "THINGIFIER_REPOSITORY";
     public static final String ENV_SQLITE_DIRECTORY = "THINGIFIER_SQLITE_DIRECTORY";
+    public static final String ENV_SQLITE_FILE = "THINGIFIER_SQLITE_FILE";
     public static final String PROPERTY_REPOSITORY_MODE = "thingifier.repository";
     public static final String PROPERTY_SQLITE_DIRECTORY = "thingifier.sqlite.directory";
+    public static final String PROPERTY_SQLITE_FILE = "thingifier.sqlite.file";
 
     private final String repositoryMode;
     private final Path sqliteDirectory;
+    private final Path sqliteFile;
 
     public ThingStoreProviderConfig(final String repositoryMode, final Path sqliteDirectory) {
+        this(repositoryMode, sqliteDirectory, null);
+    }
+
+    public ThingStoreProviderConfig(
+            final String repositoryMode, final Path sqliteDirectory, final Path sqliteFile) {
         this.repositoryMode = normalize(repositoryMode);
         this.sqliteDirectory = sqliteDirectory;
+        this.sqliteFile = sqliteFile;
     }
 
     public static ThingStoreProviderConfig fromArgs(final String[] args) {
@@ -44,7 +54,16 @@ public class ThingStoreProviderConfig {
                         System.getenv(ENV_SQLITE_DIRECTORY),
                         "thingifier-sqlite");
 
-        return new ThingStoreProviderConfig(repositoryMode, Paths.get(sqliteDirectory));
+        String sqliteFile =
+                firstNonBlank(
+                        argValue(args, ARG_SQLITE_FILE),
+                        System.getProperty(PROPERTY_SQLITE_FILE),
+                        System.getenv(ENV_SQLITE_FILE));
+
+        return new ThingStoreProviderConfig(
+                repositoryMode,
+                Paths.get(sqliteDirectory),
+                sqliteFile.isEmpty() ? null : Paths.get(sqliteFile));
     }
 
     public ThingStoreProvider createProvider() {
@@ -60,6 +79,9 @@ public class ThingStoreProviderConfig {
             case "sqlite-file":
             case "sqlite-disk":
             case "file":
+                if (sqliteFile != null) {
+                    return SqliteThingStoreProvider.fileBackedFile(sqliteFile);
+                }
                 return SqliteThingStoreProvider.fileBacked(sqliteDirectory);
             default:
                 throw new IllegalArgumentException(
@@ -77,10 +99,21 @@ public class ThingStoreProviderConfig {
         return sqliteDirectory;
     }
 
+    public Path getSqliteFile() {
+        return sqliteFile;
+    }
+
+    public boolean hasSqliteFile() {
+        return sqliteFile != null;
+    }
+
     public String describe() {
         if (repositoryMode.equals("sqlite-file")
                 || repositoryMode.equals("sqlite-disk")
                 || repositoryMode.equals("file")) {
+            if (sqliteFile != null) {
+                return repositoryMode + " at " + sqliteFile.toAbsolutePath();
+            }
             return repositoryMode + " at " + sqliteDirectory.toAbsolutePath();
         }
         return repositoryMode;

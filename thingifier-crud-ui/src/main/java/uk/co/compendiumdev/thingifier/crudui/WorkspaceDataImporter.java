@@ -74,7 +74,8 @@ public final class WorkspaceDataImporter {
             final Map<String, String> importedIdentifiers) {
         Map<String, Object> body = new LinkedHashMap<>();
         for (Map.Entry<?, ?> field : instance.entrySet()) {
-            body.put(String.valueOf(field.getKey()), field.getValue());
+            String fieldName = String.valueOf(field.getKey());
+            body.put(fieldName, normalizedValue(entity.fieldNamed(fieldName), field.getValue()));
         }
         String oldId = stringValue(body.get(entity.primaryKeyFieldName()));
         if (hasAutoPrimaryKey(entity)) {
@@ -153,6 +154,33 @@ public final class WorkspaceDataImporter {
         return primaryKey != null
                 && ("auto-increment".equals(primaryKey.type())
                         || "auto-guid".equals(primaryKey.type()));
+    }
+
+    private Object normalizedValue(final FieldDefinitionSpec field, final Object value) {
+        if (field == null || value == null) {
+            return value;
+        }
+        if ("boolean".equals(field.type()) && value instanceof String) {
+            String text = ((String) value).trim();
+            if ("true".equalsIgnoreCase(text) || "false".equalsIgnoreCase(text)) {
+                return Boolean.valueOf(text);
+            }
+        }
+        if ("integer".equals(field.type()) && value instanceof String) {
+            try {
+                return Integer.valueOf(((String) value).trim());
+            } catch (NumberFormatException e) {
+                return value;
+            }
+        }
+        if ("float".equals(field.type()) && value instanceof String) {
+            try {
+                return Double.valueOf(((String) value).trim());
+            } catch (NumberFormatException e) {
+                return value;
+            }
+        }
+        return value;
     }
 
     private Map<?, ?> mapValue(final Object value, final String errorMessage) {

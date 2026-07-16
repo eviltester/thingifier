@@ -56,6 +56,27 @@ public class SqliteThingStoreProvider implements ThingStoreProvider {
                 });
     }
 
+    public static SqliteThingStoreProvider fileBackedFile(final Path databaseFile) {
+        final Path normalized = databaseFile.toAbsolutePath().normalize();
+        final Path parent = normalized.getParent();
+        if (parent != null) {
+            try {
+                Files.createDirectories(parent);
+            } catch (IOException e) {
+                throw new IllegalStateException(
+                        "Could not create SQLite repository directory " + parent, e);
+            }
+        }
+
+        return new SqliteThingStoreProvider(
+                databaseKey ->
+                        "jdbc:sqlite:"
+                                + databaseFileFor(normalized, databaseKey)
+                                        .toAbsolutePath()
+                                        .toString()
+                                        .replace("\\", "/"));
+    }
+
     @Override
     public ThingStore getDefaultStore() {
         return repositories.get(EntityRelModel.DEFAULT_DATABASE_NAME);
@@ -105,5 +126,19 @@ public class SqliteThingStoreProvider implements ThingStoreProvider {
 
     private static String safeName(final String databaseKey) {
         return databaseKey.replaceAll("[^A-Za-z0-9._-]", "_");
+    }
+
+    private static Path databaseFileFor(final Path databaseFile, final String databaseKey) {
+        if (EntityRelModel.DEFAULT_DATABASE_NAME.equals(databaseKey)) {
+            return databaseFile;
+        }
+
+        final Path parent = databaseFile.getParent();
+        final String fileName = databaseFile.getFileName().toString();
+        final int extensionAt = fileName.lastIndexOf(".");
+        final String baseName = extensionAt > 0 ? fileName.substring(0, extensionAt) : fileName;
+        final String extension = extensionAt > 0 ? fileName.substring(extensionAt) : ".sqlite";
+        final String sessionFileName = baseName + "-" + safeName(databaseKey) + extension;
+        return parent == null ? Path.of(sessionFileName) : parent.resolve(sessionFileName);
     }
 }

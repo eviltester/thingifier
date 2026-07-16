@@ -2,17 +2,24 @@ package uk.co.compendiumdev.thingifier.crudui;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import uk.co.compendiumdev.thingifier.core.repository.ThingStoreProviderConfig;
 
 public final class CrudUiArguments {
 
     private final int port;
     private final Path modelYamlPath;
     private final Path projectPath;
+    private final WorkspaceStorage storage;
 
-    private CrudUiArguments(final int port, final Path modelYamlPath, final Path projectPath) {
+    private CrudUiArguments(
+            final int port,
+            final Path modelYamlPath,
+            final Path projectPath,
+            final WorkspaceStorage storage) {
         this.port = port;
         this.modelYamlPath = modelYamlPath;
         this.projectPath = projectPath;
+        this.storage = storage;
     }
 
     public static CrudUiArguments parse(final String[] args) {
@@ -38,7 +45,11 @@ public final class CrudUiArguments {
             throw new IllegalArgumentException("Use either -project or -modelYaml, not both");
         }
 
-        return new CrudUiArguments(configuredPort, configuredModelYamlPath, configuredProjectPath);
+        return new CrudUiArguments(
+                configuredPort,
+                configuredModelYamlPath,
+                configuredProjectPath,
+                WorkspaceStorage.fromConfig(ThingStoreProviderConfig.fromArgs(args)));
     }
 
     public int port() {
@@ -59,5 +70,9 @@ public final class CrudUiArguments {
 
     public Path projectPath() {
         return projectPath;
+    }
+
+    public WorkspaceStorage storage() {
+        return storage;
     }
 }

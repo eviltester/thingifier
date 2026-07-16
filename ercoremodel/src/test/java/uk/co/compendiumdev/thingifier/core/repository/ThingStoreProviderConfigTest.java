@@ -53,6 +53,22 @@ public class ThingStoreProviderConfigTest {
     }
 
     @Test
+    public void canCreateDirectSqliteFileRepositoryFromArgs() {
+        Path databaseFile = tempDir.resolve("crud-ui.sqlite");
+        ThingStoreProviderConfig config =
+                ThingStoreProviderConfig.fromArgs(
+                        new String[] {
+                            "-thingifier-repository=sqlite-file",
+                            "-thingifier-sqlite-file=" + databaseFile
+                        });
+
+        Assertions.assertEquals("sqlite-file", config.getRepositoryMode());
+        Assertions.assertTrue(config.hasSqliteFile());
+        Assertions.assertEquals(databaseFile, config.getSqliteFile());
+        Assertions.assertTrue(config.createProvider() instanceof SqliteThingStoreProvider);
+    }
+
+    @Test
     public void rejectsUnknownRepositoryModes() {
         ThingStoreProviderConfig config =
                 ThingStoreProviderConfig.fromArgs(new String[] {"-thingifier-repository=unknown"});

@@ -1,0 +1,83 @@
+formatVersion: 1
+model:
+  title: Todo Manager
+  description: A Simple todo manager with categories and projects.
+entities:
+  todo:
+    plural: todos
+    maxInstances: -1
+    primaryKey: id
+    fields:
+      id:
+        type: auto-increment
+      title:
+        type: string
+        required: true
+        validations:
+          - notEmpty
+      doneStatus:
+        type: boolean
+        default: "false"
+      description:
+        type: string
+  project:
+    plural: projects
+    maxInstances: -1
+    primaryKey: id
+    fields:
+      id:
+        type: auto-increment
+      title:
+        type: string
+      completed:
+        type: boolean
+        default: "false"
+      active:
+        type: boolean
+        default: "false"
+      description:
+        type: string
+  category:
+    plural: categories
+    maxInstances: -1
+    primaryKey: id
+    fields:
+      id:
+        type: auto-increment
+      title:
+        type: string
+        required: true
+        validations:
+          - notEmpty
+      description:
+        type: string
+relationships:
+  - from: project
+    name: tasks
+    to: todo
+    cardinality: one-to-many
+    optionality: optional
+    reverse:
+      name: tasksof
+      cardinality: one-to-many
+      optionality: optional
+  - from: project
+    name: categories
+    to: category
+    cardinality: one-to-many
+    optionality: optional
+  - from: category
+    name: todos
+    to: todo
+    cardinality: one-to-many
+    optionality: optional
+  - from: category
+    name: projects
+    to: project
+    cardinality: one-to-many
+    optionality: optional
+  - from: todo
+    name: categories
+    to: category
+    cardinality: one-to-many
+    optionality: optional

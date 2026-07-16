@@ -200,6 +200,28 @@ button.danger {
     cursor: pointer;
 }
 
+.storage-controls {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding-left: 8px;
+    border-left: 1px solid var(--line);
+}
+
+.storage-controls select,
+.storage-controls input {
+    min-height: 32px;
+}
+
+.storage-controls input {
+    width: 190px;
+}
+
+.storage-controls input:disabled {
+    background: #f0f2f5;
+    color: var(--muted);
+}
+
 .workspace {
     flex: 1;
     min-height: 0;
@@ -651,6 +673,61 @@ button.danger {
     border: 1px solid var(--line);
     border-radius: 4px;
     padding: 7px 9px;
+}
+
+.field-row .project-path-controls {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    gap: 8px;
+    align-items: center;
+    color: var(--ink);
+    font-size: 14px;
+    font-weight: 400;
+    text-transform: none;
+}
+
+.project-save-storage-options {
+    display: grid;
+    gap: 8px;
+    margin: 12px 0 0;
+    padding: 10px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+}
+
+.project-save-storage-options legend {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.project-save-storage-options label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.project-save-storage-options input {
+    width: auto;
+}
+
+.project-browser-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+}
+
+.project-browser-status {
+    min-height: 18px;
+    margin: 10px 0 0;
+    color: var(--muted);
+    line-height: 1.4;
+}
+
+.project-browser-status.error {
+    color: var(--danger);
 }
 
 .project-dialog-warning {

@@ -1,5 +1,6 @@
 package uk.co.compendiumdev.thingifier.core.repository;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.UUID;
@@ -55,6 +56,34 @@ public class ThingStoreContractTest {
     public void sqliteProviderKeepsLogicalDatabasesSeparate() {
         try (ThingStoreProvider provider = SqliteThingStoreProvider.inMemory()) {
             exerciseProviderIsolation(provider);
+        }
+    }
+
+    @Test
+    public void directSqliteFileProviderCreatesAndReopensDatabaseFile() {
+        ERSchema schema = todoSchema();
+        Path databasePath = tempDir.resolve("direct-provider.sqlite");
+
+        try (ThingStoreProvider provider = SqliteThingStoreProvider.fileBackedFile(databasePath)) {
+            ThingStore store = provider.getDefaultStore();
+            store.administration().initializeFrom(schema);
+            create(store, schema.getEntityDefinitionNamed("project"), "File provider");
+        }
+
+        Assertions.assertTrue(Files.exists(databasePath));
+
+        try (ThingStoreProvider reopened = SqliteThingStoreProvider.fileBackedFile(databasePath)) {
+            ThingStore store = reopened.getDefaultStore();
+            store.administration().initializeFrom(schema);
+
+            Assertions.assertEquals(
+                    1, store.entityQueries().count(schema.getEntityDefinitionNamed("project")));
+            Assertions.assertEquals(
+                    "File provider",
+                    store.entityQueries()
+                            .findByPrimaryKey(schema.getEntityDefinitionNamed("project"), "1")
+                            .getFieldValue("title")
+                            .asString());
         }
     }
 
