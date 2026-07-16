@@ -22,6 +22,7 @@ const state = {
     schemaDiagramHeight: 280,
     schemaDiagramResizeStart: null,
     schemaUpgradeDialogOpen: false,
+    projectDialogAction: null,
     schemaUpgradePreview: null,
     schemaUpgradeMappings: {
         entityMappings: {},
@@ -45,8 +46,17 @@ const els = {
     newButton: document.getElementById("new-button"),
     refreshButton: document.getElementById("refresh-button"),
     exportButton: document.getElementById("export-button"),
+    saveProjectButton: document.getElementById("save-project-button"),
+    loadProjectButton: document.getElementById("load-project-button"),
     yamlFile: document.getElementById("yaml-file"),
     importFile: document.getElementById("import-file"),
+    projectDialog: document.getElementById("project-dialog"),
+    projectDialogTitle: document.getElementById("project-dialog-title"),
+    projectDialogDescription: document.getElementById("project-dialog-description"),
+    projectDialogWarning: document.getElementById("project-dialog-warning"),
+    projectPathInput: document.getElementById("project-path-input"),
+    projectDialogConfirm: document.getElementById("project-dialog-confirm"),
+    projectDialogCancel: document.getElementById("project-dialog-cancel"),
     schemaWorkspaceLink: document.getElementById("schema-workspace-link"),
     schemaDirtyStatus: document.getElementById("schema-dirty-status"),
     schemaReset: document.getElementById("schema-reset-button"),
@@ -208,7 +218,11 @@ function renderHeader() {
         return;
     }
     els.title.textContent = state.workspace.model.title || "Thingifier";
-    els.description.textContent = state.workspace.model.description || "";
+    const description = state.workspace.model.description || "";
+    const projectPath = state.workspace.project && state.workspace.project.path
+        ? `Project: ${state.workspace.project.path}`
+        : "";
+    els.description.textContent = [description, projectPath].filter(Boolean).join(" | ");
 }
 
 function renderTree() {
@@ -1055,6 +1069,59 @@ function clearMessage() {
     }
     els.message.textContent = "";
     els.message.hidden = true;
+}
+
+function openProjectDialog(action) {
+    if (!els.projectDialog) {
+        return;
+    }
+    state.projectDialogAction = action;
+    const isSave = action === "save";
+    const currentPath = state.workspace && state.workspace.project
+        ? state.workspace.project.path || ""
+        : "";
+    els.projectDialogTitle.textContent = isSave ? "Save Project" : "Load Project";
+    els.projectDialogDescription.textContent = isSave
+        ? "Save the active schema and data to a server-side project folder."
+        : "Load schema and data from a server-side project folder or projectfile.erproj.";
+    els.projectDialogWarning.textContent = isSave
+        ? "Saving overwrites projectfile.erproj, schema.yaml, and data.json in the selected folder. Other files are left alone."
+        : "Loading a project replaces the current workspace schema and data.";
+    els.projectDialogConfirm.textContent = isSave ? "Save Project" : "Load Project";
+    els.projectPathInput.value = currentPath;
+    els.projectDialog.hidden = false;
+    els.projectPathInput.focus();
+}
+
+function closeProjectDialog() {
+    if (!els.projectDialog) {
+        return;
+    }
+    state.projectDialogAction = null;
+    els.projectDialog.hidden = true;
+}
+
+async function submitProjectDialog() {
+    if (!state.projectDialogAction || !els.projectPathInput) {
+        return;
+    }
+    const path = els.projectPathInput.value.trim();
+    if (!path) {
+        showMessage("Enter a project folder path.", true);
+        return;
+    }
+    const action = state.projectDialogAction;
+    const endpoint = action === "save" ? "/ui/project/save" : "/ui/project/load";
+    const workspace = await requestJson(endpoint, {
+        method: "POST",
+        body: JSON.stringify({path})
+    });
+    state.workspace = workspace;
+    state.schemaDraft = null;
+    state.schemaPreview = null;
+    closeProjectDialog();
+    await loadWorkspace();
+    showMessage(action === "save" ? "Project saved." : "Project loaded.");
 }
 
 function markSchemaDirty() {
@@ -2599,6 +2666,38 @@ if (els.exportButton) {
             URL.revokeObjectURL(url);
         } catch (error) {
             showMessage(error.message, true);
+        }
+    });
+}
+if (els.saveProjectButton) {
+    els.saveProjectButton.addEventListener("click", () => openProjectDialog("save"));
+}
+if (els.loadProjectButton) {
+    els.loadProjectButton.addEventListener("click", () => openProjectDialog("load"));
+}
+if (els.projectDialogConfirm) {
+    els.projectDialogConfirm.addEventListener("click", () => {
+        submitProjectDialog().catch(error => showMessage(error.message, true));
+    });
+}
+if (els.projectDialogCancel) {
+    els.projectDialogCancel.addEventListener("click", closeProjectDialog);
+}
+if (els.projectDialog) {
+    els.projectDialog.addEventListener("click", event => {
+        if (event.target === els.projectDialog) {
+            closeProjectDialog();
+        }
+    });
+}
+if (els.projectPathInput) {
+    els.projectPathInput.addEventListener("keydown", event => {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            submitProjectDialog().catch(error => showMessage(error.message, true));
+        }
+        if (event.key === "Escape") {
+            closeProjectDialog();
         }
     });
 }

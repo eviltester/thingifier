@@ -24,7 +24,14 @@ public final class WorkspaceMetadataJson {
         body.put("entities", entityMaps(snapshot));
         body.put("relationships", relationshipMaps(snapshot));
         body.put("schemaYaml", snapshot.schemaYaml());
+        body.put("project", projectMap(snapshot));
         return body;
+    }
+
+    public String toJson(final WorkspaceSnapshot snapshot, final String projectStatus) {
+        Map<String, Object> body = toMap(snapshot);
+        body.put("projectStatus", projectStatus);
+        return JsonSupport.toJson(body);
     }
 
     private Map<String, Object> modelMap(final WorkspaceSnapshot snapshot) {
@@ -32,6 +39,15 @@ public final class WorkspaceMetadataJson {
         model.put("title", nullToEmpty(snapshot.definition().title()));
         model.put("description", nullToEmpty(snapshot.definition().description()));
         return model;
+    }
+
+    private Map<String, Object> projectMap(final WorkspaceSnapshot snapshot) {
+        Map<String, Object> project = new LinkedHashMap<>();
+        project.put("path", snapshot.projectPath());
+        project.put("title", snapshot.projectTitle());
+        project.put("description", snapshot.projectDescription());
+        project.put("active", snapshot.hasProjectPath());
+        return project;
     }
 
     private List<Map<String, Object>> entityMaps(final WorkspaceSnapshot snapshot) {

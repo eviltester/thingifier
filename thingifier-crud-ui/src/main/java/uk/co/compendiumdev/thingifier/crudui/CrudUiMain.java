@@ -1,6 +1,7 @@
 package uk.co.compendiumdev.thingifier.crudui;
 
 import java.io.IOException;
+import java.util.Map;
 import uk.co.compendiumdev.thingifier.crudui.adapter.spark.CrudUiApplication;
 
 public final class CrudUiMain {
@@ -11,7 +12,10 @@ public final class CrudUiMain {
         CrudUiArguments arguments = CrudUiArguments.parse(args);
         ActiveThingifierWorkspace workspace =
                 ActiveThingifierWorkspace.defaultTodoManagerWorkspace();
-        if (arguments.hasModelYamlPath()) {
+        if (arguments.hasProjectPath()) {
+            new WorkspaceProjectService(workspace, new WorkspaceMetadataJson())
+                    .load(JsonSupport.toJson(Map.of("path", arguments.projectPath().toString())));
+        } else if (arguments.hasModelYamlPath()) {
             workspace.replaceWithYaml(arguments.modelYamlPath());
         }
 

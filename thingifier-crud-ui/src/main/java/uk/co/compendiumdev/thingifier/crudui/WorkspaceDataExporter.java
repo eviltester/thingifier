@@ -27,13 +27,27 @@ public final class WorkspaceDataExporter {
     }
 
     public UiHttpResponse exportData() {
+        return UiHttpResponse.json(200, exportWorkspaceJson());
+    }
+
+    String exportWorkspaceJson() {
+        return JsonSupport.toJson(exportDocument(true));
+    }
+
+    String exportProjectDataJson() {
+        return JsonSupport.toJson(exportDocument(false));
+    }
+
+    private Map<String, Object> exportDocument(final boolean includeSchemaYaml) {
         WorkspaceSnapshot snapshot = workspace.snapshot();
         Map<String, Object> document = new LinkedHashMap<>();
         document.put("formatVersion", 1);
-        document.put("schemaYaml", snapshot.schemaYaml());
+        if (includeSchemaYaml) {
+            document.put("schemaYaml", snapshot.schemaYaml());
+        }
         document.put("entities", exportEntities(snapshot));
         document.put("relationships", exportRelationships(snapshot));
-        return UiHttpResponse.json(200, JsonSupport.toJson(document));
+        return document;
     }
 
     private Map<String, Object> exportEntities(final WorkspaceSnapshot snapshot) {

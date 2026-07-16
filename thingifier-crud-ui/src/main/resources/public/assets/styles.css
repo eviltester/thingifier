@@ -625,6 +625,40 @@ button.danger {
     overflow: hidden;
 }
 
+.project-dialog {
+    width: min(560px, 94vw);
+}
+
+.project-dialog-body {
+    padding: 14px;
+}
+
+.field-row {
+    display: grid;
+    gap: 6px;
+}
+
+.field-row span {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.field-row input {
+    width: 100%;
+    min-height: 36px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 7px 9px;
+}
+
+.project-dialog-warning {
+    margin: 12px 0 0;
+    color: var(--muted);
+    line-height: 1.4;
+}
+
 .schema-dialog-header,
 .schema-dialog-footer {
     display: flex;

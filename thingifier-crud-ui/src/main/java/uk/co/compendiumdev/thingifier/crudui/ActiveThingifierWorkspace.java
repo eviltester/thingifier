@@ -19,6 +19,9 @@ public final class ActiveThingifierWorkspace implements AutoCloseable {
     private Thingifier thingifier;
     private ThingifierModelDefinition definition;
     private String schemaYaml;
+    private String projectPath;
+    private String projectTitle;
+    private String projectDescription;
     private long version;
 
     private ActiveThingifierWorkspace(final Thingifier thingifier) {
@@ -38,14 +41,26 @@ public final class ActiveThingifierWorkspace implements AutoCloseable {
         return new ActiveThingifierWorkspace(todoManager);
     }
 
+    static ActiveThingifierWorkspace forThingifier(final Thingifier thingifier) {
+        return new ActiveThingifierWorkspace(thingifier);
+    }
+
     public synchronized WorkspaceSnapshot snapshot() {
-        return new WorkspaceSnapshot(version, thingifier, definition, schemaYaml);
+        return new WorkspaceSnapshot(
+                version,
+                thingifier,
+                definition,
+                schemaYaml,
+                projectPath,
+                projectTitle,
+                projectDescription);
     }
 
     public synchronized WorkspaceSnapshot replaceWithYaml(final String yamlText) {
         Thingifier newThingifier = yamlLoader.loadThingifier(yamlText);
         Thingifier oldThingifier = thingifier;
         replaceWith(newThingifier);
+        clearProject();
         version++;
         if (oldThingifier != null) {
             oldThingifier.close();
@@ -72,10 +87,51 @@ public final class ActiveThingifierWorkspace implements AutoCloseable {
         return snapshot();
     }
 
+    synchronized WorkspaceSnapshot replaceWithProjectThingifier(
+            final Thingifier newThingifier,
+            final Path projectFolder,
+            final String title,
+            final String description) {
+        Thingifier oldThingifier = thingifier;
+        replaceWith(newThingifier);
+        projectPath = projectFolder.toAbsolutePath().normalize().toString();
+        projectTitle = nullToEmpty(title);
+        projectDescription = nullToEmpty(description);
+        version++;
+        if (oldThingifier != null) {
+            oldThingifier.close();
+        }
+        return snapshot();
+    }
+
+    synchronized WorkspaceSnapshot markProjectSaved(
+            final Path projectFolder, final String title, final String description) {
+        projectPath = projectFolder.toAbsolutePath().normalize().toString();
+        projectTitle = nullToEmpty(title);
+        projectDescription = nullToEmpty(description);
+        return snapshot();
+    }
+
+    synchronized Thingifier releaseThingifier() {
+        Thingifier released = thingifier;
+        thingifier = null;
+        return released;
+    }
+
     private void replaceWith(final Thingifier newThingifier) {
         thingifier = newThingifier;
         definition = modelExporter.export(newThingifier);
         schemaYaml = yamlExporter.export(definition);
+    }
+
+    private void clearProject() {
+        projectPath = "";
+        projectTitle = "";
+        projectDescription = "";
+    }
+
+    private String nullToEmpty(final String value) {
+        return value == null ? "" : value;
     }
 
     @Override
