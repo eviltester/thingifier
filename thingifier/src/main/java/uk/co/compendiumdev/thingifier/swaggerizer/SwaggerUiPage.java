@@ -130,6 +130,11 @@ public final class SwaggerUiPage {
     }
 
     private String resolveTitle() {
+        final String swaggerUiTitle = firstNonBlank(apiDefn.getSwaggerUiTitle(), "");
+        if (!swaggerUiTitle.isEmpty()) {
+            return swaggerUiTitle;
+        }
+
         final String configuredTitle = firstNonBlank(apiDefn.getSeoTitle(), apiDefn.getTitle());
         if (!configuredTitle.isEmpty()) {
             return configuredTitle + " Swagger UI";
