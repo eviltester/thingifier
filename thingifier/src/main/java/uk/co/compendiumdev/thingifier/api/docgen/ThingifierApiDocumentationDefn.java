@@ -22,6 +22,7 @@ public class ThingifierApiDocumentationDefn {
     private String description = "";
     private String pathPrefix = "";
     private String seoTitle = "";
+    private String swaggerUiTitle = "";
     private String seoDescription = "";
     private String metaRobots = "";
     private String ogImage = "";
@@ -127,6 +128,15 @@ public class ThingifierApiDocumentationDefn {
 
     public ThingifierApiDocumentationDefn setSeoTitle(final String seoTitle) {
         this.seoTitle = seoTitle;
+        return this;
+    }
+
+    public String getSwaggerUiTitle() {
+        return swaggerUiTitle;
+    }
+
+    public ThingifierApiDocumentationDefn setSwaggerUiTitle(final String swaggerUiTitle) {
+        this.swaggerUiTitle = swaggerUiTitle;
         return this;
     }
 
