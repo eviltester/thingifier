@@ -52,7 +52,7 @@ public class ThingifierAutoDocGenRouting {
                     response.type("application/json");
                     response.status(200);
                     return new Swaggerizer(apiDefn)
-                            .asJsonWithPreferredServer(requestOrigin(request));
+                            .asJsonWithPreferredServer(HttpRequestOrigin.from(request));
                 });
 
         get(
@@ -99,11 +99,8 @@ public class ThingifierAutoDocGenRouting {
                     // TODO: the swaggerizer could be stored at a class level and allow caching to
                     // be used for the output
                     return new Swaggerizer(apiDefn)
-                            .asJsonWithPreferredServer(permissive != null, requestOrigin(request));
+                            .asJsonWithPreferredServer(
+                                    permissive != null, HttpRequestOrigin.from(request));
                 });
-    }
-
-    private String requestOrigin(final HttpServerRequest request) {
-        return "%s://%s".formatted(request.scheme(), request.host());
     }
 }
