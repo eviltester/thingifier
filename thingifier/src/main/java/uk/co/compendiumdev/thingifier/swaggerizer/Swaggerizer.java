@@ -11,6 +11,7 @@ import io.swagger.v3.oas.models.responses.ApiResponses;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import uk.co.compendiumdev.thingifier.Thingifier;
@@ -541,7 +542,8 @@ public class Swaggerizer {
             return;
         }
 
-        final String preferredUrl = preferredServerUrl.trim();
+        final String preferredUrl =
+                configuredHttpsUrlForSameHost(preferredServerUrl.trim(), api.getServers());
         final List<Server> existingServers = api.getServers();
         final List<Server> reorderedServers = new ArrayList<>();
         Server preferredServer = null;
@@ -561,6 +563,73 @@ public class Swaggerizer {
         }
         reorderedServers.add(0, preferredServer);
         api.setServers(reorderedServers);
+    }
+
+    private String configuredHttpsUrlForSameHost(
+            final String preferredUrl, final List<Server> configuredServers) {
+        final URI preferredUri = uriFrom(preferredUrl);
+        if (preferredUri == null || !"http".equalsIgnoreCase(preferredUri.getScheme())) {
+            return preferredUrl;
+        }
+
+        if (configuredServers == null) {
+            return preferredUrl;
+        }
+
+        for (Server server : configuredServers) {
+            if (server.getUrl() == null) {
+                continue;
+            }
+
+            final String configuredUrl = server.getUrl().trim();
+            final URI configuredUri = uriFrom(configuredUrl);
+            if (configuredUri == null || !"https".equalsIgnoreCase(configuredUri.getScheme())) {
+                continue;
+            }
+
+            if (sameHostAndPort(preferredUri, configuredUri)) {
+                return configuredUrl;
+            }
+        }
+
+        return preferredUrl;
+    }
+
+    private boolean sameHostAndPort(final URI preferredUri, final URI configuredUri) {
+        if (!sameHost(preferredUri, configuredUri)) {
+            return false;
+        }
+        if (preferredUri.getPort() == -1 && configuredUri.getPort() == -1) {
+            return true;
+        }
+        return effectivePort(preferredUri) == effectivePort(configuredUri);
+    }
+
+    private boolean sameHost(final URI preferredUri, final URI configuredUri) {
+        return preferredUri.getHost() != null
+                && configuredUri.getHost() != null
+                && preferredUri.getHost().equalsIgnoreCase(configuredUri.getHost());
+    }
+
+    private int effectivePort(final URI uri) {
+        if (uri.getPort() != -1) {
+            return uri.getPort();
+        }
+        if ("https".equalsIgnoreCase(uri.getScheme())) {
+            return 443;
+        }
+        if ("http".equalsIgnoreCase(uri.getScheme())) {
+            return 80;
+        }
+        return -1;
+    }
+
+    private URI uriFrom(final String url) {
+        try {
+            return URI.create(url);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
     }
 
     private boolean sameServerUrl(final String preferredUrl, final String configuredUrl) {
