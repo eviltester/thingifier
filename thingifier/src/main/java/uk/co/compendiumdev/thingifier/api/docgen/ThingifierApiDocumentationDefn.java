@@ -28,6 +28,7 @@ public class ThingifierApiDocumentationDefn {
     private String ogType = "";
     private String twitterCard = "";
     private String twitterSite = "";
+    private boolean showSwaggerUiLink = true;
     private Map<String, HeaderMatch> customHeadersForRoutesThatDoNotMatch;
 
     // todo: convert internal documentation to use a ThingifierApiDefn rather than a direct
@@ -180,6 +181,15 @@ public class ThingifierApiDocumentationDefn {
 
     public ThingifierApiDocumentationDefn setTwitterSite(final String twitterSite) {
         this.twitterSite = twitterSite;
+        return this;
+    }
+
+    public boolean willShowSwaggerUiLink() {
+        return showSwaggerUiLink;
+    }
+
+    public ThingifierApiDocumentationDefn setShowSwaggerUiLink(final boolean showSwaggerUiLink) {
+        this.showSwaggerUiLink = showSwaggerUiLink;
         return this;
     }
 
