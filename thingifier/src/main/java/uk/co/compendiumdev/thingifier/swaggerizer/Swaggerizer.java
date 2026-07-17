@@ -559,7 +559,7 @@ public class Swaggerizer {
         }
 
         if (preferredServer == null) {
-            preferredServer = new Server().description("current request").url(preferredUrl);
+            return;
         }
         reorderedServers.add(0, preferredServer);
         api.setServers(reorderedServers);

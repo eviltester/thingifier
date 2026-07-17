@@ -30,6 +30,18 @@ class SwaggerizerServerPreferenceTest {
         Assertions.assertFalse(json.contains("\"description\" : \"current request\""));
     }
 
+    @Test
+    void doesNotAddCurrentRequestServerWhenCurrentRequestIsNotConfigured() {
+        final String json =
+                new Swaggerizer(apiDefn()).asJsonWithPreferredServer("http://internal:4567");
+
+        Assertions.assertTrue(
+                json.indexOf("\"url\" : \"https://apichallenges.eviltester.com\"")
+                        < json.indexOf("\"url\" : \"http://localhost:4567\""));
+        Assertions.assertFalse(json.contains("\"url\" : \"http://internal:4567\""));
+        Assertions.assertFalse(json.contains("\"description\" : \"current request\""));
+    }
+
     private ThingifierApiDocumentationDefn apiDefn() {
         final ThingifierApiDocumentationDefn apiDefn = new ThingifierApiDocumentationDefn();
         apiDefn.addServer("https://apichallenges.eviltester.com", "cloud hosted version");
