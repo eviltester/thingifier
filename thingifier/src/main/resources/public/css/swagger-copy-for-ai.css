@@ -1,0 +1,44 @@
+.swagger-copy-ai-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 1rem 0;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.swagger-copy-ai-button {
+    border: 1px solid #777;
+    border-radius: 4px;
+    background: #fff;
+    color: #222;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.2;
+    padding: 0.45rem 0.7rem;
+}
+
+.swagger-copy-ai-button:hover,
+.swagger-copy-ai-button:focus {
+    border-color: #1f5f8b;
+    color: #1f5f8b;
+}
+
+.swagger-copy-ai-button:disabled {
+    cursor: wait;
+    opacity: 0.75;
+}
+
+.swagger-copy-ai-operation {
+    margin-left: auto;
+    white-space: nowrap;
+}
+
+.swagger-copy-ai-status {
+    color: #555;
+    font-size: 12px;
+}
+
+.swagger-ui .opblock .opblock-summary {
+    gap: 0.35rem;
+}
