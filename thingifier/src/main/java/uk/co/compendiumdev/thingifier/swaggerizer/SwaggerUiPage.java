@@ -11,6 +11,8 @@ public final class SwaggerUiPage {
             "https://unpkg.com/swagger-ui-dist/swagger-ui-bundle.js";
     private static final String SWAGGER_UI_PRESET =
             "https://unpkg.com/swagger-ui-dist/swagger-ui-standalone-preset.js";
+    private static final String COPY_FOR_AI_CSS = "/css/swagger-copy-for-ai.css";
+    private static final String COPY_FOR_AI_SCRIPT = "/js/swagger-copy-for-ai.js";
 
     private final ThingifierApiDocumentationDefn apiDefn;
     private final DefaultGUIHTML guiManagement;
@@ -74,6 +76,14 @@ public final class SwaggerUiPage {
         html.append("}, 0);");
         html.append("};");
         html.append("</script>");
+        html.append("<script>");
+        html.append("window.thingifierSwaggerCopyForAi = {");
+        html.append("openApiUrl: \"").append(escapeJavaScriptString(openApiUrl)).append("\"");
+        html.append("};");
+        html.append("</script>");
+        html.append("<script src='")
+                .append(COPY_FOR_AI_SCRIPT)
+                .append("' charset='UTF-8'></script>");
         html.append("</div>");
         html.append(guiManagement.getEndOfMainContentMarker());
         html.append(guiManagement.getPageFooter());
@@ -84,6 +94,9 @@ public final class SwaggerUiPage {
     private String headInject() {
         return "<link rel='stylesheet' href='"
                 + SWAGGER_UI_CSS
+                + "'>"
+                + "<link rel='stylesheet' href='"
+                + COPY_FOR_AI_CSS
                 + "'>"
                 + "<style>"
                 + lightThemeCss()

@@ -35,6 +35,7 @@ public class CrudUiApiIT {
         assertStatusContains("/schema", 200, "Thingifier Schema Edit");
         assertStatusContains("/docs", 200, "API Documentation");
         assertStatusContains("/swagger", 200, "SwaggerUIBundle");
+        assertStatusContains("/swagger", 200, "swagger-copy-for-ai.js");
         assertStatusContains("/openapi.json", 200, "\"openapi\"");
         assertStatusContains("/docs/swagger", 200, "\"openapi\"");
     }

@@ -20,6 +20,7 @@ public final class SwaggerUiPage {
                 + " Swagger UI</title>\n"
                 + "  <link rel=\"icon\" href=\"/favicon.svg\" type=\"image/svg+xml\">\n"
                 + "  <link rel=\"stylesheet\" href=\"https://unpkg.com/swagger-ui-dist/swagger-ui.css\">\n"
+                + "  <link rel=\"stylesheet\" href=\"/css/swagger-copy-for-ai.css\">\n"
                 + "  <style>body{margin:0;background:#fafafa}.swagger-topbar{height:44px;display:flex;align-items:center;gap:12px;padding:0 14px;background:#1f2733;color:#fff;font-family:Arial,Helvetica,sans-serif}.swagger-topbar a{color:#fff}.swagger-title{font-weight:700}</style>\n"
                 + "</head>\n"
                 + "<body>\n"
@@ -41,6 +42,8 @@ public final class SwaggerUiPage {
                 + "  });\n"
                 + "};\n"
                 + "</script>\n"
+                + "<script>window.thingifierSwaggerCopyForAi = { openApiUrl: \"/openapi.json\" };</script>\n"
+                + "<script src=\"/js/swagger-copy-for-ai.js\" charset=\"UTF-8\"></script>\n"
                 + "</body>\n"
                 + "</html>\n";
     }

@@ -356,6 +356,10 @@ public class CrudUiControllerTest {
             Assertions.assertTrue(response.body().contains("href=\"/favicon.svg\""));
             Assertions.assertTrue(response.body().contains("SwaggerUIBundle"));
             Assertions.assertTrue(response.body().contains("/openapi.json"));
+            Assertions.assertTrue(response.body().contains("/css/swagger-copy-for-ai.css"));
+            Assertions.assertTrue(response.body().contains("/js/swagger-copy-for-ai.js"));
+            Assertions.assertTrue(response.body().contains("window.thingifierSwaggerCopyForAi"));
+            Assertions.assertTrue(response.body().contains("openApiUrl: \"/openapi.json\""));
         }
     }
 
