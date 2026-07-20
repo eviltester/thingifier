@@ -26,7 +26,12 @@ public final class ApplicationError {
         CONFLICT,
         UNSUPPORTED_COMMAND,
         REPLACE_CREATE_AUTO_FIELDS_NOT_ALLOWED,
-        REPLACE_CREATE_KEY_MISMATCH
+        REPLACE_CREATE_KEY_MISMATCH,
+        MAX_INSTANCE_LIMIT_REACHED,
+        MAX_INSTANCE_LIMIT_WOULD_BE_EXCEEDED,
+        DUPLICATE_PRIMARY_KEY,
+        MISSING_PRIMARY_KEY,
+        STORE_WRITE_VALIDATION_FAILED
     }
 
     private final Category category;
@@ -119,6 +124,39 @@ public final class ApplicationError {
 
     public static ApplicationError conflict(final String message) {
         return new ApplicationError(Category.CONFLICT, Code.CONFLICT, List.of(message), Map.of());
+    }
+
+    public static ApplicationError maxInstanceLimitReached(
+            final String message, final Map<String, String> details) {
+        return new ApplicationError(
+                Category.CONFLICT, Code.MAX_INSTANCE_LIMIT_REACHED, List.of(message), details);
+    }
+
+    public static ApplicationError maxInstanceLimitWouldBeExceeded(
+            final String message, final Map<String, String> details) {
+        return new ApplicationError(
+                Category.CONFLICT,
+                Code.MAX_INSTANCE_LIMIT_WOULD_BE_EXCEEDED,
+                List.of(message),
+                details);
+    }
+
+    public static ApplicationError duplicatePrimaryKey(
+            final String message, final Map<String, String> details) {
+        return new ApplicationError(
+                Category.CONFLICT, Code.DUPLICATE_PRIMARY_KEY, List.of(message), details);
+    }
+
+    public static ApplicationError missingPrimaryKey(
+            final String message, final Map<String, String> details) {
+        return new ApplicationError(
+                Category.VALIDATION, Code.MISSING_PRIMARY_KEY, List.of(message), details);
+    }
+
+    public static ApplicationError storeWriteValidationFailed(
+            final String message, final Map<String, String> details) {
+        return new ApplicationError(
+                Category.VALIDATION, Code.STORE_WRITE_VALIDATION_FAILED, List.of(message), details);
     }
 
     public static ApplicationError unsupported(final String message) {

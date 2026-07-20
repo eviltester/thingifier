@@ -209,6 +209,80 @@ public class ThingStoreContractTest {
     }
 
     @Test
+    public void sqliteRepositoryThrowsTypedMaxInstanceLimitFailure() {
+        ERSchema schema = ticketSchema(1);
+        EntityDefinition ticket = schema.getEntityDefinitionNamed("ticket");
+
+        try (ThingStore repository =
+                SqliteThingStore.inMemory(EntityRelModel.DEFAULT_DATABASE_NAME)) {
+            repository.administration().initializeFrom(schema);
+            createWithId(repository, ticket, "one");
+
+            ThingStoreWriteException exception =
+                    Assertions.assertThrows(
+                            ThingStoreWriteException.class,
+                            () -> createWithId(repository, ticket, "two"));
+
+            Assertions.assertEquals(
+                    ThingStoreWriteException.Reason.MAX_INSTANCE_LIMIT_REACHED, exception.reason());
+            Assertions.assertEquals(
+                    "ERROR: Cannot add instance, maximum limit of 1 reached",
+                    exception.getMessage());
+        }
+    }
+
+    @Test
+    public void sqliteRepositoryThrowsTypedDuplicatePrimaryKeyFailure() {
+        ERSchema schema = ticketSchema(-1);
+        EntityDefinition ticket = schema.getEntityDefinitionNamed("ticket");
+
+        try (ThingStore repository =
+                SqliteThingStore.inMemory(EntityRelModel.DEFAULT_DATABASE_NAME)) {
+            repository.administration().initializeFrom(schema);
+            createWithId(repository, ticket, "same");
+
+            ThingStoreWriteException exception =
+                    Assertions.assertThrows(
+                            ThingStoreWriteException.class,
+                            () -> createWithId(repository, ticket, "same"));
+
+            Assertions.assertEquals(
+                    ThingStoreWriteException.Reason.DUPLICATE_PRIMARY_KEY, exception.reason());
+            Assertions.assertEquals(
+                    "ERROR: Cannot add instance, another instance with primary key value exists: "
+                            + "same",
+                    exception.getMessage());
+        }
+    }
+
+    @Test
+    public void sqliteRepositoryThrowsTypedMissingPrimaryKeyFailure() {
+        ERSchema schema = ticketSchema(-1);
+        EntityDefinition ticket = schema.getEntityDefinitionNamed("ticket");
+
+        try (ThingStore repository =
+                SqliteThingStore.inMemory(EntityRelModel.DEFAULT_DATABASE_NAME)) {
+            repository.administration().initializeFrom(schema);
+
+            ThingStoreWriteException exception =
+                    Assertions.assertThrows(
+                            ThingStoreWriteException.class,
+                            () ->
+                                    repository
+                                            .entities()
+                                            .create(
+                                                    EntityInstanceDraft.forEntity(ticket)
+                                                            .withField("title", "Missing id")));
+
+            Assertions.assertEquals(
+                    ThingStoreWriteException.Reason.MISSING_PRIMARY_KEY, exception.reason());
+            Assertions.assertEquals(
+                    "ERROR: Cannot add instance, primary key field id not set",
+                    exception.getMessage());
+        }
+    }
+
+    @Test
     public void inMemoryRepositoryOwnsRelationshipValidationAndCascade() {
         ThingStore repository = new InMemoryThingStore(EntityRelModel.DEFAULT_DATABASE_NAME);
 
@@ -854,6 +928,16 @@ public class ThingStoreContractTest {
                 .create(EntityInstanceDraft.forEntity(entity).withField("title", title));
     }
 
+    private EntityInstance createWithId(
+            final ThingStore repository, final EntityDefinition entity, final String id) {
+        return repository
+                .entities()
+                .create(
+                        EntityInstanceDraft.forEntity(entity)
+                                .withField("id", id)
+                                .withField("title", "Title " + id));
+    }
+
     private String exportDataAsJson(final ThingStore repository, final ERSchema schema) {
         return new RepositoryJsonExporter(schema, repository.entityQueries()).asJson();
     }
@@ -866,6 +950,16 @@ public class ThingStoreContractTest {
 
         EntityDefinition ticket = schema.defineEntity("ticket", "tickets", -1);
         ticket.addAsPrimaryKeyField(Field.is("id", FieldType.AUTO_INCREMENT));
+
+        return schema;
+    }
+
+    private ERSchema ticketSchema(final int maxInstances) {
+        ERSchema schema = new ERSchema();
+
+        EntityDefinition ticket = schema.defineEntity("ticket", "tickets", maxInstances);
+        ticket.addAsPrimaryKeyField(Field.is("id", FieldType.STRING));
+        ticket.addField(Field.is("title", FieldType.STRING));
 
         return schema;
     }

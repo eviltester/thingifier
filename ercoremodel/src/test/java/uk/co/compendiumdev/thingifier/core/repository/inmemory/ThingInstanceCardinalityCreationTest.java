@@ -10,6 +10,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.F
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 import uk.co.compendiumdev.thingifier.core.repository.MutableEntityInstance;
+import uk.co.compendiumdev.thingifier.core.repository.ThingStoreWriteException;
 
 public class ThingInstanceCardinalityCreationTest {
 
@@ -44,13 +45,15 @@ public class ThingInstanceCardinalityCreationTest {
 
         instances.addInstance(instance(entityDefn, "test3"));
 
-        Exception exception =
+        ThingStoreWriteException exception =
                 Assertions.assertThrows(
-                        RuntimeException.class,
+                        ThingStoreWriteException.class,
                         () -> {
                             instances.addInstance(instance(entityDefn, "test4"));
                         });
 
+        Assertions.assertEquals(
+                ThingStoreWriteException.Reason.MAX_INSTANCE_LIMIT_REACHED, exception.reason());
         Assertions.assertEquals(
                 "ERROR: Cannot add instance, maximum limit of 3 reached", exception.getMessage());
         Assertions.assertEquals(3, instances.countInstances());
@@ -66,13 +69,15 @@ public class ThingInstanceCardinalityCreationTest {
 
         instances.addInstance(instance(entityDefn, "test1"));
 
-        Exception exception =
+        ThingStoreWriteException exception =
                 Assertions.assertThrows(
-                        RuntimeException.class,
+                        ThingStoreWriteException.class,
                         () -> {
                             instances.addInstance(instance(entityDefn, "test2"));
                         });
 
+        Assertions.assertEquals(
+                ThingStoreWriteException.Reason.MAX_INSTANCE_LIMIT_REACHED, exception.reason());
         Assertions.assertEquals(
                 "ERROR: Cannot add instance, maximum limit of 1 reached", exception.getMessage());
         Assertions.assertEquals(1, instances.countInstances());
@@ -94,13 +99,16 @@ public class ThingInstanceCardinalityCreationTest {
         toAdd.add(instance(entityDefn, "test3"));
         toAdd.add(instance(entityDefn, "test4"));
 
-        Exception exception =
+        ThingStoreWriteException exception =
                 Assertions.assertThrows(
-                        RuntimeException.class,
+                        ThingStoreWriteException.class,
                         () -> {
                             instances.addInstances(toAdd);
                         });
 
+        Assertions.assertEquals(
+                ThingStoreWriteException.Reason.MAX_INSTANCE_LIMIT_WOULD_BE_EXCEEDED,
+                exception.reason());
         Assertions.assertEquals(
                 "ERROR: Cannot add instances, would exceed maximum limit of 3",
                 exception.getMessage());

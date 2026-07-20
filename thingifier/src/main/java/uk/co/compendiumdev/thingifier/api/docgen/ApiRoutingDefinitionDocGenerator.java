@@ -145,7 +145,18 @@ public class ApiRoutingDefinitionDocGenerator {
                             RoutingStatus.returnValue(
                                     400,
                                     String.format(
-                                            "Error when creating a %s", entityDefn.getName())));
+                                            "Error when creating a %s", entityDefn.getName())))
+                    .addPossibleStatus(
+                            RoutingStatus.returnValue(
+                                    422,
+                                    String.format(
+                                            "Validation error when creating a %s",
+                                            entityDefn.getName())))
+                    .addPossibleStatus(
+                            RoutingStatus.returnValue(
+                                    409,
+                                    String.format(
+                                            "Conflict when creating a %s", entityDefn.getName())));
 
             // TODO: allow configurable 200 for options
             defn.addRouting(
@@ -236,7 +247,18 @@ public class ApiRoutingDefinitionDocGenerator {
                             RoutingStatus.returnValue(
                                     404,
                                     String.format(
-                                            "Could not find a specific %s", entityDefn.getName())));
+                                            "Could not find a specific %s", entityDefn.getName())))
+                    .addPossibleStatus(
+                            RoutingStatus.returnValue(
+                                    422,
+                                    String.format(
+                                            "Validation error when amending a %s",
+                                            entityDefn.getName())))
+                    .addPossibleStatus(
+                            RoutingStatus.returnValue(
+                                    409,
+                                    String.format(
+                                            "Conflict when amending a %s", entityDefn.getName())));
             ;
 
             // we should be able to amend things with PUT and a GUID e.g. PUT project/GUID
@@ -268,7 +290,18 @@ public class ApiRoutingDefinitionDocGenerator {
                             RoutingStatus.returnValue(
                                     404,
                                     String.format(
-                                            "Could not find a specific %s", entityDefn.getName())));
+                                            "Could not find a specific %s", entityDefn.getName())))
+                    .addPossibleStatus(
+                            RoutingStatus.returnValue(
+                                    422,
+                                    String.format(
+                                            "Validation error when replacing a %s",
+                                            entityDefn.getName())))
+                    .addPossibleStatus(
+                            RoutingStatus.returnValue(
+                                    409,
+                                    String.format(
+                                            "Conflict when replacing a %s", entityDefn.getName())));
             ;
 
             // we should be able to delete specific things e.g. DELETE project/GUID
@@ -418,7 +451,17 @@ public class ApiRoutingDefinitionDocGenerator {
                         RoutingStatus.returnValue(201, String.format("created the relationship")))
                 .addPossibleStatus(
                         RoutingStatus.returnValue(
-                                400, String.format("error when creating the relationship")));
+                                400, String.format("error when creating the relationship")))
+                .addPossibleStatus(
+                        RoutingStatus.returnValue(
+                                404, String.format("relationship source or target not found")))
+                .addPossibleStatus(
+                        RoutingStatus.returnValue(
+                                422,
+                                String.format("validation error when creating the relationship")))
+                .addPossibleStatus(
+                        RoutingStatus.returnValue(
+                                409, String.format("conflict when creating the relationship")));
 
         defn.addRouting(
                 "method not allowed", RoutingVerb.DELETE, aUrl, RoutingStatus.returnValue(405));
@@ -449,7 +492,14 @@ public class ApiRoutingDefinitionDocGenerator {
                         RoutingStatus.returnValue(
                                 400, String.format("error when deleting the relationship")))
                 .addPossibleStatus(
-                        RoutingStatus.returnValue(404, String.format("relationship not found")));
+                        RoutingStatus.returnValue(404, String.format("relationship not found")))
+                .addPossibleStatus(
+                        RoutingStatus.returnValue(
+                                422,
+                                String.format("validation error when deleting the relationship")))
+                .addPossibleStatus(
+                        RoutingStatus.returnValue(
+                                409, String.format("conflict when deleting the relationship")));
 
         defn.addRouting(
                 String.format("show all Options for endpoint of %s", aUrlDelete),

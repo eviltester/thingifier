@@ -27,7 +27,7 @@ public class ThingCommandResultApiMapperTest {
         ApiResponse response =
                 mapper().map(new ReplaceThingCommand("entity", "1", List.of(), List.of()), result);
 
-        Assertions.assertEquals(400, response.getStatusCode());
+        Assertions.assertEquals(422, response.getStatusCode());
         Assertions.assertEquals(
                 List.of("Cannot create entity with PUT due to Auto fields id"),
                 response.getErrorMessages());
@@ -44,7 +44,7 @@ public class ThingCommandResultApiMapperTest {
                                 new ReplaceThingCommand("entity", "newkey", List.of(), List.of()),
                                 result);
 
-        Assertions.assertEquals(400, response.getStatusCode());
+        Assertions.assertEquals(422, response.getStatusCode());
         Assertions.assertEquals(
                 List.of(
                         "Cannot create entity with PUT as key does not match body value "
@@ -73,7 +73,7 @@ public class ThingCommandResultApiMapperTest {
     public void mapsApplicationCategoriesToHttpStatuses() {
         Assertions.assertEquals(400, ThingCommandResultApiMapper.statusFor(null));
         Assertions.assertEquals(
-                400, ThingCommandResultApiMapper.statusFor(ApplicationError.validation("bad")));
+                422, ThingCommandResultApiMapper.statusFor(ApplicationError.validation("bad")));
         Assertions.assertEquals(
                 404, ThingCommandResultApiMapper.statusFor(ApplicationError.notFound("missing")));
         Assertions.assertEquals(
@@ -81,6 +81,19 @@ public class ThingCommandResultApiMapperTest {
         Assertions.assertEquals(
                 400,
                 ThingCommandResultApiMapper.statusFor(ApplicationError.unsupported("unknown")));
+    }
+
+    @Test
+    public void mapsCreateValidationWithExistingLegacyPrefixBehaviour() {
+        ThingCommandResult result = ThingCommandResult.error("title : field is mandatory");
+
+        ApiResponse response =
+                mapper().map(new CreateThingCommand("entity", List.of(), List.of(), true), result);
+
+        Assertions.assertEquals(422, response.getStatusCode());
+        Assertions.assertEquals(
+                List.of("Failed Validation: title : field is mandatory"),
+                response.getErrorMessages());
     }
 
     @Test

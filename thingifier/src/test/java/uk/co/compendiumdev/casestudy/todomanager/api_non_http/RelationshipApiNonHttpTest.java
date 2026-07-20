@@ -1097,7 +1097,7 @@ public class RelationshipApiNonHttpTest {
                 todoManager
                         .api()
                         .post("estimate", getSimpleParser(requestBody), new HttpHeadersBlock());
-        Assertions.assertEquals(400, apiresponse.getStatusCode());
+        Assertions.assertEquals(422, apiresponse.getStatusCode());
 
         Assertions.assertEquals(
                 numberOfEstimates,

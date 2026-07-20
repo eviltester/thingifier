@@ -145,7 +145,7 @@ public class NestedObjectsApiTest {
 
         final HttpApiResponse response = api.post(failToCreateBobRequest);
 
-        Assertions.assertEquals(400, response.getStatusCode());
+        Assertions.assertEquals(422, response.getStatusCode());
         Assertions.assertEquals(
                 0,
                 thingifier

@@ -10,6 +10,7 @@ import uk.co.compendiumdev.thingifier.core.domain.instances.AutoIncrement;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 import uk.co.compendiumdev.thingifier.core.repository.MutableEntityInstance;
+import uk.co.compendiumdev.thingifier.core.repository.ThingStoreWriteException;
 
 final class InMemoryEntityInstanceCollection {
 
@@ -55,10 +56,7 @@ final class InMemoryEntityInstanceCollection {
 
         if (definition.hasMaxInstanceLimit()
                 && ((instances.size() + addInstances.size()) > definition.getMaxInstanceLimit())) {
-            throw new RuntimeException(
-                    String.format(
-                            "ERROR: Cannot add instances, would exceed maximum limit of %d",
-                            definition.getMaxInstanceLimit()));
+            throw ThingStoreWriteException.maxInstanceLimitWouldBeExceeded(definition);
         }
 
         for (EntityInstance instance : addInstances) {
@@ -77,18 +75,12 @@ final class InMemoryEntityInstanceCollection {
         ensureCountersInitialized();
 
         if (mutableInstance.getEntity() != definition) {
-            throw new RuntimeException(
-                    String.format(
-                            "ERROR: Tried to add a %s instance to the %s",
-                            mutableInstance.getEntity().getName(), definition.getName()));
+            throw ThingStoreWriteException.wrongEntityType(definition, mutableInstance.getEntity());
         }
 
         if (definition.hasMaxInstanceLimit()
                 && instances.size() >= definition.getMaxInstanceLimit()) {
-            throw new RuntimeException(
-                    String.format(
-                            "ERROR: Cannot add instance, maximum limit of %d reached",
-                            definition.getMaxInstanceLimit()));
+            throw ThingStoreWriteException.maxInstanceLimitReached(definition);
         }
 
         // if there are any AUTO_GUIDs or AUTO-INCREMENTs not set in the instance, then set them now
@@ -114,10 +106,8 @@ final class InMemoryEntityInstanceCollection {
             // check value of primary key exists and is unique
             Field primaryField = definition.getPrimaryKeyField();
             if (!mutableInstance.hasInstantiatedFieldNamed(primaryField.getName())) {
-                throw new RuntimeException(
-                        String.format(
-                                "ERROR: Cannot add instance, primary key field %s not set",
-                                primaryField.getName()));
+                throw ThingStoreWriteException.missingPrimaryKey(
+                        definition, primaryField.getName());
             }
         }
 
@@ -127,10 +117,8 @@ final class InMemoryEntityInstanceCollection {
 
             for (EntityInstance existingInstance : instances.values()) {
                 if (existingInstance.getPrimaryKeyValue().equals(instance.getPrimaryKeyValue())) {
-                    throw new RuntimeException(
-                            String.format(
-                                    "ERROR: Cannot add instance, another instance with primary key value exists: %s",
-                                    existingInstance.getPrimaryKeyValue()));
+                    throw ThingStoreWriteException.duplicatePrimaryKey(
+                            definition, existingInstance.getPrimaryKeyValue());
                 }
             }
         }
@@ -143,18 +131,12 @@ final class InMemoryEntityInstanceCollection {
         ensureCountersInitialized();
 
         if (instance.getEntity() != definition) {
-            throw new RuntimeException(
-                    String.format(
-                            "ERROR: Tried to add a %s instance to the %s",
-                            instance.getEntity().getName(), definition.getName()));
+            throw ThingStoreWriteException.wrongEntityType(definition, instance.getEntity());
         }
 
         if (definition.hasMaxInstanceLimit()
                 && instances.size() >= definition.getMaxInstanceLimit()) {
-            throw new RuntimeException(
-                    String.format(
-                            "ERROR: Cannot add instance, maximum limit of %d reached",
-                            definition.getMaxInstanceLimit()));
+            throw ThingStoreWriteException.maxInstanceLimitReached(definition);
         }
 
         instances.put(instance.getInternalId(), instance);

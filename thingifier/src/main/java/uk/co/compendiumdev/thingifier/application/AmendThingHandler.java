@@ -9,6 +9,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.Nam
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 import uk.co.compendiumdev.thingifier.core.repository.ThingStore;
+import uk.co.compendiumdev.thingifier.core.repository.ThingStoreWriteException;
 
 final class AmendThingHandler {
 
@@ -61,6 +62,8 @@ final class AmendThingHandler {
                     draft,
                     command.shouldReplaceExistingFieldsAndRelationships(),
                     command.getRelationships());
+        } catch (ThingStoreWriteException e) {
+            throw e;
         } catch (Exception e) {
             return ThingCommandResult.error(ApplicationExceptionMessages.messageFrom(e));
         }
@@ -84,6 +87,8 @@ final class AmendThingHandler {
                 EntityInstanceDraft draft =
                         new EntityInstanceDraftBuilder(instance).setFieldValuesFrom(fieldValues);
                 return amend(instance, draft, true, command.getRelationships());
+            } catch (ThingStoreWriteException e) {
+                throw e;
             } catch (Exception e) {
                 return ThingCommandResult.error(ApplicationExceptionMessages.messageFrom(e));
             }
@@ -104,6 +109,8 @@ final class AmendThingHandler {
                 return created;
             }
             return ThingCommandResult.created(created.getInstance());
+        } catch (ThingStoreWriteException e) {
+            throw e;
         } catch (Exception e) {
             return ThingCommandResult.error(ApplicationExceptionMessages.messageFrom(e));
         }
@@ -136,6 +143,8 @@ final class AmendThingHandler {
             }
 
             return ThingCommandResult.success(updated);
+        } catch (ThingStoreWriteException e) {
+            throw e;
         } catch (Exception e) {
             return ThingCommandResult.error(ApplicationExceptionMessages.messageFrom(e));
         }

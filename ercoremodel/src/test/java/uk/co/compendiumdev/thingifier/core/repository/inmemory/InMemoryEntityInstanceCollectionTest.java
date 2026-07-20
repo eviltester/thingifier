@@ -10,6 +10,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.F
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 import uk.co.compendiumdev.thingifier.core.repository.MutableEntityInstance;
+import uk.co.compendiumdev.thingifier.core.repository.ThingStoreWriteException;
 
 public class InMemoryEntityInstanceCollectionTest {
 
@@ -33,10 +34,12 @@ public class InMemoryEntityInstanceCollectionTest {
         MutableEntityInstance instance1 =
                 MutableEntityInstance.fromDraft(EntityInstanceDraft.forEntity(entityDefn));
 
-        Exception exception =
+        ThingStoreWriteException exception =
                 Assertions.assertThrows(
-                        RuntimeException.class, () -> collection.addInstance(instance1));
+                        ThingStoreWriteException.class, () -> collection.addInstance(instance1));
 
+        Assertions.assertEquals(
+                ThingStoreWriteException.Reason.MISSING_PRIMARY_KEY, exception.reason());
         Assertions.assertTrue(
                 exception
                         .getMessage()
@@ -60,10 +63,12 @@ public class InMemoryEntityInstanceCollectionTest {
                         EntityInstanceDraft.forEntity(entityDefn)
                                 .withField("pk", instance1.getPrimaryKeyValue()));
 
-        Exception exception =
+        ThingStoreWriteException exception =
                 Assertions.assertThrows(
-                        RuntimeException.class, () -> collection.addInstance(instance2));
+                        ThingStoreWriteException.class, () -> collection.addInstance(instance2));
 
+        Assertions.assertEquals(
+                ThingStoreWriteException.Reason.DUPLICATE_PRIMARY_KEY, exception.reason());
         Assertions.assertTrue(
                 exception.getMessage().contains("another instance with primary key value exists"));
     }

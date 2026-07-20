@@ -201,7 +201,7 @@ public class SimpleVerbPutEntityInstanceApiNonHttpTest {
                                 String.format("entities/%s", officeWork.getPrimaryKeyValue()),
                                 getSimpleParser(requestBody, thingifier),
                                 new HttpHeadersBlock());
-        Assertions.assertEquals(400, apiresponse.getStatusCode());
+        Assertions.assertEquals(422, apiresponse.getStatusCode());
         Assertions.assertTrue(
                 apiresponse.getErrorMessages().stream()
                         .anyMatch(error -> error.contains("title : field is mandatory")));
@@ -252,7 +252,7 @@ public class SimpleVerbPutEntityInstanceApiNonHttpTest {
                                 getSimpleParser(requestBody, thingifier),
                                 new HttpHeadersBlock());
 
-        Assertions.assertEquals(400, apiresponse.getStatusCode());
+        Assertions.assertEquals(422, apiresponse.getStatusCode());
         Assertions.assertTrue(
                 apiresponse.getErrorMessages().contains("Can not amend id from 1 to 22"));
         Assertions.assertEquals(
@@ -301,7 +301,7 @@ public class SimpleVerbPutEntityInstanceApiNonHttpTest {
                                 String.format("entities/%s", id),
                                 getSimpleParser(requestBody, thingifier),
                                 new HttpHeadersBlock());
-        Assertions.assertEquals(400, apiresponse.getStatusCode());
+        Assertions.assertEquals(422, apiresponse.getStatusCode());
 
         Assertions.assertEquals(
                 currentinstances,
@@ -370,7 +370,7 @@ public class SimpleVerbPutEntityInstanceApiNonHttpTest {
                                 getSimpleParser(requestBody, myThingifier),
                                 new HttpHeadersBlock());
 
-        Assertions.assertEquals(400, apiresponse.getStatusCode());
+        Assertions.assertEquals(422, apiresponse.getStatusCode());
         Assertions.assertTrue(
                 apiresponse
                         .getErrorMessages()
@@ -563,7 +563,7 @@ public class SimpleVerbPutEntityInstanceApiNonHttpTest {
                                 getSimpleParser(requestBody, myThingifier),
                                 new HttpHeadersBlock());
 
-        Assertions.assertEquals(400, apiresponse.getStatusCode());
+        Assertions.assertEquals(422, apiresponse.getStatusCode());
         Assertions.assertEquals(
                 "Cannot create entity with PUT as key does not match body value newkey != innerkey",
                 apiresponse.getErrorMessages().toArray()[0]);

@@ -11,6 +11,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.Relat
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 import uk.co.compendiumdev.thingifier.core.repository.ThingStore;
+import uk.co.compendiumdev.thingifier.core.repository.ThingStoreWriteException;
 
 final class RelationshipCommandHandler {
 
@@ -115,6 +116,8 @@ final class RelationshipCommandHandler {
             }
 
             return ThingCommandResult.success(createResult.getInstance());
+        } catch (ThingStoreWriteException e) {
+            throw e;
         } catch (Exception e) {
             return ThingCommandResult.error(ApplicationExceptionMessages.messageFrom(e));
         }
@@ -201,6 +204,8 @@ final class RelationshipCommandHandler {
         try {
             store.relationships().removeBetween(parent, child, command.getRelationshipName());
             return ThingCommandResult.success();
+        } catch (ThingStoreWriteException e) {
+            throw e;
         } catch (Exception e) {
             return ThingCommandResult.error(ApplicationExceptionMessages.messageFrom(e));
         }

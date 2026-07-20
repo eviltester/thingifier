@@ -13,6 +13,8 @@ import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 
@@ -101,11 +103,47 @@ public class VerbPostEntityInstanceApiNonHttpTest {
         Assertions.assertEquals(createdProject, createdInstance);
     }
 
+    @Test
+    public void postFailsWithConflictWhenMaximumInstanceLimitIsReached() {
+        Thingifier limitedThingifier = new Thingifier();
+        EntityDefinition ticket = limitedThingifier.defineThing("ticket", "tickets", 1);
+        ticket.addAsPrimaryKeyField(Field.is("id", FieldType.AUTO_INCREMENT));
+        ticket.addField(Field.is("title", FieldType.STRING));
+
+        Map<String, String> first = new HashMap<>();
+        first.put("title", "First");
+        limitedThingifier
+                .api()
+                .post("tickets", parserFor(limitedThingifier, first), new HttpHeadersBlock());
+
+        Map<String, String> second = new HashMap<>();
+        second.put("title", "Second");
+        ApiResponse apiresponse =
+                limitedThingifier
+                        .api()
+                        .post(
+                                "tickets",
+                                parserFor(limitedThingifier, second),
+                                new HttpHeadersBlock());
+
+        Assertions.assertEquals(409, apiresponse.getStatusCode());
+        Assertions.assertEquals(
+                "ERROR: Cannot add instance, maximum limit of 1 reached",
+                apiresponse.getErrorMessages().iterator().next());
+    }
+
     private BodyParser getSimpleParser(final Map<String, String> requestBody) {
 
         final HttpApiRequest arequest =
                 new HttpApiRequest("/path").setBody(new Gson().toJson(requestBody));
         return new BodyParser(arequest, todoManager.getThingNames());
+    }
+
+    private BodyParser parserFor(
+            final Thingifier thingifier, final Map<String, String> requestBody) {
+        final HttpApiRequest request =
+                new HttpApiRequest("/path").setBody(new Gson().toJson(requestBody));
+        return new BodyParser(request, thingifier.getThingNames());
     }
 
     @Test
@@ -261,7 +299,7 @@ public class VerbPostEntityInstanceApiNonHttpTest {
                                 getSimpleParser(requestBody),
                                 new HttpHeadersBlock());
 
-        Assertions.assertEquals(400, apiresponse.getStatusCode());
+        Assertions.assertEquals(422, apiresponse.getStatusCode());
         Assertions.assertFalse(apiresponse.getErrorMessages().isEmpty());
         Assertions.assertTrue(apiresponse.hasABody());
 
@@ -281,7 +319,7 @@ public class VerbPostEntityInstanceApiNonHttpTest {
                                 getSimpleParser(requestBody),
                                 new HttpHeadersBlock());
 
-        Assertions.assertEquals(400, apiresponse.getStatusCode());
+        Assertions.assertEquals(422, apiresponse.getStatusCode());
         Assertions.assertTrue(apiresponse.getErrorMessages().size() > 0);
         Assertions.assertTrue(apiresponse.hasABody());
 
@@ -354,7 +392,7 @@ public class VerbPostEntityInstanceApiNonHttpTest {
 
         // Mandatory field validation on POST create - must have a title
         requestBody = new HashMap<>();
-        requestBody.put("description", "A new TODO Item"); // 400 because it should be "title"
+        requestBody.put("description", "A new TODO Item"); // 422 because it should be "title"
 
         apiresponse =
                 todoManager
@@ -363,7 +401,7 @@ public class VerbPostEntityInstanceApiNonHttpTest {
                                 String.format("todo"),
                                 getSimpleParser(requestBody),
                                 new HttpHeadersBlock());
-        Assertions.assertEquals(400, apiresponse.getStatusCode());
+        Assertions.assertEquals(422, apiresponse.getStatusCode());
         Assertions.assertFalse(apiresponse.getErrorMessages().isEmpty());
         Assertions.assertEquals(
                 "title : field is mandatory", apiresponse.getErrorMessages().iterator().next());
@@ -381,7 +419,7 @@ public class VerbPostEntityInstanceApiNonHttpTest {
                                 String.format("todo"),
                                 getSimpleParser(requestBody),
                                 new HttpHeadersBlock());
-        Assertions.assertEquals(400, apiresponse.getStatusCode());
+        Assertions.assertEquals(422, apiresponse.getStatusCode());
         Assertions.assertFalse(apiresponse.getErrorMessages().isEmpty());
         Assertions.assertTrue(apiresponse.hasABody());
 
@@ -405,7 +443,7 @@ public class VerbPostEntityInstanceApiNonHttpTest {
                                 String.format("todo/%s", paperwork.getPrimaryKeyValue()),
                                 getSimpleParser(requestBody),
                                 new HttpHeadersBlock());
-        Assertions.assertEquals(400, apiresponse.getStatusCode());
+        Assertions.assertEquals(422, apiresponse.getStatusCode());
         Assertions.assertFalse(apiresponse.getErrorMessages().isEmpty());
         Assertions.assertTrue(apiresponse.hasABody());
     }
