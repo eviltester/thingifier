@@ -201,7 +201,7 @@ public class VerbPutEntityInstanceApiNonHttpTest {
                                 getSimpleParser(requestBody),
                                 new HttpHeadersBlock());
 
-        Assertions.assertEquals(400, apiresponse.getStatusCode());
+        Assertions.assertEquals(422, apiresponse.getStatusCode());
         Assertions.assertEquals(
                 "An Existing Project", officeWork.getFieldValue("title").asString());
         Assertions.assertEquals(
@@ -342,7 +342,7 @@ public class VerbPutEntityInstanceApiNonHttpTest {
                                 String.format("project/%s", guid),
                                 getSimpleParser(requestBody),
                                 new HttpHeadersBlock());
-        Assertions.assertEquals(400, apiresponse.getStatusCode());
+        Assertions.assertEquals(422, apiresponse.getStatusCode());
 
         Assertions.assertEquals(
                 1,
@@ -360,7 +360,7 @@ public class VerbPutEntityInstanceApiNonHttpTest {
 
         // Mandatory field validation PUT create
         requestBody = new HashMap<String, String>();
-        // will generate 400 because description should be title
+        // will generate 422 because description should be title
         requestBody.put("description", "A new TODO Item");
         requestBody.put("doneStatus", "TRUE");
         apiresponse =
@@ -370,7 +370,7 @@ public class VerbPutEntityInstanceApiNonHttpTest {
                                 String.format("todo/%s", UUID.randomUUID().toString()),
                                 getSimpleParser(requestBody),
                                 new HttpHeadersBlock());
-        Assertions.assertEquals(400, apiresponse.getStatusCode());
+        Assertions.assertEquals(422, apiresponse.getStatusCode());
         Assertions.assertTrue(apiresponse.getErrorMessages().size() > 0);
         Assertions.assertTrue(apiresponse.hasABody());
 
@@ -384,7 +384,7 @@ public class VerbPutEntityInstanceApiNonHttpTest {
 
         // Mandatory field validation PUT amend
         requestBody = new HashMap<String, String>();
-        // will generate 400 because description should be title
+        // will generate 422 because description should be title
         requestBody.put("description", "Amended TODO Item ");
         requestBody.put("doneStatus", "TRUE");
         apiresponse =
@@ -394,7 +394,7 @@ public class VerbPutEntityInstanceApiNonHttpTest {
                                 String.format("todo/%s", paperwork.getPrimaryKeyValue()),
                                 getSimpleParser(requestBody),
                                 new HttpHeadersBlock());
-        Assertions.assertEquals(400, apiresponse.getStatusCode());
+        Assertions.assertEquals(422, apiresponse.getStatusCode());
         Assertions.assertTrue(apiresponse.getErrorMessages().size() > 0);
         Assertions.assertTrue(apiresponse.hasABody());
 
@@ -410,7 +410,7 @@ public class VerbPutEntityInstanceApiNonHttpTest {
                                 String.format("todo/%s", paperwork.getPrimaryKeyValue()),
                                 getSimpleParser(requestBody),
                                 new HttpHeadersBlock());
-        Assertions.assertEquals(400, apiresponse.getStatusCode());
+        Assertions.assertEquals(422, apiresponse.getStatusCode());
         Assertions.assertTrue(apiresponse.getErrorMessages().size() > 0);
         Assertions.assertTrue(apiresponse.hasABody());
     }
@@ -423,7 +423,7 @@ public class VerbPutEntityInstanceApiNonHttpTest {
 
         // Mandatory field validation PUT create
         requestBody = new HashMap<String, String>();
-        // will generate 400 because description should be title
+        // will generate 422 because description should be title
         requestBody.put("description", "A new TODO Item");
         requestBody.put("doneStatus", "TRUE");
         apiresponse =
@@ -433,7 +433,7 @@ public class VerbPutEntityInstanceApiNonHttpTest {
                                 String.format("todo/%s", UUID.randomUUID().toString()),
                                 getSimpleParser(requestBody),
                                 new HttpHeadersBlock());
-        Assertions.assertEquals(400, apiresponse.getStatusCode());
+        Assertions.assertEquals(422, apiresponse.getStatusCode());
         Assertions.assertTrue(apiresponse.getErrorMessages().size() > 0);
         Assertions.assertTrue(apiresponse.hasABody());
     }
@@ -454,7 +454,7 @@ public class VerbPutEntityInstanceApiNonHttpTest {
 
         // Mandatory field validation PUT amend
         requestBody = new HashMap<String, String>();
-        // will generate 400 because description should be title
+        // will generate 422 because description should be title
         requestBody.put("description", "Amended TODO Item ");
         requestBody.put("doneStatus", "TRUE");
         apiresponse =
@@ -464,7 +464,7 @@ public class VerbPutEntityInstanceApiNonHttpTest {
                                 String.format("todo/%s", paperwork.getPrimaryKeyValue()),
                                 getSimpleParser(requestBody),
                                 new HttpHeadersBlock());
-        Assertions.assertEquals(400, apiresponse.getStatusCode());
+        Assertions.assertEquals(422, apiresponse.getStatusCode());
         Assertions.assertTrue(apiresponse.getErrorMessages().size() > 0);
         Assertions.assertTrue(apiresponse.hasABody());
 
@@ -480,7 +480,7 @@ public class VerbPutEntityInstanceApiNonHttpTest {
                                 String.format("todo/%s", paperwork.getPrimaryKeyValue()),
                                 getSimpleParser(requestBody),
                                 new HttpHeadersBlock());
-        Assertions.assertEquals(400, apiresponse.getStatusCode());
+        Assertions.assertEquals(422, apiresponse.getStatusCode());
         Assertions.assertTrue(apiresponse.getErrorMessages().size() > 0);
         Assertions.assertTrue(apiresponse.hasABody());
     }

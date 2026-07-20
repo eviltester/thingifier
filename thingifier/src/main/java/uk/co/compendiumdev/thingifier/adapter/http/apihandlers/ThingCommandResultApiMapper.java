@@ -112,6 +112,9 @@ public final class ThingCommandResultApiMapper {
         if (error.category() == ApplicationError.Category.CONFLICT) {
             return 409;
         }
+        if (error.category() == ApplicationError.Category.VALIDATION) {
+            return 422;
+        }
         return 400;
     }
 

@@ -55,7 +55,7 @@ public class TodoEntityTest {
 
         final Response response = Api.createTodo(todo);
 
-        Assertions.assertEquals(400, response.getStatusCode());
+        Assertions.assertEquals(422, response.getStatusCode());
 
         final Payloads.ErrorMessageResponse errors =
                 response.body().as(Payloads.ErrorMessageResponse.class);

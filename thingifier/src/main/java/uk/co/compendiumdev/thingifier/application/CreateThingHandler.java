@@ -8,6 +8,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.Nam
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 import uk.co.compendiumdev.thingifier.core.repository.ThingStore;
+import uk.co.compendiumdev.thingifier.core.repository.ThingStoreWriteException;
 
 final class CreateThingHandler {
 
@@ -62,6 +63,8 @@ final class CreateThingHandler {
                     drafts.createDraft(entity, command.getRequestedPrimaryKey(), fieldValues);
             return create(
                     draft, command.getRelationships(), command.shouldValidateFinalRelationships());
+        } catch (ThingStoreWriteException e) {
+            throw e;
         } catch (Exception e) {
             return ThingCommandResult.error(ApplicationExceptionMessages.messageFrom(e));
         }
@@ -80,6 +83,8 @@ final class CreateThingHandler {
                 return relationshipResult;
             }
             return ThingCommandResult.success(created);
+        } catch (ThingStoreWriteException e) {
+            throw e;
         } catch (Exception e) {
             return ThingCommandResult.error(ApplicationExceptionMessages.messageFrom(e));
         }

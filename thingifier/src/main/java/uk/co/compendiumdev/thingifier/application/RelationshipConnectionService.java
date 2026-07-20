@@ -7,6 +7,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.Relat
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 import uk.co.compendiumdev.thingifier.core.repository.ThingStore;
+import uk.co.compendiumdev.thingifier.core.repository.ThingStoreWriteException;
 
 final class RelationshipConnectionService {
 
@@ -41,6 +42,8 @@ final class RelationshipConnectionService {
             }
 
             return ThingCommandResult.success(child);
+        } catch (ThingStoreWriteException e) {
+            throw e;
         } catch (Exception e) {
             if (!alreadyConnected) {
                 store.relationships().disconnectBetween(parent, child, relationshipName);
@@ -127,6 +130,8 @@ final class RelationshipConnectionService {
             }
 
             return ThingCommandResult.success(instance);
+        } catch (ThingStoreWriteException e) {
+            throw e;
         } catch (Exception e) {
             disconnectConnections(instance, connectedByCommand);
             return ThingCommandResult.error(

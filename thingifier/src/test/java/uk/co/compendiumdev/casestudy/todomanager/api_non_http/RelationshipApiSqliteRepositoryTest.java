@@ -290,7 +290,7 @@ public class RelationshipApiSqliteRepositoryTest {
                                     parserFor(todoManager, body),
                                     new HttpHeadersBlock());
 
-            Assertions.assertEquals(400, response.getStatusCode());
+            Assertions.assertEquals(422, response.getStatusCode());
             Assertions.assertNotNull(
                     repository
                             .entityQueries()
@@ -315,7 +315,7 @@ public class RelationshipApiSqliteRepositoryTest {
                             .api()
                             .post("todo", parserFor(todoManager, body), new HttpHeadersBlock());
 
-            Assertions.assertEquals(400, response.getStatusCode());
+            Assertions.assertEquals(422, response.getStatusCode());
             Assertions.assertEquals(todoCount, repository.entityQueries().count(todo));
         }
     }
@@ -402,7 +402,7 @@ public class RelationshipApiSqliteRepositoryTest {
             List<EntityInstance> relatedProjects =
                     repository.relationships().listRelated(restoredTask, "task-of");
 
-            Assertions.assertEquals(400, response.getStatusCode());
+            Assertions.assertEquals(422, response.getStatusCode());
             Assertions.assertEquals(
                     "Original title", restoredTask.getFieldValue("title").asString());
             Assertions.assertEquals(1, relatedProjects.size());

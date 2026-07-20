@@ -43,6 +43,7 @@ import uk.co.compendiumdev.thingifier.core.repository.RelationshipRepository;
 import uk.co.compendiumdev.thingifier.core.repository.RepositoryAdministration;
 import uk.co.compendiumdev.thingifier.core.repository.ThingStore;
 import uk.co.compendiumdev.thingifier.core.repository.ThingStoreTransaction;
+import uk.co.compendiumdev.thingifier.core.repository.ThingStoreWriteException;
 import uk.co.compendiumdev.thingifier.core.repository.relationship.RelationshipEndpoint;
 import uk.co.compendiumdev.thingifier.core.repository.relationship.RelationshipRow;
 import uk.co.compendiumdev.thingifier.core.repository.relationship.RelationshipRules;
@@ -563,10 +564,7 @@ public class SqliteThingStore implements ThingStore {
 
         if (entity.hasMaxInstanceLimit()
                 && countInstances(entity) >= entity.getMaxInstanceLimit()) {
-            throw new RuntimeException(
-                    String.format(
-                            "ERROR: Cannot add instance, maximum limit of %d reached",
-                            entity.getMaxInstanceLimit()));
+            throw ThingStoreWriteException.maxInstanceLimitReached(entity);
         }
 
         List<String> explicitAutoIncrementFields = new ArrayList<>();
@@ -588,18 +586,14 @@ public class SqliteThingStore implements ThingStore {
         if (entity.hasPrimaryKeyField()) {
             Field primaryField = entity.getPrimaryKeyField();
             if (!instance.hasInstantiatedFieldNamed(primaryField.getName())) {
-                throw new RuntimeException(
-                        String.format(
-                                "ERROR: Cannot add instance, primary key field %s not set",
-                                primaryField.getName()));
+                throw ThingStoreWriteException.missingPrimaryKey(entity, primaryField.getName());
             }
 
             EntityInstance existing =
                     findInstanceByPrimaryKey(entity, instance.getPrimaryKeyValue());
             if (existing != null && !existing.getInternalId().equals(instance.getInternalId())) {
-                throw new RuntimeException(
-                        "ERROR: Cannot add instance, another instance with primary key value exists: "
-                                + existing.getPrimaryKeyValue());
+                throw ThingStoreWriteException.duplicatePrimaryKey(
+                        entity, existing.getPrimaryKeyValue());
             }
         }
 

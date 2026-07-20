@@ -259,8 +259,50 @@ public class ThingCommandServiceTest {
         Assertions.assertTrue(result.isError());
         Assertions.assertEquals(
                 List.of("doneStatus should be BOOLEAN but was STRING"), result.getErrorMessages());
+        Assertions.assertEquals(ApplicationError.Category.VALIDATION, result.getError().category());
+        Assertions.assertEquals(ApplicationError.Code.VALIDATION_FAILED, result.getError().code());
         Assertions.assertEquals(
                 0, store.entityQueries().count(thingifier.getDefinitionNamed("todo")));
+    }
+
+    @Test
+    public void createCommandMissingMandatoryFieldReturnsValidationCategory() {
+        Thingifier thingifier = mandatoryTitleThingifier();
+        ThingStore store = storeFor(thingifier);
+
+        ThingCommandResult result =
+                serviceFor(thingifier, store)
+                        .execute(new CreateThingCommand("todo", List.of(), List.of(), true));
+
+        Assertions.assertTrue(result.isError());
+        Assertions.assertEquals(ApplicationError.Category.VALIDATION, result.getError().category());
+        Assertions.assertEquals(ApplicationError.Code.VALIDATION_FAILED, result.getError().code());
+        Assertions.assertEquals(
+                List.of("Failed Validation: title : field is mandatory"),
+                result.getErrorMessages());
+    }
+
+    @Test
+    public void createCommandMaxInstanceLimitReturnsConflictCategory() {
+        Thingifier thingifier = limitedTodoThingifier();
+        ThingStore store = storeFor(thingifier);
+        EntityDefinition todo = thingifier.getDefinitionNamed("todo");
+        store.entities().create(EntityInstanceDraft.forEntity(todo).withField("title", "First"));
+
+        ThingCommandResult result =
+                serviceFor(thingifier, store)
+                        .execute(
+                                new CreateThingCommand(
+                                        "todo", fields("title", "Second"), List.of(), true));
+
+        Assertions.assertTrue(result.isError());
+        Assertions.assertEquals(ApplicationError.Category.CONFLICT, result.getError().category());
+        Assertions.assertEquals(
+                ApplicationError.Code.MAX_INSTANCE_LIMIT_REACHED, result.getError().code());
+        Assertions.assertEquals(
+                List.of("ERROR: Cannot add instance, maximum limit of 1 reached"),
+                result.getErrorMessages());
+        Assertions.assertEquals(1, store.entityQueries().count(todo));
     }
 
     @Test
@@ -752,6 +794,21 @@ public class ThingCommandServiceTest {
         EntityDefinition todo = thingifier.defineThing("todo", "todos");
         todo.addField(Field.is("doneStatus", FieldType.BOOLEAN));
         todo.addField(Field.is("priority", FieldType.INTEGER));
+        return thingifier;
+    }
+
+    private Thingifier mandatoryTitleThingifier() {
+        Thingifier thingifier = new Thingifier();
+        EntityDefinition todo = thingifier.defineThing("todo", "todos");
+        todo.addField(Field.is("title", FieldType.STRING).makeMandatory());
+        return thingifier;
+    }
+
+    private Thingifier limitedTodoThingifier() {
+        Thingifier thingifier = new Thingifier();
+        EntityDefinition todo = thingifier.defineThing("todo", "todos", 1);
+        todo.addAsPrimaryKeyField(Field.is("id", FieldType.AUTO_INCREMENT));
+        todo.addField(Field.is("title", FieldType.STRING));
         return thingifier;
     }
 

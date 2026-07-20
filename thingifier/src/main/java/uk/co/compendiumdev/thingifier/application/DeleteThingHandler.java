@@ -4,6 +4,7 @@ import uk.co.compendiumdev.thingifier.application.command.DeleteThingCommand;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.repository.ThingStore;
+import uk.co.compendiumdev.thingifier.core.repository.ThingStoreWriteException;
 
 final class DeleteThingHandler {
 
@@ -27,6 +28,8 @@ final class DeleteThingHandler {
         try {
             store.entities().delete(instance);
             return ThingCommandResult.success();
+        } catch (ThingStoreWriteException e) {
+            throw e;
         } catch (Exception e) {
             return ThingCommandResult.error(ApplicationExceptionMessages.messageFrom(e));
         }
