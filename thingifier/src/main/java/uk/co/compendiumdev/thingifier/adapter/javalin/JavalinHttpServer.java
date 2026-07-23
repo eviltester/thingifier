@@ -59,6 +59,7 @@ public final class JavalinHttpServer implements AutoCloseable {
                             for (HttpAfterHandler afterHandler : registry.afterHandlers()) {
                                 config.routes.after(ctx -> runAfter(ctx, afterHandler));
                             }
+                            config.routes.after(this::removeContentTypeFromEmptyNotFound);
                             config.routes.after(this::restoreExactContentType);
                             config.routes.exception(
                                     HaltRequestException.class,
@@ -213,6 +214,30 @@ public final class JavalinHttpServer implements AutoCloseable {
             ctx.res().setContentType(exactContentType);
             ctx.res().setHeader("Content-Type", exactContentType);
         }
+    }
+
+    private void removeContentTypeFromEmptyNotFound(final Context ctx) {
+        if (ctx.statusCode() != 404) {
+            return;
+        }
+
+        if (!hasEmptyBody(ctx)) {
+            return;
+        }
+
+        ctx.res().setCharacterEncoding(null);
+        ctx.res().setContentType(null);
+        ctx.res().setHeader("Content-Type", null);
+    }
+
+    private boolean hasEmptyBody(final Context ctx) {
+        String body = ctx.attribute(JavalinServerResponse.RESPONSE_BODY_ATTRIBUTE);
+        if (body != null) {
+            return body.isEmpty();
+        }
+
+        String result = ctx.result();
+        return result == null || result.isEmpty();
     }
 
     private HandlerType handlerType(final HttpRouteVerb verb) {
