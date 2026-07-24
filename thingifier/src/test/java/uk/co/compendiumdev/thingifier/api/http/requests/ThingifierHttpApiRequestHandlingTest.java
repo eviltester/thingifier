@@ -172,7 +172,7 @@ public class ThingifierHttpApiRequestHandlingTest {
                 api.delete(
                         new HttpApiRequest("/things/" + anInstance.getPrimaryKeyValue())
                                 .setHeaders(headers));
-        Assertions.assertEquals(200, actualDeleteResponse.getStatusCode());
+        Assertions.assertEquals(204, actualDeleteResponse.getStatusCode());
 
         Assertions.assertEquals(
                 0, thingifier.getStore("other_things").entityQueries().count(thingInstances));

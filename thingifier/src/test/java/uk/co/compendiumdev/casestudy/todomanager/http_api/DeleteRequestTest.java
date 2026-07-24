@@ -55,7 +55,7 @@ public class DeleteRequestTest {
         HttpApiRequest request = new HttpApiRequest("/todos/" + instance.getPrimaryKeyValue());
 
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).delete(request);
-        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals(204, response.getStatusCode());
         System.out.println(response.getBody());
 
         Assertions.assertEquals(

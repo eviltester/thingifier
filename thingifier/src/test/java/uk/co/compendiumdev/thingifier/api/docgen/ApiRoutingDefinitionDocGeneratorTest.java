@@ -45,7 +45,7 @@ public class ApiRoutingDefinitionDocGeneratorTest {
                         .containsAll(Set.of(201, 400, 404, 422, 409)));
         Assertions.assertTrue(
                 statuses(route(definition, RoutingVerb.DELETE, "projects/:id/tasks/:id"))
-                        .containsAll(Set.of(200, 400, 404, 422, 409)));
+                        .containsAll(Set.of(204, 400, 404, 422, 409)));
     }
 
     private Thingifier model() {

@@ -75,7 +75,7 @@ public final class ThingCommandResultApiMapper {
 
         if (command instanceof DeleteThingCommand
                 || command instanceof DisconnectRelationshipCommand) {
-            return ApiResponse.success();
+            return ApiResponse.noContent();
         }
 
         return ApiResponse.error(400, result.getErrorMessages());

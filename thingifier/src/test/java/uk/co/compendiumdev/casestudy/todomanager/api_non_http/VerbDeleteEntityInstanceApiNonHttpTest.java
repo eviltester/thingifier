@@ -73,7 +73,7 @@ public class VerbDeleteEntityInstanceApiNonHttpTest {
                         .delete(
                                 String.format("project/%s", officeWork.getPrimaryKeyValue()),
                                 new HttpHeadersBlock());
-        Assertions.assertEquals(200, apiresponse.getStatusCode());
+        Assertions.assertEquals(204, apiresponse.getStatusCode());
         Assertions.assertTrue(apiresponse.getErrorMessages().size() == 0);
 
         Assertions.assertFalse(apiresponse.hasABody());

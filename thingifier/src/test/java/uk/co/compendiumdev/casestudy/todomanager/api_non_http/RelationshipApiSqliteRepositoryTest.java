@@ -443,7 +443,7 @@ public class RelationshipApiSqliteRepositoryTest {
                                             task.getPrimaryKeyValue()),
                                     new HttpHeadersBlock());
 
-            Assertions.assertEquals(200, response.getStatusCode());
+            Assertions.assertEquals(204, response.getStatusCode());
             Assertions.assertTrue(
                     repository.relationships().listRelated(projectInstance, "tasks").isEmpty());
             Assertions.assertNotNull(
