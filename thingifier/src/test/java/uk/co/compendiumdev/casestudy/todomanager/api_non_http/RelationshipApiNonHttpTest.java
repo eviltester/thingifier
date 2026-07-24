@@ -181,7 +181,7 @@ public class RelationshipApiNonHttpTest {
                                         paperwork.getPrimaryKeyValue()),
                                 new HttpHeadersBlock());
 
-        Assertions.assertEquals(200, apiresponse.getStatusCode());
+        Assertions.assertEquals(204, apiresponse.getStatusCode());
 
         Assertions.assertEquals(
                 numberOfTasks - 1,
@@ -255,7 +255,7 @@ public class RelationshipApiNonHttpTest {
                                 String.format("todo/%s", paperwork.getPrimaryKeyValue()),
                                 new HttpHeadersBlock());
 
-        Assertions.assertEquals(200, apiresponse.getStatusCode());
+        Assertions.assertEquals(204, apiresponse.getStatusCode());
         Assertions.assertFalse(apiresponse.hasABody());
         Assertions.assertTrue(apiresponse.getErrorMessages().size() == 0);
 
@@ -630,7 +630,7 @@ public class RelationshipApiNonHttpTest {
                                         relTodo.getPrimaryKeyValue(),
                                         myNewProject.getPrimaryKeyValue()),
                                 new HttpHeadersBlock());
-        Assertions.assertEquals(200, apiresponse.getStatusCode());
+        Assertions.assertEquals(204, apiresponse.getStatusCode());
 
         // project should be related to nothing
         Collection<EntityInstance> items =
@@ -740,7 +740,7 @@ public class RelationshipApiNonHttpTest {
                         .delete(
                                 String.format("todo/%s", relTodo.getPrimaryKeyValue()),
                                 new HttpHeadersBlock());
-        Assertions.assertEquals(200, apiresponse.getStatusCode());
+        Assertions.assertEquals(204, apiresponse.getStatusCode());
 
         Assertions.assertEquals(
                 0,

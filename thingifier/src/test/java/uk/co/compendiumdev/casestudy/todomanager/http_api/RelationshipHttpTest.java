@@ -498,7 +498,7 @@ public class RelationshipHttpTest {
                                 + atodo.getPrimaryKeyValue());
 
         final HttpApiResponse response = new ThingifierHttpApi(todoManager).delete(request);
-        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals(204, response.getStatusCode());
 
         Assertions.assertEquals(
                 0,
@@ -572,7 +572,7 @@ public class RelationshipHttpTest {
                                 + atodo.getPrimaryKeyValue());
 
         HttpApiResponse response = new ThingifierHttpApi(todoManager).delete(request);
-        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals(204, response.getStatusCode());
 
         Assertions.assertEquals(
                 0,
@@ -749,7 +749,7 @@ public class RelationshipHttpTest {
         final HttpApiRequest request = new HttpApiRequest("todos/" + atodo.getPrimaryKeyValue());
 
         HttpApiResponse response = new ThingifierHttpApi(todoManager).delete(request);
-        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals(204, response.getStatusCode());
 
         Assertions.assertEquals(
                 0,

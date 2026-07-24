@@ -92,7 +92,7 @@ public class TodoEntityTest {
 
         // delete the todoinstance we just created
         response = RestAssured.delete(Environment.getEnv("/todos/" + created.id));
-        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals(204, response.getStatusCode());
 
         // check it has gone
         response = RestAssured.get(Environment.getEnv("/todos/" + created.id));

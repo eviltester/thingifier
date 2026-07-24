@@ -64,6 +64,10 @@ public final class ApiResponse {
         return new ApiResponse(200);
     }
 
+    public static ApiResponse noContent() {
+        return new ApiResponse(204);
+    }
+
     public ApiResponse returnSingleInstance(final EntityInstance instance) {
         this.isCollection = false;
         draftToReturn = null;

@@ -315,7 +315,7 @@ public class ApiRoutingDefinitionDocGenerator {
                     .addRequestUrlParam(entityDefn.getField(uniqueIdFieldName))
                     .addPossibleStatus(
                             RoutingStatus.returnValue(
-                                    200,
+                                    204,
                                     String.format("Deleted a specific %s", entityDefn.getName())))
                     .addPossibleStatus(
                             RoutingStatus.returnValue(
@@ -323,7 +323,6 @@ public class ApiRoutingDefinitionDocGenerator {
                                     String.format(
                                             "Could not find a specific %s", entityDefn.getName())));
 
-            // TODO: API Config to allow 200 to be returned instead of 204
             defn.addRouting(
                             String.format("show all Options for endpoint of %s", aUrlWGuid),
                             RoutingVerb.OPTIONS,
@@ -487,7 +486,7 @@ public class ApiRoutingDefinitionDocGenerator {
                         aUrlDelete,
                         RoutingStatus.returnedFromCall())
                 .addPossibleStatus(
-                        RoutingStatus.returnValue(200, String.format("deleted the relationship")))
+                        RoutingStatus.returnValue(204, String.format("deleted the relationship")))
                 .addPossibleStatus(
                         RoutingStatus.returnValue(
                                 400, String.format("error when deleting the relationship")))

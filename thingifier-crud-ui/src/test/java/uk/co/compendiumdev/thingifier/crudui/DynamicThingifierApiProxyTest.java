@@ -43,7 +43,7 @@ public class DynamicThingifierApiProxyTest {
                                             uk.co.compendiumdev.thingifier.adapter.internalhttp
                                                     .InternalHttpMethod.DELETE)
                                     .addHeader("Accept", "application/json"));
-            Assertions.assertEquals(200, delete.statusCode());
+            Assertions.assertEquals(204, delete.statusCode());
         }
     }
 
@@ -90,7 +90,7 @@ public class DynamicThingifierApiProxyTest {
 
             UiHttpResponse disconnect =
                     proxy.deleteJson("projects/" + projectId + "/tasks/" + existingTodoId);
-            Assertions.assertEquals(200, disconnect.statusCode());
+            Assertions.assertEquals(204, disconnect.statusCode());
             Assertions.assertFalse(
                     proxy.getJson("projects/" + projectId + "/tasks")
                             .body()
