@@ -7,6 +7,8 @@ public interface HttpServerResponse {
 
     void body(String body);
 
+    void forceBody(String body);
+
     boolean containsHeader(String name);
 
     void header(String name, String value);
@@ -20,6 +22,8 @@ public interface HttpServerResponse {
     int status();
 
     void status(int statusCode);
+
+    void suppressContentType();
 
     String type();
 

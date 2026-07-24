@@ -8,6 +8,8 @@ import uk.co.compendiumdev.thingifier.adapter.httpserver.HttpServerResponse;
 
 final class JavalinServerResponse implements HttpServerResponse {
     static final String RESPONSE_BODY_ATTRIBUTE = "thingifier.response.body";
+    static final String SUPPRESS_CONTENT_TYPE_ATTRIBUTE = "thingifier.suppress.content.type";
+    static final String FORCE_BODY_ATTRIBUTE = "thingifier.force.body";
 
     private final Context context;
     private boolean bodySet;
@@ -27,6 +29,13 @@ final class JavalinServerResponse implements HttpServerResponse {
         bodySet = true;
         context.attribute(RESPONSE_BODY_ATTRIBUTE, body == null ? "" : body);
         context.result((body == null ? "" : body).getBytes(StandardCharsets.UTF_8));
+    }
+
+    @Override
+    public void forceBody(final String body) {
+        bodySet = true;
+        context.attribute(RESPONSE_BODY_ATTRIBUTE, body == null ? "" : body);
+        context.attribute(FORCE_BODY_ATTRIBUTE, Boolean.TRUE);
     }
 
     @Override
@@ -67,6 +76,13 @@ final class JavalinServerResponse implements HttpServerResponse {
     @Override
     public void status(final int statusCode) {
         context.status(statusCode);
+    }
+
+    @Override
+    public void suppressContentType() {
+        context.attribute(SUPPRESS_CONTENT_TYPE_ATTRIBUTE, Boolean.TRUE);
+        context.res().setContentType(null);
+        context.res().setHeader("Content-Type", null);
     }
 
     @Override

@@ -4,11 +4,20 @@ import io.javalin.Javalin;
 import io.javalin.http.Context;
 import io.javalin.http.HandlerType;
 import io.javalin.http.staticfiles.Location;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequestWrapper;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLConnection;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import org.eclipse.jetty.ee10.servlet.ServletApiRequest;
+import org.eclipse.jetty.http.HttpStatus;
+import org.eclipse.jetty.io.EndPoint;
+import org.eclipse.jetty.util.Blocker;
 import uk.co.compendiumdev.thingifier.adapter.httpserver.HaltRequestException;
 import uk.co.compendiumdev.thingifier.adapter.httpserver.HttpAfterHandler;
 import uk.co.compendiumdev.thingifier.adapter.httpserver.HttpBeforeHandler;
@@ -59,8 +68,9 @@ public final class JavalinHttpServer implements AutoCloseable {
                             for (HttpAfterHandler afterHandler : registry.afterHandlers()) {
                                 config.routes.after(ctx -> runAfter(ctx, afterHandler));
                             }
-                            config.routes.after(this::removeContentTypeFromEmptyNotFound);
+                            config.routes.after(this::removeContentTypeFromEmptyStatusResponses);
                             config.routes.after(this::restoreExactContentType);
+                            config.routes.after(this::removeSuppressedContentType);
                             config.routes.exception(
                                     HaltRequestException.class,
                                     (e, ctx) -> {
@@ -190,10 +200,92 @@ public final class JavalinHttpServer implements AutoCloseable {
         JavalinServerRequest request = new JavalinServerRequest(ctx);
         JavalinServerResponse response = new JavalinServerResponse(ctx);
         String body = route.handler().handle(request, response);
+        if (forceBodyIfRequested(ctx)) {
+            return;
+        }
         if (body != null && !response.wasBodySet()) {
             ctx.attribute(JavalinServerResponse.RESPONSE_BODY_ATTRIBUTE, body);
             ctx.result(body.getBytes(StandardCharsets.UTF_8));
         }
+    }
+
+    private boolean forceBodyIfRequested(final Context ctx) throws IOException {
+        Boolean forceBody = ctx.attribute(JavalinServerResponse.FORCE_BODY_ATTRIBUTE);
+        if (!Boolean.TRUE.equals(forceBody)) {
+            return false;
+        }
+
+        String body = ctx.attribute(JavalinServerResponse.RESPONSE_BODY_ATTRIBUTE);
+        byte[] bodyBytes = (body == null ? "" : body).getBytes(StandardCharsets.UTF_8);
+        writeRawResponse(ctx, bodyBytes);
+        ctx.skipRemainingHandlers();
+        return true;
+    }
+
+    private void writeRawResponse(final Context ctx, final byte[] bodyBytes) throws IOException {
+        ServletApiRequest servletRequest = jettyServletRequest(ctx.req());
+        if (servletRequest == null) {
+            throw new IOException(
+                    "Forced raw response requires Jetty ServletApiRequest but found "
+                            + ctx.req().getClass().getName());
+        }
+
+        byte[] responseBytes = rawResponseBytes(ctx, bodyBytes);
+        EndPoint endPoint =
+                servletRequest.getRequest().getConnectionMetaData().getConnection().getEndPoint();
+        try (Blocker.Callback callback = Blocker.callback()) {
+            endPoint.write(callback, ByteBuffer.wrap(responseBytes));
+            callback.block();
+        }
+        endPoint.close();
+        ctx.attribute(JavalinServerResponse.FORCE_BODY_ATTRIBUTE, Boolean.FALSE);
+    }
+
+    private byte[] rawResponseBytes(final Context ctx, final byte[] bodyBytes) {
+        StringBuilder response = new StringBuilder();
+        int status = ctx.statusCode();
+        response.append("HTTP/1.1 ")
+                .append(status)
+                .append(" ")
+                .append(HttpStatus.getMessage(status))
+                .append("\r\n");
+
+        Map<String, String> headers = new LinkedHashMap<>();
+        for (String name : ctx.res().getHeaderNames()) {
+            headers.put(name, ctx.res().getHeader(name));
+        }
+        headers.put("Content-Length", String.valueOf(bodyBytes.length));
+        headers.put("Connection", "close");
+
+        for (Map.Entry<String, String> header : headers.entrySet()) {
+            if (header.getValue() != null) {
+                response.append(header.getKey())
+                        .append(": ")
+                        .append(header.getValue())
+                        .append("\r\n");
+            }
+        }
+        response.append("\r\n");
+
+        byte[] headerBytes = response.toString().getBytes(StandardCharsets.ISO_8859_1);
+        byte[] responseBytes = new byte[headerBytes.length + bodyBytes.length];
+        System.arraycopy(headerBytes, 0, responseBytes, 0, headerBytes.length);
+        System.arraycopy(bodyBytes, 0, responseBytes, headerBytes.length, bodyBytes.length);
+        return responseBytes;
+    }
+
+    private ServletApiRequest jettyServletRequest(final HttpServletRequest request) {
+        HttpServletRequest current = request;
+        while (current instanceof HttpServletRequestWrapper wrapper) {
+            if (current instanceof ServletApiRequest servletRequest) {
+                return servletRequest;
+            }
+            current = (HttpServletRequest) wrapper.getRequest();
+        }
+        if (current instanceof ServletApiRequest servletRequest) {
+            return servletRequest;
+        }
+        return null;
     }
 
     private void runBefore(final Context ctx, final HttpBeforeHandler beforeHandler)
@@ -216,12 +308,24 @@ public final class JavalinHttpServer implements AutoCloseable {
         }
     }
 
-    private void removeContentTypeFromEmptyNotFound(final Context ctx) {
-        if (ctx.statusCode() != 404) {
+    private void removeContentTypeFromEmptyStatusResponses(final Context ctx) {
+        if (ctx.statusCode() != 204 && ctx.statusCode() != 404) {
             return;
         }
 
         if (!hasEmptyBody(ctx)) {
+            return;
+        }
+
+        ctx.res().setCharacterEncoding(null);
+        ctx.res().setContentType(null);
+        ctx.res().setHeader("Content-Type", null);
+    }
+
+    private void removeSuppressedContentType(final Context ctx) {
+        Boolean suppressContentType =
+                ctx.attribute(JavalinServerResponse.SUPPRESS_CONTENT_TYPE_ATTRIBUTE);
+        if (!Boolean.TRUE.equals(suppressContentType)) {
             return;
         }
 
