@@ -518,7 +518,10 @@ public class SqliteThingStore implements ThingStore {
             Field field = entity.getField(fieldNameValue.getName());
             if (field != null && field.getType() == FieldType.AUTO_INCREMENT) {
                 AutoIncrement counter = counterFor(entity, field);
-                counter.incrementToNextAbove(Integer.parseInt(fieldNameValue.value));
+                int value = Integer.parseInt(fieldNameValue.value);
+                if (counter.peekNextValue() <= value) {
+                    counter.incrementToNextAbove(value);
+                }
             }
         }
         ensureSchemaReady();
@@ -600,7 +603,7 @@ public class SqliteThingStore implements ThingStore {
         for (String fieldName : explicitAutoIncrementFields) {
             AutoIncrement counter = countersFor(entity).get(fieldName);
             int value = instance.getFieldValue(fieldName).asInteger();
-            if (counter.peekNextValue() < value) {
+            if (counter.peekNextValue() <= value) {
                 counter.incrementToNextAbove(value);
             }
         }

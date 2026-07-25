@@ -282,7 +282,10 @@ public class InMemoryThingStore implements ThingStore {
             if (field != null && field.getType() == FieldType.AUTO_INCREMENT) {
                 AutoIncrement counter = countersFor(entity).get(field.getName());
                 if (counter != null) {
-                    counter.incrementToNextAbove(Integer.parseInt(fieldNameValue.value));
+                    int value = Integer.parseInt(fieldNameValue.value);
+                    if (counter.peekNextValue() <= value) {
+                        counter.incrementToNextAbove(value);
+                    }
                 }
             }
         }

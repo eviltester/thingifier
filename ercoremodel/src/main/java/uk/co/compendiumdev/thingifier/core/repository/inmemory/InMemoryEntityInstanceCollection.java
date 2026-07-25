@@ -147,7 +147,7 @@ final class InMemoryEntityInstanceCollection {
             // should only do this if we actually add the item
             AutoIncrement counter = counters.get(autoIncrementFieldSet);
             if (counter.peekNextValue()
-                    < instance.getFieldValue(autoIncrementFieldSet).asInteger()) {
+                    <= instance.getFieldValue(autoIncrementFieldSet).asInteger()) {
                 counter.incrementToNextAbove(
                         instance.getFieldValue(autoIncrementFieldSet).asInteger());
             }
