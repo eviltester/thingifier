@@ -208,6 +208,7 @@ public class JsonRequestResponseTest {
 
         // header should give me the guid
         String guid = response.getHeaders().get(ApiResponse.PRIMARY_KEY_HEADER);
+        String location = response.getHeaders().get("Location");
 
         final EntityInstance aTodo =
                 todoManager
@@ -216,6 +217,7 @@ public class JsonRequestResponseTest {
                         .findByPrimaryKey(todo, guid);
 
         Assertions.assertEquals("title from json", aTodo.getFieldValue("title").asString());
+        Assertions.assertEquals("/todos/" + guid, location);
 
         Assertions.assertTrue(
                 response.getBody().startsWith("{\"guid\":\""), "Should have returned json");

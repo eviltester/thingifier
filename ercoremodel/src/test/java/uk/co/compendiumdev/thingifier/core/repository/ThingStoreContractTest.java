@@ -209,6 +209,21 @@ public class ThingStoreContractTest {
     }
 
     @Test
+    public void inMemoryRepositoryAccommodatesRestoredAutoIdsInAnyOrder() {
+        ThingStore repository = new InMemoryThingStore(EntityRelModel.DEFAULT_DATABASE_NAME);
+
+        exerciseRestoredAutoIdAccommodation(repository);
+    }
+
+    @Test
+    public void sqliteRepositoryAccommodatesRestoredAutoIdsInAnyOrder() {
+        try (ThingStore repository =
+                SqliteThingStore.inMemory(EntityRelModel.DEFAULT_DATABASE_NAME)) {
+            exerciseRestoredAutoIdAccommodation(repository);
+        }
+    }
+
+    @Test
     public void sqliteRepositoryThrowsTypedMaxInstanceLimitFailure() {
         ERSchema schema = ticketSchema(1);
         EntityDefinition ticket = schema.getEntityDefinitionNamed("ticket");
@@ -829,6 +844,26 @@ public class ThingStoreContractTest {
 
         Assertions.assertEquals("25", explicitTicket.getPrimaryKeyValue());
         Assertions.assertEquals("26", ticketAfterExplicit.getPrimaryKeyValue());
+    }
+
+    private void exerciseRestoredAutoIdAccommodation(final ThingStore repository) {
+        ERSchema schema = autoIdSchema();
+        repository.administration().initializeFrom(schema);
+
+        EntityDefinition ticket = schema.getEntityDefinitionNamed("ticket");
+        String[] restoredIds = {"4", "9", "8", "3", "6", "2", "10", "5", "7", "1"};
+        for (String restoredId : restoredIds) {
+            repository
+                    .entities()
+                    .create(
+                            EntityInstanceDraft.forEntity(ticket)
+                                    .withProtectedField("id", restoredId));
+        }
+
+        EntityInstance ticketAfterRestore =
+                repository.entities().create(EntityInstanceDraft.forEntity(ticket));
+
+        Assertions.assertEquals("11", ticketAfterRestore.getPrimaryKeyValue());
     }
 
     private void exerciseMandatoryRelationshipValidationAndCascade(final ThingStore repository) {
