@@ -97,6 +97,15 @@ public class ThingCommandResultApiMapperTest {
     }
 
     @Test
+    public void mapsSuccessfulDeleteToNoContent() {
+        ApiResponse response =
+                mapper().map(new DeleteThingCommand("task", "1"), ThingCommandResult.success());
+
+        Assertions.assertEquals(204, response.getStatusCode());
+        Assertions.assertFalse(response.hasABody());
+    }
+
+    @Test
     public void mapsInstanceNotFoundWithRouteContextToLegacyPathMessage() {
         ThingCommandResult result =
                 ThingCommandResult.error(ApplicationError.instanceNotFound("task", "missing"));
