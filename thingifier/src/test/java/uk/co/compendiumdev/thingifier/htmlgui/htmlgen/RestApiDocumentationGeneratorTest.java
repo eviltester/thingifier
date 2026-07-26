@@ -25,6 +25,18 @@ class RestApiDocumentationGeneratorTest {
 
         Assertions.assertTrue(docs.contains("href='/mirror/docs/swagger-ui'"));
         Assertions.assertTrue(docs.contains("Open Swagger UI"));
+        Assertions.assertTrue(docs.contains("<li>OpenAPI v 3.0 JSON"));
+        Assertions.assertTrue(docs.contains("<li>OpenAPI v 3.1 JSON"));
+        Assertions.assertTrue(docs.contains("<li>OpenAPI v 3.2 JSON"));
+        Assertions.assertTrue(
+                docs.contains("href='/mirror/docs/openapi-3.2.json'>[standard validation]</a>"));
+        Assertions.assertTrue(docs.contains("href='/mirror/docs/openapi-3.2.json?download'"));
+        Assertions.assertTrue(docs.contains("href='/mirror/docs/openapi-3.2.json?permissive'"));
+        Assertions.assertTrue(
+                docs.contains("href='/mirror/docs/openapi-3.2.json?permissive&amp;download'"));
+        Assertions.assertFalse(docs.contains("download normal swagger file"));
+        Assertions.assertFalse(docs.contains("download swagger file with less validation"));
+        Assertions.assertFalse(docs.contains("Add <code>?download</code>"));
     }
 
     @Test
@@ -44,6 +56,7 @@ class RestApiDocumentationGeneratorTest {
 
         Assertions.assertFalse(docs.contains("href='/mirror/docs/swagger-ui'"));
         Assertions.assertFalse(docs.contains("Open Swagger UI"));
-        Assertions.assertTrue(docs.contains("href='/mirror/docs/swagger'"));
+        Assertions.assertFalse(docs.contains("href='/mirror/docs/swagger'"));
+        Assertions.assertTrue(docs.contains("<li>OpenAPI v 3.0 JSON"));
     }
 }

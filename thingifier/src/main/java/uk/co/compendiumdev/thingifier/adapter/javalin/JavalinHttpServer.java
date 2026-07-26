@@ -350,6 +350,8 @@ public final class JavalinHttpServer implements AutoCloseable {
                 return HandlerType.GET;
             case HEAD:
                 return HandlerType.HEAD;
+            case QUERY:
+                return HandlerType.QUERY;
             case OPTIONS:
                 return HandlerType.OPTIONS;
             case POST:

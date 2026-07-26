@@ -2,6 +2,7 @@ package uk.co.compendiumdev.thingifier.crudui;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import uk.co.compendiumdev.thingifier.swaggerizer.OpenApiSpecificationVersion;
 import uk.co.compendiumdev.thingifier.yaml.ThingifierYamlException;
 
 public final class CrudUiController {
@@ -186,6 +187,11 @@ public final class CrudUiController {
     public UiHttpResponse openApiJson() {
         return UiHttpResponse.json(
                 200, new OpenApiDocumentation(workspace.snapshot()).openApiJson());
+    }
+
+    public UiHttpResponse openApiJson(final OpenApiSpecificationVersion version) {
+        return UiHttpResponse.json(
+                200, new OpenApiDocumentation(workspace.snapshot()).openApiJson(version));
     }
 
     public UiHttpResponse downloadOpenApi(final boolean permissive) {

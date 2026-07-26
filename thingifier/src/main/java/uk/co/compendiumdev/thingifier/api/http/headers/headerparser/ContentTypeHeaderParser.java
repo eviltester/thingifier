@@ -20,6 +20,10 @@ public class ContentTypeHeaderParser {
         return header.contains("application/json");
     }
 
+    public boolean isFormUrlEncoded() {
+        return header.contains("application/x-www-form-urlencoded");
+    }
+
     public boolean isMissing() {
         return (header.isEmpty());
     }

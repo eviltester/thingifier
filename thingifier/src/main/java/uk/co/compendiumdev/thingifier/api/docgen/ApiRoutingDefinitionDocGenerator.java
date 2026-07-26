@@ -111,6 +111,23 @@ public class ApiRoutingDefinitionDocGenerator {
 
             defn.addRouting(
                             String.format(
+                                    "query all the instances of %s using application/x-www-form-urlencoded query content",
+                                    entityDefn.getName()),
+                            RoutingVerb.QUERY,
+                            pluralUrl,
+                            RoutingStatus.returnedFromCall())
+                    .addPossibleStatus(
+                            RoutingStatus.returnValue(
+                                    200,
+                                    String.format("All the matching %s", entityDefn.getPlural())))
+                    .addPossibleStatus(RoutingStatus.returnValue(400))
+                    .addPossibleStatus(RoutingStatus.returnValue(413))
+                    .addPossibleStatus(RoutingStatus.returnValue(415))
+                    .setAsFilterableFrom(entityDefn)
+                    .returnPayload(200, entityDefn.getPlural());
+
+            defn.addRouting(
+                            String.format(
                                     "headers for all the instances of %s", entityDefn.getName()),
                             RoutingVerb.HEAD,
                             pluralUrl,
@@ -164,7 +181,7 @@ public class ApiRoutingDefinitionDocGenerator {
                     RoutingVerb.OPTIONS,
                     pluralUrl,
                     RoutingStatus.returnValue(204, "the endpoint verb options"),
-                    new ResponseHeader("Allow", "OPTIONS, GET, HEAD, POST"));
+                    new ResponseHeader("Allow", "OPTIONS, GET, HEAD, POST, QUERY"));
 
             // the following are not handled so return 405
             defn.addRouting(
@@ -227,6 +244,14 @@ public class ApiRoutingDefinitionDocGenerator {
                                     String.format(
                                             "Could not find a specific %s", entityDefn.getName())));
             ;
+
+            defn.addRouting(
+                            "method not allowed",
+                            RoutingVerb.QUERY,
+                            aUrlWGuid,
+                            RoutingStatus.returnValue(405),
+                            new ResponseHeader("Allow", "OPTIONS, GET, HEAD, POST, PUT, DELETE"))
+                    .addRequestUrlParam(entityDefn.getField(uniqueIdFieldName));
 
             // we should be able to amend things with a GUID e.g. POST project/GUID with body
             defn.addRouting(
@@ -416,6 +441,22 @@ public class ApiRoutingDefinitionDocGenerator {
 
         defn.addRouting(
                         String.format(
+                                "query all the %s items related to %s, with given %s, by the relationship named %s using application/x-www-form-urlencoded query content",
+                                toName, fromName, uniqueIdFieldName, relationshipName),
+                        RoutingVerb.QUERY,
+                        aUrl,
+                        RoutingStatus.returnedFromCall())
+                .addPossibleStatus(
+                        RoutingStatus.returnValue(
+                                200, String.format("all the matching related %s items", toName)))
+                .addPossibleStatus(RoutingStatus.returnValue(400))
+                .addPossibleStatus(RoutingStatus.returnValue(413))
+                .addPossibleStatus(RoutingStatus.returnValue(415))
+                .setAsFilterableFrom(relationship.getTo())
+                .returnPayload(200, relationship.getTo().getPlural());
+
+        defn.addRouting(
+                        String.format(
                                 "headers for the %s items related to %s, with given %s, by the relationship named %s",
                                 toName, fromName, uniqueIdFieldName, relationshipName),
                         RoutingVerb.HEAD,
@@ -431,7 +472,7 @@ public class ApiRoutingDefinitionDocGenerator {
                 RoutingVerb.OPTIONS,
                 aUrl,
                 RoutingStatus.returnValue(200),
-                new ResponseHeader("Allow", "OPTIONS, GET, HEAD, POST"));
+                new ResponseHeader("Allow", "OPTIONS, GET, HEAD, POST, QUERY"));
 
         // we can post if there is no guid as it will create the 'thing' and the relationship
         // connection
@@ -511,6 +552,12 @@ public class ApiRoutingDefinitionDocGenerator {
                 "method not allowed", RoutingVerb.HEAD, aUrlDelete, RoutingStatus.returnValue(405));
         defn.addRouting(
                 "method not allowed", RoutingVerb.GET, aUrlDelete, RoutingStatus.returnValue(405));
+        defn.addRouting(
+                "method not allowed",
+                RoutingVerb.QUERY,
+                aUrlDelete,
+                RoutingStatus.returnValue(405),
+                new ResponseHeader("Allow", "OPTIONS, DELETE"));
         defn.addRouting(
                 "method not allowed",
                 RoutingVerb.PATCH,

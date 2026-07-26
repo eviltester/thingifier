@@ -35,12 +35,19 @@ public final class ApiRequestEnvelope {
         if (verb == ThingifierHttpApi.HttpVerb.POST || verb == ThingifierHttpApi.HttpVerb.PUT) {
             bodyFields = new BodyParser(request, thingNames).bodyFields();
         }
+        QueryFilterParams queryParams = request.getFilterableQueryParams();
+        if (verb == ThingifierHttpApi.HttpVerb.QUERY) {
+            queryParams = queryContentAndUriQueryParams(request);
+        }
         return new ApiRequestEnvelope(
-                verb,
-                request.getPath(),
-                request.getFilterableQueryParams(),
-                request.getHeaders(),
-                bodyFields);
+                verb, request.getPath(), queryParams, request.getHeaders(), bodyFields);
+    }
+
+    private static QueryFilterParams queryContentAndUriQueryParams(final HttpApiRequest request) {
+        QueryFilterParams params = new QueryFilterParams();
+        params.addAll(request.getFilterableQueryParams());
+        params.addAll(new UrlQueryParamParser().parseStrict(request.getBody()));
+        return params;
     }
 
     public ThingifierHttpApi.HttpVerb verb() {

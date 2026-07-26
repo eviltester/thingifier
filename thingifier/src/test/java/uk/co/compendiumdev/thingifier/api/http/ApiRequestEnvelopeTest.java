@@ -44,4 +44,21 @@ public class ApiRequestEnvelopeTest {
                                         "relationships.project.guid".equals(entry.getKey())
                                                 && "p1".equals(entry.getValue())));
     }
+
+    @Test
+    public void queryEnvelopeCombinesUriAndBodyQueryParams() {
+        HttpApiRequest request =
+                new HttpApiRequest("/tasks")
+                        .setFilterableQueryParams("status=Open")
+                        .setBody("title=Task");
+
+        ApiRequestEnvelope envelope =
+                ApiRequestEnvelope.from(
+                        request, ThingifierHttpApi.HttpVerb.QUERY, List.of("task", "tasks"));
+
+        Assertions.assertEquals(ThingifierHttpApi.HttpVerb.QUERY, envelope.verb());
+        Assertions.assertEquals(2, envelope.queryParams().size());
+        Assertions.assertEquals("status", envelope.queryParams().get(0).fieldName);
+        Assertions.assertEquals("title", envelope.queryParams().get(1).fieldName);
+    }
 }

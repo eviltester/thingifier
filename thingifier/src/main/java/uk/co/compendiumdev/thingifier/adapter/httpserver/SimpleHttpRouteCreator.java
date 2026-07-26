@@ -88,6 +88,9 @@ public class SimpleHttpRouteCreator {
             case "head":
                 head(endpoint, route);
                 break;
+            case "query":
+                query(endpoint, route);
+                break;
             case "options":
                 options(endpoint, route);
                 break;
@@ -121,7 +124,9 @@ public class SimpleHttpRouteCreator {
     public static void routeStatusWhenNot(
             final int statuscode, final String endpoint, final List<String> excludedVerbs) {
 
-        String[] verbs = {"get", "options", "head", "put", "post", "patch", "trace", "delete"};
+        String[] verbs = {
+            "get", "options", "head", "query", "put", "post", "patch", "trace", "delete"
+        };
 
         for (String verb : verbs) {
             if (!excludedVerbs.contains(verb)) {

@@ -12,6 +12,7 @@ import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
 import uk.co.compendiumdev.thingifier.api.docgen.ThingifierApiDocumentationDefn;
 import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonThing;
 import uk.co.compendiumdev.thingifier.api.ermodelconversion.XmlThing;
+import uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.xml.GenericXMLPrettyPrinter;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
@@ -400,6 +401,13 @@ public class RestApiDocumentationGenerator {
                                     routingDefn.verb(),
                                     routingDefn.url(),
                                     routingDefn.getDocumentation()));
+                    if (routingDefn.verb() == RoutingVerb.QUERY) {
+                        output.append(
+                                paragraph(
+                                        "QUERY content uses <i>Content-Type: "
+                                                + ThingifierHttpApi.QUERY_CONTENT_TYPE
+                                                + "</i> with fields such as <i>title=Task&amp;sortBy=-id</i>."));
+                    }
                 }
             }
         }
@@ -441,18 +449,32 @@ public class RestApiDocumentationGenerator {
         if (apiDocDefn.willShowSwaggerUiLink()) {
             output.append(paragraph(href("Open Swagger UI", prependPath + "/docs/swagger-ui")));
         }
-        output.append(
-                paragraph(href("[download normal swagger file]", prependPath + "/docs/swagger")));
-        output.append(
-                paragraph(
-                        href(
-                                "[download swagger file with less validation]",
-                                prependPath + "/docs/swagger?permissive")));
+        output.append(openApiVersionLinks());
 
         output.append(defaultGui.getEndOfMainContentMarker());
         output.append(defaultGui.getPageFooter());
         output.append(defaultGui.getPageEnd());
         return output.toString();
+    }
+
+    private String openApiVersionLinks() {
+        StringBuilder links = new StringBuilder();
+        links.append("<ul>%n".formatted());
+        links.append(openApiVersionLink("3.0", prependPath + "/docs/openapi-3.0.json"));
+        links.append(openApiVersionLink("3.1", prependPath + "/docs/openapi-3.1.json"));
+        links.append(openApiVersionLink("3.2", prependPath + "/docs/openapi-3.2.json"));
+        links.append("</ul>%n".formatted());
+        return links.toString();
+    }
+
+    private String openApiVersionLink(final String version, final String specUrl) {
+        return "<li>OpenAPI v %s JSON %s %s - %s %s</li>%n"
+                .formatted(
+                        version,
+                        href("[standard validation]", specUrl),
+                        href("[download]", specUrl + "?download"),
+                        href("[less validation]", specUrl + "?permissive"),
+                        href("[download]", specUrl + "?permissive&amp;download"));
     }
 
     private String resolveDocsTitle(final ThingifierApiDocumentationDefn apiDocDefn) {

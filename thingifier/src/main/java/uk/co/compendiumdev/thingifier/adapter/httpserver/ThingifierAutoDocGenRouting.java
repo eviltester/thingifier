@@ -8,6 +8,7 @@ import uk.co.compendiumdev.thingifier.api.docgen.ApiRoutingDefinitionDocGenerato
 import uk.co.compendiumdev.thingifier.api.docgen.ThingifierApiDocumentationDefn;
 import uk.co.compendiumdev.thingifier.htmlgui.htmlgen.DefaultGUIHTML;
 import uk.co.compendiumdev.thingifier.htmlgui.htmlgen.RestApiDocumentationGenerator;
+import uk.co.compendiumdev.thingifier.swaggerizer.OpenApiSpecificationVersion;
 import uk.co.compendiumdev.thingifier.swaggerizer.SwaggerUiPage;
 import uk.co.compendiumdev.thingifier.swaggerizer.Swaggerizer;
 
@@ -25,6 +26,9 @@ public class ThingifierAutoDocGenRouting {
         final String docsPath = "%s/docs".formatted(pathPrefix);
         final String swaggerDownloadPath = "%s/docs/swagger".formatted(pathPrefix);
         final String openApiPath = "%s/docs/openapi.json".formatted(pathPrefix);
+        final String openApi30Path = "%s/docs/openapi-3.0.json".formatted(pathPrefix);
+        final String openApi31Path = "%s/docs/openapi-3.1.json".formatted(pathPrefix);
+        final String openApi32Path = "%s/docs/openapi-3.2.json".formatted(pathPrefix);
         final String swaggerUiPath = "%s/docs/swagger-ui".formatted(pathPrefix);
 
         // TODO: config to enable docs and configure the URL and add a meta tag for description and
@@ -46,14 +50,10 @@ public class ThingifierAutoDocGenRouting {
 
         // guiManagement.appendMenuItem("API documentation","/docs");
 
-        get(
-                openApiPath,
-                (request, response) -> {
-                    response.type("application/json");
-                    response.status(200);
-                    return new Swaggerizer(apiDefn)
-                            .asJsonWithPreferredServer(HttpRequestOrigin.from(request));
-                });
+        registerOpenApiEndpoint(apiDefn, openApiPath, OpenApiSpecificationVersion.OPENAPI_3_1);
+        registerOpenApiEndpoint(apiDefn, openApi31Path, OpenApiSpecificationVersion.OPENAPI_3_1);
+        registerOpenApiEndpoint(apiDefn, openApi32Path, OpenApiSpecificationVersion.OPENAPI_3_2);
+        registerOpenApiEndpoint(apiDefn, openApi30Path, OpenApiSpecificationVersion.OPENAPI_3_0);
 
         get(
                 swaggerUiPath,
@@ -64,6 +64,9 @@ public class ThingifierAutoDocGenRouting {
                                     apiDefn,
                                     guiManagement,
                                     openApiPath,
+                                    openApi30Path,
+                                    openApi31Path,
+                                    openApi32Path,
                                     docsPath,
                                     swaggerDownloadPath,
                                     swaggerUiPath)
@@ -102,5 +105,35 @@ public class ThingifierAutoDocGenRouting {
                             .asJsonWithPreferredServer(
                                     permissive != null, HttpRequestOrigin.from(request));
                 });
+    }
+
+    private void registerOpenApiEndpoint(
+            final ThingifierApiDocumentationDefn apiDefn,
+            final String path,
+            final OpenApiSpecificationVersion version) {
+        get(
+                path,
+                (request, response) -> {
+                    response.type("application/json");
+                    response.status(200);
+                    final boolean permissive = request.queryParam("permissive") != null;
+                    if (request.queryParam("download") != null) {
+                        response.header(
+                                "Content-Disposition",
+                                "attachment; filename=\"%s\""
+                                        .formatted(openApiDownloadFilename(path, permissive)));
+                    }
+                    return new Swaggerizer(apiDefn)
+                            .asJsonWithPreferredServer(
+                                    version, permissive, HttpRequestOrigin.from(request));
+                });
+    }
+
+    private String openApiDownloadFilename(final String path, final boolean permissive) {
+        final String filename = path.substring(path.lastIndexOf("/") + 1);
+        if (permissive) {
+            return "permissive-" + filename;
+        }
+        return filename;
     }
 }

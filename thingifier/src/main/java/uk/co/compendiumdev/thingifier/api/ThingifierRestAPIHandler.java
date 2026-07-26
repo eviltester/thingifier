@@ -18,6 +18,7 @@ public class ThingifierRestAPIHandler {
     private final RestApiPostHandler post;
     private final RestApiPutHandler put;
     private final RestApiGetHandler get;
+    private final RestApiQueryHandler query;
 
     public ThingifierRestAPIHandler(final Thingifier aThingifier) {
         this(new DefaultThingifierApiRuntime(aThingifier));
@@ -29,6 +30,7 @@ public class ThingifierRestAPIHandler {
         this.delete = new RestApiDeleteHandler(runtime);
         this.post = new RestApiPostHandler(runtime);
         this.put = new RestApiPutHandler(runtime);
+        this.query = new RestApiQueryHandler(runtime);
     }
 
     // TODO: we should be able to accept xml with correct content type
@@ -67,6 +69,12 @@ public class ThingifierRestAPIHandler {
         final ApiResponse response = get.handle(request.path(), request.queryParams(), context);
         response.clearBody();
         return withRepository(response, context);
+    }
+
+    public ApiResponse query(final ApiRequestEnvelope request) {
+        ThingifierRequestContext context = contextFrom(request.headers());
+        return withRepository(
+                query.handle(request.path(), request.queryParams(), context), context);
     }
 
     public ApiResponse delete(final String url, HttpHeadersBlock headers) {

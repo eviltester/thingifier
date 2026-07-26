@@ -2,6 +2,7 @@ package uk.co.compendiumdev.thingifier.crudui;
 
 import java.util.Locale;
 import uk.co.compendiumdev.thingifier.api.docgen.ThingifierApiDocumentationDefn;
+import uk.co.compendiumdev.thingifier.swaggerizer.OpenApiSpecificationVersion;
 import uk.co.compendiumdev.thingifier.swaggerizer.Swaggerizer;
 
 public final class OpenApiDocumentation {
@@ -15,11 +16,16 @@ public final class OpenApiDocumentation {
     }
 
     public String openApiJson() {
-        return new Swaggerizer(apiDefinition()).asJson();
+        return openApiJson(OpenApiSpecificationVersion.OPENAPI_3_1);
+    }
+
+    public String openApiJson(final OpenApiSpecificationVersion version) {
+        return new Swaggerizer(apiDefinition()).asJson(version);
     }
 
     public String permissiveOpenApiJson() {
-        return new Swaggerizer(apiDefinition()).asJson(true);
+        return new Swaggerizer(apiDefinition())
+                .asJson(OpenApiSpecificationVersion.OPENAPI_3_1, true);
     }
 
     public String downloadFilename(final boolean permissive) {

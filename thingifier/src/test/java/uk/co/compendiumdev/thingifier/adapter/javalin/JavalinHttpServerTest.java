@@ -76,6 +76,29 @@ class JavalinHttpServerTest {
     }
 
     @Test
+    void queryMethodRoutesThroughJavalinAdapter() throws Exception {
+        int port = availablePort();
+        HttpRouteRegistry registry = new HttpRouteRegistry();
+        registry.add(
+                HttpRouteVerb.QUERY,
+                "/search",
+                (request, response) -> {
+                    response.type("text/plain");
+                    response.status(200);
+                    return request.method() + ":" + request.body();
+                });
+
+        try (JavalinHttpServer server = new JavalinHttpServer(port, "/public", registry)) {
+            server.start();
+
+            String response = rawHttp("QUERY", "/search", port, "title=Task");
+
+            Assertions.assertTrue(response.startsWith("HTTP/1.1 200 OK"));
+            Assertions.assertTrue(response.endsWith("QUERY:title=Task"));
+        }
+    }
+
+    @Test
     void forcedBodyCanBeSentWithNoContentStatus() throws Exception {
         int port = availablePort();
         HttpRouteRegistry registry = new HttpRouteRegistry();
@@ -165,8 +188,15 @@ class JavalinHttpServerTest {
 
     private String rawHttp(final String method, final String path, final int port)
             throws Exception {
+        return rawHttp(method, path, port, "");
+    }
+
+    private String rawHttp(
+            final String method, final String path, final int port, final String body)
+            throws Exception {
         try (Socket socket = new Socket("localhost", port)) {
             socket.setSoTimeout(5000);
+            byte[] bodyBytes = body.getBytes(StandardCharsets.ISO_8859_1);
             socket.getOutputStream()
                     .write(
                             (method
@@ -174,8 +204,11 @@ class JavalinHttpServerTest {
                                             + path
                                             + " HTTP/1.1\r\nHost: localhost:"
                                             + port
+                                            + "\r\nContent-Length: "
+                                            + bodyBytes.length
                                             + "\r\nConnection: close\r\n\r\n")
                                     .getBytes(StandardCharsets.ISO_8859_1));
+            socket.getOutputStream().write(bodyBytes);
             return new String(socket.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
         }
     }
