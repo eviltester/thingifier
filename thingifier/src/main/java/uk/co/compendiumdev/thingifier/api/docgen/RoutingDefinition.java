@@ -62,6 +62,9 @@ public class RoutingDefinition {
     }
 
     public String header() {
+        if (header == null) {
+            return "";
+        }
         if (header.headerName == null) {
             return "";
         }
@@ -70,6 +73,9 @@ public class RoutingDefinition {
     }
 
     public String headerValue() {
+        if (header == null) {
+            return "";
+        }
         if (header.headerValue == null) {
             return "";
         }

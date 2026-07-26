@@ -53,6 +53,16 @@ public class ApiRoutingDefinitionDocGeneratorTest {
     }
 
     @Test
+    public void routeDefinitionWithoutHeaderReturnsEmptyHeaderDetails() {
+        RoutingDefinition route =
+                new RoutingDefinition(
+                        RoutingVerb.DELETE, "todos", RoutingStatus.returnValue(405), null);
+
+        Assertions.assertEquals("", route.header());
+        Assertions.assertEquals("", route.headerValue());
+    }
+
+    @Test
     public void relationshipWritesDocumentValidationAndConflictStatuses() {
         ApiRoutingDefinition definition =
                 new ApiRoutingDefinitionDocGenerator(model()).generate("");
