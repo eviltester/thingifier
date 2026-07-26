@@ -68,7 +68,6 @@ public class ThingifierAutoDocGenRouting {
                                     openApi31Path,
                                     openApi32Path,
                                     docsPath,
-                                    swaggerDownloadPath,
                                     swaggerUiPath)
                             .html();
                 });
