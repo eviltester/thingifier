@@ -21,7 +21,6 @@ public final class SwaggerUiPage {
     private final String openApi31Url;
     private final String openApi32Url;
     private final String docsUrl;
-    private final String downloadUrl;
     private final String canonicalUrl;
 
     public SwaggerUiPage(
@@ -32,7 +31,6 @@ public final class SwaggerUiPage {
             final String openApi31Url,
             final String openApi32Url,
             final String docsUrl,
-            final String downloadUrl,
             final String canonicalUrl) {
         this.apiDefn = apiDefn;
         this.guiManagement = guiManagement;
@@ -41,7 +39,6 @@ public final class SwaggerUiPage {
         this.openApi31Url = openApi31Url;
         this.openApi32Url = openApi32Url;
         this.docsUrl = docsUrl;
-        this.downloadUrl = downloadUrl;
         this.canonicalUrl = canonicalUrl;
     }
 
@@ -56,10 +53,6 @@ public final class SwaggerUiPage {
         html.append("<h1>").append(escapeHtml(title)).append("</h1>");
         html.append("<p>");
         html.append("<a href='").append(escapeHtmlAttribute(docsUrl)).append("'>API Docs</a>");
-        html.append(" | ");
-        html.append("<a href='")
-                .append(escapeHtmlAttribute(downloadUrl))
-                .append("'>Download OpenAPI JSON</a>");
         html.append(" | ");
         html.append("<a href='")
                 .append(escapeHtmlAttribute(openApi31Url))
@@ -146,7 +139,10 @@ public final class SwaggerUiPage {
                 ".swagger-ui-page h1{margin-bottom:.25em;}",
                 ".swagger-ui-page #swagger-ui{margin-top:1em;}",
                 ".swagger-ui{background:#fff;color:#222;color-scheme:light;}",
-                ".swagger-ui .topbar{display:none;}",
+                ".swagger-ui .topbar{background:#f7f7f7!important;border:1px solid #d7d7d7;"
+                        + "border-radius:4px;margin:1em 0;padding:8px 0;}",
+                ".swagger-ui .topbar-wrapper{align-items:center;}",
+                ".swagger-ui .topbar a span{color:#222!important;}",
                 ".swagger-ui .wrapper,.swagger-ui .scheme-container,"
                         + ".swagger-ui section.models,.swagger-ui .model-box,"
                         + ".swagger-ui .opblock,.swagger-ui .opblock .opblock-summary,"
