@@ -37,7 +37,12 @@ public class CrudUiApiIT {
         assertStatusContains("/swagger", 200, "SwaggerUIBundle");
         assertStatusContains("/swagger", 200, "swagger-copy-for-ai.js");
         assertStatusContains("/openapi.json", 200, "\"openapi\"");
+        assertStatusContains("/openapi-3.1.json", 200, "\"openapi\"");
+        assertStatusContains("/openapi-3.0.json", 200, "\"openapi\"");
         assertStatusContains("/docs/swagger", 200, "\"openapi\"");
+
+        CrudUiApiClient.ApiResult removedAlias = api.get("/openapi-3-1.json");
+        Assertions.assertEquals(404, removedAlias.statusCode(), removedAlias.body());
     }
 
     @Test

@@ -1,6 +1,7 @@
 package uk.co.compendiumdev.thingifier.api.http;
 
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import uk.co.compendiumdev.thingifier.core.query.FilterBy;
 import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
 
@@ -19,6 +20,16 @@ public final class UrlQueryParamParser {
     }
 
     public QueryFilterParams parse(final String rawUrlParams) {
+        try {
+            return parseStrict(rawUrlParams);
+        } catch (IllegalArgumentException e) {
+            // TODO: should really have added a logger by now and avoid System.out
+            System.out.println(e.getMessage());
+            return new QueryFilterParams();
+        }
+    }
+
+    public QueryFilterParams parseStrict(final String rawUrlParams) {
 
         QueryFilterParams filters = new QueryFilterParams();
 
@@ -32,19 +43,27 @@ public final class UrlQueryParamParser {
             return filters;
         }
 
-        String rawDecoded = urlDecode(parseThis);
+        String rawDecoded = urlDecodeStrict(parseThis);
         String[] rawParams = rawDecoded.split("&");
 
         for (String rawParam : rawParams) {
-            try {
-                FilterBy aFilterBy = parseToFilterBy(rawParam);
-                filters.add(aFilterBy);
-            } catch (Exception e) {
-                // TODO: should really have added a logger by now and avoid System.out
-                System.out.println(e.getMessage());
+            String param = rawParam.trim();
+            if (param.isEmpty()) {
+                continue;
             }
+
+            FilterBy aFilterBy = parseToFilterBy(param);
+            if (aFilterBy.fieldName == null || aFilterBy.fieldName.trim().isEmpty()) {
+                throw new IllegalArgumentException(
+                        "Malformed query content: field name is missing");
+            }
+            filters.add(aFilterBy);
         }
         return filters;
+    }
+
+    private String urlDecodeStrict(final String possiblyUrlEncodedString) {
+        return URLDecoder.decode(possiblyUrlEncodedString, StandardCharsets.UTF_8);
     }
 
     private FilterBy parseToFilterBy(final String rawParam) {

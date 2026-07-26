@@ -1,5 +1,6 @@
 package uk.co.compendiumdev.thingifier.swaggerizer;
 
+import io.swagger.v3.core.util.Json;
 import io.swagger.v3.core.util.Json31;
 import io.swagger.v3.oas.models.*;
 import io.swagger.v3.oas.models.info.Info;
@@ -20,6 +21,7 @@ import uk.co.compendiumdev.thingifier.api.docgen.ApiRoutingDefinitionDocGenerato
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingStatus;
 import uk.co.compendiumdev.thingifier.api.docgen.ThingifierApiDocumentationDefn;
+import uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
@@ -48,10 +50,15 @@ public class Swaggerizer {
        Swagger file for normal usage
     */
     public OpenAPI swagger() {
+        return swagger(OpenApiSpecificationVersion.OPENAPI_3_1);
+    }
+
+    public OpenAPI swagger(final OpenApiSpecificationVersion version) {
         SwaggerGenerationConfig config = new SwaggerGenerationConfig();
 
         config.includeMethodNotAllowedEndpoints = false;
         config.includeFieldValidation = true;
+        config.openApiSpecificationVersion = version;
 
         return swagger(config);
     }
@@ -60,17 +67,23 @@ public class Swaggerizer {
        Swagger file for use in testing
     */
     public OpenAPI swaggerPermissive() {
+        return swaggerPermissive(OpenApiSpecificationVersion.OPENAPI_3_1);
+    }
+
+    public OpenAPI swaggerPermissive(final OpenApiSpecificationVersion version) {
         SwaggerGenerationConfig config = new SwaggerGenerationConfig();
 
         config.includeMethodNotAllowedEndpoints = true;
         config.includeFieldValidation = false;
+        config.openApiSpecificationVersion = version;
 
         return swagger(config);
     }
 
     public OpenAPI swagger(SwaggerGenerationConfig config) {
 
-        OpenAPI api = new OpenAPI();
+        OpenAPI api = new OpenAPI(config.openApiSpecificationVersion.specVersion());
+        api.setOpenapi(config.openApiSpecificationVersion.documentVersion());
 
         final Thingifier thingifier = apiDefn.getThingifier();
 
@@ -361,6 +374,12 @@ public class Swaggerizer {
             case HEAD:
                 path.setHead(operation);
                 break;
+            case QUERY:
+                operation.addExtension("x-http-method", "QUERY");
+                operation.addExtension(
+                        "x-query-content-types", List.of(ThingifierHttpApi.QUERY_CONTENT_TYPE));
+                path.addExtension("x-query-operation", operation);
+                break;
             case PATCH:
                 path.setPatch(operation);
                 break;
@@ -509,21 +528,42 @@ public class Swaggerizer {
     // TODO: the output from swaggerizer json could be cached
 
     public String asJson() {
-        return asJson(false);
+        return asJson(OpenApiSpecificationVersion.OPENAPI_3_1, false);
     }
 
     public String asJsonWithPreferredServer(final String preferredServerUrl) {
-        return asJsonWithPreferredServer(false, preferredServerUrl);
+        return asJsonWithPreferredServer(
+                OpenApiSpecificationVersion.OPENAPI_3_1, false, preferredServerUrl);
     }
 
     public String asJsonWithPreferredServer(
             final boolean permissive, final String preferredServerUrl) {
-        final OpenAPI api = permissive ? swaggerPermissive() : swagger();
+        return asJsonWithPreferredServer(
+                OpenApiSpecificationVersion.OPENAPI_3_1, permissive, preferredServerUrl);
+    }
+
+    public String asJsonWithPreferredServer(
+            final OpenApiSpecificationVersion version,
+            final boolean permissive,
+            final String preferredServerUrl) {
+        final OpenAPI api = permissive ? swaggerPermissive(version) : swagger(version);
         preferServer(api, preferredServerUrl);
-        return Json31.pretty(api);
+        return pretty(api, version);
     }
 
     public String asJson(boolean permissive) {
+        return asJson(OpenApiSpecificationVersion.OPENAPI_3_1, permissive);
+    }
+
+    public String asJson(final OpenApiSpecificationVersion version) {
+        return asJson(version, false);
+    }
+
+    public String asJson(final OpenApiSpecificationVersion version, boolean permissive) {
+        if (version != OpenApiSpecificationVersion.OPENAPI_3_1) {
+            return pretty(permissive ? swaggerPermissive(version) : swagger(version), version);
+        }
+
         if (apiNormal == null) {
             apiNormal = swagger();
         }
@@ -531,10 +571,17 @@ public class Swaggerizer {
             apiPermissive = swaggerPermissive();
         }
         if (permissive) {
-            return Json31.pretty(apiPermissive);
+            return pretty(apiPermissive, version);
         } else {
-            return Json31.pretty(apiNormal);
+            return pretty(apiNormal, version);
         }
+    }
+
+    private String pretty(final OpenAPI api, final OpenApiSpecificationVersion version) {
+        if (version == OpenApiSpecificationVersion.OPENAPI_3_0) {
+            return Json.pretty(api);
+        }
+        return Json31.pretty(api);
     }
 
     private void preferServer(final OpenAPI api, final String preferredServerUrl) {

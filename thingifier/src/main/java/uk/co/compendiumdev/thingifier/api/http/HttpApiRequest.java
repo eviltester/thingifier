@@ -33,6 +33,7 @@ public final class HttpApiRequest {
     public enum VERB {
         GET,
         HEAD,
+        QUERY,
         POST,
         PUT,
         DELETE,

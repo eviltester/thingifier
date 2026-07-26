@@ -17,6 +17,8 @@ class SwaggerUiPageTest {
                                 apiDefn,
                                 new DefaultGUIHTML(),
                                 "/mirror/docs/openapi.json",
+                                "/mirror/docs/openapi-3.0.json",
+                                "/mirror/docs/openapi-3.1.json",
                                 "/mirror/docs",
                                 "/mirror/docs/swagger",
                                 "/mirror/docs/swagger-ui")
@@ -26,5 +28,8 @@ class SwaggerUiPageTest {
         Assertions.assertTrue(html.contains("/js/swagger-copy-for-ai.js"));
         Assertions.assertTrue(html.contains("window.thingifierSwaggerCopyForAi"));
         Assertions.assertTrue(html.contains("openApiUrl: \"/mirror/docs/openapi.json\""));
+        Assertions.assertTrue(html.contains("/mirror/docs/openapi-3.0.json"));
+        Assertions.assertTrue(html.contains("/mirror/docs/openapi-3.1.json"));
+        Assertions.assertTrue(html.contains("\"urls.primaryName\": \"OpenAPI 3.1 default\""));
     }
 }

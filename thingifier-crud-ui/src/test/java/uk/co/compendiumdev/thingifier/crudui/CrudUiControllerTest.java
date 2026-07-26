@@ -7,6 +7,7 @@ import java.util.Map;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import uk.co.compendiumdev.thingifier.swaggerizer.OpenApiSpecificationVersion;
 
 public class CrudUiControllerTest {
 
@@ -296,8 +297,27 @@ public class CrudUiControllerTest {
             Assertions.assertEquals(200, response.statusCode());
             Assertions.assertEquals("application/json", response.contentType());
             Assertions.assertTrue(response.body().contains("\"openapi\""));
+            Assertions.assertTrue(openApiVersion(response.body()).startsWith("3.1."));
             Assertions.assertTrue(response.body().contains("\"/api\""));
             Assertions.assertTrue(response.body().contains("\"/projects\""));
+            Assertions.assertTrue(response.body().contains("\"/projects/{id}/tasks\""));
+        }
+    }
+
+    @Test
+    public void openApiJsonCanBeGeneratedForOpenApi30() {
+        try (ActiveThingifierWorkspace workspace =
+                ActiveThingifierWorkspace.defaultTodoManagerWorkspace()) {
+            workspace.replaceWithYaml(TestResources.text("/models/project-tasks.yaml"));
+            CrudUiController controller = new CrudUiController(workspace);
+
+            UiHttpResponse response =
+                    controller.openApiJson(OpenApiSpecificationVersion.OPENAPI_3_0);
+
+            Assertions.assertEquals(200, response.statusCode());
+            Assertions.assertEquals("application/json", response.contentType());
+            Assertions.assertTrue(openApiVersion(response.body()).startsWith("3.0."));
+            Assertions.assertTrue(response.body().contains("\"/api\""));
             Assertions.assertTrue(response.body().contains("\"/projects/{id}/tasks\""));
         }
     }
@@ -356,10 +376,13 @@ public class CrudUiControllerTest {
             Assertions.assertTrue(response.body().contains("href=\"/favicon.svg\""));
             Assertions.assertTrue(response.body().contains("SwaggerUIBundle"));
             Assertions.assertTrue(response.body().contains("/openapi.json"));
+            Assertions.assertTrue(response.body().contains("/openapi-3.1.json"));
+            Assertions.assertTrue(response.body().contains("/openapi-3.0.json"));
             Assertions.assertTrue(response.body().contains("/css/swagger-copy-for-ai.css"));
             Assertions.assertTrue(response.body().contains("/js/swagger-copy-for-ai.js"));
             Assertions.assertTrue(response.body().contains("window.thingifierSwaggerCopyForAi"));
             Assertions.assertTrue(response.body().contains("openApiUrl: \"/openapi.json\""));
+            Assertions.assertTrue(response.body().contains("\"urls.primaryName\""));
         }
     }
 
@@ -483,5 +506,9 @@ public class CrudUiControllerTest {
         Assertions.assertTrue(favicon.contains("#134f56"));
         Assertions.assertTrue(favicon.contains("#f1c84c"));
         Assertions.assertFalse(favicon.contains("<text"));
+    }
+
+    private String openApiVersion(final String openApiJson) {
+        return JsonParser.parseString(openApiJson).getAsJsonObject().get("openapi").getAsString();
     }
 }

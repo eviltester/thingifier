@@ -5,6 +5,7 @@ import java.util.Locale;
 public enum InternalHttpMethod {
     GET,
     HEAD,
+    QUERY,
     POST,
     PUT,
     DELETE,

@@ -8,6 +8,7 @@ import uk.co.compendiumdev.thingifier.api.docgen.ApiRoutingDefinitionDocGenerato
 import uk.co.compendiumdev.thingifier.api.docgen.ThingifierApiDocumentationDefn;
 import uk.co.compendiumdev.thingifier.htmlgui.htmlgen.DefaultGUIHTML;
 import uk.co.compendiumdev.thingifier.htmlgui.htmlgen.RestApiDocumentationGenerator;
+import uk.co.compendiumdev.thingifier.swaggerizer.OpenApiSpecificationVersion;
 import uk.co.compendiumdev.thingifier.swaggerizer.SwaggerUiPage;
 import uk.co.compendiumdev.thingifier.swaggerizer.Swaggerizer;
 
@@ -25,6 +26,8 @@ public class ThingifierAutoDocGenRouting {
         final String docsPath = "%s/docs".formatted(pathPrefix);
         final String swaggerDownloadPath = "%s/docs/swagger".formatted(pathPrefix);
         final String openApiPath = "%s/docs/openapi.json".formatted(pathPrefix);
+        final String openApi30Path = "%s/docs/openapi-3.0.json".formatted(pathPrefix);
+        final String openApi31Path = "%s/docs/openapi-3.1.json".formatted(pathPrefix);
         final String swaggerUiPath = "%s/docs/swagger-ui".formatted(pathPrefix);
 
         // TODO: config to enable docs and configure the URL and add a meta tag for description and
@@ -46,14 +49,9 @@ public class ThingifierAutoDocGenRouting {
 
         // guiManagement.appendMenuItem("API documentation","/docs");
 
-        get(
-                openApiPath,
-                (request, response) -> {
-                    response.type("application/json");
-                    response.status(200);
-                    return new Swaggerizer(apiDefn)
-                            .asJsonWithPreferredServer(HttpRequestOrigin.from(request));
-                });
+        registerOpenApiEndpoint(apiDefn, openApiPath, OpenApiSpecificationVersion.OPENAPI_3_1);
+        registerOpenApiEndpoint(apiDefn, openApi31Path, OpenApiSpecificationVersion.OPENAPI_3_1);
+        registerOpenApiEndpoint(apiDefn, openApi30Path, OpenApiSpecificationVersion.OPENAPI_3_0);
 
         get(
                 swaggerUiPath,
@@ -64,6 +62,8 @@ public class ThingifierAutoDocGenRouting {
                                     apiDefn,
                                     guiManagement,
                                     openApiPath,
+                                    openApi30Path,
+                                    openApi31Path,
                                     docsPath,
                                     swaggerDownloadPath,
                                     swaggerUiPath)
@@ -101,6 +101,21 @@ public class ThingifierAutoDocGenRouting {
                     return new Swaggerizer(apiDefn)
                             .asJsonWithPreferredServer(
                                     permissive != null, HttpRequestOrigin.from(request));
+                });
+    }
+
+    private void registerOpenApiEndpoint(
+            final ThingifierApiDocumentationDefn apiDefn,
+            final String path,
+            final OpenApiSpecificationVersion version) {
+        get(
+                path,
+                (request, response) -> {
+                    response.type("application/json");
+                    response.status(200);
+                    return new Swaggerizer(apiDefn)
+                            .asJsonWithPreferredServer(
+                                    version, false, HttpRequestOrigin.from(request));
                 });
     }
 }

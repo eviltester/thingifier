@@ -52,6 +52,8 @@ public final class ApiDocumentationPage {
         html.append("    <a href=\"/swagger\">Swagger UI</a>\n");
         html.append("    <a href=\"/docs/swagger\">Download OpenAPI</a>\n");
         html.append("    <a href=\"/openapi.json\">Raw OpenAPI JSON</a>\n");
+        html.append("    <a href=\"/openapi-3.1.json\">OpenAPI 3.1 JSON</a>\n");
+        html.append("    <a href=\"/openapi-3.0.json\">OpenAPI 3.0 JSON</a>\n");
         html.append("  </nav>\n");
         html.append("  <h1>").append(escape(title())).append(" API Documentation</h1>\n");
         if (!description().isEmpty()) {

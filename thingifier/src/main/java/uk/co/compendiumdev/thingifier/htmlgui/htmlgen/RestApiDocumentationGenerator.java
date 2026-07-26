@@ -12,6 +12,7 @@ import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
 import uk.co.compendiumdev.thingifier.api.docgen.ThingifierApiDocumentationDefn;
 import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonThing;
 import uk.co.compendiumdev.thingifier.api.ermodelconversion.XmlThing;
+import uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.xml.GenericXMLPrettyPrinter;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
@@ -400,6 +401,13 @@ public class RestApiDocumentationGenerator {
                                     routingDefn.verb(),
                                     routingDefn.url(),
                                     routingDefn.getDocumentation()));
+                    if (routingDefn.verb() == RoutingVerb.QUERY) {
+                        output.append(
+                                paragraph(
+                                        "QUERY content uses <i>Content-Type: "
+                                                + ThingifierHttpApi.QUERY_CONTENT_TYPE
+                                                + "</i> with fields such as <i>title=Task&amp;sortBy=-id</i>."));
+                    }
                 }
             }
         }
@@ -441,6 +449,10 @@ public class RestApiDocumentationGenerator {
         if (apiDocDefn.willShowSwaggerUiLink()) {
             output.append(paragraph(href("Open Swagger UI", prependPath + "/docs/swagger-ui")));
         }
+        output.append(
+                paragraph(href("[openapi 3.1 json]", prependPath + "/docs/openapi-3.1.json")));
+        output.append(
+                paragraph(href("[openapi 3.0 json]", prependPath + "/docs/openapi-3.0.json")));
         output.append(
                 paragraph(href("[download normal swagger file]", prependPath + "/docs/swagger")));
         output.append(

@@ -2,6 +2,7 @@ package uk.co.compendiumdev.thingifier.api.http;
 
 import java.util.ArrayList;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
+import uk.co.compendiumdev.thingifier.api.http.headers.headerparser.ContentTypeHeaderParser;
 import uk.co.compendiumdev.thingifier.api.http.headers.headervalidator.AcceptHeaderValidator;
 import uk.co.compendiumdev.thingifier.api.http.headers.headervalidator.ContentTypeHeaderValidator;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
@@ -42,6 +43,12 @@ public class HttpApiRequestValidator {
         }
 
         if (apiResponse == null) {
+            if (verb == ThingifierHttpApi.HttpVerb.QUERY) {
+                apiResponse = validateQueryContent(request);
+            }
+        }
+
+        if (apiResponse == null) {
             // only validate content if it contains content
             if (verb == ThingifierHttpApi.HttpVerb.POST
                     || verb == ThingifierHttpApi.HttpVerb.PUT
@@ -69,6 +76,39 @@ public class HttpApiRequestValidator {
 
         this.isValid = (apiResponse == null);
         return this.isValid;
+    }
+
+    private ApiResponse validateQueryContent(final HttpApiRequest request) {
+        final ContentTypeHeaderParser contentType =
+                new ContentTypeHeaderParser(request.getContentTypeHeader());
+
+        if (contentType.isMissing()) {
+            return queryContentError(400, "Missing Content-Type for QUERY request");
+        }
+
+        if (!contentType.isFormUrlEncoded()) {
+            ApiResponse response =
+                    queryContentError(
+                            this.apiConfig.statusCodes().contentTypeNotSupported(),
+                            "Unsupported QUERY Content Type - " + request.getContentTypeHeader());
+            response.setHeader("Accept", ThingifierHttpApi.QUERY_CONTENT_TYPE);
+            return response;
+        }
+
+        try {
+            new UrlQueryParamParser().parseStrict(request.getBody());
+        } catch (IllegalArgumentException e) {
+            return queryContentError(400, e.getMessage());
+        }
+
+        return null;
+    }
+
+    private ApiResponse queryContentError(final int statusCode, final String message) {
+        return ApiResponse.error(statusCode, message)
+                .setHeader(
+                        ThingifierHttpApi.ACCEPT_QUERY_HEADER,
+                        ThingifierHttpApi.QUERY_CONTENT_TYPE);
     }
 
     public ApiResponse getErrorApiResponse() {

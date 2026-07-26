@@ -1,5 +1,7 @@
 package uk.co.compendiumdev.thingifier.swaggerizer;
 
+import com.google.gson.JsonParser;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingDefinition;
@@ -26,6 +28,29 @@ public class SwaggerizerTest {
         apiDefn.addServer("http://localhost:4567", "local execution");
         apiDefn.setVersion("1.0.1");
 
-        System.out.println(new Swaggerizer(apiDefn).asJson());
+        String swagger = new Swaggerizer(apiDefn).asJson();
+
+        Assertions.assertTrue(openApiVersion(swagger).startsWith("3.1."));
+        Assertions.assertTrue(swagger.contains("\"x-query-operation\""));
+        Assertions.assertTrue(swagger.contains("application/x-www-form-urlencoded"));
+    }
+
+    @Test
+    public void canCreateOpenApi30Swagger() {
+        Thingifier t = new TodoListThingifierTestModel().get();
+
+        ThingifierApiDocumentationDefn apiDefn = new ThingifierApiDocumentationDefn();
+        apiDefn.setThingifier(t);
+        apiDefn.setVersion("1.0.1");
+
+        String swagger = new Swaggerizer(apiDefn).asJson(OpenApiSpecificationVersion.OPENAPI_3_0);
+
+        Assertions.assertTrue(openApiVersion(swagger).startsWith("3.0."));
+        Assertions.assertTrue(swagger.contains("\"x-query-operation\""));
+        Assertions.assertTrue(swagger.contains("application/x-www-form-urlencoded"));
+    }
+
+    private String openApiVersion(final String swagger) {
+        return JsonParser.parseString(swagger).getAsJsonObject().get("openapi").getAsString();
     }
 }

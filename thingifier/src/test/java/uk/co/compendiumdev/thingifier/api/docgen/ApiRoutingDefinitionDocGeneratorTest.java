@@ -23,6 +23,18 @@ public class ApiRoutingDefinitionDocGeneratorTest {
     }
 
     @Test
+    public void entityCollectionQueryDocumentsQueryStatusesAndDiscovery() {
+        ApiRoutingDefinition definition =
+                new ApiRoutingDefinitionDocGenerator(model()).generate("");
+
+        RoutingDefinition query = route(definition, RoutingVerb.QUERY, "todos");
+        RoutingDefinition options = route(definition, RoutingVerb.OPTIONS, "todos");
+
+        Assertions.assertTrue(statuses(query).containsAll(Set.of(200, 400, 413, 415)));
+        Assertions.assertEquals("OPTIONS, GET, HEAD, POST, QUERY", options.headerValue());
+    }
+
+    @Test
     public void entityInstanceWritesDocumentValidationAndConflictStatuses() {
         ApiRoutingDefinition definition =
                 new ApiRoutingDefinitionDocGenerator(model()).generate("");
@@ -36,6 +48,8 @@ public class ApiRoutingDefinitionDocGeneratorTest {
         Assertions.assertTrue(
                 statuses(route(definition, RoutingVerb.DELETE, "todos/:id"))
                         .containsAll(Set.of(204, 404)));
+        Assertions.assertEquals(
+                405, route(definition, RoutingVerb.QUERY, "todos/:id").status().value());
     }
 
     @Test
@@ -47,8 +61,17 @@ public class ApiRoutingDefinitionDocGeneratorTest {
                 statuses(route(definition, RoutingVerb.POST, "projects/:id/tasks"))
                         .containsAll(Set.of(201, 400, 404, 422, 409)));
         Assertions.assertTrue(
+                statuses(route(definition, RoutingVerb.QUERY, "projects/:id/tasks"))
+                        .containsAll(Set.of(200, 400, 413, 415)));
+        Assertions.assertEquals(
+                "OPTIONS, GET, HEAD, POST, QUERY",
+                route(definition, RoutingVerb.OPTIONS, "projects/:id/tasks").headerValue());
+        Assertions.assertTrue(
                 statuses(route(definition, RoutingVerb.DELETE, "projects/:id/tasks/:id"))
                         .containsAll(Set.of(204, 400, 404, 422, 409)));
+        Assertions.assertEquals(
+                405,
+                route(definition, RoutingVerb.QUERY, "projects/:id/tasks/:id").status().value());
     }
 
     private Thingifier model() {

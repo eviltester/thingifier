@@ -17,6 +17,8 @@ public final class SwaggerUiPage {
     private final ThingifierApiDocumentationDefn apiDefn;
     private final DefaultGUIHTML guiManagement;
     private final String openApiUrl;
+    private final String openApi30Url;
+    private final String openApi31Url;
     private final String docsUrl;
     private final String downloadUrl;
     private final String canonicalUrl;
@@ -25,12 +27,16 @@ public final class SwaggerUiPage {
             final ThingifierApiDocumentationDefn apiDefn,
             final DefaultGUIHTML guiManagement,
             final String openApiUrl,
+            final String openApi30Url,
+            final String openApi31Url,
             final String docsUrl,
             final String downloadUrl,
             final String canonicalUrl) {
         this.apiDefn = apiDefn;
         this.guiManagement = guiManagement;
         this.openApiUrl = openApiUrl;
+        this.openApi30Url = openApi30Url;
+        this.openApi31Url = openApi31Url;
         this.docsUrl = docsUrl;
         this.downloadUrl = downloadUrl;
         this.canonicalUrl = canonicalUrl;
@@ -51,6 +57,14 @@ public final class SwaggerUiPage {
         html.append("<a href='")
                 .append(escapeHtmlAttribute(downloadUrl))
                 .append("'>Download OpenAPI JSON</a>");
+        html.append(" | ");
+        html.append("<a href='")
+                .append(escapeHtmlAttribute(openApi31Url))
+                .append("'>OpenAPI 3.1 JSON</a>");
+        html.append(" | ");
+        html.append("<a href='")
+                .append(escapeHtmlAttribute(openApi30Url))
+                .append("'>OpenAPI 3.0 JSON</a>");
         html.append("</p>");
         html.append("<div id='swagger-ui'></div>");
         html.append("<script src='")
@@ -63,7 +77,18 @@ public final class SwaggerUiPage {
         html.append("window.onload = function () {");
         html.append("document.documentElement.classList.remove(\"dark-mode\");");
         html.append("window.ui = SwaggerUIBundle({");
-        html.append("url: \"").append(escapeJavaScriptString(openApiUrl)).append("\",");
+        html.append("urls: [");
+        html.append("{url: \"")
+                .append(escapeJavaScriptString(openApiUrl))
+                .append("\", name: \"OpenAPI 3.1 default\"},");
+        html.append("{url: \"")
+                .append(escapeJavaScriptString(openApi31Url))
+                .append("\", name: \"OpenAPI 3.1\"},");
+        html.append("{url: \"")
+                .append(escapeJavaScriptString(openApi30Url))
+                .append("\", name: \"OpenAPI 3.0\"}");
+        html.append("],");
+        html.append("\"urls.primaryName\": \"OpenAPI 3.1 default\",");
         html.append("dom_id: \"#swagger-ui\",");
         html.append("deepLinking: true,");
         html.append("syntaxHighlight: {activated: false},");

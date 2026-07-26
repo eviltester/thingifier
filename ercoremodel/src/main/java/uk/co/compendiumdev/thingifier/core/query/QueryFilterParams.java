@@ -39,6 +39,16 @@ public class QueryFilterParams {
         filterBys.add(aFilterBy);
     }
 
+    public void addAll(final QueryFilterParams params) {
+        if (params == null) {
+            return;
+        }
+
+        for (FilterBy filterBy : params.toList()) {
+            add(new FilterBy(filterBy.fieldName, filterBy.filterOperation + filterBy.fieldValue));
+        }
+    }
+
     public FilterBy get(int i) {
         return filterBys.get(i);
     }

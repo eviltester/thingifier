@@ -13,6 +13,7 @@ import uk.co.compendiumdev.thingifier.crudui.CrudUiController;
 import uk.co.compendiumdev.thingifier.crudui.DynamicThingifierApiProxy;
 import uk.co.compendiumdev.thingifier.crudui.ResourceReader;
 import uk.co.compendiumdev.thingifier.crudui.UiHttpResponse;
+import uk.co.compendiumdev.thingifier.swaggerizer.OpenApiSpecificationVersion;
 
 public final class CrudUiApplication implements AutoCloseable {
 
@@ -100,6 +101,18 @@ public final class CrudUiApplication implements AutoCloseable {
                                         request.queryParam("permissive") != null)));
         ServerRoutes.get(
                 "/openapi.json", (request, response) -> write(response, controller.openApiJson()));
+        ServerRoutes.get(
+                "/openapi-3.1.json",
+                (request, response) ->
+                        write(
+                                response,
+                                controller.openApiJson(OpenApiSpecificationVersion.OPENAPI_3_1)));
+        ServerRoutes.get(
+                "/openapi-3.0.json",
+                (request, response) ->
+                        write(
+                                response,
+                                controller.openApiJson(OpenApiSpecificationVersion.OPENAPI_3_0)));
         ServerRoutes.get(
                 "/swagger", (request, response) -> write(response, controller.swaggerUi()));
 

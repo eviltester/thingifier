@@ -14,6 +14,8 @@ public final class ThingifierHttpApi {
     // TODO: each 'session' could have its own thingifier to support multiple users
     // TODO: would need the ability to create and delete sessions
     public static final String HTTP_SESSION_HEADER_NAME = "X-THING-HTTP-SESSION-GUID";
+    public static final String ACCEPT_QUERY_HEADER = "Accept-Query";
+    public static final String QUERY_CONTENT_TYPE = "application/x-www-form-urlencoded";
 
     private final Thingifier thingifier;
     private final JsonThing jsonThing;
@@ -26,6 +28,7 @@ public final class ThingifierHttpApi {
         POST,
         PUT,
         HEAD,
+        QUERY,
         // NOT Handled
         OPTIONS,
         PATCH,
@@ -146,6 +149,9 @@ public final class ThingifierHttpApi {
             case HEAD:
                 apiResponse = thingifier.api().get(envelope);
                 break;
+            case QUERY:
+                apiResponse = thingifier.api().query(envelope);
+                break;
             case DELETE:
                 apiResponse = thingifier.api().delete(envelope);
                 break;
@@ -180,6 +186,10 @@ public final class ThingifierHttpApi {
 
     public HttpApiResponse put(final HttpApiRequest request) {
         return handleRequest(request, HttpVerb.PUT);
+    }
+
+    public HttpApiResponse queryRequest(final HttpApiRequest request) {
+        return handleRequest(request, HttpVerb.QUERY);
     }
 
     public HttpApiResponse query(final HttpApiRequest request, final String query) {

@@ -13,6 +13,10 @@ public final class ServerRoutes {
         route(HttpRouteVerb.HEAD, path, handler);
     }
 
+    public static void query(final String path, final HttpRouteHandler handler) {
+        route(HttpRouteVerb.QUERY, path, handler);
+    }
+
     public static void options(final String path, final HttpRouteHandler handler) {
         route(HttpRouteVerb.OPTIONS, path, handler);
     }

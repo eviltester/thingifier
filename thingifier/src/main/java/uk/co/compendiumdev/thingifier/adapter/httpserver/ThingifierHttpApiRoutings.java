@@ -20,6 +20,7 @@ import uk.co.compendiumdev.thingifier.api.docgen.ApiRoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.docgen.ApiRoutingDefinitionDocGenerator;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.docgen.ThingifierApiDocumentationDefn;
+import uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi;
 
 public class ThingifierHttpApiRoutings {
 
@@ -166,6 +167,27 @@ public class ThingifierHttpApiRoutings {
                                 });
                     }
                     break;
+                case QUERY:
+                    if (!defn.status().isReturnedFromCall()) {
+                        query(
+                                defn.url(),
+                                (request, response) -> {
+                                    applyStaticResponse(defn, response);
+                                    return "";
+                                });
+                    } else {
+                        query(
+                                defn.url(),
+                                (request, response) -> {
+                                    final InternalHttpRequest theRequest =
+                                            internalRequestFrom(request);
+                                    final InternalHttpResponse theResponse =
+                                            apiBridge.queryRequest(theRequest);
+                                    return InternalHttpResponseToHttpServer.convert(
+                                            theResponse, response);
+                                });
+                    }
+                    break;
                 default:
                     break;
                 case HEAD:
@@ -188,7 +210,7 @@ public class ThingifierHttpApiRoutings {
                         delete(
                                 defn.url(),
                                 (request, response) -> {
-                                    response.status(defn.status().value());
+                                    applyStaticResponse(defn, response);
                                     return "";
                                 });
                     } else {
@@ -210,7 +232,7 @@ public class ThingifierHttpApiRoutings {
                         patch(
                                 defn.url(),
                                 (request, response) -> {
-                                    response.status(defn.status().value());
+                                    applyStaticResponse(defn, response);
                                     return "";
                                 });
                     }
@@ -220,7 +242,7 @@ public class ThingifierHttpApiRoutings {
                         put(
                                 defn.url(),
                                 (request, response) -> {
-                                    response.status(defn.status().value());
+                                    applyStaticResponse(defn, response);
                                     return "";
                                 });
                     } else {
@@ -242,8 +264,7 @@ public class ThingifierHttpApiRoutings {
                         options(
                                 defn.url(),
                                 (request, response) -> {
-                                    response.status(defn.status().value());
-                                    response.header(defn.header(), defn.headerValue());
+                                    applyStaticResponse(defn, response);
                                     return "";
                                 });
                     }
@@ -253,7 +274,7 @@ public class ThingifierHttpApiRoutings {
                         trace(
                                 defn.url(),
                                 (request, response) -> {
-                                    response.status(defn.status().value());
+                                    applyStaticResponse(defn, response);
                                     return "";
                                 });
                     }
@@ -291,7 +312,7 @@ public class ThingifierHttpApiRoutings {
                     404,
                     apiDefn.getPathPrefix() + "/*",
                     true,
-                    List.of("head", "get", "options", "put", "post", "patch", "delete"));
+                    List.of("head", "get", "query", "options", "put", "post", "patch", "delete"));
         }
     }
 
@@ -344,5 +365,17 @@ public class ThingifierHttpApiRoutings {
                 HttpServerRequestToInternalHttpRequest.convert(request);
         request.attribute(INTERNAL_HTTP_REQUEST_ATTRIBUTE, internalRequest);
         return internalRequest;
+    }
+
+    private void applyStaticResponse(
+            final RoutingDefinition defn, final HttpServerResponse response) {
+        response.status(defn.status().value());
+        if (!defn.header().isEmpty()) {
+            response.header(defn.header(), defn.headerValue());
+        }
+        if (defn.headerValue().contains("QUERY")) {
+            response.header(
+                    ThingifierHttpApi.ACCEPT_QUERY_HEADER, ThingifierHttpApi.QUERY_CONTENT_TYPE);
+        }
     }
 }

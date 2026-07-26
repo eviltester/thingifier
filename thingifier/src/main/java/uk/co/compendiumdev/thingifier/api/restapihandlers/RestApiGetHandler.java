@@ -7,7 +7,11 @@ import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.ThingReadRequestM
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.ThingReadRequestMapping;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.ThingReadResultApiMapper;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.ThingifierApiRuntime;
+import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.CollectionRoute;
+import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.RelationshipCollectionRoute;
+import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.ThingRoute;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.ThingRouteMapper;
+import uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi;
 import uk.co.compendiumdev.thingifier.api.http.ThingifierRequestContext;
 import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
@@ -52,15 +56,20 @@ public class RestApiGetHandler {
         QueryFilterParams effectiveQueryParams =
                 allowFiltering ? queryParams : new QueryFilterParams();
 
+        ThingRoute route = new ThingRouteMapper(runtime.schema()).map(url);
         ThingReadRequestMapping mapping =
-                new ThingReadRequestMapper(runtime.schema())
-                        .map(new ThingRouteMapper(runtime.schema()).map(url), effectiveQueryParams);
+                new ThingReadRequestMapper(runtime.schema()).map(route, effectiveQueryParams);
         if (mapping.isError()) {
             return apiMapper.map(mapping.getError());
         }
 
         queryResults = runtime.queryService().execute(mapping.getQuery(), context.store());
 
-        return apiMapper.map(url, queryResults);
+        ApiResponse response = apiMapper.map(url, queryResults);
+        if (route instanceof CollectionRoute || route instanceof RelationshipCollectionRoute) {
+            response.setHeader(
+                    ThingifierHttpApi.ACCEPT_QUERY_HEADER, ThingifierHttpApi.QUERY_CONTENT_TYPE);
+        }
+        return response;
     }
 }
