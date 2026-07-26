@@ -323,6 +323,26 @@ public class CrudUiControllerTest {
     }
 
     @Test
+    public void openApiJsonCanBeGeneratedForOpenApi32() {
+        try (ActiveThingifierWorkspace workspace =
+                ActiveThingifierWorkspace.defaultTodoManagerWorkspace()) {
+            workspace.replaceWithYaml(TestResources.text("/models/project-tasks.yaml"));
+            CrudUiController controller = new CrudUiController(workspace);
+
+            UiHttpResponse response =
+                    controller.openApiJson(OpenApiSpecificationVersion.OPENAPI_3_2);
+
+            Assertions.assertEquals(200, response.statusCode());
+            Assertions.assertEquals("application/json", response.contentType());
+            Assertions.assertEquals("3.2.0", openApiVersion(response.body()));
+            Assertions.assertTrue(response.body().contains("\"/api\""));
+            Assertions.assertTrue(response.body().contains("\"/projects/{id}/tasks\""));
+            Assertions.assertTrue(response.body().contains("\"query\""));
+            Assertions.assertFalse(response.body().contains("\"x-query-operation\""));
+        }
+    }
+
+    @Test
     public void openApiDownloadAddsAttachmentHeader() {
         try (ActiveThingifierWorkspace workspace =
                 ActiveThingifierWorkspace.defaultTodoManagerWorkspace()) {
@@ -377,6 +397,7 @@ public class CrudUiControllerTest {
             Assertions.assertTrue(response.body().contains("SwaggerUIBundle"));
             Assertions.assertTrue(response.body().contains("/openapi.json"));
             Assertions.assertTrue(response.body().contains("/openapi-3.1.json"));
+            Assertions.assertTrue(response.body().contains("/openapi-3.2.json"));
             Assertions.assertTrue(response.body().contains("/openapi-3.0.json"));
             Assertions.assertTrue(response.body().contains("/css/swagger-copy-for-ai.css"));
             Assertions.assertTrue(response.body().contains("/js/swagger-copy-for-ai.js"));

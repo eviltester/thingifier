@@ -38,6 +38,7 @@ public class CrudUiApiIT {
         assertStatusContains("/swagger", 200, "swagger-copy-for-ai.js");
         assertStatusContains("/openapi.json", 200, "\"openapi\"");
         assertStatusContains("/openapi-3.1.json", 200, "\"openapi\"");
+        assertStatusContains("/openapi-3.2.json", 200, "\"openapi\"");
         assertStatusContains("/openapi-3.0.json", 200, "\"openapi\"");
         assertStatusContains("/docs/swagger", 200, "\"openapi\"");
 

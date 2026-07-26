@@ -58,7 +58,7 @@ public class Swaggerizer {
 
         config.includeMethodNotAllowedEndpoints = false;
         config.includeFieldValidation = true;
-        config.openApiSpecificationVersion = version;
+        config.openApiSpecificationVersion = version.swaggerCoreGenerationVersion();
 
         return swagger(config);
     }
@@ -75,15 +75,18 @@ public class Swaggerizer {
 
         config.includeMethodNotAllowedEndpoints = true;
         config.includeFieldValidation = false;
-        config.openApiSpecificationVersion = version;
+        config.openApiSpecificationVersion = version.swaggerCoreGenerationVersion();
 
         return swagger(config);
     }
 
     public OpenAPI swagger(SwaggerGenerationConfig config) {
 
-        OpenAPI api = new OpenAPI(config.openApiSpecificationVersion.specVersion());
-        api.setOpenapi(config.openApiSpecificationVersion.documentVersion());
+        final OpenApiSpecificationVersion generationVersion =
+                config.openApiSpecificationVersion.swaggerCoreGenerationVersion();
+
+        OpenAPI api = new OpenAPI(generationVersion.specVersion());
+        api.setOpenapi(generationVersion.documentVersion());
 
         final Thingifier thingifier = apiDefn.getThingifier();
 
@@ -546,6 +549,15 @@ public class Swaggerizer {
             final OpenApiSpecificationVersion version,
             final boolean permissive,
             final String preferredServerUrl) {
+        if (version.requiresOpenApi32Finalization()) {
+            return new OpenApi32Finalizer()
+                    .finalizeJson(
+                            asJsonWithPreferredServer(
+                                    OpenApiSpecificationVersion.OPENAPI_3_1,
+                                    permissive,
+                                    preferredServerUrl));
+        }
+
         final OpenAPI api = permissive ? swaggerPermissive(version) : swagger(version);
         preferServer(api, preferredServerUrl);
         return pretty(api, version);
@@ -560,6 +572,11 @@ public class Swaggerizer {
     }
 
     public String asJson(final OpenApiSpecificationVersion version, boolean permissive) {
+        if (version.requiresOpenApi32Finalization()) {
+            return new OpenApi32Finalizer()
+                    .finalizeJson(asJson(OpenApiSpecificationVersion.OPENAPI_3_1, permissive));
+        }
+
         if (version != OpenApiSpecificationVersion.OPENAPI_3_1) {
             return pretty(permissive ? swaggerPermissive(version) : swagger(version), version);
         }

@@ -452,6 +452,8 @@ public class RestApiDocumentationGenerator {
         output.append(
                 paragraph(href("[openapi 3.1 json]", prependPath + "/docs/openapi-3.1.json")));
         output.append(
+                paragraph(href("[openapi 3.2 json]", prependPath + "/docs/openapi-3.2.json")));
+        output.append(
                 paragraph(href("[openapi 3.0 json]", prependPath + "/docs/openapi-3.0.json")));
         output.append(
                 paragraph(href("[download normal swagger file]", prependPath + "/docs/swagger")));

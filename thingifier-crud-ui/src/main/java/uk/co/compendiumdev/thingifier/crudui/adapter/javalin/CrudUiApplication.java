@@ -108,6 +108,12 @@ public final class CrudUiApplication implements AutoCloseable {
                                 response,
                                 controller.openApiJson(OpenApiSpecificationVersion.OPENAPI_3_1)));
         ServerRoutes.get(
+                "/openapi-3.2.json",
+                (request, response) ->
+                        write(
+                                response,
+                                controller.openApiJson(OpenApiSpecificationVersion.OPENAPI_3_2)));
+        ServerRoutes.get(
                 "/openapi-3.0.json",
                 (request, response) ->
                         write(

@@ -28,6 +28,7 @@ public class ThingifierAutoDocGenRouting {
         final String openApiPath = "%s/docs/openapi.json".formatted(pathPrefix);
         final String openApi30Path = "%s/docs/openapi-3.0.json".formatted(pathPrefix);
         final String openApi31Path = "%s/docs/openapi-3.1.json".formatted(pathPrefix);
+        final String openApi32Path = "%s/docs/openapi-3.2.json".formatted(pathPrefix);
         final String swaggerUiPath = "%s/docs/swagger-ui".formatted(pathPrefix);
 
         // TODO: config to enable docs and configure the URL and add a meta tag for description and
@@ -51,6 +52,7 @@ public class ThingifierAutoDocGenRouting {
 
         registerOpenApiEndpoint(apiDefn, openApiPath, OpenApiSpecificationVersion.OPENAPI_3_1);
         registerOpenApiEndpoint(apiDefn, openApi31Path, OpenApiSpecificationVersion.OPENAPI_3_1);
+        registerOpenApiEndpoint(apiDefn, openApi32Path, OpenApiSpecificationVersion.OPENAPI_3_2);
         registerOpenApiEndpoint(apiDefn, openApi30Path, OpenApiSpecificationVersion.OPENAPI_3_0);
 
         get(
@@ -64,6 +66,7 @@ public class ThingifierAutoDocGenRouting {
                                     openApiPath,
                                     openApi30Path,
                                     openApi31Path,
+                                    openApi32Path,
                                     docsPath,
                                     swaggerDownloadPath,
                                     swaggerUiPath)

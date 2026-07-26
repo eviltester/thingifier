@@ -36,6 +36,7 @@ public final class SwaggerUiPage {
                 + "    urls: [\n"
                 + "      { url: \"/openapi.json\", name: \"OpenAPI 3.1 default\" },\n"
                 + "      { url: \"/openapi-3.1.json\", name: \"OpenAPI 3.1\" },\n"
+                + "      { url: \"/openapi-3.2.json\", name: \"OpenAPI 3.2\" },\n"
                 + "      { url: \"/openapi-3.0.json\", name: \"OpenAPI 3.0\" }\n"
                 + "    ],\n"
                 + "    \"urls.primaryName\": \"OpenAPI 3.1 default\",\n"

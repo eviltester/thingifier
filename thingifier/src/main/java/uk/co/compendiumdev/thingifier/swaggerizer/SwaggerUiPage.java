@@ -19,6 +19,7 @@ public final class SwaggerUiPage {
     private final String openApiUrl;
     private final String openApi30Url;
     private final String openApi31Url;
+    private final String openApi32Url;
     private final String docsUrl;
     private final String downloadUrl;
     private final String canonicalUrl;
@@ -29,6 +30,7 @@ public final class SwaggerUiPage {
             final String openApiUrl,
             final String openApi30Url,
             final String openApi31Url,
+            final String openApi32Url,
             final String docsUrl,
             final String downloadUrl,
             final String canonicalUrl) {
@@ -37,6 +39,7 @@ public final class SwaggerUiPage {
         this.openApiUrl = openApiUrl;
         this.openApi30Url = openApi30Url;
         this.openApi31Url = openApi31Url;
+        this.openApi32Url = openApi32Url;
         this.docsUrl = docsUrl;
         this.downloadUrl = downloadUrl;
         this.canonicalUrl = canonicalUrl;
@@ -63,6 +66,10 @@ public final class SwaggerUiPage {
                 .append("'>OpenAPI 3.1 JSON</a>");
         html.append(" | ");
         html.append("<a href='")
+                .append(escapeHtmlAttribute(openApi32Url))
+                .append("'>OpenAPI 3.2 JSON</a>");
+        html.append(" | ");
+        html.append("<a href='")
                 .append(escapeHtmlAttribute(openApi30Url))
                 .append("'>OpenAPI 3.0 JSON</a>");
         html.append("</p>");
@@ -84,6 +91,9 @@ public final class SwaggerUiPage {
         html.append("{url: \"")
                 .append(escapeJavaScriptString(openApi31Url))
                 .append("\", name: \"OpenAPI 3.1\"},");
+        html.append("{url: \"")
+                .append(escapeJavaScriptString(openApi32Url))
+                .append("\", name: \"OpenAPI 3.2\"},");
         html.append("{url: \"")
                 .append(escapeJavaScriptString(openApi30Url))
                 .append("\", name: \"OpenAPI 3.0\"}");

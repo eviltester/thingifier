@@ -25,6 +25,7 @@ class RestApiDocumentationGeneratorTest {
 
         Assertions.assertTrue(docs.contains("href='/mirror/docs/swagger-ui'"));
         Assertions.assertTrue(docs.contains("Open Swagger UI"));
+        Assertions.assertTrue(docs.contains("href='/mirror/docs/openapi-3.2.json'"));
     }
 
     @Test
