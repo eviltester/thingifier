@@ -116,9 +116,24 @@ public class ThingifierAutoDocGenRouting {
                 (request, response) -> {
                     response.type("application/json");
                     response.status(200);
+                    final boolean permissive = request.queryParam("permissive") != null;
+                    if (request.queryParam("download") != null) {
+                        response.header(
+                                "Content-Disposition",
+                                "attachment; filename=\"%s\""
+                                        .formatted(openApiDownloadFilename(path, permissive)));
+                    }
                     return new Swaggerizer(apiDefn)
                             .asJsonWithPreferredServer(
-                                    version, false, HttpRequestOrigin.from(request));
+                                    version, permissive, HttpRequestOrigin.from(request));
                 });
+    }
+
+    private String openApiDownloadFilename(final String path, final boolean permissive) {
+        final String filename = path.substring(path.lastIndexOf("/") + 1);
+        if (permissive) {
+            return "permissive-" + filename;
+        }
+        return filename;
     }
 }

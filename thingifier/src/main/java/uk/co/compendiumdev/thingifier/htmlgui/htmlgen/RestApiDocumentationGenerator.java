@@ -449,24 +449,32 @@ public class RestApiDocumentationGenerator {
         if (apiDocDefn.willShowSwaggerUiLink()) {
             output.append(paragraph(href("Open Swagger UI", prependPath + "/docs/swagger-ui")));
         }
-        output.append(
-                paragraph(href("[openapi 3.1 json]", prependPath + "/docs/openapi-3.1.json")));
-        output.append(
-                paragraph(href("[openapi 3.2 json]", prependPath + "/docs/openapi-3.2.json")));
-        output.append(
-                paragraph(href("[openapi 3.0 json]", prependPath + "/docs/openapi-3.0.json")));
-        output.append(
-                paragraph(href("[download normal swagger file]", prependPath + "/docs/swagger")));
-        output.append(
-                paragraph(
-                        href(
-                                "[download swagger file with less validation]",
-                                prependPath + "/docs/swagger?permissive")));
+        output.append(openApiVersionLinks());
 
         output.append(defaultGui.getEndOfMainContentMarker());
         output.append(defaultGui.getPageFooter());
         output.append(defaultGui.getPageEnd());
         return output.toString();
+    }
+
+    private String openApiVersionLinks() {
+        StringBuilder links = new StringBuilder();
+        links.append("<ul>%n".formatted());
+        links.append(openApiVersionLink("3.0", prependPath + "/docs/openapi-3.0.json"));
+        links.append(openApiVersionLink("3.1", prependPath + "/docs/openapi-3.1.json"));
+        links.append(openApiVersionLink("3.2", prependPath + "/docs/openapi-3.2.json"));
+        links.append("</ul>%n".formatted());
+        return links.toString();
+    }
+
+    private String openApiVersionLink(final String version, final String specUrl) {
+        return "<li>OpenAPI v %s JSON %s %s - %s %s</li>%n"
+                .formatted(
+                        version,
+                        href("[standard validation]", specUrl),
+                        href("[download]", specUrl + "?download"),
+                        href("[less validation]", specUrl + "?permissive"),
+                        href("[download]", specUrl + "?permissive&amp;download"));
     }
 
     private String resolveDocsTitle(final ThingifierApiDocumentationDefn apiDocDefn) {
