@@ -96,10 +96,17 @@ public class JsonThing {
 
     public JsonObject asJsonObjectTypedDraftArrayWithContentsUntyped(
             final List<EntityInstanceDraft> things, String typeName) {
+        return asJsonObjectTypedDraftArrayWithContentsUntyped(things, typeName, null);
+    }
+
+    public JsonObject asJsonObjectTypedDraftArrayWithContentsUntyped(
+            final List<EntityInstanceDraft> things,
+            String typeName,
+            final EntityViewDefinition view) {
         final JsonObject arrayObj = new JsonObject();
         JsonArray drafts = new JsonArray();
         for (EntityInstanceDraft draft : things) {
-            drafts.add(asJsonObject(draft));
+            drafts.add(asJsonObject(draft, view));
         }
         arrayObj.add(typeName, drafts);
         return arrayObj;
@@ -252,6 +259,11 @@ public class JsonThing {
     }
 
     public JsonObject asJsonObject(final EntityInstanceDraft draft) {
+        return asJsonObject(draft, null);
+    }
+
+    public JsonObject asJsonObject(
+            final EntityInstanceDraft draft, final EntityViewDefinition view) {
         final JsonObject jsonobj = new JsonObject();
 
         if (draft == null) {
@@ -268,6 +280,9 @@ public class JsonThing {
         }
 
         for (String fieldName : entity.getFieldNames()) {
+            if (view != null && !view.isResponseVisible(fieldName)) {
+                continue;
+            }
             Field field = entity.getField(fieldName);
             String fieldValue = draftValueFor(field, values.get(fieldName.toLowerCase()));
             if (fieldValue == null) {
@@ -524,8 +539,13 @@ public class JsonThing {
     }
 
     public JsonObject asNamedJsonObject(final EntityInstanceDraft draft) {
+        return asNamedJsonObject(draft, null);
+    }
+
+    public JsonObject asNamedJsonObject(
+            final EntityInstanceDraft draft, final EntityViewDefinition view) {
         final JsonObject retObj = new JsonObject();
-        retObj.add(draft.getEntity().getName(), asJsonObject(draft));
+        retObj.add(draft.getEntity().getName(), asJsonObject(draft, view));
         return retObj;
     }
 }
