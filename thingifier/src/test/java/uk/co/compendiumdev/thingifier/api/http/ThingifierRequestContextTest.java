@@ -21,7 +21,7 @@ public class ThingifierRequestContextTest {
     }
 
     @Test
-    public void resolvesSessionDatabaseAndPreservesHeaders() {
+    public void resolvesSessionDatabaseFromHeader() {
         Thingifier thingifier = new Thingifier();
         HttpHeadersBlock headers = new HttpHeadersBlock();
         headers.put(ThingifierHttpApi.HTTP_SESSION_HEADER_NAME, "session-one");

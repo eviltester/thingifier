@@ -3,6 +3,7 @@ package uk.co.compendiumdev.thingifier.core.query;
 import java.util.ArrayList;
 import java.util.List;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVectorDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.repository.EntityInstanceQuery;
 import uk.co.compendiumdev.thingifier.core.repository.RelationshipRepository;
@@ -60,12 +61,29 @@ public class RepositoryQuery implements RepositoryQueryResult {
 
         if (spec.hasRelationship()) {
             wasIntentToMatchInstance = true;
-            isCollection = true;
             foundItems =
                     new ArrayList<>(
                             relationshipRepository.listRelated(
                                     currentInstance, spec.relationshipName(), queryParams));
             resultContainsDefinition = relatedEntityFor(currentInstance, spec.relationshipName());
+
+            if (shouldReturnRelationshipAsSingleInstance(
+                    currentInstance, spec.relationshipName())) {
+                isCollection = false;
+                if (foundItems.isEmpty()) {
+                    currentInstance = null;
+                    lastMatchWasNothing = true;
+                    lastMatchWasInstance = false;
+                    return this;
+                }
+
+                currentInstance = foundItems.get(0);
+                lastMatchWasNothing = false;
+                lastMatchWasInstance = true;
+                return this;
+            }
+
+            isCollection = true;
             lastMatchWasNothing = false;
             lastMatchWasInstance = false;
             return this;
@@ -119,5 +137,26 @@ public class RepositoryQuery implements RepositoryQueryResult {
             return null;
         }
         return instance.getEntity().related().getRelationships(relationshipName).get(0).getTo();
+    }
+
+    private boolean shouldReturnRelationshipAsSingleInstance(
+            final EntityInstance instance, final String relationshipName) {
+        if (!spec.singleTargetRelationshipsAsInstances()) {
+            return false;
+        }
+
+        final RelationshipVectorDefinition relationship =
+                relationshipDefinitionFor(instance, relationshipName);
+        return relationship != null
+                && relationship.getCardinality().hasMaximumLimit()
+                && relationship.getCardinality().maximumLimit() == 1;
+    }
+
+    private RelationshipVectorDefinition relationshipDefinitionFor(
+            final EntityInstance instance, final String relationshipName) {
+        if (instance.getEntity().related().getRelationships(relationshipName).isEmpty()) {
+            return null;
+        }
+        return instance.getEntity().related().getRelationships(relationshipName).get(0);
     }
 }

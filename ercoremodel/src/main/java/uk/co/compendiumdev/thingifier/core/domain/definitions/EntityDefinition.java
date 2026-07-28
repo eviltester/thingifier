@@ -10,6 +10,7 @@ public class EntityDefinition {
     private int maxInstanceCount; // use -ve for no limit
     private final String name;
     private final String plural;
+    private String description;
 
     // TODO: consider adding candidate keys e.g. guid or id
     // TODO: consider adding composite keys e.g. name and id
@@ -17,6 +18,7 @@ public class EntityDefinition {
 
     private final DefinedFields fields;
     private final DefinedRelationships definedRelationships;
+    private final Map<String, EntityViewDefinition> views;
 
     private static final int NO_INSTANCE_LIMIT = -1;
 
@@ -30,7 +32,9 @@ public class EntityDefinition {
         this.plural = plural;
         definedRelationships = new DefinedRelationships();
         fields = new DefinedFields();
+        views = new HashMap<>();
         this.maxInstanceCount = maxInstanceCount;
+        this.description = "";
 
         // todo: add some validation to report against no primary key having been defined
 
@@ -53,6 +57,19 @@ public class EntityDefinition {
 
     public String getPlural() {
         return plural;
+    }
+
+    public EntityDefinition withDescription(final String description) {
+        this.description = description == null ? "" : description;
+        return this;
+    }
+
+    public boolean hasDescription() {
+        return description != null && !description.trim().isEmpty();
+    }
+
+    public String getDescription() {
+        return description;
     }
 
     public void addField(Field aField) {
@@ -135,5 +152,33 @@ public class EntityDefinition {
             }
         }
         return false;
+    }
+
+    public EntityViewDefinition defineView(final String viewName) {
+        final String normalizedName = viewName == null ? "" : viewName.trim();
+        if (normalizedName.isEmpty()) {
+            throw new IllegalArgumentException("View name is required");
+        }
+        if (views.containsKey(normalizedName)) {
+            throw new IllegalArgumentException(
+                    String.format(
+                            "View %s is already defined for entity %s", normalizedName, getName()));
+        }
+
+        final EntityViewDefinition view = new EntityViewDefinition(this, normalizedName);
+        views.put(normalizedName, view);
+        return view;
+    }
+
+    public boolean hasViewNamed(final String viewName) {
+        return views.containsKey(viewName);
+    }
+
+    public EntityViewDefinition getViewNamed(final String viewName) {
+        return views.get(viewName);
+    }
+
+    public Collection<EntityViewDefinition> getViews() {
+        return Collections.unmodifiableCollection(views.values());
     }
 }

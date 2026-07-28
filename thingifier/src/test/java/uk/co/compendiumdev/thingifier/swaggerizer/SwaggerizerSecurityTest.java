@@ -1,0 +1,93 @@
+package uk.co.compendiumdev.thingifier.swaggerizer;
+
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.security.SecurityScheme;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.api.docgen.RoutingDefinition;
+import uk.co.compendiumdev.thingifier.api.docgen.RoutingStatus;
+import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
+import uk.co.compendiumdev.thingifier.api.docgen.ThingifierApiDocumentationDefn;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.Cardinality;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
+
+class SwaggerizerSecurityTest {
+
+    @Test
+    void bearerSecuredRoutesAddHttpBearerSecuritySchemeAndOperationRequirement() {
+        final ThingifierApiDocumentationDefn apiDefn = new ThingifierApiDocumentationDefn();
+        apiDefn.addRouteToDocumentation(
+                new RoutingDefinition(
+                                RoutingVerb.POST,
+                                "/shop/checkout/:cartId",
+                                RoutingStatus.returnedFromCall(),
+                                null)
+                        .addDocumentation("checkout a cart")
+                        .addPossibleStatuses(200, 401, 403)
+                        .secureWithBearerAuth());
+
+        final OpenAPI openApi = new Swaggerizer(apiDefn).swagger();
+
+        final SecurityScheme bearerAuth =
+                openApi.getComponents().getSecuritySchemes().get("bearerAuth");
+        Assertions.assertNotNull(bearerAuth);
+        Assertions.assertEquals(SecurityScheme.Type.HTTP, bearerAuth.getType());
+        Assertions.assertEquals("bearer", bearerAuth.getScheme());
+        Assertions.assertNull(bearerAuth.getBearerFormat());
+        Assertions.assertEquals(
+                "bearerAuth",
+                openApi.getPaths()
+                        .get("/shop/checkout/{cartId}")
+                        .getPost()
+                        .getSecurity()
+                        .get(0)
+                        .keySet()
+                        .iterator()
+                        .next());
+    }
+
+    @Test
+    void bearerSecuredGeneratedRoutesAddOperationRequirement() {
+        final Thingifier thingifier = relationshipModel();
+        thingifier
+                .apiSpec()
+                .route(RoutingVerb.POST, "/api/projects/{projectId}/tasks")
+                .secureWithBearerAuth();
+        thingifier.apiSpec().route(RoutingVerb.POST, "/api/todos").disable();
+
+        final ThingifierApiDocumentationDefn apiDefn = new ThingifierApiDocumentationDefn();
+        apiDefn.setThingifier(thingifier);
+        apiDefn.setPathPrefix("/api");
+
+        final OpenAPI openApi = new Swaggerizer(apiDefn).swagger();
+
+        Assertions.assertEquals(
+                "bearerAuth",
+                openApi.getPaths()
+                        .get("/api/projects/{id}/tasks")
+                        .getPost()
+                        .getSecurity()
+                        .get(0)
+                        .keySet()
+                        .iterator()
+                        .next());
+        Assertions.assertNull(openApi.getPaths().get("/api/todos").getPost());
+    }
+
+    private Thingifier relationshipModel() {
+        final Thingifier thingifier = new Thingifier();
+        final EntityDefinition project = thingifier.defineThing("project", "projects");
+        project.addAsPrimaryKeyField(Field.is("id", FieldType.AUTO_INCREMENT));
+        project.addField(Field.is("title", FieldType.STRING));
+        final EntityDefinition todo = thingifier.defineThing("todo", "todos");
+        todo.addAsPrimaryKeyField(Field.is("id", FieldType.AUTO_INCREMENT));
+        todo.addField(Field.is("title", FieldType.STRING));
+        thingifier
+                .defineRelationship(project, todo, "tasks", Cardinality.ONE_TO_MANY())
+                .whenReversed(Cardinality.ONE_TO_ONE(), "project");
+        return thingifier;
+    }
+}

@@ -73,6 +73,32 @@ public class RestApiGetHandlerTest {
     }
 
     @Test
+    public void singleTargetRelationshipReadReturnsRelatedInstance() {
+        Thingifier thingifier = taskProjectThingifier();
+        ThingStore store = storeFor(thingifier);
+        EntityDefinition project = thingifier.getDefinitionNamed("project");
+        EntityInstance taskInstance = createTask(thingifier, "Task");
+        EntityInstance projectInstance =
+                store.entities()
+                        .create(
+                                EntityInstanceDraft.forEntity(project)
+                                        .withField("title", "Project"));
+        store.relationships().connect(projectInstance, "tasks", taskInstance);
+
+        ApiResponse response =
+                thingifier
+                        .api()
+                        .get(
+                                "task/" + taskInstance.getPrimaryKeyValue() + "/task-of",
+                                params(),
+                                headers());
+
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertFalse(response.isCollection());
+        Assertions.assertEquals(projectInstance, response.getReturnedInstance());
+    }
+
+    @Test
     public void missingInstanceMapsToNotFound() {
         Thingifier thingifier = taskProjectThingifier();
 
@@ -138,7 +164,7 @@ public class RestApiGetHandlerTest {
 
         thingifier
                 .defineRelationship(project, task, "tasks", Cardinality.ONE_TO_MANY())
-                .whenReversed(Cardinality.ONE_TO_MANY(), "task-of");
+                .whenReversed(Cardinality.ONE_TO_ONE(), "task-of");
         return thingifier;
     }
 

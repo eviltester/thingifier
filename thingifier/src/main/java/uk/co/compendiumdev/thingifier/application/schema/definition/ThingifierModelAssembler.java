@@ -53,8 +53,12 @@ public final class ThingifierModelAssembler {
                 emptyIfNull(definition.title()), emptyIfNull(definition.description()));
 
         for (EntityDefinitionSpec entitySpec : definition.entities()) {
-            thingifier.defineThing(
-                    entitySpec.name(), entitySpec.pluralName(), entitySpec.maxInstances());
+            final EntityDefinition entity =
+                    thingifier.defineThing(
+                            entitySpec.name(), entitySpec.pluralName(), entitySpec.maxInstances());
+            if (entitySpec.description() != null) {
+                entity.withDescription(entitySpec.description());
+            }
         }
 
         for (EntityDefinitionSpec entitySpec : definition.entities()) {

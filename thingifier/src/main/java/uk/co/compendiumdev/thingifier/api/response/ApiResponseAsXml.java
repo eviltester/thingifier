@@ -58,7 +58,8 @@ public final class ApiResponseAsXml {
                         xmlThing.getCollectionOfThings(
                                 thingsToReturn,
                                 apiResponse.getTypeOfThingReturned(),
-                                apiResponse.getRelationshipRepository());
+                                apiResponse.getRelationshipRepository(),
+                                apiResponse.getResponseView());
             } catch (Exception e) {
                 // TODO: if this happens then the status code is going to be wrong, should probably
                 // throw an exception instead
@@ -78,7 +79,9 @@ public final class ApiResponseAsXml {
             try {
                 output =
                         xmlThing.getSingleObjectXml(
-                                instance, apiResponse.getRelationshipRepository());
+                                instance,
+                                apiResponse.getRelationshipRepository(),
+                                apiResponse.getResponseView());
             } catch (Exception e) {
                 // TODO: if this happens then the status code is going to be wrong
                 output = getErrorMessageXml(e.getMessage());

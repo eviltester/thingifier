@@ -17,12 +17,13 @@ public class DefinedRelationships {
     }
 
     public void addRelationship(final RelationshipVectorDefinition relationship) {
+        String relationshipName = relationship.getName().toLowerCase();
         List<RelationshipVectorDefinition> relationshipsWithThisName =
-                relationships.get(relationship.getName());
+                relationships.get(relationshipName);
         if (relationshipsWithThisName == null) {
             // there is no relationship with this name
             relationshipsWithThisName = new ArrayList<>();
-            relationships.put(relationship.getName(), relationshipsWithThisName);
+            relationships.put(relationshipName, relationshipsWithThisName);
         }
 
         relationshipsWithThisName.add(relationship);

@@ -3,11 +3,25 @@ package uk.co.compendiumdev.thingifier.api.http;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.SchemaCatalog;
+import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.ThingifierSchemaCatalog;
+import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.CollectionRoute;
+import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.InstanceRoute;
+import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.RelationshipCollectionRoute;
+import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.ThingRoute;
+import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.ThingRouteMapper;
 import uk.co.compendiumdev.thingifier.adapter.http.messagehooks.HttpApiRequestHook;
 import uk.co.compendiumdev.thingifier.adapter.http.messagehooks.HttpApiResponseHook;
+import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
 import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonThing;
+import uk.co.compendiumdev.thingifier.api.http.bodyparser.ApiBodyField;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
+import uk.co.compendiumdev.thingifier.api.spec.ThingifierApiRouteRule;
+import uk.co.compendiumdev.thingifier.application.schema.RelationshipSpec;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityViewDefinition;
 
 public final class ThingifierHttpApi {
 
@@ -75,15 +89,23 @@ public final class ThingifierHttpApi {
             request.removePrefixFromPath(prefix);
         }
 
+        final HttpVerb effectiveVerb = MethodOverrideParser.getEffectiveVerb(request, verb);
+        if (isDisabledByApiSpec(request, effectiveVerb)) {
+            return disabledRouteResponse(request);
+        }
+
         // any pre-request override processing
         HttpApiResponse httpResponse = runTheHttpApiRequestHooksOn(request);
-        final HttpVerb effectiveVerb = MethodOverrideParser.getEffectiveVerb(request, verb);
 
         // TODO: consider 'validation' hooks which can be used to override/augment validation
 
         // validate request syntax
         if (httpResponse == null) {
             httpResponse = validateRequestSyntax(request, effectiveVerb);
+        }
+
+        if (httpResponse == null) {
+            httpResponse = validateEntityViewInput(request, effectiveVerb);
         }
 
         // TODO: consider 'processing' hooks which can be used to override the generic processing
@@ -112,6 +134,32 @@ public final class ThingifierHttpApi {
 
         // run any post processing response hooks
         return runTheHttpApiResponseHooksOn(request, httpResponse);
+    }
+
+    private boolean isDisabledByApiSpec(final HttpApiRequest request, final HttpVerb verb) {
+        return routeRuleFor(request, verb).map(ThingifierApiRouteRule::isDisabled).orElse(false);
+    }
+
+    private Optional<ThingifierApiRouteRule> routeRuleFor(
+            final HttpApiRequest request, final HttpVerb verb) {
+        try {
+            return thingifier
+                    .apiSpec()
+                    .ruleFor(
+                            RoutingVerb.valueOf(verb.name()),
+                            request.getPath(),
+                            thingifier.apiConfig().getApiEndPointPrefix());
+        } catch (IllegalArgumentException e) {
+            return Optional.empty();
+        }
+    }
+
+    private HttpApiResponse disabledRouteResponse(final HttpApiRequest request) {
+        return new HttpApiResponse(
+                request.getHeaders(),
+                ApiResponse.error404("Could not find any instances with " + request.getPath()),
+                jsonThing,
+                thingifier.apiConfig());
     }
 
     /** return an error response if the request is invalid, null if valid */
@@ -165,7 +213,110 @@ public final class ThingifierHttpApi {
                 break;
         }
 
+        applyResponseEntityView(request, verb, apiResponse);
         return apiResponse;
+    }
+
+    private HttpApiResponse validateEntityViewInput(
+            final HttpApiRequest request, final HttpVerb verb) {
+        if (verb != HttpVerb.POST && verb != HttpVerb.PUT) {
+            return null;
+        }
+
+        final Optional<ThingifierApiRouteRule> matchingRule = routeRuleFor(request, verb);
+        if (matchingRule.isEmpty() || !matchingRule.get().hasRequestEntityView()) {
+            return null;
+        }
+
+        final EntityDefinition entity = targetEntityFor(request.getPath());
+        if (entity == null) {
+            return null;
+        }
+
+        final String viewName = matchingRule.get().getRequestEntityView();
+        if (!entity.hasViewNamed(viewName)) {
+            return new HttpApiResponse(
+                    request.getHeaders(),
+                    ApiResponse.error(
+                            500,
+                            String.format(
+                                    "Entity view %s is not defined for %s",
+                                    viewName, entity.getName())),
+                    jsonThing,
+                    thingifier.apiConfig());
+        }
+
+        final EntityViewDefinition view = entity.getViewNamed(viewName);
+        final List<String> disallowedFields = new ArrayList<>();
+        for (ApiBodyField field :
+                ApiRequestEnvelope.from(request, verb, thingifier.getThingNames())
+                        .bodyFields()
+                        .topLevelFields()) {
+            if (entity.hasFieldNameDefined(field.name()) && !view.isInputAllowed(field.name())) {
+                disallowedFields.add(field.name());
+            }
+        }
+
+        if (disallowedFields.isEmpty()) {
+            return null;
+        }
+
+        return new HttpApiResponse(
+                request.getHeaders(),
+                ApiResponse.error(
+                        422,
+                        String.format(
+                                "Fields are not allowed by %s: %s",
+                                viewName, String.join(", ", disallowedFields))),
+                jsonThing,
+                thingifier.apiConfig());
+    }
+
+    private void applyResponseEntityView(
+            final HttpApiRequest request, final HttpVerb verb, final ApiResponse apiResponse) {
+        if (apiResponse == null
+                || apiResponse.isErrorResponse()
+                || apiResponse.hasABodyOverride()) {
+            return;
+        }
+
+        final Optional<ThingifierApiRouteRule> matchingRule = routeRuleFor(request, verb);
+        if (matchingRule.isEmpty()) {
+            return;
+        }
+
+        final String viewName =
+                matchingRule.get().responseEntityViewFor(apiResponse.getStatusCode());
+        if (viewName == null || apiResponse.getTypeOfThingReturned() == null) {
+            return;
+        }
+
+        final EntityDefinition entity = apiResponse.getTypeOfThingReturned();
+        if (entity.hasViewNamed(viewName)) {
+            apiResponse.usingEntityView(entity.getViewNamed(viewName));
+        }
+    }
+
+    private EntityDefinition targetEntityFor(final String path) {
+        final SchemaCatalog schema = new ThingifierSchemaCatalog(thingifier);
+        final ThingRoute route = new ThingRouteMapper(schema).map(path);
+        if (route instanceof CollectionRoute) {
+            return schema.definitionWithSingularOrPluralNamed(
+                    ((CollectionRoute) route).entity().name());
+        }
+        if (route instanceof InstanceRoute) {
+            return schema.definitionWithSingularOrPluralNamed(
+                    ((InstanceRoute) route).entity().name());
+        }
+        if (route instanceof RelationshipCollectionRoute) {
+            final RelationshipCollectionRoute relationship = (RelationshipCollectionRoute) route;
+            for (RelationshipSpec spec : relationship.parentEntity().relationships()) {
+                if (spec.name().equals(relationship.relationshipName())) {
+                    return schema.definitionWithSingularOrPluralNamed(spec.toEntityName());
+                }
+            }
+        }
+        return null;
     }
 
     public HttpApiResponse get(final HttpApiRequest request) {

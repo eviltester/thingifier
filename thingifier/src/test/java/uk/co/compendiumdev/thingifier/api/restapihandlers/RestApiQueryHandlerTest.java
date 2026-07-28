@@ -78,6 +78,28 @@ public class RestApiQueryHandlerTest {
     }
 
     @Test
+    public void querySingleTargetRelationshipStillReturnsACollection() {
+        Thingifier thingifier = taskProjectThingifier();
+        ThingStore store = storeFor(thingifier);
+        EntityInstance project = createProject(thingifier, "Project");
+        EntityInstance task = createTask(thingifier, "Keep", "Open");
+        store.relationships().connect(project, "tasks", task);
+
+        HttpApiResponse response =
+                new ThingifierHttpApi(thingifier)
+                        .queryRequest(
+                                query(
+                                        "tasks/" + task.getPrimaryKeyValue() + "/task-of",
+                                        "title=Project"));
+
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertTrue(response.apiResponse().isCollection());
+        Assertions.assertEquals(1, response.apiResponse().getReturnedInstanceCollection().size());
+        Assertions.assertEquals(
+                project, response.apiResponse().getReturnedInstanceCollection().get(0));
+    }
+
+    @Test
     public void querySingleInstanceIsMethodNotAllowed() {
         Thingifier thingifier = taskProjectThingifier();
         EntityInstance task = createTask(thingifier, "Task", "Open");
@@ -213,7 +235,7 @@ public class RestApiQueryHandlerTest {
 
         thingifier
                 .defineRelationship(project, task, "tasks", Cardinality.ONE_TO_MANY())
-                .whenReversed(Cardinality.ONE_TO_MANY(), "task-of");
+                .whenReversed(Cardinality.ONE_TO_ONE(), "task-of");
         return thingifier;
     }
 

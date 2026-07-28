@@ -24,6 +24,7 @@ class ThingifierModelExporterTest {
 
         Assertions.assertEquals("Todo Model", definition.title());
         Assertions.assertEquals("Model description", definition.description());
+        Assertions.assertEquals("A task item to complete.", task.description());
         Assertions.assertEquals("id", task.primaryKeyFieldName());
         Assertions.assertEquals("auto-increment", task.fieldNamed("id").type());
         Assertions.assertTrue(title.required());
@@ -79,6 +80,8 @@ class ThingifierModelExporterTest {
 
         Assertions.assertNotNull(assembled.getDefinitionNamed("task"));
         Assertions.assertEquals(
+                "A task item to complete.", assembled.getDefinitionNamed("task").getDescription());
+        Assertions.assertEquals(
                 "id", assembled.getDefinitionNamed("task").getPrimaryKeyField().getName());
         Assertions.assertTrue(assembled.hasRelationshipNamed("tasks"));
         Assertions.assertTrue(assembled.hasRelationshipNamed("taskof"));
@@ -89,6 +92,7 @@ class ThingifierModelExporterTest {
         thingifier.setDocumentation("Todo Model", "Model description");
 
         EntityDefinition task = thingifier.defineThing("task", "tasks");
+        task.withDescription("A task item to complete.");
         task.addAsPrimaryKeyField(Field.is("id", FieldType.AUTO_INCREMENT));
         task.addFields(
                 Field.is("title", FieldType.STRING)

@@ -160,6 +160,34 @@ public class EntityRelModelTest {
     }
 
     @Test
+    public void canCreateRelationshipsWithTheSameNameFromDifferentSources() {
+        EntityRelModel erm = new EntityRelModel();
+        EntityDefinition robotModel = erm.createEntityDefinition("robotmodel", "robotmodels");
+        EntityDefinition zone = erm.createEntityDefinition("zone", "zones");
+        EntityDefinition robot = erm.createEntityDefinition("robot", "robots");
+
+        erm.createRelationshipDefinition(robotModel, robot, "robots", Cardinality.ONE_TO_MANY());
+        erm.createRelationshipDefinition(zone, robot, "robots", new Cardinality(1, 24));
+
+        Assertions.assertEquals(2, erm.getRelationshipDefinitions().size());
+        Assertions.assertTrue(erm.hasRelationshipNamed("robots"));
+        Assertions.assertEquals(
+                1,
+                erm.getRelationshipDefinitions().stream()
+                        .filter(
+                                relationship ->
+                                        relationship.getFromRelationship().getFrom() == robotModel)
+                        .count());
+        Assertions.assertEquals(
+                1,
+                erm.getRelationshipDefinitions().stream()
+                        .filter(
+                                relationship ->
+                                        relationship.getFromRelationship().getFrom() == zone)
+                        .count());
+    }
+
+    @Test
     public void canFindAReversedRelationship() {
         EntityRelModel erm = new EntityRelModel();
         EntityDefinition thing = erm.createEntityDefinition("thing", "things");

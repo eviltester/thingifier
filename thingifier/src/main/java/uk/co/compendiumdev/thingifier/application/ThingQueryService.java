@@ -20,15 +20,27 @@ public final class ThingQueryService {
     }
 
     public RepositoryQueryResult execute(final ThingReadQuery query, final ThingStore store) {
-        return new RepositoryQuery(store, specFor(query)).performQuery(query.getQueryParams());
+        return execute(query, store, true);
     }
 
-    private RepositoryQuerySpec specFor(final ThingReadQuery query) {
+    public RepositoryQueryResult execute(
+            final ThingReadQuery query,
+            final ThingStore store,
+            final boolean singleTargetRelationshipsAsInstances) {
+        return new RepositoryQuery(store, specFor(query, singleTargetRelationshipsAsInstances))
+                .performQuery(query.getQueryParams());
+    }
+
+    private RepositoryQuerySpec specFor(
+            final ThingReadQuery query, final boolean singleTargetRelationshipsAsInstances) {
         EntityDefinition entity = schema.entityNamed(query.getEntityName());
         if (query instanceof ReadRelationshipQuery) {
             ReadRelationshipQuery relationship = (ReadRelationshipQuery) query;
             return RepositoryQuerySpec.relationship(
-                    entity, relationship.getIdentifier(), relationship.getRelationshipName());
+                    entity,
+                    relationship.getIdentifier(),
+                    relationship.getRelationshipName(),
+                    singleTargetRelationshipsAsInstances);
         }
 
         if (query instanceof ReadInstanceQuery) {

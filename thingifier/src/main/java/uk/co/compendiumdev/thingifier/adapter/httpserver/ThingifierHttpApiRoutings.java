@@ -126,6 +126,9 @@ public class ThingifierHttpApiRoutings {
                 new ApiRoutingDefinitionDocGenerator(thingifier).generate(apiDefn.getPathPrefix());
 
         for (RoutingDefinition defn : routingDefinitions.definitions()) {
+            if (defn.isDisabled()) {
+                continue;
+            }
             switch (defn.verb()) {
                 case GET:
                     if (defn.status().isReturnedFromCall()) {

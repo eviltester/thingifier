@@ -27,6 +27,59 @@ class ThingDefinitionTest {
     }
 
     @Test
+    void canDescribeEntityDefinition() {
+        EntityDefinition eDefn = new EntityDefinition("Requirement", "Requirements");
+
+        Assertions.assertFalse(eDefn.hasDescription());
+        Assertions.assertEquals("", eDefn.getDescription());
+
+        Assertions.assertSame(eDefn, eDefn.withDescription("A requirement in the model."));
+        Assertions.assertTrue(eDefn.hasDescription());
+        Assertions.assertEquals("A requirement in the model.", eDefn.getDescription());
+
+        eDefn.withDescription(null);
+        Assertions.assertFalse(eDefn.hasDescription());
+        Assertions.assertEquals("", eDefn.getDescription());
+    }
+
+    @Test
+    void canDefineEntityViewsWithIndependentVisibilityAndInputRules() {
+        EntityDefinition eDefn = new EntityDefinition("cartitem", "cartitems");
+        eDefn.addAsPrimaryKeyField(Field.is("id", FieldType.AUTO_INCREMENT));
+        eDefn.addFields(
+                Field.is("productId", FieldType.INTEGER),
+                Field.is("quantity", FieldType.INTEGER),
+                Field.is("unitPriceAtAdd", FieldType.FLOAT),
+                Field.is("stockAtAdd", FieldType.INTEGER));
+
+        EntityViewDefinition view =
+                eDefn.defineView("AddedCartItem")
+                        .hideRequestFields("unitPriceAtAdd", "stockAtAdd")
+                        .hideResponseFields("stockAtAdd")
+                        .disallowInputFields("id");
+
+        Assertions.assertTrue(eDefn.hasViewNamed("AddedCartItem"));
+        Assertions.assertSame(view, eDefn.getViewNamed("AddedCartItem"));
+        Assertions.assertTrue(view.isRequestVisible("productId"));
+        Assertions.assertFalse(view.isRequestVisible("unitPriceAtAdd"));
+        Assertions.assertTrue(view.isResponseVisible("unitPriceAtAdd"));
+        Assertions.assertFalse(view.isResponseVisible("stockAtAdd"));
+        Assertions.assertTrue(view.isInputAllowed("unitPriceAtAdd"));
+        Assertions.assertFalse(view.isInputAllowed("id"));
+    }
+
+    @Test
+    void entityViewsRejectUnknownFieldConfiguration() {
+        EntityDefinition eDefn = new EntityDefinition("cartitem", "cartitems");
+        eDefn.addAsPrimaryKeyField(Field.is("id", FieldType.AUTO_INCREMENT));
+
+        EntityViewDefinition view = eDefn.defineView("AddedCartItem");
+
+        Assertions.assertThrows(
+                IllegalArgumentException.class, () -> view.hideFields("missingField"));
+    }
+
+    @Test
     void addFieldToEntityDefinition() {
         EntityDefinition eDefn;
         eDefn = new EntityDefinition("Requirement", "Requirements");
