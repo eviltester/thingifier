@@ -370,10 +370,11 @@ public class ApiRoutingDefinitionDocGenerator {
                     .addRequestUrlParam(entityDefn.getField(uniqueIdFieldName));
 
             for (RelationshipVectorDefinition rel : entityDefn.related().getRelationships()) {
-                addRoutingsForRelationship(defn, rel);
+                addRoutingsForRelationship(defn, rel, endPointPrefix);
             }
         }
 
+        thingifier.apiSpec().applyTo(defn, apiPathPrefix);
         return defn;
     }
 
@@ -393,12 +394,26 @@ public class ApiRoutingDefinitionDocGenerator {
         //        }
     }
 
+    private String relatedParameterNameFor(final Field field) {
+        if (field == null) {
+            return null;
+        }
+        String fieldName = field.getName();
+        return "related" + fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
+    }
+
     private void addRoutingsForRelationship(
-            final ApiRoutingDefinition defn, final RelationshipVectorDefinition relationship) {
+            final ApiRoutingDefinition defn,
+            final RelationshipVectorDefinition relationship,
+            final String endPointPrefix) {
 
         String fromName = relationship.getFrom().getName();
         String toName = relationship.getTo().getName();
         String relationshipName = relationship.getName();
+        boolean getReturnsSingle = relationshipReturnsSingleInstance(relationship);
+        String relationshipGetTargetDescription = getReturnsSingle ? "item" : "items";
+        String relationshipGetDocumentationVerb =
+                getReturnsSingle ? "return the" : "return all the";
 
         final EntityDefinition thingDefn = relationship.getFrom();
 
@@ -427,17 +442,30 @@ public class ApiRoutingDefinitionDocGenerator {
             fromNameForUrl = thingDefn.getName().toLowerCase();
         }
 
-        String aUrl = fromNameForUrl + "/" + uniqueIdentifier + "/" + relationshipName;
+        String aUrl =
+                endPointPrefix + fromNameForUrl + "/" + uniqueIdentifier + "/" + relationshipName;
         defn.addRouting(
                         String.format(
-                                "return all the %s items related to %s, with given %s, by the relationship named %s",
-                                toName, fromName, uniqueIdFieldName, relationshipName),
+                                "%s %s %s related to %s, with given %s, by the relationship named %s",
+                                relationshipGetDocumentationVerb,
+                                toName,
+                                relationshipGetTargetDescription,
+                                fromName,
+                                uniqueIdFieldName,
+                                relationshipName),
                         RoutingVerb.GET,
                         aUrl,
                         RoutingStatus.returnedFromCall())
+                .addRequestUrlParam(uniqueIdField)
                 .addPossibleStatus(
                         RoutingStatus.returnValue(
-                                200, String.format("all the related the %s items", toName)));
+                                200,
+                                String.format(
+                                        "%s related %s %s",
+                                        getReturnsSingle ? "the" : "all the",
+                                        toName,
+                                        relationshipGetTargetDescription)))
+                .returnPayload(200, relationshipGetReturnPayload(relationship));
 
         defn.addRouting(
                         String.format(
@@ -446,6 +474,7 @@ public class ApiRoutingDefinitionDocGenerator {
                         RoutingVerb.QUERY,
                         aUrl,
                         RoutingStatus.returnedFromCall())
+                .addRequestUrlParam(uniqueIdField)
                 .addPossibleStatus(
                         RoutingStatus.returnValue(
                                 200, String.format("all the matching related %s items", toName)))
@@ -457,15 +486,24 @@ public class ApiRoutingDefinitionDocGenerator {
 
         defn.addRouting(
                         String.format(
-                                "headers for the %s items related to %s, with given %s, by the relationship named %s",
-                                toName, fromName, uniqueIdFieldName, relationshipName),
+                                "headers for the %s %s related to %s, with given %s, by the relationship named %s",
+                                toName,
+                                relationshipGetTargetDescription,
+                                fromName,
+                                uniqueIdFieldName,
+                                relationshipName),
                         RoutingVerb.HEAD,
                         aUrl,
                         RoutingStatus.returnedFromCall())
+                .addRequestUrlParam(uniqueIdField)
                 .addPossibleStatus(
                         RoutingStatus.returnValue(
                                 200,
-                                String.format("headers for all the related the %s items", toName)));
+                                String.format(
+                                        "headers for %s related %s %s",
+                                        getReturnsSingle ? "the" : "all the",
+                                        toName,
+                                        relationshipGetTargetDescription)));
 
         defn.addRouting(
                 String.format("show all Options for endpoint of %s", aUrl),
@@ -487,6 +525,8 @@ public class ApiRoutingDefinitionDocGenerator {
                         RoutingVerb.POST,
                         aUrl,
                         RoutingStatus.returnedFromCall())
+                .addRequestUrlParam(uniqueIdField)
+                .requestPayload(relationship.getTo().getName())
                 .addPossibleStatus(
                         RoutingStatus.returnValue(201, String.format("created the relationship")))
                 .addPossibleStatus(
@@ -511,14 +551,21 @@ public class ApiRoutingDefinitionDocGenerator {
                 "method not allowed", RoutingVerb.PUT, aUrl, RoutingStatus.returnValue(405));
 
         // we should be able to delete a relationship
+        final Field relatedUniqueIdField = getUniqueIdField(relationship.getTo());
+        final String relatedUniqueIdentifier =
+                relatedUniqueIdField == null
+                        ? uniqueIdentifier
+                        : ":" + relatedParameterNameFor(relatedUniqueIdField);
+
         final String aUrlDelete =
-                fromNameForUrl
+                endPointPrefix
+                        + fromNameForUrl
                         + "/"
                         + uniqueIdentifier
                         + "/"
                         + relationshipName
                         + "/"
-                        + uniqueIdentifier;
+                        + relatedUniqueIdentifier;
         defn.addRouting(
                         String.format(
                                 "delete the instance of the relationship named %s between %s and %s using the %s",
@@ -526,6 +573,9 @@ public class ApiRoutingDefinitionDocGenerator {
                         RoutingVerb.DELETE,
                         aUrlDelete,
                         RoutingStatus.returnedFromCall())
+                .addRequestUrlParam(uniqueIdField)
+                .addRequestUrlParam(
+                        relatedParameterNameFor(relatedUniqueIdField), relatedUniqueIdField)
                 .addPossibleStatus(
                         RoutingStatus.returnValue(204, String.format("deleted the relationship")))
                 .addPossibleStatus(
@@ -567,5 +617,18 @@ public class ApiRoutingDefinitionDocGenerator {
                 "method not allowed", RoutingVerb.PUT, aUrlDelete, RoutingStatus.returnValue(405));
         defn.addRouting(
                 "method not allowed", RoutingVerb.POST, aUrlDelete, RoutingStatus.returnValue(405));
+    }
+
+    private boolean relationshipReturnsSingleInstance(
+            final RelationshipVectorDefinition relationship) {
+        return relationship.getCardinality().hasMaximumLimit()
+                && relationship.getCardinality().maximumLimit() == 1;
+    }
+
+    private String relationshipGetReturnPayload(final RelationshipVectorDefinition relationship) {
+        if (relationshipReturnsSingleInstance(relationship)) {
+            return relationship.getTo().getName();
+        }
+        return relationship.getTo().getPlural();
     }
 }

@@ -5,6 +5,7 @@ import uk.co.compendiumdev.thingifier.api.ApiUrls;
 import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityViewDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 import uk.co.compendiumdev.thingifier.core.repository.RelationshipRepository;
@@ -28,6 +29,7 @@ public final class ApiResponse {
 
     private HttpHeadersBlock headers;
     private EntityDefinition typeOfResults;
+    private EntityViewDefinition responseView;
     private String body;
     private RelationshipRepository relationshipRepository;
 
@@ -41,6 +43,7 @@ public final class ApiResponse {
         errorMessages = new ArrayList<>();
         hasBody = false;
         body = null;
+        responseView = null;
     }
 
     public ApiResponse(
@@ -222,6 +225,19 @@ public final class ApiResponse {
 
     public EntityDefinition getTypeOfThingReturned() {
         return typeOfResults;
+    }
+
+    public ApiResponse usingEntityView(final EntityViewDefinition view) {
+        responseView = view;
+        return this;
+    }
+
+    public boolean hasResponseView() {
+        return responseView != null;
+    }
+
+    public EntityViewDefinition getResponseView() {
+        return responseView;
     }
 
     public boolean hasABody() {

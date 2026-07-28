@@ -52,6 +52,9 @@ public final class ThingifierModelExporter {
                 EntityDefinitionSpec.named(entity.getName())
                         .plural(entity.getPlural())
                         .maxInstances(entity.getMaxInstanceLimit());
+        if (entity.hasDescription()) {
+            builder.description(entity.getDescription());
+        }
         if (entity.hasPrimaryKeyField()) {
             builder.primaryKey(entity.getPrimaryKeyField().getName());
         }

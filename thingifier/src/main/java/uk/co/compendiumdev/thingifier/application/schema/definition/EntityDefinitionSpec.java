@@ -8,6 +8,7 @@ public final class EntityDefinitionSpec {
 
     private final String name;
     private final String pluralName;
+    private final String description;
     private final int maxInstances;
     private final String primaryKeyFieldName;
     private final List<FieldDefinitionSpec> fields;
@@ -15,6 +16,7 @@ public final class EntityDefinitionSpec {
     private EntityDefinitionSpec(final Builder builder) {
         name = builder.name;
         pluralName = builder.pluralName;
+        description = builder.description;
         maxInstances = builder.maxInstances;
         primaryKeyFieldName = builder.primaryKeyFieldName;
         fields = Collections.unmodifiableList(new ArrayList<>(builder.fields));
@@ -30,6 +32,10 @@ public final class EntityDefinitionSpec {
 
     public String pluralName() {
         return pluralName;
+    }
+
+    public String description() {
+        return description;
     }
 
     public int maxInstances() {
@@ -61,6 +67,7 @@ public final class EntityDefinitionSpec {
 
         private final String name;
         private String pluralName;
+        private String description;
         private int maxInstances;
         private String primaryKeyFieldName;
         private final List<FieldDefinitionSpec> fields;
@@ -73,6 +80,11 @@ public final class EntityDefinitionSpec {
 
         public Builder plural(final String pluralName) {
             this.pluralName = pluralName;
+            return this;
+        }
+
+        public Builder description(final String description) {
+            this.description = description;
             return this;
         }
 

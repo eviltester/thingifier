@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import uk.co.compendiumdev.thingifier.api.response.ResponseHeader;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 
@@ -65,5 +66,46 @@ public final class ApiRoutingDefinition {
 
     public Collection<EntityDefinition> getObjectSchemas() {
         return objectSchemas.values();
+    }
+
+    public void updateOptionsAllowHeaders() {
+        final List<RoutingVerb> verbOrder =
+                List.of(
+                        RoutingVerb.OPTIONS,
+                        RoutingVerb.GET,
+                        RoutingVerb.HEAD,
+                        RoutingVerb.POST,
+                        RoutingVerb.QUERY,
+                        RoutingVerb.PUT,
+                        RoutingVerb.PATCH,
+                        RoutingVerb.DELETE,
+                        RoutingVerb.TRACE);
+        final Map<String, List<RoutingVerb>> allowedByUrl = new HashMap<>();
+
+        for (RoutingDefinition route : routings) {
+            if (route.isHiddenFromDocumentation() || route.isDisabled()) {
+                continue;
+            }
+            if (route.verb() == RoutingVerb.OPTIONS || route.status().isReturnedFromCall()) {
+                allowedByUrl.computeIfAbsent(route.url(), key -> new ArrayList<>());
+                if (!allowedByUrl.get(route.url()).contains(route.verb())) {
+                    allowedByUrl.get(route.url()).add(route.verb());
+                }
+            }
+        }
+
+        for (RoutingDefinition route : routings) {
+            if (route.verb() != RoutingVerb.OPTIONS || route.header().isEmpty()) {
+                continue;
+            }
+            final List<RoutingVerb> allowed = allowedByUrl.getOrDefault(route.url(), List.of());
+            final String allowHeader =
+                    verbOrder.stream()
+                            .filter(allowed::contains)
+                            .map(Enum::name)
+                            .reduce((left, right) -> left + ", " + right)
+                            .orElse("OPTIONS");
+            route.replaceHeader(new ResponseHeader(route.header(), allowHeader));
+        }
     }
 }

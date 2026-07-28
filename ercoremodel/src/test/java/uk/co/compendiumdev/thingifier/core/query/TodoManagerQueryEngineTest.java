@@ -49,7 +49,7 @@ public class TodoManagerQueryEngineTest {
 
         todoManager
                 .createRelationshipDefinition(project, todo, "tasks", Cardinality.ONE_TO_MANY())
-                .whenReversed(Cardinality.ONE_TO_MANY(), "task-of");
+                .whenReversed(Cardinality.ONE_TO_ONE(), "task-of");
 
         todoManager.createRelationshipDefinition(
                 project, category, "categories", Cardinality.ONE_TO_MANY());
@@ -143,14 +143,37 @@ public class TodoManagerQueryEngineTest {
         Assertions.assertTrue(tasksForProject.contains(paperwork));
         Assertions.assertTrue(tasksForProject.contains(filework));
 
-        List<EntityInstance> projectsForTask =
+        RepositoryQuery projectForTaskQuery =
                 query(
-                                RepositoryQuerySpec.relationship(
-                                        todo, paperwork.getPrimaryKeyValue(), "task-of"))
-                        .getListEntityInstances();
+                        RepositoryQuerySpec.relationship(
+                                todo, paperwork.getPrimaryKeyValue(), "task-of"));
+        List<EntityInstance> projectsForTask = projectForTaskQuery.getListEntityInstances();
 
+        Assertions.assertFalse(projectForTaskQuery.isResultACollection());
+        Assertions.assertTrue(projectForTaskQuery.lastMatchWasInstance());
+        Assertions.assertEquals(officeWork, projectForTaskQuery.getLastInstance());
         Assertions.assertEquals(1, projectsForTask.size());
         Assertions.assertTrue(projectsForTask.contains(officeWork));
+    }
+
+    @Test
+    public void canQuerySingleTargetRelationshipsAsCollectionsWhenRequested() {
+        EntityInstance officeWork =
+                store().entities()
+                        .create(
+                                EntityInstanceDraft.forEntity(project)
+                                        .withField("title", "Office Work"));
+        store().relationships().connect(officeWork, "tasks", paperwork);
+
+        RepositoryQuery projectsForTask =
+                query(
+                        RepositoryQuerySpec.relationship(
+                                todo, paperwork.getPrimaryKeyValue(), "task-of", false));
+
+        Assertions.assertTrue(projectsForTask.isResultACollection());
+        Assertions.assertFalse(projectsForTask.lastMatchWasInstance());
+        Assertions.assertEquals(1, projectsForTask.getListEntityInstances().size());
+        Assertions.assertTrue(projectsForTask.getListEntityInstances().contains(officeWork));
     }
 
     private RepositoryQuery query(final RepositoryQuerySpec spec) {

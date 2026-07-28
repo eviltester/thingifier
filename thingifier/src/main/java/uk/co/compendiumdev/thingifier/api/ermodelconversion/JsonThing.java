@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import java.util.*;
 import uk.co.compendiumdev.thingifier.apiconfig.JsonOutputConfig;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityViewDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
@@ -43,6 +44,15 @@ public class JsonThing {
                 .toString();
     }
 
+    public String asJsonTypedArrayWithContentsUntyped(
+            final List<EntityInstance> things,
+            String typeName,
+            final RelationshipRepository relationships,
+            final EntityViewDefinition view) {
+        return asJsonObjectTypedArrayWithContentsUntyped(things, typeName, relationships, view)
+                .toString();
+    }
+
     /*
       This is suitable for passing through GsonBuilderPretty Printing e.g. to get
 
@@ -74,6 +84,16 @@ public class JsonThing {
         return arrayObj;
     }
 
+    public JsonObject asJsonObjectTypedArrayWithContentsUntyped(
+            final List<EntityInstance> things,
+            String typeName,
+            final RelationshipRepository relationships,
+            final EntityViewDefinition view) {
+        final JsonObject arrayObj = new JsonObject();
+        arrayObj.add(typeName, asJsonArray(things, relationships, view));
+        return arrayObj;
+    }
+
     public JsonObject asJsonObjectTypedDraftArrayWithContentsUntyped(
             final List<EntityInstanceDraft> things, String typeName) {
         final JsonObject arrayObj = new JsonObject();
@@ -98,13 +118,20 @@ public class JsonThing {
 
     private JsonArray asJsonArray(
             final Collection<EntityInstance> things, final RelationshipRepository relationships) {
+        return asJsonArray(things, relationships, null);
+    }
+
+    private JsonArray asJsonArray(
+            final Collection<EntityInstance> things,
+            final RelationshipRepository relationships,
+            final EntityViewDefinition view) {
 
         // [{"guid":"bob"}, {"guid":"bob2"}]
 
         final JsonArray jsonArray = new JsonArray();
 
         for (EntityInstance thing : things) {
-            jsonArray.add(asJsonObject(thing, relationships));
+            jsonArray.add(asJsonObject(thing, relationships, view));
         }
 
         // System.out.println(jsonArray.toString());
@@ -168,7 +195,8 @@ public class JsonThing {
         return jsonobj;
     }
 
-    private JsonObject asFieldJsonObject(final EntityInstance instance) {
+    private JsonObject asFieldJsonObject(
+            final EntityInstance instance, final EntityViewDefinition view) {
         final JsonObject jsonobj = new JsonObject();
 
         if (instance == null) {
@@ -176,6 +204,9 @@ public class JsonThing {
         }
 
         for (String fieldName : instance.getFieldNames()) {
+            if (view != null && !view.isResponseVisible(fieldName)) {
+                continue;
+            }
             Field theField = instance.getEntity().getField(fieldName);
 
             try {
@@ -297,6 +328,13 @@ public class JsonThing {
 
     public JsonObject asJsonObject(
             final EntityInstance thingInstance, final RelationshipRepository relationshipsPort) {
+        return asJsonObject(thingInstance, relationshipsPort, null);
+    }
+
+    public JsonObject asJsonObject(
+            final EntityInstance thingInstance,
+            final RelationshipRepository relationshipsPort,
+            final EntityViewDefinition view) {
 
         // todo: I swallowed exception generation in here because I was passing in the 'input'
         // representations
@@ -309,7 +347,7 @@ public class JsonThing {
             return new JsonObject();
         }
 
-        final JsonObject jsonobj = asFieldJsonObject(thingInstance);
+        final JsonObject jsonobj = asFieldJsonObject(thingInstance, view);
 
         /*
            "relationships" : [
@@ -424,9 +462,17 @@ public class JsonThing {
             final List<EntityInstance> things,
             EntityDefinition defn,
             final RelationshipRepository relationships) {
+        return asJsonTypedArrayWithContentsTyped(things, defn, relationships, null);
+    }
+
+    public String asJsonTypedArrayWithContentsTyped(
+            final List<EntityInstance> things,
+            EntityDefinition defn,
+            final RelationshipRepository relationships,
+            final EntityViewDefinition view) {
 
         final JsonObject arrayObj = new JsonObject();
-        arrayObj.add(defn.getPlural(), asJsonArrayInstanceWrapped(things, relationships));
+        arrayObj.add(defn.getPlural(), asJsonArrayInstanceWrapped(things, relationships, view));
         return arrayObj.toString();
     }
 
@@ -438,7 +484,9 @@ public class JsonThing {
      * @return
      */
     private JsonArray asJsonArrayInstanceWrapped(
-            Collection<EntityInstance> things, final RelationshipRepository relationships) {
+            Collection<EntityInstance> things,
+            final RelationshipRepository relationships,
+            final EntityViewDefinition view) {
 
         // [{"item":{"guid":"bob"}}, {"item":{"guid":"bob2"}}]
 
@@ -447,7 +495,7 @@ public class JsonThing {
         for (EntityInstance thing : things) {
 
             JsonObject jsonObj = new JsonObject();
-            jsonObj.add(thing.getEntity().getName(), asJsonObject(thing, relationships));
+            jsonObj.add(thing.getEntity().getName(), asJsonObject(thing, relationships, view));
             jsonArray.add(jsonObj);
         }
 
@@ -462,9 +510,16 @@ public class JsonThing {
 
     public JsonObject asNamedJsonObject(
             final EntityInstance instance, final RelationshipRepository relationships) {
+        return asNamedJsonObject(instance, relationships, null);
+    }
+
+    public JsonObject asNamedJsonObject(
+            final EntityInstance instance,
+            final RelationshipRepository relationships,
+            final EntityViewDefinition view) {
 
         final JsonObject retObj = new JsonObject();
-        retObj.add(instance.getEntity().getName(), asJsonObject(instance, relationships));
+        retObj.add(instance.getEntity().getName(), asJsonObject(instance, relationships, view));
         return retObj;
     }
 

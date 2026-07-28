@@ -16,6 +16,7 @@ import uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.xml.GenericXMLPrettyPrinter;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityViewDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipDefinition;
@@ -31,6 +32,8 @@ public class RestApiDocumentationGenerator {
     private static final String DEFAULT_META_ROBOTS = "index,follow";
     private static final String DEFAULT_OG_TYPE = "website";
     private static final String DEFAULT_TWITTER_CARD = "summary_large_image";
+    private static final String MERMAID_ESM_CDN =
+            "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
     private final Thingifier thingifier;
     private final Collection<RelationshipDefinition> relationships;
     private final JsonThing jsonThing;
@@ -177,6 +180,9 @@ public class RestApiDocumentationGenerator {
             for (EntityDefinition aThingDefinition : definitions) {
 
                 output.append(heading(4, aThingDefinition.getName()));
+                if (aThingDefinition.hasDescription()) {
+                    output.append(paragraph(escapeHtmlText(aThingDefinition.getDescription())));
+                }
 
                 output.append("Fields:\n");
 
@@ -188,7 +194,7 @@ public class RestApiDocumentationGenerator {
                 output.append("<tr>");
                 output.append("<td>Fieldname</td>\n");
                 output.append("<td>Type</td>\n");
-                output.append("<td>Validation</td>\n");
+                output.append("<td>Description</td>\n");
                 output.append("</tr>");
                 output.append("</thead>\n");
 
@@ -212,9 +218,14 @@ public class RestApiDocumentationGenerator {
                     output.append("<td>");
 
                     output.append("<ul>");
+                    if (theField.hasDescription()) {
+                        output.append(
+                                "<li>" + escapeHtmlText(theField.getDescription()) + "</li>\n");
+                    }
                     for (ValidationRule validation : theField.getAllValidationRules()) {
                         // use the validation error message in the documentation
-                        output.append("<li>" + validation.getExplanation() + "</li>\n");
+                        output.append(
+                                "<li>" + escapeHtmlText(validation.getExplanation()) + "</li>\n");
                     }
 
                     output.append("</ul>\n");
@@ -233,6 +244,47 @@ public class RestApiDocumentationGenerator {
 
                 output.append("</tbody>\n");
                 output.append("</table>\n");
+
+                if (!aThingDefinition.getViews().isEmpty()) {
+                    output.append("Views:\n");
+                    output.append("<table>\n");
+                    output.append("<thead>\n");
+                    output.append("<tr>");
+                    output.append("<td>View</td>\n");
+                    output.append("<td>Request Fields</td>\n");
+                    output.append("<td>Response Fields</td>\n");
+                    output.append("<td>Input Allowed Fields</td>\n");
+                    output.append("</tr>");
+                    output.append("</thead>\n");
+                    output.append("<tbody>\n");
+                    for (EntityViewDefinition view : aThingDefinition.getViews()) {
+                        output.append("<tr>");
+                        output.append(String.format("<td>%s</td>", escapeHtmlText(view.getName())));
+                        output.append(
+                                String.format(
+                                        "<td>%s</td>",
+                                        escapeHtmlText(
+                                                fieldsInView(
+                                                        aThingDefinition,
+                                                        view::isRequestVisible))));
+                        output.append(
+                                String.format(
+                                        "<td>%s</td>",
+                                        escapeHtmlText(
+                                                fieldsInView(
+                                                        aThingDefinition,
+                                                        view::isResponseVisible))));
+                        output.append(
+                                String.format(
+                                        "<td>%s</td>",
+                                        escapeHtmlText(
+                                                fieldsInView(
+                                                        aThingDefinition, view::isInputAllowed))));
+                        output.append("</tr>");
+                    }
+                    output.append("</tbody>\n");
+                    output.append("</table>\n");
+                }
 
                 // show an example
                 if (thingifier.apiConfig().willApiAllowJsonForResponses()) {
@@ -305,37 +357,18 @@ public class RestApiDocumentationGenerator {
 
         if (relationships != null && !relationships.isEmpty()) {
             output.append(heading(3, "Relationships"));
+            output.append(mermaidErDiagram());
             output.append("<ul>\n");
 
             for (RelationshipDefinition relationship : relationships) {
 
-                RelationshipVectorDefinition fromToRelationship =
-                        relationship.getFromRelationship();
-
-                // task-of : task => project
-                String reportLine =
-                        String.format(
-                                "<li>%s : %s => %s%n",
-                                fromToRelationship.getName(),
-                                fromToRelationship.getFrom().getName(),
-                                fromToRelationship.getTo().getName());
-
-                // for a two way relationship can it be combined on to one line e.g.
-                // tasks/task-of : project =(tasks)=> task  / task=(task-of)=> project
-
+                output.append(relationshipLine(relationship.getFromRelationship()));
                 if (relationship.isTwoWay()) {
-                    reportLine =
-                            String.format(
-                                    "<li>%1$s/%2$s : %3$s =(%1$s)=> %4$s / %4$s =(%2$s)=> %3$s %n",
-                                    relationship.getFromRelationship().getName(),
-                                    relationship.getReversedRelationship().getName(),
-                                    relationship.getFromRelationship().getFrom().getName(),
-                                    relationship.getFromRelationship().getTo().getName());
+                    output.append(relationshipLine(relationship.getReversedRelationship()));
                 }
-
-                output.append(reportLine);
             }
             output.append("</ul>\n");
+            output.append(mermaidEsmScript());
         }
 
         // output the API documentation
@@ -354,6 +387,9 @@ public class RestApiDocumentationGenerator {
         String currentEndPoint = "";
 
         for (RoutingDefinition routingDefn : routingDefinitions.definitions()) {
+            if (routingDefn.isHiddenFromDocumentation() || routingDefn.isDisabled()) {
+                continue;
+            }
             // only show if not a method not allowed method
             if (!currentEndPoint.equalsIgnoreCase(routingDefn.url())) {
                 // new endpoint
@@ -455,6 +491,102 @@ public class RestApiDocumentationGenerator {
         output.append(defaultGui.getPageFooter());
         output.append(defaultGui.getPageEnd());
         return output.toString();
+    }
+
+    private String relationshipLine(final RelationshipVectorDefinition relationship) {
+        return String.format(
+                "<li>%s : %s =(%s, max %s)=> %s</li>%n",
+                escapeHtmlText(relationship.getName()),
+                escapeHtmlText(relationship.getFrom().getName()),
+                escapeHtmlText(relationship.getName()),
+                escapeHtmlText(relationship.getCardinality().right()),
+                escapeHtmlText(relationship.getTo().getName()));
+    }
+
+    private String fieldsInView(
+            final EntityDefinition entity, final java.util.function.Predicate<String> included) {
+        final List<String> fieldNames = new ArrayList<>();
+        for (String fieldName : entity.getFieldNames()) {
+            if (included.test(fieldName)) {
+                fieldNames.add(fieldName);
+            }
+        }
+        return String.join(", ", fieldNames);
+    }
+
+    private String mermaidErDiagram() {
+        StringBuilder diagram = new StringBuilder();
+        diagram.append("<pre class='mermaid'>\n");
+        diagram.append("erDiagram\n");
+        for (RelationshipDefinition relationship : relationships) {
+            RelationshipVectorDefinition fromRelationship = relationship.getFromRelationship();
+            diagram.append("    ")
+                    .append(mermaidEntityId(fromRelationship.getFrom()))
+                    .append(" ")
+                    .append(mermaidLeftCardinalityMarker(fromRelationship.getCardinality().left()))
+                    .append("--")
+                    .append(
+                            mermaidRightCardinalityMarker(
+                                    fromRelationship.getCardinality().right()))
+                    .append(" ")
+                    .append(mermaidEntityId(fromRelationship.getTo()))
+                    .append(" : ")
+                    .append(mermaidRelationshipLabel(fromRelationship.getName()))
+                    .append("\n");
+        }
+        diagram.append("</pre>\n");
+        return diagram.toString();
+    }
+
+    private String mermaidEsmScript() {
+        return "<script type='module'>\n"
+                + "  import mermaid from '"
+                + MERMAID_ESM_CDN
+                + "';\n"
+                + "  mermaid.initialize({ startOnLoad: true });\n"
+                + "</script>\n";
+    }
+
+    private String mermaidEntityId(final EntityDefinition entity) {
+        String sanitized = entity.getName().replaceAll("[^A-Za-z0-9_]", "_").toUpperCase();
+        sanitized = sanitized.replaceAll("_+", "_");
+        sanitized = sanitized.replaceAll("^_+|_+$", "");
+        if (sanitized.isEmpty()) {
+            sanitized = "ENTITY";
+        }
+        if (Character.isDigit(sanitized.charAt(0))) {
+            sanitized = "ENTITY_" + sanitized;
+        }
+        return sanitized;
+    }
+
+    private String mermaidRelationshipLabel(final String relationshipName) {
+        String sanitized = relationshipName.replaceAll("[^A-Za-z0-9 _-]", " ").trim();
+        sanitized = sanitized.replaceAll("\\s+", " ");
+        if (sanitized.isEmpty()) {
+            return "relates to";
+        }
+        return sanitized;
+    }
+
+    private String mermaidLeftCardinalityMarker(final String cardinality) {
+        if ("1".equals(cardinality)) {
+            return "||";
+        }
+        if ("0".equals(cardinality)) {
+            return "|o";
+        }
+        return "}o";
+    }
+
+    private String mermaidRightCardinalityMarker(final String cardinality) {
+        if ("1".equals(cardinality)) {
+            return "||";
+        }
+        if ("0".equals(cardinality)) {
+            return "o|";
+        }
+        return "o{";
     }
 
     private String openApiVersionLinks() {
@@ -627,6 +759,10 @@ public class RestApiDocumentationGenerator {
                 .replace("'", "&#39;")
                 .replace("<", "&lt;")
                 .replace(">", "&gt;");
+    }
+
+    private String escapeHtmlText(final String value) {
+        return escapeHtmlAttribute(value);
     }
 
     private String getExampleFilter(final EntityDefinition filterableEntity) {

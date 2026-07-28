@@ -3,6 +3,7 @@ package uk.co.compendiumdev.thingifier;
 import java.util.*;
 import uk.co.compendiumdev.thingifier.api.ThingifierRestAPIHandler;
 import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonPopulator;
+import uk.co.compendiumdev.thingifier.api.spec.ThingifierApiSpec;
 import uk.co.compendiumdev.thingifier.apiconfig.ApiDocsConfig;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfigProfile;
@@ -31,6 +32,7 @@ public final class Thingifier implements AutoCloseable {
     private String initialParagraph;
     private final ThingifierApiConfig apiConfig;
     private final ThingifierApiConfigProfiles apiConfigProfiles;
+    private final ThingifierApiSpec apiSpec;
 
     public Thingifier() {
         this(new EntityRelModel());
@@ -42,6 +44,7 @@ public final class Thingifier implements AutoCloseable {
         initialParagraph = "";
         apiConfig = new ThingifierApiConfig("");
         apiConfigProfiles = new ThingifierApiConfigProfiles();
+        apiSpec = new ThingifierApiSpec();
         apiDocsConfig = new ApiDocsConfig();
     }
 
@@ -58,6 +61,7 @@ public final class Thingifier implements AutoCloseable {
         this.initialParagraph = initialParagraph;
         this.apiConfig = apiConfig;
         this.apiConfigProfiles = apiConfigProfiles;
+        this.apiSpec = new ThingifierApiSpec();
         this.apiDocsConfig = apiDocsConfig;
     }
 
@@ -206,6 +210,10 @@ public final class Thingifier implements AutoCloseable {
 
     public ThingifierApiConfigProfiles apiConfigProfiles() {
         return apiConfigProfiles;
+    }
+
+    public ThingifierApiSpec apiSpec() {
+        return apiSpec;
     }
 
     public void configureWithProfile(final ThingifierApiConfigProfile profileToUse) {

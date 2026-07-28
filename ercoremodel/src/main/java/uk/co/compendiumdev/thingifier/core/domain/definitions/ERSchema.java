@@ -41,7 +41,7 @@ public class ERSchema {
         RelationshipDefinition relationship =
                 RelationshipDefinition.create(
                         new RelationshipVectorDefinition(from, named, to, of));
-        relationships.put(named, relationship);
+        relationships.put(relationshipKey(from, named, to), relationship);
         return relationship;
     }
 
@@ -49,12 +49,11 @@ public class ERSchema {
         if (relationshipName == null) {
             return false;
         }
-        if (relationships.containsKey(relationshipName.toLowerCase())) {
-            return true;
-        }
 
-        // perhaps it is a reverse relationship?
         for (RelationshipDefinition defn : relationships.values()) {
+            if (defn.getFromRelationship().getName().equalsIgnoreCase(relationshipName)) {
+                return true;
+            }
             if (defn.isTwoWay()) {
                 if (defn.getReversedRelationship().getName().equalsIgnoreCase(relationshipName)) {
                     return true;
@@ -63,6 +62,16 @@ public class ERSchema {
         }
 
         return false;
+    }
+
+    private String relationshipKey(
+            final EntityDefinition from, final String relationshipName, final EntityDefinition to) {
+        return String.format(
+                        "%s:%s:%s",
+                        from.getName().toLowerCase(),
+                        relationshipName.toLowerCase(),
+                        to.getName().toLowerCase())
+                .toLowerCase();
     }
 
     public List<String> getEntityNames() {

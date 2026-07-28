@@ -21,6 +21,8 @@ class ThingifierModelAssemblerTest {
         Assertions.assertNotNull(thingifier.getDefinitionNamed("project"));
 
         EntityDefinition task = thingifier.getDefinitionNamed("task");
+        Assertions.assertEquals(
+                "Task items that can be assigned to projects.", task.getDescription());
         Assertions.assertEquals("id", task.getPrimaryKeyField().getName());
         Assertions.assertTrue(task.getField("title").isMandatory());
         Assertions.assertEquals(FieldType.STRING, task.getField("title").getType());
@@ -143,6 +145,7 @@ class ThingifierModelAssemblerTest {
                 .entity(
                         EntityDefinitionSpec.named("task")
                                 .plural("todos")
+                                .description("Task items that can be assigned to projects.")
                                 .primaryKey("id")
                                 .field(FieldDefinitionSpec.named("id", "auto-increment").build())
                                 .field(

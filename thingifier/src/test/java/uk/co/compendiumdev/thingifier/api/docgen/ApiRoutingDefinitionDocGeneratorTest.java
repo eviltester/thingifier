@@ -70,6 +70,23 @@ public class ApiRoutingDefinitionDocGeneratorTest {
         Assertions.assertTrue(
                 statuses(route(definition, RoutingVerb.POST, "projects/:id/tasks"))
                         .containsAll(Set.of(201, 400, 404, 422, 409)));
+        Assertions.assertEquals(
+                Set.of("id"),
+                parameterNames(route(definition, RoutingVerb.GET, "projects/:id/tasks")));
+        Assertions.assertTrue(
+                route(definition, RoutingVerb.GET, "projects/:id/tasks").hasReturnPayloadFor(200));
+        Assertions.assertEquals(
+                "todos",
+                route(definition, RoutingVerb.GET, "projects/:id/tasks").getReturnPayloadFor(200));
+        Assertions.assertEquals(
+                "todo",
+                route(definition, RoutingVerb.POST, "projects/:id/tasks").getRequestPayload());
+        Assertions.assertEquals(
+                "project",
+                route(definition, RoutingVerb.GET, "todos/:id/tasksof").getReturnPayloadFor(200));
+        Assertions.assertEquals(
+                "projects",
+                route(definition, RoutingVerb.QUERY, "todos/:id/tasksof").getReturnPayloadFor(200));
         Assertions.assertTrue(
                 statuses(route(definition, RoutingVerb.QUERY, "projects/:id/tasks"))
                         .containsAll(Set.of(200, 400, 413, 415)));
@@ -77,11 +94,27 @@ public class ApiRoutingDefinitionDocGeneratorTest {
                 "OPTIONS, GET, HEAD, POST, QUERY",
                 route(definition, RoutingVerb.OPTIONS, "projects/:id/tasks").headerValue());
         Assertions.assertTrue(
-                statuses(route(definition, RoutingVerb.DELETE, "projects/:id/tasks/:id"))
+                statuses(route(definition, RoutingVerb.DELETE, "projects/:id/tasks/:relatedId"))
                         .containsAll(Set.of(204, 400, 404, 422, 409)));
         Assertions.assertEquals(
+                Set.of("id", "relatedId"),
+                parameterNames(
+                        route(definition, RoutingVerb.DELETE, "projects/:id/tasks/:relatedId")));
+        Assertions.assertEquals(
                 405,
-                route(definition, RoutingVerb.QUERY, "projects/:id/tasks/:id").status().value());
+                route(definition, RoutingVerb.QUERY, "projects/:id/tasks/:relatedId")
+                        .status()
+                        .value());
+    }
+
+    @Test
+    public void relationshipRoutesUseConfiguredPathPrefix() {
+        ApiRoutingDefinition definition =
+                new ApiRoutingDefinitionDocGenerator(model()).generate("/api");
+
+        Assertions.assertNotNull(route(definition, RoutingVerb.GET, "api/projects/:id/tasks"));
+        Assertions.assertNotNull(
+                route(definition, RoutingVerb.DELETE, "api/projects/:id/tasks/:relatedId"));
     }
 
     private Thingifier model() {
@@ -97,7 +130,7 @@ public class ApiRoutingDefinitionDocGeneratorTest {
 
         thingifier
                 .defineRelationship(project, todo, "tasks", Cardinality.ONE_TO_MANY())
-                .whenReversed(Cardinality.ONE_TO_MANY(), "tasksof");
+                .whenReversed(Cardinality.ONE_TO_ONE(), "tasksof");
 
         return thingifier;
     }
@@ -114,6 +147,12 @@ public class ApiRoutingDefinitionDocGeneratorTest {
     private Set<Integer> statuses(final RoutingDefinition route) {
         return route.getPossibleStatusReponses().stream()
                 .map(RoutingStatus::value)
+                .collect(Collectors.toSet());
+    }
+
+    private Set<String> parameterNames(final RoutingDefinition route) {
+        return route.getRequestUrlParameters().stream()
+                .map(RoutingDefinition.RequestUrlParameter::name)
                 .collect(Collectors.toSet());
     }
 }

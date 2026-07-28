@@ -53,7 +53,7 @@ public final class RestApiQueryHandler {
         }
 
         RepositoryQueryResult queryResults =
-                runtime.queryService().execute(mapping.getQuery(), context.store());
+                runtime.queryService().execute(mapping.getQuery(), context.store(), false);
         return apiMapper
                 .map(url, queryResults)
                 .setHeader(

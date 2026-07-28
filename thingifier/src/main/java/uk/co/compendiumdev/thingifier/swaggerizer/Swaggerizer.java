@@ -23,6 +23,7 @@ import uk.co.compendiumdev.thingifier.api.docgen.RoutingStatus;
 import uk.co.compendiumdev.thingifier.api.docgen.ThingifierApiDocumentationDefn;
 import uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityViewDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.validation.ValidationRule;
@@ -133,7 +134,8 @@ public class Swaggerizer {
             final Paths paths = api.getPaths();
 
             for (RoutingDefinition route : routes) {
-                if (!processedAdditionalRoutes.contains(route.url())) {
+                if (!processedAdditionalRoutes.contains(route.url())
+                        && hasVisibleRouteForUrl(routes, route.url(), config)) {
 
                     final PathItem path = new PathItem();
                     String prefix = "";
@@ -147,10 +149,7 @@ public class Swaggerizer {
                     for (RoutingDefinition subroute : routes) {
                         if (subroute.url().contentEquals(route.url())) {
 
-                            if (!config.includeMethodNotAllowedEndpoints
-                                    && subroute.status() != null
-                                    && subroute.status().value() == 405) {
-                                // method not allowed so do not add it to the swagger
+                            if (!isVisibleRoute(subroute, config)) {
                                 continue;
                             }
 
@@ -239,31 +238,32 @@ public class Swaggerizer {
                             }
 
                             if (subroute.isSecuredByBasicAuth()) {
-                                if (components.getSecuritySchemes() == null
-                                        || !components
-                                                .getSecuritySchemes()
-                                                .containsKey("basicAuth")) {
-                                    components.addSecuritySchemes(
-                                            "basicAuth",
-                                            new SecurityScheme()
-                                                    .type(SecurityScheme.Type.HTTP)
-                                                    .scheme("basic"));
-                                }
+                                addHttpSecurityScheme(components, "basicAuth", "basic", null);
                                 operation.addSecurityItem(
                                         new SecurityRequirement().addList("basicAuth"));
+                            }
+
+                            if (subroute.isSecuredByBearerAuth()) {
+                                addHttpSecurityScheme(components, "bearerAuth", "bearer", null);
+                                operation.addSecurityItem(
+                                        new SecurityRequirement().addList("bearerAuth"));
                             }
 
                             if (subroute.hasRequestUrlParams()) {
 
                                 List<Parameter> urlParameters = new ArrayList<>();
 
-                                // TODO: create a Field to Swaggerizer param method/class
-                                List<Field> paramFields = subroute.getRequestUrlParams();
-                                for (Field aField : paramFields) {
+                                for (RoutingDefinition.RequestUrlParameter urlParameter :
+                                        subroute.getRequestUrlParameters()) {
+                                    Field aField = urlParameter.field();
                                     Parameter param = new Parameter();
                                     param.in("path")
-                                            .name(aField.getName())
+                                            .name(urlParameter.name())
+                                            .required(true)
                                             .example(aField.getRandomExampleValue());
+                                    if (aField.hasDescription()) {
+                                        param.setDescription(aField.getDescription());
+                                    }
 
                                     // if it is in path it will always be required
                                     // but we can remove the type validation
@@ -300,6 +300,28 @@ public class Swaggerizer {
         return api;
     }
 
+    private boolean hasVisibleRouteForUrl(
+            final List<RoutingDefinition> routes,
+            final String url,
+            final SwaggerGenerationConfig config) {
+        for (RoutingDefinition route : routes) {
+            if (route.url().contentEquals(url) && isVisibleRoute(route, config)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isVisibleRoute(
+            final RoutingDefinition route, final SwaggerGenerationConfig config) {
+        if (route.isHiddenFromDocumentation() || route.isDisabled()) {
+            return false;
+        }
+        return config.includeMethodNotAllowedEndpoints
+                || route.status() == null
+                || route.status().value() != 405;
+    }
+
     private Components convertEntityDefinitionsToComponents(
             ApiRoutingDefinition routingDefinitions) {
         Components components = new Components();
@@ -317,6 +339,15 @@ public class Swaggerizer {
             // add list response for entity plural
             ArraySchema arrayObject = asArrayObjectSchema(objectSchemaDefinition);
             components.addSchemas(objectSchemaDefinition.getPlural(), arrayObject);
+
+            for (EntityViewDefinition view : objectSchemaDefinition.getViews()) {
+                ObjectSchema viewObject = asResponseViewObjectSchema(view);
+                components.addSchemas(view.getName(), viewObject);
+
+                ObjectSchema createViewObject = asRequestViewObjectSchema(view);
+                createViewObject.title("create " + createViewObject.getTitle());
+                components.addSchemas("create_" + view.getName(), createViewObject);
+            }
         }
         return components;
     }
@@ -423,6 +454,24 @@ public class Swaggerizer {
         }
     }
 
+    private void addHttpSecurityScheme(
+            final Components components,
+            final String name,
+            final String scheme,
+            final String bearerFormat) {
+        if (components.getSecuritySchemes() != null
+                && components.getSecuritySchemes().containsKey(name)) {
+            return;
+        }
+
+        final SecurityScheme securityScheme =
+                new SecurityScheme().type(SecurityScheme.Type.HTTP).scheme(scheme);
+        if (bearerFormat != null) {
+            securityScheme.bearerFormat(bearerFormat);
+        }
+        components.addSecuritySchemes(name, securityScheme);
+    }
+
     private ArraySchema asArrayObjectSchema(EntityDefinition objectSchemaDefinition) {
 
         ArraySchema arrayObject = new ArraySchema();
@@ -452,15 +501,40 @@ public class Swaggerizer {
         return asObjectSchema(objectSchemaDefinition, true);
     }
 
+    private static ObjectSchema asRequestViewObjectSchema(final EntityViewDefinition view) {
+        return asObjectSchema(view.getEntity(), true, view, true);
+    }
+
+    private static ObjectSchema asResponseViewObjectSchema(final EntityViewDefinition view) {
+        return asObjectSchema(view.getEntity(), false, view, false);
+    }
+
     // no auto fields in create
     private static ObjectSchema asObjectSchema(
             EntityDefinition objectSchemaDefinition, Boolean skipAutos) {
+        return asObjectSchema(objectSchemaDefinition, skipAutos, null, false);
+    }
+
+    private static ObjectSchema asObjectSchema(
+            EntityDefinition objectSchemaDefinition,
+            Boolean skipAutos,
+            EntityViewDefinition view,
+            Boolean requestSchema) {
         ObjectSchema object = new ObjectSchema();
-        object.setDescription(objectSchemaDefinition.getName());
-        object.setTitle(objectSchemaDefinition.getName());
+        object.setDescription(schemaDescriptionFor(objectSchemaDefinition));
+        object.setTitle(view == null ? objectSchemaDefinition.getName() : view.getName());
 
         for (String propertyName : objectSchemaDefinition.getFieldNames()) {
             Field propertyDefinition = objectSchemaDefinition.getField(propertyName);
+            if (view != null) {
+                final boolean visible =
+                        requestSchema
+                                ? view.isRequestVisible(propertyName)
+                                : view.isResponseVisible(propertyName);
+                if (!visible) {
+                    continue;
+                }
+            }
             if (skipAutos
                     && (propertyDefinition.getType() == FieldType.AUTO_GUID
                             || propertyDefinition.getType() == FieldType.AUTO_INCREMENT)) {
@@ -512,6 +586,13 @@ public class Swaggerizer {
 
         object.setXml(xml);
         return object;
+    }
+
+    private static String schemaDescriptionFor(final EntityDefinition objectSchemaDefinition) {
+        if (objectSchemaDefinition.hasDescription()) {
+            return objectSchemaDefinition.getDescription();
+        }
+        return objectSchemaDefinition.getName();
     }
 
     private static String joinStrings(List<String> description, String postfix) {

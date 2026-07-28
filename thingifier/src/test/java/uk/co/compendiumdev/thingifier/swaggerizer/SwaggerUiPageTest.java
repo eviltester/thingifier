@@ -32,6 +32,8 @@ class SwaggerUiPageTest {
         Assertions.assertTrue(html.contains("/mirror/docs/openapi-3.1.json"));
         Assertions.assertTrue(html.contains("/mirror/docs/openapi-3.2.json"));
         Assertions.assertTrue(html.contains("\"urls.primaryName\": \"OpenAPI 3.1 default\""));
+        Assertions.assertTrue(html.contains(".swagger-ui .authorization__btn"));
+        Assertions.assertTrue(html.contains("fill:#1f5f8b!important"));
         Assertions.assertFalse(html.contains("Download OpenAPI JSON"));
         Assertions.assertFalse(html.contains(".swagger-ui .topbar{display:none;}"));
     }

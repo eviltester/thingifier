@@ -12,16 +12,21 @@ public class RoutingDefinition {
     private final RoutingVerb verb;
     private final String url;
     private final RoutingStatus routingStatus;
-    private final ResponseHeader header;
+    private ResponseHeader header;
     private String documentation = "";
     private boolean isFilterable;
     private EntityDefinition filterableEntityDefn;
     private List<RoutingStatus> possibleStatusResponses;
     private HashMap<Integer, String> returnPayload;
     private String requestPayload;
-    private List<Field> requestUrlParams;
+    private List<RequestUrlParameter> requestUrlParams;
     private HashMap<String, String> customHeaders;
     private boolean usesBasicAuth = false;
+    private boolean usesBearerAuth = false;
+    private boolean hiddenFromDocumentation = false;
+    private boolean disabled = false;
+    private String requestEntityViewName;
+    private HashMap<Integer, String> responseEntityViewNames;
 
     public RoutingDefinition(
             RoutingVerb verb, String url, RoutingStatus routingStatus, ResponseHeader header) {
@@ -42,6 +47,8 @@ public class RoutingDefinition {
         returnPayload = new HashMap<>();
         requestPayload = null;
         customHeaders = new HashMap<>();
+        requestEntityViewName = null;
+        responseEntityViewNames = new HashMap<>();
     }
 
     public RoutingVerb verb() {
@@ -81,6 +88,11 @@ public class RoutingDefinition {
         }
 
         return header.headerValue;
+    }
+
+    public RoutingDefinition replaceHeader(final ResponseHeader header) {
+        this.header = header;
+        return this;
     }
 
     public String getDocumentation() {
@@ -149,8 +161,51 @@ public class RoutingDefinition {
         return requestPayload;
     }
 
+    public RoutingDefinition requestEntityView(final String viewName) {
+        requestEntityViewName = viewName;
+        requestPayload("create_" + viewName);
+        return this;
+    }
+
+    public boolean hasRequestEntityView() {
+        return requestEntityViewName != null;
+    }
+
+    public String getRequestEntityView() {
+        return requestEntityViewName;
+    }
+
+    public RoutingDefinition responseEntityView(final int statusCode, final String viewName) {
+        responseEntityViewNames.put(statusCode, viewName);
+        returnPayload(statusCode, viewName);
+        return this;
+    }
+
+    public boolean hasResponseEntityViewFor(final int statusCode) {
+        return responseEntityViewNames.containsKey(statusCode);
+    }
+
+    public String getResponseEntityViewFor(final int statusCode) {
+        return responseEntityViewNames.get(statusCode);
+    }
+
+    public Collection<Integer> returnPayloadStatusCodes() {
+        return new ArrayList<>(returnPayload.keySet());
+    }
+
     public RoutingDefinition addRequestUrlParam(Field aField) {
-        requestUrlParams.add(aField);
+        if (aField == null) {
+            return this;
+        }
+        requestUrlParams.add(new RequestUrlParameter(aField.getName(), aField));
+        return this;
+    }
+
+    public RoutingDefinition addRequestUrlParam(final String parameterName, final Field field) {
+        if (parameterName == null || field == null) {
+            return this;
+        }
+        requestUrlParams.add(new RequestUrlParameter(parameterName, field));
         return this;
     }
 
@@ -159,6 +214,14 @@ public class RoutingDefinition {
     }
 
     public List<Field> getRequestUrlParams() {
+        List<Field> fields = new ArrayList<>();
+        for (RequestUrlParameter parameter : requestUrlParams) {
+            fields.add(parameter.field());
+        }
+        return fields;
+    }
+
+    public List<RequestUrlParameter> getRequestUrlParameters() {
         return new ArrayList<>(requestUrlParams);
     }
 
@@ -190,5 +253,52 @@ public class RoutingDefinition {
 
     public boolean isSecuredByBasicAuth() {
         return usesBasicAuth;
+    }
+
+    public RoutingDefinition secureWithBearerAuth() {
+        usesBearerAuth = true;
+        return this;
+    }
+
+    public boolean isSecuredByBearerAuth() {
+        return usesBearerAuth;
+    }
+
+    public RoutingDefinition hideFromDocumentation() {
+        hiddenFromDocumentation = true;
+        return this;
+    }
+
+    public boolean isHiddenFromDocumentation() {
+        return hiddenFromDocumentation;
+    }
+
+    public RoutingDefinition disable() {
+        disabled = true;
+        hiddenFromDocumentation = true;
+        return this;
+    }
+
+    public boolean isDisabled() {
+        return disabled;
+    }
+
+    public static final class RequestUrlParameter {
+
+        private final String name;
+        private final Field field;
+
+        public RequestUrlParameter(final String name, final Field field) {
+            this.name = name;
+            this.field = field;
+        }
+
+        public String name() {
+            return name;
+        }
+
+        public Field field() {
+            return field;
+        }
     }
 }

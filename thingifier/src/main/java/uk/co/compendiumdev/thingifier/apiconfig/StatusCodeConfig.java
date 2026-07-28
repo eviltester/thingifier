@@ -33,6 +33,7 @@ public class StatusCodeConfig {
     public void setFrom(final StatusCodeConfig statusCodes) {
         acceptTypeNotSupportedValue = statusCodes.acceptTypeNotSupported();
         contentTypeNotSupportedValue = statusCodes.contentTypeNotSupported();
+        maxRequestBodyLengthBytes = statusCodes.getMaxRequestBodyLengthBytes();
     }
 
     public int contentTypeNotSupported() {

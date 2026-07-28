@@ -169,6 +169,14 @@ public final class SwaggerUiPage {
                         + "color:#222!important;border-color:#8b8b8b!important;}",
                 ".swagger-ui .btn,.swagger-ui button{background:#fff!important;"
                         + "color:#222!important;border-color:#777!important;}",
+                ".swagger-ui .authorization__btn{display:inline-flex!important;"
+                        + "align-items:center!important;justify-content:center!important;"
+                        + "min-width:32px!important;height:28px!important;margin:0 8px!important;"
+                        + "border:1px solid #1f5f8b!important;border-radius:4px!important;"
+                        + "background:#eef7fc!important;color:#1f5f8b!important;}",
+                ".swagger-ui .authorization__btn svg{display:block!important;"
+                        + "width:18px!important;height:18px!important;fill:#1f5f8b!important;}",
+                ".swagger-ui .authorization__btn svg path{fill:#1f5f8b!important;}",
                 ".swagger-ui .highlight-code,.swagger-ui .microlight{background:#f7f7f7!important;"
                         + "color:#222!important;}");
     }
