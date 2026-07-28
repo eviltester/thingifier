@@ -5,12 +5,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
 import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonThing;
 import uk.co.compendiumdev.thingifier.api.ermodelconversion.XmlThing;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.xml.GenericXMLPrettyPrinter;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityViewDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVectorDefinition;
@@ -38,10 +40,7 @@ public class DefaultGuiHtmlPages {
         this.jsonThing = new JsonThing(apiConfig.jsonOutput());
         this.xmlThing = new XmlThing(jsonThing);
         this.urlPathPrefix = urlPathPrefix;
-        String firstEntity =
-                ((EntityDefinition)
-                                this.thingifier.getERmodel().getEntityDefinitions().toArray()[0])
-                        .getName();
+        String firstEntity = firstVisibleThingName();
         String database = EntityRelModel.DEFAULT_DATABASE_NAME;
         this.tryDefault =
                 " [<a href='%s/instances?entity=%s&database=%s'>explore default data</a>]"
@@ -88,7 +87,7 @@ public class DefaultGuiHtmlPages {
         StringBuilder html = new StringBuilder();
         html.append("<div class='entity-instances-menu menu'>");
         html.append("<ul>");
-        for (String thing : thingifier.getThingNames()) {
+        for (String thing : visibleThingNames()) {
             html.append(
                     String.format(
                             "<li><a href='%3$s/instances?entity=%1$s%2$s'>%1$s</a></li>",
@@ -212,28 +211,8 @@ public class DefaultGuiHtmlPages {
                         .formatted(definition.getPlural()));
         html.append("<thead>");
         html.append("<tr>");
-        // guid first
-        if (definition.hasPrimaryKeyField()) {
-            html.append(String.format("<th>%s</th>", definition.getPrimaryKeyField().getName()));
-        }
-        // then any ids
-        for (String field : definition.getFieldNames()) {
-            Field theField = definition.getField(field);
-            if (theField != definition.getPrimaryKeyField()) {
-                if (theField.getType() == FieldType.AUTO_INCREMENT
-                        || theField.getType() == FieldType.AUTO_GUID) {
-                    html.append(String.format("<th>%s</th>", field));
-                }
-            }
-        }
-        // then the normal fields
-        for (String field : definition.getFieldNames()) {
-            Field theField = definition.getField(field);
-            if (theField != definition.getPrimaryKeyField()
-                    && theField.getType() != FieldType.AUTO_INCREMENT
-                    && theField.getType() != FieldType.AUTO_GUID) {
-                html.append(String.format("<th>%s</th>", field));
-            }
+        for (String field : responseFieldNamesForTable(definition)) {
+            html.append(String.format("<th>%s</th>", HtmlUtils.sanitise(field)));
         }
         html.append("</tr>");
         html.append("</thead>");
@@ -247,44 +226,22 @@ public class DefaultGuiHtmlPages {
         final EntityDefinition definition = instance.getEntity();
 
         html.append("<tr>");
-        // show keys first
-        if (definition.hasPrimaryKeyField()) {
-            html.append(
-                    String.format(
-                            "<td><a href='%5$s/instance?entity=%1$s&%2$s=%3$s%4$s'>%3$s</a></td>",
-                            definition.getName(),
-                            definition.getPrimaryKeyField().getName(),
-                            instance.getPrimaryKeyValue(),
-                            databaseParam(database),
-                            urlPathPrefix));
-        }
-
-        // show any clickable id fields
-        for (String field : definition.getFieldNames()) {
+        for (String field : responseFieldNamesForTable(definition)) {
             Field theField = definition.getField(field);
-            if (theField != definition.getPrimaryKeyField()) {
-                if (theField.getType() == FieldType.AUTO_INCREMENT
-                        || theField.getType() == FieldType.AUTO_GUID) {
-                    // make ids clickable
-                    String renderAs =
-                            String.format(
-                                    "<a href='%5$s/instance?entity=%1$s&%2$s=%3$s%4$s'>%3$s</a>",
-                                    definition.getName(),
-                                    theField.getName(),
-                                    instance.getFieldValue(field).asString(),
-                                    databaseParam(database),
-                                    urlPathPrefix);
-                    html.append(String.format("<td>%s</td>", renderAs));
-                }
-            }
-        }
-
-        // show any normal fields
-        for (String field : definition.getFieldNames()) {
-            Field theField = definition.getField(field);
-            if (theField != definition.getPrimaryKeyField()
-                    && theField.getType() != FieldType.AUTO_INCREMENT
-                    && theField.getType() != FieldType.AUTO_GUID) {
+            if (theField == definition.getPrimaryKeyField()
+                    || theField.getType() == FieldType.AUTO_INCREMENT
+                    || theField.getType() == FieldType.AUTO_GUID) {
+                String value = instance.getFieldValue(field).asString();
+                String renderAs =
+                        String.format(
+                                "<a href='%5$s/instance?entity=%1$s&%2$s=%3$s%4$s'>%3$s</a>",
+                                definition.getName(),
+                                theField.getName(),
+                                HtmlUtils.sanitise(value),
+                                databaseParam(database),
+                                urlPathPrefix);
+                html.append(String.format("<td>%s</td>", renderAs));
+            } else {
                 html.append(
                         String.format(
                                 "<td>%s</td>",
@@ -294,6 +251,104 @@ public class DefaultGuiHtmlPages {
         html.append("</tr>");
 
         return html.toString();
+    }
+
+    private List<String> visibleThingNames() {
+        final List<String> visible = new ArrayList<>();
+        for (String thingName : thingifier.getThingNames()) {
+            final EntityDefinition definition = thingifier.getDefinitionNamed(thingName);
+            if (definition != null && isEntityCollectionVisible(definition)) {
+                visible.add(thingName);
+            }
+        }
+        return visible;
+    }
+
+    private String firstVisibleThingName() {
+        final List<String> visibleNames = visibleThingNames();
+        if (!visibleNames.isEmpty()) {
+            return visibleNames.get(0);
+        }
+        if (!thingifier.getThingNames().isEmpty()) {
+            return thingifier.getThingNames().get(0);
+        }
+        return "";
+    }
+
+    private boolean isEntityCollectionVisible(final EntityDefinition definition) {
+        return isRouteVisible(RoutingVerb.GET, apiPathForCollection(definition));
+    }
+
+    private boolean isRelationshipCollectionVisible(
+            final RelationshipVectorDefinition relationship) {
+        return isRouteVisible(RoutingVerb.GET, apiPathForRelationship(relationship));
+    }
+
+    private boolean isRouteVisible(final RoutingVerb verb, final String path) {
+        return thingifier
+                .apiSpec()
+                .ruleFor(verb, path, apiConfig.getApiEndPointPrefix())
+                .map(rule -> !rule.isHidden() && !rule.isDisabled())
+                .orElse(true);
+    }
+
+    private String apiPathForCollection(final EntityDefinition definition) {
+        final String entityRouteName =
+                apiConfig.willUrlShowInstancesAsPlural()
+                        ? definition.getPlural()
+                        : definition.getName();
+        return "/" + entityRouteName.toLowerCase();
+    }
+
+    private String apiPathForRelationship(final RelationshipVectorDefinition relationship) {
+        return apiPathForCollection(relationship.getFrom()) + "/{id}/" + relationship.getName();
+    }
+
+    private EntityViewDefinition responseViewFor(final EntityDefinition definition) {
+        return thingifier.guiConfig().dataExplorer().responseViewFor(definition);
+    }
+
+    private boolean isResponseFieldVisible(
+            final EntityDefinition definition, final String fieldName) {
+        final EntityViewDefinition view = responseViewFor(definition);
+        return view == null || view.isResponseVisible(fieldName);
+    }
+
+    private List<String> responseFieldNames(final EntityDefinition definition) {
+        final List<String> fields = new ArrayList<>();
+        for (String fieldName : definition.getFieldNames()) {
+            if (isResponseFieldVisible(definition, fieldName)) {
+                fields.add(fieldName);
+            }
+        }
+        return fields;
+    }
+
+    private List<String> responseFieldNamesForTable(final EntityDefinition definition) {
+        final List<String> fields = new ArrayList<>();
+        if (definition.hasPrimaryKeyField()
+                && isResponseFieldVisible(definition, definition.getPrimaryKeyField().getName())) {
+            fields.add(definition.getPrimaryKeyField().getName());
+        }
+        for (String fieldName : definition.getFieldNames()) {
+            Field field = definition.getField(fieldName);
+            if (field != definition.getPrimaryKeyField()
+                    && (field.getType() == FieldType.AUTO_INCREMENT
+                            || field.getType() == FieldType.AUTO_GUID)
+                    && isResponseFieldVisible(definition, fieldName)) {
+                fields.add(fieldName);
+            }
+        }
+        for (String fieldName : definition.getFieldNames()) {
+            Field field = definition.getField(fieldName);
+            if (field != definition.getPrimaryKeyField()
+                    && field.getType() != FieldType.AUTO_INCREMENT
+                    && field.getType() != FieldType.AUTO_GUID
+                    && isResponseFieldVisible(definition, fieldName)) {
+                fields.add(fieldName);
+            }
+        }
+        return fields;
     }
 
     private String heading(final int level, final String text) {
@@ -426,6 +481,9 @@ public class DefaultGuiHtmlPages {
 
                     for (RelationshipVectorDefinition relationship :
                             definition.related().getRelationships()) {
+                        if (!isRelationshipCollectionVisible(relationship)) {
+                            continue;
+                        }
                         final List<EntityInstance> relatedItems =
                                 store.relationships().listRelated(instance, relationship.getName());
                         html.append("<h3>" + relationship.getName() + "</h3>");
@@ -457,7 +515,9 @@ public class DefaultGuiHtmlPages {
                             new GsonBuilder()
                                     .setPrettyPrinting()
                                     .create()
-                                    .toJson(jsonThing.asJsonObject(instance)));
+                                    .toJson(
+                                            jsonThing.asJsonObject(
+                                                    instance, null, responseViewFor(definition))));
                     html.append("</code>");
                     html.append("</pre>");
                 }
@@ -469,7 +529,8 @@ public class DefaultGuiHtmlPages {
                     // pretty print the json
                     html.append(
                             this.XMLPrettyPrinter.prettyPrintHtml(
-                                    xmlThing.getSingleObjectXml(instance)));
+                                    xmlThing.getSingleObjectXml(
+                                            instance, null, responseViewFor(definition))));
                     html.append("</code>");
                     html.append("</pre>");
                 }
@@ -495,7 +556,7 @@ public class DefaultGuiHtmlPages {
         final EntityDefinition definition = instance.getEntity();
         StringBuilder html = new StringBuilder();
         html.append("<ul>");
-        for (String field : definition.getFieldNames()) {
+        for (String field : responseFieldNames(definition)) {
             html.append(
                     String.format(
                             "<li>%s<ul><li>%s</li></ul></li>",
@@ -517,7 +578,7 @@ public class DefaultGuiHtmlPages {
                 "<table  aria-label='%s Instance Details' aria-describedby='instancetabledescription'>"
                         .formatted(instance.getEntity().getName().toUpperCase()));
         html.append("<thead><tr>");
-        for (String fieldName : definition.getFieldNames()) {
+        for (String fieldName : responseFieldNames(definition)) {
             Field field = definition.getField(fieldName);
             if (field.getType() == FieldType.AUTO_GUID) {
                 if (apiConfig.willResponsesShowPrimaryKeyHeader()) {
@@ -529,7 +590,7 @@ public class DefaultGuiHtmlPages {
         }
         html.append("</tr></thead>");
         html.append("<tbody><tr>");
-        for (String fieldName : definition.getFieldNames()) {
+        for (String fieldName : responseFieldNames(definition)) {
             Field field = definition.getField(fieldName);
             if (field.getType() == FieldType.AUTO_GUID) {
                 if (apiConfig.willResponsesShowPrimaryKeyHeader()) {

@@ -14,6 +14,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.*;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.repository.ThingStore;
+import uk.co.compendiumdev.thingifier.htmlgui.ThingifierGuiConfig;
 import uk.co.compendiumdev.thingifier.reporting.ThingReporter;
 
 /* Thingifier
@@ -33,6 +34,7 @@ public final class Thingifier implements AutoCloseable {
     private final ThingifierApiConfig apiConfig;
     private final ThingifierApiConfigProfiles apiConfigProfiles;
     private final ThingifierApiSpec apiSpec;
+    private final ThingifierGuiConfig guiConfig;
 
     public Thingifier() {
         this(new EntityRelModel());
@@ -45,6 +47,7 @@ public final class Thingifier implements AutoCloseable {
         apiConfig = new ThingifierApiConfig("");
         apiConfigProfiles = new ThingifierApiConfigProfiles();
         apiSpec = new ThingifierApiSpec();
+        guiConfig = new ThingifierGuiConfig();
         apiDocsConfig = new ApiDocsConfig();
     }
 
@@ -62,6 +65,7 @@ public final class Thingifier implements AutoCloseable {
         this.apiConfig = apiConfig;
         this.apiConfigProfiles = apiConfigProfiles;
         this.apiSpec = new ThingifierApiSpec();
+        this.guiConfig = new ThingifierGuiConfig();
         this.apiDocsConfig = apiDocsConfig;
     }
 
@@ -214,6 +218,10 @@ public final class Thingifier implements AutoCloseable {
 
     public ThingifierApiSpec apiSpec() {
         return apiSpec;
+    }
+
+    public ThingifierGuiConfig guiConfig() {
+        return guiConfig;
     }
 
     public void configureWithProfile(final ThingifierApiConfigProfile profileToUse) {

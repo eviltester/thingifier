@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import uk.co.compendiumdev.thingifier.api.response.ResponseHeader;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityViewDefinition;
 
 public final class ApiRoutingDefinition {
 
@@ -58,6 +59,11 @@ public final class ApiRoutingDefinition {
 
         // and as plural for array responses
         objectSchemas.put(entityDefn.getPlural(), entityDefn);
+
+        for (EntityViewDefinition view : entityDefn.getViews()) {
+            objectSchemas.put(view.getName(), entityDefn);
+            objectSchemas.put("create_" + view.getName(), entityDefn);
+        }
     }
 
     public boolean hasObjectSchemaNamed(String aName) {

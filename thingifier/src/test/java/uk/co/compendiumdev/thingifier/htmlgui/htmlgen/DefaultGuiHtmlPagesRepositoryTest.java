@@ -67,4 +67,96 @@ public class DefaultGuiHtmlPagesRepositoryTest {
             Assertions.assertTrue(detailHtml.contains("Repository&nbsp;Todo"), detailHtml);
         }
     }
+
+    @Test
+    public void guiInstancePagesApplyConfiguredExplorerViewsAndApiSpecVisibility() {
+        try (Thingifier thingifier =
+                new Thingifier(new EntityRelModel(SqliteThingStoreProvider.inMemory()))) {
+
+            EntityDefinition cart = thingifier.defineThing("cart", "carts");
+            cart.addAsPrimaryKeyField(Field.is("id", FieldType.AUTO_INCREMENT));
+            cart.addField(Field.is("token", FieldType.AUTO_GUID));
+            cart.addField(Field.is("state", FieldType.STRING));
+            cart.defineView("PublicCart").hideResponseFields("token");
+
+            EntityDefinition project = thingifier.defineThing("project", "projects");
+            project.addAsPrimaryKeyField(Field.is("id", FieldType.AUTO_INCREMENT));
+            project.addField(Field.is("title", FieldType.STRING));
+
+            EntityDefinition todo = thingifier.defineThing("todo", "todos");
+            todo.addAsPrimaryKeyField(Field.is("id", FieldType.AUTO_INCREMENT));
+            todo.addField(Field.is("title", FieldType.STRING));
+            todo.addField(Field.is("secret", FieldType.STRING));
+            todo.defineView("PublicTodo").hideResponseFields("secret");
+
+            EntityDefinition internal =
+                    thingifier.defineThing("internalentity", "internalentities");
+            internal.addAsPrimaryKeyField(Field.is("id", FieldType.AUTO_INCREMENT));
+
+            thingifier
+                    .defineRelationship(project, todo, "tasks", Cardinality.ONE_TO_MANY())
+                    .whenReversed(Cardinality.ONE_TO_ONE(), "project");
+            thingifier.defineRelationship(project, todo, "secretTasks", Cardinality.ONE_TO_MANY());
+            thingifier.apiSpec().disableEntityRoutes("/internalentities");
+            thingifier.apiSpec().hideRelationshipRoutes("/projects", "secretTasks");
+            thingifier.guiConfig().dataExplorer().responseView("cart", "PublicCart");
+            thingifier.guiConfig().dataExplorer().responseView("todo", "PublicTodo");
+
+            ThingStore repository = thingifier.getStore(EntityRelModel.DEFAULT_DATABASE_NAME);
+
+            EntityInstance cartInstance =
+                    repository
+                            .entities()
+                            .create(EntityInstanceDraft.forEntity(cart).withField("state", "open"));
+            String token = cartInstance.getFieldValue("token").asString();
+
+            EntityInstance projectInstance =
+                    repository
+                            .entities()
+                            .create(
+                                    EntityInstanceDraft.forEntity(project)
+                                            .withField("title", "Public Project"));
+            EntityInstance todoInstance =
+                    repository
+                            .entities()
+                            .create(
+                                    EntityInstanceDraft.forEntity(todo)
+                                            .withField("title", "Visible Todo")
+                                            .withField("secret", "Hidden Note"));
+
+            repository.relationships().connect(projectInstance, "tasks", todoInstance);
+            repository.relationships().connect(projectInstance, "secretTasks", todoInstance);
+
+            DefaultGuiHtmlPages pages =
+                    new DefaultGuiHtmlPages(new DefaultGUIHTML(), thingifier, "/gui");
+
+            String entitiesHtml = pages.getEntitiesListPage(EntityRelModel.DEFAULT_DATABASE_NAME);
+            Assertions.assertFalse(entitiesHtml.contains("entity=internalentity"), entitiesHtml);
+
+            String cartListHtml =
+                    pages.getInstancesListPage(EntityRelModel.DEFAULT_DATABASE_NAME, "cart");
+            Assertions.assertFalse(cartListHtml.contains("token"), cartListHtml);
+            Assertions.assertFalse(cartListHtml.contains(token), cartListHtml);
+
+            String cartDetailHtml =
+                    pages.getInstanceDetailsPage(
+                            EntityRelModel.DEFAULT_DATABASE_NAME,
+                            "cart",
+                            Map.of("id", cartInstance.getPrimaryKeyValue()));
+            Assertions.assertFalse(cartDetailHtml.contains("token"), cartDetailHtml);
+            Assertions.assertFalse(cartDetailHtml.contains(token), cartDetailHtml);
+
+            String projectDetailHtml =
+                    pages.getInstanceDetailsPage(
+                            EntityRelModel.DEFAULT_DATABASE_NAME,
+                            "project",
+                            Map.of("id", projectInstance.getPrimaryKeyValue()));
+            Assertions.assertTrue(
+                    projectDetailHtml.contains("Visible&nbsp;Todo"), projectDetailHtml);
+            Assertions.assertFalse(projectDetailHtml.contains("secret"), projectDetailHtml);
+            Assertions.assertFalse(
+                    projectDetailHtml.contains("Hidden&nbsp;Note"), projectDetailHtml);
+            Assertions.assertFalse(projectDetailHtml.contains("secretTasks"), projectDetailHtml);
+        }
+    }
 }

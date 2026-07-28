@@ -37,7 +37,12 @@ public class XmlThing {
     }
 
     public String getSingleObjectXml(final EntityInstanceDraft draft) {
-        String parseForXMLOutput = jsonConvertor.asNamedJsonObject(draft).toString();
+        return getSingleObjectXml(draft, null);
+    }
+
+    public String getSingleObjectXml(
+            final EntityInstanceDraft draft, final EntityViewDefinition view) {
+        String parseForXMLOutput = jsonConvertor.asNamedJsonObject(draft, view).toString();
         return XML.toString(new JSONObject(parseForXMLOutput));
     }
 
@@ -78,10 +83,17 @@ public class XmlThing {
     public String getCollectionOfDrafts(
             final List<EntityInstanceDraft> thingsToReturn,
             final EntityDefinition typeOfThingReturned) {
+        return getCollectionOfDrafts(thingsToReturn, typeOfThingReturned, null);
+    }
+
+    public String getCollectionOfDrafts(
+            final List<EntityInstanceDraft> thingsToReturn,
+            final EntityDefinition typeOfThingReturned,
+            final EntityViewDefinition view) {
         String parseForXMLOutput =
                 jsonConvertor
                         .asJsonObjectTypedDraftArrayWithContentsUntyped(
-                                thingsToReturn, typeOfThingReturned.getPlural())
+                                thingsToReturn, typeOfThingReturned.getPlural(), view)
                         .toString();
 
         String output = XML.toString(new JSONObject(parseForXMLOutput));
