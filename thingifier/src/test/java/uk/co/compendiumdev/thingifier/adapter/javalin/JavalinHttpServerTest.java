@@ -22,6 +22,57 @@ class JavalinHttpServerTest {
     }
 
     @Test
+    void classpathStaticAssetsUseDefaultNoCacheHeader() throws Exception {
+        final String originalValue =
+                System.getProperty(JavalinHttpServer.STATIC_CACHE_CONTROL_PROPERTY);
+        System.clearProperty(JavalinHttpServer.STATIC_CACHE_CONTROL_PROPERTY);
+
+        try {
+            int port = availablePort();
+            HttpRouteRegistry registry = new HttpRouteRegistry();
+
+            try (JavalinHttpServer server = new JavalinHttpServer(port, "/public", registry)) {
+                server.start();
+
+                HttpResponse<String> response =
+                        get("http://localhost:" + port + "/css/default.css");
+
+                Assertions.assertEquals(200, response.statusCode());
+                Assertions.assertEquals(
+                        "max-age=0", response.headers().firstValue("Cache-Control").orElse(""));
+            }
+        } finally {
+            restoreStaticCacheControlProperty(originalValue);
+        }
+    }
+
+    @Test
+    void classpathStaticAssetsCanUseConfiguredCacheHeader() throws Exception {
+        final String originalValue =
+                System.getProperty(JavalinHttpServer.STATIC_CACHE_CONTROL_PROPERTY);
+        final String cacheControl = "public, max-age=31536000, immutable";
+        System.setProperty(JavalinHttpServer.STATIC_CACHE_CONTROL_PROPERTY, cacheControl);
+
+        try {
+            int port = availablePort();
+            HttpRouteRegistry registry = new HttpRouteRegistry();
+
+            try (JavalinHttpServer server = new JavalinHttpServer(port, "/public", registry)) {
+                server.start();
+
+                HttpResponse<String> response =
+                        get("http://localhost:" + port + "/css/default.css");
+
+                Assertions.assertEquals(200, response.statusCode());
+                Assertions.assertEquals(
+                        cacheControl, response.headers().firstValue("Cache-Control").orElse(""));
+            }
+        } finally {
+            restoreStaticCacheControlProperty(originalValue);
+        }
+    }
+
+    @Test
     void emptyNoContentDoesNotReturnContentTypeHeader() throws Exception {
         int port = availablePort();
         HttpRouteRegistry registry = new HttpRouteRegistry();
@@ -178,6 +229,14 @@ class JavalinHttpServerTest {
                 .send(
                         HttpRequest.newBuilder(new URI(url)).GET().build(),
                         HttpResponse.BodyHandlers.ofString());
+    }
+
+    private void restoreStaticCacheControlProperty(final String originalValue) {
+        if (originalValue == null) {
+            System.clearProperty(JavalinHttpServer.STATIC_CACHE_CONTROL_PROPERTY);
+        } else {
+            System.setProperty(JavalinHttpServer.STATIC_CACHE_CONTROL_PROPERTY, originalValue);
+        }
     }
 
     private int availablePort() throws Exception {
