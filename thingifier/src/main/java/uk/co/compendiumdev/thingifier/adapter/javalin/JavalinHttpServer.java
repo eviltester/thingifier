@@ -27,6 +27,9 @@ import uk.co.compendiumdev.thingifier.adapter.httpserver.HttpRouteVerb;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponseError;
 
 public final class JavalinHttpServer implements AutoCloseable {
+    static final String STATIC_CACHE_CONTROL_PROPERTY = "thingifier.static.cache-control";
+    private static final String STATIC_CACHE_CONTROL_ENV = "THINGIFIER_STATIC_CACHE_CONTROL";
+    private static final String DEFAULT_STATIC_CACHE_CONTROL = "max-age=0";
     private static final String[] STATIC_ASSET_PREFIXES = {
         "/css/", "/js/", "/favicon/", "/images/"
     };
@@ -116,7 +119,7 @@ public final class JavalinHttpServer implements AutoCloseable {
         }
 
         ctx.status(200);
-        ctx.header("Cache-Control", "max-age=0");
+        ctx.header("Cache-Control", staticCacheControl());
         String contentType = contentTypeFor(path);
         if (contentType != null) {
             ctx.contentType(contentType);
@@ -142,6 +145,24 @@ public final class JavalinHttpServer implements AutoCloseable {
             }
         }
         return false;
+    }
+
+    static String staticCacheControl() {
+        final String configured = System.getProperty(STATIC_CACHE_CONTROL_PROPERTY);
+        if (hasText(configured)) {
+            return configured.trim();
+        }
+
+        final String environment = System.getenv(STATIC_CACHE_CONTROL_ENV);
+        if (hasText(environment)) {
+            return environment.trim();
+        }
+
+        return DEFAULT_STATIC_CACHE_CONTROL;
+    }
+
+    private static boolean hasText(final String value) {
+        return value != null && !value.trim().isEmpty();
     }
 
     private String classpathStaticResource(final String path) {
