@@ -194,6 +194,36 @@ public class ThingStoreContractTest {
     }
 
     @Test
+    public void inMemoryRepositoryTreatsOldSortNamesAsFilterFields() {
+        ThingStore repository = new InMemoryThingStore(EntityRelModel.DEFAULT_DATABASE_NAME);
+
+        exerciseOldSortNamesAsFilterFields(repository);
+    }
+
+    @Test
+    public void sqliteRepositoryTreatsOldSortNamesAsFilterFields() {
+        try (ThingStore repository =
+                SqliteThingStore.inMemory(EntityRelModel.DEFAULT_DATABASE_NAME)) {
+            exerciseOldSortNamesAsFilterFields(repository);
+        }
+    }
+
+    @Test
+    public void inMemoryRepositorySortsByMultipleFields() {
+        ThingStore repository = new InMemoryThingStore(EntityRelModel.DEFAULT_DATABASE_NAME);
+
+        exerciseMultipleSortFields(repository);
+    }
+
+    @Test
+    public void sqliteRepositorySortsByMultipleFields() {
+        try (ThingStore repository =
+                SqliteThingStore.inMemory(EntityRelModel.DEFAULT_DATABASE_NAME)) {
+            exerciseMultipleSortFields(repository);
+        }
+    }
+
+    @Test
     public void inMemoryRepositoryGeneratesAutoIdsThroughTheContract() {
         ThingStore repository = new InMemoryThingStore(EntityRelModel.DEFAULT_DATABASE_NAME);
 
@@ -469,7 +499,7 @@ public class ThingStoreContractTest {
                     "Wire repository", regexFilteredTasks.get(0).getFieldValue("title").asString());
 
             QueryFilterParams sortedParams = new QueryFilterParams();
-            sortedParams.put("sortBy", "-id");
+            sortedParams.put("_sortBy", "-id");
 
             List<EntityInstance> sortedTasks =
                     reopened.relationships().listRelated(project, "tasks", sortedParams);
@@ -679,7 +709,7 @@ public class ThingStoreContractTest {
         Assertions.assertEquals(secondProject, filteredProjects.get(0));
 
         QueryFilterParams sortedParams = new QueryFilterParams();
-        sortedParams.put("sortBy", "-id");
+        sortedParams.put("_sortBy", "-id");
         List<EntityInstance> sortedProjects =
                 repository.entityQueries().list(projectDefinition, sortedParams);
         Assertions.assertEquals("2", sortedProjects.get(0).getPrimaryKeyValue());
@@ -744,7 +774,7 @@ public class ThingStoreContractTest {
         Assertions.assertEquals(task, filteredTasks.get(0));
 
         QueryFilterParams relationshipSortParams = new QueryFilterParams();
-        relationshipSortParams.put("sortBy", "-id");
+        relationshipSortParams.put("_sortBy", "-id");
         List<EntityInstance> sortedTasks =
                 repository.relationships().listRelated(project, "tasks", relationshipSortParams);
         Assertions.assertEquals("2", sortedTasks.get(0).getPrimaryKeyValue());
@@ -973,6 +1003,78 @@ public class ThingStoreContractTest {
                                 .withField("title", "Title " + id));
     }
 
+    private void exerciseOldSortNamesAsFilterFields(final ThingStore repository) {
+        ERSchema schema = legacySortNameSchema();
+        repository.administration().initializeFrom(schema);
+
+        assertOldSortNameFilters(repository, schema.getEntityDefinitionNamed("camel"), "sortBy");
+        assertOldSortNameFilters(repository, schema.getEntityDefinitionNamed("lower"), "sortby");
+        assertOldSortNameFilters(repository, schema.getEntityDefinitionNamed("snake"), "sort_by");
+    }
+
+    private void assertOldSortNameFilters(
+            final ThingStore repository, final EntityDefinition entity, final String fieldName) {
+        EntityInstance other =
+                createLegacySortNameItem(repository, entity, fieldName, "other", "1");
+        EntityInstance target =
+                createLegacySortNameItem(repository, entity, fieldName, "target", "2");
+
+        QueryFilterParams filterParams = new QueryFilterParams();
+        filterParams.put(fieldName, "target");
+        Assertions.assertEquals(
+                List.of(target), repository.entityQueries().list(entity, filterParams));
+
+        QueryFilterParams sortParams = new QueryFilterParams();
+        sortParams.put("_sortBy", "+rank");
+        Assertions.assertEquals(
+                List.of(other, target), repository.entityQueries().list(entity, sortParams));
+    }
+
+    private EntityInstance createLegacySortNameItem(
+            final ThingStore repository,
+            final EntityDefinition entity,
+            final String fieldName,
+            final String fieldValue,
+            final String rank) {
+        return repository
+                .entities()
+                .create(
+                        EntityInstanceDraft.forEntity(entity)
+                                .withField(fieldName, fieldValue)
+                                .withField("rank", rank));
+    }
+
+    private void exerciseMultipleSortFields(final ThingStore repository) {
+        ERSchema schema = sortableItemSchema();
+        EntityDefinition item = schema.getEntityDefinitionNamed("item");
+        repository.administration().initializeFrom(schema);
+
+        EntityInstance alphaLow = createSortableItem(repository, item, "alpha", "1");
+        EntityInstance alphaHigh = createSortableItem(repository, item, "alpha", "3");
+        EntityInstance betaLow = createSortableItem(repository, item, "beta", "2");
+        EntityInstance betaHigh = createSortableItem(repository, item, "beta", "4");
+
+        QueryFilterParams sortParams = new QueryFilterParams();
+        sortParams.put("_sortBy", "+category,-priority");
+
+        Assertions.assertEquals(
+                List.of(alphaHigh, alphaLow, betaHigh, betaLow),
+                repository.entityQueries().list(item, sortParams));
+    }
+
+    private EntityInstance createSortableItem(
+            final ThingStore repository,
+            final EntityDefinition entity,
+            final String category,
+            final String priority) {
+        return repository
+                .entities()
+                .create(
+                        EntityInstanceDraft.forEntity(entity)
+                                .withField("category", category)
+                                .withField("priority", priority));
+    }
+
     private String exportDataAsJson(final ThingStore repository, final ERSchema schema) {
         return new RepositoryJsonExporter(schema, repository.entityQueries()).asJson();
     }
@@ -995,6 +1097,38 @@ public class ThingStoreContractTest {
         EntityDefinition ticket = schema.defineEntity("ticket", "tickets", maxInstances);
         ticket.addAsPrimaryKeyField(Field.is("id", FieldType.STRING));
         ticket.addField(Field.is("title", FieldType.STRING));
+
+        return schema;
+    }
+
+    private ERSchema legacySortNameSchema() {
+        ERSchema schema = new ERSchema();
+
+        EntityDefinition camel = schema.defineEntity("camel", "camels", -1);
+        camel.addAsPrimaryKeyField(Field.is("id", FieldType.AUTO_INCREMENT));
+        camel.addField(Field.is("sortBy", FieldType.STRING));
+        camel.addField(Field.is("rank", FieldType.INTEGER));
+
+        EntityDefinition lower = schema.defineEntity("lower", "lowers", -1);
+        lower.addAsPrimaryKeyField(Field.is("id", FieldType.AUTO_INCREMENT));
+        lower.addField(Field.is("sortby", FieldType.STRING));
+        lower.addField(Field.is("rank", FieldType.INTEGER));
+
+        EntityDefinition snake = schema.defineEntity("snake", "snakes", -1);
+        snake.addAsPrimaryKeyField(Field.is("id", FieldType.AUTO_INCREMENT));
+        snake.addField(Field.is("sort_by", FieldType.STRING));
+        snake.addField(Field.is("rank", FieldType.INTEGER));
+
+        return schema;
+    }
+
+    private ERSchema sortableItemSchema() {
+        ERSchema schema = new ERSchema();
+
+        EntityDefinition item = schema.defineEntity("item", "items", -1);
+        item.addAsPrimaryKeyField(Field.is("id", FieldType.AUTO_INCREMENT));
+        item.addField(Field.is("category", FieldType.STRING));
+        item.addField(Field.is("priority", FieldType.INTEGER));
 
         return schema;
     }

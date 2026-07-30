@@ -74,6 +74,8 @@ public class ApiRoutingDefinitionDocGeneratorTest {
                 Set.of("id"),
                 parameterNames(route(definition, RoutingVerb.GET, "projects/:id/tasks")));
         Assertions.assertTrue(
+                route(definition, RoutingVerb.GET, "projects/:id/tasks").isFilterable());
+        Assertions.assertTrue(
                 route(definition, RoutingVerb.GET, "projects/:id/tasks").hasReturnPayloadFor(200));
         Assertions.assertEquals(
                 "todos",
@@ -84,6 +86,8 @@ public class ApiRoutingDefinitionDocGeneratorTest {
         Assertions.assertEquals(
                 "project",
                 route(definition, RoutingVerb.GET, "todos/:id/tasksof").getReturnPayloadFor(200));
+        Assertions.assertFalse(
+                route(definition, RoutingVerb.GET, "todos/:id/tasksof").isFilterable());
         Assertions.assertEquals(
                 "projects",
                 route(definition, RoutingVerb.QUERY, "todos/:id/tasksof").getReturnPayloadFor(200));

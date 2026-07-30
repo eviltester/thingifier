@@ -130,6 +130,43 @@ class RestApiDocumentationGeneratorTest {
     }
 
     @Test
+    void apiDocumentationShowsFilteringAndSortingForFilterableCollectionRoutes() {
+        final Thingifier thingifier = new Thingifier();
+        thingifier.setDocumentation("Task API", "Task API docs.");
+        final EntityDefinition task = thingifier.defineThing("task", "tasks");
+        task.addAsPrimaryKeyField(Field.is("id", FieldType.AUTO_INCREMENT));
+        task.addField(Field.is("title", FieldType.STRING));
+
+        final String docs =
+                new RestApiDocumentationGenerator(thingifier, new DefaultGUIHTML())
+                        .getApiDocumentation(
+                                new ApiRoutingDefinitionDocGenerator(thingifier).generate("/api"),
+                                List.of(),
+                                new ThingifierApiDocumentationDefn(),
+                                "/api",
+                                "https://example.com/api/docs");
+
+        Assertions.assertTrue(docs.contains("<i>field=value</i> for equals"));
+        Assertions.assertTrue(docs.contains("<i>field!=value</i>"));
+        Assertions.assertTrue(docs.contains("<i>field!value</i>"));
+        Assertions.assertTrue(docs.contains("<i>field&lt;value</i>"));
+        Assertions.assertTrue(docs.contains("<i>field&gt;value</i>"));
+        Assertions.assertTrue(docs.contains("<i>field&lt;=value</i>"));
+        Assertions.assertTrue(docs.contains("<i>field&gt;=value</i>"));
+        Assertions.assertTrue(docs.contains("<i>field~=regex</i>"));
+        Assertions.assertTrue(docs.contains("<i>field*=wildcard</i>"));
+        Assertions.assertTrue(
+                docs.contains("Multiple query params are combined as AND conditions."));
+        Assertions.assertTrue(docs.contains("<i>_sortBy=+field</i>"));
+        Assertions.assertTrue(docs.contains("<i>_sortBy=field</i>"));
+        Assertions.assertTrue(docs.contains("<i>_sortBy=-field</i>"));
+        Assertions.assertTrue(docs.contains("<i>_sortBy=+field,-other</i>"));
+        Assertions.assertTrue(docs.contains("/api/tasks?_sortBy=+id"));
+        Assertions.assertTrue(docs.contains("title=Task&amp;_sortBy=-id"));
+        Assertions.assertFalse(docs.contains("&amp;sortBy=-id"));
+    }
+
+    @Test
     void apiDocumentationShowsTwoWayRelationshipsAsSeparateDirections() {
         final Thingifier thingifier = new Thingifier();
         final EntityDefinition project = thingifier.defineThing("project", "projects");
@@ -160,6 +197,7 @@ class RestApiDocumentationGeneratorTest {
         Assertions.assertTrue(
                 docs.contains("https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs"));
         Assertions.assertTrue(docs.contains("mermaid.initialize({ startOnLoad: true });"));
+        Assertions.assertTrue(docs.contains("/projects/:id/tasks?_sortBy=+id"));
     }
 
     @Test

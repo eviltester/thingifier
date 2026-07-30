@@ -1,7 +1,9 @@
 package uk.co.compendiumdev.thingifier.swaggerizer;
 
 import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
+import io.swagger.v3.oas.models.parameters.Parameter;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Assertions;
@@ -86,6 +88,23 @@ class SwaggerizerEntityDescriptionTest {
                         .allMatch(parameter -> Boolean.TRUE.equals(parameter.getRequired())));
     }
 
+    @Test
+    void filterableCollectionOperationsExposeSortByParameter() {
+        final OpenAPI openApi = new Swaggerizer(apiDefn(relationshipModel())).swagger();
+
+        assertSortByParameter(openApi.getPaths().get("/projects").getGet());
+        assertSortByParameter(queryOperation(openApi.getPaths().get("/projects")));
+        assertSortByParameter(openApi.getPaths().get("/projects/{id}/tasks").getGet());
+        assertSortByParameter(queryOperation(openApi.getPaths().get("/projects/{id}/tasks")));
+
+        Operation singleTargetRelationshipGet =
+                openApi.getPaths().get("/todos/{id}/project").getGet();
+        Assertions.assertTrue(
+                singleTargetRelationshipGet.getParameters() == null
+                        || singleTargetRelationshipGet.getParameters().stream()
+                                .noneMatch(parameter -> "_sortBy".equals(parameter.getName())));
+    }
+
     private ThingifierApiDocumentationDefn apiDefn(final Thingifier thingifier) {
         return new ThingifierApiDocumentationDefn().setThingifier(thingifier);
     }
@@ -110,5 +129,24 @@ class SwaggerizerEntityDescriptionTest {
         return pathItem.getParameters().stream()
                 .map(parameter -> parameter.getName())
                 .collect(Collectors.toSet());
+    }
+
+    private Operation queryOperation(final PathItem pathItem) {
+        return (Operation) pathItem.getExtensions().get("x-query-operation");
+    }
+
+    private void assertSortByParameter(final Operation operation) {
+        Parameter sortBy =
+                operation.getParameters().stream()
+                        .filter(parameter -> "_sortBy".equals(parameter.getName()))
+                        .findFirst()
+                        .orElseThrow();
+
+        Assertions.assertEquals("query", sortBy.getIn());
+        Assertions.assertFalse(sortBy.getRequired());
+        Assertions.assertEquals("+id", sortBy.getExample());
+        Assertions.assertTrue(sortBy.getDescription().contains("ascending"));
+        Assertions.assertTrue(sortBy.getDescription().contains("descending"));
+        Assertions.assertTrue(sortBy.getDescription().contains("+field,-other"));
     }
 }

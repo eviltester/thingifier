@@ -10,7 +10,7 @@ public class EntityInstanceListSorter {
     /*
        Given a Map of
        FieldName,Value
-       sort_by,+-FieldName
+       _sortBy,+-FieldName
 
     */
     public EntityInstanceListSorter(final QueryFilterParams queryParams) {
@@ -21,16 +21,23 @@ public class EntityInstanceListSorter {
 
         List<EntityInstance> sorted = new ArrayList<>(foundItems);
 
+        Comparator<EntityInstance> comparator = null;
         for (SortByFieldName sortBy : instanceFilter.sortBys()) {
-            sorted = sortByField(sortBy.fieldName, sortBy.order, sorted);
+            Comparator<EntityInstance> sortByField = compareByField(sortBy, sorted);
+            if (sortByField != null) {
+                comparator =
+                        comparator == null ? sortByField : comparator.thenComparing(sortByField);
+            }
+        }
+
+        if (comparator != null) {
+            sorted.sort(comparator);
         }
 
         return sorted;
     }
 
     /** Sorted list of instances */
-
-    // TODO: unit tests for sorting
     public List<EntityInstance> sortByField(
             String fieldName, int order, final List<EntityInstance> itemsToSort) {
 
@@ -41,11 +48,31 @@ public class EntityInstanceListSorter {
             return sortedList;
         }
 
-        Field fieldDefn = sortedList.get(0).getEntity().getField(fieldName);
-
-        // there is no field of that name
-        if (fieldDefn == null) {
+        Comparator<EntityInstance> compareByFieldValue =
+                compareByField(fieldName, order, sortedList);
+        if (compareByFieldValue == null) {
             return sortedList;
+        }
+
+        sortedList.sort(compareByFieldValue);
+
+        return sortedList;
+    }
+
+    private Comparator<EntityInstance> compareByField(
+            final SortByFieldName sortBy, final List<EntityInstance> itemsToSort) {
+        return compareByField(sortBy.getFieldName(), sortBy.getOrder(), itemsToSort);
+    }
+
+    private Comparator<EntityInstance> compareByField(
+            final String fieldName, final int order, final List<EntityInstance> itemsToSort) {
+        if (itemsToSort.isEmpty()) {
+            return null;
+        }
+
+        Field fieldDefn = itemsToSort.get(0).getEntity().getField(fieldName);
+        if (fieldDefn == null) {
+            return null;
         }
 
         Comparator<EntityInstance> compareByFieldValue =
@@ -65,13 +92,9 @@ public class EntityInstanceListSorter {
                 };
 
         if (order < 0) {
-            // (desc)
-            Collections.sort(sortedList, compareByFieldValue);
+            return compareByFieldValue;
         } else {
-            // low to high sort (asc)
-            Collections.sort(sortedList, compareByFieldValue.reversed());
+            return compareByFieldValue.reversed();
         }
-
-        return sortedList;
     }
 }

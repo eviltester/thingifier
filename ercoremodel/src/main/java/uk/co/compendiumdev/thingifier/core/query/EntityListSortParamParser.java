@@ -22,39 +22,50 @@ public class EntityListSortParamParser {
     }
 
     /*
-       return all the sortBy values
-       currently sortBy=-FieldName or sortBy=+FieldName or sortBy=FieldName
-       or sort_by=etc.
-
-       TODO: handle multiple sort fields e.g. sortBy=-FieldName1,+FieldName2
+       return all the _sortBy values
+       currently _sortBy=-FieldName or _sortBy=+FieldName or _sortBy=FieldName
+       or multiple sort fields e.g. _sortBy=-FieldName1,+FieldName2
     */
     public List<SortByFieldName> sortBys() {
         List<SortByFieldName> sortbys = new ArrayList<>();
         for (FilterBy field : params.sortBys()) {
             if (isSortByParam(field.fieldName)) {
-                final SortByFieldName aSortBy = new SortByFieldName();
-                String sortByValue = field.fieldValue;
-                switch (sortByValue.charAt(0)) {
-                    case '-':
-                        aSortBy.order = 1;
-                        aSortBy.fieldName = sortByValue.substring(1).trim();
-                        break;
-                    case '+':
-                        aSortBy.order = -1;
-                        aSortBy.fieldName = sortByValue.substring(1).trim();
-                        break;
-                    default:
-                        aSortBy.order = -1;
-                        aSortBy.fieldName = sortByValue.trim();
-                        break;
+                for (String sortByValue : field.fieldValue.split(",")) {
+                    final SortByFieldName aSortBy = sortByFrom(sortByValue);
+                    if (aSortBy != null) {
+                        sortbys.add(aSortBy);
+                    }
                 }
-                sortbys.add(aSortBy);
             }
         }
         return sortbys;
     }
 
+    private SortByFieldName sortByFrom(final String value) {
+        String sortByValue = value.trim();
+        if (sortByValue.isEmpty()) {
+            return null;
+        }
+
+        final SortByFieldName aSortBy = new SortByFieldName();
+        switch (sortByValue.charAt(0)) {
+            case '-':
+                aSortBy.order = 1;
+                aSortBy.fieldName = sortByValue.substring(1).trim();
+                break;
+            case '+':
+                aSortBy.order = -1;
+                aSortBy.fieldName = sortByValue.substring(1).trim();
+                break;
+            default:
+                aSortBy.order = -1;
+                aSortBy.fieldName = sortByValue;
+                break;
+        }
+        return aSortBy.fieldName.isEmpty() ? null : aSortBy;
+    }
+
     public static boolean isSortByParam(final String key) {
-        return (key.equalsIgnoreCase("sortby") || key.equalsIgnoreCase("sort_by"));
+        return SortByFieldName.isSortByParam(key);
     }
 }

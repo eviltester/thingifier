@@ -153,7 +153,7 @@ public class ThingQueryServiceTest {
         createTask(storeFor(thingifier), task, "Last", "3");
         createTask(storeFor(thingifier), task, "First", "1");
         QueryFilterParams params = new QueryFilterParams();
-        params.put("sortBy", "+priority");
+        params.put("_sortBy", "+priority");
 
         RepositoryQueryResult result =
                 queryServiceFor(thingifier)

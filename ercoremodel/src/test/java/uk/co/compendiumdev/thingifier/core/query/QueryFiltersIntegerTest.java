@@ -70,7 +70,7 @@ public class QueryFiltersIntegerTest {
 
         QueryFilterParams params = new QueryFilterParams();
         params.put("int", "!1");
-        params.put("sortby", "+int");
+        params.put("_sortBy", "+int");
 
         RepositoryQuery queryResults = queryThings(params);
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
@@ -87,7 +87,7 @@ public class QueryFiltersIntegerTest {
         QueryFilterParams params = new QueryFilterParams();
         params.put("int", ">1"); // greater than 1
         params.put("int", "!3"); // and not equal to 3
-        params.put("sortby", "+int");
+        params.put("_sortBy", "+int");
 
         RepositoryQuery queryResults = queryThings(params);
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
@@ -101,7 +101,7 @@ public class QueryFiltersIntegerTest {
     public void canFilterIntegerGreaterThan() {
         QueryFilterParams params = new QueryFilterParams();
         params.put("int", ">1");
-        params.put("sortby", "+int");
+        params.put("_sortBy", "+int");
 
         RepositoryQuery queryResults = queryThings(params);
 
@@ -117,7 +117,7 @@ public class QueryFiltersIntegerTest {
     public void canFilterIntegerLessThan() {
         QueryFilterParams params = new QueryFilterParams();
         params.put("int", "<2");
-        params.put("sortby", "+int");
+        params.put("_sortBy", "+int");
 
         RepositoryQuery queryResults = queryThings(params);
 
@@ -131,7 +131,7 @@ public class QueryFiltersIntegerTest {
     public void canFilterIntegerLessThanNotMatching() {
         QueryFilterParams params = new QueryFilterParams();
         params.put("int", "<1");
-        params.put("sortby", "+int");
+        params.put("_sortBy", "+int");
 
         RepositoryQuery queryResults = queryThings(params);
 
@@ -144,7 +144,7 @@ public class QueryFiltersIntegerTest {
     public void canFilterIntegerGreaterThanEquals() {
         QueryFilterParams params = new QueryFilterParams();
         params.put("int", ">=3");
-        params.put("sortby", "+int");
+        params.put("_sortBy", "+int");
 
         RepositoryQuery queryResults = queryThings(params);
 
@@ -159,7 +159,7 @@ public class QueryFiltersIntegerTest {
     public void canFilterIntegerLessThanEquals() {
         QueryFilterParams params = new QueryFilterParams();
         params.put("int", "<=3");
-        params.put("sortby", "+int");
+        params.put("_sortBy", "+int");
 
         RepositoryQuery queryResults = queryThings(params);
 
@@ -175,7 +175,7 @@ public class QueryFiltersIntegerTest {
     public void canFilterIntegerLessThanSortedDesc() {
         QueryFilterParams params = new QueryFilterParams();
         params.put("int", "<3");
-        params.put("sortby", "-int");
+        params.put("_sortBy", "-int");
 
         RepositoryQuery queryResults = queryThings(params);
 
@@ -189,7 +189,7 @@ public class QueryFiltersIntegerTest {
     @Test
     public void canIntegerSortedDesc() {
         QueryFilterParams params = new QueryFilterParams();
-        params.put("sortby", "-int");
+        params.put("_sortBy", "-int");
 
         RepositoryQuery queryResults = queryThings(params);
 
@@ -205,7 +205,7 @@ public class QueryFiltersIntegerTest {
     @Test
     public void canIntegerSortedAsc() {
         QueryFilterParams params = new QueryFilterParams();
-        params.put("sortby", "+int");
+        params.put("_sortBy", "+int");
 
         RepositoryQuery queryResults = queryThings(params);
 
@@ -222,7 +222,7 @@ public class QueryFiltersIntegerTest {
     public void canRegexFilterInteger() {
         QueryFilterParams params = new QueryFilterParams();
         params.put("int", "~=[1,2]");
-        params.put("sortby", "+int");
+        params.put("_sortBy", "+int");
 
         RepositoryQuery queryResults = queryThings(params);
 
