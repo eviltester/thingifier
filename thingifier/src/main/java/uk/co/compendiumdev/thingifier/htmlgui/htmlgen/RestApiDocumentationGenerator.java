@@ -23,6 +23,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.Relat
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVectorDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.validation.ValidationRule;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
+import uk.co.compendiumdev.thingifier.core.query.SortByFieldName;
 
 public class RestApiDocumentationGenerator {
     private static final String DEFAULT_CANONICAL_HOST = "https://apichallenges.eviltester.com";
@@ -152,11 +153,28 @@ public class RestApiDocumentationGenerator {
                         output.append(
                                 paragraph(
                                         "Some requests can be filtered by adding query params of fieldname=value. Where only matching items will be returned."));
+                        output.append(
+                                paragraph(
+                                        "Filter conditions can use <i>field=value</i> for equals, <i>field!=value</i> or <i>field!value</i> for not equals, <i>field&lt;value</i>, <i>field&gt;value</i>, <i>field&lt;=value</i>, and <i>field&gt;=value</i> for comparisons, <i>field~=regex</i> for regular expression matches, and <i>field*=wildcard</i> for wildcard matches where <i>*</i> matches many characters and <i>?</i> matches one character. Multiple query params are combined as AND conditions."));
 
                         // TODO: generate the filter example string from the entity definitions
                         // defns.toArray()
                         output.append(
                                 paragraph("e.g. <i>/thing?size=2&status=true</i><br/><br/>\n"));
+                        output.append(
+                                paragraph(
+                                        "Some requests can be sorted by adding the <i>"
+                                                + SortByFieldName.PARAMETER_NAME
+                                                + "</i> query param with a field name. Use <i>"
+                                                + SortByFieldName.PARAMETER_NAME
+                                                + "=+field</i> or <i>"
+                                                + SortByFieldName.PARAMETER_NAME
+                                                + "=field</i> for ascending order, and <i>"
+                                                + SortByFieldName.PARAMETER_NAME
+                                                + "=-field</i> for descending order. Multiple"
+                                                + " fields can be combined with commas, e.g. <i>"
+                                                + SortByFieldName.PARAMETER_NAME
+                                                + "=+field,-other</i>."));
                     }
                 }
 
@@ -419,6 +437,30 @@ public class RestApiDocumentationGenerator {
                                                 + exampleFilter
                                                 + "</span>"));
                     }
+
+                    output.append(
+                            paragraph(
+                                    "This endpoint can be sorted with the <i>"
+                                            + SortByFieldName.PARAMETER_NAME
+                                            + "</i> URL Query Parameter. Use <i>"
+                                            + SortByFieldName.PARAMETER_NAME
+                                            + "=+field</i> or <i>"
+                                            + SortByFieldName.PARAMETER_NAME
+                                            + "=field</i> for ascending order, and <i>"
+                                            + SortByFieldName.PARAMETER_NAME
+                                            + "=-field</i> for descending order. Multiple fields"
+                                            + " can be combined with commas, e.g. <i>"
+                                            + SortByFieldName.PARAMETER_NAME
+                                            + "=+field,-other</i>."));
+                    String exampleSort = getExampleSort(routingDefn.getFilterableEntity());
+                    if (exampleSort != null && !exampleSort.isEmpty()) {
+                        output.append(
+                                paragraph(
+                                        "e.g. <span class='endpoint'>"
+                                                + url(routingDefn.url())
+                                                + exampleSort
+                                                + "</span>"));
+                    }
                 }
 
                 currentEndPoint = routingDefn.url();
@@ -442,7 +484,9 @@ public class RestApiDocumentationGenerator {
                                 paragraph(
                                         "QUERY content uses <i>Content-Type: "
                                                 + ThingifierHttpApi.QUERY_CONTENT_TYPE
-                                                + "</i> with fields such as <i>title=Task&amp;sortBy=-id</i>."));
+                                                + "</i> with fields such as <i>title=Task&amp;"
+                                                + SortByFieldName.PARAMETER_NAME
+                                                + "=-id</i>."));
                     }
                 }
             }
@@ -809,6 +853,22 @@ public class RestApiDocumentationGenerator {
         //        }
 
         return exampleFilters;
+    }
+
+    private String getExampleSort(final EntityDefinition filterableEntity) {
+        String fieldName = "field";
+        if (filterableEntity != null) {
+            Field primaryKeyField = filterableEntity.getPrimaryKeyField();
+            if (primaryKeyField != null) {
+                fieldName = primaryKeyField.getName();
+            } else {
+                for (String name : filterableEntity.getFieldNames()) {
+                    fieldName = name;
+                    break;
+                }
+            }
+        }
+        return "?" + SortByFieldName.PARAMETER_NAME + "=+" + fieldName;
     }
 
     private String url(final String postUrl) {

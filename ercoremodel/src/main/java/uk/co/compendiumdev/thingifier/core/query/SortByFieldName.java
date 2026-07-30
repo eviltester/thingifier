@@ -1,6 +1,8 @@
 package uk.co.compendiumdev.thingifier.core.query;
 
 public class SortByFieldName {
+    public static final String PARAMETER_NAME = "_sortBy";
+
     int order = 1;
     String fieldName = "";
 
@@ -13,6 +15,6 @@ public class SortByFieldName {
     }
 
     public static boolean isSortByParam(final String key) {
-        return (key.equalsIgnoreCase("sortby") || key.equalsIgnoreCase("sort_by"));
+        return PARAMETER_NAME.equals(key);
     }
 }

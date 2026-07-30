@@ -51,7 +51,7 @@ public class QueryFiltersStringTest {
     public void canSortStringAsc() {
 
         QueryFilterParams params = new QueryFilterParams();
-        params.put("sortBy", "+string");
+        params.put("_sortBy", "+string");
 
         RepositoryQuery queryResults = queryThings(params);
 
@@ -68,7 +68,7 @@ public class QueryFiltersStringTest {
     public void canSortStringDesc() {
 
         QueryFilterParams params = new QueryFilterParams();
-        params.put("sortBy", "-string");
+        params.put("_sortBy", "-string");
 
         RepositoryQuery queryResults = queryThings(params);
 
@@ -101,7 +101,7 @@ public class QueryFiltersStringTest {
 
         QueryFilterParams params = new QueryFilterParams();
         params.put("string", "~=.*o.*");
-        params.put("sortBy", "+string");
+        params.put("_sortBy", "+string");
 
         RepositoryQuery queryResults = queryThings(params);
 
@@ -119,7 +119,7 @@ public class QueryFiltersStringTest {
 
         QueryFilterParams params = new QueryFilterParams();
         params.put("string", "~=.*o.*");
-        params.put("sortBy", "-string");
+        params.put("_sortBy", "-string");
 
         RepositoryQuery queryResults = queryThings(params);
 
@@ -137,7 +137,7 @@ public class QueryFiltersStringTest {
 
         QueryFilterParams params = new QueryFilterParams();
         params.put("string", "*=*e");
-        params.put("sortBy", "+string");
+        params.put("_sortBy", "+string");
 
         RepositoryQuery queryResults = queryThings(params);
 
@@ -154,7 +154,7 @@ public class QueryFiltersStringTest {
 
         QueryFilterParams params = new QueryFilterParams();
         params.put("string", "*=t*");
-        params.put("sortBy", "+string");
+        params.put("_sortBy", "+string");
 
         RepositoryQuery queryResults = queryThings(params);
 
@@ -171,7 +171,7 @@ public class QueryFiltersStringTest {
 
         QueryFilterParams params = new QueryFilterParams();
         params.put("string", "*=t?*");
-        params.put("sortBy", "+string");
+        params.put("_sortBy", "+string");
 
         RepositoryQuery queryResults = queryThings(params);
 
@@ -188,7 +188,7 @@ public class QueryFiltersStringTest {
 
         QueryFilterParams params = new QueryFilterParams();
         params.put("string", "*=t?o");
-        params.put("sortBy", "+string");
+        params.put("_sortBy", "+string");
 
         RepositoryQuery queryResults = queryThings(params);
 

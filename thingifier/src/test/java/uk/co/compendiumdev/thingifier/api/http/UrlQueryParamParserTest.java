@@ -12,9 +12,9 @@ public class UrlQueryParamParserTest {
     /*
     The default HTTP edge parsing for url params is a split by & and then a split by =
 
-    We want to be able to filter and sort e.g. ?id>=2&sortBy=-id&id<=16
+    We want to be able to filter and sort e.g. ?id>=2&_sortBy=-id&id<=16
 
-    This would come through as (id>,2) and (sortBy,-id) so we would lose the >= and it is on the wrong side for us.
+    This would come through as (id>,2) and (_sortBy,-id) so we would lose the >= and it is on the wrong side for us.
 
      */
 

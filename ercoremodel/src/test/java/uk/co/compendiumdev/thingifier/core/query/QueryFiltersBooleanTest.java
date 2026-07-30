@@ -110,7 +110,7 @@ public class QueryFiltersBooleanTest {
     @Test
     public void canSortBooleanMatchesAsc() {
         QueryFilterParams params = new QueryFilterParams();
-        params.put("sortBy", "+truefalse");
+        params.put("_sortBy", "+truefalse");
 
         RepositoryQuery queryResults = queryThings(params);
 
@@ -127,7 +127,7 @@ public class QueryFiltersBooleanTest {
     @Test
     public void canSortBooleanMatchesDesc() {
         QueryFilterParams params = new QueryFilterParams();
-        params.put("sortBy", "-truefalse");
+        params.put("_sortBy", "-truefalse");
 
         RepositoryQuery queryResults = queryThings(params);
 

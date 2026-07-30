@@ -21,6 +21,7 @@ import uk.co.compendiumdev.thingifier.api.docgen.ApiRoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.docgen.ApiRoutingDefinitionDocGenerator;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingStatus;
+import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
 import uk.co.compendiumdev.thingifier.api.docgen.ThingifierApiDocumentationDefn;
 import uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
@@ -28,6 +29,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityViewDefiniti
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.validation.ValidationRule;
+import uk.co.compendiumdev.thingifier.core.query.SortByFieldName;
 
 public class Swaggerizer {
 
@@ -253,6 +255,11 @@ public class Swaggerizer {
                                         new SecurityRequirement().addList("bearerAuth"));
                             }
 
+                            if (shouldDocumentSortParameter(thingifier, subroute)) {
+                                operationParameters.add(
+                                        sortByParameter(subroute.getFilterableEntity()));
+                            }
+
                             if (subroute.hasRequestUrlParams()) {
 
                                 List<Parameter> urlParameters = new ArrayList<>();
@@ -396,6 +403,45 @@ public class Swaggerizer {
                 path.addParametersItem(param);
             }
         }
+    }
+
+    private boolean shouldDocumentSortParameter(
+            final Thingifier thingifier, final RoutingDefinition route) {
+        if (!route.isFilterable()) {
+            return false;
+        }
+        if (route.verb() == RoutingVerb.QUERY) {
+            return true;
+        }
+        return thingifier.apiConfig().forParams().willAllowFilteringThroughUrlParams();
+    }
+
+    private Parameter sortByParameter(final EntityDefinition filterableEntity) {
+        Parameter param = new Parameter();
+        param.in("query")
+                .name(SortByFieldName.PARAMETER_NAME)
+                .required(false)
+                .description(
+                        "Sort collection results by a field. Use +field or field for ascending"
+                                + " order, and -field for descending order. Multiple fields can"
+                                + " be combined with commas, e.g. +field,-other.")
+                .example("+" + sortExampleFieldName(filterableEntity));
+        param.setSchema(new StringSchema());
+        return param;
+    }
+
+    private String sortExampleFieldName(final EntityDefinition filterableEntity) {
+        if (filterableEntity == null) {
+            return "field";
+        }
+        Field primaryKeyField = filterableEntity.getPrimaryKeyField();
+        if (primaryKeyField != null) {
+            return primaryKeyField.getName();
+        }
+        for (String fieldName : filterableEntity.getFieldNames()) {
+            return fieldName;
+        }
+        return "field";
     }
 
     private void setOperationVerb(RoutingDefinition subroute, PathItem path, Operation operation) {

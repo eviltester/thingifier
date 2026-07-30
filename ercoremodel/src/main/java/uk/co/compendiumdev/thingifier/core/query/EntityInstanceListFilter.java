@@ -9,7 +9,7 @@ public class EntityInstanceListFilter {
     /*
        Given a Map of
        FieldName,Value
-       sort_by,+-FieldName
+       _sortBy,+-FieldName
 
     */
     public EntityInstanceListFilter(QueryFilterParams queryParams) {

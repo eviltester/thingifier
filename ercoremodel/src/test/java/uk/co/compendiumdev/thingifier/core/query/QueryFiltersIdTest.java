@@ -54,7 +54,7 @@ public class QueryFiltersIdTest {
 
         QueryFilterParams params = new QueryFilterParams();
         params.put("id", ">=3");
-        params.put("sortBy", "+id");
+        params.put("_sortBy", "+id");
 
         RepositoryQuery queryResults = queryThings(params);
 
@@ -70,7 +70,7 @@ public class QueryFiltersIdTest {
 
         QueryFilterParams params = new QueryFilterParams();
         params.put("id", "<3");
-        params.put("sortBy", "-id");
+        params.put("_sortBy", "-id");
 
         RepositoryQuery queryResults = queryThings(params);
 

@@ -65,7 +65,7 @@ public class QueryFiltersFloatTest {
 
         QueryFilterParams params = new QueryFilterParams();
         params.put("float", "!1.1");
-        params.put("sortby", "+float");
+        params.put("_sortBy", "+float");
 
         RepositoryQuery queryResults = queryThings(params);
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
@@ -83,7 +83,7 @@ public class QueryFiltersFloatTest {
         QueryFilterParams params = new QueryFilterParams();
         params.put("float", ">1.1"); // greater than 1
         params.put("float", "!3.3"); // and not equal to 3
-        params.put("sortby", "+float");
+        params.put("_sortBy", "+float");
 
         RepositoryQuery queryResults = queryThings(params);
         Assertions.assertTrue(queryResults.isResultACollection(), "result should be a collection");
@@ -97,7 +97,7 @@ public class QueryFiltersFloatTest {
     public void canFilterFloatGreaterThan() {
         QueryFilterParams params = new QueryFilterParams();
         params.put("float", ">1.1");
-        params.put("sortby", "+float");
+        params.put("_sortBy", "+float");
 
         RepositoryQuery queryResults = queryThings(params);
 
@@ -113,7 +113,7 @@ public class QueryFiltersFloatTest {
     public void canFilterFloatLessThan() {
         QueryFilterParams params = new QueryFilterParams();
         params.put("float", "<2.0");
-        params.put("sortby", "+float");
+        params.put("_sortBy", "+float");
 
         RepositoryQuery queryResults = queryThings(params);
 
@@ -127,7 +127,7 @@ public class QueryFiltersFloatTest {
     public void canFilterFloatLessThanNotMatching() {
         QueryFilterParams params = new QueryFilterParams();
         params.put("float", "<1.1");
-        params.put("sortby", "+float");
+        params.put("_sortBy", "+float");
 
         RepositoryQuery queryResults = queryThings(params);
 
@@ -140,7 +140,7 @@ public class QueryFiltersFloatTest {
     public void canFilterFloatGreaterThanEquals() {
         QueryFilterParams params = new QueryFilterParams();
         params.put("float", ">=3.3");
-        params.put("sortby", "+float");
+        params.put("_sortBy", "+float");
 
         RepositoryQuery queryResults = queryThings(params);
 
@@ -155,7 +155,7 @@ public class QueryFiltersFloatTest {
     public void canFilterFloatLessThanEquals() {
         QueryFilterParams params = new QueryFilterParams();
         params.put("float", "<=3.3");
-        params.put("sortby", "+float");
+        params.put("_sortBy", "+float");
 
         RepositoryQuery queryResults = queryThings(params);
 
@@ -171,7 +171,7 @@ public class QueryFiltersFloatTest {
     public void canFilterFloatLessThanEqualsSortDesc() {
         QueryFilterParams params = new QueryFilterParams();
         params.put("float", "<=3.3");
-        params.put("sortby", "-float");
+        params.put("_sortBy", "-float");
 
         RepositoryQuery queryResults = queryThings(params);
 

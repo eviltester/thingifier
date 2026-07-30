@@ -1,5 +1,6 @@
 package uk.co.compendiumdev.thingifier.swaggerizer;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.junit.jupiter.api.Assertions;
@@ -66,6 +67,8 @@ public class SwaggerizerTest {
 
         Assertions.assertEquals("3.2.0", openApiVersion(swagger));
         Assertions.assertTrue(todos.has("query"));
+        Assertions.assertTrue(hasParameterNamed(todos.getAsJsonObject("get"), "_sortBy"));
+        Assertions.assertTrue(hasParameterNamed(query, "_sortBy"));
         Assertions.assertFalse(swagger.contains("\"x-query-operation\""));
         Assertions.assertFalse(swagger.contains("\"x-http-method\""));
         Assertions.assertFalse(swagger.contains("\"x-query-content-types\""));
@@ -73,6 +76,19 @@ public class SwaggerizerTest {
                 query.getAsJsonObject("requestBody")
                         .getAsJsonObject("content")
                         .has("application/x-www-form-urlencoded"));
+    }
+
+    private boolean hasParameterNamed(final JsonObject operation, final String name) {
+        if (!operation.has("parameters")) {
+            return false;
+        }
+        for (JsonElement parameterElement : operation.getAsJsonArray("parameters")) {
+            JsonObject parameter = parameterElement.getAsJsonObject();
+            if (name.equals(parameter.get("name").getAsString())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private String openApiVersion(final String swagger) {

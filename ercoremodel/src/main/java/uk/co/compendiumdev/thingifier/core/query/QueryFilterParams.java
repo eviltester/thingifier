@@ -55,7 +55,7 @@ public class QueryFilterParams {
 
     public boolean hasSortBy() {
         for (FilterBy filterBy : filterBys) {
-            if (filterBy.fieldName.equals("sortBy") || filterBy.fieldName.equals("sort_by")) {
+            if (SortByFieldName.isSortByParam(filterBy.fieldName)) {
                 return true;
             }
         }

@@ -14,8 +14,6 @@ import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 /** Repository-backed URL query coverage for API-style entity reads. */
 public class SortingViaQueryFiltersTest {
 
-    // todo: lower level testing at the EntityInstanceListSorter level
-
     EntityDefinition thing;
     EntityRelModel erModel;
 
@@ -49,7 +47,7 @@ public class SortingViaQueryFiltersTest {
                         .create(EntityInstanceDraft.forEntity(thing).withField("int", "3"));
 
         QueryFilterParams params = new QueryFilterParams();
-        params.put("sortBy", "-int");
+        params.put("_sortBy", "-int");
 
         RepositoryQuery ascSortedResults = queryCollection(erModel, thing, params);
 
@@ -63,7 +61,7 @@ public class SortingViaQueryFiltersTest {
         // then repeat sort and get different results
 
         params = new QueryFilterParams();
-        params.put("sortBy", "+int");
+        params.put("_sortBy", "+int");
 
         RepositoryQuery descSortedResults = queryCollection(erModel, thing, params);
 
@@ -75,7 +73,7 @@ public class SortingViaQueryFiltersTest {
 
         // check that default sort is ascending
         params = new QueryFilterParams();
-        params.put("sortBy", "int");
+        params.put("_sortBy", "int");
 
         RepositoryQuery defaultSortedResults = queryCollection(erModel, thing, params);
 
@@ -85,6 +83,56 @@ public class SortingViaQueryFiltersTest {
         Assertions.assertEquals(thing1, defaultSortedInstances.get(0));
         Assertions.assertEquals(thing2, defaultSortedInstances.get(1));
         Assertions.assertEquals(thing3, defaultSortedInstances.get(2));
+    }
+
+    @Test
+    public void sortByParameterNameIsExactAndCaseSensitive() {
+        Assertions.assertTrue(SortByFieldName.isSortByParam("_sortBy"));
+        Assertions.assertFalse(SortByFieldName.isSortByParam("_SortBy"));
+        Assertions.assertFalse(SortByFieldName.isSortByParam("sortBy"));
+        Assertions.assertFalse(SortByFieldName.isSortByParam("sortby"));
+        Assertions.assertFalse(SortByFieldName.isSortByParam("sort_by"));
+    }
+
+    @Test
+    public void canSortByMultipleFieldsViaAQuery() {
+        final EntityInstance falseLow =
+                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
+                                EntityInstanceDraft.forEntity(thing)
+                                        .withField("truefalse", "false")
+                                        .withField("int", "1"));
+        final EntityInstance falseHigh =
+                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
+                                EntityInstanceDraft.forEntity(thing)
+                                        .withField("truefalse", "false")
+                                        .withField("int", "3"));
+        final EntityInstance trueLow =
+                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
+                                EntityInstanceDraft.forEntity(thing)
+                                        .withField("truefalse", "true")
+                                        .withField("int", "2"));
+        final EntityInstance trueHigh =
+                erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entities()
+                        .create(
+                                EntityInstanceDraft.forEntity(thing)
+                                        .withField("truefalse", "true")
+                                        .withField("int", "4"));
+
+        QueryFilterParams params = new QueryFilterParams();
+        params.put("_sortBy", "+truefalse,-int");
+
+        RepositoryQuery sortedResults = queryCollection(erModel, thing, params);
+
+        Assertions.assertEquals(
+                List.of(falseHigh, falseLow, trueHigh, trueLow),
+                sortedResults.getListEntityInstances());
     }
 
     @Test
@@ -111,7 +159,7 @@ public class SortingViaQueryFiltersTest {
                                         .withField("truefalse", "false"));
 
         QueryFilterParams params = new QueryFilterParams();
-        params.put("sortBy", "-truefalse");
+        params.put("_sortBy", "-truefalse");
 
         RepositoryQuery ascSortedResults = queryCollection(aThingifier, thing, params);
 
@@ -125,7 +173,7 @@ public class SortingViaQueryFiltersTest {
         // then repeat sort and get different results
 
         params = new QueryFilterParams();
-        params.put("sortBy", "+truefalse");
+        params.put("_sortBy", "+truefalse");
 
         RepositoryQuery descSortedResults = queryCollection(aThingifier, thing, params);
 
@@ -136,7 +184,7 @@ public class SortingViaQueryFiltersTest {
 
         // check that default sort is ascending
         params = new QueryFilterParams();
-        params.put("sortBy", "truefalse");
+        params.put("_sortBy", "truefalse");
 
         RepositoryQuery defaultSortedResults = queryCollection(aThingifier, thing, params);
 

@@ -445,28 +445,32 @@ public class ApiRoutingDefinitionDocGenerator {
 
         String aUrl =
                 endPointPrefix + fromNameForUrl + "/" + uniqueIdentifier + "/" + relationshipName;
-        defn.addRouting(
-                        String.format(
-                                "%s %s %s related to %s, with given %s, by the relationship named %s",
-                                relationshipGetDocumentationVerb,
-                                toName,
-                                relationshipGetTargetDescription,
-                                fromName,
-                                uniqueIdFieldName,
-                                relationshipName),
-                        RoutingVerb.GET,
-                        aUrl,
-                        RoutingStatus.returnedFromCall())
-                .addRequestUrlParam(uniqueIdField)
-                .addPossibleStatus(
-                        RoutingStatus.returnValue(
-                                200,
+        RoutingDefinition relationshipGetRoute =
+                defn.addRouting(
                                 String.format(
-                                        "%s related %s %s",
-                                        getReturnsSingle ? "the" : "all the",
+                                        "%s %s %s related to %s, with given %s, by the relationship named %s",
+                                        relationshipGetDocumentationVerb,
                                         toName,
-                                        relationshipGetTargetDescription)))
-                .returnPayload(200, relationshipGetReturnPayload(relationship));
+                                        relationshipGetTargetDescription,
+                                        fromName,
+                                        uniqueIdFieldName,
+                                        relationshipName),
+                                RoutingVerb.GET,
+                                aUrl,
+                                RoutingStatus.returnedFromCall())
+                        .addRequestUrlParam(uniqueIdField)
+                        .addPossibleStatus(
+                                RoutingStatus.returnValue(
+                                        200,
+                                        String.format(
+                                                "%s related %s %s",
+                                                getReturnsSingle ? "the" : "all the",
+                                                toName,
+                                                relationshipGetTargetDescription)))
+                        .returnPayload(200, relationshipGetReturnPayload(relationship));
+        if (!getReturnsSingle) {
+            relationshipGetRoute.setAsFilterableFrom(relationship.getTo());
+        }
 
         defn.addRouting(
                         String.format(
