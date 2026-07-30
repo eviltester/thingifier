@@ -60,7 +60,8 @@ final class AmendThingHandler {
             return amend(
                     instance,
                     draft,
-                    command.shouldReplaceExistingFieldsAndRelationships(),
+                    command.shouldReplaceExistingFields(),
+                    command.shouldReplaceExistingRelationships(),
                     command.getRelationships());
         } catch (ThingStoreWriteException e) {
             throw e;
@@ -86,7 +87,7 @@ final class AmendThingHandler {
             try {
                 EntityInstanceDraft draft =
                         new EntityInstanceDraftBuilder(instance).setFieldValuesFrom(fieldValues);
-                return amend(instance, draft, true, command.getRelationships());
+                return amend(instance, draft, true, true, command.getRelationships());
             } catch (ThingStoreWriteException e) {
                 throw e;
             } catch (Exception e) {
@@ -119,16 +120,20 @@ final class AmendThingHandler {
     private ThingCommandResult amend(
             final EntityInstance instance,
             final EntityInstanceDraft draft,
-            final boolean replaceExistingFieldsAndRelationships,
+            final boolean replaceExistingFields,
+            final boolean replaceExistingRelationships,
             final List<RelationshipReference> relationshipReferences) {
         RelationshipSnapshot originalRelationships = RelationshipSnapshot.capture(store, instance);
         try {
             EntityInstance updated;
-            if (replaceExistingFieldsAndRelationships) {
+            if (replaceExistingFields) {
                 updated = store.entities().replace(instance, draft);
-                originalRelationships.disconnectFrom(store, updated);
             } else {
                 updated = store.entities().patch(instance, draft);
+            }
+
+            if (replaceExistingRelationships) {
+                originalRelationships.disconnectFrom(store, updated);
             }
 
             ThingCommandResult relationshipResult =
@@ -138,7 +143,7 @@ final class AmendThingHandler {
                 return relationshipResult;
             }
 
-            if (replaceExistingFieldsAndRelationships) {
+            if (replaceExistingRelationships) {
                 originalRelationships.deleteFormerDependentsMadeInvalidBy(store, updated);
             }
 

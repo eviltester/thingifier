@@ -1,9 +1,15 @@
 package uk.co.compendiumdev.thingifier.api.spec;
 
+import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
+import uk.co.compendiumdev.thingifier.apiconfig.EntityPatchUpdateStyle;
+import uk.co.compendiumdev.thingifier.apiconfig.EntityWriteOperation;
+import uk.co.compendiumdev.thingifier.apiconfig.RelationshipWriteOperation;
 
 public final class ThingifierApiRouteRule {
 
@@ -18,6 +24,9 @@ public final class ThingifierApiRouteRule {
     private String requestEntityView;
     private String defaultEntityView;
     private Map<Integer, String> responseEntityViews;
+    private EnumSet<EntityWriteOperation> entityWriteOperations;
+    private EnumSet<EntityPatchUpdateStyle> entityPatchUpdateStyles;
+    private EnumSet<RelationshipWriteOperation> relationshipWriteOperations;
 
     ThingifierApiRouteRule(final RoutingVerb verb, final String pathPattern) {
         this.verb = verb;
@@ -31,6 +40,9 @@ public final class ThingifierApiRouteRule {
         this.requestEntityView = null;
         this.defaultEntityView = null;
         this.responseEntityViews = new HashMap<>();
+        this.entityWriteOperations = null;
+        this.entityPatchUpdateStyles = null;
+        this.relationshipWriteOperations = null;
     }
 
     public RoutingVerb verb() {
@@ -93,6 +105,30 @@ public final class ThingifierApiRouteRule {
         return this;
     }
 
+    public ThingifierApiRouteRule entityWriteOperations(final EntityWriteOperation... operations) {
+        this.entityWriteOperations = entityOperations(operations);
+        return this;
+    }
+
+    public ThingifierApiRouteRule entityCan(final EntityWriteOperation... operations) {
+        return entityWriteOperations(operations);
+    }
+
+    public ThingifierApiRouteRule entityPatchCan(final EntityPatchUpdateStyle... updateStyles) {
+        this.entityPatchUpdateStyles = patchStyles(updateStyles);
+        return this;
+    }
+
+    public ThingifierApiRouteRule relationshipWriteOperations(
+            final RelationshipWriteOperation... operations) {
+        this.relationshipWriteOperations = relationshipOperations(operations);
+        return this;
+    }
+
+    public ThingifierApiRouteRule relationshipCan(final RelationshipWriteOperation... operations) {
+        return relationshipWriteOperations(operations);
+    }
+
     public ThingifierApiRouteRule entityView(final String viewName) {
         this.requestEntityView = viewName;
         this.defaultEntityView = viewName;
@@ -115,6 +151,39 @@ public final class ThingifierApiRouteRule {
             return defaultEntityView;
         }
         return null;
+    }
+
+    public boolean hasEntityWriteOperations() {
+        return entityWriteOperations != null;
+    }
+
+    public Set<EntityWriteOperation> entityWriteOperations() {
+        if (entityWriteOperations == null || entityWriteOperations.isEmpty()) {
+            return Set.of();
+        }
+        return Collections.unmodifiableSet(EnumSet.copyOf(entityWriteOperations));
+    }
+
+    public boolean hasEntityPatchUpdateStyles() {
+        return entityPatchUpdateStyles != null;
+    }
+
+    public Set<EntityPatchUpdateStyle> entityPatchUpdateStyles() {
+        if (entityPatchUpdateStyles == null || entityPatchUpdateStyles.isEmpty()) {
+            return Set.of();
+        }
+        return Collections.unmodifiableSet(EnumSet.copyOf(entityPatchUpdateStyles));
+    }
+
+    public boolean hasRelationshipWriteOperations() {
+        return relationshipWriteOperations != null;
+    }
+
+    public Set<RelationshipWriteOperation> relationshipWriteOperations() {
+        if (relationshipWriteOperations == null || relationshipWriteOperations.isEmpty()) {
+            return Set.of();
+        }
+        return Collections.unmodifiableSet(EnumSet.copyOf(relationshipWriteOperations));
     }
 
     void applyTo(final RoutingDefinition route) {
@@ -156,5 +225,32 @@ public final class ThingifierApiRouteRule {
                 }
             }
         }
+    }
+
+    private EnumSet<EntityWriteOperation> entityOperations(
+            final EntityWriteOperation... operations) {
+        EnumSet<EntityWriteOperation> selected = EnumSet.noneOf(EntityWriteOperation.class);
+        if (operations != null) {
+            Collections.addAll(selected, operations);
+        }
+        return selected;
+    }
+
+    private EnumSet<EntityPatchUpdateStyle> patchStyles(final EntityPatchUpdateStyle... styles) {
+        EnumSet<EntityPatchUpdateStyle> selected = EnumSet.noneOf(EntityPatchUpdateStyle.class);
+        if (styles != null) {
+            Collections.addAll(selected, styles);
+        }
+        return selected;
+    }
+
+    private EnumSet<RelationshipWriteOperation> relationshipOperations(
+            final RelationshipWriteOperation... operations) {
+        EnumSet<RelationshipWriteOperation> selected =
+                EnumSet.noneOf(RelationshipWriteOperation.class);
+        if (operations != null) {
+            Collections.addAll(selected, operations);
+        }
+        return selected;
     }
 }

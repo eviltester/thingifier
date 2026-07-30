@@ -208,16 +208,31 @@ public final class Thingifier implements AutoCloseable {
         return new ThingifierRestAPIHandler(this);
     }
 
-    public ThingifierApiConfig apiConfig() {
+    public ThingifierApiConfig apiDefaults() {
         return apiConfig;
+    }
+
+    /**
+     * Use {@link #apiDefaults()} for global API defaults. Route-specific API configuration lives
+     * behind {@link #apiContract()}.
+     */
+    @Deprecated(since = "1.5.6", forRemoval = false)
+    public ThingifierApiConfig apiConfig() {
+        return apiDefaults();
     }
 
     public ThingifierApiConfigProfiles apiConfigProfiles() {
         return apiConfigProfiles;
     }
 
-    public ThingifierApiSpec apiSpec() {
+    public ThingifierApiSpec apiContract() {
         return apiSpec;
+    }
+
+    /** Use {@link #apiContract()} for route, entity, and relationship-level API configuration. */
+    @Deprecated(since = "1.5.6", forRemoval = false)
+    public ThingifierApiSpec apiSpec() {
+        return apiContract();
     }
 
     public ThingifierGuiConfig guiConfig() {

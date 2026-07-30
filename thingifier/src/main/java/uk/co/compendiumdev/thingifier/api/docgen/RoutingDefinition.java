@@ -11,7 +11,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.F
 public class RoutingDefinition {
     private final RoutingVerb verb;
     private final String url;
-    private final RoutingStatus routingStatus;
+    private RoutingStatus routingStatus;
     private ResponseHeader header;
     private String documentation = "";
     private boolean isFilterable;
@@ -19,8 +19,10 @@ public class RoutingDefinition {
     private List<RoutingStatus> possibleStatusResponses;
     private HashMap<Integer, String> returnPayload;
     private String requestPayload;
+    private List<String> requestContentTypes;
     private List<RequestUrlParameter> requestUrlParams;
     private HashMap<String, String> customHeaders;
+    private HashMap<String, String> responseHeaders;
     private boolean usesBasicAuth = false;
     private boolean usesBearerAuth = false;
     private boolean hiddenFromDocumentation = false;
@@ -46,7 +48,9 @@ public class RoutingDefinition {
         requestUrlParams = new ArrayList<>();
         returnPayload = new HashMap<>();
         requestPayload = null;
+        requestContentTypes = new ArrayList<>();
         customHeaders = new HashMap<>();
+        responseHeaders = new HashMap<>();
         requestEntityViewName = null;
         responseEntityViewNames = new HashMap<>();
     }
@@ -57,6 +61,11 @@ public class RoutingDefinition {
 
     public RoutingStatus status() {
         return routingStatus;
+    }
+
+    public RoutingDefinition replaceStatus(final RoutingStatus status) {
+        routingStatus = status;
+        return this;
     }
 
     public String url() {
@@ -95,6 +104,25 @@ public class RoutingDefinition {
         return this;
     }
 
+    public RoutingDefinition addResponseHeader(final String headerName, final String value) {
+        if (headerName != null) {
+            responseHeaders.put(headerName, value == null ? "" : value);
+        }
+        return this;
+    }
+
+    public boolean hasResponseHeaders() {
+        return !responseHeaders.isEmpty();
+    }
+
+    public Collection<String> getResponseHeaderNames() {
+        return responseHeaders.keySet();
+    }
+
+    public String getResponseHeaderValue(final String headerName) {
+        return responseHeaders.get(headerName);
+    }
+
     public String getDocumentation() {
         return this.documentation;
     }
@@ -123,6 +151,11 @@ public class RoutingDefinition {
         return this;
     }
 
+    public RoutingDefinition clearPossibleStatuses() {
+        possibleStatusResponses.clear();
+        return this;
+    }
+
     public List<RoutingStatus> getPossibleStatusReponses() {
         return possibleStatusResponses;
     }
@@ -140,6 +173,11 @@ public class RoutingDefinition {
         return this;
     }
 
+    public RoutingDefinition clearReturnPayloads() {
+        returnPayload.clear();
+        return this;
+    }
+
     public boolean hasReturnPayloadFor(final Integer statusCode) {
         return returnPayload.containsKey(statusCode);
     }
@@ -153,12 +191,31 @@ public class RoutingDefinition {
         return this;
     }
 
+    public RoutingDefinition requestContentTypes(final String... contentTypes) {
+        requestContentTypes.clear();
+        if (contentTypes != null) {
+            for (String contentType : contentTypes) {
+                if (contentType != null && !contentType.trim().isEmpty()) {
+                    requestContentTypes.add(contentType.trim());
+                }
+            }
+        }
+        return this;
+    }
+
     public Boolean hasRequestPayload() {
         return requestPayload != null;
     }
 
     public String getRequestPayload() {
         return requestPayload;
+    }
+
+    public List<String> getRequestContentTypes() {
+        if (requestContentTypes.isEmpty()) {
+            return List.of("application/json", "application/xml");
+        }
+        return new ArrayList<>(requestContentTypes);
     }
 
     public RoutingDefinition requestEntityView(final String viewName) {

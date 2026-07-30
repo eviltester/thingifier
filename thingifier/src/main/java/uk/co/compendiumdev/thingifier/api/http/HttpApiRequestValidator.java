@@ -50,9 +50,7 @@ public class HttpApiRequestValidator {
 
         if (apiResponse == null) {
             // only validate content if it contains content
-            if (verb == ThingifierHttpApi.HttpVerb.POST
-                    || verb == ThingifierHttpApi.HttpVerb.PUT
-                    || verb == ThingifierHttpApi.HttpVerb.PATCH) {
+            if (verb == ThingifierHttpApi.HttpVerb.POST || verb == ThingifierHttpApi.HttpVerb.PUT) {
 
                 apiResponse =
                         new ContentTypeHeaderValidator(this.apiConfig)

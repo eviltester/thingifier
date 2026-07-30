@@ -16,6 +16,8 @@
         <thingifier.version>1.5.6-SNAPSHOT</thingifier.version>
         <swagger-models-version>2.2.52</swagger-models-version>
         <gson-version>2.8.6</gson-version>
+        <jackson-version>2.21.1</jackson-version>
+        <zjsonpatch-version>0.6.3</zjsonpatch-version>
         <sqlite-jdbc-version>3.53.2.0</sqlite-jdbc-version>
         <snakeyaml-version>2.6</snakeyaml-version>
         <junit.jupiter.version>5.6.2</junit.jupiter.version>
@@ -140,6 +142,7 @@
         <module>thingifier-crud-ui</module>
         <module>todoManagerRestAuto</module>
         <module>standAloneTodoListRestApi</module>
+        <module>standAloneConfiguredWriteMethodsRestApi</module>
         <module>standAloneTodoListManagerRestApi</module>
         <module>standAloneSqlLiteTodoListManagerRestApi</module>
         <module>standAloneTodoListManagerRestApiAuto</module>

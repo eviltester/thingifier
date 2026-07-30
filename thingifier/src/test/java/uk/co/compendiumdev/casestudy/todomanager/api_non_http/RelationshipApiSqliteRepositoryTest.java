@@ -28,464 +28,568 @@ public class RelationshipApiSqliteRepositoryTest {
 
     @Test
     public void getRelationshipPathsUseRepositoryWithoutLoadingCompatibilitySnapshot() {
-        try (Thingifier todoManager =
-                new Thingifier(new EntityRelModel(SqliteThingStoreProvider.inMemory()))) {
-            EntityDefinition todo = todoManager.defineThing("todo", "todos");
-            todo.addAsPrimaryKeyField(Field.is("guid", FieldType.AUTO_GUID));
-            todo.addField(Field.is("title", FieldType.STRING));
+        withFreshSqliteThingifier(
+                todoManager -> {
+                    EntityDefinition todo = todoManager.defineThing("todo", "todos");
+                    todo.addAsPrimaryKeyField(Field.is("guid", FieldType.AUTO_GUID));
+                    todo.addField(Field.is("title", FieldType.STRING));
 
-            EntityDefinition project = todoManager.defineThing("project", "projects");
-            project.addAsPrimaryKeyField(Field.is("guid", FieldType.AUTO_GUID));
-            project.addField(Field.is("title", FieldType.STRING));
+                    EntityDefinition project = todoManager.defineThing("project", "projects");
+                    project.addAsPrimaryKeyField(Field.is("guid", FieldType.AUTO_GUID));
+                    project.addField(Field.is("title", FieldType.STRING));
 
-            todoManager
-                    .defineRelationship(project, todo, "tasks", Cardinality.ONE_TO_MANY())
-                    .whenReversed(Cardinality.ONE_TO_MANY(), "task-of");
-
-            ThingStore repository = todoManager.getStore(EntityRelModel.DEFAULT_DATABASE_NAME);
-
-            EntityInstance task =
-                    repository
-                            .entities()
-                            .create(
-                                    EntityInstanceDraft.forEntity(todo)
-                                            .withField("title", "SQLite relationship task"));
-            EntityInstance projectInstance =
-                    repository
-                            .entities()
-                            .create(
-                                    EntityInstanceDraft.forEntity(project)
-                                            .withField("title", "SQLite relationship project"));
-
-            repository.relationships().connect(projectInstance, "tasks", task);
-
-            ApiResponse tasksResponse =
                     todoManager
-                            .api()
-                            .get(
-                                    String.format(
-                                            "project/%s/tasks",
-                                            projectInstance.getPrimaryKeyValue()),
-                                    new QueryFilterParams(),
-                                    new HttpHeadersBlock());
+                            .defineRelationship(project, todo, "tasks", Cardinality.ONE_TO_MANY())
+                            .whenReversed(Cardinality.ONE_TO_MANY(), "task-of");
 
-            Assertions.assertEquals(200, tasksResponse.getStatusCode());
-            Assertions.assertTrue(tasksResponse.isCollection());
-            Assertions.assertEquals(1, tasksResponse.getReturnedInstanceCollection().size());
-            Assertions.assertEquals(
-                    task.getPrimaryKeyValue(),
-                    tasksResponse.getReturnedInstanceCollection().get(0).getPrimaryKeyValue());
+                    ThingStore repository =
+                            todoManager.getStore(EntityRelModel.DEFAULT_DATABASE_NAME);
 
-            ApiResponse projectResponse =
-                    todoManager
-                            .api()
-                            .get(
-                                    String.format("todo/%s/task-of", task.getPrimaryKeyValue()),
-                                    new QueryFilterParams(),
-                                    new HttpHeadersBlock());
+                    EntityInstance task =
+                            repository
+                                    .entities()
+                                    .create(
+                                            EntityInstanceDraft.forEntity(todo)
+                                                    .withField(
+                                                            "title", "SQLite relationship task"));
+                    EntityInstance projectInstance =
+                            repository
+                                    .entities()
+                                    .create(
+                                            EntityInstanceDraft.forEntity(project)
+                                                    .withField(
+                                                            "title",
+                                                            "SQLite relationship project"));
 
-            Assertions.assertEquals(200, projectResponse.getStatusCode());
-            Assertions.assertTrue(projectResponse.isCollection());
-            Assertions.assertEquals(1, projectResponse.getReturnedInstanceCollection().size());
-            Assertions.assertEquals(
-                    projectInstance.getPrimaryKeyValue(),
-                    projectResponse.getReturnedInstanceCollection().get(0).getPrimaryKeyValue());
-        }
+                    repository.relationships().connect(projectInstance, "tasks", task);
+
+                    ApiResponse tasksResponse =
+                            todoManager
+                                    .api()
+                                    .get(
+                                            String.format(
+                                                    "project/%s/tasks",
+                                                    projectInstance.getPrimaryKeyValue()),
+                                            new QueryFilterParams(),
+                                            new HttpHeadersBlock());
+
+                    Assertions.assertEquals(200, tasksResponse.getStatusCode());
+                    Assertions.assertTrue(tasksResponse.isCollection());
+                    Assertions.assertEquals(
+                            1, tasksResponse.getReturnedInstanceCollection().size());
+                    Assertions.assertEquals(
+                            task.getPrimaryKeyValue(),
+                            tasksResponse
+                                    .getReturnedInstanceCollection()
+                                    .get(0)
+                                    .getPrimaryKeyValue());
+
+                    ApiResponse projectResponse =
+                            todoManager
+                                    .api()
+                                    .get(
+                                            String.format(
+                                                    "todo/%s/task-of", task.getPrimaryKeyValue()),
+                                            new QueryFilterParams(),
+                                            new HttpHeadersBlock());
+
+                    Assertions.assertEquals(200, projectResponse.getStatusCode());
+                    Assertions.assertTrue(projectResponse.isCollection());
+                    Assertions.assertEquals(
+                            1, projectResponse.getReturnedInstanceCollection().size());
+                    Assertions.assertEquals(
+                            projectInstance.getPrimaryKeyValue(),
+                            projectResponse
+                                    .getReturnedInstanceCollection()
+                                    .get(0)
+                                    .getPrimaryKeyValue());
+                });
     }
 
     @Test
     public void getUnsupportedRelationshipTraversalDoesNotUseCompatibilityFallback() {
-        try (Thingifier todoManager = sqliteTodoManager()) {
-            ThingStore repository = todoManager.getStore(EntityRelModel.DEFAULT_DATABASE_NAME);
-            EntityDefinition todo = todoManager.getDefinitionNamed("todo");
-            EntityDefinition project = todoManager.getDefinitionNamed("project");
+        withSqliteTodoManager(
+                todoManager -> {
+                    ThingStore repository =
+                            todoManager.getStore(EntityRelModel.DEFAULT_DATABASE_NAME);
+                    EntityDefinition todo = todoManager.getDefinitionNamed("todo");
+                    EntityDefinition project = todoManager.getDefinitionNamed("project");
 
-            EntityInstance task =
-                    repository
-                            .entities()
-                            .create(
-                                    EntityInstanceDraft.forEntity(todo)
-                                            .withField("title", "SQLite relationship task"));
-            EntityInstance projectInstance =
-                    repository
-                            .entities()
-                            .create(
-                                    EntityInstanceDraft.forEntity(project)
-                                            .withField("title", "SQLite relationship project"));
-            repository.relationships().connect(projectInstance, "tasks", task);
+                    EntityInstance task =
+                            repository
+                                    .entities()
+                                    .create(
+                                            EntityInstanceDraft.forEntity(todo)
+                                                    .withField(
+                                                            "title", "SQLite relationship task"));
+                    EntityInstance projectInstance =
+                            repository
+                                    .entities()
+                                    .create(
+                                            EntityInstanceDraft.forEntity(project)
+                                                    .withField(
+                                                            "title",
+                                                            "SQLite relationship project"));
+                    repository.relationships().connect(projectInstance, "tasks", task);
 
-            ApiResponse response =
-                    todoManager
-                            .api()
-                            .get(
-                                    String.format(
-                                            "project/%s/todo",
-                                            projectInstance.getPrimaryKeyValue()),
-                                    new QueryFilterParams(),
-                                    new HttpHeadersBlock());
+                    ApiResponse response =
+                            todoManager
+                                    .api()
+                                    .get(
+                                            String.format(
+                                                    "project/%s/todo",
+                                                    projectInstance.getPrimaryKeyValue()),
+                                            new QueryFilterParams(),
+                                            new HttpHeadersBlock());
 
-            Assertions.assertEquals(404, response.getStatusCode());
-        }
+                    Assertions.assertEquals(404, response.getStatusCode());
+                });
     }
 
     @Test
     public void postRelationshipPathConnectsExistingItemWithoutLoadingCompatibilitySnapshot() {
-        try (Thingifier todoManager = sqliteTodoManager()) {
-            ThingStore repository = todoManager.getStore(EntityRelModel.DEFAULT_DATABASE_NAME);
-            EntityDefinition todo = todoManager.getDefinitionNamed("todo");
-            EntityDefinition project = todoManager.getDefinitionNamed("project");
+        withSqliteTodoManager(
+                todoManager -> {
+                    ThingStore repository =
+                            todoManager.getStore(EntityRelModel.DEFAULT_DATABASE_NAME);
+                    EntityDefinition todo = todoManager.getDefinitionNamed("todo");
+                    EntityDefinition project = todoManager.getDefinitionNamed("project");
 
-            EntityInstance task =
-                    repository
-                            .entities()
-                            .create(
-                                    EntityInstanceDraft.forEntity(todo)
-                                            .withField("title", "SQLite relationship task"));
-            EntityInstance projectInstance =
-                    repository
-                            .entities()
-                            .create(
-                                    EntityInstanceDraft.forEntity(project)
-                                            .withField("title", "SQLite relationship project"));
+                    EntityInstance task =
+                            repository
+                                    .entities()
+                                    .create(
+                                            EntityInstanceDraft.forEntity(todo)
+                                                    .withField(
+                                                            "title", "SQLite relationship task"));
+                    EntityInstance projectInstance =
+                            repository
+                                    .entities()
+                                    .create(
+                                            EntityInstanceDraft.forEntity(project)
+                                                    .withField(
+                                                            "title",
+                                                            "SQLite relationship project"));
 
-            Map<String, String> body = new HashMap<>();
-            body.put("guid", task.getPrimaryKeyValue());
+                    Map<String, String> body = new HashMap<>();
+                    body.put("guid", task.getPrimaryKeyValue());
 
-            ApiResponse response =
-                    todoManager
-                            .api()
-                            .post(
-                                    String.format(
-                                            "project/%s/tasks",
-                                            projectInstance.getPrimaryKeyValue()),
-                                    parserFor(todoManager, body),
-                                    new HttpHeadersBlock());
+                    ApiResponse response =
+                            todoManager
+                                    .api()
+                                    .post(
+                                            String.format(
+                                                    "project/%s/tasks",
+                                                    projectInstance.getPrimaryKeyValue()),
+                                            parserFor(todoManager, body),
+                                            new HttpHeadersBlock());
 
-            Assertions.assertEquals(201, response.getStatusCode());
-            Assertions.assertEquals(
-                    1, repository.relationships().listRelated(projectInstance, "tasks").size());
-            Assertions.assertEquals(
-                    task.getPrimaryKeyValue(),
-                    repository
-                            .relationships()
-                            .listRelated(projectInstance, "tasks")
-                            .get(0)
-                            .getPrimaryKeyValue());
-        }
+                    Assertions.assertEquals(201, response.getStatusCode());
+                    Assertions.assertEquals(
+                            1,
+                            repository
+                                    .relationships()
+                                    .listRelated(projectInstance, "tasks")
+                                    .size());
+                    Assertions.assertEquals(
+                            task.getPrimaryKeyValue(),
+                            repository
+                                    .relationships()
+                                    .listRelated(projectInstance, "tasks")
+                                    .get(0)
+                                    .getPrimaryKeyValue());
+                });
     }
 
     @Test
     public void
             postReverseRelationshipPathConnectsExistingItemWithoutLoadingCompatibilitySnapshot() {
-        try (Thingifier todoManager = sqliteTodoManager()) {
-            ThingStore repository = todoManager.getStore(EntityRelModel.DEFAULT_DATABASE_NAME);
-            EntityDefinition todo = todoManager.getDefinitionNamed("todo");
-            EntityDefinition project = todoManager.getDefinitionNamed("project");
+        withSqliteTodoManager(
+                todoManager -> {
+                    ThingStore repository =
+                            todoManager.getStore(EntityRelModel.DEFAULT_DATABASE_NAME);
+                    EntityDefinition todo = todoManager.getDefinitionNamed("todo");
+                    EntityDefinition project = todoManager.getDefinitionNamed("project");
 
-            EntityInstance task =
-                    repository
-                            .entities()
-                            .create(
-                                    EntityInstanceDraft.forEntity(todo)
-                                            .withField("title", "SQLite relationship task"));
-            EntityInstance projectInstance =
-                    repository
-                            .entities()
-                            .create(
-                                    EntityInstanceDraft.forEntity(project)
-                                            .withField("title", "SQLite relationship project"));
+                    EntityInstance task =
+                            repository
+                                    .entities()
+                                    .create(
+                                            EntityInstanceDraft.forEntity(todo)
+                                                    .withField(
+                                                            "title", "SQLite relationship task"));
+                    EntityInstance projectInstance =
+                            repository
+                                    .entities()
+                                    .create(
+                                            EntityInstanceDraft.forEntity(project)
+                                                    .withField(
+                                                            "title",
+                                                            "SQLite relationship project"));
 
-            Map<String, String> body = new HashMap<>();
-            body.put("guid", projectInstance.getPrimaryKeyValue());
+                    Map<String, String> body = new HashMap<>();
+                    body.put("guid", projectInstance.getPrimaryKeyValue());
 
-            ApiResponse response =
-                    todoManager
-                            .api()
-                            .post(
-                                    String.format("todo/%s/task-of", task.getPrimaryKeyValue()),
-                                    parserFor(todoManager, body),
-                                    new HttpHeadersBlock());
+                    ApiResponse response =
+                            todoManager
+                                    .api()
+                                    .post(
+                                            String.format(
+                                                    "todo/%s/task-of", task.getPrimaryKeyValue()),
+                                            parserFor(todoManager, body),
+                                            new HttpHeadersBlock());
 
-            Assertions.assertEquals(201, response.getStatusCode());
-            Assertions.assertEquals(
-                    1, repository.relationships().listRelated(task, "task-of").size());
-            Assertions.assertEquals(
-                    projectInstance.getPrimaryKeyValue(),
-                    repository
-                            .relationships()
-                            .listRelated(task, "task-of")
-                            .get(0)
-                            .getPrimaryKeyValue());
-        }
+                    Assertions.assertEquals(201, response.getStatusCode());
+                    Assertions.assertEquals(
+                            1, repository.relationships().listRelated(task, "task-of").size());
+                    Assertions.assertEquals(
+                            projectInstance.getPrimaryKeyValue(),
+                            repository
+                                    .relationships()
+                                    .listRelated(task, "task-of")
+                                    .get(0)
+                                    .getPrimaryKeyValue());
+                });
     }
 
     @Test
     public void postRelationshipPathCreatesAndConnectsNewItemWithoutLoadingCompatibilitySnapshot() {
-        try (Thingifier todoManager = sqliteTodoManager()) {
-            ThingStore repository = todoManager.getStore(EntityRelModel.DEFAULT_DATABASE_NAME);
-            EntityDefinition todo = todoManager.getDefinitionNamed("todo");
-            EntityDefinition project = todoManager.getDefinitionNamed("project");
+        withSqliteTodoManager(
+                todoManager -> {
+                    ThingStore repository =
+                            todoManager.getStore(EntityRelModel.DEFAULT_DATABASE_NAME);
+                    EntityDefinition todo = todoManager.getDefinitionNamed("todo");
+                    EntityDefinition project = todoManager.getDefinitionNamed("project");
 
-            EntityInstance projectInstance =
-                    repository
-                            .entities()
-                            .create(
-                                    EntityInstanceDraft.forEntity(project)
-                                            .withField("title", "SQLite relationship project"));
+                    EntityInstance projectInstance =
+                            repository
+                                    .entities()
+                                    .create(
+                                            EntityInstanceDraft.forEntity(project)
+                                                    .withField(
+                                                            "title",
+                                                            "SQLite relationship project"));
 
-            Map<String, String> body = new HashMap<>();
-            body.put("title", "created through relationship path");
+                    Map<String, String> body = new HashMap<>();
+                    body.put("title", "created through relationship path");
 
-            ApiResponse response =
-                    todoManager
-                            .api()
-                            .post(
-                                    String.format(
-                                            "project/%s/tasks",
-                                            projectInstance.getPrimaryKeyValue()),
-                                    parserFor(todoManager, body),
-                                    new HttpHeadersBlock());
+                    ApiResponse response =
+                            todoManager
+                                    .api()
+                                    .post(
+                                            String.format(
+                                                    "project/%s/tasks",
+                                                    projectInstance.getPrimaryKeyValue()),
+                                            parserFor(todoManager, body),
+                                            new HttpHeadersBlock());
 
-            Assertions.assertEquals(201, response.getStatusCode());
-            List<EntityInstance> relatedTasks =
-                    repository.relationships().listRelated(projectInstance, "tasks");
-            Assertions.assertEquals(1, relatedTasks.size());
-            Assertions.assertEquals(
-                    "created through relationship path",
-                    relatedTasks.get(0).getFieldValue("title").asString());
-            Assertions.assertEquals(1, repository.entityQueries().list(todo).size());
-        }
+                    Assertions.assertEquals(201, response.getStatusCode());
+                    List<EntityInstance> relatedTasks =
+                            repository.relationships().listRelated(projectInstance, "tasks");
+                    Assertions.assertEquals(1, relatedTasks.size());
+                    Assertions.assertEquals(
+                            "created through relationship path",
+                            relatedTasks.get(0).getFieldValue("title").asString());
+                    Assertions.assertEquals(1, repository.entityQueries().list(todo).size());
+                });
     }
 
     @Test
     public void failedRelationshipPathDoesNotDeleteExistingRelatedItem() {
-        try (Thingifier todoManager = sqliteTodoManagerWithMandatoryCategory()) {
-            ThingStore repository = todoManager.getStore(EntityRelModel.DEFAULT_DATABASE_NAME);
-            EntityDefinition todo = todoManager.getDefinitionNamed("todo");
-            EntityDefinition project = todoManager.getDefinitionNamed("project");
+        withMandatoryCategoryTodoManager(
+                todoManager -> {
+                    ThingStore repository =
+                            todoManager.getStore(EntityRelModel.DEFAULT_DATABASE_NAME);
+                    EntityDefinition todo = todoManager.getDefinitionNamed("todo");
+                    EntityDefinition project = todoManager.getDefinitionNamed("project");
 
-            EntityInstance task =
-                    repository
-                            .entities()
-                            .create(
-                                    EntityInstanceDraft.forEntity(todo)
-                                            .withField("title", "Existing invalid task"));
-            EntityInstance projectInstance =
-                    repository
-                            .entities()
-                            .create(
-                                    EntityInstanceDraft.forEntity(project)
-                                            .withField("title", "SQLite relationship project"));
+                    EntityInstance task =
+                            repository
+                                    .entities()
+                                    .create(
+                                            EntityInstanceDraft.forEntity(todo)
+                                                    .withField("title", "Existing invalid task"));
+                    EntityInstance projectInstance =
+                            repository
+                                    .entities()
+                                    .create(
+                                            EntityInstanceDraft.forEntity(project)
+                                                    .withField(
+                                                            "title",
+                                                            "SQLite relationship project"));
 
-            Map<String, String> body = new HashMap<>();
-            body.put("guid", task.getPrimaryKeyValue());
+                    Map<String, String> body = new HashMap<>();
+                    body.put("guid", task.getPrimaryKeyValue());
 
-            ApiResponse response =
-                    todoManager
-                            .api()
-                            .post(
-                                    String.format(
-                                            "project/%s/tasks",
-                                            projectInstance.getPrimaryKeyValue()),
-                                    parserFor(todoManager, body),
-                                    new HttpHeadersBlock());
+                    ApiResponse response =
+                            todoManager
+                                    .api()
+                                    .post(
+                                            String.format(
+                                                    "project/%s/tasks",
+                                                    projectInstance.getPrimaryKeyValue()),
+                                            parserFor(todoManager, body),
+                                            new HttpHeadersBlock());
 
-            Assertions.assertEquals(422, response.getStatusCode());
-            Assertions.assertNotNull(
-                    repository
-                            .entityQueries()
-                            .findByQueryIdentifier(todo, task.getPrimaryKeyValue()));
-            Assertions.assertTrue(
-                    repository.relationships().listRelated(projectInstance, "tasks").isEmpty());
-        }
+                    Assertions.assertEquals(422, response.getStatusCode());
+                    Assertions.assertNotNull(
+                            repository
+                                    .entityQueries()
+                                    .findByQueryIdentifier(todo, task.getPrimaryKeyValue()));
+                    Assertions.assertTrue(
+                            repository
+                                    .relationships()
+                                    .listRelated(projectInstance, "tasks")
+                                    .isEmpty());
+                });
     }
 
     @Test
     public void failedRootCreateDoesNotPersistEntityWhenRelationshipInvariantFails() {
-        try (Thingifier todoManager = sqliteTodoManagerWithMandatoryCategory()) {
-            ThingStore repository = todoManager.getStore(EntityRelModel.DEFAULT_DATABASE_NAME);
-            EntityDefinition todo = todoManager.getDefinitionNamed("todo");
-            int todoCount = repository.entityQueries().count(todo);
+        withMandatoryCategoryTodoManager(
+                todoManager -> {
+                    ThingStore repository =
+                            todoManager.getStore(EntityRelModel.DEFAULT_DATABASE_NAME);
+                    EntityDefinition todo = todoManager.getDefinitionNamed("todo");
+                    int todoCount = repository.entityQueries().count(todo);
 
-            Map<String, String> body = new HashMap<>();
-            body.put("title", "No category means rollback");
+                    Map<String, String> body = new HashMap<>();
+                    body.put("title", "No category means rollback");
 
-            ApiResponse response =
-                    todoManager
-                            .api()
-                            .post("todo", parserFor(todoManager, body), new HttpHeadersBlock());
+                    ApiResponse response =
+                            todoManager
+                                    .api()
+                                    .post(
+                                            "todo",
+                                            parserFor(todoManager, body),
+                                            new HttpHeadersBlock());
 
-            Assertions.assertEquals(422, response.getStatusCode());
-            Assertions.assertEquals(todoCount, repository.entityQueries().count(todo));
-        }
+                    Assertions.assertEquals(422, response.getStatusCode());
+                    Assertions.assertEquals(todoCount, repository.entityQueries().count(todo));
+                });
     }
 
     @Test
     public void relationshipPathCreateCanSatisfyMandatoryRelationshipInSameCommand() {
-        try (Thingifier todoManager = sqliteTaskProjectModelWithMandatoryTaskProject()) {
-            ThingStore repository = todoManager.getStore(EntityRelModel.DEFAULT_DATABASE_NAME);
-            EntityDefinition task = todoManager.getDefinitionNamed("task");
-            EntityDefinition project = todoManager.getDefinitionNamed("project");
-            int taskCount = repository.entityQueries().count(task);
-            EntityInstance projectInstance =
-                    repository
-                            .entities()
-                            .create(
-                                    EntityInstanceDraft.forEntity(project)
-                                            .withField("title", "Project for new task"));
+        withMandatoryTaskProjectModel(
+                todoManager -> {
+                    ThingStore repository =
+                            todoManager.getStore(EntityRelModel.DEFAULT_DATABASE_NAME);
+                    EntityDefinition task = todoManager.getDefinitionNamed("task");
+                    EntityDefinition project = todoManager.getDefinitionNamed("project");
+                    int taskCount = repository.entityQueries().count(task);
+                    EntityInstance projectInstance =
+                            repository
+                                    .entities()
+                                    .create(
+                                            EntityInstanceDraft.forEntity(project)
+                                                    .withField("title", "Project for new task"));
 
-            Map<String, String> body = new HashMap<>();
-            body.put("title", "Task created through relationship path");
+                    Map<String, String> body = new HashMap<>();
+                    body.put("title", "Task created through relationship path");
 
-            ApiResponse response =
-                    todoManager
-                            .api()
-                            .post(
-                                    String.format(
-                                            "project/%s/tasks",
-                                            projectInstance.getPrimaryKeyValue()),
-                                    parserFor(todoManager, body),
-                                    new HttpHeadersBlock());
+                    ApiResponse response =
+                            todoManager
+                                    .api()
+                                    .post(
+                                            String.format(
+                                                    "project/%s/tasks",
+                                                    projectInstance.getPrimaryKeyValue()),
+                                            parserFor(todoManager, body),
+                                            new HttpHeadersBlock());
 
-            Assertions.assertEquals(201, response.getStatusCode());
-            Assertions.assertEquals(taskCount + 1, repository.entityQueries().count(task));
-            Assertions.assertEquals(
-                    1, repository.relationships().listRelated(projectInstance, "tasks").size());
-            Assertions.assertTrue(
-                    repository.relationships().validate(response.getReturnedInstance()).isValid());
-        }
+                    Assertions.assertEquals(201, response.getStatusCode());
+                    Assertions.assertEquals(taskCount + 1, repository.entityQueries().count(task));
+                    Assertions.assertEquals(
+                            1,
+                            repository
+                                    .relationships()
+                                    .listRelated(projectInstance, "tasks")
+                                    .size());
+                    Assertions.assertTrue(
+                            repository
+                                    .relationships()
+                                    .validate(response.getReturnedInstance())
+                                    .isValid());
+                });
     }
 
     @Test
     public void failedRelationshipAmendRestoresFieldsAndRelationships() {
-        try (Thingifier todoManager = sqliteTaskProjectModel()) {
-            ThingStore repository = todoManager.getStore(EntityRelModel.DEFAULT_DATABASE_NAME);
-            EntityDefinition taskDefinition = todoManager.getDefinitionNamed("task");
-            EntityDefinition projectDefinition = todoManager.getDefinitionNamed("project");
+        withTaskProjectModel(
+                todoManager -> {
+                    ThingStore repository =
+                            todoManager.getStore(EntityRelModel.DEFAULT_DATABASE_NAME);
+                    EntityDefinition taskDefinition = todoManager.getDefinitionNamed("task");
+                    EntityDefinition projectDefinition = todoManager.getDefinitionNamed("project");
 
-            EntityInstance task =
-                    repository
-                            .entities()
-                            .create(
-                                    EntityInstanceDraft.forEntity(taskDefinition)
-                                            .withField("title", "Original title"));
-            EntityInstance originalProject =
-                    repository
-                            .entities()
-                            .create(
-                                    EntityInstanceDraft.forEntity(projectDefinition)
-                                            .withField("title", "Original project"));
-            EntityInstance rejectedProject =
-                    repository
-                            .entities()
-                            .create(
-                                    EntityInstanceDraft.forEntity(projectDefinition)
-                                            .withField("title", "Rejected project"));
-            repository.relationships().connect(task, "task-of", originalProject);
+                    EntityInstance task =
+                            repository
+                                    .entities()
+                                    .create(
+                                            EntityInstanceDraft.forEntity(taskDefinition)
+                                                    .withField("title", "Original title"));
+                    EntityInstance originalProject =
+                            repository
+                                    .entities()
+                                    .create(
+                                            EntityInstanceDraft.forEntity(projectDefinition)
+                                                    .withField("title", "Original project"));
+                    EntityInstance rejectedProject =
+                            repository
+                                    .entities()
+                                    .create(
+                                            EntityInstanceDraft.forEntity(projectDefinition)
+                                                    .withField("title", "Rejected project"));
+                    repository.relationships().connect(task, "task-of", originalProject);
 
-            Map<String, String> body = new HashMap<>();
-            body.put("title", "Should not persist");
-            body.put("task-of.guid", rejectedProject.getPrimaryKeyValue());
+                    Map<String, String> body = new HashMap<>();
+                    body.put("title", "Should not persist");
+                    body.put("task-of.guid", rejectedProject.getPrimaryKeyValue());
 
-            ApiResponse response =
-                    todoManager
-                            .api()
-                            .post(
-                                    String.format("task/%s", task.getPrimaryKeyValue()),
-                                    parserFor(todoManager, body),
-                                    new HttpHeadersBlock());
+                    ApiResponse response =
+                            todoManager
+                                    .api()
+                                    .post(
+                                            String.format("task/%s", task.getPrimaryKeyValue()),
+                                            parserFor(todoManager, body),
+                                            new HttpHeadersBlock());
 
-            EntityInstance restoredTask =
-                    repository
-                            .entityQueries()
-                            .findByQueryIdentifier(taskDefinition, task.getPrimaryKeyValue());
-            List<EntityInstance> relatedProjects =
-                    repository.relationships().listRelated(restoredTask, "task-of");
+                    EntityInstance restoredTask =
+                            repository
+                                    .entityQueries()
+                                    .findByQueryIdentifier(
+                                            taskDefinition, task.getPrimaryKeyValue());
+                    List<EntityInstance> relatedProjects =
+                            repository.relationships().listRelated(restoredTask, "task-of");
 
-            Assertions.assertEquals(422, response.getStatusCode());
-            Assertions.assertEquals(
-                    "Original title", restoredTask.getFieldValue("title").asString());
-            Assertions.assertEquals(1, relatedProjects.size());
-            Assertions.assertEquals(
-                    originalProject.getPrimaryKeyValue(),
-                    relatedProjects.get(0).getPrimaryKeyValue());
-        }
+                    Assertions.assertEquals(422, response.getStatusCode());
+                    Assertions.assertEquals(
+                            "Original title", restoredTask.getFieldValue("title").asString());
+                    Assertions.assertEquals(1, relatedProjects.size());
+                    Assertions.assertEquals(
+                            originalProject.getPrimaryKeyValue(),
+                            relatedProjects.get(0).getPrimaryKeyValue());
+                });
     }
 
     @Test
     public void deleteRelationshipPathRemovesOnlyRelationshipWithoutLoadingCompatibilitySnapshot() {
-        try (Thingifier todoManager = sqliteTodoManager()) {
-            ThingStore repository = todoManager.getStore(EntityRelModel.DEFAULT_DATABASE_NAME);
-            EntityDefinition todo = todoManager.getDefinitionNamed("todo");
-            EntityDefinition project = todoManager.getDefinitionNamed("project");
+        withSqliteTodoManager(
+                todoManager -> {
+                    ThingStore repository =
+                            todoManager.getStore(EntityRelModel.DEFAULT_DATABASE_NAME);
+                    EntityDefinition todo = todoManager.getDefinitionNamed("todo");
+                    EntityDefinition project = todoManager.getDefinitionNamed("project");
 
-            EntityInstance task =
-                    repository
-                            .entities()
-                            .create(
-                                    EntityInstanceDraft.forEntity(todo)
-                                            .withField("title", "SQLite relationship task"));
-            EntityInstance projectInstance =
-                    repository
-                            .entities()
-                            .create(
-                                    EntityInstanceDraft.forEntity(project)
-                                            .withField("title", "SQLite relationship project"));
-            repository.relationships().connect(projectInstance, "tasks", task);
+                    EntityInstance task =
+                            repository
+                                    .entities()
+                                    .create(
+                                            EntityInstanceDraft.forEntity(todo)
+                                                    .withField(
+                                                            "title", "SQLite relationship task"));
+                    EntityInstance projectInstance =
+                            repository
+                                    .entities()
+                                    .create(
+                                            EntityInstanceDraft.forEntity(project)
+                                                    .withField(
+                                                            "title",
+                                                            "SQLite relationship project"));
+                    repository.relationships().connect(projectInstance, "tasks", task);
 
-            ApiResponse response =
-                    todoManager
-                            .api()
-                            .delete(
-                                    String.format(
-                                            "project/%s/tasks/%s",
-                                            projectInstance.getPrimaryKeyValue(),
-                                            task.getPrimaryKeyValue()),
-                                    new HttpHeadersBlock());
+                    ApiResponse response =
+                            todoManager
+                                    .api()
+                                    .delete(
+                                            String.format(
+                                                    "project/%s/tasks/%s",
+                                                    projectInstance.getPrimaryKeyValue(),
+                                                    task.getPrimaryKeyValue()),
+                                            new HttpHeadersBlock());
 
-            Assertions.assertEquals(204, response.getStatusCode());
-            Assertions.assertTrue(
-                    repository.relationships().listRelated(projectInstance, "tasks").isEmpty());
-            Assertions.assertNotNull(
-                    repository
-                            .entityQueries()
-                            .findByQueryIdentifier(todo, task.getPrimaryKeyValue()));
-        }
+                    Assertions.assertEquals(204, response.getStatusCode());
+                    Assertions.assertTrue(
+                            repository
+                                    .relationships()
+                                    .listRelated(projectInstance, "tasks")
+                                    .isEmpty());
+                    Assertions.assertNotNull(
+                            repository
+                                    .entityQueries()
+                                    .findByQueryIdentifier(todo, task.getPrimaryKeyValue()));
+                });
     }
 
     @Test
     public void deleteMissingRelationshipPathReturns404WithoutLoadingCompatibilitySnapshot() {
-        try (Thingifier todoManager = sqliteTodoManager()) {
-            ThingStore repository = todoManager.getStore(EntityRelModel.DEFAULT_DATABASE_NAME);
-            EntityDefinition todo = todoManager.getDefinitionNamed("todo");
-            EntityDefinition project = todoManager.getDefinitionNamed("project");
+        withSqliteTodoManager(
+                todoManager -> {
+                    ThingStore repository =
+                            todoManager.getStore(EntityRelModel.DEFAULT_DATABASE_NAME);
+                    EntityDefinition todo = todoManager.getDefinitionNamed("todo");
+                    EntityDefinition project = todoManager.getDefinitionNamed("project");
 
-            EntityInstance task =
-                    repository
-                            .entities()
-                            .create(
-                                    EntityInstanceDraft.forEntity(todo)
-                                            .withField("title", "SQLite relationship task"));
-            EntityInstance projectInstance =
-                    repository
-                            .entities()
-                            .create(
-                                    EntityInstanceDraft.forEntity(project)
-                                            .withField("title", "SQLite relationship project"));
+                    EntityInstance task =
+                            repository
+                                    .entities()
+                                    .create(
+                                            EntityInstanceDraft.forEntity(todo)
+                                                    .withField(
+                                                            "title", "SQLite relationship task"));
+                    EntityInstance projectInstance =
+                            repository
+                                    .entities()
+                                    .create(
+                                            EntityInstanceDraft.forEntity(project)
+                                                    .withField(
+                                                            "title",
+                                                            "SQLite relationship project"));
 
-            ApiResponse response =
-                    todoManager
-                            .api()
-                            .delete(
-                                    String.format(
-                                            "project/%s/tasks/%s",
-                                            projectInstance.getPrimaryKeyValue(),
-                                            task.getPrimaryKeyValue()),
-                                    new HttpHeadersBlock());
+                    ApiResponse response =
+                            todoManager
+                                    .api()
+                                    .delete(
+                                            String.format(
+                                                    "project/%s/tasks/%s",
+                                                    projectInstance.getPrimaryKeyValue(),
+                                                    task.getPrimaryKeyValue()),
+                                            new HttpHeadersBlock());
 
-            Assertions.assertEquals(404, response.getStatusCode());
-            Assertions.assertTrue(
-                    repository.relationships().listRelated(projectInstance, "tasks").isEmpty());
+                    Assertions.assertEquals(404, response.getStatusCode());
+                    Assertions.assertTrue(
+                            repository
+                                    .relationships()
+                                    .listRelated(projectInstance, "tasks")
+                                    .isEmpty());
+                });
+    }
+
+    private void withFreshSqliteThingifier(final ThingifierScenario scenario) {
+        withThingifier(
+                new Thingifier(new EntityRelModel(SqliteThingStoreProvider.inMemory())), scenario);
+    }
+
+    private void withSqliteTodoManager(final ThingifierScenario scenario) {
+        withThingifier(sqliteTodoManager(), scenario);
+    }
+
+    private void withMandatoryCategoryTodoManager(final ThingifierScenario scenario) {
+        withThingifier(sqliteTodoManagerWithMandatoryCategory(), scenario);
+    }
+
+    private void withMandatoryTaskProjectModel(final ThingifierScenario scenario) {
+        withThingifier(sqliteTaskProjectModelWithMandatoryTaskProject(), scenario);
+    }
+
+    private void withTaskProjectModel(final ThingifierScenario scenario) {
+        withThingifier(sqliteTaskProjectModel(), scenario);
+    }
+
+    private void withThingifier(final Thingifier todoManager, final ThingifierScenario scenario) {
+        try (Thingifier openThingifier = todoManager) {
+            scenario.run(openThingifier);
         }
     }
 
@@ -557,5 +661,10 @@ public class RelationshipApiSqliteRepositoryTest {
     private BodyParser parserFor(final Thingifier todoManager, final Map<String, String> body) {
         HttpApiRequest request = new HttpApiRequest("/path").setBody(new Gson().toJson(body));
         return new BodyParser(request, todoManager.getThingNames());
+    }
+
+    @FunctionalInterface
+    private interface ThingifierScenario {
+        void run(Thingifier todoManager);
     }
 }

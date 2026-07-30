@@ -238,6 +238,17 @@ public class ThingifierHttpApiRoutings {
                                     applyStaticResponse(defn, response);
                                     return "";
                                 });
+                    } else {
+                        patch(
+                                defn.url(),
+                                (request, response) -> {
+                                    final InternalHttpRequest theRequest =
+                                            internalRequestFrom(request);
+                                    final InternalHttpResponse theResponse =
+                                            apiBridge.patch(theRequest);
+                                    return InternalHttpResponseToHttpServer.convert(
+                                            theResponse, response);
+                                });
                     }
                     break;
                 case PUT:
@@ -375,6 +386,11 @@ public class ThingifierHttpApiRoutings {
         response.status(defn.status().value());
         if (!defn.header().isEmpty()) {
             response.header(defn.header(), defn.headerValue());
+        }
+        if (defn.hasResponseHeaders()) {
+            for (String headerName : defn.getResponseHeaderNames()) {
+                response.header(headerName, defn.getResponseHeaderValue(headerName));
+            }
         }
         if (defn.headerValue().contains("QUERY")) {
             response.header(
