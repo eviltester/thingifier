@@ -1,5 +1,6 @@
 package uk.co.compendiumdev.thingifier.api;
 
+import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.api.http.headers.headerparser.AcceptHeaderParser;
@@ -149,5 +150,55 @@ public class AcceptHeaderParserTest {
         Assertions.assertFalse(accept.hasAskedFor(AcceptHeaderParser.ACCEPT_TYPE.ANYTHING));
         Assertions.assertFalse(accept.hasAskedFor(AcceptHeaderParser.ACCEPT_TYPE.XML));
         Assertions.assertFalse(accept.hasAskedFor(AcceptHeaderParser.ACCEPT_TYPE.JSON));
+    }
+
+    @Test
+    public void willAcceptAdditionalResponseRepresentations() {
+        Assertions.assertTrue(
+                new AcceptHeaderParser("text/csv").willAccept(AcceptHeaderParser.ACCEPT_TYPE.CSV));
+        Assertions.assertTrue(new AcceptHeaderParser("text/plain").willAcceptText());
+        Assertions.assertTrue(
+                new AcceptHeaderParser("text/html")
+                        .willAccept(AcceptHeaderParser.ACCEPT_TYPE.HTML));
+        Assertions.assertTrue(
+                new AcceptHeaderParser("application/x-ndjson")
+                        .willAccept(AcceptHeaderParser.ACCEPT_TYPE.NDJSON));
+        Assertions.assertTrue(
+                new AcceptHeaderParser("application/jsonl")
+                        .willAccept(AcceptHeaderParser.ACCEPT_TYPE.JSONL));
+        Assertions.assertTrue(
+                new AcceptHeaderParser("application/json-seq")
+                        .willAccept(AcceptHeaderParser.ACCEPT_TYPE.JSON_SEQ));
+        Assertions.assertTrue(
+                new AcceptHeaderParser("text/tab-separated-values")
+                        .willAccept(AcceptHeaderParser.ACCEPT_TYPE.TSV));
+    }
+
+    @Test
+    public void matchesMediaTypesBeforeHeaderParameters() {
+        final AcceptHeaderParser accept =
+                new AcceptHeaderParser("application/json-seq; charset=utf-8");
+
+        Assertions.assertTrue(accept.hasAskedFor(AcceptHeaderParser.ACCEPT_TYPE.JSON_SEQ));
+        Assertions.assertFalse(accept.hasAskedFor(AcceptHeaderParser.ACCEPT_TYPE.JSON));
+    }
+
+    @Test
+    public void identifiesFirstSupportedRepresentationInHeaderOrder() {
+        final AcceptHeaderParser accept =
+                new AcceptHeaderParser("application/unknown, text/html, text/csv");
+
+        Assertions.assertEquals(
+                List.of(AcceptHeaderParser.ACCEPT_TYPE.HTML, AcceptHeaderParser.ACCEPT_TYPE.CSV),
+                accept.getSupportedTypesInPreferenceOrder());
+        Assertions.assertTrue(accept.hasAPreferenceForHtml());
+        Assertions.assertFalse(accept.hasAPreferenceForCsv());
+    }
+
+    @Test
+    public void textWildcardIsNotASupportedResponseRepresentation() {
+        final AcceptHeaderParser accept = new AcceptHeaderParser("text/*");
+
+        Assertions.assertFalse(accept.isSupportedHeader());
     }
 }

@@ -2,20 +2,9 @@ package uk.co.compendiumdev.thingifier.api.http.headers.headerparser;
 
 import java.util.*;
 
-// TODO: configure with additional accept strings e.g. to allow text/plain
 public class AcceptHeaderParser {
     private final String acceptHeader;
     private final List<String> acceptMediaTypeDefinitionsList;
-    private final String[] acceptedXmlStrings = {
-        "application/xml",
-    };
-    private final String[] acceptedJsonStrings = {"application/json"};
-
-    private final String[] acceptedAnythingStrings = {"application/*", "*/*"};
-
-    private final String[] acceptedTextStrings = {"text/plain", "text/html"};
-
-    private final Map<ACCEPT_TYPE, List<String>> acceptedTypes;
 
     public boolean willAcceptAnything() {
         return willAccept(ACCEPT_TYPE.ANYTHING);
@@ -33,6 +22,30 @@ public class AcceptHeaderParser {
         return willAccept(ACCEPT_TYPE.TEXT);
     }
 
+    public boolean willAcceptCsv() {
+        return willAccept(ACCEPT_TYPE.CSV);
+    }
+
+    public boolean willAcceptHtml() {
+        return willAccept(ACCEPT_TYPE.HTML);
+    }
+
+    public boolean willAcceptNdJson() {
+        return willAccept(ACCEPT_TYPE.NDJSON);
+    }
+
+    public boolean willAcceptJsonLines() {
+        return willAccept(ACCEPT_TYPE.JSONL);
+    }
+
+    public boolean willAcceptJsonSequence() {
+        return willAccept(ACCEPT_TYPE.JSON_SEQ);
+    }
+
+    public boolean willAcceptTsv() {
+        return willAccept(ACCEPT_TYPE.TSV);
+    }
+
     public boolean hasAskedForXML() {
         return hasAskedFor(AcceptHeaderParser.ACCEPT_TYPE.XML);
     }
@@ -47,6 +60,30 @@ public class AcceptHeaderParser {
 
     public boolean hasAskedForTEXT() {
         return hasAskedFor(ACCEPT_TYPE.TEXT);
+    }
+
+    public boolean hasAskedForCSV() {
+        return hasAskedFor(ACCEPT_TYPE.CSV);
+    }
+
+    public boolean hasAskedForHTML() {
+        return hasAskedFor(ACCEPT_TYPE.HTML);
+    }
+
+    public boolean hasAskedForNDJSON() {
+        return hasAskedFor(ACCEPT_TYPE.NDJSON);
+    }
+
+    public boolean hasAskedForJSONL() {
+        return hasAskedFor(ACCEPT_TYPE.JSONL);
+    }
+
+    public boolean hasAskedForJSONSEQ() {
+        return hasAskedFor(ACCEPT_TYPE.JSON_SEQ);
+    }
+
+    public boolean hasAskedForTSV() {
+        return hasAskedFor(ACCEPT_TYPE.TSV);
     }
 
     public boolean missingAcceptHeader() {
@@ -70,11 +107,46 @@ public class AcceptHeaderParser {
     }
 
     public enum ACCEPT_TYPE {
-        XML,
-        JSON,
-        ANYTHING,
-        NO_MATCHING_TYPE,
-        TEXT
+        XML("application/xml"),
+        JSON("application/json"),
+        CSV("text/csv"),
+        TEXT("text/plain"),
+        HTML("text/html"),
+        NDJSON("application/x-ndjson"),
+        JSONL("application/jsonl"),
+        JSON_SEQ("application/json-seq"),
+        TSV("text/tab-separated-values"),
+        ANYTHING("application/*", "*/*"),
+        NO_MATCHING_TYPE();
+
+        private final List<String> mediaTypes;
+
+        ACCEPT_TYPE(final String... mediaTypes) {
+            this.mediaTypes = List.of(mediaTypes);
+        }
+
+        public String mediaType() {
+            if (mediaTypes.isEmpty()) {
+                return "";
+            }
+            return mediaTypes.get(0);
+        }
+
+        public List<String> mediaTypes() {
+            return mediaTypes;
+        }
+
+        public boolean hasConcreteResponseMediaType() {
+            return this != ANYTHING && this != NO_MATCHING_TYPE;
+        }
+
+        public boolean usesComponentSchemaInDocumentation() {
+            return this == JSON || this == XML;
+        }
+
+        public static List<ACCEPT_TYPE> responseMediaTypes() {
+            return List.of(JSON, XML, CSV, TEXT, HTML, NDJSON, JSONL, JSON_SEQ, TSV);
+        }
     };
 
     // TODO: configure to all new accept headers and remove accept headers
@@ -86,13 +158,6 @@ public class AcceptHeaderParser {
         } else {
             this.acceptHeader = acceptHeader.trim().toLowerCase();
         }
-
-        acceptedTypes = new HashMap<ACCEPT_TYPE, List<String>>();
-        acceptedTypes.put(ACCEPT_TYPE.XML, Arrays.asList(acceptedXmlStrings));
-        acceptedTypes.put(ACCEPT_TYPE.JSON, Arrays.asList(acceptedJsonStrings));
-        acceptedTypes.put(ACCEPT_TYPE.ANYTHING, Arrays.asList(acceptedAnythingStrings));
-        acceptedTypes.put(ACCEPT_TYPE.NO_MATCHING_TYPE, new ArrayList<>());
-        acceptedTypes.put(ACCEPT_TYPE.TEXT, Arrays.asList(acceptedTextStrings));
 
         // TODO: use ;q=0.9 to sort items in the array
         String[] acceptMediaTypeDefinitions = this.acceptHeader.split(",");
@@ -126,16 +191,34 @@ public class AcceptHeaderParser {
         return false;
     }
 
+    public List<ACCEPT_TYPE> getSupportedTypesInPreferenceOrder() {
+        List<ACCEPT_TYPE> supportedTypes = new ArrayList<>();
+        for (String acceptedType : acceptMediaTypeDefinitionsList) {
+            ACCEPT_TYPE matchingType = getMatchingType(acceptedType);
+            if (matchingType != ACCEPT_TYPE.NO_MATCHING_TYPE) {
+                supportedTypes.add(matchingType);
+            }
+        }
+        return supportedTypes;
+    }
+
     private ACCEPT_TYPE getMatchingType(final String matchMe) {
-        for (Map.Entry<ACCEPT_TYPE, List<String>> type : acceptedTypes.entrySet()) {
-            List<String> validMatches = type.getValue();
-            for (String possibleMatch : validMatches) {
-                if (matchMe.contains(possibleMatch)) {
-                    return type.getKey();
+        final String mediaType = mediaTypeFrom(matchMe);
+        for (ACCEPT_TYPE type : ACCEPT_TYPE.values()) {
+            for (String possibleMatch : type.mediaTypes()) {
+                if (mediaType.equals(possibleMatch)) {
+                    return type;
                 }
             }
         }
         return ACCEPT_TYPE.NO_MATCHING_TYPE;
+    }
+
+    private String mediaTypeFrom(final String acceptMediaTypeDefinition) {
+        if (acceptMediaTypeDefinition == null) {
+            return "";
+        }
+        return acceptMediaTypeDefinition.split(";", 2)[0].trim();
     }
 
     public boolean hasAPreferenceForXml() {
@@ -144,6 +227,34 @@ public class AcceptHeaderParser {
 
     public boolean hasAPreferenceForJson() {
         return hasAPreferenceFor(ACCEPT_TYPE.JSON);
+    }
+
+    public boolean hasAPreferenceForCsv() {
+        return hasAPreferenceFor(ACCEPT_TYPE.CSV);
+    }
+
+    public boolean hasAPreferenceForText() {
+        return hasAPreferenceFor(ACCEPT_TYPE.TEXT);
+    }
+
+    public boolean hasAPreferenceForHtml() {
+        return hasAPreferenceFor(ACCEPT_TYPE.HTML);
+    }
+
+    public boolean hasAPreferenceForNdJson() {
+        return hasAPreferenceFor(ACCEPT_TYPE.NDJSON);
+    }
+
+    public boolean hasAPreferenceForJsonLines() {
+        return hasAPreferenceFor(ACCEPT_TYPE.JSONL);
+    }
+
+    public boolean hasAPreferenceForJsonSequence() {
+        return hasAPreferenceFor(ACCEPT_TYPE.JSON_SEQ);
+    }
+
+    public boolean hasAPreferenceForTsv() {
+        return hasAPreferenceFor(ACCEPT_TYPE.TSV);
     }
 
     public boolean willAccept(final ACCEPT_TYPE type) {
@@ -163,12 +274,11 @@ public class AcceptHeaderParser {
     }
 
     public boolean hasAskedFor(final ACCEPT_TYPE type) {
-        List<String> typeValues = acceptedTypes.get(type);
-
         // look for specific type
         for (String acceptedType : acceptMediaTypeDefinitionsList) {
-            for (String typeValue : typeValues) {
-                if (acceptedType.contains(typeValue)) {
+            String mediaType = mediaTypeFrom(acceptedType);
+            for (String typeValue : type.mediaTypes()) {
+                if (mediaType.equals(typeValue)) {
                     return true;
                 }
             }

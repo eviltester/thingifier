@@ -25,6 +25,7 @@ import uk.co.compendiumdev.thingifier.api.docgen.RoutingStatus;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
 import uk.co.compendiumdev.thingifier.api.docgen.ThingifierApiDocumentationDefn;
 import uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi;
+import uk.co.compendiumdev.thingifier.api.http.headers.headerparser.AcceptHeaderParser;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityViewDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
@@ -198,17 +199,7 @@ public class Swaggerizer {
                                                             + subroute.getReturnPayloadFor(
                                                                     possibleStatus.value());
 
-                                            Schema<String> object = new Schema<>();
-                                            MediaType schema = new MediaType();
-                                            schema.setSchema(object);
-                                            object.set$ref(ref);
-
-                                            response.setContent(
-                                                    new Content()
-                                                            .addMediaType(
-                                                                    "application/json", schema)
-                                                            .addMediaType(
-                                                                    "application/xml", schema));
+                                            response.setContent(responseContentWith(ref));
                                         }
                                     }
 
@@ -565,6 +556,26 @@ public class Swaggerizer {
             header.setSchema(new StringSchema());
             response.addHeaderObject(headerName, header);
         }
+    }
+
+    private Content responseContentWith(final String ref) {
+        Schema<String> object = new Schema<>();
+        MediaType schema = new MediaType();
+        schema.setSchema(object);
+        object.set$ref(ref);
+
+        Content content = new Content();
+        for (AcceptHeaderParser.ACCEPT_TYPE responseType :
+                AcceptHeaderParser.ACCEPT_TYPE.responseMediaTypes()) {
+            if (responseType.usesComponentSchemaInDocumentation()) {
+                content.addMediaType(responseType.mediaType(), schema);
+            } else {
+                MediaType textSchema = new MediaType();
+                textSchema.setSchema(new StringSchema());
+                content.addMediaType(responseType.mediaType(), textSchema);
+            }
+        }
+        return content;
     }
 
     private void addHttpSecurityScheme(

@@ -4,7 +4,11 @@ import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonThing;
 import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
 import uk.co.compendiumdev.thingifier.api.http.headers.headerparser.AcceptHeaderParser;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
+import uk.co.compendiumdev.thingifier.api.response.ApiResponseAsDelimitedText;
+import uk.co.compendiumdev.thingifier.api.response.ApiResponseAsHtml;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponseAsJson;
+import uk.co.compendiumdev.thingifier.api.response.ApiResponseAsJsonLines;
+import uk.co.compendiumdev.thingifier.api.response.ApiResponseAsPlainText;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponseAsXml;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 
@@ -20,7 +24,7 @@ public final class HttpApiResponse {
     private final ThingifierApiConfig apiConfig;
 
     private String type;
-    private boolean asJson;
+    private AcceptHeaderParser.ACCEPT_TYPE responseType;
 
     public HttpApiResponse(
             final HttpHeadersBlock requestHeaders,
@@ -31,7 +35,7 @@ public final class HttpApiResponse {
         this.apiResponseHeaders = new HttpHeadersBlock();
         this.jsonThing = jsonThing;
         this.apiConfig = apiConfig;
-        asJson = true;
+        responseType = AcceptHeaderParser.ACCEPT_TYPE.JSON;
 
         HttpHeadersBlock useRequestHeaders =
                 requestHeaders == null ? new HttpHeadersBlock() : requestHeaders;
@@ -49,22 +53,8 @@ public final class HttpApiResponse {
 
         AcceptHeaderParser accept = new AcceptHeaderParser(acceptHeader);
 
-        if (accept.hasAPreferenceForXml()) {
-            if (apiConfig.willApiAllowXmlForResponses()) {
-                asJson = false;
-            }
-        }
-
-        if (!apiConfig.willApiAllowJsonForResponses()) {
-            asJson = false;
-        }
-
-        // TODO: handle text/plain, text/html
-        if (asJson) {
-            type = "application/json";
-        } else {
-            type = "application/xml";
-        }
+        responseType = selectResponseType(accept);
+        type = responseType.mediaType();
 
         apiResponseHeaders.putAll(originalApiResponseHeaders);
         apiResponseHeaders.put("Content-Type", type);
@@ -74,16 +64,61 @@ public final class HttpApiResponse {
         }
     }
 
-    // TODO: handle text/plain, text/html
+    private AcceptHeaderParser.ACCEPT_TYPE selectResponseType(final AcceptHeaderParser accept) {
+        for (AcceptHeaderParser.ACCEPT_TYPE candidate :
+                accept.getSupportedTypesInPreferenceOrder()) {
+            if (candidate == AcceptHeaderParser.ACCEPT_TYPE.ANYTHING) {
+                continue;
+            }
+            if (canRender(candidate)) {
+                return candidate;
+            }
+        }
+        return defaultResponseType();
+    }
+
+    private boolean canRender(final AcceptHeaderParser.ACCEPT_TYPE candidate) {
+        if (candidate == AcceptHeaderParser.ACCEPT_TYPE.XML) {
+            return apiConfig.willApiAllowXmlForResponses();
+        }
+        if (candidate == AcceptHeaderParser.ACCEPT_TYPE.JSON) {
+            return apiConfig.willApiAllowJsonForResponses();
+        }
+        return candidate != AcceptHeaderParser.ACCEPT_TYPE.NO_MATCHING_TYPE;
+    }
+
+    private AcceptHeaderParser.ACCEPT_TYPE defaultResponseType() {
+        if (apiConfig.willApiAllowJsonForResponses()) {
+            return AcceptHeaderParser.ACCEPT_TYPE.JSON;
+        }
+        return AcceptHeaderParser.ACCEPT_TYPE.XML;
+    }
+
     public String getBody() {
         if (apiResponse.hasABodyOverride()) {
             return apiResponse.getBody();
         }
-        if (asJson) {
-            return new ApiResponseAsJson(apiResponse, jsonThing).getJson();
-        }
 
-        return new ApiResponseAsXml(apiResponse, jsonThing).getXml();
+        switch (responseType) {
+            case XML:
+                return new ApiResponseAsXml(apiResponse, jsonThing).getXml();
+            case CSV:
+                return new ApiResponseAsDelimitedText(apiResponse, ',').getText();
+            case TEXT:
+                return new ApiResponseAsPlainText(apiResponse).getText();
+            case HTML:
+                return new ApiResponseAsHtml(apiResponse).getHtml();
+            case NDJSON:
+            case JSONL:
+                return new ApiResponseAsJsonLines(apiResponse, jsonThing).getJsonLines();
+            case JSON_SEQ:
+                return new ApiResponseAsJsonLines(apiResponse, jsonThing).getJsonSequence();
+            case TSV:
+                return new ApiResponseAsDelimitedText(apiResponse, '\t').getText();
+            case JSON:
+            default:
+                return new ApiResponseAsJson(apiResponse, jsonThing).getJson();
+        }
     }
 
     public boolean hasType() {
