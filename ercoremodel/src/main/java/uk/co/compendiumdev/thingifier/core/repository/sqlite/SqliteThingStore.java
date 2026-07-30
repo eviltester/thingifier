@@ -29,9 +29,11 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.Relat
 import uk.co.compendiumdev.thingifier.core.domain.instances.AutoIncrement;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
+import uk.co.compendiumdev.thingifier.core.query.EntityInstanceListPaginator;
 import uk.co.compendiumdev.thingifier.core.query.EntityInstanceListSorter;
 import uk.co.compendiumdev.thingifier.core.query.EntityListSortParamParser;
 import uk.co.compendiumdev.thingifier.core.query.FilterBy;
+import uk.co.compendiumdev.thingifier.core.query.PaginationParams;
 import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
 import uk.co.compendiumdev.thingifier.core.query.SortByFieldName;
 import uk.co.compendiumdev.thingifier.core.reporting.RepositoryJsonExporter;
@@ -459,7 +461,9 @@ public class SqliteThingStore implements ThingStore {
             }
         }
 
-        return new EntityInstanceListSorter(params).sort(new ArrayList<>(related.values()));
+        List<EntityInstance> sorted =
+                new EntityInstanceListSorter(params).sort(new ArrayList<>(related.values()));
+        return new EntityInstanceListPaginator(params).paginate(sorted);
     }
 
     ValidationReport checkFieldsForUniqueNess(
@@ -1007,7 +1011,8 @@ public class SqliteThingStore implements ThingStore {
         List<Object> parameters = new ArrayList<>();
 
         for (FilterBy filterBy : queryParams.toList()) {
-            if (EntityListSortParamParser.isSortByParam(filterBy.fieldName)) {
+            if (EntityListSortParamParser.isSortByParam(filterBy.fieldName)
+                    || PaginationParams.isPaginationParam(filterBy.fieldName)) {
                 continue;
             }
             if (!entity.hasFieldNameDefined(filterBy.fieldName)) {
@@ -1049,6 +1054,7 @@ public class SqliteThingStore implements ThingStore {
         }
 
         appendOrderBy(sql, entity, queryParams, "");
+        appendPagination(sql, queryParams, parameters);
 
         return new SqlQuery(entity, sql.toString(), parameters);
     }
@@ -1092,7 +1098,8 @@ public class SqliteThingStore implements ThingStore {
         parameters.add(instance.getInternalId());
 
         for (FilterBy filterBy : queryParams.toList()) {
-            if (EntityListSortParamParser.isSortByParam(filterBy.fieldName)) {
+            if (EntityListSortParamParser.isSortByParam(filterBy.fieldName)
+                    || PaginationParams.isPaginationParam(filterBy.fieldName)) {
                 continue;
             }
             if (!connectedEntity.hasFieldNameDefined(filterBy.fieldName)) {
@@ -1156,6 +1163,26 @@ public class SqliteThingStore implements ThingStore {
         }
         if (!orderClauses.isEmpty()) {
             sql.append(" ORDER BY ").append(String.join(", ", orderClauses));
+        }
+    }
+
+    private void appendPagination(
+            final StringBuilder sql,
+            final QueryFilterParams queryParams,
+            final List<Object> parameters) {
+        PaginationParams pagination = new PaginationParams(queryParams);
+        if (pagination.hasValidationError()) {
+            throw new IllegalArgumentException(pagination.validationError());
+        }
+        if (!pagination.hasLimit() && !pagination.hasOffset()) {
+            return;
+        }
+
+        sql.append(" LIMIT ?");
+        parameters.add(pagination.limitOr(-1));
+        if (pagination.hasOffset()) {
+            sql.append(" OFFSET ?");
+            parameters.add(pagination.offsetOr(0));
         }
     }
 

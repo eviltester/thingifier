@@ -210,6 +210,25 @@ public class RestApiQueryHandlerTest {
     }
 
     @Test
+    public void queryEntityCollectionAppliesSortingThenPaging() {
+        Thingifier thingifier = taskProjectThingifier();
+        EntityInstance expected = createTask(thingifier, "Bravo", "Open");
+        createTask(thingifier, "Charlie", "Open");
+        createTask(thingifier, "Alpha", "Open");
+        createTask(thingifier, "Before but closed", "Closed");
+
+        HttpApiResponse response =
+                new ThingifierHttpApi(thingifier)
+                        .queryRequest(
+                                query("tasks", "status=Open&_sortBy=+title&_limit=1&_offset=1"));
+
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals(1, response.apiResponse().getReturnedInstanceCollection().size());
+        Assertions.assertEquals(
+                expected, response.apiResponse().getReturnedInstanceCollection().get(0));
+    }
+
+    @Test
     public void getCollectionAdvertisesQuerySupport() {
         Thingifier thingifier = taskProjectThingifier();
 

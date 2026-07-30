@@ -93,9 +93,13 @@ class SwaggerizerEntityDescriptionTest {
         final OpenAPI openApi = new Swaggerizer(apiDefn(relationshipModel())).swagger();
 
         assertSortByParameter(openApi.getPaths().get("/projects").getGet());
+        assertPagingParameters(openApi.getPaths().get("/projects").getGet());
         assertSortByParameter(queryOperation(openApi.getPaths().get("/projects")));
+        assertPagingParameters(queryOperation(openApi.getPaths().get("/projects")));
         assertSortByParameter(openApi.getPaths().get("/projects/{id}/tasks").getGet());
+        assertPagingParameters(openApi.getPaths().get("/projects/{id}/tasks").getGet());
         assertSortByParameter(queryOperation(openApi.getPaths().get("/projects/{id}/tasks")));
+        assertPagingParameters(queryOperation(openApi.getPaths().get("/projects/{id}/tasks")));
 
         Operation singleTargetRelationshipGet =
                 openApi.getPaths().get("/todos/{id}/project").getGet();
@@ -103,6 +107,22 @@ class SwaggerizerEntityDescriptionTest {
                 singleTargetRelationshipGet.getParameters() == null
                         || singleTargetRelationshipGet.getParameters().stream()
                                 .noneMatch(parameter -> "_sortBy".equals(parameter.getName())));
+    }
+
+    @Test
+    void pagingParametersAreOmittedWhenPagingIsDisabled() {
+        Thingifier thingifier = relationshipModel();
+        thingifier.apiConfig().forParams().setAllowPagingThroughUrlParams(false);
+
+        final OpenAPI openApi = new Swaggerizer(apiDefn(thingifier)).swagger();
+
+        Operation collectionGet = openApi.getPaths().get("/projects").getGet();
+        Assertions.assertTrue(
+                collectionGet.getParameters().stream()
+                        .noneMatch(parameter -> "_limit".equals(parameter.getName())));
+        Assertions.assertTrue(
+                collectionGet.getParameters().stream()
+                        .noneMatch(parameter -> "_offset".equals(parameter.getName())));
     }
 
     private ThingifierApiDocumentationDefn apiDefn(final Thingifier thingifier) {
@@ -148,5 +168,30 @@ class SwaggerizerEntityDescriptionTest {
         Assertions.assertTrue(sortBy.getDescription().contains("ascending"));
         Assertions.assertTrue(sortBy.getDescription().contains("descending"));
         Assertions.assertTrue(sortBy.getDescription().contains("+field,-other"));
+    }
+
+    private void assertPagingParameters(final Operation operation) {
+        Parameter limit =
+                operation.getParameters().stream()
+                        .filter(parameter -> "_limit".equals(parameter.getName()))
+                        .findFirst()
+                        .orElseThrow();
+        Parameter offset =
+                operation.getParameters().stream()
+                        .filter(parameter -> "_offset".equals(parameter.getName()))
+                        .findFirst()
+                        .orElseThrow();
+
+        Assertions.assertEquals("query", limit.getIn());
+        Assertions.assertEquals("integer", limit.getSchema().getType());
+        Assertions.assertFalse(limit.getRequired());
+        Assertions.assertEquals(10, limit.getExample());
+        Assertions.assertTrue(limit.getDescription().contains("capped at 20"));
+
+        Assertions.assertEquals("query", offset.getIn());
+        Assertions.assertEquals("integer", offset.getSchema().getType());
+        Assertions.assertFalse(offset.getRequired());
+        Assertions.assertEquals(0, offset.getExample());
+        Assertions.assertTrue(offset.getDescription().contains("Zero-based"));
     }
 }
