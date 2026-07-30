@@ -95,6 +95,21 @@ public class SortingViaQueryFiltersTest {
     }
 
     @Test
+    public void paginationParameterNamesAreExactAndBareNamesRemainFilters() {
+        Assertions.assertTrue(PaginationParams.isPaginationParam("_limit"));
+        Assertions.assertTrue(PaginationParams.isPaginationParam("_offset"));
+        Assertions.assertFalse(PaginationParams.isPaginationParam("limit"));
+        Assertions.assertFalse(PaginationParams.isPaginationParam("offset"));
+
+        QueryFilterParams params = new QueryFilterParams();
+        params.put("limit", "high");
+        params.put("_limit", "1");
+
+        Assertions.assertEquals(1, params.fieldFilters().size());
+        Assertions.assertEquals("limit", params.fieldFilters().get(0).fieldName);
+    }
+
+    @Test
     public void canSortByMultipleFieldsViaAQuery() {
         final EntityInstance falseLow =
                 erModel.getStore(EntityRelModel.DEFAULT_DATABASE_NAME)

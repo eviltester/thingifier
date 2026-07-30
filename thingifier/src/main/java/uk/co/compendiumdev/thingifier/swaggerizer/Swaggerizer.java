@@ -13,6 +13,7 @@ import io.swagger.v3.oas.models.responses.ApiResponses;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
+import java.math.BigDecimal;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +30,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityViewDefiniti
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.validation.ValidationRule;
+import uk.co.compendiumdev.thingifier.core.query.PaginationParams;
 import uk.co.compendiumdev.thingifier.core.query.SortByFieldName;
 
 public class Swaggerizer {
@@ -260,6 +262,11 @@ public class Swaggerizer {
                                         sortByParameter(subroute.getFilterableEntity()));
                             }
 
+                            if (shouldDocumentPagingParameters(thingifier, subroute)) {
+                                operationParameters.add(limitParameter(thingifier));
+                                operationParameters.add(offsetParameter());
+                            }
+
                             if (subroute.hasRequestUrlParams()) {
 
                                 List<Parameter> urlParameters = new ArrayList<>();
@@ -416,6 +423,12 @@ public class Swaggerizer {
         return thingifier.apiConfig().forParams().willAllowFilteringThroughUrlParams();
     }
 
+    private boolean shouldDocumentPagingParameters(
+            final Thingifier thingifier, final RoutingDefinition route) {
+        return route.isFilterable()
+                && thingifier.apiConfig().forParams().willAllowPagingThroughUrlParams();
+    }
+
     private Parameter sortByParameter(final EntityDefinition filterableEntity) {
         Parameter param = new Parameter();
         param.in("query")
@@ -427,6 +440,42 @@ public class Swaggerizer {
                                 + " be combined with commas, e.g. +field,-other.")
                 .example("+" + sortExampleFieldName(filterableEntity));
         param.setSchema(new StringSchema());
+        return param;
+    }
+
+    private Parameter limitParameter(final Thingifier thingifier) {
+        int defaultLimit = thingifier.apiConfig().forParams().defaultPagingLimit();
+        int maxLimit = thingifier.apiConfig().forParams().maxPagingLimit();
+        IntegerSchema schema = new IntegerSchema();
+        schema.minimum(BigDecimal.ZERO);
+        schema.maximum(BigDecimal.valueOf(maxLimit));
+
+        Parameter param = new Parameter();
+        param.in("query")
+                .name(PaginationParams.LIMIT_PARAMETER_NAME)
+                .required(false)
+                .description(
+                        "Limit collection results. Defaults to "
+                                + defaultLimit
+                                + " and is capped at "
+                                + maxLimit
+                                + ".")
+                .example(defaultLimit);
+        param.setSchema(schema);
+        return param;
+    }
+
+    private Parameter offsetParameter() {
+        IntegerSchema schema = new IntegerSchema();
+        schema.minimum(BigDecimal.ZERO);
+
+        Parameter param = new Parameter();
+        param.in("query")
+                .name(PaginationParams.OFFSET_PARAMETER_NAME)
+                .required(false)
+                .description("Zero-based number of collection results to skip.")
+                .example(0);
+        param.setSchema(schema);
         return param;
     }
 

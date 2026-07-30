@@ -31,6 +31,36 @@ public class QueryFilterParams {
         return sortCriteria;
     }
 
+    public QueryFilterParams fieldFilters() {
+        QueryFilterParams fieldFilters = new QueryFilterParams();
+
+        for (FilterBy filterBy : filterBys) {
+            if (!isReservedQueryControl(filterBy.fieldName)) {
+                fieldFilters.add(
+                        new FilterBy(
+                                filterBy.fieldName,
+                                filterBy.filterOperation + filterBy.fieldValue));
+            }
+        }
+
+        return fieldFilters;
+    }
+
+    public QueryFilterParams withoutPagingParams() {
+        QueryFilterParams params = new QueryFilterParams();
+
+        for (FilterBy filterBy : filterBys) {
+            if (!PaginationParams.isPaginationParam(filterBy.fieldName)) {
+                params.add(
+                        new FilterBy(
+                                filterBy.fieldName,
+                                filterBy.filterOperation + filterBy.fieldValue));
+            }
+        }
+
+        return params;
+    }
+
     public int size() {
         return filterBys.size();
     }
@@ -61,5 +91,10 @@ public class QueryFilterParams {
         }
 
         return false;
+    }
+
+    private boolean isReservedQueryControl(final String fieldName) {
+        return SortByFieldName.isSortByParam(fieldName)
+                || PaginationParams.isPaginationParam(fieldName);
     }
 }

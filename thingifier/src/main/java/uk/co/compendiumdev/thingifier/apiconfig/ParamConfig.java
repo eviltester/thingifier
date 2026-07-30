@@ -9,14 +9,24 @@ public class ParamConfig {
     // (default: true)
     private boolean enforceFilteringThroughUrlParams;
 
+    private boolean allowPagingThroughUrlParams;
+    private int defaultPagingLimit;
+    private int maxPagingLimit;
+
     public ParamConfig() {
         allowFilteringThroughUrlParams = true;
         enforceFilteringThroughUrlParams = true;
+        allowPagingThroughUrlParams = true;
+        defaultPagingLimit = 10;
+        maxPagingLimit = 20;
     }
 
     public void setFrom(final ParamConfig forParams) {
         this.allowFilteringThroughUrlParams = forParams.willAllowFilteringThroughUrlParams();
         this.enforceFilteringThroughUrlParams = forParams.willEnforceFilteringThroughUrlParams();
+        this.allowPagingThroughUrlParams = forParams.willAllowPagingThroughUrlParams();
+        this.defaultPagingLimit = forParams.defaultPagingLimit();
+        this.maxPagingLimit = forParams.maxPagingLimit();
     }
 
     public boolean setAllowFilteringThroughUrlParams(boolean allow) {
@@ -33,5 +43,35 @@ public class ParamConfig {
 
     public boolean willEnforceFilteringThroughUrlParams() {
         return enforceFilteringThroughUrlParams;
+    }
+
+    public boolean setAllowPagingThroughUrlParams(boolean allow) {
+        return allowPagingThroughUrlParams = allow;
+    }
+
+    public int setDefaultPagingLimit(final int limit) {
+        if (limit < 0) {
+            throw new IllegalArgumentException("Default paging limit must be non-negative");
+        }
+        return defaultPagingLimit = limit;
+    }
+
+    public int setMaxPagingLimit(final int limit) {
+        if (limit < 0) {
+            throw new IllegalArgumentException("Max paging limit must be non-negative");
+        }
+        return maxPagingLimit = limit;
+    }
+
+    public boolean willAllowPagingThroughUrlParams() {
+        return allowPagingThroughUrlParams;
+    }
+
+    public int defaultPagingLimit() {
+        return defaultPagingLimit;
+    }
+
+    public int maxPagingLimit() {
+        return maxPagingLimit;
     }
 }

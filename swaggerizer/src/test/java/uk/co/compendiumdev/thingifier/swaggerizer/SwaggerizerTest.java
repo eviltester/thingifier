@@ -68,7 +68,11 @@ public class SwaggerizerTest {
         Assertions.assertEquals("3.2.0", openApiVersion(swagger));
         Assertions.assertTrue(todos.has("query"));
         Assertions.assertTrue(hasParameterNamed(todos.getAsJsonObject("get"), "_sortBy"));
+        Assertions.assertTrue(hasParameterNamed(todos.getAsJsonObject("get"), "_limit"));
+        Assertions.assertTrue(hasParameterNamed(todos.getAsJsonObject("get"), "_offset"));
         Assertions.assertTrue(hasParameterNamed(query, "_sortBy"));
+        Assertions.assertTrue(hasParameterNamed(query, "_limit"));
+        Assertions.assertTrue(hasParameterNamed(query, "_offset"));
         Assertions.assertFalse(swagger.contains("\"x-query-operation\""));
         Assertions.assertFalse(swagger.contains("\"x-http-method\""));
         Assertions.assertFalse(swagger.contains("\"x-query-content-types\""));

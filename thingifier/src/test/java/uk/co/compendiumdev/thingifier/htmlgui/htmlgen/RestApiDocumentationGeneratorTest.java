@@ -164,6 +164,32 @@ class RestApiDocumentationGeneratorTest {
         Assertions.assertTrue(docs.contains("/api/tasks?_sortBy=+id"));
         Assertions.assertTrue(docs.contains("title=Task&amp;_sortBy=-id"));
         Assertions.assertFalse(docs.contains("&amp;sortBy=-id"));
+        Assertions.assertTrue(docs.contains("<i>_limit=limit</i>"));
+        Assertions.assertTrue(docs.contains("<i>_offset=offset</i>"));
+        Assertions.assertTrue(docs.contains("default limit is 10"));
+        Assertions.assertTrue(docs.contains("maximum limit is 20"));
+        Assertions.assertTrue(docs.contains("/api/tasks?_limit=10&_offset=0"));
+    }
+
+    @Test
+    void apiDocumentationOmitsPagingWhenDisabled() {
+        final Thingifier thingifier = new Thingifier();
+        thingifier.apiConfig().forParams().setAllowPagingThroughUrlParams(false);
+        final EntityDefinition task = thingifier.defineThing("task", "tasks");
+        task.addAsPrimaryKeyField(Field.is("id", FieldType.AUTO_INCREMENT));
+        task.addField(Field.is("title", FieldType.STRING));
+
+        final String docs =
+                new RestApiDocumentationGenerator(thingifier, new DefaultGUIHTML())
+                        .getApiDocumentation(
+                                new ApiRoutingDefinitionDocGenerator(thingifier).generate("/api"),
+                                List.of(),
+                                new ThingifierApiDocumentationDefn(),
+                                "/api",
+                                "https://example.com/api/docs");
+
+        Assertions.assertFalse(docs.contains("_limit"));
+        Assertions.assertFalse(docs.contains("_offset"));
     }
 
     @Test

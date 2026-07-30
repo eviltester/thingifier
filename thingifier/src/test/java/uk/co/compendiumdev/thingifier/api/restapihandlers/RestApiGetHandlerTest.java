@@ -142,6 +142,114 @@ public class RestApiGetHandlerTest {
     }
 
     @Test
+    public void collectionReadUsesDefaultPagingLimit() {
+        Thingifier thingifier = taskProjectThingifier();
+        createTasks(thingifier, 11);
+
+        ApiResponse response = thingifier.api().get("tasks", params(), headers());
+
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals(10, response.getReturnedInstanceCollection().size());
+    }
+
+    @Test
+    public void collectionReadCapsRequestedLimitAtConfiguredMax() {
+        Thingifier thingifier = taskProjectThingifier();
+        createTasks(thingifier, 25);
+        QueryFilterParams queryParams = new QueryFilterParams();
+        queryParams.put("_limit", "200");
+
+        ApiResponse response = thingifier.api().get("tasks", queryParams, headers());
+
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals(20, response.getReturnedInstanceCollection().size());
+    }
+
+    @Test
+    public void zeroOffsetIncludesFirstItem() {
+        Thingifier thingifier = taskProjectThingifier();
+        EntityInstance first = createTask(thingifier, "First");
+        createTask(thingifier, "Second");
+        QueryFilterParams queryParams = new QueryFilterParams();
+        queryParams.put("_sortBy", "+title");
+        queryParams.put("_limit", "1");
+        queryParams.put("_offset", "0");
+
+        ApiResponse response = thingifier.api().get("tasks", queryParams, headers());
+
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals(first, response.getReturnedInstanceCollection().get(0));
+    }
+
+    @Test
+    public void invalidPagingParamsAreBadRequest() {
+        Thingifier thingifier = taskProjectThingifier();
+        QueryFilterParams queryParams = new QueryFilterParams();
+        queryParams.put("_limit", "-1");
+
+        ApiResponse response = thingifier.api().get("tasks", queryParams, headers());
+
+        Assertions.assertEquals(400, response.getStatusCode());
+        Assertions.assertTrue(
+                response.getErrorMessages().contains("_limit must be a non-negative integer"));
+    }
+
+    @Test
+    public void invalidOffsetParamIsBadRequest() {
+        Thingifier thingifier = taskProjectThingifier();
+        QueryFilterParams queryParams = new QueryFilterParams();
+        queryParams.put("_offset", "abc");
+
+        ApiResponse response = thingifier.api().get("tasks", queryParams, headers());
+
+        Assertions.assertEquals(400, response.getStatusCode());
+        Assertions.assertTrue(
+                response.getErrorMessages().contains("_offset must be a non-negative integer"));
+    }
+
+    @Test
+    public void zeroLimitReturnsEmptyCollection() {
+        Thingifier thingifier = taskProjectThingifier();
+        createTasks(thingifier, 2);
+        QueryFilterParams queryParams = new QueryFilterParams();
+        queryParams.put("_limit", "0");
+
+        ApiResponse response = thingifier.api().get("tasks", queryParams, headers());
+
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertTrue(response.getReturnedInstanceCollection().isEmpty());
+    }
+
+    @Test
+    public void disabledPagingIgnoresPagingParamsAndReturnsUnpagedCollection() {
+        Thingifier thingifier = taskProjectThingifier();
+        thingifier.apiConfig().forParams().setAllowPagingThroughUrlParams(false);
+        createTasks(thingifier, 12);
+        QueryFilterParams queryParams = new QueryFilterParams();
+        queryParams.put("_limit", "1");
+
+        ApiResponse response = thingifier.api().get("tasks", queryParams, headers());
+
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals(12, response.getReturnedInstanceCollection().size());
+    }
+
+    @Test
+    public void pagingWorksWhenFieldFilteringIsDisabled() {
+        Thingifier thingifier = taskProjectThingifier();
+        thingifier.apiConfig().forParams().setAllowFilteringThroughUrlParams(false);
+        thingifier.apiConfig().forParams().setEnforceFilteringThroughUrlParams(true);
+        createTasks(thingifier, 3);
+        QueryFilterParams queryParams = new QueryFilterParams();
+        queryParams.put("_limit", "2");
+
+        ApiResponse response = thingifier.api().get("tasks", queryParams, headers());
+
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals(2, response.getReturnedInstanceCollection().size());
+    }
+
+    @Test
     public void headUsesGetMappingAndClearsBody() {
         Thingifier thingifier = taskProjectThingifier();
         createTask(thingifier, "Task");
@@ -173,6 +281,12 @@ public class RestApiGetHandlerTest {
         return storeFor(thingifier)
                 .entities()
                 .create(EntityInstanceDraft.forEntity(task).withField("title", title));
+    }
+
+    private void createTasks(final Thingifier thingifier, final int count) {
+        for (int index = 1; index <= count; index++) {
+            createTask(thingifier, "Task " + index);
+        }
     }
 
     private ThingStore storeFor(final Thingifier thingifier) {

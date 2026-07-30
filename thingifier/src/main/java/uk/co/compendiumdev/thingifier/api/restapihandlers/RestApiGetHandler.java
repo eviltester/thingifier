@@ -1,7 +1,6 @@
 package uk.co.compendiumdev.thingifier.api.restapihandlers;
 
 import uk.co.compendiumdev.thingifier.Thingifier;
-import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.ApiMappingError;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.DefaultThingifierApiRuntime;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.ThingReadRequestMapper;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.ThingReadRequestMapping;
@@ -41,24 +40,18 @@ public class RestApiGetHandler {
             final QueryFilterParams queryParams,
             final ThingifierRequestContext context) {
         ThingReadResultApiMapper apiMapper = new ThingReadResultApiMapper(runtime.apiConfig());
-        // if there are params, and we are not allowed to filter, and we enforce that
-        if (queryParams.size() > 0
-                && runtime.apiConfig().forParams().willEnforceFilteringThroughUrlParams()
-                && !runtime.apiConfig().forParams().willAllowFilteringThroughUrlParams()) {
-            return apiMapper.map(
-                    ApiMappingError.withMessage(
-                            400, String.format("Can not use query parameters with %s", url)));
-        }
 
         RepositoryQueryResult queryResults;
-        boolean allowFiltering =
-                runtime.apiConfig().forParams().willAllowFilteringThroughUrlParams();
-        QueryFilterParams effectiveQueryParams =
-                allowFiltering ? queryParams : new QueryFilterParams();
-
         ThingRoute route = new ThingRouteMapper(runtime.schema()).map(url);
+        EffectiveQueryParams effectiveQueryParams =
+                EffectiveQueryParams.forGet(runtime.apiConfig(), route, queryParams, url);
+        if (effectiveQueryParams.isError()) {
+            return apiMapper.map(effectiveQueryParams.error());
+        }
+
         ThingReadRequestMapping mapping =
-                new ThingReadRequestMapper(runtime.schema()).map(route, effectiveQueryParams);
+                new ThingReadRequestMapper(runtime.schema())
+                        .map(route, effectiveQueryParams.queryParams());
         if (mapping.isError()) {
             return apiMapper.map(mapping.getError());
         }

@@ -46,8 +46,15 @@ public final class RestApiQueryHandler {
                             404, String.format("Could not find an instance with %s", url)));
         }
 
+        EffectiveQueryParams effectiveQueryParams =
+                EffectiveQueryParams.forQuery(runtime.apiConfig(), route, queryParams);
+        if (effectiveQueryParams.isError()) {
+            return apiMapper.map(effectiveQueryParams.error());
+        }
+
         ThingReadRequestMapping mapping =
-                new ThingReadRequestMapper(runtime.schema()).map(route, queryParams);
+                new ThingReadRequestMapper(runtime.schema())
+                        .map(route, effectiveQueryParams.queryParams());
         if (mapping.isError()) {
             return apiMapper.map(mapping.getError());
         }

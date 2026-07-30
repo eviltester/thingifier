@@ -12,6 +12,7 @@ import uk.co.compendiumdev.thingifier.core.domain.instances.AutoIncrement;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 import uk.co.compendiumdev.thingifier.core.query.EntityInstanceListFilter;
+import uk.co.compendiumdev.thingifier.core.query.EntityInstanceListPaginator;
 import uk.co.compendiumdev.thingifier.core.query.EntityInstanceListSorter;
 import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
@@ -147,7 +148,8 @@ public class InMemoryThingStore implements ThingStore {
         List<EntityInstance> instances = new ArrayList<>(listInstances(entity));
         QueryFilterParams params = queryParams == null ? new QueryFilterParams() : queryParams;
         instances = new EntityInstanceListFilter(params).filter(instances);
-        return new EntityInstanceListSorter(params).sort(instances);
+        instances = new EntityInstanceListSorter(params).sort(instances);
+        return new EntityInstanceListPaginator(params).paginate(instances);
     }
 
     int countInstances(final EntityDefinition entity) {
@@ -337,7 +339,8 @@ public class InMemoryThingStore implements ThingStore {
                         relationships.listRelatedInstances(
                                 instance, relationshipName, this::findByInternalId));
         instances = new EntityInstanceListFilter(params).filter(instances);
-        return new EntityInstanceListSorter(params).sort(instances);
+        instances = new EntityInstanceListSorter(params).sort(instances);
+        return new EntityInstanceListPaginator(params).paginate(instances);
     }
 
     boolean hasRelationshipInstances(final EntityInstance instance) {

@@ -28,6 +28,10 @@ public class EntityListFilterParamParser {
             final EntityDefinition defn = instance.getEntity();
 
             String fieldName = filterByCondition.fieldName;
+            if (SortByFieldName.isSortByParam(fieldName)
+                    || PaginationParams.isPaginationParam(fieldName)) {
+                continue;
+            }
 
             // TODO: handle - ranges, like, or etc.
             // currently all conditions are treated as an AND clause e.g. ?ID=<10&ID=>5  would be is

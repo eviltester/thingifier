@@ -23,6 +23,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.Relat
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVectorDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.validation.ValidationRule;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
+import uk.co.compendiumdev.thingifier.core.query.PaginationParams;
 import uk.co.compendiumdev.thingifier.core.query.SortByFieldName;
 
 public class RestApiDocumentationGenerator {
@@ -176,6 +177,24 @@ public class RestApiDocumentationGenerator {
                                                 + SortByFieldName.PARAMETER_NAME
                                                 + "=+field,-other</i>."));
                     }
+                }
+
+                if (thingifier.apiConfig().forParams().willAllowPagingThroughUrlParams()) {
+                    output.append(
+                            paragraph(
+                                    "Collection requests can be paged with <i>"
+                                            + PaginationParams.LIMIT_PARAMETER_NAME
+                                            + "=limit</i> and <i>"
+                                            + PaginationParams.OFFSET_PARAMETER_NAME
+                                            + "=offset</i>. Offset is zero-based, the default"
+                                            + " limit is "
+                                            + thingifier
+                                                    .apiConfig()
+                                                    .forParams()
+                                                    .defaultPagingLimit()
+                                            + ", and the maximum limit is "
+                                            + thingifier.apiConfig().forParams().maxPagingLimit()
+                                            + "."));
                 }
 
                 if (!thingifier.apidocsconfig().headerSectionAppend().isEmpty()) {
@@ -461,6 +480,23 @@ public class RestApiDocumentationGenerator {
                                                 + exampleSort
                                                 + "</span>"));
                     }
+                }
+
+                if (routingDefn.isFilterable()
+                        && thingifier.apiConfig().forParams().willAllowPagingThroughUrlParams()) {
+                    output.append(
+                            paragraph(
+                                    "This endpoint can be paged with the <i>"
+                                            + PaginationParams.LIMIT_PARAMETER_NAME
+                                            + "</i> and <i>"
+                                            + PaginationParams.OFFSET_PARAMETER_NAME
+                                            + "</i> URL Query Parameters."));
+                    output.append(
+                            paragraph(
+                                    "e.g. <span class='endpoint'>"
+                                            + url(routingDefn.url())
+                                            + getExamplePage()
+                                            + "</span>"));
                 }
 
                 currentEndPoint = routingDefn.url();
@@ -869,6 +905,16 @@ public class RestApiDocumentationGenerator {
             }
         }
         return "?" + SortByFieldName.PARAMETER_NAME + "=+" + fieldName;
+    }
+
+    private String getExamplePage() {
+        return "?"
+                + PaginationParams.LIMIT_PARAMETER_NAME
+                + "="
+                + thingifier.apiConfig().forParams().defaultPagingLimit()
+                + "&"
+                + PaginationParams.OFFSET_PARAMETER_NAME
+                + "=0";
     }
 
     private String url(final String postUrl) {

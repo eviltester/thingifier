@@ -715,6 +715,21 @@ public class ThingStoreContractTest {
         Assertions.assertEquals("2", sortedProjects.get(0).getPrimaryKeyValue());
         Assertions.assertEquals("1", sortedProjects.get(1).getPrimaryKeyValue());
 
+        create(repository, projectDefinition, "Third project");
+        QueryFilterParams pagedProjectsParams = new QueryFilterParams();
+        pagedProjectsParams.put("_sortBy", "+id");
+        pagedProjectsParams.put("_limit", "1");
+        pagedProjectsParams.put("_offset", "1");
+        Assertions.assertEquals(
+                List.of(secondProject),
+                repository.entityQueries().list(projectDefinition, pagedProjectsParams));
+
+        QueryFilterParams emptyPageParams = new QueryFilterParams();
+        emptyPageParams.put("_limit", "2");
+        emptyPageParams.put("_offset", "20");
+        Assertions.assertTrue(
+                repository.entityQueries().list(projectDefinition, emptyPageParams).isEmpty());
+
         QueryFilterParams regexParams = new QueryFilterParams();
         regexParams.put("title", "~=Repository.*");
         List<EntityInstance> regexProjects =
@@ -779,6 +794,14 @@ public class ThingStoreContractTest {
                 repository.relationships().listRelated(project, "tasks", relationshipSortParams);
         Assertions.assertEquals("2", sortedTasks.get(0).getPrimaryKeyValue());
         Assertions.assertEquals("1", sortedTasks.get(1).getPrimaryKeyValue());
+
+        QueryFilterParams relationshipPageParams = new QueryFilterParams();
+        relationshipPageParams.put("_sortBy", "+id");
+        relationshipPageParams.put("_limit", "1");
+        relationshipPageParams.put("_offset", "1");
+        Assertions.assertEquals(
+                List.of(secondTask),
+                repository.relationships().listRelated(project, "tasks", relationshipPageParams));
 
         repository.relationships().removeBetween(project, task, "tasks");
 
