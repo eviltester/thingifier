@@ -3,7 +3,9 @@ package uk.co.compendiumdev.thingifier.swaggerizer;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
+import io.swagger.v3.oas.models.media.Content;
 import io.swagger.v3.oas.models.parameters.Parameter;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Assertions;
@@ -86,6 +88,32 @@ class SwaggerizerEntityDescriptionTest {
         Assertions.assertTrue(
                 relationshipInstance.getParameters().stream()
                         .allMatch(parameter -> Boolean.TRUE.equals(parameter.getRequired())));
+    }
+
+    @Test
+    void responseContentAdvertisesAdditionalRepresentations() {
+        final OpenAPI openApi = new Swaggerizer(apiDefn(relationshipModel())).swagger();
+
+        final Content content =
+                openApi.getPaths().get("/projects").getGet().getResponses().get("200").getContent();
+
+        Assertions.assertEquals(
+                "#/components/schemas/projects",
+                content.get("application/json").getSchema().get$ref());
+        Assertions.assertEquals(
+                "#/components/schemas/projects",
+                content.get("application/xml").getSchema().get$ref());
+        for (String mediaType :
+                List.of(
+                        "text/csv",
+                        "text/plain",
+                        "text/html",
+                        "application/x-ndjson",
+                        "application/jsonl",
+                        "application/json-seq",
+                        "text/tab-separated-values")) {
+            Assertions.assertEquals("string", content.get(mediaType).getSchema().getType());
+        }
     }
 
     @Test

@@ -47,6 +47,13 @@ class RestApiDocumentationGeneratorTest {
         Assertions.assertFalse(docs.contains("Add <code>?download</code>"));
         Assertions.assertFalse(docs.contains("class='mermaid'"));
         Assertions.assertFalse(docs.contains("mermaid.esm.min.mjs"));
+        Assertions.assertTrue(docs.contains("Accept: text/csv"));
+        Assertions.assertTrue(docs.contains("Accept: text/plain"));
+        Assertions.assertTrue(docs.contains("Accept: text/html"));
+        Assertions.assertTrue(docs.contains("Accept: application/x-ndjson"));
+        Assertions.assertTrue(docs.contains("Accept: application/jsonl"));
+        Assertions.assertTrue(docs.contains("Accept: application/json-seq"));
+        Assertions.assertTrue(docs.contains("Accept: text/tab-separated-values"));
     }
 
     @Test

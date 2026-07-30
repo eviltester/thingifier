@@ -14,6 +14,7 @@ import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonThing;
 import uk.co.compendiumdev.thingifier.api.ermodelconversion.XmlThing;
 import uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.xml.GenericXMLPrettyPrinter;
+import uk.co.compendiumdev.thingifier.api.http.headers.headerparser.AcceptHeaderParser;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityViewDefinition;
@@ -130,7 +131,10 @@ public class RestApiDocumentationGenerator {
                             paragraph(
                                     "You can request XML response by setting the Accept header."));
                     output.append(paragraph("i.e. for XML use"));
-                    output.append(paragraph("<i>Accept: application/xml</i><br/><br/>\n"));
+                    output.append(
+                            paragraph(
+                                    acceptHeaderExample(AcceptHeaderParser.ACCEPT_TYPE.XML)
+                                            + "<br/><br/>\n"));
                 }
 
                 if (!thingifier.apiConfig().willApiAllowXmlForResponses()
@@ -143,8 +147,14 @@ public class RestApiDocumentationGenerator {
                             paragraph(
                                     "You can request JSON response by setting the Accept header."));
                     output.append(paragraph("i.e. for JSON use"));
-                    output.append(paragraph("<i>Accept: application/json</i><br/><br/>\n"));
+                    output.append(
+                            paragraph(
+                                    acceptHeaderExample(AcceptHeaderParser.ACCEPT_TYPE.JSON)
+                                            + "<br/><br/>\n"));
                 }
+
+                output.append(paragraph("Additional response Accept headers are supported."));
+                output.append(paragraph(additionalResponseAcceptHeaders()));
 
                 if (thingifier.apiConfig().forParams().willAllowFilteringThroughUrlParams()) {
 
@@ -934,6 +944,24 @@ public class RestApiDocumentationGenerator {
 
     private String href(final String text, final String url) {
         return String.format("<a href='%s'>%s</a>", url, text);
+    }
+
+    private String additionalResponseAcceptHeaders() {
+        StringBuilder headers = new StringBuilder();
+        for (AcceptHeaderParser.ACCEPT_TYPE responseType :
+                AcceptHeaderParser.ACCEPT_TYPE.responseMediaTypes()) {
+            if (responseType == AcceptHeaderParser.ACCEPT_TYPE.JSON
+                    || responseType == AcceptHeaderParser.ACCEPT_TYPE.XML) {
+                continue;
+            }
+            headers.append(acceptHeaderExample(responseType)).append("<br/>\n");
+        }
+        headers.append("<br/>\n");
+        return headers.toString();
+    }
+
+    private String acceptHeaderExample(final AcceptHeaderParser.ACCEPT_TYPE responseType) {
+        return String.format("<i>Accept: %s</i>", responseType.mediaType());
     }
 
     private String paragraph(final String initialParagraph) {
