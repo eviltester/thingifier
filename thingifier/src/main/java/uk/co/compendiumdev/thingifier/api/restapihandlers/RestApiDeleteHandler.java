@@ -6,8 +6,12 @@ import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.ThingCommandResul
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.ThingWriteRequestMapper;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.ThingWriteRequestMapping;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.ThingifierApiRuntime;
+import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.WriteMethodPolicy;
+import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.ThingRoute;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.ThingRouteMapper;
+import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
 import uk.co.compendiumdev.thingifier.api.http.ThingifierRequestContext;
+import uk.co.compendiumdev.thingifier.api.http.bodyparser.ApiBodyFields;
 import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.application.ThingCommandResult;
@@ -28,9 +32,17 @@ public class RestApiDeleteHandler {
     }
 
     public ApiResponse handle(final String url, final ThingifierRequestContext context) {
+        ThingRoute route = new ThingRouteMapper(runtime.schema()).map(url);
+        ApiResponse policyResponse =
+                new WriteMethodPolicy(runtime)
+                        .rejectIfNotAllowed(
+                                RoutingVerb.DELETE, route, ApiBodyFields.empty(), context);
+        if (policyResponse != null) {
+            return policyResponse;
+        }
+
         ThingWriteRequestMapping mapping =
-                new ThingWriteRequestMapper(runtime.schema())
-                        .mapDelete(new ThingRouteMapper(runtime.schema()).map(url));
+                new ThingWriteRequestMapper(runtime.schema()).mapDelete(route);
         ThingCommandResultApiMapper apiMapper =
                 new ThingCommandResultApiMapper(runtime.apiConfig());
         if (mapping.isError()) {

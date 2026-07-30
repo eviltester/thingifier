@@ -17,6 +17,7 @@ public class ThingifierRestAPIHandler {
     private final RestApiDeleteHandler delete;
     private final RestApiPostHandler post;
     private final RestApiPutHandler put;
+    private final RestApiPatchHandler patch;
     private final RestApiGetHandler get;
     private final RestApiQueryHandler query;
 
@@ -30,6 +31,7 @@ public class ThingifierRestAPIHandler {
         this.delete = new RestApiDeleteHandler(runtime);
         this.post = new RestApiPostHandler(runtime);
         this.put = new RestApiPutHandler(runtime);
+        this.patch = new RestApiPatchHandler(runtime);
         this.query = new RestApiQueryHandler(runtime);
     }
 
@@ -119,6 +121,23 @@ public class ThingifierRestAPIHandler {
             final ApiBodyFields bodyFields,
             final ThingifierRequestContext context) {
         return withRepository(put.handle(url, bodyFields, context), context);
+    }
+
+    public ApiResponse patch(final String url, final BodyParser args, HttpHeadersBlock headers) {
+        ThingifierRequestContext context = contextFrom(headers);
+        return patch(url, args.bodyFields(), context);
+    }
+
+    public ApiResponse patch(final ApiRequestEnvelope request) {
+        ThingifierRequestContext context = contextFrom(request.headers());
+        return patch(request.path(), request.bodyFields(), context);
+    }
+
+    public ApiResponse patch(
+            final String url,
+            final ApiBodyFields bodyFields,
+            final ThingifierRequestContext context) {
+        return withRepository(patch.handle(url, bodyFields, context), context);
     }
 
     private ThingifierRequestContext contextFrom(final HttpHeadersBlock headers) {

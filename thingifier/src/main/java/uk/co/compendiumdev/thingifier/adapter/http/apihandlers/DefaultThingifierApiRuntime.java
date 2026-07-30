@@ -4,6 +4,7 @@ import java.util.List;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.ThingifierRequestContext;
 import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
+import uk.co.compendiumdev.thingifier.api.spec.ThingifierApiSpec;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.application.ThingCommandService;
 import uk.co.compendiumdev.thingifier.application.ThingQueryService;
@@ -28,6 +29,11 @@ public final class DefaultThingifierApiRuntime implements ThingifierApiRuntime {
     @Override
     public ThingifierApiConfig apiConfig() {
         return thingifier.apiConfig();
+    }
+
+    @Override
+    public ThingifierApiSpec apiSpec() {
+        return thingifier.apiSpec();
     }
 
     @Override

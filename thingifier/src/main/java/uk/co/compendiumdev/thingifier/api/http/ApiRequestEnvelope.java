@@ -32,7 +32,9 @@ public final class ApiRequestEnvelope {
             final ThingifierHttpApi.HttpVerb verb,
             final List<String> thingNames) {
         ApiBodyFields bodyFields = ApiBodyFields.empty();
-        if (verb == ThingifierHttpApi.HttpVerb.POST || verb == ThingifierHttpApi.HttpVerb.PUT) {
+        if (verb == ThingifierHttpApi.HttpVerb.POST
+                || verb == ThingifierHttpApi.HttpVerb.PUT
+                || verb == ThingifierHttpApi.HttpVerb.PATCH) {
             bodyFields = new BodyParser(request, thingNames).bodyFields();
         }
         QueryFilterParams queryParams = request.getFilterableQueryParams();

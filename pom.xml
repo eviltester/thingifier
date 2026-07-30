@@ -140,6 +140,7 @@
         <module>thingifier-crud-ui</module>
         <module>todoManagerRestAuto</module>
         <module>standAloneTodoListRestApi</module>
+        <module>standAloneConfiguredWriteMethodsRestApi</module>
         <module>standAloneTodoListManagerRestApi</module>
         <module>standAloneSqlLiteTodoListManagerRestApi</module>
         <module>standAloneTodoListManagerRestApiAuto</module>

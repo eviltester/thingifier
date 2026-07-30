@@ -55,6 +55,7 @@ public class ThingifierApiConfig {
     private boolean willShowPrimaryKeyHeaderInResponses;
 
     private final AdminConfig adminConfig;
+    private final WriteMethodsConfig writeMethodsConfig;
 
     // Requests
     // willEnforceDeclaredTypesInInput e.g. only accept if boolean is given as `true` indead of
@@ -120,6 +121,7 @@ public class ThingifierApiConfig {
         statusCodeConfig = new StatusCodeConfig();
 
         adminConfig = new AdminConfig();
+        writeMethodsConfig = new WriteMethodsConfig();
     }
 
     public void setFrom(final ThingifierApiConfig apiConfig) {
@@ -142,10 +144,15 @@ public class ThingifierApiConfig {
         statusCodeConfig.setFrom(apiConfig.statusCodes());
         jsonOutputConfig.setFrom(apiConfig.jsonOutput());
         adminConfig.setFrom(apiConfig.adminConfig());
+        writeMethodsConfig.setFrom(apiConfig.writeMethods());
     }
 
     public AdminConfig adminConfig() {
         return adminConfig;
+    }
+
+    public WriteMethodsConfig writeMethods() {
+        return writeMethodsConfig;
     }
 
     public JsonOutputConfig jsonOutput() {

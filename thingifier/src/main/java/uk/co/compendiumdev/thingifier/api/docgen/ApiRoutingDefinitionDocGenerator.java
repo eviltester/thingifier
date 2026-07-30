@@ -374,6 +374,7 @@ public class ApiRoutingDefinitionDocGenerator {
             }
         }
 
+        new WriteMethodRoutePolicy(thingifier).applyTo(defn, apiPathPrefix);
         thingifier.apiSpec().applyTo(defn, apiPathPrefix);
         return defn;
     }

@@ -2,18 +2,27 @@ package uk.co.compendiumdev.thingifier.api.spec;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import uk.co.compendiumdev.thingifier.api.docgen.ApiRoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
+import uk.co.compendiumdev.thingifier.apiconfig.EntityWriteOperation;
+import uk.co.compendiumdev.thingifier.apiconfig.RelationshipWriteOperation;
 
 public final class ThingifierApiSpec {
 
     private final List<ThingifierApiRouteRule> routeRules;
+    private final List<EntityWritePolicyRule> entityWritePolicyRules;
+    private final List<RelationshipWritePolicyRule> relationshipWritePolicyRules;
 
     public ThingifierApiSpec() {
         routeRules = new ArrayList<>();
+        entityWritePolicyRules = new ArrayList<>();
+        relationshipWritePolicyRules = new ArrayList<>();
     }
 
     public ThingifierApiRouteRule route(final RoutingVerb verb, final String pathPattern) {
@@ -45,6 +54,42 @@ public final class ThingifierApiSpec {
     public ThingifierApiSpec disableRelationshipRoutes(
             final String parentEntityPath, final String relationshipName) {
         configureRelationshipRoutes(parentEntityPath, relationshipName, true);
+        return this;
+    }
+
+    public ThingifierApiSpec entityPostCan(
+            final String entityPath, final EntityWriteOperation... operations) {
+        configureEntityWritePolicy(RoutingVerb.POST, entityPath, operations);
+        return this;
+    }
+
+    public ThingifierApiSpec entityPutCan(
+            final String entityPath, final EntityWriteOperation... operations) {
+        configureEntityWritePolicy(RoutingVerb.PUT, entityPath, operations);
+        return this;
+    }
+
+    public ThingifierApiSpec entityPatchCan(
+            final String entityPath, final EntityWriteOperation... operations) {
+        configureEntityWritePolicy(RoutingVerb.PATCH, entityPath, operations);
+        return this;
+    }
+
+    public ThingifierApiSpec relationshipPostCan(
+            final String parentEntityPath,
+            final String relationshipName,
+            final RelationshipWriteOperation... operations) {
+        configureRelationshipWritePolicy(
+                RoutingVerb.POST, parentEntityPath, relationshipName, operations);
+        return this;
+    }
+
+    public ThingifierApiSpec relationshipDeleteCan(
+            final String parentEntityPath,
+            final String relationshipName,
+            final RelationshipWriteOperation... operations) {
+        configureRelationshipWritePolicy(
+                RoutingVerb.DELETE, parentEntityPath, relationshipName, operations);
         return this;
     }
 
@@ -82,6 +127,38 @@ public final class ThingifierApiSpec {
                 .findFirst();
     }
 
+    public Optional<Set<EntityWriteOperation>> entityWriteOperationsFor(
+            final RoutingVerb verb, final String path, final String apiPathPrefix) {
+        Optional<ThingifierApiRouteRule> routeRule =
+                ruleFor(verb, path, apiPathPrefix)
+                        .filter(ThingifierApiRouteRule::hasEntityWriteOperations);
+        if (routeRule.isPresent()) {
+            return Optional.of(routeRule.get().entityWriteOperations());
+        }
+
+        return entityWritePolicyRules.stream()
+                .filter(rule -> rule.verb() == verb)
+                .filter(rule -> pathsMatch(rule.pathPattern(), path, apiPathPrefix))
+                .map(EntityWritePolicyRule::operations)
+                .findFirst();
+    }
+
+    public Optional<Set<RelationshipWriteOperation>> relationshipWriteOperationsFor(
+            final RoutingVerb verb, final String path, final String apiPathPrefix) {
+        Optional<ThingifierApiRouteRule> routeRule =
+                ruleFor(verb, path, apiPathPrefix)
+                        .filter(ThingifierApiRouteRule::hasRelationshipWriteOperations);
+        if (routeRule.isPresent()) {
+            return Optional.of(routeRule.get().relationshipWriteOperations());
+        }
+
+        return relationshipWritePolicyRules.stream()
+                .filter(rule -> rule.verb() == verb)
+                .filter(rule -> pathsMatch(rule.pathPattern(), path, apiPathPrefix))
+                .map(RelationshipWritePolicyRule::operations)
+                .findFirst();
+    }
+
     private void configureEntityRoutes(final String entityPath, final boolean disable) {
         final String collectionPath = "/" + normalize(entityPath);
         final String instancePath = collectionPath + "/{id}";
@@ -110,6 +187,57 @@ public final class ThingifierApiSpec {
         } else {
             rule.hide();
         }
+    }
+
+    private void configureEntityWritePolicy(
+            final RoutingVerb verb,
+            final String entityPath,
+            final EntityWriteOperation... operations) {
+        final String collectionPath = "/" + normalize(entityPath);
+        final String instancePath = collectionPath + "/{id}";
+        if (verb == RoutingVerb.POST) {
+            entityWritePolicyRules.add(
+                    new EntityWritePolicyRule(verb, collectionPath, entityOperations(operations)));
+        }
+        entityWritePolicyRules.add(
+                new EntityWritePolicyRule(verb, instancePath, entityOperations(operations)));
+    }
+
+    private void configureRelationshipWritePolicy(
+            final RoutingVerb verb,
+            final String parentEntityPath,
+            final String relationshipName,
+            final RelationshipWriteOperation... operations) {
+        final String relationshipPath =
+                "/" + normalize(parentEntityPath) + "/{id}/" + normalize(relationshipName);
+        final String path =
+                verb == RoutingVerb.DELETE ? relationshipPath + "/{relatedId}" : relationshipPath;
+        relationshipWritePolicyRules.add(
+                new RelationshipWritePolicyRule(verb, path, relationshipOperations(operations)));
+    }
+
+    private Set<EntityWriteOperation> entityOperations(final EntityWriteOperation... operations) {
+        EnumSet<EntityWriteOperation> selected = EnumSet.noneOf(EntityWriteOperation.class);
+        if (operations != null) {
+            Collections.addAll(selected, operations);
+        }
+        if (selected.isEmpty()) {
+            return Set.of();
+        }
+        return Collections.unmodifiableSet(EnumSet.copyOf(selected));
+    }
+
+    private Set<RelationshipWriteOperation> relationshipOperations(
+            final RelationshipWriteOperation... operations) {
+        EnumSet<RelationshipWriteOperation> selected =
+                EnumSet.noneOf(RelationshipWriteOperation.class);
+        if (operations != null) {
+            Collections.addAll(selected, operations);
+        }
+        if (selected.isEmpty()) {
+            return Set.of();
+        }
+        return Collections.unmodifiableSet(EnumSet.copyOf(selected));
     }
 
     private boolean pathsMatch(
@@ -176,5 +304,59 @@ public final class ThingifierApiSpec {
 
     private boolean isWildcard(final String segment) {
         return "*".equals(segment);
+    }
+
+    private static final class EntityWritePolicyRule {
+        private final RoutingVerb verb;
+        private final String pathPattern;
+        private final Set<EntityWriteOperation> operations;
+
+        EntityWritePolicyRule(
+                final RoutingVerb verb,
+                final String pathPattern,
+                final Set<EntityWriteOperation> operations) {
+            this.verb = verb;
+            this.pathPattern = pathPattern;
+            this.operations = operations;
+        }
+
+        RoutingVerb verb() {
+            return verb;
+        }
+
+        String pathPattern() {
+            return pathPattern;
+        }
+
+        Set<EntityWriteOperation> operations() {
+            return operations;
+        }
+    }
+
+    private static final class RelationshipWritePolicyRule {
+        private final RoutingVerb verb;
+        private final String pathPattern;
+        private final Set<RelationshipWriteOperation> operations;
+
+        RelationshipWritePolicyRule(
+                final RoutingVerb verb,
+                final String pathPattern,
+                final Set<RelationshipWriteOperation> operations) {
+            this.verb = verb;
+            this.pathPattern = pathPattern;
+            this.operations = operations;
+        }
+
+        RoutingVerb verb() {
+            return verb;
+        }
+
+        String pathPattern() {
+            return pathPattern;
+        }
+
+        Set<RelationshipWriteOperation> operations() {
+            return operations;
+        }
     }
 }

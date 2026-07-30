@@ -75,6 +75,29 @@ public final class ThingWriteRequestMapper {
                 ApiMappingError.withMessage(400, "Your request was not understood"));
     }
 
+    public ThingWriteRequestMapping mapPatch(
+            final ThingRoute route, final ApiBodyFields bodyFields) {
+        if (route instanceof CollectionRoute) {
+            return ThingWriteRequestMapping.error(
+                    ApiMappingError.withMessage(405, "Cannot patch root level entity"));
+        }
+
+        if (route instanceof InstanceRoute) {
+            InstanceRoute instance = (InstanceRoute) route;
+            return mapPostToInstance(instance, bodyFields);
+        }
+
+        if (route instanceof UnmatchedRoute) {
+            UnmatchedRoute unmatched = (UnmatchedRoute) route;
+            if (!unmatched.firstPart().isEmpty() && unmatched.partCount() == 2) {
+                return ThingWriteRequestMapping.error(NoSuchEntity.error(unmatched.firstPart()));
+            }
+        }
+
+        return ThingWriteRequestMapping.error(
+                ApiMappingError.withMessage(400, "Your request was not understood"));
+    }
+
     public ThingWriteRequestMapping mapDelete(final ThingRoute route) {
         if (route instanceof CollectionRoute) {
             return ThingWriteRequestMapping.error(

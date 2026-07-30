@@ -209,6 +209,9 @@ public final class ThingifierHttpApi {
             case PUT:
                 apiResponse = thingifier.api().put(envelope);
                 break;
+            case PATCH:
+                apiResponse = thingifier.api().patch(envelope);
+                break;
             default:
                 break;
         }
@@ -219,7 +222,7 @@ public final class ThingifierHttpApi {
 
     private HttpApiResponse validateEntityViewInput(
             final HttpApiRequest request, final HttpVerb verb) {
-        if (verb != HttpVerb.POST && verb != HttpVerb.PUT) {
+        if (verb != HttpVerb.POST && verb != HttpVerb.PUT && verb != HttpVerb.PATCH) {
             return null;
         }
 
@@ -337,6 +340,10 @@ public final class ThingifierHttpApi {
 
     public HttpApiResponse put(final HttpApiRequest request) {
         return handleRequest(request, HttpVerb.PUT);
+    }
+
+    public HttpApiResponse patch(final HttpApiRequest request) {
+        return handleRequest(request, HttpVerb.PATCH);
     }
 
     public HttpApiResponse queryRequest(final HttpApiRequest request) {

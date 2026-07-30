@@ -11,7 +11,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.F
 public class RoutingDefinition {
     private final RoutingVerb verb;
     private final String url;
-    private final RoutingStatus routingStatus;
+    private RoutingStatus routingStatus;
     private ResponseHeader header;
     private String documentation = "";
     private boolean isFilterable;
@@ -57,6 +57,11 @@ public class RoutingDefinition {
 
     public RoutingStatus status() {
         return routingStatus;
+    }
+
+    public RoutingDefinition replaceStatus(final RoutingStatus status) {
+        routingStatus = status;
+        return this;
     }
 
     public String url() {
@@ -123,6 +128,11 @@ public class RoutingDefinition {
         return this;
     }
 
+    public RoutingDefinition clearPossibleStatuses() {
+        possibleStatusResponses.clear();
+        return this;
+    }
+
     public List<RoutingStatus> getPossibleStatusReponses() {
         return possibleStatusResponses;
     }
@@ -137,6 +147,11 @@ public class RoutingDefinition {
 
     public RoutingDefinition returnPayload(final Integer statusCode, String objectSchemaName) {
         returnPayload.put(statusCode, objectSchemaName);
+        return this;
+    }
+
+    public RoutingDefinition clearReturnPayloads() {
+        returnPayload.clear();
         return this;
     }
 

@@ -17,14 +17,14 @@ import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.application.ThingCommandResult;
 
-public class RestApiPostHandler {
+public class RestApiPatchHandler {
     private final ThingifierApiRuntime runtime;
 
-    public RestApiPostHandler(final Thingifier aThingifier) {
+    public RestApiPatchHandler(final Thingifier aThingifier) {
         this(new DefaultThingifierApiRuntime(aThingifier));
     }
 
-    public RestApiPostHandler(final ThingifierApiRuntime runtime) {
+    public RestApiPatchHandler(final ThingifierApiRuntime runtime) {
         this.runtime = runtime;
     }
 
@@ -45,13 +45,13 @@ public class RestApiPostHandler {
         ThingRoute route = new ThingRouteMapper(runtime.schema()).map(url);
         ApiResponse policyResponse =
                 new WriteMethodPolicy(runtime)
-                        .rejectIfNotAllowed(RoutingVerb.POST, route, bodyFields, context);
+                        .rejectIfNotAllowed(RoutingVerb.PATCH, route, bodyFields, context);
         if (policyResponse != null) {
             return policyResponse;
         }
 
         ThingWriteRequestMapping mapping =
-                new ThingWriteRequestMapper(runtime.schema()).mapPost(route, bodyFields);
+                new ThingWriteRequestMapper(runtime.schema()).mapPatch(route, bodyFields);
         ThingCommandResultApiMapper apiMapper =
                 new ThingCommandResultApiMapper(runtime.apiConfig());
         if (mapping.isError()) {
