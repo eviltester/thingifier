@@ -10,6 +10,7 @@ import java.util.Set;
 import uk.co.compendiumdev.thingifier.api.docgen.ApiRoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
+import uk.co.compendiumdev.thingifier.apiconfig.EntityPatchUpdateStyle;
 import uk.co.compendiumdev.thingifier.apiconfig.EntityWriteOperation;
 import uk.co.compendiumdev.thingifier.apiconfig.RelationshipWriteOperation;
 
@@ -17,11 +18,13 @@ public final class ThingifierApiSpec {
 
     private final List<ThingifierApiRouteRule> routeRules;
     private final List<EntityWritePolicyRule> entityWritePolicyRules;
+    private final List<EntityPatchPolicyRule> entityPatchPolicyRules;
     private final List<RelationshipWritePolicyRule> relationshipWritePolicyRules;
 
     public ThingifierApiSpec() {
         routeRules = new ArrayList<>();
         entityWritePolicyRules = new ArrayList<>();
+        entityPatchPolicyRules = new ArrayList<>();
         relationshipWritePolicyRules = new ArrayList<>();
     }
 
@@ -70,8 +73,8 @@ public final class ThingifierApiSpec {
     }
 
     public ThingifierApiSpec entityPatchCan(
-            final String entityPath, final EntityWriteOperation... operations) {
-        configureEntityWritePolicy(RoutingVerb.PATCH, entityPath, operations);
+            final String entityPath, final EntityPatchUpdateStyle... updateStyles) {
+        configureEntityPatchPolicy(entityPath, updateStyles);
         return this;
     }
 
@@ -143,6 +146,21 @@ public final class ThingifierApiSpec {
                 .findFirst();
     }
 
+    public Optional<Set<EntityPatchUpdateStyle>> entityPatchUpdateStylesFor(
+            final String path, final String apiPathPrefix) {
+        Optional<ThingifierApiRouteRule> routeRule =
+                ruleFor(RoutingVerb.PATCH, path, apiPathPrefix)
+                        .filter(ThingifierApiRouteRule::hasEntityPatchUpdateStyles);
+        if (routeRule.isPresent()) {
+            return Optional.of(routeRule.get().entityPatchUpdateStyles());
+        }
+
+        return entityPatchPolicyRules.stream()
+                .filter(rule -> pathsMatch(rule.pathPattern(), path, apiPathPrefix))
+                .map(EntityPatchPolicyRule::updateStyles)
+                .findFirst();
+    }
+
     public Optional<Set<RelationshipWriteOperation>> relationshipWriteOperationsFor(
             final RoutingVerb verb, final String path, final String apiPathPrefix) {
         Optional<ThingifierApiRouteRule> routeRule =
@@ -203,6 +221,13 @@ public final class ThingifierApiSpec {
                 new EntityWritePolicyRule(verb, instancePath, entityOperations(operations)));
     }
 
+    private void configureEntityPatchPolicy(
+            final String entityPath, final EntityPatchUpdateStyle... updateStyles) {
+        final String instancePath = "/" + normalize(entityPath) + "/{id}";
+        entityPatchPolicyRules.add(
+                new EntityPatchPolicyRule(instancePath, entityPatchStyles(updateStyles)));
+    }
+
     private void configureRelationshipWritePolicy(
             final RoutingVerb verb,
             final String parentEntityPath,
@@ -220,6 +245,18 @@ public final class ThingifierApiSpec {
         EnumSet<EntityWriteOperation> selected = EnumSet.noneOf(EntityWriteOperation.class);
         if (operations != null) {
             Collections.addAll(selected, operations);
+        }
+        if (selected.isEmpty()) {
+            return Set.of();
+        }
+        return Collections.unmodifiableSet(EnumSet.copyOf(selected));
+    }
+
+    private Set<EntityPatchUpdateStyle> entityPatchStyles(
+            final EntityPatchUpdateStyle... updateStyles) {
+        EnumSet<EntityPatchUpdateStyle> selected = EnumSet.noneOf(EntityPatchUpdateStyle.class);
+        if (updateStyles != null) {
+            Collections.addAll(selected, updateStyles);
         }
         if (selected.isEmpty()) {
             return Set.of();
@@ -330,6 +367,25 @@ public final class ThingifierApiSpec {
 
         Set<EntityWriteOperation> operations() {
             return operations;
+        }
+    }
+
+    private static final class EntityPatchPolicyRule {
+        private final String pathPattern;
+        private final Set<EntityPatchUpdateStyle> updateStyles;
+
+        EntityPatchPolicyRule(
+                final String pathPattern, final Set<EntityPatchUpdateStyle> updateStyles) {
+            this.pathPattern = pathPattern;
+            this.updateStyles = updateStyles;
+        }
+
+        String pathPattern() {
+            return pathPattern;
+        }
+
+        Set<EntityPatchUpdateStyle> updateStyles() {
+            return updateStyles;
         }
     }
 

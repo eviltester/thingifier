@@ -125,19 +125,25 @@ public class ThingifierRestAPIHandler {
 
     public ApiResponse patch(final String url, final BodyParser args, HttpHeadersBlock headers) {
         ThingifierRequestContext context = contextFrom(headers);
-        return patch(url, args.bodyFields(), context);
+        return patch(url, args.rawBody(), headers, context);
+    }
+
+    public ApiResponse patch(final String url, final String body, HttpHeadersBlock headers) {
+        ThingifierRequestContext context = contextFrom(headers);
+        return patch(url, body, headers, context);
     }
 
     public ApiResponse patch(final ApiRequestEnvelope request) {
         ThingifierRequestContext context = contextFrom(request.headers());
-        return patch(request.path(), request.bodyFields(), context);
+        return patch(request.path(), request.body(), request.headers(), context);
     }
 
     public ApiResponse patch(
             final String url,
-            final ApiBodyFields bodyFields,
+            final String body,
+            final HttpHeadersBlock headers,
             final ThingifierRequestContext context) {
-        return withRepository(patch.handle(url, bodyFields, context), context);
+        return withRepository(patch.handle(url, body, headers, context), context);
     }
 
     private ThingifierRequestContext contextFrom(final HttpHeadersBlock headers) {

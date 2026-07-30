@@ -1,5 +1,8 @@
 package uk.co.compendiumdev.thingifier.application.examples;
 
+import static uk.co.compendiumdev.thingifier.apiconfig.EntityPatchUpdateStyle.JSON_MERGE_PATCH_RFC7396;
+import static uk.co.compendiumdev.thingifier.apiconfig.EntityPatchUpdateStyle.JSON_PATCH_RFC6902;
+import static uk.co.compendiumdev.thingifier.apiconfig.EntityPatchUpdateStyle.PARTIAL_JSON_UPDATE;
 import static uk.co.compendiumdev.thingifier.apiconfig.EntityWriteOperation.CREATE;
 import static uk.co.compendiumdev.thingifier.apiconfig.EntityWriteOperation.UPDATE;
 import static uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType.STRING;
@@ -25,7 +28,10 @@ public class ConfiguredWriteMethodsThingifier {
                 Field.is("description", STRING));
 
         notes.apiDefaults().writeMethods().entities().postCan(CREATE);
-        notes.apiDefaults().writeMethods().entities().patchCan(UPDATE);
+        notes.apiDefaults()
+                .writeMethods()
+                .entities()
+                .patchCan(PARTIAL_JSON_UPDATE, JSON_MERGE_PATCH_RFC7396, JSON_PATCH_RFC6902);
         notes.apiDefaults().writeMethods().entities().putCan(UPDATE);
 
         return notes;

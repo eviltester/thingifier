@@ -117,6 +117,10 @@ public class BodyParser {
         return args;
     }
 
+    public String rawBody() {
+        return request.getBody();
+    }
+
     public ApiBodyFields bodyFields() {
         return ApiBodyFields.fromMap(getMap());
     }

@@ -1,5 +1,6 @@
 package uk.co.compendiumdev.thingifier.apiconfig;
 
+import static uk.co.compendiumdev.thingifier.apiconfig.EntityPatchUpdateStyle.PARTIAL_JSON_UPDATE;
 import static uk.co.compendiumdev.thingifier.apiconfig.EntityWriteOperation.CREATE;
 import static uk.co.compendiumdev.thingifier.apiconfig.EntityWriteOperation.UPDATE;
 import static uk.co.compendiumdev.thingifier.apiconfig.RelationshipWriteOperation.CONNECT_EXISTING;
@@ -19,7 +20,7 @@ public class WriteMethodsConfigTest {
 
         Assertions.assertEquals(Set.of(CREATE, UPDATE), config.entities().postOperations());
         Assertions.assertEquals(Set.of(CREATE, UPDATE), config.entities().putOperations());
-        Assertions.assertEquals(Set.of(), config.entities().patchOperations());
+        Assertions.assertEquals(Set.of(), config.entities().patchUpdateStyles());
         Assertions.assertEquals(
                 Set.of(CREATE_AND_CONNECT, CONNECT_EXISTING),
                 config.relationships().postOperations());
@@ -41,14 +42,15 @@ public class WriteMethodsConfigTest {
     public void configCanBeCopiedBetweenProfiles() {
         ThingifierApiConfig source = new ThingifierApiConfig("");
         source.writeMethods().entities().postCan(CREATE);
-        source.writeMethods().entities().patchCan(UPDATE);
+        source.writeMethods().entities().patchCan(PARTIAL_JSON_UPDATE);
         source.writeMethods().relationships().postCan(CONNECT_EXISTING);
 
         ThingifierApiConfig target = new ThingifierApiConfig("");
         target.setFrom(source);
 
         Assertions.assertEquals(Set.of(CREATE), target.writeMethods().entities().postOperations());
-        Assertions.assertEquals(Set.of(UPDATE), target.writeMethods().entities().patchOperations());
+        Assertions.assertEquals(
+                Set.of(PARTIAL_JSON_UPDATE), target.writeMethods().entities().patchUpdateStyles());
         Assertions.assertEquals(
                 Set.of(CONNECT_EXISTING), target.writeMethods().relationships().postOperations());
     }

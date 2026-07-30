@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Set;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
+import uk.co.compendiumdev.thingifier.apiconfig.EntityPatchUpdateStyle;
 import uk.co.compendiumdev.thingifier.apiconfig.EntityWriteOperation;
 import uk.co.compendiumdev.thingifier.apiconfig.RelationshipWriteOperation;
 
@@ -24,6 +25,7 @@ public final class ThingifierApiRouteRule {
     private String defaultEntityView;
     private Map<Integer, String> responseEntityViews;
     private EnumSet<EntityWriteOperation> entityWriteOperations;
+    private EnumSet<EntityPatchUpdateStyle> entityPatchUpdateStyles;
     private EnumSet<RelationshipWriteOperation> relationshipWriteOperations;
 
     ThingifierApiRouteRule(final RoutingVerb verb, final String pathPattern) {
@@ -39,6 +41,7 @@ public final class ThingifierApiRouteRule {
         this.defaultEntityView = null;
         this.responseEntityViews = new HashMap<>();
         this.entityWriteOperations = null;
+        this.entityPatchUpdateStyles = null;
         this.relationshipWriteOperations = null;
     }
 
@@ -111,6 +114,11 @@ public final class ThingifierApiRouteRule {
         return entityWriteOperations(operations);
     }
 
+    public ThingifierApiRouteRule entityPatchCan(final EntityPatchUpdateStyle... updateStyles) {
+        this.entityPatchUpdateStyles = patchStyles(updateStyles);
+        return this;
+    }
+
     public ThingifierApiRouteRule relationshipWriteOperations(
             final RelationshipWriteOperation... operations) {
         this.relationshipWriteOperations = relationshipOperations(operations);
@@ -154,6 +162,17 @@ public final class ThingifierApiRouteRule {
             return Set.of();
         }
         return Collections.unmodifiableSet(EnumSet.copyOf(entityWriteOperations));
+    }
+
+    public boolean hasEntityPatchUpdateStyles() {
+        return entityPatchUpdateStyles != null;
+    }
+
+    public Set<EntityPatchUpdateStyle> entityPatchUpdateStyles() {
+        if (entityPatchUpdateStyles == null || entityPatchUpdateStyles.isEmpty()) {
+            return Set.of();
+        }
+        return Collections.unmodifiableSet(EnumSet.copyOf(entityPatchUpdateStyles));
     }
 
     public boolean hasRelationshipWriteOperations() {
@@ -213,6 +232,14 @@ public final class ThingifierApiRouteRule {
         EnumSet<EntityWriteOperation> selected = EnumSet.noneOf(EntityWriteOperation.class);
         if (operations != null) {
             Collections.addAll(selected, operations);
+        }
+        return selected;
+    }
+
+    private EnumSet<EntityPatchUpdateStyle> patchStyles(final EntityPatchUpdateStyle... styles) {
+        EnumSet<EntityPatchUpdateStyle> selected = EnumSet.noneOf(EntityPatchUpdateStyle.class);
+        if (styles != null) {
+            Collections.addAll(selected, styles);
         }
         return selected;
     }

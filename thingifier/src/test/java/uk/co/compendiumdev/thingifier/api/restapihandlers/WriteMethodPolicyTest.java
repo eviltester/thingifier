@@ -1,5 +1,8 @@
 package uk.co.compendiumdev.thingifier.api.restapihandlers;
 
+import static uk.co.compendiumdev.thingifier.apiconfig.EntityPatchUpdateStyle.JSON_MERGE_PATCH_RFC7396;
+import static uk.co.compendiumdev.thingifier.apiconfig.EntityPatchUpdateStyle.JSON_PATCH_RFC6902;
+import static uk.co.compendiumdev.thingifier.apiconfig.EntityPatchUpdateStyle.PARTIAL_JSON_UPDATE;
 import static uk.co.compendiumdev.thingifier.apiconfig.EntityWriteOperation.CREATE;
 import static uk.co.compendiumdev.thingifier.apiconfig.EntityWriteOperation.UPDATE;
 import static uk.co.compendiumdev.thingifier.apiconfig.RelationshipWriteOperation.CONNECT_EXISTING;
@@ -26,6 +29,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.F
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
+import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
 
 public class WriteMethodPolicyTest {
 
@@ -91,7 +95,7 @@ public class WriteMethodPolicyTest {
     @Test
     public void patchCanBeEnabledForEntityInstanceUpdates() {
         Thingifier thingifier = stringIdNotes();
-        thingifier.apiConfig().writeMethods().entities().patchCan(UPDATE);
+        thingifier.apiConfig().writeMethods().entities().patchCan(PARTIAL_JSON_UPDATE);
         createNote(thingifier, "one", "One");
 
         ApiResponse response = patch(thingifier, "notes/one", "{\"title\":\"Patched\"}");
@@ -99,6 +103,322 @@ public class WriteMethodPolicyTest {
         Assertions.assertEquals(200, response.getStatusCode());
         Assertions.assertEquals(
                 "Patched", response.getReturnedInstance().getFieldValue("title").asString());
+    }
+
+    @Test
+    public void patchIsRejectedForEntityCollectionsEvenWhenInstancePatchIsAllowed() {
+        Thingifier thingifier = stringIdNotes();
+        thingifier.apiConfig().writeMethods().entities().patchCan(PARTIAL_JSON_UPDATE);
+
+        ApiResponse response = patch(thingifier, "notes", "{\"title\":\"No Collection Patch\"}");
+
+        Assertions.assertEquals(405, response.getStatusCode());
+        Assertions.assertEquals(
+                "OPTIONS, GET, HEAD, POST, QUERY", response.getHeaderValue("Allow"));
+        Assertions.assertTrue(response.getErrorMessages().contains("Method Not Allowed"));
+        Assertions.assertEquals(0, noteCount(thingifier));
+    }
+
+    @Test
+    public void patchRequiresConfiguredContentTypeWhenMethodIsAllowed() {
+        Thingifier thingifier = stringIdNotes();
+        thingifier.apiConfig().writeMethods().entities().patchCan(PARTIAL_JSON_UPDATE);
+        createNote(thingifier, "one", "One");
+
+        ApiResponse missingContentType =
+                thingifier
+                        .api()
+                        .patch("notes/one", "{\"title\":\"Blocked\"}", new HttpHeadersBlock());
+
+        HttpHeadersBlock mergePatchHeaders = new HttpHeadersBlock();
+        mergePatchHeaders.put("Content-Type", JSON_MERGE_PATCH_RFC7396.mediaType());
+        ApiResponse unsupportedContentType =
+                thingifier.api().patch("notes/one", "{\"title\":\"Blocked\"}", mergePatchHeaders);
+
+        Assertions.assertEquals(415, missingContentType.getStatusCode());
+        Assertions.assertEquals(
+                PARTIAL_JSON_UPDATE.mediaType(), missingContentType.getHeaderValue("Accept-Patch"));
+        Assertions.assertEquals(415, unsupportedContentType.getStatusCode());
+        Assertions.assertEquals(
+                PARTIAL_JSON_UPDATE.mediaType(),
+                unsupportedContentType.getHeaderValue("Accept-Patch"));
+        Assertions.assertEquals(
+                "One", currentTitle(thingifier, "one"), "Unsupported PATCH must not amend data");
+        Assertions.assertTrue(
+                unsupportedContentType
+                        .getErrorMessages()
+                        .contains("Unsupported PATCH Content Type"));
+    }
+
+    @Test
+    public void patchContentTypeCanIncludeParameters() {
+        Thingifier thingifier = stringIdNotes();
+        thingifier.apiConfig().writeMethods().entities().patchCan(PARTIAL_JSON_UPDATE);
+        createNote(thingifier, "one", "One");
+
+        HttpHeadersBlock headers = new HttpHeadersBlock();
+        headers.put("Content-Type", "application/json; charset=utf-8");
+        ApiResponse response =
+                thingifier.api().patch("notes/one", "{\"title\":\"Patched\"}", headers);
+
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals(
+                "Patched", response.getReturnedInstance().getFieldValue("title").asString());
+    }
+
+    @Test
+    public void bodyParserPatchEntryPointPreservesJsonPatchArrayBodies() {
+        Thingifier thingifier = stringIdNotes();
+        thingifier.apiConfig().writeMethods().entities().patchCan(JSON_PATCH_RFC6902);
+        createNote(thingifier, "one", "One", "Original");
+
+        HttpHeadersBlock headers = new HttpHeadersBlock();
+        headers.put("Content-Type", JSON_PATCH_RFC6902.mediaType());
+        ApiResponse response =
+                thingifier
+                        .api()
+                        .patch(
+                                "notes/one",
+                                parser(
+                                        thingifier,
+                                        "[{\"op\":\"replace\",\"path\":\"/description\",\"value\":\"From BodyParser\"}]"),
+                                headers);
+
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals(
+                "From BodyParser",
+                response.getReturnedInstance().getFieldValue("description").asString());
+        Assertions.assertEquals("One", currentTitle(thingifier, "one"));
+    }
+
+    @Test
+    public void jsonMergePatchCanUpdateAndRemoveFields() {
+        Thingifier thingifier = stringIdNotes();
+        thingifier.apiConfig().writeMethods().entities().patchCan(JSON_MERGE_PATCH_RFC7396);
+        createNote(thingifier, "one", "One", "remove me");
+
+        ApiResponse response =
+                patch(
+                        thingifier,
+                        "notes/one",
+                        "{\"title\":\"Merged\",\"description\":null}",
+                        JSON_MERGE_PATCH_RFC7396.mediaType());
+
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals(
+                "Merged", response.getReturnedInstance().getFieldValue("title").asString());
+        Assertions.assertEquals(
+                "", response.getReturnedInstance().getFieldValue("description").asString());
+    }
+
+    @Test
+    public void jsonMergePatchRejectsRootReplacementForEntityResources() {
+        Thingifier thingifier = stringIdNotes();
+        thingifier.apiConfig().writeMethods().entities().patchCan(JSON_MERGE_PATCH_RFC7396);
+        createNote(thingifier, "one", "One");
+
+        ApiResponse response =
+                patch(
+                        thingifier,
+                        "notes/one",
+                        "\"not an entity object\"",
+                        JSON_MERGE_PATCH_RFC7396.mediaType());
+
+        Assertions.assertEquals(422, response.getStatusCode());
+        Assertions.assertEquals(
+                "One",
+                thingifier
+                        .api()
+                        .get("notes/one", new QueryFilterParams(), new HttpHeadersBlock())
+                        .getReturnedInstance()
+                        .getFieldValue("title")
+                        .asString());
+    }
+
+    @Test
+    public void malformedPatchDocumentsAreRejectedWithoutChangingTheEntity() {
+        Thingifier thingifier = stringIdNotes();
+        thingifier
+                .apiConfig()
+                .writeMethods()
+                .entities()
+                .patchCan(PARTIAL_JSON_UPDATE, JSON_MERGE_PATCH_RFC7396, JSON_PATCH_RFC6902);
+        createNote(thingifier, "one", "One", "Original");
+
+        ApiResponse partialArray =
+                patch(thingifier, "notes/one", "[{\"title\":\"Not an entity object\"}]");
+        ApiResponse malformedPartial = patch(thingifier, "notes/one", "{\"title\":");
+        ApiResponse malformedMerge =
+                patch(thingifier, "notes/one", "{\"title\":", JSON_MERGE_PATCH_RFC7396.mediaType());
+        ApiResponse malformedJsonPatch =
+                patch(thingifier, "notes/one", "[{\"op\":", JSON_PATCH_RFC6902.mediaType());
+        ApiResponse jsonPatchObject =
+                patch(
+                        thingifier,
+                        "notes/one",
+                        "{\"op\":\"replace\",\"path\":\"/title\",\"value\":\"Wrong shape\"}",
+                        JSON_PATCH_RFC6902.mediaType());
+
+        Assertions.assertEquals(400, partialArray.getStatusCode());
+        Assertions.assertTrue(
+                partialArray
+                        .getErrorMessages()
+                        .contains("PATCH partial JSON update document must be an object"));
+        Assertions.assertEquals(400, malformedPartial.getStatusCode());
+        Assertions.assertTrue(
+                malformedPartial.getErrorMessages().contains("Malformed JSON document"));
+        Assertions.assertEquals(400, malformedMerge.getStatusCode());
+        Assertions.assertTrue(
+                malformedMerge.getErrorMessages().contains("Malformed JSON Merge Patch document"));
+        Assertions.assertEquals(400, malformedJsonPatch.getStatusCode());
+        Assertions.assertTrue(
+                malformedJsonPatch.getErrorMessages().contains("Malformed JSON Patch document"));
+        Assertions.assertEquals(400, jsonPatchObject.getStatusCode());
+        Assertions.assertTrue(
+                jsonPatchObject
+                        .getErrorMessages()
+                        .contains("JSON Patch document must be an array of operations"));
+        Assertions.assertEquals("One", currentTitle(thingifier, "one"));
+        Assertions.assertEquals("Original", currentDescription(thingifier, "one"));
+    }
+
+    @Test
+    public void emptyPartialJsonPatchIsANoOpForTheTargetEntity() {
+        Thingifier thingifier = stringIdNotes();
+        thingifier.apiConfig().writeMethods().entities().patchCan(PARTIAL_JSON_UPDATE);
+        createNote(thingifier, "one", "One", "Original");
+
+        ApiResponse response = patch(thingifier, "notes/one", "");
+
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals(
+                "One", response.getReturnedInstance().getFieldValue("title").asString());
+        Assertions.assertEquals(
+                "Original", response.getReturnedInstance().getFieldValue("description").asString());
+        Assertions.assertEquals("One", currentTitle(thingifier, "one"));
+        Assertions.assertEquals("Original", currentDescription(thingifier, "one"));
+    }
+
+    @Test
+    public void patchRequiresPrimaryKeyRoutableEntities() {
+        Thingifier thingifier = new Thingifier();
+        EntityDefinition log = thingifier.defineThing("log", "logs");
+        log.addField(Field.is("title", FieldType.STRING).makeMandatory());
+        thingifier.apiConfig().writeMethods().entities().patchCan(PARTIAL_JSON_UPDATE);
+
+        ApiResponse response = patch(thingifier, "logs/anything", "{\"title\":\"No identity\"}");
+
+        Assertions.assertEquals(404, response.getStatusCode());
+        Assertions.assertTrue(
+                response.getErrorMessages()
+                        .contains("Entity log does not have a primary key defined"));
+        Assertions.assertEquals(
+                0,
+                thingifier
+                        .api()
+                        .get("logs", new QueryFilterParams(), new HttpHeadersBlock())
+                        .getReturnedInstanceCollection()
+                        .size());
+    }
+
+    @Test
+    public void rfcPatchStylesReturnNotFoundForMissingEntityAndDoNotCreateIt() {
+        Thingifier thingifier = stringIdNotes();
+        thingifier
+                .apiConfig()
+                .writeMethods()
+                .entities()
+                .patchCan(JSON_MERGE_PATCH_RFC7396, JSON_PATCH_RFC6902);
+
+        ApiResponse mergePatch =
+                patch(
+                        thingifier,
+                        "notes/missing",
+                        "{\"title\":\"Should not exist\"}",
+                        JSON_MERGE_PATCH_RFC7396.mediaType());
+        ApiResponse jsonPatch =
+                patch(
+                        thingifier,
+                        "notes/missing",
+                        "[{\"op\":\"replace\",\"path\":\"/title\",\"value\":\"Should not exist\"}]",
+                        JSON_PATCH_RFC6902.mediaType());
+
+        Assertions.assertEquals(404, mergePatch.getStatusCode());
+        Assertions.assertTrue(
+                mergePatch
+                        .getErrorMessages()
+                        .contains("No such note entity instance with id == missing found"));
+        Assertions.assertEquals(404, jsonPatch.getStatusCode());
+        Assertions.assertTrue(
+                jsonPatch
+                        .getErrorMessages()
+                        .contains("No such note entity instance with id == missing found"));
+        Assertions.assertEquals(
+                404,
+                thingifier
+                        .api()
+                        .get("notes/missing", new QueryFilterParams(), new HttpHeadersBlock())
+                        .getStatusCode());
+    }
+
+    @Test
+    public void jsonPatchWholeResourceResultMustStillBeAnEntityObject() {
+        Thingifier thingifier = stringIdNotes();
+        thingifier.apiConfig().writeMethods().entities().patchCan(JSON_PATCH_RFC6902);
+        createNote(thingifier, "one", "One", "Original");
+
+        ApiResponse response =
+                patch(
+                        thingifier,
+                        "notes/one",
+                        "[{\"op\":\"replace\",\"path\":\"\",\"value\":\"not an entity object\"}]",
+                        JSON_PATCH_RFC6902.mediaType());
+
+        Assertions.assertEquals(422, response.getStatusCode());
+        Assertions.assertTrue(
+                response.getErrorMessages()
+                        .contains("PATCH result for entity resources must be an object"));
+        Assertions.assertEquals("One", currentTitle(thingifier, "one"));
+        Assertions.assertEquals("Original", currentDescription(thingifier, "one"));
+    }
+
+    @Test
+    public void jsonPatchCanApplyOperationsAndFailedPatchIsAtomic() {
+        Thingifier thingifier = stringIdNotes();
+        thingifier.apiConfig().writeMethods().entities().patchCan(JSON_PATCH_RFC6902);
+        createNote(thingifier, "one", "One", "Original");
+
+        ApiResponse failed =
+                patch(
+                        thingifier,
+                        "notes/one",
+                        "[{\"op\":\"replace\",\"path\":\"/title\",\"value\":\"Changed\"},"
+                                + "{\"op\":\"test\",\"path\":\"/description\",\"value\":\"Wrong\"}]",
+                        JSON_PATCH_RFC6902.mediaType());
+
+        Assertions.assertEquals(409, failed.getStatusCode());
+        Assertions.assertEquals(
+                "One",
+                thingifier
+                        .api()
+                        .get("notes/one", new QueryFilterParams(), new HttpHeadersBlock())
+                        .getReturnedInstance()
+                        .getFieldValue("title")
+                        .asString());
+
+        ApiResponse applied =
+                patch(
+                        thingifier,
+                        "notes/one",
+                        "[{\"op\":\"replace\",\"path\":\"/title\",\"value\":\"Changed\"},"
+                                + "{\"op\":\"remove\",\"path\":\"/description\"}]",
+                        JSON_PATCH_RFC6902.mediaType());
+
+        Assertions.assertEquals(200, applied.getStatusCode());
+        Assertions.assertEquals(
+                "Changed", applied.getReturnedInstance().getFieldValue("title").asString());
+        Assertions.assertEquals(
+                "", applied.getReturnedInstance().getFieldValue("description").asString());
     }
 
     @Test
@@ -192,7 +512,7 @@ public class WriteMethodPolicyTest {
     public void generatedDocsReflectConfiguredEntityPolicy() {
         Thingifier thingifier = autoIdNotes();
         thingifier.apiConfig().writeMethods().entities().postCan(CREATE);
-        thingifier.apiConfig().writeMethods().entities().patchCan(UPDATE);
+        thingifier.apiConfig().writeMethods().entities().patchCan(PARTIAL_JSON_UPDATE);
         thingifier.apiConfig().writeMethods().entities().putCan(UPDATE);
 
         ApiRoutingDefinition definition =
@@ -215,6 +535,49 @@ public class WriteMethodPolicyTest {
         Assertions.assertEquals(
                 "OPTIONS, GET, HEAD, PUT, PATCH, DELETE",
                 route(definition, RoutingVerb.OPTIONS, "notes/:id").headerValue());
+        Assertions.assertEquals(
+                PARTIAL_JSON_UPDATE.mediaType(),
+                route(definition, RoutingVerb.OPTIONS, "notes/:id")
+                        .getResponseHeaderValue("Accept-Patch"));
+    }
+
+    @Test
+    public void routePatchStyleOverrideWinsOverEntityOverrideWhichWinsOverGlobalConfig() {
+        Thingifier routeOverride = stringIdNotes();
+        routeOverride.apiConfig().writeMethods().entities().patchCan(PARTIAL_JSON_UPDATE);
+        routeOverride.apiSpec().entityPatchCan("/notes", JSON_MERGE_PATCH_RFC7396);
+        routeOverride
+                .apiSpec()
+                .route(RoutingVerb.PATCH, "/notes/{id}")
+                .entityPatchCan(JSON_PATCH_RFC6902);
+        createNote(routeOverride, "one", "One");
+
+        Assertions.assertEquals(
+                415, patch(routeOverride, "notes/one", "{\"title\":\"Blocked\"}").getStatusCode());
+        Assertions.assertEquals(
+                200,
+                patch(
+                                routeOverride,
+                                "notes/one",
+                                "[{\"op\":\"replace\",\"path\":\"/title\",\"value\":\"Allowed\"}]",
+                                JSON_PATCH_RFC6902.mediaType())
+                        .getStatusCode());
+
+        Thingifier entityOverride = stringIdNotes();
+        entityOverride.apiConfig().writeMethods().entities().patchCan(PARTIAL_JSON_UPDATE);
+        entityOverride.apiSpec().entityPatchCan("/notes", JSON_MERGE_PATCH_RFC7396);
+        createNote(entityOverride, "one", "One");
+
+        Assertions.assertEquals(
+                415, patch(entityOverride, "notes/one", "{\"title\":\"Blocked\"}").getStatusCode());
+        Assertions.assertEquals(
+                200,
+                patch(
+                                entityOverride,
+                                "notes/one",
+                                "{\"title\":\"Allowed\"}",
+                                JSON_MERGE_PATCH_RFC7396.mediaType())
+                        .getStatusCode());
     }
 
     @Test
@@ -273,6 +636,7 @@ public class WriteMethodPolicyTest {
         EntityDefinition note = thingifier.defineThing("note", "notes");
         note.addAsPrimaryKeyField(Field.is("id", FieldType.STRING));
         note.addField(Field.is("title", FieldType.STRING).makeMandatory());
+        note.addField(Field.is("description", FieldType.STRING));
         return thingifier;
     }
 
@@ -300,14 +664,21 @@ public class WriteMethodPolicyTest {
 
     private EntityInstance createNote(
             final Thingifier thingifier, final String id, final String title) {
+        return createNote(thingifier, id, title, null);
+    }
+
+    private EntityInstance createNote(
+            final Thingifier thingifier,
+            final String id,
+            final String title,
+            final String description) {
         EntityDefinition note = thingifier.getDefinitionNamed("note");
-        return thingifier
-                .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
-                .entities()
-                .create(
-                        EntityInstanceDraft.forEntity(note)
-                                .withField("id", id)
-                                .withField("title", title));
+        EntityInstanceDraft draft =
+                EntityInstanceDraft.forEntity(note).withField("id", id).withField("title", title);
+        if (description != null) {
+            draft.withField("description", description);
+        }
+        return thingifier.getStore(EntityRelModel.DEFAULT_DATABASE_NAME).entities().create(draft);
     }
 
     private EntityInstance createProject(final Thingifier thingifier, final String title) {
@@ -335,7 +706,17 @@ public class WriteMethodPolicyTest {
     }
 
     private ApiResponse patch(final Thingifier thingifier, final String path, final String body) {
-        return thingifier.api().patch(path, parser(thingifier, body), new HttpHeadersBlock());
+        return patch(thingifier, path, body, PARTIAL_JSON_UPDATE.mediaType());
+    }
+
+    private ApiResponse patch(
+            final Thingifier thingifier,
+            final String path,
+            final String body,
+            final String contentType) {
+        HttpHeadersBlock headers = new HttpHeadersBlock();
+        headers.put("Content-Type", contentType);
+        return thingifier.api().patch(path, body, headers);
     }
 
     private BodyParser parser(final Thingifier thingifier, final String body) {
@@ -353,6 +734,29 @@ public class WriteMethodPolicyTest {
 
     private String noteJson(final String id, final String title) {
         return "{\"id\":\"" + id + "\",\"title\":\"" + title + "\"}";
+    }
+
+    private int noteCount(final Thingifier thingifier) {
+        return thingifier
+                .api()
+                .get("notes", new QueryFilterParams(), new HttpHeadersBlock())
+                .getReturnedInstanceCollection()
+                .size();
+    }
+
+    private String currentTitle(final Thingifier thingifier, final String id) {
+        return currentNote(thingifier, id).getFieldValue("title").asString();
+    }
+
+    private String currentDescription(final Thingifier thingifier, final String id) {
+        return currentNote(thingifier, id).getFieldValue("description").asString();
+    }
+
+    private EntityInstance currentNote(final Thingifier thingifier, final String id) {
+        return thingifier
+                .api()
+                .get("notes/" + id, new QueryFilterParams(), new HttpHeadersBlock())
+                .getReturnedInstance();
     }
 
     private RoutingDefinition route(

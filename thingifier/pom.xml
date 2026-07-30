@@ -73,6 +73,16 @@
           <artifactId>gson</artifactId>
           <version>${gson-version}</version>
       </dependency>
+      <dependency>
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>jackson-core</artifactId>
+          <version>${jackson-version}</version>
+      </dependency>
+      <dependency>
+          <groupId>io.github.vishwakarma</groupId>
+          <artifactId>zjsonpatch</artifactId>
+          <version>${zjsonpatch-version}</version>
+      </dependency>
 
   </dependencies>
 

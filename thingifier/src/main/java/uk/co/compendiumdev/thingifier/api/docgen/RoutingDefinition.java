@@ -19,8 +19,10 @@ public class RoutingDefinition {
     private List<RoutingStatus> possibleStatusResponses;
     private HashMap<Integer, String> returnPayload;
     private String requestPayload;
+    private List<String> requestContentTypes;
     private List<RequestUrlParameter> requestUrlParams;
     private HashMap<String, String> customHeaders;
+    private HashMap<String, String> responseHeaders;
     private boolean usesBasicAuth = false;
     private boolean usesBearerAuth = false;
     private boolean hiddenFromDocumentation = false;
@@ -46,7 +48,9 @@ public class RoutingDefinition {
         requestUrlParams = new ArrayList<>();
         returnPayload = new HashMap<>();
         requestPayload = null;
+        requestContentTypes = new ArrayList<>();
         customHeaders = new HashMap<>();
+        responseHeaders = new HashMap<>();
         requestEntityViewName = null;
         responseEntityViewNames = new HashMap<>();
     }
@@ -98,6 +102,25 @@ public class RoutingDefinition {
     public RoutingDefinition replaceHeader(final ResponseHeader header) {
         this.header = header;
         return this;
+    }
+
+    public RoutingDefinition addResponseHeader(final String headerName, final String value) {
+        if (headerName != null) {
+            responseHeaders.put(headerName, value == null ? "" : value);
+        }
+        return this;
+    }
+
+    public boolean hasResponseHeaders() {
+        return !responseHeaders.isEmpty();
+    }
+
+    public Collection<String> getResponseHeaderNames() {
+        return responseHeaders.keySet();
+    }
+
+    public String getResponseHeaderValue(final String headerName) {
+        return responseHeaders.get(headerName);
     }
 
     public String getDocumentation() {
@@ -168,12 +191,31 @@ public class RoutingDefinition {
         return this;
     }
 
+    public RoutingDefinition requestContentTypes(final String... contentTypes) {
+        requestContentTypes.clear();
+        if (contentTypes != null) {
+            for (String contentType : contentTypes) {
+                if (contentType != null && !contentType.trim().isEmpty()) {
+                    requestContentTypes.add(contentType.trim());
+                }
+            }
+        }
+        return this;
+    }
+
     public Boolean hasRequestPayload() {
         return requestPayload != null;
     }
 
     public String getRequestPayload() {
         return requestPayload;
+    }
+
+    public List<String> getRequestContentTypes() {
+        if (requestContentTypes.isEmpty()) {
+            return List.of("application/json", "application/xml");
+        }
+        return new ArrayList<>(requestContentTypes);
     }
 
     public RoutingDefinition requestEntityView(final String viewName) {

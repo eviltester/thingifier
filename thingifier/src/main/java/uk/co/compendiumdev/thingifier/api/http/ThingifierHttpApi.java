@@ -222,7 +222,7 @@ public final class ThingifierHttpApi {
 
     private HttpApiResponse validateEntityViewInput(
             final HttpApiRequest request, final HttpVerb verb) {
-        if (verb != HttpVerb.POST && verb != HttpVerb.PUT && verb != HttpVerb.PATCH) {
+        if (verb != HttpVerb.POST && verb != HttpVerb.PUT) {
             return null;
         }
 

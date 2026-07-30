@@ -13,15 +13,23 @@ public class ContentTypeHeaderParser {
 
     public boolean isXML() {
         // text/xml in standard https://datatracker.ietf.org/doc/html/rfc3023
-        return header.contains("application/xml") || header.contains("text/xml");
+        return isMediaType("application/xml") || isMediaType("text/xml");
     }
 
     public boolean isJSON() {
-        return header.contains("application/json");
+        return isMediaType("application/json");
+    }
+
+    public boolean isJsonMergePatch() {
+        return isMediaType("application/merge-patch+json");
+    }
+
+    public boolean isJsonPatch() {
+        return isMediaType("application/json-patch+json");
     }
 
     public boolean isFormUrlEncoded() {
-        return header.contains("application/x-www-form-urlencoded");
+        return isMediaType("application/x-www-form-urlencoded");
     }
 
     public boolean isMissing() {
@@ -29,6 +37,18 @@ public class ContentTypeHeaderParser {
     }
 
     public boolean isText() {
-        return header.contains("text/");
+        return mediaType().startsWith("text/");
+    }
+
+    public boolean isMediaType(final String mediaType) {
+        return mediaType().equalsIgnoreCase(mediaType);
+    }
+
+    public String mediaType() {
+        int separatorIndex = header.indexOf(";");
+        if (separatorIndex == -1) {
+            return header;
+        }
+        return header.substring(0, separatorIndex).trim();
     }
 }

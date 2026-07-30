@@ -4,7 +4,9 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import java.nio.file.Path;
 import java.util.Map;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import uk.co.compendiumdev.thingifier.swaggerizer.OpenApiSpecificationVersion;
@@ -13,188 +15,161 @@ public class CrudUiControllerTest {
 
     @TempDir Path temp;
 
+    private ActiveThingifierWorkspace workspace;
+    private CrudUiController controller;
+
+    @BeforeEach
+    public void createWorkspace() {
+        workspace = ActiveThingifierWorkspace.defaultTodoManagerWorkspace();
+        controller = new CrudUiController(workspace);
+    }
+
+    @AfterEach
+    public void closeWorkspace() {
+        workspace.close();
+    }
+
     @Test
     public void workspaceRouteReturnsSchemaMetadata() {
-        try (ActiveThingifierWorkspace workspace =
-                ActiveThingifierWorkspace.defaultTodoManagerWorkspace()) {
-            CrudUiController controller = new CrudUiController(workspace);
+        UiHttpResponse response = controller.workspace();
 
-            UiHttpResponse response = controller.workspace();
-
-            Assertions.assertEquals(200, response.statusCode(), response.body());
-            Assertions.assertTrue(response.body().contains("\"entities\""));
-            Assertions.assertTrue(response.body().contains("\"relationships\""));
-            Assertions.assertTrue(response.body().contains("\"schemaYaml\""));
-            Assertions.assertTrue(response.body().contains("\"project\""));
-            Assertions.assertTrue(response.body().contains("\"storage\""));
-        }
+        Assertions.assertEquals(200, response.statusCode(), response.body());
+        Assertions.assertTrue(response.body().contains("\"entities\""));
+        Assertions.assertTrue(response.body().contains("\"relationships\""));
+        Assertions.assertTrue(response.body().contains("\"schemaYaml\""));
+        Assertions.assertTrue(response.body().contains("\"project\""));
+        Assertions.assertTrue(response.body().contains("\"storage\""));
     }
 
     @Test
     public void storageSwitchEndpointChangesWorkspaceStorageMode() {
-        try (ActiveThingifierWorkspace workspace =
-                ActiveThingifierWorkspace.defaultTodoManagerWorkspace()) {
-            CrudUiController controller = new CrudUiController(workspace);
-            Path databaseFile = temp.resolve("controller.sqlite");
+        Path databaseFile = temp.resolve("controller.sqlite");
 
-            UiHttpResponse response =
-                    controller.switchStorage(
-                            JsonSupport.toJson(
-                                    Map.of(
-                                            "mode",
-                                            "sqlite-file",
-                                            "sqliteFile",
-                                            databaseFile.toString())));
+        UiHttpResponse response =
+                controller.switchStorage(
+                        JsonSupport.toJson(
+                                Map.of(
+                                        "mode",
+                                        "sqlite-file",
+                                        "sqliteFile",
+                                        databaseFile.toString())));
 
-            Assertions.assertEquals(200, response.statusCode(), response.body());
-            Assertions.assertEquals("sqlite-file", workspace.snapshot().storage().mode());
-            Assertions.assertTrue(response.body().contains("\"storageStatus\": \"switched\""));
-        }
+        Assertions.assertEquals(200, response.statusCode(), response.body());
+        Assertions.assertEquals("sqlite-file", workspace.snapshot().storage().mode());
+        Assertions.assertTrue(response.body().contains("\"storageStatus\": \"switched\""));
     }
 
     @Test
     public void projectBrowseEndpointReturnsSelectedPathFromChooser() {
-        try (ActiveThingifierWorkspace workspace =
-                ActiveThingifierWorkspace.defaultTodoManagerWorkspace()) {
-            Path chosen = temp.resolve("chosen-project");
-            CrudUiController controller =
-                    new CrudUiController(
-                            workspace, request -> ProjectPathSelection.selected(chosen.toString()));
+        Path chosen = temp.resolve("chosen-project");
+        CrudUiController browsingController =
+                new CrudUiController(
+                        workspace, request -> ProjectPathSelection.selected(chosen.toString()));
 
-            UiHttpResponse response =
-                    controller.browseProject(
-                            JsonSupport.toJson(Map.of("action", "save", "path", "")));
-            JsonObject body = JsonParser.parseString(response.body()).getAsJsonObject();
+        UiHttpResponse response =
+                browsingController.browseProject(
+                        JsonSupport.toJson(Map.of("action", "save", "path", "")));
+        JsonObject body = JsonParser.parseString(response.body()).getAsJsonObject();
 
-            Assertions.assertEquals(200, response.statusCode());
-            Assertions.assertTrue(body.get("selected").getAsBoolean());
-            Assertions.assertEquals(chosen.toString(), body.get("path").getAsString());
-        }
+        Assertions.assertEquals(200, response.statusCode());
+        Assertions.assertTrue(body.get("selected").getAsBoolean());
+        Assertions.assertEquals(chosen.toString(), body.get("path").getAsString());
     }
 
     @Test
     public void projectBrowseEndpointReturnsCancelledSelection() {
-        try (ActiveThingifierWorkspace workspace =
-                ActiveThingifierWorkspace.defaultTodoManagerWorkspace()) {
-            CrudUiController controller =
-                    new CrudUiController(workspace, request -> ProjectPathSelection.cancelled());
+        CrudUiController browsingController =
+                new CrudUiController(workspace, request -> ProjectPathSelection.cancelled());
 
-            UiHttpResponse response =
-                    controller.browseProject(
-                            JsonSupport.toJson(Map.of("action", "load", "path", "")));
-            JsonObject body = JsonParser.parseString(response.body()).getAsJsonObject();
+        UiHttpResponse response =
+                browsingController.browseProject(
+                        JsonSupport.toJson(Map.of("action", "load", "path", "")));
+        JsonObject body = JsonParser.parseString(response.body()).getAsJsonObject();
 
-            Assertions.assertEquals(200, response.statusCode());
-            Assertions.assertFalse(body.get("selected").getAsBoolean());
-            Assertions.assertEquals(
-                    "Project browsing cancelled.", body.get("message").getAsString());
-        }
+        Assertions.assertEquals(200, response.statusCode());
+        Assertions.assertFalse(body.get("selected").getAsBoolean());
+        Assertions.assertEquals("Project browsing cancelled.", body.get("message").getAsString());
     }
 
     @Test
     public void projectBrowseEndpointReportsUnavailableChooserAsBadRequest() {
-        try (ActiveThingifierWorkspace workspace =
-                ActiveThingifierWorkspace.defaultTodoManagerWorkspace()) {
-            CrudUiController controller =
-                    new CrudUiController(
-                            workspace,
-                            request -> ProjectPathSelection.unavailable("Browse unavailable"));
+        CrudUiController browsingController =
+                new CrudUiController(
+                        workspace,
+                        request -> ProjectPathSelection.unavailable("Browse unavailable"));
 
-            UiHttpResponse response =
-                    controller.browseProject(
-                            JsonSupport.toJson(Map.of("action", "save", "path", "")));
+        UiHttpResponse response =
+                browsingController.browseProject(
+                        JsonSupport.toJson(Map.of("action", "save", "path", "")));
 
-            Assertions.assertEquals(400, response.statusCode());
-            Assertions.assertTrue(response.body().contains("Browse unavailable"));
-        }
+        Assertions.assertEquals(400, response.statusCode());
+        Assertions.assertTrue(response.body().contains("Browse unavailable"));
     }
 
     @Test
     public void sqliteFileStorageSwitchRequiresAFilePathAndDoesNotMutateWorkspace() {
-        try (ActiveThingifierWorkspace workspace =
-                ActiveThingifierWorkspace.defaultTodoManagerWorkspace()) {
-            CrudUiController controller = new CrudUiController(workspace);
-            long version = workspace.snapshot().version();
+        long version = workspace.snapshot().version();
 
-            UiHttpResponse response =
-                    controller.switchStorage(JsonSupport.toJson(Map.of("mode", "sqlite-file")));
+        UiHttpResponse response =
+                controller.switchStorage(JsonSupport.toJson(Map.of("mode", "sqlite-file")));
 
-            Assertions.assertEquals(400, response.statusCode());
-            Assertions.assertEquals(version, workspace.snapshot().version());
-            Assertions.assertEquals("memory", workspace.snapshot().storage().mode());
-        }
+        Assertions.assertEquals(400, response.statusCode());
+        Assertions.assertEquals(version, workspace.snapshot().version());
+        Assertions.assertEquals("memory", workspace.snapshot().storage().mode());
     }
 
     @Test
     public void invalidYamlDoesNotReplaceWorkspace() {
-        try (ActiveThingifierWorkspace workspace =
-                ActiveThingifierWorkspace.defaultTodoManagerWorkspace()) {
-            CrudUiController controller = new CrudUiController(workspace);
+        UiHttpResponse response = controller.loadYaml("formatVersion: 1\nentities: [");
 
-            UiHttpResponse response = controller.loadYaml("formatVersion: 1\nentities: [");
-
-            Assertions.assertEquals(400, response.statusCode());
-            Assertions.assertEquals("Todo Manager", workspace.snapshot().definition().title());
-        }
+        Assertions.assertEquals(400, response.statusCode());
+        Assertions.assertEquals("Todo Manager", workspace.snapshot().definition().title());
     }
 
     @Test
     public void schemaYamlPreviewDoesNotReplaceWorkspace() {
-        try (ActiveThingifierWorkspace workspace =
-                ActiveThingifierWorkspace.defaultTodoManagerWorkspace()) {
-            CrudUiController controller = new CrudUiController(workspace);
-            long version = workspace.snapshot().version();
-            String title = workspace.snapshot().definition().title();
+        long version = workspace.snapshot().version();
+        String title = workspace.snapshot().definition().title();
 
-            UiHttpResponse response =
-                    controller.schemaFromYaml(TestResources.text("/models/minimal-todo.yaml"));
-            JsonObject body = JsonParser.parseString(response.body()).getAsJsonObject();
+        UiHttpResponse response =
+                controller.schemaFromYaml(TestResources.text("/models/minimal-todo.yaml"));
+        JsonObject body = JsonParser.parseString(response.body()).getAsJsonObject();
 
-            Assertions.assertEquals(200, response.statusCode());
-            Assertions.assertTrue(body.get("valid").getAsBoolean());
-            Assertions.assertEquals(version, workspace.snapshot().version());
-            Assertions.assertEquals(title, workspace.snapshot().definition().title());
-        }
+        Assertions.assertEquals(200, response.statusCode());
+        Assertions.assertTrue(body.get("valid").getAsBoolean());
+        Assertions.assertEquals(version, workspace.snapshot().version());
+        Assertions.assertEquals(title, workspace.snapshot().definition().title());
     }
 
     @Test
     public void schemaDraftPreviewDoesNotReplaceWorkspace() {
-        try (ActiveThingifierWorkspace workspace =
-                ActiveThingifierWorkspace.defaultTodoManagerWorkspace()) {
-            CrudUiController controller = new CrudUiController(workspace);
-            JsonObject parsed =
-                    JsonParser.parseString(
-                                    controller
-                                            .schemaFromYaml(
-                                                    TestResources.text("/models/minimal-todo.yaml"))
-                                            .body())
-                            .getAsJsonObject();
-            long version = workspace.snapshot().version();
+        JsonObject parsed =
+                JsonParser.parseString(
+                                controller
+                                        .schemaFromYaml(
+                                                TestResources.text("/models/minimal-todo.yaml"))
+                                        .body())
+                        .getAsJsonObject();
+        long version = workspace.snapshot().version();
 
-            UiHttpResponse response = controller.previewSchema(parsed.get("draft").toString());
+        UiHttpResponse response = controller.previewSchema(parsed.get("draft").toString());
 
-            Assertions.assertEquals(200, response.statusCode());
-            Assertions.assertTrue(
-                    JsonParser.parseString(response.body())
-                            .getAsJsonObject()
-                            .get("valid")
-                            .getAsBoolean());
-            Assertions.assertEquals(version, workspace.snapshot().version());
-            Assertions.assertEquals("Todo Manager", workspace.snapshot().definition().title());
-        }
+        Assertions.assertEquals(200, response.statusCode());
+        Assertions.assertTrue(
+                JsonParser.parseString(response.body())
+                        .getAsJsonObject()
+                        .get("valid")
+                        .getAsBoolean());
+        Assertions.assertEquals(version, workspace.snapshot().version());
+        Assertions.assertEquals("Todo Manager", workspace.snapshot().definition().title());
     }
 
     @Test
     public void malformedSchemaYamlPreviewReturnsBadRequest() {
-        try (ActiveThingifierWorkspace workspace =
-                ActiveThingifierWorkspace.defaultTodoManagerWorkspace()) {
-            CrudUiController controller = new CrudUiController(workspace);
+        UiHttpResponse response = controller.schemaFromYaml("formatVersion: 1\nentities: [");
 
-            UiHttpResponse response = controller.schemaFromYaml("formatVersion: 1\nentities: [");
-
-            Assertions.assertEquals(400, response.statusCode());
-            Assertions.assertEquals("Todo Manager", workspace.snapshot().definition().title());
-        }
+        Assertions.assertEquals(400, response.statusCode());
+        Assertions.assertEquals("Todo Manager", workspace.snapshot().definition().title());
     }
 
     @Test
@@ -287,124 +262,96 @@ public class CrudUiControllerTest {
 
     @Test
     public void openApiJsonUsesActiveWorkspaceApiServer() {
-        try (ActiveThingifierWorkspace workspace =
-                ActiveThingifierWorkspace.defaultTodoManagerWorkspace()) {
-            workspace.replaceWithYaml(TestResources.text("/models/project-tasks.yaml"));
-            CrudUiController controller = new CrudUiController(workspace);
+        workspace.replaceWithYaml(TestResources.text("/models/project-tasks.yaml"));
 
-            UiHttpResponse response = controller.openApiJson();
+        UiHttpResponse response = controller.openApiJson();
 
-            Assertions.assertEquals(200, response.statusCode());
-            Assertions.assertEquals("application/json", response.contentType());
-            Assertions.assertTrue(response.body().contains("\"openapi\""));
-            Assertions.assertTrue(openApiVersion(response.body()).startsWith("3.1."));
-            Assertions.assertTrue(response.body().contains("\"/api\""));
-            Assertions.assertTrue(response.body().contains("\"/projects\""));
-            Assertions.assertTrue(response.body().contains("\"/projects/{id}/tasks\""));
-        }
+        Assertions.assertEquals(200, response.statusCode());
+        Assertions.assertEquals("application/json", response.contentType());
+        Assertions.assertTrue(response.body().contains("\"openapi\""));
+        Assertions.assertTrue(openApiVersion(response.body()).startsWith("3.1."));
+        Assertions.assertTrue(response.body().contains("\"/api\""));
+        Assertions.assertTrue(response.body().contains("\"/projects\""));
+        Assertions.assertTrue(response.body().contains("\"/projects/{id}/tasks\""));
     }
 
     @Test
     public void openApiJsonCanBeGeneratedForOpenApi30() {
-        try (ActiveThingifierWorkspace workspace =
-                ActiveThingifierWorkspace.defaultTodoManagerWorkspace()) {
-            workspace.replaceWithYaml(TestResources.text("/models/project-tasks.yaml"));
-            CrudUiController controller = new CrudUiController(workspace);
+        workspace.replaceWithYaml(TestResources.text("/models/project-tasks.yaml"));
 
-            UiHttpResponse response =
-                    controller.openApiJson(OpenApiSpecificationVersion.OPENAPI_3_0);
+        UiHttpResponse response = controller.openApiJson(OpenApiSpecificationVersion.OPENAPI_3_0);
 
-            Assertions.assertEquals(200, response.statusCode());
-            Assertions.assertEquals("application/json", response.contentType());
-            Assertions.assertTrue(openApiVersion(response.body()).startsWith("3.0."));
-            Assertions.assertTrue(response.body().contains("\"/api\""));
-            Assertions.assertTrue(response.body().contains("\"/projects/{id}/tasks\""));
-        }
+        Assertions.assertEquals(200, response.statusCode());
+        Assertions.assertEquals("application/json", response.contentType());
+        Assertions.assertTrue(openApiVersion(response.body()).startsWith("3.0."));
+        Assertions.assertTrue(response.body().contains("\"/api\""));
+        Assertions.assertTrue(response.body().contains("\"/projects/{id}/tasks\""));
     }
 
     @Test
     public void openApiJsonCanBeGeneratedForOpenApi32() {
-        try (ActiveThingifierWorkspace workspace =
-                ActiveThingifierWorkspace.defaultTodoManagerWorkspace()) {
-            workspace.replaceWithYaml(TestResources.text("/models/project-tasks.yaml"));
-            CrudUiController controller = new CrudUiController(workspace);
+        workspace.replaceWithYaml(TestResources.text("/models/project-tasks.yaml"));
 
-            UiHttpResponse response =
-                    controller.openApiJson(OpenApiSpecificationVersion.OPENAPI_3_2);
+        UiHttpResponse response = controller.openApiJson(OpenApiSpecificationVersion.OPENAPI_3_2);
 
-            Assertions.assertEquals(200, response.statusCode());
-            Assertions.assertEquals("application/json", response.contentType());
-            Assertions.assertEquals("3.2.0", openApiVersion(response.body()));
-            Assertions.assertTrue(response.body().contains("\"/api\""));
-            Assertions.assertTrue(response.body().contains("\"/projects/{id}/tasks\""));
-            Assertions.assertTrue(response.body().contains("\"query\""));
-            Assertions.assertFalse(response.body().contains("\"x-query-operation\""));
-        }
+        Assertions.assertEquals(200, response.statusCode());
+        Assertions.assertEquals("application/json", response.contentType());
+        Assertions.assertEquals("3.2.0", openApiVersion(response.body()));
+        Assertions.assertTrue(response.body().contains("\"/api\""));
+        Assertions.assertTrue(response.body().contains("\"/projects/{id}/tasks\""));
+        Assertions.assertTrue(response.body().contains("\"query\""));
+        Assertions.assertFalse(response.body().contains("\"x-query-operation\""));
     }
 
     @Test
     public void openApiDownloadAddsAttachmentHeader() {
-        try (ActiveThingifierWorkspace workspace =
-                ActiveThingifierWorkspace.defaultTodoManagerWorkspace()) {
-            workspace.replaceWithYaml(TestResources.text("/models/project-tasks.yaml"));
-            CrudUiController controller = new CrudUiController(workspace);
+        workspace.replaceWithYaml(TestResources.text("/models/project-tasks.yaml"));
 
-            UiHttpResponse response = controller.downloadOpenApi(false);
+        UiHttpResponse response = controller.downloadOpenApi(false);
 
-            Assertions.assertEquals(200, response.statusCode());
-            Assertions.assertEquals("application/json", response.contentType());
-            Assertions.assertEquals(
-                    "attachment; filename=\"project-tasks-openapi.json\"",
-                    response.headers().get("Content-Disposition"));
-            Assertions.assertTrue(response.body().contains("\"Project Tasks\""));
-        }
+        Assertions.assertEquals(200, response.statusCode());
+        Assertions.assertEquals("application/json", response.contentType());
+        Assertions.assertEquals(
+                "attachment; filename=\"project-tasks-openapi.json\"",
+                response.headers().get("Content-Disposition"));
+        Assertions.assertTrue(response.body().contains("\"Project Tasks\""));
     }
 
     @Test
     public void apiDocumentationPageListsSchemaAndGeneratedRoutes() {
-        try (ActiveThingifierWorkspace workspace =
-                ActiveThingifierWorkspace.defaultTodoManagerWorkspace()) {
-            workspace.replaceWithYaml(TestResources.text("/models/project-tasks.yaml"));
-            CrudUiController controller = new CrudUiController(workspace);
+        workspace.replaceWithYaml(TestResources.text("/models/project-tasks.yaml"));
 
-            UiHttpResponse response = controller.apiDocumentationPage();
+        UiHttpResponse response = controller.apiDocumentationPage();
 
-            Assertions.assertEquals(200, response.statusCode());
-            Assertions.assertEquals("text/html", response.contentType());
-            Assertions.assertTrue(response.body().contains("Project Tasks API Documentation"));
-            Assertions.assertTrue(response.body().contains("href=\"/favicon.svg\""));
-            Assertions.assertTrue(response.body().contains("/api/projects"));
-            Assertions.assertTrue(response.body().contains("/api/projects/{id}/tasks"));
-            Assertions.assertTrue(response.body().contains("Download OpenAPI"));
-        }
+        Assertions.assertEquals(200, response.statusCode());
+        Assertions.assertEquals("text/html", response.contentType());
+        Assertions.assertTrue(response.body().contains("Project Tasks API Documentation"));
+        Assertions.assertTrue(response.body().contains("href=\"/favicon.svg\""));
+        Assertions.assertTrue(response.body().contains("/api/projects"));
+        Assertions.assertTrue(response.body().contains("/api/projects/{id}/tasks"));
+        Assertions.assertTrue(response.body().contains("Download OpenAPI"));
     }
 
     @Test
     public void swaggerUiPageEmbedsUnpkgSwaggerUiForCurrentOpenApiJson() {
-        try (ActiveThingifierWorkspace workspace =
-                ActiveThingifierWorkspace.defaultTodoManagerWorkspace()) {
-            CrudUiController controller = new CrudUiController(workspace);
+        UiHttpResponse response = controller.swaggerUi();
 
-            UiHttpResponse response = controller.swaggerUi();
-
-            Assertions.assertEquals(200, response.statusCode());
-            Assertions.assertTrue(
-                    response.body().contains("https://unpkg.com/swagger-ui-dist/swagger-ui.css"));
-            Assertions.assertTrue(
-                    response.body()
-                            .contains("https://unpkg.com/swagger-ui-dist/swagger-ui-bundle.js"));
-            Assertions.assertTrue(response.body().contains("href=\"/favicon.svg\""));
-            Assertions.assertTrue(response.body().contains("SwaggerUIBundle"));
-            Assertions.assertTrue(response.body().contains("/openapi.json"));
-            Assertions.assertTrue(response.body().contains("/openapi-3.1.json"));
-            Assertions.assertTrue(response.body().contains("/openapi-3.2.json"));
-            Assertions.assertTrue(response.body().contains("/openapi-3.0.json"));
-            Assertions.assertTrue(response.body().contains("/css/swagger-copy-for-ai.css"));
-            Assertions.assertTrue(response.body().contains("/js/swagger-copy-for-ai.js"));
-            Assertions.assertTrue(response.body().contains("window.thingifierSwaggerCopyForAi"));
-            Assertions.assertTrue(response.body().contains("openApiUrl: \"/openapi.json\""));
-            Assertions.assertTrue(response.body().contains("\"urls.primaryName\""));
-        }
+        Assertions.assertEquals(200, response.statusCode());
+        Assertions.assertTrue(
+                response.body().contains("https://unpkg.com/swagger-ui-dist/swagger-ui.css"));
+        Assertions.assertTrue(
+                response.body().contains("https://unpkg.com/swagger-ui-dist/swagger-ui-bundle.js"));
+        Assertions.assertTrue(response.body().contains("href=\"/favicon.svg\""));
+        Assertions.assertTrue(response.body().contains("SwaggerUIBundle"));
+        Assertions.assertTrue(response.body().contains("/openapi.json"));
+        Assertions.assertTrue(response.body().contains("/openapi-3.1.json"));
+        Assertions.assertTrue(response.body().contains("/openapi-3.2.json"));
+        Assertions.assertTrue(response.body().contains("/openapi-3.0.json"));
+        Assertions.assertTrue(response.body().contains("/css/swagger-copy-for-ai.css"));
+        Assertions.assertTrue(response.body().contains("/js/swagger-copy-for-ai.js"));
+        Assertions.assertTrue(response.body().contains("window.thingifierSwaggerCopyForAi"));
+        Assertions.assertTrue(response.body().contains("openApiUrl: \"/openapi.json\""));
+        Assertions.assertTrue(response.body().contains("\"urls.primaryName\""));
     }
 
     @Test

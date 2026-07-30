@@ -98,6 +98,17 @@ public final class ThingWriteRequestMapper {
                 ApiMappingError.withMessage(400, "Your request was not understood"));
     }
 
+    public ThingWriteRequestMapping mapPatchReplacingFields(
+            final ThingRoute route, final ApiBodyFields bodyFields) {
+        if (route instanceof InstanceRoute) {
+            InstanceRoute instance = (InstanceRoute) route;
+            return mapPatchToInstanceReplacingFields(instance, bodyFields);
+        }
+
+        return ThingWriteRequestMapping.error(
+                ApiMappingError.withMessage(400, "Your request was not understood"));
+    }
+
     public ThingWriteRequestMapping mapDelete(final ThingRoute route) {
         if (route instanceof CollectionRoute) {
             return ThingWriteRequestMapping.error(
@@ -135,6 +146,29 @@ public final class ThingWriteRequestMapper {
             ThingWriteRequestMapping mapping =
                     bodyCommandMapper.mapAmend(
                             bodyFields, route.entity(), route.identifier(), false);
+            return mapping.withRouteDisplay(
+                    ApiRouteDisplay.missingInstanceMessage(
+                            String.format(
+                                    "No such %s entity instance with %s == %s found",
+                                    route.entity().name(),
+                                    route.entity().primaryKeyFieldName(),
+                                    route.identifier())));
+        }
+
+        return ThingWriteRequestMapping.error(
+                ApiMappingError.withMessage(
+                        404,
+                        String.format(
+                                "Entity %s does not have a primary key defined",
+                                route.entity().name())));
+    }
+
+    private ThingWriteRequestMapping mapPatchToInstanceReplacingFields(
+            final InstanceRoute route, final ApiBodyFields bodyFields) {
+        if (route.entity().hasPrimaryKeyField()) {
+            ThingWriteRequestMapping mapping =
+                    bodyCommandMapper.mapAmend(
+                            bodyFields, route.entity(), route.identifier(), true, false);
             return mapping.withRouteDisplay(
                     ApiRouteDisplay.missingInstanceMessage(
                             String.format(

@@ -13,18 +13,21 @@ public final class ApiRequestEnvelope {
     private final QueryFilterParams queryParams;
     private final HttpHeadersBlock headers;
     private final ApiBodyFields bodyFields;
+    private final String body;
 
     private ApiRequestEnvelope(
             final ThingifierHttpApi.HttpVerb verb,
             final String path,
             final QueryFilterParams queryParams,
             final HttpHeadersBlock headers,
-            final ApiBodyFields bodyFields) {
+            final ApiBodyFields bodyFields,
+            final String body) {
         this.verb = verb;
         this.path = path;
         this.queryParams = queryParams;
         this.headers = headers;
         this.bodyFields = bodyFields;
+        this.body = body == null ? "" : body;
     }
 
     public static ApiRequestEnvelope from(
@@ -32,9 +35,7 @@ public final class ApiRequestEnvelope {
             final ThingifierHttpApi.HttpVerb verb,
             final List<String> thingNames) {
         ApiBodyFields bodyFields = ApiBodyFields.empty();
-        if (verb == ThingifierHttpApi.HttpVerb.POST
-                || verb == ThingifierHttpApi.HttpVerb.PUT
-                || verb == ThingifierHttpApi.HttpVerb.PATCH) {
+        if (verb == ThingifierHttpApi.HttpVerb.POST || verb == ThingifierHttpApi.HttpVerb.PUT) {
             bodyFields = new BodyParser(request, thingNames).bodyFields();
         }
         QueryFilterParams queryParams = request.getFilterableQueryParams();
@@ -42,7 +43,12 @@ public final class ApiRequestEnvelope {
             queryParams = queryContentAndUriQueryParams(request);
         }
         return new ApiRequestEnvelope(
-                verb, request.getPath(), queryParams, request.getHeaders(), bodyFields);
+                verb,
+                request.getPath(),
+                queryParams,
+                request.getHeaders(),
+                bodyFields,
+                request.getBody());
     }
 
     private static QueryFilterParams queryContentAndUriQueryParams(final HttpApiRequest request) {
@@ -70,5 +76,9 @@ public final class ApiRequestEnvelope {
 
     public ApiBodyFields bodyFields() {
         return bodyFields;
+    }
+
+    public String body() {
+        return body;
     }
 }

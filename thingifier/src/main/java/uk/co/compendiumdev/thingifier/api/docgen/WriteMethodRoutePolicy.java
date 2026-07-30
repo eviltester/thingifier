@@ -10,6 +10,7 @@ import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.Relationshi
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.RelationshipInstanceRoute;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.ThingRoute;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.ThingRouteMapper;
+import uk.co.compendiumdev.thingifier.apiconfig.EntityPatchUpdateStyle;
 import uk.co.compendiumdev.thingifier.apiconfig.EntityWriteOperation;
 import uk.co.compendiumdev.thingifier.apiconfig.RelationshipWriteOperation;
 
@@ -29,6 +30,7 @@ public final class WriteMethodRoutePolicy {
                     new ThingRouteMapper(schema).map(removePrefix(route.url(), apiPathPrefix));
             applyTo(route, thingRoute, apiPathPrefix);
         }
+        updateAcceptPatchHeaders(routingDefinition, apiPathPrefix);
     }
 
     private void applyTo(
@@ -77,13 +79,17 @@ public final class WriteMethodRoutePolicy {
             }
         }
         if (route.verb() == RoutingVerb.PATCH && thingRoute instanceof InstanceRoute) {
-            setEntityRouteSupport(
-                    route,
-                    thingRoute,
-                    apiPathPrefix,
-                    EntityWriteOperation.UPDATE,
-                    ((InstanceRoute) thingRoute).entity().name(),
-                    false);
+            Set<EntityPatchUpdateStyle> styles =
+                    entityPatchUpdateStylesFor(thingRoute, apiPathPrefix);
+            if (styles.isEmpty()) {
+                methodNotAllowed(route);
+            } else {
+                returnedEntityWriteRoute(
+                        route, ((InstanceRoute) thingRoute).entity().name(), false);
+                ensureStatus(route, 400);
+                ensureStatus(route, 415);
+                route.requestContentTypes(mediaTypesFor(styles));
+            }
         }
     }
 
@@ -172,6 +178,14 @@ public final class WriteMethodRoutePolicy {
                 .orElse(thingifier.apiConfig().writeMethods().entities().operationsFor(verb));
     }
 
+    private Set<EntityPatchUpdateStyle> entityPatchUpdateStylesFor(
+            final ThingRoute route, final String apiPathPrefix) {
+        return thingifier
+                .apiSpec()
+                .entityPatchUpdateStylesFor(route.originalPath(), apiPathPrefix)
+                .orElse(thingifier.apiConfig().writeMethods().entities().patchUpdateStyles());
+    }
+
     private Set<RelationshipWriteOperation> relationshipOperationsFor(
             final RoutingVerb verb, final ThingRoute route, final String apiPathPrefix) {
         return thingifier
@@ -191,6 +205,35 @@ public final class WriteMethodRoutePolicy {
             }
         }
         route.addPossibleStatus(RoutingStatus.returnValue(statusCode));
+    }
+
+    private void updateAcceptPatchHeaders(
+            final ApiRoutingDefinition routingDefinition, final String apiPathPrefix) {
+        for (RoutingDefinition route : routingDefinition.definitions()) {
+            if (route.verb() != RoutingVerb.OPTIONS) {
+                continue;
+            }
+
+            ThingRoute thingRoute =
+                    new ThingRouteMapper(schema).map(removePrefix(route.url(), apiPathPrefix));
+            if (!(thingRoute instanceof InstanceRoute)) {
+                continue;
+            }
+
+            Set<EntityPatchUpdateStyle> styles =
+                    entityPatchUpdateStylesFor(thingRoute, apiPathPrefix);
+            if (!styles.isEmpty()) {
+                route.addResponseHeader(
+                        "Accept-Patch", EntityPatchUpdateStyle.acceptPatchHeaderValue(styles));
+            }
+        }
+    }
+
+    private String[] mediaTypesFor(final Set<EntityPatchUpdateStyle> styles) {
+        return styles.stream()
+                .sorted()
+                .map(EntityPatchUpdateStyle::mediaType)
+                .toArray(String[]::new);
     }
 
     private String removePrefix(final String path, final String apiPathPrefix) {

@@ -64,6 +64,20 @@ public final class ThingBodyCommandMapper {
             final EntityTypeRef entity,
             final String identifier,
             final boolean replaceExistingFieldsAndRelationships) {
+        return mapAmend(
+                bodyFields,
+                entity,
+                identifier,
+                replaceExistingFieldsAndRelationships,
+                replaceExistingFieldsAndRelationships);
+    }
+
+    public ThingWriteRequestMapping mapAmend(
+            final ApiBodyFields bodyFields,
+            final EntityTypeRef entity,
+            final String identifier,
+            final boolean replaceExistingFields,
+            final boolean replaceExistingRelationships) {
         RelationshipBodyCommands relationships = parseRelationships(bodyFields, entity);
         if (!relationships.validationReport().isValid()) {
             return ThingWriteRequestMapping.error(
@@ -77,7 +91,8 @@ public final class ThingBodyCommandMapper {
                         identifier,
                         fieldValuesExcludingRelationships(bodyFields, relationships),
                         bodyFieldValues(bodyFields),
-                        replaceExistingFieldsAndRelationships,
+                        replaceExistingFields,
+                        replaceExistingRelationships,
                         relationships.references()));
     }
 

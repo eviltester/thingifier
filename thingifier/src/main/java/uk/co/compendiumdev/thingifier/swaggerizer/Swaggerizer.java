@@ -3,6 +3,7 @@ package uk.co.compendiumdev.thingifier.swaggerizer;
 import io.swagger.v3.core.util.Json;
 import io.swagger.v3.core.util.Json31;
 import io.swagger.v3.oas.models.*;
+import io.swagger.v3.oas.models.headers.Header;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.media.*;
 import io.swagger.v3.oas.models.parameters.Parameter;
@@ -163,14 +164,15 @@ public class Swaggerizer {
                             // situations
                             if (!subroute.status().isReturnedFromCall()) {
 
+                                ApiResponse response =
+                                        new ApiResponse()
+                                                .description(subroute.status().description());
+                                addRouteResponseHeaders(subroute, response);
                                 operation.setResponses(
                                         new ApiResponses()
                                                 .addApiResponse(
                                                         String.valueOf(subroute.status().value()),
-                                                        new ApiResponse()
-                                                                .description(
-                                                                        subroute.status()
-                                                                                .description())));
+                                                        response));
 
                             } else {
                                 final ApiResponses responses = new ApiResponses();
@@ -181,6 +183,7 @@ public class Swaggerizer {
                                     ApiResponse response =
                                             new ApiResponse()
                                                     .description(possibleStatus.description());
+                                    addRouteResponseHeaders(subroute, response);
                                     if (subroute.hasReturnPayloadFor(possibleStatus.value())) {
                                         // assume that all payloads are setup as components
                                         if (routingDefinitions.hasObjectSchemaNamed(
@@ -229,10 +232,11 @@ public class Swaggerizer {
                                 schema.setSchema(object);
                                 object.set$ref(ref);
 
-                                requestBody.setContent(
-                                        new Content()
-                                                .addMediaType("application/json", schema)
-                                                .addMediaType("application/xml", schema));
+                                Content content = new Content();
+                                for (String contentType : subroute.getRequestContentTypes()) {
+                                    content.addMediaType(contentType, schema);
+                                }
+                                requestBody.setContent(content);
 
                                 operation.setRequestBody(requestBody);
                             }
@@ -451,6 +455,20 @@ public class Swaggerizer {
                     operationParameters.add(param);
                 }
             }
+        }
+    }
+
+    private void addRouteResponseHeaders(
+            final RoutingDefinition subroute, final ApiResponse response) {
+        if (!subroute.hasResponseHeaders()) {
+            return;
+        }
+
+        for (String headerName : subroute.getResponseHeaderNames()) {
+            Header header = new Header();
+            header.setDescription(subroute.getResponseHeaderValue(headerName));
+            header.setSchema(new StringSchema());
+            response.addHeaderObject(headerName, header);
         }
     }
 

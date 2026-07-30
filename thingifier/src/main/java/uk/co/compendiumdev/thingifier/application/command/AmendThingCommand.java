@@ -11,7 +11,8 @@ public final class AmendThingCommand implements ThingWriteCommand {
     private final String identifier;
     private final List<NamedValue> fieldValues;
     private final List<BodyFieldValue> bodyFields;
-    private final boolean replaceExistingFieldsAndRelationships;
+    private final boolean replaceExistingFields;
+    private final boolean replaceExistingRelationships;
     private final List<RelationshipReference> relationships;
 
     public AmendThingCommand(
@@ -26,6 +27,7 @@ public final class AmendThingCommand implements ThingWriteCommand {
                 fieldValues,
                 BodyFieldValue.fromNamedValues(fieldValues),
                 replaceExistingFieldsAndRelationships,
+                replaceExistingFieldsAndRelationships,
                 relationships);
     }
 
@@ -36,11 +38,30 @@ public final class AmendThingCommand implements ThingWriteCommand {
             final List<BodyFieldValue> bodyFields,
             final boolean replaceExistingFieldsAndRelationships,
             final List<RelationshipReference> relationships) {
+        this(
+                entityName,
+                identifier,
+                fieldValues,
+                bodyFields,
+                replaceExistingFieldsAndRelationships,
+                replaceExistingFieldsAndRelationships,
+                relationships);
+    }
+
+    public AmendThingCommand(
+            final String entityName,
+            final String identifier,
+            final List<NamedValue> fieldValues,
+            final List<BodyFieldValue> bodyFields,
+            final boolean replaceExistingFields,
+            final boolean replaceExistingRelationships,
+            final List<RelationshipReference> relationships) {
         this.entityName = entityName;
         this.identifier = identifier;
         this.fieldValues = Collections.unmodifiableList(new ArrayList<>(fieldValues));
         this.bodyFields = Collections.unmodifiableList(new ArrayList<>(bodyFields));
-        this.replaceExistingFieldsAndRelationships = replaceExistingFieldsAndRelationships;
+        this.replaceExistingFields = replaceExistingFields;
+        this.replaceExistingRelationships = replaceExistingRelationships;
         this.relationships = Collections.unmodifiableList(new ArrayList<>(relationships));
     }
 
@@ -61,7 +82,15 @@ public final class AmendThingCommand implements ThingWriteCommand {
     }
 
     public boolean shouldReplaceExistingFieldsAndRelationships() {
-        return replaceExistingFieldsAndRelationships;
+        return replaceExistingFields && replaceExistingRelationships;
+    }
+
+    public boolean shouldReplaceExistingFields() {
+        return replaceExistingFields;
+    }
+
+    public boolean shouldReplaceExistingRelationships() {
+        return replaceExistingRelationships;
     }
 
     public List<RelationshipReference> getRelationships() {

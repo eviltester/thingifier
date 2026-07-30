@@ -9,12 +9,12 @@ public final class EntityWriteMethodConfig {
 
     private EnumSet<EntityWriteOperation> postOperations;
     private EnumSet<EntityWriteOperation> putOperations;
-    private EnumSet<EntityWriteOperation> patchOperations;
+    private EnumSet<EntityPatchUpdateStyle> patchUpdateStyles;
 
     public EntityWriteMethodConfig() {
         postOperations = operations(EntityWriteOperation.CREATE, EntityWriteOperation.UPDATE);
         putOperations = operations(EntityWriteOperation.CREATE, EntityWriteOperation.UPDATE);
-        patchOperations = operations();
+        patchUpdateStyles = patchStyles();
     }
 
     public EntityWriteMethodConfig postCan(final EntityWriteOperation... operations) {
@@ -27,8 +27,8 @@ public final class EntityWriteMethodConfig {
         return this;
     }
 
-    public EntityWriteMethodConfig patchCan(final EntityWriteOperation... operations) {
-        patchOperations = operations(operations);
+    public EntityWriteMethodConfig patchCan(final EntityPatchUpdateStyle... styles) {
+        patchUpdateStyles = patchStyles(styles);
         return this;
     }
 
@@ -52,8 +52,8 @@ public final class EntityWriteMethodConfig {
         return immutableCopyOf(putOperations);
     }
 
-    public Set<EntityWriteOperation> patchOperations() {
-        return immutableCopyOf(patchOperations);
+    public Set<EntityPatchUpdateStyle> patchUpdateStyles() {
+        return immutablePatchStyleCopyOf(patchUpdateStyles);
     }
 
     public Set<EntityWriteOperation> operationsFor(final RoutingVerb verb) {
@@ -63,22 +63,27 @@ public final class EntityWriteMethodConfig {
         if (verb == RoutingVerb.PUT) {
             return putOperations();
         }
-        if (verb == RoutingVerb.PATCH) {
-            return patchOperations();
-        }
         return Set.of();
     }
 
     public void setFrom(final EntityWriteMethodConfig source) {
         postOperations = copyOf(source.postOperations);
         putOperations = copyOf(source.putOperations);
-        patchOperations = copyOf(source.patchOperations);
+        patchUpdateStyles = patchStyleCopyOf(source.patchUpdateStyles);
     }
 
     static EnumSet<EntityWriteOperation> operations(final EntityWriteOperation... operations) {
         EnumSet<EntityWriteOperation> selected = EnumSet.noneOf(EntityWriteOperation.class);
         if (operations != null) {
             Collections.addAll(selected, operations);
+        }
+        return selected;
+    }
+
+    static EnumSet<EntityPatchUpdateStyle> patchStyles(final EntityPatchUpdateStyle... styles) {
+        EnumSet<EntityPatchUpdateStyle> selected = EnumSet.noneOf(EntityPatchUpdateStyle.class);
+        if (styles != null) {
+            Collections.addAll(selected, styles);
         }
         return selected;
     }
@@ -96,5 +101,21 @@ public final class EntityWriteMethodConfig {
             return operations();
         }
         return EnumSet.copyOf(operations);
+    }
+
+    private Set<EntityPatchUpdateStyle> immutablePatchStyleCopyOf(
+            final EnumSet<EntityPatchUpdateStyle> styles) {
+        if (styles.isEmpty()) {
+            return Set.of();
+        }
+        return Collections.unmodifiableSet(EnumSet.copyOf(styles));
+    }
+
+    private EnumSet<EntityPatchUpdateStyle> patchStyleCopyOf(
+            final EnumSet<EntityPatchUpdateStyle> styles) {
+        if (styles.isEmpty()) {
+            return patchStyles();
+        }
+        return EnumSet.copyOf(styles);
     }
 }

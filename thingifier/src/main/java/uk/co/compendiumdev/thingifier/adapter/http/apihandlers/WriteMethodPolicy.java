@@ -12,6 +12,7 @@ import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
 import uk.co.compendiumdev.thingifier.api.http.ThingifierRequestContext;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.ApiBodyFields;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
+import uk.co.compendiumdev.thingifier.apiconfig.EntityPatchUpdateStyle;
 import uk.co.compendiumdev.thingifier.apiconfig.EntityWriteOperation;
 import uk.co.compendiumdev.thingifier.apiconfig.RelationshipWriteOperation;
 import uk.co.compendiumdev.thingifier.application.schema.RelationshipSpec;
@@ -49,6 +50,10 @@ public final class WriteMethodPolicy {
             final RoutingVerb verb,
             final ThingRoute route,
             final ThingifierRequestContext context) {
+        if (verb == RoutingVerb.PATCH) {
+            return rejectEntityPatchIfNotAllowed(route, context);
+        }
+
         EntityWriteOperation operation = entityOperationFor(verb, route, context);
         if (operation == null) {
             return null;
@@ -60,6 +65,21 @@ public final class WriteMethodPolicy {
         }
 
         return methodNotAllowed(allowHeaderFor(route, context, verb, operation));
+    }
+
+    private ApiResponse rejectEntityPatchIfNotAllowed(
+            final ThingRoute route, final ThingifierRequestContext context) {
+        if (route instanceof CollectionRoute) {
+            return methodNotAllowed(
+                    allowHeaderFor(route, context, RoutingVerb.PATCH, EntityWriteOperation.UPDATE));
+        }
+
+        if (route instanceof InstanceRoute && entityPatchUpdateStylesFor(route).isEmpty()) {
+            return methodNotAllowed(
+                    allowHeaderFor(route, context, RoutingVerb.PATCH, EntityWriteOperation.UPDATE));
+        }
+
+        return null;
     }
 
     private ApiResponse rejectRelationshipWriteIfNotAllowed(
@@ -162,6 +182,13 @@ public final class WriteMethodPolicy {
                 .orElse(runtime.apiConfig().writeMethods().entities().operationsFor(verb));
     }
 
+    public Set<EntityPatchUpdateStyle> entityPatchUpdateStylesFor(final ThingRoute route) {
+        return runtime.apiSpec()
+                .entityPatchUpdateStylesFor(
+                        route.originalPath(), runtime.apiConfig().getApiEndPointPrefix())
+                .orElse(runtime.apiConfig().writeMethods().entities().patchUpdateStyles());
+    }
+
     private Set<RelationshipWriteOperation> relationshipOperationsFor(
             final RoutingVerb verb, final ThingRoute route) {
         return runtime.apiSpec()
@@ -197,8 +224,7 @@ public final class WriteMethodPolicy {
                     RoutingVerb.PUT, route, context, blockedVerb, blockedOperation)) {
                 allowed.add("PUT");
             }
-            if (entityOperationsFor(RoutingVerb.PATCH, route)
-                    .contains(EntityWriteOperation.UPDATE)) {
+            if (!entityPatchUpdateStylesFor(route).isEmpty()) {
                 allowed.add("PATCH");
             }
             allowed.add("DELETE");

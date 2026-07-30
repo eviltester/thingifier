@@ -50,6 +50,10 @@ public final class ThingifierHttpApiBridge {
         return toInternalResponse(thingifierHttpApi.put(toHttpApiRequest(theRequest)));
     }
 
+    public InternalHttpResponse patch(final InternalHttpRequest theRequest) {
+        return toInternalResponse(thingifierHttpApi.patch(toHttpApiRequest(theRequest)));
+    }
+
     public InternalHttpResponse queryRequest(final InternalHttpRequest theRequest) {
         return toInternalResponse(thingifierHttpApi.queryRequest(toHttpApiRequest(theRequest)));
     }
