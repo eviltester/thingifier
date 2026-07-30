@@ -7,6 +7,7 @@ import static uk.co.compendiumdev.configuredwritemethods.application.ConfiguredW
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.api.docgen.ApiRoutingDefinition;
+import uk.co.compendiumdev.thingifier.api.docgen.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
 
 class ConfiguredWriteMethodsDocumentationTest {
@@ -39,9 +40,12 @@ class ConfiguredWriteMethodsDocumentationTest {
     @Test
     void exposesPatchAndPutUpdateOnTheInstanceRoute() {
         final ApiRoutingDefinition definition = documentation();
+        final RoutingDefinition patchRoute = route(definition, RoutingVerb.PATCH, "notes/:id");
 
-        Assertions.assertTrue(
-                route(definition, RoutingVerb.PATCH, "notes/:id").status().isReturnedFromCall());
+        Assertions.assertTrue(patchRoute.status().isReturnedFromCall());
+        Assertions.assertEquals(
+                "patch a specific instance of note with a body containing the patch details",
+                patchRoute.getDocumentation());
         Assertions.assertTrue(
                 route(definition, RoutingVerb.PUT, "notes/:id").status().isReturnedFromCall());
     }

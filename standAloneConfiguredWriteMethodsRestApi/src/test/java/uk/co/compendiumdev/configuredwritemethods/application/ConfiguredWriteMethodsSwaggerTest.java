@@ -30,6 +30,12 @@ class ConfiguredWriteMethodsSwaggerTest {
         Assertions.assertNull(instance.getPost());
         Assertions.assertNotNull(instance.getPatch());
         Assertions.assertNotNull(instance.getPut());
+        Assertions.assertEquals(
+                "patch a specific instance of note with a body containing the patch details",
+                instance.getPatch().getSummary());
+        Assertions.assertEquals(
+                "patch a specific instance of note with a body containing the patch details",
+                instance.getPatch().getDescription());
     }
 
     @Test

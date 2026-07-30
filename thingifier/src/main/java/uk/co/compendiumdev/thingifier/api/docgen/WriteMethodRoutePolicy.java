@@ -122,6 +122,11 @@ public final class WriteMethodRoutePolicy {
         ensureStatus(route, 409);
         route.returnPayload(200, entityName);
         route.requestPayload(entityName);
+        replaceMethodNotAllowedDocumentation(
+                route,
+                String.format(
+                        "patch a specific instance of %s with a body containing the patch details",
+                        entityName));
     }
 
     private void returnedEntityPutRoute(
@@ -196,6 +201,13 @@ public final class WriteMethodRoutePolicy {
 
     private void methodNotAllowed(final RoutingDefinition route) {
         route.replaceStatus(RoutingStatus.returnValue(405));
+    }
+
+    private void replaceMethodNotAllowedDocumentation(
+            final RoutingDefinition route, final String documentation) {
+        if ("method not allowed".equals(route.getDocumentation())) {
+            route.addDocumentation(documentation);
+        }
     }
 
     private void ensureStatus(final RoutingDefinition route, final int statusCode) {

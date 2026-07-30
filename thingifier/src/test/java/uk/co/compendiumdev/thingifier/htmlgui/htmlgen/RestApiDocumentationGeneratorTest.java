@@ -1,5 +1,7 @@
 package uk.co.compendiumdev.thingifier.htmlgui.htmlgen;
 
+import static uk.co.compendiumdev.thingifier.apiconfig.EntityPatchUpdateStyle.PARTIAL_JSON_UPDATE;
+
 import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -96,6 +98,35 @@ class RestApiDocumentationGeneratorTest {
                 docs.contains(
                         "<li>Whether the task has been completed.</li>\n"
                                 + "<li>Value must be a Boolean (true, false) value</li>"));
+    }
+
+    @Test
+    void apiDocumentationShowsConfiguredPatchInstanceRouteAsSupported() {
+        final Thingifier thingifier = new Thingifier();
+        thingifier.setDocumentation("Task API", "Task API docs.");
+        final EntityDefinition task = thingifier.defineThing("task", "tasks");
+        task.addAsPrimaryKeyField(Field.is("id", FieldType.AUTO_INCREMENT));
+        task.addField(Field.is("title", FieldType.STRING));
+        thingifier.apiConfig().writeMethods().entities().patchCan(PARTIAL_JSON_UPDATE);
+
+        final String docs =
+                new RestApiDocumentationGenerator(thingifier, new DefaultGUIHTML())
+                        .getApiDocumentation(
+                                new ApiRoutingDefinitionDocGenerator(thingifier).generate("/api"),
+                                List.of(),
+                                new ThingifierApiDocumentationDefn(),
+                                "/api",
+                                "https://example.com/api/docs");
+
+        Assertions.assertTrue(docs.contains("<strong>PATCH /api/tasks/:id</strong>"));
+        Assertions.assertTrue(
+                docs.contains(
+                        "patch a specific instance of task with a body containing the patch"
+                                + " details"));
+        Assertions.assertFalse(
+                docs.contains(
+                        "<strong>PATCH /api/tasks/:id</strong><ul><li class='normal'>method not"
+                                + " allowed</li></ul>"));
     }
 
     @Test
