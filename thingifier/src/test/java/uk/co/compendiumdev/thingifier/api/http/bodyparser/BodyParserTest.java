@@ -25,6 +25,72 @@ public class BodyParserTest {
     }
 
     @Test
+    public void jsonBodyFieldsPreserveTopLevelSourceTypes() {
+        HttpApiRequest request = new HttpApiRequest("/items");
+        request.setBody(
+                "{"
+                        + "\"text\":\"hello\","
+                        + "\"flag\":true,"
+                        + "\"whole\":2,"
+                        + "\"decimal\":2.0,"
+                        + "\"object\":{\"child\":\"value\"},"
+                        + "\"array\":[1,\"two\"],"
+                        + "\"nothing\":null"
+                        + "}");
+
+        ApiBodyFields fields = new BodyParser(request, List.of("item", "items")).bodyFields();
+
+        Assertions.assertEquals("STRING", sourceType(fields, "text"));
+        Assertions.assertEquals("BOOLEAN", sourceType(fields, "flag"));
+        Assertions.assertEquals("INTEGER", sourceType(fields, "whole"));
+        Assertions.assertEquals("NUMERIC", sourceType(fields, "decimal"));
+        Assertions.assertEquals("OBJECT", sourceType(fields, "object"));
+        Assertions.assertEquals("ARRAY", sourceType(fields, "array"));
+        Assertions.assertEquals("NULL", sourceType(fields, "nothing"));
+        Assertions.assertEquals("2", value(fields, "whole"));
+        Assertions.assertEquals("2.0", value(fields, "decimal"));
+    }
+
+    @Test
+    public void nestedJsonValuesStillFlattenToStrings() {
+        HttpApiRequest request = new HttpApiRequest("/items");
+        request.setBody(
+                "{"
+                        + "\"relationships\":{\"project\":{\"id\":2,\"weight\":2.5,\"guid\":\"p1\"}},"
+                        + "\"metadata\":{\"source\":\"api\"}"
+                        + "}");
+
+        ApiBodyFields fields = new BodyParser(request, List.of("item", "items")).bodyFields();
+        List<Map.Entry<String, String>> flattened = fields.asFlattenedStringMap();
+
+        Assertions.assertEquals("OBJECT", sourceType(fields, "relationships"));
+        Assertions.assertTrue(
+                flattened.stream()
+                        .anyMatch(
+                                entry ->
+                                        "relationships.project.id".equals(entry.getKey())
+                                                && "2".equals(entry.getValue())));
+        Assertions.assertTrue(
+                flattened.stream()
+                        .anyMatch(
+                                entry ->
+                                        "relationships.project.weight".equals(entry.getKey())
+                                                && "2.5".equals(entry.getValue())));
+        Assertions.assertTrue(
+                flattened.stream()
+                        .anyMatch(
+                                entry ->
+                                        "relationships.project.guid".equals(entry.getKey())
+                                                && "p1".equals(entry.getValue())));
+        Assertions.assertTrue(
+                flattened.stream()
+                        .anyMatch(
+                                entry ->
+                                        "metadata.source".equals(entry.getKey())
+                                                && "api".equals(entry.getValue())));
+    }
+
+    @Test
     public void simpleJsonParseErrorMessage() {
 
         HttpApiRequest request = new HttpApiRequest("/estimates");
@@ -273,5 +339,23 @@ public class BodyParserTest {
         Assertions.assertEquals("estimate", objects.get(0));
 
         // estimate is a LinkedTreeMap of LinkedTreeMap "to do" of ArrayList of LinkedTreeMap
+    }
+
+    private String sourceType(final ApiBodyFields fields, final String name) {
+        for (ApiBodyField field : fields.topLevelFields()) {
+            if (field.name().equals(name)) {
+                return field.sourceType();
+            }
+        }
+        return "";
+    }
+
+    private String value(final ApiBodyFields fields, final String name) {
+        for (ApiBodyField field : fields.topLevelFields()) {
+            if (field.name().equals(name)) {
+                return field.value();
+            }
+        }
+        return "";
     }
 }

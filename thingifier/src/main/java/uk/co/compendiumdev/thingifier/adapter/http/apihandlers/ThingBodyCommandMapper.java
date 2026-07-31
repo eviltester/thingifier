@@ -182,6 +182,15 @@ public final class ThingBodyCommandMapper {
         if ("NUMERIC".equals(sourceType)) {
             return BodyFieldValue.SourceType.NUMERIC;
         }
+        if ("OBJECT".equals(sourceType)) {
+            return BodyFieldValue.SourceType.OBJECT;
+        }
+        if ("ARRAY".equals(sourceType)) {
+            return BodyFieldValue.SourceType.ARRAY;
+        }
+        if ("NULL".equals(sourceType)) {
+            return BodyFieldValue.SourceType.NULL;
+        }
         return BodyFieldValue.SourceType.SOMETHING_ELSE;
     }
 }

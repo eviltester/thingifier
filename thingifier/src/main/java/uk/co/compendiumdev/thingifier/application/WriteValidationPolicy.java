@@ -139,17 +139,7 @@ final class WriteValidationPolicy {
                             "%s should be %s but was %s",
                             field.getName(), field.getType(), fieldValue.sourceTypeDisplayName());
 
-            if (field.getType() == FieldType.BOOLEAN
-                    && fieldValue.getSourceType() != BodyFieldValue.SourceType.BOOLEAN) {
-                errors.add(errorMessage);
-            }
-            if ((field.getType() == FieldType.INTEGER
-                            || field.getType() == FieldType.AUTO_INCREMENT)
-                    && fieldValue.getSourceType() != BodyFieldValue.SourceType.NUMERIC) {
-                errors.add(errorMessage);
-            }
-            if (field.getType() == FieldType.FLOAT
-                    && fieldValue.getSourceType() != BodyFieldValue.SourceType.NUMERIC) {
+            if (!sourceTypeAllowedFor(field.getType(), fieldValue.getSourceType())) {
                 errors.add(errorMessage);
             }
         }
@@ -158,6 +148,33 @@ final class WriteValidationPolicy {
             return null;
         }
         return ThingCommandResult.error(String.join(", ", errors));
+    }
+
+    private boolean sourceTypeAllowedFor(
+            final FieldType fieldType, final BodyFieldValue.SourceType sourceType) {
+        if (sourceType == null) {
+            return false;
+        }
+
+        switch (fieldType) {
+            case STRING:
+            case ENUM:
+            case DATE:
+            case AUTO_GUID:
+                return sourceType == BodyFieldValue.SourceType.STRING;
+            case BOOLEAN:
+                return sourceType == BodyFieldValue.SourceType.BOOLEAN;
+            case INTEGER:
+            case AUTO_INCREMENT:
+                return sourceType == BodyFieldValue.SourceType.INTEGER;
+            case FLOAT:
+                return sourceType == BodyFieldValue.SourceType.INTEGER
+                        || sourceType == BodyFieldValue.SourceType.NUMERIC;
+            case OBJECT:
+                return sourceType == BodyFieldValue.SourceType.OBJECT;
+            default:
+                return false;
+        }
     }
 
     private ThingCommandResult duplicateProtectedFieldError(

@@ -1,5 +1,7 @@
 package uk.co.compendiumdev.thingifier.api.http.bodyparser;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -35,16 +37,8 @@ public final class ApiBodyFields {
         for (String key : fields.keySet()) {
             Object value = fields.get(key);
 
-            if (value instanceof Boolean) {
-                stringsInMap.put(key, String.valueOf(value));
-            }
-
-            if (value instanceof String) {
-                stringsInMap.put(key, (String) value);
-            }
-
-            if (value instanceof Double) {
-                stringsInMap.put(key, String.valueOf(value));
+            if (isScalarValue(value)) {
+                stringsInMap.put(key, stringValue(value));
             }
         }
         return stringsInMap;
@@ -77,17 +71,8 @@ public final class ApiBodyFields {
     private List<Map.Entry<String, String>> flattenToStringMap(
             final String prefixKey, final Object value) {
         List<Map.Entry<String, String>> stringsInMap = new ArrayList<>();
-        if (value instanceof String) {
-            stringsInMap.add(new AbstractMap.SimpleEntry<>(prefixKey, (String) value));
-        }
-        if (value instanceof Double) {
-            stringsInMap.add(new AbstractMap.SimpleEntry<>(prefixKey, String.valueOf(value)));
-        }
-        if (value instanceof Boolean) {
-            stringsInMap.add(new AbstractMap.SimpleEntry<>(prefixKey, String.valueOf(value)));
-        }
-        if (value instanceof Integer) {
-            stringsInMap.add(new AbstractMap.SimpleEntry<>(prefixKey, String.valueOf(value)));
+        if (isScalarValue(value)) {
+            stringsInMap.add(new AbstractMap.SimpleEntry<>(prefixKey, stringValue(value)));
         }
 
         String separator = "";
@@ -102,8 +87,8 @@ public final class ApiBodyFields {
                 stringsInMap.addAll(nestedValues);
             }
         }
-        if (value instanceof ArrayList) {
-            for (Object nestedValue : (ArrayList) value) {
+        if (value instanceof List) {
+            for (Object nestedValue : (List) value) {
                 List<Map.Entry<String, String>> nestedValues =
                         flattenToStringMap(prefixKey + separator, nestedValue);
                 stringsInMap.addAll(nestedValues);
@@ -112,29 +97,61 @@ public final class ApiBodyFields {
         return stringsInMap;
     }
 
-    private String stringValue(final Object value) {
+    private static boolean isScalarValue(final Object value) {
+        return value instanceof String || value instanceof Boolean || value instanceof Number;
+    }
+
+    private static String stringValue(final Object value) {
         if (value instanceof String) {
             return (String) value;
         }
-        if (value instanceof Boolean || value instanceof Double || value instanceof Integer) {
+        if (value instanceof BigDecimal) {
+            return ((BigDecimal) value).toPlainString();
+        }
+        if (value instanceof Boolean || value instanceof Number) {
             return String.valueOf(value);
         }
         return "";
     }
 
-    private String sourceTypeName(final Object value) {
+    public static String sourceTypeNameFor(final Object value) {
+        if (value == null) {
+            return "NULL";
+        }
         if (value instanceof String) {
             return "STRING";
         }
         if (value instanceof Boolean) {
             return "BOOLEAN";
         }
-        if (value instanceof Integer) {
+        if (isIntegralNumber(value)) {
             return "INTEGER";
         }
-        if (value instanceof Float || value instanceof Double) {
+        if (isDecimalNumber(value)) {
             return "NUMERIC";
         }
+        if (value instanceof Map) {
+            return "OBJECT";
+        }
+        if (value instanceof List) {
+            return "ARRAY";
+        }
         return "Something Else";
+    }
+
+    private static boolean isIntegralNumber(final Object value) {
+        return value instanceof Byte
+                || value instanceof Short
+                || value instanceof Integer
+                || value instanceof Long
+                || value instanceof BigInteger;
+    }
+
+    private static boolean isDecimalNumber(final Object value) {
+        return value instanceof Float || value instanceof Double || value instanceof BigDecimal;
+    }
+
+    private String sourceTypeName(final Object value) {
+        return sourceTypeNameFor(value);
     }
 }

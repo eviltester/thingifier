@@ -8,6 +8,7 @@ import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiResponse;
 import uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi;
+import uk.co.compendiumdev.thingifier.apiconfig.EntityPatchUpdateStyle;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.datapopulator.RepositoryDataPopulator;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
@@ -141,6 +142,111 @@ public class ThingifierHttpApiRequestHandlingTest {
     }
 
     @Test
+    public void strictPostRejectsNumericValueForStringField() {
+        Thingifier thingifier = strictTypedThingifier();
+        ThingifierHttpApi api = new ThingifierHttpApi(thingifier, null, null);
+
+        HttpApiResponse response = api.post(jsonRequest("/things", "{\"title\":2}"));
+
+        Assertions.assertEquals(422, response.getStatusCode());
+        Assertions.assertTrue(
+                response.getBody().contains("title should be STRING but was INTEGER"));
+        Assertions.assertEquals(
+                0,
+                thingifier
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(thingifier.getDefinitionNamed("thing")));
+    }
+
+    @Test
+    public void strictPostRejectsDecimalForIntegerAndAcceptsIntegerForFloat() {
+        Thingifier thingifier = strictTypedThingifier();
+        ThingifierHttpApi api = new ThingifierHttpApi(thingifier, null, null);
+
+        HttpApiResponse decimalInteger = api.post(jsonRequest("/things", "{\"priority\":2.0}"));
+        HttpApiResponse integerFloat = api.post(jsonRequest("/things", "{\"amount\":2}"));
+
+        Assertions.assertEquals(422, decimalInteger.getStatusCode());
+        Assertions.assertTrue(
+                decimalInteger.getBody().contains("priority should be INTEGER but was NUMERIC"));
+        Assertions.assertEquals(201, integerFloat.getStatusCode());
+        Assertions.assertEquals(
+                1,
+                thingifier
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(thingifier.getDefinitionNamed("thing")));
+    }
+
+    @Test
+    public void lenientPostStillAcceptsNumericValueForStringField() {
+        Thingifier thingifier = strictTypedThingifier();
+        thingifier.apiConfig().setApiToEnforceDeclaredTypesInInput(false);
+        ThingifierHttpApi api = new ThingifierHttpApi(thingifier, null, null);
+
+        HttpApiResponse response = api.post(jsonRequest("/things", "{\"title\":2}"));
+
+        Assertions.assertEquals(201, response.getStatusCode());
+        Assertions.assertEquals(
+                "2",
+                response.apiResponse().getReturnedInstance().getFieldValue("title").asString());
+    }
+
+    @Test
+    public void strictPutRejectsNumericValueForStringField() {
+        Thingifier thingifier = strictTypedThingifier();
+        ThingifierHttpApi api = new ThingifierHttpApi(thingifier, null, null);
+        EntityInstance existing = createThing(thingifier, "Original");
+
+        HttpApiResponse response =
+                api.put(jsonRequest("/things/" + existing.getPrimaryKeyValue(), "{\"title\":2}"));
+
+        Assertions.assertEquals(422, response.getStatusCode());
+        Assertions.assertTrue(
+                response.getBody().contains("title should be STRING but was INTEGER"));
+        Assertions.assertEquals(
+                "Original",
+                thingifier
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .findByQueryIdentifier(
+                                thingifier.getDefinitionNamed("thing"),
+                                existing.getPrimaryKeyValue())
+                        .getFieldValue("title")
+                        .asString());
+    }
+
+    @Test
+    public void strictPatchRejectsNumericValueForStringField() {
+        Thingifier thingifier = strictTypedThingifier();
+        thingifier
+                .apiConfig()
+                .writeMethods()
+                .entities()
+                .patchCan(EntityPatchUpdateStyle.PARTIAL_JSON_UPDATE);
+        ThingifierHttpApi api = new ThingifierHttpApi(thingifier, null, null);
+        EntityInstance existing = createThing(thingifier, "Original");
+
+        HttpApiResponse response =
+                api.patch(jsonRequest("/things/" + existing.getPrimaryKeyValue(), "{\"title\":2}"));
+
+        Assertions.assertEquals(422, response.getStatusCode());
+        Assertions.assertTrue(
+                response.getBody().contains("title should be STRING but was INTEGER"));
+        Assertions.assertEquals(
+                "Original",
+                thingifier
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .findByQueryIdentifier(
+                                thingifier.getDefinitionNamed("thing"),
+                                existing.getPrimaryKeyValue())
+                        .getFieldValue("title")
+                        .asString());
+    }
+
+    @Test
     public void aDeleteRequestWillCreateNewSessionWithDatabase() {
 
         Thingifier thingifier = getTestThingifier();
@@ -191,4 +297,29 @@ public class ThingifierHttpApiRequestHandlingTest {
 
     // OPTIONS
     // etc.
+
+    private Thingifier strictTypedThingifier() {
+        Thingifier thingifier = new Thingifier();
+        thingifier.apiConfig().setApiToEnforceAcceptHeaderForResponses(false);
+        EntityDefinition defn = thingifier.getERmodel().createEntityDefinition("thing", "things");
+        defn.addAsPrimaryKeyField(Field.is("guid", FieldType.AUTO_GUID));
+        defn.addField(Field.is("title", FieldType.STRING));
+        defn.addField(Field.is("priority", FieldType.INTEGER));
+        defn.addField(Field.is("amount", FieldType.FLOAT));
+        return thingifier;
+    }
+
+    private EntityInstance createThing(final Thingifier thingifier, final String title) {
+        EntityDefinition thing = thingifier.getDefinitionNamed("thing");
+        return thingifier
+                .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                .entities()
+                .create(EntityInstanceDraft.forEntity(thing).withField("title", title));
+    }
+
+    private HttpApiRequest jsonRequest(final String path, final String body) {
+        return new HttpApiRequest(path)
+                .setHeaders(Map.of("content-type", "application/json"))
+                .setBody(body);
+    }
 }

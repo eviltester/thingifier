@@ -2,7 +2,7 @@ package uk.co.compendiumdev.thingifier.adapter.http.apihandlers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.flipkart.zjsonpatch.JsonPatch;
 import java.util.Map;
@@ -11,13 +11,12 @@ import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.ThingRoute;
 import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonThing;
 import uk.co.compendiumdev.thingifier.api.http.ThingifierRequestContext;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.ApiBodyFields;
+import uk.co.compendiumdev.thingifier.api.http.bodyparser.JsonBodyValueConverter;
 import uk.co.compendiumdev.thingifier.apiconfig.EntityPatchUpdateStyle;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
 public final class EntityPatchDocumentMapper {
-
-    private static final ObjectMapper JSON = new ObjectMapper();
 
     private final ThingifierApiRuntime runtime;
     private final ThingWriteRequestMapper writeMapper;
@@ -71,7 +70,7 @@ public final class EntityPatchDocumentMapper {
 
         JsonNode patchDocument;
         try {
-            patchDocument = JSON.readTree(rawBody);
+            patchDocument = JsonBodyValueConverter.readTree(rawBody);
         } catch (JsonProcessingException e) {
             return malformedPatch("Malformed JSON Merge Patch document");
         }
@@ -95,7 +94,7 @@ public final class EntityPatchDocumentMapper {
 
         JsonNode patchDocument;
         try {
-            patchDocument = JSON.readTree(rawBody);
+            patchDocument = JsonBodyValueConverter.readTree(rawBody);
         } catch (JsonProcessingException e) {
             return malformedPatch("Malformed JSON Patch document");
         }
@@ -122,19 +121,16 @@ public final class EntityPatchDocumentMapper {
         ObjectNode result =
                 target != null && target.isObject()
                         ? ((ObjectNode) target).deepCopy()
-                        : JSON.createObjectNode();
-        patch.fields()
-                .forEachRemaining(
-                        entry -> {
-                            if (entry.getValue().isNull()) {
-                                result.remove(entry.getKey());
-                            } else {
-                                result.set(
-                                        entry.getKey(),
-                                        applyMergePatch(
-                                                result.get(entry.getKey()), entry.getValue()));
-                            }
-                        });
+                        : JsonNodeFactory.instance.objectNode();
+        for (Map.Entry<String, JsonNode> entry : patch.properties()) {
+            if (entry.getValue().isNull()) {
+                result.remove(entry.getKey());
+            } else {
+                result.set(
+                        entry.getKey(),
+                        applyMergePatch(result.get(entry.getKey()), entry.getValue()));
+            }
+        }
         return result;
     }
 
@@ -145,12 +141,13 @@ public final class EntityPatchDocumentMapper {
         }
 
         return writeMapper.mapPatchReplacingFields(
-                route, ApiBodyFields.fromMap(JSON.convertValue(patchedDocument, Map.class)));
+                route,
+                ApiBodyFields.fromMap(JsonBodyValueConverter.objectNodeAsMap(patchedDocument)));
     }
 
     private JsonNode jsonFor(final EntityInstance instance) {
         try {
-            return JSON.readTree(
+            return JsonBodyValueConverter.readTree(
                     new JsonThing(runtime.apiConfig().jsonOutput())
                             .asJsonObject(instance)
                             .toString());
@@ -190,7 +187,7 @@ public final class EntityPatchDocumentMapper {
 
         JsonNode document;
         try {
-            document = JSON.readTree(body);
+            document = JsonBodyValueConverter.readTree(body);
         } catch (JsonProcessingException e) {
             return ParseResult.error(malformedPatch("Malformed JSON document"));
         }
@@ -201,7 +198,7 @@ public final class EntityPatchDocumentMapper {
         }
 
         return ParseResult.bodyFields(
-                ApiBodyFields.fromMap(JSON.convertValue(document, Map.class)));
+                ApiBodyFields.fromMap(JsonBodyValueConverter.objectNodeAsMap(document)));
     }
 
     private ThingWriteRequestMapping malformedPatch(final String message) {

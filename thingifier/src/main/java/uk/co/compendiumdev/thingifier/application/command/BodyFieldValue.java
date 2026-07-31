@@ -12,6 +12,9 @@ public final class BodyFieldValue {
         BOOLEAN("BOOLEAN"),
         INTEGER("INTEGER"),
         NUMERIC("NUMERIC"),
+        OBJECT("OBJECT"),
+        ARRAY("ARRAY"),
+        NULL("NULL"),
         SOMETHING_ELSE("Something Else");
 
         private final String displayName;
