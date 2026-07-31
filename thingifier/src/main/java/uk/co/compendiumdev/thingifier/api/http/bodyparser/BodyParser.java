@@ -1,6 +1,6 @@
 package uk.co.compendiumdev.thingifier.api.http.bodyparser;
 
-import com.google.gson.Gson;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import java.util.*;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.xml.XMLParserAbstraction;
@@ -33,77 +33,21 @@ public class BodyParser {
     private Map<String, String> stringMap(final Map<String, Object> args) {
         // todo: configuration to reject if wrong types for field definitions
         // default should be to handle and convert
-        Map<String, String> stringsInMap = new HashMap<>();
-        for (String key : args.keySet()) {
-            Object theValue = args.get(key);
-
-            if (theValue instanceof Boolean) {
-                stringsInMap.put(key, String.valueOf(theValue));
-            }
-
-            if (theValue instanceof String) {
-                stringsInMap.put(key, (String) theValue);
-            }
-
-            if (theValue instanceof Double) {
-                stringsInMap.put(key, String.valueOf(theValue));
-            }
-        }
-        return stringsInMap;
+        return ApiBodyFields.fromMap(args).asStringMap();
     }
 
     // since complex keys can be duplicated,
     // we can't use a hashmap, so we are using a list of map entries
     // the map entries could be a custom Key Value Pair implementation if we wanted
     public List<Map.Entry<String, String>> getFlattenedStringMap() {
-        return flattenToStringMap("", getMap());
-    }
-
-    private List<Map.Entry<String, String>> flattenToStringMap(
-            final String prefixkey, final Object theValue) {
-        // todo: configuration to reject if wrong types for field definitions
-        // default should be to handle and convert
-        List<Map.Entry<String, String>> stringsInMap = new ArrayList<>();
-        if (theValue instanceof String) {
-            stringsInMap.add(new AbstractMap.SimpleEntry<>(prefixkey, (String) theValue));
-        }
-        if (theValue instanceof Double) {
-            stringsInMap.add(new AbstractMap.SimpleEntry<>(prefixkey, String.valueOf(theValue)));
-        }
-        if (theValue instanceof Boolean) {
-            stringsInMap.add(new AbstractMap.SimpleEntry<>(prefixkey, String.valueOf(theValue)));
-        }
-        if (theValue instanceof Integer) {
-            stringsInMap.add(new AbstractMap.SimpleEntry<>(prefixkey, String.valueOf(theValue)));
-        }
-        // todo: what else can come in?
-        String separator = "";
-        if (prefixkey != null && !prefixkey.isEmpty() && !prefixkey.endsWith(".")) {
-            separator = ".";
-        }
-        if (theValue instanceof Map) {
-            for (Map.Entry<String, Object> entry : ((Map<String, Object>) theValue).entrySet()) {
-                String key = entry.getKey();
-                Object aValue = entry.getValue();
-                List<Map.Entry<String, String>> nestedValues =
-                        flattenToStringMap(prefixkey + separator + key, aValue);
-                stringsInMap.addAll(nestedValues);
-            }
-        }
-        if (theValue instanceof ArrayList) {
-            for (Object aValue : (ArrayList) theValue) {
-                List<Map.Entry<String, String>> nestedValues =
-                        flattenToStringMap(prefixkey + separator, aValue);
-                stringsInMap.addAll(nestedValues);
-            }
-        }
-        return stringsInMap;
+        return ApiBodyFields.fromMap(getMap()).asFlattenedStringMap();
     }
 
     public List<String> getObjectNames() {
+        parseMap();
         List<String> objectOrCollectionNames = new ArrayList<>();
         for (String key : args.keySet()) {
-            if (!(args.get(key) instanceof String || args.get(key) instanceof Double)) {
+            if (!isScalarValue(args.get(key))) {
                 objectOrCollectionNames.add(key);
             }
         }
@@ -141,7 +85,7 @@ public class BodyParser {
 
         if (contentTypeParser.isJSON()) {
             try {
-                new Gson().fromJson(request.getBody(), Map.class);
+                JsonBodyValueConverter.readTree(request.getBody());
                 return "";
             } catch (Exception e) {
                 // Gson does not give a sensible parse error so use a generic description
@@ -160,7 +104,8 @@ public class BodyParser {
             return;
         }
 
-        if (request.getBody().trim().isEmpty()) {
+        String body = request.getBody() == null ? "" : request.getBody();
+        if (body.trim().isEmpty()) {
             args = new HashMap<>();
             return;
         }
@@ -182,7 +127,11 @@ public class BodyParser {
             args = this.xmlParser.xmlAsMap();
         } else {
             // assume it is json
-            args = new Gson().fromJson(request.getBody(), Map.class);
+            try {
+                args = JsonBodyValueConverter.jsonObjectAsMap(request.getBody());
+            } catch (JsonProcessingException e) {
+                throw new IllegalArgumentException("Invalid JSON Payload", e);
+            }
         }
 
         if (args == null) {
@@ -211,22 +160,7 @@ public class BodyParser {
             }
 
             Object theValue = arg.getValue();
-            String isInstanceType = "Something Else";
-            if (theValue instanceof String) {
-                isInstanceType = "STRING";
-            }
-            if (theValue instanceof Boolean) {
-                isInstanceType = "BOOLEAN";
-            }
-            if (theValue instanceof Integer) {
-                isInstanceType = "INTEGER";
-            }
-            if (theValue instanceof Float) {
-                isInstanceType = "NUMERIC";
-            }
-            if (theValue instanceof Double) {
-                isInstanceType = "NUMERIC";
-            }
+            String isInstanceType = ApiBodyFields.sourceTypeNameFor(theValue);
 
             // TODO: add " but was %s" e.g. should be BOOLEAN but was STRING - remember to change in
             // challenges checking
@@ -236,29 +170,41 @@ public class BodyParser {
                             field.getName(), field.getType(), isInstanceType);
 
             if (field.getType() == FieldType.BOOLEAN) {
-                if (!(theValue instanceof Boolean)) {
+                if (!isInstanceType.equals("BOOLEAN")) {
                     report.setValid(false);
                     report.addErrorMessage(errorMessage);
                 }
             }
             if (field.getType() == FieldType.INTEGER
                     || field.getType() == FieldType.AUTO_INCREMENT) {
-                if (!(theValue instanceof Double)) {
+                if (!isInstanceType.equals("INTEGER")) {
                     report.setValid(false);
                     report.addErrorMessage(errorMessage);
-                } else {
-                    // enforce an int
-                    arg.setValue(((Double) theValue).intValue());
                 }
             }
             if (field.getType() == FieldType.FLOAT) {
-                if (!(theValue instanceof Double)) {
+                if (!(isInstanceType.equals("INTEGER") || isInstanceType.equals("NUMERIC"))) {
                     report.setValid(false);
                     report.addErrorMessage(errorMessage);
                 }
             }
-            // everything else goes
+            if ((field.getType() == FieldType.STRING
+                            || field.getType() == FieldType.ENUM
+                            || field.getType() == FieldType.DATE
+                            || field.getType() == FieldType.AUTO_GUID)
+                    && !isInstanceType.equals("STRING")) {
+                report.setValid(false);
+                report.addErrorMessage(errorMessage);
+            }
+            if (field.getType() == FieldType.OBJECT && !isInstanceType.equals("OBJECT")) {
+                report.setValid(false);
+                report.addErrorMessage(errorMessage);
+            }
         }
         return report;
+    }
+
+    private boolean isScalarValue(final Object value) {
+        return value instanceof String || value instanceof Boolean || value instanceof Number;
     }
 }

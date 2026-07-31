@@ -266,6 +266,305 @@ public class ThingCommandServiceTest {
     }
 
     @Test
+    public void createCommandRejectsNonStringSourceTypesForStringFieldsWhenStrict() {
+        Thingifier thingifier = declaredTypesThingifier();
+        ThingStore store = storeFor(thingifier);
+
+        ThingCommandResult integerResult =
+                serviceFor(thingifier, store, true)
+                        .execute(
+                                new CreateThingCommand(
+                                        "sample",
+                                        "",
+                                        fields("text", "2"),
+                                        List.of(
+                                                bodyField(
+                                                        "text",
+                                                        "2",
+                                                        BodyFieldValue.SourceType.INTEGER)),
+                                        List.of(),
+                                        true));
+        ThingCommandResult numericResult =
+                serviceFor(thingifier, store, true)
+                        .execute(
+                                new CreateThingCommand(
+                                        "sample",
+                                        "",
+                                        fields("text", "2.5"),
+                                        List.of(
+                                                bodyField(
+                                                        "text",
+                                                        "2.5",
+                                                        BodyFieldValue.SourceType.NUMERIC)),
+                                        List.of(),
+                                        true));
+        ThingCommandResult booleanResult =
+                serviceFor(thingifier, store, true)
+                        .execute(
+                                new CreateThingCommand(
+                                        "sample",
+                                        "",
+                                        fields("text", "true"),
+                                        List.of(
+                                                bodyField(
+                                                        "text",
+                                                        "true",
+                                                        BodyFieldValue.SourceType.BOOLEAN)),
+                                        List.of(),
+                                        true));
+        ThingCommandResult nullResult =
+                serviceFor(thingifier, store, true)
+                        .execute(
+                                new CreateThingCommand(
+                                        "sample",
+                                        "",
+                                        List.of(),
+                                        List.of(
+                                                bodyField(
+                                                        "text",
+                                                        "",
+                                                        BodyFieldValue.SourceType.NULL)),
+                                        List.of(),
+                                        true));
+
+        Assertions.assertEquals(
+                List.of("text should be STRING but was INTEGER"), integerResult.getErrorMessages());
+        Assertions.assertEquals(
+                List.of("text should be STRING but was NUMERIC"), numericResult.getErrorMessages());
+        Assertions.assertEquals(
+                List.of("text should be STRING but was BOOLEAN"), booleanResult.getErrorMessages());
+        Assertions.assertEquals(
+                List.of("text should be STRING but was NULL"), nullResult.getErrorMessages());
+        Assertions.assertEquals(
+                0, store.entityQueries().count(thingifier.getDefinitionNamed("sample")));
+    }
+
+    @Test
+    public void createCommandDistinguishesIntegerAndNumericSourcesWhenStrict() {
+        Thingifier thingifier = declaredTypesThingifier();
+        ThingStore store = storeFor(thingifier);
+
+        ThingCommandResult integerResult =
+                serviceFor(thingifier, store, true)
+                        .execute(
+                                new CreateThingCommand(
+                                        "sample",
+                                        "",
+                                        fields("count", "2"),
+                                        List.of(
+                                                bodyField(
+                                                        "count",
+                                                        "2",
+                                                        BodyFieldValue.SourceType.INTEGER)),
+                                        List.of(),
+                                        true));
+        ThingCommandResult decimalIntegerResult =
+                serviceFor(thingifier, store, true)
+                        .execute(
+                                new CreateThingCommand(
+                                        "sample",
+                                        "",
+                                        fields("count", "2.0"),
+                                        List.of(
+                                                bodyField(
+                                                        "count",
+                                                        "2.0",
+                                                        BodyFieldValue.SourceType.NUMERIC)),
+                                        List.of(),
+                                        true));
+        ThingCommandResult integerFloatResult =
+                serviceFor(thingifier, store, true)
+                        .execute(
+                                new CreateThingCommand(
+                                        "sample",
+                                        "",
+                                        fields("amount", "2"),
+                                        List.of(
+                                                bodyField(
+                                                        "amount",
+                                                        "2",
+                                                        BodyFieldValue.SourceType.INTEGER)),
+                                        List.of(),
+                                        true));
+        ThingCommandResult numericFloatResult =
+                serviceFor(thingifier, store, true)
+                        .execute(
+                                new CreateThingCommand(
+                                        "sample",
+                                        "",
+                                        fields("amount", "2.5"),
+                                        List.of(
+                                                bodyField(
+                                                        "amount",
+                                                        "2.5",
+                                                        BodyFieldValue.SourceType.NUMERIC)),
+                                        List.of(),
+                                        true));
+
+        Assertions.assertTrue(integerResult.isSuccessful());
+        Assertions.assertEquals("2", integerResult.getInstance().getFieldValue("count").asString());
+        Assertions.assertEquals(
+                List.of("count should be INTEGER but was NUMERIC"),
+                decimalIntegerResult.getErrorMessages());
+        Assertions.assertTrue(integerFloatResult.isSuccessful());
+        Assertions.assertEquals(
+                "2.0", integerFloatResult.getInstance().getFieldValue("amount").asString());
+        Assertions.assertTrue(numericFloatResult.isSuccessful());
+        Assertions.assertEquals(
+                "2.5", numericFloatResult.getInstance().getFieldValue("amount").asString());
+    }
+
+    @Test
+    public void createCommandStrictlyValidatesBooleanEnumDateAndObjectSources() {
+        Thingifier thingifier = declaredTypesThingifier();
+        ThingStore store = storeFor(thingifier);
+
+        ThingCommandResult booleanString =
+                serviceFor(thingifier, store, true)
+                        .execute(
+                                new CreateThingCommand(
+                                        "sample",
+                                        "",
+                                        fields("flag", "true"),
+                                        List.of(
+                                                bodyField(
+                                                        "flag",
+                                                        "true",
+                                                        BodyFieldValue.SourceType.STRING)),
+                                        List.of(),
+                                        true));
+        ThingCommandResult booleanValue =
+                serviceFor(thingifier, store, true)
+                        .execute(
+                                new CreateThingCommand(
+                                        "sample",
+                                        "",
+                                        fields("flag", "true"),
+                                        List.of(
+                                                bodyField(
+                                                        "flag",
+                                                        "true",
+                                                        BodyFieldValue.SourceType.BOOLEAN)),
+                                        List.of(),
+                                        true));
+        ThingCommandResult stringBackedFields =
+                serviceFor(thingifier, store, true)
+                        .execute(
+                                new CreateThingCommand(
+                                        "sample",
+                                        "",
+                                        List.of(
+                                                new NamedValue("status", "NEW"),
+                                                new NamedValue("date", "2026-07-31")),
+                                        List.of(
+                                                bodyField(
+                                                        "status",
+                                                        "NEW",
+                                                        BodyFieldValue.SourceType.STRING),
+                                                bodyField(
+                                                        "date",
+                                                        "2026-07-31",
+                                                        BodyFieldValue.SourceType.STRING)),
+                                        List.of(),
+                                        true));
+        ThingCommandResult enumNumeric =
+                serviceFor(thingifier, store, true)
+                        .execute(
+                                new CreateThingCommand(
+                                        "sample",
+                                        "",
+                                        fields("status", "2"),
+                                        List.of(
+                                                bodyField(
+                                                        "status",
+                                                        "2",
+                                                        BodyFieldValue.SourceType.INTEGER)),
+                                        List.of(),
+                                        true));
+        ThingCommandResult objectValue =
+                serviceFor(thingifier, store, true)
+                        .execute(
+                                new CreateThingCommand(
+                                        "sample",
+                                        "",
+                                        List.of(),
+                                        List.of(
+                                                bodyField(
+                                                        "metadata",
+                                                        "",
+                                                        BodyFieldValue.SourceType.OBJECT)),
+                                        List.of(),
+                                        true));
+        ThingCommandResult objectString =
+                serviceFor(thingifier, store, true)
+                        .execute(
+                                new CreateThingCommand(
+                                        "sample",
+                                        "",
+                                        fields("metadata", "not an object"),
+                                        List.of(
+                                                bodyField(
+                                                        "metadata",
+                                                        "not an object",
+                                                        BodyFieldValue.SourceType.STRING)),
+                                        List.of(),
+                                        true));
+
+        Assertions.assertEquals(
+                List.of("flag should be BOOLEAN but was STRING"), booleanString.getErrorMessages());
+        Assertions.assertTrue(booleanValue.isSuccessful());
+        Assertions.assertTrue(stringBackedFields.isSuccessful());
+        Assertions.assertEquals(
+                List.of("status should be ENUM but was INTEGER"), enumNumeric.getErrorMessages());
+        Assertions.assertTrue(objectValue.isSuccessful());
+        Assertions.assertEquals(
+                List.of("metadata should be OBJECT but was STRING"),
+                objectString.getErrorMessages());
+    }
+
+    @Test
+    public void createCommandStrictlyValidatesAutoGuidSourceTypes() {
+        Thingifier thingifier = autoGuidPrimaryKeyThingifier();
+        ThingStore store = storeFor(thingifier);
+        String guid = "11111111-1111-1111-1111-111111111111";
+
+        ThingCommandResult stringGuid =
+                serviceFor(thingifier, store, true)
+                        .execute(
+                                new CreateThingCommand(
+                                        "sample",
+                                        guid,
+                                        List.of(),
+                                        List.of(
+                                                bodyField(
+                                                        "guid",
+                                                        guid,
+                                                        BodyFieldValue.SourceType.STRING)),
+                                        List.of(),
+                                        true));
+        ThingCommandResult numericGuid =
+                serviceFor(thingifier, store, true)
+                        .execute(
+                                new CreateThingCommand(
+                                        "sample",
+                                        "",
+                                        fields("guid", "2"),
+                                        List.of(
+                                                bodyField(
+                                                        "guid",
+                                                        "2",
+                                                        BodyFieldValue.SourceType.INTEGER)),
+                                        List.of(),
+                                        true));
+
+        Assertions.assertTrue(stringGuid.isSuccessful());
+        Assertions.assertEquals(guid, stringGuid.getInstance().getPrimaryKeyValue());
+        Assertions.assertEquals(
+                List.of("guid should be AUTO_GUID but was INTEGER"),
+                numericGuid.getErrorMessages());
+    }
+
+    @Test
     public void createCommandMissingMandatoryFieldReturnsValidationCategory() {
         Thingifier thingifier = mandatoryTitleThingifier();
         ThingStore store = storeFor(thingifier);
@@ -306,12 +605,39 @@ public class ThingCommandServiceTest {
     }
 
     @Test
-    public void createCommandNormalizesNumericIntegerBodyValuesInApplication() {
+    public void createCommandRejectsNumericIntegerBodyValuesWhenStrict() {
         Thingifier thingifier = typedTodoThingifier();
         ThingStore store = storeFor(thingifier);
 
         ThingCommandResult result =
                 serviceFor(thingifier, store, true)
+                        .execute(
+                                new CreateThingCommand(
+                                        "todo",
+                                        "",
+                                        fields("priority", "2.0"),
+                                        List.of(
+                                                bodyField(
+                                                        "priority",
+                                                        "2.0",
+                                                        BodyFieldValue.SourceType.NUMERIC)),
+                                        List.of(),
+                                        true));
+
+        Assertions.assertTrue(result.isError());
+        Assertions.assertEquals(
+                List.of("priority should be INTEGER but was NUMERIC"), result.getErrorMessages());
+        Assertions.assertEquals(
+                0, store.entityQueries().count(thingifier.getDefinitionNamed("todo")));
+    }
+
+    @Test
+    public void createCommandNormalizesNumericIntegerBodyValuesWhenLenient() {
+        Thingifier thingifier = typedTodoThingifier();
+        ThingStore store = storeFor(thingifier);
+
+        ThingCommandResult result =
+                serviceFor(thingifier, store, false)
                         .execute(
                                 new CreateThingCommand(
                                         "todo",
@@ -794,6 +1120,29 @@ public class ThingCommandServiceTest {
         EntityDefinition todo = thingifier.defineThing("todo", "todos");
         todo.addField(Field.is("doneStatus", FieldType.BOOLEAN));
         todo.addField(Field.is("priority", FieldType.INTEGER));
+        return thingifier;
+    }
+
+    private Thingifier declaredTypesThingifier() {
+        Thingifier thingifier = new Thingifier();
+        EntityDefinition sample = thingifier.defineThing("sample", "samples");
+        sample.addField(Field.is("text", FieldType.STRING));
+        sample.addField(Field.is("flag", FieldType.BOOLEAN));
+        sample.addField(Field.is("count", FieldType.INTEGER));
+        sample.addField(Field.is("amount", FieldType.FLOAT));
+        sample.addField(Field.is("status", FieldType.ENUM).withExample("NEW"));
+        sample.addField(Field.is("date", FieldType.DATE));
+        sample.addField(
+                Field.is("metadata", FieldType.OBJECT)
+                        .withField(Field.is("source", FieldType.STRING)));
+        return thingifier;
+    }
+
+    private Thingifier autoGuidPrimaryKeyThingifier() {
+        Thingifier thingifier = new Thingifier();
+        EntityDefinition sample = thingifier.defineThing("sample", "samples");
+        sample.addAsPrimaryKeyField(Field.is("guid", FieldType.AUTO_GUID));
+        sample.addField(Field.is("text", FieldType.STRING));
         return thingifier;
     }
 
