@@ -155,6 +155,10 @@ public class ThingifierApiConfig {
         return writeMethodsConfig;
     }
 
+    public ApiConfigValidationReport validate() {
+        return writeMethodsConfig.validate();
+    }
+
     public JsonOutputConfig jsonOutput() {
         return jsonOutputConfig;
     }

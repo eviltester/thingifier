@@ -18,6 +18,12 @@ public final class WriteMethodsConfig {
         return relationshipWriteMethods;
     }
 
+    public ApiConfigValidationReport validate() {
+        ApiConfigValidationReport report = new ApiConfigValidationReport();
+        entityWriteMethods.addValidationMessages(report, "writeMethods.entities");
+        return report;
+    }
+
     public void setFrom(final WriteMethodsConfig source) {
         entityWriteMethods.setFrom(source.entities());
         relationshipWriteMethods.setFrom(source.relationships());

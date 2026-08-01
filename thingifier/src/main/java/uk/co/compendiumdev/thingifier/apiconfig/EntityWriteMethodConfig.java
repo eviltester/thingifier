@@ -10,11 +10,15 @@ public final class EntityWriteMethodConfig {
     private EnumSet<EntityWriteOperation> postOperations;
     private EnumSet<EntityWriteOperation> putOperations;
     private EnumSet<EntityPatchUpdateStyle> patchUpdateStyles;
+    private PutIdentifierPolicy putIdentifierInUri;
+    private PutIdentifierPolicy putIdentifierInPayload;
 
     public EntityWriteMethodConfig() {
         postOperations = operations(EntityWriteOperation.CREATE, EntityWriteOperation.UPDATE);
         putOperations = operations(EntityWriteOperation.CREATE, EntityWriteOperation.UPDATE);
         patchUpdateStyles = patchStyles();
+        putIdentifierInUri = PutIdentifierPolicy.MANDATORY;
+        putIdentifierInPayload = PutIdentifierPolicy.OPTIONAL;
     }
 
     public EntityWriteMethodConfig postCan(final EntityWriteOperation... operations) {
@@ -24,6 +28,16 @@ public final class EntityWriteMethodConfig {
 
     public EntityWriteMethodConfig putCan(final EntityWriteOperation... operations) {
         putOperations = operations(operations);
+        return this;
+    }
+
+    public EntityWriteMethodConfig putIdentifierInUri(final PutIdentifierPolicy policy) {
+        putIdentifierInUri = policyOrDefault(policy, PutIdentifierPolicy.MANDATORY);
+        return this;
+    }
+
+    public EntityWriteMethodConfig putIdentifierInPayload(final PutIdentifierPolicy policy) {
+        putIdentifierInPayload = policyOrDefault(policy, PutIdentifierPolicy.OPTIONAL);
         return this;
     }
 
@@ -56,6 +70,14 @@ public final class EntityWriteMethodConfig {
         return immutablePatchStyleCopyOf(patchUpdateStyles);
     }
 
+    public PutIdentifierPolicy putIdentifierInUri() {
+        return putIdentifierInUri;
+    }
+
+    public PutIdentifierPolicy putIdentifierInPayload() {
+        return putIdentifierInPayload;
+    }
+
     public Set<EntityWriteOperation> operationsFor(final RoutingVerb verb) {
         if (verb == RoutingVerb.POST) {
             return postOperations();
@@ -70,6 +92,18 @@ public final class EntityWriteMethodConfig {
         postOperations = copyOf(source.postOperations);
         putOperations = copyOf(source.putOperations);
         patchUpdateStyles = patchStyleCopyOf(source.patchUpdateStyles);
+        putIdentifierInUri = source.putIdentifierInUri;
+        putIdentifierInPayload = source.putIdentifierInPayload;
+    }
+
+    void addValidationMessages(final ApiConfigValidationReport report, final String path) {
+        if (!putOperations.isEmpty()
+                && putIdentifierInUri == PutIdentifierPolicy.DISALLOWED
+                && putIdentifierInPayload == PutIdentifierPolicy.DISALLOWED) {
+            report.addWarning(
+                    path + ".put",
+                    "PUT is enabled but identifiers are disallowed in both URI and payload");
+        }
     }
 
     static EnumSet<EntityWriteOperation> operations(final EntityWriteOperation... operations) {
@@ -117,5 +151,10 @@ public final class EntityWriteMethodConfig {
             return patchStyles();
         }
         return EnumSet.copyOf(styles);
+    }
+
+    private PutIdentifierPolicy policyOrDefault(
+            final PutIdentifierPolicy policy, final PutIdentifierPolicy defaultPolicy) {
+        return policy == null ? defaultPolicy : policy;
     }
 }

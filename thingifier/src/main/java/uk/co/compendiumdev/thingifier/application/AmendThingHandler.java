@@ -1,5 +1,6 @@
 package uk.co.compendiumdev.thingifier.application;
 
+import java.util.ArrayList;
 import java.util.List;
 import uk.co.compendiumdev.thingifier.application.command.AmendThingCommand;
 import uk.co.compendiumdev.thingifier.application.command.RelationshipReference;
@@ -85,8 +86,12 @@ final class AmendThingHandler {
         EntityInstance instance = definitions.resolveInstance(entity, command.getIdentifier());
         if (instance != null) {
             try {
+                List<NamedValue> replacementValues =
+                        fieldValuesWithIdentifierIfMissing(
+                                entity, command.getIdentifier(), fieldValues);
                 EntityInstanceDraft draft =
-                        new EntityInstanceDraftBuilder(instance).setFieldValuesFrom(fieldValues);
+                        new EntityInstanceDraftBuilder(instance)
+                                .setFieldValuesFrom(replacementValues);
                 return amend(instance, draft, true, true, command.getRelationships());
             } catch (ThingStoreWriteException e) {
                 throw e;
@@ -153,5 +158,25 @@ final class AmendThingHandler {
         } catch (Exception e) {
             return ThingCommandResult.error(ApplicationExceptionMessages.messageFrom(e));
         }
+    }
+
+    private List<NamedValue> fieldValuesWithIdentifierIfMissing(
+            final EntityDefinition entity,
+            final String identifier,
+            final List<NamedValue> fieldValues) {
+        if (entity == null || !entity.hasPrimaryKeyField()) {
+            return fieldValues;
+        }
+
+        String primaryKeyFieldName = entity.getPrimaryKeyField().getName();
+        for (NamedValue fieldValue : fieldValues) {
+            if (fieldValue.getName().equals(primaryKeyFieldName)) {
+                return fieldValues;
+            }
+        }
+
+        List<NamedValue> replacementValues = new ArrayList<>(fieldValues);
+        replacementValues.add(new NamedValue(primaryKeyFieldName, identifier));
+        return replacementValues;
     }
 }

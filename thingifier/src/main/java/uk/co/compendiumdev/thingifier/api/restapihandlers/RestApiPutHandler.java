@@ -51,7 +51,9 @@ public class RestApiPutHandler {
         }
 
         ThingWriteRequestMapping mapping =
-                new ThingWriteRequestMapper(runtime.schema()).mapPut(route, bodyFields);
+                new ThingWriteRequestMapper(
+                                runtime.schema(), runtime.apiConfig().writeMethods().entities())
+                        .mapPut(route, bodyFields);
         ThingCommandResultApiMapper apiMapper =
                 new ThingCommandResultApiMapper(runtime.apiConfig());
         if (mapping.isError()) {

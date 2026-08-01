@@ -5,6 +5,9 @@ import static uk.co.compendiumdev.thingifier.apiconfig.EntityPatchUpdateStyle.JS
 import static uk.co.compendiumdev.thingifier.apiconfig.EntityPatchUpdateStyle.PARTIAL_JSON_UPDATE;
 import static uk.co.compendiumdev.thingifier.apiconfig.EntityWriteOperation.CREATE;
 import static uk.co.compendiumdev.thingifier.apiconfig.EntityWriteOperation.UPDATE;
+import static uk.co.compendiumdev.thingifier.apiconfig.PutIdentifierPolicy.DISALLOWED;
+import static uk.co.compendiumdev.thingifier.apiconfig.PutIdentifierPolicy.MANDATORY;
+import static uk.co.compendiumdev.thingifier.apiconfig.PutIdentifierPolicy.OPTIONAL;
 import static uk.co.compendiumdev.thingifier.apiconfig.RelationshipWriteOperation.CONNECT_EXISTING;
 import static uk.co.compendiumdev.thingifier.apiconfig.RelationshipWriteOperation.CREATE_AND_CONNECT;
 
@@ -90,6 +93,115 @@ public class WriteMethodPolicyTest {
                 405, put(createOnly, "notes/one", "{\"title\":\"Changed\"}").getStatusCode());
         Assertions.assertEquals(
                 201, put(createOnly, "notes/two", "{\"title\":\"Two\"}").getStatusCode());
+    }
+
+    @Test
+    public void defaultPutIdentifierPolicyRequiresUriIdentifier() {
+        Thingifier thingifier = stringIdNotes();
+
+        ApiResponse response = put(thingifier, "notes", noteJson("one", "One"));
+
+        Assertions.assertEquals(405, response.getStatusCode());
+        Assertions.assertEquals(
+                "OPTIONS, GET, HEAD, POST, QUERY", response.getHeaderValue("Allow"));
+        Assertions.assertEquals(0, noteCount(thingifier));
+    }
+
+    @Test
+    public void putCanUsePayloadIdentifierOnCollectionRoutes() {
+        Thingifier thingifier = stringIdNotes();
+        thingifier.apiConfig().writeMethods().entities().putIdentifierInUri(OPTIONAL);
+        createNote(thingifier, "one", "One");
+
+        ApiResponse updated = put(thingifier, "notes", noteJson("one", "Changed"));
+        ApiResponse created = put(thingifier, "notes", noteJson("two", "Two"));
+
+        Assertions.assertEquals(200, updated.getStatusCode());
+        Assertions.assertEquals("Changed", currentTitle(thingifier, "one"));
+        Assertions.assertEquals(201, created.getStatusCode());
+        Assertions.assertEquals("Two", currentTitle(thingifier, "two"));
+    }
+
+    @Test
+    public void putRejectsUriIdentifierWhenDisallowed() {
+        Thingifier thingifier = stringIdNotes();
+        thingifier.apiConfig().writeMethods().entities().putIdentifierInUri(DISALLOWED);
+
+        ApiResponse response = put(thingifier, "notes/one", noteJson("one", "One"));
+
+        Assertions.assertEquals(405, response.getStatusCode());
+        Assertions.assertFalse(response.getHeaderValue("Allow").contains("PUT"));
+        Assertions.assertEquals(0, noteCount(thingifier));
+    }
+
+    @Test
+    public void putRejectsMissingMandatoryPayloadIdentifierEvenWithUriIdentifier() {
+        Thingifier thingifier = stringIdNotes();
+        thingifier.apiConfig().writeMethods().entities().putIdentifierInPayload(MANDATORY);
+        createNote(thingifier, "one", "One");
+
+        ApiResponse response = put(thingifier, "notes/one", "{\"title\":\"Blocked\"}");
+
+        Assertions.assertEquals(422, response.getStatusCode());
+        Assertions.assertTrue(
+                response.getErrorMessages()
+                        .contains("PUT payload must include identifier field id"));
+        Assertions.assertEquals("One", currentTitle(thingifier, "one"));
+    }
+
+    @Test
+    public void putRejectsDisallowedPayloadIdentifierButStillAllowsUriIdentifier() {
+        Thingifier thingifier = stringIdNotes();
+        thingifier.apiConfig().writeMethods().entities().putIdentifierInPayload(DISALLOWED);
+        createNote(thingifier, "one", "One");
+
+        ApiResponse rejected = put(thingifier, "notes/one", noteJson("one", "Blocked"));
+        ApiResponse accepted = put(thingifier, "notes/one", "{\"title\":\"Changed\"}");
+
+        Assertions.assertEquals(422, rejected.getStatusCode());
+        Assertions.assertTrue(
+                rejected.getErrorMessages()
+                        .contains("PUT payload must not include identifier field id"));
+        Assertions.assertEquals(200, accepted.getStatusCode());
+        Assertions.assertEquals("Changed", currentTitle(thingifier, "one"));
+    }
+
+    @Test
+    public void putKeepsExistingMismatchResponseWhenUriAndPayloadIdentifiersDiffer() {
+        Thingifier thingifier = stringIdNotes();
+
+        ApiResponse response = put(thingifier, "notes/route-key", noteJson("body-key", "Blocked"));
+
+        Assertions.assertEquals(422, response.getStatusCode());
+        Assertions.assertTrue(
+                response.getErrorMessages()
+                        .contains(
+                                "Cannot create note with PUT as key does not match body value "
+                                        + "route-key != body-key"));
+        Assertions.assertEquals(0, noteCount(thingifier));
+    }
+
+    @Test
+    public void collectionPutRespectsCreateAndUpdateOperationPolicy() {
+        Thingifier updateOnly = stringIdNotes();
+        updateOnly.apiConfig().writeMethods().entities().putIdentifierInUri(OPTIONAL);
+        updateOnly.apiConfig().writeMethods().entities().putCan(UPDATE);
+        createNote(updateOnly, "one", "One");
+
+        Assertions.assertEquals(
+                200, put(updateOnly, "notes", noteJson("one", "Changed")).getStatusCode());
+        Assertions.assertEquals(
+                405, put(updateOnly, "notes", noteJson("two", "Two")).getStatusCode());
+
+        Thingifier createOnly = stringIdNotes();
+        createOnly.apiConfig().writeMethods().entities().putIdentifierInUri(OPTIONAL);
+        createOnly.apiConfig().writeMethods().entities().putCan(CREATE);
+        createNote(createOnly, "one", "One");
+
+        Assertions.assertEquals(
+                405, put(createOnly, "notes", noteJson("one", "Changed")).getStatusCode());
+        Assertions.assertEquals(
+                201, put(createOnly, "notes", noteJson("two", "Two")).getStatusCode());
     }
 
     @Test
@@ -613,6 +725,43 @@ public class WriteMethodPolicyTest {
                                 "notes/:id")
                         .status()
                         .value());
+    }
+
+    @Test
+    public void generatedDocsReflectPutIdentifierLocationPolicy() {
+        Thingifier collectionPut = autoIdNotes();
+        collectionPut.apiConfig().writeMethods().entities().putIdentifierInUri(OPTIONAL);
+
+        ApiRoutingDefinition collectionPutDefinition =
+                new ApiRoutingDefinitionDocGenerator(collectionPut).generate("");
+
+        Assertions.assertTrue(
+                route(collectionPutDefinition, RoutingVerb.PUT, "notes")
+                        .status()
+                        .isReturnedFromCall());
+        Assertions.assertEquals(
+                Set.of(201, 200, 404, 422, 409),
+                statusCodes(route(collectionPutDefinition, RoutingVerb.PUT, "notes")));
+        Assertions.assertEquals(
+                "OPTIONS, GET, HEAD, POST, QUERY, PUT",
+                route(collectionPutDefinition, RoutingVerb.OPTIONS, "notes").headerValue());
+
+        Thingifier uriDisallowed = autoIdNotes();
+        uriDisallowed.apiConfig().writeMethods().entities().putIdentifierInUri(DISALLOWED);
+
+        ApiRoutingDefinition uriDisallowedDefinition =
+                new ApiRoutingDefinitionDocGenerator(uriDisallowed).generate("");
+
+        Assertions.assertTrue(
+                route(uriDisallowedDefinition, RoutingVerb.PUT, "notes")
+                        .status()
+                        .isReturnedFromCall());
+        Assertions.assertEquals(
+                405, route(uriDisallowedDefinition, RoutingVerb.PUT, "notes/:id").status().value());
+        Assertions.assertFalse(
+                route(uriDisallowedDefinition, RoutingVerb.OPTIONS, "notes/:id")
+                        .headerValue()
+                        .contains("PUT"));
     }
 
     @Test

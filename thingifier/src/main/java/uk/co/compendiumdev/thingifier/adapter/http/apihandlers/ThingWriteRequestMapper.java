@@ -8,6 +8,8 @@ import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.Relationshi
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.ThingRoute;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.UnmatchedRoute;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.ApiBodyFields;
+import uk.co.compendiumdev.thingifier.apiconfig.EntityWriteMethodConfig;
+import uk.co.compendiumdev.thingifier.apiconfig.PutIdentifierPolicy;
 import uk.co.compendiumdev.thingifier.application.command.DeleteThingCommand;
 import uk.co.compendiumdev.thingifier.application.command.DisconnectRelationshipCommand;
 import uk.co.compendiumdev.thingifier.application.command.RelateThingCommand;
@@ -19,10 +21,18 @@ public final class ThingWriteRequestMapper {
 
     private final SchemaViewCatalog schema;
     private final ThingBodyCommandMapper bodyCommandMapper;
+    private final EntityWriteMethodConfig entityWriteMethods;
 
     public ThingWriteRequestMapper(final SchemaViewCatalog schema) {
+        this(schema, new EntityWriteMethodConfig());
+    }
+
+    public ThingWriteRequestMapper(
+            final SchemaViewCatalog schema, final EntityWriteMethodConfig entityWriteMethods) {
         this.schema = schema;
         this.bodyCommandMapper = new ThingBodyCommandMapper(schema);
+        this.entityWriteMethods =
+                entityWriteMethods == null ? new EntityWriteMethodConfig() : entityWriteMethods;
     }
 
     public ThingWriteRequestMapping mapPost(
@@ -55,13 +65,13 @@ public final class ThingWriteRequestMapper {
 
     public ThingWriteRequestMapping mapPut(final ThingRoute route, final ApiBodyFields bodyFields) {
         if (route instanceof CollectionRoute) {
-            return ThingWriteRequestMapping.error(
-                    ApiMappingError.withMessage(405, "Cannot create root level entity with a PUT"));
+            CollectionRoute collection = (CollectionRoute) route;
+            return mapPutToEntity(bodyFields, collection.entity(), null);
         }
 
         if (route instanceof InstanceRoute) {
             InstanceRoute instance = (InstanceRoute) route;
-            return bodyCommandMapper.mapPut(bodyFields, instance.entity(), instance.identifier());
+            return mapPutToEntity(bodyFields, instance.entity(), instance.identifier());
         }
 
         if (route instanceof UnmatchedRoute) {
@@ -73,6 +83,90 @@ public final class ThingWriteRequestMapper {
 
         return ThingWriteRequestMapping.error(
                 ApiMappingError.withMessage(400, "Your request was not understood"));
+    }
+
+    private ThingWriteRequestMapping mapPutToEntity(
+            final ApiBodyFields bodyFields,
+            final EntityTypeRef entity,
+            final String uriIdentifier) {
+        ApiMappingError identityError = putIdentifierPolicyError(bodyFields, entity, uriIdentifier);
+        if (identityError != null) {
+            return ThingWriteRequestMapping.error(identityError);
+        }
+
+        String identifier =
+                hasIdentifier(uriIdentifier)
+                        ? uriIdentifier
+                        : payloadIdentifier(bodyFields, entity);
+        if (!hasIdentifier(identifier)) {
+            if (!entity.hasPrimaryKeyField()) {
+                return ThingWriteRequestMapping.error(missingPrimaryKeyDefinitionError(entity));
+            }
+            return ThingWriteRequestMapping.error(
+                    ApiMappingError.withMessage(
+                            422, "PUT requires an identifier in the URI or payload"));
+        }
+
+        return bodyCommandMapper.mapPut(bodyFields, entity, identifier);
+    }
+
+    private ApiMappingError putIdentifierPolicyError(
+            final ApiBodyFields bodyFields,
+            final EntityTypeRef entity,
+            final String uriIdentifier) {
+        boolean hasUriIdentifier = hasIdentifier(uriIdentifier);
+        if (!hasUriIdentifier
+                && entityWriteMethods.putIdentifierInUri() == PutIdentifierPolicy.MANDATORY) {
+            return ApiMappingError.withMessage(405, "Cannot create root level entity with a PUT");
+        }
+        if (hasUriIdentifier
+                && entityWriteMethods.putIdentifierInUri() == PutIdentifierPolicy.DISALLOWED) {
+            return ApiMappingError.withMessage(405, "Cannot identify entity with URI for PUT");
+        }
+
+        boolean hasPayloadIdentifier = hasPayloadIdentifier(bodyFields, entity);
+        if (entityWriteMethods.putIdentifierInPayload() == PutIdentifierPolicy.MANDATORY
+                && !hasPayloadIdentifier) {
+            if (!entity.hasPrimaryKeyField()) {
+                return missingPrimaryKeyDefinitionError(entity);
+            }
+            return ApiMappingError.withMessage(
+                    422,
+                    String.format(
+                            "PUT payload must include identifier field %s",
+                            entity.primaryKeyFieldName()));
+        }
+        if (entityWriteMethods.putIdentifierInPayload() == PutIdentifierPolicy.DISALLOWED
+                && hasPayloadIdentifier) {
+            return ApiMappingError.withMessage(
+                    422,
+                    String.format(
+                            "PUT payload must not include identifier field %s",
+                            entity.primaryKeyFieldName()));
+        }
+        return null;
+    }
+
+    private ApiMappingError missingPrimaryKeyDefinitionError(final EntityTypeRef entity) {
+        return ApiMappingError.withMessage(
+                404, String.format("Entity %s does not have a primary key defined", entity.name()));
+    }
+
+    private boolean hasPayloadIdentifier(
+            final ApiBodyFields bodyFields, final EntityTypeRef entity) {
+        return entity.hasPrimaryKeyField()
+                && bodyFields.asStringMap().containsKey(entity.primaryKeyFieldName());
+    }
+
+    private String payloadIdentifier(final ApiBodyFields bodyFields, final EntityTypeRef entity) {
+        if (!entity.hasPrimaryKeyField()) {
+            return null;
+        }
+        return bodyFields.asStringMap().get(entity.primaryKeyFieldName());
+    }
+
+    private boolean hasIdentifier(final String identifier) {
+        return identifier != null && !identifier.trim().isEmpty();
     }
 
     public ThingWriteRequestMapping mapPatch(

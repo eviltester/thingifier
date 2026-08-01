@@ -76,9 +76,7 @@ public final class EntityInstanceDraftBuilder {
 
         for (NamedValue entry : fieldValues) {
             Field field = instance.getEntity().getField(entry.name);
-            if (field == null
-                    || (field.getType() != FieldType.AUTO_INCREMENT
-                            && field.getType() != FieldType.AUTO_GUID)) {
+            if (field == null || !isIdentityField(instance, field)) {
                 continue;
             }
 
@@ -102,5 +100,12 @@ public final class EntityInstanceDraftBuilder {
         }
 
         return errorMessages;
+    }
+
+    private boolean isIdentityField(final EntityInstance instance, final Field field) {
+        Field primaryKey = instance.getEntity().getPrimaryKeyField();
+        return field.getType() == FieldType.AUTO_INCREMENT
+                || field.getType() == FieldType.AUTO_GUID
+                || (primaryKey != null && primaryKey.getName().equals(field.getName()));
     }
 }

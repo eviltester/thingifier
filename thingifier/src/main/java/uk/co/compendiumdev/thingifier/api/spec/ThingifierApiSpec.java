@@ -213,7 +213,7 @@ public final class ThingifierApiSpec {
             final EntityWriteOperation... operations) {
         final String collectionPath = "/" + normalize(entityPath);
         final String instancePath = collectionPath + "/{id}";
-        if (verb == RoutingVerb.POST) {
+        if (verb == RoutingVerb.POST || verb == RoutingVerb.PUT) {
             entityWritePolicyRules.add(
                     new EntityWritePolicyRule(verb, collectionPath, entityOperations(operations)));
         }
