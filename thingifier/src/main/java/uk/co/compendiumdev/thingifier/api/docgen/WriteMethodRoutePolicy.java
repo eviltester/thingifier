@@ -10,8 +10,10 @@ import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.Relationshi
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.RelationshipInstanceRoute;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.ThingRoute;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.ThingRouteMapper;
+import uk.co.compendiumdev.thingifier.apiconfig.ApiConfigValidationReport;
 import uk.co.compendiumdev.thingifier.apiconfig.EntityPatchUpdateStyle;
 import uk.co.compendiumdev.thingifier.apiconfig.EntityWriteOperation;
+import uk.co.compendiumdev.thingifier.apiconfig.PutIdentifierPolicy;
 import uk.co.compendiumdev.thingifier.apiconfig.RelationshipWriteOperation;
 
 public final class WriteMethodRoutePolicy {
@@ -25,6 +27,7 @@ public final class WriteMethodRoutePolicy {
     }
 
     public void applyTo(final ApiRoutingDefinition routingDefinition, final String apiPathPrefix) {
+        rejectInvalidApiConfig();
         for (RoutingDefinition route : routingDefinition.definitions()) {
             ThingRoute thingRoute =
                     new ThingRouteMapper(schema).map(removePrefix(route.url(), apiPathPrefix));
@@ -68,10 +71,20 @@ public final class WriteMethodRoutePolicy {
                     ((InstanceRoute) thingRoute).entity().name(),
                     false);
         }
+        if (route.verb() == RoutingVerb.PUT && thingRoute instanceof CollectionRoute) {
+            Set<EntityWriteOperation> operations =
+                    entityOperationsFor(route.verb(), thingRoute, apiPathPrefix);
+            if (operations.isEmpty() || !canPutRouteUseIdentifier(thingRoute)) {
+                methodNotAllowed(route);
+            } else {
+                returnedEntityPutRoute(
+                        route, ((CollectionRoute) thingRoute).entity().name(), operations);
+            }
+        }
         if (route.verb() == RoutingVerb.PUT && thingRoute instanceof InstanceRoute) {
             Set<EntityWriteOperation> operations =
                     entityOperationsFor(route.verb(), thingRoute, apiPathPrefix);
-            if (operations.isEmpty()) {
+            if (operations.isEmpty() || !canPutRouteUseIdentifier(thingRoute)) {
                 methodNotAllowed(route);
             } else {
                 returnedEntityPutRoute(
@@ -197,6 +210,29 @@ public final class WriteMethodRoutePolicy {
                 .apiSpec()
                 .relationshipWriteOperationsFor(verb, route.originalPath(), apiPathPrefix)
                 .orElse(thingifier.apiConfig().writeMethods().relationships().operationsFor(verb));
+    }
+
+    private void rejectInvalidApiConfig() {
+        ApiConfigValidationReport validation = thingifier.apiConfig().validate();
+        if (!validation.isValid()) {
+            throw new IllegalStateException(validation.combinedErrorMessages());
+        }
+    }
+
+    private boolean canPutRouteUseIdentifier(final ThingRoute route) {
+        if (route instanceof CollectionRoute) {
+            CollectionRoute collection = (CollectionRoute) route;
+            return collection.entity().hasPrimaryKeyField()
+                    && thingifier.apiConfig().writeMethods().entities().putIdentifierInUri()
+                            != PutIdentifierPolicy.MANDATORY
+                    && thingifier.apiConfig().writeMethods().entities().putIdentifierInPayload()
+                            != PutIdentifierPolicy.DISALLOWED;
+        }
+        if (route instanceof InstanceRoute) {
+            return thingifier.apiConfig().writeMethods().entities().putIdentifierInUri()
+                    != PutIdentifierPolicy.DISALLOWED;
+        }
+        return false;
     }
 
     private void methodNotAllowed(final RoutingDefinition route) {

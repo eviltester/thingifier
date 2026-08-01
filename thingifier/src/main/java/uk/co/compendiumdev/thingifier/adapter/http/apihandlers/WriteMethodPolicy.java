@@ -12,14 +12,16 @@ import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
 import uk.co.compendiumdev.thingifier.api.http.ThingifierRequestContext;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.ApiBodyFields;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
+import uk.co.compendiumdev.thingifier.apiconfig.ApiConfigValidationReport;
 import uk.co.compendiumdev.thingifier.apiconfig.EntityPatchUpdateStyle;
 import uk.co.compendiumdev.thingifier.apiconfig.EntityWriteOperation;
+import uk.co.compendiumdev.thingifier.apiconfig.PutIdentifierPolicy;
 import uk.co.compendiumdev.thingifier.apiconfig.RelationshipWriteOperation;
+import uk.co.compendiumdev.thingifier.application.schema.EntityTypeRef;
 import uk.co.compendiumdev.thingifier.application.schema.RelationshipSpec;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
 public final class WriteMethodPolicy {
 
@@ -34,8 +36,13 @@ public final class WriteMethodPolicy {
             final ThingRoute route,
             final ApiBodyFields bodyFields,
             final ThingifierRequestContext context) {
+        ApiResponse invalidConfig = rejectInvalidApiConfig();
+        if (invalidConfig != null) {
+            return invalidConfig;
+        }
+
         if (route instanceof CollectionRoute || route instanceof InstanceRoute) {
-            return rejectEntityWriteIfNotAllowed(verb, route, context);
+            return rejectEntityWriteIfNotAllowed(verb, route, bodyFields, context);
         }
 
         if (route instanceof RelationshipCollectionRoute
@@ -49,12 +56,23 @@ public final class WriteMethodPolicy {
     private ApiResponse rejectEntityWriteIfNotAllowed(
             final RoutingVerb verb,
             final ThingRoute route,
+            final ApiBodyFields bodyFields,
             final ThingifierRequestContext context) {
         if (verb == RoutingVerb.PATCH) {
-            return rejectEntityPatchIfNotAllowed(route, context);
+            return rejectEntityPatchIfNotAllowed(route, bodyFields, context);
         }
 
-        EntityWriteOperation operation = entityOperationFor(verb, route, context);
+        if (verb == RoutingVerb.PUT && !canPutRouteUseIdentifier(route)) {
+            return methodNotAllowed(
+                    allowHeaderFor(
+                            route,
+                            bodyFields,
+                            context,
+                            RoutingVerb.PUT,
+                            EntityWriteOperation.CREATE));
+        }
+
+        EntityWriteOperation operation = entityOperationFor(verb, route, bodyFields, context);
         if (operation == null) {
             return null;
         }
@@ -64,19 +82,31 @@ public final class WriteMethodPolicy {
             return null;
         }
 
-        return methodNotAllowed(allowHeaderFor(route, context, verb, operation));
+        return methodNotAllowed(allowHeaderFor(route, bodyFields, context, verb, operation));
     }
 
     private ApiResponse rejectEntityPatchIfNotAllowed(
-            final ThingRoute route, final ThingifierRequestContext context) {
+            final ThingRoute route,
+            final ApiBodyFields bodyFields,
+            final ThingifierRequestContext context) {
         if (route instanceof CollectionRoute) {
             return methodNotAllowed(
-                    allowHeaderFor(route, context, RoutingVerb.PATCH, EntityWriteOperation.UPDATE));
+                    allowHeaderFor(
+                            route,
+                            bodyFields,
+                            context,
+                            RoutingVerb.PATCH,
+                            EntityWriteOperation.UPDATE));
         }
 
         if (route instanceof InstanceRoute && entityPatchUpdateStylesFor(route).isEmpty()) {
             return methodNotAllowed(
-                    allowHeaderFor(route, context, RoutingVerb.PATCH, EntityWriteOperation.UPDATE));
+                    allowHeaderFor(
+                            route,
+                            bodyFields,
+                            context,
+                            RoutingVerb.PATCH,
+                            EntityWriteOperation.UPDATE));
         }
 
         return null;
@@ -101,9 +131,18 @@ public final class WriteMethodPolicy {
         return ApiResponse.error(405, "Method Not Allowed").setHeader("Allow", allowHeader);
     }
 
+    private ApiResponse rejectInvalidApiConfig() {
+        ApiConfigValidationReport validation = runtime.apiConfig().validate();
+        if (validation.isValid()) {
+            return null;
+        }
+        return ApiResponse.error(500, validation.errorMessages());
+    }
+
     private EntityWriteOperation entityOperationFor(
             final RoutingVerb verb,
             final ThingRoute route,
+            final ApiBodyFields bodyFields,
             final ThingifierRequestContext context) {
         if (verb == RoutingVerb.POST && route instanceof CollectionRoute) {
             return EntityWriteOperation.CREATE;
@@ -112,8 +151,13 @@ public final class WriteMethodPolicy {
                 && route instanceof InstanceRoute) {
             return EntityWriteOperation.UPDATE;
         }
-        if (verb == RoutingVerb.PUT && route instanceof InstanceRoute) {
-            return entityInstanceExists((InstanceRoute) route, context)
+        if (verb == RoutingVerb.PUT
+                && (route instanceof CollectionRoute || route instanceof InstanceRoute)) {
+            String identifier = putIdentifierFor(route, bodyFields);
+            if (!hasIdentifier(identifier)) {
+                return null;
+            }
+            return entityInstanceExists(entityFor(route), identifier, context)
                     ? EntityWriteOperation.UPDATE
                     : EntityWriteOperation.CREATE;
         }
@@ -121,15 +165,55 @@ public final class WriteMethodPolicy {
     }
 
     private boolean entityInstanceExists(
-            final InstanceRoute route, final ThingifierRequestContext context) {
+            final EntityTypeRef entityRef,
+            final String identifier,
+            final ThingifierRequestContext context) {
         EntityDefinition entity =
-                runtime.schema().definitionWithSingularOrPluralNamed(route.entity().name());
+                runtime.schema().definitionWithSingularOrPluralNamed(entityRef.name());
         if (entity == null) {
             return false;
         }
-        EntityInstance found =
-                context.store().entityQueries().findByQueryIdentifier(entity, route.identifier());
-        return found != null;
+        return context.hasEntityInstanceWithIdentifier(entity, identifier);
+    }
+
+    private EntityTypeRef entityFor(final ThingRoute route) {
+        if (route instanceof CollectionRoute) {
+            return ((CollectionRoute) route).entity();
+        }
+        return ((InstanceRoute) route).entity();
+    }
+
+    private String putIdentifierFor(final ThingRoute route, final ApiBodyFields bodyFields) {
+        if (route instanceof InstanceRoute) {
+            return ((InstanceRoute) route).identifier();
+        }
+        if (route instanceof CollectionRoute) {
+            EntityTypeRef entity = ((CollectionRoute) route).entity();
+            if (entity.hasPrimaryKeyField()) {
+                return bodyFields.asStringMap().get(entity.primaryKeyFieldName());
+            }
+        }
+        return null;
+    }
+
+    private boolean canPutRouteUseIdentifier(final ThingRoute route) {
+        if (route instanceof CollectionRoute) {
+            CollectionRoute collection = (CollectionRoute) route;
+            return collection.entity().hasPrimaryKeyField()
+                    && runtime.apiConfig().writeMethods().entities().putIdentifierInUri()
+                            != PutIdentifierPolicy.MANDATORY
+                    && runtime.apiConfig().writeMethods().entities().putIdentifierInPayload()
+                            != PutIdentifierPolicy.DISALLOWED;
+        }
+        if (route instanceof InstanceRoute) {
+            return runtime.apiConfig().writeMethods().entities().putIdentifierInUri()
+                    != PutIdentifierPolicy.DISALLOWED;
+        }
+        return false;
+    }
+
+    private boolean hasIdentifier(final String identifier) {
+        return identifier != null && !identifier.trim().isEmpty();
     }
 
     private RelationshipWriteOperation relationshipOperationFor(
@@ -199,6 +283,7 @@ public final class WriteMethodPolicy {
 
     private String allowHeaderFor(
             final ThingRoute route,
+            final ApiBodyFields bodyFields,
             final ThingifierRequestContext context,
             final RoutingVerb blockedVerb,
             final EntityWriteOperation blockedOperation) {
@@ -211,6 +296,10 @@ public final class WriteMethodPolicy {
                     .contains(EntityWriteOperation.CREATE)) {
                 allowed.add("POST");
             }
+            if (isEntityMethodAllowedFor(
+                    RoutingVerb.PUT, route, bodyFields, context, blockedVerb, blockedOperation)) {
+                allowed.add("PUT");
+            }
             allowed.add("QUERY");
         }
         if (route instanceof InstanceRoute) {
@@ -221,7 +310,7 @@ public final class WriteMethodPolicy {
                 allowed.add("POST");
             }
             if (isEntityMethodAllowedFor(
-                    RoutingVerb.PUT, route, context, blockedVerb, blockedOperation)) {
+                    RoutingVerb.PUT, route, bodyFields, context, blockedVerb, blockedOperation)) {
                 allowed.add("PUT");
             }
             if (!entityPatchUpdateStylesFor(route).isEmpty()) {
@@ -235,11 +324,20 @@ public final class WriteMethodPolicy {
     private boolean isEntityMethodAllowedFor(
             final RoutingVerb verb,
             final ThingRoute route,
+            final ApiBodyFields bodyFields,
             final ThingifierRequestContext context,
             final RoutingVerb blockedVerb,
             final EntityWriteOperation blockedOperation) {
+        if (verb == RoutingVerb.PUT && !canPutRouteUseIdentifier(route)) {
+            return false;
+        }
         EntityWriteOperation operation =
-                verb == blockedVerb ? blockedOperation : entityOperationFor(verb, route, context);
+                verb == blockedVerb
+                        ? blockedOperation
+                        : entityOperationFor(verb, route, bodyFields, context);
+        if (operation == null && verb == RoutingVerb.PUT && route instanceof CollectionRoute) {
+            return !entityOperationsFor(verb, route).isEmpty();
+        }
         return operation != null && entityOperationsFor(verb, route).contains(operation);
     }
 

@@ -5,6 +5,8 @@ import static uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi.HTTP_SES
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.repository.ThingStore;
 
 public final class ThingifierRequestContext {
@@ -44,6 +46,15 @@ public final class ThingifierRequestContext {
 
     public ThingStore store() {
         return store;
+    }
+
+    public boolean hasEntityInstanceWithIdentifier(
+            final EntityDefinition entity, final String identifier) {
+        if (entity == null) {
+            return false;
+        }
+        EntityInstance found = store.entityQueries().findByQueryIdentifier(entity, identifier);
+        return found != null;
     }
 
     public HttpHeadersBlock headers() {

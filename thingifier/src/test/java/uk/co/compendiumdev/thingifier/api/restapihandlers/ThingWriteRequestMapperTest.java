@@ -1,5 +1,9 @@
 package uk.co.compendiumdev.thingifier.api.restapihandlers;
 
+import static uk.co.compendiumdev.thingifier.apiconfig.PutIdentifierPolicy.DISALLOWED;
+import static uk.co.compendiumdev.thingifier.apiconfig.PutIdentifierPolicy.MANDATORY;
+import static uk.co.compendiumdev.thingifier.apiconfig.PutIdentifierPolicy.OPTIONAL;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,6 +16,7 @@ import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.ThingifierSchemaC
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.ThingRoute;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.ThingRouteMapper;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.ApiBodyFields;
+import uk.co.compendiumdev.thingifier.apiconfig.EntityWriteMethodConfig;
 import uk.co.compendiumdev.thingifier.application.command.AmendThingCommand;
 import uk.co.compendiumdev.thingifier.application.command.CreateThingCommand;
 import uk.co.compendiumdev.thingifier.application.command.DeleteThingCommand;
@@ -85,6 +90,93 @@ public class ThingWriteRequestMapperTest {
 
         Assertions.assertFalse(mapping.isError());
         Assertions.assertTrue(mapping.getCommand() instanceof ReplaceThingCommand);
+    }
+
+    @Test
+    public void defaultPutMappingRejectsCollectionRoutes() {
+        Thingifier thingifier = stringKeyThingifier();
+
+        ThingWriteRequestMapping mapping =
+                mapperFor(thingifier)
+                        .mapPut(
+                                routeFor(thingifier, "notes"),
+                                parserFor("title", "Missing identifier"));
+
+        Assertions.assertTrue(mapping.isError());
+        Assertions.assertEquals(405, mapping.getError().statusCode());
+        Assertions.assertEquals(
+                List.of("Cannot create root level entity with a PUT"),
+                mapping.getError().messages());
+    }
+
+    @Test
+    public void mapsPutCollectionToReplaceCommandWhenPayloadIdentifierIsAllowed() {
+        Thingifier thingifier = stringKeyThingifier();
+        EntityWriteMethodConfig config = new EntityWriteMethodConfig().putIdentifierInUri(OPTIONAL);
+
+        ThingWriteRequestMapping mapping =
+                mapperFor(thingifier, config)
+                        .mapPut(
+                                routeFor(thingifier, "notes"),
+                                parserFor(Map.of("key", "n-1", "title", "Created")));
+
+        Assertions.assertFalse(mapping.isError());
+        ReplaceThingCommand command = (ReplaceThingCommand) mapping.getCommand();
+        Assertions.assertEquals("n-1", command.getIdentifier());
+    }
+
+    @Test
+    public void putMappingRejectsInstanceRoutesWhenUriIdentifierIsDisallowed() {
+        Thingifier thingifier = stringKeyThingifier();
+        EntityWriteMethodConfig config =
+                new EntityWriteMethodConfig().putIdentifierInUri(DISALLOWED);
+
+        ThingWriteRequestMapping mapping =
+                mapperFor(thingifier, config)
+                        .mapPut(
+                                routeFor(thingifier, "notes/n-1"),
+                                parserFor(Map.of("key", "n-1", "title", "Blocked")));
+
+        Assertions.assertTrue(mapping.isError());
+        Assertions.assertEquals(405, mapping.getError().statusCode());
+        Assertions.assertEquals(
+                List.of("Cannot identify entity with URI for PUT"), mapping.getError().messages());
+    }
+
+    @Test
+    public void putMappingRejectsMissingMandatoryPayloadIdentifier() {
+        Thingifier thingifier = stringKeyThingifier();
+        EntityWriteMethodConfig config =
+                new EntityWriteMethodConfig().putIdentifierInPayload(MANDATORY);
+
+        ThingWriteRequestMapping mapping =
+                mapperFor(thingifier, config)
+                        .mapPut(routeFor(thingifier, "notes/n-1"), parserFor("title", "Blocked"));
+
+        Assertions.assertTrue(mapping.isError());
+        Assertions.assertEquals(422, mapping.getError().statusCode());
+        Assertions.assertEquals(
+                List.of("PUT payload must include identifier field key"),
+                mapping.getError().messages());
+    }
+
+    @Test
+    public void putMappingRejectsDisallowedPayloadIdentifier() {
+        Thingifier thingifier = stringKeyThingifier();
+        EntityWriteMethodConfig config =
+                new EntityWriteMethodConfig().putIdentifierInPayload(DISALLOWED);
+
+        ThingWriteRequestMapping mapping =
+                mapperFor(thingifier, config)
+                        .mapPut(
+                                routeFor(thingifier, "notes/n-1"),
+                                parserFor(Map.of("key", "n-1", "title", "Blocked")));
+
+        Assertions.assertTrue(mapping.isError());
+        Assertions.assertEquals(422, mapping.getError().statusCode());
+        Assertions.assertEquals(
+                List.of("PUT payload must not include identifier field key"),
+                mapping.getError().messages());
     }
 
     @Test
@@ -231,6 +323,11 @@ public class ThingWriteRequestMapperTest {
 
     private ThingWriteRequestMapper mapperFor(final Thingifier thingifier) {
         return new ThingWriteRequestMapper(new ThingifierSchemaCatalog(thingifier));
+    }
+
+    private ThingWriteRequestMapper mapperFor(
+            final Thingifier thingifier, final EntityWriteMethodConfig config) {
+        return new ThingWriteRequestMapper(new ThingifierSchemaCatalog(thingifier), config);
     }
 
     private ThingStore storeFor(final Thingifier thingifier) {
