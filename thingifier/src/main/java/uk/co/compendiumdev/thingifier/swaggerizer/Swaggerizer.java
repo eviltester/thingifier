@@ -269,7 +269,10 @@ public class Swaggerizer {
                                     param.in("path")
                                             .name(urlParameter.name())
                                             .required(true)
-                                            .example(aField.getRandomExampleValue());
+                                            .example(
+                                                    openApiExampleValueFor(
+                                                            aField,
+                                                            aField.getRandomExampleValue()));
                                     if (aField.hasDescription()) {
                                         param.setDescription(aField.getDescription());
                                     }
@@ -346,7 +349,7 @@ public class Swaggerizer {
             components.addSchemas("create_" + objectSchemaDefinition.getName(), createObject);
 
             // add list response for entity plural
-            ArraySchema arrayObject = asArrayObjectSchema(objectSchemaDefinition);
+            ObjectSchema arrayObject = asArrayObjectSchema(objectSchemaDefinition);
             components.addSchemas(objectSchemaDefinition.getPlural(), arrayObject);
 
             for (EntityViewDefinition view : objectSchemaDefinition.getViews()) {
@@ -596,25 +599,33 @@ public class Swaggerizer {
         components.addSecuritySchemes(name, securityScheme);
     }
 
-    private ArraySchema asArrayObjectSchema(EntityDefinition objectSchemaDefinition) {
+    private ObjectSchema asArrayObjectSchema(EntityDefinition objectSchemaDefinition) {
+
+        ObjectSchema collectionObject = new ObjectSchema();
+        collectionObject.setDescription(objectSchemaDefinition.getPlural());
+        collectionObject.setTitle(objectSchemaDefinition.getPlural());
 
         ArraySchema arrayObject = new ArraySchema();
-        arrayObject.setDescription(objectSchemaDefinition.getPlural());
-        arrayObject.setTitle(objectSchemaDefinition.getPlural());
-        // arrayObject.setItems(asObjectSchema(objectSchemaDefinition));
-
-        String ref = "#/components/schemas/" + objectSchemaDefinition.getName();
-
-        Schema<String> objectRef = new Schema<>();
-        objectRef.set$ref(ref);
-
-        arrayObject.setItems(objectRef);
+        arrayObject.setItems(asRequiredResponseObjectSchema(objectSchemaDefinition));
 
         XML xml = new XML();
         xml.setWrapped(true);
-        arrayObject.setXml(xml);
+        collectionObject.setXml(xml);
+        collectionObject.addProperties(objectSchemaDefinition.getPlural(), arrayObject);
+        collectionObject.addRequiredItem(objectSchemaDefinition.getPlural());
 
-        return arrayObject;
+        return collectionObject;
+    }
+
+    private static ObjectSchema asRequiredResponseObjectSchema(
+            EntityDefinition objectSchemaDefinition) {
+        ObjectSchema object = asObjectSchema(objectSchemaDefinition);
+        if (object.getProperties() != null) {
+            for (String propertyName : object.getProperties().keySet()) {
+                object.addRequiredItem(propertyName);
+            }
+        }
+        return object;
     }
 
     private static ObjectSchema asObjectSchema(EntityDefinition objectSchemaDefinition) {
@@ -664,7 +675,11 @@ public class Swaggerizer {
                             || propertyDefinition.getType() == FieldType.AUTO_INCREMENT)) {
             } else {
                 Schema<String> propertyItem = new Schema<>();
-                propertyItem.setExample(propertyDefinition.getExamples().get(0));
+                final List<String> examples = propertyDefinition.getExamples();
+                if (!examples.isEmpty()) {
+                    propertyItem.setExample(
+                            openApiExampleValueFor(propertyDefinition, examples.get(0)));
+                }
 
                 List<String> description = new ArrayList<>();
                 if (propertyDefinition.hasDescription()) {
@@ -710,6 +725,31 @@ public class Swaggerizer {
 
         object.setXml(xml);
         return object;
+    }
+
+    private static Object openApiExampleValueFor(final Field field, final String example) {
+        if (example == null) {
+            return null;
+        }
+
+        try {
+            switch (field.getType()) {
+                case AUTO_INCREMENT:
+                case INTEGER:
+                    return Integer.valueOf(example);
+                case FLOAT:
+                    return new BigDecimal(example);
+                case BOOLEAN:
+                    if ("true".equalsIgnoreCase(example) || "false".equalsIgnoreCase(example)) {
+                        return Boolean.valueOf(example);
+                    }
+                    return example;
+                default:
+                    return example;
+            }
+        } catch (NumberFormatException e) {
+            return example;
+        }
     }
 
     private static String schemaDescriptionFor(final EntityDefinition objectSchemaDefinition) {

@@ -62,6 +62,43 @@ class JavalinHttpServerTest {
     }
 
     @Test
+    void requestHeaderSizeUsesBrowserFriendlyDefault() {
+        withRequestHeaderSizeProperty(
+                null, () -> Assertions.assertEquals(32768, JavalinHttpServer.requestHeaderSize()));
+    }
+
+    @Test
+    void requestHeaderSizeCanUseConfiguredSystemProperty() {
+        withRequestHeaderSizeProperty(
+                "49152",
+                () -> Assertions.assertEquals(49152, JavalinHttpServer.requestHeaderSize()));
+    }
+
+    @Test
+    void requestHeaderSizeIgnoresInvalidSystemProperty() {
+        withRequestHeaderSizeProperty(
+                "not-a-number",
+                () -> Assertions.assertEquals(32768, JavalinHttpServer.requestHeaderSize()));
+    }
+
+    @Test
+    void acceptsLargeBrowserCookieHeadersUpToConfiguredRequestHeaderSize() throws Exception {
+        withStartedServer(
+                port -> {
+                    String oversizedCookie = "oversized=" + "x".repeat(12000);
+                    String response =
+                            rawHttp(
+                                    "GET",
+                                    "/css/default.css",
+                                    port,
+                                    "",
+                                    "Cookie: " + oversizedCookie);
+
+                    Assertions.assertTrue(response.startsWith("HTTP/1.1 200 OK"), response);
+                });
+    }
+
+    @Test
     void emptyNoContentDoesNotReturnContentTypeHeader() throws Exception {
         withStartedServer(
                 registry ->
@@ -248,6 +285,33 @@ class JavalinHttpServerTest {
         }
     }
 
+    private void withRequestHeaderSizeProperty(
+            final String configuredValue, final CheckedRunnable request) {
+        final String originalValue =
+                System.getProperty(JavalinHttpServer.REQUEST_HEADER_SIZE_PROPERTY);
+        if (configuredValue == null) {
+            System.clearProperty(JavalinHttpServer.REQUEST_HEADER_SIZE_PROPERTY);
+        } else {
+            System.setProperty(JavalinHttpServer.REQUEST_HEADER_SIZE_PROPERTY, configuredValue);
+        }
+
+        try {
+            request.run();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        } finally {
+            restoreRequestHeaderSizeProperty(originalValue);
+        }
+    }
+
+    private void restoreRequestHeaderSizeProperty(final String originalValue) {
+        if (originalValue == null) {
+            System.clearProperty(JavalinHttpServer.REQUEST_HEADER_SIZE_PROPERTY);
+        } else {
+            System.setProperty(JavalinHttpServer.REQUEST_HEADER_SIZE_PROPERTY, originalValue);
+        }
+    }
+
     private int availablePort() throws Exception {
         try (ServerSocket socket = new ServerSocket(0)) {
             return socket.getLocalPort();
@@ -262,20 +326,35 @@ class JavalinHttpServerTest {
     private String rawHttp(
             final String method, final String path, final int port, final String body)
             throws Exception {
+        return rawHttp(method, path, port, body, new String[0]);
+    }
+
+    private String rawHttp(
+            final String method,
+            final String path,
+            final int port,
+            final String body,
+            final String... headers)
+            throws Exception {
         try (Socket socket = new Socket("localhost", port)) {
             socket.setSoTimeout(5000);
             byte[] bodyBytes = body.getBytes(StandardCharsets.ISO_8859_1);
+            StringBuilder rawRequest = new StringBuilder();
+            rawRequest
+                    .append(method)
+                    .append(" ")
+                    .append(path)
+                    .append(" HTTP/1.1\r\nHost: localhost:")
+                    .append(port)
+                    .append("\r\nContent-Length: ")
+                    .append(bodyBytes.length)
+                    .append("\r\n");
+            for (String header : headers) {
+                rawRequest.append(header).append("\r\n");
+            }
+            rawRequest.append("Connection: close\r\n\r\n");
             socket.getOutputStream()
-                    .write(
-                            (method
-                                            + " "
-                                            + path
-                                            + " HTTP/1.1\r\nHost: localhost:"
-                                            + port
-                                            + "\r\nContent-Length: "
-                                            + bodyBytes.length
-                                            + "\r\nConnection: close\r\n\r\n")
-                                    .getBytes(StandardCharsets.ISO_8859_1));
+                    .write(rawRequest.toString().getBytes(StandardCharsets.ISO_8859_1));
             socket.getOutputStream().write(bodyBytes);
             return new String(socket.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
         }

@@ -17,6 +17,7 @@ import java.util.Map;
 import org.eclipse.jetty.ee10.servlet.ServletApiRequest;
 import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.jetty.io.EndPoint;
+import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.util.Blocker;
 import uk.co.compendiumdev.thingifier.adapter.httpserver.HaltRequestException;
 import uk.co.compendiumdev.thingifier.adapter.httpserver.HttpAfterHandler;
@@ -28,8 +29,11 @@ import uk.co.compendiumdev.thingifier.api.response.ApiResponseError;
 
 public final class JavalinHttpServer implements AutoCloseable {
     static final String STATIC_CACHE_CONTROL_PROPERTY = "thingifier.static.cache-control";
+    static final String REQUEST_HEADER_SIZE_PROPERTY = "thingifier.request-header-size";
     private static final String STATIC_CACHE_CONTROL_ENV = "THINGIFIER_STATIC_CACHE_CONTROL";
+    private static final String REQUEST_HEADER_SIZE_ENV = "THINGIFIER_REQUEST_HEADER_SIZE";
     private static final String DEFAULT_STATIC_CACHE_CONTROL = "max-age=0";
+    private static final int DEFAULT_REQUEST_HEADER_SIZE = 32768;
     private static final String[] STATIC_ASSET_PREFIXES = {
         "/css/", "/js/", "/favicon/", "/images/"
     };
@@ -52,6 +56,7 @@ public final class JavalinHttpServer implements AutoCloseable {
                 Javalin.create(
                         config -> {
                             config.router.ignoreTrailingSlashes = false;
+                            config.jetty.modifyHttpConfiguration(JavalinHttpServer::configureHttp);
                             config.staticFiles.add(
                                     staticFiles -> {
                                         staticFiles.hostedPath = "/";
@@ -98,6 +103,10 @@ public final class JavalinHttpServer implements AutoCloseable {
                                     });
                         });
         app.start(port);
+    }
+
+    private static void configureHttp(final HttpConfiguration httpConfiguration) {
+        httpConfiguration.setRequestHeaderSize(requestHeaderSize());
     }
 
     private void serveClasspathStaticAsset(final Context ctx) throws Exception {
@@ -159,6 +168,29 @@ public final class JavalinHttpServer implements AutoCloseable {
         }
 
         return DEFAULT_STATIC_CACHE_CONTROL;
+    }
+
+    static int requestHeaderSize() {
+        final String configured = System.getProperty(REQUEST_HEADER_SIZE_PROPERTY);
+        if (hasText(configured)) {
+            return positiveIntOrDefault(configured, DEFAULT_REQUEST_HEADER_SIZE);
+        }
+
+        final String environment = System.getenv(REQUEST_HEADER_SIZE_ENV);
+        if (hasText(environment)) {
+            return positiveIntOrDefault(environment, DEFAULT_REQUEST_HEADER_SIZE);
+        }
+
+        return DEFAULT_REQUEST_HEADER_SIZE;
+    }
+
+    private static int positiveIntOrDefault(final String rawValue, final int defaultValue) {
+        try {
+            final int value = Integer.parseInt(rawValue.trim());
+            return value > 0 ? value : defaultValue;
+        } catch (NumberFormatException ignored) {
+            return defaultValue;
+        }
     }
 
     private static boolean hasText(final String value) {
