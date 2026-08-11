@@ -47,7 +47,7 @@ class SwaggerizerSchemaExampleTest {
                 "items", itemsSchema.getAsJsonArray("required").get(0).getAsString());
         Assertions.assertEquals(
                 Set.of("id", "type", "isbn13", "price", "numberinstock"),
-                stringsIn(itemSchema.getAsJsonArray("required")));
+                requiredPropertiesIn(itemSchema, "JSON item"));
         Assertions.assertEquals(
                 "#/components/schemas/items",
                 document.getAsJsonObject("paths")
@@ -82,7 +82,14 @@ class SwaggerizerSchemaExampleTest {
                 "item", xmlItemSchema.getAsJsonObject("xml").get("name").getAsString());
         Assertions.assertEquals(
                 Set.of("id", "type", "isbn13", "price", "numberinstock"),
-                stringsIn(xmlItemSchema.getAsJsonArray("required")));
+                requiredPropertiesIn(xmlItemSchema, "XML item"));
+    }
+
+    private Set<String> requiredPropertiesIn(final JsonObject schema, final String schemaName) {
+        final JsonArray requiredProperties = schema.getAsJsonArray("required");
+        Assertions.assertNotNull(
+                requiredProperties, schemaName + " schema should declare required properties");
+        return stringsIn(requiredProperties);
     }
 
     private Set<String> stringsIn(final JsonArray values) {
@@ -119,7 +126,7 @@ class SwaggerizerSchemaExampleTest {
                         .getAsJsonObject("items");
         final JsonObject itemSchema = itemsProperty.getAsJsonObject("items");
         final JsonObject properties = itemSchema.getAsJsonObject("properties");
-        final Set<String> required = stringsIn(itemSchema.getAsJsonArray("required"));
+        final Set<String> required = requiredPropertiesIn(itemSchema, "item");
 
         Assertions.assertTrue(properties.has("dueDate"));
         Assertions.assertTrue(properties.has("metadata"));
