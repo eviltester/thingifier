@@ -95,7 +95,7 @@ public final class EntityPatchDocumentMapper {
         JsonNode patchDocument;
         try {
             patchDocument = JsonBodyValueConverter.readTree(rawBody);
-        } catch (JsonProcessingException e) {
+        } catch (JsonProcessingException | IllegalArgumentException e) {
             return malformedPatch("Malformed JSON Patch document");
         }
 
