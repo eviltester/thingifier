@@ -6,15 +6,14 @@ import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.JsonPathException;
 import com.jayway.jsonpath.Option;
 import com.jayway.jsonpath.PathNotFoundException;
-import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonThing;
 import uk.co.compendiumdev.thingifier.api.http.ThingifierRequestContext;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityViewDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.query.RepositoryQueryResult;
 
@@ -29,7 +28,8 @@ final class JsonPathQueryFilter {
     ApiResponse filter(
             final RepositoryQueryResult queryResults,
             final ThingifierRequestContext context,
-            final String expression) {
+            final String expression,
+            final EntityViewDefinition responseView) {
         final EntityDefinition entity = queryResults.resultContainsDefn();
         if (entity == null || entity.getPrimaryKeyField() == null) {
             return unsafeSelection();
@@ -40,7 +40,8 @@ final class JsonPathQueryFilter {
                         .asJsonObjectTypedArrayWithContentsUntyped(
                                 queryResults.getListEntityInstances(),
                                 entity.getPlural(),
-                                context.store().relationships())
+                                context.store().relationships(),
+                                responseView)
                         .toString();
 
         final Configuration configuration =
@@ -48,10 +49,9 @@ final class JsonPathQueryFilter {
         final Object document = configuration.jsonProvider().parse(json);
 
         try {
-            final Map<String, EntityInstance> instancesByPrimaryKey =
-                    instancesByPrimaryKey(queryResults.getListEntityInstances());
-            final Map<String, Map<?, ?>> jsonResourcesByPrimaryKey =
-                    jsonResourcesByPrimaryKey(configuration, document, entity);
+            final List<ProjectedResource> projectedResources =
+                    projectedResources(
+                            configuration, document, entity, queryResults.getListEntityInstances());
 
             final Object rawSelected =
                     JsonPath.using(configuration).parse(document).read(expression.trim());
@@ -64,27 +64,23 @@ final class JsonPathQueryFilter {
                 }
 
                 final Map<?, ?> selectedResourceMap = (Map<?, ?>) selectedResource;
-                final String primaryKey =
-                        primaryKeyValueFrom(
-                                selectedResourceMap, entity.getPrimaryKeyField().getName());
-                if (primaryKey == null) {
-                    return unsafeSelection();
-                }
-
-                final Map<?, ?> fullResourceMap = jsonResourcesByPrimaryKey.get(primaryKey);
-                final EntityInstance matchingInstance = instancesByPrimaryKey.get(primaryKey);
-                if (fullResourceMap == null
-                        || matchingInstance == null
-                        || !fullResourceMap.equals(selectedResourceMap)) {
+                final EntityInstance matchingInstance =
+                        matchingInstanceFor(selectedResourceMap, projectedResources);
+                if (matchingInstance == null) {
                     return unsafeSelection();
                 }
 
                 matchingInstances.add(matchingInstance);
             }
 
-            return ApiResponse.success()
-                    .returnInstanceCollection(matchingInstances)
-                    .resultContainsType(entity);
+            final ApiResponse response =
+                    ApiResponse.success()
+                            .returnInstanceCollection(matchingInstances)
+                            .resultContainsType(entity);
+            if (responseView != null) {
+                response.usingEntityView(responseView);
+            }
+            return response;
         } catch (PathNotFoundException e) {
             return unsafeSelection();
         } catch (InvalidPathException e) {
@@ -94,37 +90,47 @@ final class JsonPathQueryFilter {
         }
     }
 
-    private Map<String, EntityInstance> instancesByPrimaryKey(
-            final List<EntityInstance> instances) {
-        final Map<String, EntityInstance> instancesByPrimaryKey = new LinkedHashMap<>();
-        for (EntityInstance instance : instances) {
-            instancesByPrimaryKey.put(instance.getPrimaryKeyValue(), instance);
-        }
-        return instancesByPrimaryKey;
-    }
-
-    private Map<String, Map<?, ?>> jsonResourcesByPrimaryKey(
+    private List<ProjectedResource> projectedResources(
             final Configuration configuration,
             final Object document,
-            final EntityDefinition entity) {
+            final EntityDefinition entity,
+            final List<EntityInstance> instances) {
         final List<?> jsonResources =
                 JsonPath.using(configuration)
                         .parse(document)
                         .read("$['" + escapedJsonPathName(entity.getPlural()) + "'][*]");
-        final Map<String, Map<?, ?>> jsonResourcesByPrimaryKey = new LinkedHashMap<>();
+        if (jsonResources.size() != instances.size()) {
+            throw new IllegalArgumentException("Projected resource count did not match instances");
+        }
 
-        for (Object jsonResource : jsonResources) {
-            if (jsonResource instanceof Map<?, ?>) {
-                final Map<?, ?> jsonResourceMap = (Map<?, ?>) jsonResource;
-                final String primaryKey =
-                        primaryKeyValueFrom(jsonResourceMap, entity.getPrimaryKeyField().getName());
-                if (primaryKey != null) {
-                    jsonResourcesByPrimaryKey.put(primaryKey, jsonResourceMap);
-                }
+        final List<ProjectedResource> projectedResources = new ArrayList<>();
+
+        for (int index = 0; index < jsonResources.size(); index++) {
+            final Object jsonResource = jsonResources.get(index);
+            if (!(jsonResource instanceof Map<?, ?>)) {
+                throw new IllegalArgumentException("Projected resource was not an object");
+            }
+            projectedResources.add(
+                    new ProjectedResource((Map<?, ?>) jsonResource, instances.get(index)));
+        }
+
+        return projectedResources;
+    }
+
+    private EntityInstance matchingInstanceFor(
+            final Map<?, ?> selectedResourceMap, final List<ProjectedResource> resources) {
+        for (ProjectedResource resource : resources) {
+            if (resource.isSameObjectAs(selectedResourceMap)) {
+                return resource.instance();
             }
         }
 
-        return jsonResourcesByPrimaryKey;
+        for (ProjectedResource resource : resources) {
+            if (resource.matches(selectedResourceMap)) {
+                return resource.instance();
+            }
+        }
+        return null;
     }
 
     private List<?> normalizeSelectedResources(
@@ -160,21 +166,6 @@ final class JsonPathQueryFilter {
         return List.of(rawSelected);
     }
 
-    private String primaryKeyValueFrom(final Map<?, ?> resource, final String primaryKeyName) {
-        if (!resource.containsKey(primaryKeyName)) {
-            return null;
-        }
-
-        final Object value = resource.get(primaryKeyName);
-        if (value instanceof Number) {
-            return new BigDecimal(value.toString()).stripTrailingZeros().toPlainString();
-        }
-        if (value == null) {
-            return null;
-        }
-        return value.toString();
-    }
-
     private String escapedJsonPathName(final String name) {
         return name.replace("\\", "\\\\").replace("'", "\\'");
     }
@@ -182,5 +173,28 @@ final class JsonPathQueryFilter {
     private ApiResponse unsafeSelection() {
         return ApiResponse.error(
                 422, "JSONPath query must select complete resource objects from the collection");
+    }
+
+    private static final class ProjectedResource {
+
+        private final Map<?, ?> resource;
+        private final EntityInstance instance;
+
+        private ProjectedResource(final Map<?, ?> resource, final EntityInstance instance) {
+            this.resource = resource;
+            this.instance = instance;
+        }
+
+        private boolean isSameObjectAs(final Map<?, ?> selectedResource) {
+            return resource == selectedResource;
+        }
+
+        private boolean matches(final Map<?, ?> selectedResource) {
+            return resource.equals(selectedResource);
+        }
+
+        private EntityInstance instance() {
+            return instance;
+        }
     }
 }

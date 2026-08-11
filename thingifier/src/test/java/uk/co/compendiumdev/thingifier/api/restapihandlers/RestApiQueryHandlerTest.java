@@ -299,6 +299,53 @@ public class RestApiQueryHandlerTest {
     }
 
     @Test
+    public void jsonPathQueryUsesResponseEntityViewBeforeFiltering() {
+        Thingifier thingifier = todoThingifier();
+        EntityDefinition todo = thingifier.getDefinitionNamed("todo");
+        todo.addField(Field.is("secret", FieldType.STRING));
+        todo.defineView("PublicTodo").hideResponseFields("id", "secret");
+        thingifier.apiSpec().route("QUERY", "/todos").entityView("PublicTodo");
+        EntityInstance matching =
+                storeFor(thingifier)
+                        .entities()
+                        .create(
+                                EntityInstanceDraft.forEntity(todo)
+                                        .withField("title", "Visible")
+                                        .withField("doneStatus", "false")
+                                        .withField("description", "Open item")
+                                        .withField("secret", "alpha"));
+        storeFor(thingifier)
+                .entities()
+                .create(
+                        EntityInstanceDraft.forEntity(todo)
+                                .withField("title", "Hidden")
+                                .withField("doneStatus", "false")
+                                .withField("description", "Other item")
+                                .withField("secret", "beta"));
+
+        HttpApiResponse hiddenFieldResponse =
+                new ThingifierHttpApi(thingifier)
+                        .queryRequest(jsonPathQuery("todos", "$.todos[?(@.secret == 'alpha')]"));
+
+        Assertions.assertEquals(200, hiddenFieldResponse.getStatusCode());
+        Assertions.assertEquals(
+                0, hiddenFieldResponse.apiResponse().getReturnedInstanceCollection().size());
+
+        HttpApiResponse visibleFieldResponse =
+                new ThingifierHttpApi(thingifier)
+                        .queryRequest(jsonPathQuery("todos", "$.todos[?(@.title == 'Visible')]"));
+
+        Assertions.assertEquals(200, visibleFieldResponse.getStatusCode());
+        Assertions.assertEquals(
+                1, visibleFieldResponse.apiResponse().getReturnedInstanceCollection().size());
+        Assertions.assertEquals(
+                matching,
+                visibleFieldResponse.apiResponse().getReturnedInstanceCollection().get(0));
+        Assertions.assertFalse(visibleFieldResponse.getBody().contains("secret"));
+        Assertions.assertFalse(visibleFieldResponse.getBody().contains("\"id\""));
+    }
+
+    @Test
     public void jsonPathQueryCanSelectCollectionArray() {
         Thingifier thingifier = todoThingifier();
         EntityInstance first = createTodo(thingifier, "First", "false", "One");
