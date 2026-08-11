@@ -76,7 +76,13 @@ public class ThingifierRestAPIHandler {
     public ApiResponse query(final ApiRequestEnvelope request) {
         ThingifierRequestContext context = contextFrom(request.headers());
         return withRepository(
-                query.handle(request.path(), request.queryParams(), context), context);
+                query.handle(
+                        request.path(),
+                        request.queryParams(),
+                        request.queryBodyFormat(),
+                        request.body(),
+                        context),
+                context);
     }
 
     public ApiResponse delete(final String url, HttpHeadersBlock headers) {

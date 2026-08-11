@@ -394,7 +394,8 @@ public class ThingifierHttpApiRoutings {
         }
         if (defn.headerValue().contains("QUERY")) {
             response.header(
-                    ThingifierHttpApi.ACCEPT_QUERY_HEADER, ThingifierHttpApi.QUERY_CONTENT_TYPE);
+                    ThingifierHttpApi.ACCEPT_QUERY_HEADER,
+                    ThingifierHttpApi.SUPPORTED_QUERY_CONTENT_TYPES);
         }
     }
 }

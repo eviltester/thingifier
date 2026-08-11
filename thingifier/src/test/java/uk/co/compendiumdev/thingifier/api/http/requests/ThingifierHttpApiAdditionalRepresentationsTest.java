@@ -54,6 +54,27 @@ class ThingifierHttpApiAdditionalRepresentationsTest {
         }
     }
 
+    @Test
+    void jsonPathQuerySelectsAdditionalResponseRepresentationsFromAcceptHeader() {
+        Thingifier thingifier = taskThingifier();
+        createTask(thingifier, "Task");
+        ThingifierHttpApi api = new ThingifierHttpApi(thingifier);
+
+        for (Map.Entry<String, String> expected : expectedBodies().entrySet()) {
+            HttpApiRequest request =
+                    new HttpApiRequest("tasks")
+                            .addHeader(
+                                    "Content-Type", ThingifierHttpApi.JSONPATH_QUERY_CONTENT_TYPE)
+                            .addHeader("Accept", expected.getKey())
+                            .setBody("$.tasks[?(@.title == 'Task')]");
+            HttpApiResponse response = api.queryRequest(request);
+
+            Assertions.assertEquals(200, response.getStatusCode());
+            Assertions.assertEquals(expected.getKey(), response.getType());
+            Assertions.assertEquals(expected.getValue(), response.getBody());
+        }
+    }
+
     private Map<String, String> expectedBodies() {
         Map<String, String> expectedBodies = new LinkedHashMap<>();
         expectedBodies.put("text/csv", "id,title\n1,Task");

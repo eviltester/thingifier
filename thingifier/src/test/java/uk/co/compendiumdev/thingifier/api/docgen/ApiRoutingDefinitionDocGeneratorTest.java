@@ -30,7 +30,8 @@ public class ApiRoutingDefinitionDocGeneratorTest {
         RoutingDefinition query = route(definition, RoutingVerb.QUERY, "todos");
         RoutingDefinition options = route(definition, RoutingVerb.OPTIONS, "todos");
 
-        Assertions.assertTrue(statuses(query).containsAll(Set.of(200, 400, 413, 415)));
+        Assertions.assertTrue(statuses(query).containsAll(Set.of(200, 400, 413, 415, 422)));
+        Assertions.assertTrue(query.getDocumentation().contains("application/jsonpath"));
         Assertions.assertEquals("OPTIONS, GET, HEAD, POST, QUERY", options.headerValue());
     }
 
@@ -93,7 +94,7 @@ public class ApiRoutingDefinitionDocGeneratorTest {
                 route(definition, RoutingVerb.QUERY, "todos/:id/tasksof").getReturnPayloadFor(200));
         Assertions.assertTrue(
                 statuses(route(definition, RoutingVerb.QUERY, "projects/:id/tasks"))
-                        .containsAll(Set.of(200, 400, 413, 415)));
+                        .containsAll(Set.of(200, 400, 413, 415, 422)));
         Assertions.assertEquals(
                 "OPTIONS, GET, HEAD, POST, QUERY",
                 route(definition, RoutingVerb.OPTIONS, "projects/:id/tasks").headerValue());

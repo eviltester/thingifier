@@ -17,6 +17,7 @@
         <swagger-models-version>2.2.52</swagger-models-version>
         <gson-version>2.8.6</gson-version>
         <jackson-version>2.21.1</jackson-version>
+        <jsonpath-version>3.0.0</jsonpath-version>
         <zjsonpatch-version>0.6.3</zjsonpatch-version>
         <sqlite-jdbc-version>3.53.2.0</sqlite-jdbc-version>
         <snakeyaml-version>2.6</snakeyaml-version>

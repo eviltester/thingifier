@@ -26,7 +26,8 @@ class OpenApi32FinalizerTest {
                         "summary": "query todos",
                         "x-http-method": "QUERY",
                         "x-query-content-types": [
-                          "application/x-www-form-urlencoded"
+                          "application/x-www-form-urlencoded",
+                          "application/jsonpath"
                         ],
                         "responses": {
                           "200": {
@@ -48,6 +49,10 @@ class OpenApi32FinalizerTest {
                 query.getAsJsonObject("requestBody")
                         .getAsJsonObject("content")
                         .getAsJsonObject("application/x-www-form-urlencoded");
+        final JsonObject jsonPathMediaType =
+                query.getAsJsonObject("requestBody")
+                        .getAsJsonObject("content")
+                        .getAsJsonObject("application/jsonpath");
 
         Assertions.assertEquals("3.2.0", document.get("openapi").getAsString());
         Assertions.assertTrue(todos.has("get"));
@@ -66,6 +71,8 @@ class OpenApi32FinalizerTest {
                         .getAsJsonObject("additionalProperties")
                         .get("type")
                         .getAsString());
+        Assertions.assertEquals(
+                "string", jsonPathMediaType.getAsJsonObject("schema").get("type").getAsString());
     }
 
     @Test
@@ -118,5 +125,13 @@ class OpenApi32FinalizerTest {
                         .getAsJsonObject("schema")
                         .getAsJsonObject("properties")
                         .has("title"));
+        Assertions.assertEquals(
+                "string",
+                query.getAsJsonObject("requestBody")
+                        .getAsJsonObject("content")
+                        .getAsJsonObject("application/jsonpath")
+                        .getAsJsonObject("schema")
+                        .get("type")
+                        .getAsString());
     }
 }

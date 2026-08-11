@@ -32,6 +32,10 @@ public class ContentTypeHeaderParser {
         return isMediaType("application/x-www-form-urlencoded");
     }
 
+    public boolean isJsonPath() {
+        return isMediaType("application/jsonpath");
+    }
+
     public boolean isMissing() {
         return (header.isEmpty());
     }

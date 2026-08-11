@@ -61,7 +61,8 @@ public class RestApiGetHandler {
         ApiResponse response = apiMapper.map(url, queryResults);
         if (route instanceof CollectionRoute || route instanceof RelationshipCollectionRoute) {
             response.setHeader(
-                    ThingifierHttpApi.ACCEPT_QUERY_HEADER, ThingifierHttpApi.QUERY_CONTENT_TYPE);
+                    ThingifierHttpApi.ACCEPT_QUERY_HEADER,
+                    ThingifierHttpApi.SUPPORTED_QUERY_CONTENT_TYPES);
         }
         return response;
     }

@@ -3,6 +3,7 @@ package uk.co.compendiumdev.thingifier.api.docgen;
 import java.util.HashMap;
 import java.util.Map;
 import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi;
 import uk.co.compendiumdev.thingifier.api.response.ResponseHeader;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
@@ -111,8 +112,9 @@ public class ApiRoutingDefinitionDocGenerator {
 
             defn.addRouting(
                             String.format(
-                                    "query all the instances of %s using application/x-www-form-urlencoded query content",
-                                    entityDefn.getName()),
+                                    "query all the instances of %s using %s query content",
+                                    entityDefn.getName(),
+                                    ThingifierHttpApi.SUPPORTED_QUERY_CONTENT_TYPES),
                             RoutingVerb.QUERY,
                             pluralUrl,
                             RoutingStatus.returnedFromCall())
@@ -123,6 +125,7 @@ public class ApiRoutingDefinitionDocGenerator {
                     .addPossibleStatus(RoutingStatus.returnValue(400))
                     .addPossibleStatus(RoutingStatus.returnValue(413))
                     .addPossibleStatus(RoutingStatus.returnValue(415))
+                    .addPossibleStatus(RoutingStatus.returnValue(422))
                     .setAsFilterableFrom(entityDefn)
                     .returnPayload(200, entityDefn.getPlural());
 
@@ -474,8 +477,12 @@ public class ApiRoutingDefinitionDocGenerator {
 
         defn.addRouting(
                         String.format(
-                                "query all the %s items related to %s, with given %s, by the relationship named %s using application/x-www-form-urlencoded query content",
-                                toName, fromName, uniqueIdFieldName, relationshipName),
+                                "query all the %s items related to %s, with given %s, by the relationship named %s using %s query content",
+                                toName,
+                                fromName,
+                                uniqueIdFieldName,
+                                relationshipName,
+                                ThingifierHttpApi.SUPPORTED_QUERY_CONTENT_TYPES),
                         RoutingVerb.QUERY,
                         aUrl,
                         RoutingStatus.returnedFromCall())
@@ -486,6 +493,7 @@ public class ApiRoutingDefinitionDocGenerator {
                 .addPossibleStatus(RoutingStatus.returnValue(400))
                 .addPossibleStatus(RoutingStatus.returnValue(413))
                 .addPossibleStatus(RoutingStatus.returnValue(415))
+                .addPossibleStatus(RoutingStatus.returnValue(422))
                 .setAsFilterableFrom(relationship.getTo())
                 .returnPayload(200, relationship.getTo().getPlural());
 
