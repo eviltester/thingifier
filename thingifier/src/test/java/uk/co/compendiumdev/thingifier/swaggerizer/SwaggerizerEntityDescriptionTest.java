@@ -124,10 +124,12 @@ class SwaggerizerEntityDescriptionTest {
         assertPagingParameters(openApi.getPaths().get("/projects").getGet());
         assertSortByParameter(queryOperation(openApi.getPaths().get("/projects")));
         assertPagingParameters(queryOperation(openApi.getPaths().get("/projects")));
+        assertQueryContentTypes(queryOperation(openApi.getPaths().get("/projects")));
         assertSortByParameter(openApi.getPaths().get("/projects/{id}/tasks").getGet());
         assertPagingParameters(openApi.getPaths().get("/projects/{id}/tasks").getGet());
         assertSortByParameter(queryOperation(openApi.getPaths().get("/projects/{id}/tasks")));
         assertPagingParameters(queryOperation(openApi.getPaths().get("/projects/{id}/tasks")));
+        assertQueryContentTypes(queryOperation(openApi.getPaths().get("/projects/{id}/tasks")));
 
         Operation singleTargetRelationshipGet =
                 openApi.getPaths().get("/todos/{id}/project").getGet();
@@ -221,5 +223,12 @@ class SwaggerizerEntityDescriptionTest {
         Assertions.assertFalse(offset.getRequired());
         Assertions.assertEquals(0, offset.getExample());
         Assertions.assertTrue(offset.getDescription().contains("Zero-based"));
+    }
+
+    private void assertQueryContentTypes(final Operation operation) {
+        Object contentTypes = operation.getExtensions().get("x-query-content-types");
+        Assertions.assertTrue(contentTypes instanceof List<?>);
+        Assertions.assertEquals(
+                List.of("application/x-www-form-urlencoded", "application/jsonpath"), contentTypes);
     }
 }
