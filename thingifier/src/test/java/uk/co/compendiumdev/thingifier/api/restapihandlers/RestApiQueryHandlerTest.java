@@ -32,7 +32,7 @@ public class RestApiQueryHandlerTest {
         Assertions.assertEquals(
                 matching, response.apiResponse().getReturnedInstanceCollection().get(0));
         Assertions.assertEquals(
-                ThingifierHttpApi.QUERY_CONTENT_TYPE,
+                ThingifierHttpApi.SUPPORTED_QUERY_CONTENT_TYPES,
                 response.getHeaders().get(ThingifierHttpApi.ACCEPT_QUERY_HEADER));
     }
 
@@ -153,7 +153,7 @@ public class RestApiQueryHandlerTest {
 
         Assertions.assertEquals(400, response.getStatusCode());
         Assertions.assertEquals(
-                ThingifierHttpApi.QUERY_CONTENT_TYPE,
+                ThingifierHttpApi.SUPPORTED_QUERY_CONTENT_TYPES,
                 response.getHeaders().get(ThingifierHttpApi.ACCEPT_QUERY_HEADER));
     }
 
@@ -169,9 +169,10 @@ public class RestApiQueryHandlerTest {
 
         Assertions.assertEquals(415, response.getStatusCode());
         Assertions.assertEquals(
-                ThingifierHttpApi.QUERY_CONTENT_TYPE, response.getHeaders().get("Accept"));
+                ThingifierHttpApi.SUPPORTED_QUERY_CONTENT_TYPES,
+                response.getHeaders().get("Accept"));
         Assertions.assertEquals(
-                ThingifierHttpApi.QUERY_CONTENT_TYPE,
+                ThingifierHttpApi.SUPPORTED_QUERY_CONTENT_TYPES,
                 response.getHeaders().get(ThingifierHttpApi.ACCEPT_QUERY_HEADER));
     }
 
@@ -237,8 +238,163 @@ public class RestApiQueryHandlerTest {
 
         Assertions.assertEquals(200, response.getStatusCode());
         Assertions.assertEquals(
-                ThingifierHttpApi.QUERY_CONTENT_TYPE,
+                ThingifierHttpApi.SUPPORTED_QUERY_CONTENT_TYPES,
                 response.getHeaders().get(ThingifierHttpApi.ACCEPT_QUERY_HEADER));
+    }
+
+    @Test
+    public void jsonPathQueryEntityCollectionFiltersByDoneStatus() {
+        Thingifier thingifier = todoThingifier();
+        EntityInstance matching = createTodo(thingifier, "Keep", "false", "Open item");
+        createTodo(thingifier, "Skip", "true", "Closed item");
+
+        HttpApiResponse response =
+                new ThingifierHttpApi(thingifier)
+                        .queryRequest(jsonPathQuery("todos", "$.todos[?(@.doneStatus == false)]"));
+
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertTrue(response.apiResponse().isCollection());
+        Assertions.assertEquals(1, response.apiResponse().getReturnedInstanceCollection().size());
+        Assertions.assertEquals(
+                matching, response.apiResponse().getReturnedInstanceCollection().get(0));
+        Assertions.assertEquals(
+                ThingifierHttpApi.SUPPORTED_QUERY_CONTENT_TYPES,
+                response.getHeaders().get(ThingifierHttpApi.ACCEPT_QUERY_HEADER));
+    }
+
+    @Test
+    public void jsonPathQueryEntityCollectionFiltersById() {
+        Thingifier thingifier = todoThingifier();
+        createTodo(thingifier, "First", "false", "One");
+        EntityInstance matching = createTodo(thingifier, "Second", "true", "Two");
+
+        HttpApiResponse response =
+                new ThingifierHttpApi(thingifier)
+                        .queryRequest(jsonPathQuery("todos", "$.todos[?(@.id == 2)]"));
+
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals(1, response.apiResponse().getReturnedInstanceCollection().size());
+        Assertions.assertEquals(
+                matching, response.apiResponse().getReturnedInstanceCollection().get(0));
+    }
+
+    @Test
+    public void jsonPathQueryEntityCollectionFiltersByTitleAndDescription() {
+        Thingifier thingifier = todoThingifier();
+        EntityInstance matching = createTodo(thingifier, "Keep", "false", "Detailed");
+        createTodo(thingifier, "Keep", "false", "Other");
+        createTodo(thingifier, "Skip", "false", "Detailed");
+
+        HttpApiResponse response =
+                new ThingifierHttpApi(thingifier)
+                        .queryRequest(
+                                jsonPathQuery(
+                                        "todos",
+                                        "$.todos[?(@.title == 'Keep' && @.description == 'Detailed')]"));
+
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals(1, response.apiResponse().getReturnedInstanceCollection().size());
+        Assertions.assertEquals(
+                matching, response.apiResponse().getReturnedInstanceCollection().get(0));
+    }
+
+    @Test
+    public void jsonPathQueryCanSelectCollectionArray() {
+        Thingifier thingifier = todoThingifier();
+        EntityInstance first = createTodo(thingifier, "First", "false", "One");
+        EntityInstance second = createTodo(thingifier, "Second", "true", "Two");
+
+        HttpApiResponse response =
+                new ThingifierHttpApi(thingifier).queryRequest(jsonPathQuery("todos", "$.todos"));
+
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals(2, response.apiResponse().getReturnedInstanceCollection().size());
+        Assertions.assertTrue(
+                response.apiResponse().getReturnedInstanceCollection().contains(first));
+        Assertions.assertTrue(
+                response.apiResponse().getReturnedInstanceCollection().contains(second));
+    }
+
+    @Test
+    public void jsonPathQueryWithNoMatchesReturnsEmptyCollection() {
+        Thingifier thingifier = todoThingifier();
+        createTodo(thingifier, "One", "false", "Open item");
+
+        HttpApiResponse response =
+                new ThingifierHttpApi(thingifier)
+                        .queryRequest(jsonPathQuery("todos", "$.todos[?(@.title == 'Missing')]"));
+
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertTrue(response.apiResponse().isCollection());
+        Assertions.assertEquals(0, response.apiResponse().getReturnedInstanceCollection().size());
+    }
+
+    @Test
+    public void jsonPathQueryRelationshipCollectionFiltersRelatedInstancesOnly() {
+        Thingifier thingifier = taskProjectThingifier();
+        ThingStore store = storeFor(thingifier);
+        EntityInstance project = createProject(thingifier, "Project");
+        EntityInstance matching = createTask(thingifier, "Keep", "Open");
+        EntityInstance relatedButFilteredOut = createTask(thingifier, "Skip", "Open");
+        createTask(thingifier, "Keep", "Open");
+        store.relationships().connect(project, "tasks", matching);
+        store.relationships().connect(project, "tasks", relatedButFilteredOut);
+
+        HttpApiResponse response =
+                new ThingifierHttpApi(thingifier)
+                        .queryRequest(
+                                jsonPathQuery(
+                                        "projects/" + project.getPrimaryKeyValue() + "/tasks",
+                                        "$.tasks[?(@.title == 'Keep')]"));
+
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals(1, response.apiResponse().getReturnedInstanceCollection().size());
+        Assertions.assertEquals(
+                matching, response.apiResponse().getReturnedInstanceCollection().get(0));
+    }
+
+    @Test
+    public void malformedJsonPathQueryContentIsBadRequest() {
+        Thingifier thingifier = todoThingifier();
+
+        HttpApiResponse response =
+                new ThingifierHttpApi(thingifier).queryRequest(jsonPathQuery("todos", "$[?"));
+
+        Assertions.assertEquals(400, response.getStatusCode());
+    }
+
+    @Test
+    public void emptyJsonPathQueryContentIsBadRequest() {
+        Thingifier thingifier = todoThingifier();
+
+        HttpApiResponse response =
+                new ThingifierHttpApi(thingifier).queryRequest(jsonPathQuery("todos", ""));
+
+        Assertions.assertEquals(400, response.getStatusCode());
+    }
+
+    @Test
+    public void jsonPathQueryProjectionIsUnprocessable() {
+        Thingifier thingifier = todoThingifier();
+        createTodo(thingifier, "Task", "false", "Open item");
+
+        HttpApiResponse response =
+                new ThingifierHttpApi(thingifier)
+                        .queryRequest(jsonPathQuery("todos", "$.todos[*].title"));
+
+        Assertions.assertEquals(422, response.getStatusCode());
+    }
+
+    @Test
+    public void jsonPathQueryPartialObjectProjectionIsUnprocessable() {
+        Thingifier thingifier = todoThingifier();
+        createTodo(thingifier, "Task", "false", "Open item");
+
+        HttpApiResponse response =
+                new ThingifierHttpApi(thingifier)
+                        .queryRequest(jsonPathQuery("todos", "$.todos[*]['id','title']"));
+
+        Assertions.assertEquals(422, response.getStatusCode());
     }
 
     private Thingifier taskProjectThingifier() {
@@ -255,6 +411,16 @@ public class RestApiQueryHandlerTest {
         thingifier
                 .defineRelationship(project, task, "tasks", Cardinality.ONE_TO_MANY())
                 .whenReversed(Cardinality.ONE_TO_ONE(), "task-of");
+        return thingifier;
+    }
+
+    private Thingifier todoThingifier() {
+        Thingifier thingifier = new Thingifier();
+        EntityDefinition todo = thingifier.defineThing("todo", "todos");
+        todo.addAsPrimaryKeyField(Field.is("id", FieldType.AUTO_INCREMENT));
+        todo.addField(Field.is("title", FieldType.STRING));
+        todo.addField(Field.is("doneStatus", FieldType.BOOLEAN));
+        todo.addField(Field.is("description", FieldType.STRING));
         return thingifier;
     }
 
@@ -276,6 +442,21 @@ public class RestApiQueryHandlerTest {
                 .create(EntityInstanceDraft.forEntity(project).withField("title", title));
     }
 
+    private EntityInstance createTodo(
+            final Thingifier thingifier,
+            final String title,
+            final String doneStatus,
+            final String description) {
+        EntityDefinition todo = thingifier.getDefinitionNamed("todo");
+        return storeFor(thingifier)
+                .entities()
+                .create(
+                        EntityInstanceDraft.forEntity(todo)
+                                .withField("title", title)
+                                .withField("doneStatus", doneStatus)
+                                .withField("description", description));
+    }
+
     private ThingStore storeFor(final Thingifier thingifier) {
         return thingifier.getStore(EntityRelModel.DEFAULT_DATABASE_NAME);
     }
@@ -283,6 +464,12 @@ public class RestApiQueryHandlerTest {
     private HttpApiRequest query(final String path, final String body) {
         return new HttpApiRequest(path)
                 .addHeader("Content-Type", ThingifierHttpApi.QUERY_CONTENT_TYPE)
+                .setBody(body);
+    }
+
+    private HttpApiRequest jsonPathQuery(final String path, final String body) {
+        return new HttpApiRequest(path)
+                .addHeader("Content-Type", ThingifierHttpApi.JSONPATH_QUERY_CONTENT_TYPE)
                 .setBody(body);
     }
 }

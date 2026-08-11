@@ -30,6 +30,9 @@ public final class ThingifierHttpApi {
     public static final String HTTP_SESSION_HEADER_NAME = "X-THING-HTTP-SESSION-GUID";
     public static final String ACCEPT_QUERY_HEADER = "Accept-Query";
     public static final String QUERY_CONTENT_TYPE = "application/x-www-form-urlencoded";
+    public static final String JSONPATH_QUERY_CONTENT_TYPE = "application/jsonpath";
+    public static final String SUPPORTED_QUERY_CONTENT_TYPES =
+            QUERY_CONTENT_TYPE + ", " + JSONPATH_QUERY_CONTENT_TYPE;
 
     private final Thingifier thingifier;
     private final JsonThing jsonThing;

@@ -4,9 +4,15 @@ import java.util.List;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.ApiBodyFields;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
+import uk.co.compendiumdev.thingifier.api.http.headers.headerparser.ContentTypeHeaderParser;
 import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
 
 public final class ApiRequestEnvelope {
+
+    public enum QueryBodyFormat {
+        URL_ENCODED,
+        JSONPATH
+    }
 
     private final ThingifierHttpApi.HttpVerb verb;
     private final String path;
@@ -14,6 +20,7 @@ public final class ApiRequestEnvelope {
     private final HttpHeadersBlock headers;
     private final ApiBodyFields bodyFields;
     private final String body;
+    private final QueryBodyFormat queryBodyFormat;
 
     private ApiRequestEnvelope(
             final ThingifierHttpApi.HttpVerb verb,
@@ -21,13 +28,15 @@ public final class ApiRequestEnvelope {
             final QueryFilterParams queryParams,
             final HttpHeadersBlock headers,
             final ApiBodyFields bodyFields,
-            final String body) {
+            final String body,
+            final QueryBodyFormat queryBodyFormat) {
         this.verb = verb;
         this.path = path;
         this.queryParams = queryParams;
         this.headers = headers;
         this.bodyFields = bodyFields;
         this.body = body == null ? "" : body;
+        this.queryBodyFormat = queryBodyFormat;
     }
 
     public static ApiRequestEnvelope from(
@@ -39,8 +48,12 @@ public final class ApiRequestEnvelope {
             bodyFields = new BodyParser(request, thingNames).bodyFields();
         }
         QueryFilterParams queryParams = request.getFilterableQueryParams();
+        QueryBodyFormat queryBodyFormat = QueryBodyFormat.URL_ENCODED;
         if (verb == ThingifierHttpApi.HttpVerb.QUERY) {
-            queryParams = queryContentAndUriQueryParams(request);
+            queryBodyFormat = queryBodyFormatFor(request);
+            if (queryBodyFormat == QueryBodyFormat.URL_ENCODED) {
+                queryParams = queryContentAndUriQueryParams(request);
+            }
         }
         return new ApiRequestEnvelope(
                 verb,
@@ -48,7 +61,17 @@ public final class ApiRequestEnvelope {
                 queryParams,
                 request.getHeaders(),
                 bodyFields,
-                request.getBody());
+                request.getBody(),
+                queryBodyFormat);
+    }
+
+    private static QueryBodyFormat queryBodyFormatFor(final HttpApiRequest request) {
+        final ContentTypeHeaderParser contentType =
+                new ContentTypeHeaderParser(request.getContentTypeHeader());
+        if (contentType.isJsonPath()) {
+            return QueryBodyFormat.JSONPATH;
+        }
+        return QueryBodyFormat.URL_ENCODED;
     }
 
     private static QueryFilterParams queryContentAndUriQueryParams(final HttpApiRequest request) {
@@ -80,5 +103,9 @@ public final class ApiRequestEnvelope {
 
     public String body() {
         return body;
+    }
+
+    public QueryBodyFormat queryBodyFormat() {
+        return queryBodyFormat;
     }
 }

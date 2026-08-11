@@ -11,6 +11,8 @@ import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.Relationshi
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.RelationshipInstanceRoute;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.ThingRoute;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.ThingRouteMapper;
+import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonThing;
+import uk.co.compendiumdev.thingifier.api.http.ApiRequestEnvelope;
 import uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi;
 import uk.co.compendiumdev.thingifier.api.http.ThingifierRequestContext;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
@@ -28,6 +30,16 @@ public final class RestApiQueryHandler {
     public ApiResponse handle(
             final String url,
             final QueryFilterParams queryParams,
+            final ThingifierRequestContext context) {
+        return handle(
+                url, queryParams, ApiRequestEnvelope.QueryBodyFormat.URL_ENCODED, "", context);
+    }
+
+    public ApiResponse handle(
+            final String url,
+            final QueryFilterParams queryParams,
+            final ApiRequestEnvelope.QueryBodyFormat queryBodyFormat,
+            final String queryBody,
             final ThingifierRequestContext context) {
         ThingReadResultApiMapper apiMapper = new ThingReadResultApiMapper(runtime.apiConfig());
         ThingRoute route = new ThingRouteMapper(runtime.schema()).map(url);
@@ -61,14 +73,27 @@ public final class RestApiQueryHandler {
 
         RepositoryQueryResult queryResults =
                 runtime.queryService().execute(mapping.getQuery(), context.store(), false);
-        return apiMapper
-                .map(url, queryResults)
-                .setHeader(
-                        ThingifierHttpApi.ACCEPT_QUERY_HEADER,
-                        ThingifierHttpApi.QUERY_CONTENT_TYPE);
+        ApiResponse response = apiMapper.map(url, queryResults);
+        if (response.isErrorResponse()) {
+            return advertiseQuery(response);
+        }
+
+        if (queryBodyFormat == ApiRequestEnvelope.QueryBodyFormat.JSONPATH) {
+            response =
+                    new JsonPathQueryFilter(new JsonThing(runtime.apiConfig().jsonOutput()))
+                            .filter(queryResults, context, queryBody);
+        }
+
+        return advertiseQuery(response);
     }
 
     private ApiResponse methodNotAllowed(final String allowHeader) {
         return ApiResponse.error(405, "Method Not Allowed").setHeader("Allow", allowHeader);
+    }
+
+    private ApiResponse advertiseQuery(final ApiResponse response) {
+        return response.setHeader(
+                ThingifierHttpApi.ACCEPT_QUERY_HEADER,
+                ThingifierHttpApi.SUPPORTED_QUERY_CONTENT_TYPES);
     }
 }

@@ -1,5 +1,7 @@
 package uk.co.compendiumdev.thingifier.api.http;
 
+import com.jayway.jsonpath.InvalidPathException;
+import com.jayway.jsonpath.JsonPath;
 import java.util.ArrayList;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.api.http.headers.headerparser.ContentTypeHeaderParser;
@@ -84,29 +86,40 @@ public class HttpApiRequestValidator {
             return queryContentError(400, "Missing Content-Type for QUERY request");
         }
 
-        if (!contentType.isFormUrlEncoded()) {
+        if (!contentType.isFormUrlEncoded() && !contentType.isJsonPath()) {
             ApiResponse response =
                     queryContentError(
                             this.apiConfig.statusCodes().contentTypeNotSupported(),
                             "Unsupported QUERY Content Type - " + request.getContentTypeHeader());
-            response.setHeader("Accept", ThingifierHttpApi.QUERY_CONTENT_TYPE);
+            response.setHeader("Accept", ThingifierHttpApi.SUPPORTED_QUERY_CONTENT_TYPES);
             return response;
         }
 
         try {
-            new UrlQueryParamParser().parseStrict(request.getBody());
-        } catch (IllegalArgumentException e) {
+            if (contentType.isJsonPath()) {
+                validateJsonPath(request.getBody());
+            } else {
+                new UrlQueryParamParser().parseStrict(request.getBody());
+            }
+        } catch (IllegalArgumentException | InvalidPathException e) {
             return queryContentError(400, e.getMessage());
         }
 
         return null;
     }
 
+    private void validateJsonPath(final String body) {
+        if (body == null || body.trim().isEmpty()) {
+            throw new IllegalArgumentException("Missing JSONPath expression for QUERY request");
+        }
+        JsonPath.compile(body.trim());
+    }
+
     private ApiResponse queryContentError(final int statusCode, final String message) {
         return ApiResponse.error(statusCode, message)
                 .setHeader(
                         ThingifierHttpApi.ACCEPT_QUERY_HEADER,
-                        ThingifierHttpApi.QUERY_CONTENT_TYPE);
+                        ThingifierHttpApi.SUPPORTED_QUERY_CONTENT_TYPES);
     }
 
     public ApiResponse getErrorApiResponse() {

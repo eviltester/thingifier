@@ -504,7 +504,10 @@ public class Swaggerizer {
             case QUERY:
                 operation.addExtension("x-http-method", "QUERY");
                 operation.addExtension(
-                        "x-query-content-types", List.of(ThingifierHttpApi.QUERY_CONTENT_TYPE));
+                        "x-query-content-types",
+                        List.of(
+                                ThingifierHttpApi.QUERY_CONTENT_TYPE,
+                                ThingifierHttpApi.JSONPATH_QUERY_CONTENT_TYPE));
                 path.addExtension("x-query-operation", operation);
                 break;
             case PATCH:

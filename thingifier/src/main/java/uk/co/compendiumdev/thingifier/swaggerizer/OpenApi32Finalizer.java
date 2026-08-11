@@ -69,6 +69,17 @@ public final class OpenApi32Finalizer {
         if (!formMediaType.has("schema") || !formMediaType.get("schema").isJsonObject()) {
             formMediaType.add("schema", permissiveFormSchema());
         }
+
+        JsonObject jsonPathMediaType =
+                objectAt(content, ThingifierHttpApi.JSONPATH_QUERY_CONTENT_TYPE);
+        if (jsonPathMediaType == null) {
+            jsonPathMediaType = new JsonObject();
+            content.add(ThingifierHttpApi.JSONPATH_QUERY_CONTENT_TYPE, jsonPathMediaType);
+        }
+
+        if (!jsonPathMediaType.has("schema") || !jsonPathMediaType.get("schema").isJsonObject()) {
+            jsonPathMediaType.add("schema", stringSchema());
+        }
     }
 
     private JsonObject permissiveFormSchema() {
@@ -77,6 +88,12 @@ public final class OpenApi32Finalizer {
         final JsonObject additionalProperties = new JsonObject();
         additionalProperties.addProperty("type", "string");
         schema.add("additionalProperties", additionalProperties);
+        return schema;
+    }
+
+    private JsonObject stringSchema() {
+        final JsonObject schema = new JsonObject();
+        schema.addProperty("type", "string");
         return schema;
     }
 

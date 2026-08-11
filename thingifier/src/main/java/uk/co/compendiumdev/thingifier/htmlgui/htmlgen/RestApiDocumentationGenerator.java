@@ -529,7 +529,7 @@ public class RestApiDocumentationGenerator {
                         output.append(
                                 paragraph(
                                         "QUERY content uses <i>Content-Type: "
-                                                + ThingifierHttpApi.QUERY_CONTENT_TYPE
+                                                + ThingifierHttpApi.SUPPORTED_QUERY_CONTENT_TYPES
                                                 + "</i> with fields such as <i>title=Task&amp;"
                                                 + SortByFieldName.PARAMETER_NAME
                                                 + "=-id</i>."));
