@@ -4,6 +4,7 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.media.Content;
+import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.parameters.Parameter;
 import java.util.List;
 import java.util.Set;
@@ -57,7 +58,7 @@ class SwaggerizerEntityDescriptionTest {
                         .getSchema()
                         .get$ref());
         Assertions.assertEquals(
-                "#/components/schemas/todos_xml_collection",
+                "array",
                 relationshipCollection
                         .getGet()
                         .getResponses()
@@ -65,7 +66,18 @@ class SwaggerizerEntityDescriptionTest {
                         .getContent()
                         .get("application/xml")
                         .getSchema()
-                        .get$ref());
+                        .getType());
+        Assertions.assertEquals(
+                "todos",
+                relationshipCollection
+                        .getGet()
+                        .getResponses()
+                        .get("200")
+                        .getContent()
+                        .get("application/xml")
+                        .getSchema()
+                        .getXml()
+                        .getName());
         Assertions.assertNotNull(relationshipCollection.getPost().getRequestBody());
         Assertions.assertEquals(
                 "#/components/schemas/todo",
@@ -110,9 +122,11 @@ class SwaggerizerEntityDescriptionTest {
         Assertions.assertEquals(
                 "#/components/schemas/projects",
                 content.get("application/json").getSchema().get$ref());
-        Assertions.assertEquals(
-                "#/components/schemas/projects_xml_collection",
-                content.get("application/xml").getSchema().get$ref());
+        final Schema<?> xmlCollectionSchema = content.get("application/xml").getSchema();
+        Assertions.assertNull(xmlCollectionSchema.get$ref());
+        Assertions.assertEquals("array", xmlCollectionSchema.getType());
+        Assertions.assertEquals("projects", xmlCollectionSchema.getXml().getName());
+        Assertions.assertTrue(xmlCollectionSchema.getXml().getWrapped());
         for (String mediaType :
                 List.of(
                         "text/csv",

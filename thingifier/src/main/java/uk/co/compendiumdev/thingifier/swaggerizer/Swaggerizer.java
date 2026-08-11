@@ -202,7 +202,7 @@ public class Swaggerizer {
                                             response.setContent(
                                                     responseContentWith(
                                                             ref,
-                                                            xmlResponseRefFor(
+                                                            xmlResponseSchemaFor(
                                                                     routingDefinitions,
                                                                     payloadName)));
                                         }
@@ -356,9 +356,6 @@ public class Swaggerizer {
             // add list response for entity plural
             ObjectSchema collectionObject = asJsonCollectionObjectSchema(objectSchemaDefinition);
             components.addSchemas(objectSchemaDefinition.getPlural(), collectionObject);
-            ArraySchema xmlCollectionObject = asXmlCollectionArraySchema(objectSchemaDefinition);
-            components.addSchemas(
-                    xmlCollectionSchemaNameFor(objectSchemaDefinition), xmlCollectionObject);
 
             for (EntityViewDefinition view : objectSchemaDefinition.getViews()) {
                 ObjectSchema viewObject = asResponseViewObjectSchema(view);
@@ -372,14 +369,14 @@ public class Swaggerizer {
         return components;
     }
 
-    private String xmlResponseRefFor(
+    private Schema<?> xmlResponseSchemaFor(
             final ApiRoutingDefinition routingDefinitions, final String payloadName) {
         for (EntityDefinition definition : routingDefinitions.getObjectSchemas()) {
             if (definition.getPlural().equals(payloadName)) {
-                return "#/components/schemas/" + xmlCollectionSchemaNameFor(definition);
+                return asXmlCollectionArraySchema(definition);
             }
         }
-        return "#/components/schemas/" + payloadName;
+        return refSchemaFor("#/components/schemas/" + payloadName);
     }
 
     private void addParamSchemeValidationFromField(Schema<String> schema, Field aField) {
@@ -580,16 +577,16 @@ public class Swaggerizer {
         }
     }
 
-    private Content responseContentWith(final String jsonRef, final String xmlRef) {
+    private Content responseContentWith(final String jsonRef, final Schema<?> xmlSchema) {
         Content content = new Content();
         for (AcceptHeaderParser.ACCEPT_TYPE responseType :
                 AcceptHeaderParser.ACCEPT_TYPE.responseMediaTypes()) {
             if (responseType.usesComponentSchemaInDocumentation()) {
-                Schema<String> object = new Schema<>();
                 MediaType schema = new MediaType();
-                schema.setSchema(object);
-                object.set$ref(
-                        responseType == AcceptHeaderParser.ACCEPT_TYPE.XML ? xmlRef : jsonRef);
+                schema.setSchema(
+                        responseType == AcceptHeaderParser.ACCEPT_TYPE.XML
+                                ? xmlSchema
+                                : refSchemaFor(jsonRef));
                 content.addMediaType(responseType.mediaType(), schema);
             } else {
                 MediaType textSchema = new MediaType();
@@ -598,6 +595,12 @@ public class Swaggerizer {
             }
         }
         return content;
+    }
+
+    private Schema<?> refSchemaFor(final String ref) {
+        Schema<String> object = new Schema<>();
+        object.set$ref(ref);
+        return object;
     }
 
     private void addHttpSecurityScheme(
@@ -646,10 +649,6 @@ public class Swaggerizer {
         collectionObject.setXml(xml);
 
         return collectionObject;
-    }
-
-    private static String xmlCollectionSchemaNameFor(EntityDefinition objectSchemaDefinition) {
-        return objectSchemaDefinition.getPlural() + "_xml_collection";
     }
 
     private static ObjectSchema asRequiredResponseObjectSchema(

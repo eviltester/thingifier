@@ -37,9 +37,10 @@ class SwaggerizerSchemaExampleTest {
         final JsonObject itemsProperty =
                 itemsSchema.getAsJsonObject("properties").getAsJsonObject("items");
         final JsonObject itemSchema = itemsProperty.getAsJsonObject("items");
-        final JsonObject xmlItemsSchema = schemas.getAsJsonObject("items_xml_collection");
+        final JsonObject xmlItemsSchema = responseSchemaFor(document, "/items", "application/xml");
         final JsonObject xmlItemSchema = xmlItemsSchema.getAsJsonObject("items");
 
+        Assertions.assertFalse(schemas.has("items_xml_collection"));
         Assertions.assertEquals("object", itemsSchema.get("type").getAsString());
         Assertions.assertEquals("array", itemsProperty.get("type").getAsString());
         Assertions.assertEquals("object", itemSchema.get("type").getAsString());
@@ -60,18 +61,7 @@ class SwaggerizerSchemaExampleTest {
                         .getAsJsonObject("schema")
                         .get("$ref")
                         .getAsString());
-        Assertions.assertEquals(
-                "#/components/schemas/items_xml_collection",
-                document.getAsJsonObject("paths")
-                        .getAsJsonObject("/items")
-                        .getAsJsonObject("get")
-                        .getAsJsonObject("responses")
-                        .getAsJsonObject("200")
-                        .getAsJsonObject("content")
-                        .getAsJsonObject("application/xml")
-                        .getAsJsonObject("schema")
-                        .get("$ref")
-                        .getAsString());
+        Assertions.assertFalse(xmlItemsSchema.has("$ref"));
 
         Assertions.assertEquals("array", xmlItemsSchema.get("type").getAsString());
         Assertions.assertEquals(
@@ -83,6 +73,48 @@ class SwaggerizerSchemaExampleTest {
         Assertions.assertEquals(
                 Set.of("id", "type", "isbn13", "price", "numberinstock"),
                 requiredPropertiesIn(xmlItemSchema, "XML item"));
+    }
+
+    @Test
+    void generatedXmlCollectionSchemasDoNotCollideWithEntityNames() {
+        final Thingifier thingifier = new Thingifier();
+        final EntityDefinition item = thingifier.defineThing("item", "items");
+        item.addAsPrimaryKeyField(Field.is("id", FieldType.AUTO_INCREMENT));
+
+        final EntityDefinition collision =
+                thingifier.defineThing("items_xml_collection", "xml_items");
+        collision.addAsPrimaryKeyField(Field.is("collisionId", FieldType.AUTO_INCREMENT));
+
+        final ThingifierApiDocumentationDefn apiDefn =
+                new ThingifierApiDocumentationDefn().setThingifier(thingifier);
+
+        final JsonObject document =
+                JsonParser.parseString(new Swaggerizer(apiDefn).asJson()).getAsJsonObject();
+        final JsonObject schemas =
+                document.getAsJsonObject("components").getAsJsonObject("schemas");
+        final JsonObject collisionSchema = schemas.getAsJsonObject("items_xml_collection");
+        final JsonObject itemXmlSchema = responseSchemaFor(document, "/items", "application/xml");
+
+        Assertions.assertEquals("object", collisionSchema.get("type").getAsString());
+        Assertions.assertTrue(
+                collisionSchema.getAsJsonObject("properties").has("collisionId"),
+                "The model-defined component should not be overwritten");
+        Assertions.assertEquals("array", itemXmlSchema.get("type").getAsString());
+        Assertions.assertFalse(itemXmlSchema.has("$ref"));
+        Assertions.assertEquals(
+                "items", itemXmlSchema.getAsJsonObject("xml").get("name").getAsString());
+    }
+
+    private JsonObject responseSchemaFor(
+            final JsonObject document, final String path, final String mediaType) {
+        return document.getAsJsonObject("paths")
+                .getAsJsonObject(path)
+                .getAsJsonObject("get")
+                .getAsJsonObject("responses")
+                .getAsJsonObject("200")
+                .getAsJsonObject("content")
+                .getAsJsonObject(mediaType)
+                .getAsJsonObject("schema");
     }
 
     private Set<String> requiredPropertiesIn(final JsonObject schema, final String schemaName) {
