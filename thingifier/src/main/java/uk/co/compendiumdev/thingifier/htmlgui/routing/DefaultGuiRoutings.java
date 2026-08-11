@@ -29,6 +29,7 @@ public class DefaultGuiRoutings {
     public DefaultGuiRoutings configureRoutes(String urlPrefixPath) {
 
         this.htmlPages = new DefaultGuiHtmlPages(templates, thingifier, urlPrefixPath);
+        templates.appendMenuItem("UI", "%s/entities".formatted(urlPrefixPath));
 
         // TODO: separate the HTML rendering from the HTTP routing with a class e.g.
         // DefaultEntitesExplorerHTML

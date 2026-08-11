@@ -24,13 +24,20 @@ public class DefaultGUIHTML {
     }
 
     public void appendMenuItem(final String title, final String url) {
+        if (hasMenuItem(title, url)) {
+            return;
+        }
+        menuItems.add(new GuiMenuItem(title, url));
+    }
+
+    private boolean hasMenuItem(final String title, final String url) {
         for (GuiMenuItem item : menuItems) {
             if (item.menuTitle.equals(title) || item.url.equals(url)) {
                 // avoid adding duplicates
-                return;
+                return true;
             }
         }
-        menuItems.add(new GuiMenuItem(title, url));
+        return false;
     }
 
     public void appendToCustomHeadContent(final String someContent) {
@@ -38,6 +45,9 @@ public class DefaultGUIHTML {
     }
 
     public void prefixMenuItem(final String title, final String url) {
+        if (hasMenuItem(title, url)) {
+            return;
+        }
         menuItems.add(0, new GuiMenuItem(title, url));
     }
 

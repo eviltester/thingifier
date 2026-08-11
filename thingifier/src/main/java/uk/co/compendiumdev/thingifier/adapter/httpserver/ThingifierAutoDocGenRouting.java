@@ -9,6 +9,7 @@ import uk.co.compendiumdev.thingifier.api.docgen.ThingifierApiDocumentationDefn;
 import uk.co.compendiumdev.thingifier.htmlgui.htmlgen.DefaultGUIHTML;
 import uk.co.compendiumdev.thingifier.htmlgui.htmlgen.RestApiDocumentationGenerator;
 import uk.co.compendiumdev.thingifier.swaggerizer.OpenApiSpecificationVersion;
+import uk.co.compendiumdev.thingifier.swaggerizer.ScalarUiPage;
 import uk.co.compendiumdev.thingifier.swaggerizer.SwaggerUiPage;
 import uk.co.compendiumdev.thingifier.swaggerizer.Swaggerizer;
 
@@ -30,6 +31,15 @@ public class ThingifierAutoDocGenRouting {
         final String openApi31Path = "%s/docs/openapi-3.1.json".formatted(pathPrefix);
         final String openApi32Path = "%s/docs/openapi-3.2.json".formatted(pathPrefix);
         final String swaggerUiPath = "%s/docs/swagger-ui".formatted(pathPrefix);
+        final String scalarUiPath = "%s/docs/scalar-ui".formatted(pathPrefix);
+
+        guiManagement.prefixMenuItem("Docs", docsPath);
+        if (apiDefn.willShowSwaggerUiLink()) {
+            guiManagement.appendMenuItem("Swagger UI", swaggerUiPath);
+        }
+        if (apiDefn.willShowScalarUiLink()) {
+            guiManagement.appendMenuItem("Scalar UI", scalarUiPath);
+        }
 
         // TODO: config to enable docs and configure the URL and add a meta tag for description and
         // additional headers
@@ -48,29 +58,48 @@ public class ThingifierAutoDocGenRouting {
                                     docsPath);
                 });
 
-        // guiManagement.appendMenuItem("API documentation","/docs");
-
         registerOpenApiEndpoint(apiDefn, openApiPath, OpenApiSpecificationVersion.OPENAPI_3_1);
         registerOpenApiEndpoint(apiDefn, openApi31Path, OpenApiSpecificationVersion.OPENAPI_3_1);
         registerOpenApiEndpoint(apiDefn, openApi32Path, OpenApiSpecificationVersion.OPENAPI_3_2);
         registerOpenApiEndpoint(apiDefn, openApi30Path, OpenApiSpecificationVersion.OPENAPI_3_0);
 
-        get(
-                swaggerUiPath,
-                (request, response) -> {
-                    response.type("text/html");
-                    response.status(200);
-                    return new SwaggerUiPage(
-                                    apiDefn,
-                                    guiManagement,
-                                    openApiPath,
-                                    openApi30Path,
-                                    openApi31Path,
-                                    openApi32Path,
-                                    docsPath,
-                                    swaggerUiPath)
-                            .html();
-                });
+        if (apiDefn.willCreateSwaggerUi()) {
+            get(
+                    swaggerUiPath,
+                    (request, response) -> {
+                        response.type("text/html");
+                        response.status(200);
+                        return new SwaggerUiPage(
+                                        apiDefn,
+                                        guiManagement,
+                                        openApiPath,
+                                        openApi30Path,
+                                        openApi31Path,
+                                        openApi32Path,
+                                        docsPath,
+                                        swaggerUiPath)
+                                .html();
+                    });
+        }
+
+        if (apiDefn.willCreateScalarUi()) {
+            get(
+                    scalarUiPath,
+                    (request, response) -> {
+                        response.type("text/html");
+                        response.status(200);
+                        return new ScalarUiPage(
+                                        apiDefn,
+                                        guiManagement,
+                                        openApiPath,
+                                        openApi30Path,
+                                        openApi31Path,
+                                        openApi32Path,
+                                        docsPath,
+                                        scalarUiPath)
+                                .html();
+                    });
+        }
 
         // TODO: api config to enable swagger and configure the URL
         // TODO: move into swagger package

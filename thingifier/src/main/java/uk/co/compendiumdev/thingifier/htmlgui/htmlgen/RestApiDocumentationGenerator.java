@@ -575,6 +575,9 @@ public class RestApiDocumentationGenerator {
         if (apiDocDefn.willShowSwaggerUiLink()) {
             output.append(paragraph(href("Open Swagger UI", prependPath + "/docs/swagger-ui")));
         }
+        if (apiDocDefn.willShowScalarUiLink()) {
+            output.append(paragraph(href("Open Scalar UI", prependPath + "/docs/scalar-ui")));
+        }
         output.append(openApiVersionLinks());
 
         output.append(defaultGui.getEndOfMainContentMarker());
