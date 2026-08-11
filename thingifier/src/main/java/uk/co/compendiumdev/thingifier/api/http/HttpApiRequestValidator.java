@@ -52,14 +52,16 @@ public class HttpApiRequestValidator {
 
         if (apiResponse == null) {
             // only validate content if it contains content
-            if (verb == ThingifierHttpApi.HttpVerb.POST || verb == ThingifierHttpApi.HttpVerb.PUT) {
+            if (verb == ThingifierHttpApi.HttpVerb.POST
+                    || verb == ThingifierHttpApi.HttpVerb.PUT
+                    || verb == ThingifierHttpApi.HttpVerb.PATCH) {
 
-                apiResponse =
-                        new ContentTypeHeaderValidator(this.apiConfig)
-                                .validate(request.getContentTypeHeader());
+                apiResponse = validateWriteContentType(request, verb);
 
                 // validate the content syntax format against content type
-                if (apiResponse == null) {
+                if (apiResponse == null
+                        && (verb == ThingifierHttpApi.HttpVerb.POST
+                                || verb == ThingifierHttpApi.HttpVerb.PUT)) {
                     BodyParser parser = new BodyParser(request, new ArrayList<>());
                     String parsingError = "";
                     if (!apiConfig.willAllowJsonAsDefaultContentType()) {
@@ -76,6 +78,19 @@ public class HttpApiRequestValidator {
 
         this.isValid = (apiResponse == null);
         return this.isValid;
+    }
+
+    private ApiResponse validateWriteContentType(
+            final HttpApiRequest request, final ThingifierHttpApi.HttpVerb verb) {
+        final ContentTypeHeaderParser contentType =
+                new ContentTypeHeaderParser(request.getContentTypeHeader());
+        if (verb == ThingifierHttpApi.HttpVerb.PATCH
+                && (contentType.isJsonMergePatch() || contentType.isJsonPatch())) {
+            return null;
+        }
+
+        return new ContentTypeHeaderValidator(this.apiConfig)
+                .validate(request.getContentTypeHeader());
     }
 
     private ApiResponse validateQueryContent(final HttpApiRequest request) {

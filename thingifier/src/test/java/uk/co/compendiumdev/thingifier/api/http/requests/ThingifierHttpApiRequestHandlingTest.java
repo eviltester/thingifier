@@ -247,6 +247,64 @@ public class ThingifierHttpApiRequestHandlingTest {
     }
 
     @Test
+    public void patchHonoursJsonContentTypePolicyForPartialJsonUpdate() {
+        Thingifier thingifier = strictTypedThingifier();
+        thingifier.apiConfig().setApiToAllowJsonForContentType(false);
+        thingifier
+                .apiConfig()
+                .writeMethods()
+                .entities()
+                .patchCan(EntityPatchUpdateStyle.PARTIAL_JSON_UPDATE);
+        ThingifierHttpApi api = new ThingifierHttpApi(thingifier, null, null);
+        EntityInstance existing = createThing(thingifier, "Original");
+
+        HttpApiResponse response =
+                api.patch(
+                        jsonRequest(
+                                "/things/" + existing.getPrimaryKeyValue(),
+                                "{\"title\":\"Patched\"}"));
+
+        Assertions.assertEquals(
+                thingifier.apiConfig().statusCodes().contentTypeNotSupported(),
+                response.getStatusCode());
+        Assertions.assertTrue(response.getBody().contains("JSON Not Supported"));
+        Assertions.assertEquals("Original", currentThingTitle(thingifier, existing));
+    }
+
+    @Test
+    public void patchContentTypePolicyAllowsConfiguredPatchMediaTypes() {
+        Thingifier thingifier = strictTypedThingifier();
+        thingifier.apiConfig().setApiToAllowJsonForContentType(false);
+        thingifier
+                .apiConfig()
+                .writeMethods()
+                .entities()
+                .patchCan(
+                        EntityPatchUpdateStyle.JSON_MERGE_PATCH_RFC7396,
+                        EntityPatchUpdateStyle.JSON_PATCH_RFC6902);
+        ThingifierHttpApi api = new ThingifierHttpApi(thingifier, null, null);
+        EntityInstance existing = createThing(thingifier, "Original");
+        String path = "/things/" + existing.getPrimaryKeyValue();
+
+        HttpApiResponse mergePatchResponse =
+                api.patch(
+                        patchRequest(
+                                path,
+                                "{\"title\":\"Merged\"}",
+                                EntityPatchUpdateStyle.JSON_MERGE_PATCH_RFC7396.mediaType()));
+        HttpApiResponse jsonPatchResponse =
+                api.patch(
+                        patchRequest(
+                                path,
+                                "[{\"op\":\"replace\",\"path\":\"/title\",\"value\":\"Patched\"}]",
+                                EntityPatchUpdateStyle.JSON_PATCH_RFC6902.mediaType()));
+
+        Assertions.assertEquals(200, mergePatchResponse.getStatusCode());
+        Assertions.assertEquals(200, jsonPatchResponse.getStatusCode());
+        Assertions.assertEquals("Patched", currentThingTitle(thingifier, existing));
+    }
+
+    @Test
     public void aDeleteRequestWillCreateNewSessionWithDatabase() {
 
         Thingifier thingifier = getTestThingifier();
@@ -317,9 +375,26 @@ public class ThingifierHttpApiRequestHandlingTest {
                 .create(EntityInstanceDraft.forEntity(thing).withField("title", title));
     }
 
+    private String currentThingTitle(final Thingifier thingifier, final EntityInstance instance) {
+        return thingifier
+                .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                .entityQueries()
+                .findByQueryIdentifier(
+                        thingifier.getDefinitionNamed("thing"), instance.getPrimaryKeyValue())
+                .getFieldValue("title")
+                .asString();
+    }
+
     private HttpApiRequest jsonRequest(final String path, final String body) {
         return new HttpApiRequest(path)
                 .setHeaders(Map.of("content-type", "application/json"))
+                .setBody(body);
+    }
+
+    private HttpApiRequest patchRequest(
+            final String path, final String body, final String contentType) {
+        return new HttpApiRequest(path)
+                .setHeaders(Map.of("content-type", contentType))
                 .setBody(body);
     }
 }
