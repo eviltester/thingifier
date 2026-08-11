@@ -346,6 +346,26 @@ public class RestApiQueryHandlerTest {
     }
 
     @Test
+    public void jsonPathQueryCanSelectEqualProjectedResourcesByIdentity() {
+        Thingifier thingifier = todoThingifier();
+        EntityDefinition todo = thingifier.getDefinitionNamed("todo");
+        todo.defineView("PublicTodo").hideResponseFields("id");
+        thingifier.apiSpec().route("QUERY", "/todos").entityView("PublicTodo");
+        EntityInstance first = createTodo(thingifier, "Same", "false", "Same description");
+        EntityInstance second = createTodo(thingifier, "Same", "false", "Same description");
+
+        HttpApiResponse response =
+                new ThingifierHttpApi(thingifier).queryRequest(jsonPathQuery("todos", "$.todos"));
+
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals(2, response.apiResponse().getReturnedInstanceCollection().size());
+        Assertions.assertTrue(
+                response.apiResponse().getReturnedInstanceCollection().contains(first));
+        Assertions.assertTrue(
+                response.apiResponse().getReturnedInstanceCollection().contains(second));
+    }
+
+    @Test
     public void jsonPathQueryCanSelectCollectionArray() {
         Thingifier thingifier = todoThingifier();
         EntityInstance first = createTodo(thingifier, "First", "false", "One");
