@@ -31,8 +31,10 @@ public final class ThingifierHttpApi {
     public static final String ACCEPT_QUERY_HEADER = "Accept-Query";
     public static final String QUERY_CONTENT_TYPE = "application/x-www-form-urlencoded";
     public static final String JSONPATH_QUERY_CONTENT_TYPE = "application/jsonpath";
+    public static final List<String> SUPPORTED_QUERY_CONTENT_TYPES_LIST =
+            List.of(QUERY_CONTENT_TYPE, JSONPATH_QUERY_CONTENT_TYPE);
     public static final String SUPPORTED_QUERY_CONTENT_TYPES =
-            QUERY_CONTENT_TYPE + ", " + JSONPATH_QUERY_CONTENT_TYPE;
+            String.join(", ", SUPPORTED_QUERY_CONTENT_TYPES_LIST);
 
     private final Thingifier thingifier;
     private final JsonThing jsonThing;
