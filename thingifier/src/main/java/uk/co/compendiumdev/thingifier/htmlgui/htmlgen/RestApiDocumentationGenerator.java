@@ -528,11 +528,18 @@ public class RestApiDocumentationGenerator {
                     if (routingDefn.verb() == RoutingVerb.QUERY) {
                         output.append(
                                 paragraph(
-                                        "QUERY content uses <i>Content-Type: "
-                                                + ThingifierHttpApi.SUPPORTED_QUERY_CONTENT_TYPES
+                                        "QUERY form content uses <i>Content-Type: "
+                                                + ThingifierHttpApi.QUERY_CONTENT_TYPE
                                                 + "</i> with fields such as <i>title=Task&amp;"
                                                 + SortByFieldName.PARAMETER_NAME
                                                 + "=-id</i>."));
+                        output.append(
+                                paragraph(
+                                        "QUERY JSONPath content uses <i>Content-Type: "
+                                                + ThingifierHttpApi.JSONPATH_QUERY_CONTENT_TYPE
+                                                + "</i> with an expression such as <i>"
+                                                + jsonPathQueryExampleFor(routingDefn)
+                                                + "</i>."));
                     }
                 }
             }
@@ -965,6 +972,43 @@ public class RestApiDocumentationGenerator {
 
     private String acceptHeaderExample(final AcceptHeaderParser.ACCEPT_TYPE responseType) {
         return String.format("<i>Accept: %s</i>", responseType.mediaType());
+    }
+
+    private String jsonPathQueryExampleFor(final RoutingDefinition routingDefn) {
+        final EntityDefinition entity = routingDefn.getFilterableEntity();
+        if (entity == null) {
+            return "$[*]";
+        }
+
+        final String fieldName =
+                entity.getField("title") == null ? exampleFieldNameFor(entity) : "title";
+        return "$."
+                + entity.getPlural()
+                + "[?@."
+                + fieldName
+                + " == '"
+                + exampleValueFor(fieldName)
+                + "']";
+    }
+
+    private String exampleFieldNameFor(final EntityDefinition entity) {
+        final Field primaryKeyField = entity.getPrimaryKeyField();
+        if (primaryKeyField != null) {
+            return primaryKeyField.getName();
+        }
+
+        for (String fieldName : entity.getFieldNames()) {
+            return fieldName;
+        }
+
+        return "field";
+    }
+
+    private String exampleValueFor(final String fieldName) {
+        if ("title".equals(fieldName)) {
+            return "Task";
+        }
+        return "value";
     }
 
     private String paragraph(final String initialParagraph) {
