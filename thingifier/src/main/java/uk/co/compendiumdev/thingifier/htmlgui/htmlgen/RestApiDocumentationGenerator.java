@@ -983,11 +983,11 @@ public class RestApiDocumentationGenerator {
         final String fieldName =
                 entity.getField("title") == null ? exampleFieldNameFor(entity) : "title";
         return "$."
-                + entity.getPlural()
+                + escapeHtmlText(entity.getPlural())
                 + "[?@."
-                + fieldName
+                + escapeHtmlText(fieldName)
                 + " == '"
-                + exampleValueFor(fieldName)
+                + escapeHtmlText(exampleValueFor(fieldName))
                 + "']";
     }
 
