@@ -29,7 +29,11 @@ public class ThingifierApiDocumentationDefn {
     private String ogType = "";
     private String twitterCard = "";
     private String twitterSite = "";
-    private boolean showSwaggerUiLink = true;
+    private boolean createSwaggerUi = true;
+    private Boolean showSwaggerUiLink;
+    private boolean createScalarUi = true;
+    private Boolean showScalarUiLink;
+    private final ScalarUiConfig scalarUiConfig;
     private Map<String, HeaderMatch> customHeadersForRoutesThatDoNotMatch;
 
     // todo: convert internal documentation to use a ThingifierApiDefn rather than a direct
@@ -40,6 +44,7 @@ public class ThingifierApiDocumentationDefn {
         this.servers = new ArrayList<>();
         this.version = "1.0.0";
         this.thingifier = new Thingifier(); // basically an empty thingifier
+        this.scalarUiConfig = new ScalarUiConfig();
         // todo: support optional swagger info
         // terms of service, contact, license, extensions
         // https://swagger.io/specification/
@@ -195,12 +200,71 @@ public class ThingifierApiDocumentationDefn {
     }
 
     public boolean willShowSwaggerUiLink() {
-        return showSwaggerUiLink;
+        return createSwaggerUi && (showSwaggerUiLink == null || showSwaggerUiLink);
     }
 
     public ThingifierApiDocumentationDefn setShowSwaggerUiLink(final boolean showSwaggerUiLink) {
         this.showSwaggerUiLink = showSwaggerUiLink;
         return this;
+    }
+
+    public boolean willCreateSwaggerUi() {
+        return createSwaggerUi;
+    }
+
+    public ThingifierApiDocumentationDefn setCreateSwaggerUi(final boolean createSwaggerUi) {
+        this.createSwaggerUi = createSwaggerUi;
+        return this;
+    }
+
+    public boolean willShowScalarUiLink() {
+        return createScalarUi && (showScalarUiLink == null || showScalarUiLink);
+    }
+
+    public ThingifierApiDocumentationDefn setShowScalarUiLink(final boolean showScalarUiLink) {
+        this.showScalarUiLink = showScalarUiLink;
+        return this;
+    }
+
+    public boolean willCreateScalarUi() {
+        return createScalarUi;
+    }
+
+    public ThingifierApiDocumentationDefn setCreateScalarUi(final boolean createScalarUi) {
+        this.createScalarUi = createScalarUi;
+        return this;
+    }
+
+    public ScalarUiConfig scalarUi() {
+        return scalarUiConfig;
+    }
+
+    public static final class ScalarUiConfig {
+        private boolean hideClientButton;
+        private boolean showDeveloperTools;
+
+        private ScalarUiConfig() {
+            hideClientButton = false;
+            showDeveloperTools = false;
+        }
+
+        public ScalarUiConfig hideClientButton(final boolean hideClientButton) {
+            this.hideClientButton = hideClientButton;
+            return this;
+        }
+
+        public ScalarUiConfig showDeveloperTools(final boolean showDeveloperTools) {
+            this.showDeveloperTools = showDeveloperTools;
+            return this;
+        }
+
+        public boolean willHideClientButton() {
+            return hideClientButton;
+        }
+
+        public boolean willShowDeveloperTools() {
+            return showDeveloperTools;
+        }
     }
 
     /**

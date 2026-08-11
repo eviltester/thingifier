@@ -18,7 +18,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.F
 class RestApiDocumentationGeneratorTest {
 
     @Test
-    void apiDocumentationShowsSwaggerUiLinkByDefault() {
+    void apiDocumentationShowsApiUiLinksByDefault() {
         final Thingifier thingifier = new Thingifier();
         final ThingifierApiDocumentationDefn apiDocDefn = new ThingifierApiDocumentationDefn();
 
@@ -33,6 +33,8 @@ class RestApiDocumentationGeneratorTest {
 
         Assertions.assertTrue(docs.contains("href='/mirror/docs/swagger-ui'"));
         Assertions.assertTrue(docs.contains("Open Swagger UI"));
+        Assertions.assertTrue(docs.contains("href='/mirror/docs/scalar-ui'"));
+        Assertions.assertTrue(docs.contains("Open Scalar UI"));
         Assertions.assertTrue(docs.contains("<li>OpenAPI v 3.0 JSON"));
         Assertions.assertTrue(docs.contains("<li>OpenAPI v 3.1 JSON"));
         Assertions.assertTrue(docs.contains("<li>OpenAPI v 3.2 JSON"));
@@ -74,6 +76,68 @@ class RestApiDocumentationGeneratorTest {
         Assertions.assertFalse(docs.contains("href='/mirror/docs/swagger-ui'"));
         Assertions.assertFalse(docs.contains("Open Swagger UI"));
         Assertions.assertFalse(docs.contains("href='/mirror/docs/swagger'"));
+        Assertions.assertTrue(docs.contains("<li>OpenAPI v 3.0 JSON"));
+    }
+
+    @Test
+    void apiDocumentationCanHideScalarUiLink() {
+        final Thingifier thingifier = new Thingifier();
+        final ThingifierApiDocumentationDefn apiDocDefn =
+                new ThingifierApiDocumentationDefn().setShowScalarUiLink(false);
+
+        final String docs =
+                new RestApiDocumentationGenerator(thingifier, new DefaultGUIHTML())
+                        .getApiDocumentation(
+                                new ApiRoutingDefinition(),
+                                List.of(),
+                                apiDocDefn,
+                                "/mirror",
+                                "https://example.com/mirror/docs");
+
+        Assertions.assertFalse(docs.contains("href='/mirror/docs/scalar-ui'"));
+        Assertions.assertFalse(docs.contains("Open Scalar UI"));
+        Assertions.assertTrue(docs.contains("href='/mirror/docs/swagger-ui'"));
+        Assertions.assertTrue(docs.contains("<li>OpenAPI v 3.0 JSON"));
+    }
+
+    @Test
+    void apiDocumentationHidesSwaggerUiLinkByDefaultWhenSwaggerUiIsNotCreated() {
+        final Thingifier thingifier = new Thingifier();
+        final ThingifierApiDocumentationDefn apiDocDefn =
+                new ThingifierApiDocumentationDefn().setCreateSwaggerUi(false);
+
+        final String docs =
+                new RestApiDocumentationGenerator(thingifier, new DefaultGUIHTML())
+                        .getApiDocumentation(
+                                new ApiRoutingDefinition(),
+                                List.of(),
+                                apiDocDefn,
+                                "/mirror",
+                                "https://example.com/mirror/docs");
+
+        Assertions.assertFalse(docs.contains("href='/mirror/docs/swagger-ui'"));
+        Assertions.assertFalse(docs.contains("Open Swagger UI"));
+        Assertions.assertTrue(docs.contains("<li>OpenAPI v 3.0 JSON"));
+    }
+
+    @Test
+    void apiDocumentationHidesScalarUiLinkByDefaultWhenScalarUiIsNotCreated() {
+        final Thingifier thingifier = new Thingifier();
+        final ThingifierApiDocumentationDefn apiDocDefn =
+                new ThingifierApiDocumentationDefn().setCreateScalarUi(false);
+
+        final String docs =
+                new RestApiDocumentationGenerator(thingifier, new DefaultGUIHTML())
+                        .getApiDocumentation(
+                                new ApiRoutingDefinition(),
+                                List.of(),
+                                apiDocDefn,
+                                "/mirror",
+                                "https://example.com/mirror/docs");
+
+        Assertions.assertFalse(docs.contains("href='/mirror/docs/scalar-ui'"));
+        Assertions.assertFalse(docs.contains("Open Scalar UI"));
+        Assertions.assertTrue(docs.contains("href='/mirror/docs/swagger-ui'"));
         Assertions.assertTrue(docs.contains("<li>OpenAPI v 3.0 JSON"));
     }
 
