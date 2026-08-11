@@ -83,8 +83,8 @@ class ThingifierHttpApiAdditionalRepresentationsTest {
                 "text/html",
                 "<table><thead><tr><th>id</th><th>title</th></tr></thead>"
                         + "<tbody><tr><td>1</td><td>Task</td></tr></tbody></table>");
-        expectedBodies.put("application/x-ndjson", "{\"id\":1,\"title\":\"Task\"}");
-        expectedBodies.put("application/jsonl", "{\"id\":1,\"title\":\"Task\"}");
+        expectedBodies.put("application/x-ndjson", "{\"id\":1,\"title\":\"Task\"}\n");
+        expectedBodies.put("application/jsonl", "{\"id\":1,\"title\":\"Task\"}\n");
         expectedBodies.put("application/json-seq", "\u001E{\"id\":1,\"title\":\"Task\"}\n");
         expectedBodies.put("text/tab-separated-values", "id\ttitle\n1\tTask");
         return expectedBodies;

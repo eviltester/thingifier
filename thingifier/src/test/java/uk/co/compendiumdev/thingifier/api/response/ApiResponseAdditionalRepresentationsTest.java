@@ -105,7 +105,7 @@ class ApiResponseAdditionalRepresentationsTest {
                 "{\"id\":1,\"title\":\"One\",\"notes\":\"Simple\","
                         + "\"metadata\":{\"tag\":\"ignored\"}}\n"
                         + "{\"id\":2,\"title\":\"Two\",\"notes\":\"More\","
-                        + "\"metadata\":{\"tag\":\"ignored\"}}",
+                        + "\"metadata\":{\"tag\":\"ignored\"}}\n",
                 new ApiResponseAsJsonLines(response, jsonThing).getJsonLines());
     }
 
@@ -149,7 +149,7 @@ class ApiResponseAdditionalRepresentationsTest {
         Assertions.assertEquals(
                 "<ul><li>&lt;bad&gt;</li></ul>", new ApiResponseAsHtml(response).getHtml());
         Assertions.assertEquals(
-                "{\"errorMessage\":\"<bad>\"}",
+                "{\"errorMessage\":\"<bad>\"}\n",
                 new ApiResponseAsJsonLines(response, jsonThing).getJsonLines());
         Assertions.assertEquals(
                 "errorMessage\n<bad>", new ApiResponseAsDelimitedText(response, ',').getText());
