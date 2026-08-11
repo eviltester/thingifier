@@ -655,12 +655,26 @@ public class Swaggerizer {
     private static ObjectSchema asRequiredResponseObjectSchema(
             EntityDefinition objectSchemaDefinition) {
         ObjectSchema object = asObjectSchema(objectSchemaDefinition);
-        if (object.getProperties() != null) {
-            for (String propertyName : object.getProperties().keySet()) {
-                object.addRequiredItem(propertyName);
+        if (object.getProperties() == null) {
+            return object;
+        }
+        for (String propertyName : objectSchemaDefinition.getFieldNames()) {
+            if (!object.getProperties().containsKey(propertyName)) {
+                continue;
             }
+            Field field = objectSchemaDefinition.getField(propertyName);
+            if (!isAlwaysRenderedResponseField(field)) {
+                continue;
+            }
+            object.addRequiredItem(propertyName);
         }
         return object;
+    }
+
+    private static boolean isAlwaysRenderedResponseField(final Field field) {
+        return field.isMandatory()
+                || field.hasDefaultValue()
+                || field.getType().getDefault() != null;
     }
 
     private static ObjectSchema asObjectSchema(EntityDefinition objectSchemaDefinition) {
