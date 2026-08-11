@@ -567,26 +567,28 @@ public class WriteMethodPolicyTest {
                                 "projects/" + project.getPrimaryKeyValue() + "/tasks",
                                 "{\"title\":\"New\"}")
                         .getStatusCode());
-        Assertions.assertEquals(
-                405,
+        ApiResponse blockedConnectExisting =
                 post(
-                                createOnly,
-                                "projects/" + project.getPrimaryKeyValue() + "/tasks",
-                                "{\"id\":" + task.getPrimaryKeyValue() + "}")
-                        .getStatusCode());
+                        createOnly,
+                        "projects/" + project.getPrimaryKeyValue() + "/tasks",
+                        "{\"id\":" + task.getPrimaryKeyValue() + "}");
+        Assertions.assertEquals(405, blockedConnectExisting.getStatusCode());
+        Assertions.assertEquals(
+                "OPTIONS, GET, HEAD, POST, QUERY", blockedConnectExisting.getHeaderValue("Allow"));
 
         Thingifier connectOnly = relationshipModel();
         connectOnly.apiConfig().writeMethods().relationships().postCan(CONNECT_EXISTING);
         EntityInstance otherProject = createProject(connectOnly, "Project");
         EntityInstance otherTask = createTask(connectOnly, "Existing");
 
-        Assertions.assertEquals(
-                405,
+        ApiResponse blockedCreateAndConnect =
                 post(
-                                connectOnly,
-                                "projects/" + otherProject.getPrimaryKeyValue() + "/tasks",
-                                "{\"title\":\"New\"}")
-                        .getStatusCode());
+                        connectOnly,
+                        "projects/" + otherProject.getPrimaryKeyValue() + "/tasks",
+                        "{\"title\":\"New\"}");
+        Assertions.assertEquals(405, blockedCreateAndConnect.getStatusCode());
+        Assertions.assertEquals(
+                "OPTIONS, GET, HEAD, POST, QUERY", blockedCreateAndConnect.getHeaderValue("Allow"));
         Assertions.assertEquals(
                 201,
                 post(

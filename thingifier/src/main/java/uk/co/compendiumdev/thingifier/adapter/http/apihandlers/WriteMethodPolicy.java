@@ -370,6 +370,10 @@ public final class WriteMethodPolicy {
             final ThingRoute route,
             final RoutingVerb blockedVerb,
             final RelationshipWriteOperation blockedOperation) {
+        if (verb == RoutingVerb.POST && route instanceof RelationshipCollectionRoute) {
+            return !relationshipOperationsFor(verb, route).isEmpty();
+        }
+
         RelationshipWriteOperation operation =
                 verb == blockedVerb
                         ? blockedOperation
