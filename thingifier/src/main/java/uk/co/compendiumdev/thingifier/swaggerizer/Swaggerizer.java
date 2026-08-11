@@ -349,8 +349,8 @@ public class Swaggerizer {
             components.addSchemas("create_" + objectSchemaDefinition.getName(), createObject);
 
             // add list response for entity plural
-            ObjectSchema arrayObject = asArrayObjectSchema(objectSchemaDefinition);
-            components.addSchemas(objectSchemaDefinition.getPlural(), arrayObject);
+            ObjectSchema collectionObject = asArrayObjectSchema(objectSchemaDefinition);
+            components.addSchemas(objectSchemaDefinition.getPlural(), collectionObject);
 
             for (EntityViewDefinition view : objectSchemaDefinition.getViews()) {
                 ObjectSchema viewObject = asResponseViewObjectSchema(view);
