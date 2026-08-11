@@ -225,12 +225,18 @@ class ThingifierApiSpecTest {
                                 path,
                                 "[{\"op\":\"copy\",\"from\":\"/forbidden\",\"path\":\"/name\"}]",
                                 JSON_PATCH_RFC6902.mediaType()));
+        final HttpApiResponse jsonPatchWithNullBodyResponse =
+                api.patch(patchRequestWithNullBody(path, JSON_PATCH_RFC6902.mediaType()));
 
         Assertions.assertEquals(422, partialJsonResponse.getStatusCode());
         Assertions.assertEquals(422, mergePatchResponse.getStatusCode());
         Assertions.assertEquals(422, jsonPatchPathResponse.getStatusCode());
         Assertions.assertEquals(422, jsonPatchFromResponse.getStatusCode());
+        Assertions.assertEquals(400, jsonPatchWithNullBodyResponse.getStatusCode());
         Assertions.assertTrue(partialJsonResponse.getBody().contains("forbidden"));
+        Assertions.assertTrue(
+                jsonPatchWithNullBodyResponse.getBody().contains("JSON Patch"),
+                jsonPatchWithNullBodyResponse.getBody());
         Assertions.assertEquals("original", currentItemField(thingifier, item, "forbidden"));
         Assertions.assertEquals("visible", currentItemField(thingifier, item, "name"));
 
@@ -319,6 +325,13 @@ class ThingifierApiSpecTest {
                 .addHeader("Content-Type", contentType)
                 .addHeader("Accept", "application/json")
                 .setBody(body);
+    }
+
+    private HttpApiRequest patchRequestWithNullBody(final String path, final String contentType) {
+        return new HttpApiRequest(path)
+                .addHeader("Content-Type", contentType)
+                .addHeader("Accept", "application/json")
+                .setBody(null);
     }
 
     private RoutingDefinition route(

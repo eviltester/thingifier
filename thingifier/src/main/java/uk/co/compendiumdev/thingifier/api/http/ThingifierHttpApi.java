@@ -324,7 +324,7 @@ public final class ThingifierHttpApi {
         final JsonNode operations;
         try {
             operations = JsonBodyValueConverter.readTree(rawBody);
-        } catch (JsonProcessingException e) {
+        } catch (JsonProcessingException | IllegalArgumentException e) {
             return inputFields;
         }
 
