@@ -254,6 +254,30 @@ class RestApiDocumentationGeneratorTest {
     }
 
     @Test
+    void apiDocumentationEscapesJsonPathQueryExamples() {
+        final Thingifier thingifier = new Thingifier();
+        final EntityDefinition item = thingifier.defineThing("item", "items<script>&'");
+        item.addAsPrimaryKeyField(Field.is("id<bad&'", FieldType.AUTO_INCREMENT));
+        item.addField(Field.is("name", FieldType.STRING));
+
+        final String docs =
+                new RestApiDocumentationGenerator(thingifier, new DefaultGUIHTML())
+                        .getApiDocumentation(
+                                new ApiRoutingDefinitionDocGenerator(thingifier).generate("/api"),
+                                List.of(),
+                                new ThingifierApiDocumentationDefn(),
+                                "/api",
+                                "https://example.com/api/docs");
+
+        final String paragraph = paragraphContaining(docs, "QUERY JSONPath content uses");
+
+        Assertions.assertTrue(
+                paragraph.contains(
+                        "$.items&lt;script&gt;&amp;&#39;[?@.id&lt;bad&amp;&#39; == 'value']"));
+        Assertions.assertFalse(paragraph.contains("$.items<script>&'[?@.id<bad&' == 'value']"));
+    }
+
+    @Test
     void apiDocumentationOmitsPagingWhenDisabled() {
         final Thingifier thingifier = new Thingifier();
         thingifier.apiConfig().forParams().setAllowPagingThroughUrlParams(false);
@@ -353,5 +377,13 @@ class RestApiDocumentationGeneratorTest {
         Assertions.assertTrue(docs.contains("<strong>GET /api/tasks</strong>"));
         Assertions.assertFalse(docs.contains("<strong>POST /api/tasks</strong>"));
         Assertions.assertFalse(docs.contains("<strong>PUT /api/tasks/:id</strong>"));
+    }
+
+    private String paragraphContaining(final String docs, final String expectedText) {
+        final int paragraphStart = docs.indexOf(expectedText);
+        Assertions.assertTrue(paragraphStart >= 0);
+        final int paragraphEnd = docs.indexOf("</p>", paragraphStart);
+        Assertions.assertTrue(paragraphEnd > paragraphStart);
+        return docs.substring(paragraphStart, paragraphEnd);
     }
 }
