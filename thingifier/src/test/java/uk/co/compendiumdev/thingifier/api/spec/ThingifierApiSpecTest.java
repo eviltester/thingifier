@@ -1,5 +1,9 @@
 package uk.co.compendiumdev.thingifier.api.spec;
 
+import static uk.co.compendiumdev.thingifier.apiconfig.EntityPatchUpdateStyle.JSON_MERGE_PATCH_RFC7396;
+import static uk.co.compendiumdev.thingifier.apiconfig.EntityPatchUpdateStyle.JSON_PATCH_RFC6902;
+import static uk.co.compendiumdev.thingifier.apiconfig.EntityPatchUpdateStyle.PARTIAL_JSON_UPDATE;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.Thingifier;
@@ -11,10 +15,13 @@ import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiResponse;
 import uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
+import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.Cardinality;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 
 class ThingifierApiSpecTest {
 
@@ -177,6 +184,68 @@ class ThingifierApiSpecTest {
         Assertions.assertTrue(disallowedResponse.getBody().contains("forbidden"));
     }
 
+    @Test
+    void patchRequestEntityViewsRejectDisallowedInputFieldsAtRuntime() {
+        final Thingifier thingifier = viewModel();
+        thingifier.apiConfig().setFrom(new ThingifierApiConfig("/api"));
+        thingifier
+                .apiConfig()
+                .writeMethods()
+                .entities()
+                .patchCan(PARTIAL_JSON_UPDATE, JSON_MERGE_PATCH_RFC7396, JSON_PATCH_RFC6902);
+        thingifier
+                .apiSpec()
+                .route(RoutingVerb.PATCH, "/api/items/{id}")
+                .requestEntityView("PublicItem");
+        final EntityInstance item = createItem(thingifier, "visible", "stored", "original");
+        final ThingifierHttpApi api = new ThingifierHttpApi(thingifier);
+        final String path = "/api/items/" + item.getPrimaryKeyValue();
+
+        final HttpApiResponse partialJsonResponse =
+                api.patch(
+                        patchRequest(
+                                path,
+                                "{\"forbidden\":\"partial\"}",
+                                PARTIAL_JSON_UPDATE.mediaType()));
+        final HttpApiResponse mergePatchResponse =
+                api.patch(
+                        patchRequest(
+                                path,
+                                "{\"forbidden\":\"merge\"}",
+                                JSON_MERGE_PATCH_RFC7396.mediaType()));
+        final HttpApiResponse jsonPatchPathResponse =
+                api.patch(
+                        patchRequest(
+                                path,
+                                "[{\"op\":\"replace\",\"path\":\"/forbidden\",\"value\":\"json patch\"}]",
+                                JSON_PATCH_RFC6902.mediaType()));
+        final HttpApiResponse jsonPatchFromResponse =
+                api.patch(
+                        patchRequest(
+                                path,
+                                "[{\"op\":\"copy\",\"from\":\"/forbidden\",\"path\":\"/name\"}]",
+                                JSON_PATCH_RFC6902.mediaType()));
+
+        Assertions.assertEquals(422, partialJsonResponse.getStatusCode());
+        Assertions.assertEquals(422, mergePatchResponse.getStatusCode());
+        Assertions.assertEquals(422, jsonPatchPathResponse.getStatusCode());
+        Assertions.assertEquals(422, jsonPatchFromResponse.getStatusCode());
+        Assertions.assertTrue(partialJsonResponse.getBody().contains("forbidden"));
+        Assertions.assertEquals("original", currentItemField(thingifier, item, "forbidden"));
+        Assertions.assertEquals("visible", currentItemField(thingifier, item, "name"));
+
+        final HttpApiResponse allowedMergePatchResponse =
+                api.patch(
+                        patchRequest(
+                                path,
+                                "{\"name\":\"updated\"}",
+                                JSON_MERGE_PATCH_RFC7396.mediaType()));
+
+        Assertions.assertEquals(200, allowedMergePatchResponse.getStatusCode());
+        Assertions.assertEquals("updated", currentItemField(thingifier, item, "name"));
+        Assertions.assertEquals("original", currentItemField(thingifier, item, "forbidden"));
+    }
+
     private Thingifier model() {
         Thingifier thingifier = new Thingifier();
 
@@ -209,10 +278,45 @@ class ThingifierApiSpecTest {
         return thingifier;
     }
 
+    private EntityInstance createItem(
+            final Thingifier thingifier,
+            final String name,
+            final String secret,
+            final String forbidden) {
+        final EntityDefinition item = thingifier.getDefinitionNamed("item");
+        return thingifier
+                .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                .entities()
+                .create(
+                        EntityInstanceDraft.forEntity(item)
+                                .withField("name", name)
+                                .withField("secret", secret)
+                                .withField("forbidden", forbidden));
+    }
+
+    private String currentItemField(
+            final Thingifier thingifier, final EntityInstance item, final String fieldName) {
+        return thingifier
+                .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                .entityQueries()
+                .findByQueryIdentifier(
+                        thingifier.getDefinitionNamed("item"), item.getPrimaryKeyValue())
+                .getFieldValue(fieldName)
+                .asString();
+    }
+
     private HttpApiRequest jsonRequest(final String path, final String body) {
         return new HttpApiRequest(path)
                 .setVerb("POST")
                 .addHeader("Content-Type", "application/json")
+                .addHeader("Accept", "application/json")
+                .setBody(body);
+    }
+
+    private HttpApiRequest patchRequest(
+            final String path, final String body, final String contentType) {
+        return new HttpApiRequest(path)
+                .addHeader("Content-Type", contentType)
                 .addHeader("Accept", "application/json")
                 .setBody(body);
     }
