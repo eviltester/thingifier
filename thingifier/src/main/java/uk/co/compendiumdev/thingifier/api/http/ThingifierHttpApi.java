@@ -1,5 +1,7 @@
 package uk.co.compendiumdev.thingifier.api.http;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,8 +19,11 @@ import uk.co.compendiumdev.thingifier.adapter.http.messagehooks.HttpApiResponseH
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
 import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonThing;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.ApiBodyField;
+import uk.co.compendiumdev.thingifier.api.http.bodyparser.ApiBodyFields;
+import uk.co.compendiumdev.thingifier.api.http.bodyparser.JsonBodyValueConverter;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.api.spec.ThingifierApiRouteRule;
+import uk.co.compendiumdev.thingifier.apiconfig.EntityPatchUpdateStyle;
 import uk.co.compendiumdev.thingifier.application.schema.RelationshipSpec;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityViewDefinition;
@@ -227,7 +232,7 @@ public final class ThingifierHttpApi {
 
     private HttpApiResponse validateEntityViewInput(
             final HttpApiRequest request, final HttpVerb verb) {
-        if (verb != HttpVerb.POST && verb != HttpVerb.PUT) {
+        if (verb != HttpVerb.POST && verb != HttpVerb.PUT && verb != HttpVerb.PATCH) {
             return null;
         }
 
@@ -256,10 +261,7 @@ public final class ThingifierHttpApi {
 
         final EntityViewDefinition view = entity.getViewNamed(viewName);
         final List<String> disallowedFields = new ArrayList<>();
-        for (ApiBodyField field :
-                ApiRequestEnvelope.from(request, verb, thingifier.getThingNames())
-                        .bodyFields()
-                        .topLevelFields()) {
+        for (ApiBodyField field : entityViewInputFields(request, verb)) {
             if (entity.hasFieldNameDefined(field.name()) && !view.isInputAllowed(field.name())) {
                 disallowedFields.add(field.name());
             }
@@ -278,6 +280,110 @@ public final class ThingifierHttpApi {
                                 viewName, String.join(", ", disallowedFields))),
                 jsonThing,
                 thingifier.apiConfig());
+    }
+
+    private List<ApiBodyField> entityViewInputFields(
+            final HttpApiRequest request, final HttpVerb verb) {
+        if (verb == HttpVerb.PATCH) {
+            return patchInputFields(request);
+        }
+
+        return ApiRequestEnvelope.from(request, verb, thingifier.getThingNames())
+                .bodyFields()
+                .topLevelFields();
+    }
+
+    private List<ApiBodyField> patchInputFields(final HttpApiRequest request) {
+        final Optional<EntityPatchUpdateStyle> style =
+                EntityPatchUpdateStyle.fromContentType(request.getContentTypeHeader());
+        if (style.isEmpty()) {
+            return List.of();
+        }
+
+        if (style.get() == EntityPatchUpdateStyle.JSON_PATCH_RFC6902) {
+            return jsonPatchInputFields(request.getBody());
+        }
+
+        return objectPatchInputFields(request.getBody());
+    }
+
+    private List<ApiBodyField> objectPatchInputFields(final String rawBody) {
+        try {
+            final JsonNode document = JsonBodyValueConverter.readTree(rawBody);
+            if (document == null || !document.isObject()) {
+                return List.of();
+            }
+            return bodyFieldsForObject(document);
+        } catch (JsonProcessingException | IllegalArgumentException e) {
+            return List.of();
+        }
+    }
+
+    private List<ApiBodyField> jsonPatchInputFields(final String rawBody) {
+        final List<ApiBodyField> inputFields = new ArrayList<>();
+        final JsonNode operations;
+        try {
+            operations = JsonBodyValueConverter.readTree(rawBody);
+        } catch (JsonProcessingException e) {
+            return inputFields;
+        }
+
+        if (operations == null || !operations.isArray()) {
+            return inputFields;
+        }
+
+        for (JsonNode operation : operations) {
+            if (!operation.isObject()) {
+                continue;
+            }
+
+            addJsonPointerTopLevelField(inputFields, operation.get("path"));
+            addJsonPointerTopLevelField(inputFields, operation.get("from"));
+            addRootReplacementFields(inputFields, operation);
+        }
+
+        return inputFields;
+    }
+
+    private void addRootReplacementFields(
+            final List<ApiBodyField> inputFields, final JsonNode operation) {
+        final JsonNode path = operation.get("path");
+        final JsonNode value = operation.get("value");
+        if (path != null
+                && path.isTextual()
+                && path.asText().isEmpty()
+                && value != null
+                && value.isObject()) {
+            inputFields.addAll(bodyFieldsForObject(value));
+        }
+    }
+
+    private List<ApiBodyField> bodyFieldsForObject(final JsonNode document) {
+        return ApiBodyFields.fromMap(JsonBodyValueConverter.objectNodeAsMap(document))
+                .topLevelFields();
+    }
+
+    private void addJsonPointerTopLevelField(
+            final List<ApiBodyField> inputFields, final JsonNode pointerNode) {
+        if (pointerNode == null || !pointerNode.isTextual()) {
+            return;
+        }
+
+        final String fieldName = jsonPointerTopLevelFieldName(pointerNode.asText());
+        if (fieldName != null) {
+            inputFields.add(new ApiBodyField(fieldName, ""));
+        }
+    }
+
+    private String jsonPointerTopLevelFieldName(final String pointer) {
+        if (pointer == null || pointer.isEmpty() || !pointer.startsWith("/")) {
+            return null;
+        }
+
+        final int nextSeparator = pointer.indexOf("/", 1);
+        final String escapedToken =
+                nextSeparator == -1 ? pointer.substring(1) : pointer.substring(1, nextSeparator);
+        return escapedToken.replace("~1", "/").replace("~0", "~");
     }
 
     private void applyResponseEntityView(
