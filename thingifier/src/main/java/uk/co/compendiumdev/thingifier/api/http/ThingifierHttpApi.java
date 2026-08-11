@@ -2,6 +2,7 @@ package uk.co.compendiumdev.thingifier.api.http;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.flipkart.zjsonpatch.JsonPatch;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +28,7 @@ import uk.co.compendiumdev.thingifier.apiconfig.EntityPatchUpdateStyle;
 import uk.co.compendiumdev.thingifier.application.schema.RelationshipSpec;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityViewDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
 public final class ThingifierHttpApi {
 
@@ -261,7 +263,7 @@ public final class ThingifierHttpApi {
 
         final EntityViewDefinition view = entity.getViewNamed(viewName);
         final List<String> disallowedFields = new ArrayList<>();
-        for (ApiBodyField field : entityViewInputFields(request, verb)) {
+        for (ApiBodyField field : entityViewInputFields(request, verb, entity)) {
             if (entity.hasFieldNameDefined(field.name()) && !view.isInputAllowed(field.name())) {
                 disallowedFields.add(field.name());
             }
@@ -283,9 +285,9 @@ public final class ThingifierHttpApi {
     }
 
     private List<ApiBodyField> entityViewInputFields(
-            final HttpApiRequest request, final HttpVerb verb) {
+            final HttpApiRequest request, final HttpVerb verb, final EntityDefinition entity) {
         if (verb == HttpVerb.PATCH) {
-            return patchInputFields(request);
+            return patchInputFields(request, entity);
         }
 
         return ApiRequestEnvelope.from(request, verb, thingifier.getThingNames())
@@ -293,7 +295,8 @@ public final class ThingifierHttpApi {
                 .topLevelFields();
     }
 
-    private List<ApiBodyField> patchInputFields(final HttpApiRequest request) {
+    private List<ApiBodyField> patchInputFields(
+            final HttpApiRequest request, final EntityDefinition entity) {
         final Optional<EntityPatchUpdateStyle> style =
                 EntityPatchUpdateStyle.fromContentType(request.getContentTypeHeader());
         if (style.isEmpty()) {
@@ -301,7 +304,7 @@ public final class ThingifierHttpApi {
         }
 
         if (style.get() == EntityPatchUpdateStyle.JSON_PATCH_RFC6902) {
-            return jsonPatchInputFields(request.getBody());
+            return jsonPatchInputFields(request, entity);
         }
 
         return objectPatchInputFields(request.getBody());
@@ -319,11 +322,12 @@ public final class ThingifierHttpApi {
         }
     }
 
-    private List<ApiBodyField> jsonPatchInputFields(final String rawBody) {
+    private List<ApiBodyField> jsonPatchInputFields(
+            final HttpApiRequest request, final EntityDefinition entity) {
         final List<ApiBodyField> inputFields = new ArrayList<>();
         final JsonNode operations;
         try {
-            operations = JsonBodyValueConverter.readTree(rawBody);
+            operations = JsonBodyValueConverter.readTree(request.getBody());
         } catch (JsonProcessingException | IllegalArgumentException e) {
             return inputFields;
         }
@@ -341,6 +345,8 @@ public final class ThingifierHttpApi {
             addJsonPointerTopLevelField(inputFields, operation.get("from"));
             addRootReplacementFields(inputFields, operation);
         }
+
+        rootResultFieldsForJsonPatch(request, entity, operations).ifPresent(inputFields::addAll);
 
         return inputFields;
     }
@@ -361,6 +367,80 @@ public final class ThingifierHttpApi {
     private List<ApiBodyField> bodyFieldsForObject(final JsonNode document) {
         return ApiBodyFields.fromMap(JsonBodyValueConverter.objectNodeAsMap(document))
                 .topLevelFields();
+    }
+
+    private Optional<List<ApiBodyField>> rootResultFieldsForJsonPatch(
+            final HttpApiRequest request,
+            final EntityDefinition entity,
+            final JsonNode operations) {
+        if (!hasRootReplacementOperation(operations)) {
+            return Optional.empty();
+        }
+
+        final EntityInstance instance = targetInstanceFor(request, entity);
+        if (instance == null) {
+            return Optional.empty();
+        }
+
+        try {
+            final JsonNode currentDocument =
+                    JsonBodyValueConverter.readTree(jsonThing.asJsonObject(instance).toString());
+            final JsonNode patchedDocument = JsonPatch.apply(operations, currentDocument);
+            if (patchedDocument != null && patchedDocument.isObject()) {
+                return Optional.of(bodyFieldsForObject(patchedDocument));
+            }
+        } catch (JsonProcessingException | RuntimeException e) {
+            return Optional.empty();
+        }
+
+        return Optional.empty();
+    }
+
+    private boolean hasRootReplacementOperation(final JsonNode operations) {
+        for (JsonNode operation : operations) {
+            if (!operation.isObject()) {
+                continue;
+            }
+
+            final JsonNode path = operation.get("path");
+            if (path != null
+                    && path.isTextual()
+                    && path.asText().isEmpty()
+                    && rootReplacementOperation(operation.get("op"))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean rootReplacementOperation(final JsonNode operationNode) {
+        if (operationNode == null || !operationNode.isTextual()) {
+            return false;
+        }
+
+        switch (operationNode.asText()) {
+            case "add":
+            case "replace":
+            case "copy":
+            case "move":
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    private EntityInstance targetInstanceFor(
+            final HttpApiRequest request, final EntityDefinition entity) {
+        final SchemaCatalog schema = new ThingifierSchemaCatalog(thingifier);
+        final ThingRoute route = new ThingRouteMapper(schema).map(request.getPath());
+        if (!(route instanceof InstanceRoute)) {
+            return null;
+        }
+
+        return ThingifierRequestContext.from(thingifier, request.getHeaders())
+                .store()
+                .entityQueries()
+                .findByQueryIdentifier(entity, ((InstanceRoute) route).identifier());
     }
 
     private void addJsonPointerTopLevelField(
