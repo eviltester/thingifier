@@ -7,8 +7,12 @@ import com.jayway.jsonpath.JsonPathException;
 import com.jayway.jsonpath.Option;
 import com.jayway.jsonpath.PathNotFoundException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonThing;
 import uk.co.compendiumdev.thingifier.api.http.ThingifierRequestContext;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
@@ -49,8 +53,8 @@ final class JsonPathQueryFilter {
         final Object document = configuration.jsonProvider().parse(json);
 
         try {
-            final List<ProjectedResource> projectedResources =
-                    projectedResources(
+            final ProjectedResourceLookup projectedResourceLookup =
+                    projectedResourceLookup(
                             configuration, document, entity, queryResults.getListEntityInstances());
 
             final Object rawSelected =
@@ -65,7 +69,7 @@ final class JsonPathQueryFilter {
 
                 final Map<?, ?> selectedResourceMap = (Map<?, ?>) selectedResource;
                 final EntityInstance matchingInstance =
-                        matchingInstanceFor(selectedResourceMap, projectedResources);
+                        projectedResourceLookup.matchingInstanceFor(selectedResourceMap);
                 if (matchingInstance == null) {
                     return unsafeSelection();
                 }
@@ -90,7 +94,7 @@ final class JsonPathQueryFilter {
         }
     }
 
-    private List<ProjectedResource> projectedResources(
+    private ProjectedResourceLookup projectedResourceLookup(
             final Configuration configuration,
             final Object document,
             final EntityDefinition entity,
@@ -103,34 +107,17 @@ final class JsonPathQueryFilter {
             throw new IllegalArgumentException("Projected resource count did not match instances");
         }
 
-        final List<ProjectedResource> projectedResources = new ArrayList<>();
+        final ProjectedResourceLookup projectedResourceLookup = new ProjectedResourceLookup();
 
         for (int index = 0; index < jsonResources.size(); index++) {
             final Object jsonResource = jsonResources.get(index);
             if (!(jsonResource instanceof Map<?, ?>)) {
                 throw new IllegalArgumentException("Projected resource was not an object");
             }
-            projectedResources.add(
-                    new ProjectedResource((Map<?, ?>) jsonResource, instances.get(index)));
+            projectedResourceLookup.add((Map<?, ?>) jsonResource, instances.get(index));
         }
 
-        return projectedResources;
-    }
-
-    private EntityInstance matchingInstanceFor(
-            final Map<?, ?> selectedResourceMap, final List<ProjectedResource> resources) {
-        for (ProjectedResource resource : resources) {
-            if (resource.isSameObjectAs(selectedResourceMap)) {
-                return resource.instance();
-            }
-        }
-
-        for (ProjectedResource resource : resources) {
-            if (resource.matches(selectedResourceMap)) {
-                return resource.instance();
-            }
-        }
-        return null;
+        return projectedResourceLookup;
     }
 
     private List<?> normalizeSelectedResources(
@@ -175,26 +162,32 @@ final class JsonPathQueryFilter {
                 422, "JSONPath query must select complete resource objects from the collection");
     }
 
-    private static final class ProjectedResource {
+    private static final class ProjectedResourceLookup {
 
-        private final Map<?, ?> resource;
-        private final EntityInstance instance;
+        private final IdentityHashMap<Map<?, ?>, EntityInstance> identityMatches =
+                new IdentityHashMap<>();
+        private final Map<Map<?, ?>, EntityInstance> equalMatches = new HashMap<>();
+        private final Set<Map<?, ?>> ambiguousEqualMatches = new HashSet<>();
 
-        private ProjectedResource(final Map<?, ?> resource, final EntityInstance instance) {
-            this.resource = resource;
-            this.instance = instance;
+        private void add(final Map<?, ?> resource, final EntityInstance instance) {
+            identityMatches.put(resource, instance);
+            if (equalMatches.containsKey(resource)) {
+                ambiguousEqualMatches.add(resource);
+                return;
+            }
+            equalMatches.put(resource, instance);
         }
 
-        private boolean isSameObjectAs(final Map<?, ?> selectedResource) {
-            return resource == selectedResource;
-        }
+        private EntityInstance matchingInstanceFor(final Map<?, ?> selectedResource) {
+            if (identityMatches.containsKey(selectedResource)) {
+                return identityMatches.get(selectedResource);
+            }
 
-        private boolean matches(final Map<?, ?> selectedResource) {
-            return resource.equals(selectedResource);
-        }
+            if (ambiguousEqualMatches.contains(selectedResource)) {
+                return null;
+            }
 
-        private EntityInstance instance() {
-            return instance;
+            return equalMatches.get(selectedResource);
         }
     }
 }
