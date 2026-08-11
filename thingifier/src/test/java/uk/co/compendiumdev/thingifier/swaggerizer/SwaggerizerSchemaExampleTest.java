@@ -17,7 +17,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.F
 class SwaggerizerSchemaExampleTest {
 
     @Test
-    void collectionResponseSchemasWrapTheArrayInThePluralNamedObject() {
+    void collectionResponseSchemasUseJsonWrapperAndXmlWrappedArray() {
         final Thingifier thingifier = new Thingifier();
         final EntityDefinition item = thingifier.defineThing("item", "items");
         item.addAsPrimaryKeyField(Field.is("id", FieldType.AUTO_INCREMENT).withExample("21"));
@@ -31,13 +31,14 @@ class SwaggerizerSchemaExampleTest {
 
         final JsonObject document =
                 JsonParser.parseString(new Swaggerizer(apiDefn).asJson()).getAsJsonObject();
-        final JsonObject itemsSchema =
-                document.getAsJsonObject("components")
-                        .getAsJsonObject("schemas")
-                        .getAsJsonObject("items");
+        final JsonObject schemas =
+                document.getAsJsonObject("components").getAsJsonObject("schemas");
+        final JsonObject itemsSchema = schemas.getAsJsonObject("items");
         final JsonObject itemsProperty =
                 itemsSchema.getAsJsonObject("properties").getAsJsonObject("items");
         final JsonObject itemSchema = itemsProperty.getAsJsonObject("items");
+        final JsonObject xmlItemsSchema = schemas.getAsJsonObject("items_xml_collection");
+        final JsonObject xmlItemSchema = xmlItemsSchema.getAsJsonObject("items");
 
         Assertions.assertEquals("object", itemsSchema.get("type").getAsString());
         Assertions.assertEquals("array", itemsProperty.get("type").getAsString());
@@ -59,6 +60,29 @@ class SwaggerizerSchemaExampleTest {
                         .getAsJsonObject("schema")
                         .get("$ref")
                         .getAsString());
+        Assertions.assertEquals(
+                "#/components/schemas/items_xml_collection",
+                document.getAsJsonObject("paths")
+                        .getAsJsonObject("/items")
+                        .getAsJsonObject("get")
+                        .getAsJsonObject("responses")
+                        .getAsJsonObject("200")
+                        .getAsJsonObject("content")
+                        .getAsJsonObject("application/xml")
+                        .getAsJsonObject("schema")
+                        .get("$ref")
+                        .getAsString());
+
+        Assertions.assertEquals("array", xmlItemsSchema.get("type").getAsString());
+        Assertions.assertEquals(
+                "items", xmlItemsSchema.getAsJsonObject("xml").get("name").getAsString());
+        Assertions.assertTrue(xmlItemsSchema.getAsJsonObject("xml").get("wrapped").getAsBoolean());
+        Assertions.assertEquals("object", xmlItemSchema.get("type").getAsString());
+        Assertions.assertEquals(
+                "item", xmlItemSchema.getAsJsonObject("xml").get("name").getAsString());
+        Assertions.assertEquals(
+                Set.of("id", "type", "isbn13", "price", "numberinstock"),
+                stringsIn(xmlItemSchema.getAsJsonArray("required")));
     }
 
     private Set<String> stringsIn(final JsonArray values) {

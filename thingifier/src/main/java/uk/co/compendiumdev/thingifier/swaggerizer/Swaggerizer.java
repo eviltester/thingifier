@@ -194,12 +194,17 @@ public class Swaggerizer {
                                         if (routingDefinitions.hasObjectSchemaNamed(
                                                 subroute.getReturnPayloadFor(
                                                         possibleStatus.value()))) {
-                                            String ref =
-                                                    "#/components/schemas/"
-                                                            + subroute.getReturnPayloadFor(
-                                                                    possibleStatus.value());
+                                            String payloadName =
+                                                    subroute.getReturnPayloadFor(
+                                                            possibleStatus.value());
+                                            String ref = "#/components/schemas/" + payloadName;
 
-                                            response.setContent(responseContentWith(ref));
+                                            response.setContent(
+                                                    responseContentWith(
+                                                            ref,
+                                                            xmlResponseRefFor(
+                                                                    routingDefinitions,
+                                                                    payloadName)));
                                         }
                                     }
 
@@ -349,8 +354,11 @@ public class Swaggerizer {
             components.addSchemas("create_" + objectSchemaDefinition.getName(), createObject);
 
             // add list response for entity plural
-            ObjectSchema collectionObject = asArrayObjectSchema(objectSchemaDefinition);
+            ObjectSchema collectionObject = asJsonCollectionObjectSchema(objectSchemaDefinition);
             components.addSchemas(objectSchemaDefinition.getPlural(), collectionObject);
+            ArraySchema xmlCollectionObject = asXmlCollectionArraySchema(objectSchemaDefinition);
+            components.addSchemas(
+                    xmlCollectionSchemaNameFor(objectSchemaDefinition), xmlCollectionObject);
 
             for (EntityViewDefinition view : objectSchemaDefinition.getViews()) {
                 ObjectSchema viewObject = asResponseViewObjectSchema(view);
@@ -362,6 +370,16 @@ public class Swaggerizer {
             }
         }
         return components;
+    }
+
+    private String xmlResponseRefFor(
+            final ApiRoutingDefinition routingDefinitions, final String payloadName) {
+        for (EntityDefinition definition : routingDefinitions.getObjectSchemas()) {
+            if (definition.getPlural().equals(payloadName)) {
+                return "#/components/schemas/" + xmlCollectionSchemaNameFor(definition);
+            }
+        }
+        return "#/components/schemas/" + payloadName;
     }
 
     private void addParamSchemeValidationFromField(Schema<String> schema, Field aField) {
@@ -562,16 +580,16 @@ public class Swaggerizer {
         }
     }
 
-    private Content responseContentWith(final String ref) {
-        Schema<String> object = new Schema<>();
-        MediaType schema = new MediaType();
-        schema.setSchema(object);
-        object.set$ref(ref);
-
+    private Content responseContentWith(final String jsonRef, final String xmlRef) {
         Content content = new Content();
         for (AcceptHeaderParser.ACCEPT_TYPE responseType :
                 AcceptHeaderParser.ACCEPT_TYPE.responseMediaTypes()) {
             if (responseType.usesComponentSchemaInDocumentation()) {
+                Schema<String> object = new Schema<>();
+                MediaType schema = new MediaType();
+                schema.setSchema(object);
+                object.set$ref(
+                        responseType == AcceptHeaderParser.ACCEPT_TYPE.XML ? xmlRef : jsonRef);
                 content.addMediaType(responseType.mediaType(), schema);
             } else {
                 MediaType textSchema = new MediaType();
@@ -600,7 +618,7 @@ public class Swaggerizer {
         components.addSecuritySchemes(name, securityScheme);
     }
 
-    private ObjectSchema asArrayObjectSchema(EntityDefinition objectSchemaDefinition) {
+    private ObjectSchema asJsonCollectionObjectSchema(EntityDefinition objectSchemaDefinition) {
 
         ObjectSchema collectionObject = new ObjectSchema();
         collectionObject.setDescription(objectSchemaDefinition.getPlural());
@@ -609,13 +627,29 @@ public class Swaggerizer {
         ArraySchema arrayObject = new ArraySchema();
         arrayObject.setItems(asRequiredResponseObjectSchema(objectSchemaDefinition));
 
-        XML xml = new XML();
-        xml.setWrapped(true);
-        collectionObject.setXml(xml);
         collectionObject.addProperties(objectSchemaDefinition.getPlural(), arrayObject);
         collectionObject.addRequiredItem(objectSchemaDefinition.getPlural());
 
         return collectionObject;
+    }
+
+    private ArraySchema asXmlCollectionArraySchema(EntityDefinition objectSchemaDefinition) {
+
+        ArraySchema collectionObject = new ArraySchema();
+        collectionObject.setDescription(objectSchemaDefinition.getPlural());
+        collectionObject.setTitle(objectSchemaDefinition.getPlural());
+        collectionObject.setItems(asRequiredResponseObjectSchema(objectSchemaDefinition));
+
+        XML xml = new XML();
+        xml.setName(objectSchemaDefinition.getPlural());
+        xml.setWrapped(true);
+        collectionObject.setXml(xml);
+
+        return collectionObject;
+    }
+
+    private static String xmlCollectionSchemaNameFor(EntityDefinition objectSchemaDefinition) {
+        return objectSchemaDefinition.getPlural() + "_xml_collection";
     }
 
     private static ObjectSchema asRequiredResponseObjectSchema(

@@ -56,6 +56,16 @@ class SwaggerizerEntityDescriptionTest {
                         .get("application/json")
                         .getSchema()
                         .get$ref());
+        Assertions.assertEquals(
+                "#/components/schemas/todos_xml_collection",
+                relationshipCollection
+                        .getGet()
+                        .getResponses()
+                        .get("200")
+                        .getContent()
+                        .get("application/xml")
+                        .getSchema()
+                        .get$ref());
         Assertions.assertNotNull(relationshipCollection.getPost().getRequestBody());
         Assertions.assertEquals(
                 "#/components/schemas/todo",
@@ -101,7 +111,7 @@ class SwaggerizerEntityDescriptionTest {
                 "#/components/schemas/projects",
                 content.get("application/json").getSchema().get$ref());
         Assertions.assertEquals(
-                "#/components/schemas/projects",
+                "#/components/schemas/projects_xml_collection",
                 content.get("application/xml").getSchema().get$ref());
         for (String mediaType :
                 List.of(
