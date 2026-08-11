@@ -233,8 +233,19 @@ class RestApiDocumentationGeneratorTest {
         Assertions.assertTrue(docs.contains("<i>_sortBy=-field</i>"));
         Assertions.assertTrue(docs.contains("<i>_sortBy=+field,-other</i>"));
         Assertions.assertTrue(docs.contains("/api/tasks?_sortBy=+id"));
+        Assertions.assertTrue(
+                docs.contains(
+                        "QUERY form content uses <i>Content-Type:"
+                                + " application/x-www-form-urlencoded</i>"));
         Assertions.assertTrue(docs.contains("title=Task&amp;_sortBy=-id"));
+        Assertions.assertTrue(
+                docs.contains(
+                        "QUERY JSONPath content uses <i>Content-Type: application/jsonpath</i>"));
+        Assertions.assertTrue(docs.contains("$.tasks[?@.title == 'Task']"));
         Assertions.assertFalse(docs.contains("&amp;sortBy=-id"));
+        Assertions.assertFalse(
+                docs.contains(
+                        "application/x-www-form-urlencoded, application/jsonpath</i> with fields"));
         Assertions.assertTrue(docs.contains("<i>_limit=limit</i>"));
         Assertions.assertTrue(docs.contains("<i>_offset=offset</i>"));
         Assertions.assertTrue(docs.contains("default limit is 10"));
