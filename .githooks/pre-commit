@@ -16,5 +16,5 @@ run_maven() {
   fi
 }
 
-echo "Running Spotless formatting check..."
-run_maven -q spotless:check
+echo "Running full Maven verification..."
+run_maven -B clean verify

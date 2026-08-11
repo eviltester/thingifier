@@ -138,7 +138,7 @@ public class CrudUiApiIT {
 
         CrudUiApiClient.ApiResult disconnected =
                 api.delete("/api/projects/" + projectId + "/tasks/" + todoId);
-        Assertions.assertEquals(200, disconnected.statusCode(), disconnected.body());
+        Assertions.assertEquals(204, disconnected.statusCode(), disconnected.body());
         Assertions.assertTrue(api.get("/api/todos/" + todoId).body().contains("Do this"));
     }
 

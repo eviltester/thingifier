@@ -56,7 +56,8 @@ mvn spotless:check
 ```
 
 The repository includes a pre-commit hook that runs the Spotless check before
-each commit. Enable the versioned hooks in a clone with:
+each commit as part of the full Maven verification. Enable the versioned hooks
+in a clone with:
 
 ```shell
 git config core.hooksPath .githooks
@@ -68,8 +69,20 @@ On Unix-like systems, if Git reports that the hook is not executable, run:
 chmod +x .githooks/pre-commit
 ```
 
-GitHub Actions also runs `mvn -B spotless:check` in both Java 17 and Java 21
-matrix builds before running the Maven tests.
+## Local Verification
+
+Run the same verification used by the pre-commit hook and CI with:
+
+```shell
+mvn -B clean verify
+```
+
+This runs unit tests, integration tests, Spotless, Checkstyle, and PMD.
+
+GitHub Actions runs on pushes to `master`, pull requests targeting `master`,
+and manual dispatch. It runs a fast `mvn -B spotless:check` formatting job and
+Java 17/21 `mvn -B "-Dspotless.check.skip=true" clean verify` jobs for compile,
+unit tests, integration tests, Checkstyle, and PMD.
     
 ## Details
 

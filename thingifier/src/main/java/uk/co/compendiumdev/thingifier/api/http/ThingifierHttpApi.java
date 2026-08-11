@@ -3,6 +3,7 @@ package uk.co.compendiumdev.thingifier.api.http;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.flipkart.zjsonpatch.JsonPatch;
+import com.flipkart.zjsonpatch.JsonPatchApplicationException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -389,7 +390,9 @@ public final class ThingifierHttpApi {
             if (patchedDocument != null && patchedDocument.isObject()) {
                 return Optional.of(bodyFieldsForObject(patchedDocument));
             }
-        } catch (JsonProcessingException | RuntimeException e) {
+        } catch (JsonProcessingException
+                | JsonPatchApplicationException
+                | IllegalArgumentException e) {
             return Optional.empty();
         }
 

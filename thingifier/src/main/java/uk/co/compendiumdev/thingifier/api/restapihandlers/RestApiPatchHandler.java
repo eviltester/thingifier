@@ -14,7 +14,6 @@ import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.ThingRoute;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.ThingRouteMapper;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
 import uk.co.compendiumdev.thingifier.api.http.ThingifierRequestContext;
-import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.apiconfig.EntityPatchUpdateStyle;
@@ -29,16 +28,6 @@ public class RestApiPatchHandler {
 
     public RestApiPatchHandler(final ThingifierApiRuntime runtime) {
         this.runtime = runtime;
-    }
-
-    public ApiResponse handle(
-            final String url, final BodyParser args, final HttpHeadersBlock requestHeaders) {
-        return handle(url, args.rawBody(), requestHeaders, runtime.contextFrom(requestHeaders));
-    }
-
-    public ApiResponse handle(
-            final String url, final BodyParser args, final ThingifierRequestContext context) {
-        return handle(url, args.rawBody(), new HttpHeadersBlock(), context);
     }
 
     public ApiResponse handle(
@@ -68,12 +57,11 @@ public class RestApiPatchHandler {
         }
 
         ThingWriteRequestMapping mapping =
-                new EntityPatchDocumentMapper(runtime)
+                new EntityPatchDocumentMapper(runtime.schema())
                         .map(
                                 style.orElse(EntityPatchUpdateStyle.PARTIAL_JSON_UPDATE),
                                 route,
-                                rawBody,
-                                context);
+                                rawBody);
         ThingCommandResultApiMapper apiMapper =
                 new ThingCommandResultApiMapper(runtime.apiConfig());
         if (mapping.isError()) {

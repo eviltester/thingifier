@@ -2,35 +2,23 @@ package uk.co.compendiumdev.thingifier.adapter.http.apihandlers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.flipkart.zjsonpatch.JsonPatch;
-import java.util.Map;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.InstanceRoute;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.ThingRoute;
-import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonThing;
-import uk.co.compendiumdev.thingifier.api.http.ThingifierRequestContext;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.ApiBodyFields;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.JsonBodyValueConverter;
 import uk.co.compendiumdev.thingifier.apiconfig.EntityPatchUpdateStyle;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
-import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
+import uk.co.compendiumdev.thingifier.application.command.PatchThingDocumentCommand;
 
 public final class EntityPatchDocumentMapper {
 
-    private final ThingifierApiRuntime runtime;
     private final ThingWriteRequestMapper writeMapper;
 
-    public EntityPatchDocumentMapper(final ThingifierApiRuntime runtime) {
-        this.runtime = runtime;
-        this.writeMapper = new ThingWriteRequestMapper(runtime.schema());
+    public EntityPatchDocumentMapper(final SchemaCatalog schema) {
+        this.writeMapper = new ThingWriteRequestMapper(schema);
     }
 
     public ThingWriteRequestMapping map(
-            final EntityPatchUpdateStyle style,
-            final ThingRoute route,
-            final String rawBody,
-            final ThingifierRequestContext context) {
+            final EntityPatchUpdateStyle style, final ThingRoute route, final String rawBody) {
         if (!(route instanceof InstanceRoute)) {
             return writeMapper.mapPatch(route, ApiBodyFields.empty());
         }
@@ -40,10 +28,16 @@ public final class EntityPatchDocumentMapper {
             return mapPartialJsonUpdate(instanceRoute, rawBody);
         }
         if (style == EntityPatchUpdateStyle.JSON_MERGE_PATCH_RFC7396) {
-            return mapJsonMergePatch(instanceRoute, rawBody, context);
+            return mapJsonDocumentPatch(
+                    instanceRoute,
+                    rawBody,
+                    PatchThingDocumentCommand.DocumentStyle.JSON_MERGE_PATCH_RFC7396);
         }
         if (style == EntityPatchUpdateStyle.JSON_PATCH_RFC6902) {
-            return mapJsonPatch(instanceRoute, rawBody, context);
+            return mapJsonDocumentPatch(
+                    instanceRoute,
+                    rawBody,
+                    PatchThingDocumentCommand.DocumentStyle.JSON_PATCH_RFC6902);
         }
 
         return ThingWriteRequestMapping.error(
@@ -59,117 +53,14 @@ public final class EntityPatchDocumentMapper {
         return writeMapper.mapPatch(route, parsed.bodyFields());
     }
 
-    private ThingWriteRequestMapping mapJsonMergePatch(
+    private ThingWriteRequestMapping mapJsonDocumentPatch(
             final InstanceRoute route,
             final String rawBody,
-            final ThingifierRequestContext context) {
-        EntityInstance instance = findInstance(route, context);
-        if (instance == null) {
-            return missingInstance(route);
-        }
-
-        JsonNode patchDocument;
-        try {
-            patchDocument = JsonBodyValueConverter.readTree(rawBody);
-        } catch (JsonProcessingException e) {
-            return malformedPatch("Malformed JSON Merge Patch document");
-        }
-
-        if (patchDocument == null || !patchDocument.isObject()) {
-            return unprocessablePatch("JSON Merge Patch for entity resources must be an object");
-        }
-
-        JsonNode patchedDocument = applyMergePatch(jsonFor(instance), patchDocument);
-        return mapReplacement(route, patchedDocument);
-    }
-
-    private ThingWriteRequestMapping mapJsonPatch(
-            final InstanceRoute route,
-            final String rawBody,
-            final ThingifierRequestContext context) {
-        EntityInstance instance = findInstance(route, context);
-        if (instance == null) {
-            return missingInstance(route);
-        }
-
-        JsonNode patchDocument;
-        try {
-            patchDocument = JsonBodyValueConverter.readTree(rawBody);
-        } catch (JsonProcessingException | IllegalArgumentException e) {
-            return malformedPatch("Malformed JSON Patch document");
-        }
-
-        if (patchDocument == null || !patchDocument.isArray()) {
-            return malformedPatch("JSON Patch document must be an array of operations");
-        }
-
-        JsonNode patchedDocument;
-        try {
-            patchedDocument = JsonPatch.apply(patchDocument, jsonFor(instance));
-        } catch (RuntimeException e) {
-            return conflictingPatch("JSON Patch could not be applied");
-        }
-
-        return mapReplacement(route, patchedDocument);
-    }
-
-    private JsonNode applyMergePatch(final JsonNode target, final JsonNode patch) {
-        if (!patch.isObject()) {
-            return patch;
-        }
-
-        ObjectNode result =
-                target != null && target.isObject()
-                        ? ((ObjectNode) target).deepCopy()
-                        : JsonNodeFactory.instance.objectNode();
-        for (Map.Entry<String, JsonNode> entry : patch.properties()) {
-            if (entry.getValue().isNull()) {
-                result.remove(entry.getKey());
-            } else {
-                result.set(
-                        entry.getKey(),
-                        applyMergePatch(result.get(entry.getKey()), entry.getValue()));
-            }
-        }
-        return result;
-    }
-
-    private ThingWriteRequestMapping mapReplacement(
-            final InstanceRoute route, final JsonNode patchedDocument) {
-        if (patchedDocument == null || !patchedDocument.isObject()) {
-            return unprocessablePatch("PATCH result for entity resources must be an object");
-        }
-
-        return writeMapper.mapPatchReplacingFields(
-                route,
-                ApiBodyFields.fromMap(JsonBodyValueConverter.objectNodeAsMap(patchedDocument)));
-    }
-
-    private JsonNode jsonFor(final EntityInstance instance) {
-        try {
-            return JsonBodyValueConverter.readTree(
-                    new JsonThing(runtime.apiConfig().jsonOutput())
-                            .asJsonObject(instance)
-                            .toString());
-        } catch (JsonProcessingException e) {
-            throw new IllegalStateException("Could not render entity instance as JSON", e);
-        }
-    }
-
-    private EntityInstance findInstance(
-            final InstanceRoute route, final ThingifierRequestContext context) {
-        EntityDefinition entity =
-                runtime.schema().definitionWithSingularOrPluralNamed(route.entity().name());
-        if (entity == null) {
-            return null;
-        }
-        return context.store().entityQueries().findByQueryIdentifier(entity, route.identifier());
-    }
-
-    private ThingWriteRequestMapping missingInstance(final InstanceRoute route) {
-        return ThingWriteRequestMapping.error(
-                ApiMappingError.withMessage(
-                        404,
+            final PatchThingDocumentCommand.DocumentStyle style) {
+        return ThingWriteRequestMapping.command(
+                new PatchThingDocumentCommand(
+                        route.entity().name(), route.identifier(), rawBody, style),
+                ApiRouteDisplay.missingInstanceMessage(
                         String.format(
                                 "No such %s entity instance with %s == %s found",
                                 route.entity().name(),
@@ -203,14 +94,6 @@ public final class EntityPatchDocumentMapper {
 
     private ThingWriteRequestMapping malformedPatch(final String message) {
         return ThingWriteRequestMapping.error(ApiMappingError.withMessage(400, message));
-    }
-
-    private ThingWriteRequestMapping unprocessablePatch(final String message) {
-        return ThingWriteRequestMapping.error(ApiMappingError.withMessage(422, message));
-    }
-
-    private ThingWriteRequestMapping conflictingPatch(final String message) {
-        return ThingWriteRequestMapping.error(ApiMappingError.withMessage(409, message));
     }
 
     private static final class ParseResult {

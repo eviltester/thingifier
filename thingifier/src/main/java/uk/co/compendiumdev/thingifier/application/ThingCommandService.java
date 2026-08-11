@@ -1,11 +1,13 @@
 package uk.co.compendiumdev.thingifier.application;
 
+import uk.co.compendiumdev.thingifier.apiconfig.JsonOutputConfig;
 import uk.co.compendiumdev.thingifier.application.command.AmendThingCommand;
 import uk.co.compendiumdev.thingifier.application.command.ConnectExistingRelationshipCommand;
 import uk.co.compendiumdev.thingifier.application.command.CreateAndConnectRelationshipCommand;
 import uk.co.compendiumdev.thingifier.application.command.CreateThingCommand;
 import uk.co.compendiumdev.thingifier.application.command.DeleteThingCommand;
 import uk.co.compendiumdev.thingifier.application.command.DisconnectRelationshipCommand;
+import uk.co.compendiumdev.thingifier.application.command.PatchThingDocumentCommand;
 import uk.co.compendiumdev.thingifier.application.command.RelateThingCommand;
 import uk.co.compendiumdev.thingifier.application.command.ReplaceThingCommand;
 import uk.co.compendiumdev.thingifier.application.command.ThingWriteCommand;
@@ -17,6 +19,7 @@ public final class ThingCommandService {
     private final WriteTransactionRunner transactionRunner;
     private final CreateThingHandler createHandler;
     private final AmendThingHandler amendHandler;
+    private final PatchThingDocumentHandler patchDocumentHandler;
     private final DeleteThingHandler deleteHandler;
     private final RelationshipCommandHandler relationshipHandler;
 
@@ -28,6 +31,14 @@ public final class ThingCommandService {
             final ThingStore store,
             final SchemaDefinitionResolver schema,
             final boolean enforceDeclaredTypes) {
+        this(store, schema, enforceDeclaredTypes, new JsonOutputConfig());
+    }
+
+    public ThingCommandService(
+            final ThingStore store,
+            final SchemaDefinitionResolver schema,
+            final boolean enforceDeclaredTypes,
+            final JsonOutputConfig jsonOutput) {
         ThingDefinitionResolver definitions = new ThingDefinitionResolver(store, schema);
         WriteValidationPolicy validation = new WriteValidationPolicy(store, enforceDeclaredTypes);
         RelationshipReferenceResolver relationshipResolver =
@@ -48,6 +59,8 @@ public final class ThingCommandService {
                         drafts,
                         createHandler,
                         relationshipConnections);
+        this.patchDocumentHandler =
+                new PatchThingDocumentHandler(definitions, amendHandler, jsonOutput);
         this.deleteHandler = new DeleteThingHandler(store, definitions);
         this.relationshipHandler =
                 new RelationshipCommandHandler(
@@ -75,6 +88,10 @@ public final class ThingCommandService {
 
         if (command instanceof DeleteThingCommand) {
             return deleteHandler.handle((DeleteThingCommand) command);
+        }
+
+        if (command instanceof PatchThingDocumentCommand) {
+            return patchDocumentHandler.handle((PatchThingDocumentCommand) command);
         }
 
         if (command instanceof ReplaceThingCommand) {
