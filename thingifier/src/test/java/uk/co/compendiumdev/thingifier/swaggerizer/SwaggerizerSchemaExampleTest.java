@@ -94,6 +94,44 @@ class SwaggerizerSchemaExampleTest {
     }
 
     @Test
+    void collectionResponseItemSchemasKeepOptionalNullableFieldsOptional() {
+        final Thingifier thingifier = new Thingifier();
+        final EntityDefinition item = thingifier.defineThing("item", "items");
+        item.addAsPrimaryKeyField(Field.is("id", FieldType.AUTO_INCREMENT).withExample("21"));
+        item.addField(Field.is("title", FieldType.STRING));
+        item.addField(Field.is("dueDate", FieldType.DATE));
+        item.addField(
+                Field.is("metadata", FieldType.OBJECT)
+                        .withField(Field.is("source", FieldType.STRING)));
+        item.addField(Field.is("scheduledDate", FieldType.DATE).makeMandatory());
+        item.addField(Field.is("createdDate", FieldType.DATE).withDefaultValue("2026-08-11"));
+
+        final ThingifierApiDocumentationDefn apiDefn =
+                new ThingifierApiDocumentationDefn().setThingifier(thingifier);
+
+        final JsonObject document =
+                JsonParser.parseString(new Swaggerizer(apiDefn).asJson()).getAsJsonObject();
+        final JsonObject schemas =
+                document.getAsJsonObject("components").getAsJsonObject("schemas");
+        final JsonObject itemsProperty =
+                schemas.getAsJsonObject("items")
+                        .getAsJsonObject("properties")
+                        .getAsJsonObject("items");
+        final JsonObject itemSchema = itemsProperty.getAsJsonObject("items");
+        final JsonObject properties = itemSchema.getAsJsonObject("properties");
+        final Set<String> required = stringsIn(itemSchema.getAsJsonArray("required"));
+
+        Assertions.assertTrue(properties.has("dueDate"));
+        Assertions.assertTrue(properties.has("metadata"));
+        Assertions.assertFalse(required.contains("dueDate"));
+        Assertions.assertFalse(required.contains("metadata"));
+        Assertions.assertTrue(required.contains("id"));
+        Assertions.assertTrue(required.contains("title"));
+        Assertions.assertTrue(required.contains("scheduledDate"));
+        Assertions.assertTrue(required.contains("createdDate"));
+    }
+
+    @Test
     void openApiSchemaExamplesUseJsonValuesMatchingTheFieldType() {
         final Thingifier thingifier = new Thingifier();
         final EntityDefinition item = thingifier.defineThing("item", "items");
