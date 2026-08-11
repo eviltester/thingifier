@@ -292,6 +292,10 @@ public class ThingifierHttpApiRequestHandlingTest {
                                 path,
                                 "{\"title\":\"Merged\"}",
                                 EntityPatchUpdateStyle.JSON_MERGE_PATCH_RFC7396.mediaType()));
+
+        Assertions.assertEquals(200, mergePatchResponse.getStatusCode());
+        Assertions.assertEquals("Merged", currentThingTitle(thingifier, existing));
+
         HttpApiResponse jsonPatchResponse =
                 api.patch(
                         patchRequest(
@@ -299,7 +303,6 @@ public class ThingifierHttpApiRequestHandlingTest {
                                 "[{\"op\":\"replace\",\"path\":\"/title\",\"value\":\"Patched\"}]",
                                 EntityPatchUpdateStyle.JSON_PATCH_RFC6902.mediaType()));
 
-        Assertions.assertEquals(200, mergePatchResponse.getStatusCode());
         Assertions.assertEquals(200, jsonPatchResponse.getStatusCode());
         Assertions.assertEquals("Patched", currentThingTitle(thingifier, existing));
     }
