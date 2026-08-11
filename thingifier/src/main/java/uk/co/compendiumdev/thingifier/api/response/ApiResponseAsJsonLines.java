@@ -19,7 +19,11 @@ public final class ApiResponseAsJsonLines {
     }
 
     public String getJsonLines() {
-        return String.join("\n", jsonObjects());
+        List<String> jsonObjects = jsonObjects();
+        if (jsonObjects.isEmpty()) {
+            return "";
+        }
+        return String.join("\n", jsonObjects) + "\n";
     }
 
     public String getJsonSequence() {
