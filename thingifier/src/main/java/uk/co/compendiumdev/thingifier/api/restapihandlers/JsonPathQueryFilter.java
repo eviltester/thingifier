@@ -7,12 +7,9 @@ import com.jayway.jsonpath.JsonPathException;
 import com.jayway.jsonpath.Option;
 import com.jayway.jsonpath.PathNotFoundException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonThing;
 import uk.co.compendiumdev.thingifier.api.http.ThingifierRequestContext;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
@@ -166,28 +163,13 @@ final class JsonPathQueryFilter {
 
         private final IdentityHashMap<Map<?, ?>, EntityInstance> identityMatches =
                 new IdentityHashMap<>();
-        private final Map<Map<?, ?>, EntityInstance> equalMatches = new HashMap<>();
-        private final Set<Map<?, ?>> ambiguousEqualMatches = new HashSet<>();
 
         private void add(final Map<?, ?> resource, final EntityInstance instance) {
             identityMatches.put(resource, instance);
-            if (equalMatches.containsKey(resource)) {
-                ambiguousEqualMatches.add(resource);
-                return;
-            }
-            equalMatches.put(resource, instance);
         }
 
         private EntityInstance matchingInstanceFor(final Map<?, ?> selectedResource) {
-            if (identityMatches.containsKey(selectedResource)) {
-                return identityMatches.get(selectedResource);
-            }
-
-            if (ambiguousEqualMatches.contains(selectedResource)) {
-                return null;
-            }
-
-            return equalMatches.get(selectedResource);
+            return identityMatches.get(selectedResource);
         }
     }
 }

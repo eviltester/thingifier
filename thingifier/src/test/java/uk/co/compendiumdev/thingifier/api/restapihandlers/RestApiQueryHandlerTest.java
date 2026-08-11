@@ -366,6 +366,30 @@ public class RestApiQueryHandlerTest {
     }
 
     @Test
+    public void jsonPathQueryRejectsNestedObjectEqualToAProjectedResource() {
+        Thingifier thingifier = new Thingifier();
+        EntityDefinition item = thingifier.defineThing("item", "items");
+        item.addAsPrimaryKeyField(Field.is("id", FieldType.AUTO_INCREMENT));
+        item.addField(Field.is("tag", FieldType.STRING));
+        item.addField(
+                Field.is("details", FieldType.OBJECT).withField(Field.is("tag", FieldType.STRING)));
+        item.defineView("PublicItem").hideResponseFields("id");
+        thingifier.apiSpec().route("QUERY", "/items").entityView("PublicItem");
+        storeFor(thingifier)
+                .entities()
+                .create(EntityInstanceDraft.forEntity(item).withField("tag", "same"));
+        storeFor(thingifier)
+                .entities()
+                .create(EntityInstanceDraft.forEntity(item).withField("details.tag", "same"));
+
+        HttpApiResponse response =
+                new ThingifierHttpApi(thingifier)
+                        .queryRequest(jsonPathQuery("items", "$.items[1].details"));
+
+        Assertions.assertEquals(422, response.getStatusCode());
+    }
+
+    @Test
     public void jsonPathQueryCanSelectCollectionArray() {
         Thingifier thingifier = todoThingifier();
         EntityInstance first = createTodo(thingifier, "First", "false", "One");
