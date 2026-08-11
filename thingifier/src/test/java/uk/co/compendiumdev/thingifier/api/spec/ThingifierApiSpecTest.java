@@ -225,6 +225,22 @@ class ThingifierApiSpecTest {
                                 path,
                                 "[{\"op\":\"copy\",\"from\":\"/forbidden\",\"path\":\"/name\"}]",
                                 JSON_PATCH_RFC6902.mediaType()));
+        final HttpApiResponse jsonPatchRootCopyResponse =
+                api.patch(
+                        patchRequest(
+                                path,
+                                "[{\"op\":\"add\",\"path\":\"/template\","
+                                        + "\"value\":{\"name\":\"copied\",\"forbidden\":\"copy\"}},"
+                                        + "{\"op\":\"copy\",\"from\":\"/template\",\"path\":\"\"}]",
+                                JSON_PATCH_RFC6902.mediaType()));
+        final HttpApiResponse jsonPatchRootMoveResponse =
+                api.patch(
+                        patchRequest(
+                                path,
+                                "[{\"op\":\"add\",\"path\":\"/template\","
+                                        + "\"value\":{\"name\":\"moved\",\"forbidden\":\"move\"}},"
+                                        + "{\"op\":\"move\",\"from\":\"/template\",\"path\":\"\"}]",
+                                JSON_PATCH_RFC6902.mediaType()));
         final HttpApiResponse jsonPatchWithNullBodyResponse =
                 api.patch(patchRequestWithNullBody(path, JSON_PATCH_RFC6902.mediaType()));
 
@@ -232,8 +248,12 @@ class ThingifierApiSpecTest {
         Assertions.assertEquals(422, mergePatchResponse.getStatusCode());
         Assertions.assertEquals(422, jsonPatchPathResponse.getStatusCode());
         Assertions.assertEquals(422, jsonPatchFromResponse.getStatusCode());
+        Assertions.assertEquals(422, jsonPatchRootCopyResponse.getStatusCode());
+        Assertions.assertEquals(422, jsonPatchRootMoveResponse.getStatusCode());
         Assertions.assertEquals(400, jsonPatchWithNullBodyResponse.getStatusCode());
         Assertions.assertTrue(partialJsonResponse.getBody().contains("forbidden"));
+        Assertions.assertTrue(jsonPatchRootCopyResponse.getBody().contains("forbidden"));
+        Assertions.assertTrue(jsonPatchRootMoveResponse.getBody().contains("forbidden"));
         Assertions.assertTrue(
                 jsonPatchWithNullBodyResponse.getBody().contains("JSON Patch"),
                 jsonPatchWithNullBodyResponse.getBody());
@@ -277,6 +297,10 @@ class ThingifierApiSpecTest {
         item.addField(Field.is("name", FieldType.STRING).makeMandatory());
         item.addField(Field.is("secret", FieldType.STRING));
         item.addField(Field.is("forbidden", FieldType.STRING));
+        item.addField(
+                Field.is("template", FieldType.OBJECT)
+                        .withField(Field.is("name", FieldType.STRING))
+                        .withField(Field.is("forbidden", FieldType.STRING)));
         item.defineView("PublicItem")
                 .hideRequestFields("secret")
                 .hideResponseFields("secret")
