@@ -79,9 +79,10 @@ mvn -B clean verify
 
 This runs unit tests, integration tests, Spotless, Checkstyle, and PMD.
 
-GitHub Actions runs on push, pull request, and manual dispatch. It runs a fast
-`mvn -B spotless:check` formatting job and full `mvn -B clean verify` jobs on
-Java 17 and Java 21.
+GitHub Actions runs on pushes to `master`, pull requests targeting `master`,
+and manual dispatch. It runs a fast `mvn -B spotless:check` formatting job and
+Java 17/21 `mvn -B "-Dspotless.check.skip=true" clean verify` jobs for compile,
+unit tests, integration tests, Checkstyle, and PMD.
     
 ## Details
 

@@ -4,7 +4,11 @@ name: Java CI
 
 on:
   push:
+    branches:
+      - master
   pull_request:
+    branches:
+      - master
   workflow_dispatch:
 
 
@@ -41,4 +45,4 @@ jobs:
           java-version: ${{ matrix.java }}
           cache: maven
       - name: Verify with Maven
-        run: mvn -B clean verify
+        run: mvn -B "-Dspotless.check.skip=true" clean verify
