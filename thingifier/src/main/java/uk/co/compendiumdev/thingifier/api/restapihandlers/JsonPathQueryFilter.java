@@ -31,7 +31,7 @@ final class JsonPathQueryFilter {
             final String expression,
             final EntityViewDefinition responseView) {
         final EntityDefinition entity = queryResults.resultContainsDefn();
-        if (entity == null || entity.getPrimaryKeyField() == null) {
+        if (entity == null) {
             return unsafeSelection();
         }
 

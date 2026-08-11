@@ -377,6 +377,35 @@ public class RestApiQueryHandlerTest {
     }
 
     @Test
+    public void jsonPathQueryCanSelectEmptyKeylessEntityCollection() {
+        Thingifier thingifier = keylessItemThingifier();
+
+        HttpApiResponse response =
+                new ThingifierHttpApi(thingifier).queryRequest(jsonPathQuery("items", "$.items"));
+
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertTrue(response.apiResponse().isCollection());
+        Assertions.assertEquals(0, response.apiResponse().getReturnedInstanceCollection().size());
+    }
+
+    @Test
+    public void jsonPathQueryCanFilterKeylessEntityCollection() {
+        Thingifier thingifier = keylessItemThingifier();
+        EntityInstance matching = createItem(thingifier, "Keep", "visible");
+        createItem(thingifier, "Skip", "visible");
+
+        HttpApiResponse response =
+                new ThingifierHttpApi(thingifier)
+                        .queryRequest(jsonPathQuery("items", "$.items[?(@.name == 'Keep')]"));
+
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertTrue(response.apiResponse().isCollection());
+        Assertions.assertEquals(1, response.apiResponse().getReturnedInstanceCollection().size());
+        Assertions.assertEquals(
+                matching, response.apiResponse().getReturnedInstanceCollection().get(0));
+    }
+
+    @Test
     public void jsonPathQueryRelationshipCollectionFiltersRelatedInstancesOnly() {
         Thingifier thingifier = taskProjectThingifier();
         ThingStore store = storeFor(thingifier);
@@ -471,6 +500,14 @@ public class RestApiQueryHandlerTest {
         return thingifier;
     }
 
+    private Thingifier keylessItemThingifier() {
+        Thingifier thingifier = new Thingifier();
+        EntityDefinition item = thingifier.defineThing("item", "items");
+        item.addField(Field.is("name", FieldType.STRING));
+        item.addField(Field.is("visibility", FieldType.STRING));
+        return thingifier;
+    }
+
     private EntityInstance createTask(
             final Thingifier thingifier, final String title, final String status) {
         EntityDefinition task = thingifier.getDefinitionNamed("task");
@@ -502,6 +539,17 @@ public class RestApiQueryHandlerTest {
                                 .withField("title", title)
                                 .withField("doneStatus", doneStatus)
                                 .withField("description", description));
+    }
+
+    private EntityInstance createItem(
+            final Thingifier thingifier, final String name, final String visibility) {
+        EntityDefinition item = thingifier.getDefinitionNamed("item");
+        return storeFor(thingifier)
+                .entities()
+                .create(
+                        EntityInstanceDraft.forEntity(item)
+                                .withField("name", name)
+                                .withField("visibility", visibility));
     }
 
     private ThingStore storeFor(final Thingifier thingifier) {
