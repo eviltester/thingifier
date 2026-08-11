@@ -11,6 +11,7 @@ import uk.co.compendiumdev.thingifier.application.command.CreateAndConnectRelati
 import uk.co.compendiumdev.thingifier.application.command.CreateThingCommand;
 import uk.co.compendiumdev.thingifier.application.command.DeleteThingCommand;
 import uk.co.compendiumdev.thingifier.application.command.DisconnectRelationshipCommand;
+import uk.co.compendiumdev.thingifier.application.command.PatchThingDocumentCommand;
 import uk.co.compendiumdev.thingifier.application.command.RelateThingCommand;
 import uk.co.compendiumdev.thingifier.application.command.ReplaceThingCommand;
 import uk.co.compendiumdev.thingifier.application.command.ThingWriteCommand;
@@ -69,7 +70,7 @@ public final class ThingCommandResultApiMapper {
             return ApiResponse.success().returnSingleInstance(result.getInstance());
         }
 
-        if (command instanceof AmendThingCommand) {
+        if (command instanceof AmendThingCommand || command instanceof PatchThingDocumentCommand) {
             return ApiResponse.success().returnSingleInstance(result.getInstance());
         }
 
@@ -106,6 +107,9 @@ public final class ThingCommandResultApiMapper {
         if (error == null) {
             return 400;
         }
+        if (error.category() == ApplicationError.Category.BAD_REQUEST) {
+            return 400;
+        }
         if (error.category() == ApplicationError.Category.NOT_FOUND) {
             return 404;
         }
@@ -139,6 +143,10 @@ public final class ThingCommandResultApiMapper {
                             error.detail("entityName"),
                             error.detail("routeIdentifier"),
                             error.detail("bodyIdentifier")));
+        }
+
+        if (error.code() == ApplicationError.Code.PATCH_RESULT_NOT_OBJECT) {
+            return List.of("PATCH result for entity resources must be an object");
         }
 
         if (error.code() == ApplicationError.Code.INSTANCE_NOT_FOUND) {

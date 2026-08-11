@@ -105,6 +105,10 @@
         <property name="files" value=".*[/\\]thingifierapp[/\\]src[/\\]main[/\\]java[/\\]uk[/\\]co[/\\]compendiumdev[/\\]thingifier[/\\]application[/\\]Main\.java"/>
     </module>
     <module name="SuppressionSingleFilter">
+        <property name="id" value="applicationNoHttpVerbVocabulary"/>
+        <property name="files" value=".*[/\\]examplemodels[/\\]src[/\\]main[/\\]java[/\\]uk[/\\]co[/\\]compendiumdev[/\\]thingifier[/\\]application[/\\]examples[/\\].*"/>
+    </module>
+    <module name="SuppressionSingleFilter">
         <property name="id" value="applicationNoHttpStatusOrTypes"/>
         <property name="files" value=".*[/\\]src[/\\]test[/\\]java[/\\].*"/>
     </module>
@@ -135,6 +139,10 @@
     <module name="SuppressionSingleFilter">
         <property name="id" value="schemaDefinitionSpecsNoMutableRuntimeSchema"/>
         <property name="files" value=".*[/\\]thingifier[/\\]src[/\\]main[/\\]java[/\\]uk[/\\]co[/\\]compendiumdev[/\\]thingifier[/\\]application[/\\]schema[/\\]definition[/\\]ThingifierModel(Assembler|Exporter)\.java"/>
+    </module>
+    <module name="SuppressionSingleFilter">
+        <property name="id" value="productionDeprecatedApi"/>
+        <property name="files" value=".*[/\\]thingifier[/\\]src[/\\]main[/\\]java[/\\]uk[/\\]co[/\\]compendiumdev[/\\]thingifier[/\\]Thingifier\.java"/>
     </module>
     <module name="RegexpMultiline">
         <property name="id" value="commandDtosNoMutableDomain"/>

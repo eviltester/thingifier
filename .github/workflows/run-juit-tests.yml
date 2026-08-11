@@ -4,6 +4,7 @@ name: Java CI
 
 on:
   push:
+  pull_request:
   workflow_dispatch:
 
 
@@ -39,5 +40,5 @@ jobs:
           distribution: temurin
           java-version: ${{ matrix.java }}
           cache: maven
-      - name: Build with Maven
-        run: mvn -B clean test
+      - name: Verify with Maven
+        run: mvn -B clean verify

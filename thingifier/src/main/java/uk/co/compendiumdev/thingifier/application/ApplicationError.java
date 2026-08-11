@@ -10,6 +10,7 @@ import java.util.Map;
 public final class ApplicationError {
 
     public enum Category {
+        BAD_REQUEST,
         VALIDATION,
         NOT_FOUND,
         CONFLICT,
@@ -27,6 +28,8 @@ public final class ApplicationError {
         UNSUPPORTED_COMMAND,
         REPLACE_CREATE_AUTO_FIELDS_NOT_ALLOWED,
         REPLACE_CREATE_KEY_MISMATCH,
+        BAD_REQUEST,
+        PATCH_RESULT_NOT_OBJECT,
         MAX_INSTANCE_LIMIT_REACHED,
         MAX_INSTANCE_LIMIT_WOULD_BE_EXCEEDED,
         DUPLICATE_PRIMARY_KEY,
@@ -57,6 +60,11 @@ public final class ApplicationError {
     public static ApplicationError validation(final Collection<String> messages) {
         return new ApplicationError(
                 Category.VALIDATION, Code.VALIDATION_FAILED, messages, Map.of());
+    }
+
+    public static ApplicationError badRequest(final String message) {
+        return new ApplicationError(
+                Category.BAD_REQUEST, Code.BAD_REQUEST, List.of(message), Map.of());
     }
 
     public static ApplicationError notFound(final String message) {
@@ -186,6 +194,14 @@ public final class ApplicationError {
                         routeIdentifier,
                         "bodyIdentifier",
                         bodyIdentifier));
+    }
+
+    public static ApplicationError patchResultNotObject() {
+        return new ApplicationError(
+                Category.VALIDATION,
+                Code.PATCH_RESULT_NOT_OBJECT,
+                List.of("Patch result for entity resources must be an object"),
+                Map.of());
     }
 
     public Category category() {

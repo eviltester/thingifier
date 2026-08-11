@@ -51,7 +51,8 @@ public final class DefaultThingifierApiRuntime implements ThingifierApiRuntime {
         return new ThingCommandService(
                 context.store(),
                 schema,
-                thingifier.apiConfig().willApiEnforceDeclaredTypesInInput());
+                thingifier.apiConfig().willApiEnforceDeclaredTypesInInput(),
+                thingifier.apiConfig().jsonOutput());
     }
 
     @Override

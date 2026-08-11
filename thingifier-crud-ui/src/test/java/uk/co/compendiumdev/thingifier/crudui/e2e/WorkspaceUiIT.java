@@ -73,7 +73,7 @@ public class WorkspaceUiIT extends BrowserTestBase {
         page.navigate(server().baseUrl() + "/");
         workspace.topBar().openSwagger();
         page.waitForURL("**/swagger");
-        assertThat(page.locator("body")).containsText("Explore");
+        assertThat(page.locator("body")).containsText("Select a definition");
         page.navigate(server().baseUrl() + "/");
         Assertions.assertTrue(
                 workspace.topBar().downloadOpenApi().suggestedFilename().endsWith(".json"));
