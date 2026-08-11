@@ -241,7 +241,7 @@ class RestApiDocumentationGeneratorTest {
         Assertions.assertTrue(
                 docs.contains(
                         "QUERY JSONPath content uses <i>Content-Type: application/jsonpath</i>"));
-        Assertions.assertTrue(docs.contains("$.tasks[?@.title == 'Task']"));
+        Assertions.assertTrue(docs.contains("$['tasks'][?@['title'] == 'Task']"));
         Assertions.assertFalse(docs.contains("&amp;sortBy=-id"));
         Assertions.assertFalse(
                 docs.contains(
@@ -273,8 +273,32 @@ class RestApiDocumentationGeneratorTest {
 
         Assertions.assertTrue(
                 paragraph.contains(
-                        "$.items&lt;script&gt;&amp;&#39;[?@.id&lt;bad&amp;&#39; == 'value']"));
-        Assertions.assertFalse(paragraph.contains("$.items<script>&'[?@.id<bad&' == 'value']"));
+                        "$['items&lt;script&gt;&amp;\\&#39;'][?@['id&lt;bad&amp;\\&#39;'] == 'value']"));
+        Assertions.assertFalse(paragraph.contains("<script>"));
+        Assertions.assertFalse(paragraph.contains("id<bad&"));
+    }
+
+    @Test
+    void apiDocumentationUsesJsonPathBracketNotationForModelNames() {
+        final Thingifier thingifier = new Thingifier();
+        final EntityDefinition item = thingifier.defineThing("item", "todo-items");
+        item.addAsPrimaryKeyField(Field.is("key-id", FieldType.AUTO_GUID));
+        item.addField(Field.is("name", FieldType.STRING));
+
+        final String docs =
+                new RestApiDocumentationGenerator(thingifier, new DefaultGUIHTML())
+                        .getApiDocumentation(
+                                new ApiRoutingDefinitionDocGenerator(thingifier).generate("/api"),
+                                List.of(),
+                                new ThingifierApiDocumentationDefn(),
+                                "/api",
+                                "https://example.com/api/docs");
+
+        final String paragraph = paragraphContaining(docs, "QUERY JSONPath content uses");
+
+        Assertions.assertTrue(paragraph.contains("$['todo-items'][?@['key-id'] == 'value']"));
+        Assertions.assertFalse(paragraph.contains("$.todo-items"));
+        Assertions.assertFalse(paragraph.contains("@.key-id"));
     }
 
     @Test

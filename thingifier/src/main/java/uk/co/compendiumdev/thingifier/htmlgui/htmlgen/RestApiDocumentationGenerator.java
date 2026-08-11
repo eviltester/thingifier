@@ -982,13 +982,24 @@ public class RestApiDocumentationGenerator {
 
         final String fieldName =
                 entity.getField("title") == null ? exampleFieldNameFor(entity) : "title";
-        return "$."
-                + escapeHtmlText(entity.getPlural())
-                + "[?@."
-                + escapeHtmlText(fieldName)
+        return "$"
+                + jsonPathPropertySelector(entity.getPlural())
+                + "[?@"
+                + jsonPathPropertySelector(fieldName)
                 + " == '"
-                + escapeHtmlText(exampleValueFor(fieldName))
+                + escapeHtmlText(jsonPathSingleQuotedContent(exampleValueFor(fieldName)))
                 + "']";
+    }
+
+    private String jsonPathPropertySelector(final String propertyName) {
+        return "['" + escapeHtmlText(jsonPathSingleQuotedContent(propertyName)) + "']";
+    }
+
+    private String jsonPathSingleQuotedContent(final String value) {
+        if (value == null) {
+            return "";
+        }
+        return value.replace("\\", "\\\\").replace("'", "\\'");
     }
 
     private String exampleFieldNameFor(final EntityDefinition entity) {
