@@ -3,6 +3,7 @@ package uk.co.compendiumdev.thingifier.api.http;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import uk.co.compendiumdev.thingifier.core.query.FilterBy;
+import uk.co.compendiumdev.thingifier.core.query.FilterOperation;
 import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
 
 public final class UrlQueryParamParser {
@@ -68,24 +69,24 @@ public final class UrlQueryParamParser {
 
     private FilterBy parseToFilterBy(final String rawParam) {
         String param = rawParam.trim();
-        String fieldName = getFieldNameFrom(param);
-
-        String opAndValue = param.substring(fieldName.length());
-
-        return new FilterBy(fieldName, opAndValue);
+        return FilterOperation.firstIn(param)
+                .map(operation -> filterByForOperation(param, operation))
+                .orElseGet(() -> new FilterBy(param, FilterOperation.EQUALS, ""));
     }
 
-    private String getFieldNameFrom(final String param) {
+    private FilterBy filterByForOperation(final String param, final FilterOperation operation) {
+        int operationIndex = param.indexOf(operation.token());
+        String fieldName = param.substring(0, operationIndex);
 
-        // for each FilterBy operator, try to find it in the string
-        // if present, split the string there and the fieldname is to the
-        // left of the operator
-        for (String anOperator : FilterBy.operators) {
-            if (param.contains(anOperator)) {
-                return param.substring(0, param.indexOf(anOperator));
-            }
+        if (operation != FilterOperation.EQUALS) {
+            return new FilterBy(
+                    fieldName,
+                    operation,
+                    param.substring(operationIndex + operation.token().length()));
         }
 
-        return param;
+        String value = param.substring(operationIndex + operation.token().length());
+        FilterOperation.ParsedValue parsedValue = FilterOperation.parseLeadingToken(value);
+        return new FilterBy(fieldName, parsedValue.operation(), parsedValue.value());
     }
 }

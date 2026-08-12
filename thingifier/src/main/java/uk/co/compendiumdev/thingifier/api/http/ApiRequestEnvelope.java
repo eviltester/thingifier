@@ -11,7 +11,8 @@ public final class ApiRequestEnvelope {
 
     public enum QueryBodyFormat {
         URL_ENCODED,
-        JSONPATH
+        JSONPATH,
+        STRUCTURED_JSON
     }
 
     private final ThingifierHttpApi.HttpVerb verb;
@@ -70,6 +71,9 @@ public final class ApiRequestEnvelope {
                 new ContentTypeHeaderParser(request.getContentTypeHeader());
         if (contentType.isJsonPath()) {
             return QueryBodyFormat.JSONPATH;
+        }
+        if (contentType.isStructuredTodoQueryJson()) {
+            return QueryBodyFormat.STRUCTURED_JSON;
         }
         return QueryBodyFormat.URL_ENCODED;
     }

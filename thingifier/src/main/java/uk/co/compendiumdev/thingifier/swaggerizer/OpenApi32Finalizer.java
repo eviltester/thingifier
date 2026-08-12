@@ -38,12 +38,12 @@ public final class OpenApi32Finalizer {
             final JsonObject query = queryOperation.getAsJsonObject();
             query.remove("x-http-method");
             query.remove("x-query-content-types");
-            ensureFormEncodedRequestBody(query);
+            ensureQueryRequestBody(query);
             path.add("query", query);
         }
     }
 
-    private void ensureFormEncodedRequestBody(final JsonObject operation) {
+    private void ensureQueryRequestBody(final JsonObject operation) {
         JsonObject requestBody = objectAt(operation, "requestBody");
         if (requestBody == null) {
             requestBody = new JsonObject();
@@ -80,6 +80,18 @@ public final class OpenApi32Finalizer {
         if (!jsonPathMediaType.has("schema") || !jsonPathMediaType.get("schema").isJsonObject()) {
             jsonPathMediaType.add("schema", stringSchema());
         }
+
+        JsonObject structuredMediaType =
+                objectAt(content, ThingifierHttpApi.STRUCTURED_TODO_QUERY_CONTENT_TYPE);
+        if (structuredMediaType == null) {
+            structuredMediaType = new JsonObject();
+            content.add(ThingifierHttpApi.STRUCTURED_TODO_QUERY_CONTENT_TYPE, structuredMediaType);
+        }
+
+        if (!structuredMediaType.has("schema")
+                || !structuredMediaType.get("schema").isJsonObject()) {
+            structuredMediaType.add("schema", structuredQuerySchema());
+        }
     }
 
     private JsonObject permissiveFormSchema() {
@@ -94,6 +106,40 @@ public final class OpenApi32Finalizer {
     private JsonObject stringSchema() {
         final JsonObject schema = new JsonObject();
         schema.addProperty("type", "string");
+        return schema;
+    }
+
+    private JsonObject structuredQuerySchema() {
+        final JsonObject schema = new JsonObject();
+        schema.addProperty("type", "object");
+
+        final JsonObject properties = new JsonObject();
+        properties.add("filter", objectSchema());
+        properties.add("sort", sortArraySchema());
+        properties.add("limit", nonNegativeIntegerSchema());
+        properties.add("offset", nonNegativeIntegerSchema());
+        schema.add("properties", properties);
+
+        return schema;
+    }
+
+    private JsonObject objectSchema() {
+        final JsonObject schema = new JsonObject();
+        schema.addProperty("type", "object");
+        return schema;
+    }
+
+    private JsonObject sortArraySchema() {
+        final JsonObject schema = new JsonObject();
+        schema.addProperty("type", "array");
+        schema.add("items", objectSchema());
+        return schema;
+    }
+
+    private JsonObject nonNegativeIntegerSchema() {
+        final JsonObject schema = new JsonObject();
+        schema.addProperty("type", "integer");
+        schema.addProperty("minimum", 0);
         return schema;
     }
 

@@ -19,6 +19,7 @@ import uk.co.compendiumdev.thingifier.api.http.ThingifierRequestContext;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityViewDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVectorDefinition;
 import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
 import uk.co.compendiumdev.thingifier.core.query.RepositoryQueryResult;
 
@@ -61,8 +62,18 @@ public final class RestApiQueryHandler {
                             404, String.format("Could not find an instance with %s", url)));
         }
 
+        QueryFilterParams requestedQueryParams = queryParams;
+        if (queryBodyFormat == ApiRequestEnvelope.QueryBodyFormat.STRUCTURED_JSON) {
+            StructuredJsonQueryCompiler.Result structuredQuery =
+                    StructuredJsonQueryCompiler.compile(queryBody, resultEntityFor(route));
+            if (structuredQuery.isError()) {
+                return advertiseQuery(apiMapper.map(structuredQuery.error()));
+            }
+            requestedQueryParams = combine(queryParams, structuredQuery.queryParams());
+        }
+
         EffectiveQueryParams effectiveQueryParams =
-                EffectiveQueryParams.forQuery(runtime.apiConfig(), route, queryParams);
+                EffectiveQueryParams.forQuery(runtime.apiConfig(), route, requestedQueryParams);
         if (effectiveQueryParams.isError()) {
             return apiMapper.map(effectiveQueryParams.error());
         }
@@ -110,6 +121,43 @@ public final class RestApiQueryHandler {
                 .filter(entity::hasViewNamed)
                 .map(entity::getViewNamed)
                 .orElse(null);
+    }
+
+    private QueryFilterParams combine(
+            final QueryFilterParams first, final QueryFilterParams second) {
+        QueryFilterParams combined = new QueryFilterParams();
+        combined.addAll(first);
+        combined.addAll(second);
+        return combined;
+    }
+
+    private EntityDefinition resultEntityFor(final ThingRoute route) {
+        if (route instanceof CollectionRoute) {
+            return runtime.schema()
+                    .definitionWithSingularOrPluralNamed(((CollectionRoute) route).entity().name());
+        }
+
+        if (route instanceof RelationshipCollectionRoute) {
+            RelationshipCollectionRoute relationship = (RelationshipCollectionRoute) route;
+            EntityDefinition parent =
+                    runtime.schema()
+                            .definitionWithSingularOrPluralNamed(
+                                    relationship.parentEntity().name());
+            if (parent == null) {
+                return null;
+            }
+            for (RelationshipVectorDefinition vector :
+                    parent.related().getRelationships(relationship.relationshipName())) {
+                if (vector.getFrom() == parent) {
+                    return vector.getTo();
+                }
+                if (vector.getTo() == parent) {
+                    return vector.getFrom();
+                }
+            }
+        }
+
+        return null;
     }
 
     private ApiResponse advertiseQuery(final ApiResponse response) {

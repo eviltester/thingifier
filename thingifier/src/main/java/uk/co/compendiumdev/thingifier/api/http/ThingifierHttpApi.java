@@ -39,8 +39,13 @@ public final class ThingifierHttpApi {
     public static final String ACCEPT_QUERY_HEADER = "Accept-Query";
     public static final String QUERY_CONTENT_TYPE = "application/x-www-form-urlencoded";
     public static final String JSONPATH_QUERY_CONTENT_TYPE = "application/jsonpath";
+    public static final String STRUCTURED_TODO_QUERY_CONTENT_TYPE =
+            "application/vnd.apichallenges.todo-query+json";
     public static final List<String> SUPPORTED_QUERY_CONTENT_TYPES_LIST =
-            List.of(QUERY_CONTENT_TYPE, JSONPATH_QUERY_CONTENT_TYPE);
+            List.of(
+                    QUERY_CONTENT_TYPE,
+                    JSONPATH_QUERY_CONTENT_TYPE,
+                    STRUCTURED_TODO_QUERY_CONTENT_TYPE);
     public static final String SUPPORTED_QUERY_CONTENT_TYPES =
             String.join(", ", SUPPORTED_QUERY_CONTENT_TYPES_LIST);
 

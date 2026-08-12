@@ -16,6 +16,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.F
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.Optionality;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
+import uk.co.compendiumdev.thingifier.core.query.FilterOperation;
 import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
 import uk.co.compendiumdev.thingifier.core.query.RepositoryQuery;
 import uk.co.compendiumdev.thingifier.core.query.RepositoryQuerySpec;
@@ -737,6 +738,20 @@ public class ThingStoreContractTest {
         Assertions.assertEquals(1, regexProjects.size());
         Assertions.assertEquals(project, regexProjects.get(0));
 
+        QueryFilterParams literalContainsParams = new QueryFilterParams();
+        literalContainsParams.put("title", FilterOperation.LITERAL_CONTAINS, "Repository");
+        Assertions.assertEquals(
+                List.of(project),
+                repository.entityQueries().list(projectDefinition, literalContainsParams));
+
+        QueryFilterParams caseSensitiveContainsParams = new QueryFilterParams();
+        caseSensitiveContainsParams.put("title", FilterOperation.LITERAL_CONTAINS, "repository");
+        Assertions.assertTrue(
+                repository
+                        .entityQueries()
+                        .list(projectDefinition, caseSensitiveContainsParams)
+                        .isEmpty());
+
         Assertions.assertThrows(
                 RuntimeException.class,
                 () ->
@@ -787,6 +802,24 @@ public class ThingStoreContractTest {
                 repository.relationships().listRelated(project, "tasks", relationshipFilterParams);
         Assertions.assertEquals(1, filteredTasks.size());
         Assertions.assertEquals(task, filteredTasks.get(0));
+
+        QueryFilterParams relationshipLiteralContainsParams = new QueryFilterParams();
+        relationshipLiteralContainsParams.put(
+                "title", FilterOperation.LITERAL_CONTAINS, "repository");
+        Assertions.assertEquals(
+                List.of(task),
+                repository
+                        .relationships()
+                        .listRelated(project, "tasks", relationshipLiteralContainsParams));
+
+        QueryFilterParams relationshipCaseSensitiveContainsParams = new QueryFilterParams();
+        relationshipCaseSensitiveContainsParams.put(
+                "title", FilterOperation.LITERAL_CONTAINS, "Repository");
+        Assertions.assertTrue(
+                repository
+                        .relationships()
+                        .listRelated(project, "tasks", relationshipCaseSensitiveContainsParams)
+                        .isEmpty());
 
         QueryFilterParams relationshipSortParams = new QueryFilterParams();
         relationshipSortParams.put("_sortBy", "-id");

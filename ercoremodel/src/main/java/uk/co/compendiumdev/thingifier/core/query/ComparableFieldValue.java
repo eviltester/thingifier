@@ -50,9 +50,15 @@ public class ComparableFieldValue {
             return field1Value.compareTo(field2Value);
         }
 
+        if (fieldDefn.getType() == FieldType.AUTO_GUID || fieldDefn.getType() == FieldType.DATE) {
+            String field1Value = fieldValue.asString();
+            String field2Value = otherValue.getValue().asString();
+            return field1Value.compareTo(field2Value);
+        }
+
         // don't know how to handle that field type
         // so the instances are by default the same
-        // TODO: FieldType.OBJECT, FieldType.DATE
+        // TODO: FieldType.OBJECT
         return 0;
     }
 

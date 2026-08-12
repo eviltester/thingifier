@@ -15,11 +15,16 @@ public final class JsonBodyValueConverter {
     private static final ObjectMapper JSON =
             new ObjectMapper(
                     JsonFactory.builder().enable(JsonReadFeature.ALLOW_SINGLE_QUOTES).build());
+    private static final ObjectMapper STRICT_JSON = new ObjectMapper();
 
     private JsonBodyValueConverter() {}
 
     public static JsonNode readTree(final String body) throws JsonProcessingException {
         return JSON.readTree(body);
+    }
+
+    public static JsonNode readStrictTree(final String body) throws JsonProcessingException {
+        return STRICT_JSON.readTree(body);
     }
 
     public static Map<String, Object> jsonObjectAsMap(final String body)

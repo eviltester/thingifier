@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.adapter.internalhttp.InternalHttpMethod;
 import uk.co.compendiumdev.thingifier.adapter.internalhttp.InternalHttpRequest;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
+import uk.co.compendiumdev.thingifier.core.query.FilterOperation;
 
 class InternalHttpRequestToHttpApiRequestTest {
 
@@ -45,7 +46,9 @@ class InternalHttpRequestToHttpApiRequestTest {
         Assertions.assertEquals("1", apiRequest.rawQueryParamsValue("p"));
         Assertions.assertEquals(4, apiRequest.getFilterableQueryParams().size());
         Assertions.assertEquals("id", apiRequest.getFilterableQueryParams().get(0).fieldName);
-        Assertions.assertEquals(">=", apiRequest.getFilterableQueryParams().get(0).filterOperation);
+        Assertions.assertEquals(
+                FilterOperation.GREATER_THAN_OR_EQUAL,
+                apiRequest.getFilterableQueryParams().get(0).filterOperation);
         Assertions.assertEquals("1", apiRequest.getFilterableQueryParams().get(0).fieldValue);
     }
 }

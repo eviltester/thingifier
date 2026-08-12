@@ -230,6 +230,289 @@ public class RestApiQueryHandlerTest {
     }
 
     @Test
+    public void structuredJsonQueryEntityCollectionFiltersByDoneStatus() {
+        Thingifier thingifier = todoThingifier();
+        EntityInstance matching = createTodo(thingifier, "Keep", "false", "Open item");
+        createTodo(thingifier, "Skip", "true", "Closed item");
+
+        HttpApiResponse response =
+                new ThingifierHttpApi(thingifier)
+                        .queryRequest(
+                                structuredJsonQuery(
+                                        "todos", "{\"filter\":{\"doneStatus\":false}}"));
+
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertTrue(response.apiResponse().isCollection());
+        Assertions.assertEquals(1, response.apiResponse().getReturnedInstanceCollection().size());
+        Assertions.assertEquals(
+                matching, response.apiResponse().getReturnedInstanceCollection().get(0));
+        Assertions.assertEquals(
+                ThingifierHttpApi.SUPPORTED_QUERY_CONTENT_TYPES,
+                response.getHeaders().get(ThingifierHttpApi.ACCEPT_QUERY_HEADER));
+    }
+
+    @Test
+    public void structuredJsonQueryContainsUsesLiteralText() {
+        Thingifier thingifier = todoThingifier();
+        EntityInstance matching = createTodo(thingifier, "Scan * literally", "false", "Open item");
+        createTodo(thingifier, "Scan documents", "false", "Open item");
+
+        HttpApiResponse response =
+                new ThingifierHttpApi(thingifier)
+                        .queryRequest(
+                                structuredJsonQuery(
+                                        "todos", "{\"filter\":{\"title\":{\"contains\":\"*\"}}}"));
+
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals(1, response.apiResponse().getReturnedInstanceCollection().size());
+        Assertions.assertEquals(
+                matching, response.apiResponse().getReturnedInstanceCollection().get(0));
+    }
+
+    @Test
+    public void structuredJsonQueryExactStringKeepsOperatorPrefixedTextLiteral() {
+        Thingifier thingifier = todoThingifier();
+        EntityInstance matching = createTodo(thingifier, ">blocked", "false", "Open item");
+        createTodo(thingifier, "zebra", "false", "Open item");
+
+        HttpApiResponse response =
+                new ThingifierHttpApi(thingifier)
+                        .queryRequest(
+                                structuredJsonQuery(
+                                        "todos", "{\"filter\":{\"title\":\">blocked\"}}"));
+
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals(1, response.apiResponse().getReturnedInstanceCollection().size());
+        Assertions.assertEquals(
+                matching, response.apiResponse().getReturnedInstanceCollection().get(0));
+    }
+
+    @Test
+    public void structuredJsonQueryFiltersByGuidExactly() {
+        Thingifier thingifier = taskProjectThingifier();
+        EntityInstance matching = createProject(thingifier, "Project");
+        createProject(thingifier, "Other");
+
+        HttpApiResponse response =
+                new ThingifierHttpApi(thingifier)
+                        .queryRequest(
+                                structuredJsonQuery(
+                                        "projects",
+                                        "{\"filter\":{\"guid\":\""
+                                                + matching.getPrimaryKeyValue()
+                                                + "\"}}"));
+
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals(1, response.apiResponse().getReturnedInstanceCollection().size());
+        Assertions.assertEquals(
+                matching, response.apiResponse().getReturnedInstanceCollection().get(0));
+    }
+
+    @Test
+    public void structuredJsonQueryFiltersByNumericComparisons() {
+        Thingifier thingifier = todoThingifier();
+        createTodo(thingifier, "First", "false", "One");
+        EntityInstance expected = createTodo(thingifier, "Second", "false", "Two");
+        createTodo(thingifier, "Third", "false", "Three");
+
+        HttpApiResponse response =
+                new ThingifierHttpApi(thingifier)
+                        .queryRequest(
+                                structuredJsonQuery(
+                                        "todos",
+                                        "{\"filter\":{\"id\":{\"greaterThan\":1,"
+                                                + "\"lessThan\":3}}}"));
+
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals(1, response.apiResponse().getReturnedInstanceCollection().size());
+        Assertions.assertEquals(
+                expected, response.apiResponse().getReturnedInstanceCollection().get(0));
+    }
+
+    @Test
+    public void structuredJsonQueryCanSortAndPaginateResults() {
+        Thingifier thingifier = todoThingifier();
+        createTodo(thingifier, "First", "false", "One");
+        EntityInstance expected = createTodo(thingifier, "Second", "false", "Two");
+        createTodo(thingifier, "Third", "false", "Three");
+
+        HttpApiResponse response =
+                new ThingifierHttpApi(thingifier)
+                        .queryRequest(
+                                structuredJsonQuery(
+                                        "todos",
+                                        "{\"sort\":[{\"field\":\"id\",\"direction\":\"desc\"}],"
+                                                + "\"limit\":1,\"offset\":1}"));
+
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals(1, response.apiResponse().getReturnedInstanceCollection().size());
+        Assertions.assertEquals(
+                expected, response.apiResponse().getReturnedInstanceCollection().get(0));
+    }
+
+    @Test
+    public void structuredJsonQueryFiltersRelationshipCollections() {
+        Thingifier thingifier = taskProjectThingifier();
+        ThingStore store = storeFor(thingifier);
+        EntityInstance project = createProject(thingifier, "Project");
+        EntityInstance matching = createTask(thingifier, "Keep this", "Open");
+        EntityInstance relatedButFilteredOut = createTask(thingifier, "Skip this", "Open");
+        createTask(thingifier, "Keep unrelated", "Open");
+        store.relationships().connect(project, "tasks", matching);
+        store.relationships().connect(project, "tasks", relatedButFilteredOut);
+
+        HttpApiResponse response =
+                new ThingifierHttpApi(thingifier)
+                        .queryRequest(
+                                structuredJsonQuery(
+                                        "projects/" + project.getPrimaryKeyValue() + "/tasks",
+                                        "{\"filter\":{\"title\":{\"contains\":\"Keep\"}}}"));
+
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals(1, response.apiResponse().getReturnedInstanceCollection().size());
+        Assertions.assertEquals(
+                matching, response.apiResponse().getReturnedInstanceCollection().get(0));
+    }
+
+    @Test
+    public void structuredJsonQueryWorksForNonTodoCollections() {
+        Thingifier thingifier = taskProjectThingifier();
+        EntityInstance matching = createProject(thingifier, "Migration");
+        createProject(thingifier, "Support");
+
+        HttpApiResponse response =
+                new ThingifierHttpApi(thingifier)
+                        .queryRequest(
+                                structuredJsonQuery(
+                                        "projects", "{\"filter\":{\"title\":\"Migration\"}}"));
+
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals(1, response.apiResponse().getReturnedInstanceCollection().size());
+        Assertions.assertEquals(
+                matching, response.apiResponse().getReturnedInstanceCollection().get(0));
+    }
+
+    @Test
+    public void structuredJsonQueryAcceptsVendorJsonMediaTypeWithParameters() {
+        Thingifier thingifier = todoThingifier();
+        EntityInstance matching = createTodo(thingifier, "Keep", "false", "Open item");
+
+        HttpApiRequest request =
+                new HttpApiRequest("todos")
+                        .addHeader(
+                                "Content-Type",
+                                ThingifierHttpApi.STRUCTURED_TODO_QUERY_CONTENT_TYPE
+                                        + "; charset=utf-8")
+                        .setBody("{\"filter\":{\"title\":\"Keep\"}}");
+        HttpApiResponse response = new ThingifierHttpApi(thingifier).queryRequest(request);
+
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals(1, response.apiResponse().getReturnedInstanceCollection().size());
+        Assertions.assertEquals(
+                matching, response.apiResponse().getReturnedInstanceCollection().get(0));
+    }
+
+    @Test
+    public void structuredJsonQueryRejectsMalformedJson() {
+        Thingifier thingifier = todoThingifier();
+
+        HttpApiResponse response =
+                new ThingifierHttpApi(thingifier)
+                        .queryRequest(structuredJsonQuery("todos", "{\"filter\":"));
+
+        Assertions.assertEquals(400, response.getStatusCode());
+    }
+
+    @Test
+    public void structuredJsonQueryRejectsSingleQuotedJson() {
+        Thingifier thingifier = todoThingifier();
+
+        HttpApiResponse response =
+                new ThingifierHttpApi(thingifier)
+                        .queryRequest(structuredJsonQuery("todos", "{'filter':{'title':'Task'}}"));
+
+        Assertions.assertEquals(400, response.getStatusCode());
+    }
+
+    @Test
+    public void structuredJsonQueryRejectsUnknownFields() {
+        Thingifier thingifier = todoThingifier();
+
+        HttpApiResponse response =
+                new ThingifierHttpApi(thingifier)
+                        .queryRequest(
+                                structuredJsonQuery(
+                                        "todos", "{\"filter\":{\"unknown\":\"value\"}}"));
+
+        Assertions.assertEquals(422, response.getStatusCode());
+    }
+
+    @Test
+    public void structuredJsonQueryRejectsUnsupportedOperators() {
+        Thingifier thingifier = todoThingifier();
+
+        HttpApiResponse response =
+                new ThingifierHttpApi(thingifier)
+                        .queryRequest(
+                                structuredJsonQuery(
+                                        "todos",
+                                        "{\"filter\":{\"title\":{\"startsWith\":\"Task\"}}}"));
+
+        Assertions.assertEquals(422, response.getStatusCode());
+    }
+
+    @Test
+    public void structuredJsonQueryRejectsInvalidPaginationValues() {
+        Thingifier thingifier = todoThingifier();
+
+        HttpApiResponse response =
+                new ThingifierHttpApi(thingifier)
+                        .queryRequest(structuredJsonQuery("todos", "{\"limit\":-1}"));
+
+        Assertions.assertEquals(422, response.getStatusCode());
+    }
+
+    @Test
+    public void structuredJsonQueryRejectsInvalidSortFields() {
+        Thingifier thingifier = todoThingifier();
+
+        HttpApiResponse response =
+                new ThingifierHttpApi(thingifier)
+                        .queryRequest(
+                                structuredJsonQuery(
+                                        "todos",
+                                        "{\"sort\":[{\"field\":\"missing\","
+                                                + "\"direction\":\"asc\"}]}"));
+
+        Assertions.assertEquals(422, response.getStatusCode());
+    }
+
+    @Test
+    public void structuredJsonQueryStillRejectsApplicationJsonContentType() {
+        Thingifier thingifier = todoThingifier();
+        HttpApiRequest request =
+                new HttpApiRequest("todos")
+                        .addHeader("Content-Type", "application/json")
+                        .setBody("{\"filter\":{\"title\":\"Task\"}}");
+
+        HttpApiResponse response = new ThingifierHttpApi(thingifier).queryRequest(request);
+
+        Assertions.assertEquals(415, response.getStatusCode());
+    }
+
+    @Test
+    public void structuredJsonQueryKeepsUnsupportedAcceptAsNotAcceptable() {
+        Thingifier thingifier = todoThingifier();
+        HttpApiRequest request =
+                structuredJsonQuery("todos", "{\"filter\":{\"doneStatus\":false}}")
+                        .addHeader("Accept", "text/*");
+
+        HttpApiResponse response = new ThingifierHttpApi(thingifier).queryRequest(request);
+
+        Assertions.assertEquals(406, response.getStatusCode());
+    }
+
+    @Test
     public void getCollectionAdvertisesQuerySupport() {
         Thingifier thingifier = taskProjectThingifier();
 
@@ -609,6 +892,12 @@ public class RestApiQueryHandlerTest {
     private HttpApiRequest jsonPathQuery(final String path, final String body) {
         return new HttpApiRequest(path)
                 .addHeader("Content-Type", ThingifierHttpApi.JSONPATH_QUERY_CONTENT_TYPE)
+                .setBody(body);
+    }
+
+    private HttpApiRequest structuredJsonQuery(final String path, final String body) {
+        return new HttpApiRequest(path)
+                .addHeader("Content-Type", ThingifierHttpApi.STRUCTURED_TODO_QUERY_CONTENT_TYPE)
                 .setBody(body);
     }
 }

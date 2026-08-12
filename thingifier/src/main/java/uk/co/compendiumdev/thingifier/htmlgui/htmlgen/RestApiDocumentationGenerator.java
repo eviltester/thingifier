@@ -540,6 +540,12 @@ public class RestApiDocumentationGenerator {
                                                 + "</i> with an expression such as <i>"
                                                 + jsonPathQueryExampleFor(routingDefn)
                                                 + "</i>."));
+                        output.append(
+                                paragraph(
+                                        "QUERY structured JSON content uses <i>Content-Type: "
+                                                + ThingifierHttpApi
+                                                        .STRUCTURED_TODO_QUERY_CONTENT_TYPE
+                                                + "</i> with a JSON query object."));
                     }
                 }
             }

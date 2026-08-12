@@ -1,9 +1,11 @@
 package uk.co.compendiumdev.thingifier.api.http;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.jayway.jsonpath.InvalidPathException;
 import com.jayway.jsonpath.JsonPath;
 import java.util.ArrayList;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
+import uk.co.compendiumdev.thingifier.api.http.bodyparser.JsonBodyValueConverter;
 import uk.co.compendiumdev.thingifier.api.http.headers.headerparser.ContentTypeHeaderParser;
 import uk.co.compendiumdev.thingifier.api.http.headers.headervalidator.AcceptHeaderValidator;
 import uk.co.compendiumdev.thingifier.api.http.headers.headervalidator.ContentTypeHeaderValidator;
@@ -101,7 +103,9 @@ public class HttpApiRequestValidator {
             return queryContentError(400, "Missing Content-Type for QUERY request");
         }
 
-        if (!contentType.isFormUrlEncoded() && !contentType.isJsonPath()) {
+        if (!contentType.isFormUrlEncoded()
+                && !contentType.isJsonPath()
+                && !contentType.isStructuredTodoQueryJson()) {
             ApiResponse response =
                     queryContentError(
                             this.apiConfig.statusCodes().contentTypeNotSupported(),
@@ -113,10 +117,12 @@ public class HttpApiRequestValidator {
         try {
             if (contentType.isJsonPath()) {
                 validateJsonPath(request.getBody());
+            } else if (contentType.isStructuredTodoQueryJson()) {
+                validateStructuredQueryJson(request.getBody());
             } else {
                 new UrlQueryParamParser().parseStrict(request.getBody());
             }
-        } catch (IllegalArgumentException | InvalidPathException e) {
+        } catch (IllegalArgumentException | InvalidPathException | JsonProcessingException e) {
             return queryContentError(400, e.getMessage());
         }
 
@@ -128,6 +134,10 @@ public class HttpApiRequestValidator {
             throw new IllegalArgumentException("Missing JSONPath expression for QUERY request");
         }
         JsonPath.compile(body.trim());
+    }
+
+    private void validateStructuredQueryJson(final String body) throws JsonProcessingException {
+        JsonBodyValueConverter.readStrictTree(body);
     }
 
     private ApiResponse queryContentError(final int statusCode, final String message) {

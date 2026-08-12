@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
+import uk.co.compendiumdev.thingifier.core.query.FilterOperation;
 import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
 
 public class UrlQueryParamParserTest {
@@ -32,7 +33,8 @@ public class UrlQueryParamParserTest {
         UrlQueryParamParser parser = new UrlQueryParamParser();
         QueryFilterParams values = parser.parse("id%3E%3D4");
         Assertions.assertEquals("id", values.get(0).fieldName);
-        Assertions.assertEquals(">=", values.get(0).filterOperation);
+        Assertions.assertEquals(
+                FilterOperation.GREATER_THAN_OR_EQUAL, values.get(0).filterOperation);
         Assertions.assertEquals("4", values.get(0).fieldValue);
     }
 
@@ -43,11 +45,12 @@ public class UrlQueryParamParserTest {
         Assertions.assertEquals(2, values.size());
 
         Assertions.assertEquals("id", values.get(0).fieldName);
-        Assertions.assertEquals(">=", values.get(0).filterOperation);
+        Assertions.assertEquals(
+                FilterOperation.GREATER_THAN_OR_EQUAL, values.get(0).filterOperation);
         Assertions.assertEquals("4", values.get(0).fieldValue);
 
         Assertions.assertEquals("id", values.get(1).fieldName);
-        Assertions.assertEquals("<=", values.get(1).filterOperation);
+        Assertions.assertEquals(FilterOperation.LESS_THAN_OR_EQUAL, values.get(1).filterOperation);
         Assertions.assertEquals("7", values.get(1).fieldValue);
     }
 
@@ -60,7 +63,8 @@ public class UrlQueryParamParserTest {
         Assertions.assertEquals(1, values.size());
 
         Assertions.assertEquals("id", values.get(0).fieldName);
-        Assertions.assertEquals(">=", values.get(0).filterOperation);
+        Assertions.assertEquals(
+                FilterOperation.GREATER_THAN_OR_EQUAL, values.get(0).filterOperation);
         Assertions.assertEquals("4", values.get(0).fieldValue);
     }
 
@@ -86,7 +90,8 @@ public class UrlQueryParamParserTest {
         Assertions.assertEquals(1, values.size());
 
         Assertions.assertEquals("fieldname4", values.get(0).fieldName);
-        Assertions.assertEquals("=", values.get(0).filterOperation, "expected = by default");
+        Assertions.assertEquals(
+                FilterOperation.EQUALS, values.get(0).filterOperation, "expected = by default");
         Assertions.assertEquals("", values.get(0).fieldValue);
     }
 
@@ -97,7 +102,53 @@ public class UrlQueryParamParserTest {
         Assertions.assertEquals(1, values.size());
 
         Assertions.assertEquals("fieldname", values.get(0).fieldName);
-        Assertions.assertEquals(">=", values.get(0).filterOperation);
+        Assertions.assertEquals(
+                FilterOperation.GREATER_THAN_OR_EQUAL, values.get(0).filterOperation);
         Assertions.assertEquals("", values.get(0).fieldValue);
+    }
+
+    @Test
+    public void explicitExactMatchCanKeepOperatorPrefixedValue() {
+        UrlQueryParamParser parser = new UrlQueryParamParser();
+        QueryFilterParams values = parser.parse("title==>blocked");
+        Assertions.assertEquals(1, values.size());
+
+        Assertions.assertEquals("title", values.get(0).fieldName);
+        Assertions.assertEquals(FilterOperation.EXACT_MATCH, values.get(0).filterOperation);
+        Assertions.assertEquals(">blocked", values.get(0).fieldValue);
+    }
+
+    @Test
+    public void keyValueQueryCanUseOperatorPrefixedValue() {
+        UrlQueryParamParser parser = new UrlQueryParamParser();
+        QueryFilterParams values = parser.parse("id=>=4");
+        Assertions.assertEquals(1, values.size());
+
+        Assertions.assertEquals("id", values.get(0).fieldName);
+        Assertions.assertEquals(
+                FilterOperation.GREATER_THAN_OR_EQUAL, values.get(0).filterOperation);
+        Assertions.assertEquals("4", values.get(0).fieldValue);
+    }
+
+    @Test
+    public void keyValueQueryCanUseNotEqualsOperatorPrefixedValue() {
+        UrlQueryParamParser parser = new UrlQueryParamParser();
+        QueryFilterParams values = parser.parse("id=!=4");
+        Assertions.assertEquals(1, values.size());
+
+        Assertions.assertEquals("id", values.get(0).fieldName);
+        Assertions.assertEquals(FilterOperation.NOT_EQUALS, values.get(0).filterOperation);
+        Assertions.assertEquals("4", values.get(0).fieldValue);
+    }
+
+    @Test
+    public void equalsValuesCanContainOtherOperatorTokens() {
+        UrlQueryParamParser parser = new UrlQueryParamParser();
+        QueryFilterParams values = parser.parse("title=one<two");
+        Assertions.assertEquals(1, values.size());
+
+        Assertions.assertEquals("title", values.get(0).fieldName);
+        Assertions.assertEquals(FilterOperation.EQUALS, values.get(0).filterOperation);
+        Assertions.assertEquals("one<two", values.get(0).fieldValue);
     }
 }
