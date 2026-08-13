@@ -60,14 +60,14 @@ public class SimpleHttpRouteCreator {
                     (request, result) -> {
                         final AcceptHeaderParser acceptParser =
                                 new AcceptHeaderParser(request.header("Accept"));
-                        String preferred =
-                                new AcceptHeaderParser(request.header("Accept")).getPreferredType();
-                        if (preferred == null
-                                || preferred.trim().isEmpty()
-                                || acceptParser.willAcceptAnything()) {
-                            preferred = "application/json"; // hard coded default
+                        AcceptHeaderParser.ACCEPT_TYPE preferredType =
+                                acceptParser.preferredSupportedType(
+                                        AcceptHeaderParser.ACCEPT_TYPE.responseMediaTypes(),
+                                        AcceptHeaderParser.ACCEPT_TYPE.JSON);
+                        if (preferredType == AcceptHeaderParser.ACCEPT_TYPE.NO_MATCHING_TYPE) {
+                            preferredType = AcceptHeaderParser.ACCEPT_TYPE.JSON;
                         }
-                        result.header("Content-Type", preferred);
+                        result.header("Content-Type", preferredType.mediaType());
                         if (!allowResponseIndexing) {
                             result.header("x-robots-tag", "noindex");
                         }

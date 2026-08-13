@@ -1,5 +1,7 @@
 package uk.co.compendiumdev.thingifier.api.http;
 
+import java.util.ArrayList;
+import java.util.List;
 import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonThing;
 import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
 import uk.co.compendiumdev.thingifier.api.http.headers.headerparser.AcceptHeaderParser;
@@ -53,7 +55,10 @@ public final class HttpApiResponse {
 
         AcceptHeaderParser accept = new AcceptHeaderParser(acceptHeader);
 
-        responseType = selectResponseType(accept);
+        responseType = accept.preferredSupportedType(allowedResponseTypes(), defaultResponseType());
+        if (responseType == AcceptHeaderParser.ACCEPT_TYPE.NO_MATCHING_TYPE) {
+            responseType = defaultResponseType();
+        }
         type = responseType.mediaType();
 
         apiResponseHeaders.putAll(originalApiResponseHeaders);
@@ -64,34 +69,31 @@ public final class HttpApiResponse {
         }
     }
 
-    private AcceptHeaderParser.ACCEPT_TYPE selectResponseType(final AcceptHeaderParser accept) {
-        for (AcceptHeaderParser.ACCEPT_TYPE candidate :
-                accept.getSupportedTypesInPreferenceOrder()) {
-            if (candidate == AcceptHeaderParser.ACCEPT_TYPE.ANYTHING) {
+    private List<AcceptHeaderParser.ACCEPT_TYPE> allowedResponseTypes() {
+        final List<AcceptHeaderParser.ACCEPT_TYPE> allowedTypes = new ArrayList<>();
+        for (AcceptHeaderParser.ACCEPT_TYPE type :
+                AcceptHeaderParser.ACCEPT_TYPE.responseMediaTypes()) {
+            if (type == AcceptHeaderParser.ACCEPT_TYPE.XML
+                    && !this.apiConfig.willApiAllowXmlForResponses()) {
                 continue;
             }
-            if (canRender(candidate)) {
-                return candidate;
+            if (type == AcceptHeaderParser.ACCEPT_TYPE.JSON
+                    && !this.apiConfig.willApiAllowJsonForResponses()) {
+                continue;
             }
+            allowedTypes.add(type);
         }
-        return defaultResponseType();
-    }
-
-    private boolean canRender(final AcceptHeaderParser.ACCEPT_TYPE candidate) {
-        if (candidate == AcceptHeaderParser.ACCEPT_TYPE.XML) {
-            return apiConfig.willApiAllowXmlForResponses();
-        }
-        if (candidate == AcceptHeaderParser.ACCEPT_TYPE.JSON) {
-            return apiConfig.willApiAllowJsonForResponses();
-        }
-        return candidate != AcceptHeaderParser.ACCEPT_TYPE.NO_MATCHING_TYPE;
+        return allowedTypes;
     }
 
     private AcceptHeaderParser.ACCEPT_TYPE defaultResponseType() {
         if (apiConfig.willApiAllowJsonForResponses()) {
             return AcceptHeaderParser.ACCEPT_TYPE.JSON;
         }
-        return AcceptHeaderParser.ACCEPT_TYPE.XML;
+        if (apiConfig.willApiAllowXmlForResponses()) {
+            return AcceptHeaderParser.ACCEPT_TYPE.XML;
+        }
+        return AcceptHeaderParser.ACCEPT_TYPE.CSV;
     }
 
     public String getBody() {

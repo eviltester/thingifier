@@ -1,5 +1,6 @@
 package uk.co.compendiumdev.thingifier.api.http.headers.headervalidator;
 
+import java.util.ArrayList;
 import java.util.List;
 import uk.co.compendiumdev.thingifier.api.http.headers.headerparser.AcceptHeaderParser;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
@@ -26,7 +27,8 @@ public class AcceptHeaderValidator {
         }
 
         if (apiResponse == null && this.apiConfig.willApiEnforceAcceptHeaderForResponses()) {
-            if (!hasAnyAllowedResponseType(accept)) {
+            if (preferredAllowedResponseType(accept)
+                    == AcceptHeaderParser.ACCEPT_TYPE.NO_MATCHING_TYPE) {
                 apiResponse =
                         ApiResponse.error(
                                 statusAcceptTypeNotSupported,
@@ -37,29 +39,36 @@ public class AcceptHeaderValidator {
         return apiResponse;
     }
 
-    private boolean hasAnyAllowedResponseType(final AcceptHeaderParser accept) {
-        final List<AcceptHeaderParser.ACCEPT_TYPE> supportedTypes =
-                accept.getSupportedTypesInPreferenceOrder();
-        if (supportedTypes.isEmpty()) {
-            return true;
-        }
+    private AcceptHeaderParser.ACCEPT_TYPE preferredAllowedResponseType(
+            final AcceptHeaderParser accept) {
+        return accept.preferredSupportedType(allowedResponseTypes(), defaultResponseType());
+    }
 
-        for (AcceptHeaderParser.ACCEPT_TYPE supportedType : supportedTypes) {
-            if (supportedType == AcceptHeaderParser.ACCEPT_TYPE.ANYTHING) {
-                return true;
-            }
-            if (supportedType == AcceptHeaderParser.ACCEPT_TYPE.XML
+    private List<AcceptHeaderParser.ACCEPT_TYPE> allowedResponseTypes() {
+        final List<AcceptHeaderParser.ACCEPT_TYPE> allowedTypes = new ArrayList<>();
+        for (AcceptHeaderParser.ACCEPT_TYPE type :
+                AcceptHeaderParser.ACCEPT_TYPE.responseMediaTypes()) {
+            if (type == AcceptHeaderParser.ACCEPT_TYPE.XML
                     && !this.apiConfig.willApiAllowXmlForResponses()) {
                 continue;
             }
-            if (supportedType == AcceptHeaderParser.ACCEPT_TYPE.JSON
+            if (type == AcceptHeaderParser.ACCEPT_TYPE.JSON
                     && !this.apiConfig.willApiAllowJsonForResponses()) {
                 continue;
             }
-            return true;
+            allowedTypes.add(type);
         }
+        return allowedTypes;
+    }
 
-        return false;
+    private AcceptHeaderParser.ACCEPT_TYPE defaultResponseType() {
+        if (apiConfig.willApiAllowJsonForResponses()) {
+            return AcceptHeaderParser.ACCEPT_TYPE.JSON;
+        }
+        if (apiConfig.willApiAllowXmlForResponses()) {
+            return AcceptHeaderParser.ACCEPT_TYPE.XML;
+        }
+        return AcceptHeaderParser.ACCEPT_TYPE.NO_MATCHING_TYPE;
     }
 
     private String unsupportedResponseTypeMessage(final AcceptHeaderParser accept) {

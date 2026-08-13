@@ -196,9 +196,122 @@ public class AcceptHeaderParserTest {
     }
 
     @Test
-    public void textWildcardIsNotASupportedResponseRepresentation() {
+    public void textWildcardMatchesTextResponseRepresentations() {
         final AcceptHeaderParser accept = new AcceptHeaderParser("text/*");
 
+        Assertions.assertTrue(accept.isSupportedHeader());
+        Assertions.assertEquals(
+                List.of(
+                        AcceptHeaderParser.ACCEPT_TYPE.CSV,
+                        AcceptHeaderParser.ACCEPT_TYPE.TEXT,
+                        AcceptHeaderParser.ACCEPT_TYPE.HTML,
+                        AcceptHeaderParser.ACCEPT_TYPE.TSV),
+                accept.getSupportedTypesInPreferenceOrder());
+        Assertions.assertTrue(accept.willAcceptText());
+        Assertions.assertFalse(accept.willAcceptJson());
+    }
+
+    @Test
+    public void applicationWildcardMatchesApplicationResponseRepresentations() {
+        final AcceptHeaderParser accept = new AcceptHeaderParser("application/*");
+
+        Assertions.assertTrue(accept.isSupportedHeader());
+        Assertions.assertEquals(
+                List.of(
+                        AcceptHeaderParser.ACCEPT_TYPE.JSON,
+                        AcceptHeaderParser.ACCEPT_TYPE.XML,
+                        AcceptHeaderParser.ACCEPT_TYPE.NDJSON,
+                        AcceptHeaderParser.ACCEPT_TYPE.JSONL,
+                        AcceptHeaderParser.ACCEPT_TYPE.JSON_SEQ),
+                accept.getSupportedTypesInPreferenceOrder());
+        Assertions.assertTrue(accept.willAcceptJson());
+        Assertions.assertTrue(accept.willAcceptXml());
+        Assertions.assertFalse(accept.willAcceptCsv());
+    }
+
+    @Test
+    public void qValuesControlPreferenceOrder() {
+        final AcceptHeaderParser accept =
+                new AcceptHeaderParser("application/xml;q=0.2, application/json;q=0.9");
+
+        Assertions.assertEquals(
+                List.of(AcceptHeaderParser.ACCEPT_TYPE.JSON, AcceptHeaderParser.ACCEPT_TYPE.XML),
+                accept.getSupportedTypesInPreferenceOrder());
+        Assertions.assertTrue(accept.hasAPreferenceForJson());
+        Assertions.assertFalse(accept.hasAPreferenceForXml());
+    }
+
+    @Test
+    public void qZeroExcludesMediaTypeFromNegotiation() {
+        final AcceptHeaderParser accept =
+                new AcceptHeaderParser("application/json;q=0, application/xml");
+
+        Assertions.assertTrue(accept.isSupportedHeader());
+        Assertions.assertFalse(accept.willAcceptJson());
+        Assertions.assertTrue(accept.willAcceptXml());
+        Assertions.assertEquals(
+                List.of(AcceptHeaderParser.ACCEPT_TYPE.XML),
+                accept.getSupportedTypesInPreferenceOrder());
+    }
+
+    @Test
+    public void qZeroExactMatchOverridesWildcardForThatMediaType() {
+        final AcceptHeaderParser accept = new AcceptHeaderParser("application/json;q=0, */*");
+
+        Assertions.assertFalse(accept.willAcceptJson());
+        Assertions.assertTrue(accept.willAcceptXml());
+        Assertions.assertEquals(
+                AcceptHeaderParser.ACCEPT_TYPE.XML,
+                accept.getSupportedTypesInPreferenceOrder().get(0));
+    }
+
+    @Test
+    public void unsupportedMediaTypesAreIgnoredWhenSupportedAlternativeExists() {
+        final AcceptHeaderParser accept =
+                new AcceptHeaderParser("application/problem+json, application/json;q=0.5");
+
+        Assertions.assertEquals(
+                List.of(AcceptHeaderParser.ACCEPT_TYPE.JSON),
+                accept.getSupportedTypesInPreferenceOrder());
+        Assertions.assertTrue(accept.willAcceptJson());
+    }
+
+    @Test
+    public void concreteStructuredJsonTypesDoNotMatchPlainJson() {
+        Assertions.assertFalse(new AcceptHeaderParser("application/problem+json").willAcceptJson());
+        Assertions.assertFalse(new AcceptHeaderParser("application/vnd.api+json").willAcceptJson());
+        Assertions.assertFalse(new AcceptHeaderParser("application/hal+json").willAcceptJson());
+    }
+
+    @Test
+    public void structuredJsonWildcardDoesNotMatchPlainJson() {
+        final AcceptHeaderParser accept = new AcceptHeaderParser("application/*+json");
+
         Assertions.assertFalse(accept.isSupportedHeader());
+        Assertions.assertFalse(accept.willAcceptJson());
+        Assertions.assertTrue(accept.getSupportedTypesInPreferenceOrder().isEmpty());
+    }
+
+    @Test
+    public void parametersDoNotPreventQValueProcessing() {
+        final AcceptHeaderParser accept =
+                new AcceptHeaderParser(
+                        "application/json; charset=utf-8; q=0.3, "
+                                + "application/xml; version=1; q=0.8");
+
+        Assertions.assertEquals(
+                List.of(AcceptHeaderParser.ACCEPT_TYPE.XML, AcceptHeaderParser.ACCEPT_TYPE.JSON),
+                accept.getSupportedTypesInPreferenceOrder());
+    }
+
+    @Test
+    public void invalidQValuesMakeMediaRangesUnacceptable() {
+        final AcceptHeaderParser accept =
+                new AcceptHeaderParser("application/json;q=nope, application/xml;q=1.1");
+
+        Assertions.assertTrue(accept.isSupportedHeader());
+        Assertions.assertFalse(accept.willAcceptJson());
+        Assertions.assertFalse(accept.willAcceptXml());
+        Assertions.assertTrue(accept.getSupportedTypesInPreferenceOrder().isEmpty());
     }
 }
