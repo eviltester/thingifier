@@ -35,6 +35,38 @@ class ThingifierHttpApiAdditionalRepresentationsTest {
     }
 
     @Test
+    void getNegotiatesAcceptHeaderQualityValuesWildcardsAndStructuredJsonTypes() {
+        Thingifier thingifier = taskThingifier();
+        createTask(thingifier, "Task");
+        ThingifierHttpApi api = new ThingifierHttpApi(thingifier);
+
+        assertNegotiatedGet(api, null, 200, "application/json", "\"tasks\"");
+        assertNegotiatedGet(api, "*/*", 200, "application/json", "\"tasks\"");
+        assertNegotiatedGet(api, "application/*", 200, "application/json", "\"tasks\"");
+        assertNegotiatedGet(api, "text/*", 200, "text/csv", "id,title");
+        assertNegotiatedGet(api, "application/json", 200, "application/json", "\"tasks\"");
+        assertNegotiatedGet(api, "application/xml", 200, "application/xml", "<tasks>");
+        assertNegotiatedGet(
+                api,
+                "application/json, application/problem+json",
+                200,
+                "application/json",
+                "\"tasks\"");
+        assertNegotiatedGet(
+                api,
+                "application/problem+json, application/json;q=0.5",
+                200,
+                "application/json",
+                "\"tasks\"");
+        assertNegotiatedGet(
+                api, "application/json;q=0, application/xml", 200, "application/xml", "<tasks>");
+        assertNegotiatedGet(
+                api, "application/problem+json", 406, "application/json", "errorMessages");
+        assertNegotiatedGet(api, "application/*+json", 406, "application/json", "errorMessages");
+        assertNegotiatedGet(api, "application/json;q=0", 406, "application/json", "errorMessages");
+    }
+
+    @Test
     void querySelectsAdditionalResponseRepresentationsFromAcceptHeader() {
         Thingifier thingifier = taskThingifier();
         createTask(thingifier, "Task");
@@ -109,6 +141,24 @@ class ThingifierHttpApiAdditionalRepresentationsTest {
         expectedBodies.put("application/json-seq", "\u001E{\"id\":1,\"title\":\"Task\"}\n");
         expectedBodies.put("text/tab-separated-values", "id\ttitle\n1\tTask");
         return expectedBodies;
+    }
+
+    private void assertNegotiatedGet(
+            final ThingifierHttpApi api,
+            final String acceptHeader,
+            final int statusCode,
+            final String contentType,
+            final String bodyFragment) {
+        HttpApiRequest request = new HttpApiRequest("tasks");
+        if (acceptHeader != null) {
+            request.addHeader("Accept", acceptHeader);
+        }
+
+        HttpApiResponse response = api.get(request);
+
+        Assertions.assertEquals(statusCode, response.getStatusCode(), acceptHeader);
+        Assertions.assertEquals(contentType, response.getType(), acceptHeader);
+        Assertions.assertTrue(response.getBody().contains(bodyFragment), response.getBody());
     }
 
     private Thingifier taskThingifier() {

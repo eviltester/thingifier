@@ -521,7 +521,7 @@ public class RestApiQueryHandlerTest {
         Thingifier thingifier = todoThingifier();
         HttpApiRequest request =
                 structuredJsonQuery("todos", "{\"filter\":{\"doneStatus\":false}}")
-                        .addHeader("Accept", "text/*");
+                        .addHeader("Accept", "application/problem+json");
 
         HttpApiResponse response = new ThingifierHttpApi(thingifier).queryRequest(request);
 

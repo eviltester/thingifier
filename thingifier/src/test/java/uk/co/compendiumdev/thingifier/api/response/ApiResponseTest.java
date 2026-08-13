@@ -44,6 +44,20 @@ public class ApiResponseTest {
     }
 
     @Test
+    public void errorFormatterUsesAcceptQualityValuesForJsonAndXml() {
+        Assertions.assertTrue(
+                ApiResponseError.asAppropriate("application/json;q=0, application/xml", "oopsy")
+                        .startsWith("<"));
+        Assertions.assertTrue(
+                ApiResponseError.asAppropriate(
+                                "application/xml;q=0.1, application/json;q=0.9", "oopsy")
+                        .startsWith("{"));
+        Assertions.assertTrue(
+                ApiResponseError.asAppropriate("application/problem+json", "oopsy")
+                        .startsWith("{"));
+    }
+
+    @Test
     public void responseErrors() {
 
         List<String> errors = new ArrayList();
