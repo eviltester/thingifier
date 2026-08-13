@@ -122,7 +122,7 @@ public class HttpApiRequestValidator {
             } else if (contentType.isStructuredQueryJson()) {
                 try {
                     validateStructuredQueryJson(request.getBody());
-                } catch (JsonProcessingException e) {
+                } catch (JsonProcessingException | IllegalArgumentException e) {
                     return queryContentError(400, MALFORMED_STRUCTURED_QUERY_JSON);
                 }
             } else {
