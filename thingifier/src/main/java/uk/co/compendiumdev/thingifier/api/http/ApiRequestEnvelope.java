@@ -72,7 +72,7 @@ public final class ApiRequestEnvelope {
         if (contentType.isJsonPath()) {
             return QueryBodyFormat.JSONPATH;
         }
-        if (contentType.isStructuredTodoQueryJson()) {
+        if (contentType.isStructuredQueryJson()) {
             return QueryBodyFormat.STRUCTURED_JSON;
         }
         return QueryBodyFormat.URL_ENCODED;

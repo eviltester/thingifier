@@ -85,8 +85,7 @@ class ThingifierHttpApiAdditionalRepresentationsTest {
             HttpApiRequest request =
                     new HttpApiRequest("tasks")
                             .addHeader(
-                                    "Content-Type",
-                                    ThingifierHttpApi.STRUCTURED_TODO_QUERY_CONTENT_TYPE)
+                                    "Content-Type", ThingifierHttpApi.STRUCTURED_QUERY_CONTENT_TYPE)
                             .addHeader("Accept", expected.getKey())
                             .setBody("{\"filter\":{\"title\":\"Task\"}}");
             HttpApiResponse response = api.queryRequest(request);

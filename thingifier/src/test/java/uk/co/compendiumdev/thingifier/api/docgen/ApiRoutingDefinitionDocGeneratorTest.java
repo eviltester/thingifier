@@ -33,7 +33,7 @@ public class ApiRoutingDefinitionDocGeneratorTest {
         Assertions.assertTrue(statuses(query).containsAll(Set.of(200, 400, 413, 415, 422)));
         Assertions.assertTrue(query.getDocumentation().contains("application/jsonpath"));
         Assertions.assertTrue(
-                query.getDocumentation().contains("application/vnd.apichallenges.todo-query+json"));
+                query.getDocumentation().contains("application/vnd.thingifier.query+json"));
         Assertions.assertEquals("OPTIONS, GET, HEAD, POST, QUERY", options.headerValue());
     }
 

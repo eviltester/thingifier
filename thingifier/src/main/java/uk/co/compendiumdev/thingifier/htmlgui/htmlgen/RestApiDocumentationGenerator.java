@@ -543,8 +543,7 @@ public class RestApiDocumentationGenerator {
                         output.append(
                                 paragraph(
                                         "QUERY structured JSON content uses <i>Content-Type: "
-                                                + ThingifierHttpApi
-                                                        .STRUCTURED_TODO_QUERY_CONTENT_TYPE
+                                                + ThingifierHttpApi.STRUCTURED_QUERY_CONTENT_TYPE
                                                 + "</i> with a JSON query object."));
                     }
                 }

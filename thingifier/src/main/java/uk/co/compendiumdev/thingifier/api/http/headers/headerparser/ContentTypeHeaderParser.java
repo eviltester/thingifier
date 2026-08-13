@@ -36,8 +36,8 @@ public class ContentTypeHeaderParser {
         return isMediaType("application/jsonpath");
     }
 
-    public boolean isStructuredTodoQueryJson() {
-        return isMediaType("application/vnd.apichallenges.todo-query+json");
+    public boolean isStructuredQueryJson() {
+        return isMediaType("application/vnd.thingifier.query+json");
     }
 
     public boolean isMissing() {

@@ -244,7 +244,7 @@ class RestApiDocumentationGeneratorTest {
         Assertions.assertTrue(
                 docs.contains(
                         "QUERY structured JSON content uses <i>Content-Type: "
-                                + "application/vnd.apichallenges.todo-query+json</i>"));
+                                + "application/vnd.thingifier.query+json</i>"));
         Assertions.assertTrue(docs.contains("$['tasks'][?@['title'] == 'Task']"));
         Assertions.assertFalse(docs.contains("&amp;sortBy=-id"));
         Assertions.assertFalse(
