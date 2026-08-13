@@ -439,6 +439,18 @@ public class RestApiQueryHandlerTest {
     }
 
     @Test
+    public void structuredJsonQueryRejectsNullBody() {
+        Thingifier thingifier = todoThingifier();
+
+        HttpApiResponse response =
+                new ThingifierHttpApi(thingifier).queryRequest(structuredJsonQuery("todos", null));
+
+        Assertions.assertEquals(400, response.getStatusCode());
+        Assertions.assertEquals(
+                List.of("Malformed JSON query body"), response.apiResponse().getErrorMessages());
+    }
+
+    @Test
     public void structuredJsonQueryRejectsUnknownFields() {
         Thingifier thingifier = todoThingifier();
 
