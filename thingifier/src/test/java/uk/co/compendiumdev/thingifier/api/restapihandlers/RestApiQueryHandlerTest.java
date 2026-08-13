@@ -1,5 +1,6 @@
 package uk.co.compendiumdev.thingifier.api.restapihandlers;
 
+import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.Thingifier;
@@ -420,6 +421,8 @@ public class RestApiQueryHandlerTest {
                         .queryRequest(structuredJsonQuery("todos", "{\"filter\":"));
 
         Assertions.assertEquals(400, response.getStatusCode());
+        Assertions.assertEquals(
+                List.of("Malformed JSON query body"), response.apiResponse().getErrorMessages());
     }
 
     @Test
@@ -431,6 +434,8 @@ public class RestApiQueryHandlerTest {
                         .queryRequest(structuredJsonQuery("todos", "{'filter':{'title':'Task'}}"));
 
         Assertions.assertEquals(400, response.getStatusCode());
+        Assertions.assertEquals(
+                List.of("Malformed JSON query body"), response.apiResponse().getErrorMessages());
     }
 
     @Test
