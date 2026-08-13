@@ -14,6 +14,8 @@ import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 
 public class HttpApiRequestValidator {
 
+    private static final String MALFORMED_STRUCTURED_QUERY_JSON = "Malformed JSON query body";
+
     private final ThingifierApiConfig apiConfig;
     Boolean isValid;
     private ApiResponse errorResponse;
@@ -118,11 +120,15 @@ public class HttpApiRequestValidator {
             if (contentType.isJsonPath()) {
                 validateJsonPath(request.getBody());
             } else if (contentType.isStructuredQueryJson()) {
-                validateStructuredQueryJson(request.getBody());
+                try {
+                    validateStructuredQueryJson(request.getBody());
+                } catch (JsonProcessingException e) {
+                    return queryContentError(400, MALFORMED_STRUCTURED_QUERY_JSON);
+                }
             } else {
                 new UrlQueryParamParser().parseStrict(request.getBody());
             }
-        } catch (IllegalArgumentException | InvalidPathException | JsonProcessingException e) {
+        } catch (IllegalArgumentException | InvalidPathException e) {
             return queryContentError(400, e.getMessage());
         }
 
