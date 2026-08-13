@@ -35,7 +35,7 @@ public class SwaggerizerTest {
         Assertions.assertTrue(openApiVersion(swagger).startsWith("3.1."));
         Assertions.assertTrue(swagger.contains("\"x-query-operation\""));
         Assertions.assertTrue(swagger.contains("application/x-www-form-urlencoded"));
-        Assertions.assertTrue(swagger.contains("application/vnd.apichallenges.todo-query+json"));
+        Assertions.assertTrue(swagger.contains("application/vnd.thingifier.query+json"));
     }
 
     @Test
@@ -51,7 +51,7 @@ public class SwaggerizerTest {
         Assertions.assertTrue(openApiVersion(swagger).startsWith("3.0."));
         Assertions.assertTrue(swagger.contains("\"x-query-operation\""));
         Assertions.assertTrue(swagger.contains("application/x-www-form-urlencoded"));
-        Assertions.assertTrue(swagger.contains("application/vnd.apichallenges.todo-query+json"));
+        Assertions.assertTrue(swagger.contains("application/vnd.thingifier.query+json"));
     }
 
     @Test
@@ -85,7 +85,7 @@ public class SwaggerizerTest {
         Assertions.assertTrue(
                 query.getAsJsonObject("requestBody")
                         .getAsJsonObject("content")
-                        .has("application/vnd.apichallenges.todo-query+json"));
+                        .has("application/vnd.thingifier.query+json"));
     }
 
     private boolean hasParameterNamed(final JsonObject operation, final String name) {

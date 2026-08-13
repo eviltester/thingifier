@@ -401,8 +401,7 @@ public class RestApiQueryHandlerTest {
                 new HttpApiRequest("todos")
                         .addHeader(
                                 "Content-Type",
-                                ThingifierHttpApi.STRUCTURED_TODO_QUERY_CONTENT_TYPE
-                                        + "; charset=utf-8")
+                                ThingifierHttpApi.STRUCTURED_QUERY_CONTENT_TYPE + "; charset=utf-8")
                         .setBody("{\"filter\":{\"title\":\"Keep\"}}");
         HttpApiResponse response = new ThingifierHttpApi(thingifier).queryRequest(request);
 
@@ -897,7 +896,7 @@ public class RestApiQueryHandlerTest {
 
     private HttpApiRequest structuredJsonQuery(final String path, final String body) {
         return new HttpApiRequest(path)
-                .addHeader("Content-Type", ThingifierHttpApi.STRUCTURED_TODO_QUERY_CONTENT_TYPE)
+                .addHeader("Content-Type", ThingifierHttpApi.STRUCTURED_QUERY_CONTENT_TYPE)
                 .setBody(body);
     }
 }

@@ -82,10 +82,10 @@ public final class OpenApi32Finalizer {
         }
 
         JsonObject structuredMediaType =
-                objectAt(content, ThingifierHttpApi.STRUCTURED_TODO_QUERY_CONTENT_TYPE);
+                objectAt(content, ThingifierHttpApi.STRUCTURED_QUERY_CONTENT_TYPE);
         if (structuredMediaType == null) {
             structuredMediaType = new JsonObject();
-            content.add(ThingifierHttpApi.STRUCTURED_TODO_QUERY_CONTENT_TYPE, structuredMediaType);
+            content.add(ThingifierHttpApi.STRUCTURED_QUERY_CONTENT_TYPE, structuredMediaType);
         }
 
         if (!structuredMediaType.has("schema")

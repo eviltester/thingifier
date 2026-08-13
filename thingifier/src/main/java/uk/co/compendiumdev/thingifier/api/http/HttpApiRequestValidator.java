@@ -105,7 +105,7 @@ public class HttpApiRequestValidator {
 
         if (!contentType.isFormUrlEncoded()
                 && !contentType.isJsonPath()
-                && !contentType.isStructuredTodoQueryJson()) {
+                && !contentType.isStructuredQueryJson()) {
             ApiResponse response =
                     queryContentError(
                             this.apiConfig.statusCodes().contentTypeNotSupported(),
@@ -117,7 +117,7 @@ public class HttpApiRequestValidator {
         try {
             if (contentType.isJsonPath()) {
                 validateJsonPath(request.getBody());
-            } else if (contentType.isStructuredTodoQueryJson()) {
+            } else if (contentType.isStructuredQueryJson()) {
                 validateStructuredQueryJson(request.getBody());
             } else {
                 new UrlQueryParamParser().parseStrict(request.getBody());

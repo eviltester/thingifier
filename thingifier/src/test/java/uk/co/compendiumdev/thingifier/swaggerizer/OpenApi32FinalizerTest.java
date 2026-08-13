@@ -28,7 +28,7 @@ class OpenApi32FinalizerTest {
                         "x-query-content-types": [
                           "application/x-www-form-urlencoded",
                           "application/jsonpath",
-                          "application/vnd.apichallenges.todo-query+json"
+                          "application/vnd.thingifier.query+json"
                         ],
                         "responses": {
                           "200": {
@@ -57,7 +57,7 @@ class OpenApi32FinalizerTest {
         final JsonObject structuredMediaType =
                 query.getAsJsonObject("requestBody")
                         .getAsJsonObject("content")
-                        .getAsJsonObject("application/vnd.apichallenges.todo-query+json");
+                        .getAsJsonObject("application/vnd.thingifier.query+json");
 
         Assertions.assertEquals("3.2.0", document.get("openapi").getAsString());
         Assertions.assertTrue(todos.has("get"));
@@ -152,7 +152,7 @@ class OpenApi32FinalizerTest {
                 "object",
                 query.getAsJsonObject("requestBody")
                         .getAsJsonObject("content")
-                        .getAsJsonObject("application/vnd.apichallenges.todo-query+json")
+                        .getAsJsonObject("application/vnd.thingifier.query+json")
                         .getAsJsonObject("schema")
                         .get("type")
                         .getAsString());

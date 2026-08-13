@@ -256,7 +256,7 @@ class SwaggerizerEntityDescriptionTest {
                 List.of(
                         "application/x-www-form-urlencoded",
                         "application/jsonpath",
-                        "application/vnd.apichallenges.todo-query+json"),
+                        "application/vnd.thingifier.query+json"),
                 contentTypes);
     }
 }
