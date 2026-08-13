@@ -253,6 +253,10 @@ class SwaggerizerEntityDescriptionTest {
         Object contentTypes = operation.getExtensions().get("x-query-content-types");
         Assertions.assertTrue(contentTypes instanceof List<?>);
         Assertions.assertEquals(
-                List.of("application/x-www-form-urlencoded", "application/jsonpath"), contentTypes);
+                List.of(
+                        "application/x-www-form-urlencoded",
+                        "application/jsonpath",
+                        "application/vnd.apichallenges.todo-query+json"),
+                contentTypes);
     }
 }

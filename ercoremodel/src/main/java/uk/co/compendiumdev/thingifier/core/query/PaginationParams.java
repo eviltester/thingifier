@@ -62,7 +62,7 @@ public final class PaginationParams {
             return null;
         }
 
-        if (!"=".equals(param.filterOperation)) {
+        if (param.filterOperation != FilterOperation.EQUALS) {
             validationError = String.format("%s must be a non-negative integer", parameterName);
             return null;
         }

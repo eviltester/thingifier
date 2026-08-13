@@ -27,7 +27,8 @@ class OpenApi32FinalizerTest {
                         "x-http-method": "QUERY",
                         "x-query-content-types": [
                           "application/x-www-form-urlencoded",
-                          "application/jsonpath"
+                          "application/jsonpath",
+                          "application/vnd.apichallenges.todo-query+json"
                         ],
                         "responses": {
                           "200": {
@@ -53,6 +54,10 @@ class OpenApi32FinalizerTest {
                 query.getAsJsonObject("requestBody")
                         .getAsJsonObject("content")
                         .getAsJsonObject("application/jsonpath");
+        final JsonObject structuredMediaType =
+                query.getAsJsonObject("requestBody")
+                        .getAsJsonObject("content")
+                        .getAsJsonObject("application/vnd.apichallenges.todo-query+json");
 
         Assertions.assertEquals("3.2.0", document.get("openapi").getAsString());
         Assertions.assertTrue(todos.has("get"));
@@ -73,6 +78,16 @@ class OpenApi32FinalizerTest {
                         .getAsString());
         Assertions.assertEquals(
                 "string", jsonPathMediaType.getAsJsonObject("schema").get("type").getAsString());
+        Assertions.assertEquals(
+                "object", structuredMediaType.getAsJsonObject("schema").get("type").getAsString());
+        Assertions.assertEquals(
+                "integer",
+                structuredMediaType
+                        .getAsJsonObject("schema")
+                        .getAsJsonObject("properties")
+                        .getAsJsonObject("limit")
+                        .get("type")
+                        .getAsString());
     }
 
     @Test
@@ -130,6 +145,14 @@ class OpenApi32FinalizerTest {
                 query.getAsJsonObject("requestBody")
                         .getAsJsonObject("content")
                         .getAsJsonObject("application/jsonpath")
+                        .getAsJsonObject("schema")
+                        .get("type")
+                        .getAsString());
+        Assertions.assertEquals(
+                "object",
+                query.getAsJsonObject("requestBody")
+                        .getAsJsonObject("content")
+                        .getAsJsonObject("application/vnd.apichallenges.todo-query+json")
                         .getAsJsonObject("schema")
                         .get("type")
                         .getAsString());

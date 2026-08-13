@@ -123,6 +123,20 @@ public class TodoManagerQueryEngineTest {
     }
 
     @Test
+    public void canFilterEntityCollectionByGuid() {
+        QueryFilterParams params = new QueryFilterParams();
+        params.put("guid", FilterOperation.EXACT_MATCH, paperwork.getPrimaryKeyValue());
+
+        RepositoryQuery queryResults =
+                new RepositoryQuery(store(), RepositoryQuerySpec.collection(todo))
+                        .performQuery(params);
+
+        List<EntityInstance> instances = queryResults.getListEntityInstances();
+        Assertions.assertEquals(1, instances.size());
+        Assertions.assertEquals(paperwork, instances.get(0));
+    }
+
+    @Test
     public void canQueryRelationships() {
         EntityInstance officeWork =
                 store().entities()

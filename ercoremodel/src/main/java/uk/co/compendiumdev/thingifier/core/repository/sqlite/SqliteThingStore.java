@@ -1021,27 +1021,32 @@ public class SqliteThingStore implements ThingStore {
 
             String column = identifier(filterBy.fieldName);
             switch (filterBy.filterOperation) {
-                case "=":
+                case EXACT_MATCH:
+                case EQUALS:
                     whereClauses.add(column + " = ?");
                     parameters.add(filterBy.fieldValue);
                     break;
-                case "!":
-                case "!=":
+                case NOT:
+                case NOT_EQUALS:
                     whereClauses.add(column + " <> ?");
                     parameters.add(filterBy.fieldValue);
                     break;
-                case "<":
-                case ">":
-                case "<=":
-                case ">=":
-                    whereClauses.add(column + " " + filterBy.filterOperation + " ?");
+                case LESS_THAN:
+                case GREATER_THAN:
+                case LESS_THAN_OR_EQUAL:
+                case GREATER_THAN_OR_EQUAL:
+                    whereClauses.add(column + " " + filterBy.operationToken() + " ?");
                     parameters.add(filterBy.fieldValue);
                     break;
-                case "*=":
+                case WILDCARD_MATCH:
                     whereClauses.add(column + " LIKE ? ESCAPE '\\'");
                     parameters.add(sqlLikeWildcard(filterBy.fieldValue));
                     break;
-                case "~=":
+                case LITERAL_CONTAINS:
+                    whereClauses.add(column + " LIKE ? ESCAPE '\\'");
+                    parameters.add(sqlContainsLiteral(filterBy.fieldValue));
+                    break;
+                case REGEX_MATCH:
                     whereClauses.add(regexSqlCondition(column, filterBy.fieldValue, parameters));
                     break;
                 default:
@@ -1108,31 +1113,36 @@ public class SqliteThingStore implements ThingStore {
 
             String column = "target." + identifier(filterBy.fieldName);
             switch (filterBy.filterOperation) {
-                case "=":
+                case EXACT_MATCH:
+                case EQUALS:
                     sql.append(" AND ").append(column).append(" = ?");
                     parameters.add(filterBy.fieldValue);
                     break;
-                case "!":
-                case "!=":
+                case NOT:
+                case NOT_EQUALS:
                     sql.append(" AND ").append(column).append(" <> ?");
                     parameters.add(filterBy.fieldValue);
                     break;
-                case "<":
-                case ">":
-                case "<=":
-                case ">=":
+                case LESS_THAN:
+                case GREATER_THAN:
+                case LESS_THAN_OR_EQUAL:
+                case GREATER_THAN_OR_EQUAL:
                     sql.append(" AND ")
                             .append(column)
                             .append(" ")
-                            .append(filterBy.filterOperation)
+                            .append(filterBy.operationToken())
                             .append(" ?");
                     parameters.add(filterBy.fieldValue);
                     break;
-                case "*=":
+                case WILDCARD_MATCH:
                     sql.append(" AND ").append(column).append(" LIKE ? ESCAPE '\\'");
                     parameters.add(sqlLikeWildcard(filterBy.fieldValue));
                     break;
-                case "~=":
+                case LITERAL_CONTAINS:
+                    sql.append(" AND ").append(column).append(" LIKE ? ESCAPE '\\'");
+                    parameters.add(sqlContainsLiteral(filterBy.fieldValue));
+                    break;
+                case REGEX_MATCH:
                     sql.append(" AND ")
                             .append(regexSqlCondition(column, filterBy.fieldValue, parameters));
                     break;
@@ -1298,6 +1308,10 @@ public class SqliteThingStore implements ThingStore {
                 .replace("_", "\\_")
                 .replace("*", "%")
                 .replace("?", "_");
+    }
+
+    private String sqlContainsLiteral(final String literal) {
+        return "%" + literal.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_") + "%";
     }
 
     private List<RelationshipVectorDefinition> relationshipVectorsFor(

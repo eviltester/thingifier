@@ -49,44 +49,45 @@ public class EntityListFilterParamParser {
                                 defn.getField(fieldName).valueFor(filterByCondition.fieldValue));
 
                 switch (filterByCondition.filterOperation) {
-                    case "=":
+                    case EXACT_MATCH:
+                    case EQUALS:
                         if (!(actualValue.compareTo(filterConditionValue) == 0)) {
                             return false;
                         }
                         break;
-                    case "<":
+                    case LESS_THAN:
                         if (!(actualValue.compareTo(filterConditionValue) < 0)) {
                             return false;
                         }
                         break;
-                    case ">":
+                    case GREATER_THAN:
                         if (!(actualValue.compareTo(filterConditionValue) > 0)) {
                             return false;
                         }
                         break;
-                    case "<=":
+                    case LESS_THAN_OR_EQUAL:
                         if (!(actualValue.compareTo(filterConditionValue) <= 0)) {
                             return false;
                         }
                         break;
-                    case ">=":
+                    case GREATER_THAN_OR_EQUAL:
                         if (!(actualValue.compareTo(filterConditionValue) >= 0)) {
                             return false;
                         }
                         break;
-                    case "!=":
-                    case "!":
+                    case NOT_EQUALS:
+                    case NOT:
                         if (!(actualValue.compareTo(filterConditionValue) != 0)) {
                             return false;
                         }
                         break;
-                    case "~=":
+                    case REGEX_MATCH:
                         { // regex match
                             Pattern pattern = Pattern.compile(filterByCondition.fieldValue);
                             Matcher matcher = pattern.matcher(actualValue.getValue().asString());
                             return matcher.matches();
                         }
-                    case "*=":
+                    case WILDCARD_MATCH:
                         { // wildcard match so * matches any multiple and ? matches one
                             String actualFilter = filterByCondition.fieldValue.replace("*", ".*");
                             actualFilter = actualFilter.replace("?", ".");
@@ -94,11 +95,19 @@ public class EntityListFilterParamParser {
                             Matcher matcher = pattern.matcher(actualValue.getValue().asString());
                             return matcher.matches();
                         }
+                    case LITERAL_CONTAINS:
+                        if (!actualValue
+                                .getValue()
+                                .asString()
+                                .contains(filterByCondition.fieldValue)) {
+                            return false;
+                        }
+                        break;
                     default:
                         System.out.println(
                                 String.format(
                                         "Unhandled filterby condition %s%s%s",
-                                        fieldName, filterByCondition.filterOperation, value));
+                                        fieldName, filterByCondition.operationToken(), value));
                 }
             }
         }

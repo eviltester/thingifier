@@ -16,7 +16,7 @@ public interface ThingReadQuery {
         }
 
         for (FilterBy filterBy : queryParams.toList()) {
-            copy.put(filterBy.fieldName, filterBy.filterOperation + filterBy.fieldValue);
+            copy.add(filterBy.copy());
         }
         return copy;
     }

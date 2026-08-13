@@ -15,6 +15,10 @@ public class QueryFilterParams {
         filterBys.add(new FilterBy(fieldName, fieldValue));
     }
 
+    public void put(String fieldName, FilterOperation operation, String fieldValue) {
+        filterBys.add(new FilterBy(fieldName, operation, fieldValue));
+    }
+
     public List<FilterBy> toList() {
         return filterBys;
     }
@@ -36,10 +40,7 @@ public class QueryFilterParams {
 
         for (FilterBy filterBy : filterBys) {
             if (!isReservedQueryControl(filterBy.fieldName)) {
-                fieldFilters.add(
-                        new FilterBy(
-                                filterBy.fieldName,
-                                filterBy.filterOperation + filterBy.fieldValue));
+                fieldFilters.add(filterBy.copy());
             }
         }
 
@@ -51,10 +52,7 @@ public class QueryFilterParams {
 
         for (FilterBy filterBy : filterBys) {
             if (!PaginationParams.isPaginationParam(filterBy.fieldName)) {
-                params.add(
-                        new FilterBy(
-                                filterBy.fieldName,
-                                filterBy.filterOperation + filterBy.fieldValue));
+                params.add(filterBy.copy());
             }
         }
 
@@ -75,7 +73,7 @@ public class QueryFilterParams {
         }
 
         for (FilterBy filterBy : params.toList()) {
-            add(new FilterBy(filterBy.fieldName, filterBy.filterOperation + filterBy.fieldValue));
+            add(filterBy.copy());
         }
     }
 
