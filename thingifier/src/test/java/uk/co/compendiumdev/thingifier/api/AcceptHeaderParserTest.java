@@ -156,29 +156,11 @@ public class AcceptHeaderParserTest {
         Assertions.assertFalse(accept.hasAskedFor(AcceptHeaderParser.ACCEPT_TYPE.JSON));
     }
 
-    @Test
-    public void willAcceptAdditionalResponseRepresentations() {
-        Assertions.assertTrue(
-                new AcceptHeaderParser("text/csv").willAccept(AcceptHeaderParser.ACCEPT_TYPE.CSV));
-        Assertions.assertTrue(new AcceptHeaderParser("text/plain").willAcceptText());
-        Assertions.assertTrue(
-                new AcceptHeaderParser("text/html")
-                        .willAccept(AcceptHeaderParser.ACCEPT_TYPE.HTML));
-        Assertions.assertTrue(
-                new AcceptHeaderParser("application/x-ndjson")
-                        .willAccept(AcceptHeaderParser.ACCEPT_TYPE.NDJSON));
-        Assertions.assertTrue(
-                new AcceptHeaderParser("application/jsonl")
-                        .willAccept(AcceptHeaderParser.ACCEPT_TYPE.JSONL));
-        Assertions.assertTrue(
-                new AcceptHeaderParser("application/json-seq")
-                        .willAccept(AcceptHeaderParser.ACCEPT_TYPE.JSON_SEQ));
-        Assertions.assertTrue(
-                new AcceptHeaderParser("text/tab-separated-values")
-                        .willAccept(AcceptHeaderParser.ACCEPT_TYPE.TSV));
-        Assertions.assertTrue(
-                new AcceptHeaderParser("text/xml")
-                        .willAccept(AcceptHeaderParser.ACCEPT_TYPE.TEXT_XML));
+    @ParameterizedTest
+    @MethodSource("additionalResponseRepresentationExamples")
+    public void willAcceptAdditionalResponseRepresentation(
+            final String acceptHeader, final AcceptHeaderParser.ACCEPT_TYPE expectedType) {
+        Assertions.assertTrue(new AcceptHeaderParser(acceptHeader).willAccept(expectedType));
     }
 
     @Test
@@ -283,22 +265,15 @@ public class AcceptHeaderParserTest {
                         .mediaType());
     }
 
-    @Test
-    public void unsupportedXmlBasedMediaTypesAreNotNormalXmlRepresentations() {
-        for (String mediaType :
-                List.of(
-                        "application/problem+xml",
-                        "application/soap+xml",
-                        "application/xhtml+xml",
-                        "image/svg+xml",
-                        "application/atom+xml",
-                        "application/rss+xml")) {
-            final AcceptHeaderParser accept = new AcceptHeaderParser(mediaType);
+    @ParameterizedTest
+    @MethodSource("unsupportedXmlMediaTypes")
+    public void unsupportedXmlBasedMediaTypesAreNotNormalXmlRepresentations(
+            final String mediaType) {
+        final AcceptHeaderParser accept = new AcceptHeaderParser(mediaType);
 
-            Assertions.assertFalse(accept.isSupportedHeader(), mediaType);
-            Assertions.assertFalse(accept.willAcceptXml(), mediaType);
-            Assertions.assertTrue(accept.getSupportedTypesInPreferenceOrder().isEmpty(), mediaType);
-        }
+        Assertions.assertFalse(accept.isSupportedHeader(), mediaType);
+        Assertions.assertFalse(accept.willAcceptXml(), mediaType);
+        Assertions.assertTrue(accept.getSupportedTypesInPreferenceOrder().isEmpty(), mediaType);
     }
 
     @Test
@@ -349,13 +324,17 @@ public class AcceptHeaderParserTest {
     }
 
     @Test
-    public void qValuesSelectBetweenXmlCompatibleMediaTypes() {
+    public void qValuesSelectExactStructuredXmlOverOtherXmlCompatibleMediaTypes() {
         assertPreferredMediaType(
                 "application/json;q=0.5, "
                         + "application/xml;q=0.6, "
                         + "text/xml;q=0.8, "
                         + "application/vnd.example.todo+xml;q=0.9",
                 "application/vnd.example.todo+xml");
+    }
+
+    @Test
+    public void qValuesSelectStructuredXmlWildcardOverOtherXmlCompatibleMediaTypes() {
         assertPreferredMediaType(
                 "application/json;q=0.5, "
                         + "application/xml;q=0.6, "
@@ -364,41 +343,36 @@ public class AcceptHeaderParserTest {
                 "application/todo+xml");
     }
 
-    @Test
-    public void unsupportedHigherQualityMediaRangesFallThroughToSupportedTypes() {
-        assertPreferredMediaType("application/problem+xml;q=1, text/xml;q=0.4", "text/xml");
-        assertPreferredMediaType(
-                "application/soap+xml;q=1, application/*+xml;q=0.4", "application/todo+xml");
-        assertPreferredMediaType(
-                "application/problem+json;q=1, application/vnd.example.todo+xml;q=0.4",
-                "application/vnd.example.todo+xml");
+    @ParameterizedTest
+    @MethodSource("unsupportedHigherQualityFallbackExamples")
+    public void unsupportedHigherQualityMediaRangesFallThroughToSupportedTypes(
+            final String acceptHeader, final String expectedMediaType) {
+        assertPreferredMediaType(acceptHeader, expectedMediaType);
+    }
+
+    @ParameterizedTest
+    @MethodSource("specificityTieBreakerExamples")
+    public void specificityBeatsHeaderOrderWhenQualityValuesTie(
+            final String acceptHeader, final String expectedMediaType) {
+        assertPreferredMediaType(acceptHeader, expectedMediaType);
+    }
+
+    @ParameterizedTest
+    @MethodSource("clientOrderTieBreakerExamples")
+    public void clientOrderBreaksTiesWhenQualityAndSpecificityAreTheSame(
+            final String acceptHeader, final String expectedMediaType) {
+        assertPreferredMediaType(acceptHeader, expectedMediaType);
+    }
+
+    @ParameterizedTest
+    @MethodSource("qZeroWildcardFallbackExamples")
+    public void qZeroExcludesExactXmlCompatibleMediaTypeBeforeWildcardFallback(
+            final String acceptHeader, final String expectedMediaType) {
+        assertPreferredMediaType(acceptHeader, expectedMediaType);
     }
 
     @Test
-    public void specificityBeatsHeaderOrderWhenQualityValuesTie() {
-        assertPreferredMediaType("application/*;q=0.8, application/xml;q=0.8", "application/xml");
-        assertPreferredMediaType("text/*;q=0.8, text/xml;q=0.8", "text/xml");
-        assertPreferredMediaType(
-                "application/*+xml;q=0.8, application/vnd.example.todo+xml;q=0.8",
-                "application/vnd.example.todo+xml");
-    }
-
-    @Test
-    public void clientOrderBreaksTiesWhenQualityAndSpecificityAreTheSame() {
-        assertPreferredMediaType("text/xml;q=0.8, application/xml;q=0.8", "text/xml");
-        assertPreferredMediaType("application/xml;q=0.8, text/xml;q=0.8", "application/xml");
-        assertPreferredMediaType(
-                "application/vnd.example.todo+xml;q=0.8, text/xml;q=0.8",
-                "application/vnd.example.todo+xml");
-        assertPreferredMediaType(
-                "text/xml;q=0.8, application/vnd.example.todo+xml;q=0.8", "text/xml");
-    }
-
-    @Test
-    public void qZeroExcludesExactXmlCompatibleMediaTypesBeforeWildcardFallback() {
-        assertPreferredMediaType("text/xml;q=0, text/*;q=0.8", "text/csv");
-        assertPreferredMediaType("application/xml;q=0, application/*;q=0.8", "application/json");
-
+    public void qZeroStructuredXmlExactMatchBlocksStructuredXmlWildcardFallback() {
         final AcceptHeaderParser structuredXml =
                 new AcceptHeaderParser("application/todo+xml;q=0, application/*+xml;q=0.8");
 
@@ -459,11 +433,10 @@ public class AcceptHeaderParserTest {
         Assertions.assertTrue(accept.willAcceptJson());
     }
 
-    @Test
-    public void concreteStructuredJsonTypesDoNotMatchPlainJson() {
-        Assertions.assertFalse(new AcceptHeaderParser("application/problem+json").willAcceptJson());
-        Assertions.assertFalse(new AcceptHeaderParser("application/vnd.api+json").willAcceptJson());
-        Assertions.assertFalse(new AcceptHeaderParser("application/hal+json").willAcceptJson());
+    @ParameterizedTest
+    @MethodSource("unsupportedStructuredJsonMediaTypes")
+    public void concreteStructuredJsonTypesDoNotMatchPlainJson(final String mediaType) {
+        Assertions.assertFalse(new AcceptHeaderParser(mediaType).willAcceptJson());
     }
 
     @Test
@@ -546,5 +519,70 @@ public class AcceptHeaderParserTest {
                 Arguments.of(
                         "application/gzip;q=1, application/json;q=0.5",
                         AcceptHeaderParser.ACCEPT_TYPE.JSON));
+    }
+
+    private static Stream<Arguments> additionalResponseRepresentationExamples() {
+        return Stream.of(
+                Arguments.of("text/csv", AcceptHeaderParser.ACCEPT_TYPE.CSV),
+                Arguments.of("text/plain", AcceptHeaderParser.ACCEPT_TYPE.TEXT),
+                Arguments.of("text/html", AcceptHeaderParser.ACCEPT_TYPE.HTML),
+                Arguments.of("application/x-ndjson", AcceptHeaderParser.ACCEPT_TYPE.NDJSON),
+                Arguments.of("application/jsonl", AcceptHeaderParser.ACCEPT_TYPE.JSONL),
+                Arguments.of("application/json-seq", AcceptHeaderParser.ACCEPT_TYPE.JSON_SEQ),
+                Arguments.of("text/tab-separated-values", AcceptHeaderParser.ACCEPT_TYPE.TSV),
+                Arguments.of("text/xml", AcceptHeaderParser.ACCEPT_TYPE.TEXT_XML));
+    }
+
+    private static Stream<Arguments> unsupportedXmlMediaTypes() {
+        return Stream.of(
+                Arguments.of("application/problem+xml"),
+                Arguments.of("application/soap+xml"),
+                Arguments.of("application/xhtml+xml"),
+                Arguments.of("image/svg+xml"),
+                Arguments.of("application/atom+xml"),
+                Arguments.of("application/rss+xml"));
+    }
+
+    private static Stream<Arguments> unsupportedHigherQualityFallbackExamples() {
+        return Stream.of(
+                Arguments.of("application/problem+xml;q=1, text/xml;q=0.4", "text/xml"),
+                Arguments.of(
+                        "application/soap+xml;q=1, application/*+xml;q=0.4",
+                        "application/todo+xml"),
+                Arguments.of(
+                        "application/problem+json;q=1, application/vnd.example.todo+xml;q=0.4",
+                        "application/vnd.example.todo+xml"));
+    }
+
+    private static Stream<Arguments> specificityTieBreakerExamples() {
+        return Stream.of(
+                Arguments.of("application/*;q=0.8, application/xml;q=0.8", "application/xml"),
+                Arguments.of("text/*;q=0.8, text/xml;q=0.8", "text/xml"),
+                Arguments.of(
+                        "application/*+xml;q=0.8, application/vnd.example.todo+xml;q=0.8",
+                        "application/vnd.example.todo+xml"));
+    }
+
+    private static Stream<Arguments> clientOrderTieBreakerExamples() {
+        return Stream.of(
+                Arguments.of("text/xml;q=0.8, application/xml;q=0.8", "text/xml"),
+                Arguments.of("application/xml;q=0.8, text/xml;q=0.8", "application/xml"),
+                Arguments.of(
+                        "application/vnd.example.todo+xml;q=0.8, text/xml;q=0.8",
+                        "application/vnd.example.todo+xml"),
+                Arguments.of("text/xml;q=0.8, application/vnd.example.todo+xml;q=0.8", "text/xml"));
+    }
+
+    private static Stream<Arguments> qZeroWildcardFallbackExamples() {
+        return Stream.of(
+                Arguments.of("text/xml;q=0, text/*;q=0.8", "text/csv"),
+                Arguments.of("application/xml;q=0, application/*;q=0.8", "application/json"));
+    }
+
+    private static Stream<Arguments> unsupportedStructuredJsonMediaTypes() {
+        return Stream.of(
+                Arguments.of("application/problem+json"),
+                Arguments.of("application/vnd.api+json"),
+                Arguments.of("application/hal+json"));
     }
 }

@@ -9,8 +9,12 @@ import io.swagger.v3.oas.models.parameters.Parameter;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.docgen.ThingifierApiDocumentationDefn;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.Cardinality;
@@ -38,13 +42,22 @@ class SwaggerizerEntityDescriptionTest {
     }
 
     @Test
-    void relationshipRoutesExposeEditablePathParametersAndPostBodies() {
+    void relationshipCollectionRouteExposesEditablePathParameter() {
         final OpenAPI openApi = new Swaggerizer(apiDefn(relationshipModel())).swagger();
 
         final PathItem relationshipCollection = openApi.getPaths().get("/projects/{id}/tasks");
+
         Assertions.assertNotNull(relationshipCollection);
         Assertions.assertEquals(Set.of("id"), pathParameterNames(relationshipCollection));
         Assertions.assertTrue(relationshipCollection.getParameters().get(0).getRequired());
+    }
+
+    @Test
+    void relationshipCollectionRouteGetUsesTodoJsonCollectionResponseSchema() {
+        final OpenAPI openApi = new Swaggerizer(apiDefn(relationshipModel())).swagger();
+
+        final PathItem relationshipCollection = openApi.getPaths().get("/projects/{id}/tasks");
+
         Assertions.assertNotNull(
                 relationshipCollection.getGet().getResponses().get("200").getContent());
         Assertions.assertEquals(
@@ -57,6 +70,14 @@ class SwaggerizerEntityDescriptionTest {
                         .get("application/json")
                         .getSchema()
                         .get$ref());
+    }
+
+    @Test
+    void relationshipCollectionRouteGetUsesTodoXmlCollectionResponseSchema() {
+        final OpenAPI openApi = new Swaggerizer(apiDefn(relationshipModel())).swagger();
+
+        final PathItem relationshipCollection = openApi.getPaths().get("/projects/{id}/tasks");
+
         Assertions.assertEquals(
                 "array",
                 relationshipCollection
@@ -78,6 +99,14 @@ class SwaggerizerEntityDescriptionTest {
                         .getSchema()
                         .getXml()
                         .getName());
+    }
+
+    @Test
+    void relationshipCollectionRoutePostUsesJsonRequestBodySchema() {
+        final OpenAPI openApi = new Swaggerizer(apiDefn(relationshipModel())).swagger();
+
+        final PathItem relationshipCollection = openApi.getPaths().get("/projects/{id}/tasks");
+
         Assertions.assertNotNull(relationshipCollection.getPost().getRequestBody());
         Assertions.assertEquals(
                 "#/components/schemas/todo",
@@ -88,20 +117,29 @@ class SwaggerizerEntityDescriptionTest {
                         .get("application/json")
                         .getSchema()
                         .get$ref());
+    }
+
+    @ParameterizedTest
+    @MethodSource("xmlRequestBodyMediaTypes")
+    void relationshipCollectionRoutePostAcceptsXmlRequestBody(final String mediaType) {
+        final OpenAPI openApi = new Swaggerizer(apiDefn(relationshipModel())).swagger();
+
+        final PathItem relationshipCollection = openApi.getPaths().get("/projects/{id}/tasks");
+
         Assertions.assertTrue(
                 relationshipCollection
                         .getPost()
                         .getRequestBody()
                         .getContent()
-                        .containsKey("application/xml"));
-        Assertions.assertTrue(
-                relationshipCollection
-                        .getPost()
-                        .getRequestBody()
-                        .getContent()
-                        .containsKey("text/xml"));
+                        .containsKey(mediaType));
+    }
+
+    @Test
+    void singleTargetRelationshipRouteGetUsesTargetSchema() {
+        final OpenAPI openApi = new Swaggerizer(apiDefn(relationshipModel())).swagger();
 
         final PathItem singleTargetRelationship = openApi.getPaths().get("/todos/{id}/project");
+
         Assertions.assertNotNull(singleTargetRelationship);
         Assertions.assertEquals(
                 "#/components/schemas/project",
@@ -113,9 +151,15 @@ class SwaggerizerEntityDescriptionTest {
                         .get("application/json")
                         .getSchema()
                         .get$ref());
+    }
+
+    @Test
+    void relationshipInstanceRouteRequiresSourceAndRelatedPathParameters() {
+        final OpenAPI openApi = new Swaggerizer(apiDefn(relationshipModel())).swagger();
 
         final PathItem relationshipInstance =
                 openApi.getPaths().get("/projects/{id}/tasks/{relatedId}");
+
         Assertions.assertNotNull(relationshipInstance);
         Assertions.assertEquals(
                 Set.of("id", "relatedId"), pathParameterNames(relationshipInstance));
@@ -125,7 +169,7 @@ class SwaggerizerEntityDescriptionTest {
     }
 
     @Test
-    void responseContentAdvertisesAdditionalRepresentations() {
+    void responseContentAdvertisesJsonComponentSchema() {
         final OpenAPI openApi = new Swaggerizer(apiDefn(relationshipModel())).swagger();
 
         final Content content =
@@ -134,45 +178,80 @@ class SwaggerizerEntityDescriptionTest {
         Assertions.assertEquals(
                 "#/components/schemas/projects",
                 content.get("application/json").getSchema().get$ref());
+    }
+
+    @Test
+    void responseContentAdvertisesApplicationXmlCollectionSchema() {
+        final OpenAPI openApi = new Swaggerizer(apiDefn(relationshipModel())).swagger();
+
+        final Content content =
+                openApi.getPaths().get("/projects").getGet().getResponses().get("200").getContent();
+
         final Schema<?> xmlCollectionSchema = content.get("application/xml").getSchema();
+
         Assertions.assertNull(xmlCollectionSchema.get$ref());
         Assertions.assertEquals("array", xmlCollectionSchema.getType());
         Assertions.assertEquals("projects", xmlCollectionSchema.getXml().getName());
         Assertions.assertTrue(xmlCollectionSchema.getXml().getWrapped());
-        for (String xmlMediaType : List.of("text/xml")) {
-            final Schema<?> compatibleXmlCollectionSchema = content.get(xmlMediaType).getSchema();
-            Assertions.assertNull(compatibleXmlCollectionSchema.get$ref());
-            Assertions.assertEquals("array", compatibleXmlCollectionSchema.getType());
-            Assertions.assertEquals("projects", compatibleXmlCollectionSchema.getXml().getName());
-            Assertions.assertTrue(compatibleXmlCollectionSchema.getXml().getWrapped());
-        }
-        for (String mediaType :
-                List.of(
-                        "text/csv",
-                        "text/plain",
-                        "text/html",
-                        "application/x-ndjson",
-                        "application/jsonl",
-                        "application/json-seq",
-                        "text/tab-separated-values")) {
-            Assertions.assertEquals("string", content.get(mediaType).getSchema().getType());
-        }
+    }
+
+    @ParameterizedTest
+    @MethodSource("xmlCompatibleResponseMediaTypes")
+    void responseContentAdvertisesXmlCompatibleCollectionSchema(final String mediaType) {
+        final OpenAPI openApi = new Swaggerizer(apiDefn(relationshipModel())).swagger();
+
+        final Content content =
+                openApi.getPaths().get("/projects").getGet().getResponses().get("200").getContent();
+
+        final Schema<?> compatibleXmlCollectionSchema = content.get(mediaType).getSchema();
+
+        Assertions.assertNull(compatibleXmlCollectionSchema.get$ref());
+        Assertions.assertEquals("array", compatibleXmlCollectionSchema.getType());
+        Assertions.assertEquals("projects", compatibleXmlCollectionSchema.getXml().getName());
+        Assertions.assertTrue(compatibleXmlCollectionSchema.getXml().getWrapped());
+    }
+
+    @ParameterizedTest
+    @MethodSource("stringResponseMediaTypes")
+    void responseContentAdvertisesStringSchemaForTextAndStreamingRepresentations(
+            final String mediaType) {
+        final OpenAPI openApi = new Swaggerizer(apiDefn(relationshipModel())).swagger();
+
+        final Content content =
+                openApi.getPaths().get("/projects").getGet().getResponses().get("200").getContent();
+
+        Assertions.assertEquals("string", content.get(mediaType).getSchema().getType());
+    }
+
+    @ParameterizedTest
+    @MethodSource("filterableCollectionOperations")
+    void filterableCollectionOperationExposesSortByParameter(
+            final String path, final String operationKind) {
+        final OpenAPI openApi = new Swaggerizer(apiDefn(relationshipModel())).swagger();
+
+        assertSortByParameter(operationFor(openApi, path, operationKind));
+    }
+
+    @ParameterizedTest
+    @MethodSource("filterableCollectionOperations")
+    void filterableCollectionOperationExposesPagingParameters(
+            final String path, final String operationKind) {
+        final OpenAPI openApi = new Swaggerizer(apiDefn(relationshipModel())).swagger();
+
+        assertPagingParameters(operationFor(openApi, path, operationKind));
+    }
+
+    @ParameterizedTest
+    @MethodSource("queryOperationPaths")
+    void queryOperationExposesQueryContentTypes(final String path) {
+        final OpenAPI openApi = new Swaggerizer(apiDefn(relationshipModel())).swagger();
+
+        assertQueryContentTypes(queryOperation(openApi.getPaths().get(path)));
     }
 
     @Test
-    void filterableCollectionOperationsExposeSortByParameter() {
+    void singleTargetRelationshipDoesNotExposeSortByParameter() {
         final OpenAPI openApi = new Swaggerizer(apiDefn(relationshipModel())).swagger();
-
-        assertSortByParameter(openApi.getPaths().get("/projects").getGet());
-        assertPagingParameters(openApi.getPaths().get("/projects").getGet());
-        assertSortByParameter(queryOperation(openApi.getPaths().get("/projects")));
-        assertPagingParameters(queryOperation(openApi.getPaths().get("/projects")));
-        assertQueryContentTypes(queryOperation(openApi.getPaths().get("/projects")));
-        assertSortByParameter(openApi.getPaths().get("/projects/{id}/tasks").getGet());
-        assertPagingParameters(openApi.getPaths().get("/projects/{id}/tasks").getGet());
-        assertSortByParameter(queryOperation(openApi.getPaths().get("/projects/{id}/tasks")));
-        assertPagingParameters(queryOperation(openApi.getPaths().get("/projects/{id}/tasks")));
-        assertQueryContentTypes(queryOperation(openApi.getPaths().get("/projects/{id}/tasks")));
 
         Operation singleTargetRelationshipGet =
                 openApi.getPaths().get("/todos/{id}/project").getGet();
@@ -226,6 +305,45 @@ class SwaggerizerEntityDescriptionTest {
 
     private Operation queryOperation(final PathItem pathItem) {
         return (Operation) pathItem.getExtensions().get("x-query-operation");
+    }
+
+    private Operation operationFor(
+            final OpenAPI openApi, final String path, final String operationKind) {
+        if ("query".equals(operationKind)) {
+            return queryOperation(openApi.getPaths().get(path));
+        }
+        return openApi.getPaths().get(path).getGet();
+    }
+
+    private static Stream<String> xmlRequestBodyMediaTypes() {
+        return Stream.of("application/xml", "text/xml");
+    }
+
+    private static Stream<String> xmlCompatibleResponseMediaTypes() {
+        return Stream.of("text/xml");
+    }
+
+    private static Stream<String> stringResponseMediaTypes() {
+        return Stream.of(
+                "text/csv",
+                "text/plain",
+                "text/html",
+                "application/x-ndjson",
+                "application/jsonl",
+                "application/json-seq",
+                "text/tab-separated-values");
+    }
+
+    private static Stream<Arguments> filterableCollectionOperations() {
+        return Stream.of(
+                Arguments.of("/projects", "get"),
+                Arguments.of("/projects", "query"),
+                Arguments.of("/projects/{id}/tasks", "get"),
+                Arguments.of("/projects/{id}/tasks", "query"));
+    }
+
+    private static Stream<String> queryOperationPaths() {
+        return Stream.of("/projects", "/projects/{id}/tasks");
     }
 
     private void assertSortByParameter(final Operation operation) {

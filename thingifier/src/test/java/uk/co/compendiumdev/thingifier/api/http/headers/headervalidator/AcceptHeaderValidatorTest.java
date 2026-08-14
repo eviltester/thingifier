@@ -1,45 +1,42 @@
 package uk.co.compendiumdev.thingifier.api.http.headers.headervalidator;
 
 import java.util.List;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 
 class AcceptHeaderValidatorTest {
 
-    @Test
-    void acceptsAdditionalResponseRepresentations() {
+    @ParameterizedTest
+    @MethodSource("additionalResponseRepresentationMediaTypes")
+    void acceptsAdditionalResponseRepresentation(final String mediaType) {
         ThingifierApiConfig config = new ThingifierApiConfig("");
         AcceptHeaderValidator validator = new AcceptHeaderValidator(config);
 
-        Assertions.assertNull(validator.validate("text/csv"));
-        Assertions.assertNull(validator.validate("text/plain"));
-        Assertions.assertNull(validator.validate("text/html"));
-        Assertions.assertNull(validator.validate("application/x-ndjson"));
-        Assertions.assertNull(validator.validate("application/jsonl"));
-        Assertions.assertNull(validator.validate("application/json-seq"));
-        Assertions.assertNull(validator.validate("text/tab-separated-values"));
-        Assertions.assertNull(validator.validate("text/*"));
+        Assertions.assertNull(validator.validate(mediaType));
     }
 
-    @Test
-    void acceptsXmlCompatibleResponseRepresentations() {
+    @ParameterizedTest
+    @MethodSource("xmlCompatibleResponseMediaTypes")
+    void acceptsXmlCompatibleResponseRepresentation(final String mediaType) {
         ThingifierApiConfig config = new ThingifierApiConfig("");
         AcceptHeaderValidator validator = new AcceptHeaderValidator(config);
 
-        Assertions.assertNull(validator.validate("application/xml"));
-        Assertions.assertNull(validator.validate("text/xml"));
+        Assertions.assertNull(validator.validate(mediaType));
     }
 
-    @Test
-    void acceptsModelMatchingStructuredXmlResponseRepresentations() {
+    @ParameterizedTest
+    @MethodSource("modelMatchingStructuredXmlResponseMediaTypes")
+    void acceptsModelMatchingStructuredXmlResponseRepresentation(final String mediaType) {
         ThingifierApiConfig config = new ThingifierApiConfig("");
         AcceptHeaderValidator validator =
                 new AcceptHeaderValidator(config, List.of("todo", "todos"));
 
-        Assertions.assertNull(validator.validate("application/vnd.example.todo+xml"));
-        Assertions.assertNull(validator.validate("application/*+xml"));
+        Assertions.assertNull(validator.validate(mediaType));
     }
 
     @Test
@@ -85,41 +82,31 @@ class AcceptHeaderValidatorTest {
         Assertions.assertTrue(response.getErrorMessages().contains("Unrecognised Accept Type"));
     }
 
-    @Test
-    void rejectsUnsupportedXmlBasedMediaTypes() {
+    @ParameterizedTest
+    @MethodSource("unsupportedXmlMediaTypes")
+    void rejectsUnsupportedXmlBasedMediaType(final String mediaType) {
         ThingifierApiConfig config = new ThingifierApiConfig("");
         AcceptHeaderValidator validator = new AcceptHeaderValidator(config);
 
-        for (String mediaType :
-                List.of(
-                        "application/problem+xml",
-                        "application/soap+xml",
-                        "application/xhtml+xml",
-                        "image/svg+xml",
-                        "application/atom+xml",
-                        "application/rss+xml")) {
-            ApiResponse response = validator.validate(mediaType);
+        ApiResponse response = validator.validate(mediaType);
 
-            Assertions.assertEquals(406, response.getStatusCode(), mediaType);
-            Assertions.assertTrue(
-                    response.getErrorMessages().contains("Unrecognised Accept Type"), mediaType);
-        }
+        Assertions.assertEquals(406, response.getStatusCode(), mediaType);
+        Assertions.assertTrue(
+                response.getErrorMessages().contains("Unrecognised Accept Type"), mediaType);
     }
 
-    @Test
-    void xmlCompatibleResponseTypesHonorDisabledXmlResponses() {
+    @ParameterizedTest
+    @MethodSource("xmlResponseMediaTypes")
+    void xmlCompatibleResponseTypeHonorsDisabledXmlResponses(final String mediaType) {
         ThingifierApiConfig config = new ThingifierApiConfig("");
         config.setApiToAllowXmlForResponses(false);
         AcceptHeaderValidator validator =
                 new AcceptHeaderValidator(config, List.of("todo", "todos"));
 
-        for (String mediaType :
-                List.of("application/xml", "text/xml", "application/vnd.example.todo+xml")) {
-            ApiResponse response = validator.validate(mediaType);
+        ApiResponse response = validator.validate(mediaType);
 
-            Assertions.assertEquals(406, response.getStatusCode(), mediaType);
-            Assertions.assertTrue(response.getErrorMessages().contains("XML not supported"));
-        }
+        Assertions.assertEquals(406, response.getStatusCode(), mediaType);
+        Assertions.assertTrue(response.getErrorMessages().contains("XML not supported"));
     }
 
     @Test
@@ -162,5 +149,39 @@ class AcceptHeaderValidatorTest {
         ApiResponse response = new AcceptHeaderValidator(config).validate("application/json-seq");
 
         Assertions.assertNull(response);
+    }
+
+    private static Stream<String> additionalResponseRepresentationMediaTypes() {
+        return Stream.of(
+                "text/csv",
+                "text/plain",
+                "text/html",
+                "application/x-ndjson",
+                "application/jsonl",
+                "application/json-seq",
+                "text/tab-separated-values",
+                "text/*");
+    }
+
+    private static Stream<String> xmlCompatibleResponseMediaTypes() {
+        return Stream.of("application/xml", "text/xml");
+    }
+
+    private static Stream<String> modelMatchingStructuredXmlResponseMediaTypes() {
+        return Stream.of("application/vnd.example.todo+xml", "application/*+xml");
+    }
+
+    private static Stream<String> unsupportedXmlMediaTypes() {
+        return Stream.of(
+                "application/problem+xml",
+                "application/soap+xml",
+                "application/xhtml+xml",
+                "image/svg+xml",
+                "application/atom+xml",
+                "application/rss+xml");
+    }
+
+    private static Stream<String> xmlResponseMediaTypes() {
+        return Stream.of("application/xml", "text/xml", "application/vnd.example.todo+xml");
     }
 }
