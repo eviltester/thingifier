@@ -47,8 +47,7 @@ class ContentTypeHeaderValidatorTest {
 
             Assertions.assertEquals(415, response.getStatusCode(), mediaType);
             Assertions.assertTrue(
-                    response.getErrorMessages()
-                            .contains("Unsupported Content Type - " + mediaType),
+                    response.getErrorMessages().contains("Unsupported Content Type - " + mediaType),
                     mediaType);
         }
     }

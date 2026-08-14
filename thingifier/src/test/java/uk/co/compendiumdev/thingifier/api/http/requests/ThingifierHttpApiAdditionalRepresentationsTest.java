@@ -53,12 +53,7 @@ class ThingifierHttpApiAdditionalRepresentationsTest {
                 200,
                 "application/vnd.example.task+xml",
                 "<tasks>");
-        assertNegotiatedGet(
-                api,
-                "application/*+xml",
-                200,
-                "application/task+xml",
-                "<tasks>");
+        assertNegotiatedGet(api, "application/*+xml", 200, "application/task+xml", "<tasks>");
         assertNegotiatedGet(
                 api,
                 "application/json, application/problem+json",
@@ -195,17 +190,9 @@ class ThingifierHttpApiAdditionalRepresentationsTest {
                 "application/json",
                 "errorMessages");
         assertNegotiatedGet(
-                api,
-                "application/xml, application/json;q=0.5",
-                200,
-                "application/xml",
-                "<tasks>");
+                api, "application/xml, application/json;q=0.5", 200, "application/xml", "<tasks>");
         assertNegotiatedGet(
-                api,
-                "*/*;q=0.8, application/xml;q=0.9",
-                200,
-                "application/xml",
-                "<tasks>");
+                api, "*/*;q=0.8, application/xml;q=0.9", 200, "application/xml", "<tasks>");
         assertNegotiatedGet(
                 api,
                 "application/gzip;q=1, application/json;q=0.5",
@@ -235,11 +222,7 @@ class ThingifierHttpApiAdditionalRepresentationsTest {
                 "application/task+xml",
                 "<tasks>");
         assertNegotiatedGet(
-                api,
-                "application/problem+xml;q=1, text/xml;q=0.4",
-                200,
-                "text/xml",
-                "<tasks>");
+                api, "application/problem+xml;q=1, text/xml;q=0.4", 200, "text/xml", "<tasks>");
         assertNegotiatedGet(
                 api,
                 "application/soap+xml;q=1, application/*+xml;q=0.4",
@@ -252,12 +235,7 @@ class ThingifierHttpApiAdditionalRepresentationsTest {
                 200,
                 "application/json",
                 "\"tasks\"");
-        assertNegotiatedGet(
-                api,
-                "text/xml;q=0, text/*;q=0.8",
-                200,
-                "text/csv",
-                "id,title");
+        assertNegotiatedGet(api, "text/xml;q=0, text/*;q=0.8", 200, "text/csv", "id,title");
         assertNegotiatedGet(
                 api,
                 "application/task+xml;q=0, application/*+xml;q=0.8",
@@ -270,12 +248,7 @@ class ThingifierHttpApiAdditionalRepresentationsTest {
                 200,
                 "application/xml",
                 "<tasks>");
-        assertNegotiatedGet(
-                api,
-                "text/*;q=0.8, text/xml;q=0.8",
-                200,
-                "text/xml",
-                "<tasks>");
+        assertNegotiatedGet(api, "text/*;q=0.8, text/xml;q=0.8", 200, "text/xml", "<tasks>");
         assertNegotiatedGet(
                 api,
                 "application/*+xml;q=0.8, application/vnd.example.task+xml;q=0.8",
@@ -283,17 +256,9 @@ class ThingifierHttpApiAdditionalRepresentationsTest {
                 "application/vnd.example.task+xml",
                 "<tasks>");
         assertNegotiatedGet(
-                api,
-                "text/xml;q=0.8, application/xml;q=0.8",
-                200,
-                "text/xml",
-                "<tasks>");
+                api, "text/xml;q=0.8, application/xml;q=0.8", 200, "text/xml", "<tasks>");
         assertNegotiatedGet(
-                api,
-                "application/xml;q=0.8, text/xml;q=0.8",
-                200,
-                "application/xml",
-                "<tasks>");
+                api, "application/xml;q=0.8, text/xml;q=0.8", 200, "application/xml", "<tasks>");
         assertNegotiatedGet(
                 api,
                 "application/vnd.example.task+xml;q=0.8, text/xml;q=0.8",

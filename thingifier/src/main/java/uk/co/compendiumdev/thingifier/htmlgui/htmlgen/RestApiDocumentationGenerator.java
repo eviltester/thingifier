@@ -114,8 +114,7 @@ public class RestApiDocumentationGenerator {
                                 "Set Content-Type header to application/xml, text/xml, or a model-matching application/*+xml media type if you want to send in XML."));
                 output.append(paragraph("<i>Content-Type: application/xml</i>"));
                 output.append(paragraph("<i>Content-Type: text/xml</i>"));
-                output.append(
-                        paragraph("<i>Content-Type: application/todo+xml</i>"));
+                output.append(paragraph("<i>Content-Type: application/todo+xml</i>"));
 
                 if (thingifier.apiConfig().willApiAllowXmlForResponses()
                         && thingifier.apiConfig().willApiAllowJsonForResponses()) {

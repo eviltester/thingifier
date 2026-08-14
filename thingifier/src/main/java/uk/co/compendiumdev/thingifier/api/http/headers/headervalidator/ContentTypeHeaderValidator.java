@@ -30,9 +30,7 @@ public class ContentTypeHeaderValidator {
         final boolean isXml = accept.isXML(xmlEntityNames);
 
         if (accept.isMissing()
-                || (!isXml
-                        && accept.isText()
-                        && apiConfig.willAllowJsonAsDefaultContentType())) {
+                || (!isXml && accept.isText() && apiConfig.willAllowJsonAsDefaultContentType())) {
             // assume that we can derive content type from the actual content
             return null;
         }

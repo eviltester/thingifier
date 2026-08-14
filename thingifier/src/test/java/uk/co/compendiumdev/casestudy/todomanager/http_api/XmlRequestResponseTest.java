@@ -79,9 +79,7 @@ public class XmlRequestResponseTest {
 
         for (String accept :
                 java.util.List.of(
-                        "text/xml",
-                        "application/vnd.example.todo+xml",
-                        "application/*+xml")) {
+                        "text/xml", "application/vnd.example.todo+xml", "application/*+xml")) {
             HttpApiRequest request = new HttpApiRequest("todos");
             request.getHeaders().put("accept", accept);
 

@@ -169,17 +169,7 @@ public class AcceptHeaderParser {
         }
 
         public static List<ACCEPT_TYPE> responseMediaTypes() {
-            return List.of(
-                    JSON,
-                    XML,
-                    CSV,
-                    TEXT,
-                    HTML,
-                    NDJSON,
-                    JSONL,
-                    JSON_SEQ,
-                    TSV,
-                    TEXT_XML);
+            return List.of(JSON, XML, CSV, TEXT, HTML, NDJSON, JSONL, JSON_SEQ, TSV, TEXT_XML);
         }
     };
 

@@ -252,7 +252,8 @@ public class AcceptHeaderParserTest {
 
     @Test
     public void modelMatchingStructuredXmlMediaTypeNegotiatesToXmlRepresentation() {
-        final AcceptHeaderParser vendorXml = new AcceptHeaderParser("application/vnd.example.todo+xml");
+        final AcceptHeaderParser vendorXml =
+                new AcceptHeaderParser("application/vnd.example.todo+xml");
 
         Assertions.assertFalse(vendorXml.isSupportedHeader());
         Assertions.assertTrue(vendorXml.isSupportedHeader(List.of("todo", "todos")));
@@ -311,8 +312,7 @@ public class AcceptHeaderParserTest {
 
         Assertions.assertEquals(
                 "text/xml",
-                accept
-                        .preferredSupportedMediaType(
+                accept.preferredSupportedMediaType(
                                 AcceptHeaderParser.ACCEPT_TYPE.responseMediaTypes(),
                                 AcceptHeaderParser.ACCEPT_TYPE.JSON,
                                 List.of("todo", "todos"))
@@ -331,9 +331,7 @@ public class AcceptHeaderParserTest {
     @MethodSource("issue103QualityValueExamples")
     public void issue103ExamplesNegotiateSupportedTypesByQualityValues(
             final String acceptHeader, final AcceptHeaderParser.ACCEPT_TYPE expectedType) {
-        assertPreferredType(
-                acceptHeader,
-                expectedType);
+        assertPreferredType(acceptHeader, expectedType);
     }
 
     @Test
@@ -368,12 +366,9 @@ public class AcceptHeaderParserTest {
 
     @Test
     public void unsupportedHigherQualityMediaRangesFallThroughToSupportedTypes() {
+        assertPreferredMediaType("application/problem+xml;q=1, text/xml;q=0.4", "text/xml");
         assertPreferredMediaType(
-                "application/problem+xml;q=1, text/xml;q=0.4",
-                "text/xml");
-        assertPreferredMediaType(
-                "application/soap+xml;q=1, application/*+xml;q=0.4",
-                "application/todo+xml");
+                "application/soap+xml;q=1, application/*+xml;q=0.4", "application/todo+xml");
         assertPreferredMediaType(
                 "application/problem+json;q=1, application/vnd.example.todo+xml;q=0.4",
                 "application/vnd.example.todo+xml");
@@ -381,12 +376,8 @@ public class AcceptHeaderParserTest {
 
     @Test
     public void specificityBeatsHeaderOrderWhenQualityValuesTie() {
-        assertPreferredMediaType(
-                "application/*;q=0.8, application/xml;q=0.8",
-                "application/xml");
-        assertPreferredMediaType(
-                "text/*;q=0.8, text/xml;q=0.8",
-                "text/xml");
+        assertPreferredMediaType("application/*;q=0.8, application/xml;q=0.8", "application/xml");
+        assertPreferredMediaType("text/*;q=0.8, text/xml;q=0.8", "text/xml");
         assertPreferredMediaType(
                 "application/*+xml;q=0.8, application/vnd.example.todo+xml;q=0.8",
                 "application/vnd.example.todo+xml");
@@ -394,28 +385,19 @@ public class AcceptHeaderParserTest {
 
     @Test
     public void clientOrderBreaksTiesWhenQualityAndSpecificityAreTheSame() {
-        assertPreferredMediaType(
-                "text/xml;q=0.8, application/xml;q=0.8",
-                "text/xml");
-        assertPreferredMediaType(
-                "application/xml;q=0.8, text/xml;q=0.8",
-                "application/xml");
+        assertPreferredMediaType("text/xml;q=0.8, application/xml;q=0.8", "text/xml");
+        assertPreferredMediaType("application/xml;q=0.8, text/xml;q=0.8", "application/xml");
         assertPreferredMediaType(
                 "application/vnd.example.todo+xml;q=0.8, text/xml;q=0.8",
                 "application/vnd.example.todo+xml");
         assertPreferredMediaType(
-                "text/xml;q=0.8, application/vnd.example.todo+xml;q=0.8",
-                "text/xml");
+                "text/xml;q=0.8, application/vnd.example.todo+xml;q=0.8", "text/xml");
     }
 
     @Test
     public void qZeroExcludesExactXmlCompatibleMediaTypesBeforeWildcardFallback() {
-        assertPreferredMediaType(
-                "text/xml;q=0, text/*;q=0.8",
-                "text/csv");
-        assertPreferredMediaType(
-                "application/xml;q=0, application/*;q=0.8",
-                "application/json");
+        assertPreferredMediaType("text/xml;q=0, text/*;q=0.8", "text/csv");
+        assertPreferredMediaType("application/xml;q=0, application/*;q=0.8", "application/json");
 
         final AcceptHeaderParser structuredXml =
                 new AcceptHeaderParser("application/todo+xml;q=0, application/*+xml;q=0.8");
@@ -535,8 +517,7 @@ public class AcceptHeaderParserTest {
         Assertions.assertTrue(accept.isSupportedHeader(List.of("todo", "todos")), acceptHeader);
         Assertions.assertEquals(
                 mediaType,
-                accept
-                        .preferredSupportedMediaType(
+                accept.preferredSupportedMediaType(
                                 AcceptHeaderParser.ACCEPT_TYPE.responseMediaTypes(),
                                 AcceptHeaderParser.ACCEPT_TYPE.JSON,
                                 List.of("todo", "todos"))
@@ -561,8 +542,7 @@ public class AcceptHeaderParserTest {
                         "application/xml, application/json;q=0.5",
                         AcceptHeaderParser.ACCEPT_TYPE.XML),
                 Arguments.of(
-                        "*/*;q=0.8, application/xml;q=0.9",
-                        AcceptHeaderParser.ACCEPT_TYPE.XML),
+                        "*/*;q=0.8, application/xml;q=0.9", AcceptHeaderParser.ACCEPT_TYPE.XML),
                 Arguments.of(
                         "application/gzip;q=1, application/json;q=0.5",
                         AcceptHeaderParser.ACCEPT_TYPE.JSON));

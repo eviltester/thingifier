@@ -102,8 +102,7 @@ class AcceptHeaderValidatorTest {
 
             Assertions.assertEquals(406, response.getStatusCode(), mediaType);
             Assertions.assertTrue(
-                    response.getErrorMessages().contains("Unrecognised Accept Type"),
-                    mediaType);
+                    response.getErrorMessages().contains("Unrecognised Accept Type"), mediaType);
         }
     }
 
@@ -111,7 +110,8 @@ class AcceptHeaderValidatorTest {
     void xmlCompatibleResponseTypesHonorDisabledXmlResponses() {
         ThingifierApiConfig config = new ThingifierApiConfig("");
         config.setApiToAllowXmlForResponses(false);
-        AcceptHeaderValidator validator = new AcceptHeaderValidator(config, List.of("todo", "todos"));
+        AcceptHeaderValidator validator =
+                new AcceptHeaderValidator(config, List.of("todo", "todos"));
 
         for (String mediaType :
                 List.of("application/xml", "text/xml", "application/vnd.example.todo+xml")) {

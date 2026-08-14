@@ -58,8 +58,7 @@ public class AcceptHeaderValidator {
         final List<AcceptHeaderParser.ACCEPT_TYPE> allowedTypes = new ArrayList<>();
         for (AcceptHeaderParser.ACCEPT_TYPE type :
                 AcceptHeaderParser.ACCEPT_TYPE.responseMediaTypes()) {
-            if (type.rendersAsXml()
-                    && !this.apiConfig.willApiAllowXmlForResponses()) {
+            if (type.rendersAsXml() && !this.apiConfig.willApiAllowXmlForResponses()) {
                 continue;
             }
             if (type == AcceptHeaderParser.ACCEPT_TYPE.JSON
