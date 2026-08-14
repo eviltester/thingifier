@@ -58,6 +58,20 @@ public class ApiResponseTest {
     }
 
     @Test
+    public void errorFormatterUsesXmlCompatibleAcceptTypes() {
+        Assertions.assertTrue(ApiResponseError.asAppropriate("text/xml", "oopsy").startsWith("<"));
+        Assertions.assertTrue(
+                ApiResponseError.asAppropriate(
+                                "application/vnd.example.todo+xml", "oopsy")
+                        .startsWith("{"));
+        Assertions.assertTrue(
+                ApiResponseError.asAppropriate("application/*+xml", "oopsy").startsWith("{"));
+        Assertions.assertTrue(
+                ApiResponseError.asAppropriate("application/problem+xml", "oopsy")
+                        .startsWith("{"));
+    }
+
+    @Test
     public void responseErrors() {
 
         List<String> errors = new ArrayList();

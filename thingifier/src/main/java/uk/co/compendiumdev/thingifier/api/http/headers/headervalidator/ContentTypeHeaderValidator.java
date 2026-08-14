@@ -1,14 +1,23 @@
 package uk.co.compendiumdev.thingifier.api.http.headers.headervalidator;
 
+import java.util.Collection;
+import java.util.List;
 import uk.co.compendiumdev.thingifier.api.http.headers.headerparser.ContentTypeHeaderParser;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 
 public class ContentTypeHeaderValidator {
     private final ThingifierApiConfig apiConfig;
+    private final Collection<String> xmlEntityNames;
 
     public ContentTypeHeaderValidator(final ThingifierApiConfig apiConfig) {
+        this(apiConfig, List.of());
+    }
+
+    public ContentTypeHeaderValidator(
+            final ThingifierApiConfig apiConfig, final Collection<String> xmlEntityNames) {
         this.apiConfig = apiConfig;
+        this.xmlEntityNames = xmlEntityNames == null ? List.of() : List.copyOf(xmlEntityNames);
     }
 
     public ApiResponse validate(final String header) {
@@ -18,21 +27,24 @@ public class ContentTypeHeaderValidator {
         }
 
         final ContentTypeHeaderParser accept = new ContentTypeHeaderParser(header);
+        final boolean isXml = accept.isXML(xmlEntityNames);
 
         if (accept.isMissing()
-                || accept.isText() && apiConfig.willAllowJsonAsDefaultContentType()) {
+                || (!isXml
+                        && accept.isText()
+                        && apiConfig.willAllowJsonAsDefaultContentType())) {
             // assume that we can derive content type from the actual content
             return null;
         }
 
         int statusContentTypeNotSupported = this.apiConfig.statusCodes().contentTypeNotSupported();
 
-        if (!accept.isXML() && !accept.isJSON()) {
+        if (!isXml && !accept.isJSON()) {
             return ApiResponse.error(
                     statusContentTypeNotSupported, "Unsupported Content Type - " + header);
         }
 
-        if (accept.isXML() && !this.apiConfig.willAcceptXMLContent()) {
+        if (isXml && !this.apiConfig.willAcceptXMLContent()) {
             return ApiResponse.error(statusContentTypeNotSupported, "XML Not Supported");
         }
 

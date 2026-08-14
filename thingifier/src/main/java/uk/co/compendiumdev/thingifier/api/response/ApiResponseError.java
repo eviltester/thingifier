@@ -16,12 +16,13 @@ public final class ApiResponseError {
                 acceptable.preferredSupportedType(
                         List.of(
                                 AcceptHeaderParser.ACCEPT_TYPE.JSON,
-                                AcceptHeaderParser.ACCEPT_TYPE.XML),
+                                AcceptHeaderParser.ACCEPT_TYPE.XML,
+                                AcceptHeaderParser.ACCEPT_TYPE.TEXT_XML),
                         AcceptHeaderParser.ACCEPT_TYPE.JSON);
 
         // TODO: should be able to configure a default API response type rather than assume it is
         // JSON
-        if (preferredType == AcceptHeaderParser.ACCEPT_TYPE.XML) {
+        if (preferredType.rendersAsXml()) {
             isJson = false;
         }
 

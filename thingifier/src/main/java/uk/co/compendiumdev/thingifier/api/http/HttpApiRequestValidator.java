@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.jayway.jsonpath.InvalidPathException;
 import com.jayway.jsonpath.JsonPath;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.JsonBodyValueConverter;
 import uk.co.compendiumdev.thingifier.api.http.headers.headerparser.ContentTypeHeaderParser;
@@ -17,11 +19,18 @@ public class HttpApiRequestValidator {
     private static final String MALFORMED_STRUCTURED_QUERY_JSON = "Malformed JSON query body";
 
     private final ThingifierApiConfig apiConfig;
+    private final Collection<String> xmlEntityNames;
     Boolean isValid;
     private ApiResponse errorResponse;
 
     public HttpApiRequestValidator(final ThingifierApiConfig apiConfig) {
+        this(apiConfig, List.of());
+    }
+
+    public HttpApiRequestValidator(
+            final ThingifierApiConfig apiConfig, final Collection<String> xmlEntityNames) {
         this.apiConfig = apiConfig;
+        this.xmlEntityNames = xmlEntityNames == null ? List.of() : List.copyOf(xmlEntityNames);
     }
 
     public boolean validateSyntax(
@@ -29,7 +38,8 @@ public class HttpApiRequestValidator {
         // Config Validation
 
         ApiResponse apiResponse =
-                new AcceptHeaderValidator(this.apiConfig).validate(request.getAcceptHeader());
+                new AcceptHeaderValidator(this.apiConfig, xmlEntityNames)
+                        .validate(request.getAcceptHeader());
         ;
 
         if (apiResponse == null) {
@@ -66,7 +76,7 @@ public class HttpApiRequestValidator {
                 if (apiResponse == null
                         && (verb == ThingifierHttpApi.HttpVerb.POST
                                 || verb == ThingifierHttpApi.HttpVerb.PUT)) {
-                    BodyParser parser = new BodyParser(request, new ArrayList<>());
+                    BodyParser parser = new BodyParser(request, new ArrayList<>(xmlEntityNames));
                     String parsingError = "";
                     if (!apiConfig.willAllowJsonAsDefaultContentType()) {
                         parsingError = parser.validBodyBasedOnContentType();
@@ -93,7 +103,7 @@ public class HttpApiRequestValidator {
             return null;
         }
 
-        return new ContentTypeHeaderValidator(this.apiConfig)
+        return new ContentTypeHeaderValidator(this.apiConfig, xmlEntityNames)
                 .validate(request.getContentTypeHeader());
     }
 

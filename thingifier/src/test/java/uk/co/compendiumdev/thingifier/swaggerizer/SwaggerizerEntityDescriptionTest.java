@@ -88,6 +88,18 @@ class SwaggerizerEntityDescriptionTest {
                         .get("application/json")
                         .getSchema()
                         .get$ref());
+        Assertions.assertTrue(
+                relationshipCollection
+                        .getPost()
+                        .getRequestBody()
+                        .getContent()
+                        .containsKey("application/xml"));
+        Assertions.assertTrue(
+                relationshipCollection
+                        .getPost()
+                        .getRequestBody()
+                        .getContent()
+                        .containsKey("text/xml"));
 
         final PathItem singleTargetRelationship = openApi.getPaths().get("/todos/{id}/project");
         Assertions.assertNotNull(singleTargetRelationship);
@@ -127,6 +139,13 @@ class SwaggerizerEntityDescriptionTest {
         Assertions.assertEquals("array", xmlCollectionSchema.getType());
         Assertions.assertEquals("projects", xmlCollectionSchema.getXml().getName());
         Assertions.assertTrue(xmlCollectionSchema.getXml().getWrapped());
+        for (String xmlMediaType : List.of("text/xml")) {
+            final Schema<?> compatibleXmlCollectionSchema = content.get(xmlMediaType).getSchema();
+            Assertions.assertNull(compatibleXmlCollectionSchema.get$ref());
+            Assertions.assertEquals("array", compatibleXmlCollectionSchema.getType());
+            Assertions.assertEquals("projects", compatibleXmlCollectionSchema.getXml().getName());
+            Assertions.assertTrue(compatibleXmlCollectionSchema.getXml().getWrapped());
+        }
         for (String mediaType :
                 List.of(
                         "text/csv",

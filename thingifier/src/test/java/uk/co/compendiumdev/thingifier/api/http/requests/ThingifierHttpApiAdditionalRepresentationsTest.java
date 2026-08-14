@@ -46,6 +46,19 @@ class ThingifierHttpApiAdditionalRepresentationsTest {
         assertNegotiatedGet(api, "text/*", 200, "text/csv", "id,title");
         assertNegotiatedGet(api, "application/json", 200, "application/json", "\"tasks\"");
         assertNegotiatedGet(api, "application/xml", 200, "application/xml", "<tasks>");
+        assertNegotiatedGet(api, "text/xml", 200, "text/xml", "<tasks>");
+        assertNegotiatedGet(
+                api,
+                "application/vnd.example.task+xml",
+                200,
+                "application/vnd.example.task+xml",
+                "<tasks>");
+        assertNegotiatedGet(
+                api,
+                "application/*+xml",
+                200,
+                "application/task+xml",
+                "<tasks>");
         assertNegotiatedGet(
                 api,
                 "application/json, application/problem+json",
@@ -64,6 +77,9 @@ class ThingifierHttpApiAdditionalRepresentationsTest {
                 api, "application/problem+json", 406, "application/json", "errorMessages");
         assertNegotiatedGet(api, "application/*+json", 406, "application/json", "errorMessages");
         assertNegotiatedGet(api, "application/json;q=0", 406, "application/json", "errorMessages");
+        assertIssue103AcceptHeaderQualityValueExamples(api);
+        assertXmlCompatibleAcceptHeaderQualityValueCombinations(api);
+        assertUnsupportedXmlBasedMediaTypesAreNotNormalResourceXml(api);
     }
 
     @Test
@@ -140,7 +156,164 @@ class ThingifierHttpApiAdditionalRepresentationsTest {
         expectedBodies.put("application/jsonl", "{\"id\":1,\"title\":\"Task\"}\n");
         expectedBodies.put("application/json-seq", "\u001E{\"id\":1,\"title\":\"Task\"}\n");
         expectedBodies.put("text/tab-separated-values", "id\ttitle\n1\tTask");
+        expectedBodies.put("text/xml", "<tasks><task><id>1</id><title>Task</title></task></tasks>");
+        expectedBodies.put(
+                "application/vnd.example.task+xml",
+                "<tasks><task><id>1</id><title>Task</title></task></tasks>");
         return expectedBodies;
+    }
+
+    private void assertIssue103AcceptHeaderQualityValueExamples(final ThingifierHttpApi api) {
+        assertNegotiatedGet(
+                api,
+                "application/xml;q=1, application/json;q=0.5",
+                200,
+                "application/xml",
+                "<tasks>");
+        assertNegotiatedGet(
+                api,
+                "application/json;q=1, application/xml;q=0.5",
+                200,
+                "application/json",
+                "\"tasks\"");
+        assertNegotiatedGet(
+                api,
+                "application/xml;q=0.2, application/json;q=0.9",
+                200,
+                "application/json",
+                "\"tasks\"");
+        assertNegotiatedGet(
+                api,
+                "application/json;q=0, application/xml;q=1",
+                200,
+                "application/xml",
+                "<tasks>");
+        assertNegotiatedGet(
+                api,
+                "application/json;q=0, application/xml;q=0",
+                406,
+                "application/json",
+                "errorMessages");
+        assertNegotiatedGet(
+                api,
+                "application/xml, application/json;q=0.5",
+                200,
+                "application/xml",
+                "<tasks>");
+        assertNegotiatedGet(
+                api,
+                "*/*;q=0.8, application/xml;q=0.9",
+                200,
+                "application/xml",
+                "<tasks>");
+        assertNegotiatedGet(
+                api,
+                "application/gzip;q=1, application/json;q=0.5",
+                200,
+                "application/json",
+                "\"tasks\"");
+    }
+
+    private void assertXmlCompatibleAcceptHeaderQualityValueCombinations(
+            final ThingifierHttpApi api) {
+        assertNegotiatedGet(
+                api,
+                "application/json;q=0.5, "
+                        + "application/xml;q=0.6, "
+                        + "text/xml;q=0.8, "
+                        + "application/vnd.example.task+xml;q=0.9",
+                200,
+                "application/vnd.example.task+xml",
+                "<tasks>");
+        assertNegotiatedGet(
+                api,
+                "application/json;q=0.5, "
+                        + "application/xml;q=0.6, "
+                        + "text/xml;q=0.8, "
+                        + "application/*+xml;q=0.9",
+                200,
+                "application/task+xml",
+                "<tasks>");
+        assertNegotiatedGet(
+                api,
+                "application/problem+xml;q=1, text/xml;q=0.4",
+                200,
+                "text/xml",
+                "<tasks>");
+        assertNegotiatedGet(
+                api,
+                "application/soap+xml;q=1, application/*+xml;q=0.4",
+                200,
+                "application/task+xml",
+                "<tasks>");
+        assertNegotiatedGet(
+                api,
+                "application/xml;q=0, application/*;q=0.8",
+                200,
+                "application/json",
+                "\"tasks\"");
+        assertNegotiatedGet(
+                api,
+                "text/xml;q=0, text/*;q=0.8",
+                200,
+                "text/csv",
+                "id,title");
+        assertNegotiatedGet(
+                api,
+                "application/task+xml;q=0, application/*+xml;q=0.8",
+                406,
+                "application/json",
+                "errorMessages");
+        assertNegotiatedGet(
+                api,
+                "application/*;q=0.8, application/xml;q=0.8",
+                200,
+                "application/xml",
+                "<tasks>");
+        assertNegotiatedGet(
+                api,
+                "text/*;q=0.8, text/xml;q=0.8",
+                200,
+                "text/xml",
+                "<tasks>");
+        assertNegotiatedGet(
+                api,
+                "application/*+xml;q=0.8, application/vnd.example.task+xml;q=0.8",
+                200,
+                "application/vnd.example.task+xml",
+                "<tasks>");
+        assertNegotiatedGet(
+                api,
+                "text/xml;q=0.8, application/xml;q=0.8",
+                200,
+                "text/xml",
+                "<tasks>");
+        assertNegotiatedGet(
+                api,
+                "application/xml;q=0.8, text/xml;q=0.8",
+                200,
+                "application/xml",
+                "<tasks>");
+        assertNegotiatedGet(
+                api,
+                "application/vnd.example.task+xml;q=0.8, text/xml;q=0.8",
+                200,
+                "application/vnd.example.task+xml",
+                "<tasks>");
+    }
+
+    private void assertUnsupportedXmlBasedMediaTypesAreNotNormalResourceXml(
+            final ThingifierHttpApi api) {
+        for (String mediaType :
+                java.util.List.of(
+                        "application/problem+xml",
+                        "application/soap+xml",
+                        "application/xhtml+xml",
+                        "image/svg+xml",
+                        "application/atom+xml",
+                        "application/rss+xml")) {
+            assertNegotiatedGet(api, mediaType, 406, "application/json", "errorMessages");
+        }
     }
 
     private void assertNegotiatedGet(

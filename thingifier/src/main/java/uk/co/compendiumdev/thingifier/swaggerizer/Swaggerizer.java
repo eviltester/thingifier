@@ -584,7 +584,7 @@ public class Swaggerizer {
             if (responseType.usesComponentSchemaInDocumentation()) {
                 MediaType schema = new MediaType();
                 schema.setSchema(
-                        responseType == AcceptHeaderParser.ACCEPT_TYPE.XML
+                        responseType.rendersAsXml()
                                 ? xmlSchema
                                 : refSchemaFor(jsonRef));
                 content.addMediaType(responseType.mediaType(), schema);

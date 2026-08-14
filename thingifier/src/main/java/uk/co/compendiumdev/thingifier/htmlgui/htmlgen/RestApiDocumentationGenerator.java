@@ -111,8 +111,11 @@ public class RestApiDocumentationGenerator {
                 output.append(paragraph("<i>Content-Type: application/json</i>"));
                 output.append(
                         paragraph(
-                                "Set Content-Type header to application/xml if you want to send in XML."));
+                                "Set Content-Type header to application/xml, text/xml, or a model-matching application/*+xml media type if you want to send in XML."));
                 output.append(paragraph("<i>Content-Type: application/xml</i>"));
+                output.append(paragraph("<i>Content-Type: text/xml</i>"));
+                output.append(
+                        paragraph("<i>Content-Type: application/todo+xml</i>"));
 
                 if (thingifier.apiConfig().willApiAllowXmlForResponses()
                         && thingifier.apiConfig().willApiAllowJsonForResponses()) {
@@ -134,6 +137,11 @@ public class RestApiDocumentationGenerator {
                     output.append(
                             paragraph(
                                     acceptHeaderExample(AcceptHeaderParser.ACCEPT_TYPE.XML)
+                                            + "<br/>\n"
+                                            + acceptHeaderExample(
+                                                    AcceptHeaderParser.ACCEPT_TYPE.TEXT_XML)
+                                            + "<br/>\n"
+                                            + "<i>Accept: application/*+xml</i>"
                                             + "<br/><br/>\n"));
                 }
 
@@ -966,7 +974,7 @@ public class RestApiDocumentationGenerator {
         for (AcceptHeaderParser.ACCEPT_TYPE responseType :
                 AcceptHeaderParser.ACCEPT_TYPE.responseMediaTypes()) {
             if (responseType == AcceptHeaderParser.ACCEPT_TYPE.JSON
-                    || responseType == AcceptHeaderParser.ACCEPT_TYPE.XML) {
+                    || responseType.rendersAsXml()) {
                 continue;
             }
             headers.append(acceptHeaderExample(responseType)).append("<br/>\n");

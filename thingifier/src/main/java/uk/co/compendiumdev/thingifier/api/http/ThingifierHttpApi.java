@@ -14,6 +14,7 @@ import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.ThingifierSchemaC
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.CollectionRoute;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.InstanceRoute;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.RelationshipCollectionRoute;
+import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.RelationshipInstanceRoute;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.ThingRoute;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.ThingRouteMapper;
 import uk.co.compendiumdev.thingifier.adapter.http.messagehooks.HttpApiRequestHook;
@@ -131,7 +132,11 @@ public final class ThingifierHttpApi {
 
             httpResponse =
                     new HttpApiResponse(
-                            request.getHeaders(), apiResponse, jsonThing, thingifier.apiConfig());
+                            request.getHeaders(),
+                            apiResponse,
+                            jsonThing,
+                            thingifier.apiConfig(),
+                            xmlEntityNamesFor(request.getPath()));
 
             if (effectiveVerb == HttpVerb.HEAD) {
                 final int bodyLength =
@@ -143,7 +148,8 @@ public final class ThingifierHttpApi {
                                 request.getHeaders(),
                                 apiResponse,
                                 jsonThing,
-                                thingifier.apiConfig());
+                                thingifier.apiConfig(),
+                                xmlEntityNamesFor(request.getPath()));
             }
         }
 
@@ -174,7 +180,8 @@ public final class ThingifierHttpApi {
                 request.getHeaders(),
                 ApiResponse.error404("Could not find any instances with " + request.getPath()),
                 jsonThing,
-                thingifier.apiConfig());
+                thingifier.apiConfig(),
+                xmlEntityNamesFor(request.getPath()));
     }
 
     /** return an error response if the request is invalid, null if valid */
@@ -182,7 +189,8 @@ public final class ThingifierHttpApi {
             final HttpApiRequest request, final HttpVerb verb) {
 
         final HttpApiRequestValidator requestValidator =
-                new HttpApiRequestValidator(thingifier.apiConfig());
+                new HttpApiRequestValidator(
+                        thingifier.apiConfig(), xmlEntityNamesFor(request.getPath()));
 
         HttpApiResponse httpResponse = null;
 
@@ -193,7 +201,8 @@ public final class ThingifierHttpApi {
                             request.getHeaders(),
                             requestValidator.getErrorApiResponse(),
                             jsonThing,
-                            thingifier.apiConfig());
+                            thingifier.apiConfig(),
+                            xmlEntityNamesFor(request.getPath()));
         }
 
         return httpResponse;
@@ -203,7 +212,7 @@ public final class ThingifierHttpApi {
 
         ApiResponse apiResponse = null;
         ApiRequestEnvelope envelope =
-                ApiRequestEnvelope.from(request, verb, thingifier.getThingNames());
+                ApiRequestEnvelope.from(request, verb, xmlEntityNamesFor(request.getPath()));
 
         switch (verb) {
             case GET:
@@ -261,7 +270,8 @@ public final class ThingifierHttpApi {
                                     "Entity view %s is not defined for %s",
                                     viewName, entity.getName())),
                     jsonThing,
-                    thingifier.apiConfig());
+                    thingifier.apiConfig(),
+                    xmlEntityNamesFor(request.getPath()));
         }
 
         final EntityViewDefinition view = entity.getViewNamed(viewName);
@@ -284,7 +294,8 @@ public final class ThingifierHttpApi {
                                 "Fields are not allowed by %s: %s",
                                 viewName, String.join(", ", disallowedFields))),
                 jsonThing,
-                thingifier.apiConfig());
+                thingifier.apiConfig(),
+                xmlEntityNamesFor(request.getPath()));
     }
 
     private List<ApiBodyField> entityViewInputFields(
@@ -293,7 +304,7 @@ public final class ThingifierHttpApi {
             return patchInputFields(request, entity);
         }
 
-        return ApiRequestEnvelope.from(request, verb, thingifier.getThingNames())
+        return ApiRequestEnvelope.from(request, verb, xmlEntityNamesFor(request.getPath()))
                 .bodyFields()
                 .topLevelFields();
     }
@@ -515,7 +526,23 @@ public final class ThingifierHttpApi {
                 }
             }
         }
+        if (route instanceof RelationshipInstanceRoute) {
+            final RelationshipInstanceRoute relationship = (RelationshipInstanceRoute) route;
+            for (RelationshipSpec spec : relationship.parentEntity().relationships()) {
+                if (spec.name().equals(relationship.relationshipName())) {
+                    return schema.definitionWithSingularOrPluralNamed(spec.toEntityName());
+                }
+            }
+        }
         return null;
+    }
+
+    private List<String> xmlEntityNamesFor(final String path) {
+        final EntityDefinition entity = targetEntityFor(path);
+        if (entity == null) {
+            return List.of();
+        }
+        return List.of(entity.getName(), entity.getPlural());
     }
 
     public HttpApiResponse get(final HttpApiRequest request) {
@@ -557,7 +584,11 @@ public final class ThingifierHttpApi {
                             .get(query, request.getFilterableQueryParams(), request.getHeaders());
             httpResponse =
                     new HttpApiResponse(
-                            request.getHeaders(), apiResponse, jsonThing, thingifier.apiConfig());
+                            request.getHeaders(),
+                            apiResponse,
+                            jsonThing,
+                            thingifier.apiConfig(),
+                            xmlEntityNamesFor(request.getPath()));
         }
 
         return runTheHttpApiResponseHooksOn(request, httpResponse);

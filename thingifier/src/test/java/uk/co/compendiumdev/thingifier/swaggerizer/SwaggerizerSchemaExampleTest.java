@@ -38,6 +38,7 @@ class SwaggerizerSchemaExampleTest {
                 itemsSchema.getAsJsonObject("properties").getAsJsonObject("items");
         final JsonObject itemSchema = itemsProperty.getAsJsonObject("items");
         final JsonObject xmlItemsSchema = responseSchemaFor(document, "/items", "application/xml");
+        final JsonObject textXmlItemsSchema = responseSchemaFor(document, "/items", "text/xml");
         final JsonObject xmlItemSchema = xmlItemsSchema.getAsJsonObject("items");
 
         Assertions.assertFalse(schemas.has("items_xml_collection"));
@@ -73,6 +74,9 @@ class SwaggerizerSchemaExampleTest {
         Assertions.assertEquals(
                 Set.of("id", "type", "isbn13", "price", "numberinstock"),
                 requiredPropertiesIn(xmlItemSchema, "XML item"));
+        Assertions.assertEquals("array", textXmlItemsSchema.get("type").getAsString());
+        Assertions.assertEquals(
+                "items", textXmlItemsSchema.getAsJsonObject("xml").get("name").getAsString());
     }
 
     @Test
